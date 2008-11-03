@@ -1,10 +1,10 @@
 /***************************************************************
  * NDO2DB.C - NDO To Database Daemon
  *
- * Copyright (c) 2005-2007 Ethan Galstad 
+ * Copyright (c) 2005-2008 Ethan Galstad 
  *
  * First Written: 05-19-2005
- * Last Modified: 10-31-2007
+ * Last Modified: 01-25-2008
  *
  **************************************************************/
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv){
 
 		printf("\n");
 		printf("%s %s\n",NDO2DB_NAME,NDO2DB_VERSION);
-		printf("Copyright(c) 2005-2007 Ethan Galstad (nagios@nagios.org)\n");
+		printf("Copyright(c) 2005-2008 Ethan Galstad (nagios@nagios.org)\n");
 		printf("Last Modified: %s\n",NDO2DB_DATE);
 		printf("License: GPL v2\n");
 		printf("\n");
@@ -1103,13 +1103,13 @@ int ndo2db_handle_client_input(ndo2db_idi *idi, char *buf){
 				idi->current_input_data=NDO2DB_INPUT_DATA_PROCESSDATA;
 				break;
 			case NDO_API_TIMEDEVENTDATA:
-			  //idi->current_input_data=NDO2DB_INPUT_DATA_TIMEDEVENTDATA;
+				idi->current_input_data=NDO2DB_INPUT_DATA_TIMEDEVENTDATA;
 				break;
 			case NDO_API_LOGDATA:
 				idi->current_input_data=NDO2DB_INPUT_DATA_LOGDATA;
 				break;
 			case NDO_API_SYSTEMCOMMANDDATA:
-			  //idi->current_input_data=NDO2DB_INPUT_DATA_SYSTEMCOMMANDDATA;
+				idi->current_input_data=NDO2DB_INPUT_DATA_SYSTEMCOMMANDDATA;
 				break;
 			case NDO_API_EVENTHANDLERDATA:
 				idi->current_input_data=NDO2DB_INPUT_DATA_EVENTHANDLERDATA;
@@ -1118,10 +1118,10 @@ int ndo2db_handle_client_input(ndo2db_idi *idi, char *buf){
 				idi->current_input_data=NDO2DB_INPUT_DATA_NOTIFICATIONDATA;
 				break;
 			case NDO_API_SERVICECHECKDATA:
-			  //idi->current_input_data=NDO2DB_INPUT_DATA_SERVICECHECKDATA;
+				idi->current_input_data=NDO2DB_INPUT_DATA_SERVICECHECKDATA;
 				break;
 			case NDO_API_HOSTCHECKDATA:
-			  //idi->current_input_data=NDO2DB_INPUT_DATA_HOSTCHECKDATA;
+				idi->current_input_data=NDO2DB_INPUT_DATA_HOSTCHECKDATA;
 				break;
 			case NDO_API_COMMENTDATA:
 				idi->current_input_data=NDO2DB_INPUT_DATA_COMMENTDATA;
