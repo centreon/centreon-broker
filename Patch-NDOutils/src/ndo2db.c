@@ -28,6 +28,7 @@
 #define NDO2DB_NAME "NDO2DB"
 #define NDO2DB_DATE "10-31-2007"
 
+#define NDO2DB_LIGHT 1
 
 extern int errno;
 

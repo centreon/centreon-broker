@@ -53,7 +53,6 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 #define NDOMOD_NAME "NDOMOD"
 #define NDOMOD_DATE "10-31-2007"
 
-
 void *ndomod_module_handle=NULL;
 char *ndomod_instance_name=NULL;
 char *ndomod_buffer_file=NULL;
@@ -1026,20 +1025,29 @@ int ndomod_register_callbacks(void){
 
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_PROCESS_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+
+#ifdef NDOMOD_LIGHT
+
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_TIMED_EVENT_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_LOG_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_SYSTEM_COMMAND_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#endif
+
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_EVENT_HANDLER_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+
+#ifdef NDOMOD_LIGHT
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_NOTIFICATION_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_SERVICE_CHECK_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_HOST_CHECK_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#endif
+
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_COMMENT_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
@@ -1052,12 +1060,15 @@ int ndomod_register_callbacks(void){
 		result=neb_register_callback(NEBCALLBACK_HOST_STATUS_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_SERVICE_STATUS_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_ADAPTIVE_PROGRAM_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_ADAPTIVE_HOST_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_ADAPTIVE_SERVICE_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+
+#ifdef NDOMOD_LIGHT
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_EXTERNAL_COMMAND_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
@@ -1068,15 +1079,22 @@ int ndomod_register_callbacks(void){
 		result=neb_register_callback(NEBCALLBACK_CONTACT_NOTIFICATION_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_CONTACT_NOTIFICATION_METHOD_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#endif
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_ACKNOWLEDGEMENT_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#ifdef NDOMOD_LIGHT
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_STATE_CHANGE_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#endif
 #ifdef BUILD_NAGIOS_3X
+
+#ifdef NDOMOD_LIGHT
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_CONTACT_STATUS_DATA,ndomod_module_handle,priority,ndomod_broker_data);
 	if(result==NDO_OK)
 		result=neb_register_callback(NEBCALLBACK_ADAPTIVE_CONTACT_DATA,ndomod_module_handle,priority,ndomod_broker_data);
+#endif
+
 #endif
 
 	return result;
@@ -2339,6 +2357,7 @@ int ndomod_broker_data(int event_type, void *data){
 
 		break;
 
+#ifdef NDOMOD_LIGHT
 #ifdef BUILD_NAGIOS_3X
 	case NEBCALLBACK_CONTACT_STATUS_DATA:
 
@@ -2417,6 +2436,7 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+#endif
 #endif
 
 	case NEBCALLBACK_ADAPTIVE_PROGRAM_DATA:
@@ -2623,6 +2643,7 @@ int ndomod_broker_data(int event_type, void *data){
 
 		break;
 #endif
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_EXTERNAL_COMMAND_DATA:
 
@@ -2658,6 +2679,8 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+#endif
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_AGGREGATED_STATUS_DATA:
 
@@ -2682,6 +2705,8 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+#endif
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_RETENTION_DATA:
 
@@ -2706,6 +2731,8 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+#endif
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_CONTACT_NOTIFICATION_DATA:
 
@@ -2761,6 +2788,9 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+
+#endif
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_CONTACT_NOTIFICATION_METHOD_DATA:
 
@@ -2822,6 +2852,7 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+#endif
 
 	case NEBCALLBACK_ACKNOWLEDGEMENT_DATA:
 
@@ -2869,6 +2900,8 @@ int ndomod_broker_data(int event_type, void *data){
 		ndo_dbuf_strcat(&dbuf,temp_buffer);
 
 		break;
+
+#ifdef NDOMOD_LIGHT
 
 	case NEBCALLBACK_STATE_CHANGE_DATA:
 
@@ -2956,6 +2989,8 @@ int ndomod_broker_data(int event_type, void *data){
 
 		break;
 
+#endif
+
 	default:
 		ndo_dbuf_free(&dbuf);
 		return 0;
@@ -2974,7 +3009,6 @@ int ndomod_broker_data(int event_type, void *data){
 
 	/* free dynamic buffer */
 	ndo_dbuf_free(&dbuf);
-
 
 
 	/* POST PROCESSING... */
@@ -3143,6 +3177,8 @@ int ndomod_write_object_config(int config_type){
 	for(x=0;x<OBJECTCONFIG_ES_ITEMS;x++)
 		es[x]=NULL;
 
+#ifdef NDOMOD_LIGHT
+
 	/****** dump command config ******/
 	for(temp_command=command_list;temp_command!=NULL;temp_command=temp_command->next){
 
@@ -3172,6 +3208,9 @@ int ndomod_write_object_config(int config_type){
 		free(es[x]);
 		es[x]=NULL;
 	        }
+#endif 
+
+#ifdef NDOMOD_LIGHT
 
 	/****** dump timeperiod config ******/
 	for(temp_timeperiod=timeperiod_list;temp_timeperiod!=NULL;temp_timeperiod=temp_timeperiod->next){
@@ -3227,6 +3266,9 @@ int ndomod_write_object_config(int config_type){
 		free(es[x]);
 		es[x]=NULL;
 	        }
+
+#endif
+#ifdef NDOMOD_LIGHT
 
 	/****** dump contact config ******/
 	for(temp_contact=contact_list;temp_contact!=NULL;temp_contact=temp_contact->next){
@@ -3401,6 +3443,9 @@ int ndomod_write_object_config(int config_type){
 		es[x]=NULL;
 	        }
 
+#endif
+#ifdef NDOMOD_LIGHT
+
 	/****** dump contactgroup config ******/
 	for(temp_contactgroup=contactgroup_list;temp_contactgroup!=NULL;temp_contactgroup=temp_contactgroup->next){
 
@@ -3468,6 +3513,8 @@ int ndomod_write_object_config(int config_type){
 		free(es[x]);
 		es[x]=NULL;
 	        }
+
+#endif
 
 	/****** dump host config ******/
 	for(temp_host=host_list;temp_host!=NULL;temp_host=temp_host->next){
@@ -3667,6 +3714,8 @@ int ndomod_write_object_config(int config_type){
 		free(es[0]);
 		es[0]=NULL;
 
+#ifdef NDOMOD_LIGHT
+
 		/* dump parent hosts */
 		for(temp_hostsmember=temp_host->parent_hosts;temp_hostsmember!=NULL;temp_hostsmember=temp_hostsmember->next){
 				
@@ -3718,6 +3767,7 @@ int ndomod_write_object_config(int config_type){
 			free(es[0]);
 			es[0]=NULL;
 			}
+#endif
 #endif
 
 
@@ -3988,6 +4038,8 @@ int ndomod_write_object_config(int config_type){
 
 		free(es[0]);
 		es[0]=NULL;
+	
+#ifdef NDOMOD_LIGHT
 
 		/* dump contactgroups */
 		for(temp_contactgroupsmember=temp_service->contact_groups;temp_contactgroupsmember!=NULL;temp_contactgroupsmember=temp_contactgroupsmember->next){
@@ -4024,6 +4076,7 @@ int ndomod_write_object_config(int config_type){
 			es[0]=NULL;
 			}
 #endif
+#endif
 
 #ifdef BUILD_NAGIOS_3X
 		/* dump customvars */
@@ -4042,11 +4095,11 @@ int ndomod_write_object_config(int config_type){
 			temp_buffer[sizeof(temp_buffer)-1]='\x0';
 			ndo_dbuf_strcat(&dbuf,temp_buffer);
 
-			for(x=0;x<2;x++){
+			for (x=0 ; x<2 ; x++){
 				free(es[x]);
 				es[x]=NULL;
 				}
-		        }
+		    }
 #endif
 
 		snprintf(temp_buffer,sizeof(temp_buffer)-1
@@ -4143,6 +4196,8 @@ int ndomod_write_object_config(int config_type){
 		es[x]=NULL;
 	        }
 
+#ifdef NDOMOD_LIGHT
+
 	/****** dump host escalation config ******/
 	for(temp_hostescalation=hostescalation_list;temp_hostescalation!=NULL;temp_hostescalation=temp_hostescalation->next){
 
@@ -4232,6 +4287,8 @@ int ndomod_write_object_config(int config_type){
 		free(es[x]);
 		es[x]=NULL;
 	        }
+#endif 
+#ifdef NDOMOD_LIGHT
 
 	/****** dump service escalation config ******/
 	for(temp_serviceescalation=serviceescalation_list;temp_serviceescalation!=NULL;temp_serviceescalation=temp_serviceescalation->next){
@@ -4328,6 +4385,9 @@ int ndomod_write_object_config(int config_type){
 		es[x]=NULL;
 	        }
 
+#endif
+#ifdef NDOMOD_LIGHT
+
 	/****** dump host dependency config ******/
 	for(temp_hostdependency=hostdependency_list;temp_hostdependency!=NULL;temp_hostdependency=temp_hostdependency->next){
 
@@ -4385,6 +4445,9 @@ int ndomod_write_object_config(int config_type){
 		free(es[x]);
 		es[x]=NULL;
 	        }
+
+#endif
+#ifdef NDOMOD_LIGHT
 
 	/****** dump service dependency config ******/
 	for(temp_servicedependency=servicedependency_list;temp_servicedependency!=NULL;temp_servicedependency=temp_servicedependency->next){
@@ -4453,7 +4516,11 @@ int ndomod_write_object_config(int config_type){
 	        }
 
 	return NDO_OK;
-        }
+
+#endif
+
+}
+
 
 
 
@@ -4461,14 +4528,14 @@ int ndomod_write_object_config(int config_type){
 int ndomod_write_config_files(void){
 	int result=NDO_OK;
 
-	if((result=ndomod_write_main_config_file())==NDO_ERROR)
+	if ((result = ndomod_write_main_config_file()) == NDO_ERROR)
 		return NDO_ERROR;
 
-	if((result=ndomod_write_resource_config_files())==NDO_ERROR)
+	if ((result = ndomod_write_resource_config_files()) == NDO_ERROR)
 		return NDO_ERROR;
 
 	return result;
-        }
+}
 
 
 
@@ -4665,7 +4732,7 @@ int ndomod_write_runtime_variables(void){
 	temp_buffer=NULL;
 
 	return NDO_OK;
-        }
+}
 
 
 
