@@ -1180,7 +1180,7 @@ int ndo2db_handle_client_input(ndo2db_idi *idi, char *buf){
 				break;
 
 			/* config variables */
-			
+			/*
 			case NDO_API_MAINCONFIGFILEVARIABLES:
 				idi->current_input_data=NDO2DB_INPUT_DATA_MAINCONFIGFILEVARIABLES;
 				break;
@@ -1190,6 +1190,7 @@ int ndo2db_handle_client_input(ndo2db_idi *idi, char *buf){
 			case NDO_API_CONFIGVARIABLES:
 				idi->current_input_data=NDO2DB_INPUT_DATA_CONFIGVARIABLES;
 				break;
+			*/
 			case NDO_API_RUNTIMEVARIABLES:
 				idi->current_input_data=NDO2DB_INPUT_DATA_RUNTIMEVARIABLES;
 				break;
