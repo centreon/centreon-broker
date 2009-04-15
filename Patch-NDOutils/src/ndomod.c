@@ -50,8 +50,8 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 
 #define NDOMOD_VERSION "1.4b7"
-#define NDOMOD_NAME "NDOMOD"
-#define NDOMOD_DATE "10-31-2007"
+#define NDOMOD_NAME "NDOMOD-FOR-CENTREON"
+#define NDOMOD_DATE "15-04-2009"
 
 void *ndomod_module_handle=NULL;
 char *ndomod_instance_name=NULL;
@@ -103,11 +103,7 @@ extern char *global_service_event_handler;
 
 extern int __nagios_object_structure_version;
 
-
-
 #define DEBUG_NDO 1
-
-
 
 /* this function gets called when the module is loaded by the event broker */
 int nebmodule_init(int flags, char *args, void *handle){
@@ -3401,6 +3397,7 @@ int ndomod_write_object_config(int config_type){
 		        }
 
 #ifdef BUILD_NAGIOS_3X
+#ifdef NDOMOD_LIGHT
 		/* dump customvars */
 		for(temp_customvar=temp_contact->custom_variables;temp_customvar!=NULL;temp_customvar=temp_customvar->next){
 				
@@ -3422,6 +3419,7 @@ int ndomod_write_object_config(int config_type){
 				es[x]=NULL;
 				}
 		        }
+#endif
 #endif
 
 		snprintf(temp_buffer,sizeof(temp_buffer)-1
@@ -4079,6 +4077,7 @@ int ndomod_write_object_config(int config_type){
 #endif
 
 #ifdef BUILD_NAGIOS_3X
+#ifdef NDOMOD_LIGHT
 		/* dump customvars */
 		for(temp_customvar=temp_service->custom_variables;temp_customvar!=NULL;temp_customvar=temp_customvar->next){
 				
@@ -4100,6 +4099,7 @@ int ndomod_write_object_config(int config_type){
 				es[x]=NULL;
 				}
 		    }
+#endif
 #endif
 
 		snprintf(temp_buffer,sizeof(temp_buffer)-1
@@ -4521,9 +4521,6 @@ int ndomod_write_object_config(int config_type){
 
 }
 
-
-
-
 /* dumps config files to data sink */
 int ndomod_write_config_files(void){
 	int result=NDO_OK;
@@ -4536,8 +4533,6 @@ int ndomod_write_config_files(void){
 
 	return result;
 }
-
-
 
 /* dumps main config file data to sink */
 int ndomod_write_main_config_file(void){
@@ -4733,6 +4728,4 @@ int ndomod_write_runtime_variables(void){
 
 	return NDO_OK;
 }
-
-
 

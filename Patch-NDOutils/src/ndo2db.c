@@ -25,8 +25,8 @@
 #include "../include/dbhandlers.h"
 
 #define NDO2DB_VERSION "1.4b7"
-#define NDO2DB_NAME "NDO2DB"
-#define NDO2DB_DATE "10-31-2007"
+#define NDO2DB_NAME "NDO2DB-FOR-CENTREON"
+#define NDO2DB_DATE "15-04-2009"
 
 #define NDO2DB_LIGHT 1
 
@@ -93,6 +93,7 @@ int main(int argc, char **argv){
 		printf("Stores Nagios event and configuration data to a database for later retrieval\n");
 		printf("and processing.  Clients that are capable of sending data to the NDO2DB daemon\n");
 		printf("include the LOG2NDO utility and NDOMOD event broker module.\n");
+		printf("\n\nNDO2DB_NAME is ndo2db optimized for centreon\n");
 		printf("\n");
 		printf("Usage: %s -c <config_file> [-i]\n",argv[0]);
 		printf("\n");
