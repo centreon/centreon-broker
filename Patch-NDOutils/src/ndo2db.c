@@ -93,7 +93,7 @@ int main(int argc, char **argv){
 		printf("Stores Nagios event and configuration data to a database for later retrieval\n");
 		printf("and processing.  Clients that are capable of sending data to the NDO2DB daemon\n");
 		printf("include the LOG2NDO utility and NDOMOD event broker module.\n");
-		printf("\n\nNDO2DB_NAME is ndo2db optimized for centreon\n");
+		printf("\n\n%s is ndo2db optimized for centreon\n", NDO2DB_NAME);
 		printf("\n");
 		printf("Usage: %s -c <config_file> [-i]\n",argv[0]);
 		printf("\n");
