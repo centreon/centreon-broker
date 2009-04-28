@@ -35,20 +35,23 @@ COMMON_SRC=io.c utils.c
 COMMON_OBJS=io.o utils.o
 
 NDO_INC=$(SRC_INCLUDE)/ndo2db.h $(SRC_INCLUDE)/db.h
-NDO_SRC=db.c dbhandlers.c stmt.c
+NDO_SRC=db.c dbhandlers.c ndo2db.c stmt.c
 NDO_OBJS=$(NDO_SRC:.c=.o)
 
 
 all: ndo2db ndomod.o sockdebug
 
-ndo2db: ndo2db.c $(NDO_INC) $(NDO_OBJS) $(COMMON_INC) $(COMMON_OBJS)
-	$(CC) $(CFLAGS) $(DBCFLAGS) -D BUILD_NAGIOS_3X -o ndo2db ndo2db.c $(COMMON_OBJS) $(NDO_OBJS) $(LDFLAGS) $(DBLDFLAGS) $(LIBS) $(SOCKETLIBS) $(DBLIBS) $(MATHLIBS) $(OTHERLIBS)
+ndo2db: $(NDO_INC) $(NDO_OBJS) $(COMMON_INC) $(COMMON_OBJS)
+	$(CC) -o ndo2db $(COMMON_OBJS) $(NDO_OBJS) $(LDFLAGS) $(DBLDFLAGS) $(LIBS) $(SOCKETLIBS) $(DBLIBS) $(MATHLIBS) $(OTHERLIBS)
 
 ndomod.o: ndomod.c $(COMMON_INC) $(COMMON_OBJS)
-	$(CC) $(MOD_CFLAGS) $(CFLAGS) -D BUILD_NAGIOS_3X -o ndomod.o ndomod.c $(COMMON_OBJS) $(MOD_LDFLAGS) $(LDFLAGS) $(LIBS) $(SOCKETLIBS) $(OTHERLIBS)
+	$(CC) $(MOD_CFLAGS) $(CFLAGS) -o ndomod.o ndomod.c $(COMMON_OBJS) $(MOD_LDFLAGS) $(LDFLAGS) $(LIBS) $(SOCKETLIBS) $(OTHERLIBS)
 
 sockdebug: sockdebug.c $(COMMON_INC) $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ sockdebug.c $(COMMON_OBJS) $(LDFLAGS) $(LIBS) $(MATHLIBS) $(SOCKETLIBS) $(OTHERLIBS)
+
+ndo2db.o: ndo2db.c $(SRC_INCLUDE)/ndo2db.h
+	$(CC) $(CFLAGS) $(DBCFLAGS) -c -o $@ ndo2db.c
 
 io.o: io.c $(SRC_INCLUDE)/io.h
 	$(CC) $(MOD_CFLAGS) $(CFLAGS) -c -o $@ io.c
@@ -60,7 +63,7 @@ db.o: db.c $(SRC_INCLUDE)/db.h
 	$(CC) $(CFLAGS) -c -o $@ db.c
 
 dbhandlers.o: dbhandlers.c $(SRC_INCLUDE)/dbhandlers.h
-	$(CC) $(CFLAGS) -D BUILD_NAGIOS_3X -c -o $@ dbhandlers.c
+	$(CC) $(CFLAGS) -c -o $@ dbhandlers.c
 
 stmt.o: stmt.c $(SRC_INCLUDE)/stmt.h
 	$(CC) $(CFLAGS) -c -o $@ stmt.c
