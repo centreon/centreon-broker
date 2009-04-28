@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+
+my ${exec_prefix};
+my ${prefix};
+
+${prefix}="/usr/local/nagios";
+${exec_prefix}="${prefix}";
+while ($f = shift @ARGV) {
+
+	if (-x "/bin/mktemp") { 
+		$TEMP = `/bin/mktemp $f.$$.XXXXXX`;
+		die 'Cannot make temporary file $TEMP' if($?);
+		chomp $TEMP;
+	} else {
+		$XXXXXX = rand;
+		$TEMP = "$f.$$.$XXXXXX";
+	}
+
+	open(IN,"<$f.in");
+	open(OUT,">$TEMP") || die 'Cannot make temporary file $TEMP';
+
+	while (<IN>) {
+		s|\@ndo2db_user\@|nagios|g;
+		s|\@ndo2db_group\@|nagios|g;
+		s|\@libexecdir\@|${exec_prefix}/libexec|g; # put all --with-vars before directories
+		s|\@localstatedir\@|${prefix}/var|g;
+		s|\@sysconfdir\@|${prefix}/etc|g;
+		s|\@datadir\@|${prefix}/share|g;
+		s|\@sbindir\@|${exec_prefix}/sbin|g;
+		s|\@bindir\@|${exec_prefix}/bin|g;
+		s|\$\{exec_prefix\}|${prefix}|g; # must be next to last
+		s|\$\{prefix\}|/usr/local/nagios|g; # must be last
+		print OUT $_;
+	}
+
+	close IN;
+	close OUT;
+
+	if ((! -e $f) || (`diff $f $TEMP`)) {
+		`mv $TEMP $f`;
+	} else {
+	         unlink $TEMP;
+	}
+
+}
