@@ -33,11 +33,14 @@ typedef struct
 ** Functions prototypes.
 */
 void		ndo2db_stmt_delete(ndo2db_stmt* stmt);
-int		ndo2db_stmt_execute(ndo2db_stmt* stmt);
+int		ndo2db_stmt_execute(ndo2db_stmt* stmt, ...);
 ndo2db_stmt*	ndo2db_stmt_new(ndo2db_dbconninfo* dbconninfo);
-int		ndo2db_stmt_param_int(ndo2db_stmt* stmt, int value);
-int		ndo2db_stmt_param_string(ndo2db_stmt* stmt, const char* value);
-int		ndo2db_stmt_param_time(ndo2db_stmt* stmt, struct tm* tm);
-int		ndo2db_stmt_prepare(ndo2db_stmt* stmt, const char* query);
+int		ndo2db_stmt_param_datetime(ndo2db_stmt* stmt);
+int		ndo2db_stmt_param_int(ndo2db_stmt* stmt);
+int		ndo2db_stmt_param_smallint(ndo2db_stmt* stmt);
+int		ndo2db_stmt_param_string(ndo2db_stmt* stmt);
+int		ndo2db_stmt_prepare(ndo2db_stmt* stmt,
+				    const char* query,
+				    int nb_col);
 
 #endif /* !_NDO2DB_STMT_H */

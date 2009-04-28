@@ -19,22 +19,13 @@
 
 /* Nagios header files */
 
-#ifdef BUILD_NAGIOS_2X
-#include "../include/nagios-2x/nagios.h"
-#include "../include/nagios-2x/broker.h"
-#include "../include/nagios-2x/comments.h"
-#endif
-#ifdef BUILD_NAGIOS_3X
 #include "../include/nagios-3x/nagios.h"
 #include "../include/nagios-3x/broker.h"
 #include "../include/nagios-3x/comments.h"
-#endif
 
-
-extern int errno;
+#include <errno.h>
 
 extern char *ndo2db_db_tablenames[NDO2DB_MAX_DBTABLES];
-
 
 
 /****************************************************************************/
@@ -1423,11 +1414,9 @@ int ndo2db_handle_servicecheckdata(ndo2db_idi *idi){
 	if(type!=NEBTYPE_SERVICECHECK_INITIATE && type!=NEBTYPE_SERVICECHECK_PROCESSED)
 		return NDO_OK;
 
-#ifdef BUILD_NAGIOS_3X
 	/* skip precheck events - they aren't useful to us */
 	if(type==NEBTYPE_SERVICECHECK_ASYNC_PRECHECK)
 		return NDO_OK;
-#endif
 
 	/* covert vars */
 	result=ndo2db_convert_string_to_int(idi->buffered_input[NDO_DATA_CHECKTYPE],&check_type);
@@ -1544,11 +1533,9 @@ int ndo2db_handle_hostcheckdata(ndo2db_idi *idi){
 		return NDO_OK;
 	*/
 
-#ifdef BUILD_NAGIOS_3X
 	/* skip precheck events - they aren't useful to us */
 	if(type==NEBTYPE_HOSTCHECK_ASYNC_PRECHECK || type==NEBTYPE_HOSTCHECK_SYNC_PRECHECK)
 		return NDO_OK;
-#endif
 
 	/* covert vars */
 	result=ndo2db_convert_string_to_int(idi->buffered_input[NDO_DATA_CHECKTYPE],&check_type);
