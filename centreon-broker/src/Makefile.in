@@ -63,7 +63,7 @@ db.o: db.c $(SRC_INCLUDE)/db.h
 	$(CC) $(CFLAGS) -c -o $@ db.c
 
 dbhandlers.o: dbhandlers.c $(SRC_INCLUDE)/dbhandlers.h
-	$(CC) $(CFLAGS) -c -o $@ dbhandlers.c
+	$(CC) $(CFLAGS) -D_BSD_SOURCE -c -o $@ dbhandlers.c
 
 stmt.o: stmt.c $(SRC_INCLUDE)/stmt.h
 	$(CC) $(CFLAGS) -c -o $@ stmt.c

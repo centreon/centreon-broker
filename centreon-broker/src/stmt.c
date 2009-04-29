@@ -76,6 +76,11 @@ int		ndo2db_stmt_execute(ndo2db_stmt* stmt, ...)
 	mt->year = tm->tm_year + 1900;
 	break ;
 
+	/* DOUBLE argument. */
+      case MYSQL_TYPE_DOUBLE:
+	*(double*)stmt->params[i].buffer = va_arg(args, double);
+	break ;
+
 	/* INT argument. */
       case MYSQL_TYPE_LONG:
 	*(int*)stmt->params[i].buffer = va_arg(args, int);
@@ -141,6 +146,27 @@ int		ndo2db_stmt_param_datetime(ndo2db_stmt* stmt)
     return (NDO_ERROR);
   param->buffer_length = sizeof(MYSQL_TIME);
   param->buffer_type = MYSQL_TYPE_DATETIME;
+  param->error = NULL;
+  param->is_null = NULL;
+  param->is_unsigned = 0;
+  param->length = &param->buffer_length;
+  stmt->current_param++;
+  return (NDO_OK);
+}
+
+/*
+** Bind a parameter to SQL type DOUBLE (double).
+*/
+int		ndo2db_stmt_param_double(ndo2db_stmt* stmt)
+{
+  MYSQL_BIND*	param;
+
+  param = stmt->params + stmt->current_param;
+  memset(param, 0, sizeof(*param));
+  if (!(param->buffer = malloc(sizeof(double))))
+    return (NDO_ERROR);
+  param->buffer_length = sizeof(double);
+  param->buffer_type = MYSQL_TYPE_DOUBLE;
   param->error = NULL;
   param->is_null = NULL;
   param->is_unsigned = 0;
