@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2005-2007 Ethan Galstad 
  *
- * Last Modified: 10-31-2007
+ * Last Modified: 28-04-2009
  *
  **************************************************************/
 
@@ -16,14 +16,15 @@
 #include "../include/ndo2db.h"
 #include "../include/db.h"
 #include "../include/dbhandlers.h"
+#include "../include/stmt.h"
 
 /* Nagios header files */
-
 #include "../include/nagios-3x/nagios.h"
 #include "../include/nagios-3x/broker.h"
 #include "../include/nagios-3x/comments.h"
 
 #include <errno.h>
+#include <time.h>
 
 extern char *ndo2db_db_tablenames[NDO2DB_MAX_DBTABLES];
 
@@ -592,15 +593,59 @@ int ndo2db_handle_logentry(ndo2db_idi *idi){
 int ndo2db_handle_processdata(ndo2db_idi *idi){
 	int type,flags,attr;
 	struct timeval tstamp;
+	struct tm *tm;
 	unsigned long process_id;
 	int result=NDO_OK;
 	char *ts[1];
 	char *es[3];
 	int x=0;
 	char *buf=NULL;
+	static ndo2db_stmt*	stmt1 = NULL;
 
 	if(idi==NULL)
 		return NDO_ERROR;
+
+	/* If the first request has not been prepared, let's do it. */
+	if (!stmt1)
+	  {
+	    char*		query;
+
+	    if (asprintf(&query,
+			 "INSERT INTO %s SET" \
+			 "instance_id=?, " \
+			 "event_type=?, " \
+			 "event_time=?, " \
+			 "event_time_usec=?, " \
+			 "process_id=?, " \
+			 "program_name=?, " \
+			 "program_version=?, " \
+			 "program_date=?",
+			 ndo2db_db_tablenames[NDO2DB_DBTABLE_PROCESSEVENTS])
+		== -1)
+	      query = NULL;
+	    if (!query
+		|| !(stmt1 = ndo2db_stmt_new(&idi->dbinfo))
+		|| ndo2db_stmt_prepare(stmt1, query, 8) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK)
+	      {
+		if (query)
+		  free(query);
+		if (stmt1)
+		  {
+		    ndo2db_stmt_delete(stmt1);
+		    stmt1 = NULL;
+		  }
+		return (NDO_ERROR);
+	      }
+	    free(query);
+	  }
 
 	/* convert timestamp, etc */
 	result=ndo2db_convert_standard_data_elements(idi,&type,&flags,&attr,&tstamp);
@@ -608,27 +653,31 @@ int ndo2db_handle_processdata(ndo2db_idi *idi){
 	/* convert vars */
 	result=ndo2db_convert_string_to_unsignedlong(idi->buffered_input[NDO_DATA_PROCESSID],&process_id);
 
-	ts[0]=ndo2db_db_timet_to_sql(idi,tstamp.tv_sec);
+ 	ts[0]=ndo2db_db_timet_to_sql(idi,tstamp.tv_sec);
 
 	es[0]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_PROGRAMNAME]);
 	es[1]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_PROGRAMVERSION]);
 	es[2]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_PROGRAMDATE]);
 
 	/* save entry to db */
-	if(asprintf(&buf,"INSERT INTO %s SET instance_id='%lu', event_type='%d', event_time=%s, event_time_usec='%lu', process_id='%lu', program_name='%s', program_version='%s', program_date='%s'"
-		    ,ndo2db_db_tablenames[NDO2DB_DBTABLE_PROCESSEVENTS]
-		    ,idi->dbinfo.instance_id
-		    ,type
-		    ,ts[0]
-		    ,tstamp.tv_usec
-		    ,process_id
-		    ,es[0]
-		    ,es[1]
-		    ,es[2]
-		   )==-1)
-		buf=NULL;
-	result=ndo2db_db_query(idi,buf);
-	free(buf);
+	if ((tm = gmtime(&tstamp.tv_sec)))
+	  ndo2db_stmt_execute(stmt1,
+			      // instance_id SMALLINT
+			      (short int)idi->dbinfo.instance_id,
+			      // event_type SMALLINT
+			      (short int)type,
+			      // event_time DATETIME
+			      (struct tm*)tm,
+			      // event_time_usec INT
+			      (int)tstamp.tv_usec,
+			      // process_id INT
+			      (int)process_id,
+			      // program_name VARCHAR(16)
+			      (char*)idi->buffered_input[NDO_DATA_PROGRAMNAME],
+			      // program_version VARCHAR(20)
+			      (char*)idi->buffered_input[NDO_DATA_PROGRAMVERSION],
+			      // program_date VARCHAR(10)
+			      (char*)idi->buffered_input[NDO_DATA_PROGRAMDATE]);
 
 	/* MORE PROCESSING.... */
 
@@ -914,17 +963,60 @@ int ndo2db_handle_timedeventdata(ndo2db_idi *idi){
 int ndo2db_handle_logdata(ndo2db_idi *idi){
 	int type,flags,attr;
 	struct timeval tstamp;
+	struct tm* ptm;
+	struct tm stm;
 	time_t etime=0L;
 	unsigned long letype=0L;
 	int result=NDO_OK;
 	char *ts[2];
 	char *es[1];
-	char *buf=NULL;
 	int len=0;
 	int x=0;
+	static ndo2db_stmt	*stmt;
 
 	if(idi==NULL)
 		return NDO_ERROR;
+
+	/* If the query has not been prepared, let's do it. */
+	if (!stmt)
+	  {
+	    char*		query;
+
+	    if (asprintf(&query,
+			 "INSERT INTO %s SET" \
+			 "instance_id=?, " \
+			 "logentry_time=?, " \
+			 "entry_time=?, " \
+			 "entry_time_usec=?, " \
+			 "logentry_type=?, " \
+			 "logentry_data=?, " \
+			 "realtime_data=1, " \
+			 "inferred_data_extracted='1'",
+			 ndo2db_db_tablenames[NDO2DB_DBTABLE_LOGENTRIES])
+		== -1)
+	      query = NULL;
+	    if (!query
+		|| !(stmt = ndo2db_stmt_new(&idi->dbinfo))
+		|| ndo2db_stmt_prepare(stmt, query, 6) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt) != NDO_OK)
+	      {
+		if (query)
+		  free(query);
+		if (stmt)
+		  {
+		    ndo2db_stmt_delete(stmt);
+		    stmt = NULL;
+		  }
+		return (NDO_ERROR);
+	      }
+	    free(query);
+	  }
 
 	/* convert timestamp, etc */
 	result=ndo2db_convert_standard_data_elements(idi,&type,&flags,&attr,&tstamp);
@@ -936,7 +1028,7 @@ int ndo2db_handle_logdata(ndo2db_idi *idi){
 	ts[0]=ndo2db_db_timet_to_sql(idi,tstamp.tv_sec);
 	ts[1]=ndo2db_db_timet_to_sql(idi,etime);
 
-	es[0]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_LOGENTRY]);
+	es[0]=idi->buffered_input[NDO_DATA_LOGENTRY];
 
 	/* strip newline chars from end */
 	len=strlen(es[0]);
@@ -948,26 +1040,25 @@ int ndo2db_handle_logdata(ndo2db_idi *idi){
 	        }
 
 	/* save entry to db */
-	if(asprintf(&buf,"INSERT INTO %s SET instance_id='%lu', logentry_time=%s, entry_time=%s, entry_time_usec='%lu', logentry_type='%lu', logentry_data='%s', realtime_data='1', inferred_data_extracted='1'"
-		    ,ndo2db_db_tablenames[NDO2DB_DBTABLE_LOGENTRIES]
-		    ,idi->dbinfo.instance_id
-		    ,ts[1]
-		    ,ts[0]
-		    ,tstamp.tv_usec
-		    ,letype
-		    ,es[0]
-		   )==-1)
-		buf=NULL;
-	result=ndo2db_db_query(idi,buf);
-	free(buf);
+	if ((ptm = gmtime(&etime)))
+	  {
+	    memcpy(&stm, ptm, sizeof(stm));
+	    if ((ptm = gmtime(&tstamp.tv_sec)))
+	      ndo2db_stmt_execute(stmt,
+				  (int)idi->dbinfo.instance_id,
+				  (struct tm*)&stm,
+				  (struct tm*)ptm,
+				  (int)tstamp.tv_usec,
+				  (int)letype,
+				  (char *)es[0]);
+	  }
 
 	/* free memory */
 	for(x=0;x<2;x++)
 		free(ts[x]);
-	free(es[0]);
-
+	
 	return NDO_OK;
-        }
+}
 
 
 int ndo2db_handle_systemcommanddata(ndo2db_idi *idi){
@@ -2220,8 +2311,6 @@ int ndo2db_handle_hoststatusdata(ndo2db_idi *idi){
 	double retry_check_interval=0.0;
 	char *ts[10];
 	char *es[4];
-	char *buf=NULL;
-	char *buf1=NULL;
 	unsigned long object_id=0L;
 	unsigned long check_timeperiod_object_id=0L;
 	int x=0;
@@ -2231,9 +2320,176 @@ int ndo2db_handle_hoststatusdata(ndo2db_idi *idi){
 	char *ptr3=NULL;
 	int has_been_modified=0;
 	ndo2db_mbuf mbuf;
+	static ndo2db_stmt*	stmt1;
+	static ndo2db_stmt*	stmt2;
 
 	if(idi==NULL)
 		return NDO_ERROR;
+
+	/* If the statement has never been created, let's do it. */
+	if (!stmt1)
+	  {
+	    char*		query;
+
+	    query = "instance_id=?, " \
+	      "host_object_id=?, " \
+	      "status_update_time=?, " \
+	      "output=?, " \
+	      "perfdata=?, " \
+	      "current_state=?, " \
+	      "has_been_checked=?, " \
+	      "should_be_scheduled=?, " \
+	      "current_check_attempt=?, " \
+	      "max_check_attempts=?, " \
+	      "last_check=?, " \
+	      "next_check=?, " \
+	      "check_type=?, " \
+	      "last_state_change=?, " \
+	      "last_hard_state_change=?, " \
+	      "last_hard_state=?, " \
+	      "last_time_up=?, " \
+	      "last_time_down=?, " \
+	      "last_time_unreachable=?, " \
+	      "state_type=?, " \
+	      "last_notification=?, " \
+	      "next_notification=?, " \
+	      "no_more_notifications=?, " \
+	      "notifications_enabled=?, " \
+	      "problem_has_been_acknowledged=?, " \
+	      "acknowledgement_type=?, " \
+	      "current_notification_number=?, " \
+	      "passive_checks_enabled=?, " \
+	      "active_checks_enabled=?, " \
+	      "event_handler_enabled=?, " \
+	      "flap_detection_enabled=?, " \
+	      "is_flapping=?, " \
+	      "percent_state_change=?, " \
+	      "latency=?, " \
+	      "execution_time=?, " \
+	      "scheduled_downtime_depth=?, " \
+	      "failure_prediction_enabled=?, " \
+	      "process_performance_data=?, " \
+	      "obsess_over_host=?, " \
+	      "modified_host_attributes=?, " \
+	      "event_handler=?, " \
+	      "check_command=?, " \
+	      "normal_check_interval=?, " \
+	      "retry_check_interval=?, " \
+	      "check_timeperiod_object_id=?";
+	    if (asprintf(&query,
+			 "INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s",
+			 ndo2db_db_tablenames[NDO2DB_DBTABLE_HOSTSTATUS],
+			 query,
+			 query)
+		== -1)
+	      query = NULL;
+	    if (!query
+		|| !(stmt1 = ndo2db_stmt_new(&idi->dbinfo))
+		|| ndo2db_stmt_prepare(stmt1, query, 45 * 2) != NDO_OK
+		/* Parameters types. */
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		/* Same stuff but for the UPDATE part. */
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK)
+	      {
+		if (query)
+		  free(query);
+		if (stmt1)
+		  {
+		    ndo2db_stmt_delete(stmt1);
+		    stmt1 = NULL;
+		  }
+		return (NDO_ERROR);
+	      }
+	    free(query);
+	  }
 
 	/* convert timestamp, etc */
 	result=ndo2db_convert_standard_data_elements(idi,&type,&flags,&attr,&tstamp);
@@ -2281,10 +2537,10 @@ int ndo2db_handle_hoststatusdata(ndo2db_idi *idi){
 	result=ndo2db_convert_string_to_double(idi->buffered_input[NDO_DATA_NORMALCHECKINTERVAL],&normal_check_interval);
 	result=ndo2db_convert_string_to_double(idi->buffered_input[NDO_DATA_RETRYCHECKINTERVAL],&retry_check_interval);
 
-	es[0]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_OUTPUT]);
-	es[1]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_PERFDATA]);
-	es[2]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_EVENTHANDLER]);
-	es[3]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_CHECKCOMMAND]);
+	es[0]=idi->buffered_input[NDO_DATA_OUTPUT];
+	es[1]=idi->buffered_input[NDO_DATA_PERFDATA];
+	es[2]=idi->buffered_input[NDO_DATA_EVENTHANDLER];
+	es[3]=idi->buffered_input[NDO_DATA_CHECKCOMMAND];
 
 	ts[0]=ndo2db_db_timet_to_sql(idi,tstamp.tv_sec);
 	ts[1]=ndo2db_db_timet_to_sql(idi,last_check);
@@ -2301,71 +2557,174 @@ int ndo2db_handle_hoststatusdata(ndo2db_idi *idi){
 	result=ndo2db_get_object_id_with_insert(idi,NDO2DB_OBJECTTYPE_HOST,idi->buffered_input[NDO_DATA_HOST],NULL,&object_id);
 	result=ndo2db_get_object_id_with_insert(idi,NDO2DB_OBJECTTYPE_TIMEPERIOD,idi->buffered_input[NDO_DATA_HOSTCHECKPERIOD],NULL,&check_timeperiod_object_id);
 
-	/* generate query string */
-	if(asprintf(&buf1,"instance_id='%lu', host_object_id='%lu', status_update_time=%s, output='%s', perfdata='%s', current_state='%d', has_been_checked='%d', should_be_scheduled='%d', current_check_attempt='%d', max_check_attempts='%d', last_check=%s, next_check=%s, check_type='%d', last_state_change=%s, last_hard_state_change=%s, last_hard_state='%d', last_time_up=%s, last_time_down=%s, last_time_unreachable=%s, state_type='%d', last_notification=%s, next_notification=%s, no_more_notifications='%d', notifications_enabled='%d', problem_has_been_acknowledged='%d', acknowledgement_type='%d', current_notification_number='%d', passive_checks_enabled='%d', active_checks_enabled='%d', event_handler_enabled='%d', flap_detection_enabled='%d', is_flapping='%d', percent_state_change='%lf', latency='%lf', execution_time='%lf', scheduled_downtime_depth='%d', failure_prediction_enabled='%d', process_performance_data='%d', obsess_over_host='%d', modified_host_attributes='%lu', event_handler='%s', check_command='%s', normal_check_interval='%lf', retry_check_interval='%lf', check_timeperiod_object_id='%lu'"
-		    ,idi->dbinfo.instance_id
-		    ,object_id
-		    ,ts[0]
-		    ,es[0]
-		    ,es[1]
-		    ,current_state
-		    ,has_been_checked
-		    ,should_be_scheduled
-		    ,current_check_attempt
-		    ,max_check_attempts
-		    ,ts[1]
-		    ,ts[2]
-		    ,check_type
-		    ,ts[3]
-		    ,ts[4]
-		    ,last_hard_state
-		    ,ts[5]
-		    ,ts[6]
-		    ,ts[7]
-		    ,state_type
-		    ,ts[8]
-		    ,ts[9]
-		    ,no_more_notifications
-		    ,notifications_enabled
-		    ,problem_has_been_acknowledged
-		    ,acknowledgement_type
-		    ,current_notification_number
-		    ,passive_checks_enabled
-		    ,active_checks_enabled
-		    ,event_handler_enabled
-		    ,flap_detection_enabled
-		    ,is_flapping
-		    ,percent_state_change
-		    ,latency
-		    ,execution_time
-		    ,scheduled_downtime_depth
-		    ,failure_prediction_enabled
-		    ,process_performance_data
-		    ,obsess_over_host
-		    ,modified_host_attributes
-		    ,es[2]
-		    ,es[3]
-		    ,normal_check_interval
-		    ,retry_check_interval
-		    ,check_timeperiod_object_id
-		   )==-1)
-		buf1=NULL;
+	/* Generate times. */
+	struct tm	tms[10];
+	time_t		t;
 
-	if(asprintf(&buf,"INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s"
-		    ,ndo2db_db_tablenames[NDO2DB_DBTABLE_HOSTSTATUS]
-		    ,buf1
-		    ,buf1
-		   )==-1)
-		buf=NULL;
+	t = tstamp.tv_sec;
+	memcpy(tms + 0, gmtime(&t), sizeof(*tms));
+	t = last_check;
+	memcpy(tms + 1, gmtime(&t), sizeof(*tms));
+	t = next_check;
+	memcpy(tms + 2, gmtime(&t), sizeof(*tms));
+	t = last_state_change;
+	memcpy(tms + 3, gmtime(&t), sizeof(*tms));
+	t = last_hard_state_change;
+	memcpy(tms + 4, gmtime(&t), sizeof(*tms));
+	t = last_time_up;
+	memcpy(tms + 5, gmtime(&t), sizeof(*tms));
+	t = last_time_down;
+	memcpy(tms + 6, gmtime(&t), sizeof(*tms));
+	t = last_time_unreachable;
+	memcpy(tms + 7, gmtime(&t), sizeof(*tms));
+	t = last_notification;
+	memcpy(tms + 8, gmtime(&t), sizeof(*tms));
+	t = next_notification;
+	memcpy(tms + 9, gmtime(&t), sizeof(*tms));
 
-	/* save entry to db */
-	result=ndo2db_db_query(idi,buf);
-	free(buf);
-	free(buf1);
+	/* Execute query. */
+	ndo2db_stmt_execute(stmt1,
+			    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+			    (int)object_id,			// host_object_id INT
+			    tms + 0, // XXX
+			    (char*)es[0],			// output VARCHAR(255)
+			    (char*)es[1],			// perfdata VARCHAR(255)
+			    (short)current_state,		// current_state SMALLINT
+			    (short)has_been_checked,		// has_been_checked SMALLINT
+			    (short)should_be_scheduled,		// should_be_scheduled SMALLINT
+			    (short)current_check_attempt,	// current_check_attempt SMALLINT
+			    (short)max_check_attempts,		// max_check_attempt SMALLINT
+			    tms + 1, // XXX
+			    tms + 2, // XXX
+			    (short)check_type,			// check_type SMALLINT
+			    tms + 3, // XXX
+			    tms + 4, // XXX
+			    (short)last_hard_state,		// last_hard_state SMALLINT
+			    tms + 5, // XXX
+			    tms + 6, // XXX
+			    tms + 7, // XXX
+			    (short)state_type,			// state_type SMALLINT
+			    tms + 8, // XXX
+			    tms + 9, // XXX
+			    (short)no_more_notifications,	// no_more_modifications SMALLINT
+			    (short)notifications_enabled,	// notifications_enabled SMALLINT
+			    (short)problem_has_been_acknowledged,	// problem_has_been_acknowledged SMALLINT
+			    (short)acknowledgement_type,	// acknowledgement_type SMALLINT
+			    (short)current_notification_number,	// current_notification_number SMALLINT
+			    (short)passive_checks_enabled,	// passive_checks_enabled SMALLINT
+			    (short)active_checks_enabled,	// active_checks_enable SMALLINT
+			    (short)event_handler_enabled,	// event_handler_enabled SMALLINT
+			    (short)flap_detection_enabled,	// flap_detection_enabled SMALLINT
+			    (short)is_flapping,			// is_flapping SMALLINT
+			    (double)percent_state_change,	// percent_state_change DOUBLE
+			    (double)latency,			// latency DOUBLE
+			    (double)execution_time,		// execution_time DOUBLE
+			    (short)scheduled_downtime_depth,	// scheduled_downtime_depth SMALLINT
+			    (short)failure_prediction_enabled,	// failure_prediction_enabled SMALLINT
+			    (short)process_performance_data,	// process_performance_data SMALLINT
+			    (short)obsess_over_host,		// obsess_over_host SMALLINT
+			    (int)modified_host_attributes,	// modified_host_attributes INT
+			    (char*)es[2],			// event_handler VARCHAR(255)
+			    (char*)es[3],			// check_command VARCHAR(255)
+			    (double)normal_check_interval,	// normal_check_interval DOUBLE
+			    (double)retry_check_interval,	// retry_check_interval DOUBLE
+			    (int)check_timeperiod_object_id,	// check_timeperiod_object_id INT
 
-	/* free memory */
-	for(x=0;x<4;x++)
-		free(es[x]);
+			    /* Same stuff but for the ON DUPLICATE KEY UPDATE part. */
+			    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+			    (int)object_id,			// host_object_id INT
+			    tms + 0, // XXX
+			    (char*)es[0],			// output VARCHAR(255)
+			    (char*)es[1],			// perfdata VARCHAR(255)
+			    (short)current_state,		// current_state SMALLINT
+			    (short)has_been_checked,		// has_been_checked SMALLINT
+			    (short)should_be_scheduled,		// should_be_scheduled SMALLINT
+			    (short)current_check_attempt,	// current_check_attempt SMALLINT
+			    (short)max_check_attempts,		// max_check_attempt SMALLINT
+			    tms + 1, // XXX
+			    tms + 2, // XXX
+			    (short)check_type,			// check_type SMALLINT
+			    tms + 3, // XXX
+			    tms + 4, // XXX
+			    (short)last_hard_state,		// last_hard_state SMALLINT
+			    tms + 5, // XXX
+			    tms + 6, // XXX
+			    tms + 7, // XXX
+			    (short)state_type,			// state_type SMALLINT
+			    tms + 8, // XXX
+			    tms + 9, // XXX
+			    (short)no_more_notifications,	// no_more_modifications SMALLINT
+			    (short)notifications_enabled,	// notifications_enabled SMALLINT
+			    (short)problem_has_been_acknowledged,	// problem_has_been_acknowledged SMALLINT
+			    (short)acknowledgement_type,	// acknowledgement_type SMALLINT
+			    (short)current_notification_number,	// current_notification_number SMALLINT
+			    (short)passive_checks_enabled,	// passive_checks_enabled SMALLINT
+			    (short)active_checks_enabled,	// active_checks_enable SMALLINT
+			    (short)event_handler_enabled,	// event_handler_enabled SMALLINT
+			    (short)flap_detection_enabled,	// flap_detection_enabled SMALLINT
+			    (short)is_flapping,			// is_flapping SMALLINT
+			    (double)percent_state_change,	// percent_state_change DOUBLE
+			    (double)latency,			// latency DOUBLE
+			    (double)execution_time,		// execution_time DOUBLE
+			    (short)scheduled_downtime_depth,	// scheduled_downtime_depth SMALLINT
+			    (short)failure_prediction_enabled,	// failure_prediction_enabled SMALLINT
+			    (short)process_performance_data,	// process_performance_data SMALLINT
+			    (short)obsess_over_host,		// obsess_over_host SMALLINT
+			    (int)modified_host_attributes,	// modified_host_attributes INT
+			    (char*)es[2],			// event_handler VARCHAR(255)
+			    (char*)es[3],			// check_command VARCHAR(255)
+			    (double)normal_check_interval,	// normal_check_interval DOUBLE
+			    (double)retry_check_interval,	// retry_check_interval DOUBLE
+			    (int)check_timeperiod_object_id);	// check_timeperiod_object_id INT
+
+	/* Check if the second statement has been prepared. If not, do it. */
+	if (!stmt2)
+	  {
+	    char*		fields;
+	    char*		query;
+
+	    fields = "instance_id=?, " \
+	      "object_id=?, " \
+	      "status_update_time=?, " \
+	      "has_been_modified=?, " \
+	      "varname=?, " \
+	      "varvalue=?";
+	    if (asprintf(&query,
+			 "INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s",
+			 ndo2db_db_tablenames[NDO2DB_DBTABLE_CUSTOMVARIABLESTATUS],
+			 fields,
+			 fields)
+		== -1)
+	      query = NULL;
+	    if (!query
+		|| !(stmt2 = ndo2db_stmt_new(&idi->dbinfo))
+		|| ndo2db_stmt_prepare(stmt2, query, 6 * 2) != NDO_OK
+		/* Query arguments. */
+		|| ndo2db_stmt_param_smallint(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt2) != NDO_OK
+		/* Same arguments, for the UPDATE part. */
+		|| ndo2db_stmt_param_smallint(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt2) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt2) != NDO_OK)
+	      {
+		if (query)
+		  free(query);
+		if (stmt2)
+		  {
+		    ndo2db_stmt_delete(stmt2);
+		    stmt2 = NULL;
+		  }
+		return (NDO_ERROR);
+	      }
+	    free(query);
+	  }
 
 	/* save custom variables to db */
 	mbuf=idi->mbuf[NDO2DB_MBUF_CUSTOMVARIABLE];
@@ -2383,29 +2742,25 @@ int ndo2db_handle_hoststatusdata(ndo2db_idi *idi){
 		ptr3=strtok(NULL,"\n");
 		es[1]=strdup((ptr3==NULL)?"":ptr3);
 
-		if(asprintf(&buf,"instance_id='%d', object_id='%lu', status_update_time=%s, has_been_modified='%d', varname='%s', varvalue='%s'"
-			    ,idi->dbinfo.instance_id
-			    ,object_id
-			    ,ts[0]
-			    ,has_been_modified
-			    ,(es[0]==NULL)?"":es[0]
-			    ,(es[1]==NULL)?"":es[1]
-			   )==-1)
-			buf=NULL;
+		
+		ndo2db_stmt_execute(stmt2,
+				    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+				    (int)object_id,			// object_id INT
+				    tms, // XXX
+				    (short)has_been_modified,		// has_been_modified SMALLINT
+				    (char*)((es[0]==NULL)?"":es[0]),	// varname VARCHAR(255)
+				    (char*)(es[1]==NULL)?"":es[1],	// varvalue VARCHAR(255)
+				    /* Same arguments. */
+				    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+				    (int)object_id,			// object_id INT
+				    tms, // XXX
+				    (short)has_been_modified,		// has_been_modified SMALLINT
+				    (char*)((es[0]==NULL)?"":es[0]),	// varname VARCHAR(255)
+				    (char*)(es[1]==NULL)?"":es[1]);	// varvalue VARCHAR(255)
 
 		free(es[0]);
 		free(es[1]);
 	
-		if(asprintf(&buf1,"INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s"
-			    ,ndo2db_db_tablenames[NDO2DB_DBTABLE_CUSTOMVARIABLESTATUS]
-			    ,buf
-			    ,buf
-			   )==-1)
-			buf1=NULL;
-
-		result=ndo2db_db_query(idi,buf1);
-		free(buf);
-		free(buf1);
 	        }
 
 	/* free memory */
@@ -2470,9 +2825,178 @@ int ndo2db_handle_servicestatusdata(ndo2db_idi *idi){
 	char *ptr3=NULL;
 	int has_been_modified=0;
 	ndo2db_mbuf mbuf;
+	static ndo2db_stmt*	stmt1 = NULL;
 
 	if(idi==NULL)
 		return NDO_ERROR;
+
+	/* If the statement has never been created, let's do it. */
+	if (!stmt1)
+	  {
+	    char*		query;
+
+	    query = "instance_id=?, " \
+	      "service_object_id=?, " \
+	      "status_update_time=?, " \
+	      "output=?, " \
+	      "perfdata=?, " \
+	      "current_state=?, " \
+	      "has_been_checked=?, " \
+	      "should_be_scheduled=?, " \
+	      "current_check_attempt=?, " \
+	      "max_check_attempts=?, " \
+	      "last_check=?, " \
+	      "next_check=?, " \
+	      "check_type=?, " \
+	      "last_state_change=?, " \
+	      "last_hard_state_change=?, " \
+	      "last_hard_state=?, " \
+	      "last_time_ok=?, " \
+	      "last_time_warning=?, " \
+	      "last_time_unknown=?, " \
+	      "last_time_critical=?, " \
+	      "state_type=?, " \
+	      "last_notification=?, " \
+	      "next_notification=?, " \
+	      "no_more_notifications=?, " \
+	      "notifications_enabled=?, " \
+	      "problem_has_been_acknowledged=?, " \
+	      "acknowledgement_type=?, " \
+	      "current_notification_number=?, " \
+	      "passive_checks_enabled=?, " \
+	      "active_checks_enabled=?, " \
+	      "event_handler_enabled=?, " \
+	      "flap_detection_enabled=?, " \
+	      "is_flapping=?, " \
+	      "percent_state_change=?, " \
+	      "latency=?, " \
+	      "execution_time=?, " \
+	      "scheduled_downtime_depth=?, " \
+	      "failure_prediction_enabled=?, " \
+	      "process_performance_data=?, " \
+	      "obsess_over_service=?, " \
+	      "modified_service_attributes=?, " \
+	      "event_handler=?, " \
+	      "check_command=?, " \
+	      "normal_check_interval=?, " \
+	      "retry_check_interval=?, " \
+	      "check_timeperiod_object_id=?";
+	    if (asprintf(&query,
+			 "INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s",
+			 ndo2db_db_tablenames[NDO2DB_DBTABLE_SERVICESTATUS],
+			 query,
+			 query)
+		== -1)
+	      query = NULL;
+	    if (!query
+		|| !(stmt1 = ndo2db_stmt_new(&idi->dbinfo))
+		|| ndo2db_stmt_prepare(stmt1, query, 46 * 2) != NDO_OK
+		/* Parameters types. */
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		/* Same types for the UPDATE part of the query. */
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_datetime(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_smallint(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_string(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_double(stmt1) != NDO_OK
+		|| ndo2db_stmt_param_int(stmt1) != NDO_OK)
+	      {
+		if (query)
+		  free(query);
+		if (stmt1)
+		  {
+		    ndo2db_stmt_delete(stmt1);
+		    stmt1 = NULL;
+		  }
+		return (NDO_ERROR);
+	      }
+	    free(query);
+	  }
 
 	/* convert timestamp, etc */
 	result=ndo2db_convert_standard_data_elements(idi,&type,&flags,&attr,&tstamp);
@@ -2521,10 +3045,10 @@ int ndo2db_handle_servicestatusdata(ndo2db_idi *idi){
 	result=ndo2db_convert_string_to_double(idi->buffered_input[NDO_DATA_NORMALCHECKINTERVAL],&normal_check_interval);
 	result=ndo2db_convert_string_to_double(idi->buffered_input[NDO_DATA_RETRYCHECKINTERVAL],&retry_check_interval);
 
-	es[0]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_OUTPUT]);
-	es[1]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_PERFDATA]);
-	es[2]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_EVENTHANDLER]);
-	es[3]=ndo2db_db_escape_string(idi,idi->buffered_input[NDO_DATA_CHECKCOMMAND]);
+	es[0]=idi->buffered_input[NDO_DATA_OUTPUT];
+	es[1]=idi->buffered_input[NDO_DATA_PERFDATA];
+	es[2]=idi->buffered_input[NDO_DATA_EVENTHANDLER];
+	es[3]=idi->buffered_input[NDO_DATA_CHECKCOMMAND];
 
 	ts[0]=ndo2db_db_timet_to_sql(idi,tstamp.tv_sec);
 	ts[1]=ndo2db_db_timet_to_sql(idi,last_check);
@@ -2542,72 +3066,128 @@ int ndo2db_handle_servicestatusdata(ndo2db_idi *idi){
 	result=ndo2db_get_object_id_with_insert(idi,NDO2DB_OBJECTTYPE_SERVICE,idi->buffered_input[NDO_DATA_HOST],idi->buffered_input[NDO_DATA_SERVICE],&object_id);
 	result=ndo2db_get_object_id_with_insert(idi,NDO2DB_OBJECTTYPE_TIMEPERIOD,idi->buffered_input[NDO_DATA_SERVICECHECKPERIOD],NULL,&check_timeperiod_object_id);
 
-	/* generate query string */
-	if(asprintf(&buf1,"instance_id='%lu', service_object_id='%lu', status_update_time=%s, output='%s', perfdata='%s', current_state='%d', has_been_checked='%d', should_be_scheduled='%d', current_check_attempt='%d', max_check_attempts='%d', last_check=%s, next_check=%s, check_type='%d', last_state_change=%s, last_hard_state_change=%s, last_hard_state='%d', last_time_ok=%s, last_time_warning=%s, last_time_unknown=%s, last_time_critical=%s, state_type='%d', last_notification=%s, next_notification=%s, no_more_notifications='%d', notifications_enabled='%d', problem_has_been_acknowledged='%d', acknowledgement_type='%d', current_notification_number='%d', passive_checks_enabled='%d', active_checks_enabled='%d', event_handler_enabled='%d', flap_detection_enabled='%d', is_flapping='%d', percent_state_change='%lf', latency='%lf', execution_time='%lf', scheduled_downtime_depth='%d', failure_prediction_enabled='%d', process_performance_data='%d', obsess_over_service='%d', modified_service_attributes='%lu', event_handler='%s', check_command='%s', normal_check_interval='%lf', retry_check_interval='%lf', check_timeperiod_object_id='%lu'"
-		    ,idi->dbinfo.instance_id
-		    ,object_id
-		    ,ts[0]
-		    ,es[0]
-		    ,es[1]
-		    ,current_state
-		    ,has_been_checked
-		    ,should_be_scheduled
-		    ,current_check_attempt
-		    ,max_check_attempts
-		    ,ts[1]
-		    ,ts[2]
-		    ,check_type
-		    ,ts[3]
-		    ,ts[4]
-		    ,last_hard_state
-		    ,ts[5]
-		    ,ts[6]
-		    ,ts[7]
-		    ,ts[8]
-		    ,state_type
-		    ,ts[9]
-		    ,ts[10]
-		    ,no_more_notifications
-		    ,notifications_enabled
-		    ,problem_has_been_acknowledged
-		    ,acknowledgement_type
-		    ,current_notification_number
-		    ,passive_checks_enabled
-		    ,active_checks_enabled
-		    ,event_handler_enabled
-		    ,flap_detection_enabled
-		    ,is_flapping
-		    ,percent_state_change
-		    ,latency
-		    ,execution_time
-		    ,scheduled_downtime_depth
-		    ,failure_prediction_enabled
-		    ,process_performance_data
-		    ,obsess_over_service
-		    ,modified_service_attributes
-		    ,es[2]
-		    ,es[3]
-		    ,normal_check_interval
-		    ,retry_check_interval
-		    ,check_timeperiod_object_id
-		   )==-1)
-		buf1=NULL;
+	/* Generate times. */
+	struct tm	tms[11];
+	time_t		t;
 
-	if(asprintf(&buf,"INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s"
-		    ,ndo2db_db_tablenames[NDO2DB_DBTABLE_SERVICESTATUS]
-		    ,buf1
-		    ,buf1
-		   )==-1)
-		buf=NULL;
+	t = tstamp.tv_sec;
+	memcpy(tms + 0, gmtime(&t), sizeof(*tms));
+	t = last_check;
+	memcpy(tms + 1, gmtime(&t), sizeof(*tms));
+	t = next_check;
+	memcpy(tms + 2, gmtime(&t), sizeof(*tms));
+	t = last_state_change;
+	memcpy(tms + 3, gmtime(&t), sizeof(*tms));
+	t = last_hard_state_change;
+	memcpy(tms + 4, gmtime(&t), sizeof(*tms));
+	t = last_time_ok;
+	memcpy(tms + 5, gmtime(&t), sizeof(*tms));
+	t = last_time_warning;
+	memcpy(tms + 6, gmtime(&t), sizeof(*tms));
+	t = last_time_unknown;
+	memcpy(tms + 7, gmtime(&t), sizeof(*tms));
+	t = last_time_critical;
+	memcpy(tms + 8, gmtime(&t), sizeof(*tms));
+	t = last_notification;
+	memcpy(tms + 9, gmtime(&t), sizeof(*tms));
+	t = next_notification;
+	memcpy(tms + 10, gmtime(&t), sizeof(*tms));
 
-	/* save entry to db */
-	result=ndo2db_db_query(idi,buf);
-	free(buf);
-	free(buf1);
-
-	/* free memory */
-	for(x=0;x<4;x++)
-		free(es[x]);
+	/* Execute query. */
+	ndo2db_stmt_execute(stmt1,
+			    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+			    (int)object_id,			// service_object_id INT
+			    tms + 0, // XXX
+			    (char*)es[0],			// output VARCHAR(255)
+			    (char*)es[1],			// perfdata VARCHAR(255)
+			    (short)current_state,		// current_state SMALLINT
+			    (short)has_been_checked,		// has_been_checked SMALLINT
+			    (short)should_be_scheduled,		// should_be_scheduled SMALLINT
+			    (short)current_check_attempt,	// current_check_attempt SMALLINT
+			    (short)max_check_attempts,		// max_check_attempts SMALLINT
+			    tms + 1, // XXX
+			    tms + 2, // XXX
+			    (short)check_type,			// check_type SMALLINT
+			    tms + 3, // XXX
+			    tms + 4, // XXX
+			    (short)last_hard_state,		// last_hard_state SMALLINT
+			    tms + 5, // XXX
+			    tms + 6, // XXX
+			    tms + 7, // XXX
+			    tms + 8, // XXX
+			    (short)state_type,			// state_type SMALLINT
+			    tms + 9, // XXX
+			    tms + 10, // XXX
+			    (short)no_more_notifications,	// no_more_notifications SMALLINT
+			    (short)notifications_enabled,	// notifications_enabled SMALLINT
+			    (short)problem_has_been_acknowledged,	// problem_has_been_acknowledged SMALLINT
+			    (short)acknowledgement_type,	// acknowledgement_type SMALLINT
+			    (short)current_notification_number,	// current_notification_number SMALLINT
+			    (short)passive_checks_enabled,	// passive_checks_enabled SMALLINT
+			    (short)active_checks_enabled,	// active_checks_enabled SMALLINT
+			    (short)event_handler_enabled,	// event_handler_enabled SMALLINT
+			    (short)flap_detection_enabled,	// flap_detection_enabled SMALLINT
+			    (short)is_flapping,			// is_flapping SMALLINT
+			    (double)percent_state_change,	// percent_state_change DOUBLE
+			    (double)latency,			// latency DOUBLE
+			    (double)execution_time,		// execution_time DOUBLE
+			    (short)scheduled_downtime_depth,	// scheduled_downtime_depth SMALLINT
+			    (short)failure_prediction_enabled,	// failure_prediction_enabled SMALLINT
+			    (short)process_performance_data,	// process_performance_data SMALLINT
+			    (short)obsess_over_service,		// obsess_over_service SMALLINT
+			    (int)modified_service_attributes,	// modified_service_attributes INT
+			    (char*)es[2],			// event_handler VARCHAR(255)
+			    (char*)es[3],			// check_command VARCHAR(255)
+			    (double)normal_check_interval,	// normal_check_interval DOUBLE
+			    (double)retry_check_interval,	// retry_check_interval DOUBLE
+			    (int)check_timeperiod_object_id,	// check_timeperiod_object_id
+			    /* Same arguments for the UPDATE part of the query. */
+			    (short)idi->dbinfo.instance_id,	// instance_id SMALLINT
+			    (int)object_id,			// service_object_id INT
+			    tms + 0, // XXX
+			    (char*)es[0],			// output VARCHAR(255)
+			    (char*)es[1],			// perfdata VARCHAR(255)
+			    (short)current_state,		// current_state SMALLINT
+			    (short)has_been_checked,		// has_been_checked SMALLINT
+			    (short)should_be_scheduled,		// should_be_scheduled SMALLINT
+			    (short)current_check_attempt,	// current_check_attempt SMALLINT
+			    (short)max_check_attempts,		// max_check_attempts SMALLINT
+			    tms + 1, // XXX
+			    tms + 2, // XXX
+			    (short)check_type,			// check_type SMALLINT
+			    tms + 3, // XXX
+			    tms + 4, // XXX
+			    (short)last_hard_state,		// last_hard_state SMALLINT
+			    tms + 5, // XXX
+			    tms + 6, // XXX
+			    tms + 7, // XXX
+			    tms + 8, // XXX
+			    (short)state_type,			// state_type SMALLINT
+			    tms + 9, // XXX
+			    tms + 10, // XXX
+			    (short)no_more_notifications,	// no_more_notifications SMALLINT
+			    (short)notifications_enabled,	// notifications_enabled SMALLINT
+			    (short)problem_has_been_acknowledged,	// problem_has_been_acknowledged SMALLINT
+			    (short)acknowledgement_type,	// acknowledgement_type SMALLINT
+			    (short)current_notification_number,	// current_notification_number SMALLINT
+			    (short)passive_checks_enabled,	// passive_checks_enabled SMALLINT
+			    (short)active_checks_enabled,	// active_checks_enabled SMALLINT
+			    (short)event_handler_enabled,	// event_handler_enabled SMALLINT
+			    (short)flap_detection_enabled,	// flap_detection_enabled SMALLINT
+			    (short)is_flapping,			// is_flapping SMALLINT
+			    (double)percent_state_change,	// percent_state_change DOUBLE
+			    (double)latency,			// latency DOUBLE
+			    (double)execution_time,		// execution_time DOUBLE
+			    (short)scheduled_downtime_depth,	// scheduled_downtime_depth SMALLINT
+			    (short)failure_prediction_enabled,	// failure_prediction_enabled SMALLINT
+			    (short)process_performance_data,	// process_performance_data SMALLINT
+			    (short)obsess_over_service,		// obsess_over_service SMALLINT
+			    (int)modified_service_attributes,	// modified_service_attributes INT
+			    (char*)es[2],			// event_handler VARCHAR(255)
+			    (char*)es[3],			// check_command VARCHAR(255)
+			    (double)normal_check_interval,	// normal_check_interval DOUBLE
+			    (double)retry_check_interval,	// retry_check_interval DOUBLE
+			    (int)check_timeperiod_object_id);	// check_timeperiod_object_id
 
 	/* save custom variables to db */
 	mbuf=idi->mbuf[NDO2DB_MBUF_CUSTOMVARIABLE];

@@ -36,6 +36,7 @@ void		ndo2db_stmt_delete(ndo2db_stmt* stmt);
 int		ndo2db_stmt_execute(ndo2db_stmt* stmt, ...);
 ndo2db_stmt*	ndo2db_stmt_new(ndo2db_dbconninfo* dbconninfo);
 int		ndo2db_stmt_param_datetime(ndo2db_stmt* stmt);
+int		ndo2db_stmt_param_double(ndo2db_stmt* stmt);
 int		ndo2db_stmt_param_int(ndo2db_stmt* stmt);
 int		ndo2db_stmt_param_smallint(ndo2db_stmt* stmt);
 int		ndo2db_stmt_param_string(ndo2db_stmt* stmt);
