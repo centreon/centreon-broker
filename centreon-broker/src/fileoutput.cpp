@@ -10,9 +10,7 @@
 ** Last update 05/05/09 Matthieu Kermagoret
 */
 
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <cassert>
 #include "fileoutput.h"
 
 using namespace CentreonBroker;
@@ -26,8 +24,7 @@ using namespace CentreonBroker;
 /**
  *  FileOutput copy constructor.
  */
-FileOutput::FileOutput(const FileOutput& fileo)
-  : ErrorManager(fileo), WriteManager(fileo)
+FileOutput::FileOutput(const FileOutput& fileo) : Thread()
 {
   (void)fileo;
 }
@@ -52,16 +49,7 @@ FileOutput& FileOutput::operator=(const FileOutput& fileo)
  */
 FileOutput::FileOutput()
 {
-  // XXX : register to IOManager
-  this->fd = -1;
-}
-
-/**
- *  Build a FileOutput and open a file.
- */
-FileOutput::FileOutput(const std::string& filename)
-{
-  this->Open(filename);
+  this->buffer.clear();
 }
 
 /**
@@ -69,8 +57,6 @@ FileOutput::FileOutput(const std::string& filename)
  */
 FileOutput::~FileOutput()
 {
-  if (this->fd >= 0)
-    close(this->fd);
 }
 
 /**
@@ -78,53 +64,47 @@ FileOutput::~FileOutput()
  */
 void FileOutput::Close()
 {
-  close(this->fd);
-  this->fd = -1;
+  assert(this->ofs.is_open());
+  this->exit_thread = true;
+  this->condvar.Broadcast();
+  this->Join();
+  this->ofs.close();
   return ;
 }
 
 /**
- *  Opens a file.
+ *  Opens the file.
  */
-void FileOutput::Open(const std::string& filename)
-  throw (Exception)
+void FileOutput::Open(const std::string& filename) throw (Exception)
 {
-  this->fd = open(filename.c_str(),
-                  O_CREAT | O_WRONLY | O_TRUNC, // XXX : O_TRUNC or O_APPEND ?
-                  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  if (this->fd < 0)
+  // XXX : open might throw exceptions
+  this->ofs.open(filename.c_str());
+  if (this->ofs.fail())
     throw (Exception("Could not open output file."));
+  this->exit_thread = false;
+  // XXX : catch Run() exceptions (or not).
+  this->Run();
   return ;
 }
 
 /**
- *  This function will be called when an error occured on the file descriptor.
+ *  Thread core function.
  */
-void FileOutput::OnError(int fd)
+int FileOutput::Core()
 {
-  (void)fd;
-  // XXX : detect error
-  return ;
-}
+  char buff[4096];
+  size_t wb;
 
-/**
- *  Returns true if we have data to write.
- */
-bool FileOutput::IsWaitingToWrite() const
-{
-  return (this->fd >= 0 && !this->buffer.empty());
-}
-
-/**
- *  This function will be called when the FD is available for writing.
- */
-void FileOutput::OnWrite(int fd)
-{
-  ssize_t wb;
-
-  (void)fd;
-  wb = write(this->fd, this->buffer.c_str(), this->buffer.size());
-  // XXX : detect error
-  this->buffer.erase(0, wb);
-  return ;
+  while (!this->exit_thread || !this->buffer.empty())
+    {
+      // XXX : catch exceptions
+      this->mutex.Lock();
+      if (this->buffer.empty())
+	this->condvar.Wait(this->mutex);
+      wb = this->buffer.copy(buff, sizeof(buff));
+      this->buffer.erase(0, wb);
+      this->mutex.Unlock();
+      this->ofs.write(buff, wb);
+    }
+  return (0);
 }

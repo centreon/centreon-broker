@@ -13,10 +13,10 @@
 CXX		=	g++
 RM		=	rm -rf
 
-SRC		=	src/event.cpp			\
+SRC		=	src/conditionvariable.cpp	\
+			src/event.cpp			\
 			src/exception.cpp		\
 			src/fileoutput.cpp		\
-			src/iomanager.cpp		\
 			src/mutex.cpp			\
 			src/mysqloutput.cpp		\
 			src/thread.cpp

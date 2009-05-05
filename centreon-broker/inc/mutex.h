@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
 #ifndef MUTEX_H_
@@ -20,6 +20,8 @@ namespace           CentreonBroker
 {
   class             Mutex
   {
+    friend class    ConditionVariable;
+
    private:
     pthread_mutex_t mutex;
                     Mutex(const Mutex& mutex);

@@ -13,38 +13,38 @@
 #ifndef FILEOUTPUT_H_
 # define FILEOUTPUT_H_
 
+# include <fstream>
 # include <string>
+# include "conditionvariable.h"
 # include "exception.h"
-# include "iomanager.h"
+# include "mutex.h"
+# include "thread.h"
 
-namespace       CentreonBroker
+namespace                             CentreonBroker
 {
-  class         FileOutput
-    : public CentreonBroker::ErrorManager,
-    public CentreonBroker::WriteManager
+  class                               FileOutput
+    : private CentreonBroker::Thread
   {
    private:
-    int         fd;
-    std::string buffer;
-                FileOutput(const FileOutput& fileo);
-    FileOutput& operator=(const FileOutput& fileo);
+    std::string                       buffer;
+    CentreonBroker::ConditionVariable condvar;
+    volatile bool                     exit_thread;
+    CentreonBroker::Mutex             mutex;
+    std::ofstream                     ofs;
+                                      FileOutput(const FileOutput& fileo);
+    FileOutput&                       operator=(const FileOutput& fileo);
+
+    // Thread method
+    int                               Core();
 
    public:
-                FileOutput();
-                FileOutput(const std::string& filename);
-                ~FileOutput();
-    void        Close();
-    void        Open(const std::string& filename)
-                  throw (CentreonBroker::Exception);
+                                      FileOutput();
+                                      ~FileOutput();
+    void                              Close();
+    void                              Open(const std::string& filename)
+      throw (CentreonBroker::Exception);
 
-    // ErrorManager
-    void        OnError(int fd);
-
-    // WriteManager
-    bool        IsWaitingToWrite() const;
-    void        OnWrite(int fd);
-
-    // XXX : handle events
+    // XXX : handle events in a thread-safe way
   };
 }
 
