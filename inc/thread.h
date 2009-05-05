@@ -30,6 +30,7 @@ namespace       CentreonBroker
     virtual     ~Thread();
     void        Cancel() throw (CentreonBroker::Exception);
     virtual int Core() = 0;
+    void        Join() throw (CentreonBroker::Exception);
     void        Run() throw (CentreonBroker::Exception);
   };
 }

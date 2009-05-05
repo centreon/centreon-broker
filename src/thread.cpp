@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include <pthread.h>
 #include "thread.h"
 
@@ -79,6 +80,19 @@ void Thread::Cancel() throw (Exception)
 {
   if (pthread_cancel(*this->thread))
     throw (Exception("Could not cancel thread execution"));
+  return ;
+}
+
+/**
+ *  Waits for the thread to finish.
+ */
+void Thread::Join() throw (Exception)
+{
+  assert(thread);
+  if (pthread_join(*this->thread, NULL))
+    throw (Exception("Could not join thread."));
+  delete (this->thread);
+  this->thread = NULL;
   return ;
 }
 
