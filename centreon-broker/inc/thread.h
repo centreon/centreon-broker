@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
 #ifndef THREAD_H_
@@ -28,9 +28,9 @@ namespace       CentreonBroker
   public:
                 Thread();
     virtual     ~Thread();
-    void        Cancel() throw (Exception);
+    void        Cancel() throw (CentreonBroker::Exception);
     virtual int Core() = 0;
-    void        Run() throw (Exception);
+    void        Run() throw (CentreonBroker::Exception);
   };
 }
 

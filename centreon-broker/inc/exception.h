@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
 #ifndef EXCEPTION_H_
@@ -15,9 +15,9 @@
 
 # include <string>
 
-namespace CentreonBroker
+namespace       CentreonBroker
 {
-  class Exception
+  class         Exception
   {
    protected:
     std::string msg;

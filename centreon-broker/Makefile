@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/04/09 Matthieu Kermagoret
+## Last update 05/05/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -19,13 +19,12 @@ SRC		=	src/event.cpp			\
 			src/iomanager.cpp		\
 			src/mutex.cpp			\
 			src/mysqloutput.cpp		\
-			src/output.cpp			\
 			src/thread.cpp
 OBJ		=	$(SRC:.cpp=.o)
 
 NAME		=	centreon-broker.so
 
-CXXFLAGS	=	-W -Wall -pedantic -Iinc `mysql_config --cflags --include`
+CXXFLAGS	=	--std=c++0x -W -Wall -pedantic -Iinc `mysql_config --cflags --include`
 LDFLAGS		=	-lpthread `mysql_config --libs`
 
 all		:	$(NAME)

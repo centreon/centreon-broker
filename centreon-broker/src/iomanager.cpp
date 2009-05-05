@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
+#include <cstdlib>
 #include <sys/select.h>
 #include "iomanager.h"
 
@@ -143,6 +144,16 @@ WriteManager& WriteManager::operator=(const WriteManager& wm)
 *                                                                             *
 ******************************************************************************/
 
+/**
+ *  This static function will be set to run upon termination if the IOManager
+ *  has been instantiated.
+ */
+static void delete_iomanager()
+{
+  delete (IOManager::GetInstance());
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -198,7 +209,7 @@ IOManager* IOManager::GetInstance()
       if (!IOManager::instance)
 	{
 	  IOManager::instance = new IOManager();
-	  // XXX : setterminate
+	  atexit(delete_iomanager);
 	}
     }
   return (IOManager::instance);
