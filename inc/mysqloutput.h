@@ -7,34 +7,44 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
 #ifndef MYSQLOUTPUT_H_
 # define MYSQLOUTPUT_H_
 
-# include "output.h"
+# include <list>
+# include <string>
+# include "mutex.h"
 # include "thread.h"
 
-namespace		CentreonBroker
+namespace                    CentreonBroker
 {
-  class			MySQLOutput
-    : public CentreonBroker::Output,
-    public CentreonBroker::Thread
+  class                      MySQLOutput
+    : public CentreonBroker::Thread
     {
-    private:
-			MySQLOutput(const MySQLOutput& mysqlo);
-      MySQLOutput&	operator=(const MySQLOutput& mysqlo);
+     private:
+      std::string            host;
+      std::string            user;
+      std::string            password;
+      std::string            db;
+      std::list<std::string> queries;
+      CentreonBroker::Mutex  queries_mutex;
+                             MySQLOutput(const MySQLOutput& mysqlo);
+      MySQLOutput&           operator=(const MySQLOutput& mysqlo);
 
-    public:
-			MySQLOutput();
-			~MySQLOutput();
-
-      // Output
-      void		Event(const CentreonBroker::Event& event);
+     public:
+                             MySQLOutput();
+                             ~MySQLOutput();
+      void                   Connect(const std::string& host,
+                                     const std::string& user,
+                                     const std::string& password,
+                                     const std::string& db);
 
       // Thread
-      int		Core();
+      int                    Core();
+
+      // XXX : event handling
     };
 }
 

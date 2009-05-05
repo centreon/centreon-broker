@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/05/09 Matthieu Kermagoret
 */
 
 #ifndef IOMANAGER_H_
@@ -84,7 +84,7 @@ namespace                        CentreonBroker
 
   public:
                                  ~IOManager();
-    IOManager*                   GetInstance();
+    static IOManager*            GetInstance();
     void                         SetFD(int fd,
                                        ErrorManager* em,
                                        ReadManager* rm,
