@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/06/09 Matthieu Kermagoret
 */
 
 #include "event.h"
@@ -48,6 +48,7 @@ Event& Event::operator=(const Event& event)
  */
 Event::Event()
 {
+  this->readers = 0;
 }
 
 /**
@@ -55,4 +56,25 @@ Event::Event()
  */
 Event::~Event()
 {
+}
+
+/**
+ *  Add an event reader.
+ */
+void Event::AddReader(EventSubscriber* es)
+{
+  (void)es;
+  this->readers++;
+  return ;
+}
+
+/**
+ *  Remove an event reader.
+ */
+void Event::RemoveReader(EventSubscriber* es)
+{
+  (void)es;
+  if (--this->readers <= 0)
+    delete (this);
+  return ;
 }
