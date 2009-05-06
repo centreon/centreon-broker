@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/05/09 Matthieu Kermagoret
+## Last update 05/06/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -15,6 +15,8 @@ RM		=	rm -rf
 
 SRC		=	src/conditionvariable.cpp	\
 			src/event.cpp			\
+			src/eventpublisher.cpp		\
+			src/eventsubscriber.cpp		\
 			src/exception.cpp		\
 			src/fileoutput.cpp		\
 			src/mutex.cpp			\
