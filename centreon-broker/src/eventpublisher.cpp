@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/07/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -133,6 +133,6 @@ void EventPublisher::Unsubscribe(EventSubscriber* es)
 	this->subscribers.erase(it);
 	break ;
       }
-  assert(it == this->subscribers.end());
+  assert(it != this->subscribers.end());
   return ;
 }

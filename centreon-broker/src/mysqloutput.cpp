@@ -7,14 +7,19 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/07/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 #include <mysql.h>
 #include "event.h"
 #include "mysqloutput.h"
+
+// XXX
+#include <mysql_driver.h>
+#include <mysql_public_iface.h>
 
 using namespace CentreonBroker;
 
@@ -45,50 +50,75 @@ MySQLOutput& MySQLOutput::operator=(const MySQLOutput& mysqlo)
 /**
  *  Prepare the queries for execution on the MySQL server.
  */
-void MySQLOutput::PrepareQueries(MYSQL* mysql)
+sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
+  throw (Exception)
 {
+  sql::PreparedStatement** stmt;
   const char* queries[] =
     {
-      "INSERT INTO test VALUES(?, ?, ?, ?)",
-      "INSERT INTO bidule VALUES(?, ?, ?, ?, ?",
-      NULL
+      "INSERT INTO nagios_hoststatus SET "  \
+        "hoststatus_id=?, "                 \
+        "instance_id=?, "                   \
+        "host_object_id=?, "                \
+        "status_update_time=?, "            \
+        "output=?, "                        \
+        "perfdata=?, "                      \
+        "current_state=?, "                 \
+        "has_been_checked=?, "              \
+        "should_be_scheduled=?, "           \
+        "current_check_attempt=?, "         \
+        "max_check_attempts=?, "            \
+        "last_check=?, "                    \
+        "next_check=?, "                    \
+        "check_type=?, "                    \
+        "last_state_change=?, "             \
+        "last_hard_state_change=?, "        \
+        "last_time_up=?, "                  \
+        "last_time_down=?, "                \
+        "last_time_unreachable=?, "         \
+        "state_type=?, "                    \
+        "last_notification=?, "             \
+        "next_notification=?, "             \
+        "no_more_notifications=?, "         \
+        "notifications_enabled=?, "         \
+        "problem_has_been_acknowledged=?, " \
+        "acknowledgement_type=?, "          \
+        "current_notification_number=?, "   \
+        "passive_checks_enabled=?, "        \
+        "active_checks_enabled=?, "         \
+        "event_handler_enabled=?, "         \
+        "flap_detection_enabled=?, "        \
+        "is_flapping=?, "                   \
+        "percent_state_change=?, "          \
+        "latency=?, "                       \
+        "execution_time=?, "                \
+        "scheduled_downtime_depth=?, "      \
+        "failure_prediction_enabled=?, "    \
+        "process_performance_data=?, "      \
+        "obsess_over_host=?, "              \
+        "modified_host_attributes=?, "      \
+        "event_handler=?, "                 \
+        "check_command=?, "                 \
+        "normal_check_interval=?, "         \
+        "retry_check_interval=?, "          \
+        "check_timeperiod_object_id=?"
     };
-  enum_field_types args[][42] =
+
+  try
     {
-      {
-	MYSQL_TYPE_SHORT,
-	MYSQL_TYPE_SHORT,
-	MYSQL_TYPE_SHORT,
-	MYSQL_TYPE_SHORT
-      },
-      {
-	MYSQL_TYPE_LONG,
-	MYSQL_TYPE_LONG,
-	MYSQL_TYPE_LONG,
-	MYSQL_TYPE_LONG
-      }
-    };
-
-  this->stmt[0] = mysql_stmt_init(mysql);
-  query = "INSERT INTO test VALUES(?)";
-  mysql_stmt_prepare(this->stmt[0], query, strlen(query));
-  this->params[0] = new (MYSQL_BIND[3]);
-  this->params[0][1].buffer_type = MYSQL_TYPE_LONG;
-  this->params[0][1].buffer = new (int);
-  this->params[0][1].buffer_length = sizeof(int);
-  this->params[0][1].length = &this->params[0][1].buffer_length;
-  this->params[0][1].is_null = NULL;
-  this->params[0][1].is_unsigned = 0;
-  this->params[0][1].error = NULL;
-  return ;
-}
-
-/**
- *  This method is called when an event is dumping its data.
- */
-void MySQLOutput::OnDump(Event* e, ...)
-{
-  
+      stmt = new sql::PreparedStatement*[sizeof(queries) / sizeof(*queries)];
+      for (unsigned int i = 0; i < sizeof(queries) / sizeof(*queries); i++)
+	stmt[i] = conn.prepareStatement(queries[i]);
+    }
+  catch (sql::SQLException& e)
+    {
+      throw (Exception("Statements preparation failed."));
+    }
+  catch (...)
+    {
+      throw (Exception("Statements allocation failed."));
+    }
+  return (stmt);
 }
 
 /**
@@ -104,9 +134,11 @@ void MySQLOutput::OnEvent(Event* e) throw ()
       this->mutex.Lock();
       mutex_locked = true;
       this->events.push_back(e);
+      this->condvar.Broadcast();
     }
   catch (...)
     {
+      std::cerr << "Exception, dropping event." << std::endl;
     }
   // Try to not to leave the mutex locked.
   if (mutex_locked)
@@ -121,32 +153,100 @@ void MySQLOutput::OnEvent(Event* e) throw ()
 }
 
 /**
+ *  Found an object of type const char* while visiting an event.
+ */
+void MySQLOutput::Visit(const char* arg)
+{
+  this->current_stmt->setString(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
+ *  Found an object of type double while visiting an event.
+ */
+void MySQLOutput::Visit(double arg)
+{
+  this->current_stmt->setDouble(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
+ *  Found an object of type int while visiting an event.
+ */
+void MySQLOutput::Visit(int arg)
+{
+  this->current_stmt->setInt(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
+ *  Found an object of type short while visiting an event.
+ */
+void MySQLOutput::Visit(short arg)
+{
+  // XXX
+  this->current_stmt->setInt(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
+ *  Found an object of type const std::string& while visiting an event.
+ */
+void MySQLOutput::Visit(const std::string& arg)
+{
+  this->current_stmt->setString(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
+ *  Found an object of type time_t while visiting an event.
+ */
+void MySQLOutput::Visit(time_t arg)
+{
+  // XXX
+  this->current_stmt->setInt(this->current_arg, arg);
+  this->current_arg++;
+  return ;
+}
+
+/**
  *  This function waits for queries to be executed on the server on its own
  *  thread.
  */
 int MySQLOutput::Core()
 {
-  Event* event;
-  MYSQL* mysql;
-  bool error = false;
-
-  // XXX
-  do
+  try
     {
-      mysql = mysql_init(NULL);
-      mysql_real_connect(mysql,
-                         this->host.c_str(),
-                         this->user.c_str(),
-                         this->password.c_str(),
-                         this->db.c_str(),
-                         0,
-                         NULL,
-                         0);
-      this->stmt[0] = mysql_stmt_init(mysql);
-      this->PrepareQueries(mysql);
-      while ((!this->exit_thread || !this->events.empty())
-	     && !error)
+      /*
+      ** Connect to the MySQL server.
+      */
+      sql::Driver* driver = get_driver_instance();
+      assert(!this->host.empty());
+      assert(!this->user.empty());
+      assert(!this->password.empty());
+      assert(!this->db.empty());
+      sql::Connection* conn = driver->connect(this->host,
+					      this->user,
+					      this->password);
+      {
+	sql::Statement* use_db = (*conn).createStatement();
+	use_db->execute(std::string("USE ") + this->db + std::string(";"));
+	delete use_db;
+      }
+      // XXX : delete statements
+      sql::PreparedStatement** stmts = this->PrepareQueries(*conn);
+      while ((!this->exit_thread || !this->events.empty()))
 	{
+	  Event* event;
+
+	  /*
+	  ** Wait for incoming events
+	  */
 	  this->mutex.Lock();
 	  if (this->events.empty())
 	    {
@@ -158,19 +258,29 @@ int MySQLOutput::Core()
 		  break ;
 		}
 	    }
+
+	  std::cerr << "Processing event..." << std::endl;
+	  /*
+	  ** Process event.
+	  */
 	  event = this->events.front();
 	  this->events.pop_front();
-	  event->Dump(this);
-	  mysql_stmt_execute(this->stmt[0]);
+	  this->mutex.Unlock();
+	  this->current_stmt = stmts[event->GetType()];
+	  this->current_arg = 1;
+	  event->AcceptVisitor(*this);
+	  this->current_stmt->execute();
 	}
-      // delete statements
-      mysql_close(mysql);
-      /*
-	if (error)
-	  sleep(mysql_retry_interval);
-      */
-    } while (!this->exit_thread); // Will loop on error
-  return (1);
+    }
+  catch (sql::SQLException& e)
+    {
+      std::cerr << "Fail: " << e.what() << std::endl;
+    }
+  catch (...)
+    {
+      std::cerr << "Unknown failure" << std::endl;
+    }
+  return (0);
 }
 
 /**************************************
@@ -211,9 +321,11 @@ void MySQLOutput::Init(const std::string& host,
                        const std::string& password,
                        const std::string& db)
 {
+  // XXX : optimize memory consumption of useless elements.
   this->host = host;
   this->user = user;
   this->password = password;
   this->db = db;
+  this->Run();
   return ;
 }
