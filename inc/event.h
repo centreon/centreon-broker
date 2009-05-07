@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/07/09 Matthieu Kermagoret
 */
 
 #ifndef EVENT_H_
@@ -27,8 +27,9 @@ namespace        CentreonBroker
    public:
                  Event();
     virtual      ~Event();
+    virtual void AcceptVisitor(EventSubscriber& ev) = 0;
     void         AddReader(EventSubscriber* es);
-    virtual void Dump(EventSubscriber* es) = 0;
+    virtual int  GetType() = 0;
     void         RemoveReader(EventSubscriber* es);
   };
 }

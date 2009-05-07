@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/05/09 Matthieu Kermagoret
+** Last update 05/07/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -70,7 +70,15 @@ Thread::Thread()
 Thread::~Thread()
 {
   if (this->thread)
-    delete (this->thread);
+    {
+      try
+	{
+	  this->Join();
+	}
+      catch (...)
+	{
+	}
+    }
 }
 
 /**

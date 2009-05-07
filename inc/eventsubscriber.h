@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/07/09 Matthieu Kermagoret
 */
 
 #ifndef EVENTSUBSCRIBER_H_
@@ -27,8 +27,13 @@ namespace            CentreonBroker
       throw (Exception);
     virtual          ~EventSubscriber();
     EventSubscriber& operator=(const EventSubscriber& es);
-    virtual void     OnDump(Event* e, ...) = 0;
     virtual void     OnEvent(Event* e) = 0;
+    virtual void     Visit(const char* arg) = 0;
+    virtual void     Visit(double arg) = 0;
+    virtual void     Visit(int arg) = 0;
+    virtual void     Visit(short arg) = 0;
+    virtual void     Visit(const std::string& arg) = 0;
+    virtual void     Visit(time_t arg) = 0;
   };
 }
 
