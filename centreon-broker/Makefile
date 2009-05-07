@@ -19,6 +19,7 @@ SRC		=	src/conditionvariable.cpp	\
 			src/eventsubscriber.cpp		\
 			src/exception.cpp		\
 			src/fileoutput.cpp		\
+			src/hoststatusevent.cpp		\
 			src/mutex.cpp			\
 			src/mysqloutput.cpp		\
 			src/thread.cpp

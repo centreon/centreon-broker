@@ -259,7 +259,6 @@ int MySQLOutput::Core()
 		}
 	    }
 
-	  std::cerr << "Processing event..." << std::endl;
 	  /*
 	  ** Process event.
 	  */
@@ -309,6 +308,7 @@ MySQLOutput::~MySQLOutput()
 void MySQLOutput::Destroy()
 {
   this->exit_thread = true;
+  this->Join();
   return ;
 }
 
