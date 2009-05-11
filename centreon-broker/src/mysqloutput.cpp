@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <ctime>
 #include <iostream>
 #include <mysql.h>
 #include "event.h"
@@ -258,7 +259,7 @@ void MySQLOutput::Visit(const std::string& arg)
 void MySQLOutput::Visit(time_t arg)
 {
   // XXX
-  this->current_stmt->setInt(this->current_arg, arg);
+  this->current_stmt->setDateTime(this->current_arg, ctime(&arg));
   this->current_arg++;
   return ;
 }

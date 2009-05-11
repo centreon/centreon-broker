@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/11/09 Matthieu Kermagoret
 */
 
 #ifndef EVENTPUBLISHER_H_
@@ -19,6 +19,7 @@
 
 namespace                        CentreonBroker
 {
+  class                          Event;
   class                          EventSubscriber;
 
   class                          EventPublisher
@@ -34,6 +35,7 @@ namespace                        CentreonBroker
    public:
                                  ~EventPublisher();
     static EventPublisher*       GetInstance() throw (Exception);
+    void                         Publish(Event* ev);
     void                         Subscribe(EventSubscriber* es)
       throw (Exception);
     void                         Unsubscribe(EventSubscriber* es);
