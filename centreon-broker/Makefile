@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/07/09 Matthieu Kermagoret
+## Last update 05/11/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -22,6 +22,8 @@ SRC		=	src/conditionvariable.cpp	\
 			src/hoststatusevent.cpp		\
 			src/mutex.cpp			\
 			src/mysqloutput.cpp		\
+			src/networkinput.cpp		\
+			src/servicestatusevent.cpp	\
 			src/thread.cpp
 OBJ		=	$(SRC:.cpp=.o)
 

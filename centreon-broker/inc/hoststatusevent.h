@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/07/09 Matthieu Kermagoret
+** Last update 05/11/09 Matthieu Kermagoret
 */
 
 #ifndef HOSTSTATUSEVENT_H_
@@ -74,10 +74,54 @@ namespace            CentreonBroker
                      HostStatusEvent(const HostStatusEvent& hse);
                      ~HostStatusEvent();
     HostStatusEvent& operator=(const HostStatusEvent& hse);
-    void             AcceptVisitor(EventSubscriber& ev);
-    int              GetType();
+    void             AcceptVisitor(EventSubscriber& es);
+    int              GetType() const;
+    // Setters
     void             SetHostStatusId(int hsi);
+    void             SetInstanceId(short ii);
     void             SetHostObjectId(int hoi);
+    void             SetStatusUpdateTime(time_t sut);
+    void             SetOutput(const std::string& o);
+    void             SetPerfdata(const std::string& p);
+    void             SetCurrentState(short cs);
+    void             SetHasBeenChecked(short hbc);
+    void             SetShouldBeScheduled(short sbs);
+    void             SetCurrentCheckAttempt(short cca);
+    void             SetMaxCheckAttempts(short mca);
+    void             SetLastCheck(time_t lc);
+    void             SetNextCheck(time_t nc);
+    void             SetCheckType(short ct);
+    void             SetLastStateChange(time_t lsc);
+    void             SetLastHardStateChange(time_t lhsc);
+    void             SetLastTimeUp(time_t ltu);
+    void             SetLastTimeDown(time_t ltd);
+    void             SetLastTimeUnreachable(time_t ltu);
+    void             SetStateType(short st);
+    void             SetLastNotification(time_t ln);
+    void             SetNextNotification(time_t nn);
+    void             SetNoMoreNotifications(short nmn);
+    void             SetNotificationsEnabled(short ne);
+    void             SetProblemHasBeenAcknowledged(short phba);
+    void             SetAcknowledgementType(short at);
+    void             SetCurrentNotificationNumber(short cnn);
+    void             SetPassiveChecksEnabled(short pce);
+    void             SetActiveChecksEnabled(short ace);
+    void             SetEventHandlerEnabled(short ehe);
+    void             SetFlapDetectionEnabled(short fde);
+    void             SetIsFlapping(short i_f);
+    void             SetPercentStateChange(double psc);
+    void             SetLatency(double l);
+    void             SetExecutionTime(double et);
+    void             SetScheduledDowntimeDepth(short sdd);
+    void             SetFailurePredictionEnabled(short fpe);
+    void             SetProcessPerformanceData(short ppd);
+    void             SetObsessOverHost(short ooh);
+    void             SetModifiedHostAttributes(int mha);
+    void             SetEventHandler(const std::string& eh);
+    void             SetCheckCommand(const std::string& cc);
+    void             SetNormalCheckInterval(double nci);
+    void             SetRetryCheckInterval(double rci);
+    void             SetCheckTimeperiodObjectId(int ctoi);
   };
 }
 

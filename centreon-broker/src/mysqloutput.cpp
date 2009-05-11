@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/07/09 Matthieu Kermagoret
+** Last update 05/11/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -54,6 +54,7 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
   throw (Exception)
 {
   sql::PreparedStatement** stmt;
+  // XXX : tables names may be different
   const char* queries[] =
     {
       "INSERT INTO nagios_hoststatus SET "  \
@@ -101,6 +102,54 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
         "check_command=?, "                 \
         "normal_check_interval=?, "         \
         "retry_check_interval=?, "          \
+        "check_timeperiod_object_id=?",
+      "INSERT INTO nagios_servicestatus SET " \
+        "servicestatus_id=?, "                \
+        "instance_id=?, "                     \
+        "service_object_id=?, "               \
+        "status_update_time=?, "              \
+        "output=?, "                          \
+        "perfdata=?, "                        \
+        "current_state=?, "                   \
+        "has_been_checked=?, "                \
+        "should_be_scheduled=?, "             \
+        "current_check_attempt=?, "           \
+        "max_check_attempts=?, "              \
+        "last_check=?, "                      \
+        "next_check=?, "                      \
+        "check_type=?, "                      \
+        "last_state_change=?, "               \
+        "last_hard_state_change=?, "          \
+        "last_hard_state=?, "                 \
+        "last_time_ok=?, "                    \
+        "last_time_warning=?, "               \
+        "last_time_unknown=?, "               \
+        "last_time_critical=?, "              \
+        "state_type=?, "                      \
+        "last_notification=?, "               \
+        "next_notification=?, "               \
+        "no_more_notifications=?, "           \
+        "notifications_enabled=?, "           \
+        "problem_has_been_acknowledged=?, "   \
+        "acknowledgement_type=?, "            \
+        "current_notification_number=?, "     \
+        "passive_checks_enabled=?, "          \
+        "active_checks_enabled=?, "           \
+        "event_handler_enabled=?, "           \
+        "flap_detection_enabled=?, "          \
+        "is_flapping=?, "                     \
+        "percent_state_change=?, "            \
+        "latency=?, "                         \
+        "execution_time=?, "                  \
+        "scheduled_downtime_depth=?, "        \
+        "failure_prediction_enabled=?, "      \
+        "process_performance_data=?, "        \
+        "obsess_over_service=?, "             \
+        "modified_service_attributes=?, "     \
+        "event_handler=?, "                   \
+        "check_command=?, "                   \
+        "normal_check_interval=?, "           \
+        "retry_check_interval=?, "            \
         "check_timeperiod_object_id=?"
     };
 
@@ -220,6 +269,8 @@ void MySQLOutput::Visit(time_t arg)
  */
 int MySQLOutput::Core()
 {
+  sql::PreparedStatement** stmts;
+
   try
     {
       /*
@@ -230,16 +281,17 @@ int MySQLOutput::Core()
       assert(!this->user.empty());
       assert(!this->password.empty());
       assert(!this->db.empty());
-      sql::Connection* conn = driver->connect(this->host,
-					      this->user,
-					      this->password);
+      std::auto_ptr< sql::Connection > conn(driver->connect(this->host,
+							    this->user,
+							    this->password));
+      // XXX : use some JDBC stuff
       {
 	sql::Statement* use_db = (*conn).createStatement();
 	use_db->execute(std::string("USE ") + this->db + std::string(";"));
 	delete use_db;
       }
       // XXX : delete statements
-      sql::PreparedStatement** stmts = this->PrepareQueries(*conn);
+      stmts = this->PrepareQueries(*conn);
       while ((!this->exit_thread || !this->events.empty()))
 	{
 	  Event* event;
@@ -273,11 +325,17 @@ int MySQLOutput::Core()
     }
   catch (sql::SQLException& e)
     {
-      std::cerr << "Fail: " << e.what() << std::endl;
+      std::cerr << "SQL error: " << e.what() << std::endl;
     }
   catch (...)
     {
-      std::cerr << "Unknown failure" << std::endl;
+      std::cerr << "Unknown failure, exiting thread." << std::endl;
+    }
+  if (stmts)
+    {
+      for (int i = 0; stmts[i]; i++)
+	delete (stmts[i]);
+      delete (stmts);
     }
   return (0);
 }
