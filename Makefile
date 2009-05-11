@@ -31,7 +31,7 @@ NAME		=	centreon-broker.so
 
 INCLUDE		+=	-Iinc
 CXXFLAGS	+=	--std=c++0x -W -Wall -pedantic $(INCLUDE)	\
-			 `mysql_config --cflags --include`
+			 `mysql_config --include`
 LDFLAGS		+=	-lpthread `mysql_config --libs`
 
 

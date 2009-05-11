@@ -23,11 +23,11 @@ namespace         CentreonBroker
     int           fd;
                   NetworkInput(const NetworkInput& ni);
     NetworkInput& operator=(const NetworkInput& ni);
+    int           Core();
 
    public:
                   NetworkInput();
                   ~NetworkInput();
-    int           Core();
     void          SetFD(int fd);
   };
 }

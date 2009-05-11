@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/07/09 Matthieu Kermagoret
+** Last update 05/11/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <cstdlib>
 #include "eventpublisher.h"
+#include "eventsubscriber.h"
 
 using namespace CentreonBroker;
 
@@ -102,6 +103,18 @@ EventPublisher* EventPublisher::GetInstance() throw (Exception)
       EventPublisher::mutex.Unlock();
     }
   return (EventPublisher::instance);
+}
+
+/**
+ *  Sends an event to all subscribers.
+ */
+void EventPublisher::Publish(Event* ev)
+{
+  std::list<EventSubscriber*>::iterator it;
+
+  for (it = this->subscribers.begin(); it != this->subscribers.end(); it++)
+    (*it)->OnEvent(ev);
+  return ;
 }
 
 /**
