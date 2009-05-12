@@ -10,12 +10,14 @@
 ** Last update 05/12/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
 #include "eventpublisher.h"
+#include "hoststatusevent.h"
 #include "networkinput.h"
 #include "servicestatusevent.h"
 
@@ -58,6 +60,116 @@ NetworkInput::~NetworkInput()
     }
 }
 
+static void HandleHostStatus(FILE* stream)
+{
+  char buffer[2048];
+  const char* types = ">>>>>SSsssssttsttstttsttsssssssssdddssssiSSddi";
+  static void (HostStatusEvent::* const set_double[])(double) =
+    {
+      &HostStatusEvent::SetPercentStateChange,
+      &HostStatusEvent::SetLatency,
+      &HostStatusEvent::SetExecutionTime,
+      &HostStatusEvent::SetNormalCheckInterval,
+      &HostStatusEvent::SetRetryCheckInterval
+    };
+  int cur_set_double;
+  static void (HostStatusEvent::* const set_int[])(int) =
+    {
+      &HostStatusEvent::SetModifiedHostAttributes,
+      &HostStatusEvent::SetCheckTimeperiodObjectId
+    };
+  int cur_set_int;
+  static void (HostStatusEvent::* const set_short[])(short) =
+    {
+      &HostStatusEvent::SetCurrentState,
+      &HostStatusEvent::SetHasBeenChecked,
+      &HostStatusEvent::SetShouldBeScheduled,
+      &HostStatusEvent::SetCurrentCheckAttempt,
+      &HostStatusEvent::SetMaxCheckAttempts,
+      &HostStatusEvent::SetCheckType,
+      &HostStatusEvent::SetLastHardState,
+      &HostStatusEvent::SetStateType,
+      &HostStatusEvent::SetNoMoreNotifications,
+      &HostStatusEvent::SetProblemHasBeenAcknowledged,
+      &HostStatusEvent::SetAcknowledgementType,
+      &HostStatusEvent::SetCurrentNotificationNumber,
+      &HostStatusEvent::SetPassiveChecksEnabled,
+      &HostStatusEvent::SetEventHandlerEnabled,
+      &HostStatusEvent::SetActiveChecksEnabled,
+      &HostStatusEvent::SetFlapDetectionEnabled,
+      &HostStatusEvent::SetIsFlapping,
+      &HostStatusEvent::SetScheduledDowntimeDepth,
+      &HostStatusEvent::SetFailurePredictionEnabled,
+      &HostStatusEvent::SetProcessPerformanceData,
+      &HostStatusEvent::SetObsessOverHost
+    };
+  int cur_set_short;
+  static void (HostStatusEvent::* const set_str[])(const std::string&) =
+    {
+      &HostStatusEvent::SetOutput,
+      &HostStatusEvent::SetPerfdata,
+      &HostStatusEvent::SetEventHandler,
+      &HostStatusEvent::SetCheckCommand
+    };
+  int cur_set_str;
+  static void (HostStatusEvent::* const set_timet[])(time_t) =
+    {
+      &HostStatusEvent::SetLastCheck,
+      &HostStatusEvent::SetNextCheck,
+      &HostStatusEvent::SetLastStateChange,
+      &HostStatusEvent::SetLastHardStateChange,
+      &HostStatusEvent::SetLastTimeUp,
+      &HostStatusEvent::SetLastTimeDown,
+      &HostStatusEvent::SetLastTimeUnreachable,
+      &HostStatusEvent::SetLastNotification,
+      &HostStatusEvent::SetNextNotification
+    };
+  int cur_set_timet;
+  static int host_status_id = 1;
+  static int host_object_id = 1;
+
+  cur_set_double = cur_set_int = cur_set_short = cur_set_str = cur_set_timet = 0;
+  fgets(buffer, sizeof(buffer), stream);
+  buffer[strlen(buffer) - 1] = '\0';
+  if (strcmp(buffer, "999\n"))
+    {
+      HostStatusEvent* hse;
+
+      hse = new HostStatusEvent;
+      hse->SetHostStatusId(host_status_id++);
+      hse->SetHostObjectId(host_object_id++);
+      for (int i = 0; types[i]; i++)
+	{
+	  switch (types[i])
+	    {
+	    case 'd': // double
+	      (hse->*set_double[cur_set_double++])(strtod(strchr(buffer, '=') + 1, NULL));
+	      break ;
+	    case 'i': // int
+	      (hse->*set_int[cur_set_int++])(atoi(strchr(buffer, '=') + 1));
+	      break ;
+	    case 's': // short
+	      (hse->*set_short[cur_set_short++])(atoi(strchr(buffer, '=') + 1));
+	      break ;
+	    case 'S': // string
+	      (hse->*set_str[cur_set_str++])(strchr(buffer, '=') + 1);
+	      break ;
+	    case 't': // time_t
+	      (hse->*set_timet[cur_set_timet++])(atoi(strchr(buffer, '=') + 1));
+	      break ;
+	    case '>': // skip
+	      break ;
+	    default:
+	      assert(false);
+	    }
+	  fgets(buffer, sizeof(buffer), stream);
+	  buffer[strlen(buffer) - 1] = '\0';
+	}
+      EventPublisher::GetInstance()->Publish(hse);
+    }
+  return ;
+}
+
 int NetworkInput::Core()
 {
   char buffer[2048];
@@ -69,7 +181,9 @@ int NetworkInput::Core()
   while (fgets(buffer, sizeof(buffer), stream))
     {
       std::cout << buffer;
-      if (!strcmp(buffer, "213:\n")) // service status
+      if (!strcmp(buffer, "212:\n"))
+	HandleHostStatus(stream);
+      else if (!strcmp(buffer, "213:\n")) // service status
 	{
 	  fgets(buffer, sizeof(buffer), stream); // NDO_DATA_TYPE
 	  if (strcmp(buffer, "999\n"))

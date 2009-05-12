@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/11/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -75,6 +75,7 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
         "check_type=?, "                    \
         "last_state_change=?, "             \
         "last_hard_state_change=?, "        \
+        "last_hard_state=?, "               \
         "last_time_up=?, "                  \
         "last_time_down=?, "                \
         "last_time_unreachable=?, "         \

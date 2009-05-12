@@ -43,6 +43,7 @@ namespace            CentreonBroker
     short            check_type;
     time_t           last_state_change;
     time_t           last_hard_state_change;
+    short            last_hard_state;
     time_t           last_time_up;
     time_t           last_time_down;
     time_t           last_time_unreachable;
@@ -97,6 +98,7 @@ namespace            CentreonBroker
     void             SetCheckType(short ct);
     void             SetLastStateChange(time_t lsc);
     void             SetLastHardStateChange(time_t lhsc);
+    void             SetLastHardState(short lhs);
     void             SetLastTimeUp(time_t ltu);
     void             SetLastTimeDown(time_t ltd);
     void             SetLastTimeUnreachable(time_t ltu);
