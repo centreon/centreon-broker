@@ -40,6 +40,7 @@ namespace                      CentreonBroker
       sql::PreparedStatement** stmts_;
       // MySQL performance objects
       int                      queries_count_;
+      struct timespec          ts_;
       // Events processing
       std::list<Event*>        events_;
       ConditionVariable        eventscv_;
