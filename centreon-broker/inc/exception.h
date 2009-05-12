@@ -7,31 +7,36 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/05/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #ifndef EXCEPTION_H_
 # define EXCEPTION_H_
 
+# include <exception>
 # include <string>
 
-namespace       CentreonBroker
+namespace               CentreonBroker
 {
-  class         Exception
+  /**
+   *  This is the standard interface for exception thrown within CentreonBroker
+   *  code. Nothing fancy, just a wrapper class around an std::string.
+   */
+  class                 Exception : public std::exception
   {
    protected:
-    std::string msg;
+    std::string         what_;
 
    public:
-                Exception();
-                Exception(const Exception& exception);
-                Exception(const char* str);
-                Exception(const std::string& str);
-                ~Exception();
-    Exception&  operator=(const Exception& exception);
-    Exception&  operator=(const char* str);
-    Exception&  operator=(const std::string& str);
-    virtual     operator const std::string&() const;
+                        Exception();
+                        Exception(const Exception& exception);
+                        Exception(const char* str);
+                        Exception(const std::string& str);
+    virtual             ~Exception() throw();
+    Exception&          operator=(const Exception& exception);
+    Exception&          operator=(const char* str);
+    Exception&          operator=(const std::string& str);
+    virtual const char* what() const throw();
   };
 }
 

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/11/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -23,8 +23,8 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
-EventPublisher* EventPublisher::instance = NULL;
-Mutex           EventPublisher::mutex;
+EventPublisher* EventPublisher::instance_ = NULL;
+Mutex           EventPublisher::instancem_;
 
 /**************************************
 *                                     *
@@ -68,6 +68,7 @@ EventPublisher& EventPublisher::operator=(const EventPublisher& ep)
  */
 static void delete_eventpublisher()
 {
+  assert(EventPublisher::GetInstance());
   delete (EventPublisher::GetInstance());
   return ;
 }
@@ -77,32 +78,35 @@ static void delete_eventpublisher()
  */
 EventPublisher::~EventPublisher()
 {
+  EventPublisher::instancem_.Lock();
+  EventPublisher::instance_ = NULL;
+  EventPublisher::instancem_.Unlock();
 }
 
 /**
  *  Retrieve the instance of EventPublisher.
  */
-EventPublisher* EventPublisher::GetInstance() throw (Exception)
+EventPublisher* EventPublisher::GetInstance()
 {
-  if (!EventPublisher::instance)
+  if (!EventPublisher::instance_)
     {
-      EventPublisher::mutex.Lock();
-      if (!EventPublisher::instance)
+      EventPublisher::instancem_.Lock();
+      if (!EventPublisher::instance_)
 	{
 	  try
 	    {
-	      EventPublisher::instance = new (EventPublisher);
-	      atexit(delete_eventpublisher);
+	      EventPublisher::instance_ = new (EventPublisher);
 	    }
-	  catch (...)
+	  catch (...) // Do not let the mutex locked.
 	    {
-	      EventPublisher::mutex.Unlock();
-	      throw (Exception("Event publisher instantiation failed."));
+	      EventPublisher::instancem_.Unlock();
+	      throw ;
 	    }
+	  atexit(delete_eventpublisher);
+	  EventPublisher::instancem_.Unlock();
 	}
-      EventPublisher::mutex.Unlock();
     }
-  return (EventPublisher::instance);
+  return (EventPublisher::instance_);
 }
 
 /**
@@ -112,24 +116,21 @@ void EventPublisher::Publish(Event* ev)
 {
   std::list<EventSubscriber*>::iterator it;
 
-  for (it = this->subscribers.begin(); it != this->subscribers.end(); it++)
+  this->subscribersm_.Lock();
+  for (it = this->subscribers_.begin(); it != this->subscribers_.end(); it++)
     (*it)->OnEvent(ev);
+  this->subscribersm_.Unlock();
   return ;
 }
 
 /**
  *  Add an object that shall be warned when an event occur.
  */
-void EventPublisher::Subscribe(EventSubscriber* es) throw (Exception)
+void EventPublisher::Subscribe(EventSubscriber* es)
 {
-  try
-    {
-      this->subscribers.push_front(es);
-    }
-  catch (...)
-    {
-      throw (Exception("Could not add a subscriber."));
-    }
+  this->subscribersm_.Lock();
+  this->subscribers_.push_front(es);
+  this->subscribersm_.Unlock();
   return ;
 }
 
@@ -138,14 +139,8 @@ void EventPublisher::Subscribe(EventSubscriber* es) throw (Exception)
  */
 void EventPublisher::Unsubscribe(EventSubscriber* es)
 {
-  std::list<EventSubscriber*>::iterator it;
-
-  for (it = this->subscribers.begin(); it != this->subscribers.end(); it++)
-    if ((*it) == es)
-      {
-	this->subscribers.erase(it);
-	break ;
-      }
-  assert(it != this->subscribers.end());
+  this->subscribersm_.Lock();
+  this->subscribers_.remove(es);
+  this->subscribersm_.Unlock();
   return ;
 }

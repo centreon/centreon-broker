@@ -7,38 +7,44 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/11/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #ifndef EVENTPUBLISHER_H_
 # define EVENTPUBLISHER_H_
 
 # include <list>
-# include "exception.h"
 # include "mutex.h"
 
-namespace                        CentreonBroker
+namespace                       CentreonBroker
 {
-  class                          Event;
-  class                          EventSubscriber;
+  class                         Event;
+  class                         EventSubscriber;
 
-  class                          EventPublisher
+  /**
+   *  The EventPublisher is a singleton that is responsible of broadcasting
+   *  events to every EventSubscriber who asked it. The EventPublisher first
+   *  receive events via Publish() (usually called from NetworkInput) and then
+   *  sends it to every object which Subscribe()'d.
+   */
+  class                         EventPublisher
   {
    private:
-    std::list<EventSubscriber*>  subscribers;
-    static EventPublisher*       instance;
-    static CentreonBroker::Mutex mutex;
-                                 EventPublisher();
-                                 EventPublisher(const EventPublisher& ep);
-    EventPublisher&              operator=(const EventPublisher& ep);
+    std::list<EventSubscriber*> subscribers_;
+    Mutex                       subscribersm_;
+    static EventPublisher*      instance_;
+    static Mutex                instancem_;
+                                EventPublisher();
+                                EventPublisher(const
+                                               EventPublisher& ep);
+    EventPublisher&             operator=(const EventPublisher& ep);
 
    public:
-                                 ~EventPublisher();
-    static EventPublisher*       GetInstance() throw (Exception);
-    void                         Publish(Event* ev);
-    void                         Subscribe(EventSubscriber* es)
-      throw (Exception);
-    void                         Unsubscribe(EventSubscriber* es);
+                                ~EventPublisher();
+    static EventPublisher*      GetInstance();
+    void                        Publish(Event* ev);
+    void                        Subscribe(EventSubscriber* es);
+    void                        Unsubscribe(EventSubscriber* es);
   };
 }
 

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/06/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #include "eventpublisher.h"
@@ -24,7 +24,7 @@ using namespace CentreonBroker;
 /**
  *  EventSubscriber constructor.
  */
-EventSubscriber::EventSubscriber() throw (Exception)
+EventSubscriber::EventSubscriber()
 {
   EventPublisher::GetInstance()->Subscribe(this);
 }
@@ -32,7 +32,7 @@ EventSubscriber::EventSubscriber() throw (Exception)
 /**
  *  EventSubscriber copy constructor.
  */
-EventSubscriber::EventSubscriber(const EventSubscriber& es) throw (Exception)
+EventSubscriber::EventSubscriber(const EventSubscriber& es)
 {
   (void)es;
   EventPublisher::GetInstance()->Subscribe(this);
