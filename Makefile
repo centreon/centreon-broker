@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/11/09 Matthieu Kermagoret
+## Last update 05/12/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -32,7 +32,7 @@ NAME		=	centreon-broker.so
 INCLUDE		+=	-Iinc
 CXXFLAGS	+=	--std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			 `mysql_config --include`
-LDFLAGS		+=	-lpthread `mysql_config --libs`
+LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`
 
 
 all		:	$(NAME)

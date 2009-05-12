@@ -180,7 +180,6 @@ int NetworkInput::Core()
   stream = fdopen(this->fd, "r+");
   while (fgets(buffer, sizeof(buffer), stream))
     {
-      std::cout << buffer;
       if (!strcmp(buffer, "212:\n"))
 	HandleHostStatus(stream);
       else if (!strcmp(buffer, "213:\n")) // service status

@@ -14,6 +14,7 @@
 # define CONDITIONVARIABLE_H_
 
 # include <sys/types.h>
+# include <time.h>
 # include "exception.h"
 
 namespace                       CentreonBroker
@@ -33,10 +34,12 @@ namespace                       CentreonBroker
       BROADCAST,
       INIT,
       SIGNAL,
+      TIMEDWAIT,
       WAIT
     };
 
    private:
+    int                         error_;
     Where                       where_;
 
    public:
@@ -70,6 +73,8 @@ namespace                       CentreonBroker
                        ~ConditionVariable() throw();
     void               Broadcast() throw (ConditionVariableException);
     void               Signal() throw (ConditionVariableException);
+    bool               TimedWait(Mutex& mutex, const struct timespec* abstime)
+                         throw (ConditionVariableException);
     void               Wait(Mutex& mutex) throw (ConditionVariableException);
   };
 }
