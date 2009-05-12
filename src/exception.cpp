@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #include "exception.h"
@@ -32,7 +32,7 @@ Exception::Exception()
  */
 Exception::Exception(const Exception& exception)
 {
-  this->msg = exception.msg;
+  this->what_ = exception.what_;
 }
 
 /**
@@ -40,7 +40,7 @@ Exception::Exception(const Exception& exception)
  */
 Exception::Exception(const char* str)
 {
-  this->msg = str;
+  this->what_ = str;
 }
 
 /**
@@ -48,13 +48,13 @@ Exception::Exception(const char* str)
  */
 Exception::Exception(const std::string& str)
 {
-  this->msg = str;
+  this->what_ = str;
 }
 
 /**
  *  Exception destructor.
  */
-Exception::~Exception()
+Exception::~Exception() throw()
 {
 }
 
@@ -63,7 +63,7 @@ Exception::~Exception()
  */
 Exception& Exception::operator=(const Exception& exception)
 {
-  this->msg = exception.msg;
+  this->what_ = exception.what_;
   return (*this);
 }
 
@@ -72,7 +72,7 @@ Exception& Exception::operator=(const Exception& exception)
  */
 Exception& Exception::operator=(const char* str)
 {
-  this->msg = str;
+  this->what_ = str;
   return (*this);
 }
 
@@ -81,14 +81,14 @@ Exception& Exception::operator=(const char* str)
  */
 Exception& Exception::operator=(const std::string& str)
 {
-  this->msg = str;
+  this->what_ = str;
   return (*this);
 }
 
 /**
  *  Returns the string associated with the exception.
  */
-Exception::operator const std::string&() const
+const char* Exception::what() const throw()
 {
-  return (this->msg);
+  return (this->what_.c_str());
 }

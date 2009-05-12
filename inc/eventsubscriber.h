@@ -7,24 +7,30 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/07/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #ifndef EVENTSUBSCRIBER_H_
 # define EVENTSUBSCRIBER_H_
 
-# include "exception.h"
+# include <string>
+# include <sys/types.h>
 
 namespace            CentreonBroker
 {
   class              Event;
 
+  /**
+   *  An EventSubscriber can subscribe against the EventPublisher to receive
+   *  events when they occur. It can then access data from the Event using the
+   *  Visitor pattern : the subscriber call the AcceptVisitor() method of the
+   *  Event which will in return call the overloaded Visit() method.
+   */
   class              EventSubscriber
   {
    public:
-                     EventSubscriber() throw (Exception);
-                     EventSubscriber(const EventSubscriber& es)
-      throw (Exception);
+                     EventSubscriber();
+                     EventSubscriber(const EventSubscriber& es);
     virtual          ~EventSubscriber();
     EventSubscriber& operator=(const EventSubscriber& es);
     virtual void     OnEvent(Event* e) = 0;

@@ -7,14 +7,106 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/04/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
+#include <cstring>
 #include <pthread.h>
 #include "exception.h"
 #include "mutex.h"
 
 using namespace CentreonBroker;
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                              MutexException                                 *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  MutexException default constructor.
+ */
+MutexException::MutexException()
+{
+  this->where_ = UNKNOWN;
+}
+
+/**
+ *  MutexException copy constructor.
+ */
+MutexException::MutexException(const MutexException& me) : Exception(me)
+{
+  this->where_ = me.where_;
+}
+
+/**
+ *  Build a MutexException from a string and an optional where argument.
+ */
+MutexException::MutexException(const char* str, MutexException::Where w)
+  : Exception(str)
+{
+  this->where_ = w;
+}
+
+/**
+ *  Build a MutexException from a string and an optional where argument.
+ */
+MutexException::MutexException(const std::string& str, MutexException::Where w)
+  : Exception(str)
+{
+  this->where_ = w;
+}
+
+/**
+ *  MutexException destructor.
+ */
+MutexException::~MutexException() throw()
+{
+}
+
+/**
+ *  MutexException operator= overload.
+ */
+MutexException& MutexException::operator=(const MutexException& me)
+{
+  Exception::operator=(me);
+  this->where_ = me.where_;
+  return (*this);
+}
+
+/**
+ *  Returns an enum defining where the exception happened.
+ */
+MutexException::Where MutexException::GetWhere() const throw()
+{
+  return (this->where_);
+}
+
+/**
+ *  Sets where the exception happened.
+ */
+void MutexException::SetWhere(MutexException::Where w) throw()
+{
+  this->where_ = w;
+  return ;
+}
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                 Mutex                                       *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
 
 /**************************************
 *                                     *
@@ -50,36 +142,54 @@ Mutex& Mutex::operator=(const Mutex& mutex)
 /**
  *  Mutex constructor.
  */
-Mutex::Mutex() throw(Exception)
+Mutex::Mutex() throw (MutexException)
 {
-  if (pthread_mutex_init(&this->mutex, NULL))
-    throw (Exception("Mutex initialization failed."));
+  int error_code;
+
+  error_code = pthread_mutex_init(&this->mutex_, NULL);
+  if (error_code)
+    throw (MutexException(std::string(__FUNCTION__)
+                          + ": "
+                          + strerror(error_code),
+                          MutexException::INIT));
 }
 
 /**
  *  Mutex destructor.
  */
-Mutex::~Mutex()
+Mutex::~Mutex() throw()
 {
-  pthread_mutex_destroy(&this->mutex);
+  pthread_mutex_destroy(&this->mutex_);
 }
 
 /**
- *  Lock a mutex.
+ *  Locks a mutex.
  */
-void		Mutex::Lock() throw (Exception)
+void Mutex::Lock() throw (MutexException)
 {
-  if (pthread_mutex_lock(&this->mutex))
-    throw (Exception("Mutex locking failed."));
+  int error_code;
+
+  error_code = pthread_mutex_lock(&this->mutex_);
+  if (error_code)
+    throw (MutexException(std::string(__FUNCTION__)
+                          + ": "
+                          + strerror(error_code),
+                          MutexException::LOCK));
   return ;
 }
 
 /**
- *  Unlock an already locked mutex.
+ *  Unlocks an already locked mutex.
  */
-void		Mutex::Unlock() throw (Exception)
+void Mutex::Unlock() throw (MutexException)
 {
-  if (pthread_mutex_unlock(&this->mutex))
-    throw (Exception("Mutex unlocking failed."));
+  int error_code;
+
+  error_code = pthread_mutex_unlock(&this->mutex_);
+  if (error_code)
+    throw (MutexException(std::string(__FUNCTION__)
+                          + ": "
+                          + strerror(error_code),
+                          MutexException::UNLOCK));
   return ;
 }

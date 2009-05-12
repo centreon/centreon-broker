@@ -7,31 +7,70 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/05/09 Matthieu Kermagoret
-** Last update 05/05/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #ifndef CONDITIONVARIABLE_H_
 # define CONDITIONVARIABLE_H_
 
-# include <pthread.h>
-# include "mutex.h"
+# include <sys/types.h>
+# include "exception.h"
 
-namespace              CentreonBroker
+namespace                       CentreonBroker
 {
+  class                         Mutex;
+
+  /**
+   *  This class of exception will be raised by ConditionVariable when
+   *  needed.
+   */
+  class                         ConditionVariableException : public Exception
+  {
+   public:
+    enum                        Where
+    {
+      UNKNOWN,
+      BROADCAST,
+      INIT,
+      SIGNAL,
+      WAIT
+    };
+
+   private:
+    Where                       where_;
+
+   public:
+                                ConditionVariableException();
+                                ConditionVariableException(const
+                                  ConditionVariableException& cve);
+                                ConditionVariableException(const char* str,
+                                                           Where w = UNKNOWN);
+                                ConditionVariableException(const
+							   std::string& str,
+                                                           Where w = UNKNOWN);
+                                ~ConditionVariableException() throw();
+    ConditionVariableException& operator=(const ConditionVariableException& c);
+    Where                       GetWhere() const throw();
+    void                        SetWhere(Where w) throw();
+  };
+
+  /**
+   *  A condition variable is an object with which a thread can temporarily
+   *  give up exclusive access, in order to wait for some condition to be met.
+   */
   class                ConditionVariable
   {
    private:
-    pthread_cond_t     condvar;
+    pthread_cond_t     condvar_;
                        ConditionVariable(const ConditionVariable& cv);
     ConditionVariable& operator=(const ConditionVariable& cv);
 
    public:
-                       ConditionVariable() throw (CentreonBroker::Exception);
-                       ~ConditionVariable();
-    void               Broadcast() throw (CentreonBroker::Exception);
-    void               Signal() throw (CentreonBroker::Exception);
-    void               Wait(CentreonBroker::Mutex& mutex)
-      throw (CentreonBroker::Exception);
+                       ConditionVariable() throw (ConditionVariableException);
+                       ~ConditionVariable() throw();
+    void               Broadcast() throw (ConditionVariableException);
+    void               Signal() throw (ConditionVariableException);
+    void               Wait(Mutex& mutex) throw (ConditionVariableException);
   };
 }
 
