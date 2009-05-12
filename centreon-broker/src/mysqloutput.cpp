@@ -56,6 +56,10 @@ void MySQLOutput::Commit()
 {
   this->myconn_->commit();
   this->queries_count_ = 0;
+  // If the clock is not working, there's nothing we can do.
+  clock_gettime(CLOCK_REALTIME, &this->ts_);
+  // XXX : commit time interval shall be configurable
+  this->ts_.tv_sec += 10;
   return ;
 }
 
@@ -85,6 +89,7 @@ void MySQLOutput::Connect()
     use_db->execute(std::string("USE ") + this->db_ + std::string(";"));
   }
 
+  this->myconn_->setAutoCommit(false);
   // Prepared statements
   this->stmts_ = this->PrepareQueries(*this->myconn_);
   return ;
@@ -223,6 +228,7 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
       stmt = new sql::PreparedStatement*[sizeof(queries) / sizeof(*queries)];
       for (unsigned int i = 0; i < sizeof(queries) / sizeof(*queries); i++)
 	stmt[i] = conn.prepareStatement(queries[i]);
+      stmt[sizeof(queries) / sizeof(*queries)] = NULL;
     }
   catch (sql::SQLException& e)
     {
@@ -273,19 +279,9 @@ Event* MySQLOutput::WaitEvent()
 	  this->events_.pop_front();
 	  break ;
 	}
-      // If the clock is not working, there's nothing we can do.
-      if (clock_gettime(CLOCK_REALTIME, &ts))
-	{
-	  this->eventsm_.Unlock();
-	  throw (Exception(std::string(__FUNCTION__)
-                           + ": "
-                           + strerror(errno)));
-	}
-      // XXX : commit time interval shall be configurable
-      ts.tv_sec += 5;
       try
 	{
-	  wait_return = this->eventscv_.TimedWait(this->eventsm_, &ts);
+	  wait_return = this->eventscv_.TimedWait(this->eventsm_, &this->ts_);
 	}
       catch (ConditionVariableException& cve)
 	{
@@ -409,29 +405,33 @@ int MySQLOutput::Core()
   while (!this->exit_thread_ || !this->events_.empty())
     {
       try
-	{
-	  Event* event;
+        {
+          Event* event;
 
-	  this->Connect();
-	  event = this->WaitEvent();
-	  while (event)
-	    {
-	      this->ProcessEvent(event);
-	      event->RemoveReader(this);
-	      event = this->WaitEvent();
-	    }
-	}
+          this->Connect();
+          // If the clock is not working, there's nothing we can do.
+          clock_gettime(CLOCK_REALTIME, &this->ts_);
+	  // XXX : commit time interval shall be configurable
+	  this->ts_.tv_sec += 10;
+          event = this->WaitEvent();
+          while (event)
+            {
+              this->ProcessEvent(event);
+              event->RemoveReader(this);
+              event = this->WaitEvent();
+            }
+        }
       catch (sql::SQLException& e)
-	{
-	  std::cerr << "Recoverable MySQL error" << std::endl
-		    << "    " << e.what() << std::endl;
-	}
+        {
+          std::cerr << "Recoverable MySQL error" << std::endl
+                    << "    " << e.what() << std::endl;
+        }
       catch (...)
-	{
+        {
 	  std::cerr << "Unrecoverable error (" << __FUNCTION__ << ')'
-		    << std::endl;
-	  break ;
-	}
+                    << std::endl;
+          break ;
+        }
       this->Disconnect();
       // XXX : mysql retry interval shall be configurable
       sleep(10);

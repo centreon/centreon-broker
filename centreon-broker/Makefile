@@ -30,7 +30,7 @@ OBJ		=	$(SRC:.cpp=.o)
 NAME		=	centreon-broker.so
 
 INCLUDE		+=	-Iinc
-CXXFLAGS	+=	--std=c++0x -W -Wall -pedantic $(INCLUDE)	\
+CXXFLAGS	+=	-g3 --std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			 `mysql_config --include`
 LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`
 
