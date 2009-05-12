@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/11/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -74,6 +74,7 @@ void HostStatusEvent::AcceptVisitor(EventSubscriber& ev)
   ev.Visit(this->check_type);
   ev.Visit(this->last_state_change);
   ev.Visit(this->last_hard_state_change);
+  ev.Visit(this->last_hard_state);
   ev.Visit(this->last_time_up);
   ev.Visit(this->last_time_down);
   ev.Visit(this->last_time_unreachable);
@@ -255,6 +256,15 @@ void HostStatusEvent::SetLastStateChange(time_t lsc)
 void HostStatusEvent::SetLastHardStateChange(time_t lhsc)
 {
   this->last_hard_state_change = lhsc;
+  return ;
+}
+
+/**
+ *  Sets the last_hard_state.
+ */
+void HostStatusEvent::SetLastHardState(short lhs)
+{
+  this->last_hard_state = lhs;
   return ;
 }
 
