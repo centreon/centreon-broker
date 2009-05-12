@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/07/09 Matthieu Kermagoret
+** Last update 05/12/09 Matthieu Kermagoret
 */
 
 #ifndef MYSQLOUTPUT_H_
@@ -30,24 +30,38 @@ namespace                      CentreonBroker
     : private EventSubscriber, private Thread
     {
      private:
-      volatile bool            exit_thread;
-      std::string              host;
-      std::string              user;
-      std::string              password;
-      std::string              db;
-      std::list<Event*>        events;
-      ConditionVariable        condvar;
-      Mutex                    mutex;
-      sql::PreparedStatement*  current_stmt;
-      int                      current_arg;
+      // Initialization parameters
+      std::string              host_;
+      std::string              user_;
+      std::string              password_;
+      std::string              db_;
+      // MySQL objects
+      sql::Connection*         myconn_;
+      sql::PreparedStatement** stmts_;
+      // MySQL performance objects
+      int                      queries_count_;
+      // Events processing
+      std::list<Event*>        events_;
+      ConditionVariable        eventscv_;
+      Mutex                    eventsm_;
+      // Used to build the argument list
+      sql::PreparedStatement*  cur_stmt_;
+      int                      cur_arg_;
+      // Thread specific parameter
+      volatile bool            exit_thread_;
+
                                MySQLOutput(const MySQLOutput& mysqlo);
       MySQLOutput&             operator=(const MySQLOutput& mysqlo);
+      void                     Commit();
+      void                     Connect();
+      void                     Disconnect();
       sql::PreparedStatement** PrepareQueries(sql::Connection& conn)
-	throw (Exception);
+                                 throw (Exception);
+      void                     ProcessEvent(Event* event);
+      Event*                   WaitEvent();
 
       // EventSubscriber
-      // XXX
-      //void                     OnEvent(Event* e) throw ();
+      void                     OnEvent(Event* e) throw ();
       void                     Visit(const char* arg);
       void                     Visit(double arg);
       void                     Visit(int arg);
@@ -66,8 +80,6 @@ namespace                      CentreonBroker
                                     const std::string& user,
                                     const std::string& password,
                                     const std::string& db);
-      // XXX
-      void                     OnEvent(Event* e) throw ();
     };
 }
 

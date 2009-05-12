@@ -11,10 +11,11 @@
 */
 
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <iostream>
-#include <mysql.h>
+#include <unistd.h>
 #include "event.h"
 #include "mysqloutput.h"
 
@@ -46,6 +47,68 @@ MySQLOutput& MySQLOutput::operator=(const MySQLOutput& mysqlo)
 {
   (void)mysqlo;
   return (*this);
+}
+
+/**
+ *  Commit the current transaction to the DB.
+ */
+void MySQLOutput::Commit()
+{
+  this->myconn_->commit();
+  this->queries_count_ = 0;
+  return ;
+}
+
+/**
+ *  Connect and prepare all DB-related objects.
+ */
+void MySQLOutput::Connect()
+{
+  // Get MySQL driver instance
+  sql::Driver* driver = get_driver_instance();
+
+  // Parameter checks
+  if (this->host_.empty())
+    this->host_ = "localhost";
+  if (this->user_.empty())
+    this->user_ = "root";
+  if (this->db_.empty())
+    this->db_ = "ndo";
+
+  // MySQL connection
+  this->myconn_ = driver->connect(this->host_,
+                                  this->user_,
+                                  this->password_);
+  // XXX : use some JDBC stuff when implemented in MySQL C++ connector
+  {
+    std::auto_ptr<sql::Statement> use_db((*this->myconn_).createStatement());
+    use_db->execute(std::string("USE ") + this->db_ + std::string(";"));
+  }
+
+  // Prepared statements
+  this->stmts_ = this->PrepareQueries(*this->myconn_);
+  return ;
+}
+
+/**
+ *  Free all ressources used by MySQL related objects.
+ */
+void MySQLOutput::Disconnect()
+{
+  if (this->stmts_)
+    {
+      for (int i = 0; this->stmts_[i]; i++)
+	if (this->stmts_[i])
+	  delete (this->stmts_[i]);
+      delete (this->stmts_);
+      this->stmts_ = NULL;
+    }
+  if (this->myconn_)
+    {
+      delete (this->myconn_);
+      this->myconn_ = NULL;
+    }
+  return ;
 }
 
 /**
@@ -173,6 +236,77 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
 }
 
 /**
+ *  Process a received event.
+ */
+void MySQLOutput::ProcessEvent(Event* event)
+{
+  // XXX : if an exception occur, we should try to put the event back into the
+  // list, otherwise properly discard it
+  this->cur_stmt_ = this->stmts_[event->GetType()];
+  this->cur_arg_ = 1;
+  event->AcceptVisitor(*this);
+  this->cur_stmt_->execute();
+  // XXX : MySQL commit interval should be configurable
+  if (++this->queries_count_ >= 10000)
+    this->Commit();
+  return ;
+}
+
+/**
+ *  Wait for incoming events. Return NULL when thread shall exit.
+ */
+Event* MySQLOutput::WaitEvent()
+{
+  Event* event;
+
+  event = NULL;
+  this->eventsm_.Lock();
+  while (!this->exit_thread_ || !this->events_.empty())
+    {
+      bool wait_return;
+      struct timespec ts;
+
+      // Try to fetch an event from the internal list.
+      if (!this->events_.empty())
+	{
+	  event = this->events_.front();
+	  this->events_.pop_front();
+	  break ;
+	}
+      // If the clock is not working, there's nothing we can do.
+      if (clock_gettime(CLOCK_REALTIME, &ts))
+	{
+	  this->eventsm_.Unlock();
+	  throw (Exception(std::string(__FUNCTION__)
+                           + ": "
+                           + strerror(errno)));
+	}
+      // XXX : commit time interval shall be configurable
+      ts.tv_sec += 5;
+      try
+	{
+	  wait_return = this->eventscv_.TimedWait(this->eventsm_, &ts);
+	}
+      catch (ConditionVariableException& cve)
+	{
+	  // Even when an error occur, the mutex shall be locked. It is our
+	  // responsability to release it.
+	  this->eventsm_.Unlock();
+	  throw ;
+	}
+      // The timeout occured, so commit data.
+      if (wait_return)
+	{
+	  this->eventsm_.Unlock();
+	  this->Commit();
+	  this->eventsm_.Lock();
+	}
+    }
+  this->eventsm_.Unlock();
+  return (event);
+}
+
+/**
  *  This method is called when an event occur.
  */
 void MySQLOutput::OnEvent(Event* e) throw ()
@@ -182,10 +316,11 @@ void MySQLOutput::OnEvent(Event* e) throw ()
   mutex_locked = false;
   try
     {
-      this->mutex.Lock();
+      this->eventsm_.Lock();
       mutex_locked = true;
-      this->events.push_back(e);
-      this->condvar.Broadcast();
+      this->events_.push_back(e);
+      e->AddReader(this);
+      this->eventscv_.Broadcast();
     }
   catch (...)
     {
@@ -195,7 +330,7 @@ void MySQLOutput::OnEvent(Event* e) throw ()
   if (mutex_locked)
     try
       {
-	this->mutex.Unlock();
+	this->eventsm_.Unlock();
       }
     catch (...)
       {
@@ -208,8 +343,8 @@ void MySQLOutput::OnEvent(Event* e) throw ()
  */
 void MySQLOutput::Visit(const char* arg)
 {
-  this->current_stmt->setString(this->current_arg, arg);
-  this->current_arg++;
+  this->cur_stmt_->setString(this->cur_arg_, arg);
+  this->cur_arg_++;
   return ;
 }
 
@@ -218,8 +353,8 @@ void MySQLOutput::Visit(const char* arg)
  */
 void MySQLOutput::Visit(double arg)
 {
-  this->current_stmt->setDouble(this->current_arg, arg);
-  this->current_arg++;
+  this->cur_stmt_->setDouble(this->cur_arg_, arg);
+  this->cur_arg_++;
   return ;
 }
 
@@ -228,8 +363,8 @@ void MySQLOutput::Visit(double arg)
  */
 void MySQLOutput::Visit(int arg)
 {
-  this->current_stmt->setInt(this->current_arg, arg);
-  this->current_arg++;
+  this->cur_stmt_->setInt(this->cur_arg_, arg);
+  this->cur_arg_++;
   return ;
 }
 
@@ -239,8 +374,8 @@ void MySQLOutput::Visit(int arg)
 void MySQLOutput::Visit(short arg)
 {
   // XXX
-  this->current_stmt->setInt(this->current_arg, arg);
-  this->current_arg++;
+  this->cur_stmt_->setInt(this->cur_arg_, arg);
+  this->cur_arg_++;
   return ;
 }
 
@@ -249,8 +384,8 @@ void MySQLOutput::Visit(short arg)
  */
 void MySQLOutput::Visit(const std::string& arg)
 {
-  this->current_stmt->setString(this->current_arg, arg);
-  this->current_arg++;
+  this->cur_stmt_->setString(this->cur_arg_, arg);
+  this->cur_arg_++;
   return ;
 }
 
@@ -260,8 +395,8 @@ void MySQLOutput::Visit(const std::string& arg)
 void MySQLOutput::Visit(time_t arg)
 {
   // XXX
-  this->current_stmt->setDateTime(this->current_arg, ctime(&arg));
-  this->current_arg++;
+  this->cur_stmt_->setDateTime(this->cur_arg_, ctime(&arg));
+  this->cur_arg_++;
   return ;
 }
 
@@ -271,73 +406,35 @@ void MySQLOutput::Visit(time_t arg)
  */
 int MySQLOutput::Core()
 {
-  sql::PreparedStatement** stmts;
-
-  try
+  while (!this->exit_thread_ || !this->events_.empty())
     {
-      /*
-      ** Connect to the MySQL server.
-      */
-      sql::Driver* driver = get_driver_instance();
-      assert(!this->host.empty());
-      assert(!this->user.empty());
-      assert(!this->password.empty());
-      assert(!this->db.empty());
-      std::auto_ptr< sql::Connection > conn(driver->connect(this->host,
-							    this->user,
-							    this->password));
-      // XXX : use some JDBC stuff
-      {
-	sql::Statement* use_db = (*conn).createStatement();
-	use_db->execute(std::string("USE ") + this->db + std::string(";"));
-	delete use_db;
-      }
-      // XXX : delete statements
-      stmts = this->PrepareQueries(*conn);
-      while ((!this->exit_thread || !this->events.empty()))
+      try
 	{
 	  Event* event;
 
-	  /*
-	  ** Wait for incoming events
-	  */
-	  this->mutex.Lock();
-	  if (this->events.empty())
+	  this->Connect();
+	  event = this->WaitEvent();
+	  while (event)
 	    {
-	      this->condvar.Wait(this->mutex);
-	      if (this->events.empty())
-		{
-		  this->mutex.Unlock();
-		  assert(this->exit_thread);
-		  break ;
-		}
+	      this->ProcessEvent(event);
+	      event->RemoveReader(this);
+	      event = this->WaitEvent();
 	    }
-
-	  /*
-	  ** Process event.
-	  */
-	  event = this->events.front();
-	  this->events.pop_front();
-	  this->mutex.Unlock();
-	  this->current_stmt = stmts[event->GetType()];
-	  this->current_arg = 1;
-	  event->AcceptVisitor(*this);
-	  this->current_stmt->execute();
 	}
-    }
-  catch (sql::SQLException& e)
-    {
-      std::cerr << "SQL error: " << e.what() << std::endl;
-    }
-  catch (...)
-    {
-      std::cerr << "Unknown failure, exiting thread." << std::endl;
-    }
-  if (stmts)
-    {
-      for (int i = 0; stmts[i]; i++)
-	delete (stmts[i]);
-      delete (stmts);
+      catch (sql::SQLException& e)
+	{
+	  std::cerr << "Recoverable MySQL error" << std::endl
+		    << "    " << e.what() << std::endl;
+	}
+      catch (...)
+	{
+	  std::cerr << "Unrecoverable error (" << __FUNCTION__ << ')'
+		    << std::endl;
+	  break ;
+	}
+      this->Disconnect();
+      // XXX : mysql retry interval shall be configurable
+      sleep(10);
     }
   return (0);
 }
@@ -353,6 +450,8 @@ int MySQLOutput::Core()
  */
 MySQLOutput::MySQLOutput()
 {
+  this->myconn_ = NULL;
+  this->stmts_ = NULL;
 }
 
 /**
@@ -360,6 +459,8 @@ MySQLOutput::MySQLOutput()
  */
 MySQLOutput::~MySQLOutput()
 {
+  this->Disconnect();
+  assert(this->events_.empty());
 }
 
 /**
@@ -367,7 +468,7 @@ MySQLOutput::~MySQLOutput()
  */
 void MySQLOutput::Destroy()
 {
-  this->exit_thread = true;
+  this->exit_thread_ = true;
   this->Join();
   return ;
 }
@@ -381,11 +482,11 @@ void MySQLOutput::Init(const std::string& host,
                        const std::string& password,
                        const std::string& db)
 {
-  // XXX : optimize memory consumption of useless elements.
-  this->host = host;
-  this->user = user;
-  this->password = password;
-  this->db = db;
+  this->exit_thread_ = false;
+  this->host_ = host;
+  this->user_ = user;
+  this->password_ = password;
+  this->db_ = db;
   this->Run();
   return ;
 }

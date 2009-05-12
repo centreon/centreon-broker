@@ -10,6 +10,7 @@
 ** Last update 05/12/09 Matthieu Kermagoret
 */
 
+#include <cerrno>
 #include <cstring>
 #include <pthread.h>
 #include <string>
@@ -202,6 +203,35 @@ void ConditionVariable::Signal() throw (ConditionVariableException)
                                       + strerror(error_code),
                                       ConditionVariableException::SIGNAL));
   return ;
+}
+
+/**
+ *  This method causes the calling thread, having ownership of the mutex, to
+ *  sleep until it is unblocked by a Broadcast() call, a Signal() call or until
+ *  system time exceeds abstime. In the latter case, the function will return
+ *  true.
+ */
+bool ConditionVariable::TimedWait(Mutex& mutex, const struct timespec* abstime)
+  throw (ConditionVariableException)
+{
+  int error_code;
+  bool return_value;
+
+  error_code = pthread_cond_timedwait(&this->condvar_, &mutex.mutex_, abstime);
+  if (error_code)
+    {
+      if (ETIMEDOUT == error_code)
+	return_value = true;
+      else
+	throw (ConditionVariableException(std::string(__FUNCTION__)
+                                          + ": "
+                                          + strerror(error_code),
+                                          ConditionVariableException::TIMEDWAIT
+                                          ));
+    }
+  else
+    error_code = false;
+  return (error_code);
 }
 
 /**
