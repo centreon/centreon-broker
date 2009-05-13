@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/11/09 Matthieu Kermagoret
+** Last update 05/13/09 Matthieu Kermagoret
 */
 
 #include "eventsubscriber.h"
@@ -21,25 +21,128 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
+/**
+ *  ServiceStatusEvent constructor.
+ */
 ServiceStatusEvent::ServiceStatusEvent()
 {
+  this->servicestatus_id = 0;
+  this->instance_id = 0;
+  this->service_object_id = 0;
+  this->status_update_time = 0;
+  this->current_state = 0;
+  this->has_been_checked = 0;
+  this->should_be_scheduled = 0;
+  this->current_check_attempt = 0;
+  this->max_check_attempts = 0;
+  this->last_check = 0;
+  this->next_check = 0;
+  this->check_type = 0;
+  this->last_state_change = 0;
+  this->last_hard_state_change = 0;
+  this->last_hard_state = 0;
+  this->last_time_ok = 0;
+  this->last_time_warning = 0;
+  this->last_time_unknown = 0;
+  this->last_time_critical = 0;
+  this->state_type = 0;
+  this->last_notification = 0;
+  this->next_notification = 0;
+  this->no_more_notifications = 0;
+  this->notifications_enabled = 0;
+  this->problem_has_been_acknowledged = 0;
+  this->acknowledgement_type = 0;
+  this->current_notification_number = 0;
+  this->passive_checks_enabled = 0;
+  this->active_checks_enabled = 0;
+  this->event_handler_enabled = 0;
+  this->flap_detection_enabled = 0;
+  this->is_flapping = 0;
+  this->percent_state_change = 0.0;
+  this->latency = 0.0;
+  this->execution_time = 0.0;
+  this->scheduled_downtime_depth = 0;
+  this->failure_prediction_enabled = 0;
+  this->process_performance_data = 0;
+  this->obsess_over_service = 0;
+  this->modified_service_attributes = 0;
+  this->normal_check_interval = 0.0;
+  this->retry_check_interval = 0.0;
+  this->check_timeperiod_object_id = 0;
 }
 
+/**
+ *  ServiceStatusEvent copy constructor.
+ */
 ServiceStatusEvent::ServiceStatusEvent(const ServiceStatusEvent& sse) : Event()
 {
   this->operator=(sse);
 }
 
+/**
+ *  ServiceStatusEvent destructor.
+ */
 ServiceStatusEvent::~ServiceStatusEvent()
 {
 }
 
+/**
+ *  ServiceStatusEvent operator= overload.
+ */
 ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
 {
-  // XXX : memcpy is not a proper way
+  // Unfortunately, because of the std::strings we can't use memcpy.
+  this->servicestatus_id = s.servicestatus_id;
+  this->instance_id = s.instance_id;
+  this->service_object_id = s.service_object_id;
+  this->status_update_time = s.status_update_time;
+  this->output = s.output;
+  this->perfdata = s.perfdata;
+  this->current_state = s.current_state;
+  this->has_been_checked = s.has_been_checked;
+  this->should_be_scheduled = s.should_be_scheduled;
+  this->current_check_attempt = s.current_check_attempt;
+  this->max_check_attempts = s.max_check_attempts;
+  this->last_check = s.last_check;
+  this->next_check = s.next_check;
+  this->check_type = s.check_type;
+  this->last_state_change = s.last_state_change;
+  this->last_hard_state_change = s.last_hard_state_change;
+  this->last_hard_state = s.last_hard_state;
+  this->last_time_ok = s.last_time_ok;
+  this->last_time_warning = s.last_time_warning;
+  this->last_time_unknown = s.last_time_unknown;
+  this->last_time_critical = s.last_time_critical;
+  this->state_type = s.state_type;
+  this->last_notification = s.last_notification;
+  this->next_notification = s.next_notification;
+  this->no_more_notifications = s.no_more_notifications;
+  this->notifications_enabled = s.notifications_enabled;
+  this->problem_has_been_acknowledged = s.problem_has_been_acknowledged;
+  this->acknowledgement_type = s.acknowledgement_type;
+  this->current_notification_number = s.current_notification_number;
+  this->passive_checks_enabled = s.passive_checks_enabled;
+  this->active_checks_enabled = s.active_checks_enabled;
+  this->event_handler_enabled = s.event_handler_enabled;
+  this->flap_detection_enabled = s.flap_detection_enabled;
+  this->is_flapping = s.is_flapping;
+  this->percent_state_change = s.percent_state_change;
+  this->latency = s.latency;
+  this->execution_time = s.execution_time;
+  this->scheduled_downtime_depth = s.scheduled_downtime_depth;
+  this->failure_prediction_enabled = s.failure_prediction_enabled;
+  this->process_performance_data = s.process_performance_data;
+  this->obsess_over_service = s.obsess_over_service;
+  this->modified_service_attributes = s.modified_service_attributes;
+  this->normal_check_interval = s.normal_check_interval;
+  this->retry_check_interval = s.retry_check_interval;
+  this->check_timeperiod_object_id = s.check_timeperiod_object_id;
   return (*this);
 }
 
+/**
+ *  Take the visitor and show him the inside.
+ */
 void ServiceStatusEvent::AcceptVisitor(EventSubscriber& es)
 {
   es.Visit(this->servicestatus_id);
@@ -92,6 +195,9 @@ void ServiceStatusEvent::AcceptVisitor(EventSubscriber& es)
   return ;
 }
 
+/**
+ *  Returns the type of the event.
+ */
 int ServiceStatusEvent::GetType() const
 {
   // XXX : hardcoded value

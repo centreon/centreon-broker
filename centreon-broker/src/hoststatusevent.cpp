@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/13/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -27,6 +27,48 @@ using namespace CentreonBroker;
  */
 HostStatusEvent::HostStatusEvent()
 {
+  this->hoststatus_id = 0;
+  this->instance_id = 0;
+  this->host_object_id = 0;
+  this->status_update_time = 0;
+  this->current_state = 0;
+  this->has_been_checked = 0;
+  this->should_be_scheduled = 0;
+  this->current_check_attempt = 0;
+  this->max_check_attempts = 0;
+  this->last_check = 0;
+  this->next_check = 0;
+  this->check_type = 0;
+  this->last_state_change = 0;
+  this->last_hard_state_change = 0;
+  this->last_hard_state = 0;
+  this->last_time_up = 0;
+  this->last_time_down = 0;
+  this->last_time_unreachable = 0;
+  this->state_type = 0;
+  this->last_notification = 0;
+  this->next_notification = 0;
+  this->no_more_notifications = 0;
+  this->notifications_enabled = 0;
+  this->problem_has_been_acknowledged = 0;
+  this->acknowledgement_type = 0;
+  this->current_notification_number = 0;
+  this->passive_checks_enabled = 0;
+  this->active_checks_enabled = 0;
+  this->event_handler_enabled = 0;
+  this->flap_detection_enabled = 0;
+  this->is_flapping = 0;
+  this->percent_state_change = 0.0;
+  this->latency = 0.0;
+  this->execution_time = 0.0;
+  this->scheduled_downtime_depth = 0;
+  this->failure_prediction_enabled = 0;
+  this->process_performance_data = 0;
+  this->obsess_over_host = 0;
+  this->modified_host_attributes = 0;
+  this->normal_check_interval = 0.0;
+  this->retry_check_interval = 0.0;
+  this->check_timeperiod_object_id = 0;
 }
 
 /**
@@ -49,7 +91,53 @@ HostStatusEvent::~HostStatusEvent()
  */
 HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
 {
-  // XXX : memcpy is not a proper way
+  // Unfortunately, because of the std::strings we can't use memcpy.
+  this->hoststatus_id = hse.hoststatus_id;
+  this->instance_id = hse.instance_id;
+  this->host_object_id = hse.host_object_id;
+  this->status_update_time = hse.status_update_time;
+  this->output = hse.output;
+  this->perfdata = hse.perfdata;
+  this->current_state = hse.current_state;
+  this->has_been_checked = hse.has_been_checked;
+  this->should_be_scheduled = hse.should_be_scheduled;
+  this->current_check_attempt = hse.current_check_attempt;
+  this->max_check_attempts = hse.max_check_attempts;
+  this->last_check = hse.last_check;
+  this->next_check = hse.next_check;
+  this->check_type = hse.check_type;
+  this->last_state_change = hse.last_state_change;
+  this->last_hard_state_change = hse.last_hard_state_change;
+  this->last_hard_state = hse.last_hard_state;
+  this->last_time_up = hse.last_time_up;
+  this->last_time_down = hse.last_time_down;
+  this->last_time_unreachable = hse.last_time_unreachable;
+  this->state_type = hse.state_type;
+  this->last_notification = hse.last_notification;
+  this->next_notification = hse.next_notification;
+  this->no_more_notifications = hse.no_more_notifications;
+  this->notifications_enabled = hse.notifications_enabled;
+  this->problem_has_been_acknowledged = hse.problem_has_been_acknowledged;
+  this->acknowledgement_type = hse.acknowledgement_type;
+  this->current_notification_number = hse.current_notification_number;
+  this->passive_checks_enabled = hse.passive_checks_enabled;
+  this->active_checks_enabled = hse.active_checks_enabled;
+  this->event_handler_enabled = hse.event_handler_enabled;
+  this->flap_detection_enabled = hse.flap_detection_enabled;
+  this->is_flapping = hse.is_flapping;
+  this->percent_state_change = hse.percent_state_change;
+  this->latency = hse.latency;
+  this->execution_time = hse.execution_time;
+  this->scheduled_downtime_depth = hse.scheduled_downtime_depth;
+  this->failure_prediction_enabled = hse.failure_prediction_enabled;
+  this->process_performance_data = hse.process_performance_data;
+  this->obsess_over_host = hse.obsess_over_host;
+  this->modified_host_attributes = hse.modified_host_attributes;
+  this->event_handler = hse.event_handler;
+  this->check_command = hse.check_command;
+  this->normal_check_interval = hse.normal_check_interval;
+  this->retry_check_interval = hse.retry_check_interval;
+  this->check_timeperiod_object_id = hse.check_timeperiod_object_id;
   return (*this);
 }
 
@@ -112,6 +200,7 @@ void HostStatusEvent::AcceptVisitor(EventSubscriber& ev)
  */
 int HostStatusEvent::GetType() const
 {
+  // XXX : hardcoded value
   return (0);
 }
 
