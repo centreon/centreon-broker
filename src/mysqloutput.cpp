@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/13/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -270,7 +270,6 @@ Event* MySQLOutput::WaitEvent()
   while (!this->exit_thread_ || !this->events_.empty())
     {
       bool wait_return;
-      struct timespec ts;
 
       // Try to fetch an event from the internal list.
       if (!this->events_.empty())
