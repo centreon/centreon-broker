@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/05/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/13/09 Matthieu Kermagoret
 */
 
 #ifndef CONDITIONVARIABLE_H_
@@ -39,7 +39,6 @@ namespace                       CentreonBroker
     };
 
    private:
-    int                         error_;
     Where                       where_;
 
    public:
@@ -51,10 +50,10 @@ namespace                       CentreonBroker
                                 ConditionVariableException(const
 							   std::string& str,
                                                            Where w = UNKNOWN);
-                                ~ConditionVariableException() throw();
+                                ~ConditionVariableException() throw ();
     ConditionVariableException& operator=(const ConditionVariableException& c);
-    Where                       GetWhere() const throw();
-    void                        SetWhere(Where w) throw();
+    Where                       GetWhere() const throw ();
+    void                        SetWhere(Where w) throw ();
   };
 
   /**
