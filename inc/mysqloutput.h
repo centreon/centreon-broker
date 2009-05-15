@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/14/09 Matthieu Kermagoret
 */
 
 #ifndef MYSQLOUTPUT_H_
@@ -26,10 +26,12 @@
 
 namespace                      CentreonBroker
 {
+  class                        HostStatusEvent;
+  class                        ServiceStatusEvent;
+
   class                        MySQLOutput
     : private EventSubscriber, private Thread
     {
-     private:
       // Initialization parameters
       std::string              host_;
       std::string              user_;
@@ -45,9 +47,6 @@ namespace                      CentreonBroker
       std::list<Event*>        events_;
       ConditionVariable        eventscv_;
       Mutex                    eventsm_;
-      // Used to build the argument list
-      sql::PreparedStatement*  cur_stmt_;
-      int                      cur_arg_;
       // Thread specific parameter
       volatile bool            exit_thread_;
 
@@ -58,17 +57,15 @@ namespace                      CentreonBroker
       void                     Disconnect();
       sql::PreparedStatement** PrepareQueries(sql::Connection& conn)
                                  throw (Exception);
+      // XXX : remove ProcessEvent
       void                     ProcessEvent(Event* event);
+      sql::PreparedStatement*  ProcessHostStatusEvent(HostStatusEvent* hse);
+      sql::PreparedStatement*  ProcessServiceStatusEvent(
+                                 ServiceStatusEvent* sse);
       Event*                   WaitEvent();
 
       // EventSubscriber
       void                     OnEvent(Event* e) throw ();
-      void                     Visit(const char* arg);
-      void                     Visit(double arg);
-      void                     Visit(int arg);
-      void                     Visit(short arg);
-      void                     Visit(const std::string& arg);
-      void                     Visit(time_t arg);
 
       // Thread
       int                      Core();

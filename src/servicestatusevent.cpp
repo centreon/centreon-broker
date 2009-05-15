@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/15/09 Matthieu Kermagoret
 */
 
 #include "eventsubscriber.h"
@@ -26,9 +26,6 @@ using namespace CentreonBroker;
  */
 ServiceStatusEvent::ServiceStatusEvent()
 {
-  this->servicestatus_id = 0;
-  this->instance_id = 0;
-  this->service_object_id = 0;
   this->status_update_time = 0;
   this->current_state = 0;
   this->has_been_checked = 0;
@@ -92,9 +89,9 @@ ServiceStatusEvent::~ServiceStatusEvent()
 ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
 {
   // Unfortunately, because of the std::strings we can't use memcpy.
-  this->servicestatus_id = s.servicestatus_id;
-  this->instance_id = s.instance_id;
-  this->service_object_id = s.service_object_id;
+  Event::operator=(s);
+  this->host = s.host;
+  this->service = s.service;
   this->status_update_time = s.status_update_time;
   this->output = s.output;
   this->perfdata = s.perfdata;
@@ -141,95 +138,400 @@ ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
 }
 
 /**
- *  Take the visitor and show him the inside.
- */
-void ServiceStatusEvent::AcceptVisitor(EventSubscriber& es)
-{
-  es.Visit(this->servicestatus_id);
-  es.Visit(this->instance_id);
-  es.Visit(this->service_object_id);
-  es.Visit(this->status_update_time);
-  es.Visit(this->output);
-  es.Visit(this->perfdata);
-  es.Visit(this->current_state);
-  es.Visit(this->has_been_checked);
-  es.Visit(this->should_be_scheduled);
-  es.Visit(this->current_check_attempt);
-  es.Visit(this->max_check_attempts);
-  es.Visit(this->last_check);
-  es.Visit(this->next_check);
-  es.Visit(this->check_type);
-  es.Visit(this->last_state_change);
-  es.Visit(this->last_hard_state_change);
-  es.Visit(this->last_hard_state);
-  es.Visit(this->last_time_ok);
-  es.Visit(this->last_time_warning);
-  es.Visit(this->last_time_unknown);
-  es.Visit(this->last_time_critical);
-  es.Visit(this->state_type);
-  es.Visit(this->last_notification);
-  es.Visit(this->next_notification);
-  es.Visit(this->no_more_notifications);
-  es.Visit(this->notifications_enabled);
-  es.Visit(this->problem_has_been_acknowledged);
-  es.Visit(this->acknowledgement_type);
-  es.Visit(this->current_notification_number);
-  es.Visit(this->passive_checks_enabled);
-  es.Visit(this->active_checks_enabled);
-  es.Visit(this->event_handler_enabled);
-  es.Visit(this->flap_detection_enabled);
-  es.Visit(this->is_flapping);
-  es.Visit(this->percent_state_change);
-  es.Visit(this->latency);
-  es.Visit(this->execution_time);
-  es.Visit(this->scheduled_downtime_depth);
-  es.Visit(this->failure_prediction_enabled);
-  es.Visit(this->process_performance_data);
-  es.Visit(this->obsess_over_service);
-  es.Visit(this->modified_service_attributes);
-  es.Visit(this->event_handler);
-  es.Visit(this->check_command);
-  es.Visit(this->normal_check_interval);
-  es.Visit(this->retry_check_interval);
-  es.Visit(this->check_timeperiod_object_id);
-  return ;
-}
-
-/**
  *  Returns the type of the event.
  */
-int ServiceStatusEvent::GetType() const
+int ServiceStatusEvent::GetType() const throw ()
 {
   // XXX : hardcoded value
   return (1);
 }
 
 /**
- *  Sets the servicestatus_id.
+ *  Returns the host.
  */
-void ServiceStatusEvent::SetServiceStatusId(int ssi)
+const std::string& ServiceStatusEvent::GetHost() const throw ()
 {
-  this->servicestatus_id = ssi;
+  return (this->host);
+}
+
+/**
+ *  Returns the service.
+ */
+const std::string& ServiceStatusEvent::GetService() const throw ()
+{
+  return (this->service);
+}
+
+/**
+ *  Returns the status_update_time.
+ */
+time_t ServiceStatusEvent::GetStatusUpdateTime() const throw ()
+{
+  return (this->status_update_time);
+}
+
+/**
+ *  Returns the output.
+ */
+const std::string& ServiceStatusEvent::GetOutput() const throw ()
+{
+  return (this->output);
+}
+
+/**
+ *  Returns the perfdata.
+ */
+const std::string& ServiceStatusEvent::GetPerfdata() const throw ()
+{
+  return (this->perfdata);
+}
+
+/**
+ *  Returns the current_state.
+ */
+short ServiceStatusEvent::GetCurrentState() const throw ()
+{
+  return (this->current_state);
+}
+
+/**
+ *  Returns the has_been_checked.
+ */
+short ServiceStatusEvent::GetHasBeenChecked() const throw ()
+{
+  return (this->has_been_checked);
+}
+
+/**
+ *  Returns the should_be_scheduled.
+ */
+short ServiceStatusEvent::GetShouldBeScheduled() const throw ()
+{
+  return (this->should_be_scheduled);
+}
+
+/**
+ *  Returns the current_check_attempt.
+ */
+short ServiceStatusEvent::GetCurrentCheckAttempt() const throw ()
+{
+  return (this->current_check_attempt);
+}
+
+/**
+ *  Returns the max_check_attempts.
+ */
+short ServiceStatusEvent::GetMaxCheckAttempts() const throw ()
+{
+  return (this->max_check_attempts);
+}
+
+/**
+ *  Returns the last_check.
+ */
+time_t ServiceStatusEvent::GetLastCheck() const throw ()
+{
+  return (this->last_check);
+}
+
+/**
+ *  Returns the next_check.
+ */
+time_t ServiceStatusEvent::GetNextCheck() const throw ()
+{
+  return (this->next_check);
+}
+
+/**
+ *  Returns the check_type.
+ */
+short ServiceStatusEvent::GetCheckType() const throw ()
+{
+  return (this->check_type);
+}
+
+/**
+ *  Returns the last_state_change.
+ */
+time_t ServiceStatusEvent::GetLastStateChange() const throw ()
+{
+  return (this->last_state_change);
+}
+
+/**
+ *  Returns the last_hard_state_change.
+ */
+time_t ServiceStatusEvent::GetLastHardStateChange() const throw ()
+{
+  return (this->last_hard_state_change);
+}
+
+/**
+ *  Returns the last_hard_state.
+ */
+short ServiceStatusEvent::GetLastHardState() const throw ()
+{
+  return (this->last_hard_state);
+}
+
+/**
+ *  Returns the last_time_ok.
+ */
+time_t ServiceStatusEvent::GetLastTimeOk() const throw ()
+{
+  return (this->last_time_ok);
+}
+
+/**
+ *  Returns the last_time_warning.
+ */
+time_t ServiceStatusEvent::GetLastTimeWarning() const throw ()
+{
+  return (this->last_time_warning);
+}
+
+/**
+ *  Returns the last_time_unknown.
+ */
+time_t ServiceStatusEvent::GetLastTimeUnknown() const throw ()
+{
+  return (this->last_time_unknown);
+}
+
+/**
+ *  Returns the last_time_critical.
+ */
+time_t ServiceStatusEvent::GetLastTimeCritical() const throw ()
+{
+  return (this->last_time_critical);
+}
+
+/**
+ *  Returns the state_type.
+ */
+short ServiceStatusEvent::GetStateType() const throw ()
+{
+  return (this->state_type);
+}
+
+/**
+ *  Returns the last_notification.
+ */
+time_t ServiceStatusEvent::GetLastNotification() const throw ()
+{
+  return (this->last_notification);
+}
+
+/**
+ *  Returns the next_notification.
+ */
+time_t ServiceStatusEvent::GetNextNotification() const throw ()
+{
+  return (this->next_notification);
+}
+
+/**
+ *  Returns the no_more_notifications.
+ */
+short ServiceStatusEvent::GetNoMoreNotifications() const throw ()
+{
+  return (this->no_more_notifications);
+}
+
+/**
+ *  Returns the notifications_enabled.
+ */
+short ServiceStatusEvent::GetNotificationsEnabled() const throw ()
+{
+  return (this->notifications_enabled);
+}
+
+/**
+ *  Returns the problem_has_been_acknowledged.
+ */
+short ServiceStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
+{
+  return (this->problem_has_been_acknowledged);
+}
+
+/**
+ *  Returns the acknowledgement_type.
+ */
+short ServiceStatusEvent::GetAcknowledgementType() const throw ()
+{
+  return (this->acknowledgement_type);
+}
+
+/**
+ *  Returns the current_notification_number.
+ */
+short ServiceStatusEvent::GetCurrentNotificationNumber() const throw ()
+{
+  return (this->current_notification_number);
+}
+
+/**
+ *  Returns the passive_checks_enabled.
+ */
+short ServiceStatusEvent::GetPassiveChecksEnabled() const throw ()
+{
+  return (this->passive_checks_enabled);
+}
+
+/**
+ *  Returns the active_checks_enabled.
+ */
+short ServiceStatusEvent::GetActiveChecksEnabled() const throw ()
+{
+  return (this->active_checks_enabled);
+}
+
+/**
+ *  Returns the event_handler_enabled.
+ */
+short ServiceStatusEvent::GetEventHandlerEnabled() const throw ()
+{
+  return (this->event_handler_enabled);
+}
+
+/**
+ *  Returns the flap_detection_enabled.
+ */
+short ServiceStatusEvent::GetFlapDetectionEnabled() const throw ()
+{
+  return (this->flap_detection_enabled);
+}
+
+/**
+ *  Returns the is_flapping.
+ */
+short ServiceStatusEvent::GetIsFlapping() const throw ()
+{
+  return (this->is_flapping);
+}
+
+/**
+ *  Returns the percent_state_change.
+ */
+double ServiceStatusEvent::GetPercentStateChange() const throw ()
+{
+  return (this->percent_state_change);
+}
+
+/**
+ *  Returns the latency.
+ */
+double ServiceStatusEvent::GetLatency() const throw ()
+{
+  return (this->latency);
+}
+
+/**
+ *  Returns the execution_time.
+ */
+double ServiceStatusEvent::GetExecutionTime() const throw ()
+{
+  return (this->execution_time);
+}
+
+/**
+ *  Returns the scheduled_downtime_depth.
+ */
+short ServiceStatusEvent::GetScheduledDowntimeDepth() const throw ()
+{
+  return (this->scheduled_downtime_depth);
+}
+
+/**
+ *  Returns the failure_prediction_enabled.
+ */
+short ServiceStatusEvent::GetFailurePredictionEnabled() const throw ()
+{
+  return (this->failure_prediction_enabled);
+}
+
+/**
+ *  Returns the process_performance_data.
+ */
+short ServiceStatusEvent::GetProcessPerformanceData() const throw ()
+{
+  return (this->process_performance_data);
+}
+
+/**
+ *  Returns the obsess_over_service.
+ */
+short ServiceStatusEvent::GetObsessOverService() const throw ()
+{
+  return (this->obsess_over_service);
+}
+
+/**
+ *  Returns the modified_service_attributes.
+ */
+int ServiceStatusEvent::GetModifiedServiceAttributes() const throw ()
+{
+  return (this->modified_service_attributes);
+}
+
+/**
+ *  Returns the event_handler.
+ */
+const std::string& ServiceStatusEvent::GetEventHandler() const throw ()
+{
+  return (this->event_handler);
+}
+
+/**
+ *  Returns the check_command.
+ */
+const std::string& ServiceStatusEvent::GetCheckCommand() const throw ()
+{
+  return (this->check_command);
+}
+
+/**
+ *  Returns the normal_check_interval.
+ */
+double ServiceStatusEvent::GetNormalCheckInterval() const throw ()
+{
+  return (this->normal_check_interval);
+}
+
+/**
+ *  Returns the retry_check_interval.
+ */
+double ServiceStatusEvent::GetRetryCheckInterval() const throw ()
+{
+  return (this->retry_check_interval);
+}
+
+/**
+ *  Returns the check_timeperiod_object_id.
+ */
+int ServiceStatusEvent::GetCheckTimeperiodObjectId() const throw ()
+{
+  return (this->check_timeperiod_object_id);
+}
+
+/**
+ *  Sets the host on which the event appeared.
+ */
+void ServiceStatusEvent::SetHost(const std::string& h)
+{
+  this->host = h;
   return ;
 }
 
 /**
- *  Sets the instance_id.
+ *  Sets the service to which this event refers.
  */
-void ServiceStatusEvent::SetInstanceId(short ii)
+void ServiceStatusEvent::SetService(const std::string& s)
 {
-  this->instance_id = ii;
+  this->service = s;
   return ;
 }
 
-/**
- *  Sets the host_object_id.
- */
-void ServiceStatusEvent::SetServiceObjectId(int soi)
-{
-  this->service_object_id = soi;
-  return ;
-}
 /**
  *  Sets the status_update_time.
  */
