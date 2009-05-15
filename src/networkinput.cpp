@@ -17,9 +17,9 @@
 #include <iostream>
 #include <unistd.h>
 #include "eventpublisher.h"
-#include "hoststatusevent.h"
+#include "host_status_event.h"
 #include "networkinput.h"
-#include "servicestatusevent.h"
+#include "service_status_event.h"
 
 using namespace CentreonBroker;
 

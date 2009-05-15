@@ -19,9 +19,9 @@
 #include <sstream>
 #include <unistd.h>
 #include "event.h"
-#include "hoststatusevent.h"
+#include "host_status_event.h"
 #include "mysqloutput.h"
-#include "servicestatusevent.h"
+#include "service_status_event.h"
 
 // XXX
 #include <mysql_driver.h>
