@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/15/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -48,22 +48,22 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 
 NetworkInput::NetworkInput()
 {
-  this->fd = -1;
+  this->fd_ = -1;
 }
 
 NetworkInput::~NetworkInput()
 {
-  if (this->fd >= 0)
+  if (this->fd_ >= 0)
     {
-      close(this->fd);
+      close(this->fd_);
       this->Join();
     }
 }
 
-static void HandleHostStatus(FILE* stream)
+void NetworkInput::HandleHostStatus(FILE* stream)
 {
   char buffer[2048];
-  const char* types = ">>>>>SSsssssttsttstttsttsssssssssdddssssiSSddi";
+  const char* types = ">>>>SSSsssssttsttstttsttsssssssssdddssssiSSddi";
   static void (HostStatusEvent::* const set_double[])(double) =
     {
       &HostStatusEvent::SetPercentStateChange,
@@ -106,6 +106,7 @@ static void HandleHostStatus(FILE* stream)
   int cur_set_short;
   static void (HostStatusEvent::* const set_str[])(const std::string&) =
     {
+      &HostStatusEvent::SetHost,
       &HostStatusEvent::SetOutput,
       &HostStatusEvent::SetPerfdata,
       &HostStatusEvent::SetEventHandler,
@@ -125,8 +126,6 @@ static void HandleHostStatus(FILE* stream)
       &HostStatusEvent::SetNextNotification
     };
   int cur_set_timet;
-  static int host_status_id = 1;
-  static int host_object_id = 1;
 
   cur_set_double = cur_set_int = cur_set_short = cur_set_str = cur_set_timet = 0;
   fgets(buffer, sizeof(buffer), stream);
@@ -136,8 +135,7 @@ static void HandleHostStatus(FILE* stream)
       HostStatusEvent* hse;
 
       hse = new HostStatusEvent;
-      hse->SetHostStatusId(host_status_id++);
-      hse->SetHostObjectId(host_object_id++);
+      hse->SetNagiosInstance(this->instance_);
       for (int i = 0; types[i]; i++)
 	{
 	  switch (types[i])
@@ -174,10 +172,13 @@ int NetworkInput::Core()
 {
   char buffer[2048];
   FILE* stream;
-  static int id = 1;
 
   // XXX : those are test stuff
-  stream = fdopen(this->fd, "r+");
+  stream = fdopen(this->fd_, "r+");
+  for (int i = 0; i < 11; i++)
+    fgets(buffer, sizeof(buffer), stream);
+  buffer[strlen(buffer) - 1] = '\0';
+  this->instance_ = strchr(buffer, ':') + 1;
   while (fgets(buffer, sizeof(buffer), stream))
     {
       if (!strcmp(buffer, "212:\n"))
@@ -189,13 +190,16 @@ int NetworkInput::Core()
 	    {
 	      ServiceStatusEvent *sse = new ServiceStatusEvent;
 
-	      sse->SetServiceStatusId(id++);
-	      sse->SetServiceObjectId(id++);
+	      sse->SetNagiosInstance(this->instance_);
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_FLAGS
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_ATTRIBUTES
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_TIMESTAMP
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_HOST
+	      buffer[strlen(buffer) - 1] = '\0';
+	      sse->SetHost(buffer);
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_SERVICE
+	      buffer[strlen(buffer) - 1] = '\0';
+	      sse->SetService(buffer);
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_OUTPUT
 	      buffer[strlen(buffer) - 1] = '\0';
 	      sse->SetOutput(strchr(buffer, '=') + 1);
@@ -335,7 +339,7 @@ int NetworkInput::Core()
 
 void NetworkInput::SetFD(int fd)
 {
-  this->fd = fd;
+  this->fd_ = fd;
   this->Run();
   return ;
 }

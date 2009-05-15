@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/15/09 Matthieu Kermagoret
 */
 
 #ifndef SERVICESTATUSEVENT_H_
@@ -27,9 +27,8 @@ namespace               CentreonBroker
   class                 ServiceStatusEvent : public Event
   {
    private:
-    int                 servicestatus_id;
-    short               instance_id;
-    int                 service_object_id;
+    std::string         host;
+    std::string         service;
     time_t              status_update_time;
     std::string         output;
     std::string         perfdata;
@@ -80,11 +79,57 @@ namespace               CentreonBroker
                         ServiceStatusEvent(const ServiceStatusEvent& sse);
                         ~ServiceStatusEvent();
     ServiceStatusEvent& operator=(const ServiceStatusEvent& sse);
-    void                AcceptVisitor(EventSubscriber& es);
-    int                 GetType() const;
-    void                SetServiceStatusId(int ssi);
-    void                SetInstanceId(short ii);
-    void                SetServiceObjectId(int soi);
+    // Getters
+    int                 GetType() const throw ();
+    const std::string&  GetHost() const throw ();
+    const std::string&  GetService() const throw ();
+    time_t              GetStatusUpdateTime() const throw ();
+    const std::string&  GetOutput() const throw ();
+    const std::string&  GetPerfdata() const throw ();
+    short               GetCurrentState() const throw ();
+    short               GetHasBeenChecked() const throw ();
+    short               GetShouldBeScheduled() const throw ();
+    short               GetCurrentCheckAttempt() const throw ();
+    short               GetMaxCheckAttempts() const throw ();
+    time_t              GetLastCheck() const throw ();
+    time_t              GetNextCheck() const throw ();
+    short               GetCheckType() const throw ();
+    time_t              GetLastStateChange() const throw ();
+    time_t              GetLastHardStateChange() const throw ();
+    short               GetLastHardState() const throw ();
+    time_t              GetLastTimeOk() const throw ();
+    time_t              GetLastTimeWarning() const throw ();
+    time_t              GetLastTimeUnknown() const throw ();
+    time_t              GetLastTimeCritical() const throw ();
+    short               GetStateType() const throw ();
+    time_t              GetLastNotification() const throw ();
+    time_t              GetNextNotification() const throw ();
+    short               GetNoMoreNotifications() const throw ();
+    short               GetNotificationsEnabled() const throw ();
+    short               GetProblemHasBeenAcknowledged() const throw ();
+    short               GetAcknowledgementType() const throw ();
+    short               GetCurrentNotificationNumber() const throw ();
+    short               GetPassiveChecksEnabled() const throw ();
+    short               GetActiveChecksEnabled() const throw ();
+    short               GetEventHandlerEnabled() const throw ();
+    short               GetFlapDetectionEnabled() const throw ();
+    short               GetIsFlapping() const throw ();
+    double              GetPercentStateChange() const throw ();
+    double              GetLatency() const throw ();
+    double              GetExecutionTime() const throw ();
+    short               GetScheduledDowntimeDepth() const throw ();
+    short               GetFailurePredictionEnabled() const throw ();
+    short               GetProcessPerformanceData() const throw ();
+    short               GetObsessOverService() const throw ();
+    int                 GetModifiedServiceAttributes() const throw ();
+    const std::string&  GetEventHandler() const throw ();
+    const std::string&  GetCheckCommand() const throw ();
+    double              GetNormalCheckInterval() const throw ();
+    double              GetRetryCheckInterval() const throw ();
+    int                 GetCheckTimeperiodObjectId() const throw ();
+    // Setters
+    void                SetHost(const std::string& h);
+    void                SetService(const std::string& s);
     void                SetStatusUpdateTime(time_t sut);
     void                SetOutput(const std::string& o);
     void                SetPerfdata(const std::string& p);

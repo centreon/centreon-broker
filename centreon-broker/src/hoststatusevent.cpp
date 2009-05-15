@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/15/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -27,9 +27,6 @@ using namespace CentreonBroker;
  */
 HostStatusEvent::HostStatusEvent()
 {
-  this->hoststatus_id = 0;
-  this->instance_id = 0;
-  this->host_object_id = 0;
   this->status_update_time = 0;
   this->current_state = 0;
   this->has_been_checked = 0;
@@ -92,9 +89,6 @@ HostStatusEvent::~HostStatusEvent()
 HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
 {
   // Unfortunately, because of the std::strings we can't use memcpy.
-  this->hoststatus_id = hse.hoststatus_id;
-  this->instance_id = hse.instance_id;
-  this->host_object_id = hse.host_object_id;
   this->status_update_time = hse.status_update_time;
   this->output = hse.output;
   this->perfdata = hse.perfdata;
@@ -142,92 +136,372 @@ HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
 }
 
 /**
- *  Take the visitor and show him the inside.
- */
-void HostStatusEvent::AcceptVisitor(EventSubscriber& ev)
-{
-  ev.Visit(this->hoststatus_id);
-  ev.Visit(this->instance_id);
-  ev.Visit(this->host_object_id);
-  ev.Visit(this->status_update_time);
-  ev.Visit(this->output);
-  ev.Visit(this->perfdata);
-  ev.Visit(this->current_state);
-  ev.Visit(this->has_been_checked);
-  ev.Visit(this->should_be_scheduled);
-  ev.Visit(this->current_check_attempt);
-  ev.Visit(this->max_check_attempts);
-  ev.Visit(this->last_check);
-  ev.Visit(this->next_check);
-  ev.Visit(this->check_type);
-  ev.Visit(this->last_state_change);
-  ev.Visit(this->last_hard_state_change);
-  ev.Visit(this->last_hard_state);
-  ev.Visit(this->last_time_up);
-  ev.Visit(this->last_time_down);
-  ev.Visit(this->last_time_unreachable);
-  ev.Visit(this->state_type);
-  ev.Visit(this->last_notification);
-  ev.Visit(this->next_notification);
-  ev.Visit(this->no_more_notifications);
-  ev.Visit(this->notifications_enabled);
-  ev.Visit(this->problem_has_been_acknowledged);
-  ev.Visit(this->acknowledgement_type);
-  ev.Visit(this->current_notification_number);
-  ev.Visit(this->passive_checks_enabled);
-  ev.Visit(this->active_checks_enabled);
-  ev.Visit(this->event_handler_enabled);
-  ev.Visit(this->flap_detection_enabled);
-  ev.Visit(this->is_flapping);
-  ev.Visit(this->percent_state_change);
-  ev.Visit(this->latency);
-  ev.Visit(this->execution_time);
-  ev.Visit(this->scheduled_downtime_depth);
-  ev.Visit(this->failure_prediction_enabled);
-  ev.Visit(this->process_performance_data);
-  ev.Visit(this->obsess_over_host);
-  ev.Visit(this->modified_host_attributes);
-  ev.Visit(this->event_handler);
-  ev.Visit(this->check_command);
-  ev.Visit(this->normal_check_interval);
-  ev.Visit(this->retry_check_interval);
-  ev.Visit(this->check_timeperiod_object_id);
-  return ;
-}
-
-/**
  *  Returns the type of the event.
  */
-int HostStatusEvent::GetType() const
+int HostStatusEvent::GetType() const throw ()
 {
   // XXX : hardcoded value
   return (0);
 }
 
 /**
- *  Sets the hoststatus_id.
+ *  Returns the host.
  */
-void HostStatusEvent::SetHostStatusId(int hsi)
+const std::string& HostStatusEvent::GetHost() const throw ()
 {
-  this->hoststatus_id = hsi;
-  return ;
+  return (this->host);
 }
 
 /**
- *  Sets the instance_id.
+ *  Returns the status_update_time.
  */
-void HostStatusEvent::SetInstanceId(short ii)
+time_t HostStatusEvent::GetStatusUpdateTime() const throw ()
 {
-  this->instance_id = ii;
-  return ;
+  return (this->status_update_time);
 }
 
 /**
- *  Sets the host_object_id.
+ *  Returns the output.
  */
-void HostStatusEvent::SetHostObjectId(int hoi)
+const std::string& HostStatusEvent::GetOutput() const throw ()
 {
-  this->host_object_id = hoi;
+  return (this->output);
+}
+
+/**
+ *  Returns the perfdata.
+ */
+const std::string& HostStatusEvent::GetPerfdata() const throw ()
+{
+  return (this->perfdata);
+}
+
+/**
+ *  Returns the current_state.
+ */
+short HostStatusEvent::GetCurrentState() const throw ()
+{
+  return (this->current_state);
+}
+
+/**
+ *  Returns the has_been_checked.
+ */
+short HostStatusEvent::GetHasBeenChecked() const throw ()
+{
+  return (this->has_been_checked);
+}
+
+/**
+ *  Returns the should_be_scheduled.
+ */
+short HostStatusEvent::GetShouldBeScheduled() const throw ()
+{
+  return (this->should_be_scheduled);
+}
+
+/**
+ *  Returns the current_check_attempt.
+ */
+short HostStatusEvent::GetCurrentCheckAttempt() const throw ()
+{
+  return (this->current_check_attempt);
+}
+
+/**
+ *  Returns the max_check_attempts.
+ */
+short HostStatusEvent::GetMaxCheckAttempts() const throw ()
+{
+  return (this->max_check_attempts);
+}
+
+/**
+ *  Returns the last_check.
+ */
+time_t HostStatusEvent::GetLastCheck() const throw ()
+{
+  return (this->last_check);
+}
+
+/**
+ *  Returns the next_check.
+ */
+time_t HostStatusEvent::GetNextCheck() const throw ()
+{
+  return (this->next_check);
+}
+
+/**
+ *  Returns the check_type.
+ */
+short HostStatusEvent::GetCheckType() const throw ()
+{
+  return (this->check_type);
+}
+
+/**
+ *  Returns the last_state_change.
+ */
+time_t HostStatusEvent::GetLastStateChange() const throw ()
+{
+  return (this->last_state_change);
+}
+
+/**
+ *  Returns the last_hard_state_change.
+ */
+time_t HostStatusEvent::GetLastHardStateChange() const throw ()
+{
+  return (this->last_hard_state_change);
+}
+
+/**
+ *  Returns the last_hard_state.
+ */
+short HostStatusEvent::GetLastHardState() const throw ()
+{
+  return (this->last_hard_state);
+}
+
+/**
+ *  Returns the last_time_up.
+ */
+time_t HostStatusEvent::GetLastTimeUp() const throw ()
+{
+  return (this->last_time_up);
+}
+
+/**
+ *  Returns the last_time_down.
+ */
+time_t HostStatusEvent::GetLastTimeDown() const throw ()
+{
+  return (this->last_time_down);
+}
+
+/**
+ *  Returns the last_time_unreachable.
+ */
+time_t HostStatusEvent::GetLastTimeUnreachable() const throw ()
+{
+  return (this->last_time_unreachable);
+}
+
+/**
+ *  Returns the state_type.
+ */
+short HostStatusEvent::GetStateType() const throw ()
+{
+  return (this->state_type);
+}
+
+/**
+ *  Returns the last_notification.
+ */
+time_t HostStatusEvent::GetLastNotification() const throw ()
+{
+  return (this->last_notification);
+}
+
+/**
+ *  Returns the next_notification.
+ */
+time_t HostStatusEvent::GetNextNotification() const throw ()
+{
+  return (this->next_notification);
+}
+
+/**
+ *  Returns the no_more_notifications.
+ */
+short HostStatusEvent::GetNoMoreNotifications() const throw ()
+{
+  return (this->no_more_notifications);
+}
+
+/**
+ *  Returns the notifications_enabled.
+ */
+short HostStatusEvent::GetNotificationsEnabled() const throw ()
+{
+  return (this->notifications_enabled);
+}
+
+/**
+ *  Returns the problem_has_been_acknowledged.
+ */
+short HostStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
+{
+  return (this->problem_has_been_acknowledged);
+}
+
+/**
+ *  Returns the acknowledgement_type.
+ */
+short HostStatusEvent::GetAcknowledgementType() const throw ()
+{
+  return (this->acknowledgement_type);
+}
+
+/**
+ *  Returns the current_notification_number.
+ */
+short HostStatusEvent::GetCurrentNotificationNumber() const throw ()
+{
+  return (this->current_notification_number);
+}
+
+/**
+ *  Returns the passive_checks_enabled.
+ */
+short HostStatusEvent::GetPassiveChecksEnabled() const throw ()
+{
+  return (this->passive_checks_enabled);
+}
+
+/**
+ *  Returns the active_checks_enabled.
+ */
+short HostStatusEvent::GetActiveChecksEnabled() const throw ()
+{
+  return (this->active_checks_enabled);
+}
+
+/**
+ *  Returns the event_handler_enabled.
+ */
+short HostStatusEvent::GetEventHandlerEnabled() const throw ()
+{
+  return (this->event_handler_enabled);
+}
+
+/**
+ *  Returns the flap_detection_enabled.
+ */
+short HostStatusEvent::GetFlapDetectionEnabled() const throw ()
+{
+  return (this->flap_detection_enabled);
+}
+
+/**
+ *  Returns the is_flapping.
+ */
+short HostStatusEvent::GetIsFlapping() const throw ()
+{
+  return (this->is_flapping);
+}
+
+/**
+ *  Returns the percent_state_change.
+ */
+double HostStatusEvent::GetPercentStateChange() const throw ()
+{
+  return (this->percent_state_change);
+}
+
+/**
+ *  Returns the latency.
+ */
+double HostStatusEvent::GetLatency() const throw ()
+{
+  return (this->latency);
+}
+
+/**
+ *  Returns the execution_time.
+ */
+double HostStatusEvent::GetExecutionTime() const throw ()
+{
+  return (this->execution_time);
+}
+
+/**
+ *  Returns the scheduled_downtime_depth.
+ */
+short HostStatusEvent::GetScheduledDowntimeDepth() const throw ()
+{
+  return (this->scheduled_downtime_depth);
+}
+
+/**
+ *  Returns the failure_prediction_enabled.
+ */
+short HostStatusEvent::GetFailurePredictionEnabled() const throw ()
+{
+  return (this->failure_prediction_enabled);
+}
+
+/**
+ *  Returns the process_performance_data.
+ */
+short HostStatusEvent::GetProcessPerformanceData() const throw ()
+{
+  return (this->process_performance_data);
+}
+
+/**
+ *  Returns the obsess_over_host.
+ */
+short HostStatusEvent::GetObsessOverHost() const throw ()
+{
+  return (this->obsess_over_host);
+}
+
+/**
+ *  Returns the modified_host_attributes.
+ */
+int HostStatusEvent::GetModifiedHostAttributes() const throw ()
+{
+  return (this->modified_host_attributes);
+}
+
+/**
+ *  Returns the event_handler.
+ */
+const std::string& HostStatusEvent::GetEventHandler() const throw ()
+{
+  return (this->event_handler);
+}
+
+/**
+ *  Returns the check_command.
+ */
+const std::string& HostStatusEvent::GetCheckCommand() const throw ()
+{
+  return (this->check_command);
+}
+
+/**
+ *  Returns the normal_check_interval.
+ */
+double HostStatusEvent::GetNormalCheckInterval() const throw ()
+{
+  return (this->normal_check_interval);
+}
+
+/**
+ *  Returns the retry_check_interval.
+ */
+double HostStatusEvent::GetRetryCheckInterval() const throw ()
+{
+  return (this->retry_check_interval);
+}
+
+/**
+ *  Returns the check_timeperiod_object_id.
+ */
+int HostStatusEvent::GetCheckTimeperiodObjectId() const throw ()
+{
+  return (this->check_timeperiod_object_id);
+}
+
+/**
+ *  Sets the host.
+ */
+void HostStatusEvent::SetHost(const std::string& h)
+{
+  this->host = h;
   return ;
 }
 

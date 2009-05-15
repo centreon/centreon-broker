@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/14/09 Matthieu Kermagoret
 */
 
 #include <cerrno>
@@ -35,7 +35,7 @@ int main()
   mo->Init("localhost", "root", "123456789", "ndo");
   fd = socket(PF_INET, SOCK_STREAM, 0);
   sin.sin_family = AF_INET;
-  sin.sin_port = htons(5668);
+  sin.sin_port = htons(5667);
   sin.sin_addr.s_addr = INADDR_ANY;
   bind(fd, (struct sockaddr*)&sin, sizeof(sin));
   fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);

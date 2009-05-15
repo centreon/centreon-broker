@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/14/09 Matthieu Kermagoret
 */
 
 #include "event.h"
@@ -21,7 +21,7 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Event constructor.
+ *  Event default constructor.
  */
 Event::Event()
 {
@@ -29,12 +29,11 @@ Event::Event()
 }
 
 /**
- *  Event copy constructor (does nothing more than standard constructor).
+ *  Event copy constructor.
  */
 Event::Event(const Event& event)
 {
-  (void)event;
-  this->readers_ = 0;
+  operator=(event);
 }
 
 /**
@@ -45,11 +44,12 @@ Event::~Event()
 }
 
 /**
- *  Event operator= overload (does nothing).
+ *  Event operator= overload. Only copy the event instance.
  */
 Event& Event::operator=(const Event& event)
 {
   (void)event;
+  this->nagios_instance_ = event.nagios_instance_;
   return (*this);
 }
 
@@ -69,6 +69,14 @@ void Event::AddReader(EventSubscriber* es)
 }
 
 /**
+ *  Returns the instance on which the event occured.
+ */
+const std::string& Event::GetNagiosInstance() const throw ()
+{
+  return (this->nagios_instance_);
+}
+
+/**
  *  Remove an event reader. The current implementation only counts the number
  *  of calls made to AddReader and RemoveReader and if the numbers equal, the
  *  object self-destruct.
@@ -84,5 +92,14 @@ void Event::RemoveReader(EventSubscriber* es)
     }
   else
     this->mutex_.Unlock();
+  return ;
+}
+
+/**
+ *  Sets the Nagios instance on which the event occured.
+ */
+void Event::SetNagiosInstance(const std::string& inst)
+{
+  this->nagios_instance_ = inst;
   return ;
 }

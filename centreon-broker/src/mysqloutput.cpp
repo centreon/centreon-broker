@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/15/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -15,9 +15,13 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <unistd.h>
 #include "event.h"
+#include "hoststatusevent.h"
 #include "mysqloutput.h"
+#include "servicestatusevent.h"
 
 // XXX
 #include <mysql_driver.h>
@@ -87,8 +91,10 @@ void MySQLOutput::Connect()
   {
     std::auto_ptr<sql::Statement> use_db((*this->myconn_).createStatement());
     use_db->execute(std::string("USE ") + this->db_ + std::string(";"));
+    // XXX : use_db different name
+    use_db->execute("TRUNCATE TABLE nagios_hoststatus;");
+    use_db->execute("TRUNCATE TABLE nagios_servicestatus;");
   }
-
   this->myconn_->setAutoCommit(false);
   // Prepared statements
   this->stmts_ = this->PrepareQueries(*this->myconn_);
@@ -126,10 +132,8 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
   // XXX : tables names may be different
   const char* queries[] =
     {
-      "INSERT INTO nagios_hoststatus SET "  \
-        "hoststatus_id=?, "                 \
+      "UPDATE nagios_hoststatus SET "       \
         "instance_id=?, "                   \
-        "host_object_id=?, "                \
         "status_update_time=?, "            \
         "output=?, "                        \
         "perfdata=?, "                      \
@@ -172,11 +176,11 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
         "check_command=?, "                 \
         "normal_check_interval=?, "         \
         "retry_check_interval=?, "          \
-        "check_timeperiod_object_id=?",
-      "INSERT INTO nagios_servicestatus SET " \
-        "servicestatus_id=?, "                \
+        "check_timeperiod_object_id=? "     \
+        "WHERE host_object_id=?",
+
+      "UPDATE nagios_servicestatus SET "      \
         "instance_id=?, "                     \
-        "service_object_id=?, "               \
         "status_update_time=?, "              \
         "output=?, "                          \
         "perfdata=?, "                        \
@@ -220,12 +224,13 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
         "check_command=?, "                   \
         "normal_check_interval=?, "           \
         "retry_check_interval=?, "            \
-        "check_timeperiod_object_id=?"
+        "check_timeperiod_object_id=? "       \
+        "WHERE service_object_id=?"
     };
 
   try
     {
-      stmt = new sql::PreparedStatement*[sizeof(queries) / sizeof(*queries)];
+      stmt = new sql::PreparedStatement*[sizeof(queries) / sizeof(*queries) + 1];
       for (unsigned int i = 0; i < sizeof(queries) / sizeof(*queries); i++)
 	stmt[i] = conn.prepareStatement(queries[i]);
       stmt[sizeof(queries) / sizeof(*queries)] = NULL;
@@ -246,16 +251,233 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
  */
 void MySQLOutput::ProcessEvent(Event* event)
 {
+  sql::PreparedStatement* stmt;
+
   // XXX : if an exception occur, we should try to put the event back into the
   // list, otherwise properly discard it
-  this->cur_stmt_ = this->stmts_[event->GetType()];
-  this->cur_arg_ = 1;
-  event->AcceptVisitor(*this);
-  this->cur_stmt_->execute();
+  switch (event->GetType())
+    {
+      // XXX
+     case 0: // HostStatusEvent
+      stmt = ProcessHostStatusEvent(static_cast<HostStatusEvent*>(event));
+      break ;
+     case 1: // ServiceStatusEvent
+      stmt = ProcessServiceStatusEvent(static_cast<ServiceStatusEvent*>(event));
+      break ;
+     default: // Don't know event type
+      assert(false);
+      // XXX : quit one way or another
+    }
+  // XXX : assert(stmt);
+  if (stmt)
+    stmt->execute();
   // XXX : MySQL commit interval should be configurable
   if (++this->queries_count_ >= 10000)
     this->Commit();
   return ;
+}
+
+/**
+ *  Process a HostStatusEvent.
+ */
+sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatusEvent* h)
+{
+  int arg;
+  int val;
+  sql::PreparedStatement* stmt;
+  static std::map<std::string, int> id;
+  std::map<std::string, int>::iterator it;
+  time_t t;
+
+  {
+    std::string id_str;
+
+    id_str = h->GetNagiosInstance() + h->GetHost();
+    it = id.find(id_str);
+    if (it == id.end())
+      {
+	val = id.size() + 1;
+	id[id_str] = val;
+	{
+	  std::stringstream val_str;
+	  std::auto_ptr<sql::Statement> insert((*this->myconn_).createStatement());
+
+	  val_str << val;
+	  insert->execute(std::string("INSERT INTO nagios_hoststatus " \
+				      " SET host_object_id=")
+				      + val_str.str()
+				      + ";");
+	}
+      }
+    else
+      val = (*it).second;
+  }
+  // XXX : Almost no type is good
+  arg = 0;
+  stmt = this->stmts_[0];
+  // XXX : instance_id
+  stmt->setInt(++arg, 1);
+
+  // XXX : possible race condition with gmtime() if used with multiple
+  //       MySQLOutput
+  t = h->GetStatusUpdateTime();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  stmt->setString(++arg, h->GetOutput());
+  stmt->setString(++arg, h->GetPerfdata());
+  stmt->setInt(++arg, h->GetCurrentState());
+  stmt->setInt(++arg, h->GetHasBeenChecked());
+  stmt->setInt(++arg, h->GetShouldBeScheduled());
+  stmt->setInt(++arg, h->GetCurrentCheckAttempt());
+  stmt->setInt(++arg, h->GetMaxCheckAttempts());
+
+  t = h->GetLastCheck();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  t = h->GetNextCheck();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  stmt->setInt(++arg, h->GetCheckType());
+
+  t = h->GetLastStateChange();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  t = h->GetLastHardStateChange();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  stmt->setInt(++arg, h->GetLastHardState());
+
+  t = h->GetLastTimeUp();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  t = h->GetLastTimeDown();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  t = h->GetLastTimeUnreachable();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  stmt->setInt(++arg, h->GetStateType());
+
+  t = h->GetLastNotification();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  t = h->GetNextNotification();
+  stmt->setDateTime(++arg, gmtime(&t));
+
+  stmt->setInt(++arg, h->GetNoMoreNotifications());
+  stmt->setInt(++arg, h->GetNotificationsEnabled());
+  stmt->setInt(++arg, h->GetProblemHasBeenAcknowledged());
+  stmt->setInt(++arg, h->GetAcknowledgementType());
+  stmt->setInt(++arg, h->GetCurrentNotificationNumber());
+  stmt->setInt(++arg, h->GetPassiveChecksEnabled());
+  stmt->setInt(++arg, h->GetActiveChecksEnabled());
+  stmt->setInt(++arg, h->GetEventHandlerEnabled());
+  stmt->setInt(++arg, h->GetFlapDetectionEnabled());
+  stmt->setInt(++arg, h->GetIsFlapping());
+  stmt->setDouble(++arg, h->GetPercentStateChange());
+  stmt->setDouble(++arg, h->GetLatency());
+  stmt->setDouble(++arg, h->GetExecutionTime());
+  stmt->setInt(++arg, h->GetScheduledDowntimeDepth());
+  stmt->setInt(++arg, h->GetFailurePredictionEnabled());
+  stmt->setInt(++arg, h->GetProcessPerformanceData());
+  stmt->setInt(++arg, h->GetObsessOverHost());
+  stmt->setInt(++arg, h->GetModifiedHostAttributes());
+  stmt->setString(++arg, h->GetEventHandler());
+  stmt->setString(++arg, h->GetCheckCommand());
+  stmt->setInt(++arg, h->GetNormalCheckInterval());
+  stmt->setInt(++arg, h->GetRetryCheckInterval());
+  stmt->setInt(++arg, h->GetCheckTimeperiodObjectId());
+  stmt->setInt(++arg, val);
+  return (stmt);
+}
+
+/**
+ *  Process a ServiceStatusEvent.
+ */
+sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
+  ServiceStatusEvent* sse)
+{
+  int arg;
+  int val;
+  sql::PreparedStatement* stmt;
+  static std::map<std::string, int> id;
+  std::map<std::string, int>::iterator it;
+
+  {
+    std::string id_str;
+
+    id_str = sse->GetNagiosInstance() + sse->GetHost() + sse->GetService();
+    it = id.find(id_str);
+    if (it == id.end())
+      {
+	val = id.size() + 1;
+	id[id_str] = val;
+	{
+	  std::stringstream val_str;
+	  std::auto_ptr<sql::Statement> insert((*this->myconn_).createStatement());
+
+	  val_str << val;
+	  insert->execute(std::string("INSERT INTO nagios_servicestatus " \
+				      " SET service_object_id=")
+				      + val_str.str()
+				      + ";");
+	}
+      }
+    else
+      val = (*it).second;
+  }
+  // XXX : Almost no type is good
+  arg = 0;
+  stmt = this->stmts_[1];
+
+  // XXX : instance_id
+  stmt->setInt(++arg, 1);
+  stmt->setInt(++arg, sse->GetStatusUpdateTime());
+  stmt->setString(++arg, sse->GetOutput());
+  stmt->setString(++arg, sse->GetPerfdata());
+  stmt->setInt(++arg, sse->GetCurrentState());
+  stmt->setInt(++arg, sse->GetHasBeenChecked());
+  stmt->setInt(++arg, sse->GetShouldBeScheduled());
+  stmt->setInt(++arg, sse->GetCurrentCheckAttempt());
+  stmt->setInt(++arg, sse->GetMaxCheckAttempts());
+  stmt->setInt(++arg, sse->GetLastCheck());
+  stmt->setInt(++arg, sse->GetNextCheck());
+  stmt->setInt(++arg, sse->GetCheckType());
+  stmt->setInt(++arg, sse->GetLastStateChange());
+  stmt->setInt(++arg, sse->GetLastHardStateChange());
+  stmt->setInt(++arg, sse->GetLastHardState());
+  stmt->setInt(++arg, sse->GetLastTimeOk());
+  stmt->setInt(++arg, sse->GetLastTimeWarning());
+  stmt->setInt(++arg, sse->GetLastTimeUnknown());
+  stmt->setInt(++arg, sse->GetLastTimeCritical());
+  stmt->setInt(++arg, sse->GetStateType());
+  stmt->setInt(++arg, sse->GetLastNotification());
+  stmt->setInt(++arg, sse->GetNextNotification());
+  stmt->setInt(++arg, sse->GetNoMoreNotifications());
+  stmt->setInt(++arg, sse->GetNotificationsEnabled());
+  stmt->setInt(++arg, sse->GetProblemHasBeenAcknowledged());
+  stmt->setInt(++arg, sse->GetAcknowledgementType());
+  stmt->setInt(++arg, sse->GetCurrentNotificationNumber());
+  stmt->setInt(++arg, sse->GetPassiveChecksEnabled());
+  stmt->setInt(++arg, sse->GetActiveChecksEnabled());
+  stmt->setInt(++arg, sse->GetEventHandlerEnabled());
+  stmt->setInt(++arg, sse->GetFlapDetectionEnabled());
+  stmt->setInt(++arg, sse->GetIsFlapping());
+  stmt->setDouble(++arg, sse->GetPercentStateChange());
+  stmt->setDouble(++arg, sse->GetLatency());
+  stmt->setDouble(++arg, sse->GetExecutionTime());
+  stmt->setInt(++arg, sse->GetScheduledDowntimeDepth());
+  stmt->setInt(++arg, sse->GetFailurePredictionEnabled());
+  stmt->setInt(++arg, sse->GetProcessPerformanceData());
+  stmt->setInt(++arg, sse->GetObsessOverService());
+  stmt->setInt(++arg, sse->GetModifiedServiceAttributes());
+  stmt->setString(++arg, sse->GetEventHandler());
+  stmt->setString(++arg, sse->GetCheckCommand());
+  stmt->setDouble(++arg, sse->GetNormalCheckInterval());
+  stmt->setDouble(++arg, sse->GetRetryCheckInterval());
+  stmt->setInt(++arg, sse->GetCheckTimeperiodObjectId());
+  stmt->setInt(++arg, val);
+  return (stmt);
 }
 
 /**
@@ -330,68 +552,6 @@ void MySQLOutput::OnEvent(Event* e) throw ()
     catch (...)
       {
       }
-  return ;
-}
-
-/**
- *  Found an object of type const char* while visiting an event.
- */
-void MySQLOutput::Visit(const char* arg)
-{
-  this->cur_stmt_->setString(this->cur_arg_, arg);
-  this->cur_arg_++;
-  return ;
-}
-
-/**
- *  Found an object of type double while visiting an event.
- */
-void MySQLOutput::Visit(double arg)
-{
-  this->cur_stmt_->setDouble(this->cur_arg_, arg);
-  this->cur_arg_++;
-  return ;
-}
-
-/**
- *  Found an object of type int while visiting an event.
- */
-void MySQLOutput::Visit(int arg)
-{
-  this->cur_stmt_->setInt(this->cur_arg_, arg);
-  this->cur_arg_++;
-  return ;
-}
-
-/**
- *  Found an object of type short while visiting an event.
- */
-void MySQLOutput::Visit(short arg)
-{
-  // XXX
-  this->cur_stmt_->setInt(this->cur_arg_, arg);
-  this->cur_arg_++;
-  return ;
-}
-
-/**
- *  Found an object of type const std::string& while visiting an event.
- */
-void MySQLOutput::Visit(const std::string& arg)
-{
-  this->cur_stmt_->setString(this->cur_arg_, arg);
-  this->cur_arg_++;
-  return ;
-}
-
-/**
- *  Found an object of type time_t while visiting an event.
- */
-void MySQLOutput::Visit(time_t arg)
-{
-  // XXX
-  this->cur_stmt_->setDateTime(this->cur_arg_, ctime(&arg));
-  this->cur_arg_++;
   return ;
 }
 
