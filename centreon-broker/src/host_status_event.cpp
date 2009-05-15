@@ -1,5 +1,5 @@
 /*
-** hoststatusevent.cpp for CentreonBroker in ./src
+** host_status_event.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -12,7 +12,7 @@
 
 #include <cstring>
 #include "eventsubscriber.h"
-#include "hoststatusevent.h"
+#include "host_status_event.h"
 
 using namespace CentreonBroker;
 
@@ -46,21 +46,16 @@ HostStatusEvent::HostStatusEvent()
   this->last_notification = 0;
   this->next_notification = 0;
   this->no_more_notifications = 0;
-  this->notifications_enabled = 0;
   this->problem_has_been_acknowledged = 0;
   this->acknowledgement_type = 0;
   this->current_notification_number = 0;
   this->passive_checks_enabled = 0;
   this->active_checks_enabled = 0;
-  this->event_handler_enabled = 0;
-  this->flap_detection_enabled = 0;
   this->is_flapping = 0;
   this->percent_state_change = 0.0;
   this->latency = 0.0;
   this->execution_time = 0.0;
   this->scheduled_downtime_depth = 0;
-  this->failure_prediction_enabled = 0;
-  this->process_performance_data = 0;
   this->obsess_over_host = 0;
   this->modified_host_attributes = 0;
   this->normal_check_interval = 0.0;
@@ -71,7 +66,7 @@ HostStatusEvent::HostStatusEvent()
 /**
  *  HostStatusEvent copy constructor.
  */
-HostStatusEvent::HostStatusEvent(const HostStatusEvent& hse) : Event()
+HostStatusEvent::HostStatusEvent(const HostStatusEvent& hse) : StatusEvent()
 {
   operator=(hse);
 }
@@ -89,6 +84,7 @@ HostStatusEvent::~HostStatusEvent()
 HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
 {
   // Unfortunately, because of the std::strings we can't use memcpy.
+  this->StatusEvent::operator=(hse);
   this->status_update_time = hse.status_update_time;
   this->output = hse.output;
   this->perfdata = hse.perfdata;
@@ -110,21 +106,16 @@ HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
   this->last_notification = hse.last_notification;
   this->next_notification = hse.next_notification;
   this->no_more_notifications = hse.no_more_notifications;
-  this->notifications_enabled = hse.notifications_enabled;
   this->problem_has_been_acknowledged = hse.problem_has_been_acknowledged;
   this->acknowledgement_type = hse.acknowledgement_type;
   this->current_notification_number = hse.current_notification_number;
   this->passive_checks_enabled = hse.passive_checks_enabled;
   this->active_checks_enabled = hse.active_checks_enabled;
-  this->event_handler_enabled = hse.event_handler_enabled;
-  this->flap_detection_enabled = hse.flap_detection_enabled;
   this->is_flapping = hse.is_flapping;
   this->percent_state_change = hse.percent_state_change;
   this->latency = hse.latency;
   this->execution_time = hse.execution_time;
   this->scheduled_downtime_depth = hse.scheduled_downtime_depth;
-  this->failure_prediction_enabled = hse.failure_prediction_enabled;
-  this->process_performance_data = hse.process_performance_data;
   this->obsess_over_host = hse.obsess_over_host;
   this->modified_host_attributes = hse.modified_host_attributes;
   this->event_handler = hse.event_handler;
@@ -321,14 +312,6 @@ short HostStatusEvent::GetNoMoreNotifications() const throw ()
 }
 
 /**
- *  Returns the notifications_enabled.
- */
-short HostStatusEvent::GetNotificationsEnabled() const throw ()
-{
-  return (this->notifications_enabled);
-}
-
-/**
  *  Returns the problem_has_been_acknowledged.
  */
 short HostStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
@@ -369,22 +352,6 @@ short HostStatusEvent::GetActiveChecksEnabled() const throw ()
 }
 
 /**
- *  Returns the event_handler_enabled.
- */
-short HostStatusEvent::GetEventHandlerEnabled() const throw ()
-{
-  return (this->event_handler_enabled);
-}
-
-/**
- *  Returns the flap_detection_enabled.
- */
-short HostStatusEvent::GetFlapDetectionEnabled() const throw ()
-{
-  return (this->flap_detection_enabled);
-}
-
-/**
  *  Returns the is_flapping.
  */
 short HostStatusEvent::GetIsFlapping() const throw ()
@@ -422,22 +389,6 @@ double HostStatusEvent::GetExecutionTime() const throw ()
 short HostStatusEvent::GetScheduledDowntimeDepth() const throw ()
 {
   return (this->scheduled_downtime_depth);
-}
-
-/**
- *  Returns the failure_prediction_enabled.
- */
-short HostStatusEvent::GetFailurePredictionEnabled() const throw ()
-{
-  return (this->failure_prediction_enabled);
-}
-
-/**
- *  Returns the process_performance_data.
- */
-short HostStatusEvent::GetProcessPerformanceData() const throw ()
-{
-  return (this->process_performance_data);
 }
 
 /**
@@ -695,15 +646,6 @@ void HostStatusEvent::SetNoMoreNotifications(short nmn)
 }
 
 /**
- *  Sets the notifications_enabled.
- */
-void HostStatusEvent::SetNotificationsEnabled(short ne)
-{
-  this->notifications_enabled = ne;
-  return ;
-}
-
-/**
  *  Sets the problem_has_been_acknowledged.
  */
 void HostStatusEvent::SetProblemHasBeenAcknowledged(short phba)
@@ -749,24 +691,6 @@ void HostStatusEvent::SetActiveChecksEnabled(short ace)
 }
 
 /**
- *  Sets the event_handler_enabled.
- */
-void HostStatusEvent::SetEventHandlerEnabled(short ehe)
-{
-  this->event_handler_enabled = ehe;
-  return ;
-}
-
-/**
- *  Sets the flap_detection_enabled.
- */
-void HostStatusEvent::SetFlapDetectionEnabled(short fde)
-{
-  this->flap_detection_enabled = fde;
-  return ;
-}
-
-/**
  *  Sets the is_flapping.
  */
 void HostStatusEvent::SetIsFlapping(short i_f)
@@ -808,24 +732,6 @@ void HostStatusEvent::SetExecutionTime(double et)
 void HostStatusEvent::SetScheduledDowntimeDepth(short sdd)
 {
   this->scheduled_downtime_depth = sdd;
-  return ;
-}
-
-/**
- *  Sets the failure_prediction_enabled.
- */
-void HostStatusEvent::SetFailurePredictionEnabled(short fpe)
-{
-  this->failure_prediction_enabled = fpe;
-  return ;
-}
-
-/**
- *  Sets the process_performance_data.
- */
-void HostStatusEvent::SetProcessPerformanceData(short ppd)
-{
-  this->process_performance_data = ppd;
   return ;
 }
 

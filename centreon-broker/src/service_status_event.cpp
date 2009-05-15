@@ -1,5 +1,5 @@
 /*
-** servicestatusevent.cpp for CentreonBroker in ./src
+** service_status_event.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -11,7 +11,7 @@
 */
 
 #include "eventsubscriber.h"
-#include "servicestatusevent.h"
+#include "service_status_event.h"
 
 using namespace CentreonBroker;
 
@@ -46,21 +46,16 @@ ServiceStatusEvent::ServiceStatusEvent()
   this->last_notification = 0;
   this->next_notification = 0;
   this->no_more_notifications = 0;
-  this->notifications_enabled = 0;
   this->problem_has_been_acknowledged = 0;
   this->acknowledgement_type = 0;
   this->current_notification_number = 0;
   this->passive_checks_enabled = 0;
   this->active_checks_enabled = 0;
-  this->event_handler_enabled = 0;
-  this->flap_detection_enabled = 0;
   this->is_flapping = 0;
   this->percent_state_change = 0.0;
   this->latency = 0.0;
   this->execution_time = 0.0;
   this->scheduled_downtime_depth = 0;
-  this->failure_prediction_enabled = 0;
-  this->process_performance_data = 0;
   this->obsess_over_service = 0;
   this->modified_service_attributes = 0;
   this->normal_check_interval = 0.0;
@@ -71,7 +66,7 @@ ServiceStatusEvent::ServiceStatusEvent()
 /**
  *  ServiceStatusEvent copy constructor.
  */
-ServiceStatusEvent::ServiceStatusEvent(const ServiceStatusEvent& sse) : Event()
+ServiceStatusEvent::ServiceStatusEvent(const ServiceStatusEvent& sse) : StatusEvent()
 {
   this->operator=(sse);
 }
@@ -89,7 +84,7 @@ ServiceStatusEvent::~ServiceStatusEvent()
 ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
 {
   // Unfortunately, because of the std::strings we can't use memcpy.
-  Event::operator=(s);
+  StatusEvent::operator=(s);
   this->host = s.host;
   this->service = s.service;
   this->status_update_time = s.status_update_time;
@@ -114,21 +109,16 @@ ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
   this->last_notification = s.last_notification;
   this->next_notification = s.next_notification;
   this->no_more_notifications = s.no_more_notifications;
-  this->notifications_enabled = s.notifications_enabled;
   this->problem_has_been_acknowledged = s.problem_has_been_acknowledged;
   this->acknowledgement_type = s.acknowledgement_type;
   this->current_notification_number = s.current_notification_number;
   this->passive_checks_enabled = s.passive_checks_enabled;
   this->active_checks_enabled = s.active_checks_enabled;
-  this->event_handler_enabled = s.event_handler_enabled;
-  this->flap_detection_enabled = s.flap_detection_enabled;
   this->is_flapping = s.is_flapping;
   this->percent_state_change = s.percent_state_change;
   this->latency = s.latency;
   this->execution_time = s.execution_time;
   this->scheduled_downtime_depth = s.scheduled_downtime_depth;
-  this->failure_prediction_enabled = s.failure_prediction_enabled;
-  this->process_performance_data = s.process_performance_data;
   this->obsess_over_service = s.obsess_over_service;
   this->modified_service_attributes = s.modified_service_attributes;
   this->normal_check_interval = s.normal_check_interval;
@@ -339,14 +329,6 @@ short ServiceStatusEvent::GetNoMoreNotifications() const throw ()
 }
 
 /**
- *  Returns the notifications_enabled.
- */
-short ServiceStatusEvent::GetNotificationsEnabled() const throw ()
-{
-  return (this->notifications_enabled);
-}
-
-/**
  *  Returns the problem_has_been_acknowledged.
  */
 short ServiceStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
@@ -387,22 +369,6 @@ short ServiceStatusEvent::GetActiveChecksEnabled() const throw ()
 }
 
 /**
- *  Returns the event_handler_enabled.
- */
-short ServiceStatusEvent::GetEventHandlerEnabled() const throw ()
-{
-  return (this->event_handler_enabled);
-}
-
-/**
- *  Returns the flap_detection_enabled.
- */
-short ServiceStatusEvent::GetFlapDetectionEnabled() const throw ()
-{
-  return (this->flap_detection_enabled);
-}
-
-/**
  *  Returns the is_flapping.
  */
 short ServiceStatusEvent::GetIsFlapping() const throw ()
@@ -440,22 +406,6 @@ double ServiceStatusEvent::GetExecutionTime() const throw ()
 short ServiceStatusEvent::GetScheduledDowntimeDepth() const throw ()
 {
   return (this->scheduled_downtime_depth);
-}
-
-/**
- *  Returns the failure_prediction_enabled.
- */
-short ServiceStatusEvent::GetFailurePredictionEnabled() const throw ()
-{
-  return (this->failure_prediction_enabled);
-}
-
-/**
- *  Returns the process_performance_data.
- */
-short ServiceStatusEvent::GetProcessPerformanceData() const throw ()
-{
-  return (this->process_performance_data);
 }
 
 /**
@@ -731,15 +681,6 @@ void ServiceStatusEvent::SetNoMoreNotifications(short nmn)
 }
 
 /**
- *  Sets the notifications_enabled.
- */
-void ServiceStatusEvent::SetNotificationsEnabled(short ne)
-{
-  this->notifications_enabled = ne;
-  return ;
-}
-
-/**
  *  Sets the problem_has_been_acknowledged.
  */
 void ServiceStatusEvent::SetProblemHasBeenAcknowledged(short phba)
@@ -785,24 +726,6 @@ void ServiceStatusEvent::SetActiveChecksEnabled(short ace)
 }
 
 /**
- *  Sets the event_handler_enabled.
- */
-void ServiceStatusEvent::SetEventHandlerEnabled(short ehe)
-{
-  this->event_handler_enabled = ehe;
-  return ;
-}
-
-/**
- *  Sets the flap_detection_enabled.
- */
-void ServiceStatusEvent::SetFlapDetectionEnabled(short fde)
-{
-  this->flap_detection_enabled = fde;
-  return ;
-}
-
-/**
  *  Sets the is_flapping.
  */
 void ServiceStatusEvent::SetIsFlapping(short i_f)
@@ -844,24 +767,6 @@ void ServiceStatusEvent::SetExecutionTime(double et)
 void ServiceStatusEvent::SetScheduledDowntimeDepth(short sdd)
 {
   this->scheduled_downtime_depth = sdd;
-  return ;
-}
-
-/**
- *  Sets the failure_prediction_enabled.
- */
-void ServiceStatusEvent::SetFailurePredictionEnabled(short fpe)
-{
-  this->failure_prediction_enabled = fpe;
-  return ;
-}
-
-/**
- *  Sets the process_performance_data.
- */
-void ServiceStatusEvent::SetProcessPerformanceData(short ppd)
-{
-  this->process_performance_data = ppd;
   return ;
 }
 
