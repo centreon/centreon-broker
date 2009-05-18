@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/15/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -27,8 +27,8 @@ using namespace CentreonBroker;
  */
 void StatusEvent::InternalCopy(const StatusEvent& se) throw ()
 {
-  memcpy(this->shorts_, se.shorts_, sizeof(*this->shorts_));
-  this->status_update_time_ = se.status_update_time_;
+  memcpy(this->shorts_, se.shorts_, sizeof(this->shorts_));
+  memcpy(this->timets_, se.timets_, sizeof(this->timets_));
   return ;
 }
 
@@ -43,8 +43,8 @@ void StatusEvent::InternalCopy(const StatusEvent& se) throw ()
  */
 StatusEvent::StatusEvent()
 {
-  memset(this->shorts_, 0, sizeof(*this->shorts_));
-  this->status_update_time_ = 0;
+  memset(this->shorts_, 0, sizeof(this->shorts_));
+  memset(this->timets_, 0, sizeof(this->timets_));
 }
 
 /**
@@ -117,7 +117,7 @@ short StatusEvent::GetProcessPerformanceData() const throw ()
  */
 time_t StatusEvent::GetStatusUpdateTime() const throw ()
 {
-  return (this->status_update_time_);
+  return (this->timets_[STATUS_UPDATE_TIME]);
 }
 
 /**
@@ -170,6 +170,6 @@ void StatusEvent::SetProcessPerformanceData(short ppd) throw ()
  */
 void StatusEvent::SetStatusUpdateTime(time_t sut) throw ()
 {
-  this->status_update_time_ = sut;
+  this->timets_[STATUS_UPDATE_TIME] = sut;
   return ;
 }

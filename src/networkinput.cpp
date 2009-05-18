@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/15/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -75,7 +75,7 @@ void NetworkInput::HandleHostStatus(FILE* stream)
   int cur_set_double;
   static void (HostStatusEvent::* const set_int[])(int) =
     {
-      &HostStatusEvent::SetModifiedHostAttributes,
+      &HostStatusEvent::SetModifiedAttributes,
       &HostStatusEvent::SetCheckTimeperiodObjectId
     };
   int cur_set_int;
@@ -101,7 +101,7 @@ void NetworkInput::HandleHostStatus(FILE* stream)
       &HostStatusEvent::SetScheduledDowntimeDepth,
       &HostStatusEvent::SetFailurePredictionEnabled,
       &HostStatusEvent::SetProcessPerformanceData,
-      &HostStatusEvent::SetObsessOverHost
+      &HostStatusEvent::SetObsessOver
     };
   int cur_set_short;
   static void (HostStatusEvent::* const set_str[])(const std::string&) =
@@ -310,10 +310,10 @@ int NetworkInput::Core()
 	      sse->SetProcessPerformanceData(atoi(strchr(buffer, '=') + 1));
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_OBSESSOVERSERVICE
 	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetObsessOverService(atoi(strchr(buffer, '=') + 1));
+	      sse->SetObsessOver(atoi(strchr(buffer, '=') + 1));
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_MODIFIEDSERVICEATTRIBUTES
 	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetModifiedServiceAttributes(atoi(strchr(buffer, '=') + 1));
+	      sse->SetModifiedAttributes(atoi(strchr(buffer, '=') + 1));
 	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_EVENTHANDLER
 	      buffer[strlen(buffer) - 1] = '\0';
 	      sse->SetEventHandler(strchr(buffer, '=') + 1);
