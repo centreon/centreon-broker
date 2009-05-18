@@ -7,71 +7,44 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 05/14/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
-#include <cerrno>
-#include <cstring>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <vector>
+#include <unistd.h>
 #include "mysqloutput.h"
-#include "networkinput.h"
+#include "network_acceptor.h"
 
 using namespace CentreonBroker;
 
 // XXX : code is not really clean, it should have error checking.
-int main()
+int main(int argc, char *argv[])
 {
-  int fd;
-  struct sockaddr_in sin;
-  MySQLOutput* mo;
-  std::vector<NetworkInput*> vni;
-  NetworkInput* ni;
-
-  mo = new MySQLOutput();
-  mo->Init("localhost", "root", "123456789", "ndo");
-  fd = socket(PF_INET, SOCK_STREAM, 0);
-  sin.sin_family = AF_INET;
-  sin.sin_port = htons(5667);
-  sin.sin_addr.s_addr = INADDR_ANY;
-  bind(fd, (struct sockaddr*)&sin, sizeof(sin));
-  fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
-  listen(fd, 0);
-  while (1)
+  if (argc != 5)
     {
-      fd_set error_fds;
-      fd_set read_fds;
-
-      FD_ZERO(&error_fds);
-      FD_SET(STDIN_FILENO, &error_fds);
-      FD_SET(fd, &error_fds);
-      FD_ZERO(&read_fds);
-      FD_SET(STDIN_FILENO, &read_fds);
-      FD_SET(fd, &read_fds);
-      if (-1 == select(fd + 1, &read_fds, NULL, &error_fds, NULL))
-	{
-	  if (EINTR != errno)
-	    break ;
-	  else
-	    continue ;
-	}
-      if (FD_ISSET(STDIN_FILENO, &error_fds)
-	  || FD_ISSET(fd, &error_fds)
-	  || FD_ISSET(STDIN_FILENO, &read_fds))
-	break ;
-      ni = new NetworkInput();
-      vni.push_back(ni);
-      ni->SetFD(accept(fd, NULL, NULL));
-      listen(fd, 0);
+      std::cerr << "USAGE: " << argv[0] << " <server> <user> <password> <db>"
+                << std::endl;
+      return (1);
     }
-  for (std::vector<NetworkInput*>::iterator it = vni.begin();
-       it != vni.end();
-       it++)
-    delete (*it);
-  mo->Destroy();
-  delete mo;
+  else
+    {
+      char c;
+      MySQLOutput* mo;
+      NetworkAcceptor* na;
+
+      mo = new MySQLOutput();
+      std::clog << "Connecting to MySQL server : " << argv[2]
+                << '@' << argv[1] << std::endl;
+      mo->Init(argv[1], argv[2], argv[3], argv[4]);
+      na = new NetworkAcceptor();
+      na->SetPort(5667);
+      na->Listen();
+      read(STDIN_FILENO, &c, 1);
+      std::clog << "Closing listening socket." << std::endl;
+      delete na;
+      std::clog << "Synchronizing with MySQL server." << std::endl;
+      mo->Destroy();
+      delete mo;
+      std::clog << "Exiting." << std::endl;
+    }
   return (0);
 }
