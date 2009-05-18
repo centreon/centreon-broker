@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/15/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_SERVICE_STATUS_EVENT_H_
@@ -19,6 +19,10 @@
 
 namespace                   CentreonBroker
 {
+  /**
+   *  This class represents what is shared between a host status event and a
+   *  service status event.
+   */
   class                     HostServiceStatusEvent : public StatusEvent
   {
    private:
@@ -33,7 +37,8 @@ namespace                   CentreonBroker
     };
     enum                    Int
     {
-      MODIFIED_ATTRIBUTES = 0,
+      CHECK_TIMEPERIOD_OBJECT_ID = 0,
+      MODIFIED_ATTRIBUTES,
       INT_NB
     };
     enum                    Short
@@ -92,6 +97,7 @@ namespace                   CentreonBroker
     short                   GetAcknowledgementType() const throw ();
     short                   GetActiveChecksEnabled() const throw ();
     const std::string&      GetCheckCommand() const throw ();
+    int                     GetCheckTimeperiodObjectId() const throw ();
     short                   GetCheckType() const throw ();
     short                   GetCurrentCheckAttempt() const throw ();
     short                   GetCurrentNotificationNumber() const throw ();
@@ -120,11 +126,13 @@ namespace                   CentreonBroker
     short                   GetProblemHasBeenAcknowledged() const throw ();
     double                  GetRetryCheckInterval() const throw ();
     short                   GetScheduledDowntimeDepth() const throw ();
+    short                   GetShouldBeScheduled() const throw ();
     short                   GetStateType() const throw ();
     // Setters
     void                    SetAcknowledgementType(short at) throw ();
     void                    SetActiveChecksEnabled(short ace) throw ();
     void                    SetCheckCommand(const std::string& cc);
+    void                    SetCheckTimeperiodObjectId(int ctoi) throw ();
     void                    SetCheckType(short ct) throw ();
     void                    SetCurrentCheckAttempt(short cca) throw ();
     void                    SetCurrentNotificationNumber(short cnn) throw ();
@@ -140,7 +148,7 @@ namespace                   CentreonBroker
     void                    SetLastStateChange(time_t lsc) throw ();
     void                    SetLatency(double l) throw ();
     void                    SetMaxCheckAttempts(short mca) throw ();
-    void                    SetModifiedAttributes() throw ();
+    void                    SetModifiedAttributes(int ma) throw ();
     void                    SetNextCheck(time_t nc) throw ();
     void                    SetNextNotification(time_t nn) throw ();
     void                    SetNoMoreNotifications(short nmn) throw ();

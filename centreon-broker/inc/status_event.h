@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/15/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
 #ifndef STATUS_EVENT_H_
@@ -18,6 +18,10 @@
 
 namespace        CentreonBroker
 {
+  /**
+   *  This is the root class of status events : host, program and service
+   *  status events.
+   */
   class          StatusEvent : public Event
   {
    private:
@@ -30,8 +34,13 @@ namespace        CentreonBroker
       PROCESS_PERFORMANCE_DATA,
       SHORT_NB
     };
+    enum         TimeT
+    {
+      STATUS_UPDATE_TIME = 0,
+      TIMET_NB
+    };
     short        shorts_[SHORT_NB];
-    time_t       status_update_time_;
+    time_t       timets_[TIMET_NB];
     void         InternalCopy(const StatusEvent& se) throw ();
 
    public:

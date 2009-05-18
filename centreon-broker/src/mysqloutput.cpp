@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/15/09 Matthieu Kermagoret
+** Last update 05/18/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -300,7 +300,7 @@ sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatusEvent* h)
 	id[id_str] = val;
 	{
 	  std::stringstream val_str;
-	  std::auto_ptr<sql::Statement> insert((*this->myconn_).createStatement());
+	  std::auto_ptr<sql::Statement> insert((*myconn_).createStatement());
 
 	  val_str << val;
 	  insert->execute(std::string("INSERT INTO nagios_hoststatus " \
@@ -380,13 +380,13 @@ sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatusEvent* h)
   stmt->setInt(++arg, h->GetScheduledDowntimeDepth());
   stmt->setInt(++arg, h->GetFailurePredictionEnabled());
   stmt->setInt(++arg, h->GetProcessPerformanceData());
-  stmt->setInt(++arg, h->GetObsessOverHost());
-  stmt->setInt(++arg, h->GetModifiedHostAttributes());
+  stmt->setInt(++arg, h->GetObsessOver());
+  stmt->setInt(++arg, h->GetModifiedAttributes());
   stmt->setString(++arg, h->GetEventHandler());
   stmt->setString(++arg, h->GetCheckCommand());
   stmt->setInt(++arg, h->GetNormalCheckInterval());
   stmt->setInt(++arg, h->GetRetryCheckInterval());
-  stmt->setInt(++arg, h->GetCheckTimeperiodObjectId());
+  stmt->setInt(++arg, 1); // XXX : check_timeperiod_object_id
   stmt->setInt(++arg, val);
   return (stmt);
 }
@@ -402,6 +402,7 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
   sql::PreparedStatement* stmt;
   static std::map<std::string, int> id;
   std::map<std::string, int>::iterator it;
+  time_t t;
 
   {
     std::string id_str;
@@ -432,7 +433,11 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
 
   // XXX : instance_id
   stmt->setInt(++arg, 1);
-  stmt->setInt(++arg, sse->GetStatusUpdateTime());
+
+  // XXX : possible race condition with gmtime if used with multiple
+  //       MySQLOutput
+  t = sse->GetStatusUpdateTime();
+  stmt->setDateTime(++arg, gmtime(&t));
   stmt->setString(++arg, sse->GetOutput());
   stmt->setString(++arg, sse->GetPerfdata());
   stmt->setInt(++arg, sse->GetCurrentState());
@@ -440,19 +445,29 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
   stmt->setInt(++arg, sse->GetShouldBeScheduled());
   stmt->setInt(++arg, sse->GetCurrentCheckAttempt());
   stmt->setInt(++arg, sse->GetMaxCheckAttempts());
-  stmt->setInt(++arg, sse->GetLastCheck());
-  stmt->setInt(++arg, sse->GetNextCheck());
+  t = sse->GetLastCheck();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetNextCheck();
+  stmt->setDateTime(++arg, gmtime(&t));
   stmt->setInt(++arg, sse->GetCheckType());
-  stmt->setInt(++arg, sse->GetLastStateChange());
-  stmt->setInt(++arg, sse->GetLastHardStateChange());
+  t = sse->GetLastStateChange();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetLastHardStateChange();
+  stmt->setDateTime(++arg, gmtime(&t));
   stmt->setInt(++arg, sse->GetLastHardState());
-  stmt->setInt(++arg, sse->GetLastTimeOk());
-  stmt->setInt(++arg, sse->GetLastTimeWarning());
-  stmt->setInt(++arg, sse->GetLastTimeUnknown());
-  stmt->setInt(++arg, sse->GetLastTimeCritical());
+  t = sse->GetLastTimeOk();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetLastTimeWarning();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetLastTimeUnknown();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetLastTimeCritical();
+  stmt->setDateTime(++arg, gmtime(&t));
   stmt->setInt(++arg, sse->GetStateType());
-  stmt->setInt(++arg, sse->GetLastNotification());
-  stmt->setInt(++arg, sse->GetNextNotification());
+  t = sse->GetLastNotification();
+  stmt->setDateTime(++arg, gmtime(&t));
+  t = sse->GetNextNotification();
+  stmt->setDateTime(++arg, gmtime(&t));
   stmt->setInt(++arg, sse->GetNoMoreNotifications());
   stmt->setInt(++arg, sse->GetNotificationsEnabled());
   stmt->setInt(++arg, sse->GetProblemHasBeenAcknowledged());
@@ -469,8 +484,8 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
   stmt->setInt(++arg, sse->GetScheduledDowntimeDepth());
   stmt->setInt(++arg, sse->GetFailurePredictionEnabled());
   stmt->setInt(++arg, sse->GetProcessPerformanceData());
-  stmt->setInt(++arg, sse->GetObsessOverService());
-  stmt->setInt(++arg, sse->GetModifiedServiceAttributes());
+  stmt->setInt(++arg, sse->GetObsessOver());
+  stmt->setInt(++arg, sse->GetModifiedAttributes());
   stmt->setString(++arg, sse->GetEventHandler());
   stmt->setString(++arg, sse->GetCheckCommand());
   stmt->setDouble(++arg, sse->GetNormalCheckInterval());
