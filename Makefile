@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/15/09 Matthieu Kermagoret
+## Last update 05/18/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -24,6 +24,7 @@ SRC		=	src/cb2db.cpp				\
 			src/host_status_event.cpp		\
 			src/mutex.cpp				\
 			src/mysqloutput.cpp			\
+			src/network_acceptor.cpp		\
 			src/networkinput.cpp			\
 			src/service_status_event.cpp		\
 			src/status_event.cpp			\
