@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <unistd.h>
-#include "mysqloutput.h"
+#include "mysql_output.h"
 #include "network_acceptor.h"
 
 using namespace CentreonBroker;

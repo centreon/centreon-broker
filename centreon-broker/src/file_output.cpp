@@ -1,5 +1,5 @@
 /*
-** fileoutput.cpp for CentreonBroker in ./src
+** file_output.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/05/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <cassert>
-#include "fileoutput.h"
+#include "file_output.h"
 
 using namespace CentreonBroker;
 

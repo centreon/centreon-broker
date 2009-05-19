@@ -1,5 +1,5 @@
 /*
-** conditionvariable.h for CentreonBroker in ./inc
+** condition_variable.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/05/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef CONDITIONVARIABLE_H_
-# define CONDITIONVARIABLE_H_
+#ifndef CONDITION_VARIABLE_H_
+# define CONDITION_VARIABLE_H_
 
 # include <sys/types.h>
 # include <time.h>
@@ -78,4 +78,4 @@ namespace                       CentreonBroker
   };
 }
 
-#endif /* !CONDITIONVARIABLE_H_ */
+#endif /* !CONDITION_VARIABLE_H_ */

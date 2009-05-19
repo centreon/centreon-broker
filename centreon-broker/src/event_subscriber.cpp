@@ -1,5 +1,5 @@
 /*
-** eventsubscriber.cpp for CentreonBroker in ./src
+** event_subscriber.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#include "eventpublisher.h"
-#include "eventsubscriber.h"
+#include "event_publisher.h"
+#include "event_subscriber.h"
 
 using namespace CentreonBroker;
 

@@ -1,5 +1,5 @@
 /*
-** conditionvariable.cpp for CentreonBroker in ./src
+** condition_variable.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,14 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/05/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <cerrno>
 #include <cstring>
 #include <pthread.h>
 #include <string>
-#include "conditionvariable.h"
+#include "condition_variable.h"
 #include "mutex.h"
 
 using namespace CentreonBroker;

@@ -1,5 +1,5 @@
 /*
-** mysqloutput.cpp for CentreonBroker in ./src
+** mysql_output.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include "event.h"
 #include "host_status_event.h"
-#include "mysqloutput.h"
+#include "mysql_output.h"
 #include "service_status_event.h"
 
 // XXX

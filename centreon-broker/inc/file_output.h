@@ -1,5 +1,5 @@
 /*
-** fileoutput.h for CentreonBroker in ./inc
+** file_output.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,15 +7,15 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/05/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef FILEOUTPUT_H_
-# define FILEOUTPUT_H_
+#ifndef FILE_OUTPUT_H_
+# define FILE_OUTPUT_H_
 
 # include <fstream>
 # include <string>
-# include "conditionvariable.h"
+# include "condition_variable.h"
 # include "exception.h"
 # include "mutex.h"
 # include "thread.h"
@@ -48,4 +48,4 @@ namespace                             CentreonBroker
   };
 }
 
-#endif /* !FILEOUTPUT_H_ */
+#endif /* !FILE_OUTPUT_H_ */
