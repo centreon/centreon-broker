@@ -1,5 +1,5 @@
 /*
-** eventpublisher.h for CentreonBroker in ./inc
+** event_publisher.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef EVENTPUBLISHER_H_
-# define EVENTPUBLISHER_H_
+#ifndef EVENT_PUBLISHER_H_
+# define EVENT_PUBLISHER_H_
 
 # include <list>
 # include "mutex.h"
@@ -48,4 +48,4 @@ namespace                       CentreonBroker
   };
 }
 
-#endif /* !EVENTPUBLISHER_H_ */
+#endif /* !EVENT_PUBLISHER_H_ */

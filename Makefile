@@ -7,25 +7,25 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/18/09 Matthieu Kermagoret
+## Last update 05/19/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
 RM		=	rm -rf
 
 SRC		=	src/cb2db.cpp				\
-			src/conditionvariable.cpp		\
+			src/condition_variable.cpp		\
 			src/event.cpp				\
-			src/eventpublisher.cpp			\
-			src/eventsubscriber.cpp			\
+			src/event_publisher.cpp			\
+			src/event_subscriber.cpp		\
 			src/exception.cpp			\
-			src/fileoutput.cpp			\
+			src/file_output.cpp			\
 			src/host_service_status_event.cpp	\
 			src/host_status_event.cpp		\
 			src/mutex.cpp				\
-			src/mysqloutput.cpp			\
+			src/mysql_output.cpp			\
 			src/network_acceptor.cpp		\
-			src/networkinput.cpp			\
+			src/network_input.cpp			\
 			src/service_status_event.cpp		\
 			src/status_event.cpp			\
 			src/thread.cpp
@@ -34,7 +34,7 @@ OBJ		=	$(SRC:.cpp=.o)
 NAME		=	cb2db
 
 INCLUDE		+=	-Iinc
-CXXFLAGS	+=	-g3 --std=c++0x -W -Wall -pedantic $(INCLUDE)	\
+CXXFLAGS	+=	-g3 -std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			 `mysql_config --include`
 LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`
 

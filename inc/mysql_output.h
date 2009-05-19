@@ -1,5 +1,5 @@
 /*
-** mysqloutput.h for CentreonBroker in ./inc
+** mysql_output.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,16 +7,16 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/14/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef MYSQLOUTPUT_H_
-# define MYSQLOUTPUT_H_
+#ifndef MYSQL_OUTPUT_H_
+# define MYSQL_OUTPUT_H_
 
 # include <list>
 # include <string>
-# include "conditionvariable.h"
-# include "eventsubscriber.h"
+# include "condition_variable.h"
+# include "event_subscriber.h"
 # include "mutex.h"
 # include "thread.h"
 
@@ -81,4 +81,4 @@ namespace                      CentreonBroker
     };
 }
 
-#endif /* !MYSQLOUTPUT_H_ */
+#endif /* !MYSQL_OUTPUT_H_ */

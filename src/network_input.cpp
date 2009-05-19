@@ -1,5 +1,5 @@
 /*
-** networkinput.cpp for CentreonBroker in ./src
+** network_input.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -16,9 +16,9 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
-#include "eventpublisher.h"
+#include "event_publisher.h"
 #include "host_status_event.h"
-#include "networkinput.h"
+#include "network_input.h"
 #include "service_status_event.h"
 
 using namespace CentreonBroker;

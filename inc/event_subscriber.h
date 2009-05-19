@@ -1,5 +1,5 @@
 /*
-** eventsubscriber.h for CentreonBroker in ./inc
+** event_subscriber.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef EVENTSUBSCRIBER_H_
-# define EVENTSUBSCRIBER_H_
+#ifndef EVENT_SUBSCRIBER_H_
+# define EVENT_SUBSCRIBER_H_
 
 # include <string>
 # include <sys/types.h>
@@ -37,4 +37,4 @@ namespace            CentreonBroker
   };
 }
 
-#endif /* !EVENTSUBSCRIBER_H_ */
+#endif /* !EVENT_SUBSCRIBER_H_ */

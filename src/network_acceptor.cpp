@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #include <cerrno>
@@ -16,7 +16,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include "network_acceptor.h"
-#include "networkinput.h"
+#include "network_input.h"
 
 using namespace CentreonBroker;
 

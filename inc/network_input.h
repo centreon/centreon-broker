@@ -1,5 +1,5 @@
 /*
-** networkinput.h for CentreonBroker in ./inc
+** network_input.h for CentreonBroker in ./inc
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/14/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#ifndef NETWORKINPUT_H_
-# define NETWORKINPUT_H_
+#ifndef NETWORK_INPUT_H_
+# define NETWORK_INPUT_H_
 
 # include <cstdio>
 # include <string>
@@ -36,4 +36,4 @@ namespace         CentreonBroker
   };
 }
 
-#endif /* !NETWORKINPUT_H_ */
+#endif /* !NETWORK_INPUT_H_ */
