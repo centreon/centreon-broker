@@ -22,30 +22,14 @@ using namespace CentreonBroker;
 static boost::asio::io_service* gl_ios;
 static MySQLOutput* gl_mo;
 static NetworkAcceptor* gl_na;
+static volatile bool gl_shall_exit = false;
 
 static void term_handler(int signum)
 {
   (void)signum;
-  if (gl_na)
-    {
-      std::clog << "Closing listening socket...";
-      delete gl_na;
-      std::clog << "  Done" << std::endl;
-    }
-  if (gl_mo)
-    {
-      std::clog << "Closing connection to MySQL server...";
-      delete gl_mo;
-      std::clog << "  Done" << std::endl;
-    }
-  if (gl_ios)
-    {
-      std::clog << "Shutting down I/O service...";
-      delete gl_ios;
-      std::clog << "  Done" << std::endl;
-    }
-  std::clog << "Exiting now." << std::endl;
-  exit(EXIT_SUCCESS);
+  gl_shall_exit = true;
+  gl_ios->stop();
+  return ;
 }
 
 int main(int argc, char *argv[])
@@ -58,9 +42,6 @@ int main(int argc, char *argv[])
     }
   else
     {
-      signal(SIGQUIT, term_handler);
-      signal(SIGTERM, term_handler);
-      signal(SIGINT, term_handler);
       std::clog << "Initializing I/O engine...";
       gl_ios = new boost::asio::io_service;
       std::clog << "  Done" << std::endl;
@@ -75,9 +56,41 @@ int main(int argc, char *argv[])
       gl_na = new NetworkAcceptor(*gl_ios);
       gl_na->Accept(5667);
       std::clog << "  Done" << std::endl;
-      while (1)
-	gl_ios->run();
-      sleep(5);
+      signal(SIGINT, term_handler);
+      try
+	{
+	  while (!gl_shall_exit)
+	    {
+	      gl_ios->run();
+	      gl_ios->reset();
+	    }
+	}
+      catch (boost::system::system_error& se)
+	{
+	}
+      if (gl_na)
+	{
+	  std::clog << "Closing listening socket...";
+	  delete gl_na;
+	  gl_na = NULL;
+	  std::clog << "  Done" << std::endl;
+	}
+      if (gl_mo)
+	{
+	  std::clog << "Closing connection to MySQL server...";
+	  gl_mo->Destroy();
+	  delete gl_mo;
+	  gl_mo = NULL;
+	  std::clog << "  Done" << std::endl;
+	}
+      if (gl_ios)
+	{
+	  std::clog << "Shutting down I/O service...";
+	  delete gl_ios;
+	  gl_ios = NULL;
+	  std::clog << "  Done" << std::endl;
+	}
+      std::clog << "Exiting now." << std::endl;
     }
   return (0);
 }
