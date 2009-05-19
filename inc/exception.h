@@ -7,37 +7,30 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/12/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #ifndef EXCEPTION_H_
 # define EXCEPTION_H_
 
-# include <exception>
-# include <string>
+# include <boost/system/system_error.hpp>
 
-namespace               CentreonBroker
+namespace        CentreonBroker
 {
   /**
-   *  This is the standard interface for exception thrown within CentreonBroker
-   *  code. Nothing fancy, just a wrapper class around an std::string.
+   *  Because we're using the Boost library, most of the time, exceptions are
+   *  raised within Boost code. It's easier for us to rethrow the exception.
    */
-  class                 Exception : public std::exception
-  {
-   protected:
-    std::string         what_;
-
-   public:
-                        Exception();
-                        Exception(const Exception& exception);
-                        Exception(const char* str);
-                        Exception(const std::string& str);
-    virtual             ~Exception() throw();
-    Exception&          operator=(const Exception& exception);
-    Exception&          operator=(const char* str);
-    Exception&          operator=(const std::string& str);
-    virtual const char* what() const throw();
-  };
+  class          Exception : public boost::system::system_error
+    {
+     public:
+                 Exception(const Exception& e);
+                 Exception(const boost::system::system_error& se);
+                 Exception(int val);
+		 Exception(int val, const char* msg);
+                 ~Exception() throw ();
+      Exception& operator=(const Exception& e);
+    };
 }
 
 #endif /* !EXCEPTION_H_ */

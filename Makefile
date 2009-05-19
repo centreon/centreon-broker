@@ -19,7 +19,6 @@ SRC		=	src/cb2db.cpp				\
 			src/event_publisher.cpp			\
 			src/event_subscriber.cpp		\
 			src/exception.cpp			\
-			src/file_output.cpp			\
 			src/host_service_status_event.cpp	\
 			src/host_status_event.cpp		\
 			src/mutex.cpp				\

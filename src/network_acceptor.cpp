@@ -10,11 +10,7 @@
 ** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include <boost/bind.hpp>
 #include "network_acceptor.h"
 #include "network_input.h"
 
@@ -27,52 +23,44 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Main thread function.
+ *  NetworkAcceptor copy constructor.
  */
-int NetworkAcceptor::Core()
+NetworkAcceptor::NetworkAcceptor(const NetworkAcceptor& na) throw ()
+  : acceptor_(na.io_service_), io_service_(na.io_service_)
 {
-  int peer;
-  NetworkInput* ni;
-  struct sockaddr_in sin;
+  (void)na;
+}
 
-  // XXX : error handling
-  this->fd_ = socket(PF_INET, SOCK_STREAM, 0);
-  if (this->fd_ < 0)
+/**
+ *  NetworkAcceptor operator= overload.
+ */
+NetworkAcceptor& NetworkAcceptor::operator=(const NetworkAcceptor& na) throw ()
+{
+  (void)na;
+  return (*this);
+}
+
+/**
+ *  Start accepting a client on our acceptor.
+ */
+void NetworkAcceptor::StartAccept() throw ()
+{
+  assert(!this->new_socket_);
+  try
     {
-      std::cerr << "Unable to create listening socket, exiting thread."
-                << std::endl;
-      return (1);
+      this->new_socket_ = new boost::asio::ip::tcp::socket(this->io_service_);
+      this->acceptor_.async_accept(*this->new_socket_,
+                                   boost::bind(&NetworkAcceptor::HandleAccept,
+                                     this,
+                                     boost::asio::placeholders::error));
     }
-  sin.sin_addr.s_addr = INADDR_ANY;
-  sin.sin_family = AF_INET;
-  sin.sin_port = htons(this->port_);
-  if (bind(this->fd_, (const struct sockaddr*)&sin, sizeof(sin)))
+  catch (std::exception& e)
     {
-      std::cerr << "Unable to bind to local port " << ntohs(sin.sin_port)
-                << ", exiting thread." << std::endl;
-      return (1);
+      // If an exception occured, it's because of the new() call. Because we
+      // can't provide a valid socket for the asynchronous accept, we're forced
+      // to shutdown (not handle asynchronous accept anymore).
     }
-  else
-    std::clog << "Listening on port " << ntohs(sin.sin_port) << std::endl;
-  while (!this->exit_thread_)
-    {
-      if (listen(this->fd_, 10))
-	{
-	  std::cerr << "Listen failed: " << strerror(errno) << std::endl;
-	  return (1);
-	}
-      if ((peer = accept(this->fd_, NULL, NULL)) < 0)
-	{
-	  std::cerr << "Accept failed:" << strerror(errno) << std::endl;
-	  return (1);
-	}
-      std::clog << "Incoming connection." << std::endl;
-      fprintf(stderr, "Listen : %d\nPeer : %d\n", this->fd_, peer);
-      ni = new (NetworkInput);
-      ni->SetFD(peer);
-      this->ni_.push_back(ni);
-    }
-  return (0);
+  return ;
 }
 
 /**************************************
@@ -84,34 +72,21 @@ int NetworkAcceptor::Core()
 /**
  *  NetworkAcceptor default constructor.
  */
-NetworkAcceptor::NetworkAcceptor()
+NetworkAcceptor::NetworkAcceptor(boost::asio::io_service& io_service) throw ()
+  : acceptor_(io_service), io_service_(io_service)
 {
-  this->exit_thread_ = false;
-  this->fd_ = -1;
-  this->port_ = 0;
-}
-
-/**
- *  NetworkAcceptor copy constructor.
- */
-NetworkAcceptor::NetworkAcceptor(const NetworkAcceptor& na) : Thread()
-{
-  this->exit_thread_ = false;
-  this->fd_ = -1;
-  this->port_ = na.port_;
+  this->new_socket_ = NULL;
 }
 
 /**
  *  NetworkAcceptor destructor.
  */
-NetworkAcceptor::~NetworkAcceptor()
+NetworkAcceptor::~NetworkAcceptor() throw ()
 {
-  this->exit_thread_ = true;
-  if (this->fd_ >= 0)
-    {
-      close(this->fd_);
-      this->Join();
-    }
+  if (this->acceptor_.is_open())
+    this->acceptor_.close();
+  if (this->new_socket_)
+    delete (this->new_socket_);
   for (std::list<NetworkInput*>::iterator it = this->ni_.begin();
        it != this->ni_.end();
        it++)
@@ -119,36 +94,57 @@ NetworkAcceptor::~NetworkAcceptor()
 }
 
 /**
- *  NetworkAcceptor operator= overload.
+ *  Accept incoming clients connections on the specified port.
  */
-NetworkAcceptor& NetworkAcceptor::operator=(const NetworkAcceptor& na)
+void NetworkAcceptor::Accept(unsigned short port) throw (Exception)
 {
-  this->port_ = na.port_;
-  return (*this);
-}
-
-/**
- *  Get the port on which the NetworkAcceptor should listen.
- */
-unsigned short NetworkAcceptor::GetPort() const throw ()
-{
-  return (this->port_);
-}
-
-/**
- *  Listen on the specified port.
- */
-void NetworkAcceptor::Listen()
-{
-  this->Run();
+  try
+    {
+      this->acceptor_.open(boost::asio::ip::tcp::v4());
+      this->acceptor_.bind(boost::asio::ip::tcp::endpoint(
+                             boost::asio::ip::tcp::v4(),
+                             port));
+      this->acceptor_.listen();
+      this->StartAccept();
+    }
+  catch (boost::system::system_error& se)
+    {
+      if (this->acceptor_.is_open())
+        this->acceptor_.close();
+      throw ;
+    }
   return ;
 }
 
 /**
- *  Set the port on which the NetworkAcceptor should listen.
+ *  Handle an incoming connection.
  */
-void NetworkAcceptor::SetPort(unsigned short port) throw ()
+void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
+  throw ()
 {
-  this->port_ = port;
+  // Error occured while accepting the connection. Discard the structure.
+  if (ec)
+    delete (this->new_socket_);
+  else
+    {
+      NetworkInput* ni;
+
+      try
+        {
+          ni = NULL;
+          ni = new NetworkInput(*this->new_socket_);
+          this->ni_.push_back(ni);
+        }
+      catch (std::exception& e)
+        {
+          // No more memory on the system so discard the new connection.
+          if (ni)
+            delete (ni);
+          else if (this->new_socket_)
+            delete (this->new_socket_);
+        }
+    }
+  this->new_socket_ = NULL;
+  this->StartAccept();
   return ;
 }

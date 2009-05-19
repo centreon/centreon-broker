@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/13/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #ifndef THREAD_H_
@@ -18,35 +18,6 @@
 
 namespace       CentreonBroker
 {
-  /**
-   *  Standard exception thrown by the Thread class.
-   */
-  class              ThreadException : public Exception
-  {
-   public:
-    enum             Where
-    {
-      UNKNOWN,
-      CANCEL,
-      JOIN,
-      RUN
-    };
-
-   private:
-    Where            where_;
-
-   public:
-                     ThreadException();
-                     ThreadException(const ThreadException& te);
-                     ThreadException(const char* str, Where w = UNKNOWN);
-                     ThreadException(const std::string& str,
-                                     Where w = UNKNOWN);
-                     ~ThreadException() throw();
-    ThreadException& operator=(const ThreadException& te);
-    Where            GetWhere() const throw ();
-    void             SetWhere(Where w) throw ();
-  };
-
   /**
    *  The Thread class is the root of all threads that can be created in
    *  CentreonBroker. It is really to use. A class that want to be thread just
@@ -63,10 +34,10 @@ namespace       CentreonBroker
    public:
                 Thread();
     virtual     ~Thread();
-    void        Cancel() throw (ThreadException);
+    void        Cancel() throw (Exception);
     virtual int Core() = 0;
-    void        Join() throw (ThreadException);
-    void        Run() throw (ThreadException);
+    void        Join() throw (Exception);
+    void        Run() throw (Exception);
   };
 }
 

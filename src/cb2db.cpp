@@ -10,13 +10,44 @@
 ** Last update 05/19/09 Matthieu Kermagoret
 */
 
-#include <unistd.h>
+#include <boost/asio.hpp>
+#include <csignal>
+#include <cstdlib>
+#include <iostream>
 #include "mysql_output.h"
 #include "network_acceptor.h"
 
 using namespace CentreonBroker;
 
-// XXX : code is not really clean, it should have error checking.
+static boost::asio::io_service* gl_ios;
+static MySQLOutput* gl_mo;
+static NetworkAcceptor* gl_na;
+
+static void term_handler(int signum)
+{
+  (void)signum;
+  if (gl_na)
+    {
+      std::clog << "Closing listening socket...";
+      delete gl_na;
+      std::clog << "  Done" << std::endl;
+    }
+  if (gl_mo)
+    {
+      std::clog << "Closing connection to MySQL server...";
+      delete gl_mo;
+      std::clog << "  Done" << std::endl;
+    }
+  if (gl_ios)
+    {
+      std::clog << "Shutting down I/O service...";
+      delete gl_ios;
+      std::clog << "  Done" << std::endl;
+    }
+  std::clog << "Exiting now." << std::endl;
+  exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   if (argc != 5)
@@ -27,24 +58,26 @@ int main(int argc, char *argv[])
     }
   else
     {
-      char c;
-      MySQLOutput* mo;
-      NetworkAcceptor* na;
-
-      mo = new MySQLOutput();
+      signal(SIGQUIT, term_handler);
+      signal(SIGTERM, term_handler);
+      signal(SIGINT, term_handler);
+      std::clog << "Initializing I/O engine...";
+      gl_ios = new boost::asio::io_service;
+      std::clog << "  Done" << std::endl;
+      std::clog << "Initializing MySQL engine...";
+      gl_mo = new MySQLOutput();
+      std::clog << "  Done" << std::endl;
       std::clog << "Connecting to MySQL server : " << argv[2]
-                << '@' << argv[1] << std::endl;
-      mo->Init(argv[1], argv[2], argv[3], argv[4]);
-      na = new NetworkAcceptor();
-      na->SetPort(5667);
-      na->Listen();
-      read(STDIN_FILENO, &c, 1);
-      std::clog << "Closing listening socket." << std::endl;
-      delete na;
-      std::clog << "Synchronizing with MySQL server." << std::endl;
-      mo->Destroy();
-      delete mo;
-      std::clog << "Exiting." << std::endl;
+                << '@' << argv[1] << "...";
+      gl_mo->Init(argv[1], argv[2], argv[3], argv[4]);
+      std::clog << "  Done" << std::endl;
+      std::clog << "Listening on port 5667...";
+      gl_na = new NetworkAcceptor(*gl_ios);
+      gl_na->Accept(5667);
+      std::clog << "  Done" << std::endl;
+      while (1)
+	gl_ios->run();
+      sleep(5);
     }
   return (0);
 }

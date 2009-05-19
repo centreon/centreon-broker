@@ -7,36 +7,46 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_ACCEPTOR_H_
 # define NETWORK_ACCEPTOR_H_
 
+# include <boost/asio.hpp>
+# include <boost/system/system_error.hpp>
 # include <list>
-# include "thread.h"
+# include "exception.h"
 
-namespace                    CentreonBroker
+namespace                          CentreonBroker
 {
-  class                      NetworkInput;
+  // Forward declaration.
+  class                            NetworkInput;
 
-  class                      NetworkAcceptor : private Thread
+  /**
+   *  The NetworkAcceptor class is responsible for accepting incoming clients.
+   */
+  class                            NetworkAcceptor
   {
    private:
-    volatile bool            exit_thread_;
-    int                      fd_;
-    std::list<NetworkInput*> ni_;
-    unsigned short           port_;
-    int                      Core();
+    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::io_service&       io_service_;
+    boost::asio::ip::tcp::socket*  new_socket_;
+    std::list<NetworkInput*>       ni_;
+                                   NetworkAcceptor(const NetworkAcceptor& na)
+                                     throw ();
+    NetworkAcceptor&               operator=(const NetworkAcceptor& na)
+                                     throw ();
+    void                           StartAccept() throw ();
 
    public:
-                             NetworkAcceptor();
-                             NetworkAcceptor(const NetworkAcceptor& na);
-                             ~NetworkAcceptor();
-    NetworkAcceptor&         operator=(const NetworkAcceptor& na);
-    unsigned short           GetPort() const throw ();
-    void                     Listen();
-    void                     SetPort(unsigned short port) throw ();
+                                   NetworkAcceptor(boost::asio::io_service& i)
+                                     throw ();
+                                   ~NetworkAcceptor() throw ();
+    void                           Accept(unsigned short port) throw (Exception);
+    void                           HandleAccept(
+                                     const boost::system::error_code& ec)
+                                     throw ();
   };
 }
 
