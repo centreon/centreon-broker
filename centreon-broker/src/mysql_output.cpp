@@ -237,11 +237,11 @@ sql::PreparedStatement** MySQLOutput::PrepareQueries(sql::Connection& conn)
     }
   catch (sql::SQLException& e)
     {
-      throw (Exception("Statements preparation failed."));
+      throw (Exception(0, "Statements preparation failed."));
     }
   catch (...)
     {
-      throw (Exception("Statements allocation failed."));
+      throw (Exception(0, "Statements allocation failed."));
     }
   return (stmt);
 }
@@ -519,7 +519,7 @@ Event* MySQLOutput::WaitEvent()
 	{
 	  wait_return = this->eventscv_.TimedWait(this->eventsm_, &this->ts_);
 	}
-      catch (ConditionVariableException& cve)
+      catch (Exception& e)
 	{
 	  // Even when an error occur, the mutex shall be locked. It is our
 	  // responsability to release it.

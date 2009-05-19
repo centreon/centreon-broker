@@ -29,7 +29,8 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
-NetworkInput::NetworkInput(const NetworkInput& ni) : Thread()
+NetworkInput::NetworkInput(const NetworkInput& ni)
+  : Thread(), socket_(ni.socket_)
 {
   (void)ni;
 }
@@ -46,9 +47,11 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 *                                     *
 **************************************/
 
-NetworkInput::NetworkInput()
+NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
+  : socket_(socket)
 {
-  this->fd_ = -1;
+  this->fd_ = socket.native();
+  this->Run();
 }
 
 NetworkInput::~NetworkInput()
@@ -175,6 +178,7 @@ int NetworkInput::Core()
 
   // XXX : those are test stuff
   stream = fdopen(this->fd_, "r+");
+  fprintf(stderr, "Stream: %p\n", stream);
   for (int i = 0; i < 11; i++)
     fgets(buffer, sizeof(buffer), stream);
   buffer[strlen(buffer) - 1] = '\0';
@@ -335,11 +339,4 @@ int NetworkInput::Core()
     }
   fclose(stream);
   return (0);
-}
-
-void NetworkInput::SetFD(int fd)
-{
-  this->fd_ = fd;
-  this->Run();
-  return ;
 }

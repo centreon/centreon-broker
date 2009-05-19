@@ -22,41 +22,6 @@ namespace                       CentreonBroker
   class                         Mutex;
 
   /**
-   *  This class of exception will be raised by ConditionVariable when
-   *  needed.
-   */
-  class                         ConditionVariableException : public Exception
-  {
-   public:
-    enum                        Where
-    {
-      UNKNOWN,
-      BROADCAST,
-      INIT,
-      SIGNAL,
-      TIMEDWAIT,
-      WAIT
-    };
-
-   private:
-    Where                       where_;
-
-   public:
-                                ConditionVariableException();
-                                ConditionVariableException(const
-                                  ConditionVariableException& cve);
-                                ConditionVariableException(const char* str,
-                                                           Where w = UNKNOWN);
-                                ConditionVariableException(const
-							   std::string& str,
-                                                           Where w = UNKNOWN);
-                                ~ConditionVariableException() throw ();
-    ConditionVariableException& operator=(const ConditionVariableException& c);
-    Where                       GetWhere() const throw ();
-    void                        SetWhere(Where w) throw ();
-  };
-
-  /**
    *  A condition variable is an object with which a thread can temporarily
    *  give up exclusive access, in order to wait for some condition to be met.
    */
@@ -68,13 +33,13 @@ namespace                       CentreonBroker
     ConditionVariable& operator=(const ConditionVariable& cv);
 
    public:
-                       ConditionVariable() throw (ConditionVariableException);
-                       ~ConditionVariable() throw();
-    void               Broadcast() throw (ConditionVariableException);
-    void               Signal() throw (ConditionVariableException);
+                       ConditionVariable() throw (Exception);
+                       ~ConditionVariable() throw ();
+    void               Broadcast() throw (Exception);
+    void               Signal() throw (Exception);
     bool               TimedWait(Mutex& mutex, const struct timespec* abstime)
-                         throw (ConditionVariableException);
-    void               Wait(Mutex& mutex) throw (ConditionVariableException);
+                         throw (Exception);
+    void               Wait(Mutex& mutex) throw (Exception);
   };
 }
 
