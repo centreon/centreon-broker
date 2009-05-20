@@ -10,12 +10,7 @@
 ** Last update 05/20/09 Matthieu Kermagoret
 */
 
-#include <cassert>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <unistd.h>
+#include <boost/thread/mutex.hpp>
 #include "event_publisher.h"
 #include "host_status_event.h"
 #include "network_input.h"
@@ -23,49 +18,222 @@
 
 using namespace CentreonBroker;
 
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                              ProtocolSocket                                 *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*              Definition             *
+*                                     *
+**************************************/
+
+/**
+ *  The ProtocolSocket class will buffer input from the socket and make it
+ *  available a line at a time.
+ */
+namespace                         CentreonBroker
+{
+  class                           ProtocolSocket
+  {
+   private:
+    char                          buffer_[1024];
+    size_t                        discard_;
+    size_t                        length_;
+    boost::asio::ip::tcp::socket& socket_;
+    ProtocolSocket&               operator=(const ProtocolSocket& ps) throw ();
+
+  public:
+                                  ProtocolSocket(
+                                    boost::asio::ip::tcp::socket& socket)
+                                    throw ();
+                                  ProtocolSocket(const ProtocolSocket& ps)
+                                   throw ();
+                                  ~ProtocolSocket() throw ();
+    char*                         GetLine();
+  };
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
 
-NetworkInput::NetworkInput(const NetworkInput& ni)
-  : socket_(ni.socket_)
+/**
+ *  ProtocolSocket operator= overload.
+ */
+ProtocolSocket& ProtocolSocket::operator=(const ProtocolSocket& ps) throw ()
+{
+  (void)ps;
+  return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  ProtocolSocket constructor.
+ */
+ProtocolSocket::ProtocolSocket(boost::asio::ip::tcp::socket& s)
+  throw () : socket_(s)
+{
+  this->discard_ = 0;
+  this->length_ = 0;
+}
+
+/**
+ *  ProtocolSocket copy constructor.
+ */
+ProtocolSocket::ProtocolSocket(const ProtocolSocket& ps) throw ()
+  : socket_(ps.socket_)
+{
+  memcpy(this->buffer_, ps.buffer_, sizeof(this->buffer_));
+  this->discard_ = ps.discard_;
+  this->length_ = ps.length_;
+}
+
+/**
+ *  ProtocolSocket destructor.
+ */
+ProtocolSocket::~ProtocolSocket() throw ()
+{
+}
+
+/**
+ *  Fetch a line of input.
+ */
+char* ProtocolSocket::GetLine()
+{
+  int old_length;
+
+  do
+    {
+      this->length_ -= this->discard_;
+      memmove(this->buffer_,
+              this->buffer_ + this->discard_,
+              this->length_ + 1);
+      this->discard_ = 0;
+      old_length = 0;
+      while (!strchr(this->buffer_ + old_length, '\n')
+             && this->length_ < sizeof(this->buffer_) - 1)
+        {
+          old_length = this->length_;
+          this->length_ += this->socket_.receive(
+                             boost::asio::buffer(this->buffer_ + this->length_,
+                               sizeof(this->buffer_) - this->length_ - 1));
+          this->buffer_[this->length_] = '\0';
+        }
+      this->discard_ = strcspn(this->buffer_, "\n");
+      this->buffer_[this->discard_] = '\0';
+      this->discard_++;
+    } while (!this->buffer_[0]); // Empty string
+  return (this->buffer_);
+}
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                               NetworkInput                                  *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Static objects            *
+*                                     *
+**************************************/
+
+static boost::mutex             gl_mutex;
+static std::list<NetworkInput*> gl_ni;
+
+static void networkinput_destruction() throw ()
+{
+  try
+    {
+      boost::unique_lock<boost::mutex> lock(gl_mutex);
+
+      while (!gl_ni.empty())
+        {
+          std::list<NetworkInput*>::iterator it;
+
+          it = gl_ni.begin();
+          lock.unlock();
+          delete (*it);
+          lock.lock();
+        }
+    }
+  catch (...)
+    {
+    }
+  return ;
+}
+
+namespace    CentreonBroker
+{
+  struct     NetworkInputDestructionRegistration
+  {
+             NetworkInputDestructionRegistration() throw ()
+    {
+      atexit(networkinput_destruction);
+    }
+  };
+}
+
+/**
+ *  This fake static object is used to register at startup the NetworkInput
+ *  cleanup function to run on termination.
+ */
+static CentreonBroker::NetworkInputDestructionRegistration gl_nidr;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  NetworkInput constructor.
+ */
+NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
+  : socket_(socket)
+{
+  this->thread_ = new boost::thread(boost::ref(*this));
+  this->thread_->detach();
+}
+
+/**
+ *  NetworkInput copy constructor.
+ */
+NetworkInput::NetworkInput(const NetworkInput& ni) : socket_(ni.socket_)
 {
   (void)ni;
 }
 
+/**
+ *  NetworkInput operator= overload.
+ */
 NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 {
   (void)ni;
   return (*this);
 }
 
-/**************************************
-*                                     *
-*            Public Methods           *
-*                                     *
-**************************************/
-
-NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
-  : socket_(socket)
+/**
+ *  Handle a host status event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 {
-  this->fd_ = socket.native();
-  this->thread_ = new boost::thread(boost::ref(*this));
-}
-
-NetworkInput::~NetworkInput()
-{
-  if (this->fd_ >= 0)
-    {
-      close(this->fd_);
-      this->thread_->join();
-    }
-}
-
-void NetworkInput::HandleHostStatus(FILE* stream)
-{
-  char buffer[2048];
+  char* buffer;
   const char* types = ">>>>SSSsssssttsttstttsttsssssssssdddssssiSSddi";
   static void (HostStatusEvent::* const set_double[])(double) =
     {
@@ -131,211 +299,107 @@ void NetworkInput::HandleHostStatus(FILE* stream)
   int cur_set_timet;
 
   cur_set_double = cur_set_int = cur_set_short = cur_set_str = cur_set_timet = 0;
-  fgets(buffer, sizeof(buffer), stream);
-  buffer[strlen(buffer) - 1] = '\0';
-  if (strcmp(buffer, "999\n"))
+  buffer = socket.GetLine();
+  if (strcmp(buffer, "999"))
     {
       HostStatusEvent* hse;
 
       hse = new HostStatusEvent;
       hse->SetNagiosInstance(this->instance_);
       for (int i = 0; types[i]; i++)
-	{
-	  switch (types[i])
-	    {
-	    case 'd': // double
-	      (hse->*set_double[cur_set_double++])(strtod(strchr(buffer, '=') + 1, NULL));
-	      break ;
-	    case 'i': // int
-	      (hse->*set_int[cur_set_int++])(atoi(strchr(buffer, '=') + 1));
-	      break ;
-	    case 's': // short
-	      (hse->*set_short[cur_set_short++])(atoi(strchr(buffer, '=') + 1));
-	      break ;
-	    case 'S': // string
-	      (hse->*set_str[cur_set_str++])(strchr(buffer, '=') + 1);
-	      break ;
-	    case 't': // time_t
-	      (hse->*set_timet[cur_set_timet++])(atoi(strchr(buffer, '=') + 1));
-	      break ;
-	    case '>': // skip
-	      break ;
-	    default:
-	      assert(false);
-	    }
-	  fgets(buffer, sizeof(buffer), stream);
-	  buffer[strlen(buffer) - 1] = '\0';
-	}
+        {
+          switch (types[i])
+            {
+             case 'd': // double
+              (hse->*set_double[cur_set_double++])(strtod(strchr(buffer, '=') + 1, NULL));
+              break ;
+             case 'i': // int
+              (hse->*set_int[cur_set_int++])(atoi(strchr(buffer, '=') + 1));
+              break ;
+             case 's': // short
+              (hse->*set_short[cur_set_short++])(atoi(strchr(buffer, '=') + 1));
+              break ;
+             case 'S': // string
+              (hse->*set_str[cur_set_str++])(strchr(buffer, '=') + 1);
+              break ;
+             case 't': // time_t
+              (hse->*set_timet[cur_set_timet++])(atoi(strchr(buffer, '=') + 1));
+              break ;
+             case '>': // skip
+              break ;
+             default:
+              assert(false);
+            }
+          buffer = socket.GetLine();
+        }
       EventPublisher::GetInstance()->Publish(hse);
     }
   return ;
 }
 
+/**************************************
+*                                     *
+*            Public Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  NetworkInput destructor.
+ */
+NetworkInput::~NetworkInput() throw ()
+{
+  // We might end up here and the object already been destroyed so let's be
+  // extra careful.
+  try
+    {
+      boost::unique_lock<boost::mutex> lock(gl_mutex);
+      std::list<NetworkInput*>::iterator it;
+
+      // XXX : use std::algorithm
+      for (it = gl_ni.begin(); it != gl_ni.end(); it++)
+        if (*it == this)
+          {
+            gl_ni.erase(it);
+            if (this->socket_.is_open())
+              {
+                boost::system::error_code ec;
+
+                this->socket_.shutdown(
+                  boost::asio::ip::tcp::socket::shutdown_both,
+                  ec);
+                this->socket_.close(ec);
+                delete (&this->socket_);
+              }
+            break ;
+          }
+      delete (this->thread_);
+    }
+  catch (...)
+    {
+    }
+}
+
+/**
+ *  This is the thread entry point.
+ */
 void NetworkInput::operator()()
 {
-  char buffer[2048];
-  FILE* stream;
+  char* buffer;
+  ProtocolSocket socket(this->socket_);
 
-  // XXX : those are test stuff
-  stream = fdopen(this->fd_, "r+");
-  for (int i = 0; i < 11; i++)
-    fgets(buffer, sizeof(buffer), stream);
-  buffer[strlen(buffer) - 1] = '\0';
-  this->instance_ = strchr(buffer, ':') + 1;
-  while (fgets(buffer, sizeof(buffer), stream))
+  try
     {
-      if (!strcmp(buffer, "212:\n"))
-	HandleHostStatus(stream);
-      else if (!strcmp(buffer, "213:\n")) // service status
+      while (1)
 	{
-	  fgets(buffer, sizeof(buffer), stream); // NDO_DATA_TYPE
-	  if (strcmp(buffer, "999\n"))
-	    {
-	      ServiceStatusEvent *sse = new ServiceStatusEvent;
-
-	      sse->SetNagiosInstance(this->instance_);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_FLAGS
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_ATTRIBUTES
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_TIMESTAMP
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_HOST
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetHost(buffer);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_SERVICE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetService(buffer);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_OUTPUT
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetOutput(strchr(buffer, '=') + 1);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_PERFDATA
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetPerfdata(strchr(buffer, '=') + 1);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_CURRENTSTATE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCurrentState(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_HASBEENCHECKED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetHasBeenChecked(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_SHOULDBESCHEDULED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetShouldBeScheduled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_CURRENTCHECKATTTEMPT
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCurrentCheckAttempt(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_MAXCHECKATTEMPTS
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetMaxCheckAttempts(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTSERVICECHECK
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastCheck(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_NEXTSERVICECHECK
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetNextCheck(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_CHECKTYPE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCheckType(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTSTATECHANGE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastStateChange(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTHARDSTATECHANGE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastHardStateChange(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTHARDSTATE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastHardState(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTTIMEOK
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastTimeOk(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTTIMEWARNING
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastTimeWarning(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTTIMEUNKNOWN
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastTimeUnknown(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTTIMECRITICAL
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastTimeCritical(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_STATETYPE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetStateType(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LASTSERVICENOTIFICATION
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLastNotification(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_NEXTSERVICENOTIFICATION
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetNextNotification(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_NOMORENOTIFICATIONS
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetNoMoreNotifications(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_NOTIFICATIONSENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetNotificationsEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_PROBLEMHASBEENACKNOWLEDGED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetProblemHasBeenAcknowledged(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_ACKNOWLEDGEMENTTYPE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetAcknowledgementType(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_CURRENTNOTIFICATIONUMBER
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCurrentNotificationNumber(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_PASSIVESERVICECHECKSENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetPassiveChecksEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_EVENTHANDLERENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetEventHandlerEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_ACTIVESERVICECHECKSENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetActiveChecksEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_FLAPDETECTIONENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetFlapDetectionEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_ISFLAPPING
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetIsFlapping(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_PERCENTSTATECHANGE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetPercentStateChange(strtod(strchr(buffer, '=') + 1, NULL));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_LATENCY
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetLatency(strtod(strchr(buffer, '=') + 1, NULL));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_EXECUTIONTIME
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetExecutionTime(strtod(strchr(buffer, '=') + 1, NULL));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_SCHEDULEDDOWNTIMEDEPTH
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetScheduledDowntimeDepth(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_FAILUREPREDICTIONENABLED
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetFailurePredictionEnabled(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_PROCESSPERFORMANCEDATA
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetProcessPerformanceData(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_OBSESSOVERSERVICE
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetObsessOver(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_MODIFIEDSERVICEATTRIBUTES
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetModifiedAttributes(atoi(strchr(buffer, '=') + 1));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_EVENTHANDLER
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetEventHandler(strchr(buffer, '=') + 1);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_CHECKCOMMAND
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCheckCommand(strchr(buffer, '=') + 1);
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_NORMALCHECKINTERVAL
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetNormalCheckInterval(strtod(strchr(buffer, '=') + 1, NULL));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_RETRYCHECKINTERVAL
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetRetryCheckInterval(strtod(strchr(buffer, '=') + 1, NULL));
-	      fgets(buffer, sizeof(buffer), stream); // NDO_DATA_SERVICECHECKPERIOD
-	      buffer[strlen(buffer) - 1] = '\0';
-	      sse->SetCheckTimeperiodObjectId(atoi(strchr(buffer, '=') + 1));
-	      EventPublisher::GetInstance()->Publish(sse);
-	    }
+	  buffer = socket.GetLine();
+	  if (!strcmp(buffer, "212:"))
+	    this->HandleHostStatus(socket);
 	}
     }
-  fclose(stream);
+  catch (...)
+    {
+      // XXX : some error message, somewhere
+    }
+  delete (this);
   return ;
 }

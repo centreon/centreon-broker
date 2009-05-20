@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_INPUT_H_
@@ -15,30 +15,33 @@
 
 # include <boost/asio.hpp>
 # include <boost/thread.hpp>
-# include <cstdio>
+# include <cstddef>
 # include <string>
 
-namespace         CentreonBroker
+namespace                           CentreonBroker
 {
+  class                             ProtocolSocket;
+
   /**
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
    */
-  class                           NetworkInput
+  class                             NetworkInput
   {
+    friend class                    NetworkAcceptor;
+
    private:
-    int                           fd_;
-    std::string                   instance_;
-    boost::asio::ip::tcp::socket& socket_;
-    boost::thread*                thread_;
-                                  NetworkInput(const NetworkInput& ni);
-    NetworkInput&                 operator=(const NetworkInput& ni);
-    void                          HandleHostStatus(FILE* stream);
+    std::string                     instance_;
+    boost::asio::ip::tcp::socket&   socket_;
+    boost::thread*                  thread_;
+                                    NetworkInput(boost::asio::ip::tcp::socket&);
+                                    NetworkInput(const NetworkInput& ni);
+    NetworkInput&                   operator=(const NetworkInput& ni);
+    void                            HandleHostStatus(ProtocolSocket& socket);
 
    public:
-                                  NetworkInput(boost::asio::ip::tcp::socket&);
-                                  ~NetworkInput();
-    void                          operator()();
+                                    ~NetworkInput() throw ();
+    void                            operator()();
   };
 }
 

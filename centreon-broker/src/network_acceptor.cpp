@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -87,10 +87,6 @@ NetworkAcceptor::~NetworkAcceptor() throw ()
     this->acceptor_.close();
   if (this->new_socket_)
     delete (this->new_socket_);
-  for (std::list<NetworkInput*>::iterator it = this->ni_.begin();
-       it != this->ni_.end();
-       it++)
-    delete (*it);
 }
 
 /**
@@ -133,7 +129,6 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
         {
           ni = NULL;
           ni = new NetworkInput(*this->new_socket_);
-          this->ni_.push_back(ni);
         }
       catch (std::exception& e)
         {
