@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -39,7 +39,7 @@ using namespace CentreonBroker;
  *  MySQLOutput copy constructor.
  */
 MySQLOutput::MySQLOutput(const MySQLOutput& mysqlo)
-  : EventSubscriber(), Thread()
+  : EventSubscriber()
 {
   (void)mysqlo;
 }
@@ -60,10 +60,7 @@ void MySQLOutput::Commit()
 {
   this->myconn_->commit();
   this->queries_count_ = 0;
-  // If the clock is not working, there's nothing we can do.
-  clock_gettime(CLOCK_REALTIME, &this->ts_);
-  // XXX : commit time interval shall be configurable
-  this->ts_.tv_sec += 10;
+  this->timeout_ = boost::get_system_time() + boost::posix_time::seconds(10);
   return ;
 }
 
@@ -501,9 +498,9 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
 Event* MySQLOutput::WaitEvent()
 {
   Event* event;
+  boost::unique_lock<boost::mutex> lock(this->eventsm_);
 
   event = NULL;
-  this->eventsm_.Lock();
   while (!this->exit_thread_ || !this->events_.empty())
     {
       bool wait_return;
@@ -517,24 +514,21 @@ Event* MySQLOutput::WaitEvent()
 	}
       try
 	{
-	  wait_return = this->eventscv_.TimedWait(this->eventsm_, &this->ts_);
+	  wait_return = this->eventscv_.timed_wait(lock,
+                                                   this->timeout_);
 	}
       catch (Exception& e)
 	{
-	  // Even when an error occur, the mutex shall be locked. It is our
-	  // responsability to release it.
-	  this->eventsm_.Unlock();
 	  throw ;
 	}
       // The timeout occured, so commit data.
-      if (wait_return)
+      if (!wait_return)
 	{
-	  this->eventsm_.Unlock();
+	  lock.unlock();
 	  this->Commit();
-	  this->eventsm_.Lock();
+	  lock.lock();
 	}
     }
-  this->eventsm_.Unlock();
   return (event);
 }
 
@@ -548,11 +542,11 @@ void MySQLOutput::OnEvent(Event* e) throw ()
   mutex_locked = false;
   try
     {
-      this->eventsm_.Lock();
+      this->eventsm_.lock();
       mutex_locked = true;
       this->events_.push_back(e);
       e->AddReader(this);
-      this->eventscv_.Broadcast();
+      this->eventscv_.notify_all();
     }
   catch (...)
     {
@@ -562,7 +556,7 @@ void MySQLOutput::OnEvent(Event* e) throw ()
   if (mutex_locked)
     try
       {
-	this->eventsm_.Unlock();
+	this->eventsm_.unlock();
       }
     catch (...)
       {
@@ -574,7 +568,7 @@ void MySQLOutput::OnEvent(Event* e) throw ()
  *  This function waits for queries to be executed on the server on its own
  *  thread.
  */
-int MySQLOutput::Core()
+void MySQLOutput::operator()()
 {
   while (!this->exit_thread_ || !this->events_.empty())
     {
@@ -583,10 +577,8 @@ int MySQLOutput::Core()
           Event* event;
 
           this->Connect();
-          // If the clock is not working, there's nothing we can do.
-          clock_gettime(CLOCK_REALTIME, &this->ts_);
-	  // XXX : commit time interval shall be configurable
-	  this->ts_.tv_sec += 10;
+	  this->timeout_ = boost::get_system_time()
+                           + boost::posix_time::seconds(10);
           event = this->WaitEvent();
           while (event)
             {
@@ -600,9 +592,9 @@ int MySQLOutput::Core()
           std::cerr << "Recoverable MySQL error" << std::endl
                     << "    " << e.what() << std::endl;
         }
-      catch (...)
+      catch (Exception& e)
         {
-	  std::cerr << "Unrecoverable error (" << __FUNCTION__ << ')'
+	  std::cerr << "Unrecoverable error (" << e.what() << ')'
                     << std::endl;
           break ;
         }
@@ -610,7 +602,7 @@ int MySQLOutput::Core()
       // XXX : mysql retry interval shall be configurable
       sleep(10);
     }
-  return (0);
+  return ;
 }
 
 /**************************************
@@ -643,7 +635,7 @@ MySQLOutput::~MySQLOutput()
 void MySQLOutput::Destroy()
 {
   this->exit_thread_ = true;
-  this->Join();
+  this->thread_->join();
   return ;
 }
 
@@ -661,6 +653,6 @@ void MySQLOutput::Init(const std::string& host,
   this->user_ = user;
   this->password_ = password;
   this->db_ = db;
-  this->Run();
+  this->thread_ = new boost::thread(boost::ref(*this));
   return ;
 }

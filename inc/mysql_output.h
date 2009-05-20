@@ -13,12 +13,11 @@
 #ifndef MYSQL_OUTPUT_H_
 # define MYSQL_OUTPUT_H_
 
+# include <boost/thread.hpp>
 # include <list>
 # include <string>
-# include "condition_variable.h"
 # include "event_subscriber.h"
-# include "mutex.h"
-# include "thread.h"
+# include "exception.h"
 
 // XXX
 # include <mysql_connection.h>
@@ -30,7 +29,7 @@ namespace                      CentreonBroker
   class                        ServiceStatusEvent;
 
   class                        MySQLOutput
-    : private EventSubscriber, private Thread
+    : private EventSubscriber
     {
       // Initialization parameters
       std::string              host_;
@@ -42,13 +41,14 @@ namespace                      CentreonBroker
       sql::PreparedStatement** stmts_;
       // MySQL performance objects
       int                      queries_count_;
-      struct timespec          ts_;
+      boost::system_time       timeout_;
       // Events processing
       std::list<Event*>        events_;
-      ConditionVariable        eventscv_;
-      Mutex                    eventsm_;
+      boost::condition_variable eventscv_;
+      boost::mutex              eventsm_;
       // Thread specific parameter
       volatile bool            exit_thread_;
+      boost::thread*           thread_;
 
                                MySQLOutput(const MySQLOutput& mysqlo);
       MySQLOutput&             operator=(const MySQLOutput& mysqlo);
@@ -67,9 +67,6 @@ namespace                      CentreonBroker
       // EventSubscriber
       void                     OnEvent(Event* e) throw ();
 
-      // Thread
-      int                      Core();
-
      public:
                                MySQLOutput();
                                ~MySQLOutput();
@@ -78,6 +75,8 @@ namespace                      CentreonBroker
                                     const std::string& user,
                                     const std::string& password,
                                     const std::string& db);
+      // Thread
+      void                     operator()();
     };
 }
 

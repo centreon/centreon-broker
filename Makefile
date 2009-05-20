@@ -14,20 +14,17 @@ CXX		=	g++
 RM		=	rm -rf
 
 SRC		=	src/cb2db.cpp				\
-			src/condition_variable.cpp		\
 			src/event.cpp				\
 			src/event_publisher.cpp			\
 			src/event_subscriber.cpp		\
 			src/exception.cpp			\
 			src/host_service_status_event.cpp	\
 			src/host_status_event.cpp		\
-			src/mutex.cpp				\
 			src/mysql_output.cpp			\
 			src/network_acceptor.cpp		\
 			src/network_input.cpp			\
 			src/service_status_event.cpp		\
-			src/status_event.cpp			\
-			src/thread.cpp
+			src/status_event.cpp
 OBJ		=	$(SRC:.cpp=.o)
 
 NAME		=	cb2db

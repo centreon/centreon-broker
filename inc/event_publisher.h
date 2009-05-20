@@ -13,8 +13,8 @@
 #ifndef EVENT_PUBLISHER_H_
 # define EVENT_PUBLISHER_H_
 
+# include <boost/thread/mutex.hpp>
 # include <list>
-# include "mutex.h"
 
 namespace                       CentreonBroker
 {
@@ -31,9 +31,9 @@ namespace                       CentreonBroker
   {
    private:
     std::list<EventSubscriber*> subscribers_;
-    Mutex                       subscribersm_;
+    boost::mutex                subscribersm_;
     static EventPublisher*      instance_;
-    static Mutex                instancem_;
+    static boost::mutex         instancem_;
                                 EventPublisher();
                                 EventPublisher(const
                                                EventPublisher& ep);
