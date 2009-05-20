@@ -1,5 +1,5 @@
 /*
-** service_status_event.cpp for CentreonBroker in ./src
+** service_status.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,12 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cstring>
 #include <string>
-#include "service_status_event.h"
+#include "service_status.h"
 
 using namespace CentreonBroker;
 
@@ -23,10 +23,10 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Make a copy of all internal members of ServiceStatusEvent to the current
+ *  Make a copy of all internal members of ServiceStatus to the current
  *  instance.
  */
-void ServiceStatusEvent::InternalCopy(const ServiceStatusEvent& sse)
+void ServiceStatus::InternalCopy(const ServiceStatus& sse)
 {
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = sse.strings_[i];
@@ -41,35 +41,35 @@ void ServiceStatusEvent::InternalCopy(const ServiceStatusEvent& sse)
 **************************************/
 
 /**
- *  ServiceStatusEvent default constructor.
+ *  ServiceStatus default constructor.
  */
-ServiceStatusEvent::ServiceStatusEvent()
+ServiceStatus::ServiceStatus()
 {
   memset(this->timets_, 0, sizeof(this->timets_));
 }
 
 /**
- *  ServiceStatusEvent copy constructor.
+ *  ServiceStatus copy constructor.
  */
-ServiceStatusEvent::ServiceStatusEvent(const ServiceStatusEvent& sse)
-  : HostServiceStatusEvent(sse)
+ServiceStatus::ServiceStatus(const ServiceStatus& sse)
+  : HostServiceStatus(sse)
 {
   this->InternalCopy(sse);
 }
 
 /**
- *  ServiceStatusEvent destructor.
+ *  ServiceStatus destructor.
  */
-ServiceStatusEvent::~ServiceStatusEvent()
+ServiceStatus::~ServiceStatus()
 {
 }
 
 /**
- *  ServiceStatusEvent operator= overload.
+ *  ServiceStatus operator= overload.
  */
-ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
+ServiceStatus& ServiceStatus::operator=(const ServiceStatus& s)
 {
-  this->HostServiceStatusEvent::operator=(s);
+  this->HostServiceStatus::operator=(s);
   this->InternalCopy(s);
   return (*this);
 }
@@ -77,7 +77,7 @@ ServiceStatusEvent& ServiceStatusEvent::operator=(const ServiceStatusEvent& s)
 /**
  *  Returns the type of the event.
  */
-int ServiceStatusEvent::GetType() const throw ()
+int ServiceStatus::GetType() const throw ()
 {
   // XXX : hardcoded value
   return (1);
@@ -86,7 +86,7 @@ int ServiceStatusEvent::GetType() const throw ()
 /**
  *  Returns the host.
  */
-const std::string& ServiceStatusEvent::GetHost() const throw ()
+const std::string& ServiceStatus::GetHost() const throw ()
 {
   return (this->strings_[HOST]);
 }
@@ -94,7 +94,7 @@ const std::string& ServiceStatusEvent::GetHost() const throw ()
 /**
  *  Get the last_time_critical member.
  */
-time_t ServiceStatusEvent::GetLastTimeCritical() const throw ()
+time_t ServiceStatus::GetLastTimeCritical() const throw ()
 {
   return (this->timets_[LAST_TIME_CRITICAL]);
 }
@@ -102,7 +102,7 @@ time_t ServiceStatusEvent::GetLastTimeCritical() const throw ()
 /**
  *  Get the last_time_ok member.
  */
-time_t ServiceStatusEvent::GetLastTimeOk() const throw ()
+time_t ServiceStatus::GetLastTimeOk() const throw ()
 {
   return (this->timets_[LAST_TIME_OK]);
 }
@@ -110,7 +110,7 @@ time_t ServiceStatusEvent::GetLastTimeOk() const throw ()
 /**
  *  Get the last_time_unknown member.
  */
-time_t ServiceStatusEvent::GetLastTimeUnknown() const throw ()
+time_t ServiceStatus::GetLastTimeUnknown() const throw ()
 {
   return (this->timets_[LAST_TIME_UNKNOWN]);
 }
@@ -118,7 +118,7 @@ time_t ServiceStatusEvent::GetLastTimeUnknown() const throw ()
 /**
  *  Get the last_time_warning member.
  */
-time_t ServiceStatusEvent::GetLastTimeWarning() const throw ()
+time_t ServiceStatus::GetLastTimeWarning() const throw ()
 {
   return (this->timets_[LAST_TIME_WARNING]);
 }
@@ -126,7 +126,7 @@ time_t ServiceStatusEvent::GetLastTimeWarning() const throw ()
 /**
  *  Returns the service.
  */
-const std::string& ServiceStatusEvent::GetService() const throw ()
+const std::string& ServiceStatus::GetService() const throw ()
 {
   return (this->strings_[SERVICE]);
 }
@@ -134,7 +134,7 @@ const std::string& ServiceStatusEvent::GetService() const throw ()
 /**
  *  Sets the host on which the event appeared.
  */
-void ServiceStatusEvent::SetHost(const std::string& h)
+void ServiceStatus::SetHost(const std::string& h)
 {
   this->strings_[HOST] = h;
   return ;
@@ -143,7 +143,7 @@ void ServiceStatusEvent::SetHost(const std::string& h)
 /**
  *  Set the last_time_critical member.
  */
-void ServiceStatusEvent::SetLastTimeCritical(time_t ltc) throw ()
+void ServiceStatus::SetLastTimeCritical(time_t ltc) throw ()
 {
   this->timets_[LAST_TIME_CRITICAL] = ltc;
   return ;
@@ -152,7 +152,7 @@ void ServiceStatusEvent::SetLastTimeCritical(time_t ltc) throw ()
 /**
  *  Set the last_time_ok member.
  */
-void ServiceStatusEvent::SetLastTimeOk(time_t lto) throw ()
+void ServiceStatus::SetLastTimeOk(time_t lto) throw ()
 {
   this->timets_[LAST_TIME_OK] = lto;
   return ;
@@ -161,7 +161,7 @@ void ServiceStatusEvent::SetLastTimeOk(time_t lto) throw ()
 /**
  *  Set the last_time_unknown member.
  */
-void ServiceStatusEvent::SetLastTimeUnknown(time_t ltu) throw ()
+void ServiceStatus::SetLastTimeUnknown(time_t ltu) throw ()
 {
   this->timets_[LAST_TIME_UNKNOWN] = ltu;
   return ;
@@ -170,7 +170,7 @@ void ServiceStatusEvent::SetLastTimeUnknown(time_t ltu) throw ()
 /**
  *  Set the last_time_warning member.
  */
-void ServiceStatusEvent::SetLastTimeWarning(time_t ltw) throw ()
+void ServiceStatus::SetLastTimeWarning(time_t ltw) throw ()
 {
   this->timets_[LAST_TIME_WARNING] = ltw;
   return ;
@@ -179,7 +179,7 @@ void ServiceStatusEvent::SetLastTimeWarning(time_t ltw) throw ()
 /**
  *  Sets the service to which this event refers.
  */
-void ServiceStatusEvent::SetService(const std::string& s)
+void ServiceStatus::SetService(const std::string& s)
 {
   this->strings_[SERVICE] = s;
   return ;

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #ifndef MYSQL_OUTPUT_H_
@@ -25,8 +25,8 @@
 
 namespace                      CentreonBroker
 {
-  class                        HostStatusEvent;
-  class                        ServiceStatusEvent;
+  class                        HostStatus;
+  class                        ServiceStatus;
 
   class                        MySQLOutput
     : private EventSubscriber
@@ -59,9 +59,9 @@ namespace                      CentreonBroker
                                  throw (Exception);
       // XXX : remove ProcessEvent
       void                     ProcessEvent(Event* event);
-      sql::PreparedStatement*  ProcessHostStatusEvent(HostStatusEvent* hse);
+      sql::PreparedStatement*  ProcessHostStatusEvent(HostStatus* hse);
       sql::PreparedStatement*  ProcessServiceStatusEvent(
-                                 ServiceStatusEvent* sse);
+                                 ServiceStatus* sse);
       Event*                   WaitEvent();
 
       // EventSubscriber

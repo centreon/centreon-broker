@@ -1,5 +1,5 @@
 /*
-** host_service_status_event.cpp for CentreonBroker in ./src
+** host_service_status.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,12 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cstring>
 #include <string>
-#include "host_service_status_event.h"
+#include "host_service_status.h"
 
 using namespace CentreonBroker;
 
@@ -23,10 +23,10 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Make a copy of all internal members of HostServiceStatusEvent to the
+ *  Make a copy of all internal members of HostServiceStatus to the
  *  current instance.
  */
-void HostServiceStatusEvent::InternalCopy(const HostServiceStatusEvent& hsse)
+void HostServiceStatus::InternalCopy(const HostServiceStatus& hsse)
 {
   memcpy(this->doubles_, hsse.doubles_, sizeof(this->doubles_));
   memcpy(this->ints_, hsse.ints_, sizeof(this->ints_));
@@ -44,9 +44,9 @@ void HostServiceStatusEvent::InternalCopy(const HostServiceStatusEvent& hsse)
 **************************************/
 
 /**
- *  HostServiceStatusEvent default constructor.
+ *  HostServiceStatus default constructor.
  */
-HostServiceStatusEvent::HostServiceStatusEvent()
+HostServiceStatus::HostServiceStatus()
 {
   for (unsigned int i = 0; i < DOUBLE_NB; i++)
     this->doubles_[i] = 0.0;
@@ -56,28 +56,28 @@ HostServiceStatusEvent::HostServiceStatusEvent()
 }
 
 /**
- *  HostServiceStatusEvent copy constructor.
+ *  HostServiceStatus copy constructor.
  */
-HostServiceStatusEvent::HostServiceStatusEvent(const HostServiceStatusEvent& h)
-  : StatusEvent(h)
+HostServiceStatus::HostServiceStatus(const HostServiceStatus& h)
+  : Status(h)
 {
   this->InternalCopy(h);
 }
 
 /**
- *  HostServiceStatusEvent destructor.
+ *  HostServiceStatus destructor.
  */
-HostServiceStatusEvent::~HostServiceStatusEvent()
+HostServiceStatus::~HostServiceStatus()
 {
 }
 
 /**
- *  HostServiceStatusEvent operator= overload.
+ *  HostServiceStatus operator= overload.
  */
-HostServiceStatusEvent& HostServiceStatusEvent::operator=(const
-  HostServiceStatusEvent& hsse)
+HostServiceStatus& HostServiceStatus::operator=(const
+  HostServiceStatus& hsse)
 {
-  this->StatusEvent::operator=(hsse);
+  this->Status::operator=(hsse);
   this->InternalCopy(hsse);
   return (*this);
 }
@@ -85,7 +85,7 @@ HostServiceStatusEvent& HostServiceStatusEvent::operator=(const
 /**
  *  Get the acknowledgement_type member.
  */
-short HostServiceStatusEvent::GetAcknowledgementType() const throw ()
+short HostServiceStatus::GetAcknowledgementType() const throw ()
 {
   return (this->shorts_[ACKNOWLEDGEMENT_TYPE]);
 }
@@ -93,7 +93,7 @@ short HostServiceStatusEvent::GetAcknowledgementType() const throw ()
 /**
  *  Get the active_checks_enabled member.
  */
-short HostServiceStatusEvent::GetActiveChecksEnabled() const throw ()
+short HostServiceStatus::GetActiveChecksEnabled() const throw ()
 {
   return (this->shorts_[ACTIVE_CHECKS_ENABLED]);
 }
@@ -101,7 +101,7 @@ short HostServiceStatusEvent::GetActiveChecksEnabled() const throw ()
 /**
  *  Get the check_command member.
  */
-const std::string& HostServiceStatusEvent::GetCheckCommand() const throw ()
+const std::string& HostServiceStatus::GetCheckCommand() const throw ()
 {
   return (this->strings_[CHECK_COMMAND]);
 }
@@ -109,7 +109,7 @@ const std::string& HostServiceStatusEvent::GetCheckCommand() const throw ()
 /**
  *  Get the check_timeperiod_object_id member.
  */
-int HostServiceStatusEvent::GetCheckTimeperiodObjectId() const throw ()
+int HostServiceStatus::GetCheckTimeperiodObjectId() const throw ()
 {
   return (this->ints_[CHECK_TIMEPERIOD_OBJECT_ID]);
 }
@@ -117,7 +117,7 @@ int HostServiceStatusEvent::GetCheckTimeperiodObjectId() const throw ()
 /**
  *  Get the check_type member.
  */
-short HostServiceStatusEvent::GetCheckType() const throw ()
+short HostServiceStatus::GetCheckType() const throw ()
 {
   return (this->shorts_[CHECK_TYPE]);
 }
@@ -125,7 +125,7 @@ short HostServiceStatusEvent::GetCheckType() const throw ()
 /**
  *  Get the current_check_attempt member.
  */
-short HostServiceStatusEvent::GetCurrentCheckAttempt() const throw ()
+short HostServiceStatus::GetCurrentCheckAttempt() const throw ()
 {
   return (this->shorts_[CURRENT_CHECK_ATTEMPT]);
 }
@@ -133,7 +133,7 @@ short HostServiceStatusEvent::GetCurrentCheckAttempt() const throw ()
 /**
  *  Get the current_notification_number member.
  */
-short HostServiceStatusEvent::GetCurrentNotificationNumber() const throw ()
+short HostServiceStatus::GetCurrentNotificationNumber() const throw ()
 {
   return (this->shorts_[CURRENT_NOTIFICATION_NUMBER]);
 }
@@ -141,7 +141,7 @@ short HostServiceStatusEvent::GetCurrentNotificationNumber() const throw ()
 /**
  *  Get the current_state member.
  */
-short HostServiceStatusEvent::GetCurrentState() const throw ()
+short HostServiceStatus::GetCurrentState() const throw ()
 {
   return (this->shorts_[CURRENT_STATE]);
 }
@@ -149,7 +149,7 @@ short HostServiceStatusEvent::GetCurrentState() const throw ()
 /**
  *  Get the event_handler member.
  */
-const std::string& HostServiceStatusEvent::GetEventHandler() const throw ()
+const std::string& HostServiceStatus::GetEventHandler() const throw ()
 {
   return (this->strings_[EVENT_HANDLER]);
 }
@@ -157,7 +157,7 @@ const std::string& HostServiceStatusEvent::GetEventHandler() const throw ()
 /**
  *  Get the execution_time member.
  */
-double HostServiceStatusEvent::GetExecutionTime() const throw ()
+double HostServiceStatus::GetExecutionTime() const throw ()
 {
   return (this->doubles_[EXECUTION_TIME]);
 }
@@ -165,7 +165,7 @@ double HostServiceStatusEvent::GetExecutionTime() const throw ()
 /**
  *  Get the has_been_checked member.
  */
-short HostServiceStatusEvent::GetHasBeenChecked() const throw ()
+short HostServiceStatus::GetHasBeenChecked() const throw ()
 {
   return (this->shorts_[HAS_BEEN_CHECKED]);
 }
@@ -173,7 +173,7 @@ short HostServiceStatusEvent::GetHasBeenChecked() const throw ()
 /**
  *  Get the is_flapping member.
  */
-short HostServiceStatusEvent::GetIsFlapping() const throw ()
+short HostServiceStatus::GetIsFlapping() const throw ()
 {
   return (this->shorts_[IS_FLAPPING]);
 }
@@ -181,7 +181,7 @@ short HostServiceStatusEvent::GetIsFlapping() const throw ()
 /**
  *  Get the last_check member.
  */
-time_t HostServiceStatusEvent::GetLastCheck() const throw ()
+time_t HostServiceStatus::GetLastCheck() const throw ()
 {
   return (this->timets_[LAST_CHECK]);
 }
@@ -189,7 +189,7 @@ time_t HostServiceStatusEvent::GetLastCheck() const throw ()
 /**
  *  Get the last_hard_state member.
  */
-short HostServiceStatusEvent::GetLastHardState() const throw ()
+short HostServiceStatus::GetLastHardState() const throw ()
 {
   return (this->shorts_[LAST_HARD_STATE]);
 }
@@ -197,7 +197,7 @@ short HostServiceStatusEvent::GetLastHardState() const throw ()
 /**
  *  Get the last_hard_state_change member.
  */
-time_t HostServiceStatusEvent::GetLastHardStateChange() const throw ()
+time_t HostServiceStatus::GetLastHardStateChange() const throw ()
 {
   return (this->timets_[LAST_HARD_STATE_CHANGE]);
 }
@@ -205,7 +205,7 @@ time_t HostServiceStatusEvent::GetLastHardStateChange() const throw ()
 /**
  *  Get the last_notification member.
  */
-time_t HostServiceStatusEvent::GetLastNotification() const throw ()
+time_t HostServiceStatus::GetLastNotification() const throw ()
 {
   return (this->timets_[LAST_NOTIFICATION]);
 }
@@ -213,7 +213,7 @@ time_t HostServiceStatusEvent::GetLastNotification() const throw ()
 /**
  *  Get the last_state_change member.
  */
-time_t HostServiceStatusEvent::GetLastStateChange() const throw ()
+time_t HostServiceStatus::GetLastStateChange() const throw ()
 {
   return (this->timets_[LAST_STATE_CHANGE]);
 }
@@ -221,7 +221,7 @@ time_t HostServiceStatusEvent::GetLastStateChange() const throw ()
 /**
  *  Get the latency member.
  */
-double HostServiceStatusEvent::GetLatency() const throw ()
+double HostServiceStatus::GetLatency() const throw ()
 {
   return (this->doubles_[LATENCY]);
 }
@@ -229,7 +229,7 @@ double HostServiceStatusEvent::GetLatency() const throw ()
 /**
  *  Get the max_check_attempts member.
  */
-short HostServiceStatusEvent::GetMaxCheckAttempts() const throw ()
+short HostServiceStatus::GetMaxCheckAttempts() const throw ()
 {
   return (this->shorts_[MAX_CHECK_ATTEMPTS]);
 }
@@ -237,7 +237,7 @@ short HostServiceStatusEvent::GetMaxCheckAttempts() const throw ()
 /**
  *  Get the modified_attributes member.
  */
-int HostServiceStatusEvent::GetModifiedAttributes() const throw ()
+int HostServiceStatus::GetModifiedAttributes() const throw ()
 {
   return (this->ints_[MODIFIED_ATTRIBUTES]);
 }
@@ -245,7 +245,7 @@ int HostServiceStatusEvent::GetModifiedAttributes() const throw ()
 /**
  *  Get the next_check member.
  */
-time_t HostServiceStatusEvent::GetNextCheck() const throw ()
+time_t HostServiceStatus::GetNextCheck() const throw ()
 {
   return (this->timets_[NEXT_CHECK]);
 }
@@ -253,7 +253,7 @@ time_t HostServiceStatusEvent::GetNextCheck() const throw ()
 /**
  *  Get the next_notification member.
  */
-time_t HostServiceStatusEvent::GetNextNotification() const throw ()
+time_t HostServiceStatus::GetNextNotification() const throw ()
 {
   return (this->timets_[NEXT_NOTIFICATION]);
 }
@@ -261,7 +261,7 @@ time_t HostServiceStatusEvent::GetNextNotification() const throw ()
 /**
  *  Get the no_more_notifications member.
  */
-short HostServiceStatusEvent::GetNoMoreNotifications() const throw ()
+short HostServiceStatus::GetNoMoreNotifications() const throw ()
 {
   return (this->shorts_[NO_MORE_NOTIFICATIONS]);
 }
@@ -269,7 +269,7 @@ short HostServiceStatusEvent::GetNoMoreNotifications() const throw ()
 /**
  *  Get the normal_check_interval member.
  */
-double HostServiceStatusEvent::GetNormalCheckInterval() const throw ()
+double HostServiceStatus::GetNormalCheckInterval() const throw ()
 {
   return (this->doubles_[NORMAL_CHECK_INTERVAL]);
 }
@@ -277,7 +277,7 @@ double HostServiceStatusEvent::GetNormalCheckInterval() const throw ()
 /**
  *  Get the obsess_over member.
  */
-short HostServiceStatusEvent::GetObsessOver() const throw ()
+short HostServiceStatus::GetObsessOver() const throw ()
 {
   return (this->shorts_[OBSESS_OVER]);
 }
@@ -285,7 +285,7 @@ short HostServiceStatusEvent::GetObsessOver() const throw ()
 /**
  *  Get the output member.
  */
-const std::string& HostServiceStatusEvent::GetOutput() const throw ()
+const std::string& HostServiceStatus::GetOutput() const throw ()
 {
   return (this->strings_[OUTPUT]);
 }
@@ -293,7 +293,7 @@ const std::string& HostServiceStatusEvent::GetOutput() const throw ()
 /**
  *  Get the passive_checks_enabled member.
  */
-short HostServiceStatusEvent::GetPassiveChecksEnabled() const throw ()
+short HostServiceStatus::GetPassiveChecksEnabled() const throw ()
 {
   return (this->shorts_[PASSIVE_CHECKS_ENABLED]);
 }
@@ -301,7 +301,7 @@ short HostServiceStatusEvent::GetPassiveChecksEnabled() const throw ()
 /**
  *  Get the percent_state_change member.
  */
-double HostServiceStatusEvent::GetPercentStateChange() const throw ()
+double HostServiceStatus::GetPercentStateChange() const throw ()
 {
   return (this->doubles_[PERCENT_STATE_CHANGE]);
 }
@@ -309,7 +309,7 @@ double HostServiceStatusEvent::GetPercentStateChange() const throw ()
 /**
  *  Get the perfdata member.
  */
-const std::string& HostServiceStatusEvent::GetPerfdata() const throw ()
+const std::string& HostServiceStatus::GetPerfdata() const throw ()
 {
   return (this->strings_[PERFDATA]);
 }
@@ -317,7 +317,7 @@ const std::string& HostServiceStatusEvent::GetPerfdata() const throw ()
 /**
  *  Get the problem_has_been_acknowledged member.
  */
-short HostServiceStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
+short HostServiceStatus::GetProblemHasBeenAcknowledged() const throw ()
 {
   return (this->shorts_[PROBLEM_HAS_BEEN_ACKNOWLEDGED]);
 }
@@ -325,7 +325,7 @@ short HostServiceStatusEvent::GetProblemHasBeenAcknowledged() const throw ()
 /**
  *  Get the retry_check_interval member.
  */
-double HostServiceStatusEvent::GetRetryCheckInterval() const throw ()
+double HostServiceStatus::GetRetryCheckInterval() const throw ()
 {
   return (this->doubles_[RETRY_CHECK_INTERVAL]);
 }
@@ -333,7 +333,7 @@ double HostServiceStatusEvent::GetRetryCheckInterval() const throw ()
 /**
  *  Get the scheduled_downtime_depth member.
  */
-short HostServiceStatusEvent::GetScheduledDowntimeDepth() const throw ()
+short HostServiceStatus::GetScheduledDowntimeDepth() const throw ()
 {
   return (this->shorts_[SCHEDULED_DOWNTIME_DEPTH]);
 }
@@ -341,7 +341,7 @@ short HostServiceStatusEvent::GetScheduledDowntimeDepth() const throw ()
 /**
  *  Get the should_be_scheduled member.
  */
-short HostServiceStatusEvent::GetShouldBeScheduled() const throw ()
+short HostServiceStatus::GetShouldBeScheduled() const throw ()
 {
   return (this->shorts_[SHOULD_BE_SCHEDULED]);
 }
@@ -349,7 +349,7 @@ short HostServiceStatusEvent::GetShouldBeScheduled() const throw ()
 /**
  *  Get the state_type member.
  */
-short HostServiceStatusEvent::GetStateType() const throw ()
+short HostServiceStatus::GetStateType() const throw ()
 {
   return (this->shorts_[STATE_TYPE]);
 }
@@ -357,7 +357,7 @@ short HostServiceStatusEvent::GetStateType() const throw ()
 /**
  *  Set the acknowledgement_type member.
  */
-void HostServiceStatusEvent::SetAcknowledgementType(short at) throw ()
+void HostServiceStatus::SetAcknowledgementType(short at) throw ()
 {
   this->shorts_[ACKNOWLEDGEMENT_TYPE] = at;
   return ;
@@ -366,7 +366,7 @@ void HostServiceStatusEvent::SetAcknowledgementType(short at) throw ()
 /**
  *  Set the active_checks_enabled member.
  */
-void HostServiceStatusEvent::SetActiveChecksEnabled(short ace) throw ()
+void HostServiceStatus::SetActiveChecksEnabled(short ace) throw ()
 {
   this->shorts_[ACTIVE_CHECKS_ENABLED] = ace;
   return ;
@@ -375,7 +375,7 @@ void HostServiceStatusEvent::SetActiveChecksEnabled(short ace) throw ()
 /**
  *  Set the check_command member.
  */
-void HostServiceStatusEvent::SetCheckCommand(const std::string& cc)
+void HostServiceStatus::SetCheckCommand(const std::string& cc)
 {
   this->strings_[CHECK_COMMAND] = cc;
   return ;
@@ -384,7 +384,7 @@ void HostServiceStatusEvent::SetCheckCommand(const std::string& cc)
 /**
  *  Set the check_timeperiod_object_id member.
  */
-void HostServiceStatusEvent::SetCheckTimeperiodObjectId(int ctoi) throw ()
+void HostServiceStatus::SetCheckTimeperiodObjectId(int ctoi) throw ()
 {
   this->ints_[CHECK_TIMEPERIOD_OBJECT_ID] = ctoi;
   return ;
@@ -393,7 +393,7 @@ void HostServiceStatusEvent::SetCheckTimeperiodObjectId(int ctoi) throw ()
 /**
  *  Set the check_type member.
  */
-void HostServiceStatusEvent::SetCheckType(short ct) throw ()
+void HostServiceStatus::SetCheckType(short ct) throw ()
 {
   this->shorts_[CHECK_TYPE] = ct;
   return ;
@@ -402,7 +402,7 @@ void HostServiceStatusEvent::SetCheckType(short ct) throw ()
 /**
  *  Set the current_check_attempt member.
  */
-void HostServiceStatusEvent::SetCurrentCheckAttempt(short cca) throw ()
+void HostServiceStatus::SetCurrentCheckAttempt(short cca) throw ()
 {
   this->shorts_[CURRENT_CHECK_ATTEMPT] = cca;
   return ;
@@ -411,7 +411,7 @@ void HostServiceStatusEvent::SetCurrentCheckAttempt(short cca) throw ()
 /**
  *  Set the current_notification_number member.
  */
-void HostServiceStatusEvent::SetCurrentNotificationNumber(short cnn) throw ()
+void HostServiceStatus::SetCurrentNotificationNumber(short cnn) throw ()
 {
   this->shorts_[CURRENT_NOTIFICATION_NUMBER] = cnn;
   return ;
@@ -420,7 +420,7 @@ void HostServiceStatusEvent::SetCurrentNotificationNumber(short cnn) throw ()
 /**
  *  Set the current_state member.
  */
-void HostServiceStatusEvent::SetCurrentState(short cs) throw ()
+void HostServiceStatus::SetCurrentState(short cs) throw ()
 {
   this->shorts_[CURRENT_STATE] = cs;
   return ;
@@ -429,7 +429,7 @@ void HostServiceStatusEvent::SetCurrentState(short cs) throw ()
 /**
  *  Set the event_handler member.
  */
-void HostServiceStatusEvent::SetEventHandler(const std::string& eh)
+void HostServiceStatus::SetEventHandler(const std::string& eh)
 {
   this->strings_[EVENT_HANDLER] = eh;
   return ;
@@ -438,7 +438,7 @@ void HostServiceStatusEvent::SetEventHandler(const std::string& eh)
 /**
  *  Set the execution_time member.
  */
-void HostServiceStatusEvent::SetExecutionTime(double et) throw ()
+void HostServiceStatus::SetExecutionTime(double et) throw ()
 {
   this->doubles_[EXECUTION_TIME] = et;
   return ;
@@ -447,7 +447,7 @@ void HostServiceStatusEvent::SetExecutionTime(double et) throw ()
 /**
  *  Set the has_been_checked member.
  */
-void HostServiceStatusEvent::SetHasBeenChecked(short hbc) throw ()
+void HostServiceStatus::SetHasBeenChecked(short hbc) throw ()
 {
   this->shorts_[HAS_BEEN_CHECKED] = hbc;
   return ;
@@ -456,7 +456,7 @@ void HostServiceStatusEvent::SetHasBeenChecked(short hbc) throw ()
 /**
  *  Set the is_flapping member.
  */
-void HostServiceStatusEvent::SetIsFlapping(short i_f) throw ()
+void HostServiceStatus::SetIsFlapping(short i_f) throw ()
 {
   this->shorts_[IS_FLAPPING] = i_f;
   return ;
@@ -465,7 +465,7 @@ void HostServiceStatusEvent::SetIsFlapping(short i_f) throw ()
 /**
  *  Set the last_check member.
  */
-void HostServiceStatusEvent::SetLastCheck(time_t lc) throw ()
+void HostServiceStatus::SetLastCheck(time_t lc) throw ()
 {
   this->timets_[LAST_CHECK] = lc;
   return ;
@@ -474,7 +474,7 @@ void HostServiceStatusEvent::SetLastCheck(time_t lc) throw ()
 /**
  *  Set the last_hard_state member.
  */
-void HostServiceStatusEvent::SetLastHardState(short lhs) throw ()
+void HostServiceStatus::SetLastHardState(short lhs) throw ()
 {
   this->shorts_[LAST_HARD_STATE] = lhs;
   return ;
@@ -483,7 +483,7 @@ void HostServiceStatusEvent::SetLastHardState(short lhs) throw ()
 /**
  *  Set the last_hard_state_change member.
  */
-void HostServiceStatusEvent::SetLastHardStateChange(time_t lhsc) throw ()
+void HostServiceStatus::SetLastHardStateChange(time_t lhsc) throw ()
 {
   this->timets_[LAST_HARD_STATE_CHANGE] = lhsc;
   return ;
@@ -492,7 +492,7 @@ void HostServiceStatusEvent::SetLastHardStateChange(time_t lhsc) throw ()
 /**
  *  Set the last_notification member.
  */
-void HostServiceStatusEvent::SetLastNotification(time_t ln) throw ()
+void HostServiceStatus::SetLastNotification(time_t ln) throw ()
 {
   this->timets_[LAST_NOTIFICATION] = ln;
   return ;
@@ -501,7 +501,7 @@ void HostServiceStatusEvent::SetLastNotification(time_t ln) throw ()
 /**
  *  Set the last_state_change member.
  */
-void HostServiceStatusEvent::SetLastStateChange(time_t lsc) throw ()
+void HostServiceStatus::SetLastStateChange(time_t lsc) throw ()
 {
   this->timets_[LAST_STATE_CHANGE] = lsc;
   return ;
@@ -510,7 +510,7 @@ void HostServiceStatusEvent::SetLastStateChange(time_t lsc) throw ()
 /**
  *  Set the latency member.
  */
-void HostServiceStatusEvent::SetLatency(double l) throw ()
+void HostServiceStatus::SetLatency(double l) throw ()
 {
   this->doubles_[LATENCY] = l;
   return ;
@@ -519,7 +519,7 @@ void HostServiceStatusEvent::SetLatency(double l) throw ()
 /**
  *  Set the max_check_attempts member.
  */
-void HostServiceStatusEvent::SetMaxCheckAttempts(short mca) throw ()
+void HostServiceStatus::SetMaxCheckAttempts(short mca) throw ()
 {
   this->shorts_[MAX_CHECK_ATTEMPTS] = mca;
   return ;
@@ -528,7 +528,7 @@ void HostServiceStatusEvent::SetMaxCheckAttempts(short mca) throw ()
 /**
  *  Set the modified_attributes member.
  */
-void HostServiceStatusEvent::SetModifiedAttributes(int ma) throw ()
+void HostServiceStatus::SetModifiedAttributes(int ma) throw ()
 {
   this->ints_[MODIFIED_ATTRIBUTES] = ma;
   return ;
@@ -537,7 +537,7 @@ void HostServiceStatusEvent::SetModifiedAttributes(int ma) throw ()
 /**
  *  Set the next_check member.
  */
-void HostServiceStatusEvent::SetNextCheck(time_t nc) throw ()
+void HostServiceStatus::SetNextCheck(time_t nc) throw ()
 {
   this->timets_[NEXT_CHECK] = nc;
   return ;
@@ -546,7 +546,7 @@ void HostServiceStatusEvent::SetNextCheck(time_t nc) throw ()
 /**
  *  Set the next_notification member.
  */
-void HostServiceStatusEvent::SetNextNotification(time_t nn) throw ()
+void HostServiceStatus::SetNextNotification(time_t nn) throw ()
 {
   this->timets_[NEXT_NOTIFICATION] = nn;
   return ;
@@ -555,7 +555,7 @@ void HostServiceStatusEvent::SetNextNotification(time_t nn) throw ()
 /**
  *  Set the no_more_notifications member.
  */
-void HostServiceStatusEvent::SetNoMoreNotifications(short nmn) throw ()
+void HostServiceStatus::SetNoMoreNotifications(short nmn) throw ()
 {
   this->shorts_[NO_MORE_NOTIFICATIONS] = nmn;
   return ;
@@ -564,7 +564,7 @@ void HostServiceStatusEvent::SetNoMoreNotifications(short nmn) throw ()
 /**
  *  Set the normal_check_interval member.
  */
-void HostServiceStatusEvent::SetNormalCheckInterval(double nci) throw ()
+void HostServiceStatus::SetNormalCheckInterval(double nci) throw ()
 {
   this->doubles_[NORMAL_CHECK_INTERVAL] = nci;
   return ;
@@ -573,7 +573,7 @@ void HostServiceStatusEvent::SetNormalCheckInterval(double nci) throw ()
 /**
  *  Set the obsess_over member.
  */
-void HostServiceStatusEvent::SetObsessOver(short oo) throw ()
+void HostServiceStatus::SetObsessOver(short oo) throw ()
 {
   this->shorts_[OBSESS_OVER] = oo;
   return ;
@@ -582,7 +582,7 @@ void HostServiceStatusEvent::SetObsessOver(short oo) throw ()
 /**
  *  Set the output member.
  */
-void HostServiceStatusEvent::SetOutput(const std::string& o)
+void HostServiceStatus::SetOutput(const std::string& o)
 {
   this->strings_[OUTPUT] = o;
   return ;
@@ -591,7 +591,7 @@ void HostServiceStatusEvent::SetOutput(const std::string& o)
 /**
  *  Set the passive_checks_enabled member.
  */
-void HostServiceStatusEvent::SetPassiveChecksEnabled(short pce) throw ()
+void HostServiceStatus::SetPassiveChecksEnabled(short pce) throw ()
 {
   this->shorts_[PASSIVE_CHECKS_ENABLED] = pce;
   return ;
@@ -600,7 +600,7 @@ void HostServiceStatusEvent::SetPassiveChecksEnabled(short pce) throw ()
 /**
  *  Set the percent_state_change member.
  */
-void HostServiceStatusEvent::SetPercentStateChange(double psc) throw ()
+void HostServiceStatus::SetPercentStateChange(double psc) throw ()
 {
   this->doubles_[PERCENT_STATE_CHANGE] = psc;
   return ;
@@ -609,7 +609,7 @@ void HostServiceStatusEvent::SetPercentStateChange(double psc) throw ()
 /**
  *  Set the perfdata member.
  */
-void HostServiceStatusEvent::SetPerfdata(const std::string& p)
+void HostServiceStatus::SetPerfdata(const std::string& p)
 {
   this->strings_[PERFDATA] = p;
   return ;
@@ -618,7 +618,7 @@ void HostServiceStatusEvent::SetPerfdata(const std::string& p)
 /**
  *  Set the problem_has_been_acknowledged member.
  */
-void HostServiceStatusEvent::SetProblemHasBeenAcknowledged(short phba) throw ()
+void HostServiceStatus::SetProblemHasBeenAcknowledged(short phba) throw ()
 {
   this->shorts_[PROBLEM_HAS_BEEN_ACKNOWLEDGED] = phba;
   return ;
@@ -627,7 +627,7 @@ void HostServiceStatusEvent::SetProblemHasBeenAcknowledged(short phba) throw ()
 /**
  *  Set the retry_check_interval member.
  */
-void HostServiceStatusEvent::SetRetryCheckInterval(double rci) throw ()
+void HostServiceStatus::SetRetryCheckInterval(double rci) throw ()
 {
   this->doubles_[RETRY_CHECK_INTERVAL] = rci;
   return ;
@@ -636,7 +636,7 @@ void HostServiceStatusEvent::SetRetryCheckInterval(double rci) throw ()
 /**
  *  Set the scheduled_downtime_depth member.
  */
-void HostServiceStatusEvent::SetScheduledDowntimeDepth(short sdd) throw ()
+void HostServiceStatus::SetScheduledDowntimeDepth(short sdd) throw ()
 {
   this->shorts_[SCHEDULED_DOWNTIME_DEPTH] = sdd;
   return ;
@@ -645,7 +645,7 @@ void HostServiceStatusEvent::SetScheduledDowntimeDepth(short sdd) throw ()
 /**
  *  Set the should_be_scheduled member.
  */
-void HostServiceStatusEvent::SetShouldBeScheduled(short sbs) throw ()
+void HostServiceStatus::SetShouldBeScheduled(short sbs) throw ()
 {
   this->shorts_[SHOULD_BE_SCHEDULED] = sbs;
   return ;
@@ -654,7 +654,7 @@ void HostServiceStatusEvent::SetShouldBeScheduled(short sbs) throw ()
 /**
  *  Set the state_type member.
  */
-void HostServiceStatusEvent::SetStateType(short st) throw ()
+void HostServiceStatus::SetStateType(short st) throw ()
 {
   this->shorts_[STATE_TYPE] = st;
   return ;

@@ -1,5 +1,5 @@
 /*
-** status_event.cpp for CentreonBroker in ./src
+** status.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,11 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cstring>
-#include "status_event.h"
+#include "status.h"
 
 using namespace CentreonBroker;
 
@@ -22,10 +22,10 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Make a copy of all internal members of a StatusEvent to the current
+ *  Make a copy of all internal members of a Status to the current
  *  instance.
  */
-void StatusEvent::InternalCopy(const StatusEvent& se) throw ()
+void Status::InternalCopy(const Status& se) throw ()
 {
   memcpy(this->shorts_, se.shorts_, sizeof(this->shorts_));
   memcpy(this->timets_, se.timets_, sizeof(this->timets_));
@@ -39,33 +39,33 @@ void StatusEvent::InternalCopy(const StatusEvent& se) throw ()
 **************************************/
 
 /**
- *  StatusEvent default constructor.
+ *  Status default constructor.
  */
-StatusEvent::StatusEvent()
+Status::Status()
 {
   memset(this->shorts_, 0, sizeof(this->shorts_));
   memset(this->timets_, 0, sizeof(this->timets_));
 }
 
 /**
- *  StatusEvent copy constructor.
+ *  Status copy constructor.
  */
-StatusEvent::StatusEvent(const StatusEvent& se) : Event(se)
+Status::Status(const Status& se) : Event(se)
 {
   this->InternalCopy(se);
 }
 
 /**
- *  StatusEvent destructor.
+ *  Status destructor.
  */
-StatusEvent::~StatusEvent()
+Status::~Status()
 {
 }
 
 /**
- *  StatusEvent operator= overload.
+ *  Status operator= overload.
  */
-StatusEvent& StatusEvent::operator=(const StatusEvent& se)
+Status& Status::operator=(const Status& se)
 {
   this->Event::operator=(se);
   this->InternalCopy(se);
@@ -75,7 +75,7 @@ StatusEvent& StatusEvent::operator=(const StatusEvent& se)
 /**
  *  Get the event_handler_enabled member.
  */
-short StatusEvent::GetEventHandlerEnabled() const throw ()
+short Status::GetEventHandlerEnabled() const throw ()
 {
   return (this->shorts_[EVENT_HANDLER_ENABLED]);
 }
@@ -83,7 +83,7 @@ short StatusEvent::GetEventHandlerEnabled() const throw ()
 /**
  *  Get the failure_prediction_enabled member.
  */
-short StatusEvent::GetFailurePredictionEnabled() const throw ()
+short Status::GetFailurePredictionEnabled() const throw ()
 {
   return (this->shorts_[FAILURE_PREDICTION_ENABLED]);
 }
@@ -91,7 +91,7 @@ short StatusEvent::GetFailurePredictionEnabled() const throw ()
 /**
  *  Get the flap_detection_enabled member.
  */
-short StatusEvent::GetFlapDetectionEnabled() const throw ()
+short Status::GetFlapDetectionEnabled() const throw ()
 {
   return (this->shorts_[FLAP_DETECTION_ENABLED]);
 }
@@ -99,7 +99,7 @@ short StatusEvent::GetFlapDetectionEnabled() const throw ()
 /**
  *  Get the notifications_enabled member.
  */
-short StatusEvent::GetNotificationsEnabled() const throw ()
+short Status::GetNotificationsEnabled() const throw ()
 {
   return (this->shorts_[NOTIFICATIONS_ENABLED]);
 }
@@ -107,7 +107,7 @@ short StatusEvent::GetNotificationsEnabled() const throw ()
 /**
  *  Get the process_performance_data member.
  */
-short StatusEvent::GetProcessPerformanceData() const throw ()
+short Status::GetProcessPerformanceData() const throw ()
 {
   return (this->shorts_[PROCESS_PERFORMANCE_DATA]);
 }
@@ -115,7 +115,7 @@ short StatusEvent::GetProcessPerformanceData() const throw ()
 /**
  *  Get the status_update_time member.
  */
-time_t StatusEvent::GetStatusUpdateTime() const throw ()
+time_t Status::GetStatusUpdateTime() const throw ()
 {
   return (this->timets_[STATUS_UPDATE_TIME]);
 }
@@ -123,7 +123,7 @@ time_t StatusEvent::GetStatusUpdateTime() const throw ()
 /**
  *  Set the event_handler_enabled member.
  */
-void StatusEvent::SetEventHandlerEnabled(short ehe) throw ()
+void Status::SetEventHandlerEnabled(short ehe) throw ()
 {
   this->shorts_[EVENT_HANDLER_ENABLED] = ehe;
   return ;
@@ -132,7 +132,7 @@ void StatusEvent::SetEventHandlerEnabled(short ehe) throw ()
 /**
  *  Set the failure_prediction_enabled member.
  */
-void StatusEvent::SetFailurePredictionEnabled(short fpe) throw ()
+void Status::SetFailurePredictionEnabled(short fpe) throw ()
 {
   this->shorts_[FAILURE_PREDICTION_ENABLED] = fpe;
   return ;
@@ -141,7 +141,7 @@ void StatusEvent::SetFailurePredictionEnabled(short fpe) throw ()
 /**
  *  Set the flap_detection_enabled member.
  */
-void StatusEvent::SetFlapDetectionEnabled(short fde) throw ()
+void Status::SetFlapDetectionEnabled(short fde) throw ()
 {
   this->shorts_[FLAP_DETECTION_ENABLED] = fde;
   return ;
@@ -150,7 +150,7 @@ void StatusEvent::SetFlapDetectionEnabled(short fde) throw ()
 /**
  *  Set the notifications_enabled member.
  */
-void StatusEvent::SetNotificationsEnabled(short ne) throw ()
+void Status::SetNotificationsEnabled(short ne) throw ()
 {
   this->shorts_[NOTIFICATIONS_ENABLED] = ne;
   return ;
@@ -159,7 +159,7 @@ void StatusEvent::SetNotificationsEnabled(short ne) throw ()
 /**
  *  Set the process_performance_data member.
  */
-void StatusEvent::SetProcessPerformanceData(short ppd) throw ()
+void Status::SetProcessPerformanceData(short ppd) throw ()
 {
   this->shorts_[PROCESS_PERFORMANCE_DATA] = ppd;
   return ;
@@ -168,7 +168,7 @@ void StatusEvent::SetProcessPerformanceData(short ppd) throw ()
 /**
  *  Set the status_update_time member.
  */
-void StatusEvent::SetStatusUpdateTime(time_t sut) throw ()
+void Status::SetStatusUpdateTime(time_t sut) throw ()
 {
   this->timets_[STATUS_UPDATE_TIME] = sut;
   return ;
