@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_ACCEPTOR_H_
@@ -32,7 +32,6 @@ namespace                          CentreonBroker
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::io_service&       io_service_;
     boost::asio::ip::tcp::socket*  new_socket_;
-    std::list<NetworkInput*>       ni_;
                                    NetworkAcceptor(const NetworkAcceptor& na)
                                      throw ();
     NetworkAcceptor&               operator=(const NetworkAcceptor& na)
