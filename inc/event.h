@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #ifndef EVENT_H_
@@ -43,7 +43,7 @@ namespace              CentreonBroker
     Event&             operator=(const Event& event);
     void               AddReader(EventSubscriber* es);
     const std::string& GetNagiosInstance() const throw ();
-    virtual int        GetType() const = 0;
+    virtual int        GetType() const throw () = 0;
     void               RemoveReader(EventSubscriber* es);
     void               SetNagiosInstance(const std::string& inst);
   };

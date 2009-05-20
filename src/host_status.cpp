@@ -1,5 +1,5 @@
 /*
-** host_status_event.cpp for CentreonBroker in ./src
+** host_status.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,12 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/18/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cstring>
 #include <string>
-#include "host_status_event.h"
+#include "host_status.h"
 
 using namespace CentreonBroker;
 
@@ -23,10 +23,10 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Make a copy of all internal members of HostStatusEvent to the current
+ *  Make a copy of all internal members of HostStatus to the current
  *  instance.
  */
-void HostStatusEvent::InternalCopy(const HostStatusEvent& hse)
+void HostStatus::InternalCopy(const HostStatus& hse)
 {
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = hse.strings_[i];
@@ -41,35 +41,35 @@ void HostStatusEvent::InternalCopy(const HostStatusEvent& hse)
 **************************************/
 
 /**
- *  HostStatusEvent constructor.
+ *  HostStatus constructor.
  */
-HostStatusEvent::HostStatusEvent()
+HostStatus::HostStatus()
 {
   memset(this->timets_, 0, sizeof(this->timets_));
 }
 
 /**
- *  HostStatusEvent copy constructor.
+ *  HostStatus copy constructor.
  */
-HostStatusEvent::HostStatusEvent(const HostStatusEvent& hse)
-  : HostServiceStatusEvent(hse)
+HostStatus::HostStatus(const HostStatus& hse)
+  : HostServiceStatus(hse)
 {
   this->InternalCopy(hse);
 }
 
 /**
- *  HostStatusEvent destructor.
+ *  HostStatus destructor.
  */
-HostStatusEvent::~HostStatusEvent()
+HostStatus::~HostStatus()
 {
 }
 
 /**
- *  HostStatusEvent operator= overload.
+ *  HostStatus operator= overload.
  */
-HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
+HostStatus& HostStatus::operator=(const HostStatus& hse)
 {
-  this->HostServiceStatusEvent::operator=(hse);
+  this->HostServiceStatus::operator=(hse);
   this->InternalCopy(hse);
   return (*this);
 }
@@ -77,7 +77,7 @@ HostStatusEvent& HostStatusEvent::operator=(const HostStatusEvent& hse)
 /**
  *  Returns the type of the event.
  */
-int HostStatusEvent::GetType() const throw ()
+int HostStatus::GetType() const throw ()
 {
   // XXX : hardcoded value
   return (0);
@@ -86,7 +86,7 @@ int HostStatusEvent::GetType() const throw ()
 /**
  *  Get the host member.
  */
-const std::string& HostStatusEvent::GetHost() const throw ()
+const std::string& HostStatus::GetHost() const throw ()
 {
   return (this->strings_[HOST]);
 }
@@ -94,7 +94,7 @@ const std::string& HostStatusEvent::GetHost() const throw ()
 /**
  *  Get the last_time_up member.
  */
-time_t HostStatusEvent::GetLastTimeUp() const throw ()
+time_t HostStatus::GetLastTimeUp() const throw ()
 {
   return (this->timets_[LAST_TIME_UP]);
 }
@@ -102,7 +102,7 @@ time_t HostStatusEvent::GetLastTimeUp() const throw ()
 /**
  *  Get the last_time_down member.
  */
-time_t HostStatusEvent::GetLastTimeDown() const throw ()
+time_t HostStatus::GetLastTimeDown() const throw ()
 {
   return (this->timets_[LAST_TIME_DOWN]);
 }
@@ -110,7 +110,7 @@ time_t HostStatusEvent::GetLastTimeDown() const throw ()
 /**
  *  Get the last_time_unreachable member.
  */
-time_t HostStatusEvent::GetLastTimeUnreachable() const throw ()
+time_t HostStatus::GetLastTimeUnreachable() const throw ()
 {
   return (this->timets_[LAST_TIME_UNREACHABLE]);
 }
@@ -118,7 +118,7 @@ time_t HostStatusEvent::GetLastTimeUnreachable() const throw ()
 /**
  *  Set the host member.
  */
-void HostStatusEvent::SetHost(const std::string& h)
+void HostStatus::SetHost(const std::string& h)
 {
   this->strings_[HOST] = h;
   return ;
@@ -127,7 +127,7 @@ void HostStatusEvent::SetHost(const std::string& h)
 /**
  *  Set the last_time_up member.
  */
-void HostStatusEvent::SetLastTimeUp(time_t ltu) throw ()
+void HostStatus::SetLastTimeUp(time_t ltu) throw ()
 {
   this->timets_[LAST_TIME_UP] = ltu;
   return ;
@@ -136,7 +136,7 @@ void HostStatusEvent::SetLastTimeUp(time_t ltu) throw ()
 /**
  *  Set the last_time_down member.
  */
-void HostStatusEvent::SetLastTimeDown(time_t ltd) throw ()
+void HostStatus::SetLastTimeDown(time_t ltd) throw ()
 {
   this->timets_[LAST_TIME_DOWN] = ltd;
   return ;
@@ -145,7 +145,7 @@ void HostStatusEvent::SetLastTimeDown(time_t ltd) throw ()
 /**
  *  Set the last_time_unreachable member.
  */
-void HostStatusEvent::SetLastTimeUnreachable(time_t ltu) throw ()
+void HostStatus::SetLastTimeUnreachable(time_t ltu) throw ()
 {
   this->timets_[LAST_TIME_UNREACHABLE] = ltu;
   return ;

@@ -12,9 +12,9 @@
 
 #include <boost/thread/mutex.hpp>
 #include "event_publisher.h"
-#include "host_status_event.h"
+#include "host_status.h"
 #include "network_input.h"
-#include "service_status_event.h"
+#include "service_status.h"
 
 using namespace CentreonBroker;
 
@@ -235,66 +235,66 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 {
   char* buffer;
   const char* types = ">>>>SSSsssssttsttstttsttsssssssssdddssssiSSddi";
-  static void (HostStatusEvent::* const set_double[])(double) =
+  static void (HostStatus::* const set_double[])(double) =
     {
-      &HostStatusEvent::SetPercentStateChange,
-      &HostStatusEvent::SetLatency,
-      &HostStatusEvent::SetExecutionTime,
-      &HostStatusEvent::SetNormalCheckInterval,
-      &HostStatusEvent::SetRetryCheckInterval
+      &HostStatus::SetPercentStateChange,
+      &HostStatus::SetLatency,
+      &HostStatus::SetExecutionTime,
+      &HostStatus::SetNormalCheckInterval,
+      &HostStatus::SetRetryCheckInterval
     };
   int cur_set_double;
-  static void (HostStatusEvent::* const set_int[])(int) =
+  static void (HostStatus::* const set_int[])(int) =
     {
-      &HostStatusEvent::SetModifiedAttributes,
-      &HostStatusEvent::SetCheckTimeperiodObjectId
+      &HostStatus::SetModifiedAttributes,
+      &HostStatus::SetCheckTimeperiodObjectId
     };
   int cur_set_int;
-  static void (HostStatusEvent::* const set_short[])(short) =
+  static void (HostStatus::* const set_short[])(short) =
     {
-      &HostStatusEvent::SetCurrentState,
-      &HostStatusEvent::SetHasBeenChecked,
-      &HostStatusEvent::SetShouldBeScheduled,
-      &HostStatusEvent::SetCurrentCheckAttempt,
-      &HostStatusEvent::SetMaxCheckAttempts,
-      &HostStatusEvent::SetCheckType,
-      &HostStatusEvent::SetLastHardState,
-      &HostStatusEvent::SetStateType,
-      &HostStatusEvent::SetNoMoreNotifications,
-      &HostStatusEvent::SetProblemHasBeenAcknowledged,
-      &HostStatusEvent::SetAcknowledgementType,
-      &HostStatusEvent::SetCurrentNotificationNumber,
-      &HostStatusEvent::SetPassiveChecksEnabled,
-      &HostStatusEvent::SetEventHandlerEnabled,
-      &HostStatusEvent::SetActiveChecksEnabled,
-      &HostStatusEvent::SetFlapDetectionEnabled,
-      &HostStatusEvent::SetIsFlapping,
-      &HostStatusEvent::SetScheduledDowntimeDepth,
-      &HostStatusEvent::SetFailurePredictionEnabled,
-      &HostStatusEvent::SetProcessPerformanceData,
-      &HostStatusEvent::SetObsessOver
+      &HostStatus::SetCurrentState,
+      &HostStatus::SetHasBeenChecked,
+      &HostStatus::SetShouldBeScheduled,
+      &HostStatus::SetCurrentCheckAttempt,
+      &HostStatus::SetMaxCheckAttempts,
+      &HostStatus::SetCheckType,
+      &HostStatus::SetLastHardState,
+      &HostStatus::SetStateType,
+      &HostStatus::SetNoMoreNotifications,
+      &HostStatus::SetProblemHasBeenAcknowledged,
+      &HostStatus::SetAcknowledgementType,
+      &HostStatus::SetCurrentNotificationNumber,
+      &HostStatus::SetPassiveChecksEnabled,
+      &HostStatus::SetEventHandlerEnabled,
+      &HostStatus::SetActiveChecksEnabled,
+      &HostStatus::SetFlapDetectionEnabled,
+      &HostStatus::SetIsFlapping,
+      &HostStatus::SetScheduledDowntimeDepth,
+      &HostStatus::SetFailurePredictionEnabled,
+      &HostStatus::SetProcessPerformanceData,
+      &HostStatus::SetObsessOver
     };
   int cur_set_short;
-  static void (HostStatusEvent::* const set_str[])(const std::string&) =
+  static void (HostStatus::* const set_str[])(const std::string&) =
     {
-      &HostStatusEvent::SetHost,
-      &HostStatusEvent::SetOutput,
-      &HostStatusEvent::SetPerfdata,
-      &HostStatusEvent::SetEventHandler,
-      &HostStatusEvent::SetCheckCommand
+      &HostStatus::SetHost,
+      &HostStatus::SetOutput,
+      &HostStatus::SetPerfdata,
+      &HostStatus::SetEventHandler,
+      &HostStatus::SetCheckCommand
     };
   int cur_set_str;
-  static void (HostStatusEvent::* const set_timet[])(time_t) =
+  static void (HostStatus::* const set_timet[])(time_t) =
     {
-      &HostStatusEvent::SetLastCheck,
-      &HostStatusEvent::SetNextCheck,
-      &HostStatusEvent::SetLastStateChange,
-      &HostStatusEvent::SetLastHardStateChange,
-      &HostStatusEvent::SetLastTimeUp,
-      &HostStatusEvent::SetLastTimeDown,
-      &HostStatusEvent::SetLastTimeUnreachable,
-      &HostStatusEvent::SetLastNotification,
-      &HostStatusEvent::SetNextNotification
+      &HostStatus::SetLastCheck,
+      &HostStatus::SetNextCheck,
+      &HostStatus::SetLastStateChange,
+      &HostStatus::SetLastHardStateChange,
+      &HostStatus::SetLastTimeUp,
+      &HostStatus::SetLastTimeDown,
+      &HostStatus::SetLastTimeUnreachable,
+      &HostStatus::SetLastNotification,
+      &HostStatus::SetNextNotification
     };
   int cur_set_timet;
 
@@ -302,9 +302,9 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
   buffer = socket.GetLine();
   if (strcmp(buffer, "999"))
     {
-      HostStatusEvent* hse;
+      HostStatus* hse;
 
-      hse = new HostStatusEvent;
+      hse = new HostStatus;
       hse->SetNagiosInstance(this->instance_);
       for (int i = 0; types[i]; i++)
         {

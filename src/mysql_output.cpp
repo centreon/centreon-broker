@@ -19,9 +19,9 @@
 #include <sstream>
 #include <unistd.h>
 #include "event.h"
-#include "host_status_event.h"
+#include "host_status.h"
 #include "mysql_output.h"
-#include "service_status_event.h"
+#include "service_status.h"
 
 // XXX
 #include <mysql_driver.h>
@@ -256,10 +256,10 @@ void MySQLOutput::ProcessEvent(Event* event)
     {
       // XXX
      case 0: // HostStatusEvent
-      stmt = ProcessHostStatusEvent(static_cast<HostStatusEvent*>(event));
+      stmt = ProcessHostStatusEvent(static_cast<HostStatus*>(event));
       break ;
      case 1: // ServiceStatusEvent
-      stmt = ProcessServiceStatusEvent(static_cast<ServiceStatusEvent*>(event));
+      stmt = ProcessServiceStatusEvent(static_cast<ServiceStatus*>(event));
       break ;
      default: // Don't know event type
       assert(false);
@@ -277,7 +277,7 @@ void MySQLOutput::ProcessEvent(Event* event)
 /**
  *  Process a HostStatusEvent.
  */
-sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatusEvent* h)
+sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatus* h)
 {
   int arg;
   int val;
@@ -392,7 +392,7 @@ sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatusEvent* h)
  *  Process a ServiceStatusEvent.
  */
 sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
-  ServiceStatusEvent* sse)
+  ServiceStatus* sse)
 {
   int arg;
   int val;
