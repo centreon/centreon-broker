@@ -14,9 +14,9 @@
 # define NETWORK_INPUT_H_
 
 # include <boost/asio.hpp>
+# include <boost/thread.hpp>
 # include <cstdio>
 # include <string>
-# include "thread.h"
 
 namespace         CentreonBroker
 {
@@ -24,20 +24,21 @@ namespace         CentreonBroker
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
    */
-  class                           NetworkInput : private Thread
+  class                           NetworkInput
   {
    private:
     int                           fd_;
-    boost::asio::ip::tcp::socket& socket_;
     std::string                   instance_;
+    boost::asio::ip::tcp::socket& socket_;
+    boost::thread*                thread_;
                                   NetworkInput(const NetworkInput& ni);
     NetworkInput&                 operator=(const NetworkInput& ni);
-    int                           Core();
     void                          HandleHostStatus(FILE* stream);
 
    public:
                                   NetworkInput(boost::asio::ip::tcp::socket&);
                                   ~NetworkInput();
+    void                          operator()();
   };
 }
 

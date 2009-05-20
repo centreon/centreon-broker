@@ -7,14 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/14/09 Matthieu Kermagoret
+** Last update 05/19/09 Matthieu Kermagoret
 */
 
 #ifndef EVENT_H_
 # define EVENT_H_
 
+# include <boost/thread/mutex.hpp>
 # include <string>
-# include "mutex.h"
 
 namespace              CentreonBroker
 {
@@ -32,7 +32,7 @@ namespace              CentreonBroker
   class                Event
   {
    private:
-    Mutex              mutex_;
+    boost::mutex       mutex_;
     std::string        nagios_instance_;
     int                readers_;
 

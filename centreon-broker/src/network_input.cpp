@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 05/20/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -30,7 +30,7 @@ using namespace CentreonBroker;
 **************************************/
 
 NetworkInput::NetworkInput(const NetworkInput& ni)
-  : Thread(), socket_(ni.socket_)
+  : socket_(ni.socket_)
 {
   (void)ni;
 }
@@ -51,7 +51,7 @@ NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
   : socket_(socket)
 {
   this->fd_ = socket.native();
-  this->Run();
+  this->thread_ = new boost::thread(boost::ref(*this));
 }
 
 NetworkInput::~NetworkInput()
@@ -59,7 +59,7 @@ NetworkInput::~NetworkInput()
   if (this->fd_ >= 0)
     {
       close(this->fd_);
-      this->Join();
+      this->thread_->join();
     }
 }
 
@@ -171,14 +171,13 @@ void NetworkInput::HandleHostStatus(FILE* stream)
   return ;
 }
 
-int NetworkInput::Core()
+void NetworkInput::operator()()
 {
   char buffer[2048];
   FILE* stream;
 
   // XXX : those are test stuff
   stream = fdopen(this->fd_, "r+");
-  fprintf(stderr, "Stream: %p\n", stream);
   for (int i = 0; i < 11; i++)
     fgets(buffer, sizeof(buffer), stream);
   buffer[strlen(buffer) - 1] = '\0';
@@ -338,5 +337,5 @@ int NetworkInput::Core()
 	}
     }
   fclose(stream);
-  return (0);
+  return ;
 }

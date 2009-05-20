@@ -24,7 +24,7 @@ using namespace CentreonBroker;
 **************************************/
 
 EventPublisher* EventPublisher::instance_ = NULL;
-Mutex           EventPublisher::instancem_;
+boost::mutex    EventPublisher::instancem_;
 
 /**************************************
 *                                     *
@@ -78,9 +78,9 @@ static void delete_eventpublisher()
  */
 EventPublisher::~EventPublisher()
 {
-  EventPublisher::instancem_.Lock();
+  EventPublisher::instancem_.lock();
   EventPublisher::instance_ = NULL;
-  EventPublisher::instancem_.Unlock();
+  EventPublisher::instancem_.unlock();
 }
 
 /**
@@ -90,7 +90,7 @@ EventPublisher* EventPublisher::GetInstance()
 {
   if (!EventPublisher::instance_)
     {
-      EventPublisher::instancem_.Lock();
+      EventPublisher::instancem_.lock();
       if (!EventPublisher::instance_)
 	{
 	  try
@@ -99,11 +99,11 @@ EventPublisher* EventPublisher::GetInstance()
 	    }
 	  catch (...) // Do not let the mutex locked.
 	    {
-	      EventPublisher::instancem_.Unlock();
+	      EventPublisher::instancem_.unlock();
 	      throw ;
 	    }
 	  atexit(delete_eventpublisher);
-	  EventPublisher::instancem_.Unlock();
+	  EventPublisher::instancem_.unlock();
 	}
     }
   return (EventPublisher::instance_);
@@ -116,10 +116,10 @@ void EventPublisher::Publish(Event* ev)
 {
   std::list<EventSubscriber*>::iterator it;
 
-  this->subscribersm_.Lock();
+  this->subscribersm_.lock();
   for (it = this->subscribers_.begin(); it != this->subscribers_.end(); it++)
     (*it)->OnEvent(ev);
-  this->subscribersm_.Unlock();
+  this->subscribersm_.unlock();
   return ;
 }
 
@@ -128,9 +128,9 @@ void EventPublisher::Publish(Event* ev)
  */
 void EventPublisher::Subscribe(EventSubscriber* es)
 {
-  this->subscribersm_.Lock();
+  this->subscribersm_.lock();
   this->subscribers_.push_front(es);
-  this->subscribersm_.Unlock();
+  this->subscribersm_.unlock();
   return ;
 }
 
@@ -139,8 +139,8 @@ void EventPublisher::Subscribe(EventSubscriber* es)
  */
 void EventPublisher::Unsubscribe(EventSubscriber* es)
 {
-  this->subscribersm_.Lock();
+  this->subscribersm_.lock();
   this->subscribers_.remove(es);
-  this->subscribersm_.Unlock();
+  this->subscribersm_.unlock();
   return ;
 }
