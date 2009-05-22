@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -289,7 +289,7 @@ sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatus* h)
   {
     std::string id_str;
 
-    id_str = h->GetNagiosInstance() + h->GetHost();
+    id_str = h->GetNagiosInstance() + h->GetHostName();
     it = id.find(id_str);
     if (it == id.end())
       {
@@ -381,9 +381,9 @@ sql::PreparedStatement* MySQLOutput::ProcessHostStatusEvent(HostStatus* h)
   stmt->setInt(++arg, h->GetModifiedAttributes());
   stmt->setString(++arg, h->GetEventHandler());
   stmt->setString(++arg, h->GetCheckCommand());
-  stmt->setInt(++arg, h->GetNormalCheckInterval());
-  stmt->setInt(++arg, h->GetRetryCheckInterval());
-  stmt->setInt(++arg, 1); // XXX : check_timeperiod_object_id
+  stmt->setInt(++arg, h->GetCheckInterval());
+  stmt->setInt(++arg, h->GetRetryInterval());
+  stmt->setInt(++arg, 1);
   stmt->setInt(++arg, val);
   return (stmt);
 }
@@ -404,7 +404,7 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
   {
     std::string id_str;
 
-    id_str = sse->GetNagiosInstance() + sse->GetHost() + sse->GetService();
+    id_str = sse->GetNagiosInstance() + sse->GetHostName() + sse->GetService();
     it = id.find(id_str);
     if (it == id.end())
       {
@@ -485,9 +485,9 @@ sql::PreparedStatement* MySQLOutput::ProcessServiceStatusEvent(
   stmt->setInt(++arg, sse->GetModifiedAttributes());
   stmt->setString(++arg, sse->GetEventHandler());
   stmt->setString(++arg, sse->GetCheckCommand());
-  stmt->setDouble(++arg, sse->GetNormalCheckInterval());
-  stmt->setDouble(++arg, sse->GetRetryCheckInterval());
-  stmt->setInt(++arg, sse->GetCheckTimeperiodObjectId());
+  stmt->setDouble(++arg, sse->GetCheckInterval());
+  stmt->setDouble(++arg, sse->GetRetryInterval());
+  stmt->setInt(++arg, 1);
   stmt->setInt(++arg, val);
   return (stmt);
 }

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -234,20 +234,19 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 {
   char* buffer;
-  const char* types = ">>>>SSSsssssttsttstttsttsssssssssdddssssiSSddi";
+  const char* types = ">>>>SSSsssssttsttstttsttsssssssssdddssssiSSdd>";
   static void (HostStatus::* const set_double[])(double) =
     {
       &HostStatus::SetPercentStateChange,
       &HostStatus::SetLatency,
       &HostStatus::SetExecutionTime,
-      &HostStatus::SetNormalCheckInterval,
-      &HostStatus::SetRetryCheckInterval
+      &HostStatus::SetCheckInterval,
+      &HostStatus::SetRetryInterval
     };
   int cur_set_double;
   static void (HostStatus::* const set_int[])(int) =
     {
-      &HostStatus::SetModifiedAttributes,
-      &HostStatus::SetCheckTimeperiodObjectId
+      &HostStatus::SetModifiedAttributes
     };
   int cur_set_int;
   static void (HostStatus::* const set_short[])(short) =
@@ -277,7 +276,7 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
   int cur_set_short;
   static void (HostStatus::* const set_str[])(const std::string&) =
     {
-      &HostStatus::SetHost,
+      &HostStatus::SetHostName,
       &HostStatus::SetOutput,
       &HostStatus::SetPerfdata,
       &HostStatus::SetEventHandler,
