@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_SERVICE_STATUS_H_
@@ -28,17 +28,16 @@ namespace                   CentreonBroker
    private:
     enum                    Double
     {
-      EXECUTION_TIME = 0,
+      CHECK_INTERVAL = 0,
+      EXECUTION_TIME,
       LATENCY,
-      NORMAL_CHECK_INTERVAL,
       PERCENT_STATE_CHANGE,
-      RETRY_CHECK_INTERVAL,
+      RETRY_INTERVAL,
       DOUBLE_NB
     };
     enum                    Int
     {
-      CHECK_TIMEPERIOD_OBJECT_ID = 0,
-      MODIFIED_ATTRIBUTES,
+      MODIFIED_ATTRIBUTES = 0,
       INT_NB
     };
     enum                    Short
@@ -66,6 +65,7 @@ namespace                   CentreonBroker
     {
       CHECK_COMMAND = 0,
       EVENT_HANDLER,
+      HOST_NAME,
       OUTPUT,
       PERFDATA,
       STRING_NB
@@ -97,7 +97,7 @@ namespace                   CentreonBroker
     short              GetAcknowledgementType() const throw ();
     short              GetActiveChecksEnabled() const throw ();
     const std::string& GetCheckCommand() const throw ();
-    int                GetCheckTimeperiodObjectId() const throw ();
+    double             GetCheckInterval() const throw ();
     short              GetCheckType() const throw ();
     short              GetCurrentCheckAttempt() const throw ();
     short              GetCurrentNotificationNumber() const throw ();
@@ -105,6 +105,7 @@ namespace                   CentreonBroker
     const std::string& GetEventHandler() const throw ();
     double             GetExecutionTime() const throw ();
     short              GetHasBeenChecked() const throw ();
+    const std::string& GetHostName() const throw ();
     short              GetIsFlapping() const throw ();
     time_t             GetLastCheck() const throw ();
     short              GetLastHardState() const throw ();
@@ -117,14 +118,13 @@ namespace                   CentreonBroker
     time_t             GetNextCheck() const throw ();
     time_t             GetNextNotification() const throw ();
     short              GetNoMoreNotifications() const throw ();
-    double             GetNormalCheckInterval() const throw ();
     short              GetObsessOver() const throw ();
     const std::string& GetOutput() const throw ();
     short              GetPassiveChecksEnabled() const throw ();
     double             GetPercentStateChange() const throw ();
     const std::string& GetPerfdata() const throw ();
     short              GetProblemHasBeenAcknowledged() const throw ();
-    double             GetRetryCheckInterval() const throw ();
+    double             GetRetryInterval() const throw ();
     short              GetScheduledDowntimeDepth() const throw ();
     short              GetShouldBeScheduled() const throw ();
     short              GetStateType() const throw ();
@@ -132,7 +132,7 @@ namespace                   CentreonBroker
     void               SetAcknowledgementType(short at) throw ();
     void               SetActiveChecksEnabled(short ace) throw ();
     void               SetCheckCommand(const std::string& cc);
-    void               SetCheckTimeperiodObjectId(int ctoi) throw ();
+    void               SetCheckInterval(double ci) throw ();
     void               SetCheckType(short ct) throw ();
     void               SetCurrentCheckAttempt(short cca) throw ();
     void               SetCurrentNotificationNumber(short cnn) throw ();
@@ -140,6 +140,7 @@ namespace                   CentreonBroker
     void               SetEventHandler(const std::string& eh);
     void               SetExecutionTime(double et) throw ();
     void               SetHasBeenChecked(short hbc) throw ();
+    void               SetHostName(const std::string& hn);
     void               SetIsFlapping(short i_f) throw ();
     void               SetLastCheck(time_t lc) throw ();
     void               SetLastHardState(short lhs) throw ();
@@ -152,14 +153,13 @@ namespace                   CentreonBroker
     void               SetNextCheck(time_t nc) throw ();
     void               SetNextNotification(time_t nn) throw ();
     void               SetNoMoreNotifications(short nmn) throw ();
-    void               SetNormalCheckInterval(double nci) throw ();
     void               SetObsessOver(short oo) throw ();
     void               SetOutput(const std::string& o);
     void               SetPassiveChecksEnabled(short pce) throw ();
     void               SetPercentStateChange(double psc) throw ();
     void               SetPerfdata(const std::string& p);
     void               SetProblemHasBeenAcknowledged(short phba) throw ();
-    void               SetRetryCheckInterval(double rci) throw ();
+    void               SetRetryInterval(double ri) throw ();
     void               SetScheduledDowntimeDepth(short sdd) throw ();
     void               SetShouldBeScheduled(short sbs) throw ();
     void               SetStateType(short st) throw ();

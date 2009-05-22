@@ -7,11 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #include <cstring>
-#include <string>
 #include "host_status.h"
 
 using namespace CentreonBroker;
@@ -28,8 +27,6 @@ using namespace CentreonBroker;
  */
 void HostStatus::InternalCopy(const HostStatus& hse)
 {
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = hse.strings_[i];
   memcpy(this->timets_, hse.timets_, sizeof(this->timets_));
   return ;
 }
@@ -75,23 +72,6 @@ HostStatus& HostStatus::operator=(const HostStatus& hse)
 }
 
 /**
- *  Returns the type of the event.
- */
-int HostStatus::GetType() const throw ()
-{
-  // XXX : hardcoded value
-  return (0);
-}
-
-/**
- *  Get the host member.
- */
-const std::string& HostStatus::GetHost() const throw ()
-{
-  return (this->strings_[HOST]);
-}
-
-/**
  *  Get the last_time_up member.
  */
 time_t HostStatus::GetLastTimeUp() const throw ()
@@ -116,12 +96,12 @@ time_t HostStatus::GetLastTimeUnreachable() const throw ()
 }
 
 /**
- *  Set the host member.
+ *  Returns the type of the event.
  */
-void HostStatus::SetHost(const std::string& h)
+int HostStatus::GetType() const throw ()
 {
-  this->strings_[HOST] = h;
-  return ;
+  // XXX : hardcoded value
+  return (0);
 }
 
 /**

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -107,11 +107,11 @@ const std::string& HostServiceStatus::GetCheckCommand() const throw ()
 }
 
 /**
- *  Get the check_timeperiod_object_id member.
+ *  Get the check_interval member.
  */
-int HostServiceStatus::GetCheckTimeperiodObjectId() const throw ()
+double HostServiceStatus::GetCheckInterval() const throw ()
 {
-  return (this->ints_[CHECK_TIMEPERIOD_OBJECT_ID]);
+  return (this->doubles_[CHECK_INTERVAL]);
 }
 
 /**
@@ -168,6 +168,14 @@ double HostServiceStatus::GetExecutionTime() const throw ()
 short HostServiceStatus::GetHasBeenChecked() const throw ()
 {
   return (this->shorts_[HAS_BEEN_CHECKED]);
+}
+
+/**
+ *  Get the host_name member.
+ */
+const std::string& HostServiceStatus::GetHostName() const throw ()
+{
+  return (this->strings_[HOST_NAME]);
 }
 
 /**
@@ -267,14 +275,6 @@ short HostServiceStatus::GetNoMoreNotifications() const throw ()
 }
 
 /**
- *  Get the normal_check_interval member.
- */
-double HostServiceStatus::GetNormalCheckInterval() const throw ()
-{
-  return (this->doubles_[NORMAL_CHECK_INTERVAL]);
-}
-
-/**
  *  Get the obsess_over member.
  */
 short HostServiceStatus::GetObsessOver() const throw ()
@@ -323,11 +323,11 @@ short HostServiceStatus::GetProblemHasBeenAcknowledged() const throw ()
 }
 
 /**
- *  Get the retry_check_interval member.
+ *  Get the retry_interval member.
  */
-double HostServiceStatus::GetRetryCheckInterval() const throw ()
+double HostServiceStatus::GetRetryInterval() const throw ()
 {
-  return (this->doubles_[RETRY_CHECK_INTERVAL]);
+  return (this->doubles_[RETRY_INTERVAL]);
 }
 
 /**
@@ -382,11 +382,11 @@ void HostServiceStatus::SetCheckCommand(const std::string& cc)
 }
 
 /**
- *  Set the check_timeperiod_object_id member.
+ *  Set the check_interval member.
  */
-void HostServiceStatus::SetCheckTimeperiodObjectId(int ctoi) throw ()
+void HostServiceStatus::SetCheckInterval(double ci) throw ()
 {
-  this->ints_[CHECK_TIMEPERIOD_OBJECT_ID] = ctoi;
+  this->doubles_[CHECK_INTERVAL] = ci;
   return ;
 }
 
@@ -450,6 +450,15 @@ void HostServiceStatus::SetExecutionTime(double et) throw ()
 void HostServiceStatus::SetHasBeenChecked(short hbc) throw ()
 {
   this->shorts_[HAS_BEEN_CHECKED] = hbc;
+  return ;
+}
+
+/**
+ *  Set the host_name member.
+ */
+void HostServiceStatus::SetHostName(const std::string& hn)
+{
+  this->strings_[HOST_NAME] = hn;
   return ;
 }
 
@@ -562,15 +571,6 @@ void HostServiceStatus::SetNoMoreNotifications(short nmn) throw ()
 }
 
 /**
- *  Set the normal_check_interval member.
- */
-void HostServiceStatus::SetNormalCheckInterval(double nci) throw ()
-{
-  this->doubles_[NORMAL_CHECK_INTERVAL] = nci;
-  return ;
-}
-
-/**
  *  Set the obsess_over member.
  */
 void HostServiceStatus::SetObsessOver(short oo) throw ()
@@ -627,9 +627,9 @@ void HostServiceStatus::SetProblemHasBeenAcknowledged(short phba) throw ()
 /**
  *  Set the retry_check_interval member.
  */
-void HostServiceStatus::SetRetryCheckInterval(double rci) throw ()
+void HostServiceStatus::SetRetryInterval(double ri) throw ()
 {
-  this->doubles_[RETRY_CHECK_INTERVAL] = rci;
+  this->doubles_[RETRY_INTERVAL] = ri;
   return ;
 }
 

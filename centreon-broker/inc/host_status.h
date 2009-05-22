@@ -7,13 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 05/22/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_STATUS_H_
 # define HOST_STATUS_H_
 
-# include <string>
 # include "host_service_status.h"
 
 namespace              CentreonBroker
@@ -27,11 +26,6 @@ namespace              CentreonBroker
   class                HostStatus : public HostServiceStatus
   {
    private:
-    enum               String
-    {
-      HOST = 0,
-      STRING_NB
-    };
     enum               TimeT
     {
       LAST_TIME_DOWN = 0,
@@ -39,7 +33,6 @@ namespace              CentreonBroker
       LAST_TIME_UP,
       TIMET_NB
     };
-    std::string        strings_[STRING_NB];
     time_t             timets_[TIMET_NB];
     void               InternalCopy(const HostStatus& hse);
 
@@ -49,13 +42,11 @@ namespace              CentreonBroker
                        ~HostStatus();
     HostStatus&        operator=(const HostStatus& hse);
     // Getters
-    int                GetType() const throw ();
-    const std::string& GetHost() const throw ();
     time_t             GetLastTimeUp() const throw ();
     time_t             GetLastTimeDown() const throw ();
     time_t             GetLastTimeUnreachable() const throw ();
+    int                GetType() const throw ();
     // Setters
-    void               SetHost(const std::string& host);
     void               SetLastTimeUp(time_t ltu) throw ();
     void               SetLastTimeDown(time_t ltd) throw ();
     void               SetLastTimeUnreachable(time_t ltu) throw ();
