@@ -216,7 +216,7 @@ struct KeySetter
     void (Event::* set_string)(const std::string&);
     void (Event::* set_timet)(time_t);
 
-    UHandler();
+    UHandler() : set_double(NULL) {}
     UHandler(void (Event::* sd)(double)) : set_double(sd) {}
     UHandler(void (Event::* si)(int)) : set_int(si) {}
     UHandler(void (Event::* ss)(short)) : set_short(ss) {}
@@ -333,7 +333,7 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
  */
 void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 {
-  KeySetter<HostStatus> keys_setters[] =
+  static const KeySetter<HostStatus> keys_setters[] =
       {
 	{ NDO_DATA_ACKNOWLEDGEMENTTYPE,
           's',
@@ -418,9 +418,105 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
           &HostStatus::SetScheduledDowntimeDepth },
 	{ NDO_DATA_SHOULDBESCHEDULED, 's', &HostStatus::SetShouldBeScheduled },
 	{ NDO_DATA_STATETYPE, 's', &HostStatus::SetStateType },
+	{ 0, '\0', static_cast<void (HostStatus::*)(double)>(NULL) }
       };
 
   HandleObject(this->instance_, keys_setters, socket);
+  return ;
+}
+
+/**
+ *  Handle a service status event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
+{
+  static const KeySetter<ServiceStatus> keys_setters[] =
+    {
+      { NDO_DATA_ACKNOWLEDGEMENTTYPE,
+	's',
+	&ServiceStatus::SetAcknowledgementType },
+      { NDO_DATA_ACTIVESERVICECHECKSENABLED,
+	's',
+	&ServiceStatus::SetActiveChecksEnabled },
+      { NDO_DATA_CHECKCOMMAND, 'S', &ServiceStatus::SetCheckCommand },
+      { NDO_DATA_CHECKTYPE, 's', &ServiceStatus::SetCheckType },
+      { NDO_DATA_CURRENTCHECKATTEMPT,
+        's',
+        &ServiceStatus::SetCurrentCheckAttempt },
+      { NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+	's',
+	&ServiceStatus::SetCurrentNotificationNumber },
+      { NDO_DATA_CURRENTSTATE, 's', &ServiceStatus::SetCurrentState },
+      { NDO_DATA_EVENTHANDLER, 'S', &ServiceStatus::SetEventHandler },
+      { NDO_DATA_EVENTHANDLERENABLED,
+        's',
+        &ServiceStatus::SetEventHandlerEnabled },
+      { NDO_DATA_EXECUTIONTIME, 'd', &ServiceStatus::SetExecutionTime },
+      { NDO_DATA_FAILUREPREDICTIONENABLED,
+	's',
+	&ServiceStatus::SetFailurePredictionEnabled },
+      { NDO_DATA_FLAPDETECTIONENABLED,
+	's',
+	&ServiceStatus::SetFlapDetectionEnabled },
+      { NDO_DATA_HASBEENCHECKED, 's', &ServiceStatus::SetHasBeenChecked },
+      { NDO_DATA_HOST, 'S', &ServiceStatus::SetHostName },
+      { NDO_DATA_ISFLAPPING, 's', &ServiceStatus::SetIsFlapping },
+      { NDO_DATA_LASTSERVICECHECK, 't', &ServiceStatus::SetLastCheck },
+      { NDO_DATA_LASTHARDSTATE, 's', &ServiceStatus::SetLastHardState },
+      { NDO_DATA_LASTHARDSTATECHANGE,
+	't',
+	&ServiceStatus::SetLastHardStateChange },
+      { NDO_DATA_LASTSERVICENOTIFICATION,
+        't',
+        &ServiceStatus::SetLastNotification },
+      { NDO_DATA_LASTSTATECHANGE, 't', &ServiceStatus::SetLastStateChange },
+      { NDO_DATA_LASTTIMECRITICAL, 't', &ServiceStatus::SetLastTimeCritical },
+      { NDO_DATA_LASTTIMEOK, 't', &ServiceStatus::SetLastTimeOk },
+      { NDO_DATA_LASTTIMEUNKNOWN, 't', &ServiceStatus::SetLastTimeUnknown },
+      { NDO_DATA_LASTTIMEWARNING, 't', &ServiceStatus::SetLastTimeWarning },
+      { NDO_DATA_LATENCY, 'd', &ServiceStatus::SetLatency },
+      { NDO_DATA_MAXCHECKATTEMPTS,
+	's',
+	&ServiceStatus::SetMaxCheckAttempts },
+      { NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+	'i',
+	&ServiceStatus::SetModifiedAttributes },
+      { NDO_DATA_NEXTSERVICECHECK, 't', &ServiceStatus::SetNextCheck },
+      { NDO_DATA_NEXTSERVICENOTIFICATION,
+	't',
+	&ServiceStatus::SetNextNotification },
+      { NDO_DATA_NOMORENOTIFICATIONS,
+	's',
+	&ServiceStatus::SetNoMoreNotifications },
+      { NDO_DATA_NORMALCHECKINTERVAL, 'd', &ServiceStatus::SetCheckInterval },
+      { NDO_DATA_OBSESSOVERSERVICE, 's', &ServiceStatus::SetObsessOver },
+      { NDO_DATA_OUTPUT, 'S', &ServiceStatus::SetOutput },
+      { NDO_DATA_PASSIVESERVICECHECKSENABLED,
+	's',
+	&ServiceStatus::SetPassiveChecksEnabled },
+      { NDO_DATA_PERCENTSTATECHANGE,
+        'd',
+        &ServiceStatus::SetPercentStateChange },
+      { NDO_DATA_PERFDATA, 'S', &ServiceStatus::SetPerfdata },
+      { NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+	's',
+	&ServiceStatus::SetProblemHasBeenAcknowledged },
+      { NDO_DATA_PROCESSPERFORMANCEDATA,
+	's',
+	&ServiceStatus::SetProcessPerformanceData },
+      { NDO_DATA_RETRYCHECKINTERVAL, 'd', &ServiceStatus::SetRetryInterval },
+      { NDO_DATA_SERVICE, 'S', &ServiceStatus::SetService },
+      { NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+	's',
+	&ServiceStatus::SetScheduledDowntimeDepth },
+      { NDO_DATA_SHOULDBESCHEDULED,
+        's',
+        &ServiceStatus::SetShouldBeScheduled },
+      { NDO_DATA_STATETYPE, 's', &ServiceStatus::SetStateType },
+      { 0, '\0', static_cast<void (ServiceStatus::*)(double)>(NULL) }
+    };
+
+  HandleObject(this->instance_, keys_setters, ps);
   return ;
 }
 
@@ -480,6 +576,7 @@ void NetworkInput::operator()()
   } handlers[] =
       {
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
+	{ NDO_API_SERVICESTATUSDATA, &NetworkInput::HandleServiceStatus },
 	{ 0, NULL }
       };
 
