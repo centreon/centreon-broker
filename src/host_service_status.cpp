@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/15/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 05/25/09 Matthieu Kermagoret
 */
 
 #include <cstring>

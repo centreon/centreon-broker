@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 05/25/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_H_
@@ -78,7 +78,7 @@ namespace              CentreonBroker
     short              GetStalkOnDown() const throw ();
     short              GetStalkOnUnreachable() const throw ();
     short              GetStalkOnUp() const throw ();
-    const std::string& GetStatusImage() const throw ();
+    const std::string& GetStatusmapImage() const throw ();
     int                GetType() const throw ();
     const std::string& GetVrmlImage() const throw ();
     short              GetX2D() const throw ();
@@ -92,16 +92,16 @@ namespace              CentreonBroker
     void               SetHave2DCoords(short h2dc) throw ();
     void               SetLastTimeDown(time_t ltd) throw ();
     void               SetLastTimeUnreachable(time_t ltu) throw ();
-    void               SetLastTimUp(time_t ltu) throw ();
+    void               SetLastTimeUp(time_t ltu) throw ();
     void               SetNotifyOnDown(short nod) throw ();
     void               SetNotifyOnUnreachable(short nou) throw ();
     void               SetStalkOnDown(short sod) throw ();
     void               SetStalkOnUnreachable(short sou) throw ();
     void               SetStalkOnUp(short sou) throw ();
-    void               SetStatusImage(const std::string& si);
+    void               SetStatusmapImage(const std::string& si);
     void               SetVrmlImage(const std::string& vi);
-    void               SetX2D(short x2d) throw ();
-    void               SetY2D(short y2d) throw ();
+    void               SetX2D(short x_2d) throw ();
+    void               SetY2D(short y_2d) throw ();
   };
 }
 
