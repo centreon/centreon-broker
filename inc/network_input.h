@@ -38,6 +38,7 @@ namespace                           CentreonBroker
                                     NetworkInput(const NetworkInput& ni);
     NetworkInput&                   operator=(const NetworkInput& ni);
     void                            HandleHostStatus(ProtocolSocket& socket);
+    void                            HandleProgramStatus(ProtocolSocket& socket);
     void                            HandleServiceStatus(ProtocolSocket& socket);
 
    public:

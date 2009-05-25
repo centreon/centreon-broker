@@ -16,6 +16,7 @@
 #include "host_status.h"
 #include "nagios/protoapi.h"
 #include "network_input.h"
+#include "program_status.h"
 #include "service_status.h"
 
 using namespace CentreonBroker;
@@ -422,6 +423,73 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
       };
 
   HandleObject(this->instance_, keys_setters, socket);
+  return ;
+}
+
+/**
+ *  Handle a program status event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
+{
+  static const KeySetter<ProgramStatus> keys_setters[] =
+    {
+      { NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+	's',
+	&ProgramStatus::SetActiveHostChecksEnabled },
+      { NDO_DATA_ACTIVESERVICECHECKSENABLED,
+	's',
+	&ProgramStatus::SetActiveServiceChecksEnabled },
+      { NDO_DATA_DAEMONMODE, 's', &ProgramStatus::SetDaemonMode },
+      { NDO_DATA_EVENTHANDLERENABLED,
+        's',
+        &ProgramStatus::SetEventHandlerEnabled },
+      { NDO_DATA_FAILUREPREDICTIONENABLED,
+	's',
+	&ProgramStatus::SetFailurePredictionEnabled },
+      { NDO_DATA_FLAPDETECTIONENABLED,
+	's',
+	&ProgramStatus::SetFlapDetectionEnabled },
+      { NDO_DATA_GLOBALHOSTEVENTHANDLER,
+	'S',
+	&ProgramStatus::SetGlobalHostEventHandler },
+      { NDO_DATA_GLOBALSERVICEEVENTHANDLER,
+	'S',
+	&ProgramStatus::SetGlobalServiceEventHandler },
+      { NDO_DATA_LASTCOMMANDCHECK,
+        't',
+        &ProgramStatus::SetLastCommandCheck },
+      { NDO_DATA_LASTLOGROTATION,
+	't',
+	&ProgramStatus::SetLastLogRotation },
+      { NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+	'i',
+	&ProgramStatus::SetModifiedHostAttributes },
+      { NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+	'i',
+	&ProgramStatus::SetModifiedServiceAttributes },
+      { NDO_DATA_NOTIFICATIONSENABLED,
+        's',
+        &ProgramStatus::SetNotificationsEnabled },
+      { NDO_DATA_OBSESSOVERHOST, 's', &ProgramStatus::SetObsessOverHost },
+      { NDO_DATA_OBSESSOVERSERVICE,
+        's',
+        &ProgramStatus::SetObsessOverService },
+      { NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+	's',
+	&ProgramStatus::SetPassiveHostChecksEnabled },
+      { NDO_DATA_PASSIVESERVICECHECKSENABLED,
+	's',
+	&ProgramStatus::SetPassiveServiceChecksEnabled },
+      { NDO_DATA_PROCESSPERFORMANCEDATA,
+	's',
+	&ProgramStatus::SetProcessPerformanceData },
+      { NDO_DATA_PROCESSID, 'i', &ProgramStatus::SetProcessId },
+      { NDO_DATA_PROGRAMSTARTTIME,
+	't',
+	&ProgramStatus::SetProgramStartTime },
+    };
+
+  HandleObject(this->instance_, keys_setters, ps);
   return ;
 }
 
