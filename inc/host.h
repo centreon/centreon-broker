@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/25/09 Matthieu Kermagoret
+** Last update 05/28/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_H_
@@ -16,11 +16,11 @@
 # include <string>
 # include <sys/types.h>
 # include "host_service.h"
-# include "host_service_status.h"
+# include "host_status.h"
 
 namespace              CentreonBroker
 {
-  class                Host : public HostService, public HostServiceStatus
+  class                Host : public HostService, public HostStatus
   {
    private:
     enum               Short
@@ -46,20 +46,13 @@ namespace              CentreonBroker
       VRML_IMAGE,
       STRING_NB
     };
-    enum               TimeT
-    {
-      LAST_TIME_DOWN = 0,
-      LAST_TIME_UNREACHABLE,
-      LAST_TIME_UP,
-      TIMET_NB
-    };
     short              shorts_[SHORT_NB];
     std::string        strings_[STRING_NB];
-    time_t             timets_[TIMET_NB];
     void               InternalCopy(const Host& h);
 
    public:
                        Host() throw ();
+		       Host(const HostStatus& hs);
                        Host(const Host& h);
                        ~Host() throw ();
     Host&              operator=(const Host& h);
@@ -70,9 +63,6 @@ namespace              CentreonBroker
     short              GetFlapDetectionOnUnreachable() const throw ();
     short              GetFlapDetectionOnUp() const throw ();
     short              GetHave2DCoords() const throw ();
-    time_t             GetLastTimeDown() const throw ();
-    time_t             GetLastTimeUnreachable() const throw ();
-    time_t             GetLastTimeUp() const throw ();
     short              GetNotifyOnDown() const throw ();
     short              GetNotifyOnUnreachable() const throw ();
     short              GetStalkOnDown() const throw ();
@@ -90,9 +80,6 @@ namespace              CentreonBroker
     void               SetFlapDetectionOnUnreachable(short fdou) throw ();
     void               SetFlapDetectionOnUp(short fdou) throw ();
     void               SetHave2DCoords(short h2dc) throw ();
-    void               SetLastTimeDown(time_t ltd) throw ();
-    void               SetLastTimeUnreachable(time_t ltu) throw ();
-    void               SetLastTimeUp(time_t ltu) throw ();
     void               SetNotifyOnDown(short nod) throw ();
     void               SetNotifyOnUnreachable(short nou) throw ();
     void               SetStalkOnDown(short sod) throw ();
