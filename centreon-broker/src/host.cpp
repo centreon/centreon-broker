@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/25/09 Matthieu Kermagoret
+** Last update 05/28/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -29,7 +29,6 @@ void Host::InternalCopy(const Host& h)
   memcpy(this->shorts_, h.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = h.strings_[i];
-  memcpy(this->timets_, h.timets_, sizeof(this->timets_));
   return ;
 }
 
@@ -45,13 +44,20 @@ void Host::InternalCopy(const Host& h)
 Host::Host() throw ()
 {
   memset(this->shorts_, 0, sizeof(this->shorts_));
-  memset(this->timets_, 0, sizeof(this->timets_));
+}
+
+/**
+ *  Build a Host from a HostStatus.
+ */
+Host::Host(const HostStatus& hs) : HostStatus(hs)
+{
+  memset(this->shorts_, 0, sizeof(this->shorts_));
 }
 
 /**
  *  Host copy constructor.
  */
-Host::Host(const Host& h) : HostService(h), HostServiceStatus(h)
+Host::Host(const Host& h) : HostService(h), HostStatus(h)
 {
   this->InternalCopy(h);
 }
@@ -69,7 +75,7 @@ Host::~Host() throw ()
 Host& Host::operator=(const Host& h)
 {
   this->HostService::operator=(h);
-  this->HostServiceStatus::operator=(h);
+  this->HostStatus::operator=(h);
   this->InternalCopy(h);
   return (*this);
 }
@@ -120,30 +126,6 @@ short Host::GetFlapDetectionOnUp() const throw ()
 short Host::GetHave2DCoords() const throw ()
 {
   return (this->shorts_[HAVE_2D_COORDS]);
-}
-
-/**
- *  Get the last_time_down member.
- */
-time_t Host::GetLastTimeDown() const throw ()
-{
-  return (this->timets_[LAST_TIME_DOWN]);
-}
-
-/**
- *  Get the last_time_unreachable member.
- */
-time_t Host::GetLastTimeUnreachable() const throw ()
-{
-  return (this->timets_[LAST_TIME_UNREACHABLE]);
-}
-
-/**
- *  Get the last_time_up member.
- */
-time_t Host::GetLastTimeUp() const throw ()
-{
-  return (this->timets_[LAST_TIME_UP]);
 }
 
 /**
@@ -278,33 +260,6 @@ void Host::SetFlapDetectionOnUp(short fdou) throw ()
 void Host::SetHave2DCoords(short h2dc) throw ()
 {
   this->shorts_[HAVE_2D_COORDS] = h2dc;
-  return ;
-}
-
-/**
- *  Set the last_time_down member.
- */
-void Host::SetLastTimeDown(time_t ltd) throw ()
-{
-  this->timets_[LAST_TIME_DOWN] = ltd;
-  return ;
-}
-
-/**
- *  Set the last_time_unreachable member.
- */
-void Host::SetLastTimeUnreachable(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UNREACHABLE] = ltu;
-  return ;
-}
-
-/**
- *  Set the last_time_up member.
- */
-void Host::SetLastTimeUp(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UP] = ltu;
   return ;
 }
 
