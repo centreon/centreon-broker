@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 05/22/09 Matthieu Kermagoret
+## Last update 05/26/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -31,7 +31,8 @@ SRC		=	src/cb2db.cpp				\
 			src/program_status.cpp			\
 			src/service.cpp				\
 			src/service_status.cpp			\
-			src/status.cpp
+			src/status.cpp				\
+			src/waitable_list.cpp
 OBJ		=	$(SRC:.cpp=.o)
 
 NAME		=	cb2db
