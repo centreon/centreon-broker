@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/29/09 Matthieu Kermagoret
+** Last update 05/30/09 Matthieu Kermagoret
 */
 
 #ifndef DB_QUERY_HPP_
@@ -24,7 +24,7 @@ namespace CentreonBroker
   class          Query
   {
    protected:
-    int                        arg;
+    int                        arg_;
     const Mapping<ObjectType>& default_mapping_;
     Mapping<ObjectType>*       modified_mapping_;
 
@@ -120,15 +120,15 @@ namespace CentreonBroker
       if (this->modified_mapping_)
 	{
 	  it = this->modified_mapping_->setters_.begin();
-	  end_it = this->modified_mapping_->setters.end();
+	  end_it = this->modified_mapping_->setters_.end();
 	}
       else
 	{
-	  it = this->default_mapping_.setters.begin();
-	  end_it = this->default_mapping_.setters.end();
+	  it = this->default_mapping_.setters_.begin();
+	  end_it = this->default_mapping_.setters_.end();
 	}
-      for (this->arg = 1; it != end_it; this->arg_++)
-	((*it).second)(query, obj);
+      for (this->arg_ = 1; it != end_it; this->arg_++)
+	(*((*it).second))(query, obj);
       return ;
     }
   };

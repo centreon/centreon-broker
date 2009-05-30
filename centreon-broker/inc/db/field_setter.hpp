@@ -7,11 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/29/09 Matthieu Kermagoret
+** Last update 05/30/09 Matthieu Kermagoret
 */
 
 #ifndef DB_FIELD_SETTER_HPP_
 # define DB_FIELD_SETTER_HPP_
+
+# include "db/query.hpp"
 
 namespace CentreonBroker
 {
@@ -55,7 +57,7 @@ namespace CentreonBroker
     // This virtual method will be called by mapped queries to extract data
     // from the mapped object.
     virtual void operator()(Query<ObjectType>* query,
-                            const ObjectType& object) = 0;
+                            const ObjectType& object) const = 0;
   };
 
 
@@ -105,7 +107,7 @@ namespace CentreonBroker
                         ~DynamicFieldSetter() {}
     // FieldSetter's operator= override.
     void                operator()(Query<ObjectType>* query,
-                                   const ObjectType& object)
+                                   const ObjectType& object) const
     {
       query->SetDouble(this->getter_(object));
       return ;

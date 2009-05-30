@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/29/09 Matthieu Kermagoret
+** Last update 05/30/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MAPPING_HPP_
@@ -26,15 +26,14 @@ namespace CentreonBroker
    *  This class contains the definition of an object mapping.
    */
   template <typename ObjectType>
-  class    Mapping
+  struct     Mapping
   {
     friend class Query<ObjectType>;
 
-   private:
-    std::string table_;
-    std::map<std::string, FieldSetter<ObjectType>*> setters_;
-
    public:
+    std::string table_;
+    std::map<std::string, const FieldSetter<ObjectType>*> setters_;
+
     /**
      *  Mapping default constructor.
      */
@@ -79,9 +78,18 @@ namespace CentreonBroker
      *  Add a field and its mapped value to the mapping.
      */
     void     AddField(const std::string& field,
-                      FieldSetter<ObjectType>* setter)
+                      const FieldSetter<ObjectType>* setter)
     {
       this->setters_[field] = setter;
+      return ;
+    }
+
+    /**
+     *  Set the table name.
+     */
+    void     SetTable(const std::string& table)
+    {
+      this->table_ = table;
       return ;
     }
   };
