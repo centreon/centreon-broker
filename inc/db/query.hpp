@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/30/09 Matthieu Kermagoret
+** Last update 06/01/09 Matthieu Kermagoret
 */
 
 #ifndef DB_QUERY_HPP_
@@ -25,8 +25,7 @@ namespace CentreonBroker
   {
    protected:
     int                        arg_;
-    const Mapping<ObjectType>& default_mapping_;
-    Mapping<ObjectType>*       modified_mapping_;
+    const Mapping<ObjectType>& mapping_;
 
     /**
      *  Query copy constructor.
@@ -50,28 +49,12 @@ namespace CentreonBroker
      *  Query constructor.
      */
                  Query(const Mapping<ObjectType>& mapping)
-      : default_mapping_(mapping), modified_mapping_(NULL) {}
+      : mapping_(mapping) {}
 
     /**
      *  Query destructor.
      */
-    virtual      ~Query()
-    {
-      if (this->modified_mapping_)
-	delete (this->modified_mapping_);
-    }
-
-    /**
-     *  Delete a field from the mapping. This will force to copy the default
-     *  mapping.
-     */
-    Query&       operator>>(const std::string& field)
-    {
-      if (!this->modified_mapping_)
-	this->modified_mapping_ = new Mapping<ObjectType>(this->mapping_);
-      this->modified_mapping_ >> field;
-      return (*this);
-    }
+    virtual      ~Query() {}
 
     /**
      *  Execute the query.
@@ -114,24 +97,16 @@ namespace CentreonBroker
     void         VisitObject(Query<ObjectType>* query, const ObjectType& obj)
     {
       // XXX : does this really works ?
-      decltype(this->default_mapping_.setters_.begin()) it;
-      decltype(this->default_mapping_.setters_.end()) end_it;
+      decltype(this->mapping_.setters_.begin()) it;
+      decltype(this->mapping_.setters_.end()) end_it;
 
-      if (this->modified_mapping_)
-	{
-	  it = this->modified_mapping_->setters_.begin();
-	  end_it = this->modified_mapping_->setters_.end();
-	}
-      else
-	{
-	  it = this->default_mapping_.setters_.begin();
-	  end_it = this->default_mapping_.setters_.end();
-	}
+      it = this->mapping_.setters_.begin();
+      end_it = this->mapping_.setters_.end();
       for (this->arg_ = 1; it != end_it; this->arg_++)
 	(*((*it).second))(query, obj);
       return ;
     }
   };
-};
+}
 
 #endif /* !DB_QUERY_HPP_ */

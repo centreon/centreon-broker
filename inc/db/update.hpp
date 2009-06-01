@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/29/09 Matthieu Kermagoret
+** Last update 06/01/09 Matthieu Kermagoret
 */
 
 #ifndef DB_UPDATE_HPP_
@@ -41,6 +41,9 @@ namespace CentreonBroker
       return (*this);
     }
 
+   protected:
+    std::map<std::string, const FieldSetter<ObjectType>*> uniques_;
+
    public:
     /**
      *  Update default constructor.
@@ -52,6 +55,16 @@ namespace CentreonBroker
      *  Update destructor.
      */
     virtual ~Update() {}
+
+    /**
+     *  Add a UNIQUE field that will help update the object.
+     */
+    void    AddUnique(const std::string& field,
+                      const FieldSetter<ObjectType>* setter)
+    {
+      this->uniques_[field] = setter;
+      return ;
+    }
   };
 }
 
