@@ -1,63 +1,64 @@
 /*
-** mysql_insert.hpp for CentreonBroker in ./inc/db
+** mysql_update.hpp for CentreonBroker in ./inc/db
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
 ** Copyright Merethis
 ** See LICENSE file for details.
 ** 
-** Started on  05/29/09 Matthieu Kermagoret
+** Started on  06/01/09 Matthieu Kermagoret
 ** Last update 06/01/09 Matthieu Kermagoret
 */
 
-#ifndef MYSQL_INSERT_HPP_
-# define MYSQL_INSERT_HPP_
+#ifndef MYSQL_UPDATE_HPP_
+# define MYSQL_UPDATE_HPP_
 
 # include <mysql_connection.h>
 # include <mysql_prepared_statement.h>
-# include "db/insert.hpp"
+# include "db/update.hpp"
 
 namespace   CentreonBroker
 {
   /**
-   *  This template encapsulates a MySQL INSERT query.
+   *  This template encapsulates a MySQL UPDATE query.
    */
   template  <typename ObjectType>
-  class     MySQLInsert : public Insert<ObjectType>
+  class     MySQLUpdate : public Update<ObjectType>
   {
    private:
     sql::Connection* myconn_;
     sql::PreparedStatement* stmt_;
+
     /**
-     *  MySQLInsert copy constructor.
+     *  MySQLUpdate copy constructor.
      */
-            MySQLInsert(const MySQLInsert& myinsert)
-      : Insert<ObjectType>(myinsert.mapping_)
+            MySQLUpdate(const MySQLUpdate& myupdate)
+      : Update<ObjectType>(myupdate.mapping_)
     {
-      (void)myinsert;
+      (void)myupdate;
     }
 
     /**
-     *  MySQLInsert operator= overload.
+     *  MySQLUpdate operator= overload.
      */
-    MySQLInsert& operator=(const MySQLInsert& myinsert)
+    MySQLUpdate& operator=(const MySQLUpdate& myupdate)
     {
-      (void)myinsert;
+      (void)myupdate;
       return (*this);
     }
 
    public:
     /**
-     *  MySQLInsert default constructor.
+     *  MySQLUpdate default constructor.
      */
-            MySQLInsert(const Mapping<ObjectType>& mapping,
+            MySQLUpdate(const Mapping<ObjectType>& mapping,
                         sql::Connection* myconn)
-      : Insert<ObjectType>(mapping), myconn_(myconn), stmt_(NULL) {}
+      : Update<ObjectType>(mapping), myconn_(myconn), stmt_(NULL) {}
 
     /**
-     *  MySQLInsert destructor.
+     *  MySQLUpdate destructor.
      */
-    virtual ~MySQLInsert()
+    virtual ~MySQLUpdate()
     {
       if (this->stmt_)
 	delete (this->stmt_);
@@ -82,18 +83,24 @@ namespace   CentreonBroker
       decltype(this->mapping_.setters_.end()) it_end;
       std::string query;
 
-      query = "INSERT INTO ";
+      query = "UPDATE ";
       query += this->mapping_.table_;
       query += " SET ";
-      it = this->mapping_.setters_.begin();
       it_end = this->mapping_.setters_.end();
-      while (it != it_end)
+      for (it = this->mapping_.setters_.begin(); it != it_end; it++)
 	{
 	  query += (*it).first;
 	  query += "=?, ";
-	  it++;
 	}
       query.resize(query.size() - 2);
+      query += "WHERE ";
+      it_end = this->uniques_.end();
+      for (it = this->uniques_.begin(); it != it_end; it++)
+	{
+	  query += (*it).first;
+	  query += "=? AND ";
+	}
+      query.resize(query.size() - 5);
       this->stmt_ = this->myconn_->prepareStatement(query);
       return ;
     }
@@ -146,4 +153,4 @@ namespace   CentreonBroker
   };
 }
 
-#endif /* !MYSQL_INSERT_HPP_ */
+#endif /* !MYSQL_UPDATE_HPP_ */

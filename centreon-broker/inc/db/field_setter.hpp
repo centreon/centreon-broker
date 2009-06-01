@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/29/09 Matthieu Kermagoret
-** Last update 05/30/09 Matthieu Kermagoret
+** Last update 06/01/09 Matthieu Kermagoret
 */
 
 #ifndef DB_FIELD_SETTER_HPP_
 # define DB_FIELD_SETTER_HPP_
 
+# include <sys/types.h>
 # include "db/query.hpp"
 
 namespace CentreonBroker
@@ -73,7 +74,9 @@ namespace CentreonBroker
    *  This template class is used for setters which use getters that are built
    *  at runtime (like boost::bind ones). The default template is not used.
    */
-  template <typename ObjectType, typename FieldType, typename GetterType>
+  template <typename ObjectType,
+            typename FieldType,
+            typename GetterType = FieldType (*)(const ObjectType&)>
   class   DynamicFieldSetter
   {
   };
@@ -110,6 +113,154 @@ namespace CentreonBroker
                                    const ObjectType& object) const
     {
       query->SetDouble(this->getter_(object));
+      return ;
+    }
+  };
+
+  /**
+   *  Template specialization on the int type.
+   */
+  template <typename ObjectType, typename GetterType>
+  class                 DynamicFieldSetter<ObjectType, int, GetterType>
+    : public FieldSetter<ObjectType>
+  {
+   private:
+    const GetterType& getter_;
+    // DynamicFieldSetter copy constructor.
+                        DynamicFieldSetter(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+    }
+    // DynamicFieldSetter operator= overload.
+    DynamicFieldSetter& operator=(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+      return (*this);
+    }
+
+   public:
+    // DynamicFieldSetter default constructor.
+                        DynamicFieldSetter(const GetterType& getter)
+      : getter_(getter) {}
+    // DynamicFieldSetter destructor.
+                        ~DynamicFieldSetter() {}
+    // FieldSetter's operator= override.
+    void                operator()(Query<ObjectType>* query,
+                                   const ObjectType& object) const
+    {
+      query->SetInt(this->getter_(object));
+      return ;
+    }
+  };
+
+  /**
+   *  Template specialization on the short type.
+   */
+  template <typename ObjectType, typename GetterType>
+  class                 DynamicFieldSetter<ObjectType, short, GetterType>
+    : public FieldSetter<ObjectType>
+  {
+   private:
+    const GetterType& getter_;
+    // DynamicFieldSetter copy constructor.
+                        DynamicFieldSetter(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+    }
+    // DynamicFieldSetter operator= overload.
+    DynamicFieldSetter& operator=(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+      return (*this);
+    }
+
+   public:
+    // DynamicFieldSetter default constructor.
+                        DynamicFieldSetter(const GetterType& getter)
+      : getter_(getter) {}
+    // DynamicFieldSetter destructor.
+                        ~DynamicFieldSetter() {}
+    // FieldSetter's operator= override.
+    void                operator()(Query<ObjectType>* query,
+                                   const ObjectType& object) const
+    {
+      query->SetShort(this->getter_(object));
+      return ;
+    }
+  };
+
+  /**
+   *  Template specialization on the string type.
+   */
+  template <typename ObjectType, typename GetterType>
+  class                 DynamicFieldSetter<ObjectType,
+                                           const std::string&,
+                                           GetterType>
+    : public FieldSetter<ObjectType>
+  {
+   private:
+    const GetterType& getter_;
+    // DynamicFieldSetter copy constructor.
+                        DynamicFieldSetter(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+    }
+    // DynamicFieldSetter operator= overload.
+    DynamicFieldSetter& operator=(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+      return (*this);
+    }
+
+   public:
+    // DynamicFieldSetter default constructor.
+                        DynamicFieldSetter(const GetterType& getter)
+      : getter_(getter) {}
+    // DynamicFieldSetter destructor.
+                        ~DynamicFieldSetter() {}
+    // FieldSetter's operator= override.
+    void                operator()(Query<ObjectType>* query,
+                                   const ObjectType& object) const
+    {
+      query->SetString(this->getter_(object));
+      return ;
+    }
+  };
+
+  /**
+   *  Template specialization on the time_t type.
+   */
+  template <typename ObjectType, typename GetterType>
+  class                 DynamicFieldSetter<ObjectType,
+                                           time_t,
+                                           GetterType>
+    : public FieldSetter<ObjectType>
+  {
+   private:
+    const GetterType& getter_;
+    // DynamicFieldSetter copy constructor.
+                        DynamicFieldSetter(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+    }
+    // DynamicFieldSetter operator= overload.
+    DynamicFieldSetter& operator=(const DynamicFieldSetter& dfs)
+    {
+      (void)dfs;
+      return (*this);
+    }
+
+   public:
+    // DynamicFieldSetter default constructor.
+                        DynamicFieldSetter(const GetterType& getter)
+      : getter_(getter) {}
+    // DynamicFieldSetter destructor.
+                        ~DynamicFieldSetter() {}
+    // FieldSetter's operator= override.
+    void                operator()(Query<ObjectType>* query,
+                                   const ObjectType& object) const
+    {
+      query->SetTimeT(this->getter_(object));
       return ;
     }
   };
