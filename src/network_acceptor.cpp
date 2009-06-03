@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 06/03/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -129,6 +129,7 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
         {
           ni = NULL;
           ni = new NetworkInput(*this->new_socket_);
+	  std::clog << "New client incoming..." << std::endl;
         }
       catch (std::exception& e)
         {

@@ -7,20 +7,21 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 06/03/09 Matthieu Kermagoret
 */
 
 #include <boost/asio.hpp>
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
-#include "mysql_output.h"
+#include "mapping.h"
+#include "db_output.h"
 #include "network_acceptor.h"
 
 using namespace CentreonBroker;
 
 static boost::asio::io_service* gl_ios;
-static MySQLOutput* gl_mo;
+static DBOutput* gl_dbo;
 static NetworkAcceptor* gl_na;
 static volatile bool gl_shall_exit = false;
 
@@ -46,11 +47,11 @@ int main(int argc, char *argv[])
       gl_ios = new boost::asio::io_service;
       std::clog << "  Done" << std::endl;
       std::clog << "Initializing MySQL engine...";
-      gl_mo = new MySQLOutput();
+      gl_dbo = new DBOutput();
       std::clog << "  Done" << std::endl;
       std::clog << "Connecting to MySQL server : " << argv[2]
                 << '@' << argv[1] << "...";
-      gl_mo->Init(argv[1], argv[2], argv[3], argv[4]);
+      gl_dbo->Init(DBOutput::MYSQL, argv[1], argv[2], argv[3], argv[4]);
       std::clog << "  Done" << std::endl;
       std::clog << "Listening on port 5667...";
       gl_na = new NetworkAcceptor(*gl_ios);
@@ -75,12 +76,12 @@ int main(int argc, char *argv[])
 	  gl_na = NULL;
 	  std::clog << "  Done" << std::endl;
 	}
-      if (gl_mo)
+      if (gl_dbo)
 	{
 	  std::clog << "Closing connection to MySQL server...";
-	  gl_mo->Destroy();
-	  delete gl_mo;
-	  gl_mo = NULL;
+	  gl_dbo->Destroy();
+	  delete gl_dbo;
+	  gl_dbo = NULL;
 	  std::clog << "  Done" << std::endl;
 	}
       if (gl_ios)

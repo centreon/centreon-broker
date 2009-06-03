@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/28/09 Matthieu Kermagoret
+** Last update 06/02/09 Matthieu Kermagoret
 */
 
 #ifndef HOST_H_
