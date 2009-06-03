@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/26/09 Matthieu Kermagoret
-** Last update 05/26/09 Matthieu Kermagoret
+** Last update 06/03/09 Matthieu Kermagoret
 */
 
 #ifndef WAITABLE_LIST_HPP_
@@ -15,6 +15,7 @@
 
 # include <boost/thread.hpp>
 # include <list>
+# include "exception.h"
 
 namespace                     CentreonBroker
 {
@@ -28,7 +29,7 @@ namespace                     CentreonBroker
     **********************************/
    private:
     boost::condition_variable cv_;
-    std::list<T>              list_;
+    std::list<T*>             list_;
     boost::mutex              mutex_;
 
     /**
@@ -82,7 +83,7 @@ namespace                     CentreonBroker
     /**
      *  Add an element in the list.
      */
-    void                      Add(T t)
+    void                      Add(T* t)
     {
       boost::unique_lock<boost::mutex> lock(this->mutex_);
 
@@ -112,10 +113,10 @@ namespace                     CentreonBroker
     /**
      *  Wait until an element is received.
      */
-    T                         Wait()
+    T*                        Wait()
     {
       boost::unique_lock<boost::mutex> lock(this->mutex_);
-      T t;
+      T* t;
 
       if (this->list_.empty())
 	{
@@ -134,17 +135,17 @@ namespace                     CentreonBroker
     /**
      *  Wait until an element is received or until the timeout occur.
      */
-    T                         TimedWait(const boost::system_time& st)
+    T*                        TimedWait(const boost::system_time& st)
     {
       boost::unique_lock<boost::mutex> lock(this->mutex_);
-      T t;
+      T* t;
 
       if (this->list_.empty())
 	{
 	  this->cv_.timed_wait(lock, st);
 	}
       if (this->list_.empty())
-	throw (Exception(ECANCELED, "Spurious condition variable wake-up."));
+	t = NULL;
       else
 	{
 	  t = this->list_.front();

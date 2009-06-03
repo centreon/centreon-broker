@@ -1,5 +1,5 @@
 /*
-** cb2db.cpp for CentreonBroker in ./src
+** mapping.cpp for CentreonBroker in ./src
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,263 +7,322 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/01/09 Matthieu Kermagoret
+** Last update 06/03/09 Matthieu Kermagoret
 */
 
 #include "host.h"
+#include "host_status.h"
 #include "mapping.h"
 
 using namespace CentreonBroker;
 
-template <typename ObjectType,
-          typename SuperType,
-          typename ReturnType,
-          ReturnType (SuperType::* method)() const>
-ReturnType MethodToFunction(const ObjectType& object)
-{
-  return ((object.*method)());
-}
-
-static MappedField<Host> hosts[] =
+const char* CentreonBroker::host_fields[] =
   {
-    {
-      "acknowledgement_type",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetAcknowledgementType>)
-    },
-    {
-      "active_checks_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetActiveChecksEnabled>)
-    },
-    {
-      "check_command",
-      DynamicFieldSetter<Host, const std::string&>(
-        &MethodToFunction<Host, HostServiceStatus, const std::string&,
-                          &HostServiceStatus::GetCheckCommand>)
-    },
-    {
-      "check_interval",
-      DynamicFieldSetter<Host, double>(
-        &MethodToFunction<Host, HostServiceStatus, double,
-                          &HostServiceStatus::GetCheckInterval>)
-    },
-    {
-      "check_type",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetCheckType>)
-    },
-    {
-      "current_check_attempt",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetCurrentCheckAttempt>)
-    },
-    {
-      "current_notification_number",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetCurrentNotificationNumber>)
-    },
-    {
-      "current_state",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetCurrentState>)
-    },
-    {
-      "event_handler",
-      DynamicFieldSetter<Host, const std::string&>(
-        &MethodToFunction<Host, HostServiceStatus, const std::string&,
-                          &HostServiceStatus::GetEventHandler>)
-    },
-    {
-      "event_handler_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, Status, short,
-                          &Status::GetEventHandlerEnabled>)
-    },
-    {
-      "execution_time",
-      DynamicFieldSetter<Host, double>(
-        &MethodToFunction<Host, HostServiceStatus, double,
-                          &HostServiceStatus::GetExecutionTime>)
-    },
-    {
-      "failure_prediction_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, Status, short,
-                          &Status::GetFailurePredictionEnabled>)
-    },
-    {
-      "flap_detection_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, Status, short,
-                          &Status::GetFlapDetectionEnabled>)
-    },
-    {
-      "has_been_checked",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetHasBeenChecked>)
-    },
-    {
-      "host_name",
-      DynamicFieldSetter<Host, const std::string&>(
-        &MethodToFunction<Host, HostServiceStatus, const std::string&,
-                          &HostServiceStatus::GetHostName>)
-    },
-    {
-      "is_flapping",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetIsFlapping>)
-    },
-    {
-      "last_check",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetLastCheck>)
-    },
-    {
-      "last_hard_state",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetLastHardState>)
-    },
-    {
-      "last_hard_state_change",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetLastHardStateChange>)
-    },
-    {
-      "last_notification",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetLastNotification>)
-    },
-    {
-      "last_state_change",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetLastStateChange>)
-    },
-    {
-      "latency",
-      DynamicFieldSetter<Host, double>(
-        &MethodToFunction<Host, HostServiceStatus, double,
-                          &HostServiceStatus::GetLatency>)
-    },
-    {
-      "max_check_attempts",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetMaxCheckAttempts>)
-    },
-    {
-      "modified_host_attributes",
-      DynamicFieldSetter<Host, int>(
-        &MethodToFunction<Host, HostServiceStatus, int,
-                          &HostServiceStatus::GetModifiedAttributes>)
-    },
-    {
-      "next_check",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetNextCheck>)
-    },
-    {
-      "next_notification",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, HostServiceStatus, time_t,
-                          &HostServiceStatus::GetNextNotification>)
-    },
-    {
-      "no_more_notifications",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetNoMoreNotifications>)
-    },
-    {
-      "notifications_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, Status, short,
-                          &Status::GetNotificationsEnabled>)
-    },
-    {
-      "obsess_over_host",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetObsessOver>)
-    },
-    {
-      "output",
-      DynamicFieldSetter<Host, const std::string&>(
-        &MethodToFunction<Host, HostServiceStatus, const std::string&,
-                          &HostServicestatus::GetOutput>)
-    },
-    {
-      "passive_checks_enabled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetPassiveChecksEnabled>)
-    },
-    {
-      "percent_state_change",
-      DynamicFieldSetter<Host, double>(
-        &MethodToFunction<Host, HostServiceStatus, double,
-                          &HostServiceStatus::GetPercentStateChange>)
-    },
-    {
-      "perfdata",
-      DynamicFieldSetter<Host, const std::string&>(
-        &MethodToFunction<Host, HostServiceStatus, const std::string&,
-                          &HostServiceStatus::GetPerfdata>)
-    },
-    {
-      "problem_has_been_acknowledged",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetProblemHasBeenAcknowledged>)
-    },
-    {
-      "process_performance_data",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, Status, short,
-                          &Status::GetProcessPerformanceData>)
-    },
-    {
-      "retry_interval",
-      DynamicFieldSetter<Host, double>(
-        &MethodToFunction<Host, HostServiceStatus, double,
-                          &HostServiceStatus::GetRetryInterval>)
-    },
-    {
-      "scheduled_downtime_depth",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetScheduledDowntimeDepth>)
-    },
-    {
-      "should_be_scheduled",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetShouldBeScheduled>)
-    },
-    {
-      "state_type",
-      DynamicFieldSetter<Host, short>(
-        &MethodToFunction<Host, HostServiceStatus, short,
-                          &HostServiceStatus::GetStateType>)
-    },
-    {
-      "status_update_time",
-      DynamicFieldSetter<Host, time_t>(
-        &MethodToFunction<Host, Status, time_t,
-                          &Status::GetStatusUpdateTime>)
-    }
+    "acknowledgement_type",
+    "action_url",
+    "active_checks_enabled",
+    "address",
+    "alias",
+    "check_command",
+    "check_interval",
+    "check_type",
+    "current_check_attempt",
+    "current_notification_number",
+    "current_state",
+    "display_name",
+    "event_handler",
+    "event_handler_enabled",
+    "execution_time",
+    "failure_prediction_enabled",
+    "first_notification_delay",
+    "flap_detection_enabled",
+    "flap_detection_on_down",
+    "flap_detection_on_unreachable",
+    "flap_detection_on_up",
+    "freshness_threshold",
+    "has_been_checked",
+    "have_2d_coords",
+    "high_flap_threshold",
+    "host_name",
+    "icon_image",
+    "icon_image_alt",
+    "is_flapping",
+    "last_check",
+    "last_hard_state",
+    "last_hard_state_change",
+    "last_notification",
+    "last_state_change",
+    "last_time_down",
+    "last_time_unreachable",
+    "last_time_up",
+    "latency",
+    "low_flap_threshold",
+    "max_check_attempts",
+    "modified_host_attributes",
+    "next_check",
+    "next_notification",
+    "no_more_notifications",
+    "notes",
+    "notes_url",
+    "notification_interval",
+    "notifications_enabled",
+    "notify_on_down",
+    "notify_on_downtime",
+    "notify_on_flapping",
+    "notify_on_recovery",
+    "notify_on_unreachable",
+    "obsess_over_host",
+    "output",
+    "passive_checks_enabled",
+    "percent_state_change",
+    "perfdata",
+    "problem_has_been_acknowledged",
+    "process_performance_data",
+    "retain_nonstatus_information",
+    "retain_status_information",
+    "retry_interval",
+    "scheduled_downtime_depth",
+    "should_be_scheduled",
+    "stalk_on_down",
+    "stalk_on_unreachable",
+    "stalk_on_up",
+    "state_type",
+    "status_update_time",
+    "statusmap_image",
+    "vrml_image",
+    "x_2d",
+    "y_2d",
+    NULL
+  };
+
+FieldGetter<Host> CentreonBroker::host_getters[] =
+  {
+    &Host::GetAcknowledgementType,
+    &Host::GetActionUrl,
+    &Host::GetActiveChecksEnabled,
+    &Host::GetAddress,
+    &Host::GetAlias,
+    &Host::GetCheckCommand,
+    &Host::GetCheckInterval,
+    &Host::GetCheckType,
+    &Host::GetCurrentCheckAttempt,
+    &Host::GetCurrentNotificationNumber,
+    &Host::GetCurrentState,
+    &Host::GetDisplayName,
+    &Host::GetEventHandler,
+    &Host::GetEventHandlerEnabled,
+    &Host::GetExecutionTime,
+    &Host::GetFailurePredictionEnabled,
+    &Host::GetFirstNotificationDelay,
+    &Host::GetFlapDetectionEnabled,
+    &Host::GetFlapDetectionOnDown,
+    &Host::GetFlapDetectionOnUnreachable,
+    &Host::GetFlapDetectionOnUp,
+    &Host::GetFreshnessThreshold,
+    &Host::GetHasBeenChecked,
+    &Host::GetHave2DCoords,
+    &Host::GetHighFlapThreshold,
+    &Host::GetHostName,
+    &Host::GetIconImage,
+    &Host::GetIconImageAlt,
+    &Host::GetIsFlapping,
+    &Host::GetLastCheck,
+    &Host::GetLastHardState,
+    &Host::GetLastHardStateChange,
+    &Host::GetLastNotification,
+    &Host::GetLastStateChange,
+    &Host::GetLastTimeDown,
+    &Host::GetLastTimeUnreachable,
+    &Host::GetLastTimeUp,
+    &Host::GetLatency,
+    &Host::GetLowFlapThreshold,
+    &Host::GetMaxCheckAttempts,
+    &Host::GetModifiedAttributes,
+    &Host::GetNextCheck,
+    &Host::GetNextNotification,
+    &Host::GetNoMoreNotifications,
+    &Host::GetNotes,
+    &Host::GetNotesUrl,
+    &Host::GetNotificationInterval,
+    &Host::GetNotificationsEnabled,
+    &Host::GetNotifyOnDown,
+    &Host::GetNotifyOnDowntime,
+    &Host::GetNotifyOnFlapping,
+    &Host::GetNotifyOnRecovery,
+    &Host::GetNotifyOnUnreachable,
+    &Host::GetObsessOver,
+    &Host::GetOutput,
+    &Host::GetPassiveChecksEnabled,
+    &Host::GetPercentStateChange,
+    &Host::GetPerfdata,
+    &Host::GetProblemHasBeenAcknowledged,
+    &Host::GetProcessPerformanceData,
+    &Host::GetRetainNonstatusInformation,
+    &Host::GetRetainStatusInformation,
+    &Host::GetRetryInterval,
+    &Host::GetScheduledDowntimeDepth,
+    &Host::GetShouldBeScheduled,
+    &Host::GetStalkOnDown,
+    &Host::GetStalkOnUnreachable,
+    &Host::GetStalkOnUp,
+    &Host::GetStateType,
+    &Host::GetStatusUpdateTime,
+    &Host::GetStatusmapImage,
+    &Host::GetVrmlImage,
+    &Host::GetX2D,
+    &Host::GetY2D,
+    0
+  };
+
+static_assert(sizeof(host_fields) / sizeof(*host_fields)
+              == sizeof(host_getters) / sizeof(*host_getters),
+              "Invalid Host object-relational mapping");
+
+const char* CentreonBroker::host_status_fields[] =
+  {
+    "acknowledgement_type",
+    "active_checks_enabled",
+    "check_command",
+    "check_interval",
+    "check_type",
+    "current_check_attempt",
+    "current_notification_number",
+    "current_state",
+    "event_handler",
+    "event_handler_enabled",
+    "execution_time",
+    "failure_prediction_enabled",
+    "flap_detection_enabled",
+    "has_been_checked",
+    "is_flapping",
+    "last_check",
+    "last_hard_state",
+    "last_hard_state_change",
+    "last_notification",
+    "last_state_change",
+    "last_time_down",
+    "last_time_unreachable",
+    "last_time_up",
+    "latency",
+    "max_check_attempts",
+    "modified_host_attributes",
+    "next_check",
+    "next_notification",
+    "no_more_notifications",
+    "notifications_enabled",
+    "obsess_over_host",
+    "output",
+    "passive_checks_enabled",
+    "percent_state_change",
+    "perfdata",
+    "problem_has_been_acknowledged",
+    "process_performance_data",
+    "retry_interval",
+    "scheduled_downtime_depth",
+    "should_be_scheduled",
+    "state_type",
+    "status_update_time",
+    NULL
+  };
+
+FieldGetter<HostStatus> CentreonBroker::host_status_getters[] =
+  {
+    &HostStatus::GetAcknowledgementType,
+    &HostStatus::GetActiveChecksEnabled,
+    &HostStatus::GetCheckCommand,
+    &HostStatus::GetCheckInterval,
+    &HostStatus::GetCheckType,
+    &HostStatus::GetCurrentCheckAttempt,
+    &HostStatus::GetCurrentNotificationNumber,
+    &HostStatus::GetCurrentState,
+    &HostStatus::GetEventHandler,
+    &HostStatus::GetEventHandlerEnabled,
+    &HostStatus::GetExecutionTime,
+    &HostStatus::GetFailurePredictionEnabled,
+    &HostStatus::GetFlapDetectionEnabled,
+    &HostStatus::GetHasBeenChecked,
+    &HostStatus::GetIsFlapping,
+    &HostStatus::GetLastCheck,
+    &HostStatus::GetLastHardState,
+    &HostStatus::GetLastHardStateChange,
+    &HostStatus::GetLastNotification,
+    &HostStatus::GetLastStateChange,
+    &HostStatus::GetLastTimeDown,
+    &HostStatus::GetLastTimeUnreachable,
+    &HostStatus::GetLastTimeUp,
+    &HostStatus::GetLatency,
+    &HostStatus::GetMaxCheckAttempts,
+    &HostStatus::GetModifiedAttributes,
+    &HostStatus::GetNextCheck,
+    &HostStatus::GetNextNotification,
+    &HostStatus::GetNoMoreNotifications,
+    &HostStatus::GetNotificationsEnabled,
+    &HostStatus::GetObsessOver,
+    &HostStatus::GetOutput,
+    &HostStatus::GetPassiveChecksEnabled,
+    &HostStatus::GetPercentStateChange,
+    &HostStatus::GetPerfdata,
+    &HostStatus::GetProblemHasBeenAcknowledged,
+    &HostStatus::GetProcessPerformanceData,
+    &HostStatus::GetRetryInterval,
+    &HostStatus::GetScheduledDowntimeDepth,
+    &HostStatus::GetShouldBeScheduled,
+    &HostStatus::GetStateType,
+    &HostStatus::GetStatusUpdateTime,
+    0
+  };
+
+static_assert(sizeof(host_status_fields) / sizeof(*host_status_fields)
+              == sizeof(host_status_getters) / sizeof(*host_status_getters),
+              "Invalid HostStatus object-relational mapping");
+
+const char* CentreonBroker::host_status_uniques[] =
+  {
+    "host_name",
+    NULL
+  };
+
+const char* service_status_fields[] =
+  {
+    "acknowledgement_type",
+    "active_checks_enabled",
+    "check_command",
+    "check_interval",
+    "check_type",
+    "current_check_attempt",
+    "current_notification_number",
+    "current_state",
+    "event_handler",
+    "event_handler_enabled",
+    "execution_time",
+    "failure_prediction_enabled",
+    "flap_detection_enabled",
+    "has_been_checked",
+    "host_name",
+    "is_flapping",
+    "last_check",
+    "last_hard_state",
+    "last_hard_state_change",
+    "last_notification",
+    "last_state_change",
+    "latency",
+    "max_check_attempts",
+    "modified_host_attributes",
+    "next_check",
+    "next_notification",
+    "no_more_notifications",
+    "notifications_enabled",
+    "obsess_over_host",
+    "output",
+    "passive_checks_enabled",
+    "percent_state_change",
+    "perfdata",
+    "problem_has_been_acknowledged",
+    "process_performance_data",
+    "retry_interval",
+    "scheduled_downtime_depth",
+    "should_be_scheduled",
+    "state_type",
+    "status_update_time",
+    NULL
   };
