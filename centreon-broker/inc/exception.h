@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef EXCEPTION_H_
@@ -18,18 +18,24 @@
 namespace        CentreonBroker
 {
   /**
-   *  Because we're using the Boost library, most of the time, exceptions are
-   *  raised within Boost code. It's easier for us to rethrow the exception.
+   *  \brief     CentreonBroker root exception class.
+   *
+   *  Exception is the main class of exceptions thrown within CentreonBroker
+   *  code. It directly subclass boost::system::system_error and only adds the
+   *  ability to construct the exception from an error code and an error
+   *  message (ie. throw (Exception(error_code, error_msg));). For more
+   *  information, please refer to boost::system::system_error.
    */
-  class          Exception : public boost::system::system_error
+  class                   Exception : public boost::system::system_error
     {
      public:
-                 Exception(const Exception& e);
-                 Exception(const boost::system::system_error& se);
-                 Exception(int val);
-		 Exception(int val, const char* msg);
-                 ~Exception() throw ();
-      Exception& operator=(const Exception& e);
+                          Exception(const Exception& e);
+                          Exception(const boost::system::system_error& se);
+                          Exception(int val);
+                          Exception(int val, const char* msg);
+                          ~Exception() throw ();
+      Exception&          operator=(const Exception& e);
+      virtual const char* what() const throw ();
     };
 }
 

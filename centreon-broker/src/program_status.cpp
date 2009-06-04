@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include "program_status.h"
@@ -155,17 +155,17 @@ int ProgramStatus::GetModifiedServiceAttributes() const throw ()
 }
 
 /**
- *  Get the obsess_over_host member.
+ *  Get the obsess_over_hosts member.
  */
-short ProgramStatus::GetObsessOverHost() const throw ()
+short ProgramStatus::GetObsessOverHosts() const throw ()
 {
   return (this->shorts_[OBSESS_OVER_HOSTS]);
 }
 
 /**
- *  Get the obsess_over_service member.
+ *  Get the obsess_over_services member.
  */
-short ProgramStatus::GetObsessOverService() const throw ()
+short ProgramStatus::GetObsessOverServices() const throw ()
 {
   return (this->shorts_[OBSESS_OVER_SERVICES]);
 }
@@ -310,18 +310,18 @@ void ProgramStatus::SetModifiedServiceAttributes(int msa) throw ()
 }
 
 /**
- *  Set the obsess_over_host member.
+ *  Set the obsess_over_hosts member.
  */
-void ProgramStatus::SetObsessOverHost(short ooh) throw ()
+void ProgramStatus::SetObsessOverHosts(short ooh) throw ()
 {
   this->shorts_[OBSESS_OVER_HOSTS] = ooh;
   return ;
 }
 
 /**
- *  Set the obsess_over_service member.
+ *  Set the obsess_over_services member.
  */
-void ProgramStatus::SetObsessOverService(short oos) throw ()
+void ProgramStatus::SetObsessOverServices(short oos) throw ()
 {
   this->shorts_[OBSESS_OVER_SERVICES] = oos;
   return ;

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/25/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_INPUT_H_
@@ -37,6 +37,7 @@ namespace                           CentreonBroker
                                     NetworkInput(boost::asio::ip::tcp::socket&);
                                     NetworkInput(const NetworkInput& ni);
     NetworkInput&                   operator=(const NetworkInput& ni);
+    void                            HandleHost(ProtocolSocket& socket);
     void                            HandleHostStatus(ProtocolSocket& socket);
     void                            HandleProgramStatus(ProtocolSocket& socket);
     void                            HandleServiceStatus(ProtocolSocket& socket);
