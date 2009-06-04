@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -84,14 +84,6 @@ int ServiceStatus::GetType() const throw ()
 }
 
 /**
- *  Returns the host.
- */
-const std::string& ServiceStatus::GetHost() const throw ()
-{
-  return (this->strings_[HOST]);
-}
-
-/**
  *  Get the last_time_critical member.
  */
 time_t ServiceStatus::GetLastTimeCritical() const throw ()
@@ -124,20 +116,11 @@ time_t ServiceStatus::GetLastTimeWarning() const throw ()
 }
 
 /**
- *  Returns the service.
+ *  Returns the service_description member.
  */
-const std::string& ServiceStatus::GetService() const throw ()
+const std::string& ServiceStatus::GetServiceDescription() const throw ()
 {
-  return (this->strings_[SERVICE]);
-}
-
-/**
- *  Sets the host on which the event appeared.
- */
-void ServiceStatus::SetHost(const std::string& h)
-{
-  this->strings_[HOST] = h;
-  return ;
+  return (this->strings_[SERVICE_DESCRIPTION]);
 }
 
 /**
@@ -177,10 +160,10 @@ void ServiceStatus::SetLastTimeWarning(time_t ltw) throw ()
 }
 
 /**
- *  Sets the service to which this event refers.
+ *  Sets the service_description member.
  */
-void ServiceStatus::SetService(const std::string& s)
+void ServiceStatus::SetServiceDescription(const std::string& sd)
 {
-  this->strings_[SERVICE] = s;
+  this->strings_[SERVICE_DESCRIPTION] = sd;
   return ;
 }

@@ -20,6 +20,7 @@
 #include "host.h"
 #include "host_status.h"
 #include "mapping.h"
+
 using namespace CentreonBroker;
 
 /**************************************
@@ -59,7 +60,7 @@ void DBOutput::Connect()
                        this->password_,
                        this->db_);
   // XXX : truncate tables
-  // Prepare queries
+  // Prepare HostStatus update query
   {
     UpdateQuery* uq;
 
@@ -70,6 +71,17 @@ void DBOutput::Connect()
     uq->Prepare();
     this->stmts_.push_back(uq);
   }
+  {
+    UpdateQuery* uq;
+
+    uq = this->conn_->GetUpdateQuery();
+    uq->SetTable("services");
+    uq->AddFields(service_status_fields);
+    uq->AddUniques(service_status_uniques);
+    uq->Prepare();
+    this->stmts_.push_back(uq);
+  }
+  // Initialize the timeout
   this->Commit();
   return ;
 }
@@ -153,6 +165,12 @@ void DBOutput::ProcessEvent(Event* event)
      case 0:
       ProcessHostStatus(*static_cast<HostStatus*>(event));
       break ;
+     case 1:
+      ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
+      break ;
+     case 8:
+      ProcessService(*static_cast<Service*>(event));
+      break ;
      case 9:
       ProcessHost(*static_cast<Host*>(event));
       break ;
@@ -172,33 +190,7 @@ void DBOutput::ProcessHost(const Host& host)
   query->SetTable("hosts");
   query->AddFields(host_fields);
   query->Prepare();
-  for (unsigned int i = 0; host_getters[i].type_; i++)
-    switch (host_getters[i].type_)
-      {
-       case 'd':
-        query->SetDouble(i,
-                         (host.*host_getters[i].getter_.get_double)());
-        break ;
-       case 'i':
-        query->SetInt(i,
-                      (host.*host_getters[i].getter_.get_int)());
-        break ;
-       case 's':
-        query->SetShort(i,
-                        (host.*host_getters[i].getter_.get_short)());
-        break ;
-       case 'S':
-        query->SetString(i,
-                         (host.*host_getters[i].getter_.get_string)().c_str());
-        break ;
-       case 't':
-        query->SetTimeT(i,
-                        (host.*host_getters[i].getter_.get_timet)());
-        break ;
-       default:
-        // XXX : some error message
-        assert(false);
-      }
+  this->SetFields<Host>(*query.get(), host, host_getters);
   this->ExecuteQuery(query.get());
   this->Commit();
   return ;
@@ -212,34 +204,9 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
   int count;
   UpdateQuery* uq;
 
+  // XXX : hardcoded value
   uq = this->stmts_[0];
-  for (count = 0; host_status_getters[count].type_; count++)
-    switch (host_status_getters[count].type_)
-      {
-       case 'd':
-        uq->SetDouble(count,
-                      (hs.*host_status_getters[count].getter_.get_double)());
-        break ;
-       case 'i':
-        uq->SetInt(count,
-                   (hs.*host_status_getters[count].getter_.get_int)());
-        break ;
-       case 's':
-        uq->SetShort(count,
-                     (hs.*host_status_getters[count].getter_.get_short)());
-        break ;
-       case 'S':
-        uq->SetString(count,
-                      (hs.*host_status_getters[count].getter_.get_string)().c_str());
-        break ;
-       case 't':
-        uq->SetTimeT(count,
-                     (hs.*host_status_getters[count].getter_.get_timet)());
-        break ;
-       default:
-        // XXX : some error message
-        assert(false);
-      }
+  count = this->SetFields<HostStatus>(*uq, hs, host_status_getters);
   for (unsigned int i = 0; host_status_uniques[i]; i++)
     if (!strcmp("host_name", host_status_uniques[i]))
       uq->SetString(count++, hs.GetHostName().c_str());
@@ -249,11 +216,96 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
     {
       this->ExecuteQuery(uq);
     }
-  catch (...)
+  catch (...) // XXX : more precise
     {
       this->ProcessHost(Host(hs));
     }
   return ;
+}
+
+/**
+ *  Process a Service event.
+ */
+void DBOutput::ProcessService(const Service& service)
+{
+  std::auto_ptr<Query> query(this->conn_->GetInsertQuery());
+
+  query->SetTable("services");
+  query->AddFields(service_fields);
+  query->Prepare();
+  this->SetFields<Service>(*query.get(), service, service_getters);
+  this->ExecuteQuery(query.get());
+  this->Commit();
+  return ;
+}
+
+/**
+ *  Process a ServiceStatus event.
+ */
+void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
+{
+  int count;
+  UpdateQuery* uq;
+
+  // XXX : hardcoded value
+  uq = this->stmts_[1];
+  count = this->SetFields<ServiceStatus>(*uq, ss, service_status_getters);
+  for (unsigned int i = 0; service_status_uniques[i]; i++)
+    if (!strcmp("host_name", service_status_uniques[i]))
+      uq->SetString(count++, ss.GetHostName().c_str());
+    else if (!strcmp("service_description", service_status_uniques[i]))
+      uq->SetString(count++, ss.GetServiceDescription().c_str());
+    else
+      assert(false);
+  try
+    {
+      this->ExecuteQuery(uq);
+    }
+  catch (...) // XXX : more precise
+    {
+      this->ProcessService(Service(ss));
+    }
+  return ;
+}
+
+/**
+ *  Insert an object in the database.
+ */
+template <typename ObjectType>
+unsigned int DBOutput::SetFields(Query& query,
+                                 const ObjectType& obj,
+			         const FieldGetter<ObjectType>* getters)
+{
+  unsigned int i;
+
+  for (i = 0; getters[i].type_; i++)
+    switch (getters[i].type_)
+      {
+       case 'd':
+        query.SetDouble(i,
+                         (obj.*getters[i].getter_.get_double)());
+        break ;
+       case 'i':
+        query.SetInt(i,
+                      (obj.*getters[i].getter_.get_int)());
+        break ;
+       case 's':
+        query.SetShort(i,
+                        (obj.*getters[i].getter_.get_short)());
+        break ;
+       case 'S':
+        query.SetString(i,
+                         (obj.*getters[i].getter_.get_string)().c_str());
+        break ;
+       case 't':
+        query.SetTimeT(i,
+                        (obj.*getters[i].getter_.get_timet)());
+        break ;
+       default:
+        // XXX : some error message
+        assert(false);
+      }
+  return (i);
 }
 
 /**************************************

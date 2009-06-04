@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/25/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -573,7 +573,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
 	's',
 	&ServiceStatus::SetProcessPerformanceData },
       { NDO_DATA_RETRYCHECKINTERVAL, 'd', &ServiceStatus::SetRetryInterval },
-      { NDO_DATA_SERVICE, 'S', &ServiceStatus::SetService },
+      { NDO_DATA_SERVICE, 'S', &ServiceStatus::SetServiceDescription },
       { NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
 	's',
 	&ServiceStatus::SetScheduledDowntimeDepth },

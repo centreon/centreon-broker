@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef SERVICE_STATUS_H_
@@ -30,8 +30,7 @@ namespace               CentreonBroker
    private:
     enum                String
     {
-      HOST = 0,
-      SERVICE,
+      SERVICE_DESCRIPTION = 0,
       STRING_NB
     };
     enum                TimeT
@@ -53,19 +52,17 @@ namespace               CentreonBroker
     ServiceStatus&     operator=(const ServiceStatus& sse);
     int                GetType() const throw ();
     // Getters
-    const std::string& GetHost() const throw ();
     time_t             GetLastTimeCritical() const throw ();
     time_t             GetLastTimeOk() const throw ();
     time_t             GetLastTimeUnknown() const throw ();
     time_t             GetLastTimeWarning() const throw ();
-    const std::string& GetService() const throw ();
+    const std::string& GetServiceDescription() const throw ();
     // Setters
-    void               SetHost(const std::string& h);
     void               SetLastTimeCritical(time_t ltc) throw ();
     void               SetLastTimeOk(time_t lto) throw ();
     void               SetLastTimeUnknown(time_t ltu) throw ();
     void               SetLastTimeWarning(time_t ltw) throw ();
-    void               SetService(const std::string& s);
+    void               SetServiceDescription(const std::string& sd);
   };
 }
 

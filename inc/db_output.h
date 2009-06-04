@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef DB_OUTPUT_H_
@@ -17,6 +17,7 @@
 # include <string>
 # include <vector>
 # include "event_subscriber.h"
+# include "mapping.h"
 # include "waitable_list.hpp"
 
 namespace                      boost
@@ -69,7 +70,12 @@ namespace                      CentreonBroker
     void                       ProcessEvent(Event* event);
     void                       ProcessHost(const Host& host);
     void                       ProcessHostStatus(const HostStatus& hs);
-
+    void                       ProcessService(const Service& service);
+    void                       ProcessServiceStatus(const ServiceStatus& ss);
+    template                   <typename ObjectType>
+    unsigned int               SetFields(Query& query,
+                                         const ObjectType& obj,
+                                         const FieldGetter<ObjectType>* g);
    public:
                                DBOutput();
                                DBOutput(const DBOutput& dbo);
