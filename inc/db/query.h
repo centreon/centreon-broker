@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef DB_QUERY_H_
@@ -39,7 +39,7 @@ namespace                    CentreonBroker
     virtual void             SetDouble(int arg, double value) = 0;
     virtual void             SetInt(int arg, int value) = 0;
     virtual void             SetShort(int arg, short value) = 0;
-    virtual void             SetString(int arg, const std::string& value) = 0;
+    virtual void             SetString(int arg, const char* value) = 0;
     virtual void             SetTimeT(int arg, time_t value) = 0;
     void                     SetTable(const std::string& table);
   };

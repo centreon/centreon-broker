@@ -14,6 +14,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
+#include <mysql.h>
 #include "mapping.h"
 #include "db_output.h"
 #include "network_acceptor.h"
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     }
   else
     {
+      mysql_library_init(0, NULL, NULL);
       std::clog << "Initializing I/O engine...";
       gl_ios = new boost::asio::io_service;
       std::clog << "  Done" << std::endl;

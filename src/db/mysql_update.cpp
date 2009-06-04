@@ -7,13 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <cassert>
-// XXX
-#include <mysql_connection.h>
-#include <mysql_prepared_statement.h>
+#include <cstring>
+#include <mysql.h>
 #include "db/mysql_update.h"
 #include "exception.h"
 
@@ -28,8 +27,8 @@ using namespace CentreonBroker;
 /**
  *  MySQLUpdate default constructor.
  */
-MySQLUpdate::MySQLUpdate(sql::Connection* myconn)
-  : myconn_(myconn), mystmt_(NULL)
+MySQLUpdate::MySQLUpdate(MYSQL* myconn)
+  : myconn_(myconn), myparams_(NULL), mystmt_(NULL)
 {
 }
 
@@ -38,11 +37,7 @@ MySQLUpdate::MySQLUpdate(sql::Connection* myconn)
  */
 void MySQLUpdate::InternalCopy(const MySQLUpdate& myupdate)
 {
-  this->myconn_ = myupdate.myconn_;
-  if (this->mystmt_)
-    delete (this->mystmt_);
-  // XXX : fix this with shared_ptr
-  this->mystmt_ = myupdate.mystmt_;
+  // XXX : copy MySQL structures (or not)
   return ;
 }
 
@@ -66,7 +61,29 @@ MySQLUpdate::MySQLUpdate(const MySQLUpdate& myupdate) : UpdateQuery(myupdate)
 MySQLUpdate::~MySQLUpdate()
 {
   if (this->mystmt_)
-    delete (this->mystmt_);
+    mysql_stmt_close(this->mystmt_);
+  if (this->myparams_)
+    {
+      unsigned int param_count;
+
+      param_count = mysql_stmt_param_count(this->mystmt_);
+      for (unsigned int i = 0; i < param_count; i++)
+        switch (this->myparams_[i].buffer_type)
+          {
+           case MYSQL_TYPE_DOUBLE:
+            delete static_cast<double*>(this->myparams_[i].buffer);
+            break ;
+           case MYSQL_TYPE_LONG:
+            delete static_cast<int*>(this->myparams_[i].buffer);
+            break ;
+           case MYSQL_TYPE_SHORT:
+            delete static_cast<short*>(this->myparams_[i].buffer);
+            break ;
+           default:
+	     ; // Do nothing, just avoid compiler warnings
+          }
+      delete [] this->myparams_;
+    }
 }
 
 /**
@@ -85,9 +102,16 @@ MySQLUpdate& MySQLUpdate::operator=(const MySQLUpdate& myupdate)
 void MySQLUpdate::Execute()
 {
   assert(this->mystmt_);
-  this->mystmt_->execute();
-  if (this->mystmt_->getUpdateCount() == 0)
-    throw (Exception(0, "No UPDATE occured"));
+  assert(this->myparams_);
+  if (mysql_stmt_bind_param(this->mystmt_, this->myparams_))
+    throw (Exception(mysql_errno(this->myconn_),
+                     mysql_error(this->myconn_)));
+  if (mysql_stmt_execute(this->mystmt_))
+    throw (Exception(mysql_errno(this->myconn_),
+                     mysql_error(this->myconn_)));
+  if (mysql_stmt_affected_rows(this->mystmt_) == 0)
+    throw (Exception(mysql_errno(this->myconn_),
+                     mysql_error(this->myconn_)));
   return ;
 }
 
@@ -118,9 +142,26 @@ void MySQLUpdate::Prepare()
       query += "=? AND ";
     }
   query.resize(query.size() - 5);
-  this->mystmt_ = this->myconn_->prepareStatement(query);
-  this->fields_.clear();
-  this->uniques_.clear();
+  this->mystmt_ = mysql_stmt_init(this->myconn_);
+  if (!this->mystmt_)
+    throw (Exception(mysql_errno(this->myconn_),
+                     mysql_error(this->myconn_)));
+  if (mysql_stmt_prepare(this->mystmt_, query.c_str(), query.size()))
+    {
+      mysql_stmt_close(this->mystmt_);
+      this->mystmt_ = NULL;
+      throw (Exception(mysql_errno(this->myconn_),
+		       mysql_error(this->myconn_)));
+    }
+  {
+    unsigned int param_count;
+
+    param_count = mysql_stmt_param_count(this->mystmt_);
+    this->myparams_ = new MYSQL_BIND[param_count];
+    memset(this->myparams_, 0, param_count * sizeof(*this->myparams_));
+    this->fields_.clear();
+    this->uniques_.clear();
+  }
   return ;
 }
 
@@ -129,8 +170,23 @@ void MySQLUpdate::Prepare()
  */
 void MySQLUpdate::SetDouble(int arg, double value)
 {
+  MYSQL_BIND* param;
+
   assert(this->mystmt_);
-  this->mystmt_->setDouble(arg, value);
+  assert(this->myparams_);
+  param = this->myparams_ + arg;
+  if (!param->buffer)
+    {
+      param->buffer_type = MYSQL_TYPE_DOUBLE;
+      param->buffer = static_cast<void*>(new double);
+      param->buffer_length = sizeof(double);
+      param->length = NULL;
+      param->is_null = NULL;
+      param->is_unsigned = false;
+      param->error = NULL;
+    }
+  assert(MYSQL_TYPE_DOUBLE == param->buffer_type);
+  *static_cast<double*>(this->myparams_[arg].buffer) = value;
   return ;
 }
 
@@ -139,8 +195,23 @@ void MySQLUpdate::SetDouble(int arg, double value)
  */
 void MySQLUpdate::SetInt(int arg, int value)
 {
+  MYSQL_BIND* param;
+
   assert(this->mystmt_);
-  this->mystmt_->setInt(arg, value);
+  assert(this->myparams_);
+  param = this->myparams_ + arg;
+  if (!param->buffer)
+    {
+      param->buffer_type = MYSQL_TYPE_LONG;
+      param->buffer = static_cast<void*>(new int);
+      param->buffer_length = sizeof(int);
+      param->length = NULL;
+      param->is_null = NULL;
+      param->is_unsigned = false;
+      param->error = NULL;
+    }
+  assert(MYSQL_TYPE_LONG == param->buffer_type);
+  *static_cast<int*>(this->myparams_[arg].buffer) = value;
   return ;
 }
 
@@ -149,19 +220,49 @@ void MySQLUpdate::SetInt(int arg, int value)
  */
 void MySQLUpdate::SetShort(int arg, short value)
 {
+  MYSQL_BIND* param;
+
   assert(this->mystmt_);
-  // XXX : setShort
-  this->mystmt_->setInt(arg, value);
+  assert(this->myparams_);
+  param = this->myparams_ + arg;
+  if (!param->buffer)
+    {
+      param->buffer_type = MYSQL_TYPE_SHORT;
+      param->buffer = static_cast<void*>(new short);
+      param->buffer_length = sizeof(short);
+      param->length = NULL;
+      param->is_null = NULL;
+      param->is_unsigned = false;
+      param->error = NULL;
+    }
+  assert(MYSQL_TYPE_SHORT == param->buffer_type);
+  *static_cast<short*>(this->myparams_[arg].buffer) = value;
   return ;
 }
 
 /**
  *  Set the argument to the string type.
  */
-void MySQLUpdate::SetString(int arg, const std::string& value)
+void MySQLUpdate::SetString(int arg, const char* value)
 {
+  MYSQL_BIND* param;
+
   assert(this->mystmt_);
-  this->mystmt_->setString(arg, value);
+  assert(this->myparams_);
+  param = this->myparams_ + arg;
+  if (!param->buffer)
+    {
+      param->buffer_type = MYSQL_TYPE_STRING;
+      param->buffer = NULL;
+      param->buffer_length = 0;
+      param->length = &param->buffer_length;
+      param->is_null = NULL;
+      param->is_unsigned = false;
+      param->error = NULL;
+    }
+  assert(MYSQL_TYPE_STRING == param->buffer_type);
+  this->myparams_[arg].buffer = static_cast<void*>(const_cast<char*>(value));
+  this->myparams_[arg].buffer_length = strlen(value);
   return ;
 }
 
@@ -170,8 +271,6 @@ void MySQLUpdate::SetString(int arg, const std::string& value)
  */
 void MySQLUpdate::SetTimeT(int arg, time_t value)
 {
-  assert(this->mystmt_);
-  // XXX : something date-related
-  this->mystmt_->setInt(arg, value);
+  this->SetInt(arg, value);
   return ;
 }

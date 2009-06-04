@@ -7,17 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
-#include <cassert>
-// XXX
-#include <mysql_connection.h>
-#include <mysql_driver.h>
-#include <mysql_statement.h>
+#include <mysql.h>
 #include "db/mysql_connection.h"
 #include "db/mysql_insert.h"
 #include "db/mysql_update.h"
+#include "exception.h"
 
 using namespace CentreonBroker;
 
@@ -33,10 +30,7 @@ using namespace CentreonBroker;
  */
 void MySQLConnection::InternalCopy(const MySQLConnection& myconn)
 {
-  if (this->myconn_)
-    delete (this->myconn_);
-  // XXX : fix this with shared_ptr
-  this->myconn_ = myconn.myconn_;
+  // XXX : find a way to copy MYSQL
   return ;
 }
 
@@ -49,8 +43,11 @@ void MySQLConnection::InternalCopy(const MySQLConnection& myconn)
 /**
  *  MySQLConnection default constructor.
  */
-MySQLConnection::MySQLConnection() : myconn_(NULL)
+MySQLConnection::MySQLConnection()
 {
+  if (mysql_thread_init())
+    throw (Exception(mysql_errno(&this->myconn_),
+                     mysql_error(&this->myconn_)));
 }
 
 /**
@@ -67,8 +64,7 @@ MySQLConnection::MySQLConnection(const MySQLConnection& myconn)
  */
 MySQLConnection::~MySQLConnection()
 {
-  if (this->myconn_)
-    delete (this->myconn_);
+  mysql_thread_end();
 }
 
 /**
@@ -86,7 +82,9 @@ MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
  */
 void MySQLConnection::Commit()
 {
-  this->myconn_->commit();
+  // XXX : error handling
+  mysql_query(&this->myconn_, "COMMIT;");
+  mysql_query(&this->myconn_, "START TRANSACTION;");
   return ;
 }
 
@@ -98,17 +96,23 @@ void MySQLConnection::Connect(const std::string& host,
                               const std::string& password,
                               const std::string& db)
 {
-  sql::Driver* driver;
-
-  driver = get_driver_instance();
-  this->myconn_ = driver->connect(host, user, password);
-  // XXX : auto_ptr deprecated
-  {
-    std::auto_ptr<sql::Statement> stmt(this->myconn_->createStatement());
-
-    stmt->execute(std::string("USE ") + db + std::string(";"));
-  }
-  this->myconn_->setAutoCommit(false);
+  if (!mysql_init(&this->myconn_))
+    throw (Exception(mysql_errno(&this->myconn_),
+                     mysql_error(&this->myconn_)));
+  if (!mysql_real_connect(&this->myconn_,
+                          host.c_str(),
+                          user.c_str(),
+                          password.c_str(),
+                          db.c_str(),
+                          0,
+                          NULL,
+                          CLIENT_FOUND_ROWS)
+      || mysql_query(&this->myconn_, "START TRANSACTION;"))
+    {
+      mysql_close(&this->myconn_);
+      throw (Exception(mysql_errno(&this->myconn_),
+                       mysql_error(&this->myconn_)));
+    }
   return ;
 }
 
@@ -117,9 +121,7 @@ void MySQLConnection::Connect(const std::string& host,
  */
 void MySQLConnection::Disconnect()
 {
-  assert(this->myconn_);
-  delete (this->myconn_);
-  this->myconn_ = NULL;
+  mysql_close(&this->myconn_);
   return ;
 }
 
@@ -128,8 +130,7 @@ void MySQLConnection::Disconnect()
  */
 Query* MySQLConnection::GetInsertQuery()
 {
-  assert(this->myconn_);
-  return (new MySQLInsert(this->myconn_));
+  return (new MySQLInsert(&this->myconn_));
 }
 
 /**
@@ -137,6 +138,5 @@ Query* MySQLConnection::GetInsertQuery()
  */
 UpdateQuery* MySQLConnection::GetUpdateQuery()
 {
-  assert(this->myconn_);
-  return (new MySQLUpdate(this->myconn_));
+  return (new MySQLUpdate(&this->myconn_));
 }

@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_CONNECTION_H_
 # define DB_MYSQL_CONNECTION_H_
 
+# include <mysql.h>
 # include <string>
 # include "db/connection.h"
 
@@ -29,7 +30,7 @@ namespace CentreonBroker
   class              MySQLConnection : public DBConnection
   {
    private:
-    sql::Connection* myconn_;
+    MYSQL            myconn_;
     void             InternalCopy(const MySQLConnection& myconn);
 
    public:
