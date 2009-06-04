@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/03/09 Matthieu Kermagoret
+## Last update 06/04/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -46,7 +46,8 @@ NAME		=	cb2db
 INCLUDE		+=	-Iinc
 CXXFLAGS	+=	-g3 -std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			 `mysql_config --include`
-LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`
+LDFLAGS		+=	-lpthread -lrt `mysql_config --libs` \
+			-lboost_system-mt -lboost_thread-mt
 
 
 all		:	$(NAME)

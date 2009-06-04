@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include "event.h"
@@ -61,10 +61,10 @@ Event& Event::operator=(const Event& event)
  */
 void Event::AddReader(EventSubscriber* es)
 {
+  boost::unique_lock<boost::mutex> lock(this->mutex_);
+
   (void)es;
-  this->mutex_.lock();
   this->readers_++;
-  this->mutex_.unlock();
   return ;
 }
 
@@ -83,15 +83,17 @@ const std::string& Event::GetNagiosInstance() const throw ()
  */
 void Event::RemoveReader(EventSubscriber* es)
 {
+  bool destroy;
+
   (void)es;
   this->mutex_.lock();
   if (--this->readers_ <= 0)
-    {
-      this->mutex_.unlock();
-      delete (this);
-    }
+    destroy = true;
   else
-    this->mutex_.unlock();
+    destroy = false;
+  this->mutex_.unlock();
+  if (destroy)
+    delete (this);
   return ;
 }
 

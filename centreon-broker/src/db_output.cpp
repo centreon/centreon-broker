@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <memory>
@@ -20,8 +20,6 @@
 #include "host.h"
 #include "host_status.h"
 #include "mapping.h"
-// XXX : remove
-#include <mysql_public_iface.h>
 using namespace CentreonBroker;
 
 /**************************************
@@ -134,7 +132,6 @@ void DBOutput::OnEvent(Event* e) throw ()
   try
     {
       this->events_.Add(e);
-      e->AddReader(this);
     }
   catch (...)
     {
@@ -179,23 +176,23 @@ void DBOutput::ProcessHost(const Host& host)
     switch (host_getters[i].type_)
       {
        case 'd':
-        query->SetDouble(i + 1,
+        query->SetDouble(i,
                          (host.*host_getters[i].getter_.get_double)());
         break ;
        case 'i':
-        query->SetInt(i + 1,
+        query->SetInt(i,
                       (host.*host_getters[i].getter_.get_int)());
         break ;
        case 's':
-        query->SetShort(i + 1,
+        query->SetShort(i,
                         (host.*host_getters[i].getter_.get_short)());
         break ;
        case 'S':
-        query->SetString(i + 1,
-                         (host.*host_getters[i].getter_.get_string)());
+        query->SetString(i,
+                         (host.*host_getters[i].getter_.get_string)().c_str());
         break ;
        case 't':
-        query->SetTimeT(i + 1,
+        query->SetTimeT(i,
                         (host.*host_getters[i].getter_.get_timet)());
         break ;
        default:
@@ -220,23 +217,23 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
     switch (host_status_getters[count].type_)
       {
        case 'd':
-        uq->SetDouble(count + 1,
+        uq->SetDouble(count,
                       (hs.*host_status_getters[count].getter_.get_double)());
         break ;
        case 'i':
-        uq->SetInt(count + 1,
+        uq->SetInt(count,
                    (hs.*host_status_getters[count].getter_.get_int)());
         break ;
        case 's':
-        uq->SetShort(count + 1,
+        uq->SetShort(count,
                      (hs.*host_status_getters[count].getter_.get_short)());
         break ;
        case 'S':
-        uq->SetString(count + 1,
-                      (hs.*host_status_getters[count].getter_.get_string)());
+        uq->SetString(count,
+                      (hs.*host_status_getters[count].getter_.get_string)().c_str());
         break ;
        case 't':
-        uq->SetTimeT(count + 1,
+        uq->SetTimeT(count,
                      (hs.*host_status_getters[count].getter_.get_timet)());
         break ;
        default:
@@ -245,16 +242,15 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
       }
   for (unsigned int i = 0; host_status_uniques[i]; i++)
     if (!strcmp("host_name", host_status_uniques[i]))
-      uq->SetString(++count, hs.GetHostName());
+      uq->SetString(count++, hs.GetHostName().c_str());
     else
       assert(false);
   try
     {
       this->ExecuteQuery(uq);
     }
-  catch (sql::SQLException& e)
+  catch (...)
     {
-      std::cerr << "SQL: " << e.what() << std::endl;
       this->ProcessHost(Host(hs));
     }
   return ;
@@ -316,11 +312,6 @@ void DBOutput::operator()()
               else
                 break ;
             }
-        }
-      catch (sql::SQLException& e)
-        {
-          std::cerr << "Recoverable MySQL error" << std::endl
-                    << "    " << e.what() << std::endl;
         }
       catch (Exception& e)
         {

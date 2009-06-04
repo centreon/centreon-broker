@@ -7,11 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/06/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <cstdlib>
+#include "event.h"
 #include "event_publisher.h"
 #include "event_subscriber.h"
 
@@ -115,11 +116,12 @@ EventPublisher* EventPublisher::GetInstance()
 void EventPublisher::Publish(Event* ev)
 {
   std::list<EventSubscriber*>::iterator it;
+  boost::unique_lock<boost::mutex> lock(this->subscribersm_);
 
-  this->subscribersm_.lock();
+  for (it = this->subscribers_.begin(); it != this->subscribers_.end(); it++)
+    ev->AddReader(*it);
   for (it = this->subscribers_.begin(); it != this->subscribers_.end(); it++)
     (*it)->OnEvent(ev);
-  this->subscribersm_.unlock();
   return ;
 }
 
@@ -128,9 +130,9 @@ void EventPublisher::Publish(Event* ev)
  */
 void EventPublisher::Subscribe(EventSubscriber* es)
 {
-  this->subscribersm_.lock();
+  boost::unique_lock<boost::mutex> lock(this->subscribersm_);
+
   this->subscribers_.push_front(es);
-  this->subscribersm_.unlock();
   return ;
 }
 
@@ -139,8 +141,8 @@ void EventPublisher::Subscribe(EventSubscriber* es)
  */
 void EventPublisher::Unsubscribe(EventSubscriber* es)
 {
-  this->subscribersm_.lock();
+  boost::unique_lock<boost::mutex> lock(this->subscribersm_);
+
   this->subscribers_.remove(es);
-  this->subscribersm_.unlock();
   return ;
 }

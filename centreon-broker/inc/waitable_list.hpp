@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/26/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef WAITABLE_LIST_HPP_
@@ -88,6 +88,7 @@ namespace                     CentreonBroker
       boost::unique_lock<boost::mutex> lock(this->mutex_);
 
       this->list_.push_back(t);
+      this->cv_.notify_all();
       return ;
     }
 

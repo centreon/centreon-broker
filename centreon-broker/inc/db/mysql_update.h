@@ -7,19 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/02/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_UPDATE_H_
 # define DB_MYSQL_UPDATE_H_
 
+# include <mysql.h>
 # include "db/update_query.h"
-
-namespace                   sql
-{
-  class                     Connection;
-  class                     PreparedStatement;
-}
 
 namespace                   CentreonBroker
 {
@@ -28,9 +23,10 @@ namespace                   CentreonBroker
     friend class            MySQLConnection;
 
    private:
-    sql::Connection*        myconn_;
-    sql::PreparedStatement* mystmt_;
-                            MySQLUpdate(sql::Connection* myconn);
+    MYSQL*                  myconn_;
+    MYSQL_BIND*             myparams_;
+    MYSQL_STMT*             mystmt_;
+                            MySQLUpdate(MYSQL* myconn);
     void                    InternalCopy(const MySQLUpdate& myupdate);
 
    public:
@@ -42,7 +38,7 @@ namespace                   CentreonBroker
     void                    SetDouble(int arg, double value);
     void                    SetInt(int arg, int value);
     void                    SetShort(int arg, short value);
-    void                    SetString(int arg, const std::string& value);
+    void                    SetString(int arg, const char* value);
     void                    SetTimeT(int arg, time_t value);
   };
 }
