@@ -282,6 +282,71 @@ const char* CentreonBroker::host_status_uniques[] =
     NULL
   };
 
+const char* CentreonBroker::program_status_fields[] =
+  {
+    "active_host_checks_enabled",
+    "active_service_checks_enabled",
+    "daemon_mode",
+    "event_handler_enabled",
+    "failure_prediction_enabled",
+    "flap_detection_enabled",
+    "global_host_event_handler",
+    "global_service_event_handler",
+    "is_currently_running",
+    "last_command_check",
+    "last_log_rotation",
+    "modified_host_attributes",
+    "modified_service_attributes",
+    "notifications_enabled",
+    "obsess_over_hosts",
+    "obsess_over_services",
+    "passive_host_checks_enabled",
+    "passive_service_checks_enabled",
+    "process_id",
+    "process_performance_data",
+    "program_end_time",
+    "program_start_time",
+    "status_update_time",
+    NULL
+  };
+
+FieldGetter<ProgramStatus> CentreonBroker::program_status_getters[] =
+  {
+    &ProgramStatus::GetActiveHostChecksEnabled,
+    &ProgramStatus::GetActiveServiceChecksEnabled,
+    &ProgramStatus::GetDaemonMode,
+    &ProgramStatus::GetEventHandlerEnabled,
+    &ProgramStatus::GetFailurePredictionEnabled,
+    &ProgramStatus::GetFlapDetectionEnabled,
+    &ProgramStatus::GetGlobalHostEventHandler,
+    &ProgramStatus::GetGlobalServiceEventHandler,
+    &ProgramStatus::GetIsCurrentlyRunning,
+    &ProgramStatus::GetLastCommandCheck,
+    &ProgramStatus::GetLastLogRotation,
+    &ProgramStatus::GetModifiedHostAttributes,
+    &ProgramStatus::GetModifiedServiceAttributes,
+    &ProgramStatus::GetNotificationsEnabled,
+    &ProgramStatus::GetObsessOverHosts,
+    &ProgramStatus::GetObsessOverServices,
+    &ProgramStatus::GetPassiveHostChecksEnabled,
+    &ProgramStatus::GetPassiveServiceChecksEnabled,
+    &ProgramStatus::GetProcessId,
+    &ProgramStatus::GetProcessPerformanceData,
+    &ProgramStatus::GetProgramEndTime,
+    &ProgramStatus::GetProgramStartTime,
+    &ProgramStatus::GetStatusUpdateTime,
+    NULL
+  };
+
+static_assert(sizeof(program_status_fields) / sizeof(*program_status_fields) ==
+              sizeof(program_status_getters) / sizeof(*program_status_getters),
+              "Invalid ProgramStatus object-relational mapping");
+
+const char* CentreonBroker::program_status_uniques[] =
+  {
+    NULL
+  };
+
 const char* CentreonBroker::service_fields[] =
   {
     "acknowledgement_type",

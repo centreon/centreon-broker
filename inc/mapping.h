@@ -15,6 +15,7 @@
 
 # include "host.h"
 # include "host_status.h"
+# include "program_status.h"
 # include "service.h"
 # include "service_status.h"
 
@@ -72,6 +73,10 @@ namespace                               CentreonBroker
   extern const char*                    host_status_fields[];
   extern FieldGetter<HostStatus>        host_status_getters[];
   extern const char*                    host_status_uniques[];
+  // ProgramStatus
+  extern const char*                    program_status_fields[];
+  extern FieldGetter<ProgramStatus>     program_status_getters[];
+  extern const char*                    program_status_uniques[];
   // Service
   extern const char*                    service_fields[];
   extern FieldGetter<Service>           service_getters[];

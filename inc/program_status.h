@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/20/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef PROGRAM_STATUS_H_
@@ -77,8 +77,8 @@ namespace              CentreonBroker
     time_t             GetLastLogRotation() const throw ();
     int                GetModifiedHostAttributes() const throw ();
     int                GetModifiedServiceAttributes() const throw ();
-    short              GetObsessOverHost() const throw ();
-    short              GetObsessOverService() const throw ();
+    short              GetObsessOverHosts() const throw ();
+    short              GetObsessOverServices() const throw ();
     short              GetPassiveHostChecksEnabled() const throw ();
     short              GetPassiveServiceChecksEnabled() const throw ();
     int                GetProcessId() const throw ();
@@ -96,8 +96,8 @@ namespace              CentreonBroker
     void               SetLastLogRotation(time_t llr) throw ();
     void               SetModifiedHostAttributes(int mha) throw ();
     void               SetModifiedServiceAttributes(int msa) throw ();
-    void               SetObsessOverHost(short ooh) throw ();
-    void               SetObsessOverService(short oos) throw ();
+    void               SetObsessOverHosts(short ooh) throw ();
+    void               SetObsessOverServices(short oos) throw ();
     void               SetPassiveHostChecksEnabled(short phce) throw ();
     void               SetPassiveServiceChecksEnabled(short psce) throw ();
     void               SetProcessId(int pi) throw ();

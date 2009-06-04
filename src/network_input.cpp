@@ -13,6 +13,7 @@
 #include <boost/thread/mutex.hpp>
 #include <cstdlib>
 #include "event_publisher.h"
+#include "host.h"
 #include "host_status.h"
 #include "nagios/protoapi.h"
 #include "network_input.h"
@@ -330,6 +331,20 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 }
 
 /**
+ *  Handle a host definition event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleHost(ProtocolSocket& socket)
+{
+  static const KeySetter<Host> keys_setters[] =
+    {
+      { NDO_DATA_HOSTNAME, 'S', &Host::SetHostName },
+      { 0, '\0', static_cast<void (Host::*)(double)>(NULL) }
+    };
+
+  HandleObject(this->instance_, keys_setters, socket);
+}
+
+/**
  *  Handle a host status event and publish it against the EventPublisher.
  */
 void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
@@ -470,10 +485,10 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
       { NDO_DATA_NOTIFICATIONSENABLED,
         's',
         &ProgramStatus::SetNotificationsEnabled },
-      { NDO_DATA_OBSESSOVERHOST, 's', &ProgramStatus::SetObsessOverHost },
+      { NDO_DATA_OBSESSOVERHOST, 's', &ProgramStatus::SetObsessOverHosts },
       { NDO_DATA_OBSESSOVERSERVICE,
         's',
-        &ProgramStatus::SetObsessOverService },
+        &ProgramStatus::SetObsessOverServices },
       { NDO_DATA_PASSIVEHOSTCHECKSENABLED,
 	's',
 	&ProgramStatus::SetPassiveHostChecksEnabled },

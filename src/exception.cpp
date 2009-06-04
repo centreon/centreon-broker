@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/19/09 Matthieu Kermagoret
-** Last update 05/19/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include "exception.h"
@@ -62,4 +62,12 @@ Exception& Exception::operator=(const Exception& e)
 {
   boost::system::system_error::operator=(e);
   return (*this);
+}
+
+/**
+ *  Get the error message associated with the exception.
+ */
+const char* Exception::what() const throw ()
+{
+  return (this->boost::system::system_error::what());
 }
