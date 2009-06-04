@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef MAPPING_H_
@@ -15,6 +15,8 @@
 
 # include "host.h"
 # include "host_status.h"
+# include "service.h"
+# include "service_status.h"
 
 namespace                               CentreonBroker
 {
@@ -70,6 +72,13 @@ namespace                               CentreonBroker
   extern const char*                    host_status_fields[];
   extern FieldGetter<HostStatus>        host_status_getters[];
   extern const char*                    host_status_uniques[];
+  // Service
+  extern const char*                    service_fields[];
+  extern FieldGetter<Service>           service_getters[];
+  // ServiceStatus
+  extern const char*                    service_status_fields[];
+  extern FieldGetter<ServiceStatus>     service_status_getters[];
+  extern const char*                    service_status_uniques[];
 }
 
 #endif /* !MAPPING_H_ */

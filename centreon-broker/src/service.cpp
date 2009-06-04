@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/25/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -29,7 +29,6 @@ void Service::InternalCopy(const Service& s)
   memcpy(this->shorts_, s.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = s.strings_[i];
-  memcpy(this->timets_, s.timets_, sizeof(this->timets_));
   return ;
 }
 
@@ -45,7 +44,14 @@ void Service::InternalCopy(const Service& s)
 Service::Service() throw ()
 {
   memset(this->shorts_, 0, sizeof(this->shorts_));
-  memset(this->timets_, 0, sizeof(this->timets_));
+}
+
+/**
+ *  Build a Service from a ServiceStatus.
+ */
+Service::Service(const ServiceStatus& ss) : ServiceStatus(ss)
+{
+  memset(this->shorts_, 0, sizeof(this->shorts_));
 }
 
 /**
@@ -187,38 +193,6 @@ short Service::GetIsVolatile() const throw ()
 }
 
 /**
- *  Get the last_time_critical member.
- */
-time_t Service::GetLastTimeCritical() const throw ()
-{
-  return (this->timets_[LAST_TIME_CRITICAL]);
-}
-
-/**
- *  Get the last_time_ok member.
- */
-time_t Service::GetLastTimeOk() const throw ()
-{
-  return (this->timets_[LAST_TIME_OK]);
-}
-
-/**
- *  Get the last_time_unknown member.
- */
-time_t Service::GetLastTimeUnknown() const throw ()
-{
-  return (this->timets_[LAST_TIME_UNKNOWN]);
-}
-
-/**
- *  Get the last_time_warning member.
- */
-time_t Service::GetLastTimeWarning() const throw ()
-{
-  return (this->timets_[LAST_TIME_WARNING]);
-}
-
-/**
  *  Get the notify_on_critical member.
  */
 short Service::GetNotifyOnCritical() const throw ()
@@ -240,14 +214,6 @@ short Service::GetNotifyOnUnknown() const throw ()
 short Service::GetNotifyOnWarning() const throw ()
 {
   return (this->shorts_[NOTIFY_ON_WARNING]);
-}
-
-/**
- *  Get the service_description member.
- */
-const std::string& Service::GetServiceDescription() const throw ()
-{
-  return (this->strings_[SERVICE_DESCRIPTION]);
 }
 
 /**
@@ -410,42 +376,6 @@ void Service::SetIsVolatile(short iv) throw ()
 }
 
 /**
- *  Set the last_time_critical member.
- */
-void Service::SetLastTimeCritical(time_t ltc) throw ()
-{
-  this->timets_[LAST_TIME_CRITICAL] = ltc;
-  return ;
-}
-
-/**
- *  Set the last_time_ok member.
- */
-void Service::SetLastTimeOk(time_t lto) throw ()
-{
-  this->timets_[LAST_TIME_OK] = lto;
-  return ;
-}
-
-/**
- *  Set the last_time_unknown member.
- */
-void Service::SetLastTimeUnknown(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UNKNOWN] = ltu;
-  return ;
-}
-
-/**
- *  Set the last_time_warning member.
- */
-void Service::SetLastTimeWarning(time_t ltw) throw ()
-{
-  this->timets_[LAST_TIME_WARNING] = ltw;
-  return ;
-}
-
-/**
  *  Set the notify_on_critical member.
  */
 void Service::SetNotifyOnCritical(short noc) throw ()
@@ -469,15 +399,6 @@ void Service::SetNotifyOnUnknown(short nou) throw ()
 void Service::SetNotifyOnWarning(short now) throw ()
 {
   this->shorts_[NOTIFY_ON_WARNING] = now;
-  return ;
-}
-
-/**
- *  Set the service_description member.
- */
-void Service::SetServiceDescription(const std::string& sd)
-{
-  this->strings_[SERVICE_DESCRIPTION] = sd;
   return ;
 }
 

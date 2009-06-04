@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/04/09 Matthieu Kermagoret
 */
 
 #ifndef SERVICE_H_
@@ -23,12 +23,6 @@ namespace              CentreonBroker
   class                Service : public HostService, public ServiceStatus
   {
    private:
-    /*
-    enum Int
-    {
-      HOST_ID,
-      GRAPH_ID
-      };*/
     enum               Short
     {
       DEFAULT_ACTIVE_CHECKS_ENABLED = 0,
@@ -56,24 +50,15 @@ namespace              CentreonBroker
     enum               String
     {
       FAILURE_PREDICTION_OPTIONS = 0,
-      SERVICE_DESCRIPTION,
       STRING_NB
-    };
-    enum               TimeT
-    {
-      LAST_TIME_CRITICAL = 0,
-      LAST_TIME_OK,
-      LAST_TIME_UNKNOWN,
-      LAST_TIME_WARNING,
-      TIMET_NB
     };
     short              shorts_[SHORT_NB];
     std::string        strings_[STRING_NB];
-    time_t             timets_[TIMET_NB];
     void               InternalCopy(const Service& s);
 
    public:
                        Service() throw ();
+		       Service(const ServiceStatus& ss);
                        Service(const Service& s);
                        ~Service() throw ();
     Service&           operator=(const Service& s);
@@ -92,14 +77,9 @@ namespace              CentreonBroker
     short              GetFlapDetectionOnWarning() const throw ();
     short              GetFreshnessChecksEnabled() const throw ();
     short              GetIsVolatile() const throw ();
-    time_t             GetLastTimeCritical() const throw ();
-    time_t             GetLastTimeOk() const throw ();
-    time_t             GetLastTimeUnknown() const throw ();
-    time_t             GetLastTimeWarning() const throw ();
     short              GetNotifyOnCritical() const throw ();
     short              GetNotifyOnUnknown() const throw ();
     short              GetNotifyOnWarning() const throw ();
-    const std::string& GetServiceDescription() const throw ();
     short              GetStalkOnCritical() const throw ();
     short              GetStalkOnUnknown() const throw ();
     short              GetStalkOnWarning() const throw ();
@@ -119,14 +99,9 @@ namespace              CentreonBroker
     void               SetFlapDetectionOnWarning(short fdow) throw ();
     void               SetFreshnessChecksEnabled(short fce) throw ();
     void               SetIsVolatile(short iv) throw ();
-    void               SetLastTimeCritical(time_t ltc) throw ();
-    void               SetLastTimeOk(time_t lto) throw ();
-    void               SetLastTimeUnknown(time_t ltu) throw ();
-    void               SetLastTimeWarning(time_t ltw) throw ();
     void               SetNotifyOnCritical(short noc) throw ();
     void               SetNotifyOnUnknown(short nou) throw ();
     void               SetNotifyOnWarning(short now) throw ();
-    void               SetServiceDescription(const std::string& sd);
     void               SetStalkOnCritical(short soc) throw ();
     void               SetStalkOnUnknown(short sou) throw ();
     void               SetStalkOnWarning(short sow) throw ();

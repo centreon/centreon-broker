@@ -104,10 +104,8 @@ void MySQLInsert::Execute()
 {
   assert(this->mystmt_);
   assert(this->myparams_);
-  if (mysql_stmt_bind_param(this->mystmt_, this->myparams_))
-    throw (Exception(mysql_errno(this->myconn_),
-                     mysql_error(this->myconn_)));
-  if (mysql_stmt_execute(this->mystmt_))
+  if (mysql_stmt_bind_param(this->mystmt_, this->myparams_)
+      || mysql_stmt_execute(this->mystmt_))
     throw (Exception(mysql_errno(this->myconn_),
                      mysql_error(this->myconn_)));
   return ;
@@ -139,10 +137,12 @@ void MySQLInsert::Prepare()
                          query.c_str(),
                          query.size()))
     {
+      Exception e(mysql_errno(this->myconn_),
+                  mysql_error(this->myconn_));
+
       mysql_stmt_close(this->mystmt_);
       this->mystmt_ = NULL;
-      throw (Exception(mysql_errno(this->myconn_),
-		       mysql_error(this->myconn_)));
+      throw (e);
     }
   {
     unsigned int param_count;
