@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/05/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_CONNECTION_H_
@@ -45,6 +45,7 @@ namespace CentreonBroker
                              const std::string& db);
     void             Disconnect();
     Query*           GetInsertQuery();
+    TruncateQuery*   GetTruncateQuery();
     UpdateQuery*     GetUpdateQuery();
   };
 }

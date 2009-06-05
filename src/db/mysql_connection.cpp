@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/05/09 Matthieu Kermagoret
 */
 
 #include <mysql.h>
 #include "db/mysql_connection.h"
 #include "db/mysql_insert.h"
+#include "db/mysql_truncate.h"
 #include "db/mysql_update.h"
 #include "exception.h"
 
@@ -131,6 +132,14 @@ void MySQLConnection::Disconnect()
 Query* MySQLConnection::GetInsertQuery()
 {
   return (new MySQLInsert(&this->myconn_));
+}
+
+/**
+ *  Get a MySQL truncate query object.
+ */
+TruncateQuery* MySQLConnection::GetTruncateQuery()
+{
+  return (new MySQLTruncate(&this->myconn_));
 }
 
 /**

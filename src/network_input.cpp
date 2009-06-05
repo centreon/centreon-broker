@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/05/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -284,6 +284,8 @@ static inline void HandleObject(const std::string& instance,
                                                                  0));
                 break ;
                default:
+                std::cerr << "Wrong type : " << key_setters[i].type
+                          << std::endl;
                 assert(false);
 	      }
 	    break ;
@@ -337,7 +339,81 @@ void NetworkInput::HandleHost(ProtocolSocket& socket)
 {
   static const KeySetter<Host> keys_setters[] =
     {
+      { NDO_DATA_ACTIONURL, 'S', &Host::SetActionUrl },
+      { NDO_DATA_ACTIVEHOSTCHECKSENABLED, 's', &Host::SetActiveChecksEnabled },
+      { NDO_DATA_DISPLAYNAME, 'S', &Host::SetDisplayName },
+      { NDO_DATA_FIRSTNOTIFICATIONDELAY,
+        'd',
+        &Host::SetFirstNotificationDelay },
+      { NDO_DATA_FLAPDETECTIONONDOWN, 's', &Host::SetFlapDetectionOnDown },
+      { NDO_DATA_FLAPDETECTIONONUNREACHABLE,
+        's',
+        &Host::SetFlapDetectionOnUnreachable },
+      { NDO_DATA_FLAPDETECTIONONUP, 's', &Host::SetFlapDetectionOnUp },
+      { NDO_DATA_HAVE2DCOORDS, 's', &Host::SetHave2DCoords },
+      //{ NDO_DATA_HAVE3DCOORDS }
+      { NDO_DATA_HIGHHOSTFLAPTHRESHOLD, 'd', &Host::SetHighFlapThreshold },
+      { NDO_DATA_HOSTADDRESS, 'S', &Host::SetAddress },
+      { NDO_DATA_HOSTALIAS, 'S', &Host::SetAlias },
+      { NDO_DATA_HOSTCHECKCOMMAND, 'S', &Host::SetCheckCommand },
+      { NDO_DATA_HOSTCHECKINTERVAL, 'd', &Host::SetCheckInterval },
+      //{ NDO_DATA_HOSTCHECKPERIOD },
+      { NDO_DATA_HOSTEVENTHANDLER, 'S', &Host::SetEventHandler },
+      { NDO_DATA_HOSTEVENTHANDLERENABLED,
+        's',
+	&Host::SetEventHandlerEnabled },
+      { NDO_DATA_HOSTFAILUREPREDICTIONENABLED,
+	's',
+	&Host::SetFailurePredictionEnabled },
+      //{ NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS },
+      { NDO_DATA_HOSTFLAPDETECTIONENABLED,
+        's',
+        &Host::SetFlapDetectionEnabled },
+      //{ NDO_DATA_HOSTFRESHNESSCHECKSENABLED },
+      { NDO_DATA_HOSTFRESHNESSTHRESHOLD, 's', &Host::SetFreshnessThreshold },
+      { NDO_DATA_HOSTMAXCHECKATTEMPTS, 's', &Host::SetMaxCheckAttempts },
       { NDO_DATA_HOSTNAME, 'S', &Host::SetHostName },
+      { NDO_DATA_HOSTNOTIFICATIONINTERVAL,
+        'd',
+        &Host::SetNotificationInterval },
+      //{ NDO_DATA_HOSTNOTIFICATIONPERIOD },
+      { NDO_DATA_HOSTNOTIFICATIONSENABLED,
+        's',
+	&Host::SetNotificationsEnabled },
+      { NDO_DATA_HOSTRETRYINTERVAL, 'd', &Host::SetRetryInterval },
+      { NDO_DATA_ICONIMAGE, 'S', &Host::SetIconImage },
+      { NDO_DATA_ICONIMAGEALT, 'S', &Host::SetIconImageAlt },
+      { NDO_DATA_LOWHOSTFLAPTHRESHOLD, 'd', &Host::SetLowFlapThreshold },
+      { NDO_DATA_NOTES, 'S', &Host::SetNotes },
+      { NDO_DATA_NOTESURL, 'S', &Host::SetNotesUrl },
+      { NDO_DATA_NOTIFYHOSTDOWN, 's', &Host::SetNotifyOnDown },
+      { NDO_DATA_NOTIFYHOSTDOWNTIME, 's', &Host::SetNotifyOnDowntime },
+      { NDO_DATA_NOTIFYHOSTFLAPPING, 's', &Host::SetNotifyOnFlapping },
+      { NDO_DATA_NOTIFYHOSTRECOVERY, 's', &Host::SetNotifyOnRecovery },
+      { NDO_DATA_NOTIFYHOSTUNREACHABLE, 's', &Host::SetNotifyOnUnreachable },
+      { NDO_DATA_OBSESSOVERHOST, 's', &Host::SetObsessOver },
+      { NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+        's',
+        &Host::SetPassiveChecksEnabled },
+      { NDO_DATA_PROCESSHOSTPERFORMANCEDATA,
+        's',
+        &Host::SetProcessPerformanceData },
+      { NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
+	's',
+	&Host::SetRetainNonstatusInformation },
+      { NDO_DATA_RETAINHOSTSTATUSINFORMATION,
+	's',
+	&Host::SetRetainStatusInformation },
+      { NDO_DATA_STALKHOSTONDOWN, 's', &Host::SetStalkOnDown },
+      { NDO_DATA_STALKHOSTONUNREACHABLE, 's', &Host::SetStalkOnUnreachable },
+      { NDO_DATA_STALKHOSTONUP, 's', &Host::SetStalkOnUp },
+      { NDO_DATA_STATUSMAPIMAGE, 'S', &Host::SetStatusmapImage },
+      { NDO_DATA_VRMLIMAGE, 'S', &Host::SetVrmlImage },
+      { NDO_DATA_X2D, 's', &Host::SetX2D },
+      //{ NDO_DATA_X3D },
+      { NDO_DATA_Y2D, 's', &Host::SetY2D },
+      //{ NDO_DATA_Y3D },
+      //{ NDO_DATA_Z3D },
       { 0, '\0', static_cast<void (Host::*)(double)>(NULL) }
     };
 
@@ -502,6 +578,7 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
       { NDO_DATA_PROGRAMSTARTTIME,
 	't',
 	&ProgramStatus::SetProgramStartTime },
+      { 0, '\0', static_cast<void (ProgramStatus::*)(double)>(NULL) }
     };
 
   HandleObject(this->instance_, keys_setters, ps);
@@ -658,7 +735,9 @@ void NetworkInput::operator()()
     void (NetworkInput::* handler)(ProtocolSocket&);
   } handlers[] =
       {
+	{ NDO_API_HOSTDEFINITION, &NetworkInput::HandleHost },
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
+	{ NDO_API_PROGRAMSTATUSDATA, &NetworkInput::HandleProgramStatus },
 	{ NDO_API_SERVICESTATUSDATA, &NetworkInput::HandleServiceStatus },
 	{ 0, NULL }
       };
