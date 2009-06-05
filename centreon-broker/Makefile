@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/04/09 Matthieu Kermagoret
+## Last update 06/05/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -19,8 +19,10 @@ SRC		=	src/cb2db.cpp				\
 			src/db/connection.cpp			\
 			src/db/mysql_connection.cpp		\
 			src/db/mysql_insert.cpp			\
+			src/db/mysql_truncate.cpp		\
 			src/db/mysql_update.cpp			\
 			src/db/query.cpp			\
+			src/db/truncate_query.cpp		\
 			src/db/update_query.cpp			\
 			src/db_output.cpp			\
 			src/event.cpp				\

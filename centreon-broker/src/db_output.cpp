@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/05/09 Matthieu Kermagoret
 */
 
 #include <memory>
 #include "db/connection.h"
 #include "db/mysql_connection.h"
+#include "db/truncate_query.h"
 #include "db/update_query.h"
 #include "db_output.h"
 #include "event.h"
@@ -59,7 +60,15 @@ void DBOutput::Connect()
                        this->user_,
                        this->password_,
                        this->db_);
-  // XXX : truncate tables
+  {
+    std::auto_ptr<TruncateQuery> truncate(this->conn_->GetTruncateQuery());
+
+    // XXX : table names should be configurable
+    truncate->SetTable("hosts");
+    truncate->Execute();
+    truncate->SetTable("services");
+    truncate->Execute();
+  }
   // Prepare HostStatus update query
   {
     UpdateQuery* uq;
