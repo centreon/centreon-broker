@@ -1,16 +1,16 @@
 /*
-** query.cpp for CentreonBroker in ./src/db
+** truncate.cpp for CentreonBroker in ./src/db
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
 ** Copyright Merethis
 ** See LICENSE file for details.
 ** 
-** Started on  06/02/09 Matthieu Kermagoret
+** Started on  06/05/09 Matthieu Kermagoret
 ** Last update 06/09/09 Matthieu Kermagoret
 */
 
-#include "db/query.h"
+#include "db/truncate.h"
 
 using namespace CentreonBroker::DB;
 
@@ -21,19 +21,19 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  Query copy constructor.
+ *  Truncate copy constructor.
  */
-Query::Query(const Query& query) throw ()
+Truncate::Truncate(const Truncate& truncate) throw () : Query()
 {
-  (void)query;
+  (void)truncate;
 }
 
 /**
- *  Query operator= overload.
+ *  Truncate operator= overload.
  */
-Query& Query::operator=(const Query& query) throw ()
+Truncate& Truncate::operator=(const Truncate& truncate) throw ()
 {
-  (void)query;
+  (void)truncate;
   return (*this);
 }
 
@@ -44,15 +44,15 @@ Query& Query::operator=(const Query& query) throw ()
 **************************************/
 
 /**
- *  Query default constructor.
+ *  Truncate default constructor.
  */
-Query::Query() throw ()
+Truncate::Truncate() throw ()
 {
 }
 
 /**
- *  Query destructor.
+ *  Truncate destructor.
  */
-Query::~Query()
+Truncate::~Truncate()
 {
 }

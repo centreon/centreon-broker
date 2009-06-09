@@ -7,42 +7,37 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/09/09 Matthieu Kermagoret
 */
 
 #ifndef DB_QUERY_H_
 # define DB_QUERY_H_
 
-# include <string>
-# include <sys/types.h>
-# include <vector>
+# include "db/db_exception.h"
 
-namespace                    CentreonBroker
+namespace          CentreonBroker
 {
-  class                      Query
+  namespace        DB
   {
-   private:
-    void                     InternalCopy(const Query& query);
+    template       <typename ObjectType>
+    class          Mapping;
 
-   protected:
-    std::vector<std::string> fields_;
-    std::string              table_;
+    /**
+     *  This is the root class of all queries. Every query can be prepared
+     *  using the appropriate feature of the DBMS.
+     */
+    class          Query
+    {
+     private:
+                   Query(const Query& query) throw ();
+      Query&       operator=(const Query& query) throw ();
 
-   public:
-                             Query();
-                             Query(const Query& query);
-    virtual                  ~Query();
-    Query&                   operator=(const Query& query);
-    void                     AddFields(const char **fields);
-    virtual void             Execute() = 0;
-    virtual void             Prepare() = 0;
-    virtual void             SetDouble(int arg, double value) = 0;
-    virtual void             SetInt(int arg, int value) = 0;
-    virtual void             SetShort(int arg, short value) = 0;
-    virtual void             SetString(int arg, const char* value) = 0;
-    virtual void             SetTimeT(int arg, time_t value) = 0;
-    void                     SetTable(const std::string& table);
-  };
+     public:
+                   Query() throw ();
+      virtual      ~Query();
+      virtual void Prepare() throw (DBException) = 0;
+    };
+  }
 }
 
 #endif /* !DB_QUERY_H_ */
