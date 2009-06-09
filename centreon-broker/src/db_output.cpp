@@ -7,20 +7,17 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/05/09 Matthieu Kermagoret
+** Last update 06/09/09 Matthieu Kermagoret
 */
 
 #include <memory>
-#include "db/connection.h"
-#include "db/mysql_connection.h"
-#include "db/truncate_query.h"
-#include "db/update_query.h"
+#include "db/mysql/connection.h"
+#include "db/queries.hpp"
 #include "db_output.h"
 #include "event.h"
 #include "exception.h"
 #include "host.h"
 #include "host_status.h"
-#include "mapping.h"
 
 using namespace CentreonBroker;
 

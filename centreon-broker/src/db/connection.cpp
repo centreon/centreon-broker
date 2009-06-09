@@ -7,40 +7,51 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/09/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include "db/connection.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::DB;
 
 /**
- *  DBConnection default constructor.
+ *  Connection default constructor.
  */
-DBConnection::DBConnection()
+Connection::Connection(Connection::DBMS dbms) : dbms_(dbms)
 {
 }
 
 /**
- *  DBConnection copy constructor.
+ *  Connection copy constructor.
  */
-DBConnection::DBConnection(const DBConnection& dbconn)
+Connection::Connection(const Connection& conn)
 {
-  (void)dbconn;
+  (void)conn;
+  assert(this->dbms_ == conn.dbms_);
 }
 
 /**
- *  DBConnection destructor.
+ *  Connection destructor.
  */
-DBConnection::~DBConnection()
+Connection::~Connection()
 {
 }
 
 /**
- *  DBConnection operator= overload.
+ *  Connection operator= overload.
  */
-DBConnection& DBConnection::operator=(const DBConnection& dbconn)
+Connection& Connection::operator=(const Connection& conn)
 {
-  (void)dbconn;
+  (void)conn;
+  assert(this->dbms_ == conn.dbms_);
   return (*this);
+}
+
+/**
+ *  Returns the type of the current DBMS.
+ */
+Connection::DBMS Connection::GetDbms() const throw ()
+{
+  return (this->dbms_);
 }

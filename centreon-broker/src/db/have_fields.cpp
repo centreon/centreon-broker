@@ -1,16 +1,16 @@
 /*
-** query.cpp for CentreonBroker in ./src/db
+** have_fields.cpp for CentreonBroker in ./src/db
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
 ** Copyright Merethis
 ** See LICENSE file for details.
 ** 
-** Started on  06/02/09 Matthieu Kermagoret
+** Started on  06/09/09 Matthieu Kermagoret
 ** Last update 06/09/09 Matthieu Kermagoret
 */
 
-#include "db/query.h"
+#include "db/have_fields.h"
 
 using namespace CentreonBroker::DB;
 
@@ -21,19 +21,21 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  Query copy constructor.
+ *  HaveFields copy constructor. No reason we would want to copy this
+ *  class so declare it private.
  */
-Query::Query(const Query& query) throw ()
+HaveFields::HaveFields(const HaveFields& hf) throw ()
 {
-  (void)query;
+  (void)hf;
 }
 
 /**
- *  Query operator= overload.
+ *  HaveFields operator= overload. No reason we would want to copy this
+ *  class so declare it private.
  */
-Query& Query::operator=(const Query& query) throw ()
+HaveFields& HaveFields::operator=(const HaveFields& hf) throw ()
 {
-  (void)query;
+  (void)hf;
   return (*this);
 }
 
@@ -44,15 +46,16 @@ Query& Query::operator=(const Query& query) throw ()
 **************************************/
 
 /**
- *  Query default constructor.
+ *  HaveFields constructor.
  */
-Query::Query() throw ()
+HaveFields::HaveFields() throw ()
 {
 }
 
 /**
- *  Query destructor.
+ *  HaveFields destructor.
  */
-Query::~Query()
+HaveFields::~HaveFields()
 {
 }
+
