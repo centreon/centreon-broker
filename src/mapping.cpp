@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/09/09 Matthieu Kermagoret
 */
 
 #include "host.h"
@@ -16,9 +16,18 @@
 
 using namespace CentreonBroker;
 
-const char* CentreonBroker::host_fields[] =
-  {
-    "acknowledgement_type",
+/**
+ *  Host mapping.
+ */
+DB::Mapping<Host> CentreonBroker::host_mapping;
+
+static void InitHostMapping()
+{
+  host_mapping.SetTable("hosts");
+  host_mapping.AddShortField("acknowledgement_type",
+			     &Host::GetAcknowledgementType);
+}
+/*
     "action_url",
     "active_checks_enabled",
     "address",
@@ -623,3 +632,4 @@ const char* CentreonBroker::service_status_uniques[] =
     "service_description",
     NULL
   };
+*/

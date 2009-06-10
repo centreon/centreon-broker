@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 06/03/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include <boost/asio.hpp>
@@ -49,11 +49,11 @@ int main(int argc, char *argv[])
       gl_ios = new boost::asio::io_service;
       std::clog << "  Done" << std::endl;
       std::clog << "Initializing MySQL engine...";
-      gl_dbo = new DBOutput();
+      gl_dbo = new DBOutput(DB::Connection::MYSQL);
       std::clog << "  Done" << std::endl;
       std::clog << "Connecting to MySQL server : " << argv[2]
                 << '@' << argv[1] << "...";
-      gl_dbo->Init(DBOutput::MYSQL, argv[1], argv[2], argv[3], argv[4]);
+      gl_dbo->Init(argv[1], argv[2], argv[3], argv[4]);
       std::clog << "  Done" << std::endl;
       std::clog << "Listening on port 5667...";
       gl_na = new NetworkAcceptor(*gl_ios);

@@ -17,6 +17,7 @@
 # include <boost/function.hpp>
 # include <map>
 # include <string>
+# include "db/have_fields.h"
 
 namespace                        CentreonBroker
 {
@@ -82,6 +83,59 @@ namespace                        CentreonBroker
                                                   const ObjectType&>& getter)
       {
 	this->fields_[field] = boost::bind(&HaveFields::SetDouble,
+                                           _1,
+                                           boost::bind(getter, _2));
+	return ;
+      }
+
+      /**
+       *  Add a field and its associated getter to the field list.
+       */
+      void                       AddIntField(const std::string& field,
+					     const boost::function1<int,
+                                               const ObjectType&>& getter)
+      {
+	this->fields_[field] = boost::bind(&HaveFields::SetInt,
+                                           _1,
+                                           boost::bind(getter, _2));
+	return ;
+      }
+
+      /**
+       *  Add a field and its associated getter to the field list.
+       */
+      void                       AddShortField(const std::string& field,
+					       const boost::function1<short,
+                                                 const ObjectType&>& getter)
+      {
+	this->fields_[field] = boost::bind(&HaveFields::SetShort,
+                                           _1,
+                                           boost::bind(getter, _2));
+	return ;
+      }
+
+      /**
+       *  Add a field and its associated getter to the field list.
+       */
+      void                       AddStringField(const std::string& field,
+						const boost::function1<
+						  const std::string&,
+                                                  const ObjectType&>& getter)
+      {
+	this->fields_[field] = boost::bind(&HaveFields::SetString,
+                                           _1,
+                                           boost::bind(getter, _2));
+	return ;
+      }
+
+      /**
+       *  Add a field and its associated getter to the field list.
+       */
+      void                       AddTimeField(const std::string& field,
+					      const boost::function1<time_t,
+                                                  const ObjectType&>& getter)
+      {
+	this->fields_[field] = boost::bind(&HaveFields::SetTime,
                                            _1,
                                            boost::bind(getter, _2));
 	return ;

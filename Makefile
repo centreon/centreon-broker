@@ -26,6 +26,7 @@ SRC		=	src/cb2db.cpp				\
 			src/db/predicate.cpp			\
 			src/db/query.cpp			\
 			src/db/truncate.cpp			\
+			src/db_output.cpp			\
 			src/event.cpp				\
 			src/event_publisher.cpp			\
 			src/event_subscriber.cpp		\
