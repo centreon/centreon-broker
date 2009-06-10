@@ -1,3 +1,26 @@
+/*
+** have_predicate.hpp for CentreonBroker in ./inc/db
+** 
+** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
+** 
+** Copyright Merethis
+** See LICENSE file for details.
+** 
+** Started on  06/10/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
+*/
+
+#ifndef DB_HAVE_PREDICATE_HPP_
+# define DB_HAVE_PREDICATE_HPP_
+
+# include <boost/smart_ptr.hpp>
+# include <cassert>
+# include "db/dynamic_predicate.hpp"
+
+namespace CentreonBroker
+{
+  namespace DB
+  {
     /**
      *  When queries accept predicates, they subclass this class.
      */
@@ -6,27 +29,15 @@
       : public DynamicPredicateVisitor<ObjectType>
     {
      private:
-      boost::shared_ptr<Predicate> predicate_;
-
-     public:
-      /**
-       *  HavePredicate default constructor.
-       */
-                                   HavePredicate() {}
-
       /**
        *  HavePredicate copy constructor.
        */
                                    HavePredicate(const HavePredicate& hp)
-        : DynamicPredicateVisitor<ObjectType>(hp)
+        : DynamicPredicateVisitor<ObjectType>()
       {
-        this->predicate_ = hp.predicate_;
+	(void)hp;
+	assert(false);
       }
-
-      /**
-       *  HavePredicate destructor.
-       */
-      virtual                      ~HavePredicate() {}
 
       /**
        *  HavePredicate operator= overload.
@@ -38,14 +49,36 @@
 	return (*this);
       }
 
+     protected:
+      Predicate*                   predicate_;
+
+     public:
+      /**
+       *  HavePredicate default constructor.
+       */
+                                   HavePredicate() {}
+
+      /**
+       *  HavePredicate destructor.
+       */
+      virtual                      ~HavePredicate() {}
+
       /**
        *  Set the predicate.
        */
       template                     <typename PredicateType>
       void                         SetPredicate(const PredicateType& predicate)
       {
-	this->predicate_ = new PredicateType(predicate);
-	return ;
+	if (this->predicate_)
+	  {
+            delete (this->predicate_);
+            this->predicate_ = NULL;
+	  }
+        this->predicate_ = new PredicateType(predicate);
+        return ;
       }
     };
+  }
+}
 
+#endif /* !DB_HAVE_PREDICATE_HPP_ */

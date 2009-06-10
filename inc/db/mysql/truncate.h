@@ -1,5 +1,5 @@
 /*
-** mysql_truncate.h for CentreonBroker in ./inc/db
+** truncate.h for CentreonBroker in ./inc/db/mysql
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,32 +7,34 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/05/09 Matthieu Kermagoret
-** Last update 06/05/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_TRUNCATE_H_
 # define DB_MYSQL_TRUNCATE_H_
 
 # include <mysql.h>
-# include "db/truncate_query.h"
+# include "db/db_exception.h"
+# include "db/mysql/query.h"
+# include "db/truncate.h"
 
-namespace          CentreonBroker
+namespace            CentreonBroker
 {
-  class            MySQLTruncate : public TruncateQuery
+  namespace          DB
   {
-    friend class   MySQLConnection;
+    class            MySQLTruncate : public Truncate, public MySQLQuery
+    {
+     private:
+                     MySQLTruncate(const MySQLTruncate& mytruncate) throw ();
+      MySQLTruncate& operator=(const MySQLTruncate& mytruncate) throw ();
 
-   private:
-    MYSQL*         myconn_;
-                   MySQLTruncate(MYSQL* myconn);
-    void           InternalCopy(const MySQLTruncate& truncate);
-
-   public:
-                   MySQLTruncate(const MySQLTruncate& truncate);
-                   ~MySQLTruncate();
-    MySQLTruncate& operator=(const MySQLTruncate& truncate);
-    void           Execute();
-  };
+     public:
+                     MySQLTruncate(MYSQL* myconn);
+                     ~MySQLTruncate();
+      void           Execute();
+      void           Prepare() throw (DBException);
+    };
+  }
 }
 
 #endif /* !DB_MYSQL_TRUNCATE_H_ */

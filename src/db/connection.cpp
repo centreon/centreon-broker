@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -15,20 +15,42 @@
 
 using namespace CentreonBroker::DB;
 
-/**
- *  Connection default constructor.
- */
-Connection::Connection(Connection::DBMS dbms) : dbms_(dbms)
-{
-}
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
 
 /**
  *  Connection copy constructor.
  */
-Connection::Connection(const Connection& conn)
+Connection::Connection(const Connection& conn) throw () : dbms_(UNKNOWN)
 {
   (void)conn;
-  assert(this->dbms_ == conn.dbms_);
+  assert(false);
+}
+
+/**
+ *  Connection operator= overload.
+ */
+Connection& Connection::operator=(const Connection& conn) throw ()
+{
+  (void)conn;
+  assert(false);
+  return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Connection default constructor.
+ */
+Connection::Connection(Connection::DBMS dbms) throw () : dbms_(dbms)
+{
 }
 
 /**
@@ -36,16 +58,6 @@ Connection::Connection(const Connection& conn)
  */
 Connection::~Connection()
 {
-}
-
-/**
- *  Connection operator= overload.
- */
-Connection& Connection::operator=(const Connection& conn)
-{
-  (void)conn;
-  assert(this->dbms_ == conn.dbms_);
-  return (*this);
 }
 
 /**

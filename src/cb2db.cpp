@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
       std::clog << "Initializing I/O engine...";
       gl_ios = new boost::asio::io_service;
       std::clog << "  Done" << std::endl;
+      std::clog << "Initializing Object-Relational mapping...";
+      InitMappings();
+      std::clog << "  Done" << std::endl;
       std::clog << "Initializing MySQL engine...";
       gl_dbo = new DBOutput(DB::Connection::MYSQL);
       std::clog << "  Done" << std::endl;

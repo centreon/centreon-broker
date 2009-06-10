@@ -17,6 +17,7 @@
 # include <string>
 # include <vector>
 # include "db/connection.h"
+# include "db/update.hpp"
 # include "event_subscriber.h"
 # include "mapping.h"
 # include "waitable_list.hpp"
@@ -62,6 +63,7 @@ namespace                      CentreonBroker
     void                       Commit();
     void                       Connect();
     void                       Disconnect();
+    int                        GetObjectInstance(const HostStatus& ev);
     int                        GetInstanceId(const std::string& instance);
     void                       OnEvent(Event* e) throw ();
     void                       ProcessEvent(Event* event);

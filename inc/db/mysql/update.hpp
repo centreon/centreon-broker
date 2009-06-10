@@ -1,5 +1,5 @@
 /*
-** mysql_update.h for CentreonBroker in ./inc/db
+** update.hpp for CentreonBroker in ./inc/db/mysql
 ** 
 ** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
 ** 
@@ -7,40 +7,126 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
-#ifndef DB_MYSQL_UPDATE_H_
-# define DB_MYSQL_UPDATE_H_
+#ifndef DB_MYSQL_UPDATE_HPP_
+# define DB_MYSQL_UPDATE_HPP_
 
-# include <mysql.h>
-# include "db/update_query.h"
+# include <cassert>
+# include "db/mysql/have_fields.h"
+# include "db/mysql/have_predicate.hpp"
+# include "db/mysql/query.h"
+# include "db/update.hpp"
 
-namespace                   CentreonBroker
+namespace          CentreonBroker
 {
-  class                     MySQLUpdate : public UpdateQuery
+  namespace        DB
   {
-    friend class            MySQLConnection;
+    template       <typename ObjectType>
+    class          MySQLUpdate : public Update<ObjectType>,
+                     public MySQLQuery,
+                     public MySQLHaveFields,
+                     public MySQLHavePredicate<ObjectType>
+    {
+     private:
+      /**
+       *  MySQLUpdate copy constructor.
+       */
+                   MySQLUpdate(const MySQLUpdate& myupdate)
+	: Update<ObjectType>(),
+	  MySQLQuery(),
+	  MySQLHaveFields(),
+	  MySQLHavePredicate<ObjectType>()
+      {
+	(void)myupdate;
+      }
 
-   private:
-    MYSQL*                  myconn_;
-    MYSQL_BIND*             myparams_;
-    MYSQL_STMT*             mystmt_;
-                            MySQLUpdate(MYSQL* myconn);
-    void                    InternalCopy(const MySQLUpdate& myupdate);
+      /**
+       *  MySQLUpdate operator= overload.
+       */
+      MySQLUpdate& operator=(const MySQLUpdate& myupdate)
+      {
+	(void)myupdate;
+	return (*this);
+      }
 
-   public:
-                            MySQLUpdate(const MySQLUpdate& myupdate);
-                            ~MySQLUpdate();
-    MySQLUpdate&            operator=(const MySQLUpdate& myupdate);
-    void                    Execute();
-    void                    Prepare();
-    void                    SetDouble(int arg, double value);
-    void                    SetInt(int arg, int value);
-    void                    SetShort(int arg, short value);
-    void                    SetString(int arg, const char* value);
-    void                    SetTimeT(int arg, time_t value);
-  };
+     public:
+      /**
+       *  MySQLUpdate constructor.
+       */
+                   MySQLUpdate(MYSQL* myconn,
+                               const Mapping<ObjectType>& mapping)
+        : Update<ObjectType>(mapping),
+          MySQLQuery(myconn),
+          MySQLHaveFields(),
+          MySQLHavePredicate<ObjectType>()
+      {
+      }
+
+      /**
+       *  MySQLUpdate destructor.
+       */
+                   ~MySQLUpdate()
+      {
+      }
+
+      /**
+       *  Update an object.
+       */
+      void         Execute(const ObjectType& object)
+      {
+	// Reset argument count.
+	this->Reset();
+	// Browse all args.
+	for (decltype(this->mapping_.fields_.begin()) it =
+               this->mapping_.fields_.begin();
+             it != this->mapping_.fields_.end();
+             it++)
+	  (*it).second(this, object);
+	if (mysql_stmt_bind_param(this->mystmt_, this->myargs_))
+	  throw (DBException(mysql_stmt_errno(this->mystmt_),
+                             DBException::QUERY_EXECUTION,
+                             mysql_stmt_error(this->mystmt_)));
+	this->MySQLQuery::Execute();
+	return ;
+      }
+
+      /**
+       *  Get the number of elements updated bu the last query execution.
+       */
+      int          GetUpdateCount()
+      {
+	// XXX : generate an exception in case of error
+	return (mysql_stmt_affected_rows(this->mystmt_));
+      }
+
+      /**
+       *  Prepare the query.
+       */
+      void         Prepare()
+      {
+	this->query_ = "UPDATE ";
+	this->query_ += this->mapping_.table_;
+	this->query_ += " SET ";
+	for (decltype(this->mapping_.fields_.begin()) it =
+               this->mapping_.fields_.begin();
+             it != this->mapping_.fields_.end();
+	     it++)
+	  {
+	    this->query_ += (*it).first;
+	    this->query_ += "=?, ";
+	  }
+	this->query_.resize(this->query_.size() - 2);
+	this->MySQLHavePredicate<ObjectType>::BuildString();
+	this->query_ += this->predicate_str_;
+	this->predicate_str_.resize(0);
+	this->MySQLQuery::Prepare();
+	this->MySQLHaveFields::Prepare(this->mystmt_);
+	return ;
+      }
+    };
+  }
 }
 
-#endif /* !DB_MYSQL_UPDATE_H_ */
+#endif /* !DB_MYSQL_UPDATE_HPP_ */

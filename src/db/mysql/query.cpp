@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include "db/mysql/query.h"
@@ -78,7 +78,7 @@ void MySQLQuery::Execute() throw (DBException)
 /**
  *  Prepare the query.
  */
-void MySQLQuery::Prepare() throw (DBException)
+void MySQLQuery::Prepare()
 {
   this->mystmt_ = mysql_stmt_init(this->myconn_);
   if (!this->mystmt_)
