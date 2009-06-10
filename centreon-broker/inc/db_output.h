@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_OUTPUT_H_
@@ -16,6 +16,7 @@
 # include <boost/thread/thread_time.hpp>
 # include <string>
 # include <vector>
+# include "db/connection.h"
 # include "event_subscriber.h"
 # include "mapping.h"
 # include "waitable_list.hpp"
@@ -27,30 +28,27 @@ namespace                      boost
 
 namespace                      CentreonBroker
 {
-  class                        DBConnection;
+  namespace                    DB
+  {
+    class                      Connection;
+    template                   <typename ObjectType>
+    class                      Update;
+  }
   class                        Event;
   class                        Host;
   class                        HostStatus;
   class                        Query;
-  class                        UpdateQuery;
 
   class                        DBOutput : private EventSubscriber
   {
-   public:
-    enum                       DBMS
-    {
-      MYSQL = 1
-    };
-
    private:
-    // DBMS
-    DBMS                       dbms_;
+    DB::Connection::DBMS       dbms_;
     std::string                host_;
     std::string                user_;
     std::string                password_;
     std::string                db_;
-    DBConnection*              conn_;
-    std::vector<UpdateQuery*>  stmts_;
+    DB::Connection*            conn_;
+    DB::Update<HostStatus>*    host_status_stmt_;
     // Performance objects
     int                        queries_;
     boost::system_time         timeout_;
@@ -64,7 +62,6 @@ namespace                      CentreonBroker
     void                       Commit();
     void                       Connect();
     void                       Disconnect();
-    void                       ExecuteQuery(Query* query);
     int                        GetInstanceId(const std::string& instance);
     void                       OnEvent(Event* e) throw ();
     void                       ProcessEvent(Event* event);
@@ -72,19 +69,16 @@ namespace                      CentreonBroker
     void                       ProcessHostStatus(const HostStatus& hs);
     void                       ProcessService(const Service& service);
     void                       ProcessServiceStatus(const ServiceStatus& ss);
-    template                   <typename ObjectType>
-    unsigned int               SetFields(Query& query,
-                                         const ObjectType& obj,
-                                         const FieldGetter<ObjectType>* g);
+    void                       QueryExecuted();
+
    public:
-                               DBOutput();
+                               DBOutput(DB::Connection::DBMS dbms);
                                DBOutput(const DBOutput& dbo);
                                ~DBOutput();
     DBOutput&                  operator=(const DBOutput& dbo);
     void                       operator()();
     void                       Destroy();
-    void                       Init(DBMS dbms,
-                                    const std::string& host,
+    void                       Init(const std::string& host,
                                     const std::string& user,
                                     const std::string& password,
                                     const std::string& db);

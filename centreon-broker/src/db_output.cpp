@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include <memory>
@@ -47,17 +47,17 @@ void DBOutput::Connect()
   // Connect to the DB server
   switch (this->dbms_)
     {
-     case MYSQL:
-       this->conn_ = new MySQLConnection;
-       break;
+     case DB::Connection::MYSQL:
+      this->conn_ = new DB::MySQLConnection;
+      break;
      default:
-       throw (Exception(0, "Unsupported DBMS requested."));
+      throw (Exception(0, "Unsupported DBMS requested."));
     }
   this->conn_->Connect(this->host_,
                        this->user_,
                        this->password_,
                        this->db_);
-  {
+  /*  {
     std::auto_ptr<TruncateQuery> truncate(this->conn_->GetTruncateQuery());
 
     // XXX : table names should be configurable
@@ -68,7 +68,7 @@ void DBOutput::Connect()
   }
   // Prepare HostStatus update query
   {
-    UpdateQuery* uq;
+    DB::Update* uq;
 
     uq = this->conn_->GetUpdateQuery();
     uq->SetTable("hosts");
@@ -86,7 +86,7 @@ void DBOutput::Connect()
     uq->AddUniques(service_status_uniques);
     uq->Prepare();
     this->stmts_.push_back(uq);
-  }
+    }*/
   // Initialize the timeout
   this->Commit();
   return ;
@@ -97,27 +97,12 @@ void DBOutput::Connect()
  */
 void DBOutput::Disconnect()
 {
-  for (std::vector<UpdateQuery*>::iterator it = this->stmts_.begin();
-       it != this->stmts_.end();
-       it++)
-    delete (*it);
+  // XXX : delete statements
   if (this->conn_)
     {
       delete (this->conn_);
       this->conn_ = NULL;
     }
-  return ;
-}
-
-/**
- *  Execute a query.
- */
-void DBOutput::ExecuteQuery(Query* query)
-{
-  query->Execute();
-  // XXX : query number should be configurable
-  if (++this->queries_ >= 10000)
-    this->Commit();
   return ;
 }
 
@@ -191,14 +176,12 @@ void DBOutput::ProcessEvent(Event* event)
  */
 void DBOutput::ProcessHost(const Host& host)
 {
-  std::auto_ptr<Query> query(this->conn_->GetInsertQuery());
+  std::auto_ptr<DB::Insert<Host> >
+    query(DB::GetInsertQuery<Host>(this->conn_, &host_mapping));
 
-  query->SetTable("hosts");
-  query->AddFields(host_fields);
   query->Prepare();
-  this->SetFields<Host>(*query.get(), host, host_getters);
-  this->ExecuteQuery(query.get());
-  this->Commit();
+  query->Execute(host);
+  this->QueryExecuted();
   return ;
 }
 
@@ -207,25 +190,7 @@ void DBOutput::ProcessHost(const Host& host)
  */
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
-  int count;
-  UpdateQuery* uq;
-
-  // XXX : hardcoded value
-  uq = this->stmts_[0];
-  count = this->SetFields<HostStatus>(*uq, hs, host_status_getters);
-  for (unsigned int i = 0; host_status_uniques[i]; i++)
-    if (!strcmp("host_name", host_status_uniques[i]))
-      uq->SetString(count++, hs.GetHostName().c_str());
-    else
-      assert(false);
-  try
-    {
-      this->ExecuteQuery(uq);
-    }
-  catch (...) // XXX : more precise
-    {
-      this->ProcessHost(Host(hs));
-    }
+  // XXX : code unfinished
   return ;
 }
 
@@ -234,14 +199,7 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
  */
 void DBOutput::ProcessService(const Service& service)
 {
-  std::auto_ptr<Query> query(this->conn_->GetInsertQuery());
-
-  query->SetTable("services");
-  query->AddFields(service_fields);
-  query->Prepare();
-  this->SetFields<Service>(*query.get(), service, service_getters);
-  this->ExecuteQuery(query.get());
-  this->Commit();
+  // XXX : code unfinished
   return ;
 }
 
@@ -250,68 +208,19 @@ void DBOutput::ProcessService(const Service& service)
  */
 void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 {
-  int count;
-  UpdateQuery* uq;
-
-  // XXX : hardcoded value
-  uq = this->stmts_[1];
-  count = this->SetFields<ServiceStatus>(*uq, ss, service_status_getters);
-  for (unsigned int i = 0; service_status_uniques[i]; i++)
-    if (!strcmp("host_name", service_status_uniques[i]))
-      uq->SetString(count++, ss.GetHostName().c_str());
-    else if (!strcmp("service_description", service_status_uniques[i]))
-      uq->SetString(count++, ss.GetServiceDescription().c_str());
-    else
-      assert(false);
-  try
-    {
-      this->ExecuteQuery(uq);
-    }
-  catch (...) // XXX : more precise
-    {
-      this->ProcessService(Service(ss));
-    }
+  // XXX : code unfinished
   return ;
 }
 
 /**
- *  Insert an object in the database.
+ *  Call this method when a query is executed.
  */
-template <typename ObjectType>
-unsigned int DBOutput::SetFields(Query& query,
-                                 const ObjectType& obj,
-			         const FieldGetter<ObjectType>* getters)
+void DBOutput::QueryExecuted()
 {
-  unsigned int i;
-
-  for (i = 0; getters[i].type_; i++)
-    switch (getters[i].type_)
-      {
-       case 'd':
-        query.SetDouble(i,
-                         (obj.*getters[i].getter_.get_double)());
-        break ;
-       case 'i':
-        query.SetInt(i,
-                      (obj.*getters[i].getter_.get_int)());
-        break ;
-       case 's':
-        query.SetShort(i,
-                        (obj.*getters[i].getter_.get_short)());
-        break ;
-       case 'S':
-        query.SetString(i,
-                         (obj.*getters[i].getter_.get_string)().c_str());
-        break ;
-       case 't':
-        query.SetTimeT(i,
-                        (obj.*getters[i].getter_.get_timet)());
-        break ;
-       default:
-        // XXX : some error message
-        assert(false);
-      }
-  return (i);
+  // XXX : query number should be configurable
+  if (++this->queries_ >= 10000)
+    this->Commit();
+  return ;
 }
 
 /**************************************
@@ -323,7 +232,7 @@ unsigned int DBOutput::SetFields(Query& query,
 /**
  *  DBOutput default constructor.
  */
-DBOutput::DBOutput()
+DBOutput::DBOutput(DB::Connection::DBMS dbms) : dbms_(dbms)
 {
 }
 
@@ -395,13 +304,11 @@ void DBOutput::Destroy()
 /**
  *  Initialize the object.
  */
-void DBOutput::Init(DBOutput::DBMS dbms,
-                    const std::string& host,
+void DBOutput::Init(const std::string& host,
                     const std::string& user,
                     const std::string& password,
                     const std::string& db)
 {
-  this->dbms_ = dbms;
   this->host_ = host;
   this->user_ = user;
   this->password_ = password;

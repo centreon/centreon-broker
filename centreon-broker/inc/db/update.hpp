@@ -13,17 +13,22 @@
 #ifndef DB_UPDATE_HPP_
 # define DB_UPDATE_HPP_
 
+# include "db/have_fields.h"
+# include "db/have_predicate.hpp"
+# include "db/mapping.hpp"
+# include "db/query.h"
+
 namespace CentreonBroker
 {
-namespace DB
-{
+  namespace DB
+  {
     /**
      *  UPDATE query.
      */
     template       <typename ObjectType>
     class          Update
-      : public Query,
-        public HaveFields<ObjectType>,
+      : virtual public Query,
+        virtual public HaveFields,
         public HavePredicate<ObjectType>
     {
      public:
@@ -31,15 +36,15 @@ namespace DB
        *  Update constructor.
        */
                    Update(const Mapping<ObjectType>& mapping)
-        : HaveFields<ObjectType>(mapping) {}
+        : HaveFields() {}
 
       /**
        *  Update copy constructor.
        */
                    Update(const Update& update)
-        : Query(update),
-          HaveFields<ObjectType>(update),
-          HavePredicate<ObjectType>(update) {}
+        : Query(),
+          HaveFields(),
+          HavePredicate<ObjectType>() {}
 
       /**
        *  Update destructor.
@@ -51,9 +56,6 @@ namespace DB
        */
       Update&      operator=(const Update& update)
       {
-	this->Query::operator=(update);
-	this->HaveFields<ObjectType>::operator=(update);
-	this->HavePredicate<ObjectType>::operator=(update);
 	return (*this);
       }
 

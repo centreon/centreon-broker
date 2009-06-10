@@ -15,6 +15,7 @@
 
 # include "db/connection.h"
 # include "db/db_exception.h"
+# include "db/insert.hpp"
 
 namespace CentreonBroker
 {
@@ -23,9 +24,9 @@ namespace CentreonBroker
     /**
      *  Returns an appropriate insert query.
      */
-    template              <typename ObjectType>
-    Insert<ObjectType>*   GetInsertQuery(Connection* conn,
-                                         const Mapping<ObjectType>* mapping)
+    template            <typename ObjectType>
+    Insert<ObjectType>* GetInsertQuery(Connection* conn,
+                                       const Mapping<ObjectType>* mapping)
       throw (DBException)
     {
       Insert<ObjectType>* insert;
@@ -43,6 +44,22 @@ namespace CentreonBroker
 	}
       return (insert);
     }
+
+    /**
+     *  Returns an appropriate update query.
+     *
+    template            <typename ObjectType>
+    Update<ObjectType>* GetUpdateQuery(Connection* conn,
+                                       const Mapping<ObjectType>* mapping)
+      throw (DBException)
+    {
+      Update<ObjectType>* update;
+
+      switch (conn->GetDbms())
+	{
+	}
+      return (update);
+      }*/
   }
 }
 
