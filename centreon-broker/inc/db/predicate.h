@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/05/09 Matthieu Kermagoret
-** Last update 06/08/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_PREDICATE_H_
@@ -20,6 +20,7 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
+    // This class is defined later.
     class          PredicateVisitor;
 
     /**
@@ -69,8 +70,8 @@ namespace          CentreonBroker
     class                          Equal : public Predicate
     {
      private:
-      boost::shared_ptr<Predicate> p1_;
-      boost::shared_ptr<Predicate> p2_;
+      Predicate*                   p1_;
+      Predicate*                   p2_;
       void                         InternalCopy(const Equal& equal);
 
      public:

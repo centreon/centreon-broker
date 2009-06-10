@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/08/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_EXCEPTION_H_
@@ -42,6 +42,7 @@ namespace          CentreonBroker
                                const char* msg = NULL);
                    ~DBException() throw ();
       DBException& operator=(const DBException& dbe);
+      Reason       GetReason() const throw ();
     };
   }
 }

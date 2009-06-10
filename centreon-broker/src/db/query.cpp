@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include "db/query.h"
 
 using namespace CentreonBroker::DB;
@@ -26,6 +27,7 @@ using namespace CentreonBroker::DB;
 Query::Query(const Query& query) throw ()
 {
   (void)query;
+  assert(false);
 }
 
 /**
@@ -34,6 +36,7 @@ Query::Query(const Query& query) throw ()
 Query& Query::operator=(const Query& query) throw ()
 {
   (void)query;
+  assert(false);
   return (*this);
 }
 

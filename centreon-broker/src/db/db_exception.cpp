@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include "db/db_exception.h"
@@ -68,4 +68,12 @@ DBException& DBException::operator=(const DBException& dbe)
   this->CentreonBroker::Exception::operator=(dbe);
   this->InternalCopy(dbe);
   return (*this);
+}
+
+/**
+ *  Return the reason why the exception happened.
+ */
+DBException::Reason DBException::GetReason() const throw ()
+{
+  return (this->reason_);
 }

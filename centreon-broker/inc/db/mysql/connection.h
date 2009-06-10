@@ -7,43 +7,60 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
+
+/**
+ *  Because the db/connection.h header includes this header, we have to tricks
+ *  to allow everything to compile properly.
+ */
+# include "db/connection.h"
 
 #ifndef DB_MYSQL_CONNECTION_H_
 # define DB_MYSQL_CONNECTION_H_
 
 # include <mysql.h>
-# include "db/connection.h"
 # include "db/db_exception.h"
 # include "db/mysql/insert.hpp"
+# include "db/mysql/truncate.h"
+# include "db/mysql/update.hpp"
 
-namespace              CentreonBroker
+namespace                 CentreonBroker
 {
-  namespace            DB
+  namespace               DB
   {
-    class              MySQLConnection : public Connection
+    class                 MySQLConnection : public Connection
     {
      private:
-      ::MYSQL*         myconn_;
-                       MySQLConnection(const MySQLConnection& myconn) throw ();
-      MySQLConnection& operator=(const MySQLConnection& myconn) throw ();
+      ::MYSQL*            myconn_;
+                          MySQLConnection(const MySQLConnection& myconn)
+                            throw ();
+      MySQLConnection&    operator=(const MySQLConnection& myconn) throw ();
 
      public:
-                       MySQLConnection() throw (DBException);
-                       ~MySQLConnection() throw ();
-      void             AutoCommit(bool activate = true) throw (DBException);
-      void             Commit() throw (DBException);
-      void             Connect(const std::string& host,
-			       const std::string& user,
-			       const std::string& password,
-			       const std::string& db) throw (DBException);
-      void             Disconnect();
+                          MySQLConnection() throw (DBException);
+                          ~MySQLConnection() throw ();
+      void                AutoCommit(bool activate = true)
+                            throw (DBException);
+      void                Commit() throw (DBException);
+      void                Connect(const std::string& host,
+			          const std::string& user,
+			          const std::string& password,
+			          const std::string& db);
+      void                Disconnect() throw ();
 
-      template           <typename ObjectType>
-      Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>* mapping)
+      template            <typename ObjectType>
+      Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping)
       {
 	return (new MySQLInsert<ObjectType>(this->myconn_, mapping));
+      }
+
+      Truncate*           GetTruncateQuery();
+
+      template            <typename ObjectType>
+      Update<ObjectType>* GetUpdateQuery(const Mapping<ObjectType>& mapping)
+      {
+	return (new MySQLUpdate<ObjectType>(this->myconn_, mapping));
       }
     };
   }

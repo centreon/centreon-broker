@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include "host.h"
@@ -186,7 +186,17 @@ FieldGetter<Host> CentreonBroker::host_getters[] =
 static_assert(sizeof(host_fields) / sizeof(*host_fields)
               == sizeof(host_getters) / sizeof(*host_getters),
               "Invalid Host object-relational mapping");
+*/
 
+DB::Mapping<HostStatus> CentreonBroker::host_status_mapping;
+
+static void InitHostStatusMapping()
+{
+  host_status_mapping.SetTable("hosts");
+  host_status_mapping.AddShortField("acknowledgement_type",
+                                    &Host::GetAcknowledgementType);
+}
+/*
 const char* CentreonBroker::host_status_fields[] =
   {
     "acknowledgement_type",
@@ -633,3 +643,10 @@ const char* CentreonBroker::service_status_uniques[] =
     NULL
   };
 */
+
+void CentreonBroker::InitMappings()
+{
+  InitHostMapping();
+  InitHostStatusMapping();
+  return ;
+}

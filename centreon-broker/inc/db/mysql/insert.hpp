@@ -7,13 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_INSERT_HPP_
 # define DB_MYSQL_INSERT_HPP_
 
 # include <boost/bind.hpp>
+# include <cassert>
 # include <mysql.h>
 # include <sstream>
 # include "db/insert.hpp"
@@ -39,6 +40,7 @@ namespace          CentreonBroker
           MySQLHaveFields()
       {
 	(void)myinsert;
+	assert(false);
       }
 
       /**
@@ -47,6 +49,7 @@ namespace          CentreonBroker
       MySQLInsert& operator=(const MySQLInsert& myinsert)
       {
 	(void)myinsert;
+	assert(false);
 	return (*this);
       }
 
@@ -55,7 +58,7 @@ namespace          CentreonBroker
        *  MySQLInsert constructor.
        */
                    MySQLInsert(MYSQL*myconn,
-                               const Mapping<ObjectType>* mapping)
+                               const Mapping<ObjectType>& mapping)
         : HaveFields(),
           Insert<ObjectType>(mapping),
           MySQLQuery(myconn),
@@ -78,9 +81,9 @@ namespace          CentreonBroker
 	// Reset argument count.
 	this->Reset();
 	// Browse all args.
-	for (decltype(this->mapping_->fields_.begin()) it =
-               this->mapping_->fields_.begin();
-             it != this->mapping_->fields_.end();
+	for (decltype(this->mapping_.fields_.begin()) it =
+               this->mapping_.fields_.begin();
+             it != this->mapping_.fields_.end();
 	     it++)
 	  (*it).second(this, object);
 	if (mysql_stmt_bind_param(this->mystmt_, this->myargs_))
@@ -99,11 +102,11 @@ namespace          CentreonBroker
 	try
 	  {
 	    this->query_ = "INSERT INTO ";
-	    this->query_ += this->mapping_->table_;
+	    this->query_ += this->mapping_.table_;
 	    this->query_ += " SET ";
-	    for (decltype(this->mapping_->fields_.begin()) it =
-		   this->mapping_->fields_.begin();
-		 it != this->mapping_->fields_.end();
+	    for (decltype(this->mapping_.fields_.begin()) it =
+		   this->mapping_.fields_.begin();
+		 it != this->mapping_.fields_.end();
 		 it++)
 	      {
 		this->query_ += (*it).first;

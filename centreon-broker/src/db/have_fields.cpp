@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include "db/have_fields.h"
 
 using namespace CentreonBroker::DB;
@@ -27,6 +28,7 @@ using namespace CentreonBroker::DB;
 HaveFields::HaveFields(const HaveFields& hf) throw ()
 {
   (void)hf;
+  assert(false);
 }
 
 /**
@@ -36,6 +38,7 @@ HaveFields::HaveFields(const HaveFields& hf) throw ()
 HaveFields& HaveFields::operator=(const HaveFields& hf) throw ()
 {
   (void)hf;
+  assert(false);
   return (*this);
 }
 

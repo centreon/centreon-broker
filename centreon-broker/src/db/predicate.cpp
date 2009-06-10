@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/08/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -205,7 +205,7 @@ void Equal::Accept(PredicateVisitor& visitor)
  */
 Predicate& Equal::Left()
 {
-  return (*this->p1_.get());
+  return (*this->p1_);
 }
 
 /**
@@ -213,7 +213,7 @@ Predicate& Equal::Left()
  */
 Predicate& Equal::Right()
 {
-  return (*this->p2_.get());
+  return (*this->p2_);
 }
 
 

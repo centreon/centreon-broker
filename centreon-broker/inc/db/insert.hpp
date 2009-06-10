@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_INSERT_HPP_
 # define DB_INSERT_HPP_
 
+# include <cassert>
 # include "db/have_fields.h"
 # include "mapping.hpp"
 # include "db/query.h"
@@ -34,6 +35,7 @@ namespace          CentreonBroker
                    Insert(const Insert& insert) : Query(), HaveFields()
       {
 	(void)insert;
+	assert(false);
       }
 
       /**
@@ -42,17 +44,18 @@ namespace          CentreonBroker
       Insert&      operator=(const Insert& insert)
       {
 	(void)insert;
+	assert(false);
 	return (*this);
       }
 
      protected:
-      const Mapping<ObjectType>* mapping_;
+      const Mapping<ObjectType>& mapping_;
 
      public:
       /**
        *  Insert default constructor.
        */
-                   Insert(const Mapping<ObjectType>* mapping)
+                   Insert(const Mapping<ObjectType>& mapping)
         : mapping_(mapping) {}
 
       /**

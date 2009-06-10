@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/05/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
+#include <cassert>
 #include "db/truncate.h"
 
 using namespace CentreonBroker::DB;
@@ -26,6 +27,7 @@ using namespace CentreonBroker::DB;
 Truncate::Truncate(const Truncate& truncate) throw () : Query()
 {
   (void)truncate;
+  assert(false);
 }
 
 /**
@@ -34,6 +36,7 @@ Truncate::Truncate(const Truncate& truncate) throw () : Query()
 Truncate& Truncate::operator=(const Truncate& truncate) throw ()
 {
   (void)truncate;
+  assert(false);
   return (*this);
 }
 
@@ -55,4 +58,21 @@ Truncate::Truncate() throw ()
  */
 Truncate::~Truncate()
 {
+}
+
+/**
+ *  Returns the table name.
+ */
+const std::string& Truncate::GetTable() const throw ()
+{
+  return (this->table_);
+}
+
+/**
+ *  Set the table name.
+ */
+void Truncate::SetTable(const std::string& table)
+{
+  this->table_ = table;
+  return ;
 }

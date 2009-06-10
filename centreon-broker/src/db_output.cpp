@@ -10,9 +10,10 @@
 ** Last update 06/10/09 Matthieu Kermagoret
 */
 
+#include <boost/bind.hpp>
 #include <memory>
 #include "db/mysql/connection.h"
-#include "db/queries.hpp"
+#include "db/predicate.h"
 #include "db_output.h"
 #include "event.h"
 #include "exception.h"
@@ -57,36 +58,32 @@ void DBOutput::Connect()
                        this->user_,
                        this->password_,
                        this->db_);
-  /*  {
-    std::auto_ptr<TruncateQuery> truncate(this->conn_->GetTruncateQuery());
+  // Truncate table `hosts`
+  {
+    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
 
     // XXX : table names should be configurable
     truncate->SetTable("hosts");
+    truncate->Prepare();
     truncate->Execute();
+  }
+  // Truncate table `services`
+  {
+    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
     truncate->SetTable("services");
+    truncate->Prepare();
     truncate->Execute();
   }
   // Prepare HostStatus update query
   {
-    DB::Update* uq;
-
-    uq = this->conn_->GetUpdateQuery();
-    uq->SetTable("hosts");
-    uq->AddFields(host_status_fields);
-    uq->AddUniques(host_status_uniques);
-    uq->Prepare();
-    this->stmts_.push_back(uq);
+    this->host_status_stmt_
+      = this->conn_->GetUpdateQuery<HostStatus>(host_status_mapping);
+    this->host_status_stmt_->SetPredicate(DB::Equal(DB::Field("instance_id"),
+      DB::DynamicInt<HostStatus>(boost::bind(&DBOutput::GetObjectInstance,
+                                             this,
+                                             _1))));
+    this->host_status_stmt_->Prepare();
   }
-  {
-    UpdateQuery* uq;
-
-    uq = this->conn_->GetUpdateQuery();
-    uq->SetTable("services");
-    uq->AddFields(service_status_fields);
-    uq->AddUniques(service_status_uniques);
-    uq->Prepare();
-    this->stmts_.push_back(uq);
-    }*/
   // Initialize the timeout
   this->Commit();
   return ;
@@ -105,7 +102,9 @@ void DBOutput::Disconnect()
     }
   return ;
 }
-
+int DBOutput::GetObjectInstance(const HostStatus& ev)
+{
+}
 /**
  *  Get an instance id.
  */
@@ -177,7 +176,7 @@ void DBOutput::ProcessEvent(Event* event)
 void DBOutput::ProcessHost(const Host& host)
 {
   std::auto_ptr<DB::Insert<Host> >
-    query(DB::GetInsertQuery<Host>(this->conn_, &host_mapping));
+    query(this->conn_->GetInsertQuery<Host>(host_mapping));
 
   query->Prepare();
   query->Execute(host);
@@ -190,7 +189,11 @@ void DBOutput::ProcessHost(const Host& host)
  */
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
-  // XXX : code unfinished
+  this->host_status_stmt_->Execute(hs);
+  if (this->host_status_stmt_->GetUpdateCount() <= 0)
+    this->ProcessHost(Host(hs));
+  else
+    this->QueryExecuted();
   return ;
 }
 

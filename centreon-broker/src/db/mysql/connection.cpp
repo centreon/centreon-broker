@@ -7,11 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <mysql.h>
+#include "db/db_exception.h"
 #include "db/mysql/connection.h"
 
 using namespace CentreonBroker::DB;
@@ -26,8 +27,10 @@ using namespace CentreonBroker::DB;
  *  MySQLConnection copy constructor.
  */
 MySQLConnection::MySQLConnection(const MySQLConnection& myconn) throw ()
-  : Connection(myconn)
+  : Connection(Connection::MYSQL)
 {
+  (void)myconn;
+  assert(false);
 }
 
 /**
@@ -36,7 +39,8 @@ MySQLConnection::MySQLConnection(const MySQLConnection& myconn) throw ()
 MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
   throw ()
 {
-  this->Connection::operator=(myconn);
+  (void)myconn;
+  assert(false);
   return (*this);
 }
 
@@ -52,6 +56,10 @@ MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
 MySQLConnection::MySQLConnection() throw (DBException)
   : Connection(Connection::MYSQL), myconn_(NULL)
 {
+  if (mysql_thread_init())
+    throw (DBException(0,
+                       DBException::INITIALIZATION,
+                       "Error while initializing MySQL library"));
 }
 
 /**
@@ -61,6 +69,7 @@ MySQLConnection::~MySQLConnection() throw ()
 {
   if (this->myconn_)
     this->Disconnect();
+  mysql_thread_end();
 }
 
 /**
@@ -95,13 +104,15 @@ void MySQLConnection::Commit() throw (DBException)
 void MySQLConnection::Connect(const std::string& host,
 			      const std::string& user,
 			      const std::string& password,
-			      const std::string& db) throw (DBException)
+			      const std::string& db)
 {
+  // Initialize the MYSQL structure.
   this->myconn_ = mysql_init(NULL);
   if (!this->myconn_)
     throw (DBException(mysql_errno(this->myconn_),
                        DBException::INITIALIZATION,
                        mysql_error(this->myconn_)));
+  // Connect to the DB server.
   if (!mysql_real_connect(this->myconn_,
 			  host.c_str(),
 			  user.c_str(),
@@ -119,10 +130,18 @@ void MySQLConnection::Connect(const std::string& host,
 /**
  *  Disconnect of the MySQL server.
  */
-void MySQLConnection::Disconnect()
+void MySQLConnection::Disconnect() throw ()
 {
   assert(this->myconn_);
   mysql_close(this->myconn_);
   this->myconn_ = NULL;
   return ;
+}
+
+/**
+ *  Return a TRUNCATE query matching the DBMS.
+ */
+Truncate* MySQLConnection::GetTruncateQuery()
+{
+  return (new MySQLTruncate(this->myconn_));
 }

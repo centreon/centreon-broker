@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/10/09 Matthieu Kermagoret
 */
 
 #ifndef DB_QUERY_H_
@@ -19,9 +19,6 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
-    template       <typename ObjectType>
-    class          Mapping;
-
     /**
      *  This is the root class of all queries. Every query can be prepared
      *  using the appropriate feature of the DBMS.
@@ -35,7 +32,7 @@ namespace          CentreonBroker
      public:
                    Query() throw ();
       virtual      ~Query();
-      virtual void Prepare() throw (DBException) = 0;
+      virtual void Prepare() = 0;
     };
   }
 }
