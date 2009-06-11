@@ -94,6 +94,27 @@ void DBOutput::Connect()
 	      ));
     this->host_status_stmt_->Prepare();
   }
+  // Prepare HostStatus update query
+  {
+    // XXX : not valid if multiple DBOutput are used
+    service_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
+							this, _1));
+    this->service_status_stmt_
+      = this->conn_->GetUpdateQuery<ServiceStatus>(service_status_mapping);
+    this->service_status_stmt_->SetPredicate(
+      DB::And(DB::Equal(DB::Field("instance_id"),
+                        DB::DynamicInt<ServiceStatus>(boost::bind(
+                                                   &DBOutput::GetInstanceId,
+                                                   this,
+                                                   _1))),
+	      DB::And(DB::Equal(DB::Field("host_name"),
+			DB::DynamicString<ServiceStatus>(&ServiceStatus::GetHostName)
+				),
+		      DB::Equal(DB::Field("service_description"),
+				DB::DynamicString<ServiceStatus>(&ServiceStatus::GetServiceDescription)))
+	      ));
+    this->service_status_stmt_->Prepare();
+  }
   // Initialize the timeout
   this->Commit();
   return ;
@@ -219,7 +240,13 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
  */
 void DBOutput::ProcessService(const Service& service)
 {
-  // XXX : code unfinished
+  std::auto_ptr<DB::Insert<Service> >
+    query(this->conn_->GetInsertQuery<Service>(service_mapping));
+
+  query->Prepare();
+  query->Execute(service);
+  this->QueryExecuted();
+  return ;
   return ;
 }
 
@@ -228,7 +255,19 @@ void DBOutput::ProcessService(const Service& service)
  */
 void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 {
-  // XXX : code unfinished
+  try
+    {
+      this->service_status_stmt_->Execute(ss);
+    }
+  catch (DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
+  if (this->service_status_stmt_->GetUpdateCount() == 0)
+    this->ProcessService(Service(ss));
+  else
+    this->QueryExecuted();
   return ;
 }
 
