@@ -50,6 +50,7 @@ namespace                      CentreonBroker
     std::string                db_;
     DB::Connection*            conn_;
     DB::Update<HostStatus>*    host_status_stmt_;
+    DB::Update<ServiceStatus>* service_status_stmt_;
     // Performance objects
     int                        queries_;
     boost::system_time         timeout_;

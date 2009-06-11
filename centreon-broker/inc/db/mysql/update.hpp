@@ -25,9 +25,9 @@ namespace          CentreonBroker
   {
     template       <typename ObjectType>
     class          MySQLUpdate : virtual public Update<ObjectType>,
-                     virtual public MySQLQuery,
-                     virtual public MySQLHaveFields,
-                     virtual public MySQLHavePredicate<ObjectType>
+                     public MySQLQuery,
+                     public MySQLHaveFields,
+                     public MySQLHavePredicate<ObjectType>
     {
      private:
       /**
