@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/08/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #ifndef DB_DYNAMIC_PREDICATE_H_
@@ -15,6 +15,7 @@
 
 # include <boost/function.hpp>
 # include <cassert>
+# include <string>
 # include "db/predicate.h"
 
 namespace               CentreonBroker
@@ -195,6 +196,68 @@ namespace               CentreonBroker
        *  DynamicInt destructor.
        */
                     ~DynamicInt() {}
+
+      /**
+       *  Accept a Visitor and show him the inside.
+       */
+      void          Accept(PredicateVisitor& visitor)
+      {
+	dynamic_cast<DynamicPredicateVisitor<ObjectType>&>(visitor).Visit(
+          this->getter_);
+	return ;
+      }
+    };
+
+
+    /**************************************************************************
+    *                                                                         *
+    *                                                                         *
+    *                             DynamicString                               *
+    *                                                                         *
+    *                                                                         *
+    **************************************************************************/
+
+    /**
+     *  This class represents something like a terminal except that it has to
+     *  evaluated at query execution and not before.
+     */
+    template        <typename ObjectType>
+    class           DynamicString : public DynamicPredicate<ObjectType>
+    {
+     private:
+      const boost::function1<const std::string&, const ObjectType&> getter_;
+
+      /**
+       *  DynamicString operator= overload.
+       */
+      DynamicString &operator=(const DynamicString& dd)
+      {
+	(void)dd;
+	assert(false);
+	return (*this);
+      }
+
+     public:
+      /**
+       *  DynamicString default constructor.
+       */
+                    DynamicString(const boost::function1<const std::string&,
+                                                         const ObjectType&>&
+                                    getter)
+        : getter_(getter) {}
+
+      /**
+       *  DynamicString copy constructor.
+       */
+                    DynamicString(const DynamicString& dd)
+        : DynamicPredicate<ObjectType>(), getter_(dd.getter_)
+      {
+      }
+
+      /**
+       *  DynamicString destructor.
+       */
+                    ~DynamicString() {}
 
       /**
        *  Accept a Visitor and show him the inside.

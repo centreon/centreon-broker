@@ -7,11 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
 #include <memory>
+#include "db/db_exception.h"
 #include "db/mysql/connection.h"
 #include "db/predicate.h"
 #include "db_output.h"
@@ -76,12 +77,21 @@ void DBOutput::Connect()
   }
   // Prepare HostStatus update query
   {
+    // XXX : not valid if multiple DBOutput are used
+    host_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
+							this, _1));
     this->host_status_stmt_
       = this->conn_->GetUpdateQuery<HostStatus>(host_status_mapping);
-    this->host_status_stmt_->SetPredicate(DB::Equal(DB::Field("instance_id"),
-      DB::DynamicInt<HostStatus>(boost::bind(&DBOutput::GetObjectInstance,
-                                             this,
-                                             _1))));
+    this->host_status_stmt_->SetPredicate(
+      DB::And(DB::Equal(DB::Field("instance_id"),
+                        DB::DynamicInt<HostStatus>(boost::bind(
+                                                   &DBOutput::GetInstanceId,
+                                                   this,
+                                                   _1))),
+	      DB::Equal(DB::Field("host_name"),
+			DB::DynamicString<HostStatus>(&HostStatus::GetHostName)
+			)
+	      ));
     this->host_status_stmt_->Prepare();
   }
   // Initialize the timeout
@@ -102,15 +112,14 @@ void DBOutput::Disconnect()
     }
   return ;
 }
-int DBOutput::GetObjectInstance(const HostStatus& ev)
-{
-}
+
 /**
  *  Get an instance id.
  */
-int DBOutput::GetInstanceId(const std::string& instance)
+int DBOutput::GetInstanceId(const Event& event)
 {
   int id;
+  const std::string& instance(event.GetNagiosInstance());
   // XXX : instance ids should be synchronized with DB
   std::map<std::string, int>::iterator it;
 
@@ -189,8 +198,16 @@ void DBOutput::ProcessHost(const Host& host)
  */
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
-  this->host_status_stmt_->Execute(hs);
-  if (this->host_status_stmt_->GetUpdateCount() <= 0)
+  try
+    {
+      this->host_status_stmt_->Execute(hs);
+    }
+  catch (DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
+  if (this->host_status_stmt_->GetUpdateCount() == 0)
     this->ProcessHost(Host(hs));
   else
     this->QueryExecuted();

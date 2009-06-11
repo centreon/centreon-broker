@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/02/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #ifndef DB_MYSQL_UPDATE_HPP_
@@ -24,10 +24,10 @@ namespace          CentreonBroker
   namespace        DB
   {
     template       <typename ObjectType>
-    class          MySQLUpdate : public Update<ObjectType>,
-                     public MySQLQuery,
-                     public MySQLHaveFields,
-                     public MySQLHavePredicate<ObjectType>
+    class          MySQLUpdate : virtual public Update<ObjectType>,
+                     virtual public MySQLQuery,
+                     virtual public MySQLHaveFields,
+                     virtual public MySQLHavePredicate<ObjectType>
     {
      private:
       /**
@@ -84,6 +84,12 @@ namespace          CentreonBroker
              it != this->mapping_.fields_.end();
              it++)
 	  (*it).second(this, object);
+	// Browse predicate arguments.
+	for (decltype(this->dynamic_getters_.begin()) it =
+               this->dynamic_getters_.begin();
+             it != this->dynamic_getters_.end();
+             it++)
+          (*it)(this, object);
 	if (mysql_stmt_bind_param(this->mystmt_, this->myargs_))
 	  throw (DBException(mysql_stmt_errno(this->mystmt_),
                              DBException::QUERY_EXECUTION,

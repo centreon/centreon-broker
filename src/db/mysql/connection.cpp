@@ -7,13 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <mysql.h>
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
+#include "db/mysql/truncate.h"
 
 using namespace CentreonBroker::DB;
 
