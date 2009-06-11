@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/09/09 Matthieu Kermagoret
+## Last update 06/11/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++

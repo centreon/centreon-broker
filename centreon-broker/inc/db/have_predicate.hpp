@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/10/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #ifndef DB_HAVE_PREDICATE_HPP_
@@ -56,12 +56,16 @@ namespace CentreonBroker
       /**
        *  HavePredicate default constructor.
        */
-                                   HavePredicate() {}
+                                   HavePredicate() : predicate_(NULL) {}
 
       /**
        *  HavePredicate destructor.
        */
-      virtual                      ~HavePredicate() {}
+      virtual                      ~HavePredicate()
+      {
+	if (this->predicate_)
+	  delete (this->predicate_);
+      }
 
       /**
        *  Set the predicate.

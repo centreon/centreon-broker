@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/11/09 Matthieu Kermagoret
 */
 
 #ifndef DB_OUTPUT_H_
@@ -63,8 +63,7 @@ namespace                      CentreonBroker
     void                       Commit();
     void                       Connect();
     void                       Disconnect();
-    int                        GetObjectInstance(const HostStatus& ev);
-    int                        GetInstanceId(const std::string& instance);
+    int                        GetInstanceId(const Event& event);
     void                       OnEvent(Event* e) throw ();
     void                       ProcessEvent(Event* event);
     void                       ProcessHost(const Host& host);
