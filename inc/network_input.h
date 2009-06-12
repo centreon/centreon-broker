@@ -17,6 +17,7 @@
 # include <boost/thread.hpp>
 # include <cstddef>
 # include <string>
+# include "connection_status.h"
 
 namespace                           CentreonBroker
 {
@@ -31,6 +32,7 @@ namespace                           CentreonBroker
     friend class                    NetworkAcceptor;
 
    private:
+    ConnectionStatus                conn_status_;
     std::string                     instance_;
     boost::asio::ip::tcp::socket&   socket_;
     boost::thread*                  thread_;

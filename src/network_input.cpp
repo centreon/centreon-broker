@@ -12,6 +12,8 @@
 
 #include <boost/thread/mutex.hpp>
 #include <cstdlib>
+#include <ctime>
+#include "connection.h"
 #include "event_publisher.h"
 #include "host.h"
 #include "host_status.h"
@@ -47,8 +49,10 @@ namespace                         CentreonBroker
   {
    private:
     char                          buffer_[1024];
+    unsigned long                 byte_count_;
     size_t                        discard_;
     size_t                        length_;
+    unsigned long                 line_count_;
     boost::asio::ip::tcp::socket& socket_;
     ProtocolSocket&               operator=(const ProtocolSocket& ps) throw ();
 
@@ -59,7 +63,9 @@ namespace                         CentreonBroker
                                   ProtocolSocket(const ProtocolSocket& ps)
                                    throw ();
                                   ~ProtocolSocket() throw ();
+    unsigned long                 GetByteCount();
     char*                         GetLine();
+    unsigned long                 GetLineCount();
   };
 }
 
@@ -90,8 +96,10 @@ ProtocolSocket& ProtocolSocket::operator=(const ProtocolSocket& ps) throw ()
 ProtocolSocket::ProtocolSocket(boost::asio::ip::tcp::socket& s)
   throw () : socket_(s)
 {
+  this->byte_count_ = 0L;
   this->discard_ = 0;
   this->length_ = 0;
+  this->line_count_ = 0L;
 }
 
 /**
@@ -128,14 +136,19 @@ char* ProtocolSocket::GetLine()
   while (!strchr(this->buffer_ + old_length, '\n')
          && this->length_ < sizeof(this->buffer_) - 1)
     {
+      unsigned long bytes_read;
+
       old_length = this->length_;
-      this->length_ += this->socket_.receive(
-                         boost::asio::buffer(this->buffer_ + this->length_,
-                           sizeof(this->buffer_) - this->length_ - 1));
+      bytes_read = this->socket_.receive(
+                      boost::asio::buffer(this->buffer_ + this->length_,
+                        sizeof(this->buffer_) - this->length_ - 1));
+      this->byte_count_ += bytes_read;
+      this->length_ += bytes_read;
       this->buffer_[this->length_] = '\0';
     }
   this->discard_ = strcspn(this->buffer_, "\n");
   this->buffer_[this->discard_++] = '\0';
+  ++this->line_count_;
   return (this->buffer_);
 }
 
@@ -312,6 +325,7 @@ static inline void HandleObject(const std::string& instance,
 NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
   : socket_(socket)
 {
+  this->conn_status_.AddReader(NULL);
   this->thread_ = new boost::thread(boost::ref(*this));
   this->thread_->detach();
 }
@@ -526,7 +540,10 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
   char* key;
   char* tmp;
   const char* value;
+  Connection*  conn_info;
 
+  conn_info = new Connection;
+  conn_info->SetConnectTime(time(NULL));
   key = ps.GetLine();
   while (strcmp(key, NDO_API_STARTDATADUMP))
     {
@@ -540,8 +557,18 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
 	}
       if (!strcmp(key, NDO_API_INSTANCENAME))
 	this->instance_ = value;
+      else if (!strcmp(key, NDO_API_AGENT))
+	conn_info->SetAgentName(value);
+      else if (!strcmp(key, NDO_API_AGENTVERSION))
+	conn_info->SetAgentVersion(value);
+      else if (!strcmp(key, NDO_API_CONNECTION))
+	conn_info->SetConnectSource(value);
+      else if (!strcmp(key, NDO_API_CONNECTTYPE))
+	conn_info->SetConnectType(value);
       key = ps.GetLine();
     }
+  conn_info->SetDataStartTime(time(NULL));
+  EventPublisher::GetInstance()->Publish(conn_info);
   return ;
 }
 
