@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/05/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -518,6 +518,33 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 }
 
 /**
+ *  Immediately after connection, handle the first data transmitted.
+ */
+void NetworkInput::HandleInitialization(ProtocolSocket& ps)
+{
+  char* key;
+  char* tmp;
+  const char* value;
+
+  key = ps.GetLine();
+  while (strcmp(key, NDO_API_STARTDATADUMP))
+    {
+      tmp = strchr(key, ':');
+      if (!tmp || !tmp[1])
+	value = "";
+      else
+	{
+	  *tmp = '\0';
+	  value = tmp + 2;
+	}
+      if (!strcmp(key, NDO_API_INSTANCENAME))
+	this->instance_ = value;
+      key = ps.GetLine();
+    }
+  return ;
+}
+
+/**
  *  Handle a program status event and publish it against the EventPublisher.
  */
 void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
@@ -744,6 +771,7 @@ void NetworkInput::operator()()
 
   try
     {
+      HandleInitialization(socket);
       while (1)
 	{
 	  buffer = socket.GetLine();
