@@ -18,6 +18,42 @@
 using namespace CentreonBroker;
 
 /**
+ *  Connection mapping.
+ */
+DB::Mapping<Connection> CentreonBroker::connection_mapping;
+
+static void InitConnectionMapping()
+{
+  logging.AddDebug("Initializing Connection mapping...");
+  connection_mapping.SetTable("connection_info");
+  connection_mapping.AddStringField("agent_name",
+				    &Connection::GetAgentName);
+  connection_mapping.AddStringField("agent_version",
+				    &Connection::GetAgentVersion);
+  connection_mapping.AddIntField("bytes_processed",
+				 &Connection::GetBytesProcessed);
+  connection_mapping.AddStringField("connect_source",
+				    &Connection::GetConnectSource);
+  connection_mapping.AddTimeField("connect_time",
+				  &Connection::GetConnectTime);
+  connection_mapping.AddStringField("connect_type",
+				    &Connection::GetConnectType);
+  connection_mapping.AddTimeField("data_start_time",
+				  &Connection::GetDataStartTime);
+  connection_mapping.AddIntField("entries_processed",
+				 &Connection::GetEntriesProcessed);
+  connection_mapping.AddIntField("lines_processed",
+				 &Connection::GetLinesProcessed);
+  connection_mapping.AddTimeField("data_end_time",
+				  &Connection::GetDataEndTime);
+  connection_mapping.AddTimeField("disconnect_time",
+				  &Connection::GetDisconnectTime);
+  connection_mapping.AddTimeField("last_checkin_time",
+				  &Connection::GetLastCheckinTime);
+  return ;
+}
+
+/**
  *  Host mapping.
  */
 DB::Mapping<Host> CentreonBroker::host_mapping;
@@ -596,6 +632,7 @@ void CentreonBroker::InitMappings()
 {
   logging.AddDebug("Initializing Object-Relational mappings...");
   logging.Indent();
+  InitConnectionMapping();
   InitHostMapping();
   InitHostStatusMapping();
   InitProgramStatusMapping();

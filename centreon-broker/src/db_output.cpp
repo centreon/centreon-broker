@@ -198,6 +198,9 @@ void DBOutput::ProcessEvent(Event* event)
      case 1:
       ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
       break ;
+     case 5:
+      ProcessConnection(*static_cast<Connection*>(event));
+      break ;
      case 8:
       ProcessService(*static_cast<Service*>(event));
       break ;
@@ -209,6 +212,25 @@ void DBOutput::ProcessEvent(Event* event)
   event->RemoveReader(this);
   return ;
 }
+
+/**
+ *  Process a Connection event.
+ */
+void DBOutput::ProcessConnection(const Connection& connection)
+{
+  logging.AddDebug("Processing Connection event...");
+  logging.Indent();
+
+  std::auto_ptr<DB::Insert<Connection> >
+    query(this->conn_->GetInsertQuery<Connection>(connection_mapping));
+
+  query->Prepare();
+  query->Execute(connection);
+  this->QueryExecuted();
+  logging.Deindent();
+  return ;
+}
+
 
 /**
  *  Process an Host event.
@@ -414,7 +436,6 @@ void DBOutput::Destroy()
   logging.AddDebug("Requesting DBOutput to stop processing...");
   logging.Indent();
   this->exit_ = true;
-  this->conn_->Disconnect();
   this->events_.CancelWait();
   logging.Deindent();
   return ;

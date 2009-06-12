@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #ifndef MAPPING_H_
 # define MAPPING_H_
 
+# include "connection.h"
 # include "db/mapping.hpp"
 # include "host.h"
 # include "host_status.h"
@@ -22,6 +23,8 @@
 
 namespace                               CentreonBroker
 {
+  // Connection
+  extern DB::Mapping<Connection>        connection_mapping;
   // Host
   extern DB::Mapping<Host>              host_mapping;
   // HostStatus
