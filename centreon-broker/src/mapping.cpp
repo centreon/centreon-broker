@@ -10,10 +10,15 @@
 ** Last update 06/12/09 Matthieu Kermagoret
 */
 
+#include "connection.h"
+#include "connection_status.h"
 #include "host.h"
 #include "host_status.h"
 #include "logging.h"
 #include "mapping.h"
+#include "program_status.h"
+#include "service.h"
+#include "service_status.h"
 
 using namespace CentreonBroker;
 
@@ -50,6 +55,30 @@ static void InitConnectionMapping()
 				  &Connection::GetDisconnectTime);
   connection_mapping.AddTimeField("last_checkin_time",
 				  &Connection::GetLastCheckinTime);
+  return ;
+}
+
+/**
+ *  ConnectionStatus mapping.
+ */
+DB::Mapping<ConnectionStatus> CentreonBroker::connection_status_mapping;
+
+static void InitConnectionStatusMapping()
+{
+  logging.AddDebug("Initializing ConnectionStatus mapping...");
+  connection_status_mapping.SetTable("connection_info");
+  connection_status_mapping.AddIntField("bytes_processed",
+					&ConnectionStatus::GetBytesProcessed);
+  connection_status_mapping.AddTimeField("data_end_time",
+					 &ConnectionStatus::GetDataEndTime);
+  connection_status_mapping.AddTimeField("disconnect_time",
+					 &ConnectionStatus::GetDisconnectTime);
+  connection_status_mapping.AddIntField("entries_processed",
+    &ConnectionStatus::GetEntriesProcessed);
+  connection_status_mapping.AddTimeField("last_checkin_time",
+    &ConnectionStatus::GetLastCheckinTime);
+  connection_status_mapping.AddIntField("lines_processed",
+					&ConnectionStatus::GetLinesProcessed);
   return ;
 }
 
@@ -633,6 +662,7 @@ void CentreonBroker::InitMappings()
   logging.AddDebug("Initializing Object-Relational mappings...");
   logging.Indent();
   InitConnectionMapping();
+  InitConnectionStatusMapping();
   InitHostMapping();
   InitHostStatusMapping();
   InitProgramStatusMapping();

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #ifndef CONNECTION_H_
@@ -43,6 +43,7 @@ namespace              CentreonBroker
    public:
                        Connection() throw ();
                        Connection(const Connection& c);
+		       Connection(const ConnectionStatus& cs);
                        ~Connection() throw ();
     Connection&        operator=(const Connection& c);
     // Getters

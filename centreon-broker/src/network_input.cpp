@@ -49,10 +49,11 @@ namespace                         CentreonBroker
   {
    private:
     char                          buffer_[1024];
-    unsigned long                 byte_count_;
+    unsigned long                 bytes_processed_;
     size_t                        discard_;
+    time_t                        last_checkin_time_;
     size_t                        length_;
-    unsigned long                 line_count_;
+    unsigned long                 lines_processed_;
     boost::asio::ip::tcp::socket& socket_;
     ProtocolSocket&               operator=(const ProtocolSocket& ps) throw ();
 
@@ -63,9 +64,10 @@ namespace                         CentreonBroker
                                   ProtocolSocket(const ProtocolSocket& ps)
                                    throw ();
                                   ~ProtocolSocket() throw ();
-    unsigned long                 GetByteCount();
+    unsigned long                 GetBytesProcessed() const;
+    time_t                        GetLastCheckinTime() const;
     char*                         GetLine();
-    unsigned long                 GetLineCount();
+    unsigned long                 GetLinesProcessed() const;
   };
 }
 
@@ -96,10 +98,11 @@ ProtocolSocket& ProtocolSocket::operator=(const ProtocolSocket& ps) throw ()
 ProtocolSocket::ProtocolSocket(boost::asio::ip::tcp::socket& s)
   throw () : socket_(s)
 {
-  this->byte_count_ = 0L;
+  this->bytes_processed_ = 0L;
   this->discard_ = 0;
+  this->last_checkin_time_ = time(NULL);
   this->length_ = 0;
-  this->line_count_ = 0L;
+  this->lines_processed_ = 0L;
 }
 
 /**
@@ -109,8 +112,11 @@ ProtocolSocket::ProtocolSocket(const ProtocolSocket& ps) throw ()
   : socket_(ps.socket_)
 {
   memcpy(this->buffer_, ps.buffer_, sizeof(this->buffer_));
+  this->bytes_processed_ = ps.bytes_processed_;
   this->discard_ = ps.discard_;
+  this->last_checkin_time_ = ps.last_checkin_time_;
   this->length_ = ps.length_;
+  this->lines_processed_ = ps.lines_processed_;
 }
 
 /**
@@ -118,6 +124,22 @@ ProtocolSocket::ProtocolSocket(const ProtocolSocket& ps) throw ()
  */
 ProtocolSocket::~ProtocolSocket() throw ()
 {
+}
+
+/**
+ *  Returns the number of bytes processed by the socket.
+ */
+unsigned long ProtocolSocket::GetBytesProcessed() const
+{
+  return (this->bytes_processed_);
+}
+
+/**
+ *  Returns the last time the client had an activity.
+ */
+time_t ProtocolSocket::GetLastCheckinTime() const
+{
+  return (this->last_checkin_time_);
 }
 
 /**
@@ -142,16 +164,24 @@ char* ProtocolSocket::GetLine()
       bytes_read = this->socket_.receive(
                       boost::asio::buffer(this->buffer_ + this->length_,
                         sizeof(this->buffer_) - this->length_ - 1));
-      this->byte_count_ += bytes_read;
+      this->bytes_processed_ += bytes_read;
       this->length_ += bytes_read;
       this->buffer_[this->length_] = '\0';
+      this->last_checkin_time_ = time(NULL);
     }
   this->discard_ = strcspn(this->buffer_, "\n");
   this->buffer_[this->discard_++] = '\0';
-  ++this->line_count_;
+  ++this->lines_processed_;
   return (this->buffer_);
 }
 
+/**
+ *  Returns the number of lines processed by the socket.
+ */
+unsigned long ProtocolSocket::GetLinesProcessed() const
+{
+  return (this->lines_processed_);
+}
 
 /******************************************************************************
 *                                                                             *
@@ -948,9 +978,9 @@ void NetworkInput::operator()()
   try
     {
       HandleInitialization(socket);
-      while (1)
+      buffer = socket.GetLine();
+      while (strcmp(buffer, NDO_API_GOODBYE))
 	{
-	  buffer = socket.GetLine();
 	  if (4 == strlen(buffer) && ':' == buffer[3])
 	    {
 	      int event;
@@ -960,16 +990,31 @@ void NetworkInput::operator()()
 	      for (unsigned int i = 0; handlers[i].event; i++)
 		if (handlers[i].event == event)
 		  {
+		    this->conn_status_.SetBytesProcessed(
+                      socket.GetBytesProcessed());
+		    this->conn_status_.SetLinesProcessed(
+                      socket.GetLinesProcessed());
 		    (this->*(handlers[i].handler))(socket);
+		    this->conn_status_.SetEntriesProcessed(
+                      this->conn_status_.GetEntriesProcessed() + 1);
+		    this->conn_status_.SetLastCheckinTime(
+                      socket.GetLastCheckinTime());
+		    EventPublisher::GetInstance()->Publish(
+                      new ConnectionStatus(this->conn_status_));
 		    break ;
 		  }
 	    }
+	  buffer = socket.GetLine();
 	}
+      this->conn_status_.SetDataEndTime(time(NULL));
     }
   catch (...)
     {
       // XXX : some error message, somewhere
     }
+  this->conn_status_.SetDisconnectTime(time(NULL));
+  EventPublisher::GetInstance()->Publish(new ConnectionStatus(
+                                           this->conn_status_));
   delete (this);
   return ;
 }

@@ -49,6 +49,7 @@ namespace                      CentreonBroker
     std::string                password_;
     std::string                db_;
     DB::Connection*            conn_;
+    DB::Update<ConnectionStatus>* connection_status_stmt_;
     DB::Update<HostStatus>*    host_status_stmt_;
     DB::Update<ServiceStatus>* service_status_stmt_;
     // Performance objects
@@ -67,6 +68,8 @@ namespace                      CentreonBroker
     int                        GetInstanceId(const Event& event);
     void                       OnEvent(Event* e) throw ();
     void                       ProcessConnection(const Connection& connection);
+    void                       ProcessConnectionStatus(
+                                 const ConnectionStatus& cs);
     void                       ProcessEvent(Event* event);
     void                       ProcessHost(const Host& host);
     void                       ProcessHostStatus(const HostStatus& hs);
