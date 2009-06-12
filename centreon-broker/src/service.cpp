@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -78,62 +78,6 @@ Service& Service::operator=(const Service& s)
   this->ServiceStatus::operator=(s);
   this->InternalCopy(s);
   return (*this);
-}
-
-/**
- *  Get the default_active_checks_enabled member.
- */
-short Service::GetDefaultActiveChecksEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_ACTIVE_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the default_event_handler_enabled member.
- */
-short Service::GetDefaultEventHandlerEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_EVENT_HANDLER_ENABLED]);
-}
-
-/**
- *  Get the default_failure_prediction_enabled member.
- */
-short Service::GetDefaultFailurePredictionEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_FAILURE_PREDICTION_ENABLED]);
-}
-
-/**
- *  Get the default_flap_detection_enabled member.
- */
-short Service::GetDefaultFlapDetectionEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_FLAP_DETECTION_ENABLED]);
-}
-
-/**
- *  Get the default_notifications_enabled member.
- */
-short Service::GetDefaultNotificationsEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_NOTIFICATIONS_ENABLED]);
-}
-
-/**
- *  Get the default_passive_checks_enabled member.
- */
-short Service::GetDefaultPassiveChecksEnabled() const throw ()
-{
-  return (this->shorts_[DEFAULT_PASSIVE_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the default_process_performance_data member.
- */
-short Service::GetDefaultProcessPerformanceData() const throw ()
-{
-  return (this->shorts_[DEFAULT_PROCESS_PERFORMANCE_DATA]);
 }
 
 /**
@@ -225,6 +169,14 @@ short Service::GetStalkOnCritical() const throw ()
 }
 
 /**
+ *  Get the stalk_on_ok member.
+ */
+short Service::GetStalkOnOk() const throw ()
+{
+  return (this->shorts_[STALK_ON_OK]);
+}
+
+/**
  *  Get the stalk_on_unknown member.
  */
 short Service::GetStalkOnUnknown() const throw ()
@@ -247,69 +199,6 @@ int Service::GetType() const throw ()
 {
   // XXX : hardcoded value
   return (8);
-}
-
-/**
- *  Set the default_active_checks_enabled member.
- */
-void Service::SetDefaultActiveChecksEnabled(short dace) throw ()
-{
-  this->shorts_[DEFAULT_ACTIVE_CHECKS_ENABLED] = dace;
-  return ;
-}
-
-/**
- *  Set the default_event_handler_enabled member.
- */
-void Service::SetDefaultEventHandlerEnabled(short dehe) throw ()
-{
-  this->shorts_[DEFAULT_EVENT_HANDLER_ENABLED] = dehe;
-  return ;
-}
-
-/**
- *  Set the default_failure_prediction_enabled member.
- */
-void Service::SetDefaultFailurePredictionEnabled(short dfpe) throw ()
-{
-  this->shorts_[DEFAULT_FAILURE_PREDICTION_ENABLED] = dfpe;
-  return ;
-}
-
-/**
- *  Set the default_flap_detection_enabled member.
- */
-void Service::SetDefaultFlapDetectionEnabled(short dfde) throw ()
-{
-  this->shorts_[DEFAULT_FLAP_DETECTION_ENABLED] = dfde;
-  return ;
-}
-
-/**
- *  Set the default_notifications_enabled member.
- */
-void Service::SetDefaultNotificationsEnabled(short dne) throw ()
-{
-  this->shorts_[DEFAULT_NOTIFICATIONS_ENABLED] = dne;
-  return ;
-}
-
-/**
- *  Set the default_passive_checks_enabled member.
- */
-void Service::SetDefaultPassiveChecksEnabled(short dpce) throw ()
-{
-  this->shorts_[DEFAULT_PASSIVE_CHECKS_ENABLED] = dpce;
-  return ;
-}
-
-/**
- *  Set the default_process_performance_data member.
- */
-void Service::SetDefaultProcessPerformanceData(short dppd) throw ()
-{
-  this->shorts_[DEFAULT_PROCESS_PERFORMANCE_DATA] = dppd;
-  return ;
 }
 
 /**
@@ -408,6 +297,15 @@ void Service::SetNotifyOnWarning(short now) throw ()
 void Service::SetStalkOnCritical(short soc) throw ()
 {
   this->shorts_[STALK_ON_CRITICAL] = soc;
+  return ;
+}
+
+/**
+ *  Set the stalk_on_ok member.
+ */
+void Service::SetStalkOnOk(short soo) throw ()
+{
+  this->shorts_[STALK_ON_OK] = soo;
   return ;
 }
 

@@ -7,10 +7,11 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include "db/mysql/query.h"
+#include "logging.h"
 
 using namespace CentreonBroker::DB;
 
@@ -67,6 +68,7 @@ MySQLQuery::~MySQLQuery()
  */
 void MySQLQuery::Execute() throw (DBException)
 {
+  logging.AddDebug("Executing MySQL prepared statement...");
   assert(this->mystmt_);
   if (mysql_stmt_execute(this->mystmt_))
     throw (DBException(mysql_stmt_errno(this->mystmt_),
@@ -80,6 +82,10 @@ void MySQLQuery::Execute() throw (DBException)
  */
 void MySQLQuery::Prepare()
 {
+  logging.AddDebug("Preparing MySQL statement...");
+  logging.Indent();
+  logging.AddDebug(this->query_.c_str());
+  logging.Deindent();
   this->mystmt_ = mysql_stmt_init(this->myconn_);
   if (!this->mystmt_)
     throw (DBException(mysql_stmt_errno(this->mystmt_),
