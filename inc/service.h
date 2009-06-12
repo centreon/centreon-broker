@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #ifndef SERVICE_H_
@@ -25,13 +25,6 @@ namespace              CentreonBroker
    private:
     enum               Short
     {
-      DEFAULT_ACTIVE_CHECKS_ENABLED = 0,
-      DEFAULT_EVENT_HANDLER_ENABLED,
-      DEFAULT_FAILURE_PREDICTION_ENABLED,
-      DEFAULT_FLAP_DETECTION_ENABLED,
-      DEFAULT_NOTIFICATIONS_ENABLED,
-      DEFAULT_PASSIVE_CHECKS_ENABLED,
-      DEFAULT_PROCESS_PERFORMANCE_DATA,
       FLAP_DETECTION_ON_CRITICAL,
       FLAP_DETECTION_ON_OK,
       FLAP_DETECTION_ON_UNKNOWN,
@@ -63,13 +56,6 @@ namespace              CentreonBroker
                        ~Service() throw ();
     Service&           operator=(const Service& s);
     // Getters
-    short              GetDefaultActiveChecksEnabled() const throw ();
-    short              GetDefaultEventHandlerEnabled() const throw ();
-    short              GetDefaultFailurePredictionEnabled() const throw ();
-    short              GetDefaultFlapDetectionEnabled() const throw ();
-    short              GetDefaultNotificationsEnabled() const throw ();
-    short              GetDefaultPassiveChecksEnabled() const throw ();
-    short              GetDefaultProcessPerformanceData() const throw ();
     const std::string& GetFailurePredictionOptions() const throw ();
     short              GetFlapDetectionOnCritical() const throw ();
     short              GetFlapDetectionOnOk() const throw ();
@@ -81,17 +67,11 @@ namespace              CentreonBroker
     short              GetNotifyOnUnknown() const throw ();
     short              GetNotifyOnWarning() const throw ();
     short              GetStalkOnCritical() const throw ();
+    short              GetStalkOnOk() const throw ();
     short              GetStalkOnUnknown() const throw ();
     short              GetStalkOnWarning() const throw ();
     int                GetType() const throw ();
     // Setters
-    void               SetDefaultActiveChecksEnabled(short dace) throw ();
-    void               SetDefaultEventHandlerEnabled(short dehe) throw ();
-    void               SetDefaultFailurePredictionEnabled(short dfpe) throw ();
-    void               SetDefaultFlapDetectionEnabled(short dfde) throw ();
-    void               SetDefaultNotificationsEnabled(short dne) throw ();
-    void               SetDefaultPassiveChecksEnabled(short dpce) throw ();
-    void               SetDefaultProcessPerformanceData(short dppd) throw ();
     void               SetFailurePredictionOptions(const std::string& fpo);
     void               SetFlapDetectionOnCritical(short fdoc) throw ();
     void               SetFlapDetectionOnOk(short fdoo) throw ();
@@ -103,6 +83,7 @@ namespace              CentreonBroker
     void               SetNotifyOnUnknown(short nou) throw ();
     void               SetNotifyOnWarning(short now) throw ();
     void               SetStalkOnCritical(short soc) throw ();
+    void               SetStalkOnOk(short soo) throw ();
     void               SetStalkOnUnknown(short sou) throw ();
     void               SetStalkOnWarning(short sow) throw ();
   };

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/11/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -15,6 +15,7 @@
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
 #include "db/mysql/truncate.h"
+#include "logging.h"
 
 using namespace CentreonBroker::DB;
 
@@ -57,6 +58,8 @@ MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
 MySQLConnection::MySQLConnection() throw (DBException)
   : Connection(Connection::MYSQL), myconn_(NULL)
 {
+  CentreonBroker::logging.AddDebug("Preparing MySQL for execution " \
+                                   "within this thread...");
   if (mysql_thread_init())
     throw (DBException(0,
                        DBException::INITIALIZATION,
@@ -78,6 +81,10 @@ MySQLConnection::~MySQLConnection() throw ()
  */
 void MySQLConnection::AutoCommit(bool activate) throw (DBException)
 {
+  if (activate)
+    CentreonBroker::logging.AddDebug("Activating MySQL auto-commit mode...");
+  else
+    CentreonBroker::logging.AddDebug("Deactivating MySQL auto-commit mode...");
   assert(this->myconn_);
   if (mysql_autocommit(this->myconn_, activate))
     throw (DBException(mysql_errno(this->myconn_),
@@ -91,6 +98,7 @@ void MySQLConnection::AutoCommit(bool activate) throw (DBException)
  */
 void MySQLConnection::Commit() throw (DBException)
 {
+  CentreonBroker::logging.AddDebug("Committing data to DB...");
   assert(this->myconn_);
   if (mysql_commit(this->myconn_))
     throw (DBException(mysql_errno(this->myconn_),
@@ -107,6 +115,11 @@ void MySQLConnection::Connect(const std::string& host,
 			      const std::string& password,
 			      const std::string& db)
 {
+  CentreonBroker::logging.AddDebug("Connecting to MySQL server...");
+  CentreonBroker::logging.Indent();
+  CentreonBroker::logging.AddDebug((std::string("Host: ") + host).c_str());
+  CentreonBroker::logging.AddDebug((std::string("User: ") + user).c_str());
+  CentreonBroker::logging.AddDebug((std::string("DB: ") + db).c_str());
   // Initialize the MYSQL structure.
   this->myconn_ = mysql_init(NULL);
   if (!this->myconn_)
@@ -125,6 +138,7 @@ void MySQLConnection::Connect(const std::string& host,
     throw (DBException(mysql_errno(this->myconn_),
                        DBException::INITIALIZATION,
                        mysql_error(this->myconn_)));
+  CentreonBroker::logging.Deindent();
   return ;
 }
 
@@ -133,6 +147,7 @@ void MySQLConnection::Connect(const std::string& host,
  */
 void MySQLConnection::Disconnect() throw ()
 {
+  CentreonBroker::logging.AddDebug("Disconnecting from MySQL server...");
   assert(this->myconn_);
   mysql_close(this->myconn_);
   this->myconn_ = NULL;
@@ -144,5 +159,6 @@ void MySQLConnection::Disconnect() throw ()
  */
 Truncate* MySQLConnection::GetTruncateQuery()
 {
+  CentreonBroker::logging.AddDebug("Creating MySQL TRUNCATE query...");
   return (new MySQLTruncate(this->myconn_));
 }

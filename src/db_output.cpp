@@ -38,7 +38,7 @@ void DBOutput::Commit()
   this->conn_->Commit();
   this->queries_ = 0;
   // XXX : timeout should be configurable
-  this->timeout_ = boost::get_system_time() + boost::posix_time::seconds(3);
+  this->timeout_ = boost::get_system_time() + boost::posix_time::seconds(7);
   return ;
 }
 
@@ -60,6 +60,7 @@ void DBOutput::Connect()
                        this->user_,
                        this->password_,
                        this->db_);
+  this->conn_->AutoCommit(false);
   // Truncate table `hosts`
   {
     logging.AddDebug("Truncating table `hosts`");
@@ -331,6 +332,15 @@ DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber(dbo)
  */
 DBOutput::~DBOutput()
 {
+  logging.AddDebug("Deleting DBOutput...");
+  if (this->thread_)
+    {
+      logging.Indent();
+      logging.AddDebug("Waiting for the running thread to finish");
+      this->thread_->join();
+      delete (this->thread_);
+      logging.Deindent();
+    }
 }
 
 /**
@@ -361,7 +371,11 @@ void DBOutput::operator()()
               else if (!this->events_.Empty() || !this->exit_)
                 this->Commit();
               else
-                break ;
+		{
+		  logging.AddDebug("DBOutput deletion requested, " \
+                                   "exiting thread...");
+		  break ;
+		}
             }
         }
       catch (DB::DBException& dbe)
@@ -380,10 +394,15 @@ void DBOutput::operator()()
           break ;
         }
       this->Disconnect();
-      // XXX : retry interval should be configurable
-      sleep(10);
-      logging.AddInfo("Trying connection to DB server again...");
+      if (!this->exit_)
+	{
+	  // XXX : retry interval should be configurable
+	  sleep(10);
+	  logging.AddInfo("Trying connection to DB server again...");
+	}
     }
+  logging.AddDebug("Exiting DBOutput thread");
+  logging.ThreadOver();
   return ;
 }
 
@@ -392,7 +411,13 @@ void DBOutput::operator()()
  */
 void DBOutput::Destroy()
 {
+  logging.AddDebug("Requesting DBOutput to stop processing...");
+  logging.Indent();
   this->exit_ = true;
+  this->conn_->Disconnect();
+  this->events_.CancelWait();
+  logging.Deindent();
+  return ;
 }
 
 /**
@@ -409,8 +434,10 @@ void DBOutput::Init(const std::string& host,
   this->db_ = db;
   this->exit_ = false;
   this->thread_ = new boost::thread(boost::ref(*this));
+  /*
   this->thread_->detach();
   delete (this->thread_);
   this->thread_ = NULL;
+  */
   return ;
 }

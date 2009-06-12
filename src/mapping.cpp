@@ -349,19 +349,19 @@ static void InitServiceMapping()
   service_mapping.AddShortField("current_state",
 				&Service::GetCurrentState);
   service_mapping.AddShortField("default_active_checks_enabled",
-				&Service::GetDefaultActiveChecksEnabled);
+				&Service::GetActiveChecksEnabled);
   service_mapping.AddShortField("default_event_handler_enabled",
-				&Service::GetDefaultFailurePredictionEnabled);
+				&Service::GetFailurePredictionEnabled);
   service_mapping.AddShortField("default_failure_prediction_enabled",
-				&Service::GetDefaultFailurePredictionEnabled);
+				&Service::GetFailurePredictionEnabled);
   service_mapping.AddShortField("default_flap_detection_enabled",
-				&Service::GetDefaultFlapDetectionEnabled);
+				&Service::GetFlapDetectionEnabled);
   service_mapping.AddShortField("default_notifications_enabled",
-				&Service::GetDefaultNotificationsEnabled);
+				&Service::GetNotificationsEnabled);
   service_mapping.AddShortField("default_passive_checks_enabled",
-				&Service::GetDefaultPassiveChecksEnabled);
+				&Service::GetPassiveChecksEnabled);
   service_mapping.AddShortField("default_process_performance_data",
-				&Service::GetDefaultProcessPerformanceData);
+				&Service::GetProcessPerformanceData);
   service_mapping.AddStringField("display_name",
 				 &Service::GetDisplayName);
   service_mapping.AddStringField("event_handler",
@@ -482,6 +482,14 @@ static void InitServiceMapping()
 				 &Service::GetServiceDescription);
   service_mapping.AddShortField("should_be_scheduled",
 				&Service::GetShouldBeScheduled);
+  service_mapping.AddShortField("stalk_on_critical",
+				&Service::GetStalkOnCritical);
+  service_mapping.AddShortField("stalk_on_ok",
+				&Service::GetStalkOnOk);
+  service_mapping.AddShortField("stalk_on_unknown",
+				&Service::GetStalkOnUnknown);
+  service_mapping.AddShortField("stalk_on_warning",
+				&Service::GetStalkOnWarning);
   service_mapping.AddShortField("state_type",
 				&Service::GetStateType);
   service_mapping.AddTimeField("status_update_time",

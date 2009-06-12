@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/26/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #ifndef WAITABLE_LIST_HPP_
@@ -16,6 +16,7 @@
 # include <boost/thread.hpp>
 # include <list>
 # include "exception.h"
+# include "logging.h"
 
 namespace                     CentreonBroker
 {
@@ -97,6 +98,7 @@ namespace                     CentreonBroker
      */
     void                      CancelWait() throw ()
     {
+      logging.AddDebug("Resume all thread Wait()ing...");
       this->cv_.notify_all();
       return ;
     }
