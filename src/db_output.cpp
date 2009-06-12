@@ -61,6 +61,19 @@ void DBOutput::Connect()
                        this->password_,
                        this->db_);
   this->conn_->AutoCommit(false);
+  // Truncate table `connection_info`
+  {
+    logging.AddDebug("Truncating table `connection_info`");
+    logging.Indent();
+
+    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
+
+    // XXX : table names should be configurable
+    truncate->SetTable("connection_info");
+    truncate->Prepare();
+    truncate->Execute();
+    logging.Deindent();
+  }
   // Truncate table `hosts`
   {
     logging.AddDebug("Truncating table `hosts`");
@@ -86,6 +99,22 @@ void DBOutput::Connect()
     truncate->Execute();
     logging.Deindent();
   }
+  // Prepare ConnectionStatus update query
+  {
+    // XXX : not valid if multiple DBOutput are used
+    connection_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
+							this, _1));
+    this->connection_status_stmt_
+      = this->conn_->GetUpdateQuery<ConnectionStatus>(connection_status_mapping);
+    this->connection_status_stmt_->SetPredicate(DB::Equal(
+                                                  DB::Field("instance_id"),
+                                                  DB::DynamicInt<ConnectionStatus>(
+                                                    boost::bind(
+                                                      &DBOutput::GetInstanceId,
+                                                      this,
+                                                      _1))));
+    this->connection_status_stmt_->Prepare();
+  }
   // Prepare HostStatus update query
   {
     // XXX : not valid if multiple DBOutput are used
@@ -105,7 +134,7 @@ void DBOutput::Connect()
 	      ));
     this->host_status_stmt_->Prepare();
   }
-  // Prepare HostStatus update query
+  // Prepare ServiceStatus update query
   {
     // XXX : not valid if multiple DBOutput are used
     service_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
@@ -198,6 +227,9 @@ void DBOutput::ProcessEvent(Event* event)
      case 1:
       ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
       break ;
+     case 4:
+      ProcessConnectionStatus(*static_cast<ConnectionStatus*>(event));
+      break ;
      case 5:
       ProcessConnection(*static_cast<Connection*>(event));
       break ;
@@ -231,6 +263,33 @@ void DBOutput::ProcessConnection(const Connection& connection)
   return ;
 }
 
+
+/**
+ *  Process a ConnectionStatus event.
+ */
+void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
+{
+  logging.AddDebug("Processing ConnectionStatus event...");
+  logging.Indent();
+  try
+    {
+      this->connection_status_stmt_->Execute(cs);
+    }
+  catch (DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	{
+	  logging.Deindent();
+	  throw ;
+	}
+    }
+  if (this->connection_status_stmt_->GetUpdateCount() == 0)
+    this->ProcessConnection(Connection(cs));
+  else
+    this->QueryExecuted();
+  logging.Deindent();
+  return ;
+}
 
 /**
  *  Process an Host event.
@@ -355,6 +414,12 @@ DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber(dbo)
 DBOutput::~DBOutput()
 {
   logging.AddDebug("Deleting DBOutput...");
+  if (this->connection_status_stmt_)
+    delete (this->connection_status_stmt_);
+  if (this->host_status_stmt_)
+    delete (this->host_status_stmt_);
+  if (this->service_status_stmt_)
+    delete (this->service_status_stmt_);
   if (this->thread_)
     {
       logging.Indent();

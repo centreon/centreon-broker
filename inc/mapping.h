@@ -14,6 +14,7 @@
 # define MAPPING_H_
 
 # include "connection.h"
+# include "connection_status.h"
 # include "db/mapping.hpp"
 # include "host.h"
 # include "host_status.h"
@@ -25,6 +26,8 @@ namespace                               CentreonBroker
 {
   // Connection
   extern DB::Mapping<Connection>        connection_mapping;
+  // ConnectionStatus
+  extern DB::Mapping<ConnectionStatus>  connection_status_mapping;
   // Host
   extern DB::Mapping<Host>              host_mapping;
   // HostStatus

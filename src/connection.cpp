@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -52,6 +52,14 @@ Connection::Connection() throw ()
 Connection::Connection(const Connection& c) : ConnectionStatus(c)
 {
   this->InternalCopy(c);
+}
+
+/**
+ *  Build a Connection from a ConnectionStatus.
+ */
+Connection::Connection(const ConnectionStatus& cs) : ConnectionStatus(cs)
+{
+  memset(this->timets_, 0, sizeof(this->timets_));
 }
 
 /**
