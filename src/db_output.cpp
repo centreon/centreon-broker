@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/11/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -20,6 +20,7 @@
 #include "exception.h"
 #include "host.h"
 #include "host_status.h"
+#include "logging.h"
 
 using namespace CentreonBroker;
 
@@ -61,19 +62,28 @@ void DBOutput::Connect()
                        this->db_);
   // Truncate table `hosts`
   {
+    logging.AddDebug("Truncating table `hosts`");
+    logging.Indent();
+
     std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
 
     // XXX : table names should be configurable
     truncate->SetTable("hosts");
     truncate->Prepare();
     truncate->Execute();
+    logging.Deindent();
   }
   // Truncate table `services`
   {
+    logging.AddDebug("Truncating table `services`");
+    logging.Indent();
+
     std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
+
     truncate->SetTable("services");
     truncate->Prepare();
     truncate->Execute();
+    logging.Deindent();
   }
   // Prepare HostStatus update query
   {
@@ -167,9 +177,8 @@ void DBOutput::OnEvent(Event* e) throw ()
     }
   catch (...)
     {
-      // XXX : some error message, somewhere
-      std::cerr << "Exception while registering event, dropping it."
-                << std::endl;
+      logging.AddError("Exception while adding event to list. Dropping event.");
+      e->RemoveReader(this);
     }
   return ;
 }
@@ -205,12 +214,16 @@ void DBOutput::ProcessEvent(Event* event)
  */
 void DBOutput::ProcessHost(const Host& host)
 {
+  logging.AddDebug("Processing Host event...");
+  logging.Indent();
+
   std::auto_ptr<DB::Insert<Host> >
     query(this->conn_->GetInsertQuery<Host>(host_mapping));
 
   query->Prepare();
   query->Execute(host);
   this->QueryExecuted();
+  logging.Deindent();
   return ;
 }
 
@@ -219,6 +232,8 @@ void DBOutput::ProcessHost(const Host& host)
  */
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
+  logging.AddDebug("Processing HostStatus event...");
+  logging.Indent();
   try
     {
       this->host_status_stmt_->Execute(hs);
@@ -226,12 +241,16 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
   catch (DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
-	throw ;
+	{
+	  logging.Deindent();
+	  throw ;
+	}
     }
   if (this->host_status_stmt_->GetUpdateCount() == 0)
     this->ProcessHost(Host(hs));
   else
     this->QueryExecuted();
+  logging.Deindent();
   return ;
 }
 
@@ -243,10 +262,12 @@ void DBOutput::ProcessService(const Service& service)
   std::auto_ptr<DB::Insert<Service> >
     query(this->conn_->GetInsertQuery<Service>(service_mapping));
 
+  logging.AddDebug("Processing Service event...");
+  logging.Indent();
   query->Prepare();
   query->Execute(service);
   this->QueryExecuted();
-  return ;
+  logging.Deindent();
   return ;
 }
 
@@ -255,6 +276,8 @@ void DBOutput::ProcessService(const Service& service)
  */
 void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 {
+  logging.AddDebug("Processing ServiceStatus event...");
+  logging.Indent();
   try
     {
       this->service_status_stmt_->Execute(ss);
@@ -268,6 +291,7 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
     this->ProcessService(Service(ss));
   else
     this->QueryExecuted();
+  logging.Deindent();
   return ;
 }
 
@@ -321,6 +345,7 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
  */
 void DBOutput::operator()()
 {
+  logging.AddDebug("New thread created (DBOutput)");
   while (!this->exit_ || !this->events_.Empty())
     {
       try
@@ -339,15 +364,25 @@ void DBOutput::operator()()
                 break ;
             }
         }
+      catch (DB::DBException& dbe)
+	{
+	  logging.AddError("Recoverable DB error");
+	  logging.Indent();
+	  logging.AddError(dbe.what());
+	  logging.Deindent();
+	}
       catch (Exception& e)
         {
-          std::cerr << "Unrecoverable error (" << e.what() << ')'
-                    << std::endl;
+	  logging.AddError("Unrecoverable error");
+	  logging.Indent();
+	  logging.AddError(e.what());
+	  logging.Deindent();
           break ;
         }
       this->Disconnect();
       // XXX : retry interval should be configurable
       sleep(10);
+      logging.AddInfo("Trying connection to DB server again...");
     }
   return ;
 }

@@ -7,11 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/11/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include "host.h"
 #include "host_status.h"
+#include "logging.h"
 #include "mapping.h"
 
 using namespace CentreonBroker;
@@ -23,6 +24,7 @@ DB::Mapping<Host> CentreonBroker::host_mapping;
 
 static void InitHostMapping()
 {
+  logging.AddDebug("Initializing Host mapping...");
   host_mapping.SetTable("hosts");
   host_mapping.AddShortField("acknowledgement_type",
 			     &Host::GetAcknowledgementType);
@@ -179,6 +181,7 @@ DB::Mapping<HostStatus> CentreonBroker::host_status_mapping;
 
 static void InitHostStatusMapping()
 {
+  logging.AddDebug("Initializing HostStatus mapping...");
   host_status_mapping.SetTable("hosts");
   host_status_mapping.AddShortField("acknowledgement_type",
                                     &HostStatus::GetAcknowledgementType);
@@ -271,6 +274,7 @@ DB::Mapping<ProgramStatus> CentreonBroker::program_status_mapping;
 
 static void InitProgramStatusMapping()
 {
+  logging.AddDebug("Initializing ProgramStatus mapping");
   program_status_mapping.AddShortField("active_host_checks_enabled",
     &ProgramStatus::GetActiveHostChecksEnabled);
   program_status_mapping.AddShortField("active_service_checks_enabled",
@@ -324,6 +328,7 @@ DB::Mapping<Service> CentreonBroker::service_mapping;
 
 static void InitServiceMapping()
 {
+  logging.AddDebug("Initializing Service mapping...");
   service_mapping.SetTable("services");
   service_mapping.AddShortField("acknowledgement_type",
 				&Service::GetAcknowledgementType);
@@ -488,6 +493,7 @@ DB::Mapping<ServiceStatus> CentreonBroker::service_status_mapping;
 
 static void InitServiceStatusMapping()
 {
+  logging.AddDebug("Initializing ServiceStatus mapping...");
   service_status_mapping.SetTable("services");
   service_status_mapping.AddShortField("acknowledgement_type",
 				       &ServiceStatus::GetAcknowledgementType);
@@ -580,10 +586,14 @@ static void InitServiceStatusMapping()
 
 void CentreonBroker::InitMappings()
 {
+  logging.AddDebug("Initializing Object-Relational mappings...");
+  logging.Indent();
   InitHostMapping();
   InitHostStatusMapping();
   InitProgramStatusMapping();
   InitServiceMapping();
   InitServiceStatusMapping();
+  logging.Deindent();
+  logging.AddDebug("Object-Relational mappings initialized");
   return ;
 }

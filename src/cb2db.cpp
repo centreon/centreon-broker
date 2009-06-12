@@ -7,16 +7,16 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 #include <boost/asio.hpp>
 #include <csignal>
 #include <cstdlib>
-#include <iostream>
 #include <mysql.h>
-#include "mapping.h"
 #include "db_output.h"
+#include "logging.h"
+#include "mapping.h"
 #include "network_acceptor.h"
 
 using namespace CentreonBroker;
@@ -38,30 +38,31 @@ int main(int argc, char *argv[])
 {
   if (argc != 5)
     {
-      std::cerr << "USAGE: " << argv[0] << " <server> <user> <password> <db>"
-                << std::endl;
+      std::string usage;
+
+      usage = "USAGE: ";
+      usage += argv[0];
+      usage += " <server> <user> <password> <db>";
+      logging.AddInfo(usage.c_str());
       return (1);
     }
   else
     {
+      logging.AddDebug("Initializing MySQL library...");
       mysql_library_init(0, NULL, NULL);
-      std::clog << "Initializing I/O engine...";
+      logging.AddDebug("Initializing I/O engine...");
       gl_ios = new boost::asio::io_service;
-      std::clog << "  Done" << std::endl;
-      std::clog << "Initializing Object-Relational mapping...";
       InitMappings();
-      std::clog << "  Done" << std::endl;
-      std::clog << "Initializing MySQL engine...";
+      logging.AddDebug("Connecting to MySQL server...");
+      logging.Indent();
       gl_dbo = new DBOutput(DB::Connection::MYSQL);
-      std::clog << "  Done" << std::endl;
-      std::clog << "Connecting to MySQL server : " << argv[2]
-                << '@' << argv[1] << "...";
       gl_dbo->Init(argv[1], argv[2], argv[3], argv[4]);
-      std::clog << "  Done" << std::endl;
-      std::clog << "Listening on port 5667...";
+      logging.Deindent();
+      logging.AddDebug("Listening for new connections...");
+      logging.Indent();
       gl_na = new NetworkAcceptor(*gl_ios);
       gl_na->Accept(5667);
-      std::clog << "  Done" << std::endl;
+      logging.Deindent();
       signal(SIGINT, term_handler);
       try
 	{
@@ -76,27 +77,22 @@ int main(int argc, char *argv[])
 	}
       if (gl_na)
 	{
-	  std::clog << "Closing listening socket...";
 	  delete gl_na;
 	  gl_na = NULL;
-	  std::clog << "  Done" << std::endl;
 	}
       if (gl_dbo)
 	{
-	  std::clog << "Closing connection to MySQL server...";
 	  gl_dbo->Destroy();
 	  delete gl_dbo;
 	  gl_dbo = NULL;
-	  std::clog << "  Done" << std::endl;
 	}
       if (gl_ios)
 	{
-	  std::clog << "Shutting down I/O service...";
+	  logging.AddDebug("Shutting down I/O service...");
 	  delete gl_ios;
 	  gl_ios = NULL;
-	  std::clog << "  Done" << std::endl;
 	}
-      std::clog << "Exiting now." << std::endl;
+      logging.AddDebug("Exiting main()");
     }
   return (0);
 }
