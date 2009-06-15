@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include "connection.h"
@@ -29,7 +29,9 @@ DB::Mapping<Connection> CentreonBroker::connection_mapping;
 
 static void InitConnectionMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing Connection mapping...");
+#endif /* !NDEBUG */
   connection_mapping.SetTable("connection_info");
   connection_mapping.AddStringField("agent_name",
 				    &Connection::GetAgentName);
@@ -65,7 +67,9 @@ DB::Mapping<ConnectionStatus> CentreonBroker::connection_status_mapping;
 
 static void InitConnectionStatusMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing ConnectionStatus mapping...");
+#endif /* !NDEBUG */
   connection_status_mapping.SetTable("connection_info");
   connection_status_mapping.AddIntField("bytes_processed",
 					&ConnectionStatus::GetBytesProcessed);
@@ -89,7 +93,9 @@ DB::Mapping<Host> CentreonBroker::host_mapping;
 
 static void InitHostMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing Host mapping...");
+#endif /* !NDEBUG */
   host_mapping.SetTable("hosts");
   host_mapping.AddShortField("acknowledgement_type",
 			     &Host::GetAcknowledgementType);
@@ -246,7 +252,9 @@ DB::Mapping<HostStatus> CentreonBroker::host_status_mapping;
 
 static void InitHostStatusMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing HostStatus mapping...");
+#endif /* !NDEBUG */
   host_status_mapping.SetTable("hosts");
   host_status_mapping.AddShortField("acknowledgement_type",
                                     &HostStatus::GetAcknowledgementType);
@@ -339,7 +347,9 @@ DB::Mapping<ProgramStatus> CentreonBroker::program_status_mapping;
 
 static void InitProgramStatusMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing ProgramStatus mapping");
+#endif /* !NDEBUG */
   program_status_mapping.AddShortField("active_host_checks_enabled",
     &ProgramStatus::GetActiveHostChecksEnabled);
   program_status_mapping.AddShortField("active_service_checks_enabled",
@@ -393,7 +403,9 @@ DB::Mapping<Service> CentreonBroker::service_mapping;
 
 static void InitServiceMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing Service mapping...");
+#endif /* !NDEBUG */
   service_mapping.SetTable("services");
   service_mapping.AddShortField("acknowledgement_type",
 				&Service::GetAcknowledgementType);
@@ -566,7 +578,9 @@ DB::Mapping<ServiceStatus> CentreonBroker::service_status_mapping;
 
 static void InitServiceStatusMapping()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing ServiceStatus mapping...");
+#endif /* !NDEBUG */
   service_status_mapping.SetTable("services");
   service_status_mapping.AddShortField("acknowledgement_type",
 				       &ServiceStatus::GetAcknowledgementType);
@@ -659,8 +673,10 @@ static void InitServiceStatusMapping()
 
 void CentreonBroker::InitMappings()
 {
+#ifndef NDEBUG
   logging.AddDebug("Initializing Object-Relational mappings...");
   logging.Indent();
+#endif /* !NDEBUG */
   InitConnectionMapping();
   InitConnectionStatusMapping();
   InitHostMapping();
@@ -668,7 +684,9 @@ void CentreonBroker::InitMappings()
   InitProgramStatusMapping();
   InitServiceMapping();
   InitServiceStatusMapping();
+#ifndef NDEBUG
   logging.Deindent();
   logging.AddDebug("Object-Relational mappings initialized");
+#endif /* !NDEBUG */
   return ;
 }
