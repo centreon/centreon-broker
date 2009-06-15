@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/26/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #ifndef WAITABLE_LIST_HPP_
@@ -98,7 +98,9 @@ namespace                     CentreonBroker
      */
     void                      CancelWait() throw ()
     {
+#ifndef NDEBUG
       logging.AddDebug("Resume all thread Wait()ing...");
+#endif /* !NDEBUG */
       this->cv_.notify_all();
       return ;
     }

@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/12/09 Matthieu Kermagoret
+## Last update 06/15/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -23,6 +23,7 @@ SRC		=	src/cb2db.cpp				\
 			src/db/mysql/have_fields.cpp		\
 			src/db/mysql/query.cpp			\
 			src/db/mysql/truncate.cpp		\
+			src/db/postgresql/connection.cpp	\
 			src/db/predicate.cpp			\
 			src/db/query.cpp			\
 			src/db/truncate.cpp			\
@@ -49,10 +50,16 @@ OBJ		=	$(SRC:.cpp=.o)
 NAME		=	cb2db
 
 INCLUDE		+=	-Iinc
-CXXFLAGS	+=	-g3 -std=c++0x -W -Wall -pedantic $(INCLUDE)	\
-			 `mysql_config --include`
-LDFLAGS		+=	-lpthread -lrt `mysql_config --libs` \
-			-lboost_system-mt -lboost_thread-mt
+CXXFLAGS	+=	-std=c++0x -W -Wall -pedantic $(INCLUDE)	\
+			`mysql_config --include`			\
+			-I`pg_config --includedir`
+## Debug
+#CXXFLAGS	+=	-g3
+## Release
+CXXFLAGS	+=	-O2 -DNDEBUG
+LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`		\
+			-lboost_system-mt -lboost_thread-mt		\
+			-L`pg_config --libdir` -lpq
 
 
 all		:	$(NAME)

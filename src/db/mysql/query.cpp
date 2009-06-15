@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include "db/mysql/query.h"
@@ -68,7 +68,9 @@ MySQLQuery::~MySQLQuery()
  */
 void MySQLQuery::Execute() throw (DBException)
 {
+#ifndef NDEBUG
   logging.AddDebug("Executing MySQL prepared statement...");
+#endif /* !NDEBUG */
   assert(this->mystmt_);
   if (mysql_stmt_execute(this->mystmt_))
     throw (DBException(mysql_stmt_errno(this->mystmt_),
@@ -82,10 +84,12 @@ void MySQLQuery::Execute() throw (DBException)
  */
 void MySQLQuery::Prepare()
 {
+#ifndef NDEBUG
   logging.AddDebug("Preparing MySQL statement...");
   logging.Indent();
   logging.AddDebug(this->query_.c_str());
   logging.Deindent();
+#endif /* !NDEBUG */
   this->mystmt_ = mysql_stmt_init(this->myconn_);
   if (!this->mystmt_)
     throw (DBException(mysql_stmt_errno(this->mystmt_),

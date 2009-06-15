@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/12/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #ifndef LOGGING_H_
@@ -30,7 +30,9 @@ namespace                    CentreonBroker
    public:
                              Logging();
                              ~Logging();
+# ifndef NDEBUG
     void                     AddDebug(const char* str);
+# endif /* !NDEBUG */
     void                     AddError(const char* str);
     void                     AddInfo(const char* str);
     void                     Deindent();

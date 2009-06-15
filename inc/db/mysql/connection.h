@@ -7,14 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/10/09 Matthieu Kermagoret
+** Last update 06/12/09 Matthieu Kermagoret
 */
 
 /**
- *  Because the db/connection.h header includes this header, we have to tricks
+ *  Because the db/connection.h header includes this header, we have to trick
  *  to allow everything to compile properly.
  */
-# include "db/connection.h"
+#include "db/connection.h"
 
 #ifndef DB_MYSQL_CONNECTION_H_
 # define DB_MYSQL_CONNECTION_H_

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/12/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -70,6 +70,7 @@ Logging::~Logging()
 {
 }
 
+#ifndef NDEBUG
 /**
  *  Add a debug output.
  */
@@ -95,6 +96,7 @@ void Logging::AddDebug(const char* str)
   std::clog << str << std::endl;
   return ;
 }
+#endif /* !NDEBUG */
 
 /**
  *  Add an error output.
