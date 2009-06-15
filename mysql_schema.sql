@@ -255,7 +255,8 @@ CREATE TABLE IF NOT EXISTS `hosts` (
   `freshness_threshold` smallint(6) NOT NULL default '0',
   `retain_status_information` smallint(6) NOT NULL default '0',
   `retain_nonstatus_information` smallint(6) NOT NULL default '0',
-  PRIMARY KEY  (`host_id`)
+  PRIMARY KEY  (`host_id`),
+  UNIQUE KEY `key1` (`instance_id`, `host_name`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Host information';
 
 
@@ -430,7 +431,8 @@ CREATE TABLE IF NOT EXISTS `services` (
   `action_url` varchar(255) NOT NULL default '',
   `icon_image` varchar(255) NOT NULL default '',
   `icon_image_alt` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`service_id`)
+  PRIMARY KEY  (`service_id`),
+  UNIQUE KEY `key1` (`instance_id`, `host_name`, `service_description`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Service information';
 
 

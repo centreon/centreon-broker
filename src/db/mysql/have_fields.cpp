@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/09/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include <cassert>
 #include <cstring>
 #include "db/mysql/have_fields.h"
+#include "logging.h"
 
 using namespace CentreonBroker::DB;
 
@@ -93,6 +94,9 @@ MySQLHaveFields::~MySQLHaveFields()
  */
 void MySQLHaveFields::Prepare(MYSQL_STMT* mystmt)
 {
+#ifndef NDEBUG
+  logging.AddDebug("Preparing bound argument structures...");
+#endif /* !NDEBUG */
   assert(!this->myargs_);
   assert(mystmt);
   this->size_ = mysql_stmt_param_count(mystmt);

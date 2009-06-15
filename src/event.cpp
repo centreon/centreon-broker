@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include "event.h"
@@ -34,6 +34,7 @@ Event::Event()
 Event::Event(const Event& event)
 {
   operator=(event);
+  this->readers_ = 0;
 }
 
 /**
