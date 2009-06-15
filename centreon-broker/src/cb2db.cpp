@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
       logging.Deindent();
 #endif /* !NDEBUG */
       signal(SIGINT, term_handler);
+      logging.AddInfo("Initialization completed, waiting for clients...");
       try
 	{
 	  while (!gl_shall_exit)

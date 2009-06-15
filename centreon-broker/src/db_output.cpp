@@ -31,6 +31,25 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
+ *  DBOutput copy constructor.
+ */
+DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber()
+{
+  (void)dbo;
+  assert(false);
+}
+
+/**
+ *  DBOutput operator= overload.
+ */
+DBOutput& DBOutput::operator=(const DBOutput& dbo)
+{
+  (void)dbo;
+  assert(false);
+  return (*this);
+}
+
+/**
  *  Commit the current transaction and reset timeout.
  */
 void DBOutput::Commit()
@@ -437,13 +456,6 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms) : dbms_(dbms)
 }
 
 /**
- *  DBOutput copy constructor.
- */
-DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber(dbo)
-{
-}
-
-/**
  *  DBOutput destructor.
  */
 DBOutput::~DBOutput()
@@ -469,13 +481,6 @@ DBOutput::~DBOutput()
       logging.Deindent();
 #endif /* !NDEBUG */
     }
-}
-
-/**
- *  DBOutput operator= overload.
- */
-DBOutput& DBOutput::operator=(const DBOutput& dbo)
-{
 }
 
 /**

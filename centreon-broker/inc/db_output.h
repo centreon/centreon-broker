@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #ifndef DB_OUTPUT_H_
@@ -62,6 +62,8 @@ namespace                      CentreonBroker
     volatile bool              exit_;
     boost::thread*             thread_;
 
+                               DBOutput(const DBOutput& dbo);
+    DBOutput&                  operator=(const DBOutput& dbo);
     void                       Commit();
     void                       Connect();
     void                       Disconnect();
@@ -79,9 +81,7 @@ namespace                      CentreonBroker
 
    public:
                                DBOutput(DB::Connection::DBMS dbms);
-                               DBOutput(const DBOutput& dbo);
                                ~DBOutput();
-    DBOutput&                  operator=(const DBOutput& dbo);
     void                       operator()();
     void                       Destroy();
     void                       Init(const std::string& host,
