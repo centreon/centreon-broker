@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/15/09 Matthieu Kermagoret
+## Last update 06/16/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -57,7 +57,7 @@ CXXFLAGS	+=	-std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 #CXXFLAGS	+=	-g3
 ## Release
 CXXFLAGS	+=	-O2 -DNDEBUG
-LDFLAGS		+=	-lpthread -lrt `mysql_config --libs`		\
+LDFLAGS		+=	-lpthread -lrt `mysql_config --libs_r`		\
 			-lboost_system-mt -lboost_thread-mt		\
 			-L`pg_config --libdir` -lpq
 
