@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -79,8 +79,7 @@ ServiceStatus& ServiceStatus::operator=(const ServiceStatus& s)
  */
 int ServiceStatus::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (1);
+  return (Event::SERVICESTATUS);
 }
 
 /**

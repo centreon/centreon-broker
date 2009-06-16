@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/15/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -50,6 +50,34 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
 }
 
 /**
+ *  Clean a table before starting event processing.
+ */
+void DBOutput::CleanTable(const std::string& table)
+{
+#ifndef NDEBUG
+  {
+    std::string debug;
+
+    debug = "Truncating table `";
+    debug += table;
+    debug += "`...";
+    logging.AddDebug(debug.c_str());
+    logging.Indent();
+  }
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
+
+  // XXX : table names should be configurable
+  truncate->SetTable(table);
+  truncate->Prepare();
+  truncate->Execute();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
  *  Commit the current transaction and reset timeout.
  */
 void DBOutput::Commit()
@@ -80,95 +108,77 @@ void DBOutput::Connect()
                        this->password_,
                        this->db_);
   this->conn_->AutoCommit(false);
-  // Truncate table `connection_info`
-  {
-#ifndef NDEBUG
-    logging.AddDebug("Truncating table `connection_info`");
-    logging.Indent();
-#endif /* !NDEBUG */
-    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
 
-    // XXX : table names should be configurable
-    truncate->SetTable("connection_info");
-    truncate->Prepare();
-    truncate->Execute();
-#ifndef NDEBUG
-    logging.Deindent();
-#endif /* !NDEBUG */
-  }
-  // Truncate table `hosts`
-  {
-#ifndef NDEBUG
-    logging.AddDebug("Truncating table `hosts`");
-    logging.Indent();
-#endif /* !NDEBUG */
-    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
+  // Clean tables
+  this->CleanTable(this->acknowledgement_mapping_.GetTable());
+  this->CleanTable(this->connection_mapping_.GetTable());
+  this->CleanTable(this->host_mapping_.GetTable());
+  this->CleanTable(this->program_status_mapping_.GetTable());
+  this->CleanTable(this->service_mapping_.GetTable());
 
-    // XXX : table names should be configurable
-    truncate->SetTable("hosts");
-    truncate->Prepare();
-    truncate->Execute();
-#ifndef NDEBUG
-    logging.Deindent();
-#endif /* !NDEBUG */
-  }
-  // Truncate table `services`
-  {
-#ifndef NDEBUG
-    logging.AddDebug("Truncating table `services`");
-    logging.Indent();
-#endif /* !NDEBUG */
-    std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
-
-    truncate->SetTable("services");
-    truncate->Prepare();
-    truncate->Execute();
-#ifndef NDEBUG
-    logging.Deindent();
-#endif /* !NDEBUG */
-  }
   // Prepare ConnectionStatus update query
   {
-    // XXX : not valid if multiple DBOutput are used
-    connection_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
-							this, _1));
+    this->connection_mapping_.AddIntField("instance_id",
+                                          boost::bind(&DBOutput::GetInstanceId,
+						      this,
+						      _1));
     this->connection_status_stmt_
-      = this->conn_->GetUpdateQuery<ConnectionStatus>(connection_status_mapping);
+      = this->conn_->GetUpdateQuery<ConnectionStatus>(
+          this->connection_status_mapping_);
     this->connection_status_stmt_->SetPredicate(DB::Equal(
-                                                  DB::Field("instance_id"),
-                                                  DB::DynamicInt<ConnectionStatus>(
-                                                    boost::bind(
-                                                      &DBOutput::GetInstanceId,
-                                                      this,
-                                                      _1))));
+      DB::Field("instance_id"),
+      DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
+                                                   this,
+                                                   _1))));
     this->connection_status_stmt_->Prepare();
   }
   // Prepare HostStatus update query
   {
-    // XXX : not valid if multiple DBOutput are used
-    host_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
-							this, _1));
+    this->host_mapping_.AddIntField("instance_id",
+                                    boost::bind(&DBOutput::GetInstanceId,
+						this,
+                                                _1));
     this->host_status_stmt_
-      = this->conn_->GetUpdateQuery<HostStatus>(host_status_mapping);
+      = this->conn_->GetUpdateQuery<HostStatus>(this->host_status_mapping_);
     this->host_status_stmt_->SetPredicate(
       DB::And(DB::Equal(DB::Field("instance_id"),
                         DB::DynamicInt<HostStatus>(boost::bind(
-                                                   &DBOutput::GetInstanceId,
-                                                   this,
-                                                   _1))),
+                                                     &DBOutput::GetInstanceId,
+                                                     this,
+                                                     _1))),
 	      DB::Equal(DB::Field("host_name"),
 			DB::DynamicString<HostStatus>(&HostStatus::GetHostName)
 			)
 	      ));
     this->host_status_stmt_->Prepare();
   }
+  // Prepare ProgramStatus update query
+  {
+    this->program_status_mapping_.AddIntField(
+      "instance_id",
+      boost::bind(&DBOutput::GetInstanceId,
+                  this,
+                  _1));
+    this->program_status_stmt_
+      = this->conn_->GetUpdateQuery<ProgramStatus>(
+          this->program_status_mapping_);
+    this->program_status_stmt_->SetPredicate(
+      DB::Equal(DB::Field("instance_id"),
+                DB::DynamicInt<ProgramStatus>(boost::bind(
+                                                &DBOutput::GetInstanceId,
+                                                this,
+                                                _1))));
+    this->program_status_stmt_->Prepare();
+  }
   // Prepare ServiceStatus update query
   {
-    // XXX : not valid if multiple DBOutput are used
-    service_mapping.AddIntField("instance_id", boost::bind(&DBOutput::GetInstanceId,
-							this, _1));
+    this->service_mapping_.AddIntField("instance_id",
+                                       boost::bind(&DBOutput::GetInstanceId,
+						   this,
+                                                   _1));
     this->service_status_stmt_
-      = this->conn_->GetUpdateQuery<ServiceStatus>(service_status_mapping);
+      = this->conn_->GetUpdateQuery<ServiceStatus>(
+          this->service_status_mapping_);
     this->service_status_stmt_->SetPredicate(
       DB::And(DB::Equal(DB::Field("instance_id"),
                         DB::DynamicInt<ServiceStatus>(boost::bind(
@@ -176,10 +186,11 @@ void DBOutput::Connect()
                                                    this,
                                                    _1))),
 	      DB::And(DB::Equal(DB::Field("host_name"),
-			DB::DynamicString<ServiceStatus>(&ServiceStatus::GetHostName)
-				),
+			DB::DynamicString<ServiceStatus>(
+                          &ServiceStatus::GetHostName)),
 		      DB::Equal(DB::Field("service_description"),
-				DB::DynamicString<ServiceStatus>(&ServiceStatus::GetServiceDescription)))
+				DB::DynamicString<ServiceStatus>(
+                                  &ServiceStatus::GetServiceDescription)))
 	      ));
     this->service_status_stmt_->Prepare();
   }
@@ -248,28 +259,57 @@ void DBOutput::ProcessEvent(Event* event)
 {
   switch (event->GetType())
     {
-      // XXX : replace hardcoded values with macros
-     case 0:
-      ProcessHostStatus(*static_cast<HostStatus*>(event));
+     case Event::ACKNOWLEDGEMENT:
+      ProcessAcknowledgement(*static_cast<Acknowledgement*>(event));
       break ;
-     case 1:
-      ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
-      break ;
-     case 4:
-      ProcessConnectionStatus(*static_cast<ConnectionStatus*>(event));
-      break ;
-     case 5:
+     case Event::CONNECTION:
       ProcessConnection(*static_cast<Connection*>(event));
       break ;
-     case 8:
-      ProcessService(*static_cast<Service*>(event));
+     case Event::CONNECTIONSTATUS:
+      ProcessConnectionStatus(*static_cast<ConnectionStatus*>(event));
       break ;
-     case 9:
+     case Event::HOST:
       ProcessHost(*static_cast<Host*>(event));
       break ;
-      // XXX : assert(false) + throw()
+     case Event::HOSTSTATUS:
+      ProcessHostStatus(*static_cast<HostStatus*>(event));
+      break ;
+     case Event::PROGRAMSTATUS:
+      ProcessProgramStatus(*static_cast<ProgramStatus*>(event));
+      break ;
+     case Event::SERVICE:
+      ProcessService(*static_cast<Service*>(event));
+      break ;
+     case Event::SERVICESTATUS:
+      ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
+      break ;
+     default:
+      assert(false);
+      throw (Exception(event->GetType(), "Invalid event type encountered"));
     }
   event->RemoveReader(this);
+  return ;
+}
+
+/**
+ *  Process an Acknowledgement event.
+ */
+void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
+{
+#ifndef NDEBUG
+  logging.AddDebug("Processing Acknowledgement event...");
+  logging.Indent();
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::Insert<Acknowledgement> >
+    query(this->conn_->GetInsertQuery<Acknowledgement>(
+            this->acknowledgement_mapping_));
+
+  query->Prepare();
+  query->Execute(ack);
+  this->QueryExecuted();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
   return ;
 }
 
@@ -283,7 +323,8 @@ void DBOutput::ProcessConnection(const Connection& connection)
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Connection> >
-    query(this->conn_->GetInsertQuery<Connection>(connection_mapping));
+    query(this->conn_->GetInsertQuery<Connection>(
+            this->connection_mapping_));
 
   query->Prepare();
   query->Execute(connection);
@@ -338,7 +379,7 @@ void DBOutput::ProcessHost(const Host& host)
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Host> >
-    query(this->conn_->GetInsertQuery<Host>(host_mapping));
+    query(this->conn_->GetInsertQuery<Host>(this->host_mapping_));
 
   query->Prepare();
   query->Execute(host);
@@ -383,12 +424,53 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
 }
 
 /**
+ *  Process a ProgramStatus event.
+ */
+void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
+{
+#ifndef NDEBUG
+  logging.AddDebug("Processing ProgramStatus event...");
+  logging.Indent();
+#endif /* !NDEBUG */
+  try
+    {
+      this->program_status_stmt_->Execute(ps);
+    }
+  catch (DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	{
+#ifndef NDEBUG
+	  logging.Deindent();
+#endif /* !NDEBUG */
+	  throw ;
+	}
+    }
+  if (this->program_status_stmt_->GetUpdateCount() == 0)
+    {
+      std::auto_ptr<DB::Insert<ProgramStatus> >
+        query(this->conn_->GetInsertQuery<ProgramStatus>(
+          this->program_status_mapping_));
+
+      query->Prepare();
+      query->Execute(ps);
+      this->QueryExecuted();
+    }
+  else
+    this->QueryExecuted();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
  *  Process a Service event.
  */
 void DBOutput::ProcessService(const Service& service)
 {
   std::auto_ptr<DB::Insert<Service> >
-    query(this->conn_->GetInsertQuery<Service>(service_mapping));
+    query(this->conn_->GetInsertQuery<Service>(this->service_mapping_));
 
 #ifndef NDEBUG
   logging.AddDebug("Processing Service event...");
@@ -451,7 +533,16 @@ void DBOutput::QueryExecuted()
 /**
  *  DBOutput default constructor.
  */
-DBOutput::DBOutput(DB::Connection::DBMS dbms) : dbms_(dbms)
+DBOutput::DBOutput(DB::Connection::DBMS dbms)
+  : acknowledgement_mapping_(acknowledgement_mapping),
+    connection_mapping_(connection_mapping),
+    connection_status_mapping_(connection_status_mapping),
+    host_mapping_(host_mapping),
+    host_status_mapping_(host_status_mapping),
+    program_status_mapping_(program_status_mapping),
+    service_mapping_(service_mapping),
+    service_status_mapping_(service_status_mapping),
+    dbms_(dbms)
 {
 }
 
@@ -467,6 +558,8 @@ DBOutput::~DBOutput()
     delete (this->connection_status_stmt_);
   if (this->host_status_stmt_)
     delete (this->host_status_stmt_);
+  if (this->program_status_stmt_)
+    delete (this->program_status_stmt_);
   if (this->service_status_stmt_)
     delete (this->service_status_stmt_);
   if (this->thread_)

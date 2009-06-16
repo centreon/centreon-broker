@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -132,8 +132,7 @@ time_t Connection::GetDataStartTime() const throw ()
  */
 int Connection::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (5);
+  return (Event::CONNECTION);
 }
 
 /**

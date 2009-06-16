@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/07/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -100,8 +100,7 @@ time_t HostStatus::GetLastTimeUnreachable() const throw ()
  */
 int HostStatus::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (0);
+  return (Event::HOSTSTATUS);
 }
 
 /**

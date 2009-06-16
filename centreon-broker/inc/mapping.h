@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #ifndef MAPPING_H_
 # define MAPPING_H_
 
+# include "acknowledgement.h"
 # include "connection.h"
 # include "connection_status.h"
 # include "db/mapping.hpp"
@@ -24,6 +25,8 @@
 
 namespace                               CentreonBroker
 {
+  // Acknowledgement
+  extern DB::Mapping<Acknowledgement>   acknowledgement_mapping;
   // Connection
   extern DB::Mapping<Connection>        connection_mapping;
   // ConnectionStatus

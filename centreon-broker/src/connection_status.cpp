@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/22/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -127,8 +127,7 @@ int ConnectionStatus::GetLinesProcessed() const throw ()
  */
 int ConnectionStatus::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (4);
+  return (Event::CONNECTIONSTATUS);
 }
 
 /**

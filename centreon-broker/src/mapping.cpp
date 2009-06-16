@@ -7,9 +7,10 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/15/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
+#include "acknowledgement.h"
 #include "connection.h"
 #include "connection_status.h"
 #include "host.h"
@@ -21,6 +22,36 @@
 #include "service_status.h"
 
 using namespace CentreonBroker;
+
+/**
+ *  Acknowledgement mapping.
+ */
+DB::Mapping<Acknowledgement> CentreonBroker::acknowledgement_mapping;
+
+static void InitAcknowledgementMapping()
+{
+#ifndef NDEBUG
+  logging.AddDebug("Initializing Acknowledgement mapping...");
+#endif /* !NDEBUG */
+  acknowledgement_mapping.SetTable("acknowledgements");
+  acknowledgement_mapping.AddShortField("acknowledgement_type",
+    &Acknowledgement::GetAcknowledgementType);
+  acknowledgement_mapping.AddStringField("author_name",
+					 &Acknowledgement::GetAuthorName);
+  acknowledgement_mapping.AddStringField("comment_data",
+					 &Acknowledgement::GetComment);
+  acknowledgement_mapping.AddTimeField("entry_time",
+				       &Acknowledgement::GetEntryTime);
+  acknowledgement_mapping.AddShortField("is_sticky",
+					&Acknowledgement::GetIsSticky);
+  acknowledgement_mapping.AddShortField("notify_contacts",
+					&Acknowledgement::GetNotifyContacts);
+  acknowledgement_mapping.AddShortField("persistent_comment",
+    &Acknowledgement::GetPersistentComment);
+  acknowledgement_mapping.AddShortField("state",
+					&Acknowledgement::GetState);
+  return ;
+}
 
 /**
  *  Connection mapping.
@@ -350,13 +381,14 @@ static void InitProgramStatusMapping()
 #ifndef NDEBUG
   logging.AddDebug("Initializing ProgramStatus mapping");
 #endif /* !NDEBUG */
+  program_status_mapping.SetTable("programstatus");
   program_status_mapping.AddShortField("active_host_checks_enabled",
     &ProgramStatus::GetActiveHostChecksEnabled);
   program_status_mapping.AddShortField("active_service_checks_enabled",
     &ProgramStatus::GetActiveServiceChecksEnabled);
   program_status_mapping.AddShortField("daemon_mode",
 				       &ProgramStatus::GetDaemonMode);
-  program_status_mapping.AddShortField("event_handler_enabled",
+  program_status_mapping.AddShortField("event_handlers_enabled",
 				       &ProgramStatus::GetEventHandlerEnabled);
   program_status_mapping.AddShortField("failure_prediction_enabled",
     &ProgramStatus::GetFailurePredictionEnabled);
@@ -677,6 +709,7 @@ void CentreonBroker::InitMappings()
   logging.AddDebug("Initializing Object-Relational mappings...");
   logging.Indent();
 #endif /* !NDEBUG */
+  InitAcknowledgementMapping();
   InitConnectionMapping();
   InitConnectionStatusMapping();
   InitHostMapping();
