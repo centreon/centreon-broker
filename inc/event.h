@@ -40,6 +40,7 @@ namespace              CentreonBroker
     enum               Type
     {
       ACKNOWLEDGEMENT = 1,
+      COMMENT,
       CONNECTION,
       CONNECTIONSTATUS,
       HOST,

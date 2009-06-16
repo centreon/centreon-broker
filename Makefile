@@ -15,6 +15,7 @@ RM		=	rm -rf
 
 SRC		=	src/acknowledgement.cpp			\
 			src/cb2db.cpp				\
+			src/comment.cpp				\
 			src/connection.cpp			\
 			src/connection_status.cpp		\
 			src/db/connection.cpp			\
