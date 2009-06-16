@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
       logging.Indent();
 #endif /* !NDEBUG */
       gl_na = new NetworkAcceptor(*gl_ios);
-      gl_na->Accept(5668);
+      gl_na->Accept(5667);
 #ifndef NDEBUG
       logging.Deindent();
 #endif /* !NDEBUG */

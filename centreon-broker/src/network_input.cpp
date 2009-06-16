@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/15/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -98,6 +98,7 @@ ProtocolSocket& ProtocolSocket::operator=(const ProtocolSocket& ps) throw ()
 ProtocolSocket::ProtocolSocket(boost::asio::ip::tcp::socket& s)
   throw () : socket_(s)
 {
+  this->buffer_[0] = '\0';
   this->bytes_processed_ = 0L;
   this->discard_ = 0;
   this->last_checkin_time_ = time(NULL);
@@ -275,18 +276,18 @@ struct KeySetter
  *  For all kind of events, this template function will parse the socket input,
  *  fill the object and publish it.
  */
-template <typename Event>
+template <typename EventType>
 static inline void HandleObject(const std::string& instance,
-                                const KeySetter<Event>* key_setters,
+                                const KeySetter<EventType>* key_setters,
                                 ProtocolSocket& ps)
 {
   int key;
   char* key_str;
   const char* value_str;
   char* tmp;
-  Event* event;
+  EventType* event;
 
-  event = new Event;
+  event = new EventType;
   event->SetNagiosInstance(instance);
   key_str = ps.GetLine();
   tmp = strchr(key_str, '=');
@@ -462,7 +463,7 @@ void NetworkInput::HandleHost(ProtocolSocket& socket)
       { 0, '\0', static_cast<void (Host::*)(double)>(NULL) }
     };
 
-  HandleObject(this->instance_, keys_setters, socket);
+  HandleObject<Host>(this->instance_, keys_setters, socket);
 }
 
 /**
@@ -558,7 +559,7 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 	{ 0, '\0', static_cast<void (HostStatus::*)(double)>(NULL) }
       };
 
-  HandleObject(this->instance_, keys_setters, socket);
+  HandleObject<HostStatus>(this->instance_, keys_setters, socket);
   return ;
 }
 
@@ -666,7 +667,7 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (ProgramStatus::*)(double)>(NULL) }
     };
 
-  HandleObject(this->instance_, keys_setters, ps);
+  HandleObject<ProgramStatus>(this->instance_, keys_setters, ps);
   return ;
 }
 
@@ -814,7 +815,7 @@ void NetworkInput::HandleService(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (Service::*)(double)>(NULL) }
     };
 
-  HandleObject(this->instance_, keys_setters, ps);
+  HandleObject<Service>(this->instance_, keys_setters, ps);
   return ;
 }
 
@@ -909,7 +910,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (ServiceStatus::*)(double)>(NULL) }
     };
 
-  HandleObject(this->instance_, keys_setters, ps);
+  HandleObject<ServiceStatus>(this->instance_, keys_setters, ps);
   return ;
 }
 

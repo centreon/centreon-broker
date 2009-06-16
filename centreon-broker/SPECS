@@ -1,0 +1,116 @@
+
+          ------------------------------------------------------------
+
+                                Centreon-Broker
+
+          ------------------------------------------------------------
+
+
+1 Introduction
+--------------
+
+The goal of Centreon-Broker is to store configuration and event data from
+Nagios instances in one or more databases, as NDOUTILS do, but in a more
+optimized way. Currently Centreon-Broker only provides a ndo2db replacement
+called cb2db which has many features the original daemon lacks, like :
+
+  - support of multiple DBMS (like MySQL, PostgreSQL and Oracle) (only MySQL
+    support is fully implemented yet)
+  - simultaneous output in multiple database server
+
+Also cb2db is more optimized. According to our first benchmarks, cb2db have a
+smaller network footprint and is roughly 60 times faster than ndo2db.
+
+
+2 Overall
+---------
+
+For now, Centreon-Broker still uses ndomod as event broker and globally works
+like ndo2db. So basically, cb2db listens on a socket, waiting for new ndomod
+clients to connect, generates events which are later processed and pushed in
+one or more databases.
+
+
+                       ______________
+                      /              \
+                      |   Network    |    Listen on a socket (default 5668)
+                      |   Acceptor   |    waiting for new clients.
+                      \______________/
+
+                         |   |
+                             |
+           - - - - - - - '   |  Accepts new client connections.
+          |                  |
+                             V
+       ___V___         ______________
+      |Network|       /              \    Each NetworkInput object represents
+      | Input |       |   Network    |    a client connection. Every connection
+       -------        |    Input     |    is separatly handled in its own
+          |           \______________/    thread.
+
+          |                  |
+                             |
+          |                  |  Generates events.
+           - - - - - - - -   |
+                          V   V
+                       ______________
+                      /              \    Then Events are generated. Events can
+                      |    Events    |    be all kind of Nagios events (host
+                      |              |    definition, service status, ...)
+                      \______________/
+
+                         |   |
+                             |
+           - - - - - - - '   |  Are processed.
+          |                  |
+                             V
+       ___V____        ______________
+      |Database|      /              \
+       --------       |   Database   |    Finally events are processed and
+                      |              |    pushed in database(s).
+                      \______________/
+
+
+3 Network
+---------
+
+As you can see in the schema above, cb2db can accept multiple Nagios instances
+connections. Also, as soon as we will start to implement the ndomod part of
+Centreon-Broker, we will likely add the following features :
+
+  - TLS connection
+  - IPv6 socket
+  - Unix domain socket
+  - multiple listening sockets
+
+
+4 Events
+--------
+
+cb2db does not fully support the integral list of Nagios events, but the main
+ones are :
+
+  - NDO_API_HOSTDEFINITION
+  - NDO_API_HOSTSTATUSDATA
+  - NDO_API_SERVICEDEFINITION
+  - NDO_API_SERVICESTATUSDATA
+
+More will come soon.
+
+
+5 Output
+--------
+
+Right now, only database output is supported but we plan to add file output
+too. This will help for debugging purposes, backlog in case of database failure
+or just because you want plain-text output :-)
+
+ 5.1 Database
+ ------------
+
+MySQL is currently the only DBMS supported and implemented (but PostgreSQL
+support has been started). The current implementation makes use of a nice
+features supported by modern DBMS : prepared statements. I won't go in details
+of all advantages that prepared statements have (for this you have Google) but
+note that prepared statements will help us reduce network footprint as well as
+DB server load.
