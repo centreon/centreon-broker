@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/12/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_INPUT_H_
@@ -19,36 +19,37 @@
 # include <string>
 # include "connection_status.h"
 
-namespace                           CentreonBroker
+namespace                         CentreonBroker
 {
-  class                             ProtocolSocket;
+  class                           ProtocolSocket;
 
   /**
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
    */
-  class                             NetworkInput
+  class                           NetworkInput
   {
-    friend class                    NetworkAcceptor;
+    friend class                  NetworkAcceptor;
 
    private:
-    ConnectionStatus                conn_status_;
-    std::string                     instance_;
-    boost::asio::ip::tcp::socket&   socket_;
-    boost::thread*                  thread_;
-                                    NetworkInput(boost::asio::ip::tcp::socket&);
-                                    NetworkInput(const NetworkInput& ni);
-    NetworkInput&                   operator=(const NetworkInput& ni);
-    void                            HandleHost(ProtocolSocket& ps);
-    void                            HandleHostStatus(ProtocolSocket& ps);
-    void                            HandleInitialization(ProtocolSocket& ps);
-    void                            HandleProgramStatus(ProtocolSocket& ps);
-    void                            HandleService(ProtocolSocket& ps);
-    void                            HandleServiceStatus(ProtocolSocket& ps);
+    ConnectionStatus              conn_status_;
+    std::string                   instance_;
+    boost::asio::ip::tcp::socket& socket_;
+    boost::thread*                thread_;
+                                  NetworkInput(boost::asio::ip::tcp::socket&);
+                                  NetworkInput(const NetworkInput& ni);
+    NetworkInput&                 operator=(const NetworkInput& ni);
+    void                          HandleAcknowledgement(ProtocolSocket& ps);
+    void                          HandleHost(ProtocolSocket& ps);
+    void                          HandleHostStatus(ProtocolSocket& ps);
+    void                          HandleInitialization(ProtocolSocket& ps);
+    void                          HandleProgramStatus(ProtocolSocket& ps);
+    void                          HandleService(ProtocolSocket& ps);
+    void                          HandleServiceStatus(ProtocolSocket& ps);
 
    public:
-                                    ~NetworkInput() throw ();
-    void                            operator()();
+                                  ~NetworkInput() throw ();
+    void                          operator()();
   };
 }
 

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/04/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #ifndef EVENT_H_
@@ -37,6 +37,17 @@ namespace              CentreonBroker
     int                readers_;
 
    public:
+    enum               Type
+    {
+      ACKNOWLEDGEMENT = 1,
+      CONNECTION,
+      CONNECTIONSTATUS,
+      HOST,
+      HOSTSTATUS,
+      PROGRAMSTATUS,
+      SERVICE,
+      SERVICESTATUS
+    };
                        Event();
                        Event(const Event& event);
     virtual            ~Event();

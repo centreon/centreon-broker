@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 06/04/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include "program_status.h"
@@ -215,8 +215,7 @@ time_t ProgramStatus::GetProgramStartTime() const throw ()
  */
 int ProgramStatus::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (6);
+  return (Event::PROGRAMSTATUS);
 }
 
 /**

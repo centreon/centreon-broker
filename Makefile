@@ -13,7 +13,8 @@
 CXX		=	g++
 RM		=	rm -rf
 
-SRC		=	src/cb2db.cpp				\
+SRC		=	src/acknowledgement.cpp			\
+			src/cb2db.cpp				\
 			src/connection.cpp			\
 			src/connection_status.cpp		\
 			src/db/connection.cpp			\

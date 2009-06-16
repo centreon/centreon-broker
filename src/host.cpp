@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/22/09 Matthieu Kermagoret
-** Last update 05/28/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -181,8 +181,7 @@ const std::string& Host::GetStatusmapImage() const throw ()
  */
 int Host::GetType() const throw ()
 {
-  // XXX : hardcoded value
-  return (9);
+  return (Event::HOST);
 }
 
 /**

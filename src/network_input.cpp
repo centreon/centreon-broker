@@ -7,12 +7,13 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/15/09 Matthieu Kermagoret
+** Last update 06/16/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
 #include <cstdlib>
 #include <ctime>
+#include "acknowledgement.h"
 #include "connection.h"
 #include "event_publisher.h"
 #include "host.h"
@@ -376,6 +377,34 @@ NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 {
   (void)ni;
   return (*this);
+}
+
+/**
+ *  Handle an acknowledgement and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleAcknowledgement(ProtocolSocket& socket)
+{
+  static const KeySetter<Acknowledgement> acknowledgement_setters[] =
+    {
+      { NDO_DATA_ACKNOWLEDGEMENTTYPE,
+	's',
+	&Acknowledgement::SetAcknowledgementType },
+      { NDO_DATA_AUTHORNAME, 'S', &Acknowledgement::SetAuthorName },
+      { NDO_DATA_COMMENT, 'S', &Acknowledgement::SetComment },
+      { NDO_DATA_HOST, 'S', &Acknowledgement::SetHost },
+      { NDO_DATA_NOTIFYCONTACTS, 's', &Acknowledgement::SetNotifyContacts },
+      { NDO_DATA_PERSISTENT, 's', &Acknowledgement::SetPersistentComment },
+      { NDO_DATA_SERVICE, 'S', &Acknowledgement::SetService },
+      { NDO_DATA_STATE, 's', &Acknowledgement::SetState },
+      { NDO_DATA_STICKY, 's', &Acknowledgement::SetIsSticky },
+      { NDO_DATA_TIMESTAMP, 't', &Acknowledgement::SetEntryTime },
+      { 0, '\0', static_cast<void (Acknowledgement::*)(double)>(NULL) }
+    };
+
+  HandleObject<Acknowledgement>(this->instance_,
+				acknowledgement_setters,
+				socket);
+  return ;
 }
 
 /**
@@ -969,9 +998,11 @@ void NetworkInput::operator()()
     void (NetworkInput::* handler)(ProtocolSocket&);
   } handlers[] =
       {
+	{ NDO_API_ACKNOWLEDGEMENTDATA, &NetworkInput::HandleAcknowledgement },
 	{ NDO_API_HOSTDEFINITION, &NetworkInput::HandleHost },
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
 	{ NDO_API_PROGRAMSTATUSDATA, &NetworkInput::HandleProgramStatus },
+	{ NDO_API_SERVICEDEFINITION, &NetworkInput::HandleService },
 	{ NDO_API_SERVICESTATUSDATA, &NetworkInput::HandleServiceStatus },
 	{ 0, NULL }
       };
