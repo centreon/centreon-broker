@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/16/09 Matthieu Kermagoret
-** Last update 06/16/09 Matthieu Kermagoret
+** Last update 06/17/09 Matthieu Kermagoret
 */
 
 #ifndef COMMENT_H_
@@ -16,7 +16,7 @@
 # include <string>
 # include "event.h"
 
-namespace       CentreonBroker
+namespace              CentreonBroker
 {
   class                Comment : public Event
   {

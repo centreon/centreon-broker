@@ -19,7 +19,8 @@ called cb2db which has many features the original daemon lacks, like :
   - simultaneous output in multiple database server
 
 Also cb2db is more optimized. According to our first benchmarks, cb2db have a
-smaller network footprint and is roughly 60 times faster than ndo2db.
+smaller network footprint and is roughly 60 times faster than ndo2db (which
+seems a lot, I doubt that this is really the case).
 
 
 2 Overall

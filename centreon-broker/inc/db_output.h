@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/16/09 Matthieu Kermagoret
+** Last update 06/17/09 Matthieu Kermagoret
 */
 
 #ifndef DB_OUTPUT_H_
@@ -37,6 +37,7 @@ namespace                      CentreonBroker
     class                      Update;
   }
   class                        Acknowledgement;
+  class                        Comment;
   class                        Event;
   class                        Host;
   class                        HostStatus;
@@ -88,6 +89,7 @@ namespace                      CentreonBroker
     void                          OnEvent(Event* e) throw ();
     void                          ProcessAcknowledgement(
                                     const Acknowledgement& ack);
+    void                          ProcessComment(const Comment& comment);
     void                          ProcessConnection(
                                     const Connection& connection);
     void                          ProcessConnectionStatus(
