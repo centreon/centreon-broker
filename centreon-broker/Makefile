@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/16/09 Matthieu Kermagoret
+## Last update 06/17/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -16,6 +16,9 @@ RM		=	rm -rf
 SRC		=	src/acknowledgement.cpp			\
 			src/cb2db.cpp				\
 			src/comment.cpp				\
+			src/conf/conf.cpp			\
+			src/conf/input.cpp			\
+			src/conf/output.cpp			\
 			src/connection.cpp			\
 			src/connection_status.cpp		\
 			src/db/connection.cpp			\
@@ -56,9 +59,9 @@ CXXFLAGS	+=	-std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			`mysql_config --include`			\
 			-I`pg_config --includedir`
 ## Debug
-#CXXFLAGS	+=	-g3
+CXXFLAGS	+=	-g3
 ## Release
-CXXFLAGS	+=	-O2 -DNDEBUG
+#CXXFLAGS	+=	-O2 -DNDEBUG
 LDFLAGS		+=	-lpthread -lrt `mysql_config --libs_r`		\
 			-lboost_system-mt -lboost_thread-mt		\
 			-L`pg_config --libdir` -lpq
