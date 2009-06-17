@@ -7,13 +7,14 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/16/09 Matthieu Kermagoret
+** Last update 06/17/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
 #include <cstdlib>
 #include <ctime>
 #include "acknowledgement.h"
+#include "comment.h"
 #include "connection.h"
 #include "event_publisher.h"
 #include "host.h"
@@ -404,6 +405,32 @@ void NetworkInput::HandleAcknowledgement(ProtocolSocket& socket)
   HandleObject<Acknowledgement>(this->instance_,
 				acknowledgement_setters,
 				socket);
+  return ;
+}
+
+/**
+ *  Handle a comment and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleComment(ProtocolSocket& socket)
+{
+  static const KeySetter<Comment> comment_setters[] =
+    {
+      { NDO_DATA_AUTHORNAME, 'S', &Comment::SetAuthorName },
+      { NDO_DATA_COMMENT, 'S', &Comment::SetCommentData },
+      //{ NDO_DATA_COMMENTID },
+      { NDO_DATA_COMMENTTYPE, 's', &Comment::SetCommentType },
+      { NDO_DATA_ENTRYTIME, 't', &Comment::SetEntryTime },
+      { NDO_DATA_ENTRYTYPE, 's', &Comment::SetEntryType },
+      { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpirationTime },
+      { NDO_DATA_EXPIRES, 's', &Comment::SetExpires },
+      { NDO_DATA_HOST, 'S', &Comment::SetHost },
+      { NDO_DATA_PERSISTENT, 's', &Comment::SetIsPersistent },
+      { NDO_DATA_SERVICE, 'S', &Comment::SetService },
+      { NDO_DATA_SOURCE, 's', &Comment::SetCommentSource },
+      { 0, '\0', static_cast<void (Comment::*)(double)>(NULL) }
+    };
+
+  HandleObject<Comment>(this->instance_, comment_setters, socket);
   return ;
 }
 
@@ -999,6 +1026,7 @@ void NetworkInput::operator()()
   } handlers[] =
       {
 	{ NDO_API_ACKNOWLEDGEMENTDATA, &NetworkInput::HandleAcknowledgement },
+	{ NDO_API_COMMENTDATA, &NetworkInput::HandleComment },
 	{ NDO_API_HOSTDEFINITION, &NetworkInput::HandleHost },
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
 	{ NDO_API_PROGRAMSTATUSDATA, &NetworkInput::HandleProgramStatus },

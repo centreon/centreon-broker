@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/16/09 Matthieu Kermagoret
+** Last update 06/17/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_INPUT_H_
@@ -40,6 +40,7 @@ namespace                         CentreonBroker
                                   NetworkInput(const NetworkInput& ni);
     NetworkInput&                 operator=(const NetworkInput& ni);
     void                          HandleAcknowledgement(ProtocolSocket& ps);
+    void                          HandleComment(ProtocolSocket& ps);
     void                          HandleHost(ProtocolSocket& ps);
     void                          HandleHostStatus(ProtocolSocket& ps);
     void                          HandleInitialization(ProtocolSocket& ps);

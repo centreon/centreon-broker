@@ -7,11 +7,12 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/16/09 Matthieu Kermagoret
+** Last update 06/17/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
 #include <memory>
+#include "comment.h"
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
 #include "db/predicate.h"
@@ -262,6 +263,9 @@ void DBOutput::ProcessEvent(Event* event)
      case Event::ACKNOWLEDGEMENT:
       ProcessAcknowledgement(*static_cast<Acknowledgement*>(event));
       break ;
+     case Event::COMMENT:
+      ProcessComment(*static_cast<Comment*>(event));
+      break ;
      case Event::CONNECTION:
       ProcessConnection(*static_cast<Connection*>(event));
       break ;
@@ -308,6 +312,22 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
   query->Execute(ack);
   this->QueryExecuted();
 #ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
+ *  Process a Comment event.
+ */
+void DBOutput::ProcessComment(const Comment& comment)
+{
+#ifndef NDEBUG
+  logging.AddDebug("Processing Comment event...");
+  logging.Indent();
+#endif /* !NDEBUG */
+#ifndef NDEBUG
+  logging.AddDebug("No processing yet");
   logging.Deindent();
 #endif /* !NDEBUG */
   return ;
