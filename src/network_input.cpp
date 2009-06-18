@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/18/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -19,6 +19,7 @@
 #include "event_publisher.h"
 #include "host.h"
 #include "host_status.h"
+#include "logging.h"
 #include "nagios/protoapi.h"
 #include "network_input.h"
 #include "program_status.h"
@@ -26,173 +27,6 @@
 #include "service_status.h"
 
 using namespace CentreonBroker;
-
-/******************************************************************************
-*                                                                             *
-*                                                                             *
-*                              ProtocolSocket                                 *
-*                                                                             *
-*                                                                             *
-******************************************************************************/
-
-/**************************************
-*                                     *
-*              Definition             *
-*                                     *
-**************************************/
-
-/**
- *  The ProtocolSocket class will buffer input from the socket and make it
- *  available a line at a time.
- */
-namespace                         CentreonBroker
-{
-  class                           ProtocolSocket
-  {
-   private:
-    char                          buffer_[1024];
-    unsigned long                 bytes_processed_;
-    size_t                        discard_;
-    time_t                        last_checkin_time_;
-    size_t                        length_;
-    unsigned long                 lines_processed_;
-    boost::asio::ip::tcp::socket& socket_;
-    ProtocolSocket&               operator=(const ProtocolSocket& ps) throw ();
-
-   public:
-                                  ProtocolSocket(
-                                    boost::asio::ip::tcp::socket& socket)
-                                    throw ();
-                                  ProtocolSocket(const ProtocolSocket& ps)
-                                   throw ();
-                                  ~ProtocolSocket() throw ();
-    unsigned long                 GetBytesProcessed() const;
-    time_t                        GetLastCheckinTime() const;
-    char*                         GetLine();
-    unsigned long                 GetLinesProcessed() const;
-  };
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  ProtocolSocket operator= overload.
- */
-ProtocolSocket& ProtocolSocket::operator=(const ProtocolSocket& ps) throw ()
-{
-  (void)ps;
-  return (*this);
-}
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
-
-/**
- *  ProtocolSocket constructor.
- */
-ProtocolSocket::ProtocolSocket(boost::asio::ip::tcp::socket& s)
-  throw () : socket_(s)
-{
-  this->buffer_[0] = '\0';
-  this->bytes_processed_ = 0L;
-  this->discard_ = 0;
-  this->last_checkin_time_ = time(NULL);
-  this->length_ = 0;
-  this->lines_processed_ = 0L;
-}
-
-/**
- *  ProtocolSocket copy constructor.
- */
-ProtocolSocket::ProtocolSocket(const ProtocolSocket& ps) throw ()
-  : socket_(ps.socket_)
-{
-  memcpy(this->buffer_, ps.buffer_, sizeof(this->buffer_));
-  this->bytes_processed_ = ps.bytes_processed_;
-  this->discard_ = ps.discard_;
-  this->last_checkin_time_ = ps.last_checkin_time_;
-  this->length_ = ps.length_;
-  this->lines_processed_ = ps.lines_processed_;
-}
-
-/**
- *  ProtocolSocket destructor.
- */
-ProtocolSocket::~ProtocolSocket() throw ()
-{
-}
-
-/**
- *  Returns the number of bytes processed by the socket.
- */
-unsigned long ProtocolSocket::GetBytesProcessed() const
-{
-  return (this->bytes_processed_);
-}
-
-/**
- *  Returns the last time the client had an activity.
- */
-time_t ProtocolSocket::GetLastCheckinTime() const
-{
-  return (this->last_checkin_time_);
-}
-
-/**
- *  Fetch a line of input.
- */
-char* ProtocolSocket::GetLine()
-{
-  int old_length;
-
-  this->length_ -= this->discard_;
-  memmove(this->buffer_,
-          this->buffer_ + this->discard_,
-          this->length_ + 1);
-  this->discard_ = 0;
-  old_length = 0;
-  while (!strchr(this->buffer_ + old_length, '\n')
-         && this->length_ < sizeof(this->buffer_) - 1)
-    {
-      unsigned long bytes_read;
-
-      old_length = this->length_;
-      bytes_read = this->socket_.receive(
-                      boost::asio::buffer(this->buffer_ + this->length_,
-                        sizeof(this->buffer_) - this->length_ - 1));
-      this->bytes_processed_ += bytes_read;
-      this->length_ += bytes_read;
-      this->buffer_[this->length_] = '\0';
-      this->last_checkin_time_ = time(NULL);
-    }
-  this->discard_ = strcspn(this->buffer_, "\n");
-  this->buffer_[this->discard_++] = '\0';
-  ++this->lines_processed_;
-  return (this->buffer_);
-}
-
-/**
- *  Returns the number of lines processed by the socket.
- */
-unsigned long ProtocolSocket::GetLinesProcessed() const
-{
-  return (this->lines_processed_);
-}
-
-/******************************************************************************
-*                                                                             *
-*                                                                             *
-*                               NetworkInput                                  *
-*                                                                             *
-*                                                                             *
-******************************************************************************/
 
 /**************************************
 *                                     *
@@ -355,18 +189,41 @@ static inline void HandleObject(const std::string& instance,
 /**
  *  NetworkInput constructor.
  */
-NetworkInput::NetworkInput(boost::asio::ip::tcp::socket& socket)
-  : socket_(socket)
+NetworkInput::NetworkInput(boost::asio::ip::tcp::socket* socket)
+  : socket_(new StandardProtocolSocket(socket))
 {
-  this->conn_status_.AddReader(NULL);
+#ifndef NDEBUG
+  logging.AddDebug("New connection accepted, launching client thread...");
+#endif /* !NDEBUG */
   this->thread_ = new boost::thread(boost::ref(*this));
   this->thread_->detach();
+  delete (this->thread_);
+  this->thread_ = NULL;
 }
+
+#ifdef USE_TLS
+/**
+ *  NetworkInput constructor.
+ */
+NetworkInput::NetworkInput(
+  boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* socket)
+  : socket_(new TlsProtocolSocket(socket)), thread_(NULL)
+{
+#ifndef NDEBUG
+  logging.AddDebug("Launching asynchronous TLS handshake...");
+#endif /* !NDEBUG */
+  socket->async_handshake(boost::asio::ssl::stream_base::server,
+			  boost::bind(&NetworkInput::Handshake,
+				      this,
+				      boost::asio::placeholders::error));
+  this->thread_ = NULL;
+}
+#endif /* USE_TLS */
 
 /**
  *  NetworkInput copy constructor.
  */
-NetworkInput::NetworkInput(const NetworkInput& ni) : socket_(ni.socket_)
+NetworkInput::NetworkInput(const NetworkInput& ni)
 {
   (void)ni;
 }
@@ -970,6 +827,31 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
   return ;
 }
 
+#ifdef USE_TLS
+/**
+ *  Handle the TLS handshake.
+ */
+void NetworkInput::Handshake(const boost::system::error_code& ec)
+{
+  if (!ec)
+    {
+# ifndef NDEBUG
+      logging.AddDebug("TLS handshake succeeded, launching client thread...");
+# endif /* !NDEBUG */
+      this->thread_ = new boost::thread(boost::ref(*this));
+      this->thread_->detach();
+      delete (this->thread_);
+      this->thread_ = NULL;
+    }
+  else
+    {
+      logging.AddInfo("TLS handshake failed, closing connection...");
+      delete (this);
+    }
+  return ;
+}
+#endif /* USE_TLS */
+
 /**************************************
 *                                     *
 *            Public Methods           *
@@ -981,6 +863,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
  */
 NetworkInput::~NetworkInput() throw ()
 {
+  logging.AddInfo("Closing client connection...");
   // We might end up here and the object already been destroyed so let's be
   // extra careful.
   try
@@ -993,19 +876,8 @@ NetworkInput::~NetworkInput() throw ()
         if (*it == this)
           {
             gl_ni.erase(it);
-            if (this->socket_.is_open())
-              {
-                boost::system::error_code ec;
-
-                this->socket_.shutdown(
-                  boost::asio::ip::tcp::socket::shutdown_both,
-                  ec);
-                this->socket_.close(ec);
-                delete (&this->socket_);
-              }
             break ;
           }
-      delete (this->thread_);
     }
   catch (...)
     {
@@ -1018,7 +890,6 @@ NetworkInput::~NetworkInput() throw ()
 void NetworkInput::operator()()
 {
   char* buffer;
-  ProtocolSocket socket(this->socket_);
   static const struct
   {
     int event;
@@ -1037,8 +908,8 @@ void NetworkInput::operator()()
 
   try
     {
-      HandleInitialization(socket);
-      buffer = socket.GetLine();
+      HandleInitialization(*this->socket_);
+      buffer = this->socket_->GetLine();
       while (strcmp(buffer, NDO_API_GOODBYE))
 	{
 	  if (4 == strlen(buffer) && ':' == buffer[3])
@@ -1051,20 +922,20 @@ void NetworkInput::operator()()
 		if (handlers[i].event == event)
 		  {
 		    this->conn_status_.SetBytesProcessed(
-                      socket.GetBytesProcessed());
+                      this->socket_->GetBytesProcessed());
 		    this->conn_status_.SetLinesProcessed(
-                      socket.GetLinesProcessed());
-		    (this->*(handlers[i].handler))(socket);
+                      this->socket_->GetLinesProcessed());
+		    (this->*(handlers[i].handler))(*this->socket_);
 		    this->conn_status_.SetEntriesProcessed(
                       this->conn_status_.GetEntriesProcessed() + 1);
 		    this->conn_status_.SetLastCheckinTime(
-                      socket.GetLastCheckinTime());
+                      this->socket_->GetLastCheckinTime());
 		    EventPublisher::GetInstance()->Publish(
                       new ConnectionStatus(this->conn_status_));
 		    break ;
 		  }
 	    }
-	  buffer = socket.GetLine();
+	  buffer = this->socket_->GetLine();
 	}
       this->conn_status_.SetDataEndTime(time(NULL));
     }

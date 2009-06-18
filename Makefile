@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/17/09 Matthieu Kermagoret
+## Last update 06/18/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -47,6 +47,7 @@ SRC		=	src/acknowledgement.cpp			\
 			src/network_acceptor.cpp		\
 			src/network_input.cpp			\
 			src/program_status.cpp			\
+			src/protocol_socket.cpp			\
 			src/service.cpp				\
 			src/service_status.cpp			\
 			src/status.cpp
@@ -59,13 +60,14 @@ CXXFLAGS	+=	-std=c++0x -W -Wall -pedantic $(INCLUDE)	\
 			`mysql_config --include`			\
 			-I`pg_config --includedir`
 ## Debug
-CXXFLAGS	+=	-g3
+#CXXFLAGS	+=	-g3
 ## Release
-#CXXFLAGS	+=	-O2 -DNDEBUG
+CXXFLAGS	+=	-O2 -DNDEBUG
 LDFLAGS		+=	-lpthread -lrt `mysql_config --libs_r`		\
 			-lboost_system-mt -lboost_thread-mt		\
 			-L`pg_config --libdir` -lpq
-
+## Features
+CXXFLAGS	+=	-DUSE_MYSQL -DUSE_POSTGRESQL -DUSE_TLS
 
 all		:	$(NAME)
 

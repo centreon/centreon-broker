@@ -7,13 +7,16 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 05/20/09 Matthieu Kermagoret
+** Last update 06/18/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_ACCEPTOR_H_
 # define NETWORK_ACCEPTOR_H_
 
 # include <boost/asio.hpp>
+# ifdef USE_TLS
+#  include <boost/asio/ssl.hpp>
+# endif /* USE_TLS */
 # include <boost/system/system_error.hpp>
 # include <list>
 # include "exception.h"
@@ -31,7 +34,12 @@ namespace                          CentreonBroker
    private:
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::io_service&       io_service_;
-    boost::asio::ip::tcp::socket*  new_socket_;
+    boost::asio::ip::tcp::socket*  new_normal_socket_;
+# ifdef USE_TLS
+    boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* new_tls_socket_;
+    bool                           tls_;
+    boost::asio::ssl::context      context_;
+# endif /* USE_TLS */
                                    NetworkAcceptor(const NetworkAcceptor& na)
                                      throw ();
     NetworkAcceptor&               operator=(const NetworkAcceptor& na)
@@ -46,6 +54,9 @@ namespace                          CentreonBroker
     void                           HandleAccept(
                                      const boost::system::error_code& ec)
                                      throw ();
+# ifdef USE_TLS
+    void                           SetTls(bool activate);
+# endif /* USE_TLS */
   };
 }
 

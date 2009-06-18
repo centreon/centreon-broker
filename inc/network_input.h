@@ -7,22 +7,25 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/18/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_INPUT_H_
 # define NETWORK_INPUT_H_
 
 # include <boost/asio.hpp>
+# ifdef USE_TLS
+#  include <boost/asio/ssl.hpp>
+# endif /* USE_TLS */
 # include <boost/thread.hpp>
 # include <cstddef>
+# include <memory>
 # include <string>
 # include "connection_status.h"
+# include "protocol_socket.h"
 
 namespace                         CentreonBroker
 {
-  class                           ProtocolSocket;
-
   /**
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
@@ -34,9 +37,13 @@ namespace                         CentreonBroker
    private:
     ConnectionStatus              conn_status_;
     std::string                   instance_;
-    boost::asio::ip::tcp::socket& socket_;
+    std::auto_ptr<ProtocolSocket> socket_;
     boost::thread*                thread_;
-                                  NetworkInput(boost::asio::ip::tcp::socket&);
+                                  NetworkInput(boost::asio::ip::tcp::socket*);
+# ifdef USE_TLS
+				  NetworkInput(boost::asio::ssl::stream<
+				    boost::asio::ip::tcp::socket>*);
+# endif /* USE_TLS */
                                   NetworkInput(const NetworkInput& ni);
     NetworkInput&                 operator=(const NetworkInput& ni);
     void                          HandleAcknowledgement(ProtocolSocket& ps);
@@ -47,6 +54,9 @@ namespace                         CentreonBroker
     void                          HandleProgramStatus(ProtocolSocket& ps);
     void                          HandleService(ProtocolSocket& ps);
     void                          HandleServiceStatus(ProtocolSocket& ps);
+# ifdef USE_TLS
+    void                          Handshake(const boost::system::error_code&);
+# endif /* USE_TLS */
 
    public:
                                   ~NetworkInput() throw ();

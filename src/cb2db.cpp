@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/18/09 Matthieu Kermagoret
 */
 
 #include <boost/asio.hpp>
@@ -91,8 +91,11 @@ int main(int argc, char* argv[])
 		NetworkAcceptor* na;
 
 		na = new NetworkAcceptor(*gl_boost_io);
+#ifdef USE_TLS
+		if (input->GetTls())
+		  na->SetTls(true);
+#endif /* USE_TLS */
 		na->Accept(input->GetPort());
-		// XXX : TLS
 		sockets.push_back(na);
 		input = conf.GetNextInput();
 	      }
