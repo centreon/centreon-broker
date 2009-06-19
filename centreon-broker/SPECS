@@ -79,10 +79,46 @@ As you can see in the schema above, cb2db can accept multiple Nagios instances
 connections. Also, as soon as we will start to implement the ndomod part of
 Centreon-Broker, we will likely add the following features :
 
-  - TLS connection
   - IPv6 socket
   - Unix domain socket
   - multiple listening sockets
+
+  3.1 TLS
+  -------
+
+cb2db support TLSv1 sockets, to ensure proper client authentication, as well as
+encrypted event flow (for more information on TLS, please refer to
+http://en.wikipedia.org/wiki/Transport_Layer_Security). To make TLS work in
+CentreonBroker, you need at least three files :
+
+  - one containing your public key (`tls_certificate` config file parameter)
+  - one containing your private key (`tls_key config` file parameter)
+  - one containing a Diffie-Hellman parameters (`tls_dh512` parameter)
+
+Optionnally you can also have a Certificate Authority (CA) public key if you
+want to provide authentication (`tls_ca` config file parameter).
+
+If your are not familiar with certificate generation and want to provide only
+encrypted event flow, type the following commands :
+
+# Generate the private key (private.key)
+ $> openssl genrsa -out private.key 1024
+# Generate the public key from the private key (certificate.pem)
+ $> openssl req -new -x509 -key private.key -out certificate.pem
+# Generate Diffie-Hellman parameters (dh512.pem)
+ $> openssl dhparam -out dh512.pem 512
+
+If you want to authenticate clients, you need a private key (see above to see
+how to generate such a key). You can then sign client certificates using the
+generated server certificate like this :
+
+# Generate a Certificate Signing Request
+ $> openssl req -new -key client.key -out client.csr
+# Sign the CSR using the server certificate
+ $> openssl x509 -req -in client.csr -CA certificate.pem -CAkey private.key
+ -set_serial 01 -out client.pem
+# Discard CSR
+ $> rm client.csr
 
 
 4 Events
@@ -99,14 +135,58 @@ ones are :
 More will come soon.
 
 
-5 Output
+5 Configuration file
+--------------------
+
+To start, a cb2db instance needs a configuration file supplied as its first
+argument. It supports both input and output definition on the following form :
+
+input
+{
+	parameter1=value1
+	parameter2=value2
+}
+
+output
+{
+	parameter1=value1
+	parameter2=value2
+}
+
+ 5.1 Input parameters
+ --------------------
+
+port                Port number on which we should listen.
+tls_ca              If you want to provide client authentication, set this to
+                    the filename of the CA's certificate who signed clients'
+                    certificates.
+tls_certificate     If you want to provide TLS support on socket, set this
+                    parameter to the filename of the public key.
+tls_dh512           This file should contain Diffie-Hellman parameters. See 3.1
+                    if you don't know how to generate such a file.
+tls_key             If you want to provide TLS support on socket, set this
+                    parameter to the filename of the private key.
+type                Can only be 'socket', as only such inputs are supported.
+
+ 5.2 Output parameters
+ ---------------------
+
+db                  DB name.
+host                DB server host.
+password            DB password used to authenticate.
+prefix              Prefix used on each table name (not yet used).
+type                Only 'db' is currently supported.
+user                DB user name used to authenticate.
+
+
+6 Output
 --------
 
 Right now, only database output is supported but we plan to add file output
 too. This will help for debugging purposes, backlog in case of database failure
 or just because you want plain-text output :-)
 
- 5.1 Database
+ 6.1 Database
  ------------
 
 MySQL is currently the only DBMS supported and implemented (but PostgreSQL

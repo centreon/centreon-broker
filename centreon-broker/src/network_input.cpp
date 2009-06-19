@@ -846,6 +846,9 @@ void NetworkInput::Handshake(const boost::system::error_code& ec)
   else
     {
       logging.AddInfo("TLS handshake failed, closing connection...");
+      logging.Indent();
+      logging.AddInfo(ec.message().c_str());
+      logging.Deindent();
       delete (this);
     }
   return ;

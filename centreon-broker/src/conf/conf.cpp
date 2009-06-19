@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/17/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/19/09 Matthieu Kermagoret
 */
 
 #include <cerrno>
@@ -58,8 +58,14 @@ void Conf::HandleInput(std::ifstream& ifs)
 	; // Skip line
       else if (!strcmp(key, "port"))
 	in.SetPort(value ? strtol(value, NULL, 0) : 0);
-      else if (!strcmp(key, "tls"))
-	in.SetTls(value ? !strcmp(value, "yes") : false);
+      else if (!strcmp(key, "tls_ca"))
+	in.SetTlsCa(value ? value : "");
+      else if (!strcmp(key, "tls_certificate"))
+	in.SetTlsCertificate(value ? value : "");
+      else if (!strcmp(key, "tls_dh512"))
+	in.SetTlsDH512(value ? value : "");
+      else if (!strcmp(key, "tls_key"))
+	in.SetTlsKey(value ? value : "");
       else if (!strcmp(key, "type"))
 	in.SetType(value ? value : "");
       ifs.getline(buffer, sizeof(buffer));

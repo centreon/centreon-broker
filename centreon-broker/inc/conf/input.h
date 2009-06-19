@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/17/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/19/09 Matthieu Kermagoret
 */
 
 #ifndef CONF_INPUT_H_
@@ -22,11 +22,6 @@ namespace                CentreonBroker
     class                Input
     {
      private:
-      enum               Bool
-      {
-	TLS = 0,
-	BOOL_NB
-      };
       enum               UShort
       {
 	PORT = 0,
@@ -34,10 +29,13 @@ namespace                CentreonBroker
       };
       enum               String
       {
-	TYPE = 0,
+	TLS_CA = 0,
+	TLS_CERTIFICATE,
+	TLS_DH512,
+	TLS_KEY,
+	TYPE,
 	STRING_NB
       };
-      bool               bools_[BOOL_NB];
       unsigned short     ushorts_[USHORT_NB];
       std::string        strings_[STRING_NB];
 
@@ -48,10 +46,16 @@ namespace                CentreonBroker
       Input&             operator=(const Input& input);
       bool               operator==(const Input& input);
       unsigned short     GetPort() const throw ();
-      bool               GetTls() const throw ();
+      const std::string& GetTlsCa() const throw ();
+      const std::string& GetTlsCertificate() const throw ();
+      const std::string& GetTlsDH512() const throw ();
+      const std::string& GetTlsKey() const throw ();
       const std::string& GetType() const throw ();
       void               SetPort(unsigned short port) throw ();
-      void               SetTls(bool tls) throw ();
+      void               SetTlsCa(const std::string& ca);
+      void               SetTlsCertificate(const std::string& certificate);
+      void               SetTlsDH512(const std::string& dh512);
+      void               SetTlsKey(const std::string& key);
       void               SetType(const std::string& type);
     };
   }
