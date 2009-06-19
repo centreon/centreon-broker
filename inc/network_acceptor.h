@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 06/18/09 Matthieu Kermagoret
+** Last update 06/19/09 Matthieu Kermagoret
 */
 
 #ifndef NETWORK_ACCEPTOR_H_
@@ -36,8 +36,12 @@ namespace                          CentreonBroker
     boost::asio::io_service&       io_service_;
     boost::asio::ip::tcp::socket*  new_normal_socket_;
 # ifdef USE_TLS
-    boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* new_tls_socket_;
+    std::string                    ca_;
+    std::string                    cert_;
+    std::string                    dh512_;
+    std::string                    key_;
     bool                           tls_;
+    boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* new_tls_socket_;
     boost::asio::ssl::context      context_;
 # endif /* USE_TLS */
                                    NetworkAcceptor(const NetworkAcceptor& na)
@@ -55,7 +59,10 @@ namespace                          CentreonBroker
                                      const boost::system::error_code& ec)
                                      throw ();
 # ifdef USE_TLS
-    void                           SetTls(bool activate);
+    void                           SetTls(const std::string& certificate = "",
+					  const std::string& key = "",
+					  const std::string& dh512 = "",
+					  const std::string& ca = "");
 # endif /* USE_TLS */
   };
 }

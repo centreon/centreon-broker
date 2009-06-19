@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/17/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/19/09 Matthieu Kermagoret
 */
 
 #include <cstring>
@@ -20,7 +20,6 @@ using namespace CentreonBroker::Conf;
  */
 Input::Input()
 {
-  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->ushorts_, 0, sizeof(this->ushorts_));
 }
 
@@ -44,7 +43,6 @@ Input::~Input()
  */
 Input& Input::operator=(const Input& input)
 {
-  memcpy(this->bools_, input.bools_, sizeof(this->bools_));
   memcpy(this->ushorts_, input.ushorts_, sizeof(this->ushorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = input.strings_[i];
@@ -56,9 +54,12 @@ Input& Input::operator=(const Input& input)
  */
 bool Input::operator==(const Input& input)
 {
-  return ((input.bools_[TLS] == this->bools_[TLS])
-          && (input.ushorts_[PORT] == this->ushorts_[PORT])
-          && (input.strings_[TYPE] == this->strings_[TYPE]));
+  bool match;
+
+  match = (this->ushorts_[PORT] == input.ushorts_[PORT]);
+  for (unsigned int i = 0; i < STRING_NB; i++)
+    match = (match && (this->strings_[i] == input.strings_[i]));
+  return (match);
 }
 
 /**
@@ -70,11 +71,36 @@ unsigned short Input::GetPort() const throw ()
 }
 
 /**
- *  Determines whether or not TLS should be activated on the socket input.
+ *  Get the Certificate Authority verification file used to verify the peer.
  */
-bool Input::GetTls() const throw ()
+const std::string& Input::GetTlsCa() const throw ()
 {
-  return (this->bools_[TLS]);
+  return (this->strings_[TLS_CA]);
+}
+
+/**
+ *  Get the certificate that will be used by the client to encrypt the
+ *  connection.
+ */
+const std::string& Input::GetTlsCertificate() const throw ()
+{
+  return (this->strings_[TLS_CERTIFICATE]);
+}
+
+/**
+ *  Get the file containing the Diffie-Hellman 512 bit wide key.
+ */
+const std::string& Input::GetTlsDH512() const throw ()
+{
+  return (this->strings_[TLS_DH512]);
+}
+
+/**
+ *  Get the private key file used to decrypt the connection.
+ */
+const std::string& Input::GetTlsKey() const throw ()
+{
+  return (this->strings_[TLS_KEY]);
 }
 
 /**
@@ -95,11 +121,39 @@ void Input::SetPort(unsigned short port) throw ()
 }
 
 /**
- *  Activate TLS on the socket.
+ *  Set the CA file used to verify the peer.
  */
-void Input::SetTls(bool tls) throw ()
+void Input::SetTlsCa(const std::string& ca)
 {
-  this->bools_[TLS] = tls;
+  this->strings_[TLS_CA] = ca;
+  return ;
+}
+
+/**
+ *  Set the certificate that will be used by the client to encrypt the
+ *  connection.
+ */
+void Input::SetTlsCertificate(const std::string& certificate)
+{
+  this->strings_[TLS_CERTIFICATE] = certificate;
+  return ;
+}
+
+/**
+ *  Set the Diffie-Hellman key.
+ */
+void Input::SetTlsDH512(const std::string& dh512)
+{
+  this->strings_[TLS_DH512] = dh512;
+  return ;
+}
+
+/**
+ *  Set the private key that will be used to decrypt the connection.
+ */
+void Input::SetTlsKey(const std::string& key)
+{
+  this->strings_[TLS_KEY] = key;
   return ;
 }
 

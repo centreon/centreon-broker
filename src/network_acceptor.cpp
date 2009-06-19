@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 06/18/09 Matthieu Kermagoret
+** Last update 06/19/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -170,6 +170,7 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
 #ifndef NDEBUG
       logging.AddDebug("Error occured while accept()ing connection...");
 #endif /* !NDEBUG */
+#ifdef USE_TLS
       if (this->tls_)
 	{
 	  delete (this->new_tls_socket_);
@@ -177,9 +178,12 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
 	}
       else
 	{
+#endif /* USE_TLS */
 	  delete (this->new_normal_socket_);
 	  this->new_normal_socket_ = NULL;
+#ifdef USE_TLS
 	}
+#endif /* USE_TLS */
     }
   else
     {
@@ -205,12 +209,16 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
             delete (ni);
           if (this->new_normal_socket_)
 	    delete (this->new_normal_socket_);
+#ifdef USE_TLS
 	  if (this->new_tls_socket_)
 	    delete (this->new_tls_socket_);
+#endif /* USE_TLS */
         }
     }
   this->new_normal_socket_ = NULL;
+#ifdef USE_TLS
   this->new_tls_socket_ = NULL;
+#endif /* USE_TLS */
   this->StartAccept();
   return ;
 }
@@ -219,16 +227,47 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
 /**
  *  Activate TLS on acceptor.
  */
-void NetworkAcceptor::SetTls(bool activate)
+void NetworkAcceptor::SetTls(const std::string& certificate,
+			     const std::string& key,
+			     const std::string& dh512,
+			     const std::string& ca)
 {
+  if (!certificate.empty() && !key.empty() && ! dh512.empty())
+    {
 # ifndef NDEBUG
-  if (activate)
-    logging.AddDebug("Activating TLS on socket...");
+      logging.AddDebug("Activating TLS on socket...");
+# endif /* !NDEBUG */
+      this->cert_ = certificate;
+      this->key_ = key;
+      this->dh512_ = dh512;
+      this->ca_ = ca;
+      this->context_.set_options(
+        boost::asio::ssl::context::default_workarounds);
+      this->context_.use_certificate_chain_file(this->cert_);
+      this->context_.use_private_key_file(this->key_,
+                                          boost::asio::ssl::context::pem);
+      this->context_.use_tmp_dh_file(this->dh512_);
+      if (!this->ca_.empty())
+	{
+	  this->context_.load_verify_file(this->ca_);
+	  this->context_.set_verify_mode(
+            boost::asio::ssl::context::verify_peer);
+	}
+      else
+	this->context_.set_verify_mode(boost::asio::ssl::context::verify_none);
+      this->tls_ = true;
+    }
   else
-    logging.AddDebug("Deactivating TLS on socket...");
+    {
+# ifndef NDEBUG
+      logging.AddDebug("Deactivating TLS on socket...");
 # endif /* !USE_TLS */
-  this->tls_ = activate;
-  // XXX : (un)set context
+      this->ca_.clear();
+      this->cert_.clear();
+      this->dh512_.clear();
+      this->key_.clear();
+      this->tls_ = false;
+    }
   return ;
 }
 #endif /* USE_TLS */
