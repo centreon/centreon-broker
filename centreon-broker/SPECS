@@ -153,6 +153,9 @@ output
 	parameter2=value2
 }
 
+You can also specify how to log cb2db output (file, syslog, ...) using the same
+syntax.
+
  5.1 Input parameters
  --------------------
 
@@ -168,7 +171,19 @@ tls_key             If you want to provide TLS support on socket, set this
                     parameter to the filename of the private key.
 type                Can only be 'socket', as only such inputs are supported.
 
- 5.2 Output parameters
+ 5.2 Logging parameters
+ ----------------------
+
+To define a log output, simply defines a `log` block. The following variables
+are available :
+
+flags               determines what kind of information should be sent. You can
+                    OR the following macros : DEBUG, ERROR and INFO.
+path                for a log type `file`, specify the file on which data shall
+                    be sent
+type                currently `syslog` or `file`
+
+ 5.3 Output parameters
  ---------------------
 
 db                  DB name.

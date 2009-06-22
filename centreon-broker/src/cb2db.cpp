@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/13/09 Matthieu Kermagoret
-** Last update 06/19/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <boost/asio.hpp>
@@ -54,20 +54,20 @@ int main(int argc, char* argv[])
       usage = "USAGE: ";
       usage += argv[0];
       usage += " <configfile>";
-      logging.AddInfo(usage.c_str());
+      logging.LogInfo(usage.c_str());
       exit_code = 1;
     }
   else
     {
       try
 	{
-	  logging.AddInfo("Starting initialization");
+	  logging.LogInfo("Starting initialization");
 #ifndef NDEBUG
-	  logging.AddDebug("Initializing MySQL library...");
+	  logging.LogDebug("Initializing MySQL library...");
 #endif /* !NDEBUG */
 	  mysql_library_init(0, NULL, NULL);
 #ifndef NDEBUG
-	  logging.AddDebug("Initializing I/O engine...");
+	  logging.LogDebug("Initializing I/O engine...");
 #endif /* !NDEBUG */
 	  gl_boost_io = new boost::asio::io_service;
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
 	  // Process configuration file
 #ifndef NDEBUG
-	  logging.AddDebug("Processing configuration file...");
+	  logging.LogDebug("Processing configuration file...");
 	  logging.Indent();
 #endif /* !NDEBUG */
 	  {
@@ -100,6 +100,19 @@ int main(int argc, char* argv[])
 		na->Accept(input->GetPort());
 		sockets.push_back(na);
 		input = conf.GetNextInput();
+	      }
+	  }
+	  {
+	    const Conf::Log* l;
+
+	    l = conf.GetNextLog();
+	    while (l)
+	      {
+		if (l->GetType() == "syslog")
+		  logging.LogInSyslog(true, l->GetFlags());
+		else if (l->GetType() == "file")
+		  logging.LogInFile(l->GetPath().c_str(), l->GetFlags());
+		l = conf.GetNextLog();
 	      }
 	  }
 	  {
@@ -127,7 +140,7 @@ int main(int argc, char* argv[])
 	  signal(SIGINT, term_handler);
 
 	  // Everything loader, ready to go
-	  logging.AddInfo("Initialization completed, waiting for clients...");
+	  logging.LogInfo("Initialization completed, waiting for clients...");
 	  while (!gl_shall_exit)
 	    {
 	      gl_boost_io->run();
@@ -138,22 +151,22 @@ int main(int argc, char* argv[])
 	}
       catch (std::exception& e)
 	{
-	  logging.AddInfo("Process terminated because of this exception :");
+	  logging.LogInfo("Process terminated because of this exception :");
 	  logging.Indent();
-	  logging.AddInfo(e.what());
+	  logging.LogInfo(e.what());
 	  logging.Deindent();
 	  exit_code = 1;
 	}
       if (gl_boost_io)
 	{
 #ifndef NDEBUG
-	  logging.AddDebug("Shutting down I/O service...");
+	  logging.LogDebug("Shutting down I/O service...");
 #endif /* !NDEBUG */
 	  delete (gl_boost_io);
 	  gl_boost_io = NULL;
 	}
 #ifndef NDEBUG
-      logging.AddDebug("Exiting main()");
+      logging.LogDebug("Exiting main()");
 #endif /* !NDEBUG */
     }
   return (exit_code);
