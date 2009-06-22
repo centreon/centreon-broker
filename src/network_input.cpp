@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/11/09 Matthieu Kermagoret
-** Last update 06/18/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <boost/thread/mutex.hpp>
@@ -165,8 +165,7 @@ static inline void HandleObject(const std::string& instance,
                                                                  0));
                 break ;
                default:
-                std::cerr << "Wrong type : " << key_setters[i].type
-                          << std::endl;
+                logging.LogError("Error while parsing protocol.");
                 assert(false);
 	      }
 	    break ;
@@ -193,7 +192,7 @@ NetworkInput::NetworkInput(boost::asio::ip::tcp::socket* socket)
   : socket_(new StandardProtocolSocket(socket))
 {
 #ifndef NDEBUG
-  logging.AddDebug("New connection accepted, launching client thread...");
+  logging.LogDebug("New connection accepted, launching client thread...");
 #endif /* !NDEBUG */
   this->thread_ = new boost::thread(boost::ref(*this));
   this->thread_->detach();
@@ -210,7 +209,7 @@ NetworkInput::NetworkInput(
   : socket_(new TlsProtocolSocket(socket)), thread_(NULL)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Launching asynchronous TLS handshake...");
+  logging.LogDebug("Launching asynchronous TLS handshake...");
 #endif /* !NDEBUG */
   socket->async_handshake(boost::asio::ssl::stream_base::server,
 			  boost::bind(&NetworkInput::Handshake,
@@ -836,7 +835,7 @@ void NetworkInput::Handshake(const boost::system::error_code& ec)
   if (!ec)
     {
 # ifndef NDEBUG
-      logging.AddDebug("TLS handshake succeeded, launching client thread...");
+      logging.LogDebug("TLS handshake succeeded, launching client thread...");
 # endif /* !NDEBUG */
       this->thread_ = new boost::thread(boost::ref(*this));
       this->thread_->detach();
@@ -845,9 +844,8 @@ void NetworkInput::Handshake(const boost::system::error_code& ec)
     }
   else
     {
-      logging.AddInfo("TLS handshake failed, closing connection...");
-      logging.Indent();
-      logging.AddInfo(ec.message().c_str());
+      logging.LogInfo("TLS handshake failed, closing connection...", true);
+      logging.LogInfo(ec.message().c_str());
       logging.Deindent();
       delete (this);
     }
@@ -866,7 +864,7 @@ void NetworkInput::Handshake(const boost::system::error_code& ec)
  */
 NetworkInput::~NetworkInput() throw ()
 {
-  logging.AddInfo("Closing client connection...");
+  logging.LogInfo("Closing client connection...");
   // We might end up here and the object already been destroyed so let's be
   // extra careful.
   try

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/17/09 Matthieu Kermagoret
-** Last update 06/19/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <cerrno>
@@ -36,7 +36,7 @@ void Conf::HandleInput(std::ifstream& ifs)
   Input in;
 
 #ifndef NDEBUG
-  logging.AddDebug("Input definition...");
+  logging.LogDebug("Input definition...");
 #endif /* !NDEBUG */
   ifs.getline(buffer, sizeof(buffer));
   while (ifs.good())
@@ -75,6 +75,63 @@ void Conf::HandleInput(std::ifstream& ifs)
 }
 
 /**
+ *  Handle the definition of a log.
+ */
+void Conf::HandleLog(std::ifstream& ifs)
+{
+  char buffer[2048];
+  Log l;
+
+#ifndef NDEBUG
+  logging.LogDebug("Log definition");
+#endif /* !NDEBUG */
+  ifs.getline(buffer, sizeof(buffer));
+  while (ifs.good())
+    {
+      char* key;
+      char* value;
+
+      key = buffer + strspn(buffer, "\t");
+      if ('}' == key[0])
+	break ;
+      value = strchr(key, '=');
+      if (value)
+	{
+	  *value = '\0';
+	  value++;
+	}
+      if ('#' == key[0])
+	; // Skip line
+      else if (!strcmp(key, "flags"))
+	{
+	  int flags;
+	  char* val;
+
+	  flags = 0;
+	  val = strtok(value, " |");
+	  while (val)
+	    {
+	      if (!strcmp("DEBUG", val))
+		flags |= CentreonBroker::Logging::DEBUG;
+	      else if (!strcmp("ERROR", val))
+		flags |= CentreonBroker::Logging::ERROR;
+	      else if (!strcmp("INFO", val))
+		flags |= CentreonBroker::Logging::INFO;
+	      val = strtok(NULL, " |");
+	    }
+	  l.SetFlags(flags);
+	}
+      else if (!strcmp(key, "path"))
+	l.SetPath(value);
+      else if (!strcmp(key, "type"))
+	l.SetType(value);
+      ifs.getline(buffer, sizeof(buffer));
+    }
+  this->logs_.push_back(l);
+  return ;
+}
+
+/**
  *  Handle the definition of an output.
  */
 void Conf::HandleOutput(std::ifstream& ifs)
@@ -83,7 +140,7 @@ void Conf::HandleOutput(std::ifstream& ifs)
   Output out;
 
 #ifndef NDEBUG
-  logging.AddDebug("Output definition");
+  logging.LogDebug("Output definition");
 #endif /* !NDEBUG */
   ifs.getline(buffer, sizeof(buffer));
   while (ifs.good())
@@ -157,6 +214,8 @@ Conf& Conf::operator=(const Conf& conf)
   this->filename_ = conf.filename_;
   this->inputs_ = conf.inputs_;
   this->in_it_ = this->inputs_.begin();
+  this->logs_ = conf.logs_;
+  this->log_it_ = this->logs_.begin();
   this->outputs_ = conf.outputs_;
   this->out_it_ = this->outputs_.begin();
   this->params_ = conf.params_;
@@ -216,6 +275,26 @@ const Input* Conf::GetNextInput() const
 }
 
 /**
+ *  Return the next log.
+ */
+const Log* Conf::GetNextLog() const
+{
+  const Log* return_value;
+
+  if (this->log_it_ == this->logs_.end())
+    {
+      return_value = NULL;
+      this->log_it_ = this->logs_.begin();
+    }
+  else
+    {
+      return_value = &(*this->log_it_);
+      this->log_it_++;
+    }
+  return (return_value);
+}
+
+/**
  *  Return the next output.
  */
 const Output* Conf::GetNextOutput() const
@@ -243,7 +322,7 @@ void Conf::Load(const std::string& filename)
   std::ifstream ifs;
 
 #ifndef NDEBUG
-  logging.AddDebug("Loading configuration file...");
+  logging.LogDebug("Loading configuration file...");
   logging.Indent();
 #endif /* !NDEBUG */
   this->filename_ = filename;
@@ -262,6 +341,8 @@ void Conf::Load(const std::string& filename)
 	    ;
 	  else if (!strcmp(ptr, "input"))
 	    this->HandleInput(ifs);
+	  else if (!strcmp(ptr, "log"))
+	    this->HandleLog(ifs);
 	  else if (!strcmp(ptr, "output"))
 	    this->HandleOutput(ifs);
 	  ifs.getline(buffer, sizeof(buffer));
@@ -279,6 +360,7 @@ void Conf::Load(const std::string& filename)
   logging.Deindent();
 #endif /* !NDEBUG */
   this->in_it_ = this->inputs_.begin();
+  this->log_it_ = this->logs_.begin();
   this->out_it_ = this->outputs_.begin();
   return ;
 }
@@ -289,7 +371,7 @@ void Conf::Load(const std::string& filename)
 void Conf::Update()
 {
 #ifndef NDEBUG
-  logging.AddDebug("Reloading configuration file, "\
+  logging.LogDebug("Reloading configuration file, "\
 		   "deleting old configuration...");
 #endif /* !NDEBUG */
   this->inputs_.clear();
@@ -297,6 +379,7 @@ void Conf::Update()
   this->params_.clear();
   this->Load(std::string(filename_));
   this->in_it_ = this->inputs_.begin();
+  this->log_it_ = this->logs_.begin();
   this->out_it_ = this->outputs_.begin();
   return ;
 }

@@ -7,7 +7,7 @@
 ## See LICENSE file for details.
 ## 
 ## Started on  05/04/09 Matthieu Kermagoret
-## Last update 06/19/09 Matthieu Kermagoret
+## Last update 06/22/09 Matthieu Kermagoret
 ##
 
 CXX		=	g++
@@ -18,6 +18,7 @@ SRC		=	src/acknowledgement.cpp			\
 			src/comment.cpp				\
 			src/conf/conf.cpp			\
 			src/conf/input.cpp			\
+			src/conf/log.cpp			\
 			src/conf/output.cpp			\
 			src/connection.cpp			\
 			src/connection_status.cpp		\

@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/09/09 Matthieu Kermagoret
-** Last update 06/15/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <cassert>
@@ -95,7 +95,7 @@ MySQLHaveFields::~MySQLHaveFields()
 void MySQLHaveFields::Prepare(MYSQL_STMT* mystmt)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Preparing bound argument structures...");
+  logging.LogDebug("Preparing bound argument structures...");
 #endif /* !NDEBUG */
   assert(!this->myargs_);
   assert(mystmt);

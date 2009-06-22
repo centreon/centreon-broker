@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  05/18/09 Matthieu Kermagoret
-** Last update 06/19/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -56,7 +56,7 @@ void NetworkAcceptor::StartAccept() throw ()
 	{
 #endif /* USE_TLS */
 #ifndef NDEBUG
-	  logging.AddDebug("Launching asynchronous accept on socket...");
+	  logging.LogDebug("Launching asynchronous accept on socket...");
 #endif /* !USE_TLS */
 	  this->new_normal_socket_ = new boost::asio::ip::tcp::socket(
             this->io_service_);
@@ -70,7 +70,7 @@ void NetworkAcceptor::StartAccept() throw ()
       else
 	{
 # ifndef NDEBUG
-	  logging.AddDebug("Launching asynchronous accept on TLS socket...");
+	  logging.LogDebug("Launching asynchronous accept on TLS socket...");
 # endif /* !NDEBUG */
 	  this->new_tls_socket_ = new boost::asio::ssl::stream<
             boost::asio::ip::tcp::socket>(this->io_service_, this->context_);
@@ -137,7 +137,7 @@ void NetworkAcceptor::Accept(unsigned short port) throw (Exception)
   try
     {
 #ifndef NDEBUG
-      logging.AddDebug("Listening on socket...");
+      logging.LogDebug("Listening on socket...");
 #endif /* !NDEBUG */
       this->acceptor_.open(boost::asio::ip::tcp::v4());
       this->acceptor_.bind(boost::asio::ip::tcp::endpoint(
@@ -149,7 +149,7 @@ void NetworkAcceptor::Accept(unsigned short port) throw (Exception)
   catch (boost::system::system_error& se)
     {
 #ifndef NDEBUG
-      logging.AddDebug("Could not listen on specified port...");
+      logging.LogDebug("Could not listen on specified port...");
 #endif /* !NDEBUG */
       if (this->acceptor_.is_open())
         this->acceptor_.close();
@@ -168,7 +168,7 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
   if (ec)
     {
 #ifndef NDEBUG
-      logging.AddDebug("Error occured while accept()ing connection...");
+      logging.LogDebug("Error occured while accept()ing connection...");
 #endif /* !NDEBUG */
 #ifdef USE_TLS
       if (this->tls_)
@@ -192,7 +192,7 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
       try
         {
           ni = NULL;
-	  logging.AddInfo("New client incoming...");
+	  logging.LogInfo("New client incoming...");
 #ifdef USE_TLS
 	  if (!this->tls_)
 #endif /* USE_TLS */
@@ -235,7 +235,7 @@ void NetworkAcceptor::SetTls(const std::string& certificate,
   if (!certificate.empty() && !key.empty() && ! dh512.empty())
     {
 # ifndef NDEBUG
-      logging.AddDebug("Activating TLS on socket...");
+      logging.LogDebug("Activating TLS on socket...");
 # endif /* !NDEBUG */
       this->cert_ = certificate;
       this->key_ = key;
@@ -260,7 +260,7 @@ void NetworkAcceptor::SetTls(const std::string& certificate,
   else
     {
 # ifndef NDEBUG
-      logging.AddDebug("Deactivating TLS on socket...");
+      logging.LogDebug("Deactivating TLS on socket...");
 # endif /* !USE_TLS */
       this->ca_.clear();
       this->cert_.clear();

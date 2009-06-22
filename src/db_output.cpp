@@ -7,7 +7,7 @@
 ** See LICENSE file for details.
 ** 
 ** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/17/09 Matthieu Kermagoret
+** Last update 06/22/09 Matthieu Kermagoret
 */
 
 #include <boost/bind.hpp>
@@ -62,7 +62,7 @@ void DBOutput::CleanTable(const std::string& table)
     debug = "Truncating table `";
     debug += table;
     debug += "`...";
-    logging.AddDebug(debug.c_str());
+    logging.LogDebug(debug.c_str());
     logging.Indent();
   }
 #endif /* !NDEBUG */
@@ -247,7 +247,7 @@ void DBOutput::OnEvent(Event* e) throw ()
     }
   catch (...)
     {
-      logging.AddError("Exception while adding event to list. Dropping event.");
+      logging.LogError("Exception while adding event to list. Dropping event.");
       e->RemoveReader(this);
     }
   return ;
@@ -301,7 +301,7 @@ void DBOutput::ProcessEvent(Event* event)
 void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing Acknowledgement event...");
+  logging.LogDebug("Processing Acknowledgement event...");
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Acknowledgement> >
@@ -323,11 +323,11 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
 void DBOutput::ProcessComment(const Comment& comment)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing Comment event...");
+  logging.LogDebug("Processing Comment event...");
   logging.Indent();
 #endif /* !NDEBUG */
 #ifndef NDEBUG
-  logging.AddDebug("No processing yet");
+  logging.LogDebug("No processing yet");
   logging.Deindent();
 #endif /* !NDEBUG */
   return ;
@@ -339,7 +339,7 @@ void DBOutput::ProcessComment(const Comment& comment)
 void DBOutput::ProcessConnection(const Connection& connection)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing Connection event...");
+  logging.LogDebug("Processing Connection event...");
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Connection> >
@@ -362,7 +362,7 @@ void DBOutput::ProcessConnection(const Connection& connection)
 void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing ConnectionStatus event...");
+  logging.LogDebug("Processing ConnectionStatus event...");
   logging.Indent();
 #endif /* !NDEBUG */
   try
@@ -395,7 +395,7 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 void DBOutput::ProcessHost(const Host& host)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing Host event...");
+  logging.LogDebug("Processing Host event...");
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Host> >
@@ -416,7 +416,7 @@ void DBOutput::ProcessHost(const Host& host)
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing HostStatus event...");
+  logging.LogDebug("Processing HostStatus event...");
   logging.Indent();
 #endif /* !NDEBUG */
   try
@@ -449,7 +449,7 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
 void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing ProgramStatus event...");
+  logging.LogDebug("Processing ProgramStatus event...");
   logging.Indent();
 #endif /* !NDEBUG */
   try
@@ -493,7 +493,7 @@ void DBOutput::ProcessService(const Service& service)
     query(this->conn_->GetInsertQuery<Service>(this->service_mapping_));
 
 #ifndef NDEBUG
-  logging.AddDebug("Processing Service event...");
+  logging.LogDebug("Processing Service event...");
   logging.Indent();
 #endif /* !NDEBUG */
   query->Prepare();
@@ -511,7 +511,7 @@ void DBOutput::ProcessService(const Service& service)
 void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 {
 #ifndef NDEBUG
-  logging.AddDebug("Processing ServiceStatus event...");
+  logging.LogDebug("Processing ServiceStatus event...");
   logging.Indent();
 #endif /* !NDEBUG */
   try
@@ -572,7 +572,7 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
 DBOutput::~DBOutput()
 {
 #ifndef NDEBUG
-  logging.AddDebug("Deleting DBOutput...");
+  logging.LogDebug("Deleting DBOutput...");
 #endif /* !NDEBUG */
   if (this->connection_status_stmt_)
     delete (this->connection_status_stmt_);
@@ -586,7 +586,7 @@ DBOutput::~DBOutput()
     {
 #ifndef NDEBUG
       logging.Indent();
-      logging.AddDebug("Waiting for the running thread to finish");
+      logging.LogDebug("Waiting for the running thread to finish");
 #endif /* !NDEBUG */
       this->thread_->join();
       delete (this->thread_);
@@ -601,8 +601,9 @@ DBOutput::~DBOutput()
  */
 void DBOutput::operator()()
 {
+  logging.ThreadStart();
 #ifndef NDEBUG
-  logging.AddDebug("New thread created (DBOutput)");
+  logging.LogDebug("New thread created (DBOutput)");
 #endif /* !NDEBUG */
   while (!this->exit_ || !this->events_.Empty())
     {
@@ -621,7 +622,7 @@ void DBOutput::operator()()
               else
 		{
 #ifndef NDEBUG
-		  logging.AddDebug("DBOutput deletion requested, " \
+		  logging.LogDebug("DBOutput deletion requested, " \
                                    "exiting thread...");
 #endif /* !NDEBUG */
 		  break ;
@@ -630,16 +631,14 @@ void DBOutput::operator()()
         }
       catch (DB::DBException& dbe)
 	{
-	  logging.AddError("Recoverable DB error");
-	  logging.Indent();
-	  logging.AddError(dbe.what());
+	  logging.LogError("Recoverable DB error", true);
+	  logging.LogError(dbe.what());
 	  logging.Deindent();
 	}
       catch (Exception& e)
         {
-	  logging.AddError("Unrecoverable error");
-	  logging.Indent();
-	  logging.AddError(e.what());
+	  logging.LogError("Unrecoverable error", true);
+	  logging.LogError(e.what());
 	  logging.Deindent();
           break ;
         }
@@ -648,13 +647,13 @@ void DBOutput::operator()()
 	{
 	  // XXX : retry interval should be configurable
 	  sleep(10);
-	  logging.AddInfo("Trying connection to DB server again...");
+	  logging.LogInfo("Trying connection to DB server again...");
 	}
     }
 #ifndef NDEBUG
-  logging.AddDebug("Exiting DBOutput thread");
+  logging.LogDebug("Exiting DBOutput thread");
 #endif /* !NDEBUG */
-  logging.ThreadOver();
+  logging.ThreadEnd();
   return ;
 }
 
@@ -664,8 +663,7 @@ void DBOutput::operator()()
 void DBOutput::Destroy()
 {
 #ifndef NDEBUG
-  logging.AddDebug("Requesting DBOutput to stop processing...");
-  logging.Indent();
+  logging.LogDebug("Requesting DBOutput to stop processing...", true);
 #endif /* !NDEBUG */
   this->exit_ = true;
   this->events_.CancelWait();
