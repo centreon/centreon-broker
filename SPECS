@@ -89,11 +89,10 @@ Centreon-Broker, we will likely add the following features :
 cb2db support TLSv1 sockets, to ensure proper client authentication, as well as
 encrypted event flow (for more information on TLS, please refer to
 http://en.wikipedia.org/wiki/Transport_Layer_Security). To make TLS work in
-CentreonBroker, you need at least three files :
+CentreonBroker, you need at least two files :
 
   - one containing your public key (`tls_certificate` config file parameter)
   - one containing your private key (`tls_key config` file parameter)
-  - one containing a Diffie-Hellman parameters (`tls_dh512` parameter)
 
 Optionnally you can also have a Certificate Authority (CA) public key if you
 want to provide authentication (`tls_ca` config file parameter).
@@ -105,8 +104,6 @@ encrypted event flow, type the following commands :
  $> openssl genrsa -out private.key 1024
 # Generate the public key from the private key (certificate.pem)
  $> openssl req -new -x509 -key private.key -out certificate.pem
-# Generate Diffie-Hellman parameters (dh512.pem)
- $> openssl dhparam -out dh512.pem 512
 
 If you want to authenticate clients, you need a private key (see above to see
 how to generate such a key). You can then sign client certificates using the
@@ -165,8 +162,6 @@ tls_ca              If you want to provide client authentication, set this to
                     certificates.
 tls_certificate     If you want to provide TLS support on socket, set this
                     parameter to the filename of the public key.
-tls_dh512           This file should contain Diffie-Hellman parameters. See 3.1
-                    if you don't know how to generate such a file.
 tls_key             If you want to provide TLS support on socket, set this
                     parameter to the filename of the private key.
 type                Can only be 'socket', as only such inputs are supported.

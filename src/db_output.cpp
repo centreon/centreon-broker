@@ -1,13 +1,21 @@
 /*
-** db_output.cpp for CentreonBroker in ./src
-** 
-** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
-** 
-** Copyright Merethis
-** See LICENSE file for details.
-** 
-** Started on  06/03/09 Matthieu Kermagoret
-** Last update 06/22/09 Matthieu Kermagoret
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
 */
 
 #include <boost/bind.hpp>
@@ -112,6 +120,7 @@ void DBOutput::Connect()
 
   // Clean tables
   this->CleanTable(this->acknowledgement_mapping_.GetTable());
+  this->CleanTable(this->comment_mapping_.GetTable());
   this->CleanTable(this->connection_mapping_.GetTable());
   this->CleanTable(this->host_mapping_.GetTable());
   this->CleanTable(this->program_status_mapping_.GetTable());
@@ -555,6 +564,7 @@ void DBOutput::QueryExecuted()
  */
 DBOutput::DBOutput(DB::Connection::DBMS dbms)
   : acknowledgement_mapping_(acknowledgement_mapping),
+    comment_mapping_(comment_mapping),
     connection_mapping_(connection_mapping),
     connection_status_mapping_(connection_status_mapping),
     host_mapping_(host_mapping),

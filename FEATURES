@@ -1,0 +1,25 @@
+Features
+--------
+
+The cb2db is a ndo2db replacement. It has the following features :
+
+ - configurable log output
+ - multi instance input
+ - multi socket input
+ - multi output
+ - TLS on input possible
+ - lower network footprint
+ - smaller DB load
+ - optimized DB schema
+ - written in C++ for more stability
+ - fully configurable
+ - multi-threaded (make use of modern processors)
+
+
+cb2db uses some external projects to provide those features :
+
+ - OpenSSL to provide TLS connection between the broker and cb2db
+ - Boost as this C++ library provide a good abstraction layer and is really
+   powerful
+
+

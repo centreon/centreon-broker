@@ -1,13 +1,21 @@
 /*
-** network_acceptor.h for CentreonBroker in ./inc
-** 
-** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
-** 
-** Copyright Merethis
-** See LICENSE file for details.
-** 
-** Started on  05/18/09 Matthieu Kermagoret
-** Last update 06/19/09 Matthieu Kermagoret
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
 */
 
 #ifndef NETWORK_ACCEPTOR_H_
@@ -38,7 +46,6 @@ namespace                          CentreonBroker
 # ifdef USE_TLS
     std::string                    ca_;
     std::string                    cert_;
-    std::string                    dh512_;
     std::string                    key_;
     bool                           tls_;
     boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* new_tls_socket_;
@@ -61,7 +68,6 @@ namespace                          CentreonBroker
 # ifdef USE_TLS
     void                           SetTls(const std::string& certificate = "",
 					  const std::string& key = "",
-					  const std::string& dh512 = "",
 					  const std::string& ca = "");
 # endif /* USE_TLS */
   };
