@@ -1,16 +1,28 @@
 /*
-** network_acceptor.cpp for CentreonBroker in ./src
-** 
-** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
-** 
-** Copyright Merethis
-** See LICENSE file for details.
-** 
-** Started on  05/18/09 Matthieu Kermagoret
-** Last update 06/22/09 Matthieu Kermagoret
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
 */
 
 #include <boost/bind.hpp>
+// POSIX specific
+#include <cstdio>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include "logging.h"
 #include "network_acceptor.h"
 #include "network_input.h"
@@ -229,24 +241,46 @@ void NetworkAcceptor::HandleAccept(const boost::system::error_code& ec)
  */
 void NetworkAcceptor::SetTls(const std::string& certificate,
 			     const std::string& key,
-			     const std::string& dh512,
 			     const std::string& ca)
 {
-  if (!certificate.empty() && !key.empty() && ! dh512.empty())
+  if (!certificate.empty() && !key.empty())
     {
 # ifndef NDEBUG
       logging.LogDebug("Activating TLS on socket...");
 # endif /* !NDEBUG */
       this->cert_ = certificate;
       this->key_ = key;
-      this->dh512_ = dh512;
       this->ca_ = ca;
       this->context_.set_options(
         boost::asio::ssl::context::default_workarounds);
       this->context_.use_certificate_chain_file(this->cert_);
       this->context_.use_private_key_file(this->key_,
                                           boost::asio::ssl::context::pem);
-      this->context_.use_tmp_dh_file(this->dh512_);
+      // Write the DH parameters in a temporary file
+      {
+	char tmp_name[L_tmpnam];
+	int tmp_fd;
+
+	if (tmpnam(tmp_name))
+	  {
+	    tmp_fd = open(tmp_name, O_WRONLY, S_IRUSR | S_IWUSR);
+	    if (tmp_fd >= 0)
+	      {
+		const char* str;
+
+		// Generated using openssl
+		str = "-----BEGIN DH PARAMETERS-----\n" \
+                  "MEYCQQDIdjgC7Qqiv9d2N9H9W6Q0AHpzD3yiPCv9Bvaem1HHwVR+p6Iw+8rnAO1+\n" \
+		  "OwCNhPOkhAqfwAjI6cKGNeIs/X+zAgEC\n" \
+		  "-----END DH PARAMETERS-----\n";
+		write(tmp_fd, str, strlen(str));
+		fsync(tmp_fd);
+		this->context_.use_tmp_dh_file(tmp_name);
+		close(tmp_fd);
+		unlink(tmp_name);
+	      }
+	  }
+      }
       if (!this->ca_.empty())
 	{
 	  this->context_.load_verify_file(this->ca_);
@@ -264,7 +298,6 @@ void NetworkAcceptor::SetTls(const std::string& certificate,
 # endif /* !USE_TLS */
       this->ca_.clear();
       this->cert_.clear();
-      this->dh512_.clear();
       this->key_.clear();
       this->tls_ = false;
     }

@@ -1,13 +1,21 @@
 /*
-** input.cpp for CentreonBroker in ./src/conf
-** 
-** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
-** 
-** Copyright Merethis
-** See LICENSE file for details.
-** 
-** Started on  06/17/09 Matthieu Kermagoret
-** Last update 06/19/09 Matthieu Kermagoret
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
 */
 
 #include <cstring>
@@ -88,14 +96,6 @@ const std::string& Input::GetTlsCertificate() const throw ()
 }
 
 /**
- *  Get the file containing the Diffie-Hellman 512 bit wide key.
- */
-const std::string& Input::GetTlsDH512() const throw ()
-{
-  return (this->strings_[TLS_DH512]);
-}
-
-/**
  *  Get the private key file used to decrypt the connection.
  */
 const std::string& Input::GetTlsKey() const throw ()
@@ -136,15 +136,6 @@ void Input::SetTlsCa(const std::string& ca)
 void Input::SetTlsCertificate(const std::string& certificate)
 {
   this->strings_[TLS_CERTIFICATE] = certificate;
-  return ;
-}
-
-/**
- *  Set the Diffie-Hellman key.
- */
-void Input::SetTlsDH512(const std::string& dh512)
-{
-  this->strings_[TLS_DH512] = dh512;
   return ;
 }
 

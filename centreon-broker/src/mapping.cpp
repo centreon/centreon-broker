@@ -1,16 +1,25 @@
 /*
-** mapping.cpp for CentreonBroker in ./src
-** 
-** Made by Matthieu Kermagoret <mkermagoret@merethis.com>
-** 
-** Copyright Merethis
-** See LICENSE file for details.
-** 
-** Started on  06/01/09 Matthieu Kermagoret
-** Last update 06/22/09 Matthieu Kermagoret
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
 */
 
 #include "acknowledgement.h"
+#include "comment.h"
 #include "connection.h"
 #include "connection_status.h"
 #include "host.h"
@@ -50,6 +59,42 @@ static void InitAcknowledgementMapping()
     &Acknowledgement::GetPersistentComment);
   acknowledgement_mapping.AddShortField("state",
 					&Acknowledgement::GetState);
+  return ;
+}
+
+/**
+ *  Comment mapping.
+ */
+DB::Mapping<Comment> CentreonBroker::comment_mapping;
+
+static void InitCommentMapping()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initializing Comment mapping...");
+#endif /* !NDEBUG */
+  comment_mapping.SetTable("comments");
+  comment_mapping.AddStringField("author_name",
+				 &Comment::GetAuthorName);
+  comment_mapping.AddStringField("comment_data",
+				 &Comment::GetCommentData);
+  comment_mapping.AddShortField("comment_source",
+				&Comment::GetCommentSource);
+  comment_mapping.AddTimeField("comment_time",
+			       &Comment::GetCommentTime);
+  comment_mapping.AddShortField("comment_type",
+				&Comment::GetCommentType);
+  comment_mapping.AddTimeField("deletion_time",
+			       &Comment::GetDeletionTime);
+  comment_mapping.AddTimeField("entry_time",
+			       &Comment::GetEntryTime);
+  comment_mapping.AddShortField("entry_type",
+				&Comment::GetEntryType);
+  comment_mapping.AddTimeField("expiration_time",
+			       &Comment::GetExpirationTime);
+  comment_mapping.AddShortField("expires",
+				&Comment::GetExpires);
+  comment_mapping.AddShortField("is_persisten",
+				&Comment::GetIsPersistent);
   return ;
 }
 
@@ -709,6 +754,7 @@ void CentreonBroker::InitMappings()
   logging.LogDebug("Initializing Object-Relational mappings...", true);
 #endif /* !NDEBUG */
   InitAcknowledgementMapping();
+  InitCommentMapping();
   InitConnectionMapping();
   InitConnectionStatusMapping();
   InitHostMapping();
