@@ -21,6 +21,7 @@
 #include <boost/asio.hpp>
 #include <csignal>
 #include <cstdlib>
+#include <iostream>
 #include <mysql.h>
 #include "conf/conf.h"
 #include "db_output.h"
@@ -57,12 +58,7 @@ int main(int argc, char* argv[])
 
   if (argc != 2)
     {
-      std::string usage;
-
-      usage = "USAGE: ";
-      usage += argv[0];
-      usage += " <configfile>";
-      logging.LogInfo(usage.c_str());
+      std::cout << "USAGE: " << argv[0] << " <configfile>" << std::endl;
       exit_code = 1;
     }
   else
