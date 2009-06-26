@@ -131,7 +131,9 @@ void DBOutput::Connect()
     this->connection_mapping_.AddIntField("instance_id",
                                           boost::bind(&DBOutput::GetInstanceId,
 						      this,
-						      _1));
+						      boost::bind(
+						&Connection::GetNagiosInstance,
+						_1)));
     this->connection_status_stmt_
       = this->conn_->GetUpdateQuery<ConnectionStatus>(
           this->connection_status_mapping_);
@@ -139,7 +141,9 @@ void DBOutput::Connect()
       DB::Field("instance_id"),
       DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
                                                    this,
-                                                   _1))));
+						   boost::bind(
+					&ConnectionStatus::GetNagiosInstance,
+					_1)))));
     this->connection_status_stmt_->Prepare();
   }
   // Prepare HostStatus update query
@@ -147,7 +151,9 @@ void DBOutput::Connect()
     this->host_mapping_.AddIntField("instance_id",
                                     boost::bind(&DBOutput::GetInstanceId,
 						this,
-                                                _1));
+						boost::bind(
+						  &Host::GetNagiosInstance,
+						  _1)));
     this->host_status_stmt_
       = this->conn_->GetUpdateQuery<HostStatus>(this->host_status_mapping_);
     this->host_status_stmt_->SetPredicate(
@@ -155,7 +161,9 @@ void DBOutput::Connect()
                         DB::DynamicInt<HostStatus>(boost::bind(
                                                      &DBOutput::GetInstanceId,
                                                      this,
-                                                     _1))),
+						     boost::bind(
+						&HostStatus::GetNagiosInstance,
+						_1)))),
 	      DB::Equal(DB::Field("host_name"),
 			DB::DynamicString<HostStatus>(&HostStatus::GetHostName)
 			)
@@ -168,7 +176,7 @@ void DBOutput::Connect()
       "instance_id",
       boost::bind(&DBOutput::GetInstanceId,
                   this,
-                  _1));
+		  boost::bind(&ProgramStatus::GetNagiosInstance, _1)));
     this->program_status_stmt_
       = this->conn_->GetUpdateQuery<ProgramStatus>(
           this->program_status_mapping_);
@@ -177,7 +185,9 @@ void DBOutput::Connect()
                 DB::DynamicInt<ProgramStatus>(boost::bind(
                                                 &DBOutput::GetInstanceId,
                                                 this,
-                                                _1))));
+						boost::bind(
+					&ProgramStatus::GetNagiosInstance,
+					_1)))));
     this->program_status_stmt_->Prepare();
   }
   // Prepare ServiceStatus update query
@@ -185,7 +195,9 @@ void DBOutput::Connect()
     this->service_mapping_.AddIntField("instance_id",
                                        boost::bind(&DBOutput::GetInstanceId,
 						   this,
-                                                   _1));
+						   boost::bind(
+					&ProgramStatus::GetNagiosInstance,
+					_1)));
     this->service_status_stmt_
       = this->conn_->GetUpdateQuery<ServiceStatus>(
           this->service_status_mapping_);
@@ -194,7 +206,9 @@ void DBOutput::Connect()
                         DB::DynamicInt<ServiceStatus>(boost::bind(
                                                    &DBOutput::GetInstanceId,
                                                    this,
-                                                   _1))),
+						   boost::bind(
+					&ServiceStatus::GetNagiosInstance,
+					_1)))),
 	      DB::And(DB::Equal(DB::Field("host_name"),
 			DB::DynamicString<ServiceStatus>(
                           &ServiceStatus::GetHostName)),
@@ -224,12 +238,20 @@ void DBOutput::Disconnect()
 }
 
 /**
+ *  Get an host id.
+ */
+int DBOutput::GetHostId(const std::string& instance, const std::string& host)
+{
+  // XXX : use a select query
+  return (1);
+}
+
+/**
  *  Get an instance id.
  */
-int DBOutput::GetInstanceId(const Event& event)
+int DBOutput::GetInstanceId(const std::string& instance)
 {
   int id;
-  const std::string& instance(event.GetNagiosInstance());
   // XXX : instance ids should be synchronized with DB
   std::map<std::string, int>::iterator it;
 
@@ -242,6 +264,17 @@ int DBOutput::GetInstanceId(const Event& event)
   else
     id = this->instances_[instance];
   return (id);
+}
+
+/**
+ *  Get a service id.
+ */
+int DBOutput::GetServiceId(const std::string& instance,
+			   const std::string& host,
+			   const std::string& service)
+{
+  // XXX : use a select query
+  return (1);
 }
 
 /**
