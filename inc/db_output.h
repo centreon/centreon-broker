@@ -94,7 +94,12 @@ namespace                      CentreonBroker
     void                          Commit();
     void                          Connect();
     void                          Disconnect();
-    int                           GetInstanceId(const Event& event);
+    int                           GetHostId(const std::string& instance,
+					    const std::string& host);
+    int                           GetInstanceId(const std::string& instance);
+    int                           GetServiceId(const std::string& instance,
+					       const std::string& host,
+					       const std::string& service);
     void                          OnEvent(Event* e) throw ();
     void                          ProcessAcknowledgement(
                                     const Acknowledgement& ack);
