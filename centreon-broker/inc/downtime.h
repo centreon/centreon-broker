@@ -90,6 +90,7 @@ namespace              CentreonBroker
     time_t             GetScheduledStartTime() const throw ();
     const std::string& GetService() const throw ();
     int                GetTriggeredById() const throw ();
+    int                GetType() const throw ();
     short              GetWasCancelled() const throw ();
     short              GetWasStarted() const throw ();
     void               SetActualEndTime(time_t aet) throw ();

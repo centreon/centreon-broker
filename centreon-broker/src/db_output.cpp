@@ -314,6 +314,9 @@ void DBOutput::ProcessEvent(Event* event)
      case Event::CONNECTIONSTATUS:
       ProcessConnectionStatus(*static_cast<ConnectionStatus*>(event));
       break ;
+     case Event::DOWNTIME:
+      ProcessDowntime(*static_cast<Downtime*>(event));
+      break ;
      case Event::HOST:
       ProcessHost(*static_cast<Host*>(event));
       break ;
@@ -437,13 +440,32 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 }
 
 /**
+ *  Process a Downtime event.
+ */
+void DBOutput::ProcessDowntime(const Downtime& downtime)
+{
+#ifndef NDEBUG
+  logging.LogDebug("Processing Downtime event...", true);
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::Insert<Downtime> >
+    query(this->conn_->GetInsertQuery<Downtime>(this->downtime_mapping_));
+
+  query->Prepare();
+  query->Execute(downtime);
+  this->QueryExecuted();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
  *  Process an Host event.
  */
 void DBOutput::ProcessHost(const Host& host)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing Host event...");
-  logging.Indent();
+  logging.LogDebug("Processing Host event...", true);
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Insert<Host> >
     query(this->conn_->GetInsertQuery<Host>(this->host_mapping_));
@@ -605,6 +627,7 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
     comment_mapping_(comment_mapping),
     connection_mapping_(connection_mapping),
     connection_status_mapping_(connection_status_mapping),
+    downtime_mapping_(downtime_mapping),
     host_mapping_(host_mapping),
     host_status_mapping_(host_status_mapping),
     program_status_mapping_(program_status_mapping),

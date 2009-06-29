@@ -212,6 +212,14 @@ int Downtime::GetTriggeredById() const throw ()
 }
 
 /**
+ *  Get the type of the event.
+ */
+int Downtime::GetType() const throw ()
+{
+  return (Event::DOWNTIME);
+}
+
+/**
  *  Get the was_cancelled member.
  */
 short Downtime::GetWasCancelled() const throw ()

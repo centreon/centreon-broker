@@ -163,6 +163,44 @@ static void InitConnectionStatusMapping()
 }
 
 /**
+ *  Downtime mapping.
+ */
+DB::Mapping<Downtime> CentreonBroker::downtime_mapping;
+
+static void InitDowntimeMapping()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initializing Downtime mapping...");
+#endif /* !NDEBUG */
+  downtime_mapping.SetTable("downtimes");
+  downtime_mapping.AddTimeField("actual_end_time",
+				&Downtime::GetActualEndTime);
+  downtime_mapping.AddIntField("actual_end_time_usec",
+			       &Downtime::GetActualEndTimeUsec);
+  downtime_mapping.AddTimeField("actual_start_time",
+				&Downtime::GetActualStartTime);
+  downtime_mapping.AddIntField("actual_start_time_usec",
+			       &Downtime::GetActualStartTimeUsec);
+  downtime_mapping.AddStringField("author_name", &Downtime::GetAuthorName);
+  downtime_mapping.AddStringField("comment_data", &Downtime::GetCommentData);
+  downtime_mapping.AddShortField("downtime_type", &Downtime::GetDowntimeType);
+  downtime_mapping.AddShortField("duration", &Downtime::GetDuration);
+  downtime_mapping.AddTimeField("entry_time", &Downtime::GetEntryTime);
+  downtime_mapping.AddIntField("internal_downtime_id",
+			       &Downtime::GetInternalId);
+  downtime_mapping.AddShortField("is_fixed", &Downtime::GetIsFixed);
+  downtime_mapping.AddTimeField("scheduled_end_time",
+				&Downtime::GetScheduledEndTime);
+  downtime_mapping.AddTimeField("scheduled_start_time",
+				&Downtime::GetScheduledStartTime);
+  downtime_mapping.AddIntField("triggered_by_id",
+			       &Downtime::GetTriggeredById);
+  downtime_mapping.AddShortField("was_cancelled", &Downtime::GetWasCancelled);
+  downtime_mapping.AddShortField("was_started", &Downtime::GetWasStarted);
+  return ;
+}
+
+/**
  *  Host mapping.
  */
 DB::Mapping<Host> CentreonBroker::host_mapping;
