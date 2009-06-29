@@ -29,6 +29,7 @@
 
 # include <mysql.h>
 # include "db/db_exception.h"
+# include "db/mysql/delete.hpp"
 # include "db/mysql/insert.hpp"
 # include "db/mysql/truncate.h"
 # include "db/mysql/update.hpp"
@@ -56,6 +57,12 @@ namespace                 CentreonBroker
 			          const std::string& password,
 			          const std::string& db);
       void                Disconnect() throw ();
+
+      template            <typename ObjectType>
+      Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping)
+      {
+	return (new MySQLDelete<ObjectType>(this->myconn_, mapping));
+      }
 
       template            <typename ObjectType>
       Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping)

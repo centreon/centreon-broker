@@ -18,14 +18,11 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_MYSQL_INSERT_HPP_
-# define DB_MYSQL_INSERT_HPP_
+#ifndef DB_MYSQL_DELETE_HPP_
+# define DB_MYSQL_DELETE_HPP_
 
-# include <boost/bind.hpp>
 # include <cassert>
-# include <mysql.h>
-# include <sstream>
-# include "db/insert.hpp"
+# include "db/delete.hpp"
 # include "db/mysql/have_fields.h"
 # include "db/mysql/query.h"
 
@@ -34,55 +31,55 @@ namespace          CentreonBroker
   namespace        DB
   {
     template       <typename ObjectType>
-    class          MySQLInsert : public Insert<ObjectType>,
+    class          MySQLDelete : public Delete<ObjectType>,
                                  public MySQLQuery,
                                  public MySQLHaveFields
     {
      private:
       /**
-       *  MySQLInsert copy constructor.
+       *  MySQLDelete copy constructor.
        */
-                   MySQLInsert(const MySQLInsert& myinsert)
-        : Insert<ObjectType>(myinsert.mapping_),
-          MySQLQuery(),
-          MySQLHaveFields()
+                   MySQLDelete(const MySQLDelete& mydelete)
+	: Delete<ObjectType>(mydelete.mapping_),
+	  MySQLQuery(),
+	  MySQLHaveFields()
       {
-	(void)myinsert;
+	(void)mydelete;
 	assert(false);
       }
 
       /**
-       *  MySQLInsert operator= overload.
+       *  MySQLDelete operator= overload.
        */
-      MySQLInsert& operator=(const MySQLInsert& myinsert)
+      MySQLDelete& operator=(const MySQLDelete& mydelete)
       {
-	(void)myinsert;
+	(void)mydelete;
 	assert(false);
 	return (*this);
       }
 
      public:
       /**
-       *  MySQLInsert constructor.
+       *  MySQLDelete constructor.
        */
-                   MySQLInsert(MYSQL* myconn,
+                   MySQLDelete(MYSQL* myconn,
                                const Mapping<ObjectType>& mapping)
-        : HaveFields(),
-          Insert<ObjectType>(mapping),
-          MySQLQuery(myconn),
-          MySQLHaveFields()
+	: HaveFields(),
+	  Delete<ObjectType>(mapping),
+	  MySQLQuery(myconn),
+	  MySQLHaveFields()
       {
       }
 
       /**
-       *  MySQLInsert destructor.
+       *  MySQLDelete destructor.
        */
-                   ~MySQLInsert()
+                   ~MySQLDelete()
       {
       }
 
       /**
-       *  Insert the specified object.
+       *  Delete the specified object.
        */
       void         Execute(const ObjectType& object) throw (DBException)
       {
@@ -90,14 +87,14 @@ namespace          CentreonBroker
 	this->Reset();
 	// Browse all args.
 	for (decltype(this->mapping_.fields_.begin()) it =
-               this->mapping_.fields_.begin();
-             it != this->mapping_.fields_.end();
+	       this->mapping_.fields_.begin();
+	     it != this->mapping_.fields_.end();
 	     it++)
 	  (*it).second(this, object);
 	if (mysql_stmt_bind_param(this->mystmt_, this->myargs_))
 	  throw (DBException(mysql_stmt_errno(this->mystmt_),
-                             DBException::QUERY_EXECUTION,
-                             mysql_stmt_error(this->mystmt_)));
+			     DBException::QUERY_EXECUTION,
+			     mysql_stmt_error(this->mystmt_)));
 	this->MySQLQuery::Execute();
 	return ;
       }
@@ -109,18 +106,18 @@ namespace          CentreonBroker
       {
 	try
 	  {
-	    this->query_ = "INSERT INTO ";
+	    this->query_ = "DELETE FROM ";
 	    this->query_ += this->mapping_.table_;
-	    this->query_ += " SET ";
+	    this->query_ += " WHERE ";
 	    for (decltype(this->mapping_.fields_.begin()) it =
 		   this->mapping_.fields_.begin();
 		 it != this->mapping_.fields_.end();
 		 it++)
 	      {
 		this->query_ += (*it).first;
-		this->query_ += "=?, ";
+		this->query_ += "=? AND ";
 	      }
-	    this->query_.resize(this->query_.size() - 2);
+	    this->query_.resize(this->query_.size() - 5);
 	    this->MySQLQuery::Prepare();
 	    this->MySQLHaveFields::Prepare(this->mystmt_);
 	  }
@@ -131,8 +128,8 @@ namespace          CentreonBroker
 	catch (std::exception& e)
 	  {
 	    throw (DBException(0,
-                               DBException::QUERY_PREPARATION,
-                               e.what()));
+			       DBException::QUERY_PREPARATION,
+			       e.what()));
 	  }
 	return ;
       }
@@ -140,4 +137,4 @@ namespace          CentreonBroker
   }
 }
 
-#endif /* !DB_MYSQL_INSERT_HPP_ */
+#endif /* !DB_MYSQL_DELETE_HPP_ */

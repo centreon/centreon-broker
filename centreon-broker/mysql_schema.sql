@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
   `entry_time` int(11) NOT NULL,
+  -- entry_time_usec int (not needed ?)
   `acknowledgement_type` smallint(6) NOT NULL default '0',
   `state` smallint(6) NOT NULL default '0',
   `author_name` varchar(64) NOT NULL default '',
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
 
 
+-- Does this table have to be present in CentreonBroker ? Guess not.
 CREATE TABLE IF NOT EXISTS `centreon_acl` (
   `id` int(11) NOT NULL auto_increment,
   `host_name` varchar(60) default NULL,
@@ -31,20 +33,22 @@ CREATE TABLE IF NOT EXISTS `centreon_acl` (
 CREATE TABLE IF NOT EXISTS `comments` (
   `comment_id` int(11) NOT NULL auto_increment,
   `internal_comment_id` int(11) NOT NULL default '0',
+  `instance_id` smallint(5) unsigned default NULL,
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
-  `instance_id` smallint(5) unsigned default NULL,
-  `author_name` varchar(64) NOT NULL default '',
   `entry_time` int(11) NOT NULL,
+  -- entry_time_usec int (not needed ?)
   `comment_type` smallint(6) NOT NULL default '0',
   `entry_type` smallint(6) NOT NULL default '0',
   `comment_time` int(11) NOT NULL,
+  `author_name` varchar(64) NOT NULL default '',
   `comment_data` varchar(255) NOT NULL default '',
   `is_persistent` smallint(6) NOT NULL default '0',
   `comment_source` smallint(6) NOT NULL default '0',
   `expires` smallint(6) NOT NULL default '0',
   `expiration_time` int(11) NOT NULL,
   `deletion_time` int(11) NOT NULL,
+  -- deletion_time_usec int (not needed ?)
   PRIMARY KEY  (`comment_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
 

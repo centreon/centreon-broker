@@ -29,6 +29,8 @@ namespace                 CentreonBroker
   {
     // Forward declarations
     template              <typename ObjectType>
+    class                 Delete;
+    template              <typename ObjectType>
     class                 Insert;
     template              <typename ObjectType>
     class                 Mapping;
@@ -67,6 +69,8 @@ namespace                 CentreonBroker
       virtual void        Disconnect() = 0;
       DBMS                GetDbms() const throw ();
       template            <typename ObjectType>
+      Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping);
+      template            <typename ObjectType>
       Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping);
       virtual Truncate*   GetTruncateQuery() = 0;
       template            <typename ObjectType>
@@ -81,8 +85,38 @@ namespace                 CentreonBroker
 //# include "db/postgresql/connection.h"
 
 /**
+ *  Return a DELETE query matching the DBMS. Because we can't override a
+ *  template method, we will dynamic_cast the Connection to call the proper
+ *  method.
+ */
+template <typename ObjectType>                    // Template
+CentreonBroker::DB::Delete<ObjectType>*           // Return type
+  CentreonBroker::DB::Connection::GetDeleteQuery( // Method
+    const Mapping<ObjectType>& mapping)           // Argument
+{
+  Delete<ObjectType>* del;
+
+  switch (this->dbms_)
+    {
+     case MYSQL:
+      del = dynamic_cast<MySQLConnection*>(this)
+	->GetDeleteQuery<ObjectType>(mapping);
+      break ;
+     case ORACLE:
+     case POSTGRESQL:
+     default:
+      assert(false);
+      throw (DBException(this->dbms_,
+			 DBException::QUERY_PREPARATION,
+			 "Unsupported DBMS"));
+    }
+  return (del);
+}
+
+/**
  *  Return an INSERT query matching the DBMS. Because we can't override a
- *  template, we will dynamic_cast the Connection to call the proper method.
+ *  template method, we will dynamic_cast the Connection to call the proper
+ *  method.
  */
 template <typename ObjectType>                    // Template
 CentreonBroker::DB::Insert<ObjectType>*           // Return type
