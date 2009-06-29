@@ -42,6 +42,7 @@ cb2db_SOURCES		=	../../src/acknowledgement.cpp		\
 				../../src/db/query.cpp			\
 				../../src/db/truncate.cpp		\
 				../../src/db_output.cpp			\
+				../../src/downtime.cpp			\
 				../../src/event.cpp			\
 				../../src/event_publisher.cpp		\
 				../../src/event_subscriber.cpp		\
