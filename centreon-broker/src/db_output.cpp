@@ -368,8 +368,13 @@ void DBOutput::ProcessComment(const Comment& comment)
   logging.LogDebug("Processing Comment event...");
   logging.Indent();
 #endif /* !NDEBUG */
+  std::auto_ptr<DB::Insert<Comment> >
+    query(this->conn_->GetInsertQuery<Comment>(this->comment_mapping_));
+
+  query->Prepare();
+  query->Execute(comment);
+  this->QueryExecuted();
 #ifndef NDEBUG
-  logging.LogDebug("No processing yet");
   logging.Deindent();
 #endif /* !NDEBUG */
   return ;
