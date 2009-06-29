@@ -56,6 +56,7 @@ namespace                         CentreonBroker
     NetworkInput&                 operator=(const NetworkInput& ni);
     void                          HandleAcknowledgement(ProtocolSocket& ps);
     void                          HandleComment(ProtocolSocket& ps);
+    void                          HandleDowntime(ProtocolSocket& ps);
     void                          HandleHost(ProtocolSocket& ps);
     void                          HandleHostStatus(ProtocolSocket& ps);
     void                          HandleInitialization(ProtocolSocket& ps);

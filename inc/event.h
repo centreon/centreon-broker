@@ -51,6 +51,7 @@ namespace              CentreonBroker
       COMMENT,
       CONNECTION,
       CONNECTIONSTATUS,
+      DOWNTIME,
       HOST,
       HOSTSTATUS,
       PROGRAMSTATUS,

@@ -46,6 +46,7 @@ namespace                      CentreonBroker
   }
   class                        Acknowledgement;
   class                        Comment;
+  class                        Downtime;
   class                        Event;
   class                        Host;
   class                        HostStatus;
@@ -62,6 +63,7 @@ namespace                      CentreonBroker
     DB::Mapping<Comment>          comment_mapping_;
     DB::Mapping<Connection>       connection_mapping_;
     DB::Mapping<ConnectionStatus> connection_status_mapping_;
+    DB::Mapping<Downtime>         downtime_mapping_;
     DB::Mapping<Host>             host_mapping_;
     DB::Mapping<HostStatus>       host_status_mapping_;
     DB::Mapping<ProgramStatus>    program_status_mapping_;
@@ -108,6 +110,7 @@ namespace                      CentreonBroker
                                     const Connection& connection);
     void                          ProcessConnectionStatus(
                                     const ConnectionStatus& cs);
+    void                          ProcessDowntime(const Downtime& downtime);
     void                          ProcessEvent(Event* event);
     void                          ProcessHost(const Host& host);
     void                          ProcessHostStatus(const HostStatus& hs);

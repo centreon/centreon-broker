@@ -24,6 +24,7 @@
 #include "acknowledgement.h"
 #include "comment.h"
 #include "connection.h"
+#include "downtime.h"
 #include "event_publisher.h"
 #include "host.h"
 #include "host_status.h"
@@ -295,6 +296,32 @@ void NetworkInput::HandleComment(ProtocolSocket& socket)
     };
 
   HandleObject<Comment>(this->instance_, comment_setters, socket);
+  return ;
+}
+
+/**
+ *  Handle a downtime event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleDowntime(ProtocolSocket& socket)
+{
+  static const KeySetter<Downtime> downtime_setters[] =
+    {
+      { NDO_DATA_AUTHORNAME, 'S', &Downtime::SetAuthorName },
+      { NDO_DATA_COMMENT, 'S', &Downtime::SetCommentData },
+      { NDO_DATA_DOWNTIMEID, 'i', &Downtime::SetInternalId },
+      { NDO_DATA_DOWNTIMETYPE, 's', &Downtime::SetDowntimeType },
+      { NDO_DATA_DURATION, 's', &Downtime::SetDuration },
+      { NDO_DATA_ENDTIME, 't', &Downtime::SetActualEndTime },
+      { NDO_DATA_ENTRYTIME, 't', &Downtime::SetEntryTime },
+      { NDO_DATA_FIXED, 's', &Downtime::SetIsFixed },
+      { NDO_DATA_HOST, 'S', &Downtime::SetHost },
+      { NDO_DATA_SERVICE, 'S', &Downtime::SetService },
+      { NDO_DATA_STARTTIME, 't', &Downtime::SetActualStartTime },
+      { NDO_DATA_TRIGGEREDBY, 'i', &Downtime::SetTriggeredById },
+      { 0, '\0', static_cast<void (Downtime::*)(double)>(NULL) }
+    };
+
+  HandleObject<Downtime>(this->instance_, downtime_setters, socket);
   return ;
 }
 

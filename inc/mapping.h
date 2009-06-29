@@ -26,6 +26,7 @@
 # include "connection.h"
 # include "connection_status.h"
 # include "db/mapping.hpp"
+# include "downtime.h"
 # include "host.h"
 # include "host_status.h"
 # include "program_status.h"
@@ -42,6 +43,8 @@ namespace                               CentreonBroker
   extern DB::Mapping<Connection>        connection_mapping;
   // ConnectionStatus
   extern DB::Mapping<ConnectionStatus>  connection_status_mapping;
+  // Downtime
+  extern DB::Mapping<Downtime>          downtime_mapping;
   // Host
   extern DB::Mapping<Host>              host_mapping;
   // HostStatus
