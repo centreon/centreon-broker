@@ -30,10 +30,10 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  This internal method is used to copy data defined inside the
- *  Comment class from an object to the current instance. This means that no
- *  superclass data are copied. This method is used in Acknowledgement copy
- *  constructor and in the = operator overload.
+ *  This internal method is used to copy data defined inside the Comment class
+ *  from an object to the current instance. This means that no superclass data
+ *  are copied. This method is used in Comment copy constructor and in the =
+ *  operator overload.
  *
  *  \see Comment(const Comment&)
  *  \see operator=

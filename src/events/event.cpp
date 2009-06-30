@@ -22,12 +22,6 @@
 
 using namespace CentreonBroker::Events;
 
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
-
 /**
  *  Event default constructor.
  */
@@ -38,6 +32,8 @@ Event::Event()
 
 /**
  *  Event copy constructor.
+ *
+ *  \param[in] event Object to copy from.
  */
 Event::Event(const Event& event)
 {
@@ -46,14 +42,18 @@ Event::Event(const Event& event)
 }
 
 /**
- *  Event destructor.
+ *  Release all acquired ressources.
  */
 Event::~Event()
 {
 }
 
 /**
- *  Event operator= overload. Only copy the event instance.
+ *  Copy the Nagios instance name of the given object to the current instance.
+ *
+ *  \param[in] event Object to copy from.
+ *
+ *  \return *this
  */
 Event& Event::operator=(const Event& event)
 {
@@ -67,6 +67,10 @@ Event& Event::operator=(const Event& event)
  *  until the reader specify that he's done with the event.
  *
  *  For now, AddReader() only counts the number of times it has been called.
+ *
+ *  \see RemoveReader
+ *
+ *  \param[in] es Ignored.
  */
 void Event::AddReader(EventSubscriber* es)
 {
@@ -78,7 +82,9 @@ void Event::AddReader(EventSubscriber* es)
 }
 
 /**
- *  Returns the instance on which the event occured.
+ *  Get the name of the instance from which the event was generated.
+ *
+ *  \return The name of the instance from which the event was generated.
  */
 const std::string& Event::GetNagiosInstance() const throw ()
 {
@@ -88,7 +94,11 @@ const std::string& Event::GetNagiosInstance() const throw ()
 /**
  *  Remove an event reader. The current implementation only counts the number
  *  of calls made to AddReader and RemoveReader and if the numbers equal, the
- *  object self-destruct.
+ *  object self-destructs.
+ *
+ *  \see AddReader
+ *
+ *  \param[in] es Ignored.
  */
 void Event::RemoveReader(EventSubscriber* es)
 {
@@ -107,7 +117,10 @@ void Event::RemoveReader(EventSubscriber* es)
 }
 
 /**
- *  Sets the Nagios instance on which the event occured.
+ *  Set the name of the instance from which the event was generated.
+ *
+ *  \param[in] inst The name of the instance from which the event was
+ *                  generated.
  */
 void Event::SetNagiosInstance(const std::string& inst)
 {

@@ -103,11 +103,7 @@ CREATE TABLE IF NOT EXISTS `downtimes` (
   `scheduled_end_time` int(11) NOT NULL,
   `was_started` smallint(6) NOT NULL default '0',
   `actual_start_time` int(11) NOT NULL,
-  -- XXX : is this usec really necessary ?
-  `actual_start_time_usec` int(11) NOT NULL default '0',
   `actual_end_time` int(11) NOT NULL,
-  -- XXX : is this usec really necessary ?
-  `actual_end_time_usec` int(11) NOT NULL default '0',
   `was_cancelled` smallint(6) NOT NULL default '0',
   PRIMARY KEY  (`downtime_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci ;

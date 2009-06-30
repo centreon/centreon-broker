@@ -130,8 +130,7 @@ namespace                CentreonBroker
        */
       short              GetState() const throw ();
       /**
-       *  \brief Returns the type of this event
-       *         (CentreonBroker::Event::ACKNOWLEDGEMENT).
+       *  \brief Returns the type of this event (Event::ACKNOWLEDGEMENT).
        */
       int                GetType() const throw ();
       /**
