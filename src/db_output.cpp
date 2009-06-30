@@ -20,18 +20,19 @@
 
 #include <boost/bind.hpp>
 #include <memory>
-#include "comment.h"
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
 #include "db/predicate.h"
 #include "db_output.h"
-#include "event.h"
 #include "exception.h"
-#include "host.h"
-#include "host_status.h"
+#include "events/comment.h"
+#include "events/event.h"
+#include "events/host.h"
+#include "events/host_status.h"
 #include "logging.h"
 
 using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

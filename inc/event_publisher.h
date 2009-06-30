@@ -26,7 +26,10 @@
 
 namespace                       CentreonBroker
 {
-  class                         Event;
+  namespace                     Events
+  {
+    class                       Event;
+  }
   class                         EventSubscriber;
 
   /**
@@ -50,7 +53,7 @@ namespace                       CentreonBroker
    public:
                                 ~EventPublisher();
     static EventPublisher*      GetInstance();
-    void                        Publish(Event* ev);
+    void                        Publish(Events::Event* ev);
     void                        Subscribe(EventSubscriber* es);
     void                        Unsubscribe(EventSubscriber* es);
   };

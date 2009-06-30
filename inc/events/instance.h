@@ -22,30 +22,33 @@
 # define INSTANCE_H_
 
 # include <string>
-# include "event.h"
+# include "events/event.h"
 
 namespace       CentreonBroker
 {
-  class         Instance : public Event
+  namespace       Events
   {
-   private:
-    enum        String
+    class         Instance : public Event
     {
-      ADDRESS = 0,
-      DESCRIPTION,
-      NAME,
-      STRING_NB
-    };
-    std::string strings_[STRING_NB];
-    void        InternalCopy(const Instance& inst);
+     private:
+      enum        String
+      {
+	ADDRESS = 0,
+	DESCRIPTION,
+	NAME,
+	STRING_NB
+      };
+      std::string strings_[STRING_NB];
+      void        InternalCopy(const Instance& inst);
 
-  public:
-                Instance();
-                Instance(const Instance& inst);
-                ~Instance();
-    Instance&   operator=(const Instance& inst);
-    int         GetType() const throw ();
-  };
+     public:
+                  Instance();
+		  Instance(const Instance& inst);
+		  ~Instance();
+      Instance&   operator=(const Instance& inst);
+      int         GetType() const throw ();
+    };
+  }
 }
 
 #endif /* !INSTANCE_H_ */

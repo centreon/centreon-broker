@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "comment.h"
+#include "events/comment.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *
@@ -30,7 +30,15 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  This internal method is used to copy data defined inside the
+ *  Comment class from an object to the current instance. This means that no
+ *  superclass data are copied. This method is used in Acknowledgement copy
+ *  constructor and in the = operator overload.
+ *
+ *  \see Comment(const Comment&)
+ *  \see operator=
+ *
+ *  \param[in] comment Object to copy from.
  */
 void Comment::InternalCopy(const Comment& comment)
 {
@@ -48,7 +56,8 @@ void Comment::InternalCopy(const Comment& comment)
 **************************************/
 
 /**
- *  Comment default constructor.
+ *  Comment default constructor. Set all members to their default value (0,
+ *  NULL or equivalent).
  */
 Comment::Comment()
 {
@@ -58,6 +67,8 @@ Comment::Comment()
 
 /**
  *  Comment copy constructor.
+ *
+ *  \param[in] comment Object to copy from.
  */
 Comment::Comment(const Comment& comment) : Event(comment)
 {
@@ -65,14 +76,18 @@ Comment::Comment(const Comment& comment) : Event(comment)
 }
 
 /**
- *  Comment destructor.
+ *  Comment destructor, release all acquired ressources.
  */
 Comment::~Comment()
 {
 }
 
 /**
- *  Comment operator= overload.
+ *  Overload of the = operator.
+ *
+ *  \param[in] comment Object to copy from.
+ *
+ *  \return *this
  */
 Comment& Comment::operator=(const Comment& comment)
 {
@@ -82,7 +97,9 @@ Comment& Comment::operator=(const Comment& comment)
 }
 
 /**
- *  Get the author_name member.
+ *  Get the name of the comment author.
+ *
+ *  \return The name of the comment author.
  */
 const std::string& Comment::GetAuthorName() const throw ()
 {
@@ -90,7 +107,9 @@ const std::string& Comment::GetAuthorName() const throw ()
 }
 
 /**
- *  Get the comment_data member.
+ *  Get the comment content.
+ *
+ *  \return The comment content.
  */
 const std::string& Comment::GetCommentData() const throw ()
 {
@@ -98,7 +117,9 @@ const std::string& Comment::GetCommentData() const throw ()
 }
 
 /**
- *  Get the comment_source member.
+ *  Get the comment source.
+ *
+ *  \return The comment source (XXX : which sources ?).
  */
 short Comment::GetCommentSource() const throw ()
 {
@@ -106,7 +127,9 @@ short Comment::GetCommentSource() const throw ()
 }
 
 /**
- *  Get the comment_time member.
+ *  Get the date on which the comment was made.
+ *
+ *  \return The date on which the comment was made.
  */
 time_t Comment::GetCommentTime() const throw ()
 {
@@ -114,7 +137,9 @@ time_t Comment::GetCommentTime() const throw ()
 }
 
 /**
- *  Get the comment_type member.
+ *  Get the type of the comment (XXX : which types ?).
+ *
+ *  \return The type of the comment.
  */
 short Comment::GetCommentType() const throw ()
 {
@@ -122,7 +147,9 @@ short Comment::GetCommentType() const throw ()
 }
 
 /**
- *  Get the deletion_time member.
+ *  Get the time on which the comment was deleted.
+ *
+ *  \return The time on which the comment was deleted.
  */
 time_t Comment::GetDeletionTime() const throw ()
 {
@@ -130,7 +157,7 @@ time_t Comment::GetDeletionTime() const throw ()
 }
 
 /**
- *  Get the entry_time member.
+ *  XXX : need fix
  */
 time_t Comment::GetEntryTime() const throw ()
 {
@@ -138,7 +165,7 @@ time_t Comment::GetEntryTime() const throw ()
 }
 
 /**
- *  Get the entry_type member.
+ *  XXX : need fix
  */
 short Comment::GetEntryType() const throw ()
 {
@@ -146,7 +173,9 @@ short Comment::GetEntryType() const throw ()
 }
 
 /**
- *  Get the expiration_time member.
+ *  Get the date on which the comment expires.
+ *
+ *  \return The date on which the comment expires.
  */
 time_t Comment::GetExpirationTime() const throw ()
 {
@@ -154,7 +183,9 @@ time_t Comment::GetExpirationTime() const throw ()
 }
 
 /**
- *  Get the expires member.
+ *  Determines whether or not the comment expires.
+ *
+ *  \return 0 if the comment does not expires.
  */
 short Comment::GetExpires() const throw ()
 {
@@ -162,7 +193,9 @@ short Comment::GetExpires() const throw ()
 }
 
 /**
- *  Get the host member.
+ *  Get the name of the host associated with the comment.
+ *
+ *  \return The name of the host associated with the comment.
  */
 const std::string& Comment::GetHost() const throw ()
 {
@@ -170,7 +203,9 @@ const std::string& Comment::GetHost() const throw ()
 }
 
 /**
- *  Get the is_persistent member.
+ *  Determines whether or not the comment is persistent.
+ *
+ *  \return 0 if the comment is not persistent.
  */
 short Comment::GetIsPersistent() const throw ()
 {
@@ -178,7 +213,9 @@ short Comment::GetIsPersistent() const throw ()
 }
 
 /**
- *  Get the service member.
+ *  Get the name of the service associated with the comment.
+ *
+ *  \return The name of the service associated with the comment.
  */
 const std::string& Comment::GetService() const throw ()
 {
@@ -186,7 +223,11 @@ const std::string& Comment::GetService() const throw ()
 }
 
 /**
- *  Get the type of the event.
+ *  Returns the type of this event (CentreonBroker::Event::COMMENT).
+ *
+ *  \see CentreonBroker::Event
+ *
+ *  \return CentreonBroker::Event::COMMENT
  */
 int Comment::GetType() const throw ()
 {
@@ -194,7 +235,11 @@ int Comment::GetType() const throw ()
 }
 
 /**
- *  Set the author_name member.
+ *  Set the name of the comment author.
+ *
+ *  \see GetAuthorName
+ *
+ *  \param[in] an The name of the comment author.
  */
 void Comment::SetAuthorName(const std::string& an)
 {
@@ -203,7 +248,11 @@ void Comment::SetAuthorName(const std::string& an)
 }
 
 /**
- *  Set the comment_data member.
+ *  Set the comment content.
+ *
+ *  \see GetCommentData
+ *
+ *  \param[in] cd The comment content.
  */
 void Comment::SetCommentData(const std::string& cd)
 {
@@ -212,7 +261,11 @@ void Comment::SetCommentData(const std::string& cd)
 }
 
 /**
- *  Set the comment_source member.
+ *  Set the comment source (XXX : what are the available sources ?).
+ *
+ *  \see GetCommentSource
+ *
+ *  \return The comment source.
  */
 void Comment::SetCommentSource(short cs) throw ()
 {
@@ -221,7 +274,11 @@ void Comment::SetCommentSource(short cs) throw ()
 }
 
 /**
- *  Set the comment_time member.
+ *  Set the time on which the comment was made.
+ *
+ *  \see GetCommentTime
+ *
+ *  \param[in] ct The time on which the comment was made.
  */
 void Comment::SetCommentTime(time_t ct) throw ()
 {
@@ -230,7 +287,11 @@ void Comment::SetCommentTime(time_t ct) throw ()
 }
 
 /**
- *  Set the comment_type member.
+ *  Set the type of the comment (XXX : what are the available types ?).
+ *
+ *  \see GetCommentType
+ *
+ *  \param[in] ct The type of the comment.
  */
 void Comment::SetCommentType(short ct) throw ()
 {
@@ -239,7 +300,11 @@ void Comment::SetCommentType(short ct) throw ()
 }
 
 /**
- *  Set the deletion_time member.
+ *  Set the date on which the comment was deleted.
+ *
+ *  \see GetDeletionTime
+ *
+ *  \param[in] dt The date on which the comment was deleted.
  */
 void Comment::SetDeletionTime(time_t dt) throw ()
 {
@@ -248,7 +313,9 @@ void Comment::SetDeletionTime(time_t dt) throw ()
 }
 
 /**
- *  Set the entry_time member.
+ *  XXX : need fix
+ *
+ *  \see GetEntryTime
  */
 void Comment::SetEntryTime(time_t et) throw ()
 {
@@ -257,7 +324,9 @@ void Comment::SetEntryTime(time_t et) throw ()
 }
 
 /**
- *  Set the entry_type member.
+ *  XXX : need fix
+ *
+ *  \see GetEntryType
  */
 void Comment::SetEntryType(short et) throw ()
 {
@@ -266,7 +335,11 @@ void Comment::SetEntryType(short et) throw ()
 }
 
 /**
- *  Set the expiration_time member.
+ *  Set the date on which the comment expires.
+ *
+ *  \see GetExpirationTime
+ *
+ *  \param[in] et The date on which the comment expires.
  */
 void Comment::SetExpirationTime(time_t et) throw ()
 {
@@ -275,7 +348,11 @@ void Comment::SetExpirationTime(time_t et) throw ()
 }
 
 /**
- *  Set the expires member.
+ *  Set whether or not the comment expires.
+ *
+ *  \see GetExpires
+ *
+ *  \param[in] e 0 if the comment doesn't expire.
  */
 void Comment::SetExpires(short e) throw ()
 {
@@ -284,7 +361,11 @@ void Comment::SetExpires(short e) throw ()
 }
 
 /**
- *  Set the host member.
+ *  Set the name of the host associated with the comment.
+ *
+ *  \see GetHost
+ *
+ *  \param[in] h The name of the host associated with the comment.
  */
 void Comment::SetHost(const std::string& h)
 {
@@ -293,7 +374,11 @@ void Comment::SetHost(const std::string& h)
 }
 
 /**
- *  Set the is_persistent member.
+ *  Set whether or not the comment is persistent.
+ *
+ *  \see GetIsPersistent
+ *
+ *  \param[in] ip 0 if the comment is not persistent.
  */
 void Comment::SetIsPersistent(short ip) throw ()
 {
@@ -302,7 +387,11 @@ void Comment::SetIsPersistent(short ip) throw ()
 }
 
 /**
- *  Set the service member.
+ *  Set the name of the service associated with the comment.
+ *
+ *  \see GetService
+ *
+ *  \param[in] s The name of the service associated with the comment.
  */
 void Comment::SetService(const std::string& s)
 {

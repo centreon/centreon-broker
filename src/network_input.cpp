@@ -21,21 +21,22 @@
 #include <boost/thread/mutex.hpp>
 #include <cstdlib>
 #include <ctime>
-#include "acknowledgement.h"
-#include "comment.h"
-#include "connection.h"
-#include "downtime.h"
 #include "event_publisher.h"
-#include "host.h"
-#include "host_status.h"
+#include "events/acknowledgement.h"
+#include "events/comment.h"
+#include "events/connection.h"
+#include "events/downtime.h"
+#include "events/host.h"
+#include "events/host_status.h"
+#include "events/program_status.h"
+#include "events/service.h"
+#include "events/service_status.h"
 #include "logging.h"
 #include "nagios/protoapi.h"
 #include "network_input.h"
-#include "program_status.h"
-#include "service.h"
-#include "service_status.h"
 
 using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "status.h"
+#include "events/status.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

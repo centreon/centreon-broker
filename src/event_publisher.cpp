@@ -20,9 +20,9 @@
 
 #include <cassert>
 #include <cstdlib>
-#include "event.h"
 #include "event_publisher.h"
 #include "event_subscriber.h"
+#include "events/event.h"
 
 using namespace CentreonBroker;
 
@@ -121,7 +121,7 @@ EventPublisher* EventPublisher::GetInstance()
 /**
  *  Sends an event to all subscribers.
  */
-void EventPublisher::Publish(Event* ev)
+void EventPublisher::Publish(Events::Event* ev)
 {
   std::list<EventSubscriber*>::iterator it;
   boost::unique_lock<boost::mutex> lock(this->subscribersm_);

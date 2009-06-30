@@ -19,9 +19,9 @@
 */
 
 #include <string>
-#include "instance.h"
+#include "events/instance.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

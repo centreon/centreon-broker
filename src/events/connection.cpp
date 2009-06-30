@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "connection.h"
+#include "events/connection.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

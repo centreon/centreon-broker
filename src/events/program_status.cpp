@@ -18,9 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include "program_status.h"
+#include "events/program_status.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

@@ -26,7 +26,10 @@
 
 namespace            CentreonBroker
 {
-  class              Event;
+  namespace          Events
+  {
+    class            Event;
+  }
 
   /**
    *  An EventSubscriber can subscribe against the EventPublisher to receive
@@ -41,7 +44,7 @@ namespace            CentreonBroker
                      EventSubscriber(const EventSubscriber& es);
     virtual          ~EventSubscriber();
     EventSubscriber& operator=(const EventSubscriber& es);
-    virtual void     OnEvent(Event* e) = 0;
+    virtual void     OnEvent(Events::Event* e) = 0;
   };
 }
 

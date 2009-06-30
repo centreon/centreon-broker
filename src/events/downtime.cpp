@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "downtime.h"
+#include "events/downtime.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *
