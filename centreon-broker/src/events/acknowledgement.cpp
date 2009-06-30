@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "acknowledgement.h"
+#include "events/acknowledgement.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *
@@ -30,7 +30,15 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  This internal method is used to copy data defined inside the
+ *  Acknowledgement class from an object to the current instance. This means
+ *  that no superclass data are copied. This method is used in Acknowledgement
+ *  copy constructor and in the = operator overload.
+ *
+ *  \see Acknowledgement(const Acknowledgement&)
+ *  \see operator=
+ *
+ *  \param[in] ack Object to copy from.
  */
 void Acknowledgement::InternalCopy(const Acknowledgement& ack)
 {
@@ -48,7 +56,8 @@ void Acknowledgement::InternalCopy(const Acknowledgement& ack)
 **************************************/
 
 /**
- *  Acknowledgement default constructor.
+ *  Acknowledgement default constructor. Set all members to their default value
+ *  (0, NULL or equivalent).
  */
 Acknowledgement::Acknowledgement()
 {
@@ -58,6 +67,8 @@ Acknowledgement::Acknowledgement()
 
 /**
  *  Acknowledgement copy constructor.
+ *
+ *  \param[in] ack Object to copy from.
  */
 Acknowledgement::Acknowledgement(const Acknowledgement& ack) : Event(ack)
 {
@@ -65,14 +76,18 @@ Acknowledgement::Acknowledgement(const Acknowledgement& ack) : Event(ack)
 }
 
 /**
- *  Acknowledgement destructor.
+ *  Acknowledgement destructor, release all acquired ressources.
  */
 Acknowledgement::~Acknowledgement()
 {
 }
 
 /**
- *  Acknowledgement operator= overload.
+ *  Overload of the = operator.
+ *
+ *  \param[in] ack Object to copy from.
+ *
+ *  \return *this
  */
 Acknowledgement& Acknowledgement::operator=(const Acknowledgement& ack)
 {
@@ -82,7 +97,9 @@ Acknowledgement& Acknowledgement::operator=(const Acknowledgement& ack)
 }
 
 /**
- *  Get the acknowledgement_type member.
+ *  Get the type of the acknowledgement.
+ *
+ *  \return The type of the acknowledgement (XXX : what are the types ?).
  */
 short Acknowledgement::GetAcknowledgementType() const throw ()
 {
@@ -90,7 +107,9 @@ short Acknowledgement::GetAcknowledgementType() const throw ()
 }
 
 /**
- *  Get the author_name member.
+ *  Get the name of the acknowledgement author.
+ *
+ *  \return The name of the acknowledgement author.
  */
 const std::string& Acknowledgement::GetAuthorName() const throw ()
 {
@@ -98,7 +117,9 @@ const std::string& Acknowledgement::GetAuthorName() const throw ()
 }
 
 /**
- *  Get the comment member.
+ *  Get the comment associated with the acknowledgement.
+ *
+ *  \return The comment associated with the acknowledgement.
  */
 const std::string& Acknowledgement::GetComment() const throw ()
 {
@@ -106,7 +127,7 @@ const std::string& Acknowledgement::GetComment() const throw ()
 }
 
 /**
- *  Get the entry_time member.
+ *  XXX : need fix
  */
 time_t Acknowledgement::GetEntryTime() const throw ()
 {
@@ -114,7 +135,9 @@ time_t Acknowledgement::GetEntryTime() const throw ()
 }
 
 /**
- *  Get the host member.
+ *  Get the name of the host associated with the acknowledgement.
+ *
+ *  \return The name of the host associated with the acknowledgement.
  */
 const std::string& Acknowledgement::GetHost() const throw ()
 {
@@ -122,7 +145,9 @@ const std::string& Acknowledgement::GetHost() const throw ()
 }
 
 /**
- *  Get the is_sticky member.
+ *  Determines whether or not the acknowledgement is sticky.
+ *
+ *  \return 0 if the acknowledgement is not sticky.
  */
 short Acknowledgement::GetIsSticky() const throw ()
 {
@@ -130,7 +155,9 @@ short Acknowledgement::GetIsSticky() const throw ()
 }
 
 /**
- *  Get the notify_contacts member.
+ *  Determines whether or not contacts should still be notified.
+ *
+ *  \return 0 if contacts shouldn't be notified.
  */
 short Acknowledgement::GetNotifyContacts() const throw ()
 {
@@ -138,7 +165,7 @@ short Acknowledgement::GetNotifyContacts() const throw ()
 }
 
 /**
- *  Get the persistent_comment member.
+ *  XXX : fix
  */
 short Acknowledgement::GetPersistentComment() const throw ()
 {
@@ -146,7 +173,9 @@ short Acknowledgement::GetPersistentComment() const throw ()
 }
 
 /**
- *  Get the service type.
+ *  Get the name of the service associated with the acknowledgement.
+ *
+ *  \return The name of the service associated with the acknowledgement.
  */
 const std::string& Acknowledgement::GetService() const throw ()
 {
@@ -154,7 +183,7 @@ const std::string& Acknowledgement::GetService() const throw ()
 }
 
 /**
- *  Get the state type.
+ *  XXX : need fix
  */
 short Acknowledgement::GetState() const throw ()
 {
@@ -162,7 +191,11 @@ short Acknowledgement::GetState() const throw ()
 }
 
 /**
- *  Return the event type.
+ *  Returns the type of this event (CentreonBroker::Event::ACKNOWLEDGEMENT).
+ *
+ *  \see CentreonBroker::Event
+ *
+ *  \return CentreonBroker::Event::ACKNOWLEDGEMENT
  */
 int Acknowledgement::GetType() const throw ()
 {
@@ -170,7 +203,11 @@ int Acknowledgement::GetType() const throw ()
 }
 
 /**
- *  Set the acknowledgement_type member.
+ *  Set the type of the acknowledgement.
+ *
+ *  \see GetAcknowlegementType
+ *
+ *  \param[in] at The acknowledgement type.
  */
 void Acknowledgement::SetAcknowledgementType(short at) throw ()
 {
@@ -179,7 +216,11 @@ void Acknowledgement::SetAcknowledgementType(short at) throw ()
 }
 
 /**
- *  Set the author_name member.
+ *  Set the name of the acknowledgement author.
+ *
+ *  \see GetAuthorName
+ *
+ *  \param[in] an The name of the acknowledgement author.
  */
 void Acknowledgement::SetAuthorName(const std::string& an)
 {
@@ -188,7 +229,11 @@ void Acknowledgement::SetAuthorName(const std::string& an)
 }
 
 /**
- *  Set the comment member.
+ *  Set the comment associated with the acknowledgement.
+ *
+ *  \see GetComment
+ *
+ *  \param[in] c The comment associated with the acknowledgement.
  */
 void Acknowledgement::SetComment(const std::string& c)
 {
@@ -197,7 +242,9 @@ void Acknowledgement::SetComment(const std::string& c)
 }
 
 /**
- *  Set the entry_time member.
+ *  XXX : need fix
+ *
+ *  \see GetEntryTime
  */
 void Acknowledgement::SetEntryTime(time_t et) throw ()
 {
@@ -206,7 +253,11 @@ void Acknowledgement::SetEntryTime(time_t et) throw ()
 }
 
 /**
- *  Set the host member.
+ *  Set the name of the host associated with the acknowledgement.
+ *
+ *  \see GetHost
+ *
+ *  \param[in] h The name of the host associated with the acknowledgement.
  */
 void Acknowledgement::SetHost(const std::string& h)
 {
@@ -215,7 +266,11 @@ void Acknowledgement::SetHost(const std::string& h)
 }
 
 /**
- *  Set the is_sticky member.
+ *  Set whether or not the acknowledgement is sticky.
+ *
+ *  \see GetIsSticky
+ *
+ *  \param[in] is 0 if the acknowledgement isn't sticky.
  */
 void Acknowledgement::SetIsSticky(short is) throw ()
 {
@@ -224,7 +279,11 @@ void Acknowledgement::SetIsSticky(short is) throw ()
 }
 
 /**
- *  Set the notify_contacts member.
+ *  Set whether or not contacts should still be notified.
+ *
+ *  \see GetNotifyContacts
+ *
+ *  \param[in] nc 0 if contacts shouldn't be notified.
  */
 void Acknowledgement::SetNotifyContacts(short nc) throw ()
 {
@@ -233,7 +292,9 @@ void Acknowledgement::SetNotifyContacts(short nc) throw ()
 }
 
 /**
- *  Set the persistent_comment member.
+ *  XXX : need fix
+ *
+ *  \see GetPersistentComment
  */
 void Acknowledgement::SetPersistentComment(short pc) throw ()
 {
@@ -242,7 +303,11 @@ void Acknowledgement::SetPersistentComment(short pc) throw ()
 }
 
 /**
- *  Set the service member.
+ *  Set the name of the service associated with the acknowledgement.
+ *
+ *  \see GetService
+ *
+ *  \param[in] s The name of the service associated with the acknowledgement.
  */
 void Acknowledgement::SetService(const std::string& s)
 {
@@ -251,7 +316,9 @@ void Acknowledgement::SetService(const std::string& s)
 }
 
 /**
- *  Set the state member.
+ *  XXX : need fix
+ *
+ *  \see GetState
  */
 void Acknowledgement::SetState(short s) throw ()
 {

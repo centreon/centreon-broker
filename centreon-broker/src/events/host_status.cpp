@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "host_status.h"
+#include "events/host_status.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

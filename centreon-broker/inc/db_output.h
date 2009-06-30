@@ -44,31 +44,36 @@ namespace                      CentreonBroker
     template                   <typename ObjectType>
     class                      Update;
   }
-  class                        Acknowledgement;
-  class                        Comment;
-  class                        Downtime;
-  class                        Event;
-  class                        Host;
-  class                        HostStatus;
-  class                        ProgramStatus;
-  class                        Query;
-  class                        Service;
-  class                        ServiceStatus;
+  namespace                    Events
+  {
+    class                      Acknowledgement;
+    class                      Comment;
+    class                      Connection;
+    class                      ConnectionStatus;
+    class                      Downtime;
+    class                      Event;
+    class                      Host;
+    class                      HostStatus;
+    class                      ProgramStatus;
+    class                      Query;
+    class                      Service;
+    class                      ServiceStatus;
+  }
 
   class                           DBOutput : private EventSubscriber
   {
    private:
     // Object-Relational mappings
-    DB::Mapping<Acknowledgement>  acknowledgement_mapping_;
-    DB::Mapping<Comment>          comment_mapping_;
-    DB::Mapping<Connection>       connection_mapping_;
-    DB::Mapping<ConnectionStatus> connection_status_mapping_;
-    DB::Mapping<Downtime>         downtime_mapping_;
-    DB::Mapping<Host>             host_mapping_;
-    DB::Mapping<HostStatus>       host_status_mapping_;
-    DB::Mapping<ProgramStatus>    program_status_mapping_;
-    DB::Mapping<Service>          service_mapping_;
-    DB::Mapping<ServiceStatus>    service_status_mapping_;
+    DB::Mapping<Events::Acknowledgement>  acknowledgement_mapping_;
+    DB::Mapping<Events::Comment>          comment_mapping_;
+    DB::Mapping<Events::Connection>       connection_mapping_;
+    DB::Mapping<Events::ConnectionStatus> connection_status_mapping_;
+    DB::Mapping<Events::Downtime>         downtime_mapping_;
+    DB::Mapping<Events::Host>             host_mapping_;
+    DB::Mapping<Events::HostStatus>       host_status_mapping_;
+    DB::Mapping<Events::ProgramStatus>    program_status_mapping_;
+    DB::Mapping<Events::Service>          service_mapping_;
+    DB::Mapping<Events::ServiceStatus>    service_status_mapping_;
     // Connection informations
     DB::Connection::DBMS          dbms_;
     std::string                   host_;
@@ -76,15 +81,15 @@ namespace                      CentreonBroker
     std::string                   password_;
     std::string                   db_;
     DB::Connection*               conn_;
-    DB::Update<ConnectionStatus>* connection_status_stmt_;
-    DB::Update<HostStatus>*       host_status_stmt_;
-    DB::Update<ProgramStatus>*    program_status_stmt_;
-    DB::Update<ServiceStatus>*    service_status_stmt_;
+    DB::Update<Events::ConnectionStatus>* connection_status_stmt_;
+    DB::Update<Events::HostStatus>*       host_status_stmt_;
+    DB::Update<Events::ProgramStatus>*    program_status_stmt_;
+    DB::Update<Events::ServiceStatus>*    service_status_stmt_;
     // Performance objects
     int                           queries_;
     boost::system_time            timeout_;
     // Events
-    WaitableList<Event>           events_;
+    WaitableList<Events::Event>   events_;
     std::map<std::string, int>    instances_;
     // Thread
     volatile bool                 exit_;
@@ -102,23 +107,23 @@ namespace                      CentreonBroker
     int                           GetServiceId(const std::string& instance,
 					       const std::string& host,
 					       const std::string& service);
-    void                          OnEvent(Event* e) throw ();
+    void                          OnEvent(Events::Event* e) throw ();
     void                          ProcessAcknowledgement(
-                                    const Acknowledgement& ack);
-    void                          ProcessComment(const Comment& comment);
+                                    const Events::Acknowledgement& ack);
+    void                          ProcessComment(const Events::Comment& comment);
     void                          ProcessConnection(
-                                    const Connection& connection);
+                                    const Events::Connection& connection);
     void                          ProcessConnectionStatus(
-                                    const ConnectionStatus& cs);
-    void                          ProcessDowntime(const Downtime& downtime);
-    void                          ProcessEvent(Event* event);
-    void                          ProcessHost(const Host& host);
-    void                          ProcessHostStatus(const HostStatus& hs);
+                                    const Events::ConnectionStatus& cs);
+    void                          ProcessDowntime(const Events::Downtime& downtime);
+    void                          ProcessEvent(Events::Event* event);
+    void                          ProcessHost(const Events::Host& host);
+    void                          ProcessHostStatus(const Events::HostStatus& hs);
     void                          ProcessProgramStatus(
-                                    const ProgramStatus& ps);
-    void                          ProcessService(const Service& service);
+                                    const Events::ProgramStatus& ps);
+    void                          ProcessService(const Events::Service& service);
     void                          ProcessServiceStatus(
-                                    const ServiceStatus& ss);
+                                    const Events::ServiceStatus& ss);
     void                          QueryExecuted();
 
    public:

@@ -29,7 +29,7 @@
 # include <cstddef>
 # include <memory>
 # include <string>
-# include "connection_status.h"
+# include "events/connection_status.h"
 # include "protocol_socket.h"
 
 namespace                         CentreonBroker
@@ -43,7 +43,7 @@ namespace                         CentreonBroker
     friend class                  NetworkAcceptor;
 
    private:
-    ConnectionStatus              conn_status_;
+    Events::ConnectionStatus      conn_status_;
     std::string                   instance_;
     std::auto_ptr<ProtocolSocket> socket_;
     boost::thread*                thread_;

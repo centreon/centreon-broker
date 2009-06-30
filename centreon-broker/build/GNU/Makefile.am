@@ -21,15 +21,11 @@
 AUTOMAKE_OPTIONS	=	subdir-objects
 
 bin_PROGRAMS		=	cb2db
-cb2db_SOURCES		=	../../src/acknowledgement.cpp		\
-				../../src/cb2db.cpp			\
-				../../src/comment.cpp			\
+cb2db_SOURCES		=	../../src/cb2db.cpp			\
 				../../src/conf/conf.cpp			\
 				../../src/conf/input.cpp		\
 				../../src/conf/log.cpp			\
 				../../src/conf/output.cpp		\
-				../../src/connection.cpp		\
-				../../src/connection_status.cpp		\
 				../../src/db/connection.cpp		\
 				../../src/db/db_exception.cpp		\
 				../../src/db/have_fields.cpp		\
@@ -42,22 +38,26 @@ cb2db_SOURCES		=	../../src/acknowledgement.cpp		\
 				../../src/db/query.cpp			\
 				../../src/db/truncate.cpp		\
 				../../src/db_output.cpp			\
-				../../src/downtime.cpp			\
-				../../src/event.cpp			\
 				../../src/event_publisher.cpp		\
 				../../src/event_subscriber.cpp		\
+				../../src/events/acknowledgement.cpp	\
+				../../src/events/comment.cpp		\
+				../../src/events/connection.cpp		\
+				../../src/events/connection_status.cpp	\
+				../../src/events/downtime.cpp		\
+				../../src/events/event.cpp		\
+				../../src/events/host.cpp		\
+				../../src/events/host_service.cpp	\
+				../../src/events/host_service_status.cpp\
+				../../src/events/host_status.cpp	\
+				../../src/events/instance.cpp		\
+				../../src/events/program_status.cpp	\
+				../../src/events/service.cpp		\
+				../../src/events/service_status.cpp	\
+				../../src/events/status.cpp		\
 				../../src/exception.cpp			\
-				../../src/host.cpp			\
-				../../src/host_service.cpp		\
-				../../src/host_service_status.cpp	\
-				../../src/host_status.cpp		\
-				../../src/instance.cpp			\
 				../../src/logging.cpp			\
 				../../src/mapping.cpp			\
 				../../src/network_acceptor.cpp		\
 				../../src/network_input.cpp		\
-				../../src/program_status.cpp		\
-				../../src/protocol_socket.cpp		\
-				../../src/service.cpp			\
-				../../src/service_status.cpp		\
-				../../src/status.cpp
+				../../src/protocol_socket.cpp

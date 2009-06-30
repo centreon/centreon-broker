@@ -19,9 +19,9 @@
 */
 
 #include <cstring>
-#include "host.h"
+#include "events/host.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
   `entry_time` int(11) NOT NULL,
-  -- entry_time_usec int (not needed ?)
   `acknowledgement_type` smallint(6) NOT NULL default '0',
   `state` smallint(6) NOT NULL default '0',
   `author_name` varchar(64) NOT NULL default '',
@@ -16,20 +15,6 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
 
 
--- Does this table have to be present in CentreonBroker ? Guess not.
-CREATE TABLE IF NOT EXISTS `centreon_acl` (
-  `id` int(11) NOT NULL auto_increment,
-  `host_name` varchar(60) default NULL,
-  `service_description` varchar(128) default NULL,
-  `group_id` int(11) default NULL,
-  `host_id` int(11) default NULL,
-  `service_id` int(11) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `host_name` (`host_name`,`service_description`,`group_id`,`host_id`,`service_id`),
-  KEY `host_name_2` (`host_name`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci ;
-
-
 CREATE TABLE IF NOT EXISTS `comments` (
   `comment_id` int(11) NOT NULL auto_increment,
   `internal_comment_id` int(11) NOT NULL default '0',
@@ -37,7 +22,6 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
   `entry_time` int(11) NOT NULL,
-  -- entry_time_usec int (not needed ?)
   `comment_type` smallint(6) NOT NULL default '0',
   `entry_type` smallint(6) NOT NULL default '0',
   `comment_time` int(11) NOT NULL,
@@ -48,7 +32,6 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `expires` smallint(6) NOT NULL default '0',
   `expiration_time` int(11) NOT NULL,
   `deletion_time` int(11) NOT NULL,
-  -- deletion_time_usec int (not needed ?)
   PRIMARY KEY  (`comment_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -58,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `connection_info` (
   `instance_id` smallint(6) NOT NULL default '0',
   `agent_name` varchar(32) NOT NULL default '',
   `agent_version` varchar(8) NOT NULL default '',
+  -- disposition varchar(16) (not needed ?)
   `connect_source` varchar(16) NOT NULL default '',
   `connect_type` varchar(16) NOT NULL default '',
   `connect_time` int(11) NOT NULL,
@@ -75,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `connection_info` (
 CREATE TABLE IF NOT EXISTS `customvariables` (
   `customvariable_id` int(11) NOT NULL auto_increment,
   `instance_id` smallint(6) NOT NULL default '0',
+  -- XXX : fail ! There shouldn't be any object_id anymore
   `object_id` int(11) NOT NULL default '0',
   `config_type` smallint(6) NOT NULL default '0',
   `has_been_modified` smallint(6) NOT NULL default '0',
@@ -89,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `customvariables` (
 CREATE TABLE IF NOT EXISTS `customvariablestatus` (
   `customvariablestatus_id` int(11) NOT NULL auto_increment,
   `instance_id` smallint(6) NOT NULL default '0',
+  -- XXX : fail ! There shouldn't be any object_id anymore
   `object_id` int(11) NOT NULL default '0',
   `status_update_time` int(11) NOT NULL,
   `has_been_modified` smallint(6) NOT NULL default '0',
@@ -102,9 +88,9 @@ CREATE TABLE IF NOT EXISTS `customvariablestatus` (
 
 CREATE TABLE IF NOT EXISTS `downtimes` (
   `downtime_id` int(11) NOT NULL auto_increment,
+  `instance_id` smallint(6) NOT NULL default '0',
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
-  `instance_id` smallint(6) NOT NULL default '0',
   `downtime_type` smallint(6) NOT NULL default '0',
   `entry_time` int(11) NOT NULL,
   `author_name` varchar(64) NOT NULL default '',
@@ -117,8 +103,10 @@ CREATE TABLE IF NOT EXISTS `downtimes` (
   `scheduled_end_time` int(11) NOT NULL,
   `was_started` smallint(6) NOT NULL default '0',
   `actual_start_time` int(11) NOT NULL,
+  -- XXX : is this usec really necessary ?
   `actual_start_time_usec` int(11) NOT NULL default '0',
   `actual_end_time` int(11) NOT NULL,
+  -- XXX : is this usec really necessary ?
   `actual_end_time_usec` int(11) NOT NULL default '0',
   `was_cancelled` smallint(6) NOT NULL default '0',
   PRIMARY KEY  (`downtime_id`)
@@ -135,6 +123,7 @@ CREATE TABLE IF NOT EXISTS `eventhandlers` (
   `state_type` smallint(6) NOT NULL default '0',
   `start_time` int(11) NOT NULL,
   `end_time` int(11) NOT NULL,
+  -- XXX : command_object_id is not present but shouldn't it be replaced ?
   `command_args` varchar(255) NOT NULL default '',
   `command_line` varchar(255) NOT NULL default '',
   `timeout` smallint(6) NOT NULL default '0',
@@ -165,6 +154,7 @@ CREATE TABLE IF NOT EXISTS `flappinghistory` (
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical record of host and service flapping' ;
 
 
+-- XXX : does not match the original definition at all
 CREATE TABLE IF NOT EXISTS `hostgroups` (
   `hostgroup_id` int(11) NOT NULL auto_increment,
   `alias` varchar(255) NOT NULL default '',
@@ -174,6 +164,7 @@ CREATE TABLE IF NOT EXISTS `hostgroups` (
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Hostgroup definitions' ;
 
 
+-- XXX : does not match the original definition at all
 CREATE TABLE IF NOT EXISTS `hostgroups_members` (
   `hostgroup_id` smallint(5) unsigned NOT NULL default '0',
   `host_id` smallint(5) unsigned default NULL,

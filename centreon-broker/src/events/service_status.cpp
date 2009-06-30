@@ -20,9 +20,9 @@
 
 #include <cstring>
 #include <string>
-#include "service_status.h"
+#include "events/service_status.h"
 
-using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *

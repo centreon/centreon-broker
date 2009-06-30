@@ -18,19 +18,20 @@
 **  For more information : contact@centreon.com
 */
 
-#include "acknowledgement.h"
-#include "comment.h"
-#include "connection.h"
-#include "connection_status.h"
-#include "host.h"
-#include "host_status.h"
+#include "events/acknowledgement.h"
+#include "events/comment.h"
+#include "events/connection.h"
+#include "events/connection_status.h"
+#include "events/host.h"
+#include "events/host_status.h"
+#include "events/program_status.h"
+#include "events/service.h"
+#include "events/service_status.h"
 #include "logging.h"
 #include "mapping.h"
-#include "program_status.h"
-#include "service.h"
-#include "service_status.h"
 
 using namespace CentreonBroker;
+using namespace CentreonBroker::Events;
 
 /**
  *  Acknowledgement mapping.

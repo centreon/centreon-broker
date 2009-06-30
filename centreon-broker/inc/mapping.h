@@ -21,42 +21,42 @@
 #ifndef MAPPING_H_
 # define MAPPING_H_
 
-# include "acknowledgement.h"
-# include "comment.h"
-# include "connection.h"
-# include "connection_status.h"
 # include "db/mapping.hpp"
-# include "downtime.h"
-# include "host.h"
-# include "host_status.h"
-# include "program_status.h"
-# include "service.h"
-# include "service_status.h"
+# include "events/acknowledgement.h"
+# include "events/comment.h"
+# include "events/connection.h"
+# include "events/connection_status.h"
+# include "events/downtime.h"
+# include "events/host.h"
+# include "events/host_status.h"
+# include "events/program_status.h"
+# include "events/service.h"
+# include "events/service_status.h"
 
-namespace                               CentreonBroker
+namespace                                       CentreonBroker
 {
   // Acknowledgement
-  extern DB::Mapping<Acknowledgement>   acknowledgement_mapping;
+  extern DB::Mapping<Events::Acknowledgement>   acknowledgement_mapping;
   // Comment
-  extern DB::Mapping<Comment>           comment_mapping;
+  extern DB::Mapping<Events::Comment>           comment_mapping;
   // Connection
-  extern DB::Mapping<Connection>        connection_mapping;
+  extern DB::Mapping<Events::Connection>        connection_mapping;
   // ConnectionStatus
-  extern DB::Mapping<ConnectionStatus>  connection_status_mapping;
+  extern DB::Mapping<Events::ConnectionStatus>  connection_status_mapping;
   // Downtime
-  extern DB::Mapping<Downtime>          downtime_mapping;
+  extern DB::Mapping<Events::Downtime>          downtime_mapping;
   // Host
-  extern DB::Mapping<Host>              host_mapping;
+  extern DB::Mapping<Events::Host>              host_mapping;
   // HostStatus
-  extern DB::Mapping<HostStatus>        host_status_mapping;
+  extern DB::Mapping<Events::HostStatus>        host_status_mapping;
   // ProgramStatus
-  extern DB::Mapping<ProgramStatus>     program_status_mapping;
+  extern DB::Mapping<Events::ProgramStatus>     program_status_mapping;
   // Service
-  extern DB::Mapping<Service>           service_mapping;
+  extern DB::Mapping<Events::Service>           service_mapping;
   // ServiceStatus
-  extern DB::Mapping<ServiceStatus>     service_status_mapping;
+  extern DB::Mapping<Events::ServiceStatus>     service_status_mapping;
 
-  void                                  InitMappings();
+  void                                          InitMappings();
 }
 
 #endif /* !MAPPING_H_ */
