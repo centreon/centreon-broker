@@ -207,7 +207,8 @@ int Acknowledgement::GetType() const throw ()
  *
  *  \see GetAcknowlegementType
  *
- *  \param[in] at The acknowledgement type.
+ *  \param[in] at The acknowledgement type (XXX : what are the available types
+ *                ?).
  */
 void Acknowledgement::SetAcknowledgementType(short at) throw ()
 {

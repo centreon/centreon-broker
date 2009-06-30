@@ -176,12 +176,8 @@ static void InitDowntimeMapping()
   downtime_mapping.SetTable("downtimes");
   downtime_mapping.AddTimeField("actual_end_time",
 				&Downtime::GetActualEndTime);
-  downtime_mapping.AddIntField("actual_end_time_usec",
-			       &Downtime::GetActualEndTimeUsec);
   downtime_mapping.AddTimeField("actual_start_time",
 				&Downtime::GetActualStartTime);
-  downtime_mapping.AddIntField("actual_start_time_usec",
-			       &Downtime::GetActualStartTimeUsec);
   downtime_mapping.AddStringField("author_name", &Downtime::GetAuthorName);
   downtime_mapping.AddStringField("comment_data", &Downtime::GetCommentData);
   downtime_mapping.AddShortField("downtime_type", &Downtime::GetDowntimeType);

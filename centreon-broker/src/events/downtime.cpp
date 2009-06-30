@@ -30,7 +30,15 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  This internal method is used to copy data defined inside the Downtime class
+ *  from an object to the current instance. This means that no superclass data
+ *  are copied. This method is used in Downtime copy constructor and in the =
+ *  operator overload.
+ *
+ *  \see Downtime(const Downtime&)
+ *  \see operator=
+ *
+ *  \param[in] downtime Object to copy from.
  */
 void Downtime::InternalCopy(const Downtime& downtime)
 {
@@ -49,7 +57,8 @@ void Downtime::InternalCopy(const Downtime& downtime)
 **************************************/
 
 /**
- *  Downtime default constructor.
+ *  Downtime default constructor. Set all members to their default value (0,
+ *  NULL or equivalent).
  */
 Downtime::Downtime()
 {
@@ -60,6 +69,8 @@ Downtime::Downtime()
 
 /**
  *  Downtime copy constructor.
+ *
+ *  \param[in] downtime Object to copy from.
  */
 Downtime::Downtime(const Downtime& downtime) : Event(downtime)
 {
@@ -67,14 +78,18 @@ Downtime::Downtime(const Downtime& downtime) : Event(downtime)
 }
 
 /**
- *  Downtime destructor.
+ *  Downtime destructor, release all acquired ressources.
  */
 Downtime::~Downtime()
 {
 }
 
 /**
- *  Downtime operator= overload.
+ *  Overload of the = operator.
+ *
+ *  \param[in] downtime Object to copy from.
+ *
+ *  \return *this
  */
 Downtime& Downtime::operator=(const Downtime& downtime)
 {
@@ -84,7 +99,7 @@ Downtime& Downtime::operator=(const Downtime& downtime)
 }
 
 /**
- *  Get the actual_end_time member.
+ *  XXX : need fix
  */
 time_t Downtime::GetActualEndTime() const throw ()
 {
@@ -92,15 +107,7 @@ time_t Downtime::GetActualEndTime() const throw ()
 }
 
 /**
- *  Get the actual_end_time_usec member.
- */
-int Downtime::GetActualEndTimeUsec() const throw ()
-{
-  return (this->ints_[ACTUAL_END_TIME_USEC]);
-}
-
-/**
- *  Get the actual_start_time member.
+ *  XXX : need fix
  */
 time_t Downtime::GetActualStartTime() const throw ()
 {
@@ -108,15 +115,9 @@ time_t Downtime::GetActualStartTime() const throw ()
 }
 
 /**
- *  Get the actual_start_time_usec member.
- */
-int Downtime::GetActualStartTimeUsec() const throw ()
-{
-  return (this->ints_[ACTUAL_START_TIME_USEC]);
-}
-
-/**
- *  Get the author_name member.
+ *  Get the name of the user who defined the downtime.
+ *
+ *  \return The name of the user who defined the downtime.
  */
 const std::string& Downtime::GetAuthorName() const throw ()
 {
@@ -124,7 +125,9 @@ const std::string& Downtime::GetAuthorName() const throw ()
 }
 
 /**
- *  Get the comment_data member.
+ *  Get the comment associated with the downtime.
+ *
+ *  \return The comment associated with the downtime.
  */
 const std::string& Downtime::GetCommentData() const throw ()
 {
@@ -132,7 +135,9 @@ const std::string& Downtime::GetCommentData() const throw ()
 }
 
 /**
- *  Get the downtime_type member.
+ *  Get the type of the downtime (XXX : what are the available types ?).
+ *
+ *  \return The type of the downtime.
  */
 short Downtime::GetDowntimeType() const throw ()
 {
@@ -140,7 +145,9 @@ short Downtime::GetDowntimeType() const throw ()
 }
 
 /**
- *  Get the duration member.
+ *  Get the duration of the downtime.
+ *
+ *  \return The duration of the downtime.
  */
 short Downtime::GetDuration() const throw ()
 {
@@ -148,7 +155,7 @@ short Downtime::GetDuration() const throw ()
 }
 
 /**
- *  Get the entry_time member.
+ *  XXX : need fix
  */
 time_t Downtime::GetEntryTime() const throw ()
 {
@@ -156,7 +163,9 @@ time_t Downtime::GetEntryTime() const throw ()
 }
 
 /**
- *  Get the host member.
+ *  Get the name of the host associated with the downtime.
+ *
+ *  \return The name of the host associated with the downtime.
  */
 const std::string& Downtime::GetHost() const throw ()
 {
@@ -164,7 +173,7 @@ const std::string& Downtime::GetHost() const throw ()
 }
 
 /**
- *  Get the internal_id member.
+ *  XXX : need fix
  */
 int Downtime::GetInternalId() const throw ()
 {
@@ -172,7 +181,9 @@ int Downtime::GetInternalId() const throw ()
 }
 
 /**
- *  Get the is_fixed member.
+ *  Determines whether or not the downtime is fixed.
+ *
+ *  \return 0 if the downtime isn't fixed.
  */
 short Downtime::GetIsFixed() const throw ()
 {
@@ -180,7 +191,7 @@ short Downtime::GetIsFixed() const throw ()
 }
 
 /**
- *  Get the scheduled_end_time member.
+ *  XXX : need fix
  */
 time_t Downtime::GetScheduledEndTime() const throw ()
 {
@@ -188,7 +199,7 @@ time_t Downtime::GetScheduledEndTime() const throw ()
 }
 
 /**
- *  Get the scheduled_start_time member.
+ *  XXX : need fix
  */
 time_t Downtime::GetScheduledStartTime() const throw ()
 {
@@ -196,7 +207,9 @@ time_t Downtime::GetScheduledStartTime() const throw ()
 }
 
 /**
- *  Get the service member.
+ *  Get the name of the service associated with the downtime.
+ *
+ *  \return The name of the service associated with the downtime.
  */
 const std::string& Downtime::GetService() const throw ()
 {
@@ -204,7 +217,7 @@ const std::string& Downtime::GetService() const throw ()
 }
 
 /**
- *  Get the triggered_by_id member.
+ *  XXX : need fix
  */
 int Downtime::GetTriggeredById() const throw ()
 {
@@ -212,7 +225,9 @@ int Downtime::GetTriggeredById() const throw ()
 }
 
 /**
- *  Get the type of the event.
+ *  Returns the type of this event (Event::DOWNTIME).
+ *
+ *  \return Event::DOWNTIME
  */
 int Downtime::GetType() const throw ()
 {
@@ -220,7 +235,9 @@ int Downtime::GetType() const throw ()
 }
 
 /**
- *  Get the was_cancelled member.
+ *  Determines whether or not the downtime was cancelled.
+ *
+ *  \return 0 if the downtime wasn't cancelled.
  */
 short Downtime::GetWasCancelled() const throw ()
 {
@@ -228,7 +245,9 @@ short Downtime::GetWasCancelled() const throw ()
 }
 
 /**
- *  Get the was_started member.
+ *  Determines whether or not the downtime was started.
+ *
+ *  \return 0 if the downtime wasn't started.
  */
 short Downtime::GetWasStarted() const throw ()
 {
@@ -236,7 +255,9 @@ short Downtime::GetWasStarted() const throw ()
 }
 
 /**
- *  Set the actual_end_time member.
+ *  XXX : need fix
+ *
+ *  \see GetActualEndTime
  */
 void Downtime::SetActualEndTime(time_t aet) throw ()
 {
@@ -245,16 +266,9 @@ void Downtime::SetActualEndTime(time_t aet) throw ()
 }
 
 /**
- *  Set the actual_end_time_usec member.
- */
-void Downtime::SetActualEndTimeUsec(int aetu) throw ()
-{
-  this->ints_[ACTUAL_END_TIME_USEC] = aetu;
-  return ;
-}
-
-/**
- *  Set the actual_start_time member.
+ *  XXX : need fix
+ *
+ *  \see GetActualStartTime
  */
 void Downtime::SetActualStartTime(time_t ast) throw ()
 {
@@ -263,16 +277,11 @@ void Downtime::SetActualStartTime(time_t ast) throw ()
 }
 
 /**
- *  Set the actual_start_time_usec member.
- */
-void Downtime::SetActualStartTimeUsec(int astu) throw ()
-{
-  this->ints_[ACTUAL_START_TIME_USEC] = astu;
-  return ;
-}
-
-/**
- *  Set the author_name member.
+ *  Set the name of the user who defined the downtime.
+ *
+ *  \see GetAuthorName
+ *
+ *  \param[in] an The name of the user who defined the downtime.
  */
 void Downtime::SetAuthorName(const std::string& an)
 {
@@ -281,7 +290,11 @@ void Downtime::SetAuthorName(const std::string& an)
 }
 
 /**
- *  Set the comment_data member.
+ *  Set the comment associated with the downtime.
+ *
+ *  \see GetCommentData
+ *
+ *  \param[in] cd The comment associated with the downtime.
  */
 void Downtime::SetCommentData(const std::string& cd)
 {
@@ -290,7 +303,11 @@ void Downtime::SetCommentData(const std::string& cd)
 }
 
 /**
- *  Set the downtime_type member.
+ *  Set the type of the downtime (XXX : what are the available types ?).
+ *
+ *  \see GetDowntimeType
+ *
+ *  \param[in] dt The type of the downtime.
  */
 void Downtime::SetDowntimeType(short dt) throw ()
 {
@@ -299,7 +316,11 @@ void Downtime::SetDowntimeType(short dt) throw ()
 }
 
 /**
- *  Set the duration member.
+ *  Set the duration of the downtime.
+ *
+ *  \see GetDuration
+ *
+ *  \param[in] d The duration of the downtime.
  */
 void Downtime::SetDuration(short d) throw ()
 {
@@ -308,7 +329,9 @@ void Downtime::SetDuration(short d) throw ()
 }
 
 /**
- *  Set the entry_time member.
+ *  XXX : need fix
+ *
+ *  \see GetEntryTime
  */
 void Downtime::SetEntryTime(time_t et) throw ()
 {
@@ -317,7 +340,11 @@ void Downtime::SetEntryTime(time_t et) throw ()
 }
 
 /**
- *  Set the host member.
+ *  Set the name of the host associated with the downtime.
+ *
+ *  \see GetHost
+ *
+ *  \param[in] h The name of the host associated with the downtime.
  */
 void Downtime::SetHost(const std::string& h)
 {
@@ -326,7 +353,9 @@ void Downtime::SetHost(const std::string& h)
 }
 
 /**
- *  Set the internal_id member.
+ *  XXX : need fix
+ *
+ *  \see GetInternalId
  */
 void Downtime::SetInternalId(int ii) throw ()
 {
@@ -335,7 +364,11 @@ void Downtime::SetInternalId(int ii) throw ()
 }
 
 /**
- *  Set the is_fixed member.
+ *  Set whether or not the downtime is fixed.
+ *
+ *  \see GetIsFixed
+ *
+ *  \param[in] i_f 0 if the downtime isn't fixed.
  */
 void Downtime::SetIsFixed(int i_f) throw ()
 {
@@ -344,7 +377,9 @@ void Downtime::SetIsFixed(int i_f) throw ()
 }
 
 /**
- *  Set the scheduled_end_time member.
+ *  XXX : need fix
+ *
+ *  \see GetScheduledEndTime
  */
 void Downtime::SetScheduledEndTime(time_t set) throw ()
 {
@@ -353,7 +388,9 @@ void Downtime::SetScheduledEndTime(time_t set) throw ()
 }
 
 /**
- *  Set the scheduled_start_time member.
+ *  XXX : need fix
+ *
+ *  \see GetScheduledStartTime
  */
 void Downtime::SetScheduledStartTime(time_t sst) throw ()
 {
@@ -362,7 +399,11 @@ void Downtime::SetScheduledStartTime(time_t sst) throw ()
 }
 
 /**
- *  Set the service member.
+ *  Set the name of the service associated with the downtime.
+ *
+ *  \see GetService
+ *
+ *  \param[in] service The name of the service associated with the downtime.
  */
 void Downtime::SetService(const std::string& service)
 {
@@ -371,7 +412,9 @@ void Downtime::SetService(const std::string& service)
 }
 
 /**
- *  Set the triggered_by_id member.
+ *  XXX : need fix
+ *
+ *  \see GetTriggeredById
  */
 void Downtime::SetTriggeredById(int tbi) throw ()
 {
@@ -380,7 +423,11 @@ void Downtime::SetTriggeredById(int tbi) throw ()
 }
 
 /**
- *  Set the was_cancelled member.
+ *  Set whether or not the downtime was cancelled.
+ *
+ *  \see GetWasCancelled
+ *
+ *  \param[in] wc 0 if the downtime wasn't cancelled.
  */
 void Downtime::SetWasCancelled(short wc) throw ()
 {
@@ -389,7 +436,11 @@ void Downtime::SetWasCancelled(short wc) throw ()
 }
 
 /**
- *  Set the was_started member.
+ *  Set whether or not the downtime was started.
+ *
+ *  \see GetWasStarted
+ *
+ *  \param[in] ws 0 if the downtime wasn't started.
  */
 void Downtime::SetWasStarted(short ws) throw ()
 {

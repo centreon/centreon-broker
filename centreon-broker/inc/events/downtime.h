@@ -21,6 +21,7 @@
 #ifndef DOWNTIME_H_
 # define DOWNTIME_H_
 
+# include <ctime>
 # include <string>
 # include "events/event.h"
 
@@ -28,14 +29,21 @@ namespace                CentreonBroker
 {
   namespace              Events
   {
+    /**
+     *  \class Downtime downtime.h "events/downtime.h"
+     *  \brief Represents a downtime inside Nagios.
+     *
+     *  A Nagios user may have the ability to define downtimes, which are time
+     *  periods inside which some host or service shall not generate any
+     *  notification. This can occur when an admin sys perform maintenance on a
+     *  server for example.
+     */
     class                Downtime : public Event
     {
      private:
       enum               Int
       {
-	ACTUAL_END_TIME_USEC = 0,
-	ACTUAL_START_TIME_USEC,
-	INTERNAL_ID,
+	INTERNAL_ID = 0,
 	TRIGGERED_BY_ID,
 	INT_NB
       };
@@ -69,49 +77,160 @@ namespace                CentreonBroker
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
       time_t             timets_[TIMET_NB];
+      /**
+       *  \brief Copy all internal data of the given object to the current
+       *         instance.
+       */
       void               InternalCopy(const Downtime& downtime);
 
      public:
+      /**
+       *  \brief Downtime default constructor.
+       */
                          Downtime();
+      /**
+       *  \brief Downtime copy constructor.
+       */
 			 Downtime(const Downtime& downtime);
+      /**
+       *  \brief Downtime destructor.
+       */
 			 ~Downtime();
+      /**
+       *  \brief Overload of the = operator.
+       */
       Downtime&          operator=(const Downtime& downtime);
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetActualEndTime() const throw ();
-      int                GetActualEndTimeUsec() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetActualStartTime() const throw ();
-      int                GetActualStartTimeUsec() const throw ();
+      /**
+       *  \brief Get the name of the user who defined the downtime.
+       */
       const std::string& GetAuthorName() const throw ();
+      /**
+       *  \brief Get the comment associated with the downtime.
+       */
       const std::string& GetCommentData() const throw ();
+      /**
+       *  \brief Get the type of the downtime.
+       */
       short              GetDowntimeType() const throw ();
+      /**
+       *  \brief Get the duration of the downtime.
+       */
       short              GetDuration() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetEntryTime() const throw ();
+      /**
+       *  \brief Get the name of the host associated with the downtime.
+       */
       const std::string& GetHost() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       int                GetInternalId() const throw ();
+      /**
+       *  \brief Determines whether or not the downtime is fixed.
+       */
       short              GetIsFixed() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetScheduledEndTime() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetScheduledStartTime() const throw ();
+      /**
+       *  \brief Get the name of the service associated with the downtime.
+       */
       const std::string& GetService() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       int                GetTriggeredById() const throw ();
+      /**
+       *  \brief Returns the type of this event (Event::DOWNTIME).
+       */
       int                GetType() const throw ();
+      /**
+       *  \brief Determines whether or not the downtime was cancelled.
+       */
       short              GetWasCancelled() const throw ();
+      /**
+       *  \brief Determines whether or not the downtime was started.
+       */
       short              GetWasStarted() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetActualEndTime(time_t aet) throw ();
-      void               SetActualEndTimeUsec(int aetu) throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetActualStartTime(time_t ast) throw ();
-      void               SetActualStartTimeUsec(int astu) throw ();
+      /**
+       *  \brief Set the name of the user who defined the downtime.
+       */
       void               SetAuthorName(const std::string& an);
+      /**
+       *  \brief Set the comment associated with the downtime.
+       */
       void               SetCommentData(const std::string& cd);
+      /**
+       *  \brief Set the type of the downtime.
+       */
       void               SetDowntimeType(short dt) throw ();
+      /**
+       *  \brief Set the duration of the downtime.
+       */
       void               SetDuration(short d) throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetEntryTime(time_t et) throw ();
+      /**
+       *  \brief Set the name of the host associated with the downtime.
+       */
       void               SetHost(const std::string& h);
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetInternalId(int ii) throw ();
+      /**
+       *  \brief Set whether or not the downtime is fixed.
+       */
       void               SetIsFixed(int i_f) throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetScheduledEndTime(time_t set) throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetScheduledStartTime(time_t sst) throw ();
+      /**
+       *  \brief Set the name of the service associated with the downtime.
+       */
       void               SetService(const std::string& service);
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetTriggeredById(int tbi) throw ();
+      /**
+       *  \brief Set whether or not the downtime was cancelled.
+       */
       void               SetWasCancelled(short wc) throw ();
+      /**
+       *  \brief Set whether or not the downtime was started.
+       */
       void               SetWasStarted(short ws) throw ();
     };
   }

@@ -142,8 +142,7 @@ namespace                CentreonBroker
        */
       const std::string& GetService() const throw ();
       /**
-       *  \brief Returns the type of this event
-       *         (CentreonBroker::Event::COMMENT).
+       *  \brief Returns the type of this event (Event::COMMENT).
        */
       int                GetType() const throw ();
       /**
