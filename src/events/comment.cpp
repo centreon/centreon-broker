@@ -42,6 +42,7 @@ using namespace CentreonBroker::Events;
  */
 void Comment::InternalCopy(const Comment& comment)
 {
+  memcpy(this->bools_, comment.bools_, sizeof(this->bools_));
   memcpy(this->shorts_, comment.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = comment.strings_[i];
@@ -61,6 +62,7 @@ void Comment::InternalCopy(const Comment& comment)
  */
 Comment::Comment()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->shorts_, 0, sizeof(this->shorts_));
   memset(this->timets_, 0, sizeof(this->timets_));
 }
@@ -167,19 +169,19 @@ short Comment::GetEntryType() const throw ()
  *
  *  \return The date on which the comment expires.
  */
-time_t Comment::GetExpirationTime() const throw ()
+time_t Comment::GetExpireTime() const throw ()
 {
-  return (this->timets_[EXPIRATION_TIME]);
+  return (this->timets_[EXPIRE_TIME]);
 }
 
 /**
  *  Determines whether or not the comment expires.
  *
- *  \return 0 if the comment does not expires.
+ *  \return true if the comment expires, false otherwise.
  */
-short Comment::GetExpires() const throw ()
+bool Comment::GetExpires() const throw ()
 {
-  return (this->shorts_[EXPIRES]);
+  return (this->bools_[EXPIRES]);
 }
 
 /**
@@ -195,11 +197,11 @@ const std::string& Comment::GetHost() const throw ()
 /**
  *  Determines whether or not the comment is persistent.
  *
- *  \return 0 if the comment is not persistent.
+ *  \return true if the comment is persistent, false otherwise.
  */
-short Comment::GetPersistent() const throw ()
+bool Comment::GetPersistent() const throw ()
 {
-  return (this->shorts_[PERSISTENT]);
+  return (this->bools_[PERSISTENT]);
 }
 
 /**
@@ -324,13 +326,13 @@ void Comment::SetEntryType(short et) throw ()
 /**
  *  Set the date on which the comment expires.
  *
- *  \see GetExpirationTime
+ *  \see GetExpireTime
  *
  *  \param[in] et The date on which the comment expires.
  */
-void Comment::SetExpirationTime(time_t et) throw ()
+void Comment::SetExpireTime(time_t et) throw ()
 {
-  this->timets_[EXPIRATION_TIME] = et;
+  this->timets_[EXPIRE_TIME] = et;
   return ;
 }
 
@@ -339,11 +341,11 @@ void Comment::SetExpirationTime(time_t et) throw ()
  *
  *  \see GetExpires
  *
- *  \param[in] e 0 if the comment doesn't expire.
+ *  \param[in] e true if the comment does expire, false otherwise.
  */
-void Comment::SetExpires(short e) throw ()
+void Comment::SetExpires(bool e) throw ()
 {
-  this->shorts_[EXPIRES] = e;
+  this->bools_[EXPIRES] = e;
   return ;
 }
 
@@ -365,11 +367,11 @@ void Comment::SetHost(const std::string& h)
  *
  *  \see GetPersistent
  *
- *  \param[in] ip 0 if the comment is not persistent.
+ *  \param[in] ip true if the comment is persistent, false otherwise.
  */
-void Comment::SetPersistent(short ip) throw ()
+void Comment::SetPersistent(bool p) throw ()
 {
-  this->shorts_[PERSISTENT] = ip;
+  this->bools_[PERSISTENT] = p;
   return ;
 }
 

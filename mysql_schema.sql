@@ -77,20 +77,20 @@
 CREATE TABLE IF NOT EXISTS `comment` (
   `id` int(11) NOT NULL auto_increment,               -- OK
   `instance_id` int(11) NOT NULL default '0',         -- OK
-  `internal_comment_id` int(11) NOT NULL default '0', -- not in Merlin
-  `host_id` int(11) NOT NULL default '0',             -- not in Merlin, host_name is
-  `service_id` int(11) NOT NULL default '0',          -- not in Merlin, service_description is
-  `entry_time` int(11) NOT NULL,                      -- OK
-  `comment_type` smallint(6) NOT NULL default '0',    -- is int in Merlin, why ?
-  `entry_type` smallint(6) NOT NULL default '0',      -- is int in Merlin, why ?
-  `comment_time` int(11) NOT NULL,                    -- not in Merlin
-  `author_name` varchar(64) NOT NULL default '',      -- varchar(255)
+  `author_name` varchar(255) NOT NULL default '',     -- OK
   `comment_data` text NOT NULL default '',            -- OK
-  `persistent` smallint(6) NOT NULL default '0',      -- tinyint(2)
-  `source` smallint(6) NOT NULL default '0',          -- int
-  `expires` smallint(6) NOT NULL default '0',         -- int, why ?
-  `expire_time` int(11) NOT NULL,                     -- OK
+  `comment_time` int(11) NOT NULL,                    -- not in Merlin
+  `comment_type` smallint(6) NOT NULL default '0',    -- OK (is int in Merlin)
   `deletion_time` int(11) NOT NULL,                   -- not in Merlin
+  `entry_time` int(11) NOT NULL,                      -- OK
+  `entry_type` smallint(6) NOT NULL default '0',      -- OK (is int in Merlin)
+  `expire_time` int(11) NOT NULL,                     -- OK
+  `expires` boolean NOT NULL default '0',             -- OK (is int in Merlin)
+  `host_name` varchar(255) default NULL,              -- OK but why don't we have host_id instead ?
+  `internal_comment_id` int(11) NOT NULL default '0', -- not in Merlin, where do we fetch it ?
+  `persistent` boolean NOT NULL default '0',          -- OK
+  `service_description` varchar(160) default NULL,    -- OK but why don't we have service_id instead ?
+  `source` smallint(6) NOT NULL default '0',          -- OK (is int in Merlin)
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -98,13 +98,13 @@ CREATE TABLE IF NOT EXISTS `comment` (
 CREATE TABLE IF NOT EXISTS `host` (
   `id` int(11) NOT NULL auto_increment,                             -- OK
   `instance_id` int(11) NOT NULL default '0',                       -- OK
-  `host_name` varchar(255) default NULL,                            -- varchar(75) in Merlin
+  `host_name` varchar(255) default NULL,                            -- varchar(75)
   `alias` varchar(100) NOT NULL default '',                         -- OK
   `display_name` varchar(100) NOT NULL default '',                  -- OK
   `address` varchar(75) NOT NULL default '',                        -- OK
   -- initial_state varchar(18) in Merlin
-  `check_interval` double NOT NULL default '0',                     -- smallint(6) in Merlin
-  `retry_interval` double NOT NULL default '0',                     -- smallint(6) in Merlin
+  `check_interval` double NOT NULL default '0',                     -- smallint(6)
+  `retry_interval` double NOT NULL default '0',                     -- smallint(6)
   `max_check_attempts` smallint(6) NOT NULL default '0',            -- OK
   -- max_attempts int
   -- current_event_id int
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   -- return_code smallint(8)
   -- last_event_id
   -- check_period varchar(75) in Merlin
-  `first_notification_delay` double NOT NULL default '0',           -- int in Merlin
+  `first_notification_delay` double NOT NULL default '0',           -- int
   -- notification_period varchar(75)
   -- notification_options varchar(15)
   `notification_interval` double NOT NULL default '0',              -- mediumint(9)
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   `output` text NOT NULL default '',                                -- OK
   -- long_output text
   `perf_data` text NOT NULL default '',                             -- OK
-  `current_state` smallint(6) NOT NULL default '0',                 -- int
+  `current_state` smallint(6) NOT NULL default '0',                 -- int, why ?
   `has_been_checked` smallint(6) NOT NULL default '0',              -- int, why ?
   `should_be_scheduled` smallint(6) NOT NULL default '0',           -- int, why ?
   `current_check_attempt` smallint(6) NOT NULL default '0',         -- int
@@ -281,9 +281,10 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
 CREATE TABLE IF NOT EXISTS `service` (
   `id` int(11) NOT NULL auto_increment,                                  -- OK
   `instance_id` int(11) NOT NULL default '0',                            -- OK
-  `host_id` int(11) NOT NULL,                                            -- not in Merlin
+  `host_id` int(11) NOT NULL,                                            -- not in Merlin, Centreon-specific, fetched from customvars
+  `service_id` int(11) NOT NULL,                                         -- not in Merlin, Centreon-specific, fetched from customvars
   `host_name` varchar(64) NOT NULL default '',                           -- varchar(75)
-  `service_description` varchar(64) NOT NULL default '',                 -- varchar(160)
+  `service_description` varchar(160) NOT NULL default '',                -- OK
   `display_name` varchar(64) NOT NULL default '',                        -- varchar(160)
   -- initial_state varchar(1)
   `graph_id` int(11) NOT NULL,

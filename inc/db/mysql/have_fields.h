@@ -45,6 +45,7 @@ namespace              CentreonBroker
       virtual          ~MySQLHaveFields();
       void             Prepare(MYSQL_STMT* mystmt);
       void             Reset() throw ();
+      void             SetBool(bool value);
       void             SetDouble(double value);
       void             SetInt(int value);
       void             SetShort(short value);
