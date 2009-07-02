@@ -88,12 +88,12 @@ static void InitCommentMapping()
 			       &Comment::GetEntryTime);
   comment_mapping.AddShortField("entry_type",
 				&Comment::GetEntryType);
-  comment_mapping.AddTimeField("expiration_time",
-			       &Comment::GetExpirationTime);
-  comment_mapping.AddShortField("expires",
-				&Comment::GetExpires);
-  comment_mapping.AddShortField("persistent",
-				&Comment::GetPersistent);
+  comment_mapping.AddTimeField("expire_time",
+			       &Comment::GetExpireTime);
+  comment_mapping.AddBoolField("expires",
+			       &Comment::GetExpires);
+  comment_mapping.AddBoolField("persistent",
+			       &Comment::GetPersistent);
   comment_mapping.AddShortField("source",
 				&Comment::GetSource);
   return ;

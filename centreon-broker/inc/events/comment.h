@@ -38,12 +38,16 @@ namespace                CentreonBroker
     class                Comment : public Event
     {
      private:
+      enum               Bool
+      {
+	EXPIRES = 0,
+	PERSISTENT,
+	BOOL_NB
+      };
       enum               Short
       {
 	COMMENT_TYPE = 0,
 	ENTRY_TYPE,
-	EXPIRES,
-	PERSISTENT,
 	SOURCE,
 	SHORT_NB
       };
@@ -51,8 +55,8 @@ namespace                CentreonBroker
       {
 	AUTHOR_NAME = 0,
 	COMMENT_DATA,
-	HOST,
-	SERVICE,
+	HOST_NAME,
+	SERVICE_DESCRIPTION,
 	STRING_NB
       };
       enum               TimeT
@@ -60,9 +64,10 @@ namespace                CentreonBroker
 	COMMENT_TIME = 0,
 	DELETION_TIME,
 	ENTRY_TIME,
-	EXPIRATION_TIME,
+	EXPIRE_TIME,
 	TIMET_NB
       };
+      bool               bools_[BOOL_NB];
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
       time_t             timets_[TIMET_NB];
@@ -120,11 +125,11 @@ namespace                CentreonBroker
       /**
        *  \brief Get the date on which the comment expires.
        */
-      time_t             GetExpirationTime() const throw ();
+      time_t             GetExpireTime() const throw ();
       /**
        *  \brief Determines whether or not the comment expires.
        */
-      short              GetExpires() const throw ();
+      bool               GetExpires() const throw ();
       /**
        *  \brief Get the name of the host associated with the comment.
        */
@@ -132,7 +137,7 @@ namespace                CentreonBroker
       /**
        *  \brief Determines whether or not the comment is persistent.
        */
-      short              GetPersistent() const throw ();
+      bool               GetPersistent() const throw ();
       /**
        *  \brief Get the name of the service associated with the comment.
        */
@@ -176,11 +181,11 @@ namespace                CentreonBroker
       /**
        *  \brief Set the date on which the comment expires.
        */
-      void               SetExpirationTime(time_t et) throw ();
+      void               SetExpireTime(time_t et) throw ();
       /**
        *  \brief Set whether or not the comment expires.
        */
-      void               SetExpires(short e) throw ();
+      void               SetExpires(bool e) throw ();
       /**
        *  \brief Set the name of the host associated with the comment.
        */
@@ -188,7 +193,7 @@ namespace                CentreonBroker
       /**
        *  \brief Set whether or not the comment is persistent.
        */
-      void               SetPersistent(short ip) throw ();
+      void               SetPersistent(bool ip) throw ();
       /**
        *  \brief Set the name of the service associated with the comment.
        */

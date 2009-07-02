@@ -43,6 +43,7 @@ namespace          CentreonBroker
       /**
        *  The following functions will set the next argument in the query.
        */
+      virtual void SetBool(bool value) = 0;
       virtual void SetDouble(double value) = 0;
       virtual void SetInt(int value) = 0;
       virtual void SetShort(short value) = 0;

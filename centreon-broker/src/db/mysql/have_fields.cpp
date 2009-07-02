@@ -123,6 +123,27 @@ void MySQLHaveFields::Reset() throw ()
 }
 
 /**
+ *  Set a bool argument.
+ */
+void MySQLHaveFields::SetBool(bool value)
+{
+  MYSQL_BIND* arg;
+
+  arg = this->myargs_ + this->arg_;
+  if (arg->buffer_type != MYSQL_TYPE_TINY)
+    {
+      this->DeleteArg(arg);
+      memset(arg, 0, sizeof(*arg));
+      arg->buffer_type = MYSQL_TYPE_TINY;
+      arg->buffer = static_cast<void*>(new char);
+      arg->buffer_length = sizeof(char);
+    }
+  *static_cast<char*>(arg->buffer) = value;
+  this->arg_++;
+  return ;
+}
+
+/**
  *  Set a double argument.
  */
 void MySQLHaveFields::SetDouble(double value)

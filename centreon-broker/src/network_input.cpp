@@ -103,13 +103,15 @@ struct KeySetter
   union UHandler
   {
    public:
+    void (Event::* set_bool)(bool);
     void (Event::* set_double)(double);
     void (Event::* set_int)(int);
     void (Event::* set_short)(short);
     void (Event::* set_string)(const std::string&);
     void (Event::* set_timet)(time_t);
 
-    UHandler() : set_double(NULL) {}
+    UHandler() : set_bool(NULL) {}
+    UHandler(void (Event::* sb)(bool)) : set_bool(sb) {}
     UHandler(void (Event::* sd)(double)) : set_double(sd) {}
     UHandler(void (Event::* si)(int)) : set_int(si) {}
     UHandler(void (Event::* ss)(short)) : set_short(ss) {}
@@ -152,6 +154,11 @@ static inline void HandleObject(const std::string& instance,
           {
             switch (key_setters[i].type)
               {
+               case 'b':
+                (event->*key_setters[i].setter.set_bool)(strtol(value_str,
+                                                                NULL,
+                                                                0));
+                break ;
                case 'd':
                 (event->*key_setters[i].setter.set_double)(strtod(value_str,
                                                                   NULL));
@@ -283,17 +290,17 @@ void NetworkInput::HandleComment(ProtocolSocket& socket)
     {
       { NDO_DATA_AUTHORNAME, 'S', &Comment::SetAuthorName },
       { NDO_DATA_COMMENT, 'S', &Comment::SetCommentData },
-      //{ NDO_DATA_COMMENTID },
+      //{ NDO_DATA_COMMENTID InternalCommentId ? },
       { NDO_DATA_COMMENTTYPE, 's', &Comment::SetCommentType },
       { NDO_DATA_ENTRYTIME, 't', &Comment::SetEntryTime },
       { NDO_DATA_ENTRYTYPE, 's', &Comment::SetEntryType },
-      { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpirationTime },
-      { NDO_DATA_EXPIRES, 's', &Comment::SetExpires },
+      { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpireTime },
+      { NDO_DATA_EXPIRES, 'b', &Comment::SetExpires },
       { NDO_DATA_HOST, 'S', &Comment::SetHost },
-      { NDO_DATA_PERSISTENT, 's', &Comment::SetPersistent },
+      { NDO_DATA_PERSISTENT, 'b', &Comment::SetPersistent },
       { NDO_DATA_SERVICE, 'S', &Comment::SetService },
       { NDO_DATA_SOURCE, 's', &Comment::SetSource },
-      { 0, '\0', static_cast<void (Comment::*)(double)>(NULL) }
+      { 0, '\0', static_cast<void (Comment::*)(bool)>(NULL) }
     };
 
   HandleObject<Comment>(this->instance_, comment_setters, socket);

@@ -86,6 +86,19 @@ namespace                        CentreonBroker
       /**
        *  Add a field and its associated getter to the field list.
        */
+      void                       AddBoolField(const std::string& field,
+					      const boost::function1<bool,
+					      const ObjectType&>& getter)
+      {
+	this->fields_[field] = boost::bind(&HaveFields::SetBool,
+					   _1,
+					   boost::bind(getter, _2));
+	return ;
+      }
+
+      /**
+       *  Add a field and its associated getter to the field list.
+       */
       void                       AddDoubleField(const std::string& field,
 						const boost::function1<double,
                                                   const ObjectType&>& getter)
