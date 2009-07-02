@@ -36,7 +36,7 @@ namespace              CentreonBroker
       {
 	MODIFIED_HOST_ATTRIBUTES = 0,
 	MODIFIED_SERVICE_ATTRIBUTES,
-	PROCESS_ID,
+	PID,
 	INT_NB
       };
       enum               Short
@@ -91,7 +91,7 @@ namespace              CentreonBroker
       short              GetObsessOverServices() const throw ();
       short              GetPassiveHostChecksEnabled() const throw ();
       short              GetPassiveServiceChecksEnabled() const throw ();
-      int                GetProcessId() const throw ();
+      int                GetPid() const throw ();
       time_t             GetProgramEndTime() const throw ();
       time_t             GetProgramStartTime() const throw ();
       int                GetType() const throw ();
@@ -110,7 +110,7 @@ namespace              CentreonBroker
       void               SetObsessOverServices(short oos) throw ();
       void               SetPassiveHostChecksEnabled(short phce) throw ();
       void               SetPassiveServiceChecksEnabled(short psce) throw ();
-      void               SetProcessId(int pi) throw ();
+      void               SetPid(int p) throw ();
       void               SetProgramEndTime(time_t pet) throw ();
       void               SetProgramStartTime(time_t pst) throw ();
     };

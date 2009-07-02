@@ -157,6 +157,14 @@ short Downtime::GetDuration() const throw ()
 /**
  *  XXX : need fix
  */
+time_t Downtime::GetEndTime() const throw ()
+{
+  return (this->timets_[END_TIME]);
+}
+
+/**
+ *  XXX : need fix
+ */
 time_t Downtime::GetEntryTime() const throw ()
 {
   return (this->timets_[ENTRY_TIME]);
@@ -193,17 +201,9 @@ short Downtime::GetIsFixed() const throw ()
 /**
  *  XXX : need fix
  */
-time_t Downtime::GetScheduledEndTime() const throw ()
+time_t Downtime::GetStartTime() const throw ()
 {
-  return (this->timets_[SCHEDULED_END_TIME]);
-}
-
-/**
- *  XXX : need fix
- */
-time_t Downtime::GetScheduledStartTime() const throw ()
-{
-  return (this->timets_[SCHEDULED_START_TIME]);
+  return (this->timets_[START_TIME]);
 }
 
 /**
@@ -219,9 +219,9 @@ const std::string& Downtime::GetService() const throw ()
 /**
  *  XXX : need fix
  */
-int Downtime::GetTriggeredById() const throw ()
+int Downtime::GetTriggeredBy() const throw ()
 {
-  return (this->ints_[TRIGGERED_BY_ID]);
+  return (this->ints_[TRIGGERED_BY]);
 }
 
 /**
@@ -331,6 +331,17 @@ void Downtime::SetDuration(short d) throw ()
 /**
  *  XXX : need fix
  *
+ *  \see GetEndTime
+ */
+void Downtime::SetEndTime(time_t et) throw ()
+{
+  this->timets_[END_TIME] = et;
+  return ;
+}
+
+/**
+ *  XXX : need fix
+ *
  *  \see GetEntryTime
  */
 void Downtime::SetEntryTime(time_t et) throw ()
@@ -379,22 +390,11 @@ void Downtime::SetIsFixed(int i_f) throw ()
 /**
  *  XXX : need fix
  *
- *  \see GetScheduledEndTime
+ *  \see GetStartTime
  */
-void Downtime::SetScheduledEndTime(time_t set) throw ()
+void Downtime::SetStartTime(time_t st) throw ()
 {
-  this->timets_[SCHEDULED_END_TIME] = set;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetScheduledStartTime
- */
-void Downtime::SetScheduledStartTime(time_t sst) throw ()
-{
-  this->timets_[SCHEDULED_START_TIME] = sst;
+  this->timets_[START_TIME] = st;
   return ;
 }
 
@@ -414,11 +414,11 @@ void Downtime::SetService(const std::string& service)
 /**
  *  XXX : need fix
  *
- *  \see GetTriggeredById
+ *  \see GetTriggeredBy
  */
-void Downtime::SetTriggeredById(int tbi) throw ()
+void Downtime::SetTriggeredBy(int tb) throw ()
 {
-  this->ints_[TRIGGERED_BY_ID] = tbi;
+  this->ints_[TRIGGERED_BY] = tb;
   return ;
 }
 

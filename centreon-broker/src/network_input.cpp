@@ -290,9 +290,9 @@ void NetworkInput::HandleComment(ProtocolSocket& socket)
       { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpirationTime },
       { NDO_DATA_EXPIRES, 's', &Comment::SetExpires },
       { NDO_DATA_HOST, 'S', &Comment::SetHost },
-      { NDO_DATA_PERSISTENT, 's', &Comment::SetIsPersistent },
+      { NDO_DATA_PERSISTENT, 's', &Comment::SetPersistent },
       { NDO_DATA_SERVICE, 'S', &Comment::SetService },
-      { NDO_DATA_SOURCE, 's', &Comment::SetCommentSource },
+      { NDO_DATA_SOURCE, 's', &Comment::SetSource },
       { 0, '\0', static_cast<void (Comment::*)(double)>(NULL) }
     };
 
@@ -318,7 +318,7 @@ void NetworkInput::HandleDowntime(ProtocolSocket& socket)
       { NDO_DATA_HOST, 'S', &Downtime::SetHost },
       { NDO_DATA_SERVICE, 'S', &Downtime::SetService },
       { NDO_DATA_STARTTIME, 't', &Downtime::SetActualStartTime },
-      { NDO_DATA_TRIGGEREDBY, 'i', &Downtime::SetTriggeredById },
+      { NDO_DATA_TRIGGEREDBY, 'i', &Downtime::SetTriggeredBy },
       { 0, '\0', static_cast<void (Downtime::*)(double)>(NULL) }
     };
 
@@ -489,7 +489,7 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 	{ NDO_DATA_PERCENTSTATECHANGE,
           'd',
           &HostStatus::SetPercentStateChange },
-	{ NDO_DATA_PERFDATA, 'S', &HostStatus::SetPerfdata },
+	{ NDO_DATA_PERFDATA, 'S', &HostStatus::SetPerfData },
 	{ NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
           's',
           &HostStatus::SetProblemHasBeenAcknowledged },
@@ -608,7 +608,7 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
       { NDO_DATA_PROCESSPERFORMANCEDATA,
 	's',
 	&ProgramStatus::SetProcessPerformanceData },
-      { NDO_DATA_PROCESSID, 'i', &ProgramStatus::SetProcessId },
+      { NDO_DATA_PROCESSID, 'i', &ProgramStatus::SetPid },
       { NDO_DATA_PROGRAMSTARTTIME,
 	't',
 	&ProgramStatus::SetProgramStartTime },
@@ -839,7 +839,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
       { NDO_DATA_PERCENTSTATECHANGE,
         'd',
         &ServiceStatus::SetPercentStateChange },
-      { NDO_DATA_PERFDATA, 'S', &ServiceStatus::SetPerfdata },
+      { NDO_DATA_PERFDATA, 'S', &ServiceStatus::SetPerfData },
       { NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
 	's',
 	&ServiceStatus::SetProblemHasBeenAcknowledged },

@@ -73,13 +73,11 @@ static void InitCommentMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Comment mapping...");
 #endif /* !NDEBUG */
-  comment_mapping.SetTable("comments");
+  comment_mapping.SetTable("comment");
   comment_mapping.AddStringField("author_name",
 				 &Comment::GetAuthorName);
   comment_mapping.AddStringField("comment_data",
 				 &Comment::GetCommentData);
-  comment_mapping.AddShortField("comment_source",
-				&Comment::GetCommentSource);
   comment_mapping.AddTimeField("comment_time",
 			       &Comment::GetCommentTime);
   comment_mapping.AddShortField("comment_type",
@@ -94,8 +92,10 @@ static void InitCommentMapping()
 			       &Comment::GetExpirationTime);
   comment_mapping.AddShortField("expires",
 				&Comment::GetExpires);
-  comment_mapping.AddShortField("is_persisten",
-				&Comment::GetIsPersistent);
+  comment_mapping.AddShortField("persistent",
+				&Comment::GetPersistent);
+  comment_mapping.AddShortField("source",
+				&Comment::GetSource);
   return ;
 }
 
@@ -173,7 +173,7 @@ static void InitDowntimeMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Downtime mapping...");
 #endif /* !NDEBUG */
-  downtime_mapping.SetTable("downtimes");
+  downtime_mapping.SetTable("scheduled_downtime");
   downtime_mapping.AddTimeField("actual_end_time",
 				&Downtime::GetActualEndTime);
   downtime_mapping.AddTimeField("actual_start_time",
@@ -182,16 +182,16 @@ static void InitDowntimeMapping()
   downtime_mapping.AddStringField("comment_data", &Downtime::GetCommentData);
   downtime_mapping.AddShortField("downtime_type", &Downtime::GetDowntimeType);
   downtime_mapping.AddShortField("duration", &Downtime::GetDuration);
+  downtime_mapping.AddTimeField("end_time",
+				&Downtime::GetEndTime);
   downtime_mapping.AddTimeField("entry_time", &Downtime::GetEntryTime);
   downtime_mapping.AddIntField("internal_downtime_id",
 			       &Downtime::GetInternalId);
   downtime_mapping.AddShortField("is_fixed", &Downtime::GetIsFixed);
-  downtime_mapping.AddTimeField("scheduled_end_time",
-				&Downtime::GetScheduledEndTime);
-  downtime_mapping.AddTimeField("scheduled_start_time",
-				&Downtime::GetScheduledStartTime);
-  downtime_mapping.AddIntField("triggered_by_id",
-			       &Downtime::GetTriggeredById);
+  downtime_mapping.AddTimeField("start_time",
+				&Downtime::GetStartTime);
+  downtime_mapping.AddIntField("triggered_by",
+			       &Downtime::GetTriggeredBy);
   downtime_mapping.AddShortField("was_cancelled", &Downtime::GetWasCancelled);
   downtime_mapping.AddShortField("was_started", &Downtime::GetWasStarted);
   return ;
@@ -207,7 +207,7 @@ static void InitHostMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Host mapping...");
 #endif /* !NDEBUG */
-  host_mapping.SetTable("hosts");
+  host_mapping.SetTable("host");
   host_mapping.AddShortField("acknowledgement_type",
 			     &Host::GetAcknowledgementType);
   host_mapping.AddStringField("action_url",
@@ -288,7 +288,7 @@ static void InitHostMapping()
 			      &Host::GetLowFlapThreshold);
   host_mapping.AddShortField("max_check_attempts",
 			     &Host::GetMaxCheckAttempts);
-  host_mapping.AddIntField("modified_host_attributes",
+  host_mapping.AddIntField("modified_attributes",
 			   &Host::GetModifiedAttributes);
   host_mapping.AddTimeField("next_check",
 			    &Host::GetNextCheck);
@@ -322,8 +322,8 @@ static void InitHostMapping()
 			     &Host::GetPassiveChecksEnabled);
   host_mapping.AddDoubleField("percent_state_change",
 			      &Host::GetPercentStateChange);
-  host_mapping.AddStringField("perfdata",
-			      &Host::GetPerfdata);
+  host_mapping.AddStringField("perf_data",
+			      &Host::GetPerfData);
   host_mapping.AddShortField("problem_has_been_acknowledged",
 			     &Host::GetProblemHasBeenAcknowledged);
   host_mapping.AddShortField("process_performance_data",
@@ -366,7 +366,7 @@ static void InitHostStatusMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing HostStatus mapping...");
 #endif /* !NDEBUG */
-  host_status_mapping.SetTable("hosts");
+  host_status_mapping.SetTable("host");
   host_status_mapping.AddShortField("acknowledgement_type",
                                     &HostStatus::GetAcknowledgementType);
   host_status_mapping.AddShortField("active_checks_enabled",
@@ -417,7 +417,7 @@ static void InitHostStatusMapping()
 				     &HostStatus::GetLatency);
   host_status_mapping.AddShortField("max_check_attempts",
 				    &HostStatus::GetMaxCheckAttempts);
-  host_status_mapping.AddIntField("modified_host_attributes",
+  host_status_mapping.AddIntField("modified_attributes",
 				  &HostStatus::GetModifiedAttributes);
   host_status_mapping.AddTimeField("next_check",
 				   &HostStatus::GetNextCheck);
@@ -435,8 +435,8 @@ static void InitHostStatusMapping()
 				    &HostStatus::GetPassiveChecksEnabled);
   host_status_mapping.AddDoubleField("percent_state_change",
 				     &HostStatus::GetPercentStateChange);
-  host_status_mapping.AddStringField("perfdata",
-				     &HostStatus::GetPerfdata);
+  host_status_mapping.AddStringField("perf_data",
+				     &HostStatus::GetPerfData);
   host_status_mapping.AddShortField("problem_has_been_acknowledged",
     &HostStatus::GetProblemHasBeenAcknowledged);
   host_status_mapping.AddShortField("process_performance_data",
@@ -461,7 +461,7 @@ static void InitProgramStatusMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing ProgramStatus mapping");
 #endif /* !NDEBUG */
-  program_status_mapping.SetTable("programstatus");
+  program_status_mapping.SetTable("program_status");
   program_status_mapping.AddShortField("active_host_checks_enabled",
     &ProgramStatus::GetActiveHostChecksEnabled);
   program_status_mapping.AddShortField("active_service_checks_enabled",
@@ -498,8 +498,8 @@ static void InitProgramStatusMapping()
     &ProgramStatus::GetPassiveHostChecksEnabled);
   program_status_mapping.AddShortField("passive_service_checks_enabled",
     &ProgramStatus::GetPassiveServiceChecksEnabled);
-  program_status_mapping.AddIntField("process_id",
-				     &ProgramStatus::GetProcessId);
+  program_status_mapping.AddIntField("pid",
+				     &ProgramStatus::GetPid);
   program_status_mapping.AddShortField("process_performance_data",
     &ProgramStatus::GetProcessPerformanceData);
   program_status_mapping.AddTimeField("program_end_time",
@@ -518,7 +518,7 @@ static void InitServiceMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Service mapping...");
 #endif /* !NDEBUG */
-  service_mapping.SetTable("services");
+  service_mapping.SetTable("service");
   service_mapping.AddShortField("acknowledgement_type",
 				&Service::GetAcknowledgementType);
   service_mapping.AddStringField("action_url",
@@ -617,7 +617,7 @@ static void InitServiceMapping()
 				 &Service::GetLowFlapThreshold);
   service_mapping.AddShortField("max_check_attempts",
 				&Service::GetMaxCheckAttempts);
-  service_mapping.AddIntField("modified_service_attributes",
+  service_mapping.AddIntField("modified_attributes",
 			      &Service::GetModifiedAttributes);
   service_mapping.AddTimeField("next_check",
 			       &Service::GetNextCheck);
@@ -653,8 +653,8 @@ static void InitServiceMapping()
 				&Service::GetPassiveChecksEnabled);
   service_mapping.AddDoubleField("percent_state_change",
 				 &Service::GetPercentStateChange);
-  service_mapping.AddStringField("perfdata",
-				 &Service::GetPerfdata);
+  service_mapping.AddStringField("perf_data",
+				 &Service::GetPerfData);
   service_mapping.AddShortField("problem_has_been_acknowledged",
 				&Service::GetProblemHasBeenAcknowledged);
   service_mapping.AddShortField("process_performance_data",
@@ -693,7 +693,7 @@ static void InitServiceStatusMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing ServiceStatus mapping...");
 #endif /* !NDEBUG */
-  service_status_mapping.SetTable("services");
+  service_status_mapping.SetTable("service");
   service_status_mapping.AddShortField("acknowledgement_type",
 				       &ServiceStatus::GetAcknowledgementType);
   service_status_mapping.AddShortField("active_checks_enabled",
@@ -746,7 +746,7 @@ static void InitServiceStatusMapping()
 					&ServiceStatus::GetLatency);
   service_status_mapping.AddShortField("max_check_attempts",
 				       &ServiceStatus::GetMaxCheckAttempts);
-  service_status_mapping.AddIntField("modified_service_attributes",
+  service_status_mapping.AddIntField("modified_attributes",
 				     &ServiceStatus::GetModifiedAttributes);
   service_status_mapping.AddTimeField("next_check",
 				      &ServiceStatus::GetNextCheck);
@@ -764,8 +764,8 @@ static void InitServiceStatusMapping()
     &ServiceStatus::GetPassiveChecksEnabled);
   service_status_mapping.AddDoubleField("percent_state_change",
 					&ServiceStatus::GetPercentStateChange);
-  service_status_mapping.AddStringField("perfdata",
-					&ServiceStatus::GetPerfdata);
+  service_status_mapping.AddStringField("perf_data",
+					&ServiceStatus::GetPerfData);
   service_status_mapping.AddShortField("problem_has_been_acknowledged",
     &ServiceStatus::GetProblemHasBeenAcknowledged);
   service_status_mapping.AddShortField("process_performance_data",

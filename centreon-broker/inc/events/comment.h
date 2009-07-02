@@ -40,11 +40,11 @@ namespace                CentreonBroker
      private:
       enum               Short
       {
-	COMMENT_SOURCE = 0,
-	COMMENT_TYPE,
+	COMMENT_TYPE = 0,
 	ENTRY_TYPE,
 	EXPIRES,
-	IS_PERSISTENT,
+	PERSISTENT,
+	SOURCE,
 	SHORT_NB
       };
       enum               String
@@ -98,10 +98,6 @@ namespace                CentreonBroker
        */
       const std::string& GetCommentData() const throw ();
       /**
-       *  \brief Get the comment source.
-       */
-      short              GetCommentSource() const throw ();
-      /**
        *  \brief Get the date on which the comment was made.
        */
       time_t             GetCommentTime() const throw ();
@@ -136,11 +132,15 @@ namespace                CentreonBroker
       /**
        *  \brief Determines whether or not the comment is persistent.
        */
-      short              GetIsPersistent() const throw ();
+      short              GetPersistent() const throw ();
       /**
        *  \brief Get the name of the service associated with the comment.
        */
       const std::string& GetService() const throw ();
+      /**
+       *  \brief Get the comment source.
+       */
+      short              GetSource() const throw ();
       /**
        *  \brief Returns the type of this event (Event::COMMENT).
        */
@@ -153,10 +153,6 @@ namespace                CentreonBroker
        *  \brief Set the comment content.
        */
       void               SetCommentData(const std::string& cd);
-      /**
-       *  \brief Set the comment source.
-       */
-      void               SetCommentSource(short cs) throw ();
       /**
        *  \brief Set the date on which the comment was made.
        */
@@ -192,11 +188,15 @@ namespace                CentreonBroker
       /**
        *  \brief Set whether or not the comment is persistent.
        */
-      void               SetIsPersistent(short ip) throw ();
+      void               SetPersistent(short ip) throw ();
       /**
        *  \brief Set the name of the service associated with the comment.
        */
       void               SetService(const std::string& s);
+      /**
+       *  \brief Set the comment source.
+       */
+      void               SetSource(short cs) throw ();
     };
   }
 }
