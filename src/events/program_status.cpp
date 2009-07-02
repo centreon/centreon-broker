@@ -195,11 +195,11 @@ short ProgramStatus::GetPassiveServiceChecksEnabled() const throw ()
 }
 
 /**
- *  Get the process_id member.
+ *  Get the pid member.
  */
-int ProgramStatus::GetProcessId() const throw ()
+int ProgramStatus::GetPid() const throw ()
 {
-  return (this->ints_[PROCESS_ID]);
+  return (this->ints_[PID]);
 }
 
 /**
@@ -353,11 +353,11 @@ void ProgramStatus::SetPassiveServiceChecksEnabled(short psce) throw ()
 }
 
 /**
- *  Set the process_id member.
+ *  Set the pid member.
  */
-void ProgramStatus::SetProcessId(int pi) throw ()
+void ProgramStatus::SetPid(int p) throw ()
 {
-  this->ints_[PROCESS_ID] = pi;
+  this->ints_[PID] = p;
   return ;
 }
 

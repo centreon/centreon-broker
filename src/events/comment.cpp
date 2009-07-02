@@ -117,16 +117,6 @@ const std::string& Comment::GetCommentData() const throw ()
 }
 
 /**
- *  Get the comment source.
- *
- *  \return The comment source (XXX : which sources ?).
- */
-short Comment::GetCommentSource() const throw ()
-{
-  return (this->shorts_[COMMENT_SOURCE]);
-}
-
-/**
  *  Get the date on which the comment was made.
  *
  *  \return The date on which the comment was made.
@@ -207,9 +197,9 @@ const std::string& Comment::GetHost() const throw ()
  *
  *  \return 0 if the comment is not persistent.
  */
-short Comment::GetIsPersistent() const throw ()
+short Comment::GetPersistent() const throw ()
 {
-  return (this->shorts_[IS_PERSISTENT]);
+  return (this->shorts_[PERSISTENT]);
 }
 
 /**
@@ -220,6 +210,16 @@ short Comment::GetIsPersistent() const throw ()
 const std::string& Comment::GetService() const throw ()
 {
   return (this->strings_[SERVICE]);
+}
+
+/**
+ *  Get the comment source.
+ *
+ *  \return The comment source (XXX : which sources ?).
+ */
+short Comment::GetSource() const throw ()
+{
+  return (this->shorts_[SOURCE]);
 }
 
 /**
@@ -257,19 +257,6 @@ void Comment::SetAuthorName(const std::string& an)
 void Comment::SetCommentData(const std::string& cd)
 {
   this->strings_[COMMENT_DATA] = cd;
-  return ;
-}
-
-/**
- *  Set the comment source (XXX : what are the available sources ?).
- *
- *  \see GetCommentSource
- *
- *  \return The comment source.
- */
-void Comment::SetCommentSource(short cs) throw ()
-{
-  this->shorts_[COMMENT_SOURCE] = cs;
   return ;
 }
 
@@ -376,13 +363,13 @@ void Comment::SetHost(const std::string& h)
 /**
  *  Set whether or not the comment is persistent.
  *
- *  \see GetIsPersistent
+ *  \see GetPersistent
  *
  *  \param[in] ip 0 if the comment is not persistent.
  */
-void Comment::SetIsPersistent(short ip) throw ()
+void Comment::SetPersistent(short ip) throw ()
 {
-  this->shorts_[IS_PERSISTENT] = ip;
+  this->shorts_[PERSISTENT] = ip;
   return ;
 }
 
@@ -396,5 +383,18 @@ void Comment::SetIsPersistent(short ip) throw ()
 void Comment::SetService(const std::string& s)
 {
   this->strings_[SERVICE] = s;
+  return ;
+}
+
+/**
+ *  Set the comment source (XXX : what are the available sources ?).
+ *
+ *  \see GetSource
+ *
+ *  \return The comment source.
+ */
+void Comment::SetSource(short cs) throw ()
+{
+  this->shorts_[SOURCE] = cs;
   return ;
 }

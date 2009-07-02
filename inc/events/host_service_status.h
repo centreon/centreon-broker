@@ -77,7 +77,7 @@ namespace                     CentreonBroker
 	EVENT_HANDLER,
 	HOST_NAME,
 	OUTPUT,
-	PERFDATA,
+	PERF_DATA,
 	STRING_NB
       };
       enum                    TimeT
@@ -132,7 +132,7 @@ namespace                     CentreonBroker
       const std::string& GetOutput() const throw ();
       short              GetPassiveChecksEnabled() const throw ();
       double             GetPercentStateChange() const throw ();
-      const std::string& GetPerfdata() const throw ();
+      const std::string& GetPerfData() const throw ();
       short              GetProblemHasBeenAcknowledged() const throw ();
       double             GetRetryInterval() const throw ();
       short              GetScheduledDowntimeDepth() const throw ();
@@ -167,7 +167,7 @@ namespace                     CentreonBroker
       void               SetOutput(const std::string& o);
       void               SetPassiveChecksEnabled(short pce) throw ();
       void               SetPercentStateChange(double psc) throw ();
-      void               SetPerfdata(const std::string& p);
+      void               SetPerfData(const std::string& p);
       void               SetProblemHasBeenAcknowledged(short phba) throw ();
       void               SetRetryInterval(double ri) throw ();
       void               SetScheduledDowntimeDepth(short sdd) throw ();

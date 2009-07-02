@@ -44,7 +44,7 @@ namespace                CentreonBroker
       enum               Int
       {
 	INTERNAL_ID = 0,
-	TRIGGERED_BY_ID,
+	TRIGGERED_BY,
 	INT_NB
       };
       enum               Short
@@ -68,9 +68,9 @@ namespace                CentreonBroker
       {
 	ACTUAL_END_TIME = 0,
 	ACTUAL_START_TIME,
+	END_TIME,
 	ENTRY_TIME,
-	SCHEDULED_END_TIME,
-	SCHEDULED_START_TIME,
+	START_TIME,
 	TIMET_NB
       };
       int                ints_[INT_NB];
@@ -127,6 +127,10 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
+      time_t             GetEndTime() const throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       time_t             GetEntryTime() const throw ();
       /**
        *  \brief Get the name of the host associated with the downtime.
@@ -143,11 +147,7 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
-      time_t             GetScheduledEndTime() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      time_t             GetScheduledStartTime() const throw ();
+      time_t             GetStartTime() const throw ();
       /**
        *  \brief Get the name of the service associated with the downtime.
        */
@@ -155,7 +155,7 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
-      int                GetTriggeredById() const throw ();
+      int                GetTriggeredBy() const throw ();
       /**
        *  \brief Returns the type of this event (Event::DOWNTIME).
        */
@@ -195,6 +195,10 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
+      void               SetEndTime(time_t et) throw ();
+      /**
+       *  \brief XXX : need fix
+       */
       void               SetEntryTime(time_t et) throw ();
       /**
        *  \brief Set the name of the host associated with the downtime.
@@ -211,11 +215,7 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
-      void               SetScheduledEndTime(time_t set) throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetScheduledStartTime(time_t sst) throw ();
+      void               SetStartTime(time_t st) throw ();
       /**
        *  \brief Set the name of the service associated with the downtime.
        */
@@ -223,7 +223,7 @@ namespace                CentreonBroker
       /**
        *  \brief XXX : need fix
        */
-      void               SetTriggeredById(int tbi) throw ();
+      void               SetTriggeredBy(int tb) throw ();
       /**
        *  \brief Set whether or not the downtime was cancelled.
        */

@@ -315,11 +315,11 @@ double HostServiceStatus::GetPercentStateChange() const throw ()
 }
 
 /**
- *  Get the perfdata member.
+ *  Get the perf_data member.
  */
-const std::string& HostServiceStatus::GetPerfdata() const throw ()
+const std::string& HostServiceStatus::GetPerfData() const throw ()
 {
-  return (this->strings_[PERFDATA]);
+  return (this->strings_[PERF_DATA]);
 }
 
 /**
@@ -615,11 +615,11 @@ void HostServiceStatus::SetPercentStateChange(double psc) throw ()
 }
 
 /**
- *  Set the perfdata member.
+ *  Set the perf_data member.
  */
-void HostServiceStatus::SetPerfdata(const std::string& p)
+void HostServiceStatus::SetPerfData(const std::string& p)
 {
-  this->strings_[PERFDATA] = p;
+  this->strings_[PERF_DATA] = p;
   return ;
 }
 
