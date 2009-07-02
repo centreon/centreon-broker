@@ -189,9 +189,9 @@ bool Comment::GetExpires() const throw ()
  *
  *  \return The name of the host associated with the comment.
  */
-const std::string& Comment::GetHost() const throw ()
+const std::string& Comment::GetHostName() const throw ()
 {
-  return (this->strings_[HOST]);
+  return (this->strings_[HOST_NAME]);
 }
 
 /**
@@ -205,13 +205,13 @@ bool Comment::GetPersistent() const throw ()
 }
 
 /**
- *  Get the name of the service associated with the comment.
+ *  Get the description of the service associated with the comment.
  *
- *  \return The name of the service associated with the comment.
+ *  \return The description of the service associated with the comment.
  */
-const std::string& Comment::GetService() const throw ()
+const std::string& Comment::GetServiceDescription() const throw ()
 {
-  return (this->strings_[SERVICE]);
+  return (this->strings_[SERVICE_DESCRIPTION]);
 }
 
 /**
@@ -352,13 +352,13 @@ void Comment::SetExpires(bool e) throw ()
 /**
  *  Set the name of the host associated with the comment.
  *
- *  \see GetHost
+ *  \see GetHostName
  *
  *  \param[in] h The name of the host associated with the comment.
  */
-void Comment::SetHost(const std::string& h)
+void Comment::SetHostName(const std::string& hn)
 {
-  this->strings_[HOST] = h;
+  this->strings_[HOST_NAME] = hn;
   return ;
 }
 
@@ -376,15 +376,15 @@ void Comment::SetPersistent(bool p) throw ()
 }
 
 /**
- *  Set the name of the service associated with the comment.
+ *  Set the description of the service associated with the comment.
  *
  *  \see GetService
  *
- *  \param[in] s The name of the service associated with the comment.
+ *  \param[in] s The description of the service associated with the comment.
  */
-void Comment::SetService(const std::string& s)
+void Comment::SetServiceDescription(const std::string& sd)
 {
-  this->strings_[SERVICE] = s;
+  this->strings_[SERVICE_DESCRIPTION] = sd;
   return ;
 }
 

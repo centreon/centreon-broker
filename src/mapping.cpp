@@ -92,8 +92,12 @@ static void InitCommentMapping()
 			       &Comment::GetExpireTime);
   comment_mapping.AddBoolField("expires",
 			       &Comment::GetExpires);
+  comment_mapping.AddStringField("host_name",
+				 &Comment::GetHostName);
   comment_mapping.AddBoolField("persistent",
 			       &Comment::GetPersistent);
+  comment_mapping.AddStringField("service_description",
+				 &Comment::GetServiceDescription);
   comment_mapping.AddShortField("source",
 				&Comment::GetSource);
   return ;

@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
 CREATE TABLE IF NOT EXISTS `host` (
   `id` int(11) NOT NULL auto_increment,                             -- OK
   `instance_id` int(11) NOT NULL default '0',                       -- OK
-  `host_name` varchar(255) default NULL,                            -- varchar(75)
+  `host_name` varchar(255) default NULL,                            -- OK (varchar(75) in Merlin)
   `alias` varchar(100) NOT NULL default '',                         -- OK
   `display_name` varchar(100) NOT NULL default '',                  -- OK
   `address` varchar(75) NOT NULL default '',                        -- OK
@@ -178,10 +178,10 @@ CREATE TABLE IF NOT EXISTS `host` (
   `notes` varchar(255) default NULL,                                -- OK
   `notes_url` varchar(255) default NULL,                            -- OK
   `action_url` varchar(255) default NULL,                           -- OK
-  `icon_image` varchar(255) default NULL,                           -- varchar(60)
-  `icon_image_alt` varchar(255) default NULL,                       -- varchar(60)
-  `vrml_image` varchar(255) default NULL,                           -- varchar(60)
-  `statusmap_image` varchar(255) default NULL,                      -- varchar(60)
+  `icon_image` varchar(255) default NULL,                           -- OK (varchar(60) in Merlin)
+  `icon_image_alt` varchar(255) default NULL,                       -- OK (varchar(60) in Merlin)
+  `vrml_image` varchar(255) default NULL,                           -- OK (varchar(60) in Merlin)
+  `statusmap_image` varchar(255) default NULL,                      -- OK (varchar(60) in Merlin)
   -- 2d_coords varchar(20)
   -- 3d_coords varchar(20)
   `have_2d_coords` smallint(6) NOT NULL default '0',
