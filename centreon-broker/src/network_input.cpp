@@ -296,9 +296,9 @@ void NetworkInput::HandleComment(ProtocolSocket& socket)
       { NDO_DATA_ENTRYTYPE, 's', &Comment::SetEntryType },
       { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpireTime },
       { NDO_DATA_EXPIRES, 'b', &Comment::SetExpires },
-      { NDO_DATA_HOST, 'S', &Comment::SetHost },
+      { NDO_DATA_HOST, 'S', &Comment::SetHostName },
       { NDO_DATA_PERSISTENT, 'b', &Comment::SetPersistent },
-      { NDO_DATA_SERVICE, 'S', &Comment::SetService },
+      { NDO_DATA_SERVICE, 'S', &Comment::SetServiceDescription },
       { NDO_DATA_SOURCE, 's', &Comment::SetSource },
       { 0, '\0', static_cast<void (Comment::*)(bool)>(NULL) }
     };

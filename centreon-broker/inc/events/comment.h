@@ -133,15 +133,15 @@ namespace                CentreonBroker
       /**
        *  \brief Get the name of the host associated with the comment.
        */
-      const std::string& GetHost() const throw ();
+      const std::string& GetHostName() const throw ();
       /**
        *  \brief Determines whether or not the comment is persistent.
        */
       bool               GetPersistent() const throw ();
       /**
-       *  \brief Get the name of the service associated with the comment.
+       *  \brief Get the description of the service associated with the comment.
        */
-      const std::string& GetService() const throw ();
+      const std::string& GetServiceDescription() const throw ();
       /**
        *  \brief Get the comment source.
        */
@@ -189,15 +189,16 @@ namespace                CentreonBroker
       /**
        *  \brief Set the name of the host associated with the comment.
        */
-      void               SetHost(const std::string& h);
+      void               SetHostName(const std::string& hn);
       /**
        *  \brief Set whether or not the comment is persistent.
        */
       void               SetPersistent(bool ip) throw ();
       /**
-       *  \brief Set the name of the service associated with the comment.
+       *  \brief Set the description of the service associated with the
+       *         comment.
        */
-      void               SetService(const std::string& s);
+      void               SetServiceDescription(const std::string& sd);
       /**
        *  \brief Set the comment source.
        */
