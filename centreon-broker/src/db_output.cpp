@@ -22,6 +22,7 @@
 #include <memory>
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
+#include "db/postgresql/connection.h"
 #include "db/predicate.h"
 #include "db_output.h"
 #include "exception.h"
@@ -110,6 +111,9 @@ void DBOutput::Connect()
      case DB::Connection::MYSQL:
       this->conn_ = new DB::MySQLConnection;
       break;
+     case DB::Connection::POSTGRESQL:
+      this->conn_ = new DB::PgSQLConnection;
+      break ;
      default:
       throw (Exception(0, "Unsupported DBMS requested."));
     }

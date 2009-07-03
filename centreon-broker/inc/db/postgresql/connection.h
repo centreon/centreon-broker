@@ -30,6 +30,7 @@
 # include <libpq-fe.h>
 # include <string>
 # include "db/postgresql/delete.hpp"
+# include "db/postgresql/insert.hpp"
 
 namespace              CentreonBroker
 {
@@ -58,6 +59,12 @@ namespace              CentreonBroker
       Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping)
       {
 	return (new PgSQLDelete<ObjectType>(this->pgconn_, mapping));
+      }
+
+      template         <typename ObjectType>
+      Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping)
+      {
+	return (new PgSQLInsert<ObjectType>(this->pgconn_, mapping));
       }
       // XXX : GetQueries()
     };
