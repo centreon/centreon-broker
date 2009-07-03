@@ -126,7 +126,10 @@ int main(int argc, char* argv[])
 	      {
 		DBOutput* dbo;
 
-		dbo = new DBOutput(DB::Connection::MYSQL);
+		if (output->GetType() == "postgresql")
+		  dbo = new DBOutput(DB::Connection::POSTGRESQL);
+		else
+		  dbo = new DBOutput(DB::Connection::MYSQL);
 		dbo->Init(output->GetHost(),
 			  output->GetUser(),
 			  output->GetPassword(),

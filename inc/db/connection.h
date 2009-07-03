@@ -134,8 +134,11 @@ CentreonBroker::DB::Insert<ObjectType>*           // Return type
       insert = dynamic_cast<MySQLConnection*>(this)
 	->GetInsertQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
      case POSTGRESQL:
+      insert = dynamic_cast<PgSQLConnection*>(this)
+        ->GetInsertQuery<ObjectType>(mapping);
+      break ;
+     case ORACLE:
      default:
       assert(false);
       throw (DBException(this->dbms_,
