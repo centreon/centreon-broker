@@ -21,6 +21,7 @@
 #include <cassert>
 #include "db/db_exception.h"
 #include "db/postgresql/connection.h"
+#include "db/postgresql/truncate.h"
 
 using namespace CentreonBroker::DB;
 
@@ -60,7 +61,8 @@ PgSQLConnection& PgSQLConnection::operator=(const PgSQLConnection& pgconn)
 /**
  *  PgSQLConnection default constructor.
  */
-PgSQLConnection::PgSQLConnection() : Connection(Connection::POSTGRESQL)
+PgSQLConnection::PgSQLConnection()
+  : Connection(Connection::POSTGRESQL), pgconn_(NULL)
 {
 }
 
@@ -69,7 +71,8 @@ PgSQLConnection::PgSQLConnection() : Connection(Connection::POSTGRESQL)
  */
 PgSQLConnection::~PgSQLConnection()
 {
-
+  if (this->pgconn_)
+    this->Disconnect();
 }
 
 /**
@@ -77,6 +80,28 @@ PgSQLConnection::~PgSQLConnection()
  */
 void PgSQLConnection::AutoCommit(bool activate)
 {
+  PGresult* res;
+
+  // For now we only support autocommit activation, not deactivation
+  (void)activate;
+  assert(this->pgconn_);
+  res = PQexec(this->pgconn_, "BEGIN;");
+  if (!res)
+    {
+      throw (DBException(0,
+                         DBException::INITIALIZATION,
+                         "Could not allocate memory."));
+    }
+  else if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+      DBException dbe(0,
+		      DBException::INITIALIZATION,
+                      PQresultErrorMessage(res));
+      PQclear(res);
+      throw (dbe);
+    }
+  PQclear(res);
+  return ;
 }
 
 /**
@@ -84,6 +109,26 @@ void PgSQLConnection::AutoCommit(bool activate)
  */
 void PgSQLConnection::Commit()
 {
+  PGresult* res;
+
+  assert(this->pgconn_);
+  res = PQexec(this->pgconn_, "COMMIT; BEGIN;");
+  if (!res)
+    {
+      throw (DBException(0,
+			 DBException::COMMIT,
+			 "Could not allocate memory."));
+    }
+  else if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+      DBException dbe(0,
+		      DBException::COMMIT,
+		      PQresultErrorMessage(res));
+      PQclear(res);
+      throw (dbe);
+    }
+  PQclear(res);
+  return ;
 }
 
 /**
@@ -117,4 +162,12 @@ void PgSQLConnection::Disconnect()
   PQfinish(this->pgconn_);
   this->pgconn_ = NULL;
   return ;
+}
+
+/**
+ *  Get the PostgreSQL TRUNCATE query object.
+ */
+Truncate* PgSQLConnection::GetTruncateQuery()
+{
+  return (new PgSQLTruncate(this->pgconn_));
 }
