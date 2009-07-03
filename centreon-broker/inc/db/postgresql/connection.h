@@ -29,6 +29,7 @@
 
 # include <libpq-fe.h>
 # include <string>
+# include "db/postgresql/delete.hpp"
 
 namespace              CentreonBroker
 {
@@ -51,7 +52,13 @@ namespace              CentreonBroker
 		               const std::string& password,
                                const std::string& db);
       void             Disconnect();
+      Truncate*        GetTruncateQuery();
 
+      template         <typename ObjectType>
+      Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping)
+      {
+	return (new PgSQLDelete<ObjectType>(this->pgconn_, mapping));
+      }
       // XXX : GetQueries()
     };
   }

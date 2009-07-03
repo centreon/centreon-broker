@@ -82,7 +82,7 @@ namespace                 CentreonBroker
 # include <cassert>
 # include "db/mysql/connection.h"
 //# include "db/oracle/connection.h"
-//# include "db/postgresql/connection.h"
+# include "db/postgresql/connection.h"
 
 /**
  *  Return a DELETE query matching the DBMS. Because we can't override a
@@ -102,8 +102,11 @@ CentreonBroker::DB::Delete<ObjectType>*           // Return type
       del = dynamic_cast<MySQLConnection*>(this)
 	->GetDeleteQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
      case POSTGRESQL:
+      del = dynamic_cast<PgSQLConnection*>(this)
+	->GetDeleteQuery<ObjectType>(mapping);
+      break ;
+     case ORACLE:
      default:
       assert(false);
       throw (DBException(this->dbms_,
