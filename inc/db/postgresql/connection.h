@@ -31,6 +31,7 @@
 # include <string>
 # include "db/postgresql/delete.hpp"
 # include "db/postgresql/insert.hpp"
+# include "db/postgresql/update.hpp"
 
 namespace              CentreonBroker
 {
@@ -66,7 +67,12 @@ namespace              CentreonBroker
       {
 	return (new PgSQLInsert<ObjectType>(this->pgconn_, mapping));
       }
-      // XXX : GetQueries()
+
+      template         <typename ObjectType>
+      Update<ObjectType>* GetUpdateQuery(const Mapping<ObjectType>& mapping)
+      {
+	return (new PgSQLUpdate<ObjectType>(this->pgconn_, mapping));
+      }
     };
   }
 }

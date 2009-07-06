@@ -22,6 +22,7 @@
 #include "db/db_exception.h"
 #include "db/postgresql/connection.h"
 #include "db/postgresql/truncate.h"
+#include "logging.h"
 
 using namespace CentreonBroker::DB;
 
@@ -82,9 +83,18 @@ void PgSQLConnection::AutoCommit(bool activate)
 {
   PGresult* res;
 
-  // For now we only support autocommit activation, not deactivation
   (void)activate;
   assert(this->pgconn_);
+  assert(!activate);
+#ifndef NDEBUG
+  if (activate)
+    CentreonBroker::logging.LogDebug("Activating PostgreSQL " \
+				     "auto-commit mode...");
+  else
+    CentreonBroker::logging.LogDebug("Deactivating PostgreSQL " \
+				     "auto-commit mode...");
+#endif /* !NDEBUG */
+  // For now we only support autocommit activation, not deactivation
   res = PQexec(this->pgconn_, "BEGIN;");
   if (!res)
     {
@@ -112,6 +122,9 @@ void PgSQLConnection::Commit()
   PGresult* res;
 
   assert(this->pgconn_);
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Committing data to DB...");
+#endif /* !NDEBUG */
   res = PQexec(this->pgconn_, "COMMIT; BEGIN;");
   if (!res)
     {
@@ -141,6 +154,21 @@ void PgSQLConnection::Connect(const std::string& host,
 {
   std::string conninfo;
 
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Connecting to PostgreSQL server...", true);
+  CentreonBroker::logging.LogDebug((std::string("Host: ") + host).c_str());
+  CentreonBroker::logging.LogDebug((std::string("User: ") + user).c_str());
+  CentreonBroker::logging.LogDebug((std::string("DB: ") + db).c_str());
+  CentreonBroker::logging.Deindent();
+#endif /* !NDEBUG */
+  conninfo = "host=";
+  conninfo += host;
+  conninfo += " user=";
+  conninfo += user;
+  conninfo += " password=";
+  conninfo += password;
+  conninfo += " dbname=";
+  conninfo += db;
   this->pgconn_ = PQconnectdb(conninfo.c_str());
   if (!this->pgconn_ || PQstatus(this->pgconn_) != CONNECTION_OK)
     {
@@ -158,6 +186,9 @@ void PgSQLConnection::Connect(const std::string& host,
  */
 void PgSQLConnection::Disconnect()
 {
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Disconnecting from PostgreSQL server...");
+#endif /* !NDEBUG */
   assert(this->pgconn_);
   PQfinish(this->pgconn_);
   this->pgconn_ = NULL;
@@ -169,5 +200,8 @@ void PgSQLConnection::Disconnect()
  */
 Truncate* PgSQLConnection::GetTruncateQuery()
 {
+#ifdef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating PostgreSQL TRUNCATE query...");
+#endif /* !NDEBUG */
   return (new PgSQLTruncate(this->pgconn_));
 }

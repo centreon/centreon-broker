@@ -66,7 +66,12 @@ PgSQLQuery& PgSQLQuery::operator=(const PgSQLQuery& pgquery) throw ()
  *  PgSQLQuery constructor. It needs the PgSQL connection object from which it
  *  depends.
  */
-PgSQLQuery::PgSQLQuery(PGconn* pgconn) throw () : pgconn_(pgconn)
+PgSQLQuery::PgSQLQuery(PGconn* pgconn) throw ()
+  : nparams_(0),
+    param_format_(NULL),
+    param_length_(NULL),
+    param_values_(NULL),
+    pgconn_(pgconn)
 {
 }
 
@@ -124,7 +129,7 @@ void PgSQLQuery::Prepare()
     std::stringstream ss;
 
     // XXX : query_nb should be locked
-    ss << "string" << ++query_nb;
+    ss << "stmt" << ++query_nb;
     this->stmt_name_ = ss.str();
   }
   // Prepare the query

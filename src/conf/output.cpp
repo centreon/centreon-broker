@@ -77,6 +77,14 @@ const std::string& Output::GetDb() const throw ()
 }
 
 /**
+ *  Returns the type of the DB.
+ */
+const std::string& Output::GetDbms() const throw ()
+{
+  return (this->strings_[DBMS]);
+}
+
+/**
  *  Returns the host name to use when connecting to DB.
  */
 const std::string& Output::GetHost() const throw ()
@@ -122,6 +130,15 @@ const std::string& Output::GetUser() const throw ()
 void Output::SetDb(const std::string& db)
 {
   this->strings_[DB] = db;
+  return ;
+}
+
+/**
+ *  Set the type of the DB.
+ */
+void Output::SetDbms(const std::string& dbms)
+{
+  this->strings_[DBMS] = dbms;
   return ;
 }
 

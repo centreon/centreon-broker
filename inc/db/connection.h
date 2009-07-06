@@ -165,8 +165,11 @@ CentreonBroker::DB::Update<ObjectType>*           // Return type
       update = dynamic_cast<MySQLConnection*>(this)
 	->GetUpdateQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
      case POSTGRESQL:
+      update = dynamic_cast<PgSQLConnection*>(this)
+	->GetUpdateQuery<ObjectType>(mapping);
+      break ;
+     case ORACLE:
      default:
       assert(false);
       throw (DBException(this->dbms_,
