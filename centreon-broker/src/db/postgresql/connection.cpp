@@ -200,7 +200,7 @@ void PgSQLConnection::Disconnect()
  */
 Truncate* PgSQLConnection::GetTruncateQuery()
 {
-#ifdef NDEBUG
+#ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Creating PostgreSQL TRUNCATE query...");
 #endif /* !NDEBUG */
   return (new PgSQLTruncate(this->pgconn_));

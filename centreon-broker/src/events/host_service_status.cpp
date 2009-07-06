@@ -36,6 +36,7 @@ using namespace CentreonBroker::Events;
  */
 void HostServiceStatus::InternalCopy(const HostServiceStatus& hsse)
 {
+  memcpy(this->bools_, hsse.bools_, sizeof(this->bools_));
   memcpy(this->doubles_, hsse.doubles_, sizeof(this->doubles_));
   memcpy(this->ints_, hsse.ints_, sizeof(this->ints_));
   memcpy(this->shorts_, hsse.shorts_, sizeof(this->shorts_));
@@ -56,6 +57,7 @@ void HostServiceStatus::InternalCopy(const HostServiceStatus& hsse)
  */
 HostServiceStatus::HostServiceStatus()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   for (unsigned int i = 0; i < DOUBLE_NB; i++)
     this->doubles_[i] = 0.0;
   memset(this->ints_, 0, sizeof(this->ints_));
@@ -101,9 +103,9 @@ short HostServiceStatus::GetAcknowledgementType() const throw ()
 /**
  *  Get the active_checks_enabled member.
  */
-short HostServiceStatus::GetActiveChecksEnabled() const throw ()
+bool HostServiceStatus::GetActiveChecksEnabled() const throw ()
 {
-  return (this->shorts_[ACTIVE_CHECKS_ENABLED]);
+  return (this->bools_[ACTIVE_CHECKS_ENABLED]);
 }
 
 /**
@@ -173,9 +175,9 @@ double HostServiceStatus::GetExecutionTime() const throw ()
 /**
  *  Get the has_been_checked member.
  */
-short HostServiceStatus::GetHasBeenChecked() const throw ()
+bool HostServiceStatus::GetHasBeenChecked() const throw ()
 {
-  return (this->shorts_[HAS_BEEN_CHECKED]);
+  return (this->bools_[HAS_BEEN_CHECKED]);
 }
 
 /**
@@ -189,9 +191,9 @@ const std::string& HostServiceStatus::GetHostName() const throw ()
 /**
  *  Get the is_flapping member.
  */
-short HostServiceStatus::GetIsFlapping() const throw ()
+bool HostServiceStatus::GetIsFlapping() const throw ()
 {
-  return (this->shorts_[IS_FLAPPING]);
+  return (this->bools_[IS_FLAPPING]);
 }
 
 /**
@@ -277,17 +279,17 @@ time_t HostServiceStatus::GetNextNotification() const throw ()
 /**
  *  Get the no_more_notifications member.
  */
-short HostServiceStatus::GetNoMoreNotifications() const throw ()
+bool HostServiceStatus::GetNoMoreNotifications() const throw ()
 {
-  return (this->shorts_[NO_MORE_NOTIFICATIONS]);
+  return (this->bools_[NO_MORE_NOTIFICATIONS]);
 }
 
 /**
  *  Get the obsess_over member.
  */
-short HostServiceStatus::GetObsessOver() const throw ()
+bool HostServiceStatus::GetObsessOver() const throw ()
 {
-  return (this->shorts_[OBSESS_OVER]);
+  return (this->bools_[OBSESS_OVER]);
 }
 
 /**
@@ -301,9 +303,9 @@ const std::string& HostServiceStatus::GetOutput() const throw ()
 /**
  *  Get the passive_checks_enabled member.
  */
-short HostServiceStatus::GetPassiveChecksEnabled() const throw ()
+bool HostServiceStatus::GetPassiveChecksEnabled() const throw ()
 {
-  return (this->shorts_[PASSIVE_CHECKS_ENABLED]);
+  return (this->bools_[PASSIVE_CHECKS_ENABLED]);
 }
 
 /**
@@ -325,9 +327,9 @@ const std::string& HostServiceStatus::GetPerfData() const throw ()
 /**
  *  Get the problem_has_been_acknowledged member.
  */
-short HostServiceStatus::GetProblemHasBeenAcknowledged() const throw ()
+bool HostServiceStatus::GetProblemHasBeenAcknowledged() const throw ()
 {
-  return (this->shorts_[PROBLEM_HAS_BEEN_ACKNOWLEDGED]);
+  return (this->bools_[PROBLEM_HAS_BEEN_ACKNOWLEDGED]);
 }
 
 /**
@@ -349,9 +351,9 @@ short HostServiceStatus::GetScheduledDowntimeDepth() const throw ()
 /**
  *  Get the should_be_scheduled member.
  */
-short HostServiceStatus::GetShouldBeScheduled() const throw ()
+bool HostServiceStatus::GetShouldBeScheduled() const throw ()
 {
-  return (this->shorts_[SHOULD_BE_SCHEDULED]);
+  return (this->bools_[SHOULD_BE_SCHEDULED]);
 }
 
 /**
@@ -360,6 +362,14 @@ short HostServiceStatus::GetShouldBeScheduled() const throw ()
 short HostServiceStatus::GetStateType() const throw ()
 {
   return (this->shorts_[STATE_TYPE]);
+}
+
+/**
+ *  Get the status_update_time member.
+ */
+time_t HostServiceStatus::GetStatusUpdateTime() const throw ()
+{
+  return (this->timets_[STATUS_UPDATE_TIME]);
 }
 
 /**
@@ -374,9 +384,9 @@ void HostServiceStatus::SetAcknowledgementType(short at) throw ()
 /**
  *  Set the active_checks_enabled member.
  */
-void HostServiceStatus::SetActiveChecksEnabled(short ace) throw ()
+void HostServiceStatus::SetActiveChecksEnabled(bool ace) throw ()
 {
-  this->shorts_[ACTIVE_CHECKS_ENABLED] = ace;
+  this->bools_[ACTIVE_CHECKS_ENABLED] = ace;
   return ;
 }
 
@@ -455,9 +465,9 @@ void HostServiceStatus::SetExecutionTime(double et) throw ()
 /**
  *  Set the has_been_checked member.
  */
-void HostServiceStatus::SetHasBeenChecked(short hbc) throw ()
+void HostServiceStatus::SetHasBeenChecked(bool hbc) throw ()
 {
-  this->shorts_[HAS_BEEN_CHECKED] = hbc;
+  this->bools_[HAS_BEEN_CHECKED] = hbc;
   return ;
 }
 
@@ -473,9 +483,9 @@ void HostServiceStatus::SetHostName(const std::string& hn)
 /**
  *  Set the is_flapping member.
  */
-void HostServiceStatus::SetIsFlapping(short i_f) throw ()
+void HostServiceStatus::SetIsFlapping(bool i_f) throw ()
 {
-  this->shorts_[IS_FLAPPING] = i_f;
+  this->bools_[IS_FLAPPING] = i_f;
   return ;
 }
 
@@ -572,18 +582,18 @@ void HostServiceStatus::SetNextNotification(time_t nn) throw ()
 /**
  *  Set the no_more_notifications member.
  */
-void HostServiceStatus::SetNoMoreNotifications(short nmn) throw ()
+void HostServiceStatus::SetNoMoreNotifications(bool nmn) throw ()
 {
-  this->shorts_[NO_MORE_NOTIFICATIONS] = nmn;
+  this->bools_[NO_MORE_NOTIFICATIONS] = nmn;
   return ;
 }
 
 /**
  *  Set the obsess_over member.
  */
-void HostServiceStatus::SetObsessOver(short oo) throw ()
+void HostServiceStatus::SetObsessOver(bool oo) throw ()
 {
-  this->shorts_[OBSESS_OVER] = oo;
+  this->bools_[OBSESS_OVER] = oo;
   return ;
 }
 
@@ -599,9 +609,9 @@ void HostServiceStatus::SetOutput(const std::string& o)
 /**
  *  Set the passive_checks_enabled member.
  */
-void HostServiceStatus::SetPassiveChecksEnabled(short pce) throw ()
+void HostServiceStatus::SetPassiveChecksEnabled(bool pce) throw ()
 {
-  this->shorts_[PASSIVE_CHECKS_ENABLED] = pce;
+  this->bools_[PASSIVE_CHECKS_ENABLED] = pce;
   return ;
 }
 
@@ -626,9 +636,9 @@ void HostServiceStatus::SetPerfData(const std::string& p)
 /**
  *  Set the problem_has_been_acknowledged member.
  */
-void HostServiceStatus::SetProblemHasBeenAcknowledged(short phba) throw ()
+void HostServiceStatus::SetProblemHasBeenAcknowledged(bool phba) throw ()
 {
-  this->shorts_[PROBLEM_HAS_BEEN_ACKNOWLEDGED] = phba;
+  this->bools_[PROBLEM_HAS_BEEN_ACKNOWLEDGED] = phba;
   return ;
 }
 
@@ -653,9 +663,9 @@ void HostServiceStatus::SetScheduledDowntimeDepth(short sdd) throw ()
 /**
  *  Set the should_be_scheduled member.
  */
-void HostServiceStatus::SetShouldBeScheduled(short sbs) throw ()
+void HostServiceStatus::SetShouldBeScheduled(bool sbs) throw ()
 {
-  this->shorts_[SHOULD_BE_SCHEDULED] = sbs;
+  this->bools_[SHOULD_BE_SCHEDULED] = sbs;
   return ;
 }
 
@@ -665,5 +675,14 @@ void HostServiceStatus::SetShouldBeScheduled(short sbs) throw ()
 void HostServiceStatus::SetStateType(short st) throw ()
 {
   this->shorts_[STATE_TYPE] = st;
+  return ;
+}
+
+/**
+ *  Set the status_update_time member.
+ */
+void HostServiceStatus::SetStatusUpdateTime(time_t sut) throw ()
+{
+  this->timets_[STATUS_UPDATE_TIME] = sut;
   return ;
 }
