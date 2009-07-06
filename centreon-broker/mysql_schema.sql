@@ -284,8 +284,8 @@ CREATE TABLE IF NOT EXISTS `service` (
   `host_id` int(11) NOT NULL,                                            -- not in Merlin, Centreon-specific, fetched from customvars
   `service_id` int(11) NOT NULL,                                         -- not in Merlin, Centreon-specific, fetched from customvars
   `host_name` varchar(64) NOT NULL default '',                           -- varchar(75)
-  `service_description` varchar(160) NOT NULL default '',                -- OK
-  `display_name` varchar(64) NOT NULL default '',                        -- varchar(160)
+  `service_description` varchar(160) default NULL,                       -- OK
+  `display_name` varchar(160) default NULL,                              -- OK
   -- initial_state varchar(1)
   `graph_id` int(11) NOT NULL,
   `status_update_time` int(11) NOT NULL,
@@ -412,8 +412,8 @@ CREATE TABLE IF NOT EXISTS `service` (
 --
 
 CREATE TABLE IF NOT EXISTS `acknowledgements` (
-  `acknowledgement_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
   `entry_time` int(11) NOT NULL,
@@ -424,13 +424,13 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `is_sticky` smallint(6) NOT NULL default '0',
   `persistent_comment` smallint(6) NOT NULL default '0',
   `notify_contacts` smallint(6) NOT NULL default '0',
-  PRIMARY KEY (`acknowledgement_id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
 
 
 CREATE TABLE IF NOT EXISTS `connection_info` (
-  `conninfo_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   `agent_name` varchar(32) NOT NULL default '',
   `agent_version` varchar(8) NOT NULL default '',
   -- disposition varchar(16) (not needed ?)
@@ -444,43 +444,43 @@ CREATE TABLE IF NOT EXISTS `connection_info` (
   `bytes_processed` int(11) NOT NULL default '0',
   `lines_processed` int(11) NOT NULL default '0',
   `entries_processed` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`conninfo_id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci ;
 
 
 CREATE TABLE IF NOT EXISTS `customvariables` (
-  `customvariable_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   -- XXX : fail ! There shouldn't be any object_id anymore
   `object_id` int(11) NOT NULL default '0',
   `config_type` smallint(6) NOT NULL default '0',
   `has_been_modified` smallint(6) NOT NULL default '0',
   `varname` varchar(255) NOT NULL default '',
   `varvalue` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`customvariable_id`),
+  PRIMARY KEY  (`id`),
   UNIQUE KEY `object_id_2` (`object_id`,`config_type`,`varname`),
   KEY `varname` (`varname`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Custom variables' ;
 
 
 CREATE TABLE IF NOT EXISTS `customvariablestatus` (
-  `customvariablestatus_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   -- XXX : fail ! There shouldn't be any object_id anymore
   `object_id` int(11) NOT NULL default '0',
   `status_update_time` int(11) NOT NULL,
   `has_been_modified` smallint(6) NOT NULL default '0',
   `varname` varchar(255) NOT NULL default '',
   `varvalue` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`customvariablestatus_id`),
+  PRIMARY KEY  (`id`),
   UNIQUE KEY `object_id_2` (`object_id`,`varname`),
   KEY `varname` (`varname`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Custom variable status information';
 
 
 CREATE TABLE IF NOT EXISTS `eventhandlers` (
-  `eventhandler_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   `host_id` smallint(5) unsigned default NULL,
   `service_id` smallint(5) unsigned default NULL,
   `eventhandler_type` smallint(6) NOT NULL default '0',
@@ -496,14 +496,14 @@ CREATE TABLE IF NOT EXISTS `eventhandlers` (
   `execution_time` double NOT NULL default '0',
   `return_code` smallint(6) NOT NULL default '0',
   `output` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`eventhandler_id`),
+  PRIMARY KEY  (`id`),
   UNIQUE KEY `instance_id` (`instance_id`,`start_time`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Historical host and service event handlers' ;
 
 
 CREATE TABLE IF NOT EXISTS `flappinghistory` (
-  `flappinghistory_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   `host_id` smallint(5) unsigned NOT NULL,
   `service_id` smallint(5) unsigned NOT NULL,
   `event_time` int(11) NOT NULL,
@@ -515,17 +515,17 @@ CREATE TABLE IF NOT EXISTS `flappinghistory` (
   `high_threshold` double NOT NULL default '0',
   `comment_time` int(11) NOT NULL,
   `internal_comment_id` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`flappinghistory_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical record of host and service flapping' ;
 
 
 -- XXX : does not match the original definition at all
 CREATE TABLE IF NOT EXISTS `hostgroups` (
-  `hostgroup_id` int(11) NOT NULL auto_increment,
+  `id` int(11) NOT NULL auto_increment,
   `alias` varchar(255) NOT NULL default '',
   `name` varchar(255) NOT NULL default '',
   `enabled` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`hostgroup_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Hostgroup definitions' ;
 
 
@@ -554,17 +554,17 @@ CREATE TABLE IF NOT EXISTS `hosts_parenthosts` (
 
 
 CREATE TABLE IF NOT EXISTS `instances` (
-  `instance_id` smallint(6) NOT NULL auto_increment,
+  `id` int(11) NOT NULL auto_increment,
   `instance_name` varchar(64) NOT NULL default '',
   `instance_description` varchar(128) NOT NULL default '',
   `instance_address` varchar(120) default NULL,
-  PRIMARY KEY  (`instance_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Location names of various Nagios installations';
 
 
 CREATE TABLE IF NOT EXISTS `processevents` (
-  `processevent_id` int(11) NOT NULL auto_increment,
-  `instance_id` smallint(6) NOT NULL default '0',
+  `id` int(11) NOT NULL auto_increment,
+  `instance_id` int(11) NOT NULL default '0',
   `event_type` smallint(6) NOT NULL default '0',
   `event_time` int(11) NOT NULL,
   `event_time_usec` int(11) NOT NULL default '0',
@@ -572,16 +572,16 @@ CREATE TABLE IF NOT EXISTS `processevents` (
   `program_name` varchar(16) NOT NULL default '',
   `program_version` varchar(20) NOT NULL default '',
   `program_date` varchar(10) NOT NULL default '',
-  PRIMARY KEY  (`processevent_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Historical Nagios process events';
 
 
 CREATE TABLE IF NOT EXISTS `servicegroups` (
-  `servicegroup_id` int(11) NOT NULL auto_increment,
+  `id` int(11) NOT NULL auto_increment,
   `alias` varchar(255) NOT NULL default '',
   `name` varchar(255) NOT NULL default '',
   `enabled` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`servicegroup_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='ServiceGroup definitions' ;
 
 

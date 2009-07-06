@@ -542,7 +542,7 @@ static void InitServiceMapping()
   service_mapping.AddShortField("current_state",
 				&Service::GetCurrentState);
   service_mapping.AddShortField("default_active_checks_enabled",
-				&Service::GetActiveChecksEnabled);
+                                &Service::GetActiveChecksEnabled);
   service_mapping.AddShortField("default_event_handler_enabled",
 				&Service::GetFailurePredictionEnabled);
   service_mapping.AddShortField("default_failure_prediction_enabled",
@@ -615,8 +615,8 @@ static void InitServiceMapping()
 			       &Service::GetLastTimeUnknown);
   service_mapping.AddTimeField("last_time_warning",
 			       &Service::GetLastTimeWarning);
-  service_mapping.AddTimeField("latency",
-			       &Service::GetLatency);
+  service_mapping.AddDoubleField("latency",
+				 &Service::GetLatency);
   service_mapping.AddDoubleField("low_flap_threshold",
 				 &Service::GetLowFlapThreshold);
   service_mapping.AddShortField("max_check_attempts",
@@ -796,6 +796,7 @@ void CentreonBroker::InitMappings()
   InitCommentMapping();
   InitConnectionMapping();
   InitConnectionStatusMapping();
+  InitDowntimeMapping();
   InitHostMapping();
   InitHostStatusMapping();
   InitProgramStatusMapping();

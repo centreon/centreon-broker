@@ -102,11 +102,13 @@ namespace          CentreonBroker
 	try
 	  {
 	    int arg;
+	    std::string parameters;
 
 	    arg = 0;
 	    this->query_ = "INSERT INTO ";
 	    this->query_ += this->mapping_.table_;
-	    this->query_ += " SET ";
+	    this->query_ += "(";
+	    parameters = "VALUES(";
 	    for (decltype(this->mapping_.fields_.begin()) it =
 		   this->mapping_.fields_.begin();
 		 it != this->mapping_.fields_.end();
@@ -114,13 +116,20 @@ namespace          CentreonBroker
 	      {
 		std::stringstream ss;
 
+		this->query_ += '"';
 		this->query_ += (*it).first;
-		this->query_ += "=";
+		this->query_ += "\", ";
+
+		parameters += '$';
 		ss << ++arg;
-		this->query_ += ss.str();
-		this->query_ += ", ";
+		parameters += ss.str();
+		parameters += ", ";
 	      }
 	    this->query_.resize(this->query_.size() - 2);
+	    this->query_ += ") ";
+	    parameters.resize(parameters.size() - 2);
+	    parameters += ')';
+	    this->query_ += parameters;
 	    this->PgSQLQuery::Prepare();
 	    this->PgSQLHaveFields::Prepare();
 	  }

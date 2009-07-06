@@ -168,6 +168,8 @@ void Conf::HandleOutput(std::ifstream& ifs)
 	; // Skip line
       else if (!strcmp(key, "db"))
 	out.SetDb(value ? value : "");
+      else if (!strcmp(key, "dbms"))
+	out.SetDbms(value ? value : "");
       else if (!strcmp(key, "host"))
 	out.SetHost(value ? value : "");
       else if (!strcmp(key, "password"))

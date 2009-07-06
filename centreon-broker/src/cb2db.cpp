@@ -64,113 +64,113 @@ int main(int argc, char* argv[])
   else
     {
       try
-	{
-	  logging.LogInfo("Starting initialization");
+        {
+          logging.LogInfo("Starting initialization");
 #ifndef NDEBUG
-	  logging.LogDebug("Initializing MySQL library...");
+          logging.LogDebug("Initializing MySQL library...");
 #endif /* !NDEBUG */
-	  mysql_library_init(0, NULL, NULL);
+          mysql_library_init(0, NULL, NULL);
 #ifndef NDEBUG
-	  logging.LogDebug("Initializing I/O engine...");
+          logging.LogDebug("Initializing I/O engine...");
 #endif /* !NDEBUG */
-	  gl_boost_io = new boost::asio::io_service;
+          gl_boost_io = new boost::asio::io_service;
 
-	  // Load Object-Relational mappings
-	  InitMappings();
+          // Load Object-Relational mappings
+          InitMappings();
 
-	  // Load configuration file
-	  conf.Load(argv[1]);
+          // Load configuration file
+          conf.Load(argv[1]);
 
-	  // Process configuration file
+          // Process configuration file
 #ifndef NDEBUG
-	  logging.LogDebug("Processing configuration file...");
-	  logging.Indent();
+          logging.LogDebug("Processing configuration file...");
+          logging.Indent();
 #endif /* !NDEBUG */
-	  {
-	    const Conf::Input* input;
+          {
+            const Conf::Input* input;
 
-	    input = conf.GetNextInput();
-	    while (input)
-	      {
-		NetworkAcceptor* na;
+            input = conf.GetNextInput();
+            while (input)
+              {
+                NetworkAcceptor* na;
 
-		na = new NetworkAcceptor(*gl_boost_io);
+                na = new NetworkAcceptor(*gl_boost_io);
 #ifdef USE_TLS
-		na->SetTls(input->GetTlsCertificate(),
-			   input->GetTlsKey(),
-			   input->GetTlsCa());
+                na->SetTls(input->GetTlsCertificate(),
+                           input->GetTlsKey(),
+                           input->GetTlsCa());
 #endif /* USE_TLS */
-		na->Accept(input->GetPort());
-		sockets.push_back(na);
-		input = conf.GetNextInput();
-	      }
-	  }
-	  {
-	    const Conf::Log* l;
+                na->Accept(input->GetPort());
+                sockets.push_back(na);
+                input = conf.GetNextInput();
+              }
+          }
+          {
+            const Conf::Log* l;
 
-	    l = conf.GetNextLog();
-	    while (l)
-	      {
-		if (l->GetType() == "syslog")
-		  logging.LogInSyslog(true, l->GetFlags());
-		else if (l->GetType() == "file")
-		  logging.LogInFile(l->GetPath().c_str(), l->GetFlags());
-		l = conf.GetNextLog();
-	      }
-	  }
-	  {
-	    const Conf::Output* output;
+            l = conf.GetNextLog();
+            while (l)
+              {
+                if (l->GetType() == "syslog")
+                  logging.LogInSyslog(true, l->GetFlags());
+                else if (l->GetType() == "file")
+                  logging.LogInFile(l->GetPath().c_str(), l->GetFlags());
+                l = conf.GetNextLog();
+              }
+          }
+          {
+            const Conf::Output* output;
 
-	    output = conf.GetNextOutput();
-	    while (output)
-	      {
-		DBOutput* dbo;
+            output = conf.GetNextOutput();
+            while (output)
+              {
+                DBOutput* dbo;
 
-		if (output->GetType() == "postgresql")
-		  dbo = new DBOutput(DB::Connection::POSTGRESQL);
-		else
-		  dbo = new DBOutput(DB::Connection::MYSQL);
-		dbo->Init(output->GetHost(),
-			  output->GetUser(),
-			  output->GetPassword(),
-			  output->GetDb());
-		dbs.push_back(dbo);
+                if (output->GetDbms() == "postgresql")
+                  dbo = new DBOutput(DB::Connection::POSTGRESQL);
+                else
+                  dbo = new DBOutput(DB::Connection::MYSQL);
+                dbo->Init(output->GetHost(),
+                          output->GetUser(),
+                          output->GetPassword(),
+                          output->GetDb());
+                dbs.push_back(dbo);
                 output = conf.GetNextOutput();
-	      }
-	  }
+              }
+          }
 #ifndef NDEBUG
-	  logging.Deindent();
+          logging.Deindent();
 #endif /* !NDEBUG */
 
-	  // Catch ^C
-	  signal(SIGINT, term_handler);
+          // Catch ^C
+          signal(SIGINT, term_handler);
 
-	  // Everything loader, ready to go
-	  logging.LogInfo("Initialization completed, waiting for clients...");
-	  while (!gl_shall_exit)
-	    {
-	      gl_boost_io->run();
-	      gl_boost_io->reset();
-	    }
+          // Everything loader, ready to go
+          logging.LogInfo("Initialization completed, waiting for clients...");
+          while (!gl_shall_exit)
+            {
+              gl_boost_io->run();
+              gl_boost_io->reset();
+            }
 
-	  exit_code = 0;
-	}
+          exit_code = 0;
+        }
       catch (std::exception& e)
-	{
-	  logging.LogInfo("Process terminated because of this exception :");
-	  logging.Indent();
-	  logging.LogInfo(e.what());
-	  logging.Deindent();
-	  exit_code = 1;
-	}
+        {
+          logging.LogInfo("Process terminated because of this exception :");
+          logging.Indent();
+          logging.LogInfo(e.what());
+          logging.Deindent();
+          exit_code = 1;
+        }
       if (gl_boost_io)
-	{
+        {
 #ifndef NDEBUG
-	  logging.LogDebug("Shutting down I/O service...");
+          logging.LogDebug("Shutting down I/O service...");
 #endif /* !NDEBUG */
-	  delete (gl_boost_io);
-	  gl_boost_io = NULL;
-	}
+          delete (gl_boost_io);
+          gl_boost_io = NULL;
+        }
 #ifndef NDEBUG
       logging.LogDebug("Exiting main()");
 #endif /* !NDEBUG */

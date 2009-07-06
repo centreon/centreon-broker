@@ -33,6 +33,7 @@ namespace                CentreonBroker
       enum               String
       {
 	DB = 0,
+	DBMS,
 	HOST,
 	PASSWORD,
 	PREFIX,
@@ -49,12 +50,14 @@ namespace                CentreonBroker
       Output&            operator=(const Output& output);
       bool               operator==(const Output& output);
       const std::string& GetDb() const throw ();
+      const std::string& GetDbms() const throw ();
       const std::string& GetHost() const throw ();
       const std::string& GetPassword() const throw ();
       const std::string& GetPrefix() const throw ();
       const std::string& GetType() const throw ();
       const std::string& GetUser() const throw ();
       void               SetDb(const std::string& db);
+      void               SetDbms(const std::string& dbms);
       void               SetHost(const std::string& host);
       void               SetPassword(const std::string& password);
       void               SetPrefix(const std::string& prefix);

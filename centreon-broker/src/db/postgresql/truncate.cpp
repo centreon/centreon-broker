@@ -81,9 +81,9 @@ void PgSQLTruncate::Execute()
  */
 void PgSQLTruncate::Prepare() throw (DBException)
 {
-  this->query_ = "TRUNCATE TABLE `";
+  this->query_ = "TRUNCATE TABLE \"";
   this->query_ += this->table_;
-  this->query_ += '`';
+  this->query_ += '"';
   this->PgSQLQuery::Prepare();
   return ;
 }
