@@ -182,6 +182,7 @@ type                currently `syslog` or `file`
  ---------------------
 
 db                  DB name.
+dbms                One of mysql, postgresql or in the future oracle.
 host                DB server host.
 password            DB password used to authenticate.
 prefix              Prefix used on each table name (not yet used).

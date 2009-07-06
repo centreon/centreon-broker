@@ -36,6 +36,18 @@ namespace                     CentreonBroker
     class                     HostServiceStatus : public Status
     {
      private:
+      enum                    Bool
+      {
+	ACTIVE_CHECKS_ENABLED = 0,
+	HAS_BEEN_CHECKED,
+	IS_FLAPPING,
+	NO_MORE_NOTIFICATIONS,
+	OBSESS_OVER,
+	PASSIVE_CHECKS_ENABLED,
+	PROBLEM_HAS_BEEN_ACKNOWLEDGED,
+	SHOULD_BE_SCHEDULED,
+	BOOL_NB
+      };
       enum                    Double
       {
 	CHECK_INTERVAL = 0,
@@ -53,21 +65,13 @@ namespace                     CentreonBroker
       enum                    Short
       {
 	ACKNOWLEDGEMENT_TYPE = 0,
-	ACTIVE_CHECKS_ENABLED,
 	CHECK_TYPE,
 	CURRENT_CHECK_ATTEMPT,
 	CURRENT_NOTIFICATION_NUMBER,
 	CURRENT_STATE,
-	HAS_BEEN_CHECKED,
-	IS_FLAPPING,
 	LAST_HARD_STATE,
 	MAX_CHECK_ATTEMPTS,
-	NO_MORE_NOTIFICATIONS,
-	OBSESS_OVER,
-	PASSIVE_CHECKS_ENABLED,
-	PROBLEM_HAS_BEEN_ACKNOWLEDGED,
 	SCHEDULED_DOWNTIME_DEPTH,
-	SHOULD_BE_SCHEDULED,
 	STATE_TYPE,
 	SHORT_NB
       };
@@ -88,8 +92,10 @@ namespace                     CentreonBroker
 	LAST_STATE_CHANGE,
 	NEXT_CHECK,
 	NEXT_NOTIFICATION,
+	STATUS_UPDATE_TIME,
 	TIMET_NB
       };
+      bool               bools_[BOOL_NB];
       double             doubles_[DOUBLE_NB];
       int                ints_[INT_NB];
       short              shorts_[SHORT_NB];
@@ -105,7 +111,7 @@ namespace                     CentreonBroker
       HostServiceStatus& operator=(const HostServiceStatus& hsse);
       // Getters
       short              GetAcknowledgementType() const throw ();
-      short              GetActiveChecksEnabled() const throw ();
+      bool               GetActiveChecksEnabled() const throw ();
       const std::string& GetCheckCommand() const throw ();
       double             GetCheckInterval() const throw ();
       short              GetCheckType() const throw ();
@@ -114,9 +120,9 @@ namespace                     CentreonBroker
       short              GetCurrentState() const throw ();
       const std::string& GetEventHandler() const throw ();
       double             GetExecutionTime() const throw ();
-      short              GetHasBeenChecked() const throw ();
+      bool               GetHasBeenChecked() const throw ();
       const std::string& GetHostName() const throw ();
-      short              GetIsFlapping() const throw ();
+      bool               GetIsFlapping() const throw ();
       time_t             GetLastCheck() const throw ();
       short              GetLastHardState() const throw ();
       time_t             GetLastHardStateChange() const throw ();
@@ -127,20 +133,21 @@ namespace                     CentreonBroker
       int                GetModifiedAttributes() const throw ();
       time_t             GetNextCheck() const throw ();
       time_t             GetNextNotification() const throw ();
-      short              GetNoMoreNotifications() const throw ();
-      short              GetObsessOver() const throw ();
+      bool               GetNoMoreNotifications() const throw ();
+      bool               GetObsessOver() const throw ();
       const std::string& GetOutput() const throw ();
-      short              GetPassiveChecksEnabled() const throw ();
+      bool               GetPassiveChecksEnabled() const throw ();
       double             GetPercentStateChange() const throw ();
       const std::string& GetPerfData() const throw ();
-      short              GetProblemHasBeenAcknowledged() const throw ();
+      bool               GetProblemHasBeenAcknowledged() const throw ();
       double             GetRetryInterval() const throw ();
       short              GetScheduledDowntimeDepth() const throw ();
-      short              GetShouldBeScheduled() const throw ();
+      bool               GetShouldBeScheduled() const throw ();
       short              GetStateType() const throw ();
+      time_t             GetStatusUpdateTime() const throw ();
       // Setters
       void               SetAcknowledgementType(short at) throw ();
-      void               SetActiveChecksEnabled(short ace) throw ();
+      void               SetActiveChecksEnabled(bool ace) throw ();
       void               SetCheckCommand(const std::string& cc);
       void               SetCheckInterval(double ci) throw ();
       void               SetCheckType(short ct) throw ();
@@ -149,9 +156,9 @@ namespace                     CentreonBroker
       void               SetCurrentState(short cs) throw ();
       void               SetEventHandler(const std::string& eh);
       void               SetExecutionTime(double et) throw ();
-      void               SetHasBeenChecked(short hbc) throw ();
+      void               SetHasBeenChecked(bool hbc) throw ();
       void               SetHostName(const std::string& hn);
-      void               SetIsFlapping(short i_f) throw ();
+      void               SetIsFlapping(bool i_f) throw ();
       void               SetLastCheck(time_t lc) throw ();
       void               SetLastHardState(short lhs) throw ();
       void               SetLastHardStateChange(time_t lhsc) throw ();
@@ -162,17 +169,18 @@ namespace                     CentreonBroker
       void               SetModifiedAttributes(int ma) throw ();
       void               SetNextCheck(time_t nc) throw ();
       void               SetNextNotification(time_t nn) throw ();
-      void               SetNoMoreNotifications(short nmn) throw ();
-      void               SetObsessOver(short oo) throw ();
+      void               SetNoMoreNotifications(bool nmn) throw ();
+      void               SetObsessOver(bool oo) throw ();
       void               SetOutput(const std::string& o);
-      void               SetPassiveChecksEnabled(short pce) throw ();
+      void               SetPassiveChecksEnabled(bool pce) throw ();
       void               SetPercentStateChange(double psc) throw ();
       void               SetPerfData(const std::string& p);
-      void               SetProblemHasBeenAcknowledged(short phba) throw ();
+      void               SetProblemHasBeenAcknowledged(bool phba) throw ();
       void               SetRetryInterval(double ri) throw ();
       void               SetScheduledDowntimeDepth(short sdd) throw ();
-      void               SetShouldBeScheduled(short sbs) throw ();
+      void               SetShouldBeScheduled(bool sbs) throw ();
       void               SetStateType(short st) throw ();
+      void               SetStatusUpdateTime(time_t sut) throw ();
     };
   }
 }

@@ -23,13 +23,19 @@
 
 # include <string>
 
-namespace              CentreonBroker
+namespace                CentreonBroker
 {
   namespace              Events
   {
     class                HostService
     {
      private:
+      enum               Bool
+      {
+	RETAIN_NONSTATUS_INFORMATION = 0,
+	RETAIN_STATUS_INFORMATION,
+	BOOL_NB
+      };
       enum               Double
       {
 	FIRST_NOTIFICATION_DELAY = 0,
@@ -44,8 +50,6 @@ namespace              CentreonBroker
 	NOTIFY_ON_DOWNTIME,
 	NOTIFY_ON_FLAPPING,
 	NOTIFY_ON_RECOVERY,
-	RETAIN_NONSTATUS_INFORMATION,
-	RETAIN_STATUS_INFORMATION,
 	SHORT_NB
       };
       enum               String
@@ -58,6 +62,7 @@ namespace              CentreonBroker
 	NOTES_URL,
 	STRING_NB
       };
+      bool               bools_[BOOL_NB];
       double             doubles_[DOUBLE_NB];
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
@@ -83,8 +88,8 @@ namespace              CentreonBroker
       short              GetNotifyOnDowntime() const throw ();
       short              GetNotifyOnFlapping() const throw ();
       short              GetNotifyOnRecovery() const throw ();
-      short              GetRetainNonstatusInformation() const throw ();
-      short              GetRetainStatusInformation() const throw ();
+      bool               GetRetainNonstatusInformation() const throw ();
+      bool               GetRetainStatusInformation() const throw ();
       // Setters
       void               SetActionUrl(const std::string& au);
       void               SetDisplayName(const std::string& dn);
@@ -100,8 +105,8 @@ namespace              CentreonBroker
       void               SetNotifyOnDowntime(short nod) throw ();
       void               SetNotifyOnFlapping(short nof) throw ();
       void               SetNotifyOnRecovery(short nor) throw ();
-      void               SetRetainNonstatusInformation(short rni) throw ();
-      void               SetRetainStatusInformation(short rsi) throw ();
+      void               SetRetainNonstatusInformation(bool rni) throw ();
+      void               SetRetainStatusInformation(bool rsi) throw ();
     };
   }
 }

@@ -216,8 +216,8 @@ static void InitHostMapping()
 			     &Host::GetAcknowledgementType);
   host_mapping.AddStringField("action_url",
 			      &Host::GetActionUrl);
-  host_mapping.AddShortField("active_checks_enabled",
-			     &Host::GetActiveChecksEnabled);
+  host_mapping.AddBoolField("active_checks_enabled",
+			    &Host::GetActiveChecksEnabled);
   host_mapping.AddStringField("address",
 			      &Host::GetAddress);
   host_mapping.AddStringField("alias",
@@ -238,16 +238,16 @@ static void InitHostMapping()
 			      &Host::GetDisplayName);
   host_mapping.AddStringField("event_handler",
 			      &Host::GetEventHandler);
-  host_mapping.AddShortField("event_handler_enabled",
-			     &Host::GetEventHandlerEnabled);
+  host_mapping.AddBoolField("event_handler_enabled",
+			    &Host::GetEventHandlerEnabled);
   host_mapping.AddDoubleField("execution_time",
 			      &Host::GetExecutionTime);
-  host_mapping.AddShortField("failure_prediction_enabled",
-			     &Host::GetFailurePredictionEnabled);
+  host_mapping.AddBoolField("failure_prediction_enabled",
+			    &Host::GetFailurePredictionEnabled);
   host_mapping.AddDoubleField("first_notification_delay",
 			      &Host::GetFirstNotificationDelay);
-  host_mapping.AddShortField("flap_detection_enabled",
-			     &Host::GetFlapDetectionEnabled);
+  host_mapping.AddBoolField("flap_detection_enabled",
+			    &Host::GetFlapDetectionEnabled);
   host_mapping.AddShortField("flap_detection_on_down",
 			     &Host::GetFlapDetectionOnDown);
   host_mapping.AddShortField("flap_detection_on_unreachable",
@@ -256,8 +256,8 @@ static void InitHostMapping()
 			     &Host::GetFlapDetectionOnUp);
   host_mapping.AddShortField("freshness_threshold",
 			     &Host::GetFreshnessThreshold);
-  host_mapping.AddShortField("has_been_checked",
-			      &Host::GetHasBeenChecked);
+  host_mapping.AddBoolField("has_been_checked",
+			    &Host::GetHasBeenChecked);
   host_mapping.AddShortField("have_2d_coords",
 			     &Host::GetHave2DCoords);
   host_mapping.AddDoubleField("high_flap_threshold",
@@ -268,8 +268,8 @@ static void InitHostMapping()
 			      &Host::GetIconImage);
   host_mapping.AddStringField("icon_image_alt",
 			      &Host::GetIconImageAlt);
-  host_mapping.AddShortField("is_flapping",
-			     &Host::GetIsFlapping);
+  host_mapping.AddBoolField("is_flapping",
+			    &Host::GetIsFlapping);
   host_mapping.AddTimeField("last_check",
 			    &Host::GetLastCheck);
   host_mapping.AddShortField("last_hard_state",
@@ -298,16 +298,16 @@ static void InitHostMapping()
 			    &Host::GetNextCheck);
   host_mapping.AddTimeField("next_notification",
 			    &Host::GetNextNotification);
-  host_mapping.AddShortField("no_more_notifications",
-			     &Host::GetNoMoreNotifications);
+  host_mapping.AddBoolField("no_more_notifications",
+			    &Host::GetNoMoreNotifications);
   host_mapping.AddStringField("notes",
 			      &Host::GetNotes);
   host_mapping.AddStringField("notes_url",
 			      &Host::GetNotesUrl);
   host_mapping.AddDoubleField("notification_interval",
 			      &Host::GetNotificationInterval);
-  host_mapping.AddShortField("notifications_enabled",
-			     &Host::GetNotificationsEnabled);
+  host_mapping.AddBoolField("notifications_enabled",
+			    &Host::GetNotificationsEnabled);
   host_mapping.AddShortField("notify_on_down",
 			     &Host::GetNotifyOnDown);
   host_mapping.AddShortField("notify_on_downtime",
@@ -318,30 +318,30 @@ static void InitHostMapping()
 			     &Host::GetNotifyOnRecovery);
   host_mapping.AddShortField("notify_on_unreachable",
 			     &Host::GetNotifyOnUnreachable);
-  host_mapping.AddShortField("obsess_over_host",
-			     &Host::GetObsessOver);
+  host_mapping.AddBoolField("obsess_over_host",
+			    &Host::GetObsessOver);
   host_mapping.AddStringField("output",
 			      &Host::GetOutput);
-  host_mapping.AddShortField("passive_checks_enabled",
-			     &Host::GetPassiveChecksEnabled);
+  host_mapping.AddBoolField("passive_checks_enabled",
+			    &Host::GetPassiveChecksEnabled);
   host_mapping.AddDoubleField("percent_state_change",
 			      &Host::GetPercentStateChange);
   host_mapping.AddStringField("perf_data",
 			      &Host::GetPerfData);
-  host_mapping.AddShortField("problem_has_been_acknowledged",
-			     &Host::GetProblemHasBeenAcknowledged);
-  host_mapping.AddShortField("process_performance_data",
-			     &Host::GetProcessPerformanceData);
-  host_mapping.AddShortField("retain_nonstatus_information",
-			     &Host::GetRetainNonstatusInformation);
-  host_mapping.AddShortField("retain_status_information",
-			     &Host::GetRetainStatusInformation);
+  host_mapping.AddBoolField("problem_has_been_acknowledged",
+			    &Host::GetProblemHasBeenAcknowledged);
+  host_mapping.AddBoolField("process_performance_data",
+			    &Host::GetProcessPerformanceData);
+  host_mapping.AddBoolField("retain_nonstatus_information",
+			    &Host::GetRetainNonstatusInformation);
+  host_mapping.AddBoolField("retain_status_information",
+			    &Host::GetRetainStatusInformation);
   host_mapping.AddDoubleField("retry_interval",
 			      &Host::GetRetryInterval);
   host_mapping.AddShortField("scheduled_downtime_depth",
 			     &Host::GetScheduledDowntimeDepth);
-  host_mapping.AddShortField("should_be_scheduled",
-			     &Host::GetShouldBeScheduled);
+  host_mapping.AddBoolField("should_be_scheduled",
+			    &Host::GetShouldBeScheduled);
   host_mapping.AddShortField("stalk_on_down",
 			     &Host::GetStalkOnDown);
   host_mapping.AddShortField("stalk_on_unreachable",
@@ -373,8 +373,8 @@ static void InitHostStatusMapping()
   host_status_mapping.SetTable("host");
   host_status_mapping.AddShortField("acknowledgement_type",
                                     &HostStatus::GetAcknowledgementType);
-  host_status_mapping.AddShortField("active_checks_enabled",
-				    &HostStatus::GetActiveChecksEnabled);
+  host_status_mapping.AddBoolField("active_checks_enabled",
+				   &HostStatus::GetActiveChecksEnabled);
   host_status_mapping.AddStringField("check_command",
 				     &HostStatus::GetCheckCommand);
   host_status_mapping.AddDoubleField("check_interval",
@@ -389,18 +389,18 @@ static void InitHostStatusMapping()
 				    &HostStatus::GetCurrentState);
   host_status_mapping.AddStringField("event_handler",
 				     &HostStatus::GetEventHandler);
-  host_status_mapping.AddShortField("event_handler_enabled",
-				    &HostStatus::GetEventHandlerEnabled);
+  host_status_mapping.AddBoolField("event_handler_enabled",
+				   &HostStatus::GetEventHandlerEnabled);
   host_status_mapping.AddDoubleField("execution_time",
 				     &HostStatus::GetExecutionTime);
-  host_status_mapping.AddShortField("failure_prediction_enabled",
+  host_status_mapping.AddBoolField("failure_prediction_enabled",
     &HostStatus::GetFailurePredictionEnabled);
-  host_status_mapping.AddShortField("flap_detection_enabled",
-				    &HostStatus::GetFlapDetectionEnabled);
-  host_status_mapping.AddShortField("has_been_checked",
-				    &HostStatus::GetHasBeenChecked);
-  host_status_mapping.AddShortField("is_flapping",
-				    &HostStatus::GetIsFlapping);
+  host_status_mapping.AddBoolField("flap_detection_enabled",
+				   &HostStatus::GetFlapDetectionEnabled);
+  host_status_mapping.AddBoolField("has_been_checked",
+				   &HostStatus::GetHasBeenChecked);
+  host_status_mapping.AddBoolField("is_flapping",
+				   &HostStatus::GetIsFlapping);
   host_status_mapping.AddTimeField("last_check",
 				   &HostStatus::GetLastCheck);
   host_status_mapping.AddShortField("last_hard_state",
@@ -427,30 +427,30 @@ static void InitHostStatusMapping()
 				   &HostStatus::GetNextCheck);
   host_status_mapping.AddTimeField("next_notification",
 				   &HostStatus::GetNextNotification);
-  host_status_mapping.AddShortField("no_more_notifications",
-				    &HostStatus::GetNoMoreNotifications);
-  host_status_mapping.AddShortField("notifications_enabled",
-				    &HostStatus::GetNotificationsEnabled);
-  host_status_mapping.AddShortField("obsess_over_host",
-				    &HostStatus::GetObsessOver);
+  host_status_mapping.AddBoolField("no_more_notifications",
+				   &HostStatus::GetNoMoreNotifications);
+  host_status_mapping.AddBoolField("notifications_enabled",
+				   &HostStatus::GetNotificationsEnabled);
+  host_status_mapping.AddBoolField("obsess_over_host",
+				   &HostStatus::GetObsessOver);
   host_status_mapping.AddStringField("output",
 				     &HostStatus::GetOutput);
-  host_status_mapping.AddShortField("passive_checks_enabled",
-				    &HostStatus::GetPassiveChecksEnabled);
+  host_status_mapping.AddBoolField("passive_checks_enabled",
+				   &HostStatus::GetPassiveChecksEnabled);
   host_status_mapping.AddDoubleField("percent_state_change",
 				     &HostStatus::GetPercentStateChange);
   host_status_mapping.AddStringField("perf_data",
 				     &HostStatus::GetPerfData);
-  host_status_mapping.AddShortField("problem_has_been_acknowledged",
+  host_status_mapping.AddBoolField("problem_has_been_acknowledged",
     &HostStatus::GetProblemHasBeenAcknowledged);
-  host_status_mapping.AddShortField("process_performance_data",
-				    &HostStatus::GetProcessPerformanceData);
+  host_status_mapping.AddBoolField("process_performance_data",
+				   &HostStatus::GetProcessPerformanceData);
   host_status_mapping.AddDoubleField("retry_interval",
 				     &HostStatus::GetRetryInterval);
   host_status_mapping.AddShortField("scheduled_downtime_depth",
 				    &HostStatus::GetScheduledDowntimeDepth);
-  host_status_mapping.AddShortField("should_be_scheduled",
-				    &HostStatus::GetShouldBeScheduled);
+  host_status_mapping.AddBoolField("should_be_scheduled",
+				   &HostStatus::GetShouldBeScheduled);
   host_status_mapping.AddShortField("state_type",
 				    &HostStatus::GetStateType);
   host_status_mapping.AddTimeField("status_update_time",
@@ -466,24 +466,26 @@ static void InitProgramStatusMapping()
   logging.LogDebug("Initializing ProgramStatus mapping");
 #endif /* !NDEBUG */
   program_status_mapping.SetTable("program_status");
-  program_status_mapping.AddShortField("active_host_checks_enabled",
+  program_status_mapping.AddBoolField("active_host_checks_enabled",
     &ProgramStatus::GetActiveHostChecksEnabled);
-  program_status_mapping.AddShortField("active_service_checks_enabled",
+  program_status_mapping.AddBoolField("active_service_checks_enabled",
     &ProgramStatus::GetActiveServiceChecksEnabled);
-  program_status_mapping.AddShortField("daemon_mode",
+  program_status_mapping.AddBoolField("daemon_mode",
 				       &ProgramStatus::GetDaemonMode);
-  program_status_mapping.AddShortField("event_handlers_enabled",
-				       &ProgramStatus::GetEventHandlerEnabled);
-  program_status_mapping.AddShortField("failure_prediction_enabled",
+  program_status_mapping.AddBoolField("event_handlers_enabled",
+				      &ProgramStatus::GetEventHandlerEnabled);
+  program_status_mapping.AddBoolField("failure_prediction_enabled",
     &ProgramStatus::GetFailurePredictionEnabled);
-  program_status_mapping.AddShortField("flap_detection_enabled",
+  program_status_mapping.AddBoolField("flap_detection_enabled",
     &ProgramStatus::GetFlapDetectionEnabled);
   program_status_mapping.AddStringField("global_host_event_handler",
     &ProgramStatus::GetGlobalHostEventHandler);
   program_status_mapping.AddStringField("global_service_event_handler",
     &ProgramStatus::GetGlobalServiceEventHandler);
-  program_status_mapping.AddShortField("is_currently_running",
-				       &ProgramStatus::GetIsCurrentlyRunning);
+  program_status_mapping.AddBoolField("is_running",
+				       &ProgramStatus::GetIsRunning);
+  program_status_mapping.AddTimeField("last_alive",
+				      &ProgramStatus::GetLastAlive);
   program_status_mapping.AddTimeField("last_command_check",
 				      &ProgramStatus::GetLastCommandCheck);
   program_status_mapping.AddTimeField("last_log_rotation",
@@ -492,26 +494,24 @@ static void InitProgramStatusMapping()
     &ProgramStatus::GetModifiedHostAttributes);
   program_status_mapping.AddIntField("modified_service_attributes",
     &ProgramStatus::GetModifiedServiceAttributes);
-  program_status_mapping.AddShortField("notifications_enabled",
+  program_status_mapping.AddBoolField("notifications_enabled",
     &ProgramStatus::GetNotificationsEnabled);
-  program_status_mapping.AddShortField("obsess_over_hosts",
+  program_status_mapping.AddBoolField("obsess_over_hosts",
 				       &ProgramStatus::GetObsessOverHosts);
-  program_status_mapping.AddShortField("obsess_over_services",
+  program_status_mapping.AddBoolField("obsess_over_services",
 				       &ProgramStatus::GetObsessOverServices);
-  program_status_mapping.AddShortField("passive_host_checks_enabled",
+  program_status_mapping.AddBoolField("passive_host_checks_enabled",
     &ProgramStatus::GetPassiveHostChecksEnabled);
-  program_status_mapping.AddShortField("passive_service_checks_enabled",
+  program_status_mapping.AddBoolField("passive_service_checks_enabled",
     &ProgramStatus::GetPassiveServiceChecksEnabled);
   program_status_mapping.AddIntField("pid",
 				     &ProgramStatus::GetPid);
-  program_status_mapping.AddShortField("process_performance_data",
+  program_status_mapping.AddBoolField("process_performance_data",
     &ProgramStatus::GetProcessPerformanceData);
   program_status_mapping.AddTimeField("program_end_time",
 				      &ProgramStatus::GetProgramEndTime);
-  program_status_mapping.AddTimeField("program_start_time",
-				      &ProgramStatus::GetProgramStartTime);
-  program_status_mapping.AddTimeField("status_update_time",
-				      &ProgramStatus::GetStatusUpdateTime);
+  program_status_mapping.AddTimeField("program_start",
+				      &ProgramStatus::GetProgramStart);
   return ;
 }
 
@@ -527,8 +527,8 @@ static void InitServiceMapping()
 				&Service::GetAcknowledgementType);
   service_mapping.AddStringField("action_url",
 				 &Service::GetActionUrl);
-  service_mapping.AddShortField("active_checks_enabled",
-				&Service::GetActiveChecksEnabled);
+  service_mapping.AddBoolField("active_checks_enabled",
+			       &Service::GetActiveChecksEnabled);
   service_mapping.AddStringField("check_command",
 				 &Service::GetCheckCommand);
   service_mapping.AddDoubleField("check_interval",
@@ -559,18 +559,18 @@ static void InitServiceMapping()
 				 &Service::GetDisplayName);
   service_mapping.AddStringField("event_handler",
 				 &Service::GetEventHandler);
-  service_mapping.AddShortField("event_handler_enabled",
-				&Service::GetEventHandlerEnabled);
+  service_mapping.AddBoolField("event_handler_enabled",
+			       &Service::GetEventHandlerEnabled);
   service_mapping.AddDoubleField("execution_time",
 				 &Service::GetExecutionTime);
-  service_mapping.AddShortField("failure_prediction_enabled",
-				&Service::GetFailurePredictionEnabled);
+  service_mapping.AddBoolField("failure_prediction_enabled",
+			       &Service::GetFailurePredictionEnabled);
   service_mapping.AddStringField("failure_prediction_options",
 				 &Service::GetFailurePredictionOptions);
   service_mapping.AddDoubleField("first_notification_delay",
 				 &Service::GetFirstNotificationDelay);
-  service_mapping.AddShortField("flap_detection_enabled",
-				&Service::GetFlapDetectionEnabled);
+  service_mapping.AddBoolField("flap_detection_enabled",
+			       &Service::GetFlapDetectionEnabled);
   service_mapping.AddShortField("flap_detection_on_critical",
 				&Service::GetFlapDetectionOnCritical);
   service_mapping.AddShortField("flap_detection_on_ok",
@@ -583,8 +583,8 @@ static void InitServiceMapping()
 				&Service::GetFreshnessChecksEnabled);
   service_mapping.AddShortField("freshness_threshold",
 				&Service::GetFreshnessThreshold);
-  service_mapping.AddShortField("has_been_checked",
-				&Service::GetHasBeenChecked);
+  service_mapping.AddBoolField("has_been_checked",
+			       &Service::GetHasBeenChecked);
   service_mapping.AddDoubleField("high_flap_threshold",
 				 &Service::GetHighFlapThreshold);
   service_mapping.AddStringField("host_name",
@@ -593,8 +593,8 @@ static void InitServiceMapping()
 				 &Service::GetIconImage);
   service_mapping.AddStringField("icon_image_alt",
 				 &Service::GetIconImageAlt);
-  service_mapping.AddShortField("is_flapping",
-				&Service::GetIsFlapping);
+  service_mapping.AddBoolField("is_flapping",
+			       &Service::GetIsFlapping);
   service_mapping.AddShortField("is_volatile",
 				&Service::GetIsVolatile);
   service_mapping.AddTimeField("last_check",
@@ -627,16 +627,16 @@ static void InitServiceMapping()
 			       &Service::GetNextCheck);
   service_mapping.AddTimeField("next_notification",
 			       &Service::GetNextNotification);
-  service_mapping.AddShortField("no_more_notifications",
-				&Service::GetNoMoreNotifications);
+  service_mapping.AddBoolField("no_more_notifications",
+			       &Service::GetNoMoreNotifications);
   service_mapping.AddStringField("notes",
 				 &Service::GetNotes);
   service_mapping.AddStringField("notes_url",
 				 &Service::GetNotesUrl);
   service_mapping.AddDoubleField("notification_interval",
 				 &Service::GetNotificationInterval);
-  service_mapping.AddShortField("notifications_enabled",
-				&Service::GetNotificationsEnabled);
+  service_mapping.AddBoolField("notifications_enabled",
+			       &Service::GetNotificationsEnabled);
   service_mapping.AddShortField("notify_on_critical",
 				&Service::GetNotifyOnCritical);
   service_mapping.AddShortField("notify_on_downtime",
@@ -649,32 +649,32 @@ static void InitServiceMapping()
 				&Service::GetNotifyOnUnknown);
   service_mapping.AddShortField("notify_on_warning",
 				&Service::GetNotifyOnWarning);
-  service_mapping.AddShortField("obsess_over_service",
+  service_mapping.AddBoolField("obsess_over_service",
 				&Service::GetObsessOver);
   service_mapping.AddStringField("output",
 				 &Service::GetOutput);
-  service_mapping.AddShortField("passive_checks_enabled",
-				&Service::GetPassiveChecksEnabled);
+  service_mapping.AddBoolField("passive_checks_enabled",
+			       &Service::GetPassiveChecksEnabled);
   service_mapping.AddDoubleField("percent_state_change",
 				 &Service::GetPercentStateChange);
   service_mapping.AddStringField("perf_data",
 				 &Service::GetPerfData);
-  service_mapping.AddShortField("problem_has_been_acknowledged",
-				&Service::GetProblemHasBeenAcknowledged);
-  service_mapping.AddShortField("process_performance_data",
-				&Service::GetProcessPerformanceData);
-  service_mapping.AddShortField("retain_nonstatus_information",
-				&Service::GetRetainNonstatusInformation);
-  service_mapping.AddShortField("retain_status_information",
-				&Service::GetRetainStatusInformation);
+  service_mapping.AddBoolField("problem_has_been_acknowledged",
+			       &Service::GetProblemHasBeenAcknowledged);
+  service_mapping.AddBoolField("process_performance_data",
+			       &Service::GetProcessPerformanceData);
+  service_mapping.AddBoolField("retain_nonstatus_information",
+			       &Service::GetRetainNonstatusInformation);
+  service_mapping.AddBoolField("retain_status_information",
+			       &Service::GetRetainStatusInformation);
   service_mapping.AddDoubleField("retry_interval",
 				 &Service::GetRetryInterval);
   service_mapping.AddShortField("scheduled_downtime_depth",
 				&Service::GetScheduledDowntimeDepth);
   service_mapping.AddStringField("service_description",
 				 &Service::GetServiceDescription);
-  service_mapping.AddShortField("should_be_scheduled",
-				&Service::GetShouldBeScheduled);
+  service_mapping.AddBoolField("should_be_scheduled",
+			       &Service::GetShouldBeScheduled);
   service_mapping.AddShortField("stalk_on_critical",
 				&Service::GetStalkOnCritical);
   service_mapping.AddShortField("stalk_on_ok",
@@ -700,8 +700,8 @@ static void InitServiceStatusMapping()
   service_status_mapping.SetTable("service");
   service_status_mapping.AddShortField("acknowledgement_type",
 				       &ServiceStatus::GetAcknowledgementType);
-  service_status_mapping.AddShortField("active_checks_enabled",
-				       &ServiceStatus::GetActiveChecksEnabled);
+  service_status_mapping.AddBoolField("active_checks_enabled",
+				      &ServiceStatus::GetActiveChecksEnabled);
   service_status_mapping.AddStringField("check_command",
 					&ServiceStatus::GetCheckCommand);
   service_status_mapping.AddDoubleField("check_interval",
@@ -716,18 +716,18 @@ static void InitServiceStatusMapping()
 				       &ServiceStatus::GetCurrentState);
   service_status_mapping.AddStringField("event_handler",
 					&ServiceStatus::GetEventHandler);
-  service_status_mapping.AddShortField("event_handler_enabled",
-				       &ServiceStatus::GetEventHandlerEnabled);
+  service_status_mapping.AddBoolField("event_handler_enabled",
+				      &ServiceStatus::GetEventHandlerEnabled);
   service_status_mapping.AddDoubleField("execution_time",
 					&ServiceStatus::GetExecutionTime);
-  service_status_mapping.AddShortField("failure_prediction_enabled",
+  service_status_mapping.AddBoolField("failure_prediction_enabled",
     &ServiceStatus::GetFailurePredictionEnabled);
-  service_status_mapping.AddShortField("flap_detection_enabled",
+  service_status_mapping.AddBoolField("flap_detection_enabled",
     &ServiceStatus::GetFlapDetectionEnabled);
-  service_status_mapping.AddShortField("has_been_checked",
-				       &ServiceStatus::GetHasBeenChecked);
-  service_status_mapping.AddShortField("is_flapping",
-				       &ServiceStatus::GetIsFlapping);
+  service_status_mapping.AddBoolField("has_been_checked",
+				      &ServiceStatus::GetHasBeenChecked);
+  service_status_mapping.AddBoolField("is_flapping",
+				      &ServiceStatus::GetIsFlapping);
   service_status_mapping.AddTimeField("last_check",
 				      &ServiceStatus::GetLastCheck);
   service_status_mapping.AddShortField("last_hard_state",
@@ -756,30 +756,30 @@ static void InitServiceStatusMapping()
 				      &ServiceStatus::GetNextCheck);
   service_status_mapping.AddTimeField("next_notification",
 				      &ServiceStatus::GetNextCheck);
-  service_status_mapping.AddShortField("no_more_notifications",
-				       &ServiceStatus::GetNoMoreNotifications);
-  service_status_mapping.AddShortField("notifications_enabled",
+  service_status_mapping.AddBoolField("no_more_notifications",
+				      &ServiceStatus::GetNoMoreNotifications);
+  service_status_mapping.AddBoolField("notifications_enabled",
     &ServiceStatus::GetNotificationsEnabled);
-  service_status_mapping.AddShortField("obsess_over_service",
-				       &ServiceStatus::GetObsessOver);
+  service_status_mapping.AddBoolField("obsess_over_service",
+				      &ServiceStatus::GetObsessOver);
   service_status_mapping.AddStringField("output",
 					&ServiceStatus::GetOutput);
-  service_status_mapping.AddShortField("passive_checks_enabled",
+  service_status_mapping.AddBoolField("passive_checks_enabled",
     &ServiceStatus::GetPassiveChecksEnabled);
   service_status_mapping.AddDoubleField("percent_state_change",
 					&ServiceStatus::GetPercentStateChange);
   service_status_mapping.AddStringField("perf_data",
 					&ServiceStatus::GetPerfData);
-  service_status_mapping.AddShortField("problem_has_been_acknowledged",
+  service_status_mapping.AddBoolField("problem_has_been_acknowledged",
     &ServiceStatus::GetProblemHasBeenAcknowledged);
-  service_status_mapping.AddShortField("process_performance_data",
+  service_status_mapping.AddBoolField("process_performance_data",
     &ServiceStatus::GetProcessPerformanceData);
   service_status_mapping.AddDoubleField("retry_interval",
 					&ServiceStatus::GetRetryInterval);
   service_status_mapping.AddShortField("scheduled_downtime_depth",
     &ServiceStatus::GetScheduledDowntimeDepth);
-  service_status_mapping.AddShortField("should_be_scheduled",
-				       &ServiceStatus::GetShouldBeScheduled);
+  service_status_mapping.AddBoolField("should_be_scheduled",
+				      &ServiceStatus::GetShouldBeScheduled);
   service_status_mapping.AddShortField("state_type",
 				       &ServiceStatus::GetStateType);
   service_status_mapping.AddTimeField("status_update_time",

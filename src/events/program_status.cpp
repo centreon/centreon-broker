@@ -33,8 +33,8 @@ using namespace CentreonBroker::Events;
  */
 void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 {
+  memcpy(this->bools_, ps.bools_, sizeof(this->bools_));
   memcpy(this->ints_, ps.ints_, sizeof(this->ints_));
-  memcpy(this->shorts_, ps.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = ps.strings_[i];
   memcpy(this->timets_, ps.timets_, sizeof(this->timets_));
@@ -52,8 +52,8 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
  */
 ProgramStatus::ProgramStatus() throw ()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->ints_, 0, sizeof(this->ints_));
-  memset(this->shorts_, 0, sizeof(this->shorts_));
   memset(this->timets_, 0, sizeof(this->timets_));
 }
 
@@ -85,25 +85,25 @@ ProgramStatus& ProgramStatus::operator=(const ProgramStatus& ps)
 /**
  *  Get the active_host_checks_enabled member.
  */
-short ProgramStatus::GetActiveHostChecksEnabled() const throw ()
+bool ProgramStatus::GetActiveHostChecksEnabled() const throw ()
 {
-  return (this->shorts_[ACTIVE_HOST_CHECKS_ENABLED]);
+  return (this->bools_[ACTIVE_HOST_CHECKS_ENABLED]);
 }
 
 /**
  *  Get the active_service_checks_enabled member.
  */
-short ProgramStatus::GetActiveServiceChecksEnabled() const throw ()
+bool ProgramStatus::GetActiveServiceChecksEnabled() const throw ()
 {
-  return (this->shorts_[ACTIVE_SERVICE_CHECKS_ENABLED]);
+  return (this->bools_[ACTIVE_SERVICE_CHECKS_ENABLED]);
 }
 
 /**
  *  Get the daemon_mode member.
  */
-short ProgramStatus::GetDaemonMode() const throw ()
+bool ProgramStatus::GetDaemonMode() const throw ()
 {
-  return (this->shorts_[DAEMON_MODE]);
+  return (this->bools_[DAEMON_MODE]);
 }
 
 /**
@@ -123,11 +123,19 @@ const std::string& ProgramStatus::GetGlobalServiceEventHandler() const throw ()
 }
 
 /**
- *  Get the is_currently_running member.
+ *  Get the is_running member.
  */
-short ProgramStatus::GetIsCurrentlyRunning() const throw ()
+bool ProgramStatus::GetIsRunning() const throw ()
 {
-  return (this->shorts_[IS_CURRENTLY_RUNNING]);
+  return (this->bools_[IS_RUNNING]);
+}
+
+/**
+ *  Get the last_alive member.
+ */
+time_t ProgramStatus::GetLastAlive() const throw ()
+{
+  return (this->timets_[LAST_ALIVE]);
 }
 
 /**
@@ -165,33 +173,33 @@ int ProgramStatus::GetModifiedServiceAttributes() const throw ()
 /**
  *  Get the obsess_over_hosts member.
  */
-short ProgramStatus::GetObsessOverHosts() const throw ()
+bool ProgramStatus::GetObsessOverHosts() const throw ()
 {
-  return (this->shorts_[OBSESS_OVER_HOSTS]);
+  return (this->bools_[OBSESS_OVER_HOSTS]);
 }
 
 /**
  *  Get the obsess_over_services member.
  */
-short ProgramStatus::GetObsessOverServices() const throw ()
+bool ProgramStatus::GetObsessOverServices() const throw ()
 {
-  return (this->shorts_[OBSESS_OVER_SERVICES]);
+  return (this->bools_[OBSESS_OVER_SERVICES]);
 }
 
 /**
  *  Get the passive_host_checks_enabled member.
  */
-short ProgramStatus::GetPassiveHostChecksEnabled() const throw ()
+bool ProgramStatus::GetPassiveHostChecksEnabled() const throw ()
 {
-  return (this->shorts_[PASSIVE_HOST_CHECKS_ENABLED]);
+  return (this->bools_[PASSIVE_HOST_CHECKS_ENABLED]);
 }
 
 /**
  *  Get the passive_service_checks_enabled member.
  */
-short ProgramStatus::GetPassiveServiceChecksEnabled() const throw ()
+bool ProgramStatus::GetPassiveServiceChecksEnabled() const throw ()
 {
-  return (this->shorts_[PASSIVE_SERVICE_CHECKS_ENABLED]);
+  return (this->bools_[PASSIVE_SERVICE_CHECKS_ENABLED]);
 }
 
 /**
@@ -211,11 +219,11 @@ time_t ProgramStatus::GetProgramEndTime() const throw ()
 }
 
 /**
- *  Get the program_start_time member.
+ *  Get the program_start member.
  */
-time_t ProgramStatus::GetProgramStartTime() const throw ()
+time_t ProgramStatus::GetProgramStart() const throw ()
 {
-  return (this->timets_[PROGRAM_START_TIME]);
+  return (this->timets_[PROGRAM_START]);
 }
 
 /**
@@ -229,27 +237,27 @@ int ProgramStatus::GetType() const throw ()
 /**
  *  Set the active_host_checks_enabled member.
  */
-void ProgramStatus::SetActiveHostChecksEnabled(short ahce) throw ()
+void ProgramStatus::SetActiveHostChecksEnabled(bool ahce) throw ()
 {
-  this->shorts_[ACTIVE_HOST_CHECKS_ENABLED] = ahce;
+  this->bools_[ACTIVE_HOST_CHECKS_ENABLED] = ahce;
   return ;
 }
 
 /**
  *  Set the active_service_checks_enabled member.
  */
-void ProgramStatus::SetActiveServiceChecksEnabled(short asce) throw ()
+void ProgramStatus::SetActiveServiceChecksEnabled(bool asce) throw ()
 {
-  this->shorts_[ACTIVE_SERVICE_CHECKS_ENABLED] = asce;
+  this->bools_[ACTIVE_SERVICE_CHECKS_ENABLED] = asce;
   return ;
 }
 
 /**
  *  Set the daemon_mode member.
  */
-void ProgramStatus::SetDaemonMode(short dm) throw ()
+void ProgramStatus::SetDaemonMode(bool dm) throw ()
 {
-  this->shorts_[DAEMON_MODE] = dm;
+  this->bools_[DAEMON_MODE] = dm;
   return ;
 }
 
@@ -272,11 +280,20 @@ void ProgramStatus::SetGlobalServiceEventHandler(const std::string& gseh)
 }
 
 /**
- *  Set the is_currently running member.
+ *  Set the is_running member.
  */
-void ProgramStatus::SetIsCurrentlyRunning(short icr) throw ()
+void ProgramStatus::SetIsRunning(bool ir) throw ()
 {
-  this->shorts_[IS_CURRENTLY_RUNNING] = icr;
+  this->bools_[IS_RUNNING] = ir;
+  return ;
+}
+
+/**
+ *  Set the last_alive member.
+ */
+void ProgramStatus::SetLastAlive(time_t la) throw ()
+{
+  this->timets_[LAST_ALIVE] = la;
   return ;
 }
 
@@ -319,36 +336,36 @@ void ProgramStatus::SetModifiedServiceAttributes(int msa) throw ()
 /**
  *  Set the obsess_over_hosts member.
  */
-void ProgramStatus::SetObsessOverHosts(short ooh) throw ()
+void ProgramStatus::SetObsessOverHosts(bool ooh) throw ()
 {
-  this->shorts_[OBSESS_OVER_HOSTS] = ooh;
+  this->bools_[OBSESS_OVER_HOSTS] = ooh;
   return ;
 }
 
 /**
  *  Set the obsess_over_services member.
  */
-void ProgramStatus::SetObsessOverServices(short oos) throw ()
+void ProgramStatus::SetObsessOverServices(bool oos) throw ()
 {
-  this->shorts_[OBSESS_OVER_SERVICES] = oos;
+  this->bools_[OBSESS_OVER_SERVICES] = oos;
   return ;
 }
 
 /**
  *  Set the passive_host_checks_enabled member.
  */
-void ProgramStatus::SetPassiveHostChecksEnabled(short phce) throw ()
+void ProgramStatus::SetPassiveHostChecksEnabled(bool phce) throw ()
 {
-  this->shorts_[PASSIVE_HOST_CHECKS_ENABLED] = phce;
+  this->bools_[PASSIVE_HOST_CHECKS_ENABLED] = phce;
   return ;
 }
 
 /**
  *  Set the passive_service_checks_enabled member.
  */
-void ProgramStatus::SetPassiveServiceChecksEnabled(short psce) throw ()
+void ProgramStatus::SetPassiveServiceChecksEnabled(bool psce) throw ()
 {
-  this->shorts_[PASSIVE_SERVICE_CHECKS_ENABLED] = psce;
+  this->bools_[PASSIVE_SERVICE_CHECKS_ENABLED] = psce;
   return ;
 }
 
@@ -371,10 +388,10 @@ void ProgramStatus::SetProgramEndTime(time_t pet) throw ()
 }
 
 /**
- *  Set the program_start_time member.
+ *  Set the program_start member.
  */
-void ProgramStatus::SetProgramStartTime(time_t pst) throw ()
+void ProgramStatus::SetProgramStart(time_t ps) throw ()
 {
-  this->timets_[PROGRAM_START_TIME] = pst;
+  this->timets_[PROGRAM_START] = ps;
   return ;
 }

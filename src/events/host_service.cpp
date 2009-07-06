@@ -35,6 +35,7 @@ using namespace CentreonBroker::Events;
  */
 void HostService::InternalCopy(const HostService& hs)
 {
+  memcpy(this->bools_, hs.bools_, sizeof(this->bools_));
   memcpy(this->doubles_, hs.doubles_, sizeof(this->doubles_));
   memcpy(this->shorts_, hs.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
@@ -53,6 +54,7 @@ void HostService::InternalCopy(const HostService& hs)
  */
 HostService::HostService() throw ()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   for (unsigned int i = 0; i < DOUBLE_NB; i++)
     this->doubles_[i] = 0.0;
   memset(this->shorts_, 0, sizeof(this->shorts_));
@@ -197,17 +199,17 @@ short HostService::GetNotifyOnRecovery() const throw ()
 /**
  *  Get the retain_nonstatus_information member.
  */
-short HostService::GetRetainNonstatusInformation() const throw ()
+bool HostService::GetRetainNonstatusInformation() const throw ()
 {
-  return (this->shorts_[RETAIN_NONSTATUS_INFORMATION]);
+  return (this->bools_[RETAIN_NONSTATUS_INFORMATION]);
 }
 
 /**
  *  Get the retain_status_information member.
  */
-short HostService::GetRetainStatusInformation() const throw ()
+bool HostService::GetRetainStatusInformation() const throw ()
 {
-  return (this->shorts_[RETAIN_STATUS_INFORMATION]);
+  return (this->bools_[RETAIN_STATUS_INFORMATION]);
 }
 
 /**
@@ -339,17 +341,17 @@ void HostService::SetNotifyOnRecovery(short nor) throw ()
 /**
  *  Set the retain_nonstatus_information member.
  */
-void HostService::SetRetainNonstatusInformation(short rni) throw ()
+void HostService::SetRetainNonstatusInformation(bool rni) throw ()
 {
-  this->shorts_[RETAIN_NONSTATUS_INFORMATION] = rni;
+  this->bools_[RETAIN_NONSTATUS_INFORMATION] = rni;
   return ;
 }
 
 /**
  *  Set the retain_status_information member.
  */
-void HostService::SetRetainStatusInformation(short rsi) throw ()
+void HostService::SetRetainStatusInformation(bool rsi) throw ()
 {
-  this->shorts_[RETAIN_STATUS_INFORMATION] = rsi;
+  this->bools_[RETAIN_STATUS_INFORMATION] = rsi;
   return ;
 }

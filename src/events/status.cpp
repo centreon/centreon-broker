@@ -35,8 +35,7 @@ using namespace CentreonBroker::Events;
  */
 void Status::InternalCopy(const Status& se) throw ()
 {
-  memcpy(this->shorts_, se.shorts_, sizeof(this->shorts_));
-  memcpy(this->timets_, se.timets_, sizeof(this->timets_));
+  memcpy(this->bools_, se.bools_, sizeof(this->bools_));
   return ;
 }
 
@@ -51,8 +50,7 @@ void Status::InternalCopy(const Status& se) throw ()
  */
 Status::Status()
 {
-  memset(this->shorts_, 0, sizeof(this->shorts_));
-  memset(this->timets_, 0, sizeof(this->timets_));
+  memset(this->bools_, 0, sizeof(this->bools_));
 }
 
 /**
@@ -83,101 +81,84 @@ Status& Status::operator=(const Status& se)
 /**
  *  Get the event_handler_enabled member.
  */
-short Status::GetEventHandlerEnabled() const throw ()
+bool Status::GetEventHandlerEnabled() const throw ()
 {
-  return (this->shorts_[EVENT_HANDLER_ENABLED]);
+  return (this->bools_[EVENT_HANDLER_ENABLED]);
 }
 
 /**
  *  Get the failure_prediction_enabled member.
  */
-short Status::GetFailurePredictionEnabled() const throw ()
+bool Status::GetFailurePredictionEnabled() const throw ()
 {
-  return (this->shorts_[FAILURE_PREDICTION_ENABLED]);
+  return (this->bools_[FAILURE_PREDICTION_ENABLED]);
 }
 
 /**
  *  Get the flap_detection_enabled member.
  */
-short Status::GetFlapDetectionEnabled() const throw ()
+bool Status::GetFlapDetectionEnabled() const throw ()
 {
-  return (this->shorts_[FLAP_DETECTION_ENABLED]);
+  return (this->bools_[FLAP_DETECTION_ENABLED]);
 }
 
 /**
  *  Get the notifications_enabled member.
  */
-short Status::GetNotificationsEnabled() const throw ()
+bool Status::GetNotificationsEnabled() const throw ()
 {
-  return (this->shorts_[NOTIFICATIONS_ENABLED]);
+  return (this->bools_[NOTIFICATIONS_ENABLED]);
 }
 
 /**
  *  Get the process_performance_data member.
  */
-short Status::GetProcessPerformanceData() const throw ()
+bool Status::GetProcessPerformanceData() const throw ()
 {
-  return (this->shorts_[PROCESS_PERFORMANCE_DATA]);
-}
-
-/**
- *  Get the status_update_time member.
- */
-time_t Status::GetStatusUpdateTime() const throw ()
-{
-  return (this->timets_[STATUS_UPDATE_TIME]);
+  return (this->bools_[PROCESS_PERFORMANCE_DATA]);
 }
 
 /**
  *  Set the event_handler_enabled member.
  */
-void Status::SetEventHandlerEnabled(short ehe) throw ()
+void Status::SetEventHandlerEnabled(bool ehe) throw ()
 {
-  this->shorts_[EVENT_HANDLER_ENABLED] = ehe;
+  this->bools_[EVENT_HANDLER_ENABLED] = ehe;
   return ;
 }
 
 /**
  *  Set the failure_prediction_enabled member.
  */
-void Status::SetFailurePredictionEnabled(short fpe) throw ()
+void Status::SetFailurePredictionEnabled(bool fpe) throw ()
 {
-  this->shorts_[FAILURE_PREDICTION_ENABLED] = fpe;
+  this->bools_[FAILURE_PREDICTION_ENABLED] = fpe;
   return ;
 }
 
 /**
  *  Set the flap_detection_enabled member.
  */
-void Status::SetFlapDetectionEnabled(short fde) throw ()
+void Status::SetFlapDetectionEnabled(bool fde) throw ()
 {
-  this->shorts_[FLAP_DETECTION_ENABLED] = fde;
+  this->bools_[FLAP_DETECTION_ENABLED] = fde;
   return ;
 }
 
 /**
  *  Set the notifications_enabled member.
  */
-void Status::SetNotificationsEnabled(short ne) throw ()
+void Status::SetNotificationsEnabled(bool ne) throw ()
 {
-  this->shorts_[NOTIFICATIONS_ENABLED] = ne;
+  this->bools_[NOTIFICATIONS_ENABLED] = ne;
   return ;
 }
 
 /**
  *  Set the process_performance_data member.
  */
-void Status::SetProcessPerformanceData(short ppd) throw ()
+void Status::SetProcessPerformanceData(bool ppd) throw ()
 {
-  this->shorts_[PROCESS_PERFORMANCE_DATA] = ppd;
-  return ;
-}
-
-/**
- *  Set the status_update_time member.
- */
-void Status::SetStatusUpdateTime(time_t sut) throw ()
-{
-  this->timets_[STATUS_UPDATE_TIME] = sut;
+  this->bools_[PROCESS_PERFORMANCE_DATA] = ppd;
   return ;
 }
