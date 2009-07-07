@@ -42,6 +42,7 @@ using namespace CentreonBroker::Events;
  */
 void Downtime::InternalCopy(const Downtime& downtime)
 {
+  memcpy(this->bools_, downtime.bools_, sizeof(this->bools_));
   memcpy(this->ints_, downtime.ints_, sizeof(this->ints_));
   memcpy(this->shorts_, downtime.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
@@ -62,6 +63,7 @@ void Downtime::InternalCopy(const Downtime& downtime)
  */
 Downtime::Downtime()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->ints_, 0, sizeof(this->ints_));
   memset(this->shorts_, 0, sizeof(this->shorts_));
   memset(this->timets_, 0, sizeof(this->timets_));
@@ -99,22 +101,6 @@ Downtime& Downtime::operator=(const Downtime& downtime)
 }
 
 /**
- *  XXX : need fix
- */
-time_t Downtime::GetActualEndTime() const throw ()
-{
-  return (this->timets_[ACTUAL_END_TIME]);
-}
-
-/**
- *  XXX : need fix
- */
-time_t Downtime::GetActualStartTime() const throw ()
-{
-  return (this->timets_[ACTUAL_START_TIME]);
-}
-
-/**
  *  Get the name of the user who defined the downtime.
  *
  *  \return The name of the user who defined the downtime.
@@ -135,6 +121,14 @@ const std::string& Downtime::GetCommentData() const throw ()
 }
 
 /**
+ *  XXX : need fix
+ */
+int Downtime::GetDowntimeId() const throw ()
+{
+  return (this->ints_[DOWNTIME_ID]);
+}
+
+/**
  *  Get the type of the downtime (XXX : what are the available types ?).
  *
  *  \return The type of the downtime.
@@ -149,9 +143,9 @@ short Downtime::GetDowntimeType() const throw ()
  *
  *  \return The duration of the downtime.
  */
-short Downtime::GetDuration() const throw ()
+int Downtime::GetDuration() const throw ()
 {
-  return (this->shorts_[DURATION]);
+  return (this->ints_[DURATION]);
 }
 
 /**
@@ -171,6 +165,16 @@ time_t Downtime::GetEntryTime() const throw ()
 }
 
 /**
+ *  Determines whether or not the downtime is fixed.
+ *
+ *  \return true if the downtime is fixed, false otherwise.
+ */
+bool Downtime::GetFixed() const throw ()
+{
+  return (this->bools_[FIXED]);
+}
+
+/**
  *  Get the name of the host associated with the downtime.
  *
  *  \return The name of the host associated with the downtime.
@@ -178,24 +182,6 @@ time_t Downtime::GetEntryTime() const throw ()
 const std::string& Downtime::GetHost() const throw ()
 {
   return (this->strings_[HOST]);
-}
-
-/**
- *  XXX : need fix
- */
-int Downtime::GetInternalId() const throw ()
-{
-  return (this->ints_[INTERNAL_ID]);
-}
-
-/**
- *  Determines whether or not the downtime is fixed.
- *
- *  \return 0 if the downtime isn't fixed.
- */
-short Downtime::GetIsFixed() const throw ()
-{
-  return (this->shorts_[IS_FIXED]);
 }
 
 /**
@@ -237,43 +223,21 @@ int Downtime::GetType() const throw ()
 /**
  *  Determines whether or not the downtime was cancelled.
  *
- *  \return 0 if the downtime wasn't cancelled.
+ *  \return true if the downtime was cancelled, false otherwise.
  */
-short Downtime::GetWasCancelled() const throw ()
+bool Downtime::GetWasCancelled() const throw ()
 {
-  return (this->shorts_[WAS_CANCELLED]);
+  return (this->bools_[WAS_CANCELLED]);
 }
 
 /**
  *  Determines whether or not the downtime was started.
  *
- *  \return 0 if the downtime wasn't started.
+ *  \return true if the downtime was started, false otherwise.
  */
-short Downtime::GetWasStarted() const throw ()
+bool Downtime::GetWasStarted() const throw ()
 {
-  return (this->shorts_[WAS_STARTED]);
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetActualEndTime
- */
-void Downtime::SetActualEndTime(time_t aet) throw ()
-{
-  this->timets_[ACTUAL_END_TIME] = aet;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetActualStartTime
- */
-void Downtime::SetActualStartTime(time_t ast) throw ()
-{
-  this->timets_[ACTUAL_START_TIME] = ast;
-  return ;
+  return (this->bools_[WAS_STARTED]);
 }
 
 /**
@@ -303,6 +267,17 @@ void Downtime::SetCommentData(const std::string& cd)
 }
 
 /**
+ *  XXX : need fix
+ *
+ *  \see GetDowntimeId
+ */
+void Downtime::SetDowntimeId(int di) throw ()
+{
+  this->ints_[DOWNTIME_ID] = di;
+  return ;
+}
+
+/**
  *  Set the type of the downtime (XXX : what are the available types ?).
  *
  *  \see GetDowntimeType
@@ -322,9 +297,9 @@ void Downtime::SetDowntimeType(short dt) throw ()
  *
  *  \param[in] d The duration of the downtime.
  */
-void Downtime::SetDuration(short d) throw ()
+void Downtime::SetDuration(int d) throw ()
 {
-  this->shorts_[DURATION] = d;
+  this->ints_[DURATION] = d;
   return ;
 }
 
@@ -351,6 +326,19 @@ void Downtime::SetEntryTime(time_t et) throw ()
 }
 
 /**
+ *  Set whether or not the downtime is fixed.
+ *
+ *  \see GetFixed
+ *
+ *  \param[in] f true if the downtime is fixed, false otherwise.
+ */
+void Downtime::SetFixed(bool f) throw ()
+{
+  this->bools_[FIXED] = f;
+  return ;
+}
+
+/**
  *  Set the name of the host associated with the downtime.
  *
  *  \see GetHost
@@ -360,30 +348,6 @@ void Downtime::SetEntryTime(time_t et) throw ()
 void Downtime::SetHost(const std::string& h)
 {
   this->strings_[HOST] = h;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetInternalId
- */
-void Downtime::SetInternalId(int ii) throw ()
-{
-  this->ints_[INTERNAL_ID] = ii;
-  return ;
-}
-
-/**
- *  Set whether or not the downtime is fixed.
- *
- *  \see GetIsFixed
- *
- *  \param[in] i_f 0 if the downtime isn't fixed.
- */
-void Downtime::SetIsFixed(int i_f) throw ()
-{
-  this->ints_[IS_FIXED] = i_f;
   return ;
 }
 
@@ -427,11 +391,11 @@ void Downtime::SetTriggeredBy(int tb) throw ()
  *
  *  \see GetWasCancelled
  *
- *  \param[in] wc 0 if the downtime wasn't cancelled.
+ *  \param[in] wc true if the downtime was cancelled, false otherwise.
  */
-void Downtime::SetWasCancelled(short wc) throw ()
+void Downtime::SetWasCancelled(bool wc) throw ()
 {
-  this->shorts_[WAS_CANCELLED] = wc;
+  this->bools_[WAS_CANCELLED] = wc;
   return ;
 }
 
@@ -440,10 +404,10 @@ void Downtime::SetWasCancelled(short wc) throw ()
  *
  *  \see GetWasStarted
  *
- *  \param[in] ws 0 if the downtime wasn't started.
+ *  \param[in] ws true if the downtime was started, false otherwise.
  */
-void Downtime::SetWasStarted(short ws) throw ()
+void Downtime::SetWasStarted(bool ws) throw ()
 {
-  this->shorts_[WAS_STARTED] = ws;
+  this->bools_[WAS_STARTED] = ws;
   return ;
 }

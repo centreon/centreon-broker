@@ -33,14 +33,17 @@ namespace                CentreonBroker
     class                Service : public HostService, public ServiceStatus
     {
      private:
+      enum               Bool
+      {
+	IS_VOLATILE = 0,
+	BOOL_NB
+      };
       enum               Short
       {
 	FLAP_DETECTION_ON_CRITICAL = 0,
 	FLAP_DETECTION_ON_OK,
 	FLAP_DETECTION_ON_UNKNOWN,
 	FLAP_DETECTION_ON_WARNING,
-	FRESHNESS_CHECKS_ENABLED,
-	IS_VOLATILE,
 	NOTIFY_ON_CRITICAL,
 	NOTIFY_ON_UNKNOWN,
 	NOTIFY_ON_WARNING,
@@ -55,6 +58,7 @@ namespace                CentreonBroker
 	FAILURE_PREDICTION_OPTIONS = 0,
 	STRING_NB
       };
+      bool               bools_[BOOL_NB];
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
       void               InternalCopy(const Service& s);
@@ -71,8 +75,7 @@ namespace                CentreonBroker
       short              GetFlapDetectionOnOk() const throw ();
       short              GetFlapDetectionOnUnknown() const throw ();
       short              GetFlapDetectionOnWarning() const throw ();
-      short              GetFreshnessChecksEnabled() const throw ();
-      short              GetIsVolatile() const throw ();
+      bool               GetIsVolatile() const throw ();
       short              GetNotifyOnCritical() const throw ();
       short              GetNotifyOnUnknown() const throw ();
       short              GetNotifyOnWarning() const throw ();
@@ -87,8 +90,7 @@ namespace                CentreonBroker
       void               SetFlapDetectionOnOk(short fdoo) throw ();
       void               SetFlapDetectionOnUnknown(short fdou) throw ();
       void               SetFlapDetectionOnWarning(short fdow) throw ();
-      void               SetFreshnessChecksEnabled(short fce) throw ();
-      void               SetIsVolatile(short iv) throw ();
+      void               SetIsVolatile(bool iv) throw ();
       void               SetNotifyOnCritical(short noc) throw ();
       void               SetNotifyOnUnknown(short nou) throw ();
       void               SetNotifyOnWarning(short now) throw ();

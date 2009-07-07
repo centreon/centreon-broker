@@ -63,13 +63,7 @@
 
 --
 --
---    Tables compatible with Merlin (none yet :-( )
---
---
-
---
---
---    Tables with Merlin compatibility under progress
+--    Tables compatible with Merlin
 --
 --
 
@@ -90,22 +84,51 @@ CREATE TABLE IF NOT EXISTS `comment` (
 
   `comment_time` int(11) default NULL,                -- not in Merlin
   `deletion_time` int(11) default NULL,               -- not in Merlin
-  `internal_comment_id` int(11) default NULL,         -- not in Merlin, where do we fetch it ?
+  `internal_comment_id` int(11) default NULL,         -- not in Merlin
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
+
+CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
+  `id` int(11) NOT NULL auto_increment,                -- OK
+  `author_name` varchar(255) default NULL,             -- OK
+  `comment_data` text default NULL,                    -- OK
+  `downtime_id` int(11) default NULL,                  -- OK
+  `downtime_type` smallint(6) default NULL,            -- OK (int in Merlin)
+  `duration` int(11) default NULL,                     -- OK
+  `end_time` int(11) default NULL,                     -- OK
+  `entry_time` int(11) default NULL,                   -- OK
+  `fixed` boolean default NULL,                        -- OK
+  `host_name` varchar(255) NOT NULL,                   -- OK
+  `instance_id` int(11) NOT NULL,                      -- OK
+  `service_description` varchar(255) NOT NULL,         -- OK
+  `start_time` int(11) default NULL,                   -- OK
+  `triggered_by` int(11) default NULL,                 -- OK
+
+  `was_cancelled` boolean default NULL,                -- not in Merlin
+  `was_started` boolean default NULL,                  -- not in Merlin
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+--
+--
+--    Tables with Merlin compatibility under progress
+--
+--
 
 CREATE TABLE IF NOT EXISTS `host` (
   `id` int(11) NOT NULL auto_increment,                             -- OK
   `instance_id` int(11) NOT NULL ,                                  -- OK
   `host_name` varchar(255) NOT NULL,                                -- OK (varchar(75) in Merlin)
-
   `acknowledgement_type` smallint(6) default NULL,                  -- OK (int in Merlin)
   `action_url` varchar(255) default NULL,                           -- OK
   `active_checks_enabled` boolean default NULL,                     -- OK
   `address` varchar(75) default NULL,                               -- OK
   `alias` varchar(100) default NULL,                                -- OK
   `check_command` text default NULL,                                -- OK
+  `check_freshness` boolean default NULL,                           -- OK
+  `check_period` varchar(75) default NULL,                          -- OK
   `check_type` smallint(6) default NULL,                            -- OK (int in Merlin)
   `current_check_attempt` smallint(6) default NULL,                 -- OK (int in Merlin)
   `current_notification_number` smallint(6) default NULL,           -- OK (int in Merlin)
@@ -115,6 +138,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   `execution_time` double default NULL,                             -- OK (float in Merlin)
   `failure_prediction_enabled` boolean default NULL,                -- OK
   `flap_detection_enabled` boolean default NULL,                    -- OK
+  `freshness_threshold` double default NULL,                        -- OK (float in Merlin)
   `has_been_checked` boolean default NULL,                          -- OK (int in Merlin)
   `high_flap_threshold` double default NULL,                        -- OK (float in Merlin)
   `icon_image` varchar(255) default NULL,                           -- OK (varchar(60) in Merlin)
@@ -128,6 +152,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   `last_time_down` int(11) default NULL,                            -- OK
   `last_time_unreachable` int(11) default NULL,                     -- OK
   `last_time_up` int(11) default NULL,                              -- OK
+  `last_update` int(11) default NULL,                               -- OK
   `latency` double default NULL,                                    -- OK (float in Merlin)
   `low_flap_threshold` double default NULL,                         -- OK (float in Merlin)
   `max_check_attempts` smallint(6) default NULL,                    -- OK
@@ -144,7 +169,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   `perf_data` text default NULL,                                    -- OK
   `problem_has_been_acknowledged` boolean default NULL,             -- OK (int in Merlin)
   `process_performance_data` boolean default NULL,                  -- OK
-  `retain_nonstatus_information` default NULL,                      -- OK
+  `retain_nonstatus_information` boolean default NULL,              -- OK
   `retain_status_information` boolean default NULL,                 -- OK
   `should_be_scheduled` boolean default NULL,                       -- OK (int in Merlin)
   `state_type` smallint(6) default NULL,                            -- OK (int in Merlin)
@@ -153,10 +178,8 @@ CREATE TABLE IF NOT EXISTS `host` (
 
   -- 2d_coords varchar(20)
   -- 3d_coords varchar(20)
-  -- check_freshness tinyint(1)
   -- check_flapping_recovery_notification int
   -- check_options int
-  -- check_period varchar(75) in Merlin
   -- current_event_id int
   -- current_notification_id int
   -- current_problem_id int
@@ -172,7 +195,6 @@ CREATE TABLE IF NOT EXISTS `host` (
   -- last_host_notification int
   -- last_problem_id int
   -- last_state int
-  -- last_update int
   -- long_output text
   -- max_attempts int
   -- next_host_notification int
@@ -192,7 +214,6 @@ CREATE TABLE IF NOT EXISTS `host` (
   `flap_detection_on_down` smallint(6) NOT NULL default '0',
   `flap_detection_on_unreachable` smallint(6) NOT NULL default '0',
   `flap_detection_on_up` smallint(6) NOT NULL default '0',
-  `freshness_threshold` smallint(6) NOT NULL default '0',           -- float in Merlin
   `have_2d_coords` smallint(6) NOT NULL default '0',
   `next_notification` int(11) NOT NULL,
   `notification_interval` double NOT NULL default '0',              -- mediumint(9)
@@ -206,12 +227,10 @@ CREATE TABLE IF NOT EXISTS `host` (
   `stalk_on_down` smallint(6) NOT NULL default '0',
   `stalk_on_unreachable` smallint(6) NOT NULL default '0',
   `stalk_on_up` smallint(6) NOT NULL default '0',
-  `status_update_time` int(11) NOT NULL,
   `x_2d` smallint(6) NOT NULL default '0',
   `y_2d` smallint(6) NOT NULL default '0',
 
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `key1` (`instance_id`, `host_name`)                    -- UNIQUE only on host_name
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB;
 
 
@@ -243,7 +262,7 @@ CREATE TABLE IF NOT EXISTS `program_status` (
 
   -- check_host_freshness tinyint(2)
   -- check_service_freshness tinyint(2)
-  `instance_address` varcar(120) default NULL,
+  `instance_address` varchar(120) default NULL,
   `instance_description` varchar(128) default NULL,
   `program_end_time` int(11) NOT NULL,
 
@@ -251,155 +270,132 @@ CREATE TABLE IF NOT EXISTS `program_status` (
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
-  `id` int(11) NOT NULL auto_increment,                -- OK
-  `instance_id` int(11) NOT NULL default '0',          -- OK
-  `downtime_type` smallint(6) NOT NULL default '0',    -- int, why ?
-  `host_id` smallint(5) unsigned default NULL,         -- not in Merlin but host_name is
-  `service_id` smallint(5) unsigned default NULL,      -- not in Merlin but service_description is
-  `entry_time` int(11) NOT NULL,                       -- OK
-  `author_name` varchar(255) NOT NULL default '',      -- OK
-  `comment_data` text NOT NULL default '',             -- OK
-  `internal_downtime_id` int(11) NOT NULL default '0', -- not in Merlin
-  `triggered_by` int(11) NOT NULL default '0',         -- OK
-  `is_fixed` smallint(6) NOT NULL default '0',         -- fixed tinyint(2)
-  `duration` smallint(6) NOT NULL default '0',         -- int
-  `start_time` int(11) NOT NULL,                       -- OK
-  `end_time` int(11) NOT NULL,                         -- OK
-  `was_started` smallint(6) NOT NULL default '0',      -- not in Merlin
-  `actual_start_time` int(11) NOT NULL,                -- not in Merlin : what's the purpose of this field against start_time ?
-  `actual_end_time` int(11) NOT NULL,                  -- not in Merlin : what's the purpose of this field against end_time ?
-  `was_cancelled` smallint(6) NOT NULL default '0',    -- not in Merlin
-  -- downtime_id int
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci ;
-
-
 CREATE TABLE IF NOT EXISTS `service` (
   `id` int(11) NOT NULL auto_increment,                                  -- OK
-  `instance_id` int(11) NOT NULL default '0',                            -- OK
-  `host_id` int(11) NOT NULL,                                            -- not in Merlin, Centreon-specific, fetched from customvars
-  `service_id` int(11) NOT NULL,                                         -- not in Merlin, Centreon-specific, fetched from customvars
-  `host_name` varchar(255) NOT NULL default '',                          -- OK (varchar(75) in Merlin)
-  `service_description` varchar(160) default NULL,                       -- OK
+  `instance_id` int(11) NOT NULL,                                        -- OK
+  `host_name` varchar(255) NOT NULL,                                     -- OK (varchar(75) in Merlin)
+  `service_description` varchar(255) NOT NULL,                           -- OK (varchar(160) in Merlin)
+
+  `acknowledgement_type` smallint(6) default NULL,                       -- OK (int in Merlin)
+  `action_url` varchar(255) default NULL,                                -- OK
+  `active_checks_enabled` boolean default NULL,                          -- OK
+  `check_command` text default NULL,                                     -- OK
+  `check_freshness` boolean default NULL,                                -- OK
+  `check_period` varchar(75) default NULL,
+  `check_type` smallint(6) default NULL,                                 -- OK (int in Merlin)
+  `current_attempt` smallint(6) default NULL,                            -- OK (int in Merlin)
+  `current_state` smallint(6) default NULL,                              -- OK (int in Merlin)
   `display_name` varchar(160) default NULL,                              -- OK
-  -- initial_state varchar(1)
-  `graph_id` int(11) NOT NULL,
-  `status_update_time` int(11) NOT NULL,
-  `check_interval` double NOT NULL default '0',                          -- smallint(6)
-  `retry_interval` double NOT NULL default '0',                          -- smallint(6)
-  `max_check_attempts` smallint(6) NOT NULL default '0',                 -- smallint(6)
-  -- max_attempts int
-  -- check_period varchar(75)
-  -- parallelize_check tinyint(1)
-  `current_check_attempt` smallint(6) NOT NULL default '0',              -- current_attempt int
+  `event_handler_enabled` boolean default NULL,                          -- OK
+  `execution_time` double default NULL,                                  -- OK (float in Merlin)
+  `failure_prediction_enabled` boolean default NULL,                     -- OK
+  `flap_detection_enabled` boolean default NULL,                         -- OK
+  `has_been_checked` boolean default NULL,                               -- OK (int in Merlin)
+  `high_flap_threshold` double default NULL,                             -- OK (float in Merlin)
+  `icon_image` varchar(255) default NULL,                                -- OK (varchar(60) in Merlin)
+  `icon_image_alt` varchar(255) default NULL,                            -- OK (varchar(60) in Merlin)
+  `is_flapping` boolean default NULL,                                    -- OK (int in Merlin)
+  `is_volatile` boolean default NULL,                                    -- OK
+  `last_check` int(11) default NULL,                                     -- OK
+  `last_hard_state_change` int(11) default NULL,                         -- OK
+  `last_notification` int(11) default NULL,                              -- OK
+  `last_state_change` int(11) default NULL,                              -- OK
+  `last_time_critical` int(11) default NULL,                             -- OK
+  `last_time_ok` int(11) default NULL,                                   -- OK
+  `last_time_unknown` int(11) default NULL,                              -- OK
+  `last_time_warning` int(11) default NULL,                              -- OK
+  `last_update` int(11) default NULL,                                    -- OK
+  `latency` double default NULL,                                         -- OK (float in Merlin)
+  `low_flap_threshold` double default NULL,                              -- OK (float in Merlin)
+  `max_check_attempts` smallint(6) default NULL,                         -- OK
+  `modified_attributes` int(11) default NULL,                            -- OK
+  `next_check` int(11) default NULL,                                     -- OK
+  `next_notification` int(11) default NULL,                              -- OK
+  `no_more_notifications` boolean default NULL,                          -- OK (int in Merlin)
+  `notifications_enabled` boolean default NULL,                          -- OK
+  `obsess_over_service` boolean default NULL,                            -- OK
+  `output` text default NULL,                                            -- OK
+  `notes` varchar(255) default NULL,                                     -- OK
+  `notes_url` varchar(255) default NULL,                                 -- OK
+  `passive_checks_enabled` boolean default NULL,                         -- OK
+  `percent_state_change` double default NULL,                            -- OK (float in Merlin)
+  `perf_data` text default NULL,                                         -- OK
+  `problem_has_been_acknowledged` boolean default NULL,                  -- OK (int in Merlin)
+  `process_performance_data` boolean default NULL,                       -- OK
+  `retain_nonstatus_information` boolean default NULL,                   -- OK
+  `retain_status_information` boolean default NULL,                      -- OK
+  `should_be_scheduled` boolean default NULL,                            -- OK (int in Merlin)
+  `state_type` smallint(6) default NULL,                                 -- OK (int in Merlin)
+
+
+  -- check_options int
+  -- check_flapping_recovery_notification int
   -- current_event_id int
-  -- last_event_id int
+  -- current_notification_id int
   -- current_problem_id
-  -- last_problem_id
+  -- early_timeout smallint
+  -- end_time int
+  -- event_handler_args text
+  -- flap_detection_options varchar(18)
+  -- flapping_comment_id
+  -- host_problem_at_last_check
+  -- initial_state varchar(1)
   -- is_being_freshened int
   -- is_executing int
-  `has_been_checked` boolean default NULL,                               -- OK (int in Merlin)
-  `should_be_scheduled` boolean default NULL,                            -- OK (int in Merlin)
-  `passive_checks_enabled` boolean default NULL,                         -- OK
-  `active_checks_enabled` boolean default NULL,                          -- OK
-  `current_state` smallint(6) NOT NULL default '0',                      -- int, why ?
-  `state_type` smallint(6) NOT NULL default '0',                         -- int, why ?
-  `output` varchar(255) NOT NULL default '',                             -- text
-  -- long_output                                                         -- text
-  `perf_data` text NOT NULL default '',                                  -- OK
-  `last_check` int(11) NOT NULL,                                         -- OK
-  `next_check` int(11) NOT NULL,                                         -- OK
-  `check_type` smallint(6) NOT NULL default '0',                         -- int
-  -- check_options int
-  `latency` double NOT NULL default '0',                                 -- float
-  `execution_time` double NOT NULL default '0',                          -- float
+  -- last_event_id int
+  -- last_problem_id
   -- last_state int
-  -- last_update int
-  -- timeout int
-  -- start_time int
-  -- end_time int
-  -- early_timeout smallint
-  -- return_code smallint
-  `last_state_change` int(11) NOT NULL,                                  -- OK
-  `last_hard_state_change` int(11) NOT NULL,                             -- OK
-  `last_hard_state` smallint(6) NOT NULL default '0',                    -- int, why ?
-  `last_time_ok` int(11) NOT NULL,                                       -- OK
-  `last_time_warning` int(11) NOT NULL,                                  -- OK
-  `last_time_unknown` int(11) NOT NULL,                                  -- OK
-  `last_time_critical` int(11) NOT NULL,                                 -- OK
-  `default_passive_checks_enabled` smallint(6) NOT NULL default '0',
-  `default_active_checks_enabled` smallint(6) NOT NULL default '0',
-  `last_notification` int(11) NOT NULL,                                  -- OK
-  `next_notification` int(11) NOT NULL,                                  -- OK
-  `no_more_notifications` boolean default NULL,                          -- OK (int in Merlin)
-  -- check_flapping_recovery_notification int
-  `notifications_enabled` boolean default NULL,                          -- OK
-  `default_notifications_enabled` smallint(6) NOT NULL default '0',
-  `current_notification_number` smallint(6) NOT NULL default '0',        -- int
-  -- current_notification_id int
-  `first_notification_delay` double NOT NULL default '0',                -- int
-  `notification_interval` double NOT NULL default '0',                   -- int
-  -- notification_period
+  -- long_output text
+  -- max_attempts int
   -- notification_options
+  -- notification_period
   -- notified_on_unknown int
   -- notified_on_warning int
   -- notified_on_critical int
-  `notify_on_warning` smallint(6) NOT NULL default '0',
-  `notify_on_unknown` smallint(6) NOT NULL default '0',
-  `notify_on_critical` smallint(6) NOT NULL default '0',
-  `notify_on_recovery` smallint(6) NOT NULL default '0',
-  `notify_on_flapping` smallint(6) NOT NULL default '0',
-  `notify_on_downtime` smallint(6) NOT NULL default '0',
-  `problem_has_been_acknowledged` boolean default NULL,                  -- OK (int in Merlin)
-  `acknowledgement_type` smallint(6) NOT NULL default '0',               -- int, why ?
-  -- host_problem_at_last_check
-  `flap_detection_enabled` boolean default NULL,                         -- OK
-  -- flap_detection_options varchar(18)
-  `default_flap_detection_enabled` smallint(6) NOT NULL default '0',
-  `flap_detection_on_ok` smallint(6) NOT NULL default '0',
-  `flap_detection_on_warning` smallint(6) NOT NULL default '0',
-  `flap_detection_on_unknown` smallint(6) NOT NULL default '0',
-  `flap_detection_on_critical` smallint(6) NOT NULL default '0',
-  `is_flapping` default NULL,                                            -- OK (int in Merlin)
-  -- flapping_comment_id
-  `percent_state_change` double NOT NULL default '0',                    -- float
-  `low_flap_threshold` double NOT NULL default '0',                      -- float
-  `high_flap_threshold` double NOT NULL default '0',                     -- float
-  `scheduled_downtime_depth` smallint(6) NOT NULL default '0',           -- int
+  -- parallelize_check tinyint(1)
   -- pending_flex_downtime int
-  `default_failure_prediction_enabled` smallint(6) NOT NULL default '0',
-  -- process_perf_data tinyint(1)
-  `process_performance_data` boolean default NULL,                       -- OK
-  `default_process_performance_data` smallint(6) NOT NULL default '0',
-  `obsess_over_service` default NULL,                                    -- OK
-  `modified_attributes` int(11) NOT NULL default '0',                    -- OK
-  `event_handler` varchar(255) NOT NULL default '',                      -- int
-  -- event_handler_args text
-  `check_command` varchar(255) NOT NULL default '',                      -- text
+  -- process_perf_data tinyint(1) XXX : what about process_performance_data ?
+  -- return_code smallint
   -- stalking_options
-  `stalk_on_ok` smallint(6) NOT NULL default '0',
-  `stalk_on_warning` smallint(6) NOT NULL default '0',
-  `stalk_on_unknown` smallint(6) NOT NULL default '0',
-  `stalk_on_critical` smallint(6) NOT NULL default '0',
-  `is_volatile` smallint(6) NOT NULL default '0',                        -- tinyint(1)
-  `event_handler_enabled` boolean default NULL,                          -- OK
+  -- start_time int
+  -- timeout int
+  `check_interval` double NOT NULL default '0',                          -- smallint(6)
+  `current_notification_number` smallint(6) NOT NULL default '0',        -- int
+  `default_active_checks_enabled` smallint(6) NOT NULL default '0',
   `default_event_handler_enabled` smallint(6) NOT NULL default '0',
-  -- check_freshness tinyint(1)
-  `freshness_checks_enabled` smallint(6) NOT NULL default '0',
-  `freshness_threshold` smallint(6) NOT NULL default '0',                -- int
-  `retain_status_information` boolean default NULL,                      -- OK
-  `retain_nonstatus_information` boolean default NULL,                   -- OK
-  `failure_prediction_enabled` boolean default NULL,                     -- OK
+  `default_failure_prediction_enabled` smallint(6) NOT NULL default '0',
+  `default_flap_detection_enabled` smallint(6) NOT NULL default '0',
+  `default_notifications_enabled` smallint(6) NOT NULL default '0',
+  `default_passive_checks_enabled` smallint(6) NOT NULL default '0',
+  `default_process_performance_data` smallint(6) NOT NULL default '0',
+  `event_handler` varchar(255) NOT NULL default '',                      -- int
   `failure_prediction_options` varchar(64) NOT NULL default '',
-  `notes` varchar(255) default NULL,                                     -- OK
-  `notes_url` varchar(255) default NULL,                                 -- OK
-  `action_url` varchar(255) default NULL,                                -- OK
-  `icon_image` varchar(255) default NULL,                                -- varchar(60)
-  `icon_image_alt` varchar(255) default NULL,                            -- varchar(60)
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `key1` (`instance_id`, `host_name`, `service_description`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Service information';
+  `first_notification_delay` double NOT NULL default '0',                -- int
+  `flap_detection_on_critical` smallint(6) NOT NULL default '0',
+  `flap_detection_on_ok` smallint(6) NOT NULL default '0',
+  `flap_detection_on_unknown` smallint(6) NOT NULL default '0',
+  `flap_detection_on_warning` smallint(6) NOT NULL default '0',
+  `freshness_threshold` smallint(6) NOT NULL default '0',                -- int, WTF ? double in host table
+  `graph_id` int(11) NOT NULL,                                           -- not in Merlin
+  `host_id` int(11) NOT NULL,                                            -- not in Merlin, Centreon-specific, fetched from customvars
+  `last_hard_state` smallint(6) NOT NULL default '0',                    -- int, why ?
+  `notification_interval` double NOT NULL default '0',                   -- int
+  `notify_on_critical` smallint(6) NOT NULL default '0',
+  `notify_on_downtime` smallint(6) NOT NULL default '0',
+  `notify_on_flapping` smallint(6) NOT NULL default '0',
+  `notify_on_recovery` smallint(6) NOT NULL default '0',
+  `notify_on_unknown` smallint(6) NOT NULL default '0',
+  `notify_on_warning` smallint(6) NOT NULL default '0',
+  `retry_interval` double NOT NULL default '0',                          -- smallint(6)
+  `service_id` int(11) NOT NULL,                                         -- not in Merlin, Centreon-specific, fetched from customvars
+  `scheduled_downtime_depth` smallint(6) NOT NULL default '0',           -- int
+  `stalk_on_critical` smallint(6) NOT NULL default '0',
+  `stalk_on_ok` smallint(6) NOT NULL default '0',
+  `stalk_on_unknown` smallint(6) NOT NULL default '0',
+  `stalk_on_warning` smallint(6) NOT NULL default '0',
+
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
 
 
 --

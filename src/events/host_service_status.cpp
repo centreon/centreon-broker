@@ -125,6 +125,14 @@ double HostServiceStatus::GetCheckInterval() const throw ()
 }
 
 /**
+ *  Get the check_period member.
+ */
+const std::string& HostServiceStatus::GetCheckPeriod() const throw ()
+{
+  return (this->strings_[CHECK_PERIOD]);
+}
+
+/**
  *  Get the check_type member.
  */
 short HostServiceStatus::GetCheckType() const throw ()
@@ -234,6 +242,14 @@ time_t HostServiceStatus::GetLastNotification() const throw ()
 time_t HostServiceStatus::GetLastStateChange() const throw ()
 {
   return (this->timets_[LAST_STATE_CHANGE]);
+}
+
+/**
+ *  Get the last_update member.
+ */
+time_t HostServiceStatus::GetLastUpdate() const throw ()
+{
+  return (this->timets_[LAST_UPDATE]);
 }
 
 /**
@@ -365,14 +381,6 @@ short HostServiceStatus::GetStateType() const throw ()
 }
 
 /**
- *  Get the status_update_time member.
- */
-time_t HostServiceStatus::GetStatusUpdateTime() const throw ()
-{
-  return (this->timets_[STATUS_UPDATE_TIME]);
-}
-
-/**
  *  Set the acknowledgement_type member.
  */
 void HostServiceStatus::SetAcknowledgementType(short at) throw ()
@@ -405,6 +413,15 @@ void HostServiceStatus::SetCheckCommand(const std::string& cc)
 void HostServiceStatus::SetCheckInterval(double ci) throw ()
 {
   this->doubles_[CHECK_INTERVAL] = ci;
+  return ;
+}
+
+/**
+ *  Set the check_period member.
+ */
+void HostServiceStatus::SetCheckPeriod(const std::string& cp)
+{
+  this->strings_[CHECK_PERIOD] = cp;
   return ;
 }
 
@@ -531,6 +548,15 @@ void HostServiceStatus::SetLastNotification(time_t ln) throw ()
 void HostServiceStatus::SetLastStateChange(time_t lsc) throw ()
 {
   this->timets_[LAST_STATE_CHANGE] = lsc;
+  return ;
+}
+
+/**
+ *  Set the last_update member.
+ */
+void HostServiceStatus::SetLastUpdate(time_t lu) throw ()
+{
+  this->timets_[LAST_UPDATE] = lu;
   return ;
 }
 
@@ -675,14 +701,5 @@ void HostServiceStatus::SetShouldBeScheduled(bool sbs) throw ()
 void HostServiceStatus::SetStateType(short st) throw ()
 {
   this->shorts_[STATE_TYPE] = st;
-  return ;
-}
-
-/**
- *  Set the status_update_time member.
- */
-void HostServiceStatus::SetStatusUpdateTime(time_t sut) throw ()
-{
-  this->timets_[STATUS_UPDATE_TIME] = sut;
   return ;
 }

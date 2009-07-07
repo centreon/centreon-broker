@@ -43,6 +43,7 @@ using namespace CentreonBroker::Events;
 void Comment::InternalCopy(const Comment& comment)
 {
   memcpy(this->bools_, comment.bools_, sizeof(this->bools_));
+  memcpy(this->ints_, comment.ints_, sizeof(this->ints_));
   memcpy(this->shorts_, comment.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = comment.strings_[i];
@@ -63,6 +64,7 @@ void Comment::InternalCopy(const Comment& comment)
 Comment::Comment()
 {
   memset(this->bools_, 0, sizeof(this->bools_));
+  memset(this->ints_, 0, sizeof(this->ints_));
   memset(this->shorts_, 0, sizeof(this->shorts_));
   memset(this->timets_, 0, sizeof(this->timets_));
 }
@@ -192,6 +194,16 @@ bool Comment::GetExpires() const throw ()
 const std::string& Comment::GetHostName() const throw ()
 {
   return (this->strings_[HOST_NAME]);
+}
+
+/**
+ *  Get the internal id of the comment.
+ *
+ *  \return The internal id of the comment.
+ */
+int Comment::GetInternalCommentId() const throw ()
+{
+  return (this->ints_[INTERNAL_COMMENT_ID]);
 }
 
 /**
@@ -359,6 +371,19 @@ void Comment::SetExpires(bool e) throw ()
 void Comment::SetHostName(const std::string& hn)
 {
   this->strings_[HOST_NAME] = hn;
+  return ;
+}
+
+/**
+ *  Set the internal id of the comment.
+ *
+ *  \see GetInternalCommentId
+ *
+ *  \param[in] ici The internal id of the comment.
+ */
+void Comment::SetInternalCommentId(int ici) throw ()
+{
+  this->ints_[INTERNAL_COMMENT_ID] = ici;
   return ;
 }
 

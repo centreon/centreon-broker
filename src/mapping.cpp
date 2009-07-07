@@ -94,6 +94,8 @@ static void InitCommentMapping()
 			       &Comment::GetExpires);
   comment_mapping.AddStringField("host_name",
 				 &Comment::GetHostName);
+  comment_mapping.AddIntField("internal_comment_id",
+			      &Comment::GetInternalCommentId);
   comment_mapping.AddBoolField("persistent",
 			       &Comment::GetPersistent);
   comment_mapping.AddStringField("service_description",
@@ -178,26 +180,22 @@ static void InitDowntimeMapping()
   logging.LogDebug("Initializing Downtime mapping...");
 #endif /* !NDEBUG */
   downtime_mapping.SetTable("scheduled_downtime");
-  downtime_mapping.AddTimeField("actual_end_time",
-				&Downtime::GetActualEndTime);
-  downtime_mapping.AddTimeField("actual_start_time",
-				&Downtime::GetActualStartTime);
   downtime_mapping.AddStringField("author_name", &Downtime::GetAuthorName);
   downtime_mapping.AddStringField("comment_data", &Downtime::GetCommentData);
+  downtime_mapping.AddIntField("downtime_id",
+			       &Downtime::GetDowntimeId);
   downtime_mapping.AddShortField("downtime_type", &Downtime::GetDowntimeType);
   downtime_mapping.AddShortField("duration", &Downtime::GetDuration);
   downtime_mapping.AddTimeField("end_time",
 				&Downtime::GetEndTime);
   downtime_mapping.AddTimeField("entry_time", &Downtime::GetEntryTime);
-  downtime_mapping.AddIntField("internal_downtime_id",
-			       &Downtime::GetInternalId);
-  downtime_mapping.AddShortField("is_fixed", &Downtime::GetIsFixed);
+  downtime_mapping.AddBoolField("fixed", &Downtime::GetFixed);
   downtime_mapping.AddTimeField("start_time",
 				&Downtime::GetStartTime);
   downtime_mapping.AddIntField("triggered_by",
 			       &Downtime::GetTriggeredBy);
-  downtime_mapping.AddShortField("was_cancelled", &Downtime::GetWasCancelled);
-  downtime_mapping.AddShortField("was_started", &Downtime::GetWasStarted);
+  downtime_mapping.AddBoolField("was_cancelled", &Downtime::GetWasCancelled);
+  downtime_mapping.AddBoolField("was_started", &Downtime::GetWasStarted);
   return ;
 }
 
@@ -226,6 +224,10 @@ static void InitHostMapping()
 			      &Host::GetCheckCommand);
   host_mapping.AddDoubleField("check_interval",
 			      &Host::GetCheckInterval);
+  host_mapping.AddBoolField("check_freshness",
+			    &Host::GetCheckFreshness);
+  host_mapping.AddStringField("check_period",
+			      &Host::GetCheckPeriod);
   host_mapping.AddShortField("check_type",
 			     &Host::GetCheckType);
   host_mapping.AddShortField("current_check_attempt",
@@ -254,8 +256,8 @@ static void InitHostMapping()
 			     &Host::GetFlapDetectionOnUnreachable);
   host_mapping.AddShortField("flap_detection_on_up",
 			     &Host::GetFlapDetectionOnUp);
-  host_mapping.AddShortField("freshness_threshold",
-			     &Host::GetFreshnessThreshold);
+  host_mapping.AddDoubleField("freshness_threshold",
+			      &Host::GetFreshnessThreshold);
   host_mapping.AddBoolField("has_been_checked",
 			    &Host::GetHasBeenChecked);
   host_mapping.AddShortField("have_2d_coords",
@@ -286,6 +288,8 @@ static void InitHostMapping()
 			    &Host::GetLastTimeUnreachable);
   host_mapping.AddTimeField("last_time_up",
 			     &Host::GetLastTimeUp);
+  host_mapping.AddTimeField("last_update",
+			    &Host::GetLastUpdate);
   host_mapping.AddDoubleField("latency",
 			      &Host::GetLatency);
   host_mapping.AddDoubleField("low_flap_threshold",
@@ -350,8 +354,6 @@ static void InitHostMapping()
 			     &Host::GetStalkOnUp);
   host_mapping.AddShortField("state_type",
 			     &Host::GetStateType);
-  host_mapping.AddTimeField("status_update_time",
-			    &Host::GetStatusUpdateTime);
   host_mapping.AddStringField("statusmap_image",
 			      &Host::GetStatusmapImage);
   host_mapping.AddStringField("vrml_image",
@@ -379,6 +381,8 @@ static void InitHostStatusMapping()
 				     &HostStatus::GetCheckCommand);
   host_status_mapping.AddDoubleField("check_interval",
 				     &HostStatus::GetCheckInterval);
+  host_status_mapping.AddStringField("check_period",
+				     &HostStatus::GetCheckPeriod);
   host_status_mapping.AddShortField("check_type",
 				    &HostStatus::GetCheckType);
   host_status_mapping.AddShortField("current_check_attempt",
@@ -417,6 +421,8 @@ static void InitHostStatusMapping()
 				   &HostStatus::GetLastTimeUnreachable);
   host_status_mapping.AddTimeField("last_time_up",
 				   &HostStatus::GetLastTimeUp);
+  host_status_mapping.AddTimeField("last_update",
+				   &HostStatus::GetLastUpdate);
   host_status_mapping.AddDoubleField("latency",
 				     &HostStatus::GetLatency);
   host_status_mapping.AddShortField("max_check_attempts",
@@ -453,8 +459,6 @@ static void InitHostStatusMapping()
 				   &HostStatus::GetShouldBeScheduled);
   host_status_mapping.AddShortField("state_type",
 				    &HostStatus::GetStateType);
-  host_status_mapping.AddTimeField("status_update_time",
-				   &HostStatus::GetStatusUpdateTime);
   return ;
 }
 
@@ -533,9 +537,13 @@ static void InitServiceMapping()
 				 &Service::GetCheckCommand);
   service_mapping.AddDoubleField("check_interval",
 				 &Service::GetCheckInterval);
+  service_mapping.AddBoolField("check_freshness",
+			       &Service::GetCheckFreshness);
+  service_mapping.AddStringField("check_period",
+				 &Service::GetCheckPeriod);
   service_mapping.AddShortField("check_type",
 				&Service::GetCheckType);
-  service_mapping.AddShortField("current_check_attempt",
+  service_mapping.AddShortField("current_attempt",
 				&Service::GetCurrentCheckAttempt);
   service_mapping.AddShortField("current_notification_number",
 				&Service::GetCurrentNotificationNumber);
@@ -579,10 +587,8 @@ static void InitServiceMapping()
 				&Service::GetFlapDetectionOnUnknown);
   service_mapping.AddShortField("flap_detection_on_warning",
 				&Service::GetFlapDetectionOnWarning);
-  service_mapping.AddShortField("freshness_checks_enabled",
-				&Service::GetFreshnessChecksEnabled);
-  service_mapping.AddShortField("freshness_threshold",
-				&Service::GetFreshnessThreshold);
+  service_mapping.AddDoubleField("freshness_threshold",
+				 &Service::GetFreshnessThreshold);
   service_mapping.AddBoolField("has_been_checked",
 			       &Service::GetHasBeenChecked);
   service_mapping.AddDoubleField("high_flap_threshold",
@@ -595,8 +601,8 @@ static void InitServiceMapping()
 				 &Service::GetIconImageAlt);
   service_mapping.AddBoolField("is_flapping",
 			       &Service::GetIsFlapping);
-  service_mapping.AddShortField("is_volatile",
-				&Service::GetIsVolatile);
+  service_mapping.AddBoolField("is_volatile",
+			       &Service::GetIsVolatile);
   service_mapping.AddTimeField("last_check",
 			       &Service::GetLastCheck);
   service_mapping.AddShortField("last_hard_state",
@@ -615,6 +621,8 @@ static void InitServiceMapping()
 			       &Service::GetLastTimeUnknown);
   service_mapping.AddTimeField("last_time_warning",
 			       &Service::GetLastTimeWarning);
+  service_mapping.AddTimeField("last_update",
+			       &Service::GetLastUpdate);
   service_mapping.AddDoubleField("latency",
 				 &Service::GetLatency);
   service_mapping.AddDoubleField("low_flap_threshold",
@@ -685,8 +693,6 @@ static void InitServiceMapping()
 				&Service::GetStalkOnWarning);
   service_mapping.AddShortField("state_type",
 				&Service::GetStateType);
-  service_mapping.AddTimeField("status_update_time",
-			       &Service::GetStatusUpdateTime);
   return ;
 }
 
@@ -706,9 +712,11 @@ static void InitServiceStatusMapping()
 					&ServiceStatus::GetCheckCommand);
   service_status_mapping.AddDoubleField("check_interval",
 					&ServiceStatus::GetCheckInterval);
+  service_status_mapping.AddStringField("check_period",
+					&ServiceStatus::GetCheckPeriod);
   service_status_mapping.AddShortField("check_type",
 				       &ServiceStatus::GetCheckType);
-  service_status_mapping.AddShortField("current_check_attempt",
+  service_status_mapping.AddShortField("current_attempt",
 				       &ServiceStatus::GetCurrentCheckAttempt);
   service_status_mapping.AddShortField("current_notification_number",
     &ServiceStatus::GetCurrentNotificationNumber);
@@ -746,6 +754,8 @@ static void InitServiceStatusMapping()
 				      &ServiceStatus::GetLastTimeUnknown);
   service_status_mapping.AddTimeField("last_time_warning",
 				      &ServiceStatus::GetLastTimeWarning);
+  service_status_mapping.AddTimeField("last_update",
+				      &ServiceStatus::GetLastUpdate);
   service_status_mapping.AddDoubleField("latency",
 					&ServiceStatus::GetLatency);
   service_status_mapping.AddShortField("max_check_attempts",
@@ -782,8 +792,6 @@ static void InitServiceStatusMapping()
 				      &ServiceStatus::GetShouldBeScheduled);
   service_status_mapping.AddShortField("state_type",
 				       &ServiceStatus::GetStateType);
-  service_status_mapping.AddTimeField("status_update_time",
-				      &ServiceStatus::GetStatusUpdateTime);
   return ;
 }
 

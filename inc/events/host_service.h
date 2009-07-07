@@ -32,13 +32,15 @@ namespace                CentreonBroker
      private:
       enum               Bool
       {
-	RETAIN_NONSTATUS_INFORMATION = 0,
+	CHECK_FRESHNESS = 0,
+	RETAIN_NONSTATUS_INFORMATION,
 	RETAIN_STATUS_INFORMATION,
 	BOOL_NB
       };
       enum               Double
       {
 	FIRST_NOTIFICATION_DELAY = 0,
+	FRESHNESS_THRESHOLD,
 	HIGH_FLAP_THRESHOLD,
 	LOW_FLAP_THRESHOLD,
 	NOTIFICATION_INTERVAL,
@@ -46,15 +48,14 @@ namespace                CentreonBroker
       };
       enum               Short
       {
-	FRESHNESS_THRESHOLD = 0,
-	NOTIFY_ON_DOWNTIME,
+	NOTIFY_ON_DOWNTIME = 0,
 	NOTIFY_ON_FLAPPING,
 	NOTIFY_ON_RECOVERY,
 	SHORT_NB
       };
       enum               String
       {
-	ACTION_URL,
+	ACTION_URL = 0,
 	DISPLAY_NAME,
 	ICON_IMAGE,
 	ICON_IMAGE_ALT,
@@ -75,9 +76,10 @@ namespace                CentreonBroker
       HostService&       operator=(const HostService& hs);
       // Getters
       const std::string& GetActionUrl() const throw ();
+      bool               GetCheckFreshness() const throw ();
       const std::string& GetDisplayName() const throw ();
       double             GetFirstNotificationDelay() const throw ();
-      short              GetFreshnessThreshold() const throw ();
+      double             GetFreshnessThreshold() const throw ();
       double             GetHighFlapThreshold() const throw ();
       const std::string& GetIconImage() const throw ();
       const std::string& GetIconImageAlt() const throw ();
@@ -92,9 +94,10 @@ namespace                CentreonBroker
       bool               GetRetainStatusInformation() const throw ();
       // Setters
       void               SetActionUrl(const std::string& au);
+      void               SetCheckFreshness(bool cf) throw ();
       void               SetDisplayName(const std::string& dn);
       void               SetFirstNotificationDelay(double fnd) throw ();
-      void               SetFreshnessThreshold(short ft) throw ();
+      void               SetFreshnessThreshold(double ft) throw ();
       void               SetHighFlapThreshold(double hft) throw ();
       void               SetIconImage(const std::string& ii);
       void               SetIconImageAlt(const std::string& iia);

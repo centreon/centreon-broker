@@ -93,6 +93,14 @@ const std::string& HostService::GetActionUrl() const throw ()
 }
 
 /**
+ *  Get the check_freshness member.
+ */
+bool HostService::GetCheckFreshness() const throw ()
+{
+  return (this->bools_[CHECK_FRESHNESS]);
+}
+
+/**
  *  Get the display_name member.
  */
 const std::string& HostService::GetDisplayName() const throw ()
@@ -111,9 +119,9 @@ double HostService::GetFirstNotificationDelay() const throw ()
 /**
  *  Get the freshness_threshold member.
  */
-short HostService::GetFreshnessThreshold() const throw ()
+double HostService::GetFreshnessThreshold() const throw ()
 {
-  return (this->shorts_[FRESHNESS_THRESHOLD]);
+  return (this->doubles_[FRESHNESS_THRESHOLD]);
 }
 
 /**
@@ -222,6 +230,15 @@ void HostService::SetActionUrl(const std::string& au)
 }
 
 /**
+ *  Set the check_freshness member.
+ */
+void HostService::SetCheckFreshness(bool cf) throw ()
+{
+  this->bools_[CHECK_FRESHNESS] = cf;
+  return ;
+}
+
+/**
  *  Set the display_name member.
  */
 void HostService::SetDisplayName(const std::string& dn)
@@ -242,9 +259,9 @@ void HostService::SetFirstNotificationDelay(double fnd) throw ()
 /**
  *  Set the freshness_threshold member.
  */
-void HostService::SetFreshnessThreshold(short ft) throw ()
+void HostService::SetFreshnessThreshold(double ft) throw ()
 {
-  this->shorts_[FRESHNESS_THRESHOLD] = ft;
+  this->doubles_[FRESHNESS_THRESHOLD] = ft;
   return ;
 }
 

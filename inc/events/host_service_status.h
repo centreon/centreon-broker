@@ -78,6 +78,7 @@ namespace                     CentreonBroker
       enum                    String
       {
 	CHECK_COMMAND = 0,
+	CHECK_PERIOD,
 	EVENT_HANDLER,
 	HOST_NAME,
 	OUTPUT,
@@ -90,9 +91,9 @@ namespace                     CentreonBroker
 	LAST_HARD_STATE_CHANGE,
 	LAST_NOTIFICATION,
 	LAST_STATE_CHANGE,
+	LAST_UPDATE,
 	NEXT_CHECK,
 	NEXT_NOTIFICATION,
-	STATUS_UPDATE_TIME,
 	TIMET_NB
       };
       bool               bools_[BOOL_NB];
@@ -114,6 +115,7 @@ namespace                     CentreonBroker
       bool               GetActiveChecksEnabled() const throw ();
       const std::string& GetCheckCommand() const throw ();
       double             GetCheckInterval() const throw ();
+      const std::string& GetCheckPeriod() const throw ();
       short              GetCheckType() const throw ();
       short              GetCurrentCheckAttempt() const throw ();
       short              GetCurrentNotificationNumber() const throw ();
@@ -128,6 +130,7 @@ namespace                     CentreonBroker
       time_t             GetLastHardStateChange() const throw ();
       time_t             GetLastNotification() const throw ();
       time_t             GetLastStateChange() const throw ();
+      time_t             GetLastUpdate() const throw ();
       double             GetLatency() const throw ();
       short              GetMaxCheckAttempts() const throw ();
       int                GetModifiedAttributes() const throw ();
@@ -144,12 +147,12 @@ namespace                     CentreonBroker
       short              GetScheduledDowntimeDepth() const throw ();
       bool               GetShouldBeScheduled() const throw ();
       short              GetStateType() const throw ();
-      time_t             GetStatusUpdateTime() const throw ();
       // Setters
       void               SetAcknowledgementType(short at) throw ();
       void               SetActiveChecksEnabled(bool ace) throw ();
       void               SetCheckCommand(const std::string& cc);
       void               SetCheckInterval(double ci) throw ();
+      void               SetCheckPeriod(const std::string& cp);
       void               SetCheckType(short ct) throw ();
       void               SetCurrentCheckAttempt(short cca) throw ();
       void               SetCurrentNotificationNumber(short cnn) throw ();
@@ -164,6 +167,7 @@ namespace                     CentreonBroker
       void               SetLastHardStateChange(time_t lhsc) throw ();
       void               SetLastNotification(time_t ln) throw ();
       void               SetLastStateChange(time_t lsc) throw ();
+      void               SetLastUpdate(time_t lu) throw ();
       void               SetLatency(double l) throw ();
       void               SetMaxCheckAttempts(short mca) throw ();
       void               SetModifiedAttributes(int ma) throw ();
@@ -180,7 +184,6 @@ namespace                     CentreonBroker
       void               SetScheduledDowntimeDepth(short sdd) throw ();
       void               SetShouldBeScheduled(bool sbs) throw ();
       void               SetStateType(short st) throw ();
-      void               SetStatusUpdateTime(time_t sut) throw ();
     };
   }
 }
