@@ -44,6 +44,11 @@ namespace                CentreonBroker
 	PERSISTENT,
 	BOOL_NB
       };
+      enum               Int
+      {
+	INTERNAL_COMMENT_ID = 0,
+	INT_NB
+      };
       enum               Short
       {
 	COMMENT_TYPE = 0,
@@ -68,6 +73,7 @@ namespace                CentreonBroker
 	TIMET_NB
       };
       bool               bools_[BOOL_NB];
+      int                ints_[INT_NB];
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
       time_t             timets_[TIMET_NB];
@@ -135,6 +141,10 @@ namespace                CentreonBroker
        */
       const std::string& GetHostName() const throw ();
       /**
+       *  \brief Get the internal id of the comment.
+       */
+      int                GetInternalCommentId() const throw ();
+      /**
        *  \brief Determines whether or not the comment is persistent.
        */
       bool               GetPersistent() const throw ();
@@ -190,6 +200,10 @@ namespace                CentreonBroker
        *  \brief Set the name of the host associated with the comment.
        */
       void               SetHostName(const std::string& hn);
+      /**
+       *  \brief Set the internal id of the comment.
+       */
+      void               SetInternalCommentId(int ici) throw ();
       /**
        *  \brief Set whether or not the comment is persistent.
        */

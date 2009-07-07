@@ -41,19 +41,23 @@ namespace                CentreonBroker
     class                Downtime : public Event
     {
      private:
+      enum               Bool
+      {
+	FIXED = 0,
+	WAS_CANCELLED,
+	WAS_STARTED,
+	BOOL_NB
+      };
       enum               Int
       {
-	INTERNAL_ID = 0,
+	DOWNTIME_ID = 0,
+	DURATION,
 	TRIGGERED_BY,
 	INT_NB
       };
       enum               Short
       {
 	DOWNTIME_TYPE = 0,
-	DURATION,
-	IS_FIXED,
-	WAS_CANCELLED,
-	WAS_STARTED,
 	SHORT_NB
       };
       enum               String
@@ -66,13 +70,12 @@ namespace                CentreonBroker
       };
       enum               TimeT
       {
-	ACTUAL_END_TIME = 0,
-	ACTUAL_START_TIME,
-	END_TIME,
+	END_TIME = 0,
 	ENTRY_TIME,
 	START_TIME,
 	TIMET_NB
       };
+      bool               bools_[BOOL_NB];
       int                ints_[INT_NB];
       short              shorts_[SHORT_NB];
       std::string        strings_[STRING_NB];
@@ -101,14 +104,6 @@ namespace                CentreonBroker
        */
       Downtime&          operator=(const Downtime& downtime);
       /**
-       *  \brief XXX : need fix
-       */
-      time_t             GetActualEndTime() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      time_t             GetActualStartTime() const throw ();
-      /**
        *  \brief Get the name of the user who defined the downtime.
        */
       const std::string& GetAuthorName() const throw ();
@@ -117,13 +112,17 @@ namespace                CentreonBroker
        */
       const std::string& GetCommentData() const throw ();
       /**
+       *  \brief XXX : need fix
+       */
+      int                GetDowntimeId() const throw ();
+      /**
        *  \brief Get the type of the downtime.
        */
       short              GetDowntimeType() const throw ();
       /**
        *  \brief Get the duration of the downtime.
        */
-      short              GetDuration() const throw ();
+      int                GetDuration() const throw ();
       /**
        *  \brief XXX : need fix
        */
@@ -133,17 +132,13 @@ namespace                CentreonBroker
        */
       time_t             GetEntryTime() const throw ();
       /**
+       *  \brief Determines whether or not the downtime is fixed.
+       */
+      bool               GetFixed() const throw ();
+      /**
        *  \brief Get the name of the host associated with the downtime.
        */
       const std::string& GetHost() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      int                GetInternalId() const throw ();
-      /**
-       *  \brief Determines whether or not the downtime is fixed.
-       */
-      short              GetIsFixed() const throw ();
       /**
        *  \brief XXX : need fix
        */
@@ -163,19 +158,11 @@ namespace                CentreonBroker
       /**
        *  \brief Determines whether or not the downtime was cancelled.
        */
-      short              GetWasCancelled() const throw ();
+      bool               GetWasCancelled() const throw ();
       /**
        *  \brief Determines whether or not the downtime was started.
        */
-      short              GetWasStarted() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetActualEndTime(time_t aet) throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetActualStartTime(time_t ast) throw ();
+      bool               GetWasStarted() const throw ();
       /**
        *  \brief Set the name of the user who defined the downtime.
        */
@@ -185,13 +172,17 @@ namespace                CentreonBroker
        */
       void               SetCommentData(const std::string& cd);
       /**
+       *  \brief XXX : need fix
+       */
+      void               SetDowntimeId(int di) throw ();
+      /**
        *  \brief Set the type of the downtime.
        */
       void               SetDowntimeType(short dt) throw ();
       /**
        *  \brief Set the duration of the downtime.
        */
-      void               SetDuration(short d) throw ();
+      void               SetDuration(int d) throw ();
       /**
        *  \brief XXX : need fix
        */
@@ -201,17 +192,13 @@ namespace                CentreonBroker
        */
       void               SetEntryTime(time_t et) throw ();
       /**
+       *  \brief Set whether or not the downtime is fixed.
+       */
+      void               SetFixed(bool f) throw ();
+      /**
        *  \brief Set the name of the host associated with the downtime.
        */
       void               SetHost(const std::string& h);
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetInternalId(int ii) throw ();
-      /**
-       *  \brief Set whether or not the downtime is fixed.
-       */
-      void               SetIsFixed(int i_f) throw ();
       /**
        *  \brief XXX : need fix
        */
@@ -227,11 +214,11 @@ namespace                CentreonBroker
       /**
        *  \brief Set whether or not the downtime was cancelled.
        */
-      void               SetWasCancelled(short wc) throw ();
+      void               SetWasCancelled(bool wc) throw ();
       /**
        *  \brief Set whether or not the downtime was started.
        */
-      void               SetWasStarted(short ws) throw ();
+      void               SetWasStarted(bool ws) throw ();
     };
   }
 }

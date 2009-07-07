@@ -34,6 +34,7 @@ using namespace CentreonBroker::Events;
  */
 void Service::InternalCopy(const Service& s)
 {
+  memcpy(this->bools_, s.bools_, sizeof(this->bools_));
   memcpy(this->shorts_, s.shorts_, sizeof(this->shorts_));
   for (unsigned int i = 0; i < STRING_NB; i++)
     this->strings_[i] = s.strings_[i];
@@ -51,6 +52,7 @@ void Service::InternalCopy(const Service& s)
  */
 Service::Service() throw ()
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->shorts_, 0, sizeof(this->shorts_));
 }
 
@@ -59,6 +61,7 @@ Service::Service() throw ()
  */
 Service::Service(const ServiceStatus& ss) : ServiceStatus(ss)
 {
+  memset(this->bools_, 0, sizeof(this->bools_));
   memset(this->shorts_, 0, sizeof(this->shorts_));
 }
 
@@ -129,19 +132,11 @@ short Service::GetFlapDetectionOnWarning() const throw ()
 }
 
 /**
- *  Get the freshness_checks_enabled member.
- */
-short Service::GetFreshnessChecksEnabled() const throw ()
-{
-  return (this->shorts_[FRESHNESS_CHECKS_ENABLED]);
-}
-
-/**
  *  Get the is_volatile member.
  */
-short Service::GetIsVolatile() const throw ()
+bool Service::GetIsVolatile() const throw ()
 {
-  return (this->shorts_[IS_VOLATILE]);
+  return (this->bools_[IS_VOLATILE]);
 }
 
 /**
@@ -254,20 +249,11 @@ void Service::SetFlapDetectionOnWarning(short fdow) throw ()
 }
 
 /**
- *  Set the freshness_checks_enabled member.
- */
-void Service::SetFreshnessChecksEnabled(short fce) throw ()
-{
-  this->shorts_[FRESHNESS_CHECKS_ENABLED] = fce;
-  return ;
-}
-
-/**
  *  Set the is_volatile member.
  */
-void Service::SetIsVolatile(short iv) throw ()
+void Service::SetIsVolatile(bool iv) throw ()
 {
-  this->shorts_[IS_VOLATILE] = iv;
+  this->bools_[IS_VOLATILE] = iv;
   return ;
 }
 
