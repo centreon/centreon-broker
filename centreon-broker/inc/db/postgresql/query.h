@@ -42,6 +42,7 @@ namespace          CentreonBroker
       char**       param_values_;
       PGconn*      pgconn_;
       std::string  query_;
+      PGresult*    result_;
       std::string  stmt_name_;
 
      public:
