@@ -221,4 +221,4 @@ namespace                CentreonBroker
   }
 }
 
-#endif /* !COMMENT_H_ */
+#endif /* !EVENTS_COMMENT_H_ */

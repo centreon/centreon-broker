@@ -27,6 +27,7 @@
 #include "events/connection.h"
 #include "events/downtime.h"
 #include "events/host.h"
+#include "events/host_group.h"
 #include "events/host_status.h"
 #include "events/program_status.h"
 #include "events/service.h"
@@ -377,7 +378,7 @@ void NetworkInput::HandleHost(ProtocolSocket& socket)
       { NDO_DATA_HOSTNOTIFICATIONINTERVAL,
         'd',
         &Host::SetNotificationInterval },
-      //{ NDO_DATA_HOSTNOTIFICATIONPERIOD },
+      { NDO_DATA_HOSTNOTIFICATIONPERIOD, 'S', &Host::SetNotificationPeriod },
       { NDO_DATA_HOSTNOTIFICATIONSENABLED,
         'b',
 	&Host::SetNotificationsEnabled },
@@ -419,6 +420,23 @@ void NetworkInput::HandleHost(ProtocolSocket& socket)
     };
 
   HandleObject<Host>(this->instance_, keys_setters, socket);
+  return ;
+}
+
+/**
+ *  Handle a host group definition and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleHostGroup(ProtocolSocket& socket)
+{
+  static const KeySetter<HostGroup> keys_setters[] =
+    {
+      { NDO_DATA_HOSTGROUPALIAS, 'S', &HostGroup::SetAlias },
+      { NDO_DATA_HOSTGROUPNAME, 'S', &HostGroup::SetHostGroupName },
+      { 0, '\0', static_cast<void (HostGroup::*)(double)>(NULL) }
+    };
+
+  HandleObject<HostGroup>(this->instance_, keys_setters, socket);
+  return ;
 }
 
 /**
@@ -472,6 +490,7 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
           't',
           &HostStatus::SetLastTimeUnreachable},
 	{ NDO_DATA_LATENCY, 'd', &HostStatus::SetLatency },
+	{ NDO_DATA_LONGOUTPUT, 'S', &HostStatus::SetLongOutput },
 	{ NDO_DATA_MAXCHECKATTEMPTS, 's', &HostStatus::SetMaxCheckAttempts },
 	{ NDO_DATA_MODIFIEDHOSTATTRIBUTES,
           'i',
@@ -749,7 +768,9 @@ void NetworkInput::HandleService(ProtocolSocket& ps)
       { NDO_DATA_SERVICENOTIFICATIONINTERVAL,
 	'd',
 	&Service::SetNotificationInterval },
-      //{ NDO_DATA_SERVICENOTIFICATIONPERIOD },
+      { NDO_DATA_SERVICENOTIFICATIONPERIOD,
+	'S',
+	&Service::SetNotificationPeriod },
       { NDO_DATA_SERVICENOTIFICATIONSENABLED,
 	'b',
 	&Service::SetNotificationsEnabled },
@@ -825,6 +846,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
       { NDO_DATA_LASTTIMEUNKNOWN, 't', &ServiceStatus::SetLastTimeUnknown },
       { NDO_DATA_LASTTIMEWARNING, 't', &ServiceStatus::SetLastTimeWarning },
       { NDO_DATA_LATENCY, 'd', &ServiceStatus::SetLatency },
+      { NDO_DATA_LONGOUTPUT, 'S', &ServiceStatus::SetLongOutput },
       { NDO_DATA_MAXCHECKATTEMPTS,
 	's',
 	&ServiceStatus::SetMaxCheckAttempts },
@@ -945,6 +967,7 @@ void NetworkInput::operator()()
 	{ NDO_API_ACKNOWLEDGEMENTDATA, &NetworkInput::HandleAcknowledgement },
 	{ NDO_API_COMMENTDATA, &NetworkInput::HandleComment },
 	{ NDO_API_HOSTDEFINITION, &NetworkInput::HandleHost },
+	{ NDO_API_HOSTGROUPDEFINITION, &NetworkInput::HandleHostGroup },
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
 	{ NDO_API_PROGRAMSTATUSDATA, &NetworkInput::HandleProgramStatus },
 	{ NDO_API_SERVICEDEFINITION, &NetworkInput::HandleService },

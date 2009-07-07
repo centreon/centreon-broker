@@ -261,6 +261,14 @@ double HostServiceStatus::GetLatency() const throw ()
 }
 
 /**
+ *  Get the long_output member.
+ */
+const std::string& HostServiceStatus::GetLongOutput() const throw ()
+{
+  return (this->strings_[LONG_OUTPUT]);
+}
+
+/**
  *  Get the max_check_attempts member.
  */
 short HostServiceStatus::GetMaxCheckAttempts() const throw ()
@@ -566,6 +574,15 @@ void HostServiceStatus::SetLastUpdate(time_t lu) throw ()
 void HostServiceStatus::SetLatency(double l) throw ()
 {
   this->doubles_[LATENCY] = l;
+  return ;
+}
+
+/**
+ *  Set the long_output member.
+ */
+void HostServiceStatus::SetLongOutput(const std::string& lo)
+{
+  this->strings_[LONG_OUTPUT] = lo;
   return ;
 }
 

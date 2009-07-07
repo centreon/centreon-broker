@@ -181,6 +181,14 @@ double HostService::GetNotificationInterval() const throw ()
 }
 
 /**
+ *  Get the notification_period member.
+ */
+const std::string& HostService::GetNotificationPeriod() const throw ()
+{
+  return (this->strings_[NOTIFICATION_PERIOD]);
+}
+
+/**
  *  Get the notify_on_downtime member.
  */
 short HostService::GetNotifyOnDowntime() const throw ()
@@ -325,6 +333,15 @@ void HostService::SetNotesUrl(const std::string& nu)
 void HostService::SetNotificationInterval(double ni) throw ()
 {
   this->doubles_[NOTIFICATION_INTERVAL] = ni;
+  return ;
+}
+
+/**
+ *  Set the notification_period member.
+ */
+void HostService::SetNotificationPeriod(const std::string& np)
+{
+  this->strings_[NOTIFICATION_PERIOD] = np;
   return ;
 }
 

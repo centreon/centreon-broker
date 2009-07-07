@@ -23,6 +23,7 @@
 #include "events/connection.h"
 #include "events/connection_status.h"
 #include "events/host.h"
+#include "events/host_group.h"
 #include "events/host_status.h"
 #include "events/program_status.h"
 #include "events/service.h"
@@ -292,6 +293,8 @@ static void InitHostMapping()
 			    &Host::GetLastUpdate);
   host_mapping.AddDoubleField("latency",
 			      &Host::GetLatency);
+  host_mapping.AddStringField("long_output",
+			      &Host::GetLongOutput);
   host_mapping.AddDoubleField("low_flap_threshold",
 			      &Host::GetLowFlapThreshold);
   host_mapping.AddShortField("max_check_attempts",
@@ -300,7 +303,7 @@ static void InitHostMapping()
 			   &Host::GetModifiedAttributes);
   host_mapping.AddTimeField("next_check",
 			    &Host::GetNextCheck);
-  host_mapping.AddTimeField("next_notification",
+  host_mapping.AddTimeField("next_host_notification",
 			    &Host::GetNextNotification);
   host_mapping.AddBoolField("no_more_notifications",
 			    &Host::GetNoMoreNotifications);
@@ -310,6 +313,8 @@ static void InitHostMapping()
 			      &Host::GetNotesUrl);
   host_mapping.AddDoubleField("notification_interval",
 			      &Host::GetNotificationInterval);
+  host_mapping.AddStringField("notification_period",
+			      &Host::GetNotificationPeriod);
   host_mapping.AddBoolField("notifications_enabled",
 			    &Host::GetNotificationsEnabled);
   host_mapping.AddShortField("notify_on_down",
@@ -365,6 +370,29 @@ static void InitHostMapping()
   return ;
 }
 
+/**
+ *  HostGroup mapping.
+ */
+DB::Mapping<HostGroup> CentreonBroker::host_group_mapping;
+
+static void InitHostGroupMapping()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initializing HostGroup mapping...");
+#endif /* !NDEBUG */
+  host_group_mapping.SetTable("hostgroup");
+  host_group_mapping.AddStringField("action_url", &HostGroup::GetActionUrl);
+  host_group_mapping.AddStringField("alias", &HostGroup::GetAlias);
+  host_group_mapping.AddStringField("hostgroup_name",
+				    &HostGroup::GetHostGroupName);
+  host_group_mapping.AddStringField("notes", &HostGroup::GetNotes);
+  host_group_mapping.AddStringField("notes_url", &HostGroup::GetNotesUrl);
+  return ;
+}
+
+/**
+ *  HostStatus mapping.
+ */
 DB::Mapping<HostStatus> CentreonBroker::host_status_mapping;
 
 static void InitHostStatusMapping()
@@ -425,13 +453,15 @@ static void InitHostStatusMapping()
 				   &HostStatus::GetLastUpdate);
   host_status_mapping.AddDoubleField("latency",
 				     &HostStatus::GetLatency);
+  host_status_mapping.AddStringField("long_output",
+				     &HostStatus::GetLongOutput);
   host_status_mapping.AddShortField("max_check_attempts",
 				    &HostStatus::GetMaxCheckAttempts);
   host_status_mapping.AddIntField("modified_attributes",
 				  &HostStatus::GetModifiedAttributes);
   host_status_mapping.AddTimeField("next_check",
 				   &HostStatus::GetNextCheck);
-  host_status_mapping.AddTimeField("next_notification",
+  host_status_mapping.AddTimeField("next_host_notification",
 				   &HostStatus::GetNextNotification);
   host_status_mapping.AddBoolField("no_more_notifications",
 				   &HostStatus::GetNoMoreNotifications);
@@ -625,6 +655,8 @@ static void InitServiceMapping()
 			       &Service::GetLastUpdate);
   service_mapping.AddDoubleField("latency",
 				 &Service::GetLatency);
+  service_mapping.AddStringField("long_output",
+				 &Service::GetLongOutput);
   service_mapping.AddDoubleField("low_flap_threshold",
 				 &Service::GetLowFlapThreshold);
   service_mapping.AddShortField("max_check_attempts",
@@ -643,6 +675,8 @@ static void InitServiceMapping()
 				 &Service::GetNotesUrl);
   service_mapping.AddDoubleField("notification_interval",
 				 &Service::GetNotificationInterval);
+  service_mapping.AddStringField("notification_period",
+				 &Service::GetNotificationPeriod);
   service_mapping.AddBoolField("notifications_enabled",
 			       &Service::GetNotificationsEnabled);
   service_mapping.AddShortField("notify_on_critical",
@@ -758,6 +792,8 @@ static void InitServiceStatusMapping()
 				      &ServiceStatus::GetLastUpdate);
   service_status_mapping.AddDoubleField("latency",
 					&ServiceStatus::GetLatency);
+  service_status_mapping.AddStringField("long_output",
+					&ServiceStatus::GetLongOutput);
   service_status_mapping.AddShortField("max_check_attempts",
 				       &ServiceStatus::GetMaxCheckAttempts);
   service_status_mapping.AddIntField("modified_attributes",
@@ -806,6 +842,7 @@ void CentreonBroker::InitMappings()
   InitConnectionStatusMapping();
   InitDowntimeMapping();
   InitHostMapping();
+  InitHostGroupMapping();
   InitHostStatusMapping();
   InitProgramStatusMapping();
   InitServiceMapping();

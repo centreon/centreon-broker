@@ -58,6 +58,7 @@ namespace                         CentreonBroker
     void                          HandleComment(ProtocolSocket& ps);
     void                          HandleDowntime(ProtocolSocket& ps);
     void                          HandleHost(ProtocolSocket& ps);
+    void                          HandleHostGroup(ProtocolSocket& ps);
     void                          HandleHostStatus(ProtocolSocket& ps);
     void                          HandleInitialization(ProtocolSocket& ps);
     void                          HandleProgramStatus(ProtocolSocket& ps);

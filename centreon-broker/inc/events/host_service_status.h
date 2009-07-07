@@ -21,8 +21,8 @@
 #ifndef HOST_SERVICE_STATUS_H_
 # define HOST_SERVICE_STATUS_H_
 
+# include <ctime>
 # include <string>
-# include <sys/types.h>
 # include "status.h"
 
 namespace                     CentreonBroker
@@ -81,6 +81,7 @@ namespace                     CentreonBroker
 	CHECK_PERIOD,
 	EVENT_HANDLER,
 	HOST_NAME,
+	LONG_OUTPUT,
 	OUTPUT,
 	PERF_DATA,
 	STRING_NB
@@ -132,6 +133,7 @@ namespace                     CentreonBroker
       time_t             GetLastStateChange() const throw ();
       time_t             GetLastUpdate() const throw ();
       double             GetLatency() const throw ();
+      const std::string& GetLongOutput() const throw ();
       short              GetMaxCheckAttempts() const throw ();
       int                GetModifiedAttributes() const throw ();
       time_t             GetNextCheck() const throw ();
@@ -169,6 +171,7 @@ namespace                     CentreonBroker
       void               SetLastStateChange(time_t lsc) throw ();
       void               SetLastUpdate(time_t lu) throw ();
       void               SetLatency(double l) throw ();
+      void               SetLongOutput(const std::string& lo);
       void               SetMaxCheckAttempts(short mca) throw ();
       void               SetModifiedAttributes(int ma) throw ();
       void               SetNextCheck(time_t nc) throw ();

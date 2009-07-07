@@ -1,8 +1,9 @@
 -- ----------------------------------------------------------------------------
 --                                                                           --
 --    After discussing with Andreas Ericsson (who seems to be a nice and     --
---    competent guy), I will try to make CentreonBroker's schema compatible  --
---    with Merlin's (ie. I will copy Merlin's schema into CentreonBroker).   --
+--    competent guy), CentreonBroker will try to adopt Merlin's database     --
+--    schema (ie. Merlin's schema will be kind of imported into              --
+--    CentreonBroker).                                                       --
 --                                                                           --
 -- ----------------------------------------------------------------------------
 
@@ -14,7 +15,7 @@
 --
 --   -acknowledgements
 --   +command
---   !comment
+--    comment
 --   -connection_info
 --   +contact
 --   +contact_contactgroup
@@ -30,33 +31,29 @@
 --   !host
 --   +host_contact
 --   +host_contactgroup
---   +host_hostgroup
+--    host_hostgroup
 --   +host_parents
 --   +hostdependency
 --   +hostescalation
 --   +hostescalation_contact
 --   +hostescalation_contactgroup
---   +hostgroup
---   -hostgroups
---   -hostgroups_members
+--    hostgroup
 --   -hosts_commands
 --   -hosts_parenthosts
 --   +notification
 --   -processevents
 --   !program_status
 --   +report_data
---   !scheduled_downtime
+--    scheduled_downtime
 --   !service
 --   +service_contact
 --   +service_contactgroup
---   +service_servicegroup
+--    service_servicegroup
 --   +servicedependency
 --   +serviceescalation
 --   +serviceescalation_contact
 --   +serviceescalation_contactgroup
---   +servicegroup
---   -servicegroups
---   -servicegroups_members
+--    servicegroup
 --   -services_commands
 --   +timeperiod
 --   +timeperiod_exclude
@@ -89,6 +86,24 @@ CREATE TABLE IF NOT EXISTS `comment` (
 ) ENGINE=InnoDB;
 
 
+CREATE TABLE IF NOT EXISTS `host_hostgroup` (
+  `host` int(11) NOT NULL,     -- OK
+  `hostgroup` int(11) NOT NULL -- OK
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `hostgroup` (
+  `id` int(11) NOT NULL auto_increment,       -- OK
+  `instance_id` int NOT NULL,                 -- OK
+  `action_url` varchar(160) default NULL,     -- OK
+  `alias` varchar(255) default NULL,          -- OK (varchar(160) in Merlin)
+  `hostgroup_name` varchar(255) default NULL, -- OK (varchar(160) in Merlin)
+  `notes` varchar(160) default NULL,          -- OK
+  `notes_url` varchar(160) default NULL,      -- OK
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
 CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
   `id` int(11) NOT NULL auto_increment,                -- OK
   `author_name` varchar(255) default NULL,             -- OK
@@ -107,6 +122,24 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
 
   `was_cancelled` boolean default NULL,                -- not in Merlin
   `was_started` boolean default NULL,                  -- not in Merlin
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `service_servicegroup` (
+  `service` int(11) NOT NULL,     -- OK
+  `servicegroup` int(11) NOT NULL -- OK
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `servicegroup` (
+  `id` int(11) NOT NULL auto_increment,          -- OK
+  `instance_id` int(11) NOT NULL,                -- OK
+  `action_url` varchar(160) default NULL,        -- OK
+  `alias` varchar(255) default NULL,             -- OK (varchar(160) in Merlin)
+  `notes` varchar(160) default NULL,             -- OK
+  `notes_url` varchar(160) default NULL,         -- OK
+  `servicegroup_name` varchar(255) default NULL, -- OK (varchar(75) in Merlin)
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -154,13 +187,16 @@ CREATE TABLE IF NOT EXISTS `host` (
   `last_time_up` int(11) default NULL,                              -- OK
   `last_update` int(11) default NULL,                               -- OK
   `latency` double default NULL,                                    -- OK (float in Merlin)
+  `long_output` text default NULL,                                  -- OK
   `low_flap_threshold` double default NULL,                         -- OK (float in Merlin)
   `max_check_attempts` smallint(6) default NULL,                    -- OK
   `modified_attributes` int(11) default NULL,                       -- OK
   `next_check` int(11) default NULL,                                -- OK
+  `next_host_notification` int(11) default NULL,                    -- OK
   `no_more_notifications` boolean default NULL,                     -- OK (int in Merlin)
   `notes` varchar(255) default NULL,                                -- OK
   `notes_url` varchar(255) default NULL,                            -- OK
+  `notification_period` varchar(75) default NULL,                   -- OK
   `notifications_enabled` boolean default NULL,                     -- OK
   `obsess_over_host` boolean default NULL,                          -- OK
   `output` text default NULL,                                       -- OK
@@ -192,16 +228,11 @@ CREATE TABLE IF NOT EXISTS `host` (
   -- is_being_freshened int
   -- is_executing int
   -- last_event_id
-  -- last_host_notification int
   -- last_problem_id int
   -- last_state int
-  -- long_output text
   -- max_attempts int
-  -- next_host_notification int
   -- notification_options varchar(15)
-  -- notification_period varchar(75)
   -- pending_flex_downtime int
-  -- process_perf_data tinyint(1)
   -- return_code smallint(8)
   -- stalking_options varchar(15)
   -- start_time int
@@ -215,7 +246,6 @@ CREATE TABLE IF NOT EXISTS `host` (
   `flap_detection_on_unreachable` smallint(6) NOT NULL default '0',
   `flap_detection_on_up` smallint(6) NOT NULL default '0',
   `have_2d_coords` smallint(6) NOT NULL default '0',
-  `next_notification` int(11) NOT NULL,
   `notification_interval` double NOT NULL default '0',              -- mediumint(9)
   `notify_on_down` smallint(6) NOT NULL default '0',                -- notified_on_down int
   `notify_on_downtime` smallint(6) NOT NULL default '0',
@@ -262,9 +292,9 @@ CREATE TABLE IF NOT EXISTS `program_status` (
 
   -- check_host_freshness tinyint(2)
   -- check_service_freshness tinyint(2)
-  `instance_address` varchar(120) default NULL,
-  `instance_description` varchar(128) default NULL,
-  `program_end_time` int(11) NOT NULL,
+  `instance_address` varchar(120) default NULL,                     -- not in Merlin
+  `instance_description` varchar(128) default NULL,                 -- not in Merlin
+  `program_end_time` int(11) default NULL,                          -- not in Merlin
 
   PRIMARY KEY `instance_id` (`instance_id`)
 ) ENGINE=InnoDB;
@@ -284,6 +314,7 @@ CREATE TABLE IF NOT EXISTS `service` (
   `check_period` varchar(75) default NULL,
   `check_type` smallint(6) default NULL,                                 -- OK (int in Merlin)
   `current_attempt` smallint(6) default NULL,                            -- OK (int in Merlin)
+  `current_notification_number` smallint(6) NOT NULL default '0',        -- OK (int in Merlin)
   `current_state` smallint(6) default NULL,                              -- OK (int in Merlin)
   `display_name` varchar(160) default NULL,                              -- OK
   `event_handler_enabled` boolean default NULL,                          -- OK
@@ -297,6 +328,7 @@ CREATE TABLE IF NOT EXISTS `service` (
   `is_flapping` boolean default NULL,                                    -- OK (int in Merlin)
   `is_volatile` boolean default NULL,                                    -- OK
   `last_check` int(11) default NULL,                                     -- OK
+  `last_hard_state` smallint(6) NOT NULL default '0',                    -- OK (int in Merlin)
   `last_hard_state_change` int(11) default NULL,                         -- OK
   `last_notification` int(11) default NULL,                              -- OK
   `last_state_change` int(11) default NULL,                              -- OK
@@ -306,12 +338,14 @@ CREATE TABLE IF NOT EXISTS `service` (
   `last_time_warning` int(11) default NULL,                              -- OK
   `last_update` int(11) default NULL,                                    -- OK
   `latency` double default NULL,                                         -- OK (float in Merlin)
+  `long_output` text default NULL,                                       -- OK
   `low_flap_threshold` double default NULL,                              -- OK (float in Merlin)
   `max_check_attempts` smallint(6) default NULL,                         -- OK
   `modified_attributes` int(11) default NULL,                            -- OK
   `next_check` int(11) default NULL,                                     -- OK
   `next_notification` int(11) default NULL,                              -- OK
   `no_more_notifications` boolean default NULL,                          -- OK (int in Merlin)
+  `notification_period` varchar(75) default NULL,                        -- OK
   `notifications_enabled` boolean default NULL,                          -- OK
   `obsess_over_service` boolean default NULL,                            -- OK
   `output` text default NULL,                                            -- OK
@@ -345,22 +379,18 @@ CREATE TABLE IF NOT EXISTS `service` (
   -- last_event_id int
   -- last_problem_id
   -- last_state int
-  -- long_output text
   -- max_attempts int
   -- notification_options
-  -- notification_period
   -- notified_on_unknown int
   -- notified_on_warning int
   -- notified_on_critical int
   -- parallelize_check tinyint(1)
   -- pending_flex_downtime int
-  -- process_perf_data tinyint(1) XXX : what about process_performance_data ?
   -- return_code smallint
   -- stalking_options
   -- start_time int
   -- timeout int
   `check_interval` double NOT NULL default '0',                          -- smallint(6)
-  `current_notification_number` smallint(6) NOT NULL default '0',        -- int
   `default_active_checks_enabled` smallint(6) NOT NULL default '0',
   `default_event_handler_enabled` smallint(6) NOT NULL default '0',
   `default_failure_prediction_enabled` smallint(6) NOT NULL default '0',
@@ -378,7 +408,6 @@ CREATE TABLE IF NOT EXISTS `service` (
   `freshness_threshold` smallint(6) NOT NULL default '0',                -- int, WTF ? double in host table
   `graph_id` int(11) NOT NULL,                                           -- not in Merlin
   `host_id` int(11) NOT NULL,                                            -- not in Merlin, Centreon-specific, fetched from customvars
-  `last_hard_state` smallint(6) NOT NULL default '0',                    -- int, why ?
   `notification_interval` double NOT NULL default '0',                   -- int
   `notify_on_critical` smallint(6) NOT NULL default '0',
   `notify_on_downtime` smallint(6) NOT NULL default '0',
@@ -512,25 +541,6 @@ CREATE TABLE IF NOT EXISTS `flappinghistory` (
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical record of host and service flapping' ;
 
 
--- XXX : does not match the original definition at all
-CREATE TABLE IF NOT EXISTS `hostgroups` (
-  `id` int(11) NOT NULL auto_increment,
-  `alias` varchar(255) NOT NULL default '',
-  `name` varchar(255) NOT NULL default '',
-  `enabled` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Hostgroup definitions' ;
-
-
--- XXX : does not match the original definition at all
-CREATE TABLE IF NOT EXISTS `hostgroups_members` (
-  `hostgroup_id` smallint(5) unsigned NOT NULL default '0',
-  `host_id` smallint(5) unsigned default NULL,
-  `hostgroup_child_id` smallint(6) default NULL,
-  PRIMARY KEY  (`hostgroup_id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
 CREATE TABLE IF NOT EXISTS `hosts_commands` (
   `host_id` smallint(5) unsigned NOT NULL default '0',
   `check_command` text,
@@ -556,30 +566,13 @@ CREATE TABLE IF NOT EXISTS `processevents` (
   `program_name` varchar(16) NOT NULL default '',
   `program_version` varchar(20) NOT NULL default '',
   `program_date` varchar(10) NOT NULL default '',
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Historical Nagios process events';
-
-
-CREATE TABLE IF NOT EXISTS `servicegroups` (
-  `id` int(11) NOT NULL auto_increment,
-  `alias` varchar(255) NOT NULL default '',
-  `name` varchar(255) NOT NULL default '',
-  `enabled` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='ServiceGroup definitions' ;
-
-
-CREATE TABLE IF NOT EXISTS `servicegroups_members` (
-  `servicegroup_id` smallint(5) unsigned NOT NULL default '0',
-  `service_id` smallint(5) unsigned default NULL,
-  `servicegroup_child_id` smallint(5) unsigned default NULL,
-  PRIMARY KEY  (`servicegroup_id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 CREATE TABLE IF NOT EXISTS `services_commands` (
   `service_id` smallint(5) unsigned NOT NULL default '0',
   `check_command` text,
   `event_handler_command` text,
-  PRIMARY KEY  (`service_id`)
+  PRIMARY KEY (`service_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
