@@ -71,7 +71,8 @@ PgSQLQuery::PgSQLQuery(PGconn* pgconn) throw ()
     param_format_(NULL),
     param_length_(NULL),
     param_values_(NULL),
-    pgconn_(pgconn)
+    pgconn_(pgconn),
+    result_(NULL)
 {
 }
 
@@ -82,6 +83,8 @@ PgSQLQuery::~PgSQLQuery()
 {
   assert(this->pgconn_);
   // XXX : DEALLOCATE statement
+  if (this->result_)
+    PQclear(this->result_);
 }
 
 /**
@@ -89,28 +92,28 @@ PgSQLQuery::~PgSQLQuery()
  */
 void PgSQLQuery::Execute() throw (DBException)
 {
-  PGresult* res;
-
 #ifndef NDEBUG
   logging.LogDebug("Executing PostgreSQL prepared statement...");
 #endif /* !NDEBUG */
   assert(!this->stmt_name_.empty());
-  res = PQexecPrepared(this->pgconn_,
-		       this->stmt_name_.c_str(),
-		       this->nparams_,
-		       this->param_values_,
-		       this->param_length_,
-		       this->param_format_,
-		       0);
-  if (!res)
+  if (this->result_)
+    PQclear(this->result_);
+  this->result_ = PQexecPrepared(this->pgconn_,
+                                 this->stmt_name_.c_str(),
+                                 this->nparams_,
+                                 this->param_values_,
+                                 this->param_length_,
+                                 this->param_format_,
+                                 0);
+  if (!this->result_)
     throw (DBException(0,
 		       DBException::QUERY_EXECUTION,
 		       "Could not allocate memory."));
-  else if (PQresultStatus(res) != PGRES_COMMAND_OK
-	   && PQresultStatus(res) != PGRES_TUPLES_OK)
+  else if (PQresultStatus(this->result_) != PGRES_COMMAND_OK
+	   && PQresultStatus(this->result_) != PGRES_TUPLES_OK)
     throw (DBException(0,
                        DBException::QUERY_EXECUTION,
-                       PQresultErrorMessage(res)));
+                       PQresultErrorMessage(this->result_)));
   return ;
 }
 

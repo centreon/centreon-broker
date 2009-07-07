@@ -22,6 +22,7 @@
 # define DB_POSTGRESQL_UPDATE_HPP_
 
 # include <cassert>
+# include <cstdlib>
 # include "db/postgresql/have_fields.h"
 # include "db/postgresql/have_predicate.hpp"
 # include "db/update.hpp"
@@ -103,9 +104,14 @@ namespace          CentreonBroker
        */
       int          GetUpdateCount()
       {
-	// XXX : how to do that with PostgreSQL ?
-	// XXX : generate an exception in case of error
-	return (0);
+	char*      count;
+
+	count = PQcmdTuples(this->result_);
+	if (!count)
+	  throw (DBException(0,
+			     DBException::QUERY_EXECUTION,
+			     "Could not allocate memory."));
+	return (atoi(count));
       }
 
       /**
