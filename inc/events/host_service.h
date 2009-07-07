@@ -61,6 +61,7 @@ namespace                CentreonBroker
 	ICON_IMAGE_ALT,
 	NOTES,
 	NOTES_URL,
+	NOTIFICATION_PERIOD,
 	STRING_NB
       };
       bool               bools_[BOOL_NB];
@@ -87,6 +88,7 @@ namespace                CentreonBroker
       const std::string& GetNotes() const throw ();
       const std::string& GetNotesUrl() const throw ();
       double             GetNotificationInterval() const throw ();
+      const std::string& GetNotificationPeriod() const throw ();
       short              GetNotifyOnDowntime() const throw ();
       short              GetNotifyOnFlapping() const throw ();
       short              GetNotifyOnRecovery() const throw ();
@@ -105,6 +107,7 @@ namespace                CentreonBroker
       void               SetNotes(const std::string& n);
       void               SetNotesUrl(const std::string& nu);
       void               SetNotificationInterval(double ni) throw ();
+      void               SetNotificationPeriod(const std::string& np);
       void               SetNotifyOnDowntime(short nod) throw ();
       void               SetNotifyOnFlapping(short nof) throw ();
       void               SetNotifyOnRecovery(short nor) throw ();

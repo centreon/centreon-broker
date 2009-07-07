@@ -80,6 +80,7 @@ namespace                CentreonBroker
 	CONNECTIONSTATUS,
 	DOWNTIME,
 	HOST,
+	HOSTGROUP,
 	HOSTSTATUS,
 	PROGRAMSTATUS,
 	SERVICE,

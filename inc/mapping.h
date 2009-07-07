@@ -28,6 +28,7 @@
 # include "events/connection_status.h"
 # include "events/downtime.h"
 # include "events/host.h"
+# include "events/host_group.h"
 # include "events/host_status.h"
 # include "events/program_status.h"
 # include "events/service.h"
@@ -47,6 +48,8 @@ namespace                                       CentreonBroker
   extern DB::Mapping<Events::Downtime>          downtime_mapping;
   // Host
   extern DB::Mapping<Events::Host>              host_mapping;
+  // HostGroup
+  extern DB::Mapping<Events::HostGroup>         host_group_mapping;
   // HostStatus
   extern DB::Mapping<Events::HostStatus>        host_status_mapping;
   // ProgramStatus

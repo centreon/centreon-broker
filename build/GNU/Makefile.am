@@ -50,6 +50,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/downtime.cpp			\
 			../../src/events/event.cpp			\
 			../../src/events/host.cpp			\
+			../../src/events/host_group.cpp			\
 			../../src/events/host_service.cpp		\
 			../../src/events/host_service_status.cpp	\
 			../../src/events/host_status.cpp		\
