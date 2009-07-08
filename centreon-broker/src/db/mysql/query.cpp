@@ -74,7 +74,7 @@ MySQLQuery::~MySQLQuery()
 /**
  *  Execute the query.
  */
-void MySQLQuery::Execute() throw (DBException)
+void MySQLQuery::Execute()
 {
 #ifndef NDEBUG
   logging.LogDebug("Executing MySQL prepared statement...");

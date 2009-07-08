@@ -991,7 +991,7 @@ void NetworkInput::operator()()
 		if (handlers[i].event == event)
 		  {
 		    this->conn_status_.SetBytesProcessed(
-                      this->socket_->GetBytesProcessed());
+		      this->socket_->GetBytesProcessed());
 		    this->conn_status_.SetLinesProcessed(
                       this->socket_->GetLinesProcessed());
 		    (this->*(handlers[i].handler))(*this->socket_);
@@ -1000,7 +1000,7 @@ void NetworkInput::operator()()
 		    this->conn_status_.SetLastCheckinTime(
                       this->socket_->GetLastCheckinTime());
 		    EventPublisher::GetInstance()->Publish(
-                      new ConnectionStatus(this->conn_status_));
+		      new ConnectionStatus(this->conn_status_));
 		    break ;
 		  }
 	    }
@@ -1008,13 +1008,27 @@ void NetworkInput::operator()()
 	}
       this->conn_status_.SetDataEndTime(time(NULL));
     }
+  catch (std::exception& e)
+    {
+      logging.LogError("Exception occured while processing network input",
+		       true);
+      logging.LogError(e.what());
+      logging.Deindent();
+    }
   catch (...)
     {
-      // XXX : some error message, somewhere
+      logging.LogError(
+        "Unknown exception occured while processing network input");
     }
   this->conn_status_.SetDisconnectTime(time(NULL));
-  EventPublisher::GetInstance()->Publish(new ConnectionStatus(
-                                           this->conn_status_));
+  try
+    {
+      EventPublisher::GetInstance()->Publish(new ConnectionStatus(
+		                               this->conn_status_));
+    }
+  catch (...)
+    {
+    }
   delete (this);
   return ;
 }
