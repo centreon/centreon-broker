@@ -98,16 +98,14 @@ namespace                      CentreonBroker
                                   DBOutput(const DBOutput& dbo);
     DBOutput&                     operator=(const DBOutput& dbo);
     void                          CleanTable(const std::string& table);
+    void                          CleanTables();
     void                          Commit();
     void                          Connect();
     void                          Disconnect();
-    int                           GetHostId(const std::string& instance,
-					    const std::string& host);
     int                           GetInstanceId(const std::string& instance);
-    int                           GetServiceId(const std::string& instance,
-					       const std::string& host,
-					       const std::string& service);
     void                          OnEvent(Events::Event* e) throw ();
+    void                          PrepareMappings();
+    void                          PrepareStatements();
     void                          ProcessAcknowledgement(
                                     const Events::Acknowledgement& ack);
     void                          ProcessComment(const Events::Comment& comment);

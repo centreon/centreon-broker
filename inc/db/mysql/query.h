@@ -42,7 +42,7 @@ namespace          CentreonBroker
      public:
                    MySQLQuery(MYSQL* myconn) throw ();
       virtual      ~MySQLQuery();
-      void         Execute() throw (DBException);
+      void         Execute();
       virtual void Prepare();
     };
   }

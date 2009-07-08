@@ -61,7 +61,7 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
 }
 
 /**
- *  Clean a table before starting event processing.
+ *  Purge a table before starting event processing.
  */
 void DBOutput::CleanTable(const std::string& table)
 {
@@ -78,10 +78,30 @@ void DBOutput::CleanTable(const std::string& table)
 #endif /* !NDEBUG */
   std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
 
-  // XXX : table names should be configurable
   truncate->SetTable(table);
   truncate->Prepare();
   truncate->Execute();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
+ *  Purge tables before starting event processing.
+ */
+void DBOutput::CleanTables()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initial table purge...", true);
+#endif /* !NDEBUG */
+  this->CleanTable(this->acknowledgement_mapping_.GetTable());
+  this->CleanTable(this->comment_mapping_.GetTable());
+  this->CleanTable(this->connection_mapping_.GetTable());
+  this->CleanTable(this->downtime_mapping_.GetTable());
+  this->CleanTable(this->host_mapping_.GetTable());
+  this->CleanTable(this->program_status_mapping_.GetTable());
+  this->CleanTable(this->service_mapping_.GetTable());
 #ifndef NDEBUG
   logging.Deindent();
 #endif /* !NDEBUG */
@@ -121,110 +141,13 @@ void DBOutput::Connect()
                        this->user_,
                        this->password_,
                        this->db_);
+
+  // Deactivate auto-commit.
   this->conn_->AutoCommit(false);
 
-  // Clean tables
-  this->CleanTable(this->acknowledgement_mapping_.GetTable());
-  this->CleanTable(this->comment_mapping_.GetTable());
-  this->CleanTable(this->connection_mapping_.GetTable());
-  this->CleanTable(this->host_mapping_.GetTable());
-  this->CleanTable(this->program_status_mapping_.GetTable());
-  this->CleanTable(this->service_mapping_.GetTable());
-
-  // Prepare ConnectionStatus update query
-  {
-    this->connection_mapping_.AddIntField("instance_id",
-                                          boost::bind(&DBOutput::GetInstanceId,
-						      this,
-						      boost::bind(
-						&Connection::GetNagiosInstance,
-						_1)));
-    this->connection_status_stmt_
-      = this->conn_->GetUpdateQuery<ConnectionStatus>(
-          this->connection_status_mapping_);
-    this->connection_status_stmt_->SetPredicate(DB::Equal(
-      DB::Field("instance_id"),
-      DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
-                                                   this,
-						   boost::bind(
-					&ConnectionStatus::GetNagiosInstance,
-					_1)))));
-    this->connection_status_stmt_->Prepare();
-  }
-  // Prepare HostStatus update query
-  {
-    this->host_mapping_.AddIntField("instance_id",
-                                    boost::bind(&DBOutput::GetInstanceId,
-						this,
-						boost::bind(
-						  &Host::GetNagiosInstance,
-						  _1)));
-    this->host_status_stmt_
-      = this->conn_->GetUpdateQuery<HostStatus>(this->host_status_mapping_);
-    this->host_status_stmt_->SetPredicate(
-      DB::And(DB::Equal(DB::Field("instance_id"),
-                        DB::DynamicInt<HostStatus>(boost::bind(
-                                                     &DBOutput::GetInstanceId,
-                                                     this,
-						     boost::bind(
-						&HostStatus::GetNagiosInstance,
-						_1)))),
-	      DB::Equal(DB::Field("host_name"),
-			DB::DynamicString<HostStatus>(&HostStatus::GetHostName)
-			)
-	      ));
-    this->host_status_stmt_->Prepare();
-  }
-  // Prepare ProgramStatus update query
-  {
-    this->program_status_mapping_.AddIntField(
-      "instance_id",
-      boost::bind(&DBOutput::GetInstanceId,
-                  this,
-		  boost::bind(&ProgramStatus::GetNagiosInstance, _1)));
-    this->program_status_stmt_
-      = this->conn_->GetUpdateQuery<ProgramStatus>(
-          this->program_status_mapping_);
-    this->program_status_stmt_->SetPredicate(
-      DB::Equal(DB::Field("instance_id"),
-                DB::DynamicInt<ProgramStatus>(boost::bind(
-                                                &DBOutput::GetInstanceId,
-                                                this,
-						boost::bind(
-					&ProgramStatus::GetNagiosInstance,
-					_1)))));
-    this->program_status_stmt_->Prepare();
-  }
-  // Prepare ServiceStatus update query
-  {
-    this->service_mapping_.AddIntField("instance_id",
-                                       boost::bind(&DBOutput::GetInstanceId,
-						   this,
-						   boost::bind(
-					&ProgramStatus::GetNagiosInstance,
-					_1)));
-    this->service_status_stmt_
-      = this->conn_->GetUpdateQuery<ServiceStatus>(
-          this->service_status_mapping_);
-    this->service_status_stmt_->SetPredicate(
-      DB::And(DB::Equal(DB::Field("instance_id"),
-                        DB::DynamicInt<ServiceStatus>(boost::bind(
-                                                   &DBOutput::GetInstanceId,
-                                                   this,
-						   boost::bind(
-					&ServiceStatus::GetNagiosInstance,
-					_1)))),
-	      DB::And(DB::Equal(DB::Field("host_name"),
-			DB::DynamicString<ServiceStatus>(
-                          &ServiceStatus::GetHostName)),
-		      DB::Equal(DB::Field("service_description"),
-				DB::DynamicString<ServiceStatus>(
-                                  &ServiceStatus::GetServiceDescription)))
-	      ));
-    this->service_status_stmt_->Prepare();
-  }
   // Initialize the timeout
   this->Commit();
+
   return ;
 }
 
@@ -240,15 +163,6 @@ void DBOutput::Disconnect()
       this->conn_ = NULL;
     }
   return ;
-}
-
-/**
- *  Get an host id.
- */
-int DBOutput::GetHostId(const std::string& instance, const std::string& host)
-{
-  // XXX : use a select query
-  return (1);
 }
 
 /**
@@ -272,17 +186,6 @@ int DBOutput::GetInstanceId(const std::string& instance)
 }
 
 /**
- *  Get a service id.
- */
-int DBOutput::GetServiceId(const std::string& instance,
-			   const std::string& host,
-			   const std::string& service)
-{
-  // XXX : use a select query
-  return (1);
-}
-
-/**
  *  Callback called when an event occur. This will push the event into the
  *  list.
  */
@@ -297,6 +200,117 @@ void DBOutput::OnEvent(Event* e) throw ()
       logging.LogError("Exception while adding event to list. Dropping event.");
       e->RemoveReader(this);
     }
+  return ;
+}
+
+/**
+ *  Initialize object-relational mappings.
+ */
+void DBOutput::PrepareMappings()
+{
+  // Connection mapping.
+  this->connection_mapping_.AddIntField("instance_id",
+					boost::bind(&DBOutput::GetInstanceId,
+						    this,
+						    boost::bind(
+					  &Connection::GetNagiosInstance,
+					  _1)));
+
+  // Host mapping.
+  this->host_mapping_.AddIntField("instance_id",
+				  boost::bind(&DBOutput::GetInstanceId,
+					      this,
+					      boost::bind(
+                                                &Host::GetNagiosInstance,
+						_1)));
+
+  // ProgramStatus mapping.
+  this->program_status_mapping_.AddIntField("instance_id",
+					    boost::bind(
+					      &DBOutput::GetInstanceId,
+					      this,
+					      boost::bind(
+                                          &ProgramStatus::GetNagiosInstance,
+					  _1)));
+
+  // Service mapping.
+  this->service_mapping_.AddIntField("instance_id",
+				     boost::bind(&DBOutput::GetInstanceId,
+						 this,
+						 boost::bind(
+				       &ProgramStatus::GetNagiosInstance,
+				       _1)));
+
+  return ;
+}
+
+/**
+ *  Prepare most often used statements.
+ */
+void DBOutput::PrepareStatements()
+{
+  // ConnectionStatus update statement.
+  this->connection_status_stmt_ =
+    this->conn_->GetUpdateQuery<ConnectionStatus>(
+      this->connection_status_mapping_);
+  this->connection_status_stmt_->SetPredicate(DB::Equal(
+    DB::Field("instance_id"),
+    DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
+						 this,
+						 boost::bind(
+				       &ConnectionStatus::GetNagiosInstance,
+				       _1)))));
+  this->connection_status_stmt_->Prepare();
+
+  // HostStatus update statement.
+  this->host_status_stmt_ = this->conn_->GetUpdateQuery<HostStatus>(
+                              this->host_status_mapping_);
+  this->host_status_stmt_->SetPredicate(
+    DB::And(DB::Equal(DB::Field("instance_id"),
+                      DB::DynamicInt<HostStatus>(boost::bind(
+                                                   &DBOutput::GetInstanceId,
+                                                   this,
+						   boost::bind(
+			&HostStatus::GetNagiosInstance,
+			_1)))),
+	    DB::Equal(DB::Field("host_name"),
+		      DB::DynamicString<HostStatus>(&HostStatus::GetHostName))
+	    ));
+  this->host_status_stmt_->Prepare();
+
+  // ProgramStatus update statement.
+  this->program_status_stmt_ = this->conn_->GetUpdateQuery<ProgramStatus>(
+                                 this->program_status_mapping_);
+  this->program_status_stmt_->SetPredicate(
+    DB::Equal(DB::Field("instance_id"),
+              DB::DynamicInt<ProgramStatus>(boost::bind(
+                                              &DBOutput::GetInstanceId,
+                                              this,
+					      boost::bind(
+					 &ProgramStatus::GetNagiosInstance,
+					 _1)))));
+  this->program_status_stmt_->Prepare();
+
+  // ServiceStatus update statement.
+  this->service_status_stmt_ = this->conn_->GetUpdateQuery<ServiceStatus>(
+                                 this->service_status_mapping_);
+  this->service_status_stmt_->SetPredicate(
+    DB::And(DB::Equal(DB::Field("instance_id"),
+                      DB::DynamicInt<ServiceStatus>(boost::bind(
+                                                      &DBOutput::GetInstanceId,
+                                                      this,
+						      boost::bind(
+			&ServiceStatus::GetNagiosInstance,
+			_1)))),
+	    DB::And(DB::Equal(DB::Field("host_name"),
+		              DB::DynamicString<ServiceStatus>(
+                                &ServiceStatus::GetHostName)),
+		    DB::Equal(DB::Field("service_description"),
+			      DB::DynamicString<ServiceStatus>(
+                                &ServiceStatus::GetServiceDescription)))
+	    ));
+  this->service_status_stmt_->Prepare();
+
   return ;
 }
 
@@ -640,6 +654,7 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
     service_status_mapping_(service_status_mapping),
     dbms_(dbms)
 {
+  this->PrepareMappings();
 }
 
 /**
@@ -677,17 +692,38 @@ DBOutput::~DBOutput()
  */
 void DBOutput::operator()()
 {
+  // Allocate printing ressources for this thread.
   logging.ThreadStart();
+
 #ifndef NDEBUG
   logging.LogDebug("New thread created (DBOutput)");
 #endif /* !NDEBUG */
-  while (!this->exit_ || !this->events_.Empty())
+  try
     {
+#ifndef NDEBUG
+      logging.LogDebug("Initial connection to the database...");
+#endif /* !NDEBUG */
+      this->Connect();
+      this->CleanTables();
+    }
+  // An error occured on initialization, we won't try to go any further as it
+  // is likely that something fatal happened (unreachable server, no memory
+  // available, ...)
+  catch (...)
+    {
+      logging.LogError("Initial database initialization failed...");
+      logging.LogInfo("Aborting output...");
+      this->Disconnect();
+      return ;
+    }
+
+  while (!this->exit_)
+    {
+      Event* event;
+
       try
         {
-          Event* event;
-
-          this->Connect();
+	  this->PrepareStatements();
           while (1)
             {
               event = this->events_.TimedWait(this->timeout_);
@@ -705,30 +741,66 @@ void DBOutput::operator()()
 		}
             }
         }
+
+      // If such an exception occur, it's likely because the connection with
+      // the DB server has been dropped. So we will disconnect and try to
+      // reconnect later.
       catch (DB::DBException& dbe)
 	{
 	  logging.LogError("Recoverable DB error", true);
 	  logging.LogError(dbe.what());
 	  logging.Deindent();
 	}
-      catch (Exception& e)
+
+      // Standard exception should be thrown if an unrecoverable error occured.
+      catch (std::exception& e)
         {
 	  logging.LogError("Unrecoverable error", true);
 	  logging.LogError(e.what());
 	  logging.Deindent();
           break ;
         }
-      this->Disconnect();
-      if (!this->exit_)
+      catch (...)
 	{
-	  // XXX : retry interval should be configurable
-	  sleep(10);
-	  logging.LogInfo("Trying connection to DB server again...");
+	  logging.LogError("Unknown unrecoverable error");
+	  break ;
 	}
+
+      while (1)
+	{
+	  // Free connection ressources
+	  this->Disconnect();
+
+	  try
+	    {
+	      // XXX : retry interval should be configurable
+	      // Wait before trying to reconnect.
+	      boost::thread::sleep(boost::get_system_time()
+				     + boost::posix_time::seconds(10));
+
+	      if (!this->exit_)
+		{
+		  logging.LogInfo("Trying connection to DB server again...");
+		  this->Connect();
+		}
+	      break ;
+	    }
+	  // If an exception occur, try to sleep a bit then try again
+	  catch (...)
+	    {
+	    }
+	}
+      if (!this->exit_)
+	break ;
     }
 #ifndef NDEBUG
   logging.LogDebug("Exiting DBOutput thread");
 #endif /* !NDEBUG */
+
+  // Close connection
+  this->Disconnect();
+
+  // Release printing ressources for this thread.
   logging.ThreadEnd();
   return ;
 }
@@ -741,8 +813,10 @@ void DBOutput::Destroy()
 #ifndef NDEBUG
   logging.LogDebug("Requesting DBOutput to stop processing...", true);
 #endif /* !NDEBUG */
+  assert(this->thread_);
   this->exit_ = true;
   this->events_.CancelWait();
+  this->thread_->interrupt();
 #ifndef NDEBUG
   logging.Deindent();
 #endif /* !NDEBUG */
