@@ -32,7 +32,7 @@ m4_include(macros/ax_lib_postgresql.m4)
 #
 # Main code
 #
-AC_INIT([CentreonBroker], 0.1, mkermagoret@merethis.com, centreonbroker)
+AC_INIT([CentreonBroker], 0.1.0, mkermagoret@merethis.com, centreonbroker)
 
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
