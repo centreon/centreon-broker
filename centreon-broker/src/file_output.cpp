@@ -19,7 +19,9 @@
 */
 
 #include <cassert>
+#include "events/event.h"
 #include "file_output.h"
+#include "logging.h"
 
 using namespace CentreonBroker;
 
@@ -32,18 +34,37 @@ using namespace CentreonBroker;
 /**
  *  FileOutput copy constructor.
  */
-FileOutput::FileOutput(const FileOutput& fileo) : Thread()
+FileOutput::FileOutput(const FileOutput& fo) : EventSubscriber()
 {
-  (void)fileo;
+  (void)fo;
+  assert(false);
 }
 
 /**
  *  FileOutput operator= overload.
  */
-FileOutput& FileOutput::operator=(const FileOutput& fileo)
+FileOutput& FileOutput::operator=(const FileOutput& fo)
 {
-  (void)fileo;
+  (void)fo;
+  assert(false);
   return (*this);
+}
+
+/**
+ *  Callback called when an event occur. This will push the event into the list.
+ */
+void FileOutput::OnEvent(Events::Event* e) throw ()
+{
+  try
+    {
+      this->events_.Add(e);
+    }
+  catch (...)
+    {
+      logging.LogError("Exception while adding event to list. Dropping event.");
+      e->RemoveReader(this);
+    }
+  return ;
 }
 
 /**************************************
@@ -55,9 +76,8 @@ FileOutput& FileOutput::operator=(const FileOutput& fileo)
 /**
  *  FileOutput default constructor.
  */
-FileOutput::FileOutput()
+FileOutput::FileOutput() : exit_(true), thread_(NULL)
 {
-  this->buffer.clear();
 }
 
 /**
@@ -65,6 +85,51 @@ FileOutput::FileOutput()
  */
 FileOutput::~FileOutput()
 {
+  this->Close();
+}
+
+/**
+ *  Thread start function.
+ */
+void FileOutput::operator()()
+{
+  try
+    {
+      // Allocate ressources for thread logging
+      logging.ThreadStart();
+
+      // While thread has not been canceled
+      while (!this->exit_)
+	{
+	  Events::Event* e;
+
+	  // Wait for an event
+	  e = this->events_.Wait();
+	  if (e)
+	    {
+	      switch (e->GetType())
+		{
+                 default:
+                  logging.LogInfo("Invalid type of event processed");
+		}
+
+	      // We're finished with the event
+	      e->RemoveReader(this);
+	    }
+	}
+    }
+  catch (std::exception& e)
+    {
+      logging.LogError("Caught exception while writing to file", true);
+      logging.LogError(e.what());
+      logging.Deindent();
+    }
+  catch (...)
+    {
+    }
+  // Free ressources for thread logging
+  logging.ThreadEnd();
+  return ;
 }
 
 /**
@@ -72,47 +137,65 @@ FileOutput::~FileOutput()
  */
 void FileOutput::Close()
 {
-  assert(this->ofs.is_open());
-  this->exit_thread = true;
-  this->condvar.Broadcast();
-  this->Join();
-  this->ofs.close();
+  if (this->thread_)
+    {
+#ifndef NDEBUG
+      logging.LogDebug("Finishing file-writing thread...", true);
+      logging.LogDebug("Cancelling thread execution...");
+#endif /* !NDEBUG */
+      this->exit_ = true;
+
+      // In case the working thread is waiting on event, cancel his waiting
+      this->events_.CancelWait();
+
+#ifndef NDEBUG
+      logging.LogDebug("Waiting for thread termination...");
+#endif /* !NDEBUG */
+
+      // Wait for thread termination
+      this->thread_->join();
+      delete (this->thread_);
+      this->thread_ = NULL;
+
+#ifndef NDEBUG
+      logging.Deindent();
+#endif /* !NDEBUG */
+    }
+  if (this->ofs.is_open())
+    {
+#ifndef NDEBUG
+      logging.LogDebug("Closing file...");
+#endif /* !NDEBUG */
+
+      // Close file stream
+      this->ofs.close();
+    }
   return ;
 }
 
 /**
  *  Opens the file.
  */
-void FileOutput::Open(const std::string& filename) throw (Exception)
+void FileOutput::Open(const char* filename)
 {
-  // XXX : open might throw exceptions
-  this->ofs.open(filename.c_str());
+  assert(filename);
+#ifndef NDEBUG
+  logging.LogDebug("Opening file...", true);
+  logging.LogDebug(filename);
+  logging.Deindent();
+#endif /* !NDEBUG */
+
+  // Open file
+  this->ofs.open(filename);
   if (this->ofs.fail())
-    throw (Exception("Could not open output file."));
-  this->exit_thread = false;
-  // XXX : catch Run() exceptions (or not).
-  this->Run();
+    throw (Exception(0, "Could not open output file."));
+  this->exit_ = false;
+
+#ifndef NDEBUG
+  logging.LogDebug("Launching file-writing thread...");
+#endif /* !NDEBUG */
+
+  // Create worker thread
+  this->thread_ = new boost::thread(boost::ref(*this));
   return ;
-}
-
-/**
- *  Thread core function.
- */
-int FileOutput::Core()
-{
-  char buff[4096];
-  size_t wb;
-
-  while (!this->exit_thread || !this->buffer.empty())
-    {
-      // XXX : catch exceptions
-      this->mutex.Lock();
-      if (this->buffer.empty())
-	this->condvar.Wait(this->mutex);
-      wb = this->buffer.copy(buff, sizeof(buff));
-      this->buffer.erase(0, wb);
-      this->mutex.Unlock();
-      this->ofs.write(buff, wb);
-    }
-  return (0);
 }

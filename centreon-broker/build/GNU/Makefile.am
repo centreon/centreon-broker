@@ -59,6 +59,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/service_status.cpp		\
 			../../src/events/status.cpp			\
 			../../src/exception.cpp				\
+			../../src/file_output.cpp			\
 			../../src/logging.cpp				\
 			../../src/mapping.cpp				\
 			../../src/network_acceptor.cpp			\
