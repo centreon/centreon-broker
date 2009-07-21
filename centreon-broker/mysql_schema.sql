@@ -65,23 +65,23 @@
 --
 
 CREATE TABLE IF NOT EXISTS `comment` (
-  `id` int NOT NULL auto_increment,               -- OK
-  `instance_id` int NOT NULL default '0',         -- OK
-  `author_name` varchar(255) default NULL,            -- OK
-  `comment_data` text default NULL,                   -- OK
+  `id` int NOT NULL auto_increment,                -- OK
+  `instance_id` int NOT NULL default '0',          -- OK
+  `author_name` varchar(255) default NULL,         -- OK
+  `comment_data` text default NULL,                -- OK
   `comment_type` smallint default NULL,            -- OK (is int in Merlin)
-  `entry_time` int default NULL,                  -- OK
+  `entry_time` int default NULL,                   -- OK
   `entry_type` smallint default NULL,              -- OK (is int in Merlin)
-  `expire_time` int default NULL,                 -- OK
-  `expires` boolean default NULL,                     -- OK (is int in Merlin)
-  `host_name` varchar(255) NOT NULL,                  -- OK but why don't we have host_id instead ?
-  `persistent` boolean default NULL,                  -- OK
-  `service_description` varchar(160) default NULL,    -- OK but why don't we have service_id instead ?
+  `expire_time` int default NULL,                  -- OK
+  `expires` boolean default NULL,                  -- OK (is int in Merlin)
+  `host_name` varchar(255) NOT NULL,               -- OK but why don't we have host_id instead ?
+  `persistent` boolean default NULL,               -- OK
+  `service_description` varchar(160) default NULL, -- OK but why don't we have service_id instead ?
   `source` smallint default NULL,                  -- OK (is int in Merlin)
 
-  `comment_time` int default NULL,                -- not in Merlin
-  `deletion_time` int default NULL,               -- not in Merlin
-  `internal_comment_id` int default NULL,         -- not in Merlin
+  `comment_time` int default NULL,                 -- not in Merlin
+  `deletion_time` int default NULL,                -- not in Merlin
+  `internal_comment_id` int default NULL,          -- not in Merlin
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `host_hostgroup` (
 
 
 CREATE TABLE IF NOT EXISTS `hostgroup` (
-  `id` int NOT NULL auto_increment,       -- OK
+  `id` int NOT NULL auto_increment,           -- OK
   `instance_id` int NOT NULL,                 -- OK
   `action_url` varchar(160) default NULL,     -- OK
   `alias` varchar(255) default NULL,          -- OK (varchar(160) in Merlin)
@@ -106,22 +106,22 @@ CREATE TABLE IF NOT EXISTS `hostgroup` (
 
 CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
   `id` int NOT NULL auto_increment,                -- OK
-  `author_name` varchar(255) default NULL,             -- OK
-  `comment_data` text default NULL,                    -- OK
+  `author_name` varchar(255) default NULL,         -- OK
+  `comment_data` text default NULL,                -- OK
   `downtime_id` int default NULL,                  -- OK
-  `downtime_type` smallint default NULL,            -- OK (int in Merlin)
+  `downtime_type` smallint default NULL,           -- OK (int in Merlin)
   `duration` int default NULL,                     -- OK
   `end_time` int default NULL,                     -- OK
   `entry_time` int default NULL,                   -- OK
-  `fixed` boolean default NULL,                        -- OK
-  `host_name` varchar(255) NOT NULL,                   -- OK
+  `fixed` boolean default NULL,                    -- OK
+  `host_name` varchar(255) NOT NULL,               -- OK
   `instance_id` int NOT NULL,                      -- OK
-  `service_description` varchar(255) NOT NULL,         -- OK
+  `service_description` varchar(255) default NULL, -- OK
   `start_time` int default NULL,                   -- OK
   `triggered_by` int default NULL,                 -- OK
 
-  `was_cancelled` boolean default NULL,                -- not in Merlin
-  `was_started` boolean default NULL,                  -- not in Merlin
+  `was_cancelled` boolean default NULL,            -- not in Merlin
+  `was_started` boolean default NULL,              -- not in Merlin
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -133,8 +133,8 @@ CREATE TABLE IF NOT EXISTS `service_servicegroup` (
 
 
 CREATE TABLE IF NOT EXISTS `servicegroup` (
-  `id` int NOT NULL auto_increment,          -- OK
-  `instance_id` int NOT NULL,                -- OK
+  `id` int NOT NULL auto_increment,              -- OK
+  `instance_id` int NOT NULL,                    -- OK
   `action_url` varchar(160) default NULL,        -- OK
   `alias` varchar(255) default NULL,             -- OK (varchar(160) in Merlin)
   `notes` varchar(160) default NULL,             -- OK
@@ -151,66 +151,66 @@ CREATE TABLE IF NOT EXISTS `servicegroup` (
 --
 
 CREATE TABLE IF NOT EXISTS `host` (
-  `id` int NOT NULL auto_increment,                             -- OK
-  `instance_id` int NOT NULL ,                                  -- OK
-  `host_name` varchar(255) NOT NULL,                                -- OK (varchar(75) in Merlin)
-  `acknowledgement_type` smallint default NULL,                  -- OK (int in Merlin)
-  `action_url` varchar(255) default NULL,                           -- OK
-  `active_checks_enabled` boolean default NULL,                     -- OK
-  `address` varchar(75) default NULL,                               -- OK
-  `alias` varchar(100) default NULL,                                -- OK
-  `check_command` text default NULL,                                -- OK
-  `check_freshness` boolean default NULL,                           -- OK
-  `check_period` varchar(75) default NULL,                          -- OK
-  `check_type` smallint default NULL,                            -- OK (int in Merlin)
-  `current_check_attempt` smallint default NULL,                 -- OK (int in Merlin)
-  `current_notification_number` smallint default NULL,           -- OK (int in Merlin)
-  `current_state` smallint default NULL,                         -- OK (int in Merlin)
-  `display_name` varchar(100) default NULL,                         -- OK
-  `event_handler_enabled` boolean default NULL,                     -- OK
-  `execution_time` double default NULL,                             -- OK (float in Merlin)
-  `failure_prediction_enabled` boolean default NULL,                -- OK
-  `flap_detection_enabled` boolean default NULL,                    -- OK
-  `freshness_threshold` double default NULL,                        -- OK (float in Merlin)
-  `has_been_checked` boolean default NULL,                          -- OK (int in Merlin)
-  `high_flap_threshold` double default NULL,                        -- OK (float in Merlin)
-  `icon_image` varchar(255) default NULL,                           -- OK (varchar(60) in Merlin)
-  `icon_image_alt` varchar(255) default NULL,                       -- OK (varchar(60) in Merlin)
-  `is_flapping` boolean default NULL,                               -- OK (int in Merlin)
-  `last_check` int default NULL,                                -- OK
-  `last_hard_state` smallint default NULL,                       -- OK (int in Merlin)
-  `last_hard_state_change` int default NULL,                    -- OK
-  `last_notification` int default NULL,                         -- OK
-  `last_state_change` int default NULL,                         -- OK
-  `last_time_down` int default NULL,                            -- OK
-  `last_time_unreachable` int default NULL,                     -- OK
-  `last_time_up` int default NULL,                              -- OK
-  `last_update` int default NULL,                               -- OK
-  `latency` double default NULL,                                    -- OK (float in Merlin)
-  `long_output` text default NULL,                                  -- OK
-  `low_flap_threshold` double default NULL,                         -- OK (float in Merlin)
-  `max_check_attempts` smallint default NULL,                    -- OK
-  `modified_attributes` int default NULL,                       -- OK
-  `next_check` int default NULL,                                -- OK
-  `next_host_notification` int default NULL,                    -- OK
-  `no_more_notifications` boolean default NULL,                     -- OK (int in Merlin)
-  `notes` varchar(255) default NULL,                                -- OK
-  `notes_url` varchar(255) default NULL,                            -- OK
-  `notification_period` varchar(75) default NULL,                   -- OK
-  `notifications_enabled` boolean default NULL,                     -- OK
-  `obsess_over_host` boolean default NULL,                          -- OK
-  `output` text default NULL,                                       -- OK
-  `passive_checks_enabled` boolean default NULL,                    -- OK
-  `percent_state_change` double default NULL,                       -- OK (float in Merlin)
-  `perf_data` text default NULL,                                    -- OK
-  `problem_has_been_acknowledged` boolean default NULL,             -- OK (int in Merlin)
-  `process_performance_data` boolean default NULL,                  -- OK
-  `retain_nonstatus_information` boolean default NULL,              -- OK
-  `retain_status_information` boolean default NULL,                 -- OK
-  `should_be_scheduled` boolean default NULL,                       -- OK (int in Merlin)
-  `state_type` smallint default NULL,                            -- OK (int in Merlin)
-  `statusmap_image` varchar(255) default NULL,                      -- OK (varchar(60) in Merlin)
-  `vrml_image` varchar(255) default NULL,                           -- OK (varchar(60) in Merlin)
+  `id` int NOT NULL auto_increment,                     -- OK
+  `instance_id` int NOT NULL ,                          -- OK
+  `host_name` varchar(255) NOT NULL,                    -- OK (varchar(75) in Merlin)
+  `acknowledgement_type` smallint default NULL,         -- OK (int in Merlin)
+  `action_url` varchar(255) default NULL,               -- OK
+  `active_checks_enabled` boolean default NULL,         -- OK
+  `address` varchar(75) default NULL,                   -- OK
+  `alias` varchar(100) default NULL,                    -- OK
+  `check_command` text default NULL,                    -- OK
+  `check_freshness` boolean default NULL,               -- OK
+  `check_period` varchar(75) default NULL,              -- OK
+  `check_type` smallint default NULL,                   -- OK (int in Merlin)
+  `current_check_attempt` smallint default NULL,        -- OK (int in Merlin)
+  `current_notification_number` smallint default NULL,  -- OK (int in Merlin)
+  `current_state` smallint default NULL,                -- OK (int in Merlin)
+  `display_name` varchar(100) default NULL,             -- OK
+  `event_handler_enabled` boolean default NULL,         -- OK
+  `execution_time` double default NULL,                 -- OK (float in Merlin)
+  `failure_prediction_enabled` boolean default NULL,    -- OK
+  `flap_detection_enabled` boolean default NULL,        -- OK
+  `freshness_threshold` double default NULL,            -- OK (float in Merlin)
+  `has_been_checked` boolean default NULL,              -- OK (int in Merlin)
+  `high_flap_threshold` double default NULL,            -- OK (float in Merlin)
+  `icon_image` varchar(255) default NULL,               -- OK (varchar(60) in Merlin)
+  `icon_image_alt` varchar(255) default NULL,           -- OK (varchar(60) in Merlin)
+  `is_flapping` boolean default NULL,                   -- OK (int in Merlin)
+  `last_check` int default NULL,                        -- OK
+  `last_hard_state` smallint default NULL,              -- OK (int in Merlin)
+  `last_hard_state_change` int default NULL,            -- OK
+  `last_notification` int default NULL,                 -- OK
+  `last_state_change` int default NULL,                 -- OK
+  `last_time_down` int default NULL,                    -- OK
+  `last_time_unreachable` int default NULL,             -- OK
+  `last_time_up` int default NULL,                      -- OK
+  `last_update` int default NULL,                       -- OK
+  `latency` double default NULL,                        -- OK (float in Merlin)
+  `long_output` text default NULL,                      -- OK
+  `low_flap_threshold` double default NULL,             -- OK (float in Merlin)
+  `max_check_attempts` smallint default NULL,           -- OK
+  `modified_attributes` int default NULL,               -- OK
+  `next_check` int default NULL,                        -- OK
+  `next_host_notification` int default NULL,            -- OK
+  `no_more_notifications` boolean default NULL,         -- OK (int in Merlin)
+  `notes` varchar(255) default NULL,                    -- OK
+  `notes_url` varchar(255) default NULL,                -- OK
+  `notification_period` varchar(75) default NULL,       -- OK
+  `notifications_enabled` boolean default NULL,         -- OK
+  `obsess_over_host` boolean default NULL,              -- OK
+  `output` text default NULL,                           -- OK
+  `passive_checks_enabled` boolean default NULL,        -- OK
+  `percent_state_change` double default NULL,           -- OK (float in Merlin)
+  `perf_data` text default NULL,                        -- OK
+  `problem_has_been_acknowledged` boolean default NULL, -- OK (int in Merlin)
+  `process_performance_data` boolean default NULL,      -- OK
+  `retain_nonstatus_information` boolean default NULL,  -- OK
+  `retain_status_information` boolean default NULL,     -- OK
+  `should_be_scheduled` boolean default NULL,           -- OK (int in Merlin)
+  `state_type` smallint default NULL,                   -- OK (int in Merlin)
+  `statusmap_image` varchar(255) default NULL,          -- OK (varchar(60) in Merlin)
+  `vrml_image` varchar(255) default NULL,               -- OK (varchar(60) in Merlin)
 
   -- 2d_coords varchar(20)
   -- 3d_coords varchar(20)
@@ -239,21 +239,21 @@ CREATE TABLE IF NOT EXISTS `host` (
   -- timeout int
   -- total_service_check_interval int
   -- total_services int
-  `check_interval` double NOT NULL default '0',                     -- smallint
-  `event_handler` varchar(255) NOT NULL default '',                 -- int in Merlin
-  `first_notification_delay` double NOT NULL default '0',           -- int
-  `flap_detection_on_down` smallint NOT NULL default '0',
-  `flap_detection_on_unreachable` smallint NOT NULL default '0',
+  `check_interval` double NOT NULL default '0',         -- smallint
+  `event_handler` varchar(255) NOT NULL default '',     -- int in Merlin
+  `first_notification_delay` double default NULL,       -- int
+  `flap_detection_on_down` smallint default NULL,
+  `flap_detection_on_unreachable` smallint default NULL,
   `flap_detection_on_up` smallint NOT NULL default '0',
   `have_2d_coords` smallint NOT NULL default '0',
-  `notification_interval` double NOT NULL default '0',              -- mediumint(9)
-  `notify_on_down` smallint NOT NULL default '0',                -- notified_on_down int
+  `notification_interval` double NOT NULL default '0',  -- mediumint(9)
+  `notify_on_down` smallint NOT NULL default '0',       -- notified_on_down int
   `notify_on_downtime` smallint NOT NULL default '0',
   `notify_on_flapping` smallint NOT NULL default '0',
   `notify_on_recovery` smallint NOT NULL default '0',
-  `notify_on_unreachable` smallint NOT NULL default '0',         -- notified_on_unreachable int
-  `retry_interval` double NOT NULL default '0',                     -- smallint
-  `scheduled_downtime_depth` smallint NOT NULL default '0',      -- int
+  `notify_on_unreachable` smallint default NULL,        -- notified_on_unreachable int
+  `retry_interval` double NOT NULL default '0',         -- smallint
+  `scheduled_downtime_depth` smallint default NULL,     -- int
   `stalk_on_down` smallint NOT NULL default '0',
   `stalk_on_unreachable` smallint NOT NULL default '0',
   `stalk_on_up` smallint NOT NULL default '0',
@@ -265,101 +265,104 @@ CREATE TABLE IF NOT EXISTS `host` (
 
 
 CREATE TABLE IF NOT EXISTS `program_status` (
-  `instance_id` int NOT NULL auto_increment,                    -- OK
-  `instance_name` varchar(255) NOT NULL default 'localhost',    -- OK
-  `active_host_checks_enabled` boolean default NULL,            -- OK
-  `active_service_checks_enabled` boolean default NULL,         -- OK
-  `daemon_mode` boolean default NULL,                           -- OK
-  `event_handlers_enabled` boolean default NULL,                -- OK
-  `failure_prediction_enabled` boolean default NULL,            -- OK
-  `flap_detection_enabled` boolean default NULL,                -- OK
-  `global_host_event_handler` text default NULL,                -- OK
-  `global_service_event_handler` text default NULL,             -- OK
-  `is_running` boolean default NULL,                            -- OK
-  `last_alive` int default NULL,                                -- OK
-  `last_command_check` int default NULL,                        -- OK
-  `last_log_rotation` int default NULL,                         -- OK
-  `modified_host_attributes` int default NULL,                  -- OK
-  `modified_service_attributes` int default NULL,               -- OK
-  `notifications_enabled` boolean default NULL,                 -- OK
-  `obsess_over_hosts` boolean default NULL,                     -- OK
-  `obsess_over_services` boolean default NULL,                  -- OK
-  `passive_host_checks_enabled` boolean default NULL,           -- OK
-  `passive_service_checks_enabled` boolean default NULL,        -- OK
-  `pid` int default NULL,                                       -- OK
-  `process_performance_data` boolean default NULL,              -- OK
-  `program_start` int default NULL,                             -- OK
+  `instance_id` int NOT NULL auto_increment,                 -- OK
+  `instance_name` varchar(255) NOT NULL default 'localhost', -- OK
+  `active_host_checks_enabled` boolean default NULL,         -- OK
+  `active_service_checks_enabled` boolean default NULL,      -- OK
+  `daemon_mode` boolean default NULL,                        -- OK
+  `event_handlers_enabled` boolean default NULL,             -- OK
+  `failure_prediction_enabled` boolean default NULL,         -- OK
+  `flap_detection_enabled` boolean default NULL,             -- OK
+  `global_host_event_handler` text default NULL,             -- OK
+  `global_service_event_handler` text default NULL,          -- OK
+  `is_running` boolean default NULL,                         -- OK
+  `last_alive` int default NULL,                             -- OK
+  `last_command_check` int default NULL,                     -- OK
+  `last_log_rotation` int default NULL,                      -- OK
+  `modified_host_attributes` int default NULL,               -- OK
+  `modified_service_attributes` int default NULL,            -- OK
+  `notifications_enabled` boolean default NULL,              -- OK
+  `obsess_over_hosts` boolean default NULL,                  -- OK
+  `obsess_over_services` boolean default NULL,               -- OK
+  `passive_host_checks_enabled` boolean default NULL,        -- OK
+  `passive_service_checks_enabled` boolean default NULL,     -- OK
+  `pid` int default NULL,                                    -- OK
+  `process_performance_data` boolean default NULL,           -- OK
+  `program_start` int default NULL,                          -- OK
 
   -- check_host_freshness tinyint(2)
   -- check_service_freshness tinyint(2)
-  `instance_address` varchar(120) default NULL,                 -- not in Merlin
-  `instance_description` varchar(128) default NULL,             -- not in Merlin
-  `program_end_time` int default NULL,                          -- not in Merlin
+  `instance_address` varchar(120) default NULL,              -- not in Merlin
+  `instance_description` varchar(128) default NULL,          -- not in Merlin
+  `program_end_time` int default NULL,                       -- not in Merlin
 
   PRIMARY KEY (`instance_id`)
 ) ENGINE=InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS `service` (
-  `id` int NOT NULL auto_increment,                                  -- OK
-  `instance_id` int NOT NULL,                                        -- OK
-  `host_name` varchar(255) NOT NULL,                                     -- OK (varchar(75) in Merlin)
-  `service_description` varchar(255) NOT NULL,                           -- OK (varchar(160) in Merlin)
+  `id` int NOT NULL auto_increment,                     -- OK
+  `instance_id` int NOT NULL,                           -- OK
+  `host_name` varchar(255) NOT NULL,                    -- OK (varchar(75) in Merlin)
+  `service_description` varchar(255) NOT NULL,          -- OK (varchar(160) in Merlin)
 
-  `acknowledgement_type` smallint default NULL,                       -- OK (int in Merlin)
-  `action_url` varchar(255) default NULL,                                -- OK
-  `active_checks_enabled` boolean default NULL,                          -- OK
-  `check_command` text default NULL,                                     -- OK
-  `check_freshness` boolean default NULL,                                -- OK
-  `check_period` varchar(75) default NULL,
-  `check_type` smallint default NULL,                                 -- OK (int in Merlin)
-  `current_attempt` smallint default NULL,                            -- OK (int in Merlin)
-  `current_notification_number` smallint NOT NULL default '0',        -- OK (int in Merlin)
-  `current_state` smallint default NULL,                              -- OK (int in Merlin)
-  `display_name` varchar(160) default NULL,                              -- OK
-  `event_handler_enabled` boolean default NULL,                          -- OK
-  `execution_time` double default NULL,                                  -- OK (float in Merlin)
-  `failure_prediction_enabled` boolean default NULL,                     -- OK
-  `flap_detection_enabled` boolean default NULL,                         -- OK
-  `has_been_checked` boolean default NULL,                               -- OK (int in Merlin)
-  `high_flap_threshold` double default NULL,                             -- OK (float in Merlin)
-  `icon_image` varchar(255) default NULL,                                -- OK (varchar(60) in Merlin)
-  `icon_image_alt` varchar(255) default NULL,                            -- OK (varchar(60) in Merlin)
-  `is_flapping` boolean default NULL,                                    -- OK (int in Merlin)
-  `is_volatile` boolean default NULL,                                    -- OK
-  `last_check` int default NULL,                                     -- OK
-  `last_hard_state` smallint NOT NULL default '0',                    -- OK (int in Merlin)
-  `last_hard_state_change` int default NULL,                         -- OK
-  `last_notification` int default NULL,                              -- OK
-  `last_state_change` int default NULL,                              -- OK
-  `last_time_critical` int default NULL,                             -- OK
-  `last_time_ok` int default NULL,                                   -- OK
-  `last_time_unknown` int default NULL,                              -- OK
-  `last_time_warning` int default NULL,                              -- OK
-  `last_update` int default NULL,                                    -- OK
-  `latency` double default NULL,                                         -- OK (float in Merlin)
-  `long_output` text default NULL,                                       -- OK
-  `low_flap_threshold` double default NULL,                              -- OK (float in Merlin)
-  `max_check_attempts` smallint default NULL,                         -- OK
-  `modified_attributes` int default NULL,                            -- OK
-  `next_check` int default NULL,                                     -- OK
-  `next_notification` int default NULL,                              -- OK
-  `no_more_notifications` boolean default NULL,                          -- OK (int in Merlin)
-  `notification_period` varchar(75) default NULL,                        -- OK
-  `notifications_enabled` boolean default NULL,                          -- OK
-  `obsess_over_service` boolean default NULL,                            -- OK
-  `output` text default NULL,                                            -- OK
-  `notes` varchar(255) default NULL,                                     -- OK
-  `notes_url` varchar(255) default NULL,                                 -- OK
-  `passive_checks_enabled` boolean default NULL,                         -- OK
-  `percent_state_change` double default NULL,                            -- OK (float in Merlin)
-  `perf_data` text default NULL,                                         -- OK
-  `problem_has_been_acknowledged` boolean default NULL,                  -- OK (int in Merlin)
-  `process_performance_data` boolean default NULL,                       -- OK
-  `retain_nonstatus_information` boolean default NULL,                   -- OK
-  `retain_status_information` boolean default NULL,                      -- OK
-  `should_be_scheduled` boolean default NULL,                            -- OK (int in Merlin)
-  `state_type` smallint default NULL,                                 -- OK (int in Merlin)
+  `acknowledgement_type` smallint default NULL,         -- OK (int in Merlin)
+  `action_url` varchar(255) default NULL,               -- OK
+  `active_checks_enabled` boolean default NULL,         -- OK
+  `check_command` text default NULL,                    -- OK
+  `check_freshness` boolean default NULL,               -- OK
+  `check_period` varchar(75) default NULL,              -- OK
+  `check_type` smallint default NULL,                   -- OK (int in Merlin)
+  `current_attempt` smallint default NULL,              -- OK (int in Merlin)
+  `current_notification_number` smallint default NULL,  -- OK (int in Merlin)
+  `current_state` smallint default NULL,                -- OK (int in Merlin)
+  `display_name` varchar(160) default NULL,             -- OK
+  `event_handler_enabled` boolean default NULL,         -- OK
+  `execution_time` double default NULL,                 -- OK (float in Merlin)
+  `failure_prediction_enabled` boolean default NULL,    -- OK
+  `flap_detection_enabled` boolean default NULL,        -- OK
+  `has_been_checked` boolean default NULL,              -- OK (int in Merlin)
+  `high_flap_threshold` double default NULL,            -- OK (float in Merlin)
+  `icon_image` varchar(255) default NULL,               -- OK (varchar(60) in Merlin)
+  `icon_image_alt` varchar(255) default NULL,           -- OK (varchar(60) in Merlin)
+  `is_flapping` boolean default NULL,                   -- OK (int in Merlin)
+  `is_volatile` boolean default NULL,                   -- OK
+  `last_check` int default NULL,                        -- OK
+  `last_hard_state` smallint default NULL,              -- OK (int in Merlin)
+  `last_hard_state_change` int default NULL,            -- OK
+  `last_notification` int default NULL,                 -- OK
+  `last_state_change` int default NULL,                 -- OK
+  `last_time_critical` int default NULL,                -- OK
+  `last_time_ok` int default NULL,                      -- OK
+  `last_time_unknown` int default NULL,                 -- OK
+  `last_time_warning` int default NULL,                 -- OK
+  `last_update` int default NULL,                       -- OK
+  `latency` double default NULL,                        -- OK (float in Merlin)
+  `long_output` text default NULL,                      -- OK
+  `low_flap_threshold` double default NULL,             -- OK (float in Merlin)
+  `max_check_attempts` smallint default NULL,           -- OK
+  `modified_attributes` int default NULL,               -- OK
+  `next_check` int default NULL,                        -- OK
+  `next_notification` int default NULL,                 -- OK
+  `no_more_notifications` boolean default NULL,         -- OK (int in Merlin)
+  `notification_period` varchar(75) default NULL,       -- OK
+  `notifications_enabled` boolean default NULL,         -- OK
+  `notified_on_critical` boolean default NULL,          -- OK (int in Merlin)
+  `notified_on_unknown` boolean default NULL,           -- OK (int in Merlin)
+  `notified_on_warning` boolean default NULL,           -- OK (int in Merlin)
+  `obsess_over_service` boolean default NULL,           -- OK
+  `output` text default NULL,                           -- OK
+  `notes` varchar(255) default NULL,                    -- OK
+  `notes_url` varchar(255) default NULL,                -- OK
+  `passive_checks_enabled` boolean default NULL,        -- OK
+  `percent_state_change` double default NULL,           -- OK (float in Merlin)
+  `perf_data` text default NULL,                        -- OK
+  `problem_has_been_acknowledged` boolean default NULL, -- OK (int in Merlin)
+  `process_performance_data` boolean default NULL,      -- OK
+  `retain_nonstatus_information` boolean default NULL,  -- OK
+  `retain_status_information` boolean default NULL,     -- OK
+  `should_be_scheduled` boolean default NULL,           -- OK (int in Merlin)
+  `state_type` smallint default NULL,                   -- OK (int in Merlin)
 
 
   -- check_options int
@@ -381,16 +384,13 @@ CREATE TABLE IF NOT EXISTS `service` (
   -- last_state int
   -- max_attempts int
   -- notification_options
-  -- notified_on_unknown int
-  -- notified_on_warning int
-  -- notified_on_critical int
   -- parallelize_check tinyint(1)
   -- pending_flex_downtime int
   -- return_code smallint
   -- stalking_options
   -- start_time int
   -- timeout int
-  `check_interval` double NOT NULL default '0',                          -- smallint
+  `check_interval` double NOT NULL default '0',                      -- smallint
   `default_active_checks_enabled` smallint NOT NULL default '0',
   `default_event_handler_enabled` smallint NOT NULL default '0',
   `default_failure_prediction_enabled` smallint NOT NULL default '0',
@@ -398,9 +398,9 @@ CREATE TABLE IF NOT EXISTS `service` (
   `default_notifications_enabled` smallint NOT NULL default '0',
   `default_passive_checks_enabled` smallint NOT NULL default '0',
   `default_process_performance_data` smallint NOT NULL default '0',
-  `event_handler` varchar(255) NOT NULL default '',                      -- int
+  `event_handler` varchar(255) NOT NULL default '',                  -- int
   `failure_prediction_options` varchar(64) NOT NULL default '',
-  `first_notification_delay` double NOT NULL default '0',                -- int
+  `first_notification_delay` double NOT NULL default '0',            -- int
   `flap_detection_on_critical` smallint NOT NULL default '0',
   `flap_detection_on_ok` smallint NOT NULL default '0',
   `flap_detection_on_unknown` smallint NOT NULL default '0',
@@ -408,13 +408,10 @@ CREATE TABLE IF NOT EXISTS `service` (
   `freshness_threshold` double default NULL,                         -- int, WTF ? double in host table, smallint originally
   `graph_id` int default NULL,                                       -- not in Merlin
   `host_id` int default NULL,                                        -- not in Merlin, Centreon-specific, fetched from customvars
-  `notification_interval` double NOT NULL default '0',                   -- int
-  `notify_on_critical` smallint NOT NULL default '0',
+  `notification_interval` double NOT NULL default '0',               -- int
   `notify_on_downtime` smallint NOT NULL default '0',
   `notify_on_flapping` smallint NOT NULL default '0',
   `notify_on_recovery` smallint NOT NULL default '0',
-  `notify_on_unknown` smallint NOT NULL default '0',
-  `notify_on_warning` smallint NOT NULL default '0',
   `retry_interval` double NOT NULL default '0',                      -- smallint
   `service_id` int default NULL,                                     -- not in Merlin, Centreon-specific, fetched from customvars
   `scheduled_downtime_depth` smallint NOT NULL default '0',          -- int

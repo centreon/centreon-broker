@@ -36,6 +36,9 @@ namespace                CentreonBroker
       enum               Bool
       {
 	IS_VOLATILE = 0,
+	NOTIFIED_ON_CRITICAL,
+	NOTIFIED_ON_UNKNOWN,
+	NOTIFIED_ON_WARNING,
 	BOOL_NB
       };
       enum               Short
@@ -44,9 +47,6 @@ namespace                CentreonBroker
 	FLAP_DETECTION_ON_OK,
 	FLAP_DETECTION_ON_UNKNOWN,
 	FLAP_DETECTION_ON_WARNING,
-	NOTIFY_ON_CRITICAL,
-	NOTIFY_ON_UNKNOWN,
-	NOTIFY_ON_WARNING,
 	STALK_ON_CRITICAL,
 	STALK_ON_OK,
 	STALK_ON_UNKNOWN,
@@ -76,9 +76,9 @@ namespace                CentreonBroker
       short              GetFlapDetectionOnUnknown() const throw ();
       short              GetFlapDetectionOnWarning() const throw ();
       bool               GetIsVolatile() const throw ();
-      short              GetNotifyOnCritical() const throw ();
-      short              GetNotifyOnUnknown() const throw ();
-      short              GetNotifyOnWarning() const throw ();
+      bool               GetNotifiedOnCritical() const throw ();
+      bool               GetNotifiedOnUnknown() const throw ();
+      bool               GetNotifiedOnWarning() const throw ();
       short              GetStalkOnCritical() const throw ();
       short              GetStalkOnOk() const throw ();
       short              GetStalkOnUnknown() const throw ();
@@ -91,9 +91,9 @@ namespace                CentreonBroker
       void               SetFlapDetectionOnUnknown(short fdou) throw ();
       void               SetFlapDetectionOnWarning(short fdow) throw ();
       void               SetIsVolatile(bool iv) throw ();
-      void               SetNotifyOnCritical(short noc) throw ();
-      void               SetNotifyOnUnknown(short nou) throw ();
-      void               SetNotifyOnWarning(short now) throw ();
+      void               SetNotifiedOnCritical(bool noc) throw ();
+      void               SetNotifiedOnUnknown(bool nou) throw ();
+      void               SetNotifiedOnWarning(bool now) throw ();
       void               SetStalkOnCritical(short soc) throw ();
       void               SetStalkOnOk(short soo) throw ();
       void               SetStalkOnUnknown(short sou) throw ();

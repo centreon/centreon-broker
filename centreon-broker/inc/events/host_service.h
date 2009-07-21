@@ -73,7 +73,7 @@ namespace                CentreonBroker
      public:
                          HostService() throw ();
 			 HostService(const HostService& hs);
-			 ~HostService() throw ();
+      virtual            ~HostService() throw ();
       HostService&       operator=(const HostService& hs);
       // Getters
       const std::string& GetActionUrl() const throw ();

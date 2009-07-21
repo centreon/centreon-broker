@@ -140,27 +140,27 @@ bool Service::GetIsVolatile() const throw ()
 }
 
 /**
- *  Get the notify_on_critical member.
+ *  Get the notified_on_critical member.
  */
-short Service::GetNotifyOnCritical() const throw ()
+bool Service::GetNotifiedOnCritical() const throw ()
 {
-  return (this->shorts_[NOTIFY_ON_CRITICAL]);
+  return (this->bools_[NOTIFIED_ON_CRITICAL]);
 }
 
 /**
- *  Get the notify_on_unknown member.
+ *  Get the notified_on_unknown member.
  */
-short Service::GetNotifyOnUnknown() const throw ()
+bool Service::GetNotifiedOnUnknown() const throw ()
 {
-  return (this->shorts_[NOTIFY_ON_UNKNOWN]);
+  return (this->bools_[NOTIFIED_ON_UNKNOWN]);
 }
 
 /**
- *  Get the notify_on_warning member.
+ *  Get the notified_on_warning member.
  */
-short Service::GetNotifyOnWarning() const throw ()
+bool Service::GetNotifiedOnWarning() const throw ()
 {
-  return (this->shorts_[NOTIFY_ON_WARNING]);
+  return (this->bools_[NOTIFIED_ON_WARNING]);
 }
 
 /**
@@ -258,29 +258,29 @@ void Service::SetIsVolatile(bool iv) throw ()
 }
 
 /**
- *  Set the notify_on_critical member.
+ *  Set the notified_on_critical member.
  */
-void Service::SetNotifyOnCritical(short noc) throw ()
+void Service::SetNotifiedOnCritical(bool noc) throw ()
 {
-  this->shorts_[NOTIFY_ON_CRITICAL] = noc;
+  this->bools_[NOTIFIED_ON_CRITICAL] = noc;
   return ;
 }
 
 /**
- *  Set the notify_on_unknown member.
+ *  Set the notified_on_unknown member.
  */
-void Service::SetNotifyOnUnknown(short nou) throw ()
+void Service::SetNotifiedOnUnknown(bool nou) throw ()
 {
-  this->shorts_[NOTIFY_ON_UNKNOWN] = nou;
+  this->bools_[NOTIFIED_ON_UNKNOWN] = nou;
   return ;
 }
 
 /**
- *  Set the notify_on_warning member.
+ *  Set the notified_on_warning member.
  */
-void Service::SetNotifyOnWarning(short now) throw ()
+void Service::SetNotifiedOnWarning(bool now) throw ()
 {
-  this->shorts_[NOTIFY_ON_WARNING] = now;
+  this->bools_[NOTIFIED_ON_WARNING] = now;
   return ;
 }
 

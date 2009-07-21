@@ -679,18 +679,18 @@ static void InitServiceMapping()
 				 &Service::GetNotificationPeriod);
   service_mapping.AddBoolField("notifications_enabled",
 			       &Service::GetNotificationsEnabled);
-  service_mapping.AddShortField("notify_on_critical",
-				&Service::GetNotifyOnCritical);
+  service_mapping.AddBoolField("notified_on_critical",
+			       &Service::GetNotifiedOnCritical);
+  service_mapping.AddBoolField("notified_on_unknown",
+			       &Service::GetNotifiedOnUnknown);
+  service_mapping.AddBoolField("notified_on_warning",
+				&Service::GetNotifiedOnWarning);
   service_mapping.AddShortField("notify_on_downtime",
 				&Service::GetNotifyOnDowntime);
   service_mapping.AddShortField("notify_on_flapping",
 				&Service::GetNotifyOnFlapping);
   service_mapping.AddShortField("notify_on_recovery",
 				&Service::GetNotifyOnRecovery);
-  service_mapping.AddShortField("notify_on_unknown",
-				&Service::GetNotifyOnUnknown);
-  service_mapping.AddShortField("notify_on_warning",
-				&Service::GetNotifyOnWarning);
   service_mapping.AddBoolField("obsess_over_service",
 				&Service::GetObsessOver);
   service_mapping.AddStringField("output",

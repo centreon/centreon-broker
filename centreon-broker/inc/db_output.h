@@ -53,6 +53,7 @@ namespace                      CentreonBroker
     class                      Downtime;
     class                      Event;
     class                      Host;
+    class                      HostGroup;
     class                      HostStatus;
     class                      ProgramStatus;
     class                      Query;
@@ -70,6 +71,7 @@ namespace                      CentreonBroker
     DB::Mapping<Events::ConnectionStatus> connection_status_mapping_;
     DB::Mapping<Events::Downtime>         downtime_mapping_;
     DB::Mapping<Events::Host>             host_mapping_;
+    DB::Mapping<Events::HostGroup>        host_group_mapping_;
     DB::Mapping<Events::HostStatus>       host_status_mapping_;
     DB::Mapping<Events::ProgramStatus>    program_status_mapping_;
     DB::Mapping<Events::Service>          service_mapping_;
@@ -116,6 +118,7 @@ namespace                      CentreonBroker
     void                          ProcessDowntime(const Events::Downtime& downtime);
     void                          ProcessEvent(Events::Event* event);
     void                          ProcessHost(const Events::Host& host);
+    void                          ProcessHostGroup(const Events::HostGroup& hg);
     void                          ProcessHostStatus(const Events::HostStatus& hs);
     void                          ProcessProgramStatus(
                                     const Events::ProgramStatus& ps);
