@@ -100,6 +100,7 @@ void DBOutput::CleanTables()
   this->CleanTable(this->connection_mapping_.GetTable());
   this->CleanTable(this->downtime_mapping_.GetTable());
   this->CleanTable(this->host_mapping_.GetTable());
+  this->CleanTable(this->host_group_mapping_.GetTable());
   this->CleanTable(this->program_status_mapping_.GetTable());
   this->CleanTable(this->service_mapping_.GetTable());
 #ifndef NDEBUG
@@ -339,6 +340,9 @@ void DBOutput::ProcessEvent(Event* event)
      case Event::HOST:
       ProcessHost(*static_cast<Host*>(event));
       break ;
+     case Event::HOSTGROUP:
+      ProcessHostGroup(*static_cast<HostGroup*>(event));
+      break ;
      case Event::HOSTSTATUS:
       ProcessHostStatus(*static_cast<HostStatus*>(event));
       break ;
@@ -499,13 +503,32 @@ void DBOutput::ProcessHost(const Host& host)
 }
 
 /**
- *  Process an HostStatus event.
+ *  Process a HostGroup event.
+ */
+void DBOutput::ProcessHostGroup(const HostGroup& hg)
+{
+#ifndef NDEBUG
+  logging.LogDebug("Processing HostGroup event...", true);
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::Insert<HostGroup> >
+    query(this->conn_->GetInsertQuery<HostGroup>(this->host_group_mapping_));
+
+  query->Prepare();
+  query->Execute(hg);
+  this->QueryExecuted();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
+ *  Process a HostStatus event.
  */
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing HostStatus event...");
-  logging.Indent();
+  logging.LogDebug("Processing HostStatus event...", true);
 #endif /* !NDEBUG */
   try
     {
@@ -648,6 +671,7 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
     connection_status_mapping_(connection_status_mapping),
     downtime_mapping_(downtime_mapping),
     host_mapping_(host_mapping),
+    host_group_mapping_(host_group_mapping),
     host_status_mapping_(host_status_mapping),
     program_status_mapping_(program_status_mapping),
     service_mapping_(service_mapping),

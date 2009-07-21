@@ -49,7 +49,7 @@ namespace                CentreonBroker
      *  every EventSubscriber which can process it. When the EventSubscriber is
      *  finished with the event, it removes itself from the event's reader
      *  list. When no object is registered against the event anymore, the
-     *  event will self-destructs (ie. delete (*this);).
+     *  event will self-destructs (ie. delete this;).
      *
      *  \see DBOutput
      *  \see EventPublisher
