@@ -82,6 +82,7 @@ namespace                CentreonBroker
 	HOST,
 	HOSTGROUP,
 	HOSTSTATUS,
+	LOG,
 	PROGRAMSTATUS,
 	SERVICE,
 	SERVICESTATUS

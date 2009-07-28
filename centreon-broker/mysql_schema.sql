@@ -40,6 +40,7 @@
 --    hostgroup
 --   -hosts_commands
 --   -hosts_parenthosts
+--   -log
 --   +notification
 --   -processevents
 --   !program_status
@@ -549,6 +550,28 @@ CREATE TABLE IF NOT EXISTS `hosts_parenthosts` (
   `host_child_id` int NOT NULL default '0',
   UNIQUE KEY `instance_id` (`host_id`,`host_child_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Parent hosts';
+
+
+CREATE TABLE IF NOT EXISTS `log` (
+  `log_id` int(11) NOT NULL auto_increment,
+  `ctime` int(11) default NULL,
+  `host_name` varchar(255) default NULL,
+  `service_description` varchar(255) default NULL,
+  `status` varchar(255) default NULL,
+  `output` text,
+  `notification_cmd` varchar(255) default NULL,
+  `notification_contact` varchar(255) default NULL,
+  `type` varchar(255) default NULL,
+  `retry` int(255) NOT NULL,
+  `msg_type` enum('0','1','2','3','4','5','6','7','8','9','10','11') NOT NULL,
+  `instance` int(11) NOT NULL default '1',
+  PRIMARY KEY  (`log_id`),
+  KEY `host_name` (`host_name`(64)),
+  KEY `service_description` (`service_description`(64)),
+  KEY `status` (`status`),
+  KEY `instance` (`instance`),
+  KEY `ctime` (`ctime`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
 
 
 CREATE TABLE IF NOT EXISTS `processevents` (

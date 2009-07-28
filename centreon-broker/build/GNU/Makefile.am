@@ -54,6 +54,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/host_service.cpp		\
 			../../src/events/host_service_status.cpp	\
 			../../src/events/host_status.cpp		\
+			../../src/events/log.cpp			\
 			../../src/events/program_status.cpp		\
 			../../src/events/service.cpp			\
 			../../src/events/service_status.cpp		\

@@ -25,6 +25,7 @@
 #include "events/host.h"
 #include "events/host_group.h"
 #include "events/host_status.h"
+#include "events/log.h"
 #include "events/program_status.h"
 #include "events/service.h"
 #include "events/service_status.h"
@@ -492,6 +493,28 @@ static void InitHostStatusMapping()
   return ;
 }
 
+DB::Mapping<Log> CentreonBroker::log_mapping;
+
+static void InitLogMapping()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initializing Log mapping");
+#endif /* !NDEBUG */
+  log_mapping.AddTimeField("ctime", &Log::GetCtime);
+  log_mapping.AddStringField("host_name", &Log::GetHostName);
+  log_mapping.AddIntField("msg_type", &Log::GetMsgType);
+  log_mapping.AddStringField("notification_cmd", &Log::GetNotificationCmd);
+  log_mapping.AddStringField("notification_contact",
+                             &Log::GetNotificationContact);
+  log_mapping.AddStringField("output", &Log::GetOutput);
+  log_mapping.AddIntField("retry", &Log::GetRetry);
+  log_mapping.AddStringField("service_description",
+                             &Log::GetServiceDescription);
+  log_mapping.AddStringField("status", &Log::GetStatus);
+  log_mapping.AddStringField("type", &Log::GetLogType);
+  return ;
+}
+
 DB::Mapping<ProgramStatus> CentreonBroker::program_status_mapping;
 
 static void InitProgramStatusMapping()
@@ -844,6 +867,7 @@ void CentreonBroker::InitMappings()
   InitHostMapping();
   InitHostGroupMapping();
   InitHostStatusMapping();
+  InitLogMapping();
   InitProgramStatusMapping();
   InitServiceMapping();
   InitServiceStatusMapping();
