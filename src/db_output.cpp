@@ -346,6 +346,9 @@ void DBOutput::ProcessEvent(Event* event)
      case Event::HOSTSTATUS:
       ProcessHostStatus(*static_cast<HostStatus*>(event));
       break ;
+     case Event::LOG:
+      ProcessLog(*static_cast<Log*>(event));
+      break ;
      case Event::PROGRAMSTATUS:
       ProcessProgramStatus(*static_cast<ProgramStatus*>(event));
       break ;
@@ -548,6 +551,26 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
     this->ProcessHost(Host(hs));
   else
     this->QueryExecuted();
+#ifndef NDEBUG
+  logging.Deindent();
+#endif /* !NDEBUG */
+  return ;
+}
+
+/**
+ *  Process a Log event.
+ */
+void DBOutput::ProcessLog(const Log& log)
+{
+#ifndef NDEBUG
+  logging.LogDebug("Processing Log event...", true);
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::Insert<Log> >
+    query(this->conn_->GetInsertQuery<Log>(log_mapping));
+
+  query->Prepare();
+  query->Execute(log);
+  this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
 #endif /* !NDEBUG */

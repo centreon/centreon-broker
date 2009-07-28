@@ -120,6 +120,7 @@ namespace                      CentreonBroker
     void                          ProcessHost(const Events::Host& host);
     void                          ProcessHostGroup(const Events::HostGroup& hg);
     void                          ProcessHostStatus(const Events::HostStatus& hs);
+    void                          ProcessLog(const Events::Log& log);
     void                          ProcessProgramStatus(
                                     const Events::ProgramStatus& ps);
     void                          ProcessService(const Events::Service& service);

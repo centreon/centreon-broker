@@ -30,6 +30,7 @@
 # include "events/host.h"
 # include "events/host_group.h"
 # include "events/host_status.h"
+# include "events/log.h"
 # include "events/program_status.h"
 # include "events/service.h"
 # include "events/service_status.h"
@@ -52,6 +53,8 @@ namespace                                       CentreonBroker
   extern DB::Mapping<Events::HostGroup>         host_group_mapping;
   // HostStatus
   extern DB::Mapping<Events::HostStatus>        host_status_mapping;
+  // Log
+  extern DB::Mapping<Events::Log>               log_mapping;
   // ProgramStatus
   extern DB::Mapping<Events::ProgramStatus>     program_status_mapping;
   // Service
