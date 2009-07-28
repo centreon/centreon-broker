@@ -29,6 +29,7 @@
 #include "events/host.h"
 #include "events/host_group.h"
 #include "events/host_status.h"
+#include "events/log.h"
 #include "events/program_status.h"
 #include "events/service.h"
 #include "events/service_status.h"
@@ -579,6 +580,201 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
 }
 
 /**
+ *  Handle a log event and publish it against the EventPublisher.
+ */
+void NetworkInput::HandleLog(ProtocolSocket& ps)
+{
+  int key;
+  char* key_str;
+  Log* log;
+  const char* value_str;
+  char* tmp;
+
+  log = new Log;
+  log->SetNagiosInstance(this->instance_);
+  key_str = ps.GetLine();
+  tmp = strchr(key_str, '=');
+  if (!tmp)
+    value_str = "";
+  else
+    {
+      *tmp = '\0';
+      value_str = tmp + 1;
+    }
+  key = strtol(key_str, NULL, 0);
+  while (key != NDO_API_ENDDATA)
+    {
+      if (NDO_DATA_LOGENTRY == key)
+	{
+	  char* data;
+	  char* lasts;
+	  char* value_s;
+
+	  value_s = const_cast<char*>(value_str);
+	  data = strtok_r(value_s, " ", &lasts);
+	  log->SetCtime(strtol(data, NULL, 0));
+	  data = strtok_r(NULL, ":", &lasts);
+	  if (!strcmp(data, "SERVICE ALERT"))
+	    {
+	      log->SetMsgType(0);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetServiceDescription(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetRetry(strtol(data, NULL, 0));
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetOutput(data);
+	    }
+	  else if (!strcmp(data, "HOST ALERT"))
+	    {
+	      log->SetMsgType(1);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetRetry(strtol(data, NULL, 0));
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetOutput(data);
+	    }
+	  else if (!strcmp(data, "SERVICE NOTIFICATION"))
+	    {
+	      log->SetMsgType(2);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetNotificationContact(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetServiceDescription(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetNotificationCmd(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetOutput(data);
+	    }
+	  else if (!strcmp(data, "HOST NOTIFICATION"))
+	    {
+	      log->SetMsgType(3);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetNotificationContact(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetNotificationCmd(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetOutput(data);
+	    }
+	  else if (!strcmp(data, "CURRENT SERVICE STATE"))
+	    {
+	      log->SetMsgType(6);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetServiceDescription(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	    }
+	  else if (!strcmp(data, "CURRENT HOST STATE"))
+	    {
+	      log->SetMsgType(7);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	    }
+	  else if (!strcmp(data, "INITIAL HOST STATE"))
+	    {
+	      log->SetMsgType(9);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	    }
+	  else if (!strcmp(data, "INITIAL SERVICE STATE"))
+	    {
+	      log->SetMsgType(8);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetHostName(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetServiceDescription(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetStatus(data);
+	      data = strtok_r(NULL, ";", &lasts);
+	      log->SetLogType(data);
+	    }
+	  else if (!strcmp(data, "EXTERNAL COMMAND"))
+	    {
+	      data = strtok_r(NULL, ";", &lasts);
+	      if (!strcmp("ACKNOWLEDGE_SVC_PROBLEM", data))
+		{
+		  log->SetMsgType(10);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetHostName(data);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetServiceDescription(data);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetNotificationContact(data);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetOutput(data);
+		}
+	      else if (!strcmp("ACKNOWLEDGE_HOST_PROBLEM", data))
+		{
+		  log->SetMsgType(11);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetHostName(data);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetNotificationContact(data);
+		  data = strtok_r(NULL, ";", &lasts);
+		  log->SetOutput(data);
+		}
+	      else
+		; // XXX : problem
+	    }
+	  else if (!strcmp(data, "Warning"))
+	    {
+	      log->SetMsgType(4);
+	      data = strtok_r(NULL, "", &lasts);
+	      log->SetOutput(data);
+	    }
+	  else
+	    {
+	      // XXX
+	      log->SetMsgType(5);
+	      log->SetOutput(data);
+	    }
+	}
+      key_str = ps.GetLine();
+      tmp = strchr(key_str, '=');
+      if (!tmp)
+	value_str = "";
+      else
+	{
+	  *tmp = '\0';
+	  value_str = tmp + 1;
+	}
+      key = strtol(key_str, NULL, 0);
+    }
+  EventPublisher::GetInstance()->Publish(log);
+  return ;
+}
+
+/**
  *  Handle a program status event and publish it against the EventPublisher.
  */
 void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
@@ -970,6 +1166,7 @@ void NetworkInput::operator()()
 	{ NDO_API_HOSTDEFINITION, &NetworkInput::HandleHost },
 	{ NDO_API_HOSTGROUPDEFINITION, &NetworkInput::HandleHostGroup },
 	{ NDO_API_HOSTSTATUSDATA, &NetworkInput::HandleHostStatus },
+	{ NDO_API_LOGDATA, &NetworkInput::HandleLog },
 	{ NDO_API_PROGRAMSTATUSDATA, &NetworkInput::HandleProgramStatus },
 	{ NDO_API_SERVICEDEFINITION, &NetworkInput::HandleService },
 	{ NDO_API_SERVICESTATUSDATA, &NetworkInput::HandleServiceStatus },
