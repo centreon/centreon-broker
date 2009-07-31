@@ -21,10 +21,6 @@
 #ifndef NETWORK_INPUT_H_
 # define NETWORK_INPUT_H_
 
-# include <boost/asio.hpp>
-# ifdef USE_TLS
-#  include <boost/asio/ssl.hpp>
-# endif /* USE_TLS */
 # include <boost/thread.hpp>
 # include <cstddef>
 # include <memory>
@@ -40,18 +36,14 @@ namespace                         CentreonBroker
    */
   class                           NetworkInput
   {
-    friend class                  NetworkAcceptor;
+    friend class                  ClientAcceptor;
 
    private:
     Events::ConnectionStatus      conn_status_;
     std::string                   instance_;
     std::auto_ptr<ProtocolSocket> socket_;
     boost::thread*                thread_;
-                                  NetworkInput(boost::asio::ip::tcp::socket*);
-# ifdef USE_TLS
-				  NetworkInput(boost::asio::ssl::stream<
-				    boost::asio::ip::tcp::socket>*);
-# endif /* USE_TLS */
+                                  NetworkInput(ProtocolSocket* ps);
                                   NetworkInput(const NetworkInput& ni);
     NetworkInput&                 operator=(const NetworkInput& ni);
     void                          HandleAcknowledgement(ProtocolSocket& ps);
@@ -65,9 +57,6 @@ namespace                         CentreonBroker
     void                          HandleProgramStatus(ProtocolSocket& ps);
     void                          HandleService(ProtocolSocket& ps);
     void                          HandleServiceStatus(ProtocolSocket& ps);
-# ifdef USE_TLS
-    void                          Handshake(const boost::system::error_code&);
-# endif /* USE_TLS */
 
    public:
                                   ~NetworkInput() throw ();

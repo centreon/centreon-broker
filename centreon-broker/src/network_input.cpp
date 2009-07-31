@@ -207,8 +207,8 @@ static inline void HandleObject(const std::string& instance,
 /**
  *  NetworkInput constructor.
  */
-NetworkInput::NetworkInput(boost::asio::ip::tcp::socket* socket)
-  : socket_(new StandardProtocolSocket(socket))
+NetworkInput::NetworkInput(ProtocolSocket* ps)
+  : socket_(ps)
 {
 #ifndef NDEBUG
   logging.LogDebug("New connection accepted, launching client thread...");
@@ -218,25 +218,6 @@ NetworkInput::NetworkInput(boost::asio::ip::tcp::socket* socket)
   delete (this->thread_);
   this->thread_ = NULL;
 }
-
-#ifdef USE_TLS
-/**
- *  NetworkInput constructor.
- */
-NetworkInput::NetworkInput(
-  boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* socket)
-  : socket_(new TlsProtocolSocket(socket)), thread_(NULL)
-{
-#ifndef NDEBUG
-  logging.LogDebug("Launching asynchronous TLS handshake...");
-#endif /* !NDEBUG */
-  socket->async_handshake(boost::asio::ssl::stream_base::server,
-			  boost::bind(&NetworkInput::Handshake,
-				      this,
-				      boost::asio::placeholders::error));
-  this->thread_ = NULL;
-}
-#endif /* USE_TLS */
 
 /**
  *  NetworkInput copy constructor.
@@ -1089,33 +1070,6 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
   return ;
 }
 
-#ifdef USE_TLS
-/**
- *  Handle the TLS handshake.
- */
-void NetworkInput::Handshake(const boost::system::error_code& ec)
-{
-  if (!ec)
-    {
-# ifndef NDEBUG
-      logging.LogDebug("TLS handshake succeeded, launching client thread...");
-# endif /* !NDEBUG */
-      this->thread_ = new boost::thread(boost::ref(*this));
-      this->thread_->detach();
-      delete (this->thread_);
-      this->thread_ = NULL;
-    }
-  else
-    {
-      logging.LogInfo("TLS handshake failed, closing connection...", true);
-      logging.LogInfo(ec.message().c_str());
-      logging.Deindent();
-      delete (this);
-    }
-  return ;
-}
-#endif /* USE_TLS */
-
 /**************************************
 *                                     *
 *            Public Methods           *
@@ -1227,6 +1181,7 @@ void NetworkInput::operator()()
   catch (...)
     {
     }
+  logging.LogInfo("Exiting input processing thread...");
   delete (this);
   return ;
 }
