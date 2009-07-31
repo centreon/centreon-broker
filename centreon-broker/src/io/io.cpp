@@ -30,13 +30,21 @@ using namespace CentreonBroker::IO;
 *                                                                             *
 ******************************************************************************/
 
-/**
- *  Stream default constructor.
- */
-Stream::Stream() throw () {}
+/**************************************
+*                                     *
+*         Protected Methods           *
+*                                     *
+**************************************/
 
 /**
- *  Stream copy constructor.
+ *  \brief Stream copy constructor.
+ *
+ *  As Stream is just an interface with no data, the copy constructor does
+ *  nothing and therefore cannot generate any exception. Also, as users of this
+ *  class should not call the copy constructor directly, but instead through
+ *  concrete objects, the copy constructor is declared protected.
+ *
+ *  \param[in] stream Object to copy from (unused).
  */
 Stream::Stream(const Stream& stream) throw ()
 {
@@ -44,18 +52,44 @@ Stream::Stream(const Stream& stream) throw ()
 }
 
 /**
- *  Stream destructor.
- */
-Stream::~Stream() {}
-
-/**
- *  Stream operator= overload.
+ *  \brief Overload of the assignement operator.
+ *
+ *  As Stream is just an interface with no data, the operator= method does
+ *  nothing and therefore cannot generate any exception. Also, as users of this
+ *  class should not directly assign a Stream object to another, the method is
+ *  declared protected. If one want to copy a Stream object, he'll have to go
+ *  through the concrete object's interface.
+ *
+ *  \param[in] stream Object to copy from (unused).
+ *
+ *  \return *this.
  */
 Stream& Stream::operator=(const Stream& stream) throw ()
 {
   (void)stream;
   return (*this);
 }
+
+/**************************************
+*                                     *
+*          Public Methods             *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Stream default constructor.
+ *
+ *  As Stream is just an interface with no data, the default constructor does
+ *  nothing and therefore cannot generate any exception.
+ */
+Stream::Stream() throw () {}
+
+/**
+ *  \brief Stream destructor.
+ *
+ *  Does nothing directly but beware the overriden destructors.
+ */
+Stream::~Stream() {}
 
 
 /******************************************************************************
@@ -66,13 +100,21 @@ Stream& Stream::operator=(const Stream& stream) throw ()
 *                                                                             *
 ******************************************************************************/
 
-/**
- *  Acceptor default constructor.
- */
-Acceptor::Acceptor() throw () {}
+/**************************************
+*                                     *
+*         Protected Methods           *
+*                                     *
+**************************************/
 
 /**
- *  Acceptor copy constructor.
+ *  \brief Acceptor copy constructor.
+ *
+ *  As Acceptor is just an interface with no data, the copy constructor does
+ *  nothing and therefore cannot generate any exception. Also, as users of this
+ *  class should not call the copy constructor directly, but instead through
+ *  concrete objects, the copy constructor is declared protected.
+ *
+ *  \param[in] acceptor Object to copy from (unused).
  */
 Acceptor::Acceptor(const Acceptor& acceptor) throw ()
 {
@@ -80,15 +122,41 @@ Acceptor::Acceptor(const Acceptor& acceptor) throw ()
 }
 
 /**
- *  Acceptor destructor.
- */
-Acceptor::~Acceptor() {}
-
-/**
- *  Acceptor operator= overload.
+ *  \brief Overload of the assignement operator.
+ *
+ *  As Acceptor is just an interface with no data, the operator= method does
+ *  nothing and therefore cannot generate any exception. Also, as users of this
+ *  class should not directly assign an Acceptor object to another, the method
+ *  is declared protected. If one want to copy an Acceptor object, he'll have
+ *  to go through the concrete object's interface.
+ *
+ *  \param[in] acceptor Object to copy from (unused).
+ *
+ *  \return *this
  */
 Acceptor& Acceptor::operator=(const Acceptor& acceptor) throw ()
 {
   (void)acceptor;
   return (*this);
 }
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Acceptor default constructor.
+ *
+ *  As Acceptor is just an interface with no data, the default constructor does
+ *  nothing and therefore cannot generate any exception.
+ */
+Acceptor::Acceptor() throw () {}
+
+/**
+ *  \brief Acceptor destructor.
+ *
+ *  Does nothing directly, but beware the overrident destructors.
+ */
+Acceptor::~Acceptor() {}

@@ -22,7 +22,6 @@
 #include "client_acceptor.h"
 #include "logging.h"
 #include "network_input.h"
-#include "protocol_socket.h"
 
 using namespace CentreonBroker;
 
@@ -96,7 +95,7 @@ void ClientAcceptor::operator()()
 	      // XXX : hold a list of NetworkInput
 	      logging.LogInfo("New client incoming, " \
                               "launching processing thread...");
-	      new NetworkInput(new ProtocolSocket(stream));
+	      new NetworkInput(stream);
 	    }
 	}
     }

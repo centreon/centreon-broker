@@ -67,24 +67,12 @@ static ssize_t PushHelper(gnutls_transport_ptr_t ptr,
 **************************************/
 
 /**
- *  TLSStream default constructor.
- */
-TLSStream::TLSStream(Stream* lower)
-  : lower_(lower)
-{
-  int ret;
-
-  ret = gnutls_init(&this->session_, GNUTLS_SERVER);
-  if (ret != GNUTLS_E_SUCCESS)
-    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  gnutls_transport_set_lowat(this->session_, 0);
-  gnutls_transport_set_pull_function(this->session_, PullHelper);
-  gnutls_transport_set_push_function(this->session_, PushHelper);
-  gnutls_transport_set_ptr(this->session_, this->lower_);
-}
-
-/**
- *  TLSStream copy constructor.
+ *  \brief TLSStream copy constructor.
+ *
+ *  TLSStreams are not copiable, that's why the copy constructor is declared
+ *  private.
+ *
+ *  \param[in] tls_stream Unused.
  */
 TLSStream::TLSStream(const TLSStream& tls_stream) : Stream(tls_stream)
 {
@@ -92,57 +80,20 @@ TLSStream::TLSStream(const TLSStream& tls_stream) : Stream(tls_stream)
 }
 
 /**
- *  TLSStream operator= overload.
+ *  \brief Overload of the assignement operator.
+ *
+ *  TLSStreams are not copiable, that's why the copy constructor is declared
+ *  private.
+ *
+ *  \param[in] tls_stream Unused.
+ *
+ *  \return *this
  */
 TLSStream& TLSStream::operator=(const TLSStream& tls_stream)
 {
   (void)tls_stream;
   assert(false);
   return (*this);
-}
-
-/**
- *  Perform a TLS handshake.
- */
-void TLSStream::Handshake()
-{
-  int ret;
-
-  do
-    {
-      ret = gnutls_handshake(this->session_);
-    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-  if (ret != GNUTLS_E_SUCCESS)
-    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  return ;
-}
-
-/**
- *  Verify if peer certificate is valid.
- */
-void TLSStream::VerifyPeer()
-{
-  int ret;
-  unsigned int status;
-
-  ret = gnutls_certificate_verify_peers2(this->session_, &status);
-  if (ret != GNUTLS_E_SUCCESS)
-    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  if (status & GNUTLS_CERT_INVALID)
-    throw (CentreonBroker::Exception(GNUTLS_CERT_INVALID,
-      "The certificate is not signed by one of the known authorities, or " \
-      "the signature is invalid."));
-  else if (status & GNUTLS_CERT_REVOKED)
-    throw (CentreonBroker::Exception(GNUTLS_CERT_REVOKED,
-      "The certificate has been revoked by its CA."));
-  else if (status & GNUTLS_CERT_SIGNER_NOT_FOUND)
-    throw (CentreonBroker::Exception(GNUTLS_CERT_SIGNER_NOT_FOUND,
-      "The issuer is not in the trusted certificates list."));
-  else if (status & GNUTLS_CERT_INSECURE_ALGORITHM)
-    throw (CentreonBroker::Exception(GNUTLS_CERT_INSECURE_ALGORITHM,
-      "The certificate was signed using an insecure algorithm such as MD2 " \
-      "or MD5. These algorithms have been broken and should not be trusted."));
-  return ;
 }
 
 /**************************************
@@ -152,39 +103,69 @@ void TLSStream::VerifyPeer()
 **************************************/
 
 /**
- *  TLSStream destructor.
+ *  \brief TLSStream constructor.
+ *
+ *  When building the TLSStream, you need to provide a stream that will be used
+ *  to transport encrypted data and a TLS session, providing informations on
+ *  the kind of encryption to use. Upon completion of this constructor, the
+ *  TLSStream object is considered to be the owner of the given objects, which
+ *  means that the TLSStream object is responsible for their destruction.
+ *
+ *  \param[in] lower   The stream object that will transport encrypted data.
+ *  \param[in] session TLS session, providing informations on the encryption
+ *                     that should be used.
  */
-TLSStream::~TLSStream()
+TLSStream::TLSStream(Stream* lower, gnutls_session_t* session) throw ()
+  : lower_(lower), session_(session)
 {
-  this->Close();
-  gnutls_deinit(this->session_);
+  gnutls_transport_set_lowat(*this->session_, 0);
+  gnutls_transport_set_pull_function(*this->session_, PullHelper);
+  gnutls_transport_set_push_function(*this->session_, PushHelper);
+  gnutls_transport_set_ptr(*this->session_, this->lower_);
 }
 
 /**
- *  Close all connection-related objects.
+ *  \brief TLSStream destructor.
+ *
+ *  The destructor will release all acquired ressources that haven't been
+ *  released yet.
+ */
+TLSStream::~TLSStream()
+{
+  if (this->lower_ || this->session_)
+    this->Close();
+}
+
+/**
+ *  \brief Close the TLS stream.
+ *
+ *  This method will shutdown the TLS session and close the underlying stream,
+ *  releasing all acquired ressources.
  */
 void TLSStream::Close()
 {
-  if (this->lower_)
-    {
-      gnutls_bye(this->session_, GNUTLS_SHUT_RDWR);
-      this->lower_->Close();
-      delete (this->lower_);
-      this->lower_ = NULL;
-    }
+  gnutls_bye(*this->session_, GNUTLS_SHUT_RDWR);
+  gnutls_deinit(*this->session_);
+  delete (this->session_);
+  this->session_ = NULL;
+  this->lower_->Close();
+  delete (this->lower_);
+  this->lower_ = NULL;
   return ;
 }
 
 /**
- *  Return the lower layer.
- */
-Stream* TLSStream::GetLower() const throw ()
-{
-  return (this->lower_);
-}
-
-/**
- *  Receive data.
+ *  \brief Receive data from the TLS session.
+ *
+ *  Receive at most size bytes from the network stream and store them in
+ *  buffer. The number of bytes read is then returned. This number can be less
+ *  than size. In case of error, a CentreonBroker::Exception is thrown.
+ *
+ *  \param[out] buffer Buffer on which to store received data.
+ *  \param[in]  size   Maximum number of bytes to read.
+ *
+ *  \return Number of bytes read from the network stream. 0 if the session has
+ *          been shut down.
  */
 int TLSStream::Receive(char* buffer, int size)
 {
@@ -192,7 +173,7 @@ int TLSStream::Receive(char* buffer, int size)
 
   do
     {
-      ret = gnutls_record_recv(this->session_, buffer, size);
+      ret = gnutls_record_recv(*this->session_, buffer, size);
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
   if (ret != GNUTLS_E_SUCCESS)
     throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
@@ -200,7 +181,17 @@ int TLSStream::Receive(char* buffer, int size)
 }
 
 /**
- *  Send data.
+ *  \brief Send data across the TLS session.
+ *
+ *  Send at most size bytes from the buffer. The number of bytes actually sent
+ *  is returned. This number can be less than size. In case of error, a
+ *  CentreonBroker::Exception is thrown.
+ *
+ *  \param[in] buffer Data to send.
+ *  \param[in] size   Maximum number of bytes to send.
+ *
+ *  \return Number of bytes actually sent through the TLS session. 0 if the
+ *          connection has been shut down.
  */
 int TLSStream::Send(const char* buffer, int size)
 {
@@ -208,7 +199,7 @@ int TLSStream::Send(const char* buffer, int size)
 
   do
     {
-      ret = gnutls_record_send(this->session_, buffer, size);
+      ret = gnutls_record_send(*this->session_, buffer, size);
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
   if (ret != GNUTLS_E_SUCCESS)
     throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
@@ -234,7 +225,7 @@ int TLSStream::Send(const char* buffer, int size)
  *  Those 2048-bits wide Diffie-Hellman parameters were generated the
  *  30/07/2009 on Ubuntu 9.04 x86 using OpenSSL 0.9.8g with generator 2.
  */
-const unsigned char TLSAcceptor::dh_params_2048[] =
+static const unsigned char dh_params_2048[] =
   "-----BEGIN DH PARAMETERS-----\n" \
   "MIIBCAKCAQEA93F3CN41kJooLbqcOdWHJPb+/zPV+mMs5Svb6PVH/XS3BK/tuuVu\n" \
   "r9okkOzGr07KLPiKf+3MJSgHs9N91wPG6JcMcRys3fH1Tszh1i1317tE54o+oLPv\n" \
@@ -246,15 +237,58 @@ const unsigned char TLSAcceptor::dh_params_2048[] =
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief TLSAcceptor copy constructor.
+ *
+ *  As TLSAcceptors are not copiable, the copy constructor is declared private.
+ *
+ *  \param[in] tls_acceptor Unused.
+ */
+TLSAcceptor::TLSAcceptor(const TLSAcceptor& tls_acceptor)
+  : Acceptor(tls_acceptor)
+{
+  (void)tls_acceptor;
+  assert(false);
+}
+
+/**
+ *  \brief Overload of the assignement operator.
+ *
+ *  As TLSAcceptors are not copiable, the operator= method is declared private.
+ *
+ *  \param[in] tls_acceptor Unused.
+ *
+ *  \return *this
+ */
+TLSAcceptor& TLSAcceptor::operator=(const TLSAcceptor& tls_acceptor)
+{
+  (void)tls_acceptor;
+  assert(false);
+  return (*this);
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
 
 /**
- *  TLSAcceptor default constructor.
+ *  \brief TLSAcceptor default constructor.
+ *
+ *  This constructor will initialize internal data, especially Diffie-Hellman
+ *  parameters. In case of error, a CentreonBroker::Exception is thrown.
  */
 TLSAcceptor::TLSAcceptor()
-  : compression_(false), cred_init_(false)
+  : cert_based_(false),
+    check_cert_(false),
+    compression_(false),
+    cred_init_(false),
+    lower_(NULL)
 {
   const gnutls_datum_t dh_params =
     { const_cast<unsigned char*>(dh_params_2048), sizeof(dh_params_2048) };
@@ -271,23 +305,51 @@ TLSAcceptor::TLSAcceptor()
 }
 
 /**
- *  TLSAcceptor destructor.
+ *  \brief TLSAcceptor destructor.
+ *
+ *  Release all acquired ressources like Diffie-Hellman parameters,
+ *  credentials, ... and close the underlying acceptor if it has not already
+ *  been closed.
  */
 TLSAcceptor::~TLSAcceptor()
 {
-  this->Close();
+  if (this->lower_)
+    this->Close();
+  else if (this->cred_init_)
+    {
+      if (this->cert_based_)
+	gnutls_certificate_free_credentials(this->cred_.cert);
+      else
+	gnutls_anon_free_server_credentials(this->cred_.anon);
+    }
   gnutls_dh_params_deinit(this->dh_params_);
 }
 
 /**
- *  Try to accept a new connection.
+ *  \brief Try to accept a new connection.
+ *
+ *  Wait for an incoming client through the underlying acceptor, perform TLS
+ *  checks (if configured to do so) and return a TLS encrypted stream. In case
+ *  of error, a CentreonBroker::Exception is thrown.
+ *
+ *  \return A TLS-encrypted stream (namely a TLSStream object).
+ *
+ *  \see TLSStream
  */
 Stream* TLSAcceptor::Accept()
 {
   Stream* lower;
+  gnutls_session_t* session;
   TLSStream* stream;
 
+  /*
+  ** The process of accepting a TLS client is pretty straight-forward. Just
+  ** follow the comments the have an overview of performed operations.
+  */
+
+  // First accept a client from the lower layer.
   lower = this->lower_->Accept();
+  session = NULL;
   stream = NULL;
   if (lower)
     {
@@ -295,38 +357,82 @@ Stream* TLSAcceptor::Accept()
 	{
 	  int ret;
 
-	  stream = new TLSStream(lower);
-	  if (this->cert_.empty() || this->key_.empty())
-            ret = gnutls_credentials_set(stream->session_,
+	  // Initialize the TLS session
+	  session = new (gnutls_session_t);
+	  ret = gnutls_init(session, GNUTLS_SERVER);
+	  if (ret != GNUTLS_E_SUCCESS)
+	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+	  // Set the certificate to use for encryption ...
+	  if (!this->cert_based_)
+            ret = gnutls_credentials_set(*session,
                                          GNUTLS_CRD_ANON,
                                          this->cred_.anon);
+	  // ... or the anonymous credentials.
 	  else
 	    {
-              ret = gnutls_credentials_set(stream->session_,
+              ret = gnutls_credentials_set(*session,
                                            GNUTLS_CRD_CERTIFICATE,
                                            this->cred_.cert);
-	      gnutls_certificate_server_set_request(stream->session_,
+	      gnutls_certificate_server_set_request(*session,
 						    GNUTLS_CERT_REQUIRE);
 	    }
           if (ret != GNUTLS_E_SUCCESS)
             throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-	  ret = gnutls_priority_set_direct(stream->session_,
+
+	  // Set the encryption method (normal ciphers with anonymous
+	  // Diffie-Hellman and optionnally compresion).
+	  ret = gnutls_priority_set_direct(*session,
                                            (this->compression_
                                             ? "NORMAL:+ANON-DH"
                                             : "NORMAL:+ANON-DH:+COMP-DEFLATE"),
                                            NULL);
 	  if (ret != GNUTLS_E_SUCCESS)
 	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-	  stream->Handshake();
-	  if (!this->ca_cert_.empty())
-	    stream->VerifyPeer();
+
+	  // Perform the TLS handshake.
+	  do
+	    {
+	      ret = gnutls_handshake(*session);
+	    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
+	  if (ret != GNUTLS_E_SUCCESS)
+	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+	  // If set, check if the peer's certificate is valid.
+	  if (!this->check_cert_)
+	    {
+	      unsigned int status;
+
+	      ret = gnutls_certificate_verify_peers2(*session, &status);
+	      if (ret != GNUTLS_E_SUCCESS)
+		throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+	      if (status & GNUTLS_CERT_INVALID)
+		throw (CentreonBroker::Exception(GNUTLS_CERT_INVALID,
+                  "The certificate is not signed by one of the known " \
+                  "authorities, or the signature is invalid."));
+	      else if (status & GNUTLS_CERT_REVOKED)
+		throw (CentreonBroker::Exception(GNUTLS_CERT_REVOKED,
+                  "The certificate has been revoked by its CA."));
+	      else if (status & GNUTLS_CERT_SIGNER_NOT_FOUND)
+		throw (CentreonBroker::Exception(GNUTLS_CERT_SIGNER_NOT_FOUND,
+                  "The issuer is not in the trusted certificates list."));
+	      else if (status & GNUTLS_CERT_INSECURE_ALGORITHM)
+		throw (CentreonBroker::Exception(GNUTLS_CERT_INSECURE_ALGORITHM,
+                  "The certificate was signed using an insecure algorithm " \
+		  "such as MD2 or MD5. These algorithms have been broken "  \
+                  "and should not be trusted."));
+	    }
+	  stream = new TLSStream(lower, session);
 	}
       catch (...)
 	{
-	  if (stream)
-	    delete (stream);
-	  else if (lower)
-	    delete (lower);
+	  if (session)
+	    {
+	      gnutls_deinit(*session);
+	      delete (session);
+	    }
+	  lower->Close();
+	  delete (lower);
 	  throw ;
 	}
     }
@@ -334,103 +440,135 @@ Stream* TLSAcceptor::Accept()
 }
 
 /**
- *  Close the acceptor.
+ *  \brief Close the acceptor.
+ *
+ *  Release all acquired ressources and close the underlying Acceptor.
  */
 void TLSAcceptor::Close()
 {
-  if (this->lower_)
-    {
-      this->lower_->Close();
-      this->lower_ = NULL;
-    }
+  this->lower_->Close();
+  this->lower_ = NULL;
   if (this->cred_init_)
     {
-      if (!this->cert_.empty() && !this->key_.empty())
+      if (this->cert_based_)
 	gnutls_certificate_free_credentials(this->cred_.cert);
       else
 	gnutls_anon_free_server_credentials(this->cred_.anon);
-      this->cred_init_ = false;
     }
+  this->cert_based_ = false;
+  this->check_cert_ = false;
+  this->compression_ = false;
+  this->cred_init_ = false;
   return ;
 }
 
 /**
- *  Get the lower acceptor.
+ *  \brief Get the TLSAcceptor ready.
+ *
+ *  Initialize late TLS-related objects. From now on, users can call Accept()
+ *  to wait for new clients. Upon a successful return of this method, the
+ *  TLSAcceptor object is considered owning the Acceptor object provided, which
+ *  means that the TLSAcceptor object will handle its destruction.
+ *
+ *  In case of error, a CentreonBroker::Exception is thrown.
+ *
+ *  \param[in] lower The underlying Acceptor.
  */
-Acceptor* TLSAcceptor::GetLower() const throw ()
+void TLSAcceptor::Listen(Acceptor* lower) throw (CentreonBroker::Exception)
 {
-  return (this->lower_);
-}
-
-/**
- *  Put the acceptor in listen mode.
- */
-void TLSAcceptor::Listen()
-{
-  int ret;
-
-  if (!this->cert_.empty() && !this->key_.empty())
-    {
-      ret = gnutls_certificate_allocate_credentials(&this->cred_.cert);
-      if (ret != GNUTLS_E_SUCCESS)
-	throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-      ret = gnutls_certificate_set_x509_key_file(this->cred_.cert,
-                                                 this->cert_.c_str(),
-                                                 this->key_.c_str(),
-                                                 GNUTLS_X509_FMT_PEM);
-      if (ret != GNUTLS_E_SUCCESS)
-	{
-	  gnutls_certificate_free_credentials(this->cred_.cert);
-	  throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-	}
-      ret = gnutls_certificate_set_x509_trust_file(this->cred_.cert,
-                                                   this->ca_cert_.c_str(),
-                                                   GNUTLS_X509_FMT_PEM);
-      if (ret < 0)
-	{
-	  gnutls_certificate_free_credentials(this->cred_.cert);
-	  throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-	}
-      gnutls_certificate_set_dh_params(this->cred_.cert, this->dh_params_);
-    }
+  if (this->cert_based_)
+    gnutls_certificate_set_dh_params(this->cred_.cert, this->dh_params_);
   else
     {
+      int ret;
+
       ret = gnutls_anon_allocate_server_credentials(&this->cred_.anon);
       if (ret != GNUTLS_E_SUCCESS)
 	throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
       gnutls_anon_set_server_dh_params(this->cred_.anon, this->dh_params_);
+      this->cred_init_ = true;
     }
-  this->cred_init_ = true;
-  this->lower_->Listen();
-  return ;
-}
-
-/**
- *  Set certificates to use for connection encryption.
- */
-void TLSAcceptor::SetCert(const std::string& cert,
-                          const std::string& key)
-{
-  this->cert_ = cert;
-  this->key_ = key;
-  return ;
-}
-
-/**
- *  Set the lower acceptor.
- */
-void TLSAcceptor::SetLower(Acceptor* lower) throw ()
-{
   this->lower_ = lower;
   return ;
 }
 
 /**
- *  Set the trusted CA certificate. If this parameter is set, certificate
- *  checking will be performed on the connection against this CA certificate.
+ *  \brief Set certificates to use for connection encryption.
+ *
+ *  TLSAcceptor provides two encryption mode : anonymous and certificate-based.
+ *  If you want to use certificates for encryption, call this function with the
+ *  name of the PEM-encoded public certificate (cert) and the private key
+ *  (key). In case there was an error loading this pair, a
+ *  CentreonBroker::Exception is thrown.
+ *
+ *  \param[in] cert The path to the PEM-encoded public certificate.
+ *  \param[in] key  The path to the PEM-encoded private key.
  */
-void TLSAcceptor::SetTrustedCA(const std::string& ca_cert)
+void TLSAcceptor::SetCert(const char* cert, const char* key)
+  throw (CentreonBroker::Exception)
 {
-  this->ca_cert_ = ca_cert;
+  int ret;
+
+  ret = gnutls_certificate_allocate_credentials(&this->cred_.cert);
+  if (ret != GNUTLS_E_SUCCESS)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+  ret = gnutls_certificate_set_x509_key_file(this->cred_.cert,
+                                             cert,
+                                             key,
+                                             GNUTLS_X509_FMT_PEM);
+  if (ret != GNUTLS_E_SUCCESS)
+    {
+      gnutls_certificate_free_credentials(this->cred_.cert);
+      throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+    }
+  this->cert_based_ = true;
+  this->cred_init_ = true;
+  return ;
+}
+
+/**
+ *  \brief Set the compression mode (on/off).
+ *
+ *  Determines whether or not the encrypted stream should also be compressed
+ *  using the Deflate algorithm. This kind of compression usually works well on
+ *  text or other compressible data. The compression algorithm, may be useful
+ *  in high bandwidth TLS tunnels, and in cases where network usage has to be
+ *  minimized. As a drawback, compression increases latency.
+ *
+ *  \param[in] compress_stream True if the stream should be compressed, false
+ *                             otherwise.
+ */
+void TLSAcceptor::SetCompression(bool compress_stream) throw ()
+{
+  this->compression_ = compress_stream;
+  return ;
+}
+
+/**
+ *  \brief Set the trusted CA certificate.
+ *
+ *  If this parameter is set, certificate checking will be performed on the
+ *  connection against this CA certificate. The SetCert method should have been
+ *  called before. In case of error, a CentreonBroker::Exception will be
+ *  thrown.
+ *
+ *  \param[in] ca_cert The path to the PEM-encoded public certificate of the
+ *                     trusted Certificate Authority.
+ */
+void TLSAcceptor::SetTrustedCA(const char* ca_cert)
+  throw (CentreonBroker::Exception)
+{
+  int ret;
+
+  if (!this->cert_based_)
+    throw (CentreonBroker::Exception(0, "Certificate used for encryption " \
+                                        "should be set before the trusted " \
+                                        "Certificate Authority's."));
+  ret = gnutls_certificate_set_x509_trust_file(this->cred_.cert,
+                                               ca_cert,
+                                               GNUTLS_X509_FMT_PEM);
+  if (ret <= 0)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+  this->check_cert_ = true;
   return ;
 }

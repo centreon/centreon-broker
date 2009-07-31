@@ -108,12 +108,11 @@ int main(int argc, char* argv[])
 		    IO::Net4Acceptor* net4_acceptor;
 
 		    net4_acceptor = new IO::Net4Acceptor;
-		    net4_acceptor->SetPort(input->GetPort());
+		    net4_acceptor->Listen(input->GetPort());
 		    a = net4_acceptor;
 #ifdef USE_TLS
 		  }
 #endif /* USE_TLS */
-		a->Listen();
 		ca = new ClientAcceptor;
 		ca->Run(a);
                 sockets.push_back(ca);

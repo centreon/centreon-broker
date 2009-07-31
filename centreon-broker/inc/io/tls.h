@@ -22,40 +22,56 @@
 # define IO_TLS_H_
 
 # include <gnutls.h>
+# include "exception.h"
 # include "io/io.h"
 
-namespace              CentreonBroker
+namespace               CentreonBroker
 {
-  namespace            IO
+  namespace             IO
   {
-    class              TLSStream : public Stream
+    /**
+     *  \class TLSStream tls.h "io/tls.h"
+     *  \brief TLS wrapper of an underlying stream.
+     *
+     *  The TLSStream class wraps a lower layer stream and provides encryption
+     *  (and optionnally compression) over this stream. Those functionnality
+     *  are provided using the GNU TLS library
+     *  (http://www.gnu.org/software/gnutls). TLSStream can be used on every
+     *  Stream object.
+     */
+    class                TLSStream : public Stream
     {
-      friend class     TLSAcceptor;
-
      private:
-      Stream*          lower_;
-      gnutls_session_t session_;
-                       TLSStream(Stream* lower);
-                       TLSStream(const TLSStream& tls_stream);
-      TLSStream&       operator=(const TLSStream& tls_stream);
-      void             Handshake();
-      void             VerifyPeer();
+      Stream*            lower_;
+      gnutls_session_t*  session_;
+                         TLSStream(const TLSStream& tls_stream);
+      TLSStream&         operator=(const TLSStream& tls_stream);
 
      public:
-                       ~TLSStream();
-      void             Close();
-      Stream*          GetLower() const throw ();
-      int              Receive(char* buffer, int size);
-      int              Send(const char* buffer, int size);
+                         TLSStream(Stream* lower, gnutls_session_t* session)
+                           throw ();
+                         ~TLSStream();
+      void               Close();
+      int                Receive(char* buffer, int size);
+      int                Send(const char* buffer, int size);
     };
 
-    class              TLSAcceptor : public Acceptor
+    /**
+     *  \class TLSAcceptor tls.h "io/tls.h"
+     *  \brief Perform TLS verification on top of another acceptor.
+     *
+     *  Within the process of accepting an incoming client, the TLSAcceptor
+     *  class will provide encryption to the lower stream. Using this class is
+     *  really simple : build the object, set some properties and call Listen()
+     *  with the lower acceptor. Then use it just like you'd use another
+     *  Acceptor. Encryption will be automatically provided on the returned
+     *  accepted streams.
+     */
+    class                TLSAcceptor : public Acceptor
     {
      private:
-      static const unsigned char
-                         dh_params_2048[];
-      std::string        ca_cert_;
-      std::string        cert_;
+      bool               cert_based_;
+      bool               check_cert_;
       bool               compression_;
       union
       {
@@ -64,7 +80,6 @@ namespace              CentreonBroker
       }                  cred_;
       bool               cred_init_;
       gnutls_dh_params_t dh_params_;
-      std::string        key_;
       Acceptor*          lower_;
                          TLSAcceptor(const TLSAcceptor& tls_acceptor);
       TLSAcceptor&       operator=(const TLSAcceptor& tls_acceptor);
@@ -74,13 +89,14 @@ namespace              CentreonBroker
                          ~TLSAcceptor();
       Stream*            Accept();
       void               Close();
-      Acceptor*          GetLower() const throw ();
-      void               Listen();
-      void               SetCert(const std::string& cert,
-                                 const std::string& key);
-      void               SetCompression(bool compress_stream = true);
-      void               SetLower(Acceptor* lower) throw ();
-      void               SetTrustedCA(const std::string& ca_cert);
+      void               Listen(Acceptor* acceptor)
+                           throw (CentreonBroker::Exception);
+      void               SetCert(const char* cert, const char* key)
+                           throw (CentreonBroker::Exception);
+      void               SetCompression(bool compress_stream = true)
+                           throw ();
+      void               SetTrustedCA(const char* ca_cert)
+                           throw (CentreonBroker::Exception);
     };
   }
 }

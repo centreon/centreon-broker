@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <boost/thread/mutex.hpp>
 #include <cstdlib>
 #include <ctime>
 #include "event_publisher.h"
@@ -33,60 +32,13 @@
 #include "events/program_status.h"
 #include "events/service.h"
 #include "events/service_status.h"
+#include "exception.h"
 #include "logging.h"
 #include "nagios/protoapi.h"
 #include "network_input.h"
 
 using namespace CentreonBroker;
 using namespace CentreonBroker::Events;
-
-/**************************************
-*                                     *
-*           Static objects            *
-*                                     *
-**************************************/
-
-static boost::mutex             gl_mutex;
-static std::list<NetworkInput*> gl_ni;
-
-static void networkinput_destruction() throw ()
-{
-  try
-    {
-      boost::unique_lock<boost::mutex> lock(gl_mutex);
-
-      while (!gl_ni.empty())
-        {
-          std::list<NetworkInput*>::iterator it;
-
-          it = gl_ni.begin();
-          lock.unlock();
-          delete (*it);
-          lock.lock();
-        }
-    }
-  catch (...)
-    {
-    }
-  return ;
-}
-
-namespace    CentreonBroker
-{
-  struct     NetworkInputDestructionRegistration
-  {
-             NetworkInputDestructionRegistration() throw ()
-    {
-      atexit(networkinput_destruction);
-    }
-  };
-}
-
-/**
- *  This fake static object is used to register at startup the NetworkInput
- *  cleanup function that will run on termination.
- */
-static CentreonBroker::NetworkInputDestructionRegistration gl_nidr;
 
 /**************************************
 *                                     *
@@ -129,7 +81,7 @@ struct KeySetter
 template <typename EventType>
 static inline void HandleObject(const std::string& instance,
                                 const KeySetter<EventType>* key_setters,
-                                ProtocolSocket& ps)
+                                NetworkInput& ni)
 {
   int key;
   char* key_str;
@@ -139,7 +91,7 @@ static inline void HandleObject(const std::string& instance,
 
   event = new EventType;
   event->SetNagiosInstance(instance);
-  key_str = ps.GetLine();
+  key_str = ni.GetLine();
   tmp = strchr(key_str, '=');
   if (!tmp)
     value_str = "";
@@ -189,7 +141,7 @@ static inline void HandleObject(const std::string& instance,
 	      }
 	    break ;
 	  }
-      key_str = ps.GetLine();
+      key_str = ni.GetLine();
       tmp = strchr(key_str, '=');
       if (!tmp)
 	value_str = "";
@@ -207,16 +159,19 @@ static inline void HandleObject(const std::string& instance,
 /**
  *  NetworkInput constructor.
  */
-NetworkInput::NetworkInput(ProtocolSocket* ps)
-  : socket_(ps)
+NetworkInput::NetworkInput(IO::Stream* stream)
+  : bytes_processed_(0L),
+    discard_(0),
+    last_checkin_time_(time(NULL)),
+    length_(0),
+    lines_processed_(0L),
+    socket_(stream)
 {
 #ifndef NDEBUG
   logging.LogDebug("New connection accepted, launching client thread...");
 #endif /* !NDEBUG */
+  this->buffer_[0] = '\0';
   this->thread_ = new boost::thread(boost::ref(*this));
-  this->thread_->detach();
-  delete (this->thread_);
-  this->thread_ = NULL;
 }
 
 /**
@@ -225,6 +180,7 @@ NetworkInput::NetworkInput(ProtocolSocket* ps)
 NetworkInput::NetworkInput(const NetworkInput& ni)
 {
   (void)ni;
+  assert(false);
 }
 
 /**
@@ -233,13 +189,14 @@ NetworkInput::NetworkInput(const NetworkInput& ni)
 NetworkInput& NetworkInput::operator=(const NetworkInput& ni)
 {
   (void)ni;
+  assert(false);
   return (*this);
 }
 
 /**
  *  Handle an acknowledgement and publish it against the EventPublisher.
  */
-void NetworkInput::HandleAcknowledgement(ProtocolSocket& socket)
+void NetworkInput::HandleAcknowledgement()
 {
   static const KeySetter<Acknowledgement> acknowledgement_setters[] =
     {
@@ -260,14 +217,14 @@ void NetworkInput::HandleAcknowledgement(ProtocolSocket& socket)
 
   HandleObject<Acknowledgement>(this->instance_,
 				acknowledgement_setters,
-				socket);
+				*this);
   return ;
 }
 
 /**
  *  Handle a comment and publish it against the EventPublisher.
  */
-void NetworkInput::HandleComment(ProtocolSocket& socket)
+void NetworkInput::HandleComment()
 {
   static const KeySetter<Comment> comment_setters[] =
     {
@@ -286,14 +243,14 @@ void NetworkInput::HandleComment(ProtocolSocket& socket)
       { 0, '\0', static_cast<void (Comment::*)(bool)>(NULL) }
     };
 
-  HandleObject<Comment>(this->instance_, comment_setters, socket);
+  HandleObject<Comment>(this->instance_, comment_setters, *this);
   return ;
 }
 
 /**
  *  Handle a downtime event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleDowntime(ProtocolSocket& socket)
+void NetworkInput::HandleDowntime()
 {
   static const KeySetter<Downtime> downtime_setters[] =
     {
@@ -312,14 +269,14 @@ void NetworkInput::HandleDowntime(ProtocolSocket& socket)
       { 0, '\0', static_cast<void (Downtime::*)(double)>(NULL) }
     };
 
-  HandleObject<Downtime>(this->instance_, downtime_setters, socket);
+  HandleObject<Downtime>(this->instance_, downtime_setters, *this);
   return ;
 }
 
 /**
  *  Handle a host definition event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleHost(ProtocolSocket& socket)
+void NetworkInput::HandleHost()
 {
   static const KeySetter<Host> keys_setters[] =
     {
@@ -401,14 +358,14 @@ void NetworkInput::HandleHost(ProtocolSocket& socket)
       { 0, '\0', static_cast<void (Host::*)(double)>(NULL) }
     };
 
-  HandleObject<Host>(this->instance_, keys_setters, socket);
+  HandleObject<Host>(this->instance_, keys_setters, *this);
   return ;
 }
 
 /**
  *  Handle a host group definition and publish it against the EventPublisher.
  */
-void NetworkInput::HandleHostGroup(ProtocolSocket& socket)
+void NetworkInput::HandleHostGroup()
 {
   static const KeySetter<HostGroup> keys_setters[] =
     {
@@ -417,14 +374,14 @@ void NetworkInput::HandleHostGroup(ProtocolSocket& socket)
       { 0, '\0', static_cast<void (HostGroup::*)(double)>(NULL) }
     };
 
-  HandleObject<HostGroup>(this->instance_, keys_setters, socket);
+  HandleObject<HostGroup>(this->instance_, keys_setters, *this);
   return ;
 }
 
 /**
  *  Handle a host status event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
+void NetworkInput::HandleHostStatus()
 {
   static const KeySetter<HostStatus> keys_setters[] =
       {
@@ -516,14 +473,14 @@ void NetworkInput::HandleHostStatus(ProtocolSocket& socket)
 	{ 0, '\0', static_cast<void (HostStatus::*)(double)>(NULL) }
       };
 
-  HandleObject<HostStatus>(this->instance_, keys_setters, socket);
+  HandleObject<HostStatus>(this->instance_, keys_setters, *this);
   return ;
 }
 
 /**
  *  Immediately after connection, handle the first data transmitted.
  */
-void NetworkInput::HandleInitialization(ProtocolSocket& ps)
+void NetworkInput::HandleInitialization()
 {
   char* key;
   char* tmp;
@@ -532,7 +489,7 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
 
   conn_info = new Connection;
   conn_info->SetConnectTime(time(NULL));
-  key = ps.GetLine();
+  key = this->GetLine();
   while (strcmp(key, NDO_API_STARTDATADUMP))
     {
       tmp = strchr(key, ':');
@@ -553,7 +510,7 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
 	conn_info->SetConnectSource(value);
       else if (!strcmp(key, NDO_API_CONNECTTYPE))
 	conn_info->SetConnectType(value);
-      key = ps.GetLine();
+      key = this->GetLine();
     }
   conn_info->SetDataStartTime(time(NULL));
   EventPublisher::GetInstance()->Publish(conn_info);
@@ -563,7 +520,7 @@ void NetworkInput::HandleInitialization(ProtocolSocket& ps)
 /**
  *  Handle a log event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleLog(ProtocolSocket& ps)
+void NetworkInput::HandleLog()
 {
   int key;
   char* key_str;
@@ -573,7 +530,7 @@ void NetworkInput::HandleLog(ProtocolSocket& ps)
 
   log = new Log;
   log->SetNagiosInstance(this->instance_);
-  key_str = ps.GetLine();
+  key_str = this->GetLine();
   tmp = strchr(key_str, '=');
   if (!tmp)
     value_str = "";
@@ -740,7 +697,7 @@ void NetworkInput::HandleLog(ProtocolSocket& ps)
 	      log->SetOutput(data);
 	    }
 	}
-      key_str = ps.GetLine();
+      key_str = this->GetLine();
       tmp = strchr(key_str, '=');
       if (!tmp)
 	value_str = "";
@@ -758,7 +715,7 @@ void NetworkInput::HandleLog(ProtocolSocket& ps)
 /**
  *  Handle a program status event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
+void NetworkInput::HandleProgramStatus()
 {
   static const KeySetter<ProgramStatus> keys_setters[] =
     {
@@ -819,7 +776,7 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (ProgramStatus::*)(double)>(NULL) }
     };
 
-  HandleObject<ProgramStatus>(this->instance_, keys_setters, ps);
+  HandleObject<ProgramStatus>(this->instance_, keys_setters, *this);
   return ;
 }
 
@@ -827,7 +784,7 @@ void NetworkInput::HandleProgramStatus(ProtocolSocket& ps)
  *  Handle a service definition event and publish it against the
  *  EventPublisher.
  */
-void NetworkInput::HandleService(ProtocolSocket& ps)
+void NetworkInput::HandleService()
 {
   static const KeySetter<Service> keys_setters[] =
     {
@@ -969,14 +926,14 @@ void NetworkInput::HandleService(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (Service::*)(double)>(NULL) }
     };
 
-  HandleObject<Service>(this->instance_, keys_setters, ps);
+  HandleObject<Service>(this->instance_, keys_setters, *this);
   return ;
 }
 
 /**
  *  Handle a service status event and publish it against the EventPublisher.
  */
-void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
+void NetworkInput::HandleServiceStatus()
 {
   static const KeySetter<ServiceStatus> keys_setters[] =
     {
@@ -1066,7 +1023,7 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
       { 0, '\0', static_cast<void (ServiceStatus::*)(double)>(NULL) }
     };
 
-  HandleObject<ServiceStatus>(this->instance_, keys_setters, ps);
+  HandleObject<ServiceStatus>(this->instance_, keys_setters, *this);
   return ;
 }
 
@@ -1082,24 +1039,10 @@ void NetworkInput::HandleServiceStatus(ProtocolSocket& ps)
 NetworkInput::~NetworkInput() throw ()
 {
   logging.LogInfo("Closing client connection...");
-  // We might end up here and the object already been destroyed so let's be
-  // extra careful.
-  try
-    {
-      boost::unique_lock<boost::mutex> lock(gl_mutex);
-      std::list<NetworkInput*>::iterator it;
-
-      // XXX : use std::algorithm
-      for (it = gl_ni.begin(); it != gl_ni.end(); it++)
-        if (*it == this)
-          {
-            gl_ni.erase(it);
-            break ;
-          }
-    }
-  catch (...)
-    {
-    }
+  this->socket_->Close();
+  delete (this->socket_);
+  this->thread_->join();
+  delete (this->thread_);
 }
 
 /**
@@ -1111,7 +1054,7 @@ void NetworkInput::operator()()
   static const struct
   {
     int event;
-    void (NetworkInput::* handler)(ProtocolSocket&);
+    void (NetworkInput::* handler)();
   } handlers[] =
       {
 	{ NDO_API_ACKNOWLEDGEMENTDATA, &NetworkInput::HandleAcknowledgement },
@@ -1129,8 +1072,8 @@ void NetworkInput::operator()()
 
   try
     {
-      HandleInitialization(*this->socket_);
-      buffer = this->socket_->GetLine();
+      this->HandleInitialization();
+      buffer = this->GetLine();
       while (strcmp(buffer, NDO_API_GOODBYE))
 	{
 	  if (4 == strlen(buffer) && ':' == buffer[3])
@@ -1143,20 +1086,20 @@ void NetworkInput::operator()()
 		if (handlers[i].event == event)
 		  {
 		    this->conn_status_.SetBytesProcessed(
-		      this->socket_->GetBytesProcessed());
+		      this->bytes_processed_);
 		    this->conn_status_.SetLinesProcessed(
-                      this->socket_->GetLinesProcessed());
-		    (this->*(handlers[i].handler))(*this->socket_);
+                      this->lines_processed_);
+		    (this->*(handlers[i].handler))();
 		    this->conn_status_.SetEntriesProcessed(
                       this->conn_status_.GetEntriesProcessed() + 1);
 		    this->conn_status_.SetLastCheckinTime(
-                      this->socket_->GetLastCheckinTime());
+                      this->last_checkin_time_);
 		    EventPublisher::GetInstance()->Publish(
 		      new ConnectionStatus(this->conn_status_));
 		    break ;
 		  }
 	    }
-	  buffer = this->socket_->GetLine();
+	  buffer = this->GetLine();
 	}
       this->conn_status_.SetDataEndTime(time(NULL));
     }
@@ -1184,4 +1127,36 @@ void NetworkInput::operator()()
   logging.LogInfo("Exiting input processing thread...");
   delete (this);
   return ;
+}
+
+char* NetworkInput::GetLine()
+{
+  int old_length;
+
+  this->length_ -= this->discard_;
+  memmove(this->buffer_,
+	  this->buffer_ + this->discard_,
+	  this->length_ + 1);
+  this->discard_ = 0;
+  old_length = 0;
+  while (!strchr(this->buffer_ + old_length, '\n')
+	 && this->length_ < sizeof(this->buffer_) - 1)
+    {
+      unsigned long bytes_read;
+
+      old_length = this->length_;
+      bytes_read = this->socket_->Receive(this->buffer_ + this->length_,
+                     sizeof(this->buffer_) - this->length_ - 1);
+      this->bytes_processed_ += bytes_read;
+      this->length_ += bytes_read;
+      this->buffer_[this->length_] = '\0';
+      this->last_checkin_time_ = time(NULL);
+      // XXX : find a better way to correct this
+      if (!bytes_read)
+	throw (Exception(0, "Socket is closed"));
+    }
+  this->discard_ = strcspn(this->buffer_, "\n");
+  this->buffer_[this->discard_++] = '\0';
+  ++this->lines_processed_;
+  return (this->buffer_);
 }

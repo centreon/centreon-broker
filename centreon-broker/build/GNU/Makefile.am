@@ -64,7 +64,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/file_output.cpp			\
 			../../src/io/io.cpp				\
 			../../src/io/net4.cpp				\
+			../../src/io/tls.cpp				\
 			../../src/logging.cpp				\
 			../../src/mapping.cpp				\
-			../../src/network_input.cpp			\
-			../../src/protocol_socket.cpp
+			../../src/network_input.cpp
