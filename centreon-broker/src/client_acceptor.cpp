@@ -32,7 +32,12 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  ClientAcceptor copy constructor.
+ *  \brief ClientAcceptor copy constructor.
+ *
+ *  The need to copy a client acceptor should be avoided and as such, the copy
+ *  constructor is declared private.
+ *
+ *  \param[in] ca Unused.
  */
 ClientAcceptor::ClientAcceptor(const ClientAcceptor& ca)
 {
@@ -41,7 +46,14 @@ ClientAcceptor::ClientAcceptor(const ClientAcceptor& ca)
 }
 
 /**
- *  ClientAcceptor operator= overload.
+ *  \brief Overload of the assignement operator.
+ *
+ *  The need to copy a client acceptor should be avoided and as such, the
+ *  operator= overload is declared private.
+ *
+ *  \param[in] ca Unused.
+ *
+ *  \return *this
  */
 ClientAcceptor& ClientAcceptor::operator=(const ClientAcceptor& ca)
 {
@@ -57,18 +69,31 @@ ClientAcceptor& ClientAcceptor::operator=(const ClientAcceptor& ca)
 **************************************/
 
 /**
- *  ClientAcceptor constructor.
+ *  \brief ClientAcceptor default constructor.
+ *
+ *  Initialize internal data.
  */
-ClientAcceptor::ClientAcceptor() : acceptor_(NULL), thread_(NULL) {}
+ClientAcceptor::ClientAcceptor() throw (): acceptor_(NULL), thread_(NULL) {}
 
 /**
- *  ClientAcceptor destructor.
+ *  \brief ClientAcceptor destructor.
+ *
+ *  Release all acquired ressources.
  */
 ClientAcceptor::~ClientAcceptor()
 {
   if (this->thread_)
     {
       this->acceptor_->Close();
+      {
+	boost::unique_lock<boost::mutex> lock(this->inputsm_);
+
+	for (std::list<NetworkInput*>::iterator it = this->inputs_.begin();
+	     it != this->inputs_.end();
+	     it++)
+	  delete (*it);
+	this->inputs_.clear();
+      }
       this->thread_->join();
       delete (this->thread_);
     }
@@ -77,10 +102,18 @@ ClientAcceptor::~ClientAcceptor()
 }
 
 /**
- *  Core thread function which is in charge of accepting new clients.
+ *  \brief Core code of the thread.
+ *
+ *  When the Run() method is called, a new thread is created. This is where it
+ *  starts. Basically, all ClientAcceptor processing will be in this loop. The
+ *  loop it self is really simple : 1) wait for new client 2) launch processing
+ *  thread.
  */
 void ClientAcceptor::operator()()
 {
+#ifndef NDEBUG
+  logging.LogDebug("Client accepting thread started.");
+#endif /* !NDEBUG */
   try
     {
       IO::Stream* stream;
@@ -92,21 +125,36 @@ void ClientAcceptor::operator()()
 	    break ;
 	  else
 	    {
-	      // XXX : hold a list of NetworkInput
+	      boost::unique_lock<boost::mutex> lock(this->inputsm_);
+
 	      logging.LogInfo("New client incoming, " \
                               "launching processing thread...");
-	      new NetworkInput(stream);
+	      // XXX : new NetworkInput(this, stream)
+	      this->inputs_.push_back(new NetworkInput(stream));
 	    }
 	}
     }
+  catch (std::exception& e)
+    {
+      logging.LogError("Client acceptor failed because of an exception :");
+      logging.LogError(e.what());
+      logging.LogError("Exiting accepting thread.");
+    }
   catch (...)
     {
+      logging.LogError("Client acceptor failed because of an unknown " \
+                       "exception, exiting accepting thread.");
     }
+  logging.LogInfo("Exiting client accepting thread.");
   return ;
 }
 
 /**
- *  Launch the thread.
+ *  \brief Launch client accepting thread.
+ *
+ *  This method starts the processing thread.
+ *
+ *  \param[in] acceptor Acceptor from which clients should be accepted.
  */
 void ClientAcceptor::Run(IO::Acceptor* acceptor)
 {
