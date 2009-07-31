@@ -23,22 +23,38 @@
 
 # include <boost/thread.hpp>
 # include "io/io.h"
+# include "network_input.h"
 
 namespace           CentreonBroker
 {
-  class             ClientAcceptor
+  /**
+   *  \class ClientAcceptor client_acceptor.h "client_acceptor.h"
+   *  \brief Wait for incoming clients and then launch processing thread.
+   *
+   *  A ClientAcceptor will wait for incoming clients on a provided acceptor.
+   *  When a new client arrives, the ClientAcceptor class has the
+   *  responsability to create the thread that will process the input of this
+   *  client (namely a NetworkInput object). Upon ClientAcceptor termination,
+   *  it will close all previously launched threads.
+   *
+   *  \see NetworkInput
+   *  \see Acceptor
+   */
+  class                      ClientAcceptor
   {
    private:
-    IO::Acceptor*   acceptor_;
-    boost::thread*  thread_;
-                    ClientAcceptor(const ClientAcceptor& ca);
-    ClientAcceptor& operator=(const ClientAcceptor& ca);
+    IO::Acceptor*            acceptor_;
+    std::list<NetworkInput*> inputs_;
+    boost::mutex             inputsm_;
+    boost::thread*           thread_;
+                             ClientAcceptor(const ClientAcceptor& ca);
+    ClientAcceptor&          operator=(const ClientAcceptor& ca);
 
    public:
-                    ClientAcceptor();
-                    ~ClientAcceptor();
-    void            operator()();
-    void            Run(IO::Acceptor* acceptor);
+                             ClientAcceptor() throw ();
+                             ~ClientAcceptor();
+    void                     operator()();
+    void                     Run(IO::Acceptor* acceptor);
   };
 }
 
