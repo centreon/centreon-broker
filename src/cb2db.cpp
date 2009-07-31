@@ -18,20 +18,22 @@
 **  For more information : contact@centreon.com
 */
 
-#include <boost/asio.hpp>
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
 #include <mysql.h>
+#include "client_acceptor.h"
 #include "conf/conf.h"
 #include "db_output.h"
+#include "io/net4.h"
+#ifdef USE_TLS
+# include "io/tls.h"
+#endif /* USE_TLS */
 #include "logging.h"
 #include "mapping.h"
-#include "network_acceptor.h"
 
 using namespace CentreonBroker;
 
-static boost::asio::io_service* gl_boost_io;
 static volatile bool gl_shall_exit = false;
 
 /**
@@ -41,7 +43,7 @@ static void term_handler(int signum)
 {
   (void)signum;
   gl_shall_exit = true;
-  gl_boost_io->stop();
+  raise(SIGURG);
   signal(SIGINT, term_handler);
   return ;
 }
@@ -54,7 +56,7 @@ int main(int argc, char* argv[])
   Conf::Conf conf;
   int exit_code;
   std::vector<DBOutput*> dbs;
-  std::vector<NetworkAcceptor*> sockets;
+  std::vector<ClientAcceptor*> sockets;
 
   if (argc != 2)
     {
@@ -70,10 +72,6 @@ int main(int argc, char* argv[])
           logging.LogDebug("Initializing MySQL library...");
 #endif /* !NDEBUG */
           mysql_library_init(0, NULL, NULL);
-#ifndef NDEBUG
-          logging.LogDebug("Initializing I/O engine...");
-#endif /* !NDEBUG */
-          gl_boost_io = new boost::asio::io_service;
 
           // Load Object-Relational mappings
           InitMappings();
@@ -92,16 +90,33 @@ int main(int argc, char* argv[])
             input = conf.GetNextInput();
             while (input)
               {
-                NetworkAcceptor* na;
+                ClientAcceptor* ca;
+		IO::Acceptor* a;
 
-                na = new NetworkAcceptor(*gl_boost_io);
 #ifdef USE_TLS
-                na->SetTls(input->GetTlsCertificate(),
-                           input->GetTlsKey(),
-                           input->GetTlsCa());
+		if (input->GetTLS())
+		  {
+		    IO::TLSAcceptor* tls_acceptor;
+
+		    tls_acceptor = new IO::TLSAcceptor;
+		    // XXX : TLS configuration
+		    a = tls_acceptor;
+		  }
+		else
+		  {
 #endif /* USE_TLS */
-                na->Accept(input->GetPort());
-                sockets.push_back(na);
+		    IO::Net4Acceptor* net4_acceptor;
+
+		    net4_acceptor = new IO::Net4Acceptor;
+		    net4_acceptor->SetPort(input->GetPort());
+		    a = net4_acceptor;
+#ifdef USE_TLS
+		  }
+#endif /* USE_TLS */
+		a->Listen();
+		ca = new ClientAcceptor;
+		ca->Run(a);
+                sockets.push_back(ca);
                 input = conf.GetNextInput();
               }
           }
@@ -148,10 +163,7 @@ int main(int argc, char* argv[])
           // Everything loader, ready to go
           logging.LogInfo("Initialization completed, waiting for clients...");
           while (!gl_shall_exit)
-            {
-              gl_boost_io->run();
-              gl_boost_io->reset();
-            }
+	    pause();
 
           exit_code = 0;
         }
@@ -163,14 +175,7 @@ int main(int argc, char* argv[])
           logging.Deindent();
           exit_code = 1;
         }
-      if (gl_boost_io)
-        {
-#ifndef NDEBUG
-          logging.LogDebug("Shutting down I/O service...");
-#endif /* !NDEBUG */
-          delete (gl_boost_io);
-          gl_boost_io = NULL;
-        }
+
 #ifndef NDEBUG
       logging.LogDebug("Exiting main()");
 #endif /* !NDEBUG */

@@ -21,11 +21,9 @@
 #ifndef PROTOCOL_SOCKET_H_
 # define PROTOCOL_SOCKET_H_
 
-# include <boost/asio.hpp>
-# ifdef USE_TLS
-#  include <boost/asio/ssl.hpp>
-# endif /* USE_TLS */
 # include <cstring>
+# include <ctime>
+# include "io/io.h"
 
 namespace           CentreonBroker
 {
@@ -42,61 +40,18 @@ namespace           CentreonBroker
     time_t          last_checkin_time_;
     size_t          length_;
     unsigned long   lines_processed_;
+    IO::Stream*     stream_;
                     ProtocolSocket(const ProtocolSocket& ps) throw ();
     ProtocolSocket& operator=(const ProtocolSocket& ps) throw ();
 
-   protected:
-    template        <typename SocketT>
-    char*           GetLine(SocketT& socket);
-
    public:
-                    ProtocolSocket() throw ();
+                    ProtocolSocket(IO::Stream* stream) throw ();
     virtual         ~ProtocolSocket();
     unsigned long   GetBytesProcessed() const;
     time_t          GetLastCheckinTime() const;
-    virtual char*   GetLine() = 0;
+    char*           GetLine();
     unsigned long   GetLinesProcessed() const;
   };
-
-  /**
-   *  This class is a ProtocolSocket that uses a normal boost socket (as
-   *  opposed to TLS socket.
-   */
-  class                     StandardProtocolSocket : public ProtocolSocket
-  {
-   private:
-    std::auto_ptr<boost::asio::ip::tcp::socket> socket_;
-                            StandardProtocolSocket(
-                              const StandardProtocolSocket& sps);
-    StandardProtocolSocket& operator=(const StandardProtocolSocket& sps);
-
-   public:
-                            StandardProtocolSocket(
-                              boost::asio::ip::tcp::socket* socket);
-			    ~StandardProtocolSocket();
-    char*                   GetLine();
-  };
-
-# ifdef USE_TLS
-  /**
-   *  This class is a ProtocolSocket that uses a TLS socket.
-   */
-  class                TlsProtocolSocket : public ProtocolSocket
-  {
-   private:
-    std::auto_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >
-      socket_;
-                       TlsProtocolSocket(const TlsProtocolSocket& tps);
-    TlsProtocolSocket& operator=(const TlsProtocolSocket& tps);
-
-   public:
-                       TlsProtocolSocket(
-                         boost::asio::ssl::stream<
-                           boost::asio::ip::tcp::socket>*);
-                       ~TlsProtocolSocket();
-    char*              GetLine();
-  };
-# endif /* USE_TLS */
 }
 
 #endif /* !PROTOCOL_SOCKET_H_ */

@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -98,8 +99,12 @@ void Net4Stream::Close()
  */
 int Net4Stream::Receive(char* buffer, int size)
 {
-  // XXX : throw exception
-  return (recv(this->sockfd_, buffer, size, 0));
+  int ret;
+
+  ret = recv(this->sockfd_, buffer, size, 0);
+  if (ret < 0)
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
+  return (ret);
 }
 
 /**
@@ -107,8 +112,12 @@ int Net4Stream::Receive(char* buffer, int size)
  */
 int Net4Stream::Send(const char* buffer, int size)
 {
-  // XXX : throw exception
-  return (send(this->sockfd_, buffer, size, 0));
+  int ret;
+
+  ret = send(this->sockfd_, buffer, size, 0);
+  if (ret < 0)
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
+  return (ret);
 }
 
 
@@ -172,7 +181,7 @@ Stream* Net4Acceptor::Accept()
 
   fd = accept(this->sockfd_, NULL, NULL);
   if (fd < 0)
-    throw (CentreonBroker::Exception(fd, strerror(fd)));
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
   return (new Net4Stream(fd));
 }
 
@@ -203,23 +212,21 @@ unsigned short Net4Acceptor::GetPort() const throw ()
  */
 void Net4Acceptor::Listen()
 {
-  int ret;
   struct sockaddr_in sin;
 
   this->sockfd_ = socket(PF_INET, SOCK_STREAM, 0);
   if (this->sockfd_ < 0)
-    throw (CentreonBroker::Exception(this->sockfd_, strerror(this->sockfd_)));
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
   memset(&sin, 0, sizeof(sin));
   sin.sin_addr.s_addr = INADDR_ANY;
   sin.sin_family = AF_INET;
   sin.sin_port = htons(this->port_);
-  if ((ret = bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin)))
-      || (ret = listen(this->sockfd_, 0)))
+  if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))
+      || listen(this->sockfd_, 0))
     {
       this->Close();
-      throw (CentreonBroker::Exception(ret, strerror(ret)));
+      throw (CentreonBroker::Exception(errno, strerror(errno)));
     }
-  return ;
   return ;
 }
 

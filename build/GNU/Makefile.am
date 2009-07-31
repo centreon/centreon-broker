@@ -22,6 +22,7 @@ AUTOMAKE_OPTIONS=	subdir-objects
 
 bin_PROGRAMS	=	cb2db
 cb2db_SOURCES	=	../../src/cb2db.cpp				\
+			../../src/client_acceptor.cpp			\
 			../../src/conf/conf.cpp				\
 			../../src/conf/input.cpp			\
 			../../src/conf/log.cpp				\
@@ -65,6 +66,5 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/io/net4.cpp				\
 			../../src/logging.cpp				\
 			../../src/mapping.cpp				\
-			../../src/network_acceptor.cpp			\
 			../../src/network_input.cpp			\
 			../../src/protocol_socket.cpp
