@@ -20,6 +20,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include "client_acceptor.h"
 #include "event_publisher.h"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
@@ -159,12 +160,13 @@ static inline void HandleObject(const std::string& instance,
 /**
  *  NetworkInput constructor.
  */
-NetworkInput::NetworkInput(IO::Stream* stream)
+NetworkInput::NetworkInput(ClientAcceptor* parent, IO::Stream* stream)
   : bytes_processed_(0L),
     discard_(0),
     last_checkin_time_(time(NULL)),
     length_(0),
     lines_processed_(0L),
+    parent_(parent),
     socket_(stream)
 {
 #ifndef NDEBUG
@@ -1039,10 +1041,16 @@ void NetworkInput::HandleServiceStatus()
 NetworkInput::~NetworkInput() throw ()
 {
   logging.LogInfo("Closing client connection...");
-  this->socket_->Close();
-  delete (this->socket_);
-  this->thread_->join();
-  delete (this->thread_);
+
+  boost::unique_lock<boost::mutex> lock(this->threadm_);
+
+  if (this->thread_)
+    {
+      this->socket_->Close();
+      this->thread_->join();
+      delete (this->thread_);
+      delete (this->socket_);
+    }
 }
 
 /**
@@ -1124,8 +1132,18 @@ void NetworkInput::operator()()
   catch (...)
     {
     }
+  if (this->threadm_.try_lock())
+    {
+      this->socket_->Close();
+      delete (this->socket_);
+      this->socket_ = NULL;
+      this->thread_->detach();
+      delete (this->thread_);
+      this->thread_ = NULL;
+      this->threadm_.unlock();
+      this->parent_->CleanupNetworkInput(this);
+    }
   logging.LogInfo("Exiting input processing thread...");
-  delete (this);
   return ;
 }
 
