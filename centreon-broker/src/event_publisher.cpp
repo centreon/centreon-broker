@@ -42,26 +42,45 @@ boost::mutex    EventPublisher::instancem_;
 **************************************/
 
 /**
- *  EventPublisher constructor.
+ *  \brief EventPublisher constructor.
+ *
+ *  As the EventPublisher is a singleton, the constructor is declared private.
+ *  Initialization is made through the first call to GetInstance().
+ *
+ *  \see GetInstance
  */
 EventPublisher::EventPublisher()
 {
 }
 
 /**
- *  EventPublisher copy constructor.
+ *  \brief EventPublisher copy constructor.
+ *
+ *  EventPublisher shouldn't be copied, so the copy constructor is declared
+ *  private.
+ *
+ *  \param ep Unused.
  */
 EventPublisher::EventPublisher(const EventPublisher& ep)
 {
   (void)ep;
+  assert(false);
 }
 
 /**
- *  EventPublisher operator= overload.
+ *  \brief Overload of the assignement operator.
+ *
+ *  EventPublisher shouldn't be copied, so the assignement operator is declared
+ *  private.
+ *
+ *  \param ep Unused.
+ *
+ *  \return *this
  */
 EventPublisher& EventPublisher::operator=(const EventPublisher& ep)
 {
   (void)ep;
+  assert(false);
   return (*this);
 }
 
@@ -83,7 +102,9 @@ static void delete_eventpublisher()
 }
 
 /**
- *  EventPublisher destructor.
+ *  \brief EventPublisher destructor.
+ *
+ *  Free all internal ressources.
  */
 EventPublisher::~EventPublisher()
 {
@@ -93,7 +114,12 @@ EventPublisher::~EventPublisher()
 }
 
 /**
- *  Retrieve the instance of EventPublisher.
+ *  \brief Retrieve the instance of EventPublisher.
+ *
+ *  On the first call of this method, the EventPublisher object will be
+ *  instantiated. On following calls, this object will be returned.
+ *
+ *  \return The EventPublisher instance.
  */
 EventPublisher* EventPublisher::GetInstance()
 {
@@ -106,7 +132,7 @@ EventPublisher* EventPublisher::GetInstance()
 	    {
 	      EventPublisher::instance_ = new (EventPublisher);
 	    }
-	  catch (...) // Do not let the mutex locked.
+	  catch (...) // Do not leave the mutex locked.
 	    {
 	      EventPublisher::instancem_.unlock();
 	      throw ;
@@ -119,7 +145,12 @@ EventPublisher* EventPublisher::GetInstance()
 }
 
 /**
- *  Sends an event to all subscribers.
+ *  \brief Sends an event to all subscribers.
+ *
+ *  The given event has been generated and should be broadcasted to all
+ *  registered EventSubscribers.
+ *
+ *  \param ev Event to broadcast.
  */
 void EventPublisher::Publish(Events::Event* ev)
 {
@@ -134,7 +165,13 @@ void EventPublisher::Publish(Events::Event* ev)
 }
 
 /**
- *  Add an object that shall be warned when an event occur.
+ *  \brief Subscribe to the EventPublisher.
+ *
+ *  When an event is generated and Publish()'ed against the EventPublisher,
+ *  all objects that registered through this method will be notified through
+ *  their overriden OnEvent() method.
+ *
+ *  \param es Object to notify on event broadcast.
  */
 void EventPublisher::Subscribe(EventSubscriber* es)
 {
@@ -145,7 +182,12 @@ void EventPublisher::Subscribe(EventSubscriber* es)
 }
 
 /**
- *  Unsubscribe an object.
+ *  \brief Unsubscribe an object.
+ *
+ *  If an EventSubscriber object does not want to receive events anymore, it
+ *  has to unregister itself via this method.
+ *
+ *  \param es Object that shouldn't receive events anymore.
  */
 void EventPublisher::Unsubscribe(EventSubscriber* es)
 {

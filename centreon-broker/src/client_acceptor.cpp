@@ -129,8 +129,7 @@ void ClientAcceptor::operator()()
 
 	      logging.LogInfo("New client incoming, " \
                               "launching processing thread...");
-	      // XXX : new NetworkInput(this, stream)
-	      this->inputs_.push_back(new NetworkInput(stream));
+	      this->inputs_.push_back(new NetworkInput(this, stream));
 	    }
 	}
     }
@@ -146,6 +145,28 @@ void ClientAcceptor::operator()()
                        "exception, exiting accepting thread.");
     }
   logging.LogInfo("Exiting client accepting thread.");
+  return ;
+}
+
+/**
+ *  \brief Clean a terminated NetworkInput.
+ *
+ *  When a NetworkInput thread is over, it calls this method to release
+ *  acquired ressources.
+ *
+ *  \param[in] ni Terminated NetworkInput.
+ */
+void ClientAcceptor::CleanupNetworkInput(NetworkInput* ni)
+{
+  boost::unique_lock<boost::mutex> lock(this->inputsm_);
+  std::list<NetworkInput*>::iterator it;
+
+  it = std::find(this->inputs_.begin(), this->inputs_.end(), ni);
+  if (it != this->inputs_.end())
+    {
+      delete (*it);
+      this->inputs_.erase(it);
+    }
   return ;
 }
 

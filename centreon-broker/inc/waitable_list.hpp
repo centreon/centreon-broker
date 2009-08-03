@@ -28,6 +28,17 @@
 
 namespace                     CentreonBroker
 {
+  /**
+   *  \class WaitableList waitable_list.hpp "waitable_list.hpp"
+   *  \brief List of objects on which one can wait for it to be filled.
+   *
+   *  This class is similar to an std::list with the exception that if the list
+   *  is empty, one can wait for the list to be filled. All locking/notifying
+   *  process is handled internally.
+   *
+   *  \tparam T Base type of the list. The list will hold pointers to such type
+   *            because of a C++/gcc limitation.
+   */
   template <typename T>
   class                       WaitableList
   {
@@ -42,8 +53,16 @@ namespace                     CentreonBroker
     boost::mutex              mutex_;
 
     /**
-     *  Copy all internal data of the WaitableList object to the current
-     *  instance.
+     *  \brief Copy the list given as a parameter within the current instance.
+     *
+     *  Copy the list stored within the WaitableList parameter within the
+     *  current instance. This method is just by the copy constructor and the
+     *  assignement operator.
+     *
+     *  \param wl List to copy data from.
+     *
+     *  \see WaitableList
+     *  \see operator=
      */
     void                      InternalCopy(const WaitableList& wl)
     {
@@ -60,13 +79,19 @@ namespace                     CentreonBroker
     **********************************/
    public:
     /**
-     *  WaitableList default constructor.
+     *  \brief WaitableList default constructor.
+     *
+     *  Build an empty list.
      */
-                              WaitableList()
-    {
-    }
+                              WaitableList() {}
+
     /**
-     *  WaitableList copy constructor.
+     *  \brief WaitableList copy constructor.
+     *
+     *  Copy the list stored within the given WaitableList to the current
+     *  instance.
+     *
+     *  \param wl List to copy data from.
      */
                               WaitableList(const WaitableList& wl)
     {
@@ -74,14 +99,21 @@ namespace                     CentreonBroker
     }
 
     /**
-     *  Waitable List destructor.
+     *  \brief Waitable List destructor.
+     *
+     *  Destroy the list.
      */
-                              ~WaitableList()
-    {
-    }
+                              ~WaitableList() {}
 
     /**
-     *  WaitableList operator= overload.
+     *  \brief Overload of the assignement operator.
+     *
+     *  Copy the list stored within the given WaitableList to the current
+     *  instance.
+     *
+     *  \param wl List to copy data from.
+     *
+     *  \return *this
      */
     WaitableList&             operator=(const WaitableList& wl)
     {
@@ -90,7 +122,11 @@ namespace                     CentreonBroker
     }
 
     /**
-     *  Add an element in the list.
+     *  \brief Add an element to the list.
+     *
+     *  Store the given element at the end of the list.
+     *
+     *  \param t Object to store in the list.
      */
     void                      Add(T* t)
     {
@@ -102,6 +138,8 @@ namespace                     CentreonBroker
     }
 
     /**
+     *  \brief Resume threads waiting on the list.
+     *
      *  Resume all threads blocked by a Wait() or TimedWait() call.
      */
     void                      CancelWait() throw ()
@@ -114,7 +152,9 @@ namespace                     CentreonBroker
     }
 
     /**
-     *  Determines whether or not the list is empty.
+     *  \brief Determines whether or not the list is empty.
+     *
+     *  \return true if the list is empty, false otherwise.
      */
     bool                      Empty()
     {
@@ -124,29 +164,15 @@ namespace                     CentreonBroker
     }
 
     /**
-     *  Wait until an element is received.
-     */
-    T*                        Wait()
-    {
-      boost::unique_lock<boost::mutex> lock(this->mutex_);
-      T* t;
-
-      if (this->list_.empty())
-	{
-	  this->cv_.wait(lock);
-	}
-      if (this->list_.empty())
-	throw (Exception(ECANCELED, "Spurious condition variable wake-up."));
-      else
-	{
-	  t = this->list_.front();
-	  this->list_.pop_front();
-	}
-      return (t);
-    }
-
-    /**
-     *  Wait until an element is received or until the timeout occur.
+     *  \brief Wait until an element is received or until the timeout occur.
+     *
+     *  Wait on the list until an element is received through Add() or until
+     *  the timeout occur (whichever comes first). This call can be cancelled
+     *  via CancelWait().
+     *
+     *  \param st Timeout.
+     *
+     *  \return The new element in the list, NULL if the timeout occured.
      */
     T*                        TimedWait(const boost::system_time& st)
     {
@@ -159,6 +185,33 @@ namespace                     CentreonBroker
 	}
       if (this->list_.empty())
 	t = NULL;
+      else
+	{
+	  t = this->list_.front();
+	  this->list_.pop_front();
+	}
+      return (t);
+    }
+
+    /**
+     *  \brief Wait until an element is received.
+     *
+     *  Wait on the list until an element is received through Add(). This call
+     *  can be cancelled via CancelWait().
+     *
+     *  \return The new element in the list.
+     */
+    T*                        Wait()
+    {
+      boost::unique_lock<boost::mutex> lock(this->mutex_);
+      T* t;
+
+      if (this->list_.empty())
+	{
+	  this->cv_.wait(lock);
+	}
+      if (this->list_.empty())
+	throw (Exception(ECANCELED, "Spurious condition variable wake-up."));
       else
 	{
 	  t = this->list_.front();

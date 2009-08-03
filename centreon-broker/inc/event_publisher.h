@@ -33,10 +33,16 @@ namespace                       CentreonBroker
   class                         EventSubscriber;
 
   /**
+   *  \class EventPublisher event_publisher.h "event_publisher.h"
+   *  \brief Publish events to all registered EventSubscribers.
+   *
    *  The EventPublisher is a singleton that is responsible of broadcasting
-   *  events to every EventSubscriber who asked it. The EventPublisher first
-   *  receive events via Publish() (usually called from NetworkInput) and then
-   *  sends it to every object which Subscribe()'d.
+   *  events to every EventSubscriber which registered. The EventPublisher
+   *  first receive events via Publish() (usually called from NetworkInput) and
+   *  then sends it to every object which Subscribe()'d.
+   *
+   *  \see EventSubscriber
+   *  \see NetworkInput
    */
   class                         EventPublisher
   {

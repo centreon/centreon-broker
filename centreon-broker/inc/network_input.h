@@ -28,6 +28,9 @@
 
 namespace                    CentreonBroker
 {
+  // Forward declaration
+  class                      ClientAcceptor;
+
   /**
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
@@ -47,9 +50,12 @@ namespace                    CentreonBroker
     // Other parameters
     Events::ConnectionStatus conn_status_;
     std::string              instance_;
+    ClientAcceptor*          parent_;
     IO::Stream*              socket_;
     boost::thread*           thread_;
-                             NetworkInput(IO::Stream* stream);
+    boost::mutex             threadm_;
+                             NetworkInput(ClientAcceptor* parent,
+                               IO::Stream* stream);
                              NetworkInput(const NetworkInput& ni);
     NetworkInput&            operator=(const NetworkInput& ni);
     void                     HandleAcknowledgement();

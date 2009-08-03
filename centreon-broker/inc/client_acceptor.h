@@ -54,6 +54,7 @@ namespace           CentreonBroker
                              ClientAcceptor() throw ();
                              ~ClientAcceptor();
     void                     operator()();
+    void                     CleanupNetworkInput(NetworkInput* ni);
     void                     Run(IO::Acceptor* acceptor);
   };
 }
