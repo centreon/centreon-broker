@@ -21,7 +21,7 @@
 #ifndef IO_TLS_H_
 # define IO_TLS_H_
 
-# include <gnutls.h>
+# include <gnutls/gnutls.h>
 # include "exception.h"
 # include "io/io.h"
 
