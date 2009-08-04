@@ -22,12 +22,12 @@
 # Include macro files
 #
 m4_include(macros/ax_boost_base.m4)
-m4_include(macros/ax_boost_asio.m4)
 m4_include(macros/ax_boost_system.m4)
 m4_include(macros/ax_boost_thread.m4)
 m4_include(macros/ax_lib_mysql.m4)
 m4_include(macros/ax_lib_oracle_oci.m4)
 m4_include(macros/ax_lib_postgresql.m4)
+m4_include(macros/libgnutls.m4)
 
 #
 # Main code
@@ -48,13 +48,12 @@ if test "x$enable_debug" = "xyes"
 then
 	DEBUG_CFLAGS="-g";
 else
-	DEBUG_CFLAGS="-DNDEBUG";
+	AC_DEFINE(NDEBUG)
 fi
 AC_SUBST([DEBUG_CFLAGS])
 
 # Mandatory Boost dependencies
 AX_BOOST_BASE
-AX_BOOST_ASIO
 AX_BOOST_SYSTEM
 AX_BOOST_THREAD
 # We should check if all these libraries are present. If not, compilation will
@@ -65,12 +64,25 @@ AX_LIB_MYSQL
 AX_LIB_ORACLE_OCI
 AX_LIB_POSTGRESQL
 
+# Optional TLS support
+AC_MSG_CHECKING([whether the program should support TLS])
+AC_ARG_ENABLE([tls],
+	AS_HELP_STRING([--enable-tls], [TLS code should be compiled]),
+	[enable_tls=$enableval],
+	[enable_tls="no"])
+AC_MSG_RESULT($enable_tls)
+if test "x$enable_tls" = "xyes"
+then
+	AM_PATH_LIBGNUTLS
+	AC_DEFINE(USE_TLS)
+fi
+
 # Configure tools flags according to previous tests
 CPPFLAGS="$CPPFLAGS -I../../inc $BOOST_CPPFLAGS $MYSQL_CPPFLAGS"
 CXXFLAGS="-std=c++0x -W -Wall -pedantic -O2 $DEBUG_CFLAGS $ORACLE_OCI_CFLAGS \
-	$POSTGRESQL_CFLAGS"
+	$POSTGRESQL_CFLAGS $LIBGNUTLS_CFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $MYSQL_LDFLAGS $ORACLE_OCI_LDFLAGS \
-	$POSTGRESQL_LDFLAGS"
+	$POSTGRESQL_LDFLAGS $LIBGNUTLS_LIBS"
 LIBS="$LIBS $BOOST_ASIO_LIB $BOOST_SYSTEM_LIB $BOOST_THREAD_LIB"
 
 AC_CONFIG_FILES([Makefile])

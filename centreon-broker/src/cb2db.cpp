@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		IO::Acceptor* a;
 
 #ifdef USE_TLS
-		if (input->GetTLS())
+/*		if (input->GetTLS())
 		  {
 		    IO::TLSAcceptor* tls_acceptor;
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 		    a = tls_acceptor;
 		  }
 		else
-		  {
+		{*/
 #endif /* USE_TLS */
 		    IO::Net4Acceptor* net4_acceptor;
 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 		    net4_acceptor->Listen(input->GetPort());
 		    a = net4_acceptor;
 #ifdef USE_TLS
-		  }
+		    //}
 #endif /* USE_TLS */
 		ca = new ClientAcceptor;
 		ca->Run(a);
