@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/comment.h"
 
 using namespace CentreonBroker::Events;
@@ -30,24 +29,34 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
+ *  \brief Copy internal data of the given object to the current instance.
+ *
  *  This internal method is used to copy data defined inside the Comment class
  *  from an object to the current instance. This means that no superclass data
  *  are copied. This method is used in Comment copy constructor and in the =
  *  operator overload.
  *
+ *  \param[in] comment Object to copy from.
+ *
  *  \see Comment(const Comment&)
  *  \see operator=
- *
- *  \param[in] comment Object to copy from.
  */
 void Comment::InternalCopy(const Comment& comment)
 {
-  memcpy(this->bools_, comment.bools_, sizeof(this->bools_));
-  memcpy(this->ints_, comment.ints_, sizeof(this->ints_));
-  memcpy(this->shorts_, comment.shorts_, sizeof(this->shorts_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = comment.strings_[i];
-  memcpy(this->timets_, comment.timets_, sizeof(this->timets_));
+  this->author        = comment.author;
+  this->comment       = comment.comment;
+  this->comment_time  = comment.comment_time;
+  this->deletion_time = comment.deletion_time;
+  this->entry_time    = comment.entry_time;
+  this->entry_type    = comment.entry_type;
+  this->expire_time   = comment.expire_time;
+  this->expires       = comment.expires;
+  this->host          = comment.host;
+  this->internal_id   = comment.internal_id;
+  this->persistent    = comment.persistent;
+  this->service       = comment.service;
+  this->source        = comment.source;
+  this->type          = comment.type;
   return ;
 }
 
@@ -58,19 +67,26 @@ void Comment::InternalCopy(const Comment& comment)
 **************************************/
 
 /**
- *  Comment default constructor. Set all members to their default value (0,
- *  NULL or equivalent).
+ *  \brief Comment default constructor.
+ *
+ *  Set all members to their default value (0, NULL or equivalent).
  */
 Comment::Comment()
-{
-  memset(this->bools_, 0, sizeof(this->bools_));
-  memset(this->ints_, 0, sizeof(this->ints_));
-  memset(this->shorts_, 0, sizeof(this->shorts_));
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+  :  comment_time(0),
+     deletion_time(0),
+     entry_time(0),
+     entry_type(0),
+     expire_time(0),
+     expires(false),
+     internal_id(0),
+     persistent(false),
+     source(0),
+     type(0) {}
 
 /**
- *  Comment copy constructor.
+ *  \brief Comment copy constructor.
+ *
+ *  Copy data from the given comment to the current instance.
  *
  *  \param[in] comment Object to copy from.
  */
@@ -80,14 +96,14 @@ Comment::Comment(const Comment& comment) : Event(comment)
 }
 
 /**
- *  Comment destructor, release all acquired ressources.
+ *  Comment destructor.
  */
-Comment::~Comment()
-{
-}
+Comment::~Comment() {}
 
 /**
- *  Overload of the = operator.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given comment to the current instance.
  *
  *  \param[in] comment Object to copy from.
  *
@@ -101,143 +117,10 @@ Comment& Comment::operator=(const Comment& comment)
 }
 
 /**
- *  Get the name of the comment author.
+ *  \brief Returns the type of this event (CentreonBroker::Event::COMMENT).
  *
- *  \return The name of the comment author.
- */
-const std::string& Comment::GetAuthorName() const throw ()
-{
-  return (this->strings_[AUTHOR_NAME]);
-}
-
-/**
- *  Get the comment content.
- *
- *  \return The comment content.
- */
-const std::string& Comment::GetCommentData() const throw ()
-{
-  return (this->strings_[COMMENT_DATA]);
-}
-
-/**
- *  Get the date on which the comment was made.
- *
- *  \return The date on which the comment was made.
- */
-time_t Comment::GetCommentTime() const throw ()
-{
-  return (this->timets_[COMMENT_TIME]);
-}
-
-/**
- *  Get the type of the comment (XXX : which types ?).
- *
- *  \return The type of the comment.
- */
-short Comment::GetCommentType() const throw ()
-{
-  return (this->shorts_[COMMENT_TYPE]);
-}
-
-/**
- *  Get the time on which the comment was deleted.
- *
- *  \return The time on which the comment was deleted.
- */
-time_t Comment::GetDeletionTime() const throw ()
-{
-  return (this->timets_[DELETION_TIME]);
-}
-
-/**
- *  XXX : need fix
- */
-time_t Comment::GetEntryTime() const throw ()
-{
-  return (this->timets_[ENTRY_TIME]);
-}
-
-/**
- *  XXX : need fix
- */
-short Comment::GetEntryType() const throw ()
-{
-  return (this->shorts_[ENTRY_TYPE]);
-}
-
-/**
- *  Get the date on which the comment expires.
- *
- *  \return The date on which the comment expires.
- */
-time_t Comment::GetExpireTime() const throw ()
-{
-  return (this->timets_[EXPIRE_TIME]);
-}
-
-/**
- *  Determines whether or not the comment expires.
- *
- *  \return true if the comment expires, false otherwise.
- */
-bool Comment::GetExpires() const throw ()
-{
-  return (this->bools_[EXPIRES]);
-}
-
-/**
- *  Get the name of the host associated with the comment.
- *
- *  \return The name of the host associated with the comment.
- */
-const std::string& Comment::GetHostName() const throw ()
-{
-  return (this->strings_[HOST_NAME]);
-}
-
-/**
- *  Get the internal id of the comment.
- *
- *  \return The internal id of the comment.
- */
-int Comment::GetInternalCommentId() const throw ()
-{
-  return (this->ints_[INTERNAL_COMMENT_ID]);
-}
-
-/**
- *  Determines whether or not the comment is persistent.
- *
- *  \return true if the comment is persistent, false otherwise.
- */
-bool Comment::GetPersistent() const throw ()
-{
-  return (this->bools_[PERSISTENT]);
-}
-
-/**
- *  Get the description of the service associated with the comment.
- *
- *  \return The description of the service associated with the comment.
- */
-const std::string& Comment::GetServiceDescription() const throw ()
-{
-  return (this->strings_[SERVICE_DESCRIPTION]);
-}
-
-/**
- *  Get the comment source.
- *
- *  \return The comment source (XXX : which sources ?).
- */
-short Comment::GetSource() const throw ()
-{
-  return (this->shorts_[SOURCE]);
-}
-
-/**
- *  Returns the type of this event (CentreonBroker::Event::COMMENT).
+ *  The type of this event can be useful for runtime determination of the type
+ *  of an event.
  *
  *  \see CentreonBroker::Event
  *
@@ -246,182 +129,4 @@ short Comment::GetSource() const throw ()
 int Comment::GetType() const throw ()
 {
   return (Event::COMMENT);
-}
-
-/**
- *  Set the name of the comment author.
- *
- *  \see GetAuthorName
- *
- *  \param[in] an The name of the comment author.
- */
-void Comment::SetAuthorName(const std::string& an)
-{
-  this->strings_[AUTHOR_NAME] = an;
-  return ;
-}
-
-/**
- *  Set the comment content.
- *
- *  \see GetCommentData
- *
- *  \param[in] cd The comment content.
- */
-void Comment::SetCommentData(const std::string& cd)
-{
-  this->strings_[COMMENT_DATA] = cd;
-  return ;
-}
-
-/**
- *  Set the time on which the comment was made.
- *
- *  \see GetCommentTime
- *
- *  \param[in] ct The time on which the comment was made.
- */
-void Comment::SetCommentTime(time_t ct) throw ()
-{
-  this->timets_[COMMENT_TIME] = ct;
-  return ;
-}
-
-/**
- *  Set the type of the comment (XXX : what are the available types ?).
- *
- *  \see GetCommentType
- *
- *  \param[in] ct The type of the comment.
- */
-void Comment::SetCommentType(short ct) throw ()
-{
-  this->shorts_[COMMENT_TYPE] = ct;
-  return ;
-}
-
-/**
- *  Set the date on which the comment was deleted.
- *
- *  \see GetDeletionTime
- *
- *  \param[in] dt The date on which the comment was deleted.
- */
-void Comment::SetDeletionTime(time_t dt) throw ()
-{
-  this->timets_[DELETION_TIME] = dt;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetEntryTime
- */
-void Comment::SetEntryTime(time_t et) throw ()
-{
-  this->timets_[ENTRY_TIME] = et;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetEntryType
- */
-void Comment::SetEntryType(short et) throw ()
-{
-  this->shorts_[ENTRY_TYPE] = et;
-  return ;
-}
-
-/**
- *  Set the date on which the comment expires.
- *
- *  \see GetExpireTime
- *
- *  \param[in] et The date on which the comment expires.
- */
-void Comment::SetExpireTime(time_t et) throw ()
-{
-  this->timets_[EXPIRE_TIME] = et;
-  return ;
-}
-
-/**
- *  Set whether or not the comment expires.
- *
- *  \see GetExpires
- *
- *  \param[in] e true if the comment does expire, false otherwise.
- */
-void Comment::SetExpires(bool e) throw ()
-{
-  this->bools_[EXPIRES] = e;
-  return ;
-}
-
-/**
- *  Set the name of the host associated with the comment.
- *
- *  \see GetHostName
- *
- *  \param[in] h The name of the host associated with the comment.
- */
-void Comment::SetHostName(const std::string& hn)
-{
-  this->strings_[HOST_NAME] = hn;
-  return ;
-}
-
-/**
- *  Set the internal id of the comment.
- *
- *  \see GetInternalCommentId
- *
- *  \param[in] ici The internal id of the comment.
- */
-void Comment::SetInternalCommentId(int ici) throw ()
-{
-  this->ints_[INTERNAL_COMMENT_ID] = ici;
-  return ;
-}
-
-/**
- *  Set whether or not the comment is persistent.
- *
- *  \see GetPersistent
- *
- *  \param[in] ip true if the comment is persistent, false otherwise.
- */
-void Comment::SetPersistent(bool p) throw ()
-{
-  this->bools_[PERSISTENT] = p;
-  return ;
-}
-
-/**
- *  Set the description of the service associated with the comment.
- *
- *  \see GetService
- *
- *  \param[in] s The description of the service associated with the comment.
- */
-void Comment::SetServiceDescription(const std::string& sd)
-{
-  this->strings_[SERVICE_DESCRIPTION] = sd;
-  return ;
-}
-
-/**
- *  Set the comment source (XXX : what are the available sources ?).
- *
- *  \see GetSource
- *
- *  \return The comment source.
- */
-void Comment::SetSource(short cs) throw ()
-{
-  this->shorts_[SOURCE] = cs;
-  return ;
 }

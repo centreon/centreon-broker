@@ -18,11 +18,11 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef SERVICE_H_
-# define SERVICE_H_
+#ifndef EVENTS_SERVICE_H_
+# define EVENTS_SERVICE_H_
 
+# include <ctime>
 # include <string>
-# include <sys/types.h>
 # include "events/host_service.h"
 # include "events/service_status.h"
 
@@ -33,73 +33,31 @@ namespace                CentreonBroker
     class                Service : public HostService, public ServiceStatus
     {
      private:
-      enum               Bool
-      {
-	IS_VOLATILE = 0,
-	NOTIFIED_ON_CRITICAL,
-	NOTIFIED_ON_UNKNOWN,
-	NOTIFIED_ON_WARNING,
-	BOOL_NB
-      };
-      enum               Short
-      {
-	FLAP_DETECTION_ON_CRITICAL = 0,
-	FLAP_DETECTION_ON_OK,
-	FLAP_DETECTION_ON_UNKNOWN,
-	FLAP_DETECTION_ON_WARNING,
-	STALK_ON_CRITICAL,
-	STALK_ON_OK,
-	STALK_ON_UNKNOWN,
-	STALK_ON_WARNING,
-	SHORT_NB
-      };
-      enum               String
-      {
-	FAILURE_PREDICTION_OPTIONS = 0,
-	STRING_NB
-      };
-      bool               bools_[BOOL_NB];
-      short              shorts_[SHORT_NB];
-      std::string        strings_[STRING_NB];
       void               InternalCopy(const Service& s);
+      void               ZeroInitialize();
 
      public:
-                         Service() throw ();
+      std::string        failure_prediction_options;
+      short              flap_detection_on_critical;
+      short              flap_detection_on_ok;
+      short              flap_detection_on_unknown;
+      short              flap_detection_on_warning;
+      bool               is_volatile;
+      bool               notified_on_critical;
+      bool               notified_on_unknown;
+      bool               notified_on_warning;
+      short              stalk_on_critical;
+      short              stalk_on_ok;
+      short              stalk_on_unknown;
+      short              stalk_on_warning;
+                         Service();
 			 Service(const ServiceStatus& ss);
 			 Service(const Service& s);
-			 ~Service() throw ();
+			 ~Service();
       Service&           operator=(const Service& s);
-      // Getters
-      const std::string& GetFailurePredictionOptions() const throw ();
-      short              GetFlapDetectionOnCritical() const throw ();
-      short              GetFlapDetectionOnOk() const throw ();
-      short              GetFlapDetectionOnUnknown() const throw ();
-      short              GetFlapDetectionOnWarning() const throw ();
-      bool               GetIsVolatile() const throw ();
-      bool               GetNotifiedOnCritical() const throw ();
-      bool               GetNotifiedOnUnknown() const throw ();
-      bool               GetNotifiedOnWarning() const throw ();
-      short              GetStalkOnCritical() const throw ();
-      short              GetStalkOnOk() const throw ();
-      short              GetStalkOnUnknown() const throw ();
-      short              GetStalkOnWarning() const throw ();
       int                GetType() const throw ();
-      // Setters
-      void               SetFailurePredictionOptions(const std::string& fpo);
-      void               SetFlapDetectionOnCritical(short fdoc) throw ();
-      void               SetFlapDetectionOnOk(short fdoo) throw ();
-      void               SetFlapDetectionOnUnknown(short fdou) throw ();
-      void               SetFlapDetectionOnWarning(short fdow) throw ();
-      void               SetIsVolatile(bool iv) throw ();
-      void               SetNotifiedOnCritical(bool noc) throw ();
-      void               SetNotifiedOnUnknown(bool nou) throw ();
-      void               SetNotifiedOnWarning(bool now) throw ();
-      void               SetStalkOnCritical(short soc) throw ();
-      void               SetStalkOnOk(short soo) throw ();
-      void               SetStalkOnUnknown(short sou) throw ();
-      void               SetStalkOnWarning(short sow) throw ();
     };
   }
 }
 
-#endif /* !SERVICE_H_ */
+#endif /* !EVENTS_SERVICE_H_ */

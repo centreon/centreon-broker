@@ -18,8 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
-#include <string>
 #include "events/service_status.h"
 
 using namespace CentreonBroker::Events;
@@ -31,14 +29,21 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Make a copy of all internal members of ServiceStatus to the current
- *  instance.
+ *  \brief Copy internal members of the given object to the current instance.
+ *
+ *  Make a copy of all internal members defined within ServiceStatus to the
+ *  current instance. This method is used by the copy constructor and the
+ *  assignment operator.
+ *
+ *  \param[in] ss Object to copy data from.
  */
-void ServiceStatus::InternalCopy(const ServiceStatus& sse)
+void ServiceStatus::InternalCopy(const ServiceStatus& ss)
 {
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = sse.strings_[i];
-  memcpy(this->timets_, sse.timets_, sizeof(this->timets_));
+  this->last_time_critical = ss.last_time_critical;
+  this->last_time_ok       = ss.last_time_ok;
+  this->last_time_unknown  = ss.last_time_unknown;
+  this->last_time_warning  = ss.last_time_warning;
+  this->service            = ss.service;
   return ;
 }
 
@@ -49,128 +54,58 @@ void ServiceStatus::InternalCopy(const ServiceStatus& sse)
 **************************************/
 
 /**
- *  ServiceStatus default constructor.
+ *  \brief ServiceStatus default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
 ServiceStatus::ServiceStatus()
-{
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+  : last_time_critical(0),
+    last_time_ok(0),
+    last_time_unknown(0),
+    last_time_warning(0) {}
 
 /**
- *  ServiceStatus copy constructor.
+ *  \brief ServiceStatus copy constructor.
+ *
+ *  Copy all members of the given ServiceStatus to the current instance.
+ *
+ *  \param[in] ss Object to copy data from.
  */
-ServiceStatus::ServiceStatus(const ServiceStatus& sse)
-  : HostServiceStatus(sse)
+ServiceStatus::ServiceStatus(const ServiceStatus& ss)
+  : HostServiceStatus(ss)
 {
-  this->InternalCopy(sse);
+  this->InternalCopy(ss);
 }
 
 /**
  *  ServiceStatus destructor.
  */
-ServiceStatus::~ServiceStatus()
-{
-}
+ServiceStatus::~ServiceStatus() {}
 
 /**
- *  ServiceStatus operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all members of the given ServiceStatus to the current instance.
+ *
+ *  \param[in] ss Object to copy data from.
+ *
+ *  \return *this
  */
-ServiceStatus& ServiceStatus::operator=(const ServiceStatus& s)
+ServiceStatus& ServiceStatus::operator=(const ServiceStatus& ss)
 {
-  this->HostServiceStatus::operator=(s);
-  this->InternalCopy(s);
+  this->HostServiceStatus::operator=(ss);
+  this->InternalCopy(ss);
   return (*this);
 }
 
 /**
- *  Returns the type of the event.
+ *  \brief Returns the type of the event (Event::SERVICESTATUS).
+ *
+ *  This method is used to determine at runtime the type of event.
+ *
+ *  \return Event::SERVICESTATUS
  */
 int ServiceStatus::GetType() const throw ()
 {
   return (Event::SERVICESTATUS);
-}
-
-/**
- *  Get the last_time_critical member.
- */
-time_t ServiceStatus::GetLastTimeCritical() const throw ()
-{
-  return (this->timets_[LAST_TIME_CRITICAL]);
-}
-
-/**
- *  Get the last_time_ok member.
- */
-time_t ServiceStatus::GetLastTimeOk() const throw ()
-{
-  return (this->timets_[LAST_TIME_OK]);
-}
-
-/**
- *  Get the last_time_unknown member.
- */
-time_t ServiceStatus::GetLastTimeUnknown() const throw ()
-{
-  return (this->timets_[LAST_TIME_UNKNOWN]);
-}
-
-/**
- *  Get the last_time_warning member.
- */
-time_t ServiceStatus::GetLastTimeWarning() const throw ()
-{
-  return (this->timets_[LAST_TIME_WARNING]);
-}
-
-/**
- *  Returns the service_description member.
- */
-const std::string& ServiceStatus::GetServiceDescription() const throw ()
-{
-  return (this->strings_[SERVICE_DESCRIPTION]);
-}
-
-/**
- *  Set the last_time_critical member.
- */
-void ServiceStatus::SetLastTimeCritical(time_t ltc) throw ()
-{
-  this->timets_[LAST_TIME_CRITICAL] = ltc;
-  return ;
-}
-
-/**
- *  Set the last_time_ok member.
- */
-void ServiceStatus::SetLastTimeOk(time_t lto) throw ()
-{
-  this->timets_[LAST_TIME_OK] = lto;
-  return ;
-}
-
-/**
- *  Set the last_time_unknown member.
- */
-void ServiceStatus::SetLastTimeUnknown(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UNKNOWN] = ltu;
-  return ;
-}
-
-/**
- *  Set the last_time_warning member.
- */
-void ServiceStatus::SetLastTimeWarning(time_t ltw) throw ()
-{
-  this->timets_[LAST_TIME_WARNING] = ltw;
-  return ;
-}
-
-/**
- *  Sets the service_description member.
- */
-void ServiceStatus::SetServiceDescription(const std::string& sd)
-{
-  this->strings_[SERVICE_DESCRIPTION] = sd;
-  return ;
 }

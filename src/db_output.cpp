@@ -214,7 +214,7 @@ void DBOutput::PrepareMappings()
 					boost::bind(&DBOutput::GetInstanceId,
 						    this,
 						    boost::bind(
-					  &Connection::GetNagiosInstance,
+					  &Connection::instance,
 					  _1)));
 
   // Host mapping.
@@ -222,7 +222,7 @@ void DBOutput::PrepareMappings()
 				  boost::bind(&DBOutput::GetInstanceId,
 					      this,
 					      boost::bind(
-                                                &Host::GetNagiosInstance,
+                                                &Host::instance,
 						_1)));
 
   // ProgramStatus mapping.
@@ -231,7 +231,7 @@ void DBOutput::PrepareMappings()
 					      &DBOutput::GetInstanceId,
 					      this,
 					      boost::bind(
-                                          &ProgramStatus::GetNagiosInstance,
+                                          &ProgramStatus::instance,
 					  _1)));
 
   // Service mapping.
@@ -239,7 +239,7 @@ void DBOutput::PrepareMappings()
 				     boost::bind(&DBOutput::GetInstanceId,
 						 this,
 						 boost::bind(
-				       &ProgramStatus::GetNagiosInstance,
+				       &ProgramStatus::instance,
 				       _1)));
 
   return ;
@@ -259,7 +259,7 @@ void DBOutput::PrepareStatements()
     DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
 						 this,
 						 boost::bind(
-				       &ConnectionStatus::GetNagiosInstance,
+				       &ConnectionStatus::instance,
 				       _1)))));
   this->connection_status_stmt_->Prepare();
 
@@ -272,10 +272,10 @@ void DBOutput::PrepareStatements()
                                                    &DBOutput::GetInstanceId,
                                                    this,
 						   boost::bind(
-			&HostStatus::GetNagiosInstance,
+			&HostStatus::instance,
 			_1)))),
 	    DB::Equal(DB::Field("host_name"),
-		      DB::DynamicString<HostStatus>(&HostStatus::GetHostName))
+		      DB::DynamicString<HostStatus>(&HostStatus::host))
 	    ));
   this->host_status_stmt_->Prepare();
 
@@ -288,7 +288,7 @@ void DBOutput::PrepareStatements()
                                               &DBOutput::GetInstanceId,
                                               this,
 					      boost::bind(
-					 &ProgramStatus::GetNagiosInstance,
+					 &ProgramStatus::instance,
 					 _1)))));
   this->program_status_stmt_->Prepare();
 
@@ -301,17 +301,16 @@ void DBOutput::PrepareStatements()
                                                       &DBOutput::GetInstanceId,
                                                       this,
 						      boost::bind(
-			&ServiceStatus::GetNagiosInstance,
+			&ServiceStatus::instance,
 			_1)))),
 	    DB::And(DB::Equal(DB::Field("host_name"),
 		              DB::DynamicString<ServiceStatus>(
-                                &ServiceStatus::GetHostName)),
+                                &ServiceStatus::host)),
 		    DB::Equal(DB::Field("service_description"),
 			      DB::DynamicString<ServiceStatus>(
-                                &ServiceStatus::GetServiceDescription)))
+                                &ServiceStatus::service)))
 	    ));
   this->service_status_stmt_->Prepare();
-
   return ;
 }
 

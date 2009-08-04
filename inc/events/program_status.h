@@ -18,12 +18,12 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef PROGRAM_STATUS_H_
-# define PROGRAM_STATUS_H_
+#ifndef EVENTS_PROGRAM_STATUS_H_
+# define EVENTS_PROGRAM_STATUS_H_
 
-# include <ctime>
+# include <ctime> // for time_t
 # include <string>
-# include "status.h"
+# include "events/status.h"
 
 namespace                CentreonBroker
 {
@@ -32,92 +32,34 @@ namespace                CentreonBroker
     class                ProgramStatus : public Status
     {
      private:
-      enum               Bool
-      {
-	ACTIVE_HOST_CHECKS_ENABLED = 0,
-	ACTIVE_SERVICE_CHECKS_ENABLED,
-	DAEMON_MODE,
-	IS_RUNNING,
-	OBSESS_OVER_HOSTS,
-	OBSESS_OVER_SERVICES,
-	PASSIVE_HOST_CHECKS_ENABLED,
-	PASSIVE_SERVICE_CHECKS_ENABLED,
-	BOOL_NB
-      };
-      enum               Int
-      {
-	MODIFIED_HOST_ATTRIBUTES = 0,
-	MODIFIED_SERVICE_ATTRIBUTES,
-	PID,
-	INT_NB
-      };
-      enum               String
-      {
-	GLOBAL_HOST_EVENT_HANDLER = 0,
-	GLOBAL_SERVICE_EVENT_HANDLER,
-	STRING_NB
-      };
-      enum               TimeT
-      {
-	LAST_ALIVE = 0,
-	LAST_COMMAND_CHECK,
-	LAST_LOG_ROTATION,
-	PROGRAM_END_TIME,
-	PROGRAM_START,
-	TIMET_NB
-      };
-      bool               bools_[BOOL_NB];
-      int                ints_[INT_NB];
-      std::string        strings_[STRING_NB];
-      time_t             timets_[TIMET_NB];
       void               InternalCopy(const ProgramStatus& ps);
 
      public:
-                         ProgramStatus() throw ();
+      bool               active_host_checks_enabled;
+      bool               active_service_checks_enabled;
+      bool               daemon_mode;
+      std::string        global_host_event_handler;
+      std::string        global_service_event_handler;
+      bool               is_running;
+      time_t             last_alive;
+      time_t             last_command_check;
+      time_t             last_log_rotation;
+      int                modified_host_attributes;
+      int                modified_service_attributes;
+      bool               obsess_over_hosts;
+      bool               obsess_over_services;
+      bool               passive_host_checks_enabled;
+      bool               passive_service_checks_enabled;
+      int                pid;
+      time_t             program_end;
+      time_t             program_start;
+                         ProgramStatus();
 			 ProgramStatus(const ProgramStatus& ps);
-			 ~ProgramStatus() throw ();
+			 ~ProgramStatus();
       ProgramStatus&     operator=(const ProgramStatus& ps);
-      // Getters
-      bool               GetActiveHostChecksEnabled() const throw ();
-      bool               GetActiveServiceChecksEnabled() const throw ();
-      bool               GetDaemonMode() const throw ();
-      const std::string& GetGlobalHostEventHandler() const throw ();
-      const std::string& GetGlobalServiceEventHandler() const throw ();
-      bool               GetIsRunning() const throw ();
-      time_t             GetLastAlive() const throw ();
-      time_t             GetLastCommandCheck() const throw ();
-      time_t             GetLastLogRotation() const throw ();
-      int                GetModifiedHostAttributes() const throw ();
-      int                GetModifiedServiceAttributes() const throw ();
-      bool               GetObsessOverHosts() const throw ();
-      bool               GetObsessOverServices() const throw ();
-      bool               GetPassiveHostChecksEnabled() const throw ();
-      bool               GetPassiveServiceChecksEnabled() const throw ();
-      int                GetPid() const throw ();
-      time_t             GetProgramEndTime() const throw ();
-      time_t             GetProgramStart() const throw ();
       int                GetType() const throw ();
-      // Setters
-      void               SetActiveHostChecksEnabled(bool ahce) throw ();
-      void               SetActiveServiceChecksEnabled(bool asce) throw ();
-      void               SetDaemonMode(bool dm) throw ();
-      void               SetGlobalHostEventHandler(const std::string& gheh);
-      void               SetGlobalServiceEventHandler(const std::string& gseh);
-      void               SetIsRunning(bool ir) throw ();
-      void               SetLastAlive(time_t la) throw ();
-      void               SetLastCommandCheck(time_t lcc) throw ();
-      void               SetLastLogRotation(time_t llr) throw ();
-      void               SetModifiedHostAttributes(int mha) throw ();
-      void               SetModifiedServiceAttributes(int msa) throw ();
-      void               SetObsessOverHosts(bool ooh) throw ();
-      void               SetObsessOverServices(bool oos) throw ();
-      void               SetPassiveHostChecksEnabled(bool phce) throw ();
-      void               SetPassiveServiceChecksEnabled(bool psce) throw ();
-      void               SetPid(int p) throw ();
-      void               SetProgramEndTime(time_t pet) throw ();
-      void               SetProgramStart(time_t ps) throw ();
     };
   }
 }
 
-#endif /* !PROGRAM_STATUS_H_ */
+#endif /* !EVENTS_PROGRAM_STATUS_H_ */

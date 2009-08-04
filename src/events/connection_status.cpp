@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/connection_status.h"
 
 using namespace CentreonBroker::Events;
@@ -30,13 +29,21 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the ConnectionStatus object to the current
- *  instance.
+ *  \brief Copy members of the ConnectionStatus object to the current instance.
+ *
+ *  Copy all members defined within the ConnectionStatus class. This method is
+ *  used by the copy constructor and the assignment operator.
+ *
+ *  \param[in] cs Object to copy data from.
  */
 void ConnectionStatus::InternalCopy(const ConnectionStatus& cs) throw ()
 {
-  memcpy(this->ints_, cs.ints_, sizeof(this->ints_));
-  memcpy(this->timets_, cs.timets_, sizeof(this->timets_));
+  this->bytes_processed   = cs.bytes_processed;
+  this->data_end_time     = cs.data_end_time;
+  this->disconnect_time   = cs.disconnect_time;
+  this->entries_processed = cs.entries_processed;
+  this->last_checkin_time = cs.last_checkin_time;
+  this->lines_processed   = cs.lines_processed;
   return ;
 }
 
@@ -47,18 +54,26 @@ void ConnectionStatus::InternalCopy(const ConnectionStatus& cs) throw ()
 **************************************/
 
 /**
- *  ConnectionStatus default constructor.
+ *  \brief ConnectionStatus default constructor.
+ *
+ *  Initialize all members to 0, NULL or equivalent.
  */
-ConnectionStatus::ConnectionStatus() throw ()
-{
-  memset(this->ints_, 0, sizeof(this->ints_));
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+ConnectionStatus::ConnectionStatus()
+  : bytes_processed(0),
+    data_end_time(0),
+    disconnect_time(0),
+    entries_processed(0),
+    last_checkin_time(0),
+    lines_processed(0) {}
 
 /**
- *  ConnectionStatus copy constructor.
+ *  \brief ConnectionStatus copy constructor.
+ *
+ *  Copy all data of the given object to the current instance.
+ *
+ *  \param[in] cs Object to copy data from.
  */
-ConnectionStatus::ConnectionStatus(const ConnectionStatus& cs) throw ()
+ConnectionStatus::ConnectionStatus(const ConnectionStatus& cs)
   : Event(cs)
 {
   this->InternalCopy(cs);
@@ -67,15 +82,16 @@ ConnectionStatus::ConnectionStatus(const ConnectionStatus& cs) throw ()
 /**
  *  ConnectionStatus destructor.
  */
-ConnectionStatus::~ConnectionStatus() throw ()
-{
-}
+ConnectionStatus::~ConnectionStatus() {}
 
 /**
- *  ConnectionStatus operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all data of the given object to the current instance.
+ *
+ *  \param[in] cs Object to copy data from.
  */
 ConnectionStatus& ConnectionStatus::operator=(const ConnectionStatus& cs)
-  throw ()
 {
   this->Event::operator=(cs);
   this->InternalCopy(cs);
@@ -83,111 +99,13 @@ ConnectionStatus& ConnectionStatus::operator=(const ConnectionStatus& cs)
 }
 
 /**
- *  Get the bytes_processed member.
- */
-int ConnectionStatus::GetBytesProcessed() const throw ()
-{
-  return (this->ints_[BYTES_PROCESSED]);
-}
-
-/**
- *  Get the data_end_time member.
- */
-time_t ConnectionStatus::GetDataEndTime() const throw ()
-{
-  return (this->timets_[DATA_END_TIME]);
-}
-
-/**
- *  Get the disconnect_time member.
- */
-time_t ConnectionStatus::GetDisconnectTime() const throw ()
-{
-  return (this->timets_[DISCONNECT_TIME]);
-}
-
-/**
- *  Get the entries_processed member.
- */
-int ConnectionStatus::GetEntriesProcessed() const throw ()
-{
-  return (this->ints_[ENTRIES_PROCESSED]);
-}
-
-/**
- *  Get the last_checkin_time member.
- */
-time_t ConnectionStatus::GetLastCheckinTime() const throw ()
-{
-  return (this->timets_[LAST_CHECKIN_TIME]);
-}
-
-/**
- *  Get the lines_processed member.
- */
-int ConnectionStatus::GetLinesProcessed() const throw ()
-{
-  return (this->ints_[LINES_PROCESSED]);
-}
-
-/**
- *  Get the type member.
+ *  \brief Get the type of the event (Event::CONNECTIONSTATUS).
+ *
+ *  This method is used to determine the type of the event at runtime.
+ *
+ *  \return Event::CONNECTIONSTATUS
  */
 int ConnectionStatus::GetType() const throw ()
 {
   return (Event::CONNECTIONSTATUS);
-}
-
-/**
- *  Set the bytes_processed member.
- */
-void ConnectionStatus::SetBytesProcessed(int bp) throw ()
-{
-  this->ints_[BYTES_PROCESSED] = bp;
-  return ;
-}
-
-/**
- *  Set the data_end_time member.
- */
-void ConnectionStatus::SetDataEndTime(time_t det) throw ()
-{
-  this->timets_[DATA_END_TIME] = det;
-  return ;
-}
-
-/**
- *  Set the disconnect_time member.
- */
-void ConnectionStatus::SetDisconnectTime(time_t dt) throw ()
-{
-  this->timets_[DISCONNECT_TIME] = dt;
-  return ;
-}
-
-/**
- *  Set the entries_processed member.
- */
-void ConnectionStatus::SetEntriesProcessed(int ep) throw ()
-{
-  this->ints_[ENTRIES_PROCESSED] = ep;
-  return ;
-}
-
-/**
- *  Set the last_checkin_time member.
- */
-void ConnectionStatus::SetLastCheckinTime(time_t lct) throw ()
-{
-  this->timets_[LAST_CHECKIN_TIME] = lct;
-  return ;
-}
-
-/**
- *  Set the lines_processed member.
- */
-void ConnectionStatus::SetLinesProcessed(int lp) throw ()
-{
-  this->ints_[LINES_PROCESSED] = lp;
-  return ;
 }

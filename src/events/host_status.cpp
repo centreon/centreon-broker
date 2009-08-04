@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/host_status.h"
 
 using namespace CentreonBroker::Events;
@@ -30,12 +29,19 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Make a copy of all internal members of HostStatus to the current
- *  instance.
+ *  \brief Copy all internal members of the given object to the current
+ *         instance.
+ *
+ *  Make a copy of all internal members of HostStatus to the current instance.
+ *  This method is use by the copy constructor and the assignment operator.
+ *
+ *  \param[in] hs Object to copy data from.
  */
-void HostStatus::InternalCopy(const HostStatus& hse)
+void HostStatus::InternalCopy(const HostStatus& hs)
 {
-  memcpy(this->timets_, hse.timets_, sizeof(this->timets_));
+  this->last_time_down        = hs.last_time_down;
+  this->last_time_unreachable = hs.last_time_unreachable;
+  this->last_time_up          = hs.last_time_up;
   return ;
 }
 
@@ -46,94 +52,57 @@ void HostStatus::InternalCopy(const HostStatus& hse)
 **************************************/
 
 /**
- *  HostStatus constructor.
+ *  \brief HostStatus constructor.
+ *
+ *  Initialize all members to 0, NULL or equivalent.
  */
 HostStatus::HostStatus()
-{
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+  : last_time_down(0),
+    last_time_unreachable(0),
+    last_time_up(0) {}
 
 /**
- *  HostStatus copy constructor.
+ *  \brief HostStatus copy constructor.
+ *
+ *  Copy all internal data of the given object to the current instance.
+ *
+ *  \param[in] hs Object to copy data from.
  */
-HostStatus::HostStatus(const HostStatus& hse)
-  : HostServiceStatus(hse)
+HostStatus::HostStatus(const HostStatus& hs)
+  : HostServiceStatus(hs)
 {
-  this->InternalCopy(hse);
+  this->InternalCopy(hs);
 }
 
 /**
  *  HostStatus destructor.
  */
-HostStatus::~HostStatus()
-{
-}
+HostStatus::~HostStatus() {}
 
 /**
- *  HostStatus operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all internal data of the given object to the current instance.
+ *
+ *  \param[in] hs Object to copy data from.
+ *
+ *  \return *this
  */
-HostStatus& HostStatus::operator=(const HostStatus& hse)
+HostStatus& HostStatus::operator=(const HostStatus& hs)
 {
-  this->HostServiceStatus::operator=(hse);
-  this->InternalCopy(hse);
+  this->HostServiceStatus::operator=(hs);
+  this->InternalCopy(hs);
   return (*this);
 }
 
 /**
- *  Get the last_time_up member.
- */
-time_t HostStatus::GetLastTimeUp() const throw ()
-{
-  return (this->timets_[LAST_TIME_UP]);
-}
-
-/**
- *  Get the last_time_down member.
- */
-time_t HostStatus::GetLastTimeDown() const throw ()
-{
-  return (this->timets_[LAST_TIME_DOWN]);
-}
-
-/**
- *  Get the last_time_unreachable member.
- */
-time_t HostStatus::GetLastTimeUnreachable() const throw ()
-{
-  return (this->timets_[LAST_TIME_UNREACHABLE]);
-}
-
-/**
- *  Returns the type of the event.
+ *  \brief Returns the type of the event (Event::HOSTSTATUS).
+ *
+ *  The type of the event can be useful for runtime event type identification.
+ *
+ *  \return Event::HOSTSTATUS
  */
 int HostStatus::GetType() const throw ()
 {
   return (Event::HOSTSTATUS);
-}
-
-/**
- *  Set the last_time_up member.
- */
-void HostStatus::SetLastTimeUp(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UP] = ltu;
-  return ;
-}
-
-/**
- *  Set the last_time_down member.
- */
-void HostStatus::SetLastTimeDown(time_t ltd) throw ()
-{
-  this->timets_[LAST_TIME_DOWN] = ltd;
-  return ;
-}
-
-/**
- *  Set the last_time_unreachable member.
- */
-void HostStatus::SetLastTimeUnreachable(time_t ltu) throw ()
-{
-  this->timets_[LAST_TIME_UNREACHABLE] = ltu;
-  return ;
 }

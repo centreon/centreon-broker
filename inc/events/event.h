@@ -60,7 +60,6 @@ namespace                CentreonBroker
     {
      private:
       boost::mutex       mutex_;
-      std::string        nagios_instance_;
       int                readers_;
 
      public:
@@ -87,45 +86,14 @@ namespace                CentreonBroker
 	SERVICE,
 	SERVICESTATUS
       };
-      /**
-       *  \brief Event default constructor.
-       */
+      std::string        instance;
                          Event();
-      /**
-       *  \brief Event copy constructor.
-       */
                          Event(const Event& event);
-      /**
-       *  \brief Event destructor.
-       */
       virtual            ~Event();
-      /**
-       *  \brief Overload of the = operator.
-       */
       Event&             operator=(const Event& event);
-      /**
-       *  \brief Specify that the event has a new reader.
-       */
       void               AddReader(EventSubscriber* es);
-      /**
-       *  \brief Get the name of the instance from which the event was
-       *         generated.
-       */
-      const std::string& GetNagiosInstance() const throw ();
-      /**
-       *  \brief Get the true type of the event.
-       */
       virtual int        GetType() const throw () = 0;
-      /**
-       *  \brief Specify that a previously reading subscriber is not reading
-       *         anymore.
-       */
       void               RemoveReader(EventSubscriber* es);
-      /**
-       *  \brief Set the name of the instance from which the event was
-       *         generated.
-       */
-      void               SetNagiosInstance(const std::string& inst);
     };
   }
 }

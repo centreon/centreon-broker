@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/status.h"
 
 using namespace CentreonBroker::Events;
@@ -30,12 +29,20 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Make a copy of all internal members of a Status to the current
- *  instance.
+ *  \brief Copy members of the given Status object to the current instance.
+ *
+ *  Copy all members defined within the Status class. This method is used by
+ *  the copy constructor and the assignment operator.
+ *
+ *  \param[in] s Object to copy data from.
  */
-void Status::InternalCopy(const Status& se) throw ()
+void Status::InternalCopy(const Status& s) throw ()
 {
-  memcpy(this->bools_, se.bools_, sizeof(this->bools_));
+  this->event_handler_enabled = s.event_handler_enabled;
+  this->failure_prediction_enabled = s.failure_prediction_enabled;
+  this->flap_detection_enabled = s.flap_detection_enabled;
+  this->notifications_enabled = s.notifications_enabled;
+  this->process_performance_data = s.process_performance_data;
   return ;
 }
 
@@ -46,119 +53,46 @@ void Status::InternalCopy(const Status& se) throw ()
 **************************************/
 
 /**
- *  Status default constructor.
+ *  \brief Status default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
 Status::Status()
-{
-  memset(this->bools_, 0, sizeof(this->bools_));
-}
+  : event_handler_enabled(false),
+    failure_prediction_enabled(false),
+    flap_detection_enabled(false),
+    notifications_enabled(false),
+    process_performance_data(false) {}
 
 /**
- *  Status copy constructor.
+ *  \brief Status copy constructor.
+ *
+ *  Copy all members of the given Status object to the current instance.
+ *
+ *  \param[in] s Object to copy data from.
  */
-Status::Status(const Status& se) : Event(se)
+Status::Status(const Status& s) : Event(s)
 {
-  this->InternalCopy(se);
+  this->InternalCopy(s);
 }
 
 /**
  *  Status destructor.
  */
-Status::~Status()
-{
-}
+Status::~Status() {}
 
 /**
- *  Status operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all members of the given Status object to the current instance.
+ *
+ *  \param[in] s Object to copy data from.
+ *
+ *  \return *this
  */
-Status& Status::operator=(const Status& se)
+Status& Status::operator=(const Status& s)
 {
-  this->Event::operator=(se);
-  this->InternalCopy(se);
+  this->Event::operator=(s);
+  this->InternalCopy(s);
   return (*this);
-}
-
-/**
- *  Get the event_handler_enabled member.
- */
-bool Status::GetEventHandlerEnabled() const throw ()
-{
-  return (this->bools_[EVENT_HANDLER_ENABLED]);
-}
-
-/**
- *  Get the failure_prediction_enabled member.
- */
-bool Status::GetFailurePredictionEnabled() const throw ()
-{
-  return (this->bools_[FAILURE_PREDICTION_ENABLED]);
-}
-
-/**
- *  Get the flap_detection_enabled member.
- */
-bool Status::GetFlapDetectionEnabled() const throw ()
-{
-  return (this->bools_[FLAP_DETECTION_ENABLED]);
-}
-
-/**
- *  Get the notifications_enabled member.
- */
-bool Status::GetNotificationsEnabled() const throw ()
-{
-  return (this->bools_[NOTIFICATIONS_ENABLED]);
-}
-
-/**
- *  Get the process_performance_data member.
- */
-bool Status::GetProcessPerformanceData() const throw ()
-{
-  return (this->bools_[PROCESS_PERFORMANCE_DATA]);
-}
-
-/**
- *  Set the event_handler_enabled member.
- */
-void Status::SetEventHandlerEnabled(bool ehe) throw ()
-{
-  this->bools_[EVENT_HANDLER_ENABLED] = ehe;
-  return ;
-}
-
-/**
- *  Set the failure_prediction_enabled member.
- */
-void Status::SetFailurePredictionEnabled(bool fpe) throw ()
-{
-  this->bools_[FAILURE_PREDICTION_ENABLED] = fpe;
-  return ;
-}
-
-/**
- *  Set the flap_detection_enabled member.
- */
-void Status::SetFlapDetectionEnabled(bool fde) throw ()
-{
-  this->bools_[FLAP_DETECTION_ENABLED] = fde;
-  return ;
-}
-
-/**
- *  Set the notifications_enabled member.
- */
-void Status::SetNotificationsEnabled(bool ne) throw ()
-{
-  this->bools_[NOTIFICATIONS_ENABLED] = ne;
-  return ;
-}
-
-/**
- *  Set the process_performance_data member.
- */
-void Status::SetProcessPerformanceData(bool ppd) throw ()
-{
-  this->bools_[PROCESS_PERFORMANCE_DATA] = ppd;
-  return ;
 }

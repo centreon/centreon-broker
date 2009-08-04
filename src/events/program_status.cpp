@@ -29,15 +29,33 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the ProgramStatus object to the current instance.
+ *  \brief Copy internal data of the ProgramStatus object to the current
+ *         instance.
+ *
+ *  Copy data defined within the ProgramStatus class. This method is used by
+ *  the copy constructor and the assignment operator.
+ *
+ *  \param[in] ps Object to copy data from.
  */
 void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 {
-  memcpy(this->bools_, ps.bools_, sizeof(this->bools_));
-  memcpy(this->ints_, ps.ints_, sizeof(this->ints_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = ps.strings_[i];
-  memcpy(this->timets_, ps.timets_, sizeof(this->timets_));
+  this->active_host_checks_enabled     = ps.active_host_checks_enabled;
+  this->active_service_checks_enabled  = ps.active_service_checks_enabled;
+  this->daemon_mode                    = ps.daemon_mode;
+  this->global_host_event_handler      = ps.global_host_event_handler;
+  this->global_service_event_handler   = ps.global_service_event_handler;
+  this->is_running                     = ps.is_running;
+  this->last_alive                     = ps.last_alive;
+  this->last_command_check             = ps.last_command_check;
+  this->last_log_rotation              = ps.last_log_rotation;
+  this->modified_host_attributes       = ps.modified_host_attributes;
+  this->obsess_over_hosts              = ps.obsess_over_hosts;
+  this->obsess_over_services           = ps.obsess_over_services;
+  this->passive_host_checks_enabled    = ps.passive_host_checks_enabled;
+  this->passive_service_checks_enabled = ps.passive_service_checks_enabled;
+  this->pid                            = ps.pid;
+  this->program_end                    = ps.program_end;
+  this->program_start                  = ps.program_start;
   return ;
 }
 
@@ -48,17 +66,34 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 **************************************/
 
 /**
- *  ProgramStatus default constructor.
+ *  \brief ProgramStatus default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
-ProgramStatus::ProgramStatus() throw ()
-{
-  memset(this->bools_, 0, sizeof(this->bools_));
-  memset(this->ints_, 0, sizeof(this->ints_));
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+ProgramStatus::ProgramStatus()
+  : active_host_checks_enabled(false),
+    active_service_checks_enabled(false),
+    daemon_mode(false),
+    is_running(false),
+    last_alive(0),
+    last_command_check(0),
+    last_log_rotation(0),
+    modified_host_attributes(0),
+    modified_service_attributes(0),
+    obsess_over_hosts(false),
+    obsess_over_services(false),
+    passive_host_checks_enabled(false),
+    passive_service_checks_enabled(false),
+    pid(0),
+    program_end(0),
+    program_start(0) {}
 
 /**
- *  ProgramStatus copy constructor.
+ *  \brief ProgramStatus copy constructor.
+ *
+ *  Copy all members of the given object to the current instance.
+ *
+ *  \param[in] ps Object to copy data from.
  */
 ProgramStatus::ProgramStatus(const ProgramStatus& ps) : Status(ps)
 {
@@ -68,12 +103,14 @@ ProgramStatus::ProgramStatus(const ProgramStatus& ps) : Status(ps)
 /**
  *  ProgramStatus destructor.
  */
-ProgramStatus::~ProgramStatus() throw ()
-{
-}
+ProgramStatus::~ProgramStatus() {}
 
 /**
- *  ProgramStatus operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all members of the given object to the current instance.
+ *
+ *  \param[in] ps Object to copy data from.
  */
 ProgramStatus& ProgramStatus::operator=(const ProgramStatus& ps)
 {
@@ -83,315 +120,13 @@ ProgramStatus& ProgramStatus::operator=(const ProgramStatus& ps)
 }
 
 /**
- *  Get the active_host_checks_enabled member.
- */
-bool ProgramStatus::GetActiveHostChecksEnabled() const throw ()
-{
-  return (this->bools_[ACTIVE_HOST_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the active_service_checks_enabled member.
- */
-bool ProgramStatus::GetActiveServiceChecksEnabled() const throw ()
-{
-  return (this->bools_[ACTIVE_SERVICE_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the daemon_mode member.
- */
-bool ProgramStatus::GetDaemonMode() const throw ()
-{
-  return (this->bools_[DAEMON_MODE]);
-}
-
-/**
- *  Get the global_host_event_handler member.
- */
-const std::string& ProgramStatus::GetGlobalHostEventHandler() const throw ()
-{
-  return (this->strings_[GLOBAL_HOST_EVENT_HANDLER]);
-}
-
-/**
- *  Get the gobal_service_event_handler member.
- */
-const std::string& ProgramStatus::GetGlobalServiceEventHandler() const throw ()
-{
-  return (this->strings_[GLOBAL_SERVICE_EVENT_HANDLER]);
-}
-
-/**
- *  Get the is_running member.
- */
-bool ProgramStatus::GetIsRunning() const throw ()
-{
-  return (this->bools_[IS_RUNNING]);
-}
-
-/**
- *  Get the last_alive member.
- */
-time_t ProgramStatus::GetLastAlive() const throw ()
-{
-  return (this->timets_[LAST_ALIVE]);
-}
-
-/**
- *  Get the last_command_check member.
- */
-time_t ProgramStatus::GetLastCommandCheck() const throw ()
-{
-  return (this->timets_[LAST_COMMAND_CHECK]);
-}
-
-/**
- *  Get the last_log_rotation member.
- */
-time_t ProgramStatus::GetLastLogRotation() const throw ()
-{
-  return (this->timets_[LAST_LOG_ROTATION]);
-}
-
-/**
- *  Get the modified_host_attributes member.
- */
-int ProgramStatus::GetModifiedHostAttributes() const throw ()
-{
-  return (this->ints_[MODIFIED_HOST_ATTRIBUTES]);
-}
-
-/**
- *  Get the modified_service_attributes member.
- */
-int ProgramStatus::GetModifiedServiceAttributes() const throw ()
-{
-  return (this->ints_[MODIFIED_SERVICE_ATTRIBUTES]);
-}
-
-/**
- *  Get the obsess_over_hosts member.
- */
-bool ProgramStatus::GetObsessOverHosts() const throw ()
-{
-  return (this->bools_[OBSESS_OVER_HOSTS]);
-}
-
-/**
- *  Get the obsess_over_services member.
- */
-bool ProgramStatus::GetObsessOverServices() const throw ()
-{
-  return (this->bools_[OBSESS_OVER_SERVICES]);
-}
-
-/**
- *  Get the passive_host_checks_enabled member.
- */
-bool ProgramStatus::GetPassiveHostChecksEnabled() const throw ()
-{
-  return (this->bools_[PASSIVE_HOST_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the passive_service_checks_enabled member.
- */
-bool ProgramStatus::GetPassiveServiceChecksEnabled() const throw ()
-{
-  return (this->bools_[PASSIVE_SERVICE_CHECKS_ENABLED]);
-}
-
-/**
- *  Get the pid member.
- */
-int ProgramStatus::GetPid() const throw ()
-{
-  return (this->ints_[PID]);
-}
-
-/**
- *  Get the program_end_time member.
- */
-time_t ProgramStatus::GetProgramEndTime() const throw ()
-{
-  return (this->timets_[PROGRAM_END_TIME]);
-}
-
-/**
- *  Get the program_start member.
- */
-time_t ProgramStatus::GetProgramStart() const throw ()
-{
-  return (this->timets_[PROGRAM_START]);
-}
-
-/**
- *  Get the type of the event.
+ *  \brief Get the type of the event (Event::PROGRAMSTATUS).
+ *
+ *  This method is used to determine the type of the event at runtime.
+ *
+ *  \return Event::PROGRAMSTATUS
  */
 int ProgramStatus::GetType() const throw ()
 {
   return (Event::PROGRAMSTATUS);
-}
-
-/**
- *  Set the active_host_checks_enabled member.
- */
-void ProgramStatus::SetActiveHostChecksEnabled(bool ahce) throw ()
-{
-  this->bools_[ACTIVE_HOST_CHECKS_ENABLED] = ahce;
-  return ;
-}
-
-/**
- *  Set the active_service_checks_enabled member.
- */
-void ProgramStatus::SetActiveServiceChecksEnabled(bool asce) throw ()
-{
-  this->bools_[ACTIVE_SERVICE_CHECKS_ENABLED] = asce;
-  return ;
-}
-
-/**
- *  Set the daemon_mode member.
- */
-void ProgramStatus::SetDaemonMode(bool dm) throw ()
-{
-  this->bools_[DAEMON_MODE] = dm;
-  return ;
-}
-
-/**
- *  Set the global_host_event_handler member.
- */
-void ProgramStatus::SetGlobalHostEventHandler(const std::string& gheh)
-{
-  this->strings_[GLOBAL_HOST_EVENT_HANDLER] = gheh;
-  return ;
-}
-
-/**
- *  Set the global_service_event_handler member.
- */
-void ProgramStatus::SetGlobalServiceEventHandler(const std::string& gseh)
-{
-  this->strings_[GLOBAL_SERVICE_EVENT_HANDLER] = gseh;
-  return ;
-}
-
-/**
- *  Set the is_running member.
- */
-void ProgramStatus::SetIsRunning(bool ir) throw ()
-{
-  this->bools_[IS_RUNNING] = ir;
-  return ;
-}
-
-/**
- *  Set the last_alive member.
- */
-void ProgramStatus::SetLastAlive(time_t la) throw ()
-{
-  this->timets_[LAST_ALIVE] = la;
-  return ;
-}
-
-/**
- *  Set the last_command_check member.
- */
-void ProgramStatus::SetLastCommandCheck(time_t lcc) throw ()
-{
-  this->timets_[LAST_COMMAND_CHECK] = lcc;
-  return ;
-}
-
-/**
- *  Set the last_log_rotation member.
- */
-void ProgramStatus::SetLastLogRotation(time_t llr) throw ()
-{
-  this->timets_[LAST_LOG_ROTATION] = llr;
-  return ;
-}
-
-/**
- *  Set the modified_host_attributes member.
- */
-void ProgramStatus::SetModifiedHostAttributes(int mha) throw ()
-{
-  this->ints_[MODIFIED_HOST_ATTRIBUTES] = mha;
-  return ;
-}
-
-/**
- *  Set the modified_service_attributes member.
- */
-void ProgramStatus::SetModifiedServiceAttributes(int msa) throw ()
-{
-  this->ints_[MODIFIED_SERVICE_ATTRIBUTES] = msa;
-  return ;
-}
-
-/**
- *  Set the obsess_over_hosts member.
- */
-void ProgramStatus::SetObsessOverHosts(bool ooh) throw ()
-{
-  this->bools_[OBSESS_OVER_HOSTS] = ooh;
-  return ;
-}
-
-/**
- *  Set the obsess_over_services member.
- */
-void ProgramStatus::SetObsessOverServices(bool oos) throw ()
-{
-  this->bools_[OBSESS_OVER_SERVICES] = oos;
-  return ;
-}
-
-/**
- *  Set the passive_host_checks_enabled member.
- */
-void ProgramStatus::SetPassiveHostChecksEnabled(bool phce) throw ()
-{
-  this->bools_[PASSIVE_HOST_CHECKS_ENABLED] = phce;
-  return ;
-}
-
-/**
- *  Set the passive_service_checks_enabled member.
- */
-void ProgramStatus::SetPassiveServiceChecksEnabled(bool psce) throw ()
-{
-  this->bools_[PASSIVE_SERVICE_CHECKS_ENABLED] = psce;
-  return ;
-}
-
-/**
- *  Set the pid member.
- */
-void ProgramStatus::SetPid(int p) throw ()
-{
-  this->ints_[PID] = p;
-  return ;
-}
-
-/**
- *  Set the program_end_time member.
- */
-void ProgramStatus::SetProgramEndTime(time_t pet) throw ()
-{
-  this->timets_[PROGRAM_END_TIME] = pet;
-  return ;
-}
-
-/**
- *  Set the program_start member.
- */
-void ProgramStatus::SetProgramStart(time_t ps) throw ()
-{
-  this->timets_[PROGRAM_START] = ps;
-  return ;
 }

@@ -25,30 +25,29 @@ using namespace CentreonBroker::Events;
 /**
  *  Event default constructor.
  */
-Event::Event()
-{
-  this->readers_ = 0;
-}
+Event::Event() : readers_(0) {}
 
 /**
- *  Event copy constructor.
+ *  \brief Event copy constructor.
+ *
+ *  Copy data from the given object to the current instance.
  *
  *  \param[in] event Object to copy from.
  */
 Event::Event(const Event& event)
 {
-  operator=(event);
+  this->instance = event.instance;
   this->readers_ = 0;
 }
 
 /**
- *  Release all acquired ressources.
+ *  Event destructor.
  */
-Event::~Event()
-{
-}
+Event::~Event() {}
 
 /**
+ *  \brief Overload of the assignment operator.
+ *
  *  Copy the Nagios instance name of the given object to the current instance.
  *
  *  \param[in] event Object to copy from.
@@ -57,12 +56,13 @@ Event::~Event()
  */
 Event& Event::operator=(const Event& event)
 {
-  (void)event;
-  this->nagios_instance_ = event.nagios_instance_;
+  this->instance = event.instance;
   return (*this);
 }
 
 /**
+ *  \brief Add a reader to the event.
+ *
  *  Specify that somebody is reading the Event. It shall not be destructed
  *  until the reader specify that he's done with the event.
  *
@@ -82,16 +82,8 @@ void Event::AddReader(EventSubscriber* es)
 }
 
 /**
- *  Get the name of the instance from which the event was generated.
+ *  \brief Remove a reader from the event.
  *
- *  \return The name of the instance from which the event was generated.
- */
-const std::string& Event::GetNagiosInstance() const throw ()
-{
-  return (this->nagios_instance_);
-}
-
-/**
  *  Remove an event reader. The current implementation only counts the number
  *  of calls made to AddReader and RemoveReader and if the numbers equal, the
  *  object self-destructs.
@@ -113,17 +105,5 @@ void Event::RemoveReader(EventSubscriber* es)
   this->mutex_.unlock();
   if (destroy)
     delete (this);
-  return ;
-}
-
-/**
- *  Set the name of the instance from which the event was generated.
- *
- *  \param[in] inst The name of the instance from which the event was
- *                  generated.
- */
-void Event::SetNagiosInstance(const std::string& inst)
-{
-  this->nagios_instance_ = inst;
   return ;
 }

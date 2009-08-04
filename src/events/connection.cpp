@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/connection.h"
 
 using namespace CentreonBroker::Events;
@@ -30,13 +29,34 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data from the Connection object to the current instance.
+ *  \brief Copy members from the Connection object to the current instance.
+ *
+ *  Copy all members defined within the Connection class. This method is used
+ *  by the copy constructor and the assignment operator.
+ *
+ *  \param[in] c Object to copy data from.
  */
 void Connection::InternalCopy(const Connection& c)
 {
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = c.strings_[i];
-  memcpy(this->timets_, c.timets_, sizeof(this->timets_));
+  this->agent_name      = c.agent_name;
+  this->agent_version   = c.agent_version;
+  this->connect_source  = c.connect_source;
+  this->connect_time    = c.connect_time;
+  this->connect_type    = c.connect_type;
+  this->data_start_time = c.data_start_time;
+  return ;
+}
+
+/**
+ *  \brief Initialize members to 0, NULL or equivalent.
+ *
+ *  All members defined within the Connection class will be initialized to 0,
+ *  NULL or equivalent. This method is used by some constructors.
+ */
+void Connection::ZeroInitialize()
+{
+  this->connect_time = 0;
+  this->data_start_time = 0;
   return ;
 }
 
@@ -47,15 +67,34 @@ void Connection::InternalCopy(const Connection& c)
 **************************************/
 
 /**
- *  Connection default constructor.
+ *  \brief Connection default constructor.
+ *
+ *  Initialize all members to 0, NULL or equivalent.
  */
-Connection::Connection() throw ()
+Connection::Connection()
 {
-  memset(this->timets_, 0, sizeof(this->timets_));
+  this->ZeroInitialize();
 }
 
 /**
- *  Connection copy constructor.
+ *  \brief Build a Connection from a ConnectionStatus.
+ *
+ *  Copy all data from the ConnectionStatus object and zero-initialize
+ *  remaining members.
+ *
+ *  \param[in] cs Object to copy data from.
+ */
+Connection::Connection(const ConnectionStatus& cs) : ConnectionStatus(cs)
+{
+  this->ZeroInitialize();
+}
+
+/**
+ *  \brief Connection copy constructor.
+ *
+ *  Copy all data from the given object to the current instance.
+ *
+ *  \param[in] c Object to copy data from.
  */
 Connection::Connection(const Connection& c) : ConnectionStatus(c)
 {
@@ -63,22 +102,16 @@ Connection::Connection(const Connection& c) : ConnectionStatus(c)
 }
 
 /**
- *  Build a Connection from a ConnectionStatus.
- */
-Connection::Connection(const ConnectionStatus& cs) : ConnectionStatus(cs)
-{
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
-
-/**
  *  Connection destructor.
  */
-Connection::~Connection() throw ()
-{
-}
+Connection::~Connection() {}
 
 /**
- *  Connection operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all data from the given object to the current instance.
+ *
+ *  \param[in] c Object to copy data from.
  */
 Connection& Connection::operator=(const Connection& c)
 {
@@ -88,111 +121,13 @@ Connection& Connection::operator=(const Connection& c)
 }
 
 /**
- *  Get the agent_name member.
- */
-const std::string& Connection::GetAgentName() const throw ()
-{
-  return (this->strings_[AGENT_NAME]);
-}
-
-/**
- *  Get the agent_version member.
- */
-const std::string& Connection::GetAgentVersion() const throw ()
-{
-  return (this->strings_[AGENT_VERSION]);
-}
-
-/**
- *  Get the connect_source member.
- */
-const std::string& Connection::GetConnectSource() const throw ()
-{
-  return (this->strings_[CONNECT_SOURCE]);
-}
-
-/**
- *  Get the connect_time member.
- */
-time_t Connection::GetConnectTime() const throw ()
-{
-  return (this->timets_[CONNECT_TIME]);
-}
-
-/**
- *  Get the connect_type member.
- */
-const std::string& Connection::GetConnectType() const throw ()
-{
-  return (this->strings_[CONNECT_TYPE]);
-}
-
-/**
- *  Get the data_start_time member.
- */
-time_t Connection::GetDataStartTime() const throw ()
-{
-  return (this->timets_[DATA_START_TIME]);
-}
-
-/**
- *  Get the type of the event.
+ *  \brief Get the type of this event (Event::CONNECTION).
+ *
+ *  This method can help identify the type of an event at runtime.
+ *
+ *  \return Event::CONNECTION
  */
 int Connection::GetType() const throw ()
 {
   return (Event::CONNECTION);
-}
-
-/**
- *  Set the agent_name member.
- */
-void Connection::SetAgentName(const std::string& an)
-{
-  this->strings_[AGENT_NAME] = an;
-  return ;
-}
-
-/**
- *  Set the agent_version member.
- */
-void Connection::SetAgentVersion(const std::string& av)
-{
-  this->strings_[AGENT_VERSION] = av;
-  return ;
-}
-
-/**
- *  Set the connect_source member.
- */
-void Connection::SetConnectSource(const std::string& cs)
-{
-  this->strings_[CONNECT_SOURCE] = cs;
-  return ;
-}
-
-/**
- *  Set the connect_time member.
- */
-void Connection::SetConnectTime(time_t ct) throw ()
-{
-  this->timets_[CONNECT_TIME] = ct;
-  return ;
-}
-
-/**
- *  Set the connect_type member.
- */
-void Connection::SetConnectType(const std::string& ct)
-{
-  this->strings_[CONNECT_TYPE] = ct;
-  return ;
-}
-
-/**
- *  Set the data_start_time member.
- */
-void Connection::SetDataStartTime(time_t dst) throw ()
-{
-  this->timets_[DATA_START_TIME] = dst;
-  return ;
 }

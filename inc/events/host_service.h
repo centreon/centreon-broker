@@ -30,89 +30,31 @@ namespace                CentreonBroker
     class                HostService
     {
      private:
-      enum               Bool
-      {
-	CHECK_FRESHNESS = 0,
-	RETAIN_NONSTATUS_INFORMATION,
-	RETAIN_STATUS_INFORMATION,
-	BOOL_NB
-      };
-      enum               Double
-      {
-	FIRST_NOTIFICATION_DELAY = 0,
-	FRESHNESS_THRESHOLD,
-	HIGH_FLAP_THRESHOLD,
-	LOW_FLAP_THRESHOLD,
-	NOTIFICATION_INTERVAL,
-	DOUBLE_NB
-      };
-      enum               Short
-      {
-	NOTIFY_ON_DOWNTIME = 0,
-	NOTIFY_ON_FLAPPING,
-	NOTIFY_ON_RECOVERY,
-	SHORT_NB
-      };
-      enum               String
-      {
-	ACTION_URL = 0,
-	DISPLAY_NAME,
-	ICON_IMAGE,
-	ICON_IMAGE_ALT,
-	NOTES,
-	NOTES_URL,
-	NOTIFICATION_PERIOD,
-	STRING_NB
-      };
-      bool               bools_[BOOL_NB];
-      double             doubles_[DOUBLE_NB];
-      short              shorts_[SHORT_NB];
-      std::string        strings_[STRING_NB];
       void               InternalCopy(const HostService& hs);
 
      public:
-                         HostService() throw ();
+      std::string        action_url;
+      bool               check_freshness;
+      std::string        display_name;
+      double             first_notification_delay;
+      double             freshness_threshold;
+      double             high_flap_threshold;
+      std::string        icon_image;
+      std::string        icon_image_alt;
+      double             low_flap_threshold;
+      std::string        notes;
+      std::string        notes_url;
+      double             notification_interval;
+      std::string        notification_period;
+      short              notify_on_downtime;
+      short              notify_on_flapping;
+      short              notify_on_recovery;
+      bool               retain_nonstatus_information;
+      bool               retain_status_information;
+                         HostService();
 			 HostService(const HostService& hs);
-      virtual            ~HostService() throw ();
+      virtual            ~HostService();
       HostService&       operator=(const HostService& hs);
-      // Getters
-      const std::string& GetActionUrl() const throw ();
-      bool               GetCheckFreshness() const throw ();
-      const std::string& GetDisplayName() const throw ();
-      double             GetFirstNotificationDelay() const throw ();
-      double             GetFreshnessThreshold() const throw ();
-      double             GetHighFlapThreshold() const throw ();
-      const std::string& GetIconImage() const throw ();
-      const std::string& GetIconImageAlt() const throw ();
-      double             GetLowFlapThreshold() const throw ();
-      const std::string& GetNotes() const throw ();
-      const std::string& GetNotesUrl() const throw ();
-      double             GetNotificationInterval() const throw ();
-      const std::string& GetNotificationPeriod() const throw ();
-      short              GetNotifyOnDowntime() const throw ();
-      short              GetNotifyOnFlapping() const throw ();
-      short              GetNotifyOnRecovery() const throw ();
-      bool               GetRetainNonstatusInformation() const throw ();
-      bool               GetRetainStatusInformation() const throw ();
-      // Setters
-      void               SetActionUrl(const std::string& au);
-      void               SetCheckFreshness(bool cf) throw ();
-      void               SetDisplayName(const std::string& dn);
-      void               SetFirstNotificationDelay(double fnd) throw ();
-      void               SetFreshnessThreshold(double ft) throw ();
-      void               SetHighFlapThreshold(double hft) throw ();
-      void               SetIconImage(const std::string& ii);
-      void               SetIconImageAlt(const std::string& iia);
-      void               SetLowFlapThreshold(double lft) throw ();
-      void               SetNotes(const std::string& n);
-      void               SetNotesUrl(const std::string& nu);
-      void               SetNotificationInterval(double ni) throw ();
-      void               SetNotificationPeriod(const std::string& np);
-      void               SetNotifyOnDowntime(short nod) throw ();
-      void               SetNotifyOnFlapping(short nof) throw ();
-      void               SetNotifyOnRecovery(short nor) throw ();
-      void               SetRetainNonstatusInformation(bool rni) throw ();
-      void               SetRetainStatusInformation(bool rsi) throw ();
     };
   }
 }

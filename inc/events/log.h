@@ -21,7 +21,7 @@
 #ifndef EVENTS_LOG_H_
 # define EVENTS_LOG_H_
 
-# include <ctime>
+# include <ctime> // for time_t
 # include <string>
 # include "events/event.h"
 
@@ -32,59 +32,24 @@ namespace                CentreonBroker
     class                Log : public Event
     {
      private:
-      enum               Int
-      {
-	MSG_TYPE = 0,
-	RETRY,
-	INT_NB
-      };
-      enum               String
-      {
-	HOST_NAME = 0,
-	LOG_TYPE,
-	NOTIFICATION_CMD,
-	NOTIFICATION_CONTACT,
-	OUTPUT,
-	SERVICE_DESCRIPTION,
-	STATUS,
-	STRING_NB
-      };
-      enum               TimeT
-      {
-	C_TIME = 0,
-	TIMET_NB
-      };
-      int                ints_[INT_NB];
-      std::string        strings_[STRING_NB];
-      time_t             timets_[TIMET_NB];
       void               InternalCopy(const Log& log);
 
      public:
+      time_t             c_time;
+      std::string        host;
+      int                msg_type;
+      std::string        notification_cmd;
+      std::string        notification_contact;
+      std::string        output;
+      int                retry;
+      std::string        service;
+      std::string        status;
+      std::string        type;
                          Log();
                          Log(const Log& log);
                          ~Log();
       Log&               operator=(const Log& log);
-      time_t             GetCtime() const throw ();
-      const std::string& GetHostName() const throw ();
-      const std::string& GetLogType() const throw ();
-      int                GetMsgType() const throw ();
-      const std::string& GetNotificationCmd() const throw ();
-      const std::string& GetNotificationContact() const throw ();
-      const std::string& GetOutput() const throw ();
-      int                GetRetry() const throw ();
-      const std::string& GetServiceDescription() const throw ();
-      const std::string& GetStatus() const throw ();
       int                GetType() const throw ();
-      void               SetCtime(time_t c) throw ();
-      void               SetHostName(const std::string& hn);
-      void               SetLogType(const std::string& lt);
-      void               SetMsgType(int mt) throw ();
-      void               SetNotificationCmd(const std::string& nc);
-      void               SetNotificationContact(const std::string& nc);
-      void               SetOutput(const std::string& o);
-      void               SetRetry(int r) throw ();
-      void               SetServiceDescription(const std::string& sd);
-      void               SetStatus(const std::string& s);
     };
   }
 }
