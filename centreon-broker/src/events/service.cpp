@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/service.h"
 
 using namespace CentreonBroker::Events;
@@ -30,14 +29,49 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the Service structure to the current instance.
+ *  \brief Copy members of the Service object to the current instance.
+ *
+ *  Copy all members defined within the Service class. This method is used by
+ *  the copy constructor and the assignment operator.
+ *
+ *  \param[in] s Object to copy data from.
  */
 void Service::InternalCopy(const Service& s)
 {
-  memcpy(this->bools_, s.bools_, sizeof(this->bools_));
-  memcpy(this->shorts_, s.shorts_, sizeof(this->shorts_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = s.strings_[i];
+  this->failure_prediction_options = s.failure_prediction_options;
+  this->flap_detection_on_critical = s.flap_detection_on_critical;
+  this->flap_detection_on_ok       = s.flap_detection_on_ok;
+  this->flap_detection_on_unknown  = s.flap_detection_on_unknown;
+  this->is_volatile                = s.is_volatile;
+  this->notified_on_critical       = s.notified_on_critical;
+  this->notified_on_unknown        = s.notified_on_unknown;
+  this->notified_on_warning        = s.notified_on_warning;
+  this->stalk_on_critical          = s.stalk_on_critical;
+  this->stalk_on_unknown           = s.stalk_on_unknown;
+  this->stalk_on_warning           = s.stalk_on_warning;
+  return ;
+}
+
+/**
+ *  \brief Initialize members to 0, NULL or equivalent.
+ *
+ *  This method initializes members defined within the Service class to 0,
+ *  NULL or equivalent. This method is used by some constructors.
+ */
+void Service::ZeroInitialize()
+{
+  this->flap_detection_on_critical = 0;
+  this->flap_detection_on_ok = 0;
+  this->flap_detection_on_unknown = 0;
+  this->flap_detection_on_warning = 0;
+  this->is_volatile = false;
+  this->notified_on_critical = false;
+  this->notified_on_unknown = false;
+  this->notified_on_warning = false;
+  this->stalk_on_critical = 0;
+  this->stalk_on_ok = 0;
+  this->stalk_on_unknown = 0;
+  this->stalk_on_warning = 0;
   return ;
 }
 
@@ -48,25 +82,34 @@ void Service::InternalCopy(const Service& s)
 **************************************/
 
 /**
- *  Service default constructor.
+ *  \brief Service default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
-Service::Service() throw ()
+Service::Service()
 {
-  memset(this->bools_, 0, sizeof(this->bools_));
-  memset(this->shorts_, 0, sizeof(this->shorts_));
+  this->ZeroInitialize();
 }
 
 /**
- *  Build a Service from a ServiceStatus.
+ *  \brief Build a Service from a ServiceStatus.
+ *
+ *  Copy all members from ServiceStatus to the current instance and
+ *  zero-initialize remaining members.
+ *
+ *  \param[in] ss ServiceStatus object to copy data from.
  */
 Service::Service(const ServiceStatus& ss) : ServiceStatus(ss)
 {
-  memset(this->bools_, 0, sizeof(this->bools_));
-  memset(this->shorts_, 0, sizeof(this->shorts_));
+  this->ZeroInitialize();
 }
 
 /**
- *  Service copy constructor.
+ *  \brief Service copy constructor.
+ *
+ *  Copy all members of the given Service object to the current instance.
+ *
+ *  \param[in] s Object to copy data from.
  */
 Service::Service(const Service& s) : HostService(s), ServiceStatus(s)
 {
@@ -76,12 +119,16 @@ Service::Service(const Service& s) : HostService(s), ServiceStatus(s)
 /**
  *  Service destructor.
  */
-Service::~Service() throw ()
-{
-}
+Service::~Service() {}
 
 /**
- *  Service operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all members of the given Service object to the current instance.
+ *
+ *  \param[in] s Object to copy data from.
+ *
+ *  \return *this
  */
 Service& Service::operator=(const Service& s)
 {
@@ -92,230 +139,13 @@ Service& Service::operator=(const Service& s)
 }
 
 /**
- *  Get the failure_prediction_options member.
- */
-const std::string& Service::GetFailurePredictionOptions() const throw ()
-{
-  return (this->strings_[FAILURE_PREDICTION_OPTIONS]);
-}
-
-/**
- *  Get the flap_detection_on_critical member.
- */
-short Service::GetFlapDetectionOnCritical() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_CRITICAL]);
-}
-
-/**
- *  Get the flap_detection_on_ok member.
- */
-short Service::GetFlapDetectionOnOk() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_OK]);
-}
-
-/**
- *  Get the flap_detection_on_unknown member.
- */
-short Service::GetFlapDetectionOnUnknown() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_UNKNOWN]);
-}
-
-/**
- *  Get the flap_detection_on_warning member.
- */
-short Service::GetFlapDetectionOnWarning() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_WARNING]);
-}
-
-/**
- *  Get the is_volatile member.
- */
-bool Service::GetIsVolatile() const throw ()
-{
-  return (this->bools_[IS_VOLATILE]);
-}
-
-/**
- *  Get the notified_on_critical member.
- */
-bool Service::GetNotifiedOnCritical() const throw ()
-{
-  return (this->bools_[NOTIFIED_ON_CRITICAL]);
-}
-
-/**
- *  Get the notified_on_unknown member.
- */
-bool Service::GetNotifiedOnUnknown() const throw ()
-{
-  return (this->bools_[NOTIFIED_ON_UNKNOWN]);
-}
-
-/**
- *  Get the notified_on_warning member.
- */
-bool Service::GetNotifiedOnWarning() const throw ()
-{
-  return (this->bools_[NOTIFIED_ON_WARNING]);
-}
-
-/**
- *  Get the stalk_on_critical member.
- */
-short Service::GetStalkOnCritical() const throw ()
-{
-  return (this->shorts_[STALK_ON_CRITICAL]);
-}
-
-/**
- *  Get the stalk_on_ok member.
- */
-short Service::GetStalkOnOk() const throw ()
-{
-  return (this->shorts_[STALK_ON_OK]);
-}
-
-/**
- *  Get the stalk_on_unknown member.
- */
-short Service::GetStalkOnUnknown() const throw ()
-{
-  return (this->shorts_[STALK_ON_UNKNOWN]);
-}
-
-/**
- *  Get the stalk_on_warning member.
- */
-short Service::GetStalkOnWarning() const throw ()
-{
-  return (this->shorts_[STALK_ON_WARNING]);
-}
-
-/**
- *  Get the type of the event.
+ *  \brief Get the type of the event (Event::SERVICE).
+ *
+ *  This method is used to determine the type of the event at runtime.
+ *
+ *  \return Event::SERVICE
  */
 int Service::GetType() const throw ()
 {
   return (Event::SERVICE);
-}
-
-/**
- *  Set the failure_prediction_options member.
- */
-void Service::SetFailurePredictionOptions(const std::string& fpo)
-{
-  this->strings_[FAILURE_PREDICTION_OPTIONS] = fpo;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_critical member.
- */
-void Service::SetFlapDetectionOnCritical(short fdoc) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_CRITICAL] = fdoc;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_ok member.
- */
-void Service::SetFlapDetectionOnOk(short fdoo) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_OK] = fdoo;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_unknown member.
- */
-void Service::SetFlapDetectionOnUnknown(short fdou) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_UNKNOWN] = fdou;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_warning member.
- */
-void Service::SetFlapDetectionOnWarning(short fdow) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_WARNING] = fdow;
-  return ;
-}
-
-/**
- *  Set the is_volatile member.
- */
-void Service::SetIsVolatile(bool iv) throw ()
-{
-  this->bools_[IS_VOLATILE] = iv;
-  return ;
-}
-
-/**
- *  Set the notified_on_critical member.
- */
-void Service::SetNotifiedOnCritical(bool noc) throw ()
-{
-  this->bools_[NOTIFIED_ON_CRITICAL] = noc;
-  return ;
-}
-
-/**
- *  Set the notified_on_unknown member.
- */
-void Service::SetNotifiedOnUnknown(bool nou) throw ()
-{
-  this->bools_[NOTIFIED_ON_UNKNOWN] = nou;
-  return ;
-}
-
-/**
- *  Set the notified_on_warning member.
- */
-void Service::SetNotifiedOnWarning(bool now) throw ()
-{
-  this->bools_[NOTIFIED_ON_WARNING] = now;
-  return ;
-}
-
-/**
- *  Set the stalk_on_critical member.
- */
-void Service::SetStalkOnCritical(short soc) throw ()
-{
-  this->shorts_[STALK_ON_CRITICAL] = soc;
-  return ;
-}
-
-/**
- *  Set the stalk_on_ok member.
- */
-void Service::SetStalkOnOk(short soo) throw ()
-{
-  this->shorts_[STALK_ON_OK] = soo;
-  return ;
-}
-
-/**
- *  Set the stalk_on_unknown member.
- */
-void Service::SetStalkOnUnknown(short sou) throw ()
-{
-  this->shorts_[STALK_ON_UNKNOWN] = sou;
-  return ;
-}
-
-/**
- *  Set the stalk_on_warning member.
- */
-void Service::SetStalkOnWarning(short sow) throw ()
-{
-  this->shorts_[STALK_ON_WARNING] = sow;
-  return ;
 }

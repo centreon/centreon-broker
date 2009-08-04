@@ -18,8 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
-#include <string>
 #include "events/host_service.h"
 
 using namespace CentreonBroker::Events;
@@ -31,15 +29,34 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the HostService object to the current instance.
+ *  \brief Copy all internal data of the HostService object to the current
+ *         instance.
+ *
+ *  Copy data defined within the HostService class. This is used by the copy
+ *  constructor and the assignment operator.
+ *
+ *  \param[in] hs Object to copy data from.
  */
 void HostService::InternalCopy(const HostService& hs)
 {
-  memcpy(this->bools_, hs.bools_, sizeof(this->bools_));
-  memcpy(this->doubles_, hs.doubles_, sizeof(this->doubles_));
-  memcpy(this->shorts_, hs.shorts_, sizeof(this->shorts_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = hs.strings_[i];
+  this->action_url                   = hs.action_url;
+  this->check_freshness              = hs.check_freshness;
+  this->display_name                 = hs.display_name;
+  this->first_notification_delay     = hs.first_notification_delay;
+  this->freshness_threshold          = hs.freshness_threshold;
+  this->high_flap_threshold          = hs.high_flap_threshold;
+  this->icon_image                   = hs.icon_image;
+  this->icon_image_alt               = hs.icon_image_alt;
+  this->low_flap_threshold           = hs.low_flap_threshold;
+  this->notes                        = hs.notes;
+  this->notes_url                    = hs.notes_url;
+  this->notification_interval        = hs.notification_interval;
+  this->notification_period          = hs.notification_period;
+  this->notify_on_downtime           = hs.notify_on_downtime;
+  this->notify_on_flapping           = hs.notify_on_flapping;
+  this->notify_on_recovery           = hs.notify_on_recovery;
+  this->retain_nonstatus_information = hs.retain_nonstatus_information;
+  this->retain_status_information    = hs.retain_status_information;
   return ;
 }
 
@@ -50,18 +67,29 @@ void HostService::InternalCopy(const HostService& hs)
 **************************************/
 
 /**
- *  HostService default constructor.
+ *  \brief HostService default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
-HostService::HostService() throw ()
-{
-  memset(this->bools_, 0, sizeof(this->bools_));
-  for (unsigned int i = 0; i < DOUBLE_NB; i++)
-    this->doubles_[i] = 0.0;
-  memset(this->shorts_, 0, sizeof(this->shorts_));
-}
+HostService::HostService()
+  : check_freshness(false),
+    first_notification_delay(0.0),
+    freshness_threshold(0.0),
+    high_flap_threshold(0.0),
+    low_flap_threshold(0.0),
+    notification_interval(0.0),
+    notify_on_downtime(0),
+    notify_on_flapping(0),
+    notify_on_recovery(0),
+    retain_nonstatus_information(false),
+    retain_status_information(false) {}
 
 /**
- *  HostService copy constructor.
+ *  \brief HostService copy constructor.
+ *
+ *  Copy internal data of the given object to the current instance.
+ *
+ *  \param[in] hs Object to copy data from.
  */
 HostService::HostService(const HostService& hs)
 {
@@ -71,321 +99,19 @@ HostService::HostService(const HostService& hs)
 /**
  *  HostService destructor.
  */
-HostService::~HostService() throw ()
-{
-}
+HostService::~HostService() {}
 
 /**
- *  HostService operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy internal data of the given object to the current instance.
+ *
+ *  \param[in] hs Object to copy data from.
+ *
+ *  \return *this
  */
 HostService& HostService::operator=(const HostService& hs)
 {
   this->InternalCopy(hs);
   return (*this);
-}
-
-/**
- *  Get the action_url member.
- */
-const std::string& HostService::GetActionUrl() const throw ()
-{
-  return (this->strings_[ACTION_URL]);
-}
-
-/**
- *  Get the check_freshness member.
- */
-bool HostService::GetCheckFreshness() const throw ()
-{
-  return (this->bools_[CHECK_FRESHNESS]);
-}
-
-/**
- *  Get the display_name member.
- */
-const std::string& HostService::GetDisplayName() const throw ()
-{
-  return (this->strings_[DISPLAY_NAME]);
-}
-
-/**
- *  Get the first_notification_delay member.
- */
-double HostService::GetFirstNotificationDelay() const throw ()
-{
-  return (this->doubles_[FIRST_NOTIFICATION_DELAY]);
-}
-
-/**
- *  Get the freshness_threshold member.
- */
-double HostService::GetFreshnessThreshold() const throw ()
-{
-  return (this->doubles_[FRESHNESS_THRESHOLD]);
-}
-
-/**
- *  Get the high_flap_threshold member.
- */
-double HostService::GetHighFlapThreshold() const throw ()
-{
-  return (this->doubles_[HIGH_FLAP_THRESHOLD]);
-}
-
-/**
- *  Get the icon_image member.
- */
-const std::string& HostService::GetIconImage() const throw ()
-{
-  return (this->strings_[ICON_IMAGE]);
-}
-
-/**
- *  Get the icon_image_alt member.
- */
-const std::string& HostService::GetIconImageAlt() const throw ()
-{
-  return (this->strings_[ICON_IMAGE_ALT]);
-}
-
-/**
- *  Get the low_flap_threshold member.
- */
-double HostService::GetLowFlapThreshold() const throw ()
-{
-  return (this->doubles_[LOW_FLAP_THRESHOLD]);
-}
-
-/**
- *  Get the notes member.
- */
-const std::string& HostService::GetNotes() const throw ()
-{
-  return (this->strings_[NOTES]);
-}
-
-/**
- *  Get the notes_url member.
- */
-const std::string& HostService::GetNotesUrl() const throw ()
-{
-  return (this->strings_[NOTES_URL]);
-}
-
-/**
- *  Get the notification_interval member.
- */
-double HostService::GetNotificationInterval() const throw ()
-{
-  return (this->doubles_[NOTIFICATION_INTERVAL]);
-}
-
-/**
- *  Get the notification_period member.
- */
-const std::string& HostService::GetNotificationPeriod() const throw ()
-{
-  return (this->strings_[NOTIFICATION_PERIOD]);
-}
-
-/**
- *  Get the notify_on_downtime member.
- */
-short HostService::GetNotifyOnDowntime() const throw ()
-{
-  return (this->shorts_[NOTIFY_ON_DOWNTIME]);
-}
-
-/**
- *  Get the notify_on_flapping member.
- */
-short HostService::GetNotifyOnFlapping() const throw ()
-{
-  return (this->shorts_[NOTIFY_ON_FLAPPING]);
-}
-
-/**
- *  Get the notify_on_recovery member.
- */
-short HostService::GetNotifyOnRecovery() const throw ()
-{
-  return (this->shorts_[NOTIFY_ON_RECOVERY]);
-}
-
-/**
- *  Get the retain_nonstatus_information member.
- */
-bool HostService::GetRetainNonstatusInformation() const throw ()
-{
-  return (this->bools_[RETAIN_NONSTATUS_INFORMATION]);
-}
-
-/**
- *  Get the retain_status_information member.
- */
-bool HostService::GetRetainStatusInformation() const throw ()
-{
-  return (this->bools_[RETAIN_STATUS_INFORMATION]);
-}
-
-/**
- *  Set the action_url member.
- */
-void HostService::SetActionUrl(const std::string& au)
-{
-  this->strings_[ACTION_URL] = au;
-  return ;
-}
-
-/**
- *  Set the check_freshness member.
- */
-void HostService::SetCheckFreshness(bool cf) throw ()
-{
-  this->bools_[CHECK_FRESHNESS] = cf;
-  return ;
-}
-
-/**
- *  Set the display_name member.
- */
-void HostService::SetDisplayName(const std::string& dn)
-{
-  this->strings_[DISPLAY_NAME] = dn;
-  return ;
-}
-
-/**
- *  Set the first_notification_delay member.
- */
-void HostService::SetFirstNotificationDelay(double fnd) throw ()
-{
-  this->doubles_[FIRST_NOTIFICATION_DELAY] = fnd;
-  return ;
-}
-
-/**
- *  Set the freshness_threshold member.
- */
-void HostService::SetFreshnessThreshold(double ft) throw ()
-{
-  this->doubles_[FRESHNESS_THRESHOLD] = ft;
-  return ;
-}
-
-/**
- *  Set the high_flap_threshold member.
- */
-void HostService::SetHighFlapThreshold(double hft) throw ()
-{
-  this->doubles_[HIGH_FLAP_THRESHOLD] = hft;
-  return ;
-}
-
-/**
- *  Set the icon_image member.
- */
-void HostService::SetIconImage(const std::string& ii)
-{
-  this->strings_[ICON_IMAGE] = ii;
-  return ;
-}
-
-/**
- *  Set the icon_image_alt member.
- */
-void HostService::SetIconImageAlt(const std::string& iia)
-{
-  this->strings_[ICON_IMAGE_ALT] = iia;
-  return ;
-}
-
-/**
- *  Set the low_flap_threshold member.
- */
-void HostService::SetLowFlapThreshold(double lft) throw ()
-{
-  this->doubles_[LOW_FLAP_THRESHOLD] = lft;
-  return ;
-}
-
-/**
- *  Set the notes member.
- */
-void HostService::SetNotes(const std::string& n)
-{
-  this->strings_[NOTES] = n;
-  return ;
-}
-
-/**
- *  Set the notes_url member.
- */
-void HostService::SetNotesUrl(const std::string& nu)
-{
-  this->strings_[NOTES_URL] = nu;
-  return ;
-}
-
-/**
- *  Set the notification_interval member.
- */
-void HostService::SetNotificationInterval(double ni) throw ()
-{
-  this->doubles_[NOTIFICATION_INTERVAL] = ni;
-  return ;
-}
-
-/**
- *  Set the notification_period member.
- */
-void HostService::SetNotificationPeriod(const std::string& np)
-{
-  this->strings_[NOTIFICATION_PERIOD] = np;
-  return ;
-}
-
-/**
- *  Set the notify_on_downtime member.
- */
-void HostService::SetNotifyOnDowntime(short nod) throw ()
-{
-  this->shorts_[NOTIFY_ON_DOWNTIME] = nod;
-  return ;
-}
-
-/**
- *  Set the notify_on_flapping member.
- */
-void HostService::SetNotifyOnFlapping(short nof) throw ()
-{
-  this->shorts_[NOTIFY_ON_FLAPPING] = nof;
-  return ;
-}
-
-/**
- *  Set the notify_on_recovery member.
- */
-void HostService::SetNotifyOnRecovery(short nor) throw ()
-{
-  this->shorts_[NOTIFY_ON_RECOVERY] = nor;
-  return ;
-}
-
-/**
- *  Set the retain_nonstatus_information member.
- */
-void HostService::SetRetainNonstatusInformation(bool rni) throw ()
-{
-  this->bools_[RETAIN_NONSTATUS_INFORMATION] = rni;
-  return ;
-}
-
-/**
- *  Set the retain_status_information member.
- */
-void HostService::SetRetainStatusInformation(bool rsi) throw ()
-{
-  this->bools_[RETAIN_STATUS_INFORMATION] = rsi;
-  return ;
 }

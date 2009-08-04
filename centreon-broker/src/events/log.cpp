@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/log.h"
 
 using namespace CentreonBroker::Events;
@@ -30,14 +29,25 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  \brief Copy all internal data of the given object to the current instance.
+ *
+ *  Make a copy of all data defined within the Log class. This method is used
+ *  by the copy constructor and the assignment operator.
+ *
+ *  \param[in] log Object to copy data from.
  */
 void Log::InternalCopy(const Log& log)
 {
-  memcpy(this->ints_, log.ints_, sizeof(this->ints_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = log.strings_[i];
-  memcpy(this->timets_, log.timets_, sizeof(this->timets_));
+  this->c_time               = log.c_time;
+  this->host                 = log.host;
+  this->msg_type             = log.msg_type;
+  this->notification_cmd     = log.notification_cmd;
+  this->notification_contact = log.notification_contact;
+  this->output               = log.output;
+  this->retry                = log.retry;
+  this->service              = log.service;
+  this->status               = log.status;
+  this->type                 = log.type;
   return ;
 }
 
@@ -48,16 +58,18 @@ void Log::InternalCopy(const Log& log)
 **************************************/
 
 /**
- *  Log default constructor.
+ *  \brief Log default constructor.
+ *
+ *  Initialize members to 0, NULL or equivalent.
  */
-Log::Log()
-{
-  memset(this->ints_, 0, sizeof(this->ints_));
-  memset(this->timets_, 0, sizeof(this->timets_));
-}
+Log::Log() : c_time(0), msg_type(0), retry(0) {}
 
 /**
- *  Log copy constructor.
+ *  \brief Log copy constructor.
+ *
+ *  Copy all internal data of the given object to the current instance.
+ *
+ *  \param[in] log Object to copy data from.
  */
 Log::Log(const Log& log) : Event(log)
 {
@@ -70,7 +82,13 @@ Log::Log(const Log& log) : Event(log)
 Log::~Log() {}
 
 /**
- *  Log operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all internal data of the given object to the current instance.
+ *
+ *  \param[in] log Object to copy data from.
+ *
+ *  \return *this
  */
 Log& Log::operator=(const Log& log)
 {
@@ -80,179 +98,13 @@ Log& Log::operator=(const Log& log)
 }
 
 /**
- *  Get the ctime member.
- */
-time_t Log::GetCtime() const throw ()
-{
-  return (this->timets_[C_TIME]);
-}
-
-/**
- *  Get the host_name member.
- */
-const std::string& Log::GetHostName() const throw ()
-{
-  return (this->strings_[HOST_NAME]);
-}
-
-/**
- *  Get the log_type member.
- */
-const std::string& Log::GetLogType() const throw ()
-{
-  return (this->strings_[LOG_TYPE]);
-}
-
-/**
- *  Get the msg_type member.
- */
-int Log::GetMsgType() const throw ()
-{
-  return (this->ints_[MSG_TYPE]);
-}
-
-/**
- *  Get the notification_cmd member.
- */
-const std::string& Log::GetNotificationCmd() const throw ()
-{
-  return (this->strings_[NOTIFICATION_CMD]);
-}
-
-/**
- *  Get the notification_contact member.
- */
-const std::string& Log::GetNotificationContact() const throw ()
-{
-  return (this->strings_[NOTIFICATION_CONTACT]);
-}
-
-/**
- *  Get the output member.
- */
-const std::string& Log::GetOutput() const throw ()
-{
-  return (this->strings_[OUTPUT]);
-}
-
-/**
- *  Get the retry member.
- */
-int Log::GetRetry() const throw ()
-{
-  return (this->ints_[RETRY]);
-}
-
-/**
- *  Get the service_description member.
- */
-const std::string& Log::GetServiceDescription() const throw ()
-{
-  return (this->strings_[SERVICE_DESCRIPTION]);
-}
-
-/**
- *  Get the status member.
- */
-const std::string& Log::GetStatus() const throw ()
-{
-  return (this->strings_[STATUS]);
-}
-
-/**
- *  Get the type member.
+ *  \brief Returns the type of the event (Event::LOG).
+ *
+ *  This method can be useful for runtime event type identification.
+ *
+ *  \return Event::LOG
  */
 int Log::GetType() const throw ()
 {
   return (Event::LOG);
-}
-
-/**
- *  Set the ctime member.
- */
-void Log::SetCtime(time_t c) throw ()
-{
-  this->timets_[C_TIME] = c;
-  return ;
-}
-
-/**
- *  Set the host_name member.
- */
-void Log::SetHostName(const std::string& hn)
-{
-  this->strings_[HOST_NAME] = hn;
-  return ;
-}
-
-/**
- *  Set the type member.
- */
-void Log::SetLogType(const std::string& lt)
-{
-  this->strings_[LOG_TYPE] = lt;
-  return ;
-}
-
-/**
- *  Set the msg_type member.
- */
-void Log::SetMsgType(int mt) throw ()
-{
-  this->ints_[MSG_TYPE] = mt;
-  return ;
-}
-
-/**
- *  Set the notification_cmd member.
- */
-void Log::SetNotificationCmd(const std::string& nc)
-{
-  this->strings_[NOTIFICATION_CMD] = nc;
-  return ;
-}
-
-/**
- *  Set the notification_contact member.
- */
-void Log::SetNotificationContact(const std::string& nc)
-{
-  this->strings_[NOTIFICATION_CONTACT] = nc;
-  return ;
-}
-
-/**
- *  Set the output member.
- */
-void Log::SetOutput(const std::string& o)
-{
-  this->strings_[OUTPUT] = o;
-  return ;
-}
-
-/**
- *  Set the retry member.
- */
-void Log::SetRetry(int r) throw ()
-{
-  this->ints_[RETRY] = r;
-  return ;
-}
-
-/**
- *  Set the service_description member.
- */
-void Log::SetServiceDescription(const std::string& sd)
-{
-  this->strings_[SERVICE_DESCRIPTION] = sd;
-  return ;
-}
-
-/**
- *  Set the status member.
- */
-void Log::SetStatus(const std::string& s)
-{
-  this->strings_[STATUS] = s;
-  return ;
 }

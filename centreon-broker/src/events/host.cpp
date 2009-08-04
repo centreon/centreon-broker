@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/host.h"
 
 using namespace CentreonBroker::Events;
@@ -30,13 +29,51 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  Copy all internal data of the Host object to the current instance.
+ *  \brief Copy all internal data of the given object to the current instance.
+ *
+ *  This method copy all data defined directly in the Host class. This is used
+ *  by the copy constructor and the assignment operator.
+ *
+ *  \param[in] h Object to copy data from.
  */
 void Host::InternalCopy(const Host& h)
 {
-  memcpy(this->shorts_, h.shorts_, sizeof(this->shorts_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = h.strings_[i];
+  this->address                       = h.address;
+  this->alias                         = h.alias;
+  this->flap_detection_on_down        = h.flap_detection_on_down;
+  this->flap_detection_on_unreachable = h.flap_detection_on_unreachable;
+  this->flap_detection_on_up          = h.flap_detection_on_up;
+  this->have_2d_coords                = h.have_2d_coords;
+  this->notify_on_down                = h.notify_on_down;
+  this->notify_on_unreachable         = h.notify_on_unreachable;
+  this->stalk_on_down                 = h.stalk_on_down;
+  this->stalk_on_unreachable          = h.stalk_on_unreachable;
+  this->stalk_on_up                   = h.stalk_on_up;
+  this->statusmap_image               = h.statusmap_image;
+  this->vrml_image                    = h.vrml_image;
+  this->x_2d                          = h.x_2d;
+  this->y_2d                          = h.y_2d;
+  return ;
+}
+
+/**
+ *  \brief Zero-initialize internal data.
+ *
+ *  This method is used by constructors.
+ */
+void Host::ZeroInitialize()
+{
+  this->flap_detection_on_down        = 0;
+  this->flap_detection_on_unreachable = 0;
+  this->flap_detection_on_up          = 0;
+  this->have_2d_coords                = 0;
+  this->notify_on_down                = 0;
+  this->notify_on_unreachable         = 0;
+  this->stalk_on_down                 = 0;
+  this->stalk_on_unreachable          = 0;
+  this->stalk_on_up                   = 0;
+  this->x_2d                          = 0;
+  this->y_2d                          = 0;
   return ;
 }
 
@@ -47,23 +84,34 @@ void Host::InternalCopy(const Host& h)
 **************************************/
 
 /**
- *  Host default constructor.
+ *  \brief Host default constructor.
+ *
+ *  Initialize internal data to 0, NULL or equivalent.
  */
-Host::Host() throw ()
+Host::Host()
 {
-  memset(this->shorts_, 0, sizeof(this->shorts_));
+  this->ZeroInitialize();
 }
 
 /**
- *  Build a Host from a HostStatus.
+ *  \brief Build a Host from a HostStatus.
+ *
+ *  Copy HostStatus data to the current instance and zero-initialize other
+ *  members.
+ *
+ *  \param[in] hs HostStatus object to initialize part of the Host instance.
  */
 Host::Host(const HostStatus& hs) : HostStatus(hs)
 {
-  memset(this->shorts_, 0, sizeof(this->shorts_));
+  this->ZeroInitialize();
 }
 
 /**
- *  Host copy constructor.
+ *  \brief Host copy constructor.
+ *
+ *  Copy data from the given object to the current instance.
+ *
+ *  \param[in] h Object to copy data from.
  */
 Host::Host(const Host& h) : HostService(h), HostStatus(h)
 {
@@ -73,12 +121,16 @@ Host::Host(const Host& h) : HostService(h), HostStatus(h)
 /**
  *  Host destructor.
  */
-Host::~Host() throw ()
-{
-}
+Host::~Host() {}
 
 /**
- *  Host operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given object to the current instance.
+ *
+ *  \param[in] h Object to copy data from.
+ *
+ *  \return *this
  */
 Host& Host::operator=(const Host& h)
 {
@@ -89,264 +141,13 @@ Host& Host::operator=(const Host& h)
 }
 
 /**
- *  Get the address member.
- */
-const std::string& Host::GetAddress() const throw ()
-{
-  return (this->strings_[ADDRESS]);
-}
-
-/**
- *  Get the alias member.
- */
-const std::string& Host::GetAlias() const throw ()
-{
-  return (this->strings_[ALIAS]);
-}
-
-/**
- *  Get the flap_detection_on_down member.
- */
-short Host::GetFlapDetectionOnDown() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_DOWN]);
-}
-
-/**
- *  Get the flap_detection_on_unreachable member.
- */
-short Host::GetFlapDetectionOnUnreachable() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_UNREACHABLE]);
-}
-
-/**
- *  Get the flap_detection_on_up member.
- */
-short Host::GetFlapDetectionOnUp() const throw ()
-{
-  return (this->shorts_[FLAP_DETECTION_ON_UP]);
-}
-
-/**
- *  Get the have_2d_coords member.
- */
-short Host::GetHave2DCoords() const throw ()
-{
-  return (this->shorts_[HAVE_2D_COORDS]);
-}
-
-/**
- *  Get the notify_on_down member.
- */
-short Host::GetNotifyOnDown() const throw ()
-{
-  return (this->shorts_[NOTIFY_ON_DOWN]);
-}
-
-/**
- *  Get the notify_on_unreachable member.
- */
-short Host::GetNotifyOnUnreachable() const throw ()
-{
-  return (this->shorts_[NOTIFY_ON_UNREACHABLE]);
-}
-
-/**
- *  Get the stalk_on_down member.
- */
-short Host::GetStalkOnDown() const throw ()
-{
-  return (this->shorts_[STALK_ON_DOWN]);
-}
-
-/**
- *  Get the stalk_on_unreachable member.
- */
-short Host::GetStalkOnUnreachable() const throw ()
-{
-  return (this->shorts_[STALK_ON_UNREACHABLE]);
-}
-
-/**
- *  Get the stalk_on_up member.
- */
-short Host::GetStalkOnUp() const throw ()
-{
-  return (this->shorts_[STALK_ON_UP]);
-}
-
-/**
- *  Get the statusmap_image member.
- */
-const std::string& Host::GetStatusmapImage() const throw ()
-{
-  return (this->strings_[STATUSMAP_IMAGE]);
-}
-
-/**
- *  Get the type of the event.
+ *  \brief Get the type of this event (Event::HOST).
+ *
+ *  This will help for runtime event type identification.
+ *
+ *  \return Event::HOST
  */
 int Host::GetType() const throw ()
 {
   return (Event::HOST);
-}
-
-/**
- *  Get the vrml_image member.
- */
-const std::string& Host::GetVrmlImage() const throw ()
-{
-  return (this->strings_[VRML_IMAGE]);
-}
-
-/**
- *  Get the x_2d member.
- */
-short Host::GetX2D() const throw ()
-{
-  return (this->shorts_[X_2D]);
-}
-
-/**
- *  Get the y_2d member.
- */
-short Host::GetY2D() const throw ()
-{
-  return (this->shorts_[Y_2D]);
-}
-
-/**
- *  Set the address member.
- */
-void Host::SetAddress(const std::string& a)
-{
-  this->strings_[ADDRESS] = a;
-  return ;
-}
-
-/**
- *  Set the alias member.
- */
-void Host::SetAlias(const std::string& a)
-{
-  this->strings_[ALIAS] = a;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_down member.
- */
-void Host::SetFlapDetectionOnDown(short fdod) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_DOWN] = fdod;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_unreachable member.
- */
-void Host::SetFlapDetectionOnUnreachable(short fdou) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_UNREACHABLE] = fdou;
-  return ;
-}
-
-/**
- *  Set the flap_detection_on_up member.
- */
-void Host::SetFlapDetectionOnUp(short fdou) throw ()
-{
-  this->shorts_[FLAP_DETECTION_ON_UP] = fdou;
-  return ;
-}
-
-/**
- *  Set the have_2d_coords member.
- */
-void Host::SetHave2DCoords(short h2dc) throw ()
-{
-  this->shorts_[HAVE_2D_COORDS] = h2dc;
-  return ;
-}
-
-/**
- *  Set the notify_on_down member.
- */
-void Host::SetNotifyOnDown(short nod) throw ()
-{
-  this->shorts_[NOTIFY_ON_DOWN] = nod;
-  return ;
-}
-
-/**
- *  Set the notify_on_unreachable member.
- */
-void Host::SetNotifyOnUnreachable(short nou) throw ()
-{
-  this->shorts_[NOTIFY_ON_UNREACHABLE] = nou;
-  return ;
-}
-
-/**
- *  Set the stalk_on_down member.
- */
-void Host::SetStalkOnDown(short sod) throw ()
-{
-  this->shorts_[STALK_ON_DOWN] = sod;
-  return ;
-}
-
-/**
- *  Set the stalk_on_unreachable member.
- */
-void Host::SetStalkOnUnreachable(short sou) throw ()
-{
-  this->shorts_[STALK_ON_UNREACHABLE] = sou;
-  return ;
-}
-
-/**
- *  Set the stalk_on_up member.
- */
-void Host::SetStalkOnUp(short sou) throw ()
-{
-  this->shorts_[STALK_ON_UP] = sou;
-  return ;
-}
-
-/**
- *  Set the statusmap_image member.
- */
-void Host::SetStatusmapImage(const std::string& si)
-{
-  this->strings_[STATUSMAP_IMAGE] = si;
-  return ;
-}
-
-/**
- *  Set the vrml_image member.
- */
-void Host::SetVrmlImage(const std::string& vi)
-{
-  this->strings_[VRML_IMAGE] = vi;
-  return ;
-}
-
-/**
- *  Set the x_2d member.
- */
-void Host::SetX2D(short x_2d) throw ()
-{
-  this->shorts_[X_2D] = x_2d;
-  return ;
-}
-
-/**
- *  Set the y_2d member.
- */
-void Host::SetY2D(short y_2d) throw ()
-{
-  this->shorts_[Y_2D] = y_2d;
-  return ;
 }

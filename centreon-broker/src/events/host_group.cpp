@@ -18,7 +18,6 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "events/host_group.h"
 
 using namespace CentreonBroker::Events;
@@ -30,20 +29,25 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
+ *  \brief Copy internal members of the given object to the current instance.
+ *
  *  This internal method is used to copy data defined inside the HostGroup
  *  class from an object to the current instance. This means that no superclass
  *  data are copied. This method is used in HostGroup copy constructor and in
  *  the = operator overload.
  *
+ *  \param[in] host_group Object to copy from.
+ *
  *  \see HostGroup(const HostGroup&)
  *  \see operator=
- *
- *  \param[in] host_group Object to copy from.
  */
 void HostGroup::InternalCopy(const HostGroup& host_group)
 {
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = host_group.strings_[i];
+  this->action_url = host_group.action_url;
+  this->alias      = host_group.alias;
+  this->name       = host_group.name;
+  this->notes      = host_group.notes;
+  this->notes_url  = host_group.notes_url;
   return ;
 }
 
@@ -54,15 +58,16 @@ void HostGroup::InternalCopy(const HostGroup& host_group)
 **************************************/
 
 /**
- *  HostGroup default constructor. Set all members to their default value (0,
- *  NULL or equivalent).
+ *  \brief HostGroup default constructor.
+ *
+ *  Set all members to their default value (0, NULL or equivalent).
  */
-HostGroup::HostGroup()
-{
-}
+HostGroup::HostGroup() {}
 
 /**
- *  HostGroup copy constructor.
+ *  \brief HostGroup copy constructor.
+ *
+ *  Copy all members of the HostGroup object to the current instance.
  *
  *  \param[in] host_group Object to copy from.
  */
@@ -72,14 +77,14 @@ HostGroup::HostGroup(const HostGroup& host_group) : Event(host_group)
 }
 
 /**
- *  HostGroup destructor, release all acquired ressources.
+ *  HostGroup destructor.
  */
-HostGroup::~HostGroup()
-{
-}
+HostGroup::~HostGroup() {}
 
 /**
- *  Overload of the = operator.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all members of the HostGroup object to the current instance.
  *
  *  \param[in] host_group Object to copy from.
  *
@@ -93,116 +98,15 @@ HostGroup& HostGroup::operator=(const HostGroup& host_group)
 }
 
 /**
- *  XXX : need fix
- */
-const std::string& HostGroup::GetActionUrl() const throw ()
-{
-  return (this->strings_[ACTION_URL]);
-}
-
-/**
- *  Get the alias of the host group.
+ *  \brief Returns the type of this events (CentreonBroker::Event::HOSTGROUP).
  *
- *  \return The alias of the host group.
- */
-const std::string& HostGroup::GetAlias() const throw ()
-{
-  return (this->strings_[ALIAS]);
-}
-
-/**
- *  Get the real name of the host group.
- *
- *  \return The real name of the host group.
- */
-const std::string& HostGroup::GetHostGroupName() const throw ()
-{
-  return (this->strings_[HOST_GROUP_NAME]);
-}
-
-/**
- *  XXX : need fix
- */
-const std::string& HostGroup::GetNotes() const throw ()
-{
-  return (this->strings_[NOTES]);
-}
-
-/**
- *  XXX : need fix
- */
-const std::string& HostGroup::GetNotesUrl() const throw ()
-{
-  return (this->strings_[NOTES_URL]);
-}
-
-/**
- *  Returns the type of this events (CentreonBroker::Event::HOSTGROUP).
- *
- *  \see CentreonBroker::Event
+ *  This method can be used for runtime event type identification.
  *
  *  \return CentreonBroker::Event::HOSTGROUP
+ *
+ *  \see CentreonBroker::Event
  */
 int HostGroup::GetType() const throw ()
 {
   return (Event::HOSTGROUP);
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetActionUrl
- */
-void HostGroup::SetActionUrl(const std::string& au)
-{
-  this->strings_[ACTION_URL] = au;
-  return ;
-}
-
-/**
- *  Set the alias of the host group.
- *
- *  \see GetAlias
- *
- *  \param[in] a The alias of the host group.
- */
-void HostGroup::SetAlias(const std::string& a)
-{
-  this->strings_[ALIAS] = a;
-  return ;
-}
-
-/**
- *  Set the real name of the host group.
- *
- *  \see GetHostGroupName
- *
- *  \param[in] hgn The real name of the host group.
- */
-void HostGroup::SetHostGroupName(const std::string& hgn)
-{
-  this->strings_[HOST_GROUP_NAME] = hgn;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetNotes
- */
-void HostGroup::SetNotes(const std::string& n)
-{
-  this->strings_[NOTES] = n;
-  return ;
-}
-
-/**
- *  XXX : need fix
- *
- *  \see GetNotesUrl
- */
-void HostGroup::SetNotesUrl(const std::string& nu)
-{
-  this->strings_[NOTES_URL] = nu;
-  return ;
 }

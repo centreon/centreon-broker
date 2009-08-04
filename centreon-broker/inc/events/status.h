@@ -18,10 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef STATUS_H_
-# define STATUS_H_
+#ifndef EVENTS_STATUS_H_
+# define EVENTS_STATUS_H_
 
-# include <ctime>
 # include "events/event.h"
 
 namespace         CentreonBroker
@@ -35,38 +34,20 @@ namespace         CentreonBroker
     class         Status : public Event
     {
      private:
-      enum        Bool
-      {
-	EVENT_HANDLER_ENABLED = 0,
-	FAILURE_PREDICTION_ENABLED,
-	FLAP_DETECTION_ENABLED,
-	NOTIFICATIONS_ENABLED,
-	PROCESS_PERFORMANCE_DATA,
-	BOOL_NB
-      };
-      bool        bools_[BOOL_NB];
-      void        InternalCopy(const Status& se) throw ();
+      void        InternalCopy(const Status& s) throw ();
 
      public:
+      bool        event_handler_enabled;
+      bool        failure_prediction_enabled;
+      bool        flap_detection_enabled;
+      bool        notifications_enabled;
+      bool        process_performance_data;
                   Status();
-		  Status(const Status& se);
+		  Status(const Status& s);
       virtual     ~Status();
-      Status&     operator=(const Status& se);
-      // Getters
-      bool        GetEventHandlerEnabled() const throw ();
-      bool        GetFailurePredictionEnabled() const throw ();
-      bool        GetFlapDetectionEnabled() const throw ();
-      bool        GetNotificationsEnabled() const throw ();
-      bool        GetProcessPerformanceData() const throw ();
-      virtual int GetType() const throw () = 0;
-      // Setters
-      void        SetEventHandlerEnabled(bool ehe) throw ();
-      void        SetFailurePredictionEnabled(bool fpe) throw ();
-      void        SetFlapDetectionEnabled(bool fde) throw ();
-      void        SetNotificationsEnabled(bool ne) throw ();
-      void        SetProcessPerformanceData(bool ppd) throw ();
+      Status&     operator=(const Status& s);
     };
   }
 }
 
-#endif /* !STATUS_H_ */
+#endif /* !EVENTS_STATUS_H_ */

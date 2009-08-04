@@ -40,140 +40,24 @@ namespace                CentreonBroker
     class                Acknowledgement : public Event
     {
      private:
-      enum               Short
-      {
-	ACKNOWLEDGEMENT_TYPE = 0,
-	IS_STICKY,
-	NOTIFY_CONTACTS,
-	PERSISTENT_COMMENT,
-	STATE,
-	SHORT_NB
-      };
-      enum               String
-      {
-	AUTHOR_NAME = 0,
-	COMMENT,
-	HOST,
-	SERVICE,
-	STRING_NB
-      };
-      enum               TimeT
-      {
-	ENTRY_TIME = 0,
-	TIMET_NB
-      };
-      short              shorts_[SHORT_NB];
-      std::string        strings_[STRING_NB];
-      time_t             timets_[TIMET_NB];
-      /**
-       *  \brief Copy all internal data of the given object to the current
-       *         instance.
-       */
       void               InternalCopy(const Acknowledgement& ack);
 
      public:
-      /**
-       *  \brief Acknowledgement default constructor.
-       */
+      std::string        author;
+      std::string        comment;
+      time_t             entry_time;
+      std::string        host;
+      bool               is_sticky;
+      short              notify_contacts;
+      short              persistent_comment;
+      std::string        service;
+      short              state;
+      int                type;
                          Acknowledgement();
-      /**
-       *  \brief Acknowledgement copy constructor.
-       */
                          Acknowledgement(const Acknowledgement& ack);
-      /**
-       *  \brief Acknowledgement destructor.
-       */
                          ~Acknowledgement();
-      /**
-       *  \brief Overload of the = operator.
-       */
       Acknowledgement&   operator=(const Acknowledgement& ack);
-      /**
-       *  \brief Get the type of the acknowledgement.
-       */
-      short              GetAcknowledgementType() const throw ();
-      /**
-       *  \brief Get the name of the acknowledgement author.
-       */
-      const std::string& GetAuthorName() const throw ();
-      /**
-       *  \brief Get the comment associated with the acknowledgement.
-       */
-      const std::string& GetComment() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      time_t             GetEntryTime() const throw ();
-      /**
-       *  \brief Get the name of the host associated with the acknowledgement.
-       */
-      const std::string& GetHost() const throw ();
-      /**
-       *  \brief Determines whether or not the acknowledgement is sticky.
-       */
-      short              GetIsSticky() const throw ();
-      /**
-       *  \brief Determines whether or not contacts should stil be notified.
-       */
-      short              GetNotifyContacts() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      short              GetPersistentComment() const throw ();
-      /**
-       *  \brief Get the name of the service associated with the
-       *         acknowledgement.
-       */
-      const std::string& GetService() const throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      short              GetState() const throw ();
-      /**
-       *  \brief Returns the type of this event (Event::ACKNOWLEDGEMENT).
-       */
       int                GetType() const throw ();
-      /**
-       *  \brief Set the type of the acknowledgement.
-       */
-      void               SetAcknowledgementType(short at) throw ();
-      /**
-       *  \brief Set the name of the acknowledgement author.
-       */
-      void               SetAuthorName(const std::string& an);
-      /**
-       *  \brief Set the comment associated with the acknowledgement.
-       */
-      void               SetComment(const std::string& c);
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetEntryTime(time_t et) throw ();
-      /**
-       *  \brief Set the name of the host associated with the acknowledgement.
-       */
-      void               SetHost(const std::string& h);
-      /**
-       *  \brief Set whether or not the acknowledgement is sticky.
-       */
-      void               SetIsSticky(short is) throw ();
-      /**
-       *  \brief Set whether or not contacts should still be notified.
-       */
-      void               SetNotifyContacts(short nc) throw ();
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetPersistentComment(short pc) throw ();
-      /**
-       *  \brief Set the name of the service associated with the
-       *         acknowledgement.
-       */
-      void               SetService(const std::string& s);
-      /**
-       *  \brief XXX : need fix
-       */
-      void               SetState(short s) throw ();
     };
   }
 }

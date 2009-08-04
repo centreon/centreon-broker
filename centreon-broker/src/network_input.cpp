@@ -58,21 +58,28 @@ struct KeySetter
   union UHandler
   {
    public:
-    void (Event::* set_bool)(bool);
-    void (Event::* set_double)(double);
-    void (Event::* set_int)(int);
-    void (Event::* set_short)(short);
-    void (Event::* set_string)(const std::string&);
-    void (Event::* set_timet)(time_t);
-
-    UHandler() : set_bool(NULL) {}
-    UHandler(void (Event::* sb)(bool)) : set_bool(sb) {}
-    UHandler(void (Event::* sd)(double)) : set_double(sd) {}
-    UHandler(void (Event::* si)(int)) : set_int(si) {}
-    UHandler(void (Event::* ss)(short)) : set_short(ss) {}
-    UHandler(void (Event::* ss)(const std::string&)) : set_string(ss) {}
-    UHandler(void (Event::* st)(time_t)) : set_timet(st) {}
+    bool (Event::* set_bool);
+    double (Event::* set_double);
+    int (Event::* set_int);
+    short (Event::* set_short);
+    std::string (Event::* set_string);
+    time_t (Event::* set_timet);
   } setter;
+
+  KeySetter() : key(0), type('\0')
+  { this->setter.set_bool = NULL; }
+  KeySetter(int k, bool (Event::* sb)) : key(k), type('b')
+  { this->setter.set_bool = sb; }
+  KeySetter(int k, double (Event::* sd)) : key(k), type('d')
+  { this->setter.set_double = sd; }
+  KeySetter(int k, int (Event::* si)) : key(k), type('i')
+  { this->setter.set_int = si; }
+  KeySetter(int k, short (Event::* ss)) : key(k), type('s')
+  { this->setter.set_short = ss; }
+  KeySetter(int k, std::string (Event::* ss)) : key(k), type('S')
+  { this->setter.set_string = ss; }
+  KeySetter(int k, time_t (Event::* st)) : key(k), type('t')
+  { this->setter.set_timet = st; }
 };
 
 /**
@@ -91,7 +98,7 @@ static inline void HandleObject(const std::string& instance,
   EventType* event;
 
   event = new EventType;
-  event->SetNagiosInstance(instance);
+  event->instance = instance;
   key_str = ni.GetLine();
   tmp = strchr(key_str, '=');
   if (!tmp)
@@ -110,31 +117,31 @@ static inline void HandleObject(const std::string& instance,
             switch (key_setters[i].type)
               {
                case 'b':
-                (event->*key_setters[i].setter.set_bool)(strtol(value_str,
+                event->*key_setters[i].setter.set_bool = strtol(value_str,
                                                                 NULL,
-                                                                0));
+                                                                0);
                 break ;
                case 'd':
-                (event->*key_setters[i].setter.set_double)(strtod(value_str,
-                                                                  NULL));
+                event->*key_setters[i].setter.set_double = strtod(value_str,
+                                                                  NULL);
                 break ;
                case 'i':
-                (event->*key_setters[i].setter.set_int)(strtol(value_str,
+                event->*key_setters[i].setter.set_int = strtol(value_str,
                                                                NULL,
-                                                               0));
+                                                               0);
                 break ;
                case 's':
-                (event->*key_setters[i].setter.set_short)(strtol(value_str,
+                event->*key_setters[i].setter.set_short = strtol(value_str,
                                                                  NULL,
-                                                                 0));
+                                                                 0);
                 break ;
                case 'S':
-                (event->*key_setters[i].setter.set_string)(value_str);
+                event->*key_setters[i].setter.set_string = value_str;
                 break ;
                case 't':
-                (event->*key_setters[i].setter.set_timet)(strtol(value_str,
+                event->*key_setters[i].setter.set_timet = strtol(value_str,
                                                                  NULL,
-                                                                 0));
+                                                                 0);
                 break ;
                default:
                 logging.LogError("Error while parsing protocol.");
@@ -202,19 +209,27 @@ void NetworkInput::HandleAcknowledgement()
 {
   static const KeySetter<Acknowledgement> acknowledgement_setters[] =
     {
-      { NDO_DATA_ACKNOWLEDGEMENTTYPE,
-	's',
-	&Acknowledgement::SetAcknowledgementType },
-      { NDO_DATA_AUTHORNAME, 'S', &Acknowledgement::SetAuthorName },
-      { NDO_DATA_COMMENT, 'S', &Acknowledgement::SetComment },
-      { NDO_DATA_HOST, 'S', &Acknowledgement::SetHost },
-      { NDO_DATA_NOTIFYCONTACTS, 's', &Acknowledgement::SetNotifyContacts },
-      { NDO_DATA_PERSISTENT, 's', &Acknowledgement::SetPersistentComment },
-      { NDO_DATA_SERVICE, 'S', &Acknowledgement::SetService },
-      { NDO_DATA_STATE, 's', &Acknowledgement::SetState },
-      { NDO_DATA_STICKY, 's', &Acknowledgement::SetIsSticky },
-      { NDO_DATA_TIMESTAMP, 't', &Acknowledgement::SetEntryTime },
-      { 0, '\0', static_cast<void (Acknowledgement::*)(double)>(NULL) }
+      KeySetter<Acknowledgement>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
+        &Acknowledgement::type),
+      KeySetter<Acknowledgement>(NDO_DATA_AUTHORNAME,
+        &Acknowledgement::author),
+      KeySetter<Acknowledgement>(NDO_DATA_COMMENT,
+        &Acknowledgement::comment),
+      KeySetter<Acknowledgement>(NDO_DATA_HOST,
+        &Acknowledgement::host),
+      KeySetter<Acknowledgement>(NDO_DATA_NOTIFYCONTACTS,
+        &Acknowledgement::notify_contacts),
+      KeySetter<Acknowledgement>(NDO_DATA_PERSISTENT,
+        &Acknowledgement::persistent_comment),
+      KeySetter<Acknowledgement>(NDO_DATA_SERVICE,
+        &Acknowledgement::service),
+      KeySetter<Acknowledgement>(NDO_DATA_STATE,
+        &Acknowledgement::state),
+      KeySetter<Acknowledgement>(NDO_DATA_STICKY,
+        &Acknowledgement::is_sticky),
+      KeySetter<Acknowledgement>(NDO_DATA_TIMESTAMP,
+        &Acknowledgement::entry_time),
+      KeySetter<Acknowledgement>()
     };
 
   HandleObject<Acknowledgement>(this->instance_,
@@ -230,19 +245,31 @@ void NetworkInput::HandleComment()
 {
   static const KeySetter<Comment> comment_setters[] =
     {
-      { NDO_DATA_AUTHORNAME, 'S', &Comment::SetAuthorName },
-      { NDO_DATA_COMMENT, 'S', &Comment::SetCommentData },
-      { NDO_DATA_COMMENTID, 'i', &Comment::SetInternalCommentId },
-      { NDO_DATA_COMMENTTYPE, 's', &Comment::SetCommentType },
-      { NDO_DATA_ENTRYTIME, 't', &Comment::SetEntryTime },
-      { NDO_DATA_ENTRYTYPE, 's', &Comment::SetEntryType },
-      { NDO_DATA_EXPIRATIONTIME, 't', &Comment::SetExpireTime },
-      { NDO_DATA_EXPIRES, 'b', &Comment::SetExpires },
-      { NDO_DATA_HOST, 'S', &Comment::SetHostName },
-      { NDO_DATA_PERSISTENT, 'b', &Comment::SetPersistent },
-      { NDO_DATA_SERVICE, 'S', &Comment::SetServiceDescription },
-      { NDO_DATA_SOURCE, 's', &Comment::SetSource },
-      { 0, '\0', static_cast<void (Comment::*)(bool)>(NULL) }
+      KeySetter<Comment>(NDO_DATA_AUTHORNAME,
+        &Comment::author),
+      KeySetter<Comment>(NDO_DATA_COMMENT,
+        &Comment::comment),
+      KeySetter<Comment>(NDO_DATA_COMMENTID,
+        &Comment::internal_id),
+      KeySetter<Comment>(NDO_DATA_COMMENTTYPE,
+        &Comment::type),
+      KeySetter<Comment>(NDO_DATA_ENTRYTIME,
+        &Comment::entry_time),
+      KeySetter<Comment>(NDO_DATA_ENTRYTYPE,
+        &Comment::entry_type),
+      KeySetter<Comment>(NDO_DATA_EXPIRATIONTIME,
+        &Comment::expire_time),
+      KeySetter<Comment>(NDO_DATA_EXPIRES,
+        &Comment::expires),
+      KeySetter<Comment>(NDO_DATA_HOST,
+        &Comment::host),
+      KeySetter<Comment>(NDO_DATA_PERSISTENT,
+        &Comment::persistent),
+      KeySetter<Comment>(NDO_DATA_SERVICE,
+        &Comment::service),
+      KeySetter<Comment>(NDO_DATA_SOURCE,
+        &Comment::source),
+      KeySetter<Comment>()
     };
 
   HandleObject<Comment>(this->instance_, comment_setters, *this);
@@ -256,19 +283,31 @@ void NetworkInput::HandleDowntime()
 {
   static const KeySetter<Downtime> downtime_setters[] =
     {
-      { NDO_DATA_AUTHORNAME, 'S', &Downtime::SetAuthorName },
-      { NDO_DATA_COMMENT, 'S', &Downtime::SetCommentData },
-      { NDO_DATA_DOWNTIMEID, 'i', &Downtime::SetDowntimeId },
-      { NDO_DATA_DOWNTIMETYPE, 's', &Downtime::SetDowntimeType },
-      { NDO_DATA_DURATION, 's', &Downtime::SetDuration },
-      { NDO_DATA_ENDTIME, 't', &Downtime::SetEndTime },
-      { NDO_DATA_ENTRYTIME, 't', &Downtime::SetEntryTime },
-      { NDO_DATA_FIXED, 'b', &Downtime::SetFixed },
-      { NDO_DATA_HOST, 'S', &Downtime::SetHost },
-      { NDO_DATA_SERVICE, 'S', &Downtime::SetService },
-      { NDO_DATA_STARTTIME, 't', &Downtime::SetStartTime },
-      { NDO_DATA_TRIGGEREDBY, 'i', &Downtime::SetTriggeredBy },
-      { 0, '\0', static_cast<void (Downtime::*)(double)>(NULL) }
+      KeySetter<Downtime>(NDO_DATA_AUTHORNAME,
+        &Downtime::author),
+      KeySetter<Downtime>(NDO_DATA_COMMENT,
+        &Downtime::comment),
+      KeySetter<Downtime>(NDO_DATA_DOWNTIMEID,
+        &Downtime::id),
+      KeySetter<Downtime>(NDO_DATA_DOWNTIMETYPE,
+        &Downtime::type),
+      KeySetter<Downtime>(NDO_DATA_DURATION,
+        &Downtime::duration),
+      KeySetter<Downtime>(NDO_DATA_ENDTIME,
+        &Downtime::end_time),
+      KeySetter<Downtime>(NDO_DATA_ENTRYTIME,
+        &Downtime::entry_time),
+      KeySetter<Downtime>(NDO_DATA_FIXED,
+        &Downtime::fixed),
+      KeySetter<Downtime>(NDO_DATA_HOST,
+        &Downtime::host),
+      KeySetter<Downtime>(NDO_DATA_SERVICE,
+        &Downtime::service),
+      KeySetter<Downtime>(NDO_DATA_STARTTIME,
+        &Downtime::start_time),
+      KeySetter<Downtime>(NDO_DATA_TRIGGEREDBY,
+        &Downtime::triggered_by),
+      KeySetter<Downtime>()
     };
 
   HandleObject<Downtime>(this->instance_, downtime_setters, *this);
@@ -282,82 +321,108 @@ void NetworkInput::HandleHost()
 {
   static const KeySetter<Host> keys_setters[] =
     {
-      { NDO_DATA_ACTIONURL, 'S', &Host::SetActionUrl },
-      { NDO_DATA_ACTIVEHOSTCHECKSENABLED, 'b', &Host::SetActiveChecksEnabled },
-      { NDO_DATA_DISPLAYNAME, 'S', &Host::SetDisplayName },
-      { NDO_DATA_FIRSTNOTIFICATIONDELAY,
-        'd',
-        &Host::SetFirstNotificationDelay },
-      { NDO_DATA_FLAPDETECTIONONDOWN, 's', &Host::SetFlapDetectionOnDown },
-      { NDO_DATA_FLAPDETECTIONONUNREACHABLE,
-        's',
-        &Host::SetFlapDetectionOnUnreachable },
-      { NDO_DATA_FLAPDETECTIONONUP, 's', &Host::SetFlapDetectionOnUp },
-      { NDO_DATA_HAVE2DCOORDS, 's', &Host::SetHave2DCoords },
+      KeySetter<Host>(NDO_DATA_ACTIONURL,
+        &Host::action_url),
+      KeySetter<Host>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+        &Host::active_checks_enabled),
+      KeySetter<Host>(NDO_DATA_DISPLAYNAME,
+        &Host::display_name),
+      KeySetter<Host>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
+        &Host::first_notification_delay),
+      KeySetter<Host>(NDO_DATA_FLAPDETECTIONONDOWN,
+        &Host::flap_detection_on_down),
+      KeySetter<Host>(NDO_DATA_FLAPDETECTIONONUNREACHABLE,
+        &Host::flap_detection_on_unreachable),
+      KeySetter<Host>(NDO_DATA_FLAPDETECTIONONUP,
+        &Host::flap_detection_on_up),
+      KeySetter<Host>(NDO_DATA_HAVE2DCOORDS,
+        &Host::have_2d_coords),
       //{ NDO_DATA_HAVE3DCOORDS }
-      { NDO_DATA_HIGHHOSTFLAPTHRESHOLD, 'd', &Host::SetHighFlapThreshold },
-      { NDO_DATA_HOSTADDRESS, 'S', &Host::SetAddress },
-      { NDO_DATA_HOSTALIAS, 'S', &Host::SetAlias },
-      { NDO_DATA_HOSTCHECKCOMMAND, 'S', &Host::SetCheckCommand },
-      { NDO_DATA_HOSTCHECKINTERVAL, 'd', &Host::SetCheckInterval },
-      { NDO_DATA_HOSTCHECKPERIOD, 'S', &Host::SetCheckPeriod },
-      { NDO_DATA_HOSTEVENTHANDLER, 'S', &Host::SetEventHandler },
-      { NDO_DATA_HOSTEVENTHANDLERENABLED,
-        'b',
-	&Host::SetEventHandlerEnabled },
-      { NDO_DATA_HOSTFAILUREPREDICTIONENABLED,
-	'b',
-	&Host::SetFailurePredictionEnabled },
+      KeySetter<Host>(NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
+        &Host::high_flap_threshold),
+      KeySetter<Host>(NDO_DATA_HOSTADDRESS,
+        &Host::address),
+      KeySetter<Host>(NDO_DATA_HOSTALIAS,
+        &Host::alias),
+      KeySetter<Host>(NDO_DATA_HOSTCHECKCOMMAND,
+        &Host::check_command),
+      KeySetter<Host>(NDO_DATA_HOSTCHECKINTERVAL,
+        &Host::check_interval),
+      KeySetter<Host>(NDO_DATA_HOSTCHECKPERIOD,
+        &Host::check_period),
+      KeySetter<Host>(NDO_DATA_HOSTEVENTHANDLER,
+        &Host::event_handler),
+      KeySetter<Host>(NDO_DATA_HOSTEVENTHANDLERENABLED,
+        &Host::event_handler_enabled),
+      KeySetter<Host>(NDO_DATA_HOSTFAILUREPREDICTIONENABLED,
+        &Host::failure_prediction_enabled),
       //{ NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS },
-      { NDO_DATA_HOSTFLAPDETECTIONENABLED,
-        'b',
-        &Host::SetFlapDetectionEnabled },
-      { NDO_DATA_HOSTFRESHNESSCHECKSENABLED, 'b', &Host::SetCheckFreshness },
-      { NDO_DATA_HOSTFRESHNESSTHRESHOLD, 'd', &Host::SetFreshnessThreshold },
-      { NDO_DATA_HOSTMAXCHECKATTEMPTS, 's', &Host::SetMaxCheckAttempts },
-      { NDO_DATA_HOSTNAME, 'S', &Host::SetHostName },
-      { NDO_DATA_HOSTNOTIFICATIONINTERVAL,
-        'd',
-        &Host::SetNotificationInterval },
-      { NDO_DATA_HOSTNOTIFICATIONPERIOD, 'S', &Host::SetNotificationPeriod },
-      { NDO_DATA_HOSTNOTIFICATIONSENABLED,
-        'b',
-	&Host::SetNotificationsEnabled },
-      { NDO_DATA_HOSTRETRYINTERVAL, 'd', &Host::SetRetryInterval },
-      { NDO_DATA_ICONIMAGE, 'S', &Host::SetIconImage },
-      { NDO_DATA_ICONIMAGEALT, 'S', &Host::SetIconImageAlt },
-      { NDO_DATA_LOWHOSTFLAPTHRESHOLD, 'd', &Host::SetLowFlapThreshold },
-      { NDO_DATA_NOTES, 'S', &Host::SetNotes },
-      { NDO_DATA_NOTESURL, 'S', &Host::SetNotesUrl },
-      { NDO_DATA_NOTIFYHOSTDOWN, 's', &Host::SetNotifyOnDown },
-      { NDO_DATA_NOTIFYHOSTDOWNTIME, 's', &Host::SetNotifyOnDowntime },
-      { NDO_DATA_NOTIFYHOSTFLAPPING, 's', &Host::SetNotifyOnFlapping },
-      { NDO_DATA_NOTIFYHOSTRECOVERY, 's', &Host::SetNotifyOnRecovery },
-      { NDO_DATA_NOTIFYHOSTUNREACHABLE, 's', &Host::SetNotifyOnUnreachable },
-      { NDO_DATA_OBSESSOVERHOST, 'b', &Host::SetObsessOver },
-      { NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-        'b',
-        &Host::SetPassiveChecksEnabled },
-      { NDO_DATA_PROCESSHOSTPERFORMANCEDATA,
-        'b',
-        &Host::SetProcessPerformanceData },
-      { NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
-	'b',
-	&Host::SetRetainNonstatusInformation },
-      { NDO_DATA_RETAINHOSTSTATUSINFORMATION,
-	'b',
-	&Host::SetRetainStatusInformation },
-      { NDO_DATA_STALKHOSTONDOWN, 's', &Host::SetStalkOnDown },
-      { NDO_DATA_STALKHOSTONUNREACHABLE, 's', &Host::SetStalkOnUnreachable },
-      { NDO_DATA_STALKHOSTONUP, 's', &Host::SetStalkOnUp },
-      { NDO_DATA_STATUSMAPIMAGE, 'S', &Host::SetStatusmapImage },
-      { NDO_DATA_VRMLIMAGE, 'S', &Host::SetVrmlImage },
-      { NDO_DATA_X2D, 's', &Host::SetX2D },
+      KeySetter<Host>(NDO_DATA_HOSTFLAPDETECTIONENABLED,
+        &Host::flap_detection_enabled),
+      KeySetter<Host>(NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
+        &Host::check_freshness),
+      KeySetter<Host>(NDO_DATA_HOSTFRESHNESSTHRESHOLD,
+        &Host::freshness_threshold),
+      KeySetter<Host>(NDO_DATA_HOSTMAXCHECKATTEMPTS,
+        &Host::max_check_attempts),
+      KeySetter<Host>(NDO_DATA_HOSTNAME,
+        &Host::host),
+      KeySetter<Host>(NDO_DATA_HOSTNOTIFICATIONINTERVAL,
+        &Host::notification_interval),
+      KeySetter<Host>(NDO_DATA_HOSTNOTIFICATIONPERIOD,
+        &Host::notification_period),
+      KeySetter<Host>(NDO_DATA_HOSTNOTIFICATIONSENABLED,
+        &Host::notifications_enabled),
+      KeySetter<Host>(NDO_DATA_HOSTRETRYINTERVAL,
+        &Host::retry_interval),
+      KeySetter<Host>(NDO_DATA_ICONIMAGE,
+        &Host::icon_image),
+      KeySetter<Host>(NDO_DATA_ICONIMAGEALT,
+        &Host::icon_image_alt),
+      KeySetter<Host>(NDO_DATA_LOWHOSTFLAPTHRESHOLD,
+        &Host::low_flap_threshold),
+      KeySetter<Host>(NDO_DATA_NOTES,
+        &Host::notes),
+      KeySetter<Host>(NDO_DATA_NOTESURL,
+        &Host::notes_url),
+      KeySetter<Host>(NDO_DATA_NOTIFYHOSTDOWN,
+        &Host::notify_on_down),
+      KeySetter<Host>(NDO_DATA_NOTIFYHOSTDOWNTIME,
+        &Host::notify_on_downtime),
+      KeySetter<Host>(NDO_DATA_NOTIFYHOSTFLAPPING,
+        &Host::notify_on_flapping),
+      KeySetter<Host>(NDO_DATA_NOTIFYHOSTRECOVERY,
+        &Host::notify_on_recovery),
+      KeySetter<Host>(NDO_DATA_NOTIFYHOSTUNREACHABLE,
+        &Host::notify_on_unreachable),
+      KeySetter<Host>(NDO_DATA_OBSESSOVERHOST,
+        &Host::obsess_over),
+      KeySetter<Host>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+        &Host::passive_checks_enabled),
+      KeySetter<Host>(NDO_DATA_PROCESSHOSTPERFORMANCEDATA,
+        &Host::process_performance_data),
+      KeySetter<Host>(NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
+        &Host::retain_nonstatus_information),
+      KeySetter<Host>(NDO_DATA_RETAINHOSTSTATUSINFORMATION,
+        &Host::retain_status_information),
+      KeySetter<Host>(NDO_DATA_STALKHOSTONDOWN,
+        &Host::stalk_on_down),
+      KeySetter<Host>(NDO_DATA_STALKHOSTONUNREACHABLE,
+        &Host::stalk_on_unreachable),
+      KeySetter<Host>(NDO_DATA_STALKHOSTONUP,
+        &Host::stalk_on_up),
+      KeySetter<Host>(NDO_DATA_STATUSMAPIMAGE,
+        &Host::statusmap_image),
+      KeySetter<Host>(NDO_DATA_VRMLIMAGE,
+        &Host::vrml_image),
+      KeySetter<Host>(NDO_DATA_X2D,
+        &Host::x_2d),
       //{ NDO_DATA_X3D },
-      { NDO_DATA_Y2D, 's', &Host::SetY2D },
+      KeySetter<Host>(NDO_DATA_Y2D,
+        &Host::y_2d),
       //{ NDO_DATA_Y3D },
       //{ NDO_DATA_Z3D },
-      { 0, '\0', static_cast<void (Host::*)(double)>(NULL) }
+      KeySetter<Host>()
     };
 
   HandleObject<Host>(this->instance_, keys_setters, *this);
@@ -371,9 +436,11 @@ void NetworkInput::HandleHostGroup()
 {
   static const KeySetter<HostGroup> keys_setters[] =
     {
-      { NDO_DATA_HOSTGROUPALIAS, 'S', &HostGroup::SetAlias },
-      { NDO_DATA_HOSTGROUPNAME, 'S', &HostGroup::SetHostGroupName },
-      { 0, '\0', static_cast<void (HostGroup::*)(double)>(NULL) }
+      KeySetter<HostGroup>(NDO_DATA_HOSTGROUPALIAS,
+        &HostGroup::alias),
+      KeySetter<HostGroup>(NDO_DATA_HOSTGROUPNAME,
+        &HostGroup::name),
+      KeySetter<HostGroup>()
     };
 
   HandleObject<HostGroup>(this->instance_, keys_setters, *this);
@@ -386,94 +453,95 @@ void NetworkInput::HandleHostGroup()
 void NetworkInput::HandleHostStatus()
 {
   static const KeySetter<HostStatus> keys_setters[] =
-      {
-	{ NDO_DATA_ACKNOWLEDGEMENTTYPE,
-          's',
-          &HostStatus::SetAcknowledgementType },
-	{ NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-          'b',
-          &HostStatus::SetActiveChecksEnabled },
-	{ NDO_DATA_CHECKCOMMAND, 'S', &HostStatus::SetCheckCommand },
-	{ NDO_DATA_CHECKTYPE, 's', &HostStatus::SetCheckType },
-	{ NDO_DATA_CURRENTCHECKATTEMPT,
-          's',
-          &HostStatus::SetCurrentCheckAttempt },
-	{ NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-	  's',
-	  &HostStatus::SetCurrentNotificationNumber },
-	{ NDO_DATA_CURRENTSTATE, 's', &HostStatus::SetCurrentState },
-	{ NDO_DATA_EVENTHANDLER, 'S', &HostStatus::SetEventHandler },
-	{ NDO_DATA_EVENTHANDLERENABLED,
-          'b',
-          &HostStatus::SetEventHandlerEnabled },
-	{ NDO_DATA_EXECUTIONTIME, 'd', &HostStatus::SetExecutionTime },
-	{ NDO_DATA_FAILUREPREDICTIONENABLED,
-	  'b',
-	  &HostStatus::SetFailurePredictionEnabled },
-	{ NDO_DATA_FLAPDETECTIONENABLED,
-          'b',
-          &HostStatus::SetFlapDetectionEnabled },
-	{ NDO_DATA_HASBEENCHECKED, 'b', &HostStatus::SetHasBeenChecked },
-	{ NDO_DATA_HOST, 'S', &HostStatus::SetHostName },
-	{ NDO_DATA_HOSTCHECKPERIOD, 'S', &HostStatus::SetCheckPeriod },
-	{ NDO_DATA_ISFLAPPING, 'b', &HostStatus::SetIsFlapping },
-	{ NDO_DATA_LASTHARDSTATE, 's', &HostStatus::SetLastHardState },
-	{ NDO_DATA_LASTHARDSTATECHANGE,
-          't',
-          &HostStatus::SetLastHardStateChange },
-	{ NDO_DATA_LASTHOSTCHECK, 't', &HostStatus::SetLastCheck },
-	{ NDO_DATA_LASTHOSTNOTIFICATION,
-          't',
-          &HostStatus::SetLastNotification },
-	{ NDO_DATA_LASTSTATECHANGE, 't', &HostStatus::SetLastStateChange },
-	{ NDO_DATA_LASTTIMEDOWN, 't', &HostStatus::SetLastTimeDown },
-	{ NDO_DATA_LASTTIMEUNREACHABLE,
-          't',
-          &HostStatus::SetLastTimeUnreachable},
-	{ NDO_DATA_LATENCY, 'd', &HostStatus::SetLatency },
-	{ NDO_DATA_LONGOUTPUT, 'S', &HostStatus::SetLongOutput },
-	{ NDO_DATA_MAXCHECKATTEMPTS, 's', &HostStatus::SetMaxCheckAttempts },
-	{ NDO_DATA_MODIFIEDHOSTATTRIBUTES,
-          'i',
-          &HostStatus::SetModifiedAttributes },
-	{ NDO_DATA_NEXTHOSTCHECK, 't', &HostStatus::SetNextCheck },
-	{ NDO_DATA_NEXTHOSTNOTIFICATION,
-          't',
-          &HostStatus::SetNextNotification },
-	{ NDO_DATA_NOMORENOTIFICATIONS,
-          'b',
-          &HostStatus::SetNoMoreNotifications },
-	{ NDO_DATA_NORMALCHECKINTERVAL,
-	  'd',
-	  &HostStatus::SetCheckInterval },
-	{ NDO_DATA_NOTIFICATIONSENABLED,
-          'b',
-          &HostStatus::SetNotificationsEnabled },
-	{ NDO_DATA_OBSESSOVERHOST, 'b', &HostStatus::SetObsessOver },
-	{ NDO_DATA_OUTPUT, 'S', &HostStatus::SetOutput },
-	{ NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-	  'b',
-	  &HostStatus::SetPassiveChecksEnabled },
-	{ NDO_DATA_PERCENTSTATECHANGE,
-          'd',
-          &HostStatus::SetPercentStateChange },
-	{ NDO_DATA_PERFDATA, 'S', &HostStatus::SetPerfData },
-	{ NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-          'b',
-          &HostStatus::SetProblemHasBeenAcknowledged },
-	{ NDO_DATA_PROCESSPERFORMANCEDATA,
-	  'b',
-	  &HostStatus::SetProcessPerformanceData },
-	{ NDO_DATA_RETRYCHECKINTERVAL,
-	  'd',
-	  &HostStatus::SetRetryInterval },
-	{ NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
-          's',
-          &HostStatus::SetScheduledDowntimeDepth },
-	{ NDO_DATA_SHOULDBESCHEDULED, 'b', &HostStatus::SetShouldBeScheduled },
-	{ NDO_DATA_STATETYPE, 's', &HostStatus::SetStateType },
-	{ 0, '\0', static_cast<void (HostStatus::*)(double)>(NULL) }
-      };
+    {
+      KeySetter<HostStatus>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
+        &HostStatus::acknowledgement_type),
+      KeySetter<HostStatus>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+        &HostStatus::active_checks_enabled),
+      KeySetter<HostStatus>(NDO_DATA_CHECKCOMMAND,
+        &HostStatus::check_command),
+      KeySetter<HostStatus>(NDO_DATA_CHECKTYPE,
+        &HostStatus::check_type),
+      KeySetter<HostStatus>(NDO_DATA_CURRENTCHECKATTEMPT,
+        &HostStatus::current_check_attempt),
+      KeySetter<HostStatus>(NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+        &HostStatus::current_notification_number),
+      KeySetter<HostStatus>(NDO_DATA_CURRENTSTATE,
+        &HostStatus::current_state),
+      KeySetter<HostStatus>(NDO_DATA_EVENTHANDLER,
+        &HostStatus::event_handler),
+      KeySetter<HostStatus>(NDO_DATA_EVENTHANDLERENABLED,
+        &HostStatus::event_handler_enabled),
+      KeySetter<HostStatus>(NDO_DATA_EXECUTIONTIME,
+        &HostStatus::execution_time),
+      KeySetter<HostStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
+        &HostStatus::failure_prediction_enabled),
+      KeySetter<HostStatus>(NDO_DATA_FLAPDETECTIONENABLED,
+        &HostStatus::flap_detection_enabled),
+      KeySetter<HostStatus>(NDO_DATA_HASBEENCHECKED,
+        &HostStatus::has_been_checked),
+      KeySetter<HostStatus>(NDO_DATA_HOST,
+        &HostStatus::host),
+      KeySetter<HostStatus>(NDO_DATA_HOSTCHECKPERIOD,
+        &HostStatus::check_period),
+      KeySetter<HostStatus>(NDO_DATA_ISFLAPPING,
+        &HostStatus::is_flapping),
+      KeySetter<HostStatus>(NDO_DATA_LASTHARDSTATE,
+        &HostStatus::last_hard_state),
+      KeySetter<HostStatus>(NDO_DATA_LASTHARDSTATECHANGE,
+        &HostStatus::last_hard_state_change),
+      KeySetter<HostStatus>(NDO_DATA_LASTHOSTCHECK,
+        &HostStatus::last_check),
+      KeySetter<HostStatus>(NDO_DATA_LASTHOSTNOTIFICATION,
+        &HostStatus::last_notification),
+      KeySetter<HostStatus>(NDO_DATA_LASTSTATECHANGE,
+        &HostStatus::last_state_change),
+      KeySetter<HostStatus>(NDO_DATA_LASTTIMEDOWN,
+        &HostStatus::last_time_down),
+      KeySetter<HostStatus>(NDO_DATA_LASTTIMEUNREACHABLE,
+        &HostStatus::last_time_unreachable),
+      KeySetter<HostStatus>(NDO_DATA_LATENCY,
+        &HostStatus::latency),
+      KeySetter<HostStatus>(NDO_DATA_LONGOUTPUT,
+        &HostStatus::long_output),
+      KeySetter<HostStatus>(NDO_DATA_MAXCHECKATTEMPTS,
+        &HostStatus::max_check_attempts),
+      KeySetter<HostStatus>(NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+        &HostStatus::modified_attributes),
+      KeySetter<HostStatus>(NDO_DATA_NEXTHOSTCHECK,
+        &HostStatus::next_check),
+      KeySetter<HostStatus>(NDO_DATA_NEXTHOSTNOTIFICATION,
+        &HostStatus::next_notification),
+      KeySetter<HostStatus>(NDO_DATA_NOMORENOTIFICATIONS,
+        &HostStatus::no_more_notifications),
+      KeySetter<HostStatus>(NDO_DATA_NORMALCHECKINTERVAL,
+        &HostStatus::check_interval),
+      KeySetter<HostStatus>(NDO_DATA_NOTIFICATIONSENABLED,
+        &HostStatus::notifications_enabled),
+      KeySetter<HostStatus>(NDO_DATA_OBSESSOVERHOST,
+        &HostStatus::obsess_over),
+      KeySetter<HostStatus>(NDO_DATA_OUTPUT,
+        &HostStatus::output),
+      KeySetter<HostStatus>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+        &HostStatus::passive_checks_enabled),
+      KeySetter<HostStatus>(NDO_DATA_PERCENTSTATECHANGE,
+        &HostStatus::percent_state_change),
+      KeySetter<HostStatus>(NDO_DATA_PERFDATA,
+        &HostStatus::perf_data),
+      KeySetter<HostStatus>(NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+        &HostStatus::problem_has_been_acknowledged),
+      KeySetter<HostStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
+        &HostStatus::process_performance_data),
+      KeySetter<HostStatus>(NDO_DATA_RETRYCHECKINTERVAL,
+        &HostStatus::retry_interval),
+      KeySetter<HostStatus>(NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+        &HostStatus::scheduled_downtime_depth),
+      KeySetter<HostStatus>(NDO_DATA_SHOULDBESCHEDULED,
+        &HostStatus::should_be_scheduled),
+      KeySetter<HostStatus>(NDO_DATA_STATETYPE,
+        &HostStatus::state_type),
+      KeySetter<HostStatus>()
+    };
 
   HandleObject<HostStatus>(this->instance_, keys_setters, *this);
   return ;
@@ -490,7 +558,7 @@ void NetworkInput::HandleInitialization()
   Connection*  conn_info;
 
   conn_info = new Connection;
-  conn_info->SetConnectTime(time(NULL));
+  conn_info->connect_time = time(NULL);
   key = this->GetLine();
   while (strcmp(key, NDO_API_STARTDATADUMP))
     {
@@ -505,16 +573,16 @@ void NetworkInput::HandleInitialization()
       if (!strcmp(key, NDO_API_INSTANCENAME))
 	this->instance_ = value;
       else if (!strcmp(key, NDO_API_AGENT))
-	conn_info->SetAgentName(value);
+	conn_info->agent_name = value;
       else if (!strcmp(key, NDO_API_AGENTVERSION))
-	conn_info->SetAgentVersion(value);
+	conn_info->agent_version = value;
       else if (!strcmp(key, NDO_API_CONNECTION))
-	conn_info->SetConnectSource(value);
+	conn_info->connect_source = value;
       else if (!strcmp(key, NDO_API_CONNECTTYPE))
-	conn_info->SetConnectType(value);
+	conn_info->connect_type = value;
       key = this->GetLine();
     }
-  conn_info->SetDataStartTime(time(NULL));
+  conn_info->data_start_time = time(NULL);
   EventPublisher::GetInstance()->Publish(conn_info);
   return ;
 }
@@ -531,7 +599,7 @@ void NetworkInput::HandleLog()
   char* tmp;
 
   log = new Log;
-  log->SetNagiosInstance(this->instance_);
+  log->instance = this->instance_;
   key_str = this->GetLine();
   tmp = strchr(key_str, '=');
   if (!tmp)
@@ -552,151 +620,151 @@ void NetworkInput::HandleLog()
 
 	  value_s = const_cast<char*>(value_str);
 	  data = strtok_r(value_s, " ", &lasts);
-	  log->SetCtime(strtol(data, NULL, 0));
+	  log->c_time = strtol(data, NULL, 0);
 	  data = strtok_r(NULL, ":", &lasts);
 	  if (!strcmp(data, "SERVICE ALERT"))
 	    {
-	      log->SetMsgType(0);
+	      log->msg_type = 0;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetServiceDescription(data);
+	      log->service = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetRetry(strtol(data, NULL, 0));
+	      log->retry = strtol(data, NULL, 0);
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetOutput(data);
+	      log->output = data;
 	    }
 	  else if (!strcmp(data, "HOST ALERT"))
 	    {
-	      log->SetMsgType(1);
+	      log->msg_type = 1;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetRetry(strtol(data, NULL, 0));
+	      log->retry = strtol(data, NULL, 0);
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetOutput(data);
+	      log->output = data;
 	    }
 	  else if (!strcmp(data, "SERVICE NOTIFICATION"))
 	    {
-	      log->SetMsgType(2);
+	      log->msg_type = 2;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetNotificationContact(data);
+	      log->notification_contact = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetServiceDescription(data);
+	      log->service = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetNotificationCmd(data);
+	      log->notification_cmd = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetOutput(data);
+	      log->output = data;
 	    }
 	  else if (!strcmp(data, "HOST NOTIFICATION"))
 	    {
-	      log->SetMsgType(3);
+	      log->msg_type = 3;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetNotificationContact(data);
+	      log->notification_contact = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetNotificationCmd(data);
+	      log->notification_cmd = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetOutput(data);
+	      log->output = data;
 	    }
 	  else if (!strcmp(data, "CURRENT SERVICE STATE"))
 	    {
-	      log->SetMsgType(6);
+	      log->msg_type = 6;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetServiceDescription(data);
+	      log->service = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	    }
 	  else if (!strcmp(data, "CURRENT HOST STATE"))
 	    {
-	      log->SetMsgType(7);
+	      log->msg_type = 7;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	    }
 	  else if (!strcmp(data, "INITIAL HOST STATE"))
 	    {
-	      log->SetMsgType(9);
+	      log->msg_type = 9;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	    }
 	  else if (!strcmp(data, "INITIAL SERVICE STATE"))
 	    {
-	      log->SetMsgType(8);
+	      log->msg_type = 8;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetHostName(data);
+	      log->host = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetServiceDescription(data);
+	      log->service = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetStatus(data);
+	      log->status = data;
 	      data = strtok_r(NULL, ";", &lasts);
-	      log->SetLogType(data);
+	      log->type = data;
 	    }
 	  else if (!strcmp(data, "EXTERNAL COMMAND"))
 	    {
 	      data = strtok_r(NULL, ";", &lasts);
 	      if (!strcmp("ACKNOWLEDGE_SVC_PROBLEM", data))
 		{
-		  log->SetMsgType(10);
+		  log->msg_type = 10;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetHostName(data);
+		  log->host = data;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetServiceDescription(data);
+		  log->service = data;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetNotificationContact(data);
+		  log->notification_contact = data;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetOutput(data);
+		  log->output = data;
 		}
 	      else if (!strcmp("ACKNOWLEDGE_HOST_PROBLEM", data))
 		{
-		  log->SetMsgType(11);
+		  log->msg_type = 11;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetHostName(data);
+		  log->host = data;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetNotificationContact(data);
+		  log->notification_contact = data;
 		  data = strtok_r(NULL, ";", &lasts);
-		  log->SetOutput(data);
+		  log->output = data;
 		}
 	      else
 		; // XXX : problem
 	    }
 	  else if (!strcmp(data, "Warning"))
 	    {
-	      log->SetMsgType(4);
+	      log->msg_type = 4;
 	      data = strtok_r(NULL, "", &lasts);
-	      log->SetOutput(data);
+	      log->output = data;
 	    }
 	  else
 	    {
 	      // XXX
-	      log->SetMsgType(5);
-	      log->SetOutput(data);
+	      log->msg_type = 5;
+	      log->output = data;
 	    }
 	}
       key_str = this->GetLine();
@@ -721,61 +789,47 @@ void NetworkInput::HandleProgramStatus()
 {
   static const KeySetter<ProgramStatus> keys_setters[] =
     {
-      { NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-	's',
-	&ProgramStatus::SetActiveHostChecksEnabled },
-      { NDO_DATA_ACTIVESERVICECHECKSENABLED,
-	's',
-	&ProgramStatus::SetActiveServiceChecksEnabled },
-      { NDO_DATA_DAEMONMODE, 's', &ProgramStatus::SetDaemonMode },
-      { NDO_DATA_EVENTHANDLERENABLED,
-        'b',
-        &ProgramStatus::SetEventHandlerEnabled },
-      { NDO_DATA_FAILUREPREDICTIONENABLED,
-	'b',
-	&ProgramStatus::SetFailurePredictionEnabled },
-      { NDO_DATA_FLAPDETECTIONENABLED,
-	'b',
-	&ProgramStatus::SetFlapDetectionEnabled },
-      { NDO_DATA_GLOBALHOSTEVENTHANDLER,
-	'S',
-	&ProgramStatus::SetGlobalHostEventHandler },
-      { NDO_DATA_GLOBALSERVICEEVENTHANDLER,
-	'S',
-	&ProgramStatus::SetGlobalServiceEventHandler },
-      { NDO_DATA_LASTCOMMANDCHECK,
-        't',
-        &ProgramStatus::SetLastCommandCheck },
-      { NDO_DATA_LASTLOGROTATION,
-	't',
-	&ProgramStatus::SetLastLogRotation },
-      { NDO_DATA_MODIFIEDHOSTATTRIBUTES,
-	'i',
-	&ProgramStatus::SetModifiedHostAttributes },
-      { NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
-	'i',
-	&ProgramStatus::SetModifiedServiceAttributes },
-      { NDO_DATA_NOTIFICATIONSENABLED,
-        'b',
-        &ProgramStatus::SetNotificationsEnabled },
-      { NDO_DATA_OBSESSOVERHOST, 's', &ProgramStatus::SetObsessOverHosts },
-      { NDO_DATA_OBSESSOVERSERVICE,
-        's',
-        &ProgramStatus::SetObsessOverServices },
-      { NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-	's',
-	&ProgramStatus::SetPassiveHostChecksEnabled },
-      { NDO_DATA_PASSIVESERVICECHECKSENABLED,
-	's',
-	&ProgramStatus::SetPassiveServiceChecksEnabled },
-      { NDO_DATA_PROCESSPERFORMANCEDATA,
-	'b',
-	&ProgramStatus::SetProcessPerformanceData },
-      { NDO_DATA_PROCESSID, 'i', &ProgramStatus::SetPid },
-      { NDO_DATA_PROGRAMSTARTTIME,
-	't',
-	&ProgramStatus::SetProgramStart },
-      { 0, '\0', static_cast<void (ProgramStatus::*)(double)>(NULL) }
+      KeySetter<ProgramStatus>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+        &ProgramStatus::active_host_checks_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
+        &ProgramStatus::active_service_checks_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_DAEMONMODE,
+        &ProgramStatus::daemon_mode),
+      KeySetter<ProgramStatus>(NDO_DATA_EVENTHANDLERENABLED,
+        &ProgramStatus::event_handler_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
+        &ProgramStatus::failure_prediction_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_FLAPDETECTIONENABLED,
+        &ProgramStatus::flap_detection_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_GLOBALHOSTEVENTHANDLER,
+        &ProgramStatus::global_host_event_handler),
+      KeySetter<ProgramStatus>(NDO_DATA_GLOBALSERVICEEVENTHANDLER,
+        &ProgramStatus::global_service_event_handler),
+      KeySetter<ProgramStatus>(NDO_DATA_LASTCOMMANDCHECK,
+        &ProgramStatus::last_command_check),
+      KeySetter<ProgramStatus>(NDO_DATA_LASTLOGROTATION,
+        &ProgramStatus::last_log_rotation),
+      KeySetter<ProgramStatus>(NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+        &ProgramStatus::modified_host_attributes),
+      KeySetter<ProgramStatus>(NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+        &ProgramStatus::modified_service_attributes),
+      KeySetter<ProgramStatus>(NDO_DATA_NOTIFICATIONSENABLED,
+        &ProgramStatus::notifications_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_OBSESSOVERHOST,
+        &ProgramStatus::obsess_over_hosts),
+      KeySetter<ProgramStatus>(NDO_DATA_OBSESSOVERSERVICE,
+        &ProgramStatus::obsess_over_services),
+      KeySetter<ProgramStatus>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+        &ProgramStatus::passive_host_checks_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
+        &ProgramStatus::passive_service_checks_enabled),
+      KeySetter<ProgramStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
+        &ProgramStatus::process_performance_data),
+      KeySetter<ProgramStatus>(NDO_DATA_PROCESSID,
+        &ProgramStatus::pid),
+      KeySetter<ProgramStatus>(NDO_DATA_PROGRAMSTARTTIME,
+        &ProgramStatus::program_start),
+      KeySetter<ProgramStatus>()
     };
 
   HandleObject<ProgramStatus>(this->instance_, keys_setters, *this);
@@ -790,142 +844,101 @@ void NetworkInput::HandleService()
 {
   static const KeySetter<Service> keys_setters[] =
     {
-      { NDO_DATA_ACTIONURL, 'S', &Service::SetActionUrl },
-      { NDO_DATA_ACTIVESERVICECHECKSENABLED,
-        'b',
-        &Service::SetActiveChecksEnabled },
-      { NDO_DATA_DISPLAYNAME, 'S', &Service::SetDisplayName },
-      { NDO_DATA_FIRSTNOTIFICATIONDELAY,
-        'd',
-        &Service::SetFirstNotificationDelay },
-      { NDO_DATA_FLAPDETECTIONONCRITICAL,
-        's',
-        &Service::SetFlapDetectionOnCritical },
-      { NDO_DATA_FLAPDETECTIONONOK,
-        's',
-	&Service::SetFlapDetectionOnOk },
-      { NDO_DATA_FLAPDETECTIONONUNKNOWN,
-	's',
-	&Service::SetFlapDetectionOnUnknown },
-      { NDO_DATA_FLAPDETECTIONONWARNING,
-	's',
-	&Service::SetFlapDetectionOnWarning },
-      { NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
-	'd',
-	&Service::SetHighFlapThreshold },
-      { NDO_DATA_HOSTNAME,
-	'S',
-	&Service::SetHostName },
-      { NDO_DATA_ICONIMAGE,
-	'S',
-	&Service::SetIconImage },
-      { NDO_DATA_ICONIMAGEALT,
-	'S',
-	&Service::SetIconImageAlt },
-      { NDO_DATA_LOWSERVICEFLAPTHRESHOLD,
-	'd',
-	&Service::SetLowFlapThreshold },
-      { NDO_DATA_MAXSERVICECHECKATTEMPTS,
-	's',
-	&Service::SetMaxCheckAttempts },
-      { NDO_DATA_NOTES,
-	'S',
-	&Service::SetNotes },
-      { NDO_DATA_NOTESURL,
-	'S',
-	&Service::SetNotesUrl },
-      { NDO_DATA_NOTIFYSERVICECRITICAL,
-	'b',
-	&Service::SetNotifiedOnCritical },
-      { NDO_DATA_NOTIFYSERVICEDOWNTIME,
-	's',
-	&Service::SetNotifyOnDowntime },
-      { NDO_DATA_NOTIFYSERVICEFLAPPING,
-	's',
-	&Service::SetNotifyOnFlapping },
-      { NDO_DATA_NOTIFYSERVICERECOVERY,
-	's',
-	&Service::SetNotifyOnRecovery },
-      { NDO_DATA_NOTIFYSERVICEUNKNOWN,
-	'b',
-	&Service::SetNotifiedOnUnknown },
-      { NDO_DATA_NOTIFYSERVICEWARNING,
-	'b',
-	&Service::SetNotifiedOnWarning },
-      { NDO_DATA_OBSESSOVERSERVICE,
-	'b',
-	&Service::SetObsessOver },
-      { NDO_DATA_PASSIVESERVICECHECKSENABLED,
-	'b',
-	&Service::SetPassiveChecksEnabled },
-      { NDO_DATA_PROCESSSERVICEPERFORMANCEDATA,
-	'b',
-	&Service::SetProcessPerformanceData },
-      { NDO_DATA_RETAINSERVICENONSTATUSINFORMATION,
-	'b',
-	&Service::SetRetainNonstatusInformation },
-      { NDO_DATA_RETAINSERVICESTATUSINFORMATION,
-	'b',
-	&Service::SetRetainStatusInformation },
-      { NDO_DATA_SERVICECHECKCOMMAND,
-	'S',
-	&Service::SetCheckCommand },
-      { NDO_DATA_SERVICECHECKINTERVAL,
-	'd',
-	&Service::SetCheckInterval },
-      { NDO_DATA_SERVICECHECKPERIOD, 'S', &Service::SetCheckPeriod },
-      { NDO_DATA_SERVICEDESCRIPTION,
-	'S',
-	&Service::SetServiceDescription },
-      { NDO_DATA_SERVICEEVENTHANDLER,
-	'S',
-	&Service::SetEventHandler },
-      { NDO_DATA_SERVICEEVENTHANDLERENABLED,
-	'b',
-	&Service::SetEventHandlerEnabled },
-      { NDO_DATA_SERVICEFAILUREPREDICTIONENABLED,
-	'b',
-	&Service::SetFailurePredictionEnabled },
-      { NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
-	'S',
-	&Service::SetFailurePredictionOptions },
-      { NDO_DATA_SERVICEFLAPDETECTIONENABLED,
-	'b',
-	&Service::SetFlapDetectionEnabled },
-      { NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
-	'b',
-	&Service::SetCheckFreshness },
-      { NDO_DATA_SERVICEFRESHNESSTHRESHOLD,
-	'd',
-	&Service::SetFreshnessThreshold },
-      { NDO_DATA_SERVICEISVOLATILE,
-	'b',
-	&Service::SetIsVolatile },
-      { NDO_DATA_SERVICENOTIFICATIONINTERVAL,
-	'd',
-	&Service::SetNotificationInterval },
-      { NDO_DATA_SERVICENOTIFICATIONPERIOD,
-	'S',
-	&Service::SetNotificationPeriod },
-      { NDO_DATA_SERVICENOTIFICATIONSENABLED,
-	'b',
-	&Service::SetNotificationsEnabled },
-      { NDO_DATA_SERVICERETRYINTERVAL,
-	'd',
-	&Service::SetRetryInterval },
-      { NDO_DATA_STALKSERVICEONCRITICAL,
-	's',
-	&Service::SetStalkOnCritical },
-      { NDO_DATA_STALKSERVICEONOK,
-	's',
-	&Service::SetStalkOnOk },
-      { NDO_DATA_STALKSERVICEONUNKNOWN,
-	's',
-	&Service::SetStalkOnUnknown },
-      { NDO_DATA_STALKSERVICEONWARNING,
-	's',
-	&Service::SetStalkOnWarning },
-      { 0, '\0', static_cast<void (Service::*)(double)>(NULL) }
+      KeySetter<Service>(NDO_DATA_ACTIONURL,
+        &Service::action_url),
+      KeySetter<Service>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
+        &Service::active_checks_enabled),
+      KeySetter<Service>(NDO_DATA_DISPLAYNAME,
+        &Service::display_name),
+      KeySetter<Service>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
+        &Service::first_notification_delay),
+      KeySetter<Service>(NDO_DATA_FLAPDETECTIONONCRITICAL,
+        &Service::flap_detection_on_critical),
+      KeySetter<Service>(NDO_DATA_FLAPDETECTIONONOK,
+        &Service::flap_detection_on_ok),
+      KeySetter<Service>(NDO_DATA_FLAPDETECTIONONUNKNOWN,
+        &Service::flap_detection_on_unknown),
+      KeySetter<Service>(NDO_DATA_FLAPDETECTIONONWARNING,
+        &Service::flap_detection_on_warning),
+      KeySetter<Service>(NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
+        &Service::high_flap_threshold),
+      KeySetter<Service>(NDO_DATA_HOSTNAME,
+        &Service::host),
+      KeySetter<Service>(NDO_DATA_ICONIMAGE,
+        &Service::icon_image),
+      KeySetter<Service>(NDO_DATA_ICONIMAGEALT,
+        &Service::icon_image_alt),
+      KeySetter<Service>(NDO_DATA_LOWSERVICEFLAPTHRESHOLD,
+        &Service::low_flap_threshold),
+      KeySetter<Service>(NDO_DATA_MAXSERVICECHECKATTEMPTS,
+        &Service::max_check_attempts),
+      KeySetter<Service>(NDO_DATA_NOTES,
+        &Service::notes),
+      KeySetter<Service>(NDO_DATA_NOTESURL,
+        &Service::notes_url),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICECRITICAL,
+        &Service::notified_on_critical),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICEDOWNTIME,
+        &Service::notify_on_downtime),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICEFLAPPING,
+        &Service::notify_on_flapping),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICERECOVERY,
+        &Service::notify_on_recovery),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICEUNKNOWN,
+        &Service::notified_on_unknown),
+      KeySetter<Service>(NDO_DATA_NOTIFYSERVICEWARNING,
+        &Service::notified_on_warning),
+      KeySetter<Service>(NDO_DATA_OBSESSOVERSERVICE,
+        &Service::obsess_over),
+      KeySetter<Service>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
+        &Service::passive_checks_enabled),
+      KeySetter<Service>(NDO_DATA_PROCESSSERVICEPERFORMANCEDATA,
+        &Service::process_performance_data),
+      KeySetter<Service>(NDO_DATA_RETAINSERVICENONSTATUSINFORMATION,
+        &Service::retain_nonstatus_information),
+      KeySetter<Service>(NDO_DATA_RETAINSERVICESTATUSINFORMATION,
+        &Service::retain_status_information),
+      KeySetter<Service>(NDO_DATA_SERVICECHECKCOMMAND,
+        &Service::check_command),
+      KeySetter<Service>(NDO_DATA_SERVICECHECKINTERVAL,
+        &Service::check_interval),
+      KeySetter<Service>(NDO_DATA_SERVICECHECKPERIOD,
+        &Service::check_period),
+      KeySetter<Service>(NDO_DATA_SERVICEDESCRIPTION,
+        &Service::service),
+      KeySetter<Service>(NDO_DATA_SERVICEEVENTHANDLER,
+        &Service::event_handler),
+      KeySetter<Service>(NDO_DATA_SERVICEEVENTHANDLERENABLED,
+        &Service::event_handler_enabled),
+      KeySetter<Service>(NDO_DATA_SERVICEFAILUREPREDICTIONENABLED,
+        &Service::failure_prediction_enabled),
+      KeySetter<Service>(NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
+        &Service::failure_prediction_options),
+      KeySetter<Service>(NDO_DATA_SERVICEFLAPDETECTIONENABLED,
+        &Service::flap_detection_enabled),
+      KeySetter<Service>(NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
+        &Service::check_freshness),
+      KeySetter<Service>(NDO_DATA_SERVICEFRESHNESSTHRESHOLD,
+        &Service::freshness_threshold),
+      KeySetter<Service>(NDO_DATA_SERVICEISVOLATILE,
+        &Service::is_volatile),
+      KeySetter<Service>(NDO_DATA_SERVICENOTIFICATIONINTERVAL,
+        &Service::notification_interval),
+      KeySetter<Service>(NDO_DATA_SERVICENOTIFICATIONPERIOD,
+        &Service::notification_period),
+      KeySetter<Service>(NDO_DATA_SERVICENOTIFICATIONSENABLED,
+        &Service::notifications_enabled),
+      KeySetter<Service>(NDO_DATA_SERVICERETRYINTERVAL,
+        &Service::retry_interval),
+      KeySetter<Service>(NDO_DATA_STALKSERVICEONCRITICAL,
+        &Service::stalk_on_critical),
+      KeySetter<Service>(NDO_DATA_STALKSERVICEONOK,
+        &Service::stalk_on_ok),
+      KeySetter<Service>(NDO_DATA_STALKSERVICEONUNKNOWN,
+        &Service::stalk_on_unknown),
+      KeySetter<Service>(NDO_DATA_STALKSERVICEONWARNING,
+        &Service::stalk_on_warning),
+      KeySetter<Service>()
     };
 
   HandleObject<Service>(this->instance_, keys_setters, *this);
@@ -939,90 +952,97 @@ void NetworkInput::HandleServiceStatus()
 {
   static const KeySetter<ServiceStatus> keys_setters[] =
     {
-      { NDO_DATA_ACKNOWLEDGEMENTTYPE,
-	's',
-	&ServiceStatus::SetAcknowledgementType },
-      { NDO_DATA_ACTIVESERVICECHECKSENABLED,
-	'b',
-	&ServiceStatus::SetActiveChecksEnabled },
-      { NDO_DATA_CHECKCOMMAND, 'S', &ServiceStatus::SetCheckCommand },
-      { NDO_DATA_CHECKTYPE, 's', &ServiceStatus::SetCheckType },
-      { NDO_DATA_CURRENTCHECKATTEMPT,
-        's',
-        &ServiceStatus::SetCurrentCheckAttempt },
-      { NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-	's',
-	&ServiceStatus::SetCurrentNotificationNumber },
-      { NDO_DATA_CURRENTSTATE, 's', &ServiceStatus::SetCurrentState },
-      { NDO_DATA_EVENTHANDLER, 'S', &ServiceStatus::SetEventHandler },
-      { NDO_DATA_EVENTHANDLERENABLED,
-        'b',
-        &ServiceStatus::SetEventHandlerEnabled },
-      { NDO_DATA_EXECUTIONTIME, 'd', &ServiceStatus::SetExecutionTime },
-      { NDO_DATA_FAILUREPREDICTIONENABLED,
-	'b',
-	&ServiceStatus::SetFailurePredictionEnabled },
-      { NDO_DATA_FLAPDETECTIONENABLED,
-	'b',
-	&ServiceStatus::SetFlapDetectionEnabled },
-      { NDO_DATA_HASBEENCHECKED, 'b', &ServiceStatus::SetHasBeenChecked },
-      { NDO_DATA_HOST, 'S', &ServiceStatus::SetHostName },
-      { NDO_DATA_ISFLAPPING, 'b', &ServiceStatus::SetIsFlapping },
-      { NDO_DATA_LASTSERVICECHECK, 't', &ServiceStatus::SetLastCheck },
-      { NDO_DATA_LASTHARDSTATE, 's', &ServiceStatus::SetLastHardState },
-      { NDO_DATA_LASTHARDSTATECHANGE,
-	't',
-	&ServiceStatus::SetLastHardStateChange },
-      { NDO_DATA_LASTSERVICENOTIFICATION,
-        't',
-        &ServiceStatus::SetLastNotification },
-      { NDO_DATA_LASTSTATECHANGE, 't', &ServiceStatus::SetLastStateChange },
-      { NDO_DATA_LASTTIMECRITICAL, 't', &ServiceStatus::SetLastTimeCritical },
-      { NDO_DATA_LASTTIMEOK, 't', &ServiceStatus::SetLastTimeOk },
-      { NDO_DATA_LASTTIMEUNKNOWN, 't', &ServiceStatus::SetLastTimeUnknown },
-      { NDO_DATA_LASTTIMEWARNING, 't', &ServiceStatus::SetLastTimeWarning },
-      { NDO_DATA_LATENCY, 'd', &ServiceStatus::SetLatency },
-      { NDO_DATA_LONGOUTPUT, 'S', &ServiceStatus::SetLongOutput },
-      { NDO_DATA_MAXCHECKATTEMPTS,
-	's',
-	&ServiceStatus::SetMaxCheckAttempts },
-      { NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
-	'i',
-	&ServiceStatus::SetModifiedAttributes },
-      { NDO_DATA_NEXTSERVICECHECK, 't', &ServiceStatus::SetNextCheck },
-      { NDO_DATA_NEXTSERVICENOTIFICATION,
-	't',
-	&ServiceStatus::SetNextNotification },
-      { NDO_DATA_NOMORENOTIFICATIONS,
-	'b',
-	&ServiceStatus::SetNoMoreNotifications },
-      { NDO_DATA_NORMALCHECKINTERVAL, 'd', &ServiceStatus::SetCheckInterval },
-      { NDO_DATA_OBSESSOVERSERVICE, 'b', &ServiceStatus::SetObsessOver },
-      { NDO_DATA_OUTPUT, 'S', &ServiceStatus::SetOutput },
-      { NDO_DATA_PASSIVESERVICECHECKSENABLED,
-	'b',
-	&ServiceStatus::SetPassiveChecksEnabled },
-      { NDO_DATA_PERCENTSTATECHANGE,
-        'd',
-        &ServiceStatus::SetPercentStateChange },
-      { NDO_DATA_PERFDATA, 'S', &ServiceStatus::SetPerfData },
-      { NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-	'b',
-	&ServiceStatus::SetProblemHasBeenAcknowledged },
-      { NDO_DATA_PROCESSPERFORMANCEDATA,
-	'b',
-	&ServiceStatus::SetProcessPerformanceData },
-      { NDO_DATA_RETRYCHECKINTERVAL, 'd', &ServiceStatus::SetRetryInterval },
-      { NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
-	's',
-	&ServiceStatus::SetScheduledDowntimeDepth },
-      { NDO_DATA_SERVICE, 'S', &ServiceStatus::SetServiceDescription },
-      { NDO_DATA_SERVICECHECKPERIOD, 'S', &ServiceStatus::SetCheckPeriod },
-      { NDO_DATA_SHOULDBESCHEDULED,
-        'b',
-        &ServiceStatus::SetShouldBeScheduled },
-      { NDO_DATA_STATETYPE, 's', &ServiceStatus::SetStateType },
-      { 0, '\0', static_cast<void (ServiceStatus::*)(double)>(NULL) }
+      KeySetter<ServiceStatus>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
+        &ServiceStatus::acknowledgement_type),
+      KeySetter<ServiceStatus>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
+        &ServiceStatus::active_checks_enabled),
+      KeySetter<ServiceStatus>(NDO_DATA_CHECKCOMMAND,
+        &ServiceStatus::check_command),
+      KeySetter<ServiceStatus>(NDO_DATA_CHECKTYPE,
+        &ServiceStatus::check_type),
+      KeySetter<ServiceStatus>(NDO_DATA_CURRENTCHECKATTEMPT,
+        &ServiceStatus::current_check_attempt),
+      KeySetter<ServiceStatus>(NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+        &ServiceStatus::current_notification_number),
+      KeySetter<ServiceStatus>(NDO_DATA_CURRENTSTATE,
+        &ServiceStatus::current_state),
+      KeySetter<ServiceStatus>(NDO_DATA_EVENTHANDLER,
+        &ServiceStatus::event_handler),
+      KeySetter<ServiceStatus>(NDO_DATA_EVENTHANDLERENABLED,
+        &ServiceStatus::event_handler_enabled),
+      KeySetter<ServiceStatus>(NDO_DATA_EXECUTIONTIME,
+        &ServiceStatus::execution_time),
+      KeySetter<ServiceStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
+        &ServiceStatus::failure_prediction_enabled),
+      KeySetter<ServiceStatus>(NDO_DATA_FLAPDETECTIONENABLED,
+        &ServiceStatus::flap_detection_enabled),
+      KeySetter<ServiceStatus>(NDO_DATA_HASBEENCHECKED,
+        &ServiceStatus::has_been_checked),
+      KeySetter<ServiceStatus>(NDO_DATA_HOST,
+        &ServiceStatus::host),
+      KeySetter<ServiceStatus>(NDO_DATA_ISFLAPPING,
+        &ServiceStatus::is_flapping),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTSERVICECHECK,
+        &ServiceStatus::last_check),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTHARDSTATE,
+        &ServiceStatus::last_hard_state),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTHARDSTATECHANGE,
+        &ServiceStatus::last_hard_state_change),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTSERVICENOTIFICATION,
+        &ServiceStatus::last_notification),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTSTATECHANGE,
+        &ServiceStatus::last_state_change),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTTIMECRITICAL,
+        &ServiceStatus::last_time_critical),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTTIMEOK,
+        &ServiceStatus::last_time_ok),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTTIMEUNKNOWN,
+        &ServiceStatus::last_time_unknown),
+      KeySetter<ServiceStatus>(NDO_DATA_LASTTIMEWARNING,
+        &ServiceStatus::last_time_warning),
+      KeySetter<ServiceStatus>(NDO_DATA_LATENCY,
+        &ServiceStatus::latency),
+      KeySetter<ServiceStatus>(NDO_DATA_LONGOUTPUT,
+        &ServiceStatus::long_output),
+      KeySetter<ServiceStatus>(NDO_DATA_MAXCHECKATTEMPTS,
+        &ServiceStatus::max_check_attempts),
+      KeySetter<ServiceStatus>(NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+        &ServiceStatus::modified_attributes),
+      KeySetter<ServiceStatus>(NDO_DATA_NEXTSERVICECHECK,
+        &ServiceStatus::next_check),
+      KeySetter<ServiceStatus>(NDO_DATA_NEXTSERVICENOTIFICATION,
+        &ServiceStatus::next_notification),
+      KeySetter<ServiceStatus>(NDO_DATA_NOMORENOTIFICATIONS,
+        &ServiceStatus::no_more_notifications),
+      KeySetter<ServiceStatus>(NDO_DATA_NORMALCHECKINTERVAL,
+        &ServiceStatus::check_interval),
+      KeySetter<ServiceStatus>(NDO_DATA_OBSESSOVERSERVICE,
+        &ServiceStatus::obsess_over),
+      KeySetter<ServiceStatus>(NDO_DATA_OUTPUT,
+        &ServiceStatus::output),
+      KeySetter<ServiceStatus>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
+        &ServiceStatus::passive_checks_enabled),
+      KeySetter<ServiceStatus>(NDO_DATA_PERCENTSTATECHANGE,
+        &ServiceStatus::percent_state_change),
+      KeySetter<ServiceStatus>(NDO_DATA_PERFDATA,
+        &ServiceStatus::perf_data),
+      KeySetter<ServiceStatus>(NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+        &ServiceStatus::problem_has_been_acknowledged),
+      KeySetter<ServiceStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
+        &ServiceStatus::process_performance_data),
+      KeySetter<ServiceStatus>(NDO_DATA_RETRYCHECKINTERVAL,
+        &ServiceStatus::retry_interval),
+      KeySetter<ServiceStatus>(NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+        &ServiceStatus::scheduled_downtime_depth),
+      KeySetter<ServiceStatus>(NDO_DATA_SERVICE,
+        &ServiceStatus::service),
+      KeySetter<ServiceStatus>(NDO_DATA_SERVICECHECKPERIOD,
+        &ServiceStatus::check_period),
+      KeySetter<ServiceStatus>(NDO_DATA_SHOULDBESCHEDULED,
+        &ServiceStatus::should_be_scheduled),
+      KeySetter<ServiceStatus>(NDO_DATA_STATETYPE,
+        &ServiceStatus::state_type),
+      KeySetter<ServiceStatus>()
     };
 
   HandleObject<ServiceStatus>(this->instance_, keys_setters, *this);
@@ -1093,15 +1113,14 @@ void NetworkInput::operator()()
 	      for (unsigned int i = 0; handlers[i].event; i++)
 		if (handlers[i].event == event)
 		  {
-		    this->conn_status_.SetBytesProcessed(
-		      this->bytes_processed_);
-		    this->conn_status_.SetLinesProcessed(
-                      this->lines_processed_);
+		    this->conn_status_.bytes_processed =
+                      this->bytes_processed_;
+		    this->conn_status_.lines_processed =
+                      this->lines_processed_;
 		    (this->*(handlers[i].handler))();
-		    this->conn_status_.SetEntriesProcessed(
-                      this->conn_status_.GetEntriesProcessed() + 1);
-		    this->conn_status_.SetLastCheckinTime(
-                      this->last_checkin_time_);
+		    this->conn_status_.entries_processed++;
+		    this->conn_status_.last_checkin_time =
+                      this->last_checkin_time_;
 		    EventPublisher::GetInstance()->Publish(
 		      new ConnectionStatus(this->conn_status_));
 		    break ;
@@ -1109,7 +1128,7 @@ void NetworkInput::operator()()
 	    }
 	  buffer = this->GetLine();
 	}
-      this->conn_status_.SetDataEndTime(time(NULL));
+      this->conn_status_.data_end_time = time(NULL);
     }
   catch (std::exception& e)
     {
@@ -1123,7 +1142,7 @@ void NetworkInput::operator()()
       logging.LogError(
         "Unknown exception occured while processing network input");
     }
-  this->conn_status_.SetDisconnectTime(time(NULL));
+  this->conn_status_.disconnect_time = time(NULL);
   try
     {
       EventPublisher::GetInstance()->Publish(new ConnectionStatus(
