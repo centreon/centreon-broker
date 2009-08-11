@@ -512,6 +512,7 @@ static void InitLogMapping()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Log mapping");
 #endif /* !NDEBUG */
+  log_mapping.SetTable("log");
   log_mapping.AddTimeField("ctime",
     &Log::c_time);
   log_mapping.AddStringField("host_name",
