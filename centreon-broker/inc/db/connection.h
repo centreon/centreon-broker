@@ -80,9 +80,18 @@ namespace                 CentreonBroker
 }
 
 # include <cassert>
-# include "db/mysql/connection.h"
+
+# ifdef USE_MYSQL
+#  include "db/mysql/connection.h"
+# endif /* USE_MYSQL */
+
+# ifdef USE_ORACLE
 //# include "db/oracle/connection.h"
-# include "db/postgresql/connection.h"
+# endif /* USE_ORACLE */
+
+# ifdef USE_POSTGRESQL
+#  include "db/postgresql/connection.h"
+# endif /* USE_POSTGRESQL */
 
 /**
  *  Return a DELETE query matching the DBMS. Because we can't override a
@@ -98,15 +107,24 @@ CentreonBroker::DB::Delete<ObjectType>*           // Return type
 
   switch (this->dbms_)
     {
+# ifdef USE_MYSQL
      case MYSQL:
       del = dynamic_cast<MySQLConnection*>(this)
 	->GetDeleteQuery<ObjectType>(mapping);
       break ;
+# endif /* USE_MYSQL */
+
+# ifdef USE_ORACLE
+     case ORACLE:
+# endif /* USE_ORACLE */
+
+# ifdef USE_POSTGRESQL
      case POSTGRESQL:
       del = dynamic_cast<PgSQLConnection*>(this)
 	->GetDeleteQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
+# endif /* USE_POSTGRESQL */
+
      default:
       assert(false);
       throw (DBException(this->dbms_,
@@ -130,15 +148,24 @@ CentreonBroker::DB::Insert<ObjectType>*           // Return type
 
   switch (this->dbms_)
     {
+# ifdef USE_MYSQL
      case MYSQL:
       insert = dynamic_cast<MySQLConnection*>(this)
 	->GetInsertQuery<ObjectType>(mapping);
       break ;
+# endif /* USE_MYSQL */
+
+# ifdef USE_ORACLE
+     case ORACLE:
+# endif /* USE_ORACLE */
+
+# ifdef USE_POSTGRESQL
      case POSTGRESQL:
       insert = dynamic_cast<PgSQLConnection*>(this)
         ->GetInsertQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
+# endif /* USE_POSTGRESQL */
+
      default:
       assert(false);
       throw (DBException(this->dbms_,
@@ -161,15 +188,24 @@ CentreonBroker::DB::Update<ObjectType>*           // Return type
 
   switch (this->dbms_)
     {
+# ifdef USE_MYSQL
      case MYSQL:
       update = dynamic_cast<MySQLConnection*>(this)
 	->GetUpdateQuery<ObjectType>(mapping);
       break ;
+# endif /* USE_MYSQL */
+
+# ifdef USE_ORACLE
+     case ORACLE:
+# endif /* USE_ORACLE */
+
+# ifdef USE_POSTGRESQL
      case POSTGRESQL:
       update = dynamic_cast<PgSQLConnection*>(this)
 	->GetUpdateQuery<ObjectType>(mapping);
       break ;
-     case ORACLE:
+# endif /* USE_POSTGRESQL */
+
      default:
       assert(false);
       throw (DBException(this->dbms_,

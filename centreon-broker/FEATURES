@@ -18,8 +18,8 @@ The cb2db is a ndo2db replacement. It has the following features :
 
 cb2db uses some external projects to provide those features :
 
- - OpenSSL to provide TLS connection between the broker and cb2db
+ - GNU TLS to provide TLS connection between the broker and cb2db
  - Boost as this C++ library provide a good abstraction layer and is really
    powerful
-
-
+ - MySQL C Connector to handle MySQL databases
+ - libpq to handle PostgreSQL databases

@@ -21,7 +21,9 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
-#include <mysql.h>
+#ifdef USE_MYSQL
+# include <mysql.h>
+#endif /* USE_MYSQL */
 #include "client_acceptor.h"
 #include "conf/conf.h"
 #include "db_output.h"
@@ -71,7 +73,9 @@ int main(int argc, char* argv[])
 #ifndef NDEBUG
           logging.LogDebug("Initializing MySQL library...");
 #endif /* !NDEBUG */
+#ifdef USE_MYSQL
           mysql_library_init(0, NULL, NULL);
+#endif /* USE_MYSQL */
 
           // Load Object-Relational mappings
           InitMappings();
@@ -174,6 +178,10 @@ int main(int argc, char* argv[])
           logging.Deindent();
           exit_code = 1;
         }
+
+#ifdef USE_MYSQL
+      mysql_library_end();
+#endif /* USE_MYSQL */
 
 #ifndef NDEBUG
       logging.LogDebug("Exiting main()");
