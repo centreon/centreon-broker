@@ -23,7 +23,6 @@
 
 # include <boost/bind.hpp>
 # include <cassert>
-# include <mysql.h>
 # include <sstream>
 # include "db/insert.hpp"
 # include "db/postgresql/have_fields.h"

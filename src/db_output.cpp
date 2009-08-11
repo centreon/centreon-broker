@@ -21,9 +21,14 @@
 #include <boost/bind.hpp>
 #include <memory>
 #include "db/db_exception.h"
-#include "db/mysql/connection.h"
-#include "db/postgresql/connection.h"
+#ifdef USE_MYSQL
+# include "db/mysql/connection.h"
+#endif /* USE_MYSQL */
+#ifdef USE_POSTGRESQL
+# include "db/postgresql/connection.h"
+#endif /* USE_POSTGRESQL */
 #include "db/predicate.h"
+#include "db/truncate.h"
 #include "db_output.h"
 #include "exception.h"
 #include "events/comment.h"
@@ -42,7 +47,11 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  DBOutput copy constructor.
+ *  \brief DBOutput copy constructor.
+ *
+ *  As DBOutput are not copiable, the copy constructor is declared private.
+ *
+ *  \param[in] dbo Unused.
  */
 DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber()
 {
@@ -51,7 +60,13 @@ DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber()
 }
 
 /**
- *  DBOutput operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  As DBOutput are not copiable, the assignment operator is declared private.
+ *
+ *  \param[in] dbo Unused.
+ *
+ *  \return *this
  */
 DBOutput& DBOutput::operator=(const DBOutput& dbo)
 {
@@ -110,7 +125,10 @@ void DBOutput::CleanTables()
 }
 
 /**
- *  Commit the current transaction and reset timeout.
+ *  \brief Commit the current transaction and reset timeout.
+ *
+ *  Ask the underlying database to commit the current transaction. The timeout
+ *  for autocommit is also rescheduled.
  */
 void DBOutput::Commit()
 {
@@ -122,19 +140,32 @@ void DBOutput::Commit()
 }
 
 /**
- *  Perform all DB connection related operations.
+ *  \brief Connect to the preconfigured database.
+ *
+ *  Using parameters provided by Init(), connect to the database server. Upon
+ *  successful return, the connection can later be dropped by calling
+ *  Disconnect().
+ *
+ *  \see Disconnect
+ *  \see Init
  */
 void DBOutput::Connect()
 {
   // Connect to the DB server
   switch (this->dbms_)
     {
+#ifdef USE_MYSQL
      case DB::Connection::MYSQL:
       this->conn_ = new DB::MySQLConnection;
       break;
+#endif /* USE_MYSQL */
+
+#ifdef USE_POSTGRESQL
      case DB::Connection::POSTGRESQL:
       this->conn_ = new DB::PgSQLConnection;
       break ;
+#endif /* USE_POSTGRESQL */
+
      default:
       throw (Exception(0, "Unsupported DBMS requested."));
     }
@@ -146,14 +177,33 @@ void DBOutput::Connect()
   // Deactivate auto-commit.
   this->conn_->AutoCommit(false);
 
-  // Initialize the timeout
+  // Initialize internal auto-commit timeout
   this->Commit();
+
+  // XXX : synchronize data with server
+  /*
+    std::auto_ptr<DB::Select> query = this->conn_->GetSelectQuery();
+    query->AddField("instance_id");
+    query->AddField("instance_name");
+    query->SetTable("program_status");
+    query->Prepare();
+    query->Execute();
+    while (query.HasNext())
+    {
+      this->instances_[query->GetString("instance_name")] = query->GetInt("instance_id");
+    }
+  */
 
   return ;
 }
 
 /**
- *  Delete all DB connection related objects.
+ *  \brief Disconnect from the database server.
+ *
+ *  Upon a successful call to Connect(), one can disconnect from the server by
+ *  calling this method. All previously allocated ressources are freed.
+ *
+ *  \see Connect
  */
 void DBOutput::Disconnect()
 {
@@ -167,7 +217,14 @@ void DBOutput::Disconnect()
 }
 
 /**
- *  Get an instance id.
+ *  \brief Get the ID of an instance by its name.
+ *
+ *  The DBOutput class caches instance IDs as those are used within almost
+ *  every table of the schema. This avoids expensive SELECT queries.
+ *
+ *  \param[in] instance The name of the Nagios instance.
+ *
+ *  \return The database ID of the Nagios instance.
  */
 int DBOutput::GetInstanceId(const std::string& instance)
 {
@@ -187,8 +244,15 @@ int DBOutput::GetInstanceId(const std::string& instance)
 }
 
 /**
- *  Callback called when an event occur. This will push the event into the
- *  list.
+ *  \brief Insert the given object into an internal list for later processing.
+ *
+ *  Reminder : we use a publish / subscribe model for event propagation.
+ *
+ *  When a new event is published, the EventPublisher instance will call this
+ *  method (we subclass EventSubscriber). We will store the event into our
+ *  internal list. This list is processed by a separate thread.
+ *
+ *  \param[in] e The newly generated event.
  */
 void DBOutput::OnEvent(Event* e) throw ()
 {
@@ -315,7 +379,12 @@ void DBOutput::PrepareStatements()
 }
 
 /**
- *  Process an event.
+ *  \brief Process an event.
+ *
+ *  When an event is poped from the list, it will be processed by this method.
+ *  We will determine the true event type and process it accordingly.
+ *
+ *  \param[in] event Event that should be stored in the database.
  */
 void DBOutput::ProcessEvent(Event* event)
 {
@@ -684,7 +753,11 @@ void DBOutput::QueryExecuted()
 **************************************/
 
 /**
- *  DBOutput default constructor.
+ *  \brief DBOutput default constructor.
+ *
+ *  Initialize the DBOutput with default parameters.
+ *
+ *  \param[in] dbms Type of the database to use.
  */
 DBOutput::DBOutput(DB::Connection::DBMS dbms)
   : acknowledgement_mapping_(acknowledgement_mapping),
@@ -704,13 +777,16 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
 }
 
 /**
- *  DBOutput destructor.
+ *  \brief DBOutput destructor.
+ *
+ *  Release all previously allocated ressources.
  */
 DBOutput::~DBOutput()
 {
 #ifndef NDEBUG
   logging.LogDebug("Deleting DBOutput...");
 #endif /* !NDEBUG */
+  // XXX : statement deletion should be in Disconnect
   if (this->connection_status_stmt_)
     delete (this->connection_status_stmt_);
   if (this->host_status_stmt_)
@@ -734,7 +810,10 @@ DBOutput::~DBOutput()
 }
 
 /**
- *  Thread entry point.
+ *  \brief Entry point of the processing thread.
+ *
+ *  When Init() is called, it creates a new thread. This method is the thread
+ *  entry point.
  */
 void DBOutput::operator()()
 {
@@ -852,7 +931,9 @@ void DBOutput::operator()()
 }
 
 /**
- *  Request the object to stop processing.
+ *  \brief Request the object to stop processing.
+ *
+ *  This method requires the processing thread to stop.
  */
 void DBOutput::Destroy()
 {
@@ -870,7 +951,14 @@ void DBOutput::Destroy()
 }
 
 /**
- *  Initialize the object.
+ *  \brief Initialize the object.
+ *
+ *  Set connection parameters and launch the processing thread.
+ *
+ *  \param[in] host     IP address or host name to connect to.
+ *  \param[in] user     User name to use for authentication.
+ *  \param[in] password Password to use for authentication.
+ *  \param[in] db       Name of the database to connect to.
  */
 void DBOutput::Init(const std::string& host,
                     const std::string& user,

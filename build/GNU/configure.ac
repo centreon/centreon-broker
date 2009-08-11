@@ -59,10 +59,29 @@ AX_BOOST_THREAD
 # We should check if all these libraries are present. If not, compilation will
 # fail. However I don't know how to do it...
 
-# Optional DBMS dependencies
+# Optional MySQL dependency
 AX_LIB_MYSQL
+if test x"$want_mysql" = "xyes"
+then
+	AC_DEFINE([USE_MYSQL])
+fi
+AM_CONDITIONAL([MYSQL], [test x"$want_mysql" = "xyes"])
+
+# Optional Oracle dependency
 AX_LIB_ORACLE_OCI
+if test x"$HAVE_ORACLE_OCI" = "xyes"
+then
+	AC_DEFINE([USE_ORACLE])
+fi
+AM_CONDITIONAL([ORACLE], [test x"$HAVE_ORACLE_OCI" = "xyes"])
+
+# Optional PostgreSQL dependency
 AX_LIB_POSTGRESQL
+if test x"$want_postgresql" = "xyes"
+then
+	AC_DEFINE([USE_POSTGRESQL])
+fi
+AM_CONDITIONAL([POSTGRESQL], [test x"$want_postgresql" = "xyes"])
 
 # Optional TLS support
 AC_MSG_CHECKING([whether the program should support TLS])
@@ -74,8 +93,9 @@ AC_MSG_RESULT($enable_tls)
 if test "x$enable_tls" = "xyes"
 then
 	AM_PATH_LIBGNUTLS
-	AC_DEFINE(USE_TLS)
+	AC_DEFINE([USE_TLS])
 fi
+AM_CONDITIONAL([TLS], [test x"$enable_tls" = "xyes"])
 
 # Configure tools flags according to previous tests
 CPPFLAGS="$CPPFLAGS -I../../inc $BOOST_CPPFLAGS $MYSQL_CPPFLAGS"

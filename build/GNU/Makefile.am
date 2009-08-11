@@ -30,14 +30,6 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/db/connection.cpp			\
 			../../src/db/db_exception.cpp			\
 			../../src/db/have_fields.cpp			\
-			../../src/db/mysql/connection.cpp		\
-			../../src/db/mysql/have_fields.cpp		\
-			../../src/db/mysql/query.cpp			\
-			../../src/db/mysql/truncate.cpp			\
-			../../src/db/postgresql/connection.cpp		\
-			../../src/db/postgresql/have_fields.cpp		\
-			../../src/db/postgresql/query.cpp		\
-			../../src/db/postgresql/truncate.cpp		\
 			../../src/db/predicate.cpp			\
 			../../src/db/query.cpp				\
 			../../src/db/truncate.cpp			\
@@ -64,7 +56,31 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/file_output.cpp			\
 			../../src/io/io.cpp				\
 			../../src/io/net4.cpp				\
-			../../src/io/tls.cpp				\
 			../../src/logging.cpp				\
 			../../src/mapping.cpp				\
 			../../src/network_input.cpp
+
+# Add MySQL files if MySQL is enabled
+if MYSQL
+cb2db_SOURCES +=	../../src/db/mysql/connection.cpp		\
+			../../src/db/mysql/have_fields.cpp		\
+			../../src/db/mysql/query.cpp			\
+			../../src/db/mysql/truncate.cpp
+endif
+
+# Add Oracle files if Oracle is enabled
+if ORACLE
+endif
+
+# Add PostgreSQL files if PostgreSQL is enabled
+if POSTGRESQL
+cb2db_SOURCES +=	../../src/db/postgresql/connection.cpp		\
+			../../src/db/postgresql/have_fields.cpp		\
+			../../src/db/postgresql/query.cpp		\
+			../../src/db/postgresql/truncate.cpp
+endif
+
+# Add TLS files is TLS is enabled
+if TLS
+cb2db_SOURCES +=	../../src/io/tls.cpp
+endif

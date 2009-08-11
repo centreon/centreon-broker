@@ -18,11 +18,10 @@
 **  For more information : contact@centreon.com
 */
 
-#ifdef USE_TLS
-# include <cassert>
-# include <gnutls/gnutls.h>
-# include "exception.h"
-# include "io/tls.h"
+#include <cassert>
+#include <gnutls/gnutls.h>
+#include "exception.h"
+#include "io/tls.h"
 
 using namespace CentreonBroker::IO;
 
@@ -573,4 +572,3 @@ void TLSAcceptor::SetTrustedCA(const char* ca_cert)
   this->check_cert_ = true;
   return ;
 }
-#endif /* USE_TLS */
