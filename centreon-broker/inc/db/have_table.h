@@ -18,31 +18,24 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_MYSQL_TRUNCATE_H_
-# define DB_MYSQL_TRUNCATE_H_
+#include <string>
 
-# include <mysql.h>
-# include "db/mysql/query.h"
-# include "db/truncate.h"
-
-namespace            CentreonBroker
+namespace                CentreonBroker
 {
-  namespace          DB
+  namespace              DB
   {
-    class            MySQLTruncate : public Truncate, public MySQLQuery
+    class                HaveTable
     {
-     private:
-                     MySQLTruncate(const MySQLTruncate& mytruncate);
-      MySQLTruncate& operator=(const MySQLTruncate& mytruncate);
-      void           BuildQuery();
+     protected:
+      std::string        table;
+                         HaveTable();
+                         HaveTable(const HaveTable& ht);
+      virtual            ~HaveTable();
+      HaveTable&         operator=(const HaveTable& ht);
 
      public:
-                     MySQLTruncate(MYSQL* myconn);
-                     ~MySQLTruncate();
-      void           Execute();
-      void           Prepare();
+      const std::string& GetTable() throw ();
+      void               SetTable(const std::string& tab);
     };
   }
 }
-
-#endif /* !DB_MYSQL_TRUNCATE_H_ */

@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/query.h"
+#include "db/select.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,36 +29,31 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Query default constructor.
+ *  \brief Select copy constructor.
  *
- *  Initialize members to their default values.
+ *  Copy data of the given object to the current instance.
+ *
+ *  \param[in] select Object to copy data from.
  */
-Query::Query() throw () {}
-
-/**
- *  \brief Query copy constructor.
- *
- *  Build the new instance by copying data from the given object.
- *
- *  \param[in] query Object to copy data from.
- */
-Query::Query(const Query& query) throw ()
-{
-  (void)query;
-}
+Select::Select(const Select& select)
+  : HaveFields(select), HavePredicate(select), HaveTable(select), Query(select)
+{}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data from the given object to the current instance.
+ *  Copy data of the given object to the current instance.
  *
- *  \param[in] query Object to copy data from.
+ *  \param[in] select Object to copy data from.
  *
  *  \return *this
  */
-Query& Query::operator=(const Query& query) throw ()
+Select& Select::Select(const Select& select)
 {
-  (void)query;
+  this->HaveFields::operator=(select);
+  this->HavePredicate::operator=(select);
+  this->HaveTable::operator=(select);
+  this->Query::operator=(select);
   return (*this);
 }
 
@@ -69,8 +64,15 @@ Query& Query::operator=(const Query& query) throw ()
 **************************************/
 
 /**
- *  \brief Query destructor.
+ *  \brief Select default constructor.
  *
- *  Release previously allocated ressources.
+ *  Initialize members to their default values.
  */
-Query::~Query() {}
+Select::Select() {}
+
+/**
+ *  \brief Select destructor.
+ *
+ *  Release all acquired ressources.
+ */
+Select::~Select() {}

@@ -1,0 +1,236 @@
+/*
+**  Copyright 2009 MERETHIS
+**  This file is part of CentreonBroker.
+**
+**  CentreonBroker is free software: you can redistribute it and/or modify it
+**  under the terms of the GNU General Public License as published by the Free
+**  Software Foundation, either version 2 of the License, or (at your option)
+**  any later version.
+**
+**  CentreonBroker is distributed in the hope that it will be useful, but
+**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+**  for more details.
+**
+**  You should have received a copy of the GNU General Public License along
+**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+**
+**  For more information : contact@centreon.com
+*/
+
+#include <cassert>
+#include "db/mysql/select.h"
+
+using namespace CentreonBroker::DB;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief MySQLSelect copy constructor.
+ *
+ *  As this query is not copiable, the copy constructor is declared private.
+ *
+ *  \param[in] mys Unused.
+ */
+MySQLSelect::MySQLSelect(const MySQLSelect& mys)
+{
+  (void)mys;
+  assert(false);
+}
+
+/**
+ *  \brief Overload of the assignment operator.
+ *
+ *  As this query is not copiable, the assignment operator is declared private.
+ *
+ *  \param[in] mys Unused.
+ *
+ *  \return *this
+ */
+MySQLSelect& MySQLSelect::operator=(const MySQLSelect& mys)
+{
+  (void)mys;
+  assert(false);
+  return (*this);
+}
+
+/**
+ *  \brief Generate the beginning of the SELECT query.
+ *
+ *  This method build the first part of the query, the one with the SELECT
+ *  keyword, the fields and the table. This method is here to avoid code
+ *  redundancy and is used by Execute() and Prepare().
+ *
+ *  \see Execute
+ *  \see Prepare
+ */
+void MySQLSelect::GenerateQueryStart()
+{
+  // Start the query string
+  this->query = "SELECT ";
+
+  // List all fields to fetch
+  for (std::list<std::string>::iterator it = this->fields.begin();
+       it != this->fields.end();
+       it++)
+    {
+      this->query.append(*it);
+      this->query.append(", ");
+    }
+  query.resize(query.size() - 2);
+
+  // Set the table
+  query.append(" FROM ");
+  query.append(this->table);
+
+  return ;
+}
+
+/**
+ *  \brief Get the number of arguments the query holds.
+ *
+ *  Returns the number of variables present in the query. This method is an
+ *  override of the MySQLHaveArgs's method and is used by the latter class to
+ *  allocate memory for prepared statements.
+ *
+ *  \return The number of settables variables in the query.
+ *
+ *  \see MySQLHaveArgs
+ */
+unsigned int MySQLSelect::GetArgCount() throw ()
+{
+  return (this->placeholders);
+}
+
+/**************************************
+*                                     *
+*            Public Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief MySQLSelect default constructor.
+ *
+ *  Initialize members to their default values.
+ */
+MySQLSelect::MySQLSelect() : result(NULL) {}
+
+/**
+ *  \brief MySQLSelect destructor.
+ *
+ *  Release all acquired ressources.
+ */
+MySQLSelect::~MySQLSelect()
+{
+  // XXX : free ressources
+}
+
+/**
+ *  \brief Execute a SELECT query.
+ *
+ *  Execute the SELECT query as it has been configured (prepared, with or
+ *  without predicate, ...).
+ */
+void MySQLSelect::Execute()
+{
+  // If the query has not been prepared, generate it.
+  if (!this->stmt)
+    {
+      // Generate the first part of the query (SELECT fields from table)
+      this->GenerateQueryStart();
+
+      // Generate the predicate string (if any).
+      this->MySQLHavePredicate::ProcessPredicate(this->query);
+
+      // Close the query string
+      this->query.append(";");
+    }
+
+  // Execute the query (prepared or not).
+  this->MySQLHaveArgs::Execute();
+
+  return ;
+}
+
+/**
+ *  \brief Get the next argument as a bool.
+ */
+bool MySQLSelect::GetBool()
+{
+  bool ret;
+
+  if (this->stmt)
+    {
+      if (this->result_->stmt[this->current_].buffer_type != MYSQL_TYPE_TINY)
+	throw (DBException(0,
+                           DBException::QUERY_EXECUTION,
+                           "Tried to fetch bool column"));
+      ret = *static_cast<bool*>(this->result_->stmt[this->current_].buffer);
+    }
+  else
+    ret = static_cast<bool*>(this->result_->std.row)[this->current_];
+  this->current_++;
+  return (ret);
+}
+
+/**
+ *  \brief Move to the next row.
+ *
+ *  Fetch the next row of the result set. Returns true while there's a row.
+ *
+ *  \return True if there is an available row.
+ */
+bool MySQLSelect::Next()
+{
+  bool ret;
+
+  // Prepared statement
+  if (this->stmt)
+    {
+      int ec;
+
+      ec = mysql_stmt_fetch(this->stmt);
+      if (1 == ec)
+	throw (DBException(mysql_stmt_errno(this->stmt),
+                           DBException::QUERY_EXECUTION,
+                           mysql_stmt_error(this->stmt)));
+      else
+	ret = !(ec && (ec != MYSQL_DATA_TRUNCATED));
+    }
+
+  // Standard query
+  else
+    {
+      this->result_.std.row = mysql_fetch_row(this->result_.std.res);
+      ret = (this->result_.std.row == NULL);
+    }
+
+  // Reset column counter
+  this->current_ = -1;
+
+  return (ret);
+}
+
+/**
+ *  \brief Prepare the SELECT query.
+ *
+ *  Prepare the SELECT query for a later execution. Prepared statements are
+ *  useful for multiple execution.
+ */
+void MySQLSelect::Prepare()
+{
+  // Generate the first part of the query (SELECT fields FROM table)
+  this->GenerateQueryStart();
+
+  // Generate the predicate string (if any).
+  this->MySQLHavePredicate::PreparePredicate(this->query);
+
+  // Prepare the query against the DB server
+  this->MySQLHaveArgs::Prepare();
+
+  return ;
+}
