@@ -29,22 +29,44 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  MySQLTruncate copy constructor.
+ *  \brief MySQLTruncate copy constructor.
+ *
+ *  Construct the current instance by copying data from the given object.
+ *  At least it should.
+ *
+ *  \param[in] mytruncate Object to copy data from.
  */
-MySQLTruncate::MySQLTruncate(const MySQLTruncate& mytruncate) throw ()
-  : Query(), Truncate(), MySQLQuery(mytruncate.myconn_)
+MySQLTruncate::MySQLTruncate(const MySQLTruncate& mytruncate)
+  : Query(mytruncate), Truncate(mytruncate), MySQLQuery(mytruncate) {}
+
+/**
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given object to the current instance. At least it
+ *  should.
+ *
+ *  \param[in] mytruncate Object to copy data from.
+ *
+ *  \return *this
+ */
+MySQLTruncate& MySQLTruncate::operator=(const MySQLTruncate& mytruncate)
 {
-  (void)mytruncate;
+  this->Truncate::operator=(mytruncate);
+  this->MySQLQuery::operator=(mytruncate);
+  return (*this);
 }
 
 /**
- *  MySQLTruncate operator= overload.
+ *  \brief Build the query string.
+ *
+ *  Build the literal TRUNCATE query.
  */
-MySQLTruncate& MySQLTruncate::operator=(const MySQLTruncate& mytruncate)
-  throw ()
+void MySQLTruncate::BuildQuery()
 {
-  (void)mytruncate;
-  return (*this);
+  this->query = "TRUNCATE TABLE `";
+  this->query.append(this->table);
+  this->query.append("`");
+  return ;
 }
 
 /**************************************
@@ -54,36 +76,54 @@ MySQLTruncate& MySQLTruncate::operator=(const MySQLTruncate& mytruncate)
 **************************************/
 
 /**
- *  MySQLTruncate default constructor.
+ *  \brief MySQLTruncate default constructor.
+ *
+ *  Initialize the MySQL TRUNCATE query.
+ *
+ *  \param[in] myconn MySQL connection object.
  */
-MySQLTruncate::MySQLTruncate(MYSQL* myconn) : MySQLQuery(myconn)
-{
-}
+MySQLTruncate::MySQLTruncate(MYSQL* myconn) : MySQLQuery(myconn) {}
 
 /**
- *  MySQLTruncate destructor.
+ *  \brief MySQLTruncate destructor.
+ *
+ *  Release all acquired ressources.
  */
-MySQLTruncate::~MySQLTruncate()
-{
-}
+MySQLTruncate::~MySQLTruncate() {}
 
 /**
- *  Execute the query.
+ *  \brief Execute the query.
+ *
+ *  Execute the TRUNCATE query on the specified table.
  */
 void MySQLTruncate::Execute()
 {
+  // Build the query string if necessary
+  if (!this->stmt)
+    {
+      this->BuildQuery();
+      // BuildQuery does not append the final semicolon (in case it is used for
+      // a prepared statement) so do it.
+      this->query.append(";");
+    }
+
+  // Really execute the query
   this->MySQLQuery::Execute();
+
   return ;
 }
 
 /**
- *  Prepare the query.
+ *  \brief Prepare the query.
+ *
+ *  Prepare the TRUNCATE query on the MySQL server.
  */
-void MySQLTruncate::Prepare() throw (DBException)
+void MySQLTruncate::Prepare()
 {
-  this->query_ = "TRUNCATE TABLE `";
-  this->query_ += this->table_;
-  this->query_ += '`';
+  // Build the query string
+  this->BuildQuery();
+
+  // Prepare the statement
   this->MySQLQuery::Prepare();
   return ;
 }

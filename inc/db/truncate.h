@@ -21,31 +21,21 @@
 #ifndef DB_TRUNCATE_H_
 # define DB_TRUNCATE_H_
 
-# include <string>
+# include "db/have_table.h"
 # include "db/query.h"
 
-namespace                CentreonBroker
+namespace       CentreonBroker
 {
-  namespace              DB
+  namespace     DB
   {
-    /**
-     *  Represents a table truncation.
-     */
-    class                Truncate : virtual public Query
+    class       Truncate : virtual public HaveTable,
+                           virtual public Query
     {
-     private:
-                         Truncate(const Truncate& truncate) throw ();
-      Truncate&          operator=(const Truncate& truncate) throw ();
-
      protected:
-      std::string        table_;
-
-     public:
-                         Truncate() throw ();
-      virtual            ~Truncate();
-      virtual void       Execute() = 0;
-      const std::string& GetTable() const throw ();
-      void               SetTable(const std::string& table);
+                Truncate();
+                Truncate(const Truncate& truncate);
+      virtual   ~Truncate();
+      Truncate& operator=(const Truncate& truncate);
     };
   }
 }

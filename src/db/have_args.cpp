@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/truncate.h"
+#include "db/have_args.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,41 +29,43 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Truncate default constructor.
+ *  \brief HaveArgs default constructor.
  *
- *  Initialize members to their default values.
+ *  Initialize the new object.
  */
-Truncate::Truncate() {}
+HaveArgs::HaveArgs() throw () {}
 
 /**
- *  \brief Truncate copy constructor.
+ *  \brief HaveArgs copy constructor.
  *
- *  Construct the current instance by copying data from the given object.
+ *  Initialize the new object from the given object.
  *
- *  \param[in] truncate Object to copy data from.
+ *  \param[in] ha Object to copy data from.
  */
-Truncate::Truncate(const Truncate& truncate)
-  : HaveTable(truncate), Query(truncate) {}
+HaveArgs::HaveArgs(const HaveArgs& ha) throw ()
+{
+  (void)ha;
+}
 
 /**
- *  \brief Truncate destructor.
+ *  \brief HaveArgs destructor.
  *
- *  Release previously allocated ressources.
+ *  Release acquired ressources.
  */
-Truncate::~Truncate() {}
+HaveArgs::~HaveArgs() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy all data of the given object to the current instance.
+ *  Copy data of the given object to the current instance. As users shouldn't
+ *  directly use this method, it is declared protected.
  *
- *  \param[in] truncate Object to copy data from.
+ *  \param[in] ha Object to copy data from.
  *
  *  \return *this
  */
-Truncate& Truncate::operator=(const Truncate& truncate)
+HaveArgs& HaveArgs::operator=(const HaveArgs& ha) throw ()
 {
-  this->HaveTable::operator=(truncate);
-  this->Query::operator=(truncate);
+  (void)ha;
   return (*this);
 }

@@ -21,25 +21,20 @@
 #ifndef DB_QUERY_H_
 # define DB_QUERY_H_
 
-# include "db/db_exception.h"
-
 namespace          CentreonBroker
 {
   namespace        DB
   {
-    /**
-     *  This is the root class of all queries. Every query can be prepared
-     *  using the appropriate feature of the DBMS.
-     */
     class          Query
     {
-     private:
+     protected:
+                   Query() throw ();
                    Query(const Query& query) throw ();
       Query&       operator=(const Query& query) throw ();
 
      public:
-                   Query() throw ();
       virtual      ~Query();
+      virtual void Execute() = 0;
       virtual void Prepare() = 0;
     };
   }

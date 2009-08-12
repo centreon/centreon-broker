@@ -18,47 +18,58 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/query.h"
+#include "db/have_table.h"
 
 using namespace CentreonBroker::DB;
 
 /**************************************
 *                                     *
-*          Protected Methods          *
+*         Protected Methods           *
 *                                     *
 **************************************/
 
 /**
- *  \brief Query default constructor.
+ *  \brief HaveTable default constructor.
  *
  *  Initialize members to their default values.
  */
-Query::Query() throw () {}
+HaveTable::HaveTable() {}
 
 /**
- *  \brief Query copy constructor.
+ *  \brief HaveTable copy constructor.
  *
- *  Build the new instance by copying data from the given object.
+ *  Copy the table name of the given object to the current instance. Because
+ *  users aren't supposed to directly copy-construct a HaveTable object, this
+ *  constructor is declared protected.
  *
- *  \param[in] query Object to copy data from.
+ *  \param[in] ht Object to copy the table name from.
  */
-Query::Query(const Query& query) throw ()
+HaveTable::HaveTable(const HaveTable& ht)
 {
-  (void)query;
+  this->table = ht.table;
 }
+
+/**
+ *  \brief HaveTable destructor.
+ *
+ *  Release all acquired ressources.
+ */
+HaveTable::~HaveTable() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data from the given object to the current instance.
+ *  Copy the table name of the given object to the current instance. Because
+ *  users aren't supposed to directly copy a HaveTable object, this method is
+ *  declared protected.
  *
- *  \param[in] query Object to copy data from.
+ *  \param[in] ht Object to copy the table name from.
  *
  *  \return *this
  */
-Query& Query::operator=(const Query& query) throw ()
+HaveTable& HaveTable::operator=(const HaveTable& ht)
 {
-  (void)query;
+  this->table = ht.table;
   return (*this);
 }
 
@@ -69,8 +80,26 @@ Query& Query::operator=(const Query& query) throw ()
 **************************************/
 
 /**
- *  \brief Query destructor.
+ *  \brief Get the table name.
  *
- *  Release previously allocated ressources.
+ *  Returns the name of the table on which the query operates.
+ *
+ *  \return The name of the table.
  */
-Query::~Query() {}
+const std::string& HaveTable::GetTable() throw ()
+{
+  return (this->table);
+}
+
+/**
+ *  \brief Set the table name.
+ *
+ *  Set the name of the table on which the query operates.
+ *
+ *  \param[in] The name of the table.
+ */
+void HaveTable::SetTable(const std::string& tab)
+{
+  this->table = tab;
+  return ;
+}
