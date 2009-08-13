@@ -29,10 +29,17 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/conf/output.cpp			\
 			../../src/db/connection.cpp			\
 			../../src/db/db_exception.cpp			\
+			../../src/db/delete.cpp				\
+			../../src/db/have_args.cpp			\
 			../../src/db/have_fields.cpp			\
+			../../src/db/have_predicate.cpp			\
+			../../src/db/have_table.cpp			\
+			../../src/db/insert.cpp				\
 			../../src/db/predicate.cpp			\
 			../../src/db/query.cpp				\
+			../../src/db/select.cpp				\
 			../../src/db/truncate.cpp			\
+			../../src/db/update.cpp				\
 			../../src/db_output.cpp				\
 			../../src/event_publisher.cpp			\
 			../../src/event_subscriber.cpp			\
@@ -63,9 +70,15 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 # Add MySQL files if MySQL is enabled
 if MYSQL
 cb2db_SOURCES +=	../../src/db/mysql/connection.cpp		\
+			../../src/db/mysql/delete.cpp			\
+			../../src/db/mysql/have_args.cpp		\
 			../../src/db/mysql/have_fields.cpp		\
+			../../src/db/mysql/have_predicate.cpp		\
+			../../src/db/mysql/insert.cpp			\
 			../../src/db/mysql/query.cpp			\
-			../../src/db/mysql/truncate.cpp
+			../../src/db/mysql/select.cpp			\
+			../../src/db/mysql/truncate.cpp			\
+			../../src/db/mysql/update.cpp
 endif
 
 # Add Oracle files if Oracle is enabled

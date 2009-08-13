@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/select.h"
+#include "db/mysql/update.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,40 +29,28 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Select default constructor.
+ *  \brief MySQLUpdate copy constructor.
  *
- *  Initialize members to their default values.
+ *  Build the new instance by copying data from the given object.
+ *
+ *  \param[in] myupdate Object to copy data from.
  */
-Select::Select() {}
-
-/**
- *  \brief Select copy constructor.
- *
- *  Copy data of the given object to the current instance.
- *
- *  \param[in] select Object to copy data from.
- */
-Select::Select(const Select& select) : HaveArgs(select),
-                                       HavePredicate(select),
-                                       Query(select),
-                                       HaveFields(select),
-                                       HaveTable(select) {}
+MySQLUpdate::MySQLUpdate(const MySQLUpdate& myupdate) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data of the given object to the current instance.
+ *  Copy data from the given object to the current instance.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] myupdate Object to copy data from.
  *
  *  \return *this
  */
-Select& Select::operator=(const Select& select)
+MySQLUpdate& MySQLUpdate::operator=(const MySQLUpdate& myupdate)
 {
-  this->HaveFields::operator=(select);
-  this->HavePredicate::operator=(select);
-  this->HaveTable::operator=(select);
-  this->Query::operator=(select);
+  this->MySQLHaveArgs::operator=(myupdate);
+  this->MySQLHavePredicate::operator=(myupdate);
+  this->Update::operator=(myupdate);
   return (*this);
 }
 
@@ -73,8 +61,18 @@ Select& Select::operator=(const Select& select)
 **************************************/
 
 /**
- *  \brief Select destructor.
+ *  \brief MySQLUpdate constructor.
  *
- *  Release all acquired ressources.
+ *  Build the UPDATE query using the MySQL connection object on which the query
+ *  will operate.
+ *
+ *  \param[in] myconn MySQL connection object.
  */
-Select::~Select() {}
+MySQLUpdate::MySQLUpdate(MYSQL* myconn) : MySQLHaveArgs(myconn) {}
+
+/**
+ *  \brief MySQLUpdate destructor.
+ *
+ *  Release acquired ressources.
+ */
+MySQLUpdate::~MySQLUpdate() {}

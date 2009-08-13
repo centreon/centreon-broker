@@ -18,31 +18,34 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_HAVE_FIELDS_H_
-# define DB_HAVE_FIELDS_H_
+#ifndef DB_MYSQL_INSERT_H_
+# define DB_MYSQL_INSERT_H_
 
-# include <list>
-# include <string>
-# include "db/have_args.h"
+# include "db/insert.h"
+# include "db/mysql/have_args.h"
 
-namespace                    CentreonBroker
+namespace          CentreonBroker
 {
-  namespace                  DB
+  namespace        DB
   {
-    class                    HaveFields : virtual public HaveArgs
+    class          MySQLInsert : public Insert, public MySQLHaveArgs
     {
+     private:
+      void         GenerateQuery();
+      unsigned int GetArgCount() throw ();
+
      protected:
-      std::list<std::string> fields;
-                             HaveFields();
-                             HaveFields(const HaveFields& hf);
-      HaveFields&            operator=(const HaveFields& hf);
-      virtual                ~HaveFields();
+                   MySQLInsert(const MySQLInsert& myinsert);
+      MySQLInsert& operator=(const MySQLInsert& myinsert);
 
      public:
-      void                   AddField(const std::string& field);
-      void                   RemoveField(const std::string& field);
+                   MySQLInsert(MYSQL* myconn);
+      virtual      ~MySQLInsert();
+      void         Execute();
+      void         Prepare();
+      void         SetArg(bool arg);
     };
   }
 }
 
-#endif /* !DB_HAVE_FIELDS_H_ */
+#endif /* !DB_MYSQL_INSERT_HPP_ */

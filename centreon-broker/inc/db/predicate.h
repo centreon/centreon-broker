@@ -118,6 +118,19 @@ namespace          CentreonBroker
     };
 
     /**
+     *  Specify that the predicate contains a parameter that will be set later.
+     */
+    class          Placeholder : public Predicate
+    {
+     public:
+                   Placeholder() throw ();
+                   Placeholder(const Placeholder& ph) throw ();
+                   ~Placeholder();
+      Placeholder& operator=(const Placeholder& ph) throw ();
+      void         Accept(PredicateVisitor& visitor);
+    };
+
+    /**
      *  Terminal predicate. This can either be a double, an int or some other
      *  base type.
      */
@@ -165,6 +178,7 @@ namespace          CentreonBroker
       virtual void      Visit(And& a_n_d) = 0;
       virtual void      Visit(Equal& equal) = 0;
       virtual void      Visit(Field& field) = 0;
+      virtual void      Visit(Placeholder& placeholder) = 0;
       virtual void      Visit(Terminal& terminal) = 0;
     };
   }

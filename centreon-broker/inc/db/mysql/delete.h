@@ -18,31 +18,36 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_HAVE_FIELDS_H_
-# define DB_HAVE_FIELDS_H_
+#ifndef DB_MYSQL_DELETE_H_
+# define DB_MYSQL_DELETE_H_
 
-# include <list>
-# include <string>
-# include "db/have_args.h"
+# include "db/delete.h"
+# include "db/mysql/have_args.h"
+# include "db/mysql/have_predicate.h"
 
-namespace                    CentreonBroker
+namespace          CentreonBroker
 {
-  namespace                  DB
+  namespace        DB
   {
-    class                    HaveFields : virtual public HaveArgs
+    class          MySQLDelete : public Delete,
+                                 public MySQLHaveArgs,
+                                 public MySQLHavePredicate
     {
+     private:
+      void         GenerateQuery();
+      unsigned int GetArgCount() throw ();
+
      protected:
-      std::list<std::string> fields;
-                             HaveFields();
-                             HaveFields(const HaveFields& hf);
-      HaveFields&            operator=(const HaveFields& hf);
-      virtual                ~HaveFields();
+                   MySQLDelete(const MySQLDelete& mydelete);
+      MySQLDelete& operator=(const MySQLDelete& mydelete);
 
      public:
-      void                   AddField(const std::string& field);
-      void                   RemoveField(const std::string& field);
+                   MySQLDelete(MYSQL* myconn);
+      virtual      ~MySQLDelete();
+      void         Execute();
+      void         Prepare();
     };
   }
 }
 
-#endif /* !DB_HAVE_FIELDS_H_ */
+#endif /* !DB_MYSQL_DELETE_H_ */

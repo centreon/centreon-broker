@@ -18,31 +18,39 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_HAVE_FIELDS_H_
-# define DB_HAVE_FIELDS_H_
+#ifndef DB_HAVE_PREDICATE_H_
+# define DB_HAVE_PREDICATE_H_
 
-# include <list>
-# include <string>
 # include "db/have_args.h"
+# include "db/predicate.h"
 
-namespace                    CentreonBroker
+namespace            CentreonBroker
 {
-  namespace                  DB
+  namespace          DB
   {
-    class                    HaveFields : virtual public HaveArgs
+    class            HavePredicate : virtual public HaveArgs
     {
      protected:
-      std::list<std::string> fields;
-                             HaveFields();
-                             HaveFields(const HaveFields& hf);
-      HaveFields&            operator=(const HaveFields& hf);
-      virtual                ~HaveFields();
+      Predicate*     predicate;
+                     HavePredicate() throw ();
+                     HavePredicate(const HavePredicate& hp);
+      HavePredicate& operator=(const HavePredicate& hp);
 
      public:
-      void                   AddField(const std::string& field);
-      void                   RemoveField(const std::string& field);
+      virtual        ~HavePredicate();
+      template       <typename PredicateT>
+      void           SetPredicate(const PredicateT& pred)
+      {
+	if (this->predicate)
+	  {
+            delete (this->predicate);
+            this->predicate = NULL;
+	  }
+        this->predicate = new PredicateT(pred);
+        return ;
+      }
     };
   }
 }
 
-#endif /* !DB_HAVE_FIELDS_H_ */
+#endif /* !DB_HAVE_PREDICATE_H_ */

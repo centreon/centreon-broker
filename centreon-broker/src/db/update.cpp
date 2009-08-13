@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/select.h"
+#include "db/update.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,40 +29,41 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Select default constructor.
+ *  \brief Update default constructor.
  *
  *  Initialize members to their default values.
  */
-Select::Select() {}
+Update::Update() {}
 
 /**
- *  \brief Select copy constructor.
+ *  \brief Update copy constructor.
  *
- *  Copy data of the given object to the current instance.
+ *  Build a new Update object by copying data from the given object.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] update Object to copy data from.
  */
-Select::Select(const Select& select) : HaveArgs(select),
-                                       HavePredicate(select),
-                                       Query(select),
-                                       HaveFields(select),
-                                       HaveTable(select) {}
+Update::Update(const Update& update)
+  : HaveArgs(update),
+    HaveFields(update),
+    HavePredicate(update),
+    Query(update),
+    HaveTable(update) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data of the given object to the current instance.
+ *  Copy data from the given object to the current instance.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] update Object to copy data from.
  *
  *  \return *this
  */
-Select& Select::operator=(const Select& select)
+Update& Update::operator=(const Update& update)
 {
-  this->HaveFields::operator=(select);
-  this->HavePredicate::operator=(select);
-  this->HaveTable::operator=(select);
-  this->Query::operator=(select);
+  this->HaveFields::operator=(update);
+  this->HavePredicate::operator=(update);
+  this->HaveTable::operator=(update);
+  this->Query::operator=(update);
   return (*this);
 }
 
@@ -73,8 +74,8 @@ Select& Select::operator=(const Select& select)
 **************************************/
 
 /**
- *  \brief Select destructor.
+ *  \brief Update destructor.
  *
- *  Release all acquired ressources.
+ *  Release acquired ressources.
  */
-Select::~Select() {}
+Update::~Update() {}

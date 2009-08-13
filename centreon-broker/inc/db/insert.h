@@ -18,31 +18,30 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_HAVE_FIELDS_H_
-# define DB_HAVE_FIELDS_H_
+#ifndef DB_INSERT_H_
+# define DB_INSERT_H_
 
-# include <list>
-# include <string>
-# include "db/have_args.h"
+# include "db/have_fields.h"
+# include "db/have_table.h"
+# include "db/query.h"
 
-namespace                    CentreonBroker
+namespace          CentreonBroker
 {
-  namespace                  DB
+  namespace        DB
   {
-    class                    HaveFields : virtual public HaveArgs
+    class          Insert : public HaveFields,
+                            public HaveTable,
+                            virtual public Query
     {
      protected:
-      std::list<std::string> fields;
-                             HaveFields();
-                             HaveFields(const HaveFields& hf);
-      HaveFields&            operator=(const HaveFields& hf);
-      virtual                ~HaveFields();
+                   Insert();
+                   Insert(const Insert& insert);
+      Insert&      operator=(const Insert& insert);
 
      public:
-      void                   AddField(const std::string& field);
-      void                   RemoveField(const std::string& field);
+      virtual      ~Insert();
     };
   }
 }
 
-#endif /* !DB_HAVE_FIELDS_H_ */
+#endif /* !DB_INSERT_H_ */
