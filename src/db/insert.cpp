@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/select.h"
+#include "db/insert.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,40 +29,39 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Select default constructor.
+ *  \brief Insert default constructor.
  *
  *  Initialize members to their default values.
  */
-Select::Select() {}
+Insert::Insert() {}
 
 /**
- *  \brief Select copy constructor.
+ *  \brief Insert copy constructor.
  *
- *  Copy data of the given object to the current instance.
+ *  Build the new instance by copying data from the given object.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] insert Object to copy data from.
  */
-Select::Select(const Select& select) : HaveArgs(select),
-                                       HavePredicate(select),
-                                       Query(select),
-                                       HaveFields(select),
-                                       HaveTable(select) {}
+Insert::Insert(const Insert& insert)
+  : HaveArgs(insert),
+    Query(insert),
+    HaveFields(insert),
+    HaveTable(insert) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data of the given object to the current instance.
+ *  Copy data from the given object to the current instance.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] insert Object to copy data from.
  *
  *  \return *this
  */
-Select& Select::operator=(const Select& select)
+Insert& Insert::operator=(const Insert& insert)
 {
-  this->HaveFields::operator=(select);
-  this->HavePredicate::operator=(select);
-  this->HaveTable::operator=(select);
-  this->Query::operator=(select);
+  this->HaveFields::operator=(insert);
+  this->HaveTable::operator=(insert);
+  this->Query::operator=(insert);
   return (*this);
 }
 
@@ -73,8 +72,8 @@ Select& Select::operator=(const Select& select)
 **************************************/
 
 /**
- *  \brief Select destructor.
+ *  \brief Insert destructor.
  *
- *  Release all acquired ressources.
+ *  Release acquired ressources.
  */
-Select::~Select() {}
+Insert::~Insert() {}

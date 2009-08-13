@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/select.h"
+#include "db/delete.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,40 +29,39 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Select default constructor.
+ *  \brief Delete default constructor.
  *
  *  Initialize members to their default values.
  */
-Select::Select() {}
+Delete::Delete() {}
 
 /**
- *  \brief Select copy constructor.
+ *  \brief Delete copy constructor.
  *
- *  Copy data of the given object to the current instance.
+ *  Build the new instance by copying data from the given object.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] del Object to copy data from.
  */
-Select::Select(const Select& select) : HaveArgs(select),
-                                       HavePredicate(select),
-                                       Query(select),
-                                       HaveFields(select),
-                                       HaveTable(select) {}
+Delete::Delete(const Delete& del)
+  : HaveArgs(del),
+    HavePredicate(del),
+    Query(del),
+    HaveTable(del) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data of the given object to the current instance.
+ *  Copy data from the given object to the current instance.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] del Object to copy data from.
  *
  *  \return *this
  */
-Select& Select::operator=(const Select& select)
+Delete& Delete::operator=(const Delete& del)
 {
-  this->HaveFields::operator=(select);
-  this->HavePredicate::operator=(select);
-  this->HaveTable::operator=(select);
-  this->Query::operator=(select);
+  this->HavePredicate::operator=(del);
+  this->HaveTable::operator=(del);
+  this->Query::operator=(del);
   return (*this);
 }
 
@@ -73,8 +72,8 @@ Select& Select::operator=(const Select& select)
 **************************************/
 
 /**
- *  \brief Select destructor.
+ *  \brief Delete destructor.
  *
- *  Release all acquired ressources.
+ *  Release acquired ressources.
  */
-Select::~Select() {}
+Delete::~Delete() {}

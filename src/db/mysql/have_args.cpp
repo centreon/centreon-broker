@@ -18,9 +18,30 @@
 **  For more information : contact@centreon.com
 */
 
+#include <cstring>
+#include "db/db_exception.h"
 #include "db/mysql/have_args.h"
 
 using namespace CentreonBroker::DB;
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Clean a MYSQL_BIND structure.
+ *
+ *  MYSQL_BIND structures might hold allocated memory. Release such ressources
+ *  hold by the specified MYSQL_BIND structure.
+ *
+ *  \param[in,out] bind MYSQL_BIND structure to clean.
+ */
+void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
+{
+  // XXX : cleanup code
+}
 
 /**************************************
 *                                     *
@@ -45,6 +66,7 @@ MySQLHaveArgs::MySQLHaveArgs(MYSQL* mysql) : MySQLQuery(mysql) {}
  *  \param[in] mha Object to copy data from.
  */
 MySQLHaveArgs::MySQLHaveArgs(const MySQLHaveArgs& mha)
+  : HaveArgs(mha), Query(mha), MySQLQuery(mha)
 {
   // XXX : copy arguments
 }
@@ -89,7 +111,7 @@ MySQLHaveArgs& MySQLHaveArgs::operator=(const MySQLHaveArgs& mha)
  */
 void MySQLHaveArgs::Execute()
 {
-  if (this->stmt && mysql_bind(this->stmt, this->args_))
+  if (this->stmt && mysql_stmt_bind_param(this->stmt, this->args_))
     throw (DBException(mysql_stmt_errno(this->stmt),
                        DBException::QUERY_EXECUTION,
                        mysql_stmt_error(this->stmt)));
@@ -125,11 +147,11 @@ void MySQLHaveArgs::SetArg(bool arg)
       MYSQL_BIND* mybind;
 
       mybind = this->args_ + this->arg_;
-      if (mybind->buffer_type != MYSQL_TYPE_TINYINT)
+      if (mybind->buffer_type != MYSQL_TYPE_TINY)
 	{
 	  this->CleanArg(mybind);
 	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_TINYINT;
+	  mybind->buffer_type = MYSQL_TYPE_TINY;
 	  mybind->buffer = static_cast<void*>(new bool);
 	  mybind->buffer_length = sizeof(bool);
 	  mybind->length = &(mybind->buffer_length);

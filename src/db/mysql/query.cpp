@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include "db/db_exception.h"
 #include "db/mysql/query.h"
 #include "logging.h"
 
@@ -25,26 +26,45 @@ using namespace CentreonBroker::DB;
 
 /**************************************
 *                                     *
-*           Private Methods           *
+*          Protected Methods          *
 *                                     *
 **************************************/
 
 /**
- *  MySQLQuery copy constructor. Because queries are not copyable, this is
- *  declared private.
+ *  \brief MySQLQuery constructor.
+ *
+ *  Initialize the new instance with the MySQL connection object from which it
+ *  depends.
+ *
+ *  \param[in] myconn MySQL connection on which the query will be executed.
  */
-MySQLQuery::MySQLQuery(const MySQLQuery& myquery) throw () : Query()
+MySQLQuery::MySQLQuery(MYSQL* myconn) : mysql(myconn), stmt(NULL) {}
+
+/**
+ *  \brief MySQLQuery copy constructor.
+ *
+ *  Build the MySQL query by copying data from the given query.
+ *
+ *  \param[in] myquery Object to copy data from.
+ */
+MySQLQuery::MySQLQuery(const MySQLQuery& myquery) : Query(myquery)
 {
-  (void)myquery;
+  // XXX : copy data
 }
 
 /**
- *  MySQLQuery operator= overload. Because queries are not copyable, this is
- *  declared private.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given query object to the current instance.
+ *
+ *  \param[in] myquery Object to copy data from.
+ *
+ *  \return *this
  */
-MySQLQuery& MySQLQuery::operator=(const MySQLQuery& myquery) throw ()
+MySQLQuery& MySQLQuery::operator=(const MySQLQuery& myquery)
 {
-  (void)myquery;
+  this->Query::operator=(myquery);
+  // XXX : copy data
   return (*this);
 }
 
@@ -55,58 +75,68 @@ MySQLQuery& MySQLQuery::operator=(const MySQLQuery& myquery) throw ()
 **************************************/
 
 /**
- *  MySQLQuery constructor. It needs the MySQL connection object from which it
- *  depends.
- */
-MySQLQuery::MySQLQuery(MYSQL* myconn) throw () : myconn_(myconn), mystmt_(NULL)
-{
-}
-
-/**
- *  MySQLQuery destructor.
+ *  \brief MySQLQuery destructor.
+ *
+ *  Close the statement if the Prepare() method has been called.
  */
 MySQLQuery::~MySQLQuery()
 {
-  if (this->mystmt_)
-    mysql_stmt_close(this->mystmt_);
+  if (this->stmt)
+    mysql_stmt_close(this->stmt);
 }
 
 /**
- *  Execute the query.
+ *  \brief Execute the query.
+ *
+ *  Execute the underlying query on the MySQL server.
  */
 void MySQLQuery::Execute()
 {
+  if (this->stmt)
+    {
 #ifndef NDEBUG
-  logging.LogDebug("Executing MySQL prepared statement...");
+      logging.LogDebug("Executing MySQL prepared statement...");
 #endif /* !NDEBUG */
-  assert(this->mystmt_);
-  if (mysql_stmt_execute(this->mystmt_))
-    throw (DBException(mysql_stmt_errno(this->mystmt_),
-                       DBException::QUERY_EXECUTION,
-                       mysql_stmt_error(this->mystmt_)));
+      if (mysql_stmt_execute(this->stmt))
+	throw (DBException(mysql_stmt_errno(this->stmt),
+                           DBException::QUERY_EXECUTION,
+                           mysql_stmt_error(this->stmt)));
+    }
+  else
+    {
+#ifndef NDEBUG
+      logging.LogDebug("Executing MySQL standard query...");
+#endif /* !NDEBUG */
+      if (mysql_query(this->mysql, this->query.c_str()))
+	throw (DBException(mysql_errno(this->mysql),
+                           DBException::QUERY_EXECUTION,
+                           mysql_error(this->mysql)));
+    }
   return ;
 }
 
 /**
- *  Prepare the query.
+ *  \brief Prepare the query.
+ *
+ *  Prepare the query on the MySQL server for later execution.
  */
 void MySQLQuery::Prepare()
 {
 #ifndef NDEBUG
   logging.LogDebug("Preparing MySQL statement...", true);
-  logging.LogDebug(this->query_.c_str());
+  logging.LogDebug(this->query.c_str());
   logging.Deindent();
 #endif /* !NDEBUG */
-  this->mystmt_ = mysql_stmt_init(this->myconn_);
-  if (!this->mystmt_)
-    throw (DBException(mysql_stmt_errno(this->mystmt_),
+  this->stmt = mysql_stmt_init(this->mysql);
+  if (!this->stmt)
+    throw (DBException(mysql_errno(this->mysql),
                        DBException::QUERY_PREPARATION,
-                       mysql_stmt_error(this->mystmt_)));
-  if (mysql_stmt_prepare(this->mystmt_,
-                         this->query_.c_str(),
-                         this->query_.size()))
-    throw (DBException(mysql_stmt_errno(this->mystmt_),
+                       mysql_error(this->mysql)));
+  if (mysql_stmt_prepare(this->stmt,
+                         this->query.c_str(),
+                         this->query.size()))
+    throw (DBException(mysql_stmt_errno(this->stmt),
                        DBException::QUERY_PREPARATION,
-                       mysql_stmt_error(this->mystmt_)));
+                       mysql_stmt_error(this->stmt)));
   return ;
 }

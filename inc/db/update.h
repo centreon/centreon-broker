@@ -18,31 +18,33 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_HAVE_FIELDS_H_
-# define DB_HAVE_FIELDS_H_
+#ifndef DB_UPDATE_H_
+# define DB_UPDATE_H_
 
-# include <list>
-# include <string>
-# include "db/have_args.h"
+# include "db/have_fields.h"
+# include "db/have_predicate.h"
+# include "db/have_table.h"
+# include "db/query.h"
 
-namespace                    CentreonBroker
+namespace                  CentreonBroker
 {
-  namespace                  DB
+  namespace                DB
   {
-    class                    HaveFields : virtual public HaveArgs
+    class                  Update : virtual public HaveFields,
+                                    virtual public HavePredicate,
+                                    public HaveTable,
+                                    virtual public Query
     {
      protected:
-      std::list<std::string> fields;
-                             HaveFields();
-                             HaveFields(const HaveFields& hf);
-      HaveFields&            operator=(const HaveFields& hf);
-      virtual                ~HaveFields();
+                           Update();
+                           Update(const Update& update);
+      Update&              operator=(const Update& update);
 
      public:
-      void                   AddField(const std::string& field);
-      void                   RemoveField(const std::string& field);
+      virtual              ~Update();
+      virtual unsigned int GetUpdateCount() = 0;
     };
   }
 }
 
-#endif /* !DB_HAVE_FIELDS_H_ */
+#endif /* !DB_UPDATE_H_ */

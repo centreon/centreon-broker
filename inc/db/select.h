@@ -31,17 +31,17 @@ namespace              CentreonBroker
 {
   namespace            DB
   {
-    class              Select : virtual public HaveFields,
+    class              Select : public HaveFields,
                                 virtual public HavePredicate,
-                                virtual public HaveTable,
+                                public HaveTable,
                                 virtual public Query
       {
        protected:
+                       Select();
                        Select(const Select& select);
         Select&        operator=(const Select& select);
 
        public:
-                       Select();
         virtual        ~Select();
         virtual bool   GetBool() = 0;
         virtual double GetDouble() = 0;
@@ -50,6 +50,19 @@ namespace              CentreonBroker
         virtual void   GetString(std::string& str) = 0;
         virtual bool   Next() = 0;
       };
+
+    template           <typename T>
+    class              MappedSelect : virtual public Select
+    {
+     protected:
+                       MappedSelect();
+                       MappedSelect(const MappedSelect& sm);
+      MappedSelect&    operator=(const MappedSelect& sm);
+
+     public:
+      virtual          ~MappedSelect();
+      void             Get(T& t);
+    };
   }
 }
 

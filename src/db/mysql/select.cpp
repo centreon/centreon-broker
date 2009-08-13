@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include "db/db_exception.h"
 #include "db/mysql/select.h"
 
 using namespace CentreonBroker::DB;
@@ -37,8 +38,15 @@ using namespace CentreonBroker::DB;
  *  \param[in] mys Unused.
  */
 MySQLSelect::MySQLSelect(const MySQLSelect& mys)
+  : HaveArgs(mys),
+    HaveFields(mys),
+    HavePredicate(mys),
+    HaveTable(mys),
+    Query(mys),
+    Select(mys),
+    MySQLHaveArgs(mys),
+    MySQLHavePredicate(mys)
 {
-  (void)mys;
   assert(false);
 }
 
@@ -117,7 +125,7 @@ unsigned int MySQLSelect::GetArgCount() throw ()
  *
  *  Initialize members to their default values.
  */
-MySQLSelect::MySQLSelect() : result(NULL) {}
+MySQLSelect::MySQLSelect(MYSQL* mysql) : MySQLHaveArgs(mysql) {}
 
 /**
  *  \brief MySQLSelect destructor.
@@ -145,13 +153,17 @@ void MySQLSelect::Execute()
 
       // Generate the predicate string (if any).
       this->MySQLHavePredicate::ProcessPredicate(this->query);
-
-      // Close the query string
-      this->query.append(";");
     }
 
   // Execute the query (prepared or not).
   this->MySQLHaveArgs::Execute();
+
+  // Extract the result set
+  this->result_.std.res = mysql_use_result(this->mysql);
+  if (!this->result_.std.res)
+    throw (DBException(mysql_errno(this->mysql),
+                       DBException::QUERY_EXECUTION,
+                       mysql_error(this->mysql)));
 
   return ;
 }
@@ -165,14 +177,14 @@ bool MySQLSelect::GetBool()
 
   if (this->stmt)
     {
-      if (this->result_->stmt[this->current_].buffer_type != MYSQL_TYPE_TINY)
+      if (this->result_.stmt[this->current_].buffer_type != MYSQL_TYPE_TINY)
 	throw (DBException(0,
                            DBException::QUERY_EXECUTION,
                            "Tried to fetch bool column"));
-      ret = *static_cast<bool*>(this->result_->stmt[this->current_].buffer);
+      ret = *(bool*)(this->result_.stmt[this->current_].buffer);
     }
   else
-    ret = static_cast<bool*>(this->result_->std.row)[this->current_];
+    ret = *(bool*)(this->result_.std.row[this->current_]);
   this->current_++;
   return (ret);
 }

@@ -21,46 +21,58 @@
 #ifndef DB_MYSQL_SELECT_H_
 # define DB_MYSQL_SELECT_H_
 
+# include <mysql.h>
 # include <string>
 # include "db/mysql/have_args.h"
 # include "db/mysql/have_predicate.h"
 # include "db/select.h"
 
-namespace           CentreonBroker
+namespace            CentreonBroker
 {
-  namespace         DB
+  namespace          DB
   {
-    class           MySQLSelect : public Select,
-                                  public MySQLHaveArgs,
-                                  public MySQLHavePredicate
+    class            MySQLSelect : virtual public Select,
+                                   public MySQLHaveArgs,
+                                   public MySQLHavePredicate
     {
      private:
-      unsigned int  current_;
+      unsigned int   current_;
       union
       {
 	struct
 	{
-	  MYSQL_RES res;
-	  MYSQL_ROW row;
-	}           std;
-	MYSQL_BIND* stmt;
-      }             result_;
-                    MySQLSelect(const MySQLSelect& mys);
-      MySQLSelect&  operator=(const MySQLSelect& mys);
-      void          GenerateQueryStart();
-      unsigned int  GetArgCount() throw ();
+	  MYSQL_RES* res;
+	  MYSQL_ROW  row;
+	}            std;
+	MYSQL_BIND*  stmt;
+      }              result_;
+                     MySQLSelect(const MySQLSelect& mys);
+      MySQLSelect&   operator=(const MySQLSelect& mys);
+      void           GenerateQueryStart();
+      unsigned int   GetArgCount() throw ();
 
      public:
-                    MySQLSelect();
-      virtual       ~MySQLSelect();
-      virtual void  Execute();
-      bool          GetBool();
-      double        GetDouble();
-      int           GetInt();
-      short         GetShort();
-      void          GetString(std::string& str);
-      bool          Next();
-      virtual void  Prepare();
+                     MySQLSelect(MYSQL* mysql);
+      virtual        ~MySQLSelect();
+      virtual void   Execute();
+      bool           GetBool();
+      double         GetDouble();
+      int            GetInt();
+      short          GetShort();
+      void           GetString(std::string& str);
+      bool           Next();
+      virtual void   Prepare();
+    };
+
+    template             <typename T>
+    class                MySQLMappedSelect : public MappedSelect<T>,
+                                             public MySQLSelect
+    {
+     public:
+                         MySQLMappedSelect();
+                         MySQLMappedSelect(const MySQLMappedSelect& myms);
+                         ~MySQLMappedSelect();
+      MySQLMappedSelect& operator=(const MySQLMappedSelect& myms);
     };
   }
 }

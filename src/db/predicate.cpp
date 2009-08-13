@@ -307,6 +307,52 @@ const std::string& Field::GetName() const throw ()
 /******************************************************************************
 *                                                                             *
 *                                                                             *
+*                               Placeholder                                   *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**
+ *  \brief Placeholder default constructor.
+ *
+ *  Does nothing.
+ */
+Placeholder::Placeholder() throw () {}
+
+/**
+ *  \brief Placeholder copy constructor.
+ *
+ *  Does nothing as there is no data to copy.
+ *
+ *  \param[in] ph Object to copy from.
+ */
+Placeholder::Placeholder(const Placeholder& ph) throw () : Predicate(ph) {}
+
+/**
+ *  \brief Placeholder destructor.
+ *
+ *  Does nothing.
+ */
+Placeholder::~Placeholder() {}
+
+/**
+ *  \brief Overload of the assignment operator.
+ *
+ *  Does nothing as there is no data to copy.
+ *
+ *  \param[in] ph Object to copy from.
+ *
+ *  \return *this
+ */
+Placeholder& Placeholder::operator=(const Placeholder& ph) throw ()
+{
+  this->Predicate::operator=(ph);
+  return (*this);
+}
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
 *                                Terminal                                     *
 *                                                                             *
 *                                                                             *

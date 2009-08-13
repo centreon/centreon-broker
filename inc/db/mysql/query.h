@@ -22,6 +22,7 @@
 # define DB_MYSQL_QUERY_H_
 
 # include <mysql.h>
+# include <string>
 # include "db/query.h"
 
 namespace          CentreonBroker
@@ -30,19 +31,17 @@ namespace          CentreonBroker
   {
     class          MySQLQuery : virtual public Query
     {
-     private:
-                   MySQLQuery(const MySQLQuery& myquery) throw ();
-      MySQLQuery&  operator=(const MySQLQuery& myquery) throw ();
-
      protected:
-      MYSQL*       myconn_;
-      MYSQL_STMT*  mystmt_;
-      std::string  query_;
+      MYSQL*       mysql;
+      std::string  query;
+      MYSQL_STMT*  stmt;
+                   MySQLQuery(MYSQL* myconn);
+                   MySQLQuery(const MySQLQuery& myquery);
+      MySQLQuery&  operator=(const MySQLQuery& myquery);
 
      public:
-                   MySQLQuery(MYSQL* myconn) throw ();
       virtual      ~MySQLQuery();
-      void         Execute();
+      virtual void Execute();
       virtual void Prepare();
     };
   }

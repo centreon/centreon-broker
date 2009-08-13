@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/select.h"
+#include "db/have_predicate.h"
 
 using namespace CentreonBroker::DB;
 
@@ -29,52 +29,47 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  \brief Select default constructor.
+ *  \brief HavePredicate default constructor.
  *
  *  Initialize members to their default values.
  */
-Select::Select() {}
+HavePredicate::HavePredicate() throw () : predicate(NULL) {}
 
 /**
- *  \brief Select copy constructor.
+ *  \brief HavePredicate copy constructor.
  *
- *  Copy data of the given object to the current instance.
+ *  Build the new instance by copying data from the given object.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] hp Object to copy data from.
  */
-Select::Select(const Select& select) : HaveArgs(select),
-                                       HavePredicate(select),
-                                       Query(select),
-                                       HaveFields(select),
-                                       HaveTable(select) {}
+HavePredicate::HavePredicate(const HavePredicate& hp) : HaveArgs(hp)
+{
+  // XXX : copy predicate
+}
+
+/**
+ *  \brief HavePredicate destructor.
+ *
+ *  Release previously acquired ressources.
+ */
+HavePredicate::~HavePredicate()
+{
+  if (this->predicate)
+    delete (this->predicate);
+}
 
 /**
  *  \brief Overload of the assignment operator.
  *
  *  Copy data of the given object to the current instance.
  *
- *  \param[in] select Object to copy data from.
+ *  \param[in] hp Object to copy data from.
  *
  *  \return *this
  */
-Select& Select::operator=(const Select& select)
+HavePredicate& HavePredicate::operator=(const HavePredicate& hp)
 {
-  this->HaveFields::operator=(select);
-  this->HavePredicate::operator=(select);
-  this->HaveTable::operator=(select);
-  this->Query::operator=(select);
+  this->HaveArgs::operator=(hp);
+  // XXX : copy predicate
   return (*this);
 }
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
-
-/**
- *  \brief Select destructor.
- *
- *  Release all acquired ressources.
- */
-Select::~Select() {}

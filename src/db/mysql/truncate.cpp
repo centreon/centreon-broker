@@ -100,12 +100,7 @@ void MySQLTruncate::Execute()
 {
   // Build the query string if necessary
   if (!this->stmt)
-    {
-      this->BuildQuery();
-      // BuildQuery does not append the final semicolon (in case it is used for
-      // a prepared statement) so do it.
-      this->query.append(";");
-    }
+    this->BuildQuery();
 
   // Really execute the query
   this->MySQLQuery::Execute();

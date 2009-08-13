@@ -18,35 +18,56 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cassert>
+#include <algorithm>
 #include "db/have_fields.h"
 
 using namespace CentreonBroker::DB;
 
 /**************************************
 *                                     *
-*           Private Methods           *
+*          Protected Methods          *
 *                                     *
 **************************************/
 
 /**
- *  HaveFields copy constructor. No reason we would want to copy this
- *  class so declare it private.
+ *  \brief HaveFields default constructor.
+ *
+ *  Initialize members to their default values.
  */
-HaveFields::HaveFields(const HaveFields& hf) throw ()
+HaveFields::HaveFields() {}
+
+/**
+ *  \brief HaveFields copy constructor.
+ *
+ *  Build the new instance by copying data from the given object.
+ *
+ *  \param[in] hf Object to copy data from.
+ */
+HaveFields::HaveFields(const HaveFields& hf) : HaveArgs(hf)
 {
-  (void)hf;
-  assert(false);
+  this->fields = hf.fields;
 }
 
 /**
- *  HaveFields operator= overload. No reason we would want to copy this
- *  class so declare it private.
+ *  \brief HaveFields destructor.
+ *
+ *  Release previously acquired ressources.
  */
-HaveFields& HaveFields::operator=(const HaveFields& hf) throw ()
+HaveFields::~HaveFields() {}
+
+/**
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given object to the current instance.
+ *
+ *  \param[in] hf Object to copy data from.
+ *
+ *  \return *this
+ */
+HaveFields& HaveFields::operator=(const HaveFields& hf)
 {
-  (void)hf;
-  assert(false);
+  this->HaveArgs::operator=(hf);
+  this->fields = hf.fields;
   return (*this);
 }
 
@@ -57,16 +78,36 @@ HaveFields& HaveFields::operator=(const HaveFields& hf) throw ()
 **************************************/
 
 /**
- *  HaveFields constructor.
+ *  \brief Add a field on which the query should operate.
+ *
+ *  Specify that the underlying query should operate on this field.
+ *
+ *  \param[in] field New field to operate on.
  */
-HaveFields::HaveFields() throw ()
+void HaveFields::AddField(const std::string& field)
 {
+  this->fields.push_back(field);
+  return ;
 }
 
 /**
- *  HaveFields destructor.
+ *  \brief Specify that the query shouldn't operate on a field.
+ *
+ *  Remove the specified field from the list of fields on which the query
+ *  operates.
+ *
+ *  \param[in] field Field that shouldn't be treated within the query.
  */
-HaveFields::~HaveFields()
+void HaveFields::RemoveField(const std::string& field)
 {
-}
+  std::list<std::string>::iterator it;
 
+  // Try to find the field in the list
+  it = std::find(this->fields.begin(), this->fields.end(), field);
+
+  // If it does exist, remove it
+  if (it != this->fields.end())
+    this->fields.erase(it);
+
+  return ;
+}
