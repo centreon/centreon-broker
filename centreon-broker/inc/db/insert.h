@@ -29,7 +29,15 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
-    class          Insert : public HaveFields,
+    /**
+     *  \class Insert insert.h "db/insert.h"
+     *  \brief Interface for an INSERT query.
+     *
+     *  This interface is subclassed by concrete objects related to a specific
+     *  DBMS. Users can then manipulate every INSERT query object in an
+     *  abstract manner.
+     */
+    class          Insert : virtual public HaveFields,
                             public HaveTable,
                             virtual public Query
     {
@@ -40,6 +48,64 @@ namespace          CentreonBroker
 
      public:
       virtual      ~Insert();
+    };
+
+    /**
+     *  \brief MappedInsert insert.h "db/insert.h"
+     *  \class Interface for a mapped INSERT query.
+     *
+     *  Interface to manipulate object-relational INSERT query. Each DBMS
+     *  provides its own concrete implementation of this interface.
+     */
+    template       <typename T>
+    class          MappedInsert : public HaveInFields<T>,
+                                  virtual public Insert
+    {
+     protected:
+      /**
+       *  \brief MappedInsert constructor.
+       *
+       *  Initialize members to their default values.
+       *
+       *  \param[in] mapping The Object-Relational mapping of the object.
+       */
+                   MappedInsert(const Mapping<T>& mapping)
+		     : HaveInFields<T>(mapping) {}
+
+      /**
+       *  \brief MappedInsert copy constructor.
+       *
+       *  Build the new MappedInsert object by copying data from the given
+       *  object.
+       *
+       *  \param[in] minsert Object to copy data from.
+       */
+                   MappedInsert(const MappedInsert<T>& minsert)
+        : HaveInFields<T>(minsert), Insert(minsert) {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy data from the given object to the current instance.
+       *
+       *  \param[in] minsert Object to copy data from.
+       *
+       *  \return *this
+       */
+      MappedInsert<T>& operator=(const MappedInsert<T>& minsert)
+      {
+	this->HaveInFields<T>::operator=(minsert);
+	this->Insert::operator=(minsert);
+	return (*this);
+      }
+
+     public:
+      /**
+       *  \brief MappedInsert destructor.
+       *
+       *  Release acquired ressources.
+       */
+      virtual       ~MappedInsert() {}
     };
   }
 }

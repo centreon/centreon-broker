@@ -26,7 +26,7 @@
 # include <vector>
 # include "db/connection.h"
 # include "db/mapping.hpp"
-# include "db/update.hpp"
+# include "db/update.h"
 # include "event_subscriber.h"
 # include "mapping.h"
 # include "waitable_list.hpp"
@@ -38,12 +38,6 @@ namespace                      boost
 
 namespace                      CentreonBroker
 {
-  namespace                    DB
-  {
-    class                      Connection;
-    template                   <typename ObjectType>
-    class                      Update;
-  }
   namespace                    Events
   {
     class                      Acknowledgement;
@@ -83,10 +77,10 @@ namespace                      CentreonBroker
     std::string                   password_;
     std::string                   db_;
     DB::Connection*               conn_;
-    DB::Update<Events::ConnectionStatus>* connection_status_stmt_;
-    DB::Update<Events::HostStatus>*       host_status_stmt_;
-    DB::Update<Events::ProgramStatus>*    program_status_stmt_;
-    DB::Update<Events::ServiceStatus>*    service_status_stmt_;
+    DB::MappedUpdate<Events::ConnectionStatus>* connection_status_stmt_;
+    DB::MappedUpdate<Events::HostStatus>*       host_status_stmt_;
+    DB::MappedUpdate<Events::ProgramStatus>*    program_status_stmt_;
+    DB::MappedUpdate<Events::ServiceStatus>*    service_status_stmt_;
     // Performance objects
     int                           queries_;
     boost::system_time            timeout_;

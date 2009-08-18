@@ -46,13 +46,6 @@ Truncate::Truncate(const Truncate& truncate)
   : HaveTable(truncate), Query(truncate) {}
 
 /**
- *  \brief Truncate destructor.
- *
- *  Release previously allocated ressources.
- */
-Truncate::~Truncate() {}
-
-/**
  *  \brief Overload of the assignment operator.
  *
  *  Copy all data of the given object to the current instance.
@@ -67,3 +60,16 @@ Truncate& Truncate::operator=(const Truncate& truncate)
   this->Query::operator=(truncate);
   return (*this);
 }
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Truncate destructor.
+ *
+ *  Release previously allocated ressources.
+ */
+Truncate::~Truncate() {}

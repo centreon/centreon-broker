@@ -34,11 +34,14 @@ using namespace CentreonBroker::DB;
  *  Generate the "INSERT INTO table(fields) VALUES(" part of the query. This
  *  method is used internaly for prepared statement and plain text query.
  */
-void MySQLInsert::GenerateQuery()
+void MySQLInsert::GenerateQueryBeginning()
 {
+  // First part, table on which the query will operate
   this->query = "INSERT INTO `";
   this->query.append(this->table);
   this->query.append("`(");
+
+  // Extract fields names
   for (std::list<std::string>::iterator it = this->fields.begin();
        it != this->fields.end();
        it++)
@@ -47,7 +50,10 @@ void MySQLInsert::GenerateQuery()
       this->query.append(", ");
     }
   this->query.resize(this->query.size() - 2);
+
+  // Prepare for values insertions
   this->query.append(") VALUES(");
+
   return ;
 }
 
@@ -62,6 +68,7 @@ void MySQLInsert::GenerateQuery()
  */
 unsigned int MySQLInsert::GetArgCount() throw ()
 {
+  // XXX : not really exception proof
   return (this->fields.size());
 }
 
@@ -80,6 +87,7 @@ unsigned int MySQLInsert::GetArgCount() throw ()
  */
 MySQLInsert::MySQLInsert(const MySQLInsert& myinsert)
   : HaveArgs(myinsert),
+    HaveFields(myinsert),
     Query(myinsert),
     Insert(myinsert),
     MySQLHaveArgs(myinsert) {}
@@ -111,6 +119,8 @@ MySQLInsert& MySQLInsert::operator=(const MySQLInsert& myinsert)
  *
  *  Build the MySQL INSERT query using the connection object on which the query
  *  will operate.
+ *
+ *  \param[in] myconn MySQL connection object.
  */
 MySQLInsert::MySQLInsert(MYSQL* myconn) : MySQLHaveArgs(myconn) {}
 
@@ -154,7 +164,7 @@ void MySQLInsert::Prepare()
   int fields_nb;
 
   // Generate the first part of the query
-  this->GenerateQuery();
+  this->GenerateQueryBeginning();
 
   // Append as many ? as fields
   fields_nb = this->fields.size();
@@ -170,12 +180,82 @@ void MySQLInsert::Prepare()
 }
 
 /**
- *  \brief Set the next argument as a bool.
+ *  Set the next argument as a bool.
+ *
+ *  \param[in] arg Next argument value.
  */
 void MySQLInsert::SetArg(bool arg)
 {
-  if (this->query.empty())
-    this->GenerateQuery();
+  if (!this->stmt && this->query.empty())
+    this->GenerateQueryBeginning();
   this->MySQLHaveArgs::SetArg(arg);
+  this->query.append(", ");
+  return ;
+}
+
+/**
+ *  Set the next argument as a double.
+ *
+ *  \param[in] arg Next argument value.
+ */
+void MySQLInsert::SetArg(double arg)
+{
+  if (!this->stmt && this->query.empty())
+    this->GenerateQueryBeginning();
+  this->MySQLHaveArgs::SetArg(arg);
+  this->query.append(", ");
+  return ;
+}
+
+/**
+ *  Set the next argument as an int.
+ *
+ *  \param[in] arg Next argument value.
+ */
+void MySQLInsert::SetArg(int arg)
+{
+  if (!this->stmt && this->query.empty())
+    this->GenerateQueryBeginning();
+  this->MySQLHaveArgs::SetArg(arg);
+  this->query.append(", ");
+  return ;
+}
+
+/**
+ *  Set the next argument as a short.
+ *
+ *  \param[in] arg Next argument value.
+ */
+void MySQLInsert::SetArg(short arg)
+{
+  if (!this->stmt && this->query.empty())
+    this->GenerateQueryBeginning();
+  this->MySQLHaveArgs::SetArg(arg);
+  this->query.append(", ");
+  return ;
+}
+
+/**
+ *  Set the next argument as a string.
+ *
+ *  \param[in] arg Next argument value.
+ */
+void MySQLInsert::SetArg(const std::string& arg)
+{
+  if (!this->stmt && this->query.empty())
+    this->GenerateQueryBeginning();
+  this->MySQLHaveArgs::SetArg(arg);
+  this->query.append(", ");
+  return ;
+}
+
+/**
+ *  Set the next argument as a time_t.
+ *
+ *  \param[in] arg Next argument value.
+ */
+void MySQLInsert::SetArg(time_t arg)
+{
+  this->MySQLInsert::SetArg((int)arg);
   return ;
 }

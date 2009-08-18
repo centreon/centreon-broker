@@ -96,7 +96,7 @@ const std::string& HaveTable::GetTable() throw ()
  *
  *  Set the name of the table on which the query operates.
  *
- *  \param[in] The name of the table.
+ *  \param[in] tab The name of the table.
  */
 void HaveTable::SetTable(const std::string& tab)
 {

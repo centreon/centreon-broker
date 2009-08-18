@@ -44,8 +44,8 @@ Insert::Insert() {}
  */
 Insert::Insert(const Insert& insert)
   : HaveArgs(insert),
-    Query(insert),
     HaveFields(insert),
+    Query(insert),
     HaveTable(insert) {}
 
 /**

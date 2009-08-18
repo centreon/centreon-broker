@@ -29,6 +29,13 @@ namespace            CentreonBroker
 {
   namespace          DB
   {
+    /**
+     *  \class MySQLTruncate truncate.h "db/mysql/truncate.h"
+     *
+     *  MySQL TRUNCATE query.
+     *
+     *  \see Truncate
+     */
     class            MySQLTruncate : public Truncate, public MySQLQuery
     {
      private:

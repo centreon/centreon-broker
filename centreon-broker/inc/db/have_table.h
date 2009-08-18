@@ -18,12 +18,21 @@
 **  For more information : contact@centreon.com
 */
 
-#include <string>
+#ifndef DB_HAVE_TABLE_H_
+# define DB_HAVE_TABLE_H_
+
+# include <string>
 
 namespace                CentreonBroker
 {
   namespace              DB
   {
+    /**
+     *  \class HaveTable have_table.h "db/have_table.h"
+     *  \brief Table related query.
+     *
+     *  Every query related to a specific table subclass this class.
+     */
     class                HaveTable
     {
      protected:
@@ -39,3 +48,5 @@ namespace                CentreonBroker
     };
   }
 }
+
+#endif /* DB_HAVE_TABLE_H_ */

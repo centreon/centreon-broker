@@ -39,9 +39,7 @@ using namespace CentreonBroker::DB;
  */
 MySQLSelect::MySQLSelect(const MySQLSelect& mys)
   : HaveArgs(mys),
-    HaveFields(mys),
     HavePredicate(mys),
-    HaveTable(mys),
     Query(mys),
     Select(mys),
     MySQLHaveArgs(mys),
@@ -187,6 +185,90 @@ bool MySQLSelect::GetBool()
     ret = *(bool*)(this->result_.std.row[this->current_]);
   this->current_++;
   return (ret);
+}
+
+/**
+ *  \brief Get the next argument as a double.
+ */
+double MySQLSelect::GetDouble()
+{
+  double ret;
+
+  if (this->stmt)
+    {
+      if (this->result_.stmt[this->current_].buffer_type != MYSQL_TYPE_DOUBLE)
+	throw (DBException(0,
+                           DBException::QUERY_EXECUTION,
+                           "Tried to fetch double column"));
+      ret = *(double*)(this->result_.stmt[this->current_].buffer);
+    }
+  else
+    ret = *(double*)(this->result_.std.row[this->current_]);
+  this->current_++;
+  return (ret);
+}
+
+/**
+ *  \brief Get the next argument as an int.
+ */
+int MySQLSelect::GetInt()
+{
+  int ret;
+
+  if (this->stmt)
+    {
+      if (this->result_.stmt[this->current_].buffer_type != MYSQL_TYPE_LONG)
+	throw (DBException(0,
+                           DBException::QUERY_EXECUTION,
+                           "Tried to fetch int column"));
+      ret = *(int*)(this->result_.stmt[this->current_].buffer);
+    }
+  else
+    ret = *(int*)(this->result_.std.row[this->current_]);
+  this->current_++;
+  return (ret);
+}
+
+/**
+ *  \brief Get the next argument as a short.
+ */
+short MySQLSelect::GetShort()
+{
+  short ret;
+
+  if (this->stmt)
+    {
+      if (this->result_.stmt[this->current_].buffer_type != MYSQL_TYPE_SHORT)
+	throw (DBException(0,
+                           DBException::QUERY_EXECUTION,
+                           "Tried to fetch short column"));
+      ret = *(short*)(this->result_.stmt[this->current_].buffer);
+    }
+  else
+    ret = *(short*)(this->result_.std.row[this->current_]);
+  this->current_++;
+  return (ret);
+}
+
+/**
+ *  \brief Get the next argument as a string.
+ *
+ *  \param[out] The string argument will be set in this string.
+ */
+void MySQLSelect::GetString(std::string& str)
+{
+  if (this->stmt)
+    {
+      if (this->result_.stmt[this->current_].buffer_type != MYSQL_TYPE_STRING)
+	throw (DBException(0,
+                           DBException::QUERY_EXECUTION,
+                           "Tried to fetch string column"));
+      str = (char*)(this->result_.stmt[this->current_].buffer);
+    }
+  else
+    str = (char*)(this->result_.std.row[this->current_]);
+  this->current_++;
+  return ;
 }
 
 /**

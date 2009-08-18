@@ -29,15 +29,25 @@
 
 # include <mysql.h>
 # include "db/db_exception.h"
-# include "db/mysql/delete.hpp"
-# include "db/mysql/insert.hpp"
+# include "db/mysql/delete.h"
+# include "db/mysql/insert.h"
+# include "db/mysql/select.h"
 # include "db/mysql/truncate.h"
-# include "db/mysql/update.hpp"
+# include "db/mysql/update.h"
 
 namespace                 CentreonBroker
 {
   namespace               DB
   {
+    /**
+     *  \class MySQLConnection connection.h "db/mysql/connection.h"
+     *  \brief MySQL connection object.
+     *
+     *  This class holds informations about the current MySQL session. It is
+     *  used to generate query objects.
+     *
+     *  \see Connection
+     */
     class                 MySQLConnection : public Connection
     {
      private:
@@ -57,25 +67,45 @@ namespace                 CentreonBroker
 			          const std::string& password,
 			          const std::string& db);
       void                Disconnect() throw ();
+      Delete*             GetDelete();
+      Insert*             GetInsert();
+      Select*             GetSelect();
+      Truncate*           GetTruncate();
+      Update*             GetUpdate();
 
-      template            <typename ObjectType>
-      Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational INSERT query.
+       *
+       *  \return A new MappedInsert query object.
+       */
+      template            <typename T>
+      MappedInsert<T>*    GetMappedInsert(const Mapping<T>& mapping)
       {
-	return (new MySQLDelete<ObjectType>(this->myconn_, mapping));
+	return (new MySQLMappedInsert<T>(this->myconn_, mapping));
       }
 
-      template            <typename ObjectType>
-      Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational SELECT query.
+       *
+       *  \return A new MappedSelect query object.
+       */
+      /*
+      template            <typename T>
+      MappedSelect<T>*    GetMappedSelect(const Mapping<T>& mapping)
       {
-	return (new MySQLInsert<ObjectType>(this->myconn_, mapping));
+	return (new MySQLMappedSelect<T>(this->myconn_, mapping));
       }
+      */
 
-      Truncate*           GetTruncateQuery();
-
-      template            <typename ObjectType>
-      Update<ObjectType>* GetUpdateQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational UPDATE query.
+       *
+       *  \return A new MappedUpdate query object.
+       */
+      template            <typename T>
+      MappedUpdate<T>*    GetMappedUpdate(const Mapping<T>& mapping)
       {
-	return (new MySQLUpdate<ObjectType>(this->myconn_, mapping));
+	return (new MySQLMappedUpdate<T>(this->myconn_, mapping));
       }
     };
   }

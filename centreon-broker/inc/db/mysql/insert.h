@@ -21,6 +21,8 @@
 #ifndef DB_MYSQL_INSERT_H_
 # define DB_MYSQL_INSERT_H_
 
+# include <ctime>
+# include <string>
 # include "db/insert.h"
 # include "db/mysql/have_args.h"
 
@@ -28,10 +30,17 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
-    class          MySQLInsert : public Insert, public MySQLHaveArgs
+    /**
+     *  \class MySQLInsert insert.h "db/mysql/insert.h"
+     *
+     *  MySQL INSERT query.
+     *
+     *  \see Insert
+     */
+    class          MySQLInsert : virtual public Insert, public MySQLHaveArgs
     {
      private:
-      void         GenerateQuery();
+      void         GenerateQueryBeginning();
       unsigned int GetArgCount() throw ();
 
      protected:
@@ -43,9 +52,86 @@ namespace          CentreonBroker
       virtual      ~MySQLInsert();
       void         Execute();
       void         Prepare();
-      void         SetArg(bool arg);
+      virtual void SetArg(bool arg);
+      virtual void SetArg(double arg);
+      virtual void SetArg(int arg);
+      virtual void SetArg(short arg);
+      virtual void SetArg(const std::string& arg);
+      virtual void SetArg(time_t arg);
+    };
+
+    /**
+     *  \class MySQLMappedInsert insert.h "db/mysql/insert.h"
+     *
+     *  Object-relational MySQL INSERT query.
+     *
+     *  \see MappedInsert
+     */
+    template       <typename T>
+    class          MySQLMappedInsert : public MappedInsert<T>,
+                                       public MySQLInsert
+    {
+     protected:
+      /**
+       *  \brief MySQLMappedInsert copy constructor.
+       *
+       *  Build the new mapped query by copying data from the given object.
+       *
+       *  \param[in] myminsert Object to copy data from.
+       */
+                         MySQLMappedInsert(const MySQLMappedInsert& myminsert)
+	: MappedInsert<T>(myminsert), MySQLInsert(myminsert) {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy data of the given object to the current instance.
+       *
+       *  \param[in] myminsert Object to copy data from.
+       *
+       *  \return *this
+       */
+      MySQLMappedInsert& operator=(const MySQLMappedInsert& myminsert)
+      {
+	this->MappedInsert<T>::operator=(myminsert);
+	this->MySQLInsert::operator=(myminsert);
+	return (*this);
+      }
+
+     public:
+      /**
+       *  \brief MySQLMappedInsert constructor.
+       *
+       *  Build the MySQLMappedInsert object. Needs the MySQL connection object
+       *  on which the query will be executed.
+       *
+       *  \param[in] myconn  MySQL connection object.
+       *  \param[in] mapping Object-Relational mapping of the event type T.
+       */
+                         MySQLMappedInsert(MYSQL* myconn,
+                                           const Mapping<T>& mapping)
+        : MappedInsert<T>(mapping), MySQLInsert(myconn) {}
+
+      /**
+       *  \brief MySQLMappedInsert destructor.
+       *
+       *  Release acquired ressources.
+       */
+                         ~MySQLMappedInsert() {}
+
+      /**
+       *  \brief Prepare the query.
+       *
+       *  Prepare the INSERT query on the MySQL server.
+       */
+      void               Prepare()
+      {
+	this->MappedInsert<T>::ExtractGetters();
+	this->MySQLInsert::Prepare();
+	return ;
+      }
     };
   }
 }
 
-#endif /* !DB_MYSQL_INSERT_HPP_ */
+#endif /* !DB_MYSQL_INSERT_H_ */

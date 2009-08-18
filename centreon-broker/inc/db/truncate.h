@@ -28,14 +28,24 @@ namespace       CentreonBroker
 {
   namespace     DB
   {
+    /**
+     *  \class Truncate truncate.h "db/truncate.h"
+     *  \brief Interface for TRUNCATE queries.
+     *
+     *  Each DBMS provides a concrete object subclassing this interface, so
+     *  that TRUNCATE queries can be executed independently of the database
+     *  type.
+     */
     class       Truncate : virtual public HaveTable,
                            virtual public Query
     {
      protected:
                 Truncate();
                 Truncate(const Truncate& truncate);
-      virtual   ~Truncate();
       Truncate& operator=(const Truncate& truncate);
+
+     public:
+      virtual   ~Truncate();
     };
   }
 }

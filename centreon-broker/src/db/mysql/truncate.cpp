@@ -32,18 +32,19 @@ using namespace CentreonBroker::DB;
  *  \brief MySQLTruncate copy constructor.
  *
  *  Construct the current instance by copying data from the given object.
- *  At least it should.
  *
  *  \param[in] mytruncate Object to copy data from.
  */
 MySQLTruncate::MySQLTruncate(const MySQLTruncate& mytruncate)
-  : Query(mytruncate), Truncate(mytruncate), MySQLQuery(mytruncate) {}
+  : HaveTable(mytruncate),
+    Query(mytruncate),
+    Truncate(mytruncate),
+    MySQLQuery(mytruncate) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data from the given object to the current instance. At least it
- *  should.
+ *  Copy data from the given object to the current instance.
  *
  *  \param[in] mytruncate Object to copy data from.
  *

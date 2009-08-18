@@ -21,104 +21,122 @@
 #ifndef DB_PREDICATE_H_
 # define DB_PREDICATE_H_
 
-# include <boost/smart_ptr.hpp>
 # include <string>
 
 namespace          CentreonBroker
 {
   namespace        DB
   {
-    // This class is defined later.
+    // This class is defined at the bottom of this file.
     class          PredicateVisitor;
 
     /**
-     *  This is the root class of all predicates.
+     *  \class Predicate predicate.h "db/predicate.h"
+     *  \brief Root of all predicate element of an SQL query.
+     *
+     *  A predicate object is a condition that can be checked within a SQL
+     *  query and put on the WHERE part of the query. Predicate is an interface
+     *  defining a way to expand a Predicate object to its corresponding SQL
+     *  string. This method uses the Visitor design pattern : the Predicate can
+     *  virtually Accept() a visitor and expose to him the true Predicate type
+     *  through the visitor's overloaded Visit() method.
+     *
+     *  \see PredicateVisitor
      */
     class          Predicate
     {
+     protected:
+                         Predicate() throw ();
+                         Predicate(const Predicate& predicate) throw ();
+      Predicate&         operator=(const Predicate& predicate) throw ();
+
      public:
-                   Predicate() throw ();
-                   Predicate(const Predicate& predicate) throw ();
-      virtual      ~Predicate();
-      Predicate&   operator=(const Predicate& predicate) throw ();
-      virtual void Accept(PredicateVisitor& visitor) = 0;
+      virtual            ~Predicate();
+      virtual void       Accept(PredicateVisitor& visitor) const = 0;
+      virtual Predicate* Duplicate() const = 0;
     };
 
     /**
-     *  Determines whether or not both predicates are true.
+     *  \class And predicate.h "db/predicate.h"
+     *  \brief Determines whether or not both subpredicates are true.
+     *
+     *  This predicate is used to determine whether or not the two
+     *  subpredicates are true.
      */
-    class                          And : public Predicate
+    class              And : public Predicate
     {
      private:
-      boost::shared_ptr<Predicate> p1_;
-      boost::shared_ptr<Predicate> p2_;
-      void                         InternalCopy(const And& a_n_d);
+      Predicate*       left_;
+      Predicate*       right_;
+      void             Clean();
+      void             InternalCopy(const And& a_n_d);
 
      public:
-      /**
-       *  And default constructor.
-       */
-      template                     <typename Predicate1, typename Predicate2>
-                                   And(const Predicate1& p1,
-                                       const Predicate2& p2)
-	: p1_(new Predicate1(p1)), p2_(new Predicate2(p2)) {}
-
-                                   And(const And& a_n_d);
-                                   ~And();
-      And&                         operator=(const And& a_n_d);
-      void                         Accept(PredicateVisitor& visitor);
-      Predicate&                   Left();
-      Predicate&                   Right();
+                       And(const Predicate& left, const Predicate& right);
+                       And(const And& a_n_d);
+                       ~And();
+      And&             operator=(const And& a_n_d);
+      void             Accept(PredicateVisitor& visitor) const;
+      Predicate*       Duplicate() const;
+      const Predicate& Left() const;
+      const Predicate& Right() const;
     };
 
     /**
-     *  Verify the equality between two members. This predicate is a
-     *  composition of two other predicates.
+     *  \class Equal predicate.h "db/predicate.h"
+     *  \brief Determines whether or not both subpredicates are equal.
+     *
+     *  This predicate is used to determine whether or not the two
+     *  subpredicates are equal.
      */
-    class                          Equal : public Predicate
+    class              Equal : public Predicate
     {
      private:
-      Predicate*                   p1_;
-      Predicate*                   p2_;
-      void                         InternalCopy(const Equal& equal);
+      Predicate*       left_;
+      Predicate*       right_;
+      void             Clean();
+      void             InternalCopy(const Equal& equal);
 
      public:
-      /**
-       *  Equal constructor.
-       */
-      template                     <typename Predicate1, typename Predicate2>
-                                   Equal(const Predicate1& p1,
-                                         const Predicate2& p2)
-	: p1_(new Predicate1(p1)), p2_(new Predicate2(p2)) {}
-
-                                   Equal(const Equal& equal);
-                                   ~Equal();
-      Equal&                       operator=(const Equal& equal);
-      void                         Accept(PredicateVisitor& visitor);
-      Predicate&                   Left();
-      Predicate&                   Right();
+                       Equal(const Predicate& left, const Predicate& right);
+                       Equal(const Equal& equal);
+                       ~Equal();
+      Equal&           operator=(const Equal& equal);
+      void             Accept(PredicateVisitor& visitor) const;
+      Predicate*       Duplicate() const;
+      const Predicate& Left() const;
+      const Predicate& Right() const;
     };
 
     /**
-     *  This will match a field.
+     *  \class Field predicate.h "db/predicate.h"
+     *  \brief Expand to a table field.
+     *
+     *  When used inside a composed predicate, objects of this class maps to
+     *  the actual table field.
      */
     class                Field : public Predicate
     {
      private:
       std::string        field_;
-      void               InternalCopy(const Field& field);
 
      public:
                          Field(const std::string& field);
                          Field(const Field& field);
                          ~Field();
       Field&             operator=(const Field& field);
-      void               Accept(PredicateVisitor& visitor);
-      const std::string& GetName() const throw ();
+      void               Accept(PredicateVisitor& visitor) const;
+      Predicate*         Duplicate() const;
+      const std::string& Name() const throw ();
     };
 
     /**
-     *  Specify that the predicate contains a parameter that will be set later.
+     *  \class Placeholder predicate.h "db/predicate.h"
+     *  \brief A parameter that can be set later.
+     *
+     *  A placeholder is a parameter that can be set later in the query. Such
+     *  objects are used on prepared queries where predicate parameters can
+     *  change on every execution.
      */
     class          Placeholder : public Predicate
     {
@@ -127,18 +145,23 @@ namespace          CentreonBroker
                    Placeholder(const Placeholder& ph) throw ();
                    ~Placeholder();
       Placeholder& operator=(const Placeholder& ph) throw ();
-      void         Accept(PredicateVisitor& visitor);
+      void         Accept(PredicateVisitor& visitor) const;
+      Predicate*   Duplicate() const;
     };
 
     /**
-     *  Terminal predicate. This can either be a double, an int or some other
-     *  base type.
+     *  \class Terminal predicate.h "db/predicate.h"
+     *  \brief Explicit value.
+     *
+     *  A terminal is a determined value. Unlike Placeholder, its value cannot
+     *  be changed later. This can be any kind of constant or string.
      */
     class           Terminal : public Predicate
     {
       char          type_;
       union
       {
+	bool        b;
 	double      d;
 	int         i;
 	short       s;
@@ -148,6 +171,7 @@ namespace          CentreonBroker
       void          InternalCopy(const Terminal& terminal) throw ();
 
      public:
+                    Terminal(bool b) throw ();
                     Terminal(double d) throw ();
                     Terminal(int i) throw ();
                     Terminal(short s) throw ();
@@ -156,7 +180,9 @@ namespace          CentreonBroker
                     Terminal(const Terminal& terminal) throw ();
                     ~Terminal() throw ();
       Terminal&     operator=(const Terminal& terminal) throw ();
-      void          Accept(PredicateVisitor& visitor);
+      void          Accept(PredicateVisitor& visitor) const;
+      Predicate*    Duplicate() const;
+      bool          GetBool() const throw ();
       double        GetDouble() const throw ();
       int           GetInt() const throw ();
       short         GetShort() const throw ();
@@ -166,20 +192,30 @@ namespace          CentreonBroker
     };
 
     /**
-     *  This class will be subclassed by those who needs to unroll predicates.
+     *  \class PredicateVisitor predicate.h "db/predicate.h"
+     *  \brief Visit a generic predicate.
+     *
+     *  A class willing to expand a generic predicate object to its underlying
+     *  concrete objects can subclass PredicateVisitor. The Visitor design
+     *  pattern is used to expose the concrete type of any predicate. Just call
+     *  Accept() on the predicate object with the appropriate visitor and
+     *  override the Visit() methods to have full access to any predicate
+     *  object.
      */
     class               PredicateVisitor
     {
+     protected:
+                        PredicateVisitor() throw ();
+                        PredicateVisitor(const PredicateVisitor& pv) throw ();
+      PredicateVisitor& operator=(const PredicateVisitor& pv) throw ();
+
      public:
-                        PredicateVisitor();
-                        PredicateVisitor(const PredicateVisitor& pv);
       virtual           ~PredicateVisitor();
-      PredicateVisitor& operator=(const PredicateVisitor& pv);
-      virtual void      Visit(And& a_n_d) = 0;
-      virtual void      Visit(Equal& equal) = 0;
-      virtual void      Visit(Field& field) = 0;
-      virtual void      Visit(Placeholder& placeholder) = 0;
-      virtual void      Visit(Terminal& terminal) = 0;
+      virtual void      Visit(const And& a_n_d) = 0;
+      virtual void      Visit(const Equal& equal) = 0;
+      virtual void      Visit(const Field& field) = 0;
+      virtual void      Visit(const Placeholder& placeholder) = 0;
+      virtual void      Visit(const Terminal& terminal) = 0;
     };
   }
 }

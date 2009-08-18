@@ -27,6 +27,15 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
+    /**
+     *  \class DBException db_exception.h "db/db_exception.h"
+     *  \brief Standard class thrown by the database layer.
+     *
+     *  By default, all DB related classes (ie. in the CentreonBroker::DB
+     *  namespace) throw DBException exceptions. This exception can be
+     *  parameterized with an error code, a reason explained where the
+     *  exception occured (DBException::Reason enum) and a message.
+     */
     class          DBException : public CentreonBroker::Exception
     {
      public:
@@ -35,6 +44,7 @@ namespace          CentreonBroker
 	UNKNOWN = 0,
 	COMMIT,
 	INITIALIZATION,
+	PREDICATE,
 	QUERY_EXECUTION,
 	QUERY_PREPARATION
       };
@@ -47,7 +57,7 @@ namespace          CentreonBroker
                    DBException(const DBException& dbe);
 		   DBException(int val,
                                Reason reason = UNKNOWN,
-                               const char* msg = NULL);
+                               const char* msg = "");
                    ~DBException() throw ();
       DBException& operator=(const DBException& dbe);
       Reason       GetReason() const throw ();
