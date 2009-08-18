@@ -29,7 +29,13 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  \brief Copy internal data from the given object to the current intance.
+ *
+ *  Copy all data members defined within the DBException class from the given
+ *  object to the current instance. This method is used by the copy constructor
+ *  and the assignment operator.
+ *
+ *  \param[in] dbe Object to copy data from.
  */
 void DBException::InternalCopy(const DBException& dbe) throw ()
 {
@@ -44,7 +50,11 @@ void DBException::InternalCopy(const DBException& dbe) throw ()
 **************************************/
 
 /**
- *  DBException copy constructor.
+ *  \brief DBException copy constructor.
+ *
+ *  Build the new object by copying data from the given object.
+ *
+ *  \param[in] dbe Object to copy data from.
  */
 DBException::DBException(const DBException& dbe)
   : CentreonBroker::Exception(dbe)
@@ -53,23 +63,32 @@ DBException::DBException(const DBException& dbe)
 }
 
 /**
+ *  \brief DBException constructor.
+ *
  *  Build an exception from an error code, the reason of the exception and the
  *  error message.
+ *
+ *  \param[in] val    The error code.
+ *  \param[in] reason The reason explaining why the exception was thrown
+ *                    (DBException::Reason enum).
+ *  \param[in] msg    The error message.
  */
 DBException::DBException(int val, DBException::Reason reason, const char* msg)
-  : CentreonBroker::Exception(val, msg), reason_(reason)
-{
-}
+  : CentreonBroker::Exception(val, msg), reason_(reason) {}
 
 /**
  *  DBException destructor.
  */
-DBException::~DBException() throw ()
-{
-}
+DBException::~DBException() throw () {}
 
 /**
- *  DBException operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given object to the current instance.
+ *
+ *  \param[in] dbe Object to copy data from.
+ *
+ *  \return *this
  */
 DBException& DBException::operator=(const DBException& dbe)
 {
@@ -79,7 +98,9 @@ DBException& DBException::operator=(const DBException& dbe)
 }
 
 /**
- *  Return the reason why the exception happened.
+ *  Get the reason why the exception happened.
+ *
+ *  \return The reason why the exception happened.
  */
 DBException::Reason DBException::GetReason() const throw ()
 {

@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <sstream>
 #include "db/mysql/have_predicate.h"
 
@@ -36,7 +37,7 @@ using namespace CentreonBroker::DB;
  *
  *  \param[in] a_n_d Predicate to expand.
  */
-void MySQLHavePredicate::Visit(And& a_n_d)
+void MySQLHavePredicate::Visit(const And& a_n_d)
 {
   a_n_d.Left().Accept(*this);
   this->query_->append(" AND ");
@@ -51,7 +52,7 @@ void MySQLHavePredicate::Visit(And& a_n_d)
  *
  *  \param[in] equal Predicate to expand.
  */
-void MySQLHavePredicate::Visit(Equal& equal)
+void MySQLHavePredicate::Visit(const Equal& equal)
 {
   equal.Left().Accept(*this);
   this->query_->append("=");
@@ -66,9 +67,9 @@ void MySQLHavePredicate::Visit(Equal& equal)
  *
  *  \param[in] field Field to append.
  */
-void MySQLHavePredicate::Visit(Field& field)
+void MySQLHavePredicate::Visit(const Field& field)
 {
-  this->query_->append(field.GetName());
+  this->query_->append(field.Name());
   return ;
 }
 
@@ -82,7 +83,7 @@ void MySQLHavePredicate::Visit(Field& field)
  *  \param[in] placeholder Specify that the query contains an undefined
  *                         argument.
  */
-void MySQLHavePredicate::Visit(Placeholder& placeholder)
+void MySQLHavePredicate::Visit(const Placeholder& placeholder)
 {
   (void)placeholder;
   this->query_->append("?");
@@ -97,12 +98,15 @@ void MySQLHavePredicate::Visit(Placeholder& placeholder)
  *
  *  \param[in] terminal Terminal to append.
  */
-void MySQLHavePredicate::Visit(Terminal& terminal)
+void MySQLHavePredicate::Visit(const Terminal& terminal)
 {
   std::stringstream ss;
 
   switch (terminal.GetType())
     {
+     case 'b':
+      ss << terminal.GetBool();
+      break ;
      case 'd':
       ss << terminal.GetDouble();
       break ;
@@ -157,6 +161,8 @@ MySQLHavePredicate::MySQLHavePredicate(const MySQLHavePredicate& myhp)
  *  Copy data from the given object to the current instance.
  *
  *  \param[in] myhp Object to copy data from.
+ *
+ *  \return *this
  */
 MySQLHavePredicate& MySQLHavePredicate::operator=(const MySQLHavePredicate& m)
 {

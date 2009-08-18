@@ -30,6 +30,13 @@ namespace                  CentreonBroker
 {
   namespace                DB
   {
+    /**
+     *  \class Update update.h "db/update.h"
+     *  \brief Interface for an UPDATE query.
+     *
+     *  This class is the interface for UPDATE queries. DBMS will have to have
+     *  their own concrete objects subclassing this interface.
+     */
     class                  Update : virtual public HaveFields,
                                     virtual public HavePredicate,
                                     public HaveTable,
@@ -43,6 +50,64 @@ namespace                  CentreonBroker
      public:
       virtual              ~Update();
       virtual unsigned int GetUpdateCount() = 0;
+    };
+
+    /**
+     *  \class MappedUpdate update.h "db/update.h"
+     *  \brief Interface for an object-relational UPDATE query.
+     *
+     *  This class is the interface for mapped UPDATE queries. Just like
+     *  Update, DBMS will have to have their own concrete objects subclassing
+     *  this interface. This class is specific for object-relational updates.
+     */
+    template               <typename T>
+    class                  MappedUpdate : public HaveInFields<T>,
+                                          virtual public Update
+    {
+     protected:
+      /**
+       *  \brief MappedUpdate constructor.
+       *
+       *  Initialize members to their default values.
+       *
+       *  \param[in] mapping The Object-Relational mapping of the object.
+       */
+                           MappedUpdate(const Mapping<T>& mapping)
+        : HaveInFields<T>(mapping) {}
+
+      /**
+       *  \brief MappedUpdate copy constructor.
+       *
+       *  Build a new MappedUpdate by copying data from the given object.
+       *
+       *  \param[in] mupdate Object to copy data from.
+       */
+                           MappedUpdate(const MappedUpdate& mupdate)
+        : HaveInFields<T>(mupdate), Update(mupdate) {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy data from the given object to the current instance.
+       *
+       *  \param[in] mupdate Object to copy data from.
+       *
+       *  \return *this
+       */
+      MappedUpdate&        operator=(const MappedUpdate& mupdate)
+      {
+	this->HaveInFields<T>::operator=(mupdate);
+	this->Update::operator=(mupdate);
+	return (*this);
+      }
+
+     public:
+      /**
+       *  \brief MappedUpdate destructor.
+       *
+       *  Release acquired ressources.
+       */
+      virtual              ~MappedUpdate() {}
     };
   }
 }

@@ -21,12 +21,19 @@
 #ifndef DB_HAVE_ARGS_H_
 # define DB_HAVE_ARGS_H_
 
+# include <ctime>  // for time_t
 # include <string>
 
 namespace          CentreonBroker
 {
   namespace        DB
   {
+    /**
+     *  \class HaveArgs have_args.h "db/have_args.h"
+     *  \brief Query that can be parameterized.
+     *
+     *  This class provides an interface to set arguments of a query.
+     */
     class          HaveArgs
     {
      protected:
@@ -41,6 +48,7 @@ namespace          CentreonBroker
       virtual void SetArg(int arg) = 0;
       virtual void SetArg(short arg) = 0;
       virtual void SetArg(const std::string& arg) = 0;
+      virtual void SetArg(time_t arg) = 0;
     };
   }
 }

@@ -28,16 +28,23 @@ namespace                 CentreonBroker
 {
   namespace               DB
   {
+    /**
+     *  \class MySQLHavePredicate have_predicate.h "db/mysql/have_predicate.h"
+     *  \brief MySQL query with a predicate.
+     *
+     *  This class subclass PredicateVisitor to expand the predicate set in the
+     *  query to a MySQL-specific string.
+     */
     class                 MySQLHavePredicate : virtual public HavePredicate,
                                                private PredicateVisitor
     {
      private:
       std::string*        query_;
-      void                Visit(And& a_n_d);
-      void                Visit(Equal& equal);
-      void                Visit(Field& field);
-      void                Visit(Placeholder& placeholder);
-      void                Visit(Terminal& terminal);
+      void                Visit(const And& a_n_d);
+      void                Visit(const Equal& equal);
+      void                Visit(const Field& field);
+      void                Visit(const Placeholder& placeholder);
+      void                Visit(const Terminal& terminal);
 
      protected:
       unsigned int        placeholders;

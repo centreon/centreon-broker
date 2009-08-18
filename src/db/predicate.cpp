@@ -19,6 +19,7 @@
 */
 
 #include <cstring>
+#include "db/db_exception.h"
 #include "db/predicate.h"
 
 using namespace CentreonBroker::DB;
@@ -31,15 +32,23 @@ using namespace CentreonBroker::DB;
 *                                                                             *
 ******************************************************************************/
 
-/**
- *  Predicate default constructor.
- */
-Predicate::Predicate() throw ()
-{
-}
+/**************************************
+*                                     *
+*          Protected Methods          *
+*                                     *
+**************************************/
 
 /**
- *  Predicate copy constructor.
+ *  \brief Predicate default constructor.
+ *
+ *  Does nothing, as Predicate is just an interface with no data members.
+ */
+Predicate::Predicate() throw () {}
+
+/**
+ *  \brief Predicate copy constructor.
+ *
+ *  Does nothing, as Predicate is just an interface with no data members.
  */
 Predicate::Predicate(const Predicate& predicate) throw ()
 {
@@ -47,20 +56,28 @@ Predicate::Predicate(const Predicate& predicate) throw ()
 }
 
 /**
- *  Predicate destructor.
- */
-Predicate::~Predicate()
-{
-}
-
-/**
- *  Predicate operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Does nothing, as Predicate is just an interface with no data members.
  */
 Predicate& Predicate::operator=(const Predicate& predicate) throw ()
 {
   (void)predicate;
   return (*this);
 }
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Predicate destructor.
+ *
+ *  Does nothing, as Predicate is just an interface with no data members.
+ */
+Predicate::~Predicate() {}
 
 
 /******************************************************************************
@@ -78,12 +95,42 @@ Predicate& Predicate::operator=(const Predicate& predicate) throw ()
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  \brief Delete subpredicates.
+ *
+ *  Clean the object by deleting the two subpredicates.
+ */
+void And::Clean()
+{
+  // Delete the left member
+  if (this->left_)
+    {
+      delete (this->left_);
+      this->left_ = NULL;
+    }
+
+  // Delete the right member
+  if (this->right_)
+    {
+      delete (this->right_);
+      this->right_ = NULL;
+    }
+
+  return ;
+}
+
+/**
+ *  \brief Copy data of the given object to the current instance.
+ *
+ *  Copy data defined within the And class from the given object to the current
+ *  instance. This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  \param[in] a_n_d Object to copy data from.
  */
 void And::InternalCopy(const And& a_n_d)
 {
-  this->p1_ = a_n_d.p1_;
-  this->p2_ = a_n_d.p2_;
+  this->left_ = a_n_d.left_->Duplicate();
+  this->right_ = a_n_d.right_->Duplicate();
   return ;
 }
 
@@ -94,7 +141,26 @@ void And::InternalCopy(const And& a_n_d)
 **************************************/
 
 /**
- *  And copy constructor.
+ *  \brief And constructor.
+ *
+ *  Initialize the two subpredicates with copies of the arguments.
+ *
+ *  \param[in] left  First subpredicate (the left member).
+ *  \param[in] right Second subpredicate (the right member).
+ */
+And::And(const Predicate& left, const Predicate& right)
+{
+  this->left_ = left.Duplicate();
+  this->right_ = right.Duplicate();
+}
+
+/**
+ *  \brief And copy constructor.
+ *
+ *  Copy the left and right subpredicates of the given object to the current
+ *  instance.
+ *
+ *  \param[in] a_n_d Object to copy predicates from.
  */
 And::And(const And& a_n_d) : Predicate(a_n_d)
 {
@@ -102,14 +168,24 @@ And::And(const And& a_n_d) : Predicate(a_n_d)
 }
 
 /**
- *  And destructor.
+ *  \brief And destructor.
+ *
+ *  Delete subpredicates.
  */
 And::~And()
 {
+  this->Clean();
 }
 
 /**
- *  And operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy the left and right subpredicates of the given object to the current
+ *  instance.
+ *
+ *  \param[in] a_n_d Object to copy predicates from.
+ *
+ *  \return *this
  */
 And& And::operator=(const And& a_n_d)
 {
@@ -119,28 +195,51 @@ And& And::operator=(const And& a_n_d)
 }
 
 /**
- *  Accept a visitor and show him around.
+ *  \brief Accept a visitor.
+ *
+ *  The goal of this overriden method is to expose the concrete predicate type.
+ *  This is done by calling the overloaded method Visit() of PredicateVisitor.
+ *
+ *  \param[in] visitor Visitor.
  */
-void And::Accept(PredicateVisitor& visitor)
+void And::Accept(PredicateVisitor& visitor) const
 {
   visitor.Visit(*this);
   return ;
 }
 
 /**
- *  Returns the left member of the and predicate.
+ *  Duplicate the And predicate.
+ *
+ *  \return An exact copy of this predicate.
  */
-Predicate& And::Left()
+Predicate* And::Duplicate() const
 {
-  return (*this->p1_.get());
+  if (!this->left_ || !this->right_)
+    throw (DBException(0,
+                       DBException::PREDICATE,
+                       "Tried to duplicate an incomplete And predicate."));
+  return (new And(*this->left_, *this->right_));
 }
 
 /**
- *  Returns the right member of the and predicate.
+ *  Get the left member of the predicate.
+ *
+ *  \return Left member of the predicate.
  */
-Predicate& And::Right()
+const Predicate& And::Left() const
 {
-  return (*this->p2_.get());
+  return (*this->left_);
+}
+
+/**
+ *  Get the right member of the predicate.
+ *
+ *  \return Right member of the predicate.
+ */
+const Predicate& And::Right() const
+{
+  return (*this->right_);
 }
 
 
@@ -159,12 +258,42 @@ Predicate& And::Right()
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  \brief Delete subpredicates.
+ *
+ *  Clean the object by deleting the two subpredicates.
+ */
+void Equal::Clean()
+{
+  // Delete the left member
+  if (this->left_)
+    {
+      delete (this->left_);
+      this->left_ = NULL;
+    }
+
+  // Delete the right member
+  if (this->right_)
+    {
+      delete (this->right_);
+      this->right_ = NULL;
+    }
+
+  return ;
+}
+
+/**
+ *  \brief Copy data of the given object to the current instance.
+ *
+ *  Copy data defined within the Equal class from the given object to the
+ *  current instance. This method is used by the copy constructor and the
+ *  assignment operator.
+ *
+ *  \param[in] equal Object to copy data from.
  */
 void Equal::InternalCopy(const Equal& equal)
 {
-  this->p1_ = equal.p1_;
-  this->p2_ = equal.p2_;
+  this->left_ = equal.left_->Duplicate();
+  this->right_ = equal.right_->Duplicate();
   return ;
 }
 
@@ -175,7 +304,26 @@ void Equal::InternalCopy(const Equal& equal)
 **************************************/
 
 /**
- *  Equal copy constructor.
+ *  \brief Equal constructor.
+ *
+ *  Initialize the two subpredicates with copies of the arguments.
+ *
+ *  \param[in] left First subpredicate (left member).
+ *  \param[in] right Second subpredicate (right member).
+ */
+Equal::Equal(const Predicate& left, const Predicate& right)
+{
+  this->left_ = left.Duplicate();
+  this->right_ = right.Duplicate();
+}
+
+/**
+ *  \brief Equal copy constructor.
+ *
+ *  Copy the left and right subpredicates of the given object to the current
+ *  instance.
+ *
+ *  \param[in] equal Object to copy predicates from.
  */
 Equal::Equal(const Equal& equal) : Predicate(equal)
 {
@@ -183,14 +331,24 @@ Equal::Equal(const Equal& equal) : Predicate(equal)
 }
 
 /**
- *  Equal destructor.
+ *  \brief Equal destructor.
+ *
+ *  Delete subpredicates.
  */
 Equal::~Equal()
 {
+  this->Clean();
 }
 
 /**
- *  Equal operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy the left and right subpredicates of the given object to the current
+ *  instance.
+ *
+ *  \param[in] equal Object to copy predicates from.
+ *
+ *  \return *this
  */
 Equal& Equal::operator=(const Equal& equal)
 {
@@ -200,28 +358,51 @@ Equal& Equal::operator=(const Equal& equal)
 }
 
 /**
- *  Show to the visitor the true type of the object.
+ *  \brief Accept a visitor.
+ *
+ *  The goal of this overriden method is to expose the concrete predicate type.
+ *  This is done by calling the overloaded method Visit() of PredicateVisitor.
+ *
+ *  \param[in] visitor Visitor.
  */
-void Equal::Accept(PredicateVisitor& visitor)
+void Equal::Accept(PredicateVisitor& visitor) const
 {
   visitor.Visit(*this);
   return ;
 }
 
 /**
- *  Returns the left member of the equality.
+ *  Duplicates the Equal predicate.
+ *
+ *  \return An exact copy of this predicate.
  */
-Predicate& Equal::Left()
+Predicate* Equal::Duplicate() const
 {
-  return (*this->p1_);
+  if (!this->left_ || !this->right_)
+    throw (DBException(0,
+                       DBException::PREDICATE,
+                       "Tried to duplicate an incomplete Equal predicate."));
+  return (new Equal(*this->left_, *this->right_));
 }
 
 /**
- *  Returns the right member of the equality.
+ *  Get the left member of the predicate.
+ *
+ *  \return Left member of the predicate.
  */
-Predicate& Equal::Right()
+const Predicate& Equal::Left() const
 {
-  return (*this->p2_);
+  return (*this->left_);
+}
+
+/**
+ *  Get the right member of the predicate.
+ *
+ *  \return Right member of the predicate.
+ */
+const Predicate& Equal::Right() const
+{
+  return (*this->right_);
 }
 
 
@@ -235,70 +416,80 @@ Predicate& Equal::Right()
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy all internal data of the given object to the current instance.
- */
-void Field::InternalCopy(const Field& field)
-{
-  this->field_ = field.field_;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
 
 /**
- *  Field default constructor.
+ *  Field constructor.
+ *
+ *  \param[in] field Field name.
  */
-Field::Field(const std::string& field) : field_(field)
-{
-}
+Field::Field(const std::string& field) : field_(field) {}
 
 /**
- *  Field copy constructor.
+ *  \brief Field copy constructor.
+ *
+ *  Copy the field name of the given object to the current instance.
+ *
+ *  \param[in] field Field to copy.
  */
 Field::Field(const Field& field) : Predicate(field)
 {
-  this->InternalCopy(field);
+  this->field_ = field.field_;
 }
 
 /**
  *  Field destructor.
  */
-Field::~Field()
-{
-}
+Field::~Field() {}
 
 /**
- *  Field operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy the field name of the given object to the current instance.
+ *
+ *  \param[in] field Field to copy.
+ *
+ *  \return *this
  */
 Field& Field::operator=(const Field& field)
 {
   this->Predicate::operator=(field);
-  this->InternalCopy(field);
+  this->field_ = field.field_;
   return (*this);
 }
 
 /**
- *  Show the true type of the object to the visitor.
+ *  \brief Accept a visitor.
+ *
+ *  The goal of this overriden method is to expose the concrete predicate type.
+ *  This is done by calling the overloaded method Visit() of PredicateVisitor.
+ *
+ *  \param[in] visitor Visitor.
  */
-void Field::Accept(PredicateVisitor& visitor)
+void Field::Accept(PredicateVisitor& visitor) const
 {
   visitor.Visit(*this);
   return ;
 }
 
 /**
- *  Returns the name of the field associated to the predicate.
+ *  Duplicate a Field.
+ *
+ *  \return An exact copy of this predicate.
  */
-const std::string& Field::GetName() const throw ()
+Predicate* Field::Duplicate() const
+{
+  return (new Field(this->field_));
+}
+
+/**
+ *  Get the field name.
+ *
+ *  \return The name of the field.
+ */
+const std::string& Field::Name() const throw ()
 {
   return (this->field_);
 }
@@ -315,14 +506,14 @@ const std::string& Field::GetName() const throw ()
 /**
  *  \brief Placeholder default constructor.
  *
- *  Does nothing.
+ *  Does nothing, as Placeholder does not contain any data.
  */
 Placeholder::Placeholder() throw () {}
 
 /**
  *  \brief Placeholder copy constructor.
  *
- *  Does nothing as there is no data to copy.
+ *  Does nothing, as Placeholder does not contain any data.
  *
  *  \param[in] ph Object to copy from.
  */
@@ -331,14 +522,14 @@ Placeholder::Placeholder(const Placeholder& ph) throw () : Predicate(ph) {}
 /**
  *  \brief Placeholder destructor.
  *
- *  Does nothing.
+ *  Does nothing, as Placeholder does not contain any data.
  */
 Placeholder::~Placeholder() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Does nothing as there is no data to copy.
+ *  Does nothing, as Placeholder does not contain any data.
  *
  *  \param[in] ph Object to copy from.
  *
@@ -349,6 +540,31 @@ Placeholder& Placeholder::operator=(const Placeholder& ph) throw ()
   this->Predicate::operator=(ph);
   return (*this);
 }
+
+/**
+ *  \brief Accept a visitor.
+ *
+ *  The goal of this overriden method is to expose the concrete predicate type.
+ *  This is done by calling the overloaded method Visit of PredicateVisitor.
+ *
+ *  \param[in] visitor Visitor.
+ */
+void Placeholder::Accept(PredicateVisitor& visitor) const
+{
+  visitor.Visit(*this);
+  return ;
+}
+
+/**
+ *  Duplicate the Placeholder.
+ *
+ *  \return A new Placeholder object.
+ */
+Predicate* Placeholder::Duplicate() const
+{
+  return (new Placeholder);
+}
+
 
 /******************************************************************************
 *                                                                             *
@@ -365,7 +581,13 @@ Placeholder& Placeholder::operator=(const Placeholder& ph) throw ()
 **************************************/
 
 /**
- *  Copy all internal data of the given object to the current instance.
+ *  \brief Copy data of the given object to the current instance.
+ *
+ *  Copy data defined within the Terminal class from the given object to the
+ *  current instance. This method is used by the copy constructor and the
+ *  assignment operator.
+ *
+ *  \param[in] terminal Object to copy data from.
  */
 void Terminal::InternalCopy(const Terminal& terminal) throw ()
 {
@@ -381,7 +603,19 @@ void Terminal::InternalCopy(const Terminal& terminal) throw ()
 **************************************/
 
 /**
+ *  Build a Terminal from a bool.
+ *
+ *  \param[in] b Value.
+ */
+Terminal::Terminal(bool b) throw () : type_('b')
+{
+  this->value_.b = b;
+}
+
+/**
  *  Build a Terminal from a double.
+ *
+ *  \param[in] d Value.
  */
 Terminal::Terminal(double d) throw () : type_('d')
 {
@@ -390,6 +624,8 @@ Terminal::Terminal(double d) throw () : type_('d')
 
 /**
  *  Build a Terminal from an int.
+ *
+ *  \param[in] i Value.
  */
 Terminal::Terminal(int i) throw () : type_('i')
 {
@@ -398,6 +634,8 @@ Terminal::Terminal(int i) throw () : type_('i')
 
 /**
  *  Build a Terminal from a short.
+ *
+ *  \param[in] s Value.
  */
 Terminal::Terminal(short s) throw () : type_('s')
 {
@@ -406,6 +644,8 @@ Terminal::Terminal(short s) throw () : type_('s')
 
 /**
  *  Build a Terminal from a string.
+ *
+ *  \param[in] S Value.
  */
 Terminal::Terminal(const char* S) throw () : type_('S')
 {
@@ -414,6 +654,8 @@ Terminal::Terminal(const char* S) throw () : type_('S')
 
 /**
  *  Build a Terminal from a time.
+ *
+ *  \param[in] t Value.
  */
 Terminal::Terminal(time_t t) throw () : type_('t')
 {
@@ -421,7 +663,11 @@ Terminal::Terminal(time_t t) throw () : type_('t')
 }
 
 /**
- *  Terminal copy constructor.
+ *  \brief Terminal copy constructor.
+ *
+ *  Copy the value stored within the given Terminal to the current instance.
+ *
+ *  \param[in] terminal Object to copy value from.
  */
 Terminal::Terminal(const Terminal& terminal) throw () : Predicate(terminal)
 {
@@ -429,14 +675,20 @@ Terminal::Terminal(const Terminal& terminal) throw () : Predicate(terminal)
 }
 
 /**
- *  Terminal destructor.
+ *  \brief Terminal destructor.
+ *
+ *  Does nothing.
  */
-Terminal::~Terminal() throw ()
-{
-}
+Terminal::~Terminal() throw () {}
 
 /**
- *  Terminal operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy the value stored within the given Terminal to the current instance.
+ *
+ *  \param[in] terminal Object to copy value from.
+ *
+ *  \return *this
  */
 Terminal& Terminal::operator=(const Terminal& terminal) throw ()
 {
@@ -446,16 +698,70 @@ Terminal& Terminal::operator=(const Terminal& terminal) throw ()
 }
 
 /**
- *  Make a tour of the instance to the visitor.
+ *  \brief Accept a visitor.
+ *
+ *  The goal of this overriden method is to expose the concrete predicate type.
+ *  This is done by calling the overloaded method Visit() of PredicateVisitor.
+ *
+ *  \param[in] visitor Visitor.
  */
-void Terminal::Accept(PredicateVisitor& visitor)
+void Terminal::Accept(PredicateVisitor& visitor) const
 {
   visitor.Visit(*this);
   return ;
 }
 
 /**
- *  Return the double contained within the object.
+ *  Duplicate the Terminal.
+ *
+ *  \return An exact copy of this terminal.
+ */
+Predicate* Terminal::Duplicate() const
+{
+  Predicate* ret;
+
+  switch (this->type_)
+    {
+     case 'b':
+      ret = new Terminal(this->value_.b);
+      break ;
+     case 'd':
+      ret = new Terminal(this->value_.d);
+      break ;
+     case 'i':
+      ret = new Terminal(this->value_.i);
+      break ;
+     case 's':
+      ret = new Terminal(this->value_.s);
+      break ;
+     case 'S':
+      ret = new Terminal(this->value_.S);
+      break ;
+     case 't':
+      ret = new Terminal(this->value_.t);
+      break ;
+    default:
+      throw (DBException(this->type_,
+                         DBException::PREDICATE,
+                         "Tried to duplicate an invalid Terminal."));
+    }
+  return (ret);
+}
+
+/**
+ *  Get the boolean stored within the object.
+ *
+ *  \return The boolean stored within the object.
+ */
+bool Terminal::GetBool() const throw ()
+{
+  return (this->value_.b);
+}
+
+/**
+ *  Get the double stored within the object.
+ *
+ *  \return The double stored within the object.
  */
 double Terminal::GetDouble() const throw ()
 {
@@ -463,7 +769,9 @@ double Terminal::GetDouble() const throw ()
 }
 
 /**
- *  Return the int contained within the object.
+ *  Get the integer stored within the object.
+ *
+ *  \return The integer stored within the object.
  */
 int Terminal::GetInt() const throw ()
 {
@@ -471,7 +779,9 @@ int Terminal::GetInt() const throw ()
 }
 
 /**
- *  Return the short contained within the object.
+ *  Get the short stored within the object.
+ *
+ *  \return The short stored within the object.
  */
 short Terminal::GetShort() const throw ()
 {
@@ -479,7 +789,9 @@ short Terminal::GetShort() const throw ()
 }
 
 /**
- *  Return the string contained within the object.
+ *  Get the string stored within the object.
+ *
+ *  \return The string stored within the object.
  */
 const char* Terminal::GetString() const throw ()
 {
@@ -487,7 +799,9 @@ const char* Terminal::GetString() const throw ()
 }
 
 /**
- *  Return the string contained within the object.
+ *  Get the time stored within the object.
+ *
+ *  \return The time stored within the object.
  */
 time_t Terminal::GetTime() const throw ()
 {
@@ -495,7 +809,18 @@ time_t Terminal::GetTime() const throw ()
 }
 
 /**
- *  Return the type of the object contained within this Predicate.
+ *  \brief Get the type of the value stored within the Terminal.
+ *
+ *  Valid values are :
+ *
+ *    - 'b' for bool
+ *    - 'd' for double
+ *    - 'i' for int
+ *    - 's' for short
+ *    - 'S' for string (const char*)
+ *    - 't' for time (time_t)
+ *
+ *  \return The type of the value stored within the Terminal.
  */
 char Terminal::GetType() const throw ()
 {
@@ -511,33 +836,56 @@ char Terminal::GetType() const throw ()
 *                                                                             *
 ******************************************************************************/
 
-/**
- *  PredicateVisitor default constructor.
- */
-PredicateVisitor::PredicateVisitor()
-{
-}
+/**************************************
+*                                     *
+*          Protected Methods          *
+*                                     *
+**************************************/
 
 /**
- *  PredicateVisitor copy constructor.
+ *  \brief PredicateVisitor default constructor.
+ *
+ *  Does nothing, as PredicateVisitor does not contain any data member.
  */
-PredicateVisitor::PredicateVisitor(const PredicateVisitor& pv)
+PredicateVisitor::PredicateVisitor() throw () {}
+
+/**
+ *  \brief PredicateVisitor copy constructor.
+ *
+ *  Does nothing, as PredicateVisitor does not contain any data member.
+ *
+ *  \param[in] pv Unused.
+ */
+PredicateVisitor::PredicateVisitor(const PredicateVisitor& pv) throw ()
 {
   (void)pv;
 }
 
 /**
- *  PredicateVisitor destructor.
- */
-PredicateVisitor::~PredicateVisitor()
-{
-}
-
-/**
- *  PredicateVisitor operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Does nothing, as PredicateVisitor does not contain any data member.
+ *
+ *  \param[in] pv Unused.
+ *
+ *  \return *this
  */
 PredicateVisitor& PredicateVisitor::operator=(const PredicateVisitor& pv)
+  throw ()
 {
   (void)pv;
   return (*this);
 }
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief PredicateVisitor destructor.
+ *
+ *  Does nothing, as PredicateVisitor does not contain any data member.
+ */
+PredicateVisitor::~PredicateVisitor() {}

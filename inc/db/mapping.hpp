@@ -25,7 +25,7 @@
 # include <boost/function.hpp>
 # include <map>
 # include <string>
-# include "db/have_fields.h"
+# include "db/have_args.h"
 
 namespace                        CentreonBroker
 {
@@ -51,7 +51,7 @@ namespace                        CentreonBroker
      public:
       std::map<std::string,
 	       boost::function2<void,
-                                HaveFields*,
+                                HaveArgs*,
                                 const ObjectType&>
                                > fields_;
       std::string                table_;
@@ -90,9 +90,10 @@ namespace                        CentreonBroker
 					      const boost::function1<bool,
 					      const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetBool,
-					   _1,
-					   boost::bind(getter, _2));
+        this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(bool)>(&HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 
@@ -103,9 +104,10 @@ namespace                        CentreonBroker
 						const boost::function1<double,
                                                   const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetDouble,
-                                           _1,
-                                           boost::bind(getter, _2));
+	this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(double)>(&HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 
@@ -116,9 +118,10 @@ namespace                        CentreonBroker
 					     const boost::function1<int,
                                                const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetInt,
-                                           _1,
-                                           boost::bind(getter, _2));
+	this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(int)>(&HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 
@@ -129,9 +132,10 @@ namespace                        CentreonBroker
 					       const boost::function1<short,
                                                  const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetShort,
-                                           _1,
-                                           boost::bind(getter, _2));
+        this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(short)>(&HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 
@@ -143,9 +147,11 @@ namespace                        CentreonBroker
 						  const std::string&,
                                                   const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetString,
-                                           _1,
-                                           boost::bind(getter, _2));
+	this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(const std::string&)>(
+            &HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 
@@ -156,9 +162,10 @@ namespace                        CentreonBroker
 					      const boost::function1<time_t,
                                                   const ObjectType&>& getter)
       {
-	this->fields_[field] = boost::bind(&HaveFields::SetTime,
-                                           _1,
-                                           boost::bind(getter, _2));
+	this->fields_[field] = boost::bind(
+          static_cast<void (HaveArgs::*)(time_t)>(&HaveArgs::SetArg),
+          _1,
+          boost::bind(getter, _2));
 	return ;
       }
 

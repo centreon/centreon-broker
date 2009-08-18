@@ -21,7 +21,8 @@
 #ifndef DB_MYSQL_HAVE_ARGS_H_
 # define DB_MYSQL_HAVE_ARGS_H_
 
-# include <mysql.h>
+# include <ctime>            // for time_t
+# include <mysql.h>          // for MYSQL_BIND
 # include "db/have_args.h"
 # include "db/mysql/query.h"
 
@@ -29,6 +30,15 @@ namespace                  CentreonBroker
 {
   namespace                DB
   {
+    /**
+     *  \class MySQLHaveArgs have_args.h "db/mysql/have_args.h"
+     *  \brief MySQL queries that can have arguments.
+     *
+     *  MySQLHaveArgs is subclassed by every query that can have arguments ;
+     *  typically queries that have fields or that have predicate.
+     *  MySQLHaveArgs holds an array of arguments that can be sequentially set
+     *  using the overloaded SetArg() method.
+     */
     class                  MySQLHaveArgs : virtual public HaveArgs,
                                            public MySQLQuery
     {
@@ -53,6 +63,7 @@ namespace                  CentreonBroker
       virtual void         SetArg(int arg);
       virtual void         SetArg(short arg);
       virtual void         SetArg(const std::string& arg);
+      virtual void         SetArg(time_t arg);
     };
   }
 }

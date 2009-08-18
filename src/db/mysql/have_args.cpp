@@ -19,6 +19,7 @@
 */
 
 #include <cstring>
+#include <sstream>
 #include "db/db_exception.h"
 #include "db/mysql/have_args.h"
 
@@ -40,7 +41,29 @@ using namespace CentreonBroker::DB;
  */
 void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
 {
-  // XXX : cleanup code
+  if (bind->buffer)
+    switch (bind->buffer_type)
+      {
+       case MYSQL_TYPE_TINY:
+        delete (static_cast<char*>(bind->buffer));
+        break ;
+       case MYSQL_TYPE_DOUBLE:
+        delete (static_cast<double*>(bind->buffer));
+        break ;
+       case MYSQL_TYPE_LONG:
+        delete (static_cast<int*>(bind->buffer));
+        break ;
+       case MYSQL_TYPE_SHORT:
+        delete (static_cast<short*>(bind->buffer));
+        break ;
+       case MYSQL_TYPE_STRING:
+        delete (static_cast<char*>(bind->buffer));
+        break ;
+       default:
+	;
+      }
+  memset(bind, 0, sizeof(*bind));
+  return ;
 }
 
 /**************************************
@@ -56,7 +79,11 @@ void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
  *
  *  \param[in] mysql The MySQL connection object.
  */
-MySQLHaveArgs::MySQLHaveArgs(MYSQL* mysql) : MySQLQuery(mysql) {}
+MySQLHaveArgs::MySQLHaveArgs(MYSQL* mysql)
+  : MySQLQuery(mysql),
+    arg_(0),
+    args_(NULL),
+    args_count_(0) {}
 
 /**
  *  \brief MySQLHaveArgs copy constructor.
@@ -132,13 +159,19 @@ void MySQLHaveArgs::Prepare()
 {
   this->args_count_ = this->GetArgCount();
   if (this->args_count_)
-    this->args_ = new MYSQL_BIND[this->args_count_];
+    {
+      this->args_ = new MYSQL_BIND[this->args_count_];
+      memset(this->args_, 0, this->args_count_ * sizeof(*this->args_));
+      this->arg_ = 0;
+    }
   this->MySQLQuery::Prepare();
   return ;
 }
 
 /**
- *  \brief Set the next argument as a bool.
+ *  Set the next argument as a bool.
+ *
+ *  \param[in] arg Next value.
  */
 void MySQLHaveArgs::SetArg(bool arg)
 {
@@ -152,16 +185,162 @@ void MySQLHaveArgs::SetArg(bool arg)
 	  this->CleanArg(mybind);
 	  memset(mybind, 0, sizeof(*mybind));
 	  mybind->buffer_type = MYSQL_TYPE_TINY;
-	  mybind->buffer = static_cast<void*>(new bool);
-	  mybind->buffer_length = sizeof(bool);
+	  mybind->buffer = static_cast<void*>(new char);
+	  mybind->buffer_length = sizeof(char);
 	  mybind->length = &(mybind->buffer_length);
 	}
-      *static_cast<bool*>(mybind->buffer) = arg;
+      *static_cast<char*>(mybind->buffer) = (arg ? 1 : 0);
+      this->arg_++;
     }
   else
     if (arg)
       this->query.append("true");
     else
       this->query.append("false");
+  return ;
+}
+
+/**
+ *  Set the next argument as a double.
+ *
+ *  \param[in] arg Next value.
+ */
+void MySQLHaveArgs::SetArg(double arg)
+{
+  if (this->stmt)
+    {
+      MYSQL_BIND* mybind;
+
+      mybind = this->args_ + this->arg_;
+      if (mybind->buffer_type != MYSQL_TYPE_DOUBLE)
+	{
+	  this->CleanArg(mybind);
+	  memset(mybind, 0, sizeof(*mybind));
+	  mybind->buffer_type = MYSQL_TYPE_DOUBLE;
+	  mybind->buffer = static_cast<void*>(new double);
+	  mybind->buffer_length = sizeof(double);
+	  mybind->length = &(mybind->buffer_length);
+	}
+      *static_cast<double*>(mybind->buffer) = arg;
+      this->arg_++;
+    }
+  else
+    {
+      std::stringstream ss;
+
+      ss << arg;
+      this->query.append(ss.str());
+    }
+  return ;
+}
+
+/**
+ *  Set the next argument as an int.
+ *
+ *  \param[in] arg Next value.
+ */
+void MySQLHaveArgs::SetArg(int arg)
+{
+  if (this->stmt)
+    {
+      MYSQL_BIND* mybind;
+
+      mybind = this->args_ + this->arg_;
+      if (mybind->buffer_type != MYSQL_TYPE_LONG)
+	{
+	  this->CleanArg(mybind);
+	  memset(mybind, 0, sizeof(*mybind));
+	  mybind->buffer_type = MYSQL_TYPE_LONG;
+	  mybind->buffer = static_cast<void*>(new int);
+	  mybind->buffer_length = sizeof(int);
+	  mybind->length = &(mybind->buffer_length);
+	}
+      *static_cast<int*>(mybind->buffer) = arg;
+      this->arg_++;
+    }
+  else
+    {
+      std::stringstream ss;
+
+      ss << arg;
+      this->query.append(ss.str());
+    }
+  return ;
+}
+
+/**
+ *  Set the next argument as a short.
+ *
+ *  \param[in] arg Next value.
+ */
+void MySQLHaveArgs::SetArg(short arg)
+{
+  if (this->stmt)
+    {
+      MYSQL_BIND* mybind;
+
+      mybind = this->args_ + this->arg_;
+      if (mybind->buffer_type != MYSQL_TYPE_SHORT)
+	{
+	  this->CleanArg(mybind);
+	  memset(mybind, 0, sizeof(*mybind));
+	  mybind->buffer_type = MYSQL_TYPE_SHORT;
+	  mybind->buffer = static_cast<void*>(new short);
+	  mybind->buffer_length = sizeof(short);
+	  mybind->length = &(mybind->buffer_length);
+	}
+      *static_cast<short*>(mybind->buffer) = arg;
+      this->arg_++;
+    }
+  else
+    {
+      std::stringstream ss;
+
+      ss << arg;
+      this->query.append(ss.str());
+    }
+  return ;
+}
+
+/**
+ *  Set the next argument as a string.
+ *
+ *  \param[in] arg Next value.
+ */
+void MySQLHaveArgs::SetArg(const std::string& arg)
+{
+  if (this->stmt)
+    {
+      MYSQL_BIND* mybind;
+      size_t size;
+
+      mybind = this->args_ + this->arg_;
+      this->CleanArg(mybind);
+      memset(mybind, 0, sizeof(*mybind));
+      mybind->buffer_type = MYSQL_TYPE_STRING;
+      size = arg.size() + 1;
+      mybind->buffer = static_cast<void*>(new char[size]);
+      mybind->buffer_length = size;
+      mybind->length = &(mybind->buffer_length);
+      memcpy(mybind->buffer, arg.c_str(), size);
+      this->arg_++;
+    }
+  else
+    {
+      this->query.append("\"");
+      this->query.append(arg);
+      this->query.append("\"");
+    }
+  return ;
+}
+
+/**
+ *  Set the next argument as a time_t.
+ *
+ *  \param[in] arg Next value.
+ */
+void MySQLHaveArgs::SetArg(time_t arg)
+{
+  this->SetArg((int)arg);
   return ;
 }

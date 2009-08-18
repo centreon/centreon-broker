@@ -91,10 +91,9 @@ void DBOutput::CleanTable(const std::string& table)
     logging.Indent();
   }
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncateQuery());
+  std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncate());
 
   truncate->SetTable(table);
-  truncate->Prepare();
   truncate->Execute();
 #ifndef NDEBUG
   logging.Deindent();
@@ -316,63 +315,46 @@ void DBOutput::PrepareStatements()
 {
   // ConnectionStatus update statement.
   this->connection_status_stmt_ =
-    this->conn_->GetUpdateQuery<ConnectionStatus>(
+    this->conn_->GetMappedUpdate<ConnectionStatus>(
       this->connection_status_mapping_);
+  this->connection_status_stmt_->SetTable("connection_info");
   this->connection_status_stmt_->SetPredicate(DB::Equal(
     DB::Field("instance_id"),
-    DB::DynamicInt<ConnectionStatus>(boost::bind(&DBOutput::GetInstanceId,
-						 this,
-						 boost::bind(
-				       &ConnectionStatus::instance,
-				       _1)))));
+    DB::Placeholder()));
   this->connection_status_stmt_->Prepare();
 
   // HostStatus update statement.
-  this->host_status_stmt_ = this->conn_->GetUpdateQuery<HostStatus>(
+  this->host_status_stmt_ = this->conn_->GetMappedUpdate<HostStatus>(
                               this->host_status_mapping_);
+  this->host_status_stmt_->SetTable("host");
   this->host_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
-                      DB::DynamicInt<HostStatus>(boost::bind(
-                                                   &DBOutput::GetInstanceId,
-                                                   this,
-						   boost::bind(
-			&HostStatus::instance,
-			_1)))),
+		      DB::Placeholder()),
 	    DB::Equal(DB::Field("host_name"),
-		      DB::DynamicString<HostStatus>(&HostStatus::host))
+		      DB::Placeholder())
 	    ));
   this->host_status_stmt_->Prepare();
 
   // ProgramStatus update statement.
-  this->program_status_stmt_ = this->conn_->GetUpdateQuery<ProgramStatus>(
+  this->program_status_stmt_ = this->conn_->GetMappedUpdate<ProgramStatus>(
                                  this->program_status_mapping_);
+  this->program_status_stmt_->SetTable("program_status");
   this->program_status_stmt_->SetPredicate(
     DB::Equal(DB::Field("instance_id"),
-              DB::DynamicInt<ProgramStatus>(boost::bind(
-                                              &DBOutput::GetInstanceId,
-                                              this,
-					      boost::bind(
-					 &ProgramStatus::instance,
-					 _1)))));
+	      DB::Placeholder()));
   this->program_status_stmt_->Prepare();
 
   // ServiceStatus update statement.
-  this->service_status_stmt_ = this->conn_->GetUpdateQuery<ServiceStatus>(
+  this->service_status_stmt_ = this->conn_->GetMappedUpdate<ServiceStatus>(
                                  this->service_status_mapping_);
+  this->service_status_stmt_->SetTable("service");
   this->service_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
-                      DB::DynamicInt<ServiceStatus>(boost::bind(
-                                                      &DBOutput::GetInstanceId,
-                                                      this,
-						      boost::bind(
-			&ServiceStatus::instance,
-			_1)))),
+		      DB::Placeholder()),
 	    DB::And(DB::Equal(DB::Field("host_name"),
-		              DB::DynamicString<ServiceStatus>(
-                                &ServiceStatus::host)),
+			      DB::Placeholder()),
 		    DB::Equal(DB::Field("service_description"),
-			      DB::DynamicString<ServiceStatus>(
-                                &ServiceStatus::service)))
+			      DB::Placeholder()))
 	    ));
   this->service_status_stmt_->Prepare();
   return ;
@@ -443,12 +425,13 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
   logging.LogDebug("Processing Acknowledgement event...");
   logging.Indent();
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Acknowledgement> >
-    query(this->conn_->GetInsertQuery<Acknowledgement>(
+  std::auto_ptr<DB::MappedInsert<Acknowledgement> >
+    query(this->conn_->GetMappedInsert<Acknowledgement>(
             this->acknowledgement_mapping_));
 
-  query->Prepare();
-  query->Execute(ack);
+  query->SetTable("acknowledgement");
+  query->SetArg(ack);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -465,11 +448,12 @@ void DBOutput::ProcessComment(const Comment& comment)
   logging.LogDebug("Processing Comment event...");
   logging.Indent();
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Comment> >
-    query(this->conn_->GetInsertQuery<Comment>(this->comment_mapping_));
+  std::auto_ptr<DB::MappedInsert<Comment> >
+    query(this->conn_->GetMappedInsert<Comment>(this->comment_mapping_));
 
-  query->Prepare();
-  query->Execute(comment);
+  query->SetTable("comment");
+  query->SetArg(comment);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -486,12 +470,13 @@ void DBOutput::ProcessConnection(const Connection& connection)
   logging.LogDebug("Processing Connection event...");
   logging.Indent();
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Connection> >
-    query(this->conn_->GetInsertQuery<Connection>(
+  std::auto_ptr<DB::MappedInsert<Connection> >
+    query(this->conn_->GetMappedInsert<Connection>(
             this->connection_mapping_));
 
-  query->Prepare();
-  query->Execute(connection);
+  query->SetTable("connection_info");
+  query->SetArg(connection);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -511,7 +496,8 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 #endif /* !NDEBUG */
   try
     {
-      this->connection_status_stmt_->Execute(cs);
+      this->connection_status_stmt_->SetArg(cs);
+      this->connection_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
     {
@@ -541,11 +527,12 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
 #ifndef NDEBUG
   logging.LogDebug("Processing Downtime event...", true);
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Downtime> >
-    query(this->conn_->GetInsertQuery<Downtime>(this->downtime_mapping_));
+  std::auto_ptr<DB::MappedInsert<Downtime> >
+    query(this->conn_->GetMappedInsert<Downtime>(this->downtime_mapping_));
 
-  query->Prepare();
-  query->Execute(downtime);
+  query->SetTable("downtime");
+  query->SetArg(downtime);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -561,11 +548,12 @@ void DBOutput::ProcessHost(const Host& host)
 #ifndef NDEBUG
   logging.LogDebug("Processing Host event...", true);
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Host> >
-    query(this->conn_->GetInsertQuery<Host>(this->host_mapping_));
+  std::auto_ptr<DB::MappedInsert<Host> >
+    query(this->conn_->GetMappedInsert<Host>(this->host_mapping_));
 
-  query->Prepare();
-  query->Execute(host);
+  query->SetTable("host");
+  query->SetArg(host);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -581,11 +569,12 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
 #ifndef NDEBUG
   logging.LogDebug("Processing HostGroup event...", true);
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<HostGroup> >
-    query(this->conn_->GetInsertQuery<HostGroup>(this->host_group_mapping_));
+  std::auto_ptr<DB::MappedInsert<HostGroup> >
+    query(this->conn_->GetMappedInsert<HostGroup>(this->host_group_mapping_));
 
-  query->Prepare();
-  query->Execute(hg);
+  query->SetTable("host_group");
+  query->SetArg(hg);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -603,7 +592,8 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
 #endif /* !NDEBUG */
   try
     {
-      this->host_status_stmt_->Execute(hs);
+      this->host_status_stmt_->SetArg(hs);
+      this->host_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
     {
@@ -633,11 +623,12 @@ void DBOutput::ProcessLog(const Log& log)
 #ifndef NDEBUG
   logging.LogDebug("Processing Log event...", true);
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::Insert<Log> >
-    query(this->conn_->GetInsertQuery<Log>(log_mapping));
+  std::auto_ptr<DB::MappedInsert<Log> >
+    query(this->conn_->GetMappedInsert<Log>(log_mapping));
 
-  query->Prepare();
-  query->Execute(log);
+  query->SetTable("log");
+  query->SetArg(log);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -656,7 +647,9 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
 #endif /* !NDEBUG */
   try
     {
-      this->program_status_stmt_->Execute(ps);
+      this->program_status_stmt_->SetArg(ps);
+      ((DB::HaveArgs*)(this->program_status_stmt_))->SetArg(this->GetInstanceId(ps.instance));
+      this->program_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
     {
@@ -670,12 +663,13 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
     }
   if (this->program_status_stmt_->GetUpdateCount() == 0)
     {
-      std::auto_ptr<DB::Insert<ProgramStatus> >
-        query(this->conn_->GetInsertQuery<ProgramStatus>(
+      std::auto_ptr<DB::MappedInsert<ProgramStatus> >
+        query(this->conn_->GetMappedInsert<ProgramStatus>(
           this->program_status_mapping_));
 
-      query->Prepare();
-      query->Execute(ps);
+      query->SetTable("program_status");
+      query->SetArg(ps);
+      query->Execute();
       this->QueryExecuted();
     }
   else
@@ -691,15 +685,16 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
  */
 void DBOutput::ProcessService(const Service& service)
 {
-  std::auto_ptr<DB::Insert<Service> >
-    query(this->conn_->GetInsertQuery<Service>(this->service_mapping_));
-
 #ifndef NDEBUG
   logging.LogDebug("Processing Service event...");
   logging.Indent();
 #endif /* !NDEBUG */
-  query->Prepare();
-  query->Execute(service);
+  std::auto_ptr<DB::MappedInsert<Service> >
+    query(this->conn_->GetMappedInsert<Service>(this->service_mapping_));
+
+  query->SetTable("service");
+  query->SetArg(service);
+  query->Execute();
   this->QueryExecuted();
 #ifndef NDEBUG
   logging.Deindent();
@@ -718,7 +713,8 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 #endif /* !NDEBUG */
   try
     {
-      this->service_status_stmt_->Execute(ss);
+      this->service_status_stmt_->SetArg(ss);
+      this->service_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
     {

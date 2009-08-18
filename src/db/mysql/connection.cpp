@@ -34,23 +34,31 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  MySQLConnection copy constructor.
+ *  \brief MySQLConnection copy constructor.
+ *
+ *  Build a new object by copying data from the given object.
+ *
+ *  \param[in] myconn Object to copy data from.
  */
 MySQLConnection::MySQLConnection(const MySQLConnection& myconn) throw ()
-  : Connection(Connection::MYSQL)
+  : Connection(myconn)
 {
   (void)myconn;
-  assert(false);
 }
 
 /**
- *  MySQLConnection operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data of the given object to the current instance.
+ *
+ *  \param[in] myconn Object to copy data from.
+ *
+ *  \return *this
  */
 MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
   throw ()
 {
   (void)myconn;
-  assert(false);
   return (*this);
 }
 
@@ -61,7 +69,9 @@ MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
 **************************************/
 
 /**
- *  MySQLConnection default constructor.
+ *  \brief MySQLConnection default constructor.
+ *
+ *  Initialize object to its default state.
  */
 MySQLConnection::MySQLConnection() throw (DBException)
   : Connection(Connection::MYSQL), myconn_(NULL)
@@ -77,7 +87,9 @@ MySQLConnection::MySQLConnection() throw (DBException)
 }
 
 /**
- *  MySQLConnection destructor.
+ *  \brief MySQLConnection destructor.
+ *
+ *  Release acquired ressources.
  */
 MySQLConnection::~MySQLConnection() throw ()
 {
@@ -87,7 +99,12 @@ MySQLConnection::~MySQLConnection() throw ()
 }
 
 /**
- *  Toggle the auto-commit mode of the database.
+ *  \brief Toggle the auto-commit mode of the database.
+ *
+ *  Set whether or not the database engine should commit queries automatically.
+ *
+ *  \param[in] activate true if data should be commited automatically, false
+ *                      otherwise.
  */
 void MySQLConnection::AutoCommit(bool activate) throw (DBException)
 {
@@ -123,6 +140,11 @@ void MySQLConnection::Commit() throw (DBException)
 
 /**
  *  Connect to the MySQL server.
+ *
+ *  \param[in] host     Host to connect to.
+ *  \param[in] user     User name to use for authentication.
+ *  \param[in] password Password to use for authentication.
+ *  \param[in] db       Database to use.
  */
 void MySQLConnection::Connect(const std::string& host,
 			      const std::string& user,
@@ -141,6 +163,7 @@ void MySQLConnection::Connect(const std::string& host,
     throw (DBException(mysql_errno(this->myconn_),
                        DBException::INITIALIZATION,
                        mysql_error(this->myconn_)));
+
   // Connect to the DB server.
   if (!mysql_real_connect(this->myconn_,
 			  host.c_str(),
@@ -174,12 +197,66 @@ void MySQLConnection::Disconnect() throw ()
 }
 
 /**
- *  Return a TRUNCATE query matching the DBMS.
+ *  Get a DELETE query.
+ *
+ *  \return A new Delete query object.
  */
-Truncate* MySQLConnection::GetTruncateQuery()
+Delete* MySQLConnection::GetDelete()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating MySQL DELETE query...");
+#endif /* !NDEBUG */
+  return (new MySQLDelete(this->myconn_));
+}
+
+/**
+ *  Get an INSERT query.
+ *
+ *  \return A new Insert query object.
+ */
+Insert* MySQLConnection::GetInsert()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating MySQL INSERT query...");
+#endif /* !NDEBUG */
+  return (new MySQLInsert(this->myconn_));
+}
+
+/**
+ *  Get a SELECT query.
+ *
+ *  \return A new Select query object.
+ */
+Select* MySQLConnection::GetSelect()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating MYSQL SELECT query...");
+#endif /* !NDEBUG */
+  return (new MySQLSelect(this->myconn_));
+}
+
+/**
+ *  Get a TRUNCATE query.
+ *
+ *  \return A new Truncate query object.
+ */
+Truncate* MySQLConnection::GetTruncate()
 {
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Creating MySQL TRUNCATE query...");
 #endif /* !NDEBUG */
   return (new MySQLTruncate(this->myconn_));
+}
+
+/**
+ *  Get an UPDATE query.
+ *
+ *  \return A new Update query object.
+ */
+Update* MySQLConnection::GetUpdate()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating MySQL UPDATE query...");
+#endif /* !NDEBUG */
+  return (new MySQLUpdate(this->myconn_));
 }

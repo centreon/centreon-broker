@@ -31,6 +31,13 @@ namespace              CentreonBroker
 {
   namespace            DB
   {
+    /**
+     *  \class Select select.h "db/select.h"
+     *  \brief Interface for SELECT queries.
+     *
+     *  Interface of SELECT queries. Each DBMS will have to implement a
+     *  concrete object subclassing this interface.
+     */
     class              Select : public HaveFields,
                                 virtual public HavePredicate,
                                 public HaveTable,
@@ -51,17 +58,69 @@ namespace              CentreonBroker
         virtual bool   Next() = 0;
       };
 
+    /**
+     *  \class MappedSelect select.h "db/select.h"
+     *  \brief Interface for object-relational SELECT queries.
+     *
+     *  Interface to manipulate object-relational SELECT queries.
+     */
     template           <typename T>
-    class              MappedSelect : virtual public Select
+    class               MappedSelect : virtual public Select
     {
+     private:
+      const Mapping<T>& mapping_;
+
      protected:
-                       MappedSelect();
-                       MappedSelect(const MappedSelect& sm);
-      MappedSelect&    operator=(const MappedSelect& sm);
+      /**
+       *  \brief MappedSelect constructor.
+       *
+       *  Initialize members to their default values.
+       *
+       *  \param[in] mapping The Object-Relational mapping of the object.
+       */
+                        MappedSelect(const Mapping<T>& mapping)
+        : mapping_(mapping) {}
+
+      /**
+       *  \brief MappedSelect copy constructor.
+       *
+       *  Build a new MappedSelect by copying data from the given object.
+       *
+       *  \param[in] ms Object to copy data from.
+       */
+                        MappedSelect(const MappedSelect& ms)
+        : Select(ms), mapping_(ms.mapping_) {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy data from the given object to the current instance.
+       *
+       *  \param[in] ms Object to copy data from.
+       */
+      MappedSelect&     operator=(const MappedSelect& ms)
+      {
+	this->Select::operator=(ms);
+	return (*this);
+      }
 
      public:
-      virtual          ~MappedSelect();
-      void             Get(T& t);
+      /**
+       *  \brief MappedSelect destructor.
+       *
+       *  Release acquired ressources.
+       */
+      virtual           ~MappedSelect() {}
+
+      /**
+       *  Get the next object from the database.
+       *
+       *  \param[out] t Object to put data into.
+       */
+      virtual void      Get(T& t)
+      {
+	// XXX
+      }
     };
   }
 }
