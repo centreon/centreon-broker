@@ -18,21 +18,20 @@
 **  For more information : contact@centreon.com
 */
 
-#include <arpa/inet.h>
 #include <cerrno>
 #include <cstring>
-#include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include "exception.h"
-#include "io/net4.h"
+#include "io/unix.h"
 
 using namespace CentreonBroker::IO;
 
 /******************************************************************************
 *                                                                             *
 *                                                                             *
-*                                 Net4Stream                                  *
+*                                 UnixStream                                  *
 *                                                                             *
 *                                                                             *
 ******************************************************************************/
@@ -52,15 +51,15 @@ using namespace CentreonBroker::IO;
  *  stored with the current instance. If dup() failed, the method will throw a
  *  CentreonBroker::Exception.
  *
- *  \param[in] n4s Object which holds the original socket file descriptor.
+ *  \param[in] us Object which holds the original socket file descriptor.
  *
- *  \see Net4Stream
+ *  \see UnixStream
  *  \see operator=
  */
-void Net4Stream::InternalCopy(const Net4Stream& n4s)
+void UnixStream::InternalCopy(const UnixStream& us)
   throw (CentreonBroker::Exception)
 {
-  this->sockfd_ = dup(n4s.sockfd_);
+  this->sockfd_ = dup(us.sockfd_);
   if (this->sockfd_ < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;
@@ -73,38 +72,38 @@ void Net4Stream::InternalCopy(const Net4Stream& n4s)
 **************************************/
 
 /**
- *  \brief Net4Stream constructor.
+ *  \brief UnixStream constructor.
  *
- *  Build a Net4Stream by providing an already opened Berkeley style socket
- *  file descriptor. Once the constructor has been successfully executed, the
- *  Net4Stream object is responsible of the file descriptor (ie. it will handle
+ *  Build a UnixStream by providing an already opened Unix domain socket file
+ *  descriptor. Once the constructor has been successfully executed, the
+ *  UnixStream object is responsible of the file descriptor (ie. it will handle
  *  all I/O operations as well as closing).
  *
  *  \param[in] sockfd Berkeley style socket file descriptor.
  */
-Net4Stream::Net4Stream(int sockfd) throw () : sockfd_(sockfd) {}
+UnixStream::UnixStream(int sockfd) throw () : sockfd_(sockfd) {}
 
 /**
- *  \brief Net4Stream copy constructor.
+ *  \brief UnixStream copy constructor.
  *
- *  Duplicate the Net4Stream object given as a parameter. The internal socket
+ *  Duplicate the UnixStream object given as a parameter. The internal socket
  *  file descriptor will be dup()ed. A CentreonBroker::Exception will be thrown
  *  in case of error.
  *
- *  \param[in] n4s Net4Stream to duplicate.
+ *  \param[in] us UnixStream to duplicate.
  */
-Net4Stream::Net4Stream(const Net4Stream& n4s) throw (CentreonBroker::Exception)
-  : Stream(n4s)
+UnixStream::UnixStream(const UnixStream& us) throw (CentreonBroker::Exception)
+  : Stream(us)
 {
-  this->InternalCopy(n4s);
+  this->InternalCopy(us);
 }
 
 /**
- *  \brief Net4Stream destructor.
+ *  \brief UnixStream destructor.
  *
  *  The destructor will call Close() if the call has not already been made.
  */
-Net4Stream::~Net4Stream() throw ()
+UnixStream::~UnixStream() throw ()
 {
   this->Close();
 }
@@ -112,31 +111,31 @@ Net4Stream::~Net4Stream() throw ()
 /**
  *  \brief Overload of the assignement operator.
  *
- *  Close the current socket and duplicate the Net4Stream object given as a
+ *  Close the current socket and duplicate the UnixStream object given as a
  *  parameter. The internal socket file descriptor will be dup()ed. In case of
  *  error, the current object will be in a closed state and a
  *  CentreonBroker::Exception will be thrown.
  *
- *  \param[in] n4s Net4Stream to duplicate.
+ *  \param[in] us UnixStream to duplicate.
  *
  *  \return *this
  */
-Net4Stream& Net4Stream::operator=(const Net4Stream& n4s)
+UnixStream& UnixStream::operator=(const UnixStream& us)
   throw (CentreonBroker::Exception)
 {
   this->Close();
-  this->Stream::operator=(n4s);
-  this->InternalCopy(n4s);
+  this->Stream::operator=(us);
+  this->InternalCopy(us);
   return (*this);
 }
 
 /**
- *  \brief Close the Net4Stream socket.
+ *  \brief Close the UnixStream socket.
  *
  *  Close the current socket. If called directly, it won't be possible to use
  *  the object without error anymore.
  */
-void Net4Stream::Close() throw ()
+void UnixStream::Close() throw ()
 {
   if (this->sockfd_ >= 0)
     {
@@ -148,19 +147,19 @@ void Net4Stream::Close() throw ()
 }
 
 /**
- *  \brief Receive data from the network stream.
+ *  \brief Receive data from the IPC socket.
  *
- *  Receive at most size bytes from the network stream and store them in
- *  buffer. The number of bytes read is then returned. This number can be less
- *  than size. In case of error, a CentreonBroker::Exception is thrown.
+ *  Receive at most size bytes from another process and store them in buffer.
+ *  The number of bytes read is then returned. This number can be less than
+ *  size. In case of error, a CentreonBroker::Exception is thrown.
  *
  *  \param[out] buffer Buffer on which to store received data.
  *  \param[in]  size   Maximum number of bytes to read.
  *
- *  \return Number of bytes read from the network stream. 0 if the connection
+ *  \return Number of bytes read from the local stream. 0 if the connection
  *          has been shut down.
  */
-int Net4Stream::Receive(char* buffer, int size)
+int UnixStream::Receive(char* buffer, int size)
   throw (CentreonBroker::Exception)
 {
   int ret;
@@ -172,7 +171,7 @@ int Net4Stream::Receive(char* buffer, int size)
 }
 
 /**
- *  \brief Send data across the network stream.
+ *  \brief Send data across the IPC socket.
  *
  *  Send at most size bytes from the buffer. The number of bytes actually sent
  *  is returned. This number can be less than size. In case of error, a
@@ -181,10 +180,10 @@ int Net4Stream::Receive(char* buffer, int size)
  *  \param[in] buffer Data to send.
  *  \param[in] size   Maximum number of bytes to send.
  *
- *  \return Number of bytes actually sent to the network stream. 0 if the
+ *  \return Number of bytes actually sent to the peer process. 0 if the
  *          connection has been shut down.
  */
-int Net4Stream::Send(const char* buffer, int size)
+int UnixStream::Send(const char* buffer, int size)
   throw (CentreonBroker::Exception)
 {
   int ret;
@@ -199,7 +198,7 @@ int Net4Stream::Send(const char* buffer, int size)
 /******************************************************************************
 *                                                                             *
 *                                                                             *
-*                               Net4Acceptor                                  *
+*                               UnixAcceptor                                  *
 *                                                                             *
 *                                                                             *
 ******************************************************************************/
@@ -216,18 +215,18 @@ int Net4Stream::Send(const char* buffer, int size)
  *
  *  This method is used by the copy constructor and operator= to duplicate the
  *  file descriptor of the given object. This will result in the current
- *  instance listening on the same port and with the same parameters as the
- *  given object. In case of error, a CentreonBroker::Exception is thrown.
+ *  instance listening on the same socket name and with the same parameters as
+ *  the given object. In case of error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] ua UnixAcceptor to duplicate.
  *
- *  \see Net4Acceptor
+ *  \see UnixAcceptor
  *  \see operator=
  */
-void Net4Acceptor::InternalCopy(const Net4Acceptor& n4a)
+void UnixAcceptor::InternalCopy(const UnixAcceptor& ua)
   throw (CentreonBroker::Exception)
 {
-  this->sockfd_ = dup(n4a.sockfd_);
+  this->sockfd_ = dup(ua.sockfd_);
   if (this->sockfd_ < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;
@@ -240,33 +239,33 @@ void Net4Acceptor::InternalCopy(const Net4Acceptor& n4a)
 **************************************/
 
 /**
- *  \brief Net4Acceptor default constructor.
+ *  \brief UnixAcceptor default constructor.
  *
- *  Build a Net4Acceptor.
+ *  Build a UnixAcceptor.
  */
-Net4Acceptor::Net4Acceptor() throw () : sockfd_(-1) {}
+UnixAcceptor::UnixAcceptor() throw () : sockfd_(-1) {}
 
 /**
- *  \brief Net4Acceptor copy constructor.
+ *  \brief UnixAcceptor copy constructor.
  *
  *  Duplicate the already listening acceptor. The resulting acceptor will have
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] ua UnixAcceptor to duplicate.
  */
-Net4Acceptor::Net4Acceptor(const Net4Acceptor& n4a)
-  throw (CentreonBroker::Exception) : Acceptor(n4a), sockfd_(-1)
+UnixAcceptor::UnixAcceptor(const UnixAcceptor& ua)
+  throw (CentreonBroker::Exception) : Acceptor(ua), sockfd_(-1)
 {
-  this->InternalCopy(n4a);
+  this->InternalCopy(ua);
 }
 
 /**
- *  \brief Net4Acceptor destructor.
+ *  \brief UnixAcceptor destructor.
  *
  *  Will close the socket if it has not already been done.
  */
-Net4Acceptor::~Net4Acceptor() throw ()
+UnixAcceptor::~UnixAcceptor() throw ()
 {
   this->Close();
 }
@@ -278,16 +277,16 @@ Net4Acceptor::~Net4Acceptor() throw ()
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] ua UnixAcceptor to duplicate.
  *
  *  \return *this
  */
-Net4Acceptor& Net4Acceptor::operator=(const Net4Acceptor& n4a)
+UnixAcceptor& UnixAcceptor::operator=(const UnixAcceptor& ua)
   throw (CentreonBroker::Exception)
 {
   this->Close();
-  this->Acceptor::operator=(n4a);
-  this->InternalCopy(n4a);
+  this->Acceptor::operator=(ua);
+  this->InternalCopy(ua);
   return (*this);
 }
 
@@ -296,19 +295,19 @@ Net4Acceptor& Net4Acceptor::operator=(const Net4Acceptor& n4a)
  *
  *  Once the acceptor is in a listening state, one can wait for incoming
  *  client by using this method. Once a client is properly connected, this
- *  method will return a Stream object (in fact a Net4Stream object). In case
+ *  method will return a Stream object (in fact a UnixStream object). In case
  *  of error, a CentreonBroker::Exception is thrown.
  *
  *  \return A stream object representing the new client connection.
  */
-Stream* Net4Acceptor::Accept()
+Stream* UnixAcceptor::Accept()
 {
   int fd;
 
   fd = accept(this->sockfd_, NULL, NULL);
   if (fd < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
-  return (new Net4Stream(fd));
+  return (new UnixStream(fd));
 }
 
 /**
@@ -317,7 +316,7 @@ Stream* Net4Acceptor::Accept()
  *  Shutdown the socket properly. No more client connection can be made through
  *  this acceptor.
  */
-void Net4Acceptor::Close() throw ()
+void UnixAcceptor::Close() throw ()
 {
   if (this->sockfd_ >= 0)
     {
@@ -332,42 +331,32 @@ void Net4Acceptor::Close() throw ()
 /**
  *  \brief Put the acceptor in listen mode.
  *
- *  Before being able to Accept() new clients, the Net4Acceptor has to be put
+ *  Before being able to Accept() new clients, the UnixAcceptor has to be put
  *  in the listen mode. Call this method with the desired port to do so. In
  *  case of error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] port  Port on which the acceptor should listen on.
- *  \param[in] iface IP address of the interface the acceptor should be to.
- *                   If NULL (default), bind to all available interfaces.
+ *  \param[in] sock_path Name of the Unix domain socket.
  */
-void Net4Acceptor::Listen(unsigned short port, const char* iface)
+void UnixAcceptor::Listen(const char* sock_path)
   throw (CentreonBroker::Exception)
 {
-  struct sockaddr_in sin;
+  struct sockaddr_un sun;
 
   // Close the socket if it was previously open
   this->Close();
 
   // Create the new socket
-  this->sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+  this->sockfd_ = socket(AF_UNIX, SOCK_STREAM, 0);
   if (this->sockfd_ < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
 
   // Set the binding structure
-  memset(&sin, 0, sizeof(sin));
-  if (iface)
-    {
-      sin.sin_addr.s_addr = inet_addr(iface);
-      if ((in_addr_t)-1 == sin.sin_addr.s_addr)
-	throw (CentreonBroker::Exception(errno, strerror(errno)));
-    }
-  else
-    sin.sin_addr.s_addr = INADDR_ANY;
-  sin.sin_family = AF_INET;
-  sin.sin_port = htons(port);
+  sun.sun_family = AF_UNIX;
+  strncpy(sun.sun_path, sock_path, sizeof(sun.sun_path) - 1);
+  sun.sun_path[sizeof(sun.sun_path) - 1] = '\0';
 
   // Bind
-  if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))
+  if (bind(this->sockfd_, (struct sockaddr*)&sun, sizeof(sun))
       || listen(this->sockfd_, 0))
     throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;
