@@ -26,14 +26,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "exception.h"
-#include "io/net4.h"
+#include "io/net6.h"
 
 using namespace CentreonBroker::IO;
 
 /******************************************************************************
 *                                                                             *
 *                                                                             *
-*                                 Net4Stream                                  *
+*                                 Net6Stream                                  *
 *                                                                             *
 *                                                                             *
 ******************************************************************************/
@@ -55,10 +55,10 @@ using namespace CentreonBroker::IO;
  *
  *  \param[in] n4s Object which holds the original socket file descriptor.
  *
- *  \see Net4Stream
+ *  \see Net6Stream
  *  \see operator=
  */
-void Net4Stream::InternalCopy(const Net4Stream& n4s)
+void Net6Stream::InternalCopy(const Net6Stream& n4s)
   throw (CentreonBroker::Exception)
 {
   this->sockfd_ = dup(n4s.sockfd_);
@@ -74,38 +74,38 @@ void Net4Stream::InternalCopy(const Net4Stream& n4s)
 **************************************/
 
 /**
- *  \brief Net4Stream constructor.
+ *  \brief Net6Stream constructor.
  *
- *  Build a Net4Stream by providing an already opened Berkeley style socket
+ *  Build a Net6Stream by providing an already opened Berkeley style socket
  *  file descriptor. Once the constructor has been successfully executed, the
- *  Net4Stream object is responsible of the file descriptor (ie. it will handle
+ *  Net6Stream object is responsible of the file descriptor (ie. it will handle
  *  all I/O operations as well as closing).
  *
  *  \param[in] sockfd Berkeley style socket file descriptor.
  */
-Net4Stream::Net4Stream(int sockfd) throw () : sockfd_(sockfd) {}
+Net6Stream::Net6Stream(int sockfd) throw () : sockfd_(sockfd) {}
 
 /**
- *  \brief Net4Stream copy constructor.
+ *  \brief Net6Stream copy constructor.
  *
- *  Duplicate the Net4Stream object given as a parameter. The internal socket
+ *  Duplicate the Net6Stream object given as a parameter. The internal socket
  *  file descriptor will be dup()ed. A CentreonBroker::Exception will be thrown
  *  in case of error.
  *
- *  \param[in] n4s Net4Stream to duplicate.
+ *  \param[in] n4s Net6Stream to duplicate.
  */
-Net4Stream::Net4Stream(const Net4Stream& n4s) throw (CentreonBroker::Exception)
+Net6Stream::Net6Stream(const Net6Stream& n4s) throw (CentreonBroker::Exception)
   : Stream(n4s)
 {
   this->InternalCopy(n4s);
 }
 
 /**
- *  \brief Net4Stream destructor.
+ *  \brief Net6Stream destructor.
  *
  *  The destructor will call Close() if the call has not already been made.
  */
-Net4Stream::~Net4Stream() throw ()
+Net6Stream::~Net6Stream() throw ()
 {
   if (this->sockfd_ >= 0)
     this->Close();
@@ -114,16 +114,16 @@ Net4Stream::~Net4Stream() throw ()
 /**
  *  \brief Overload of the assignement operator.
  *
- *  Close the current socket and duplicate the Net4Stream object given as a
+ *  Close the current socket and duplicate the Net6Stream object given as a
  *  parameter. The internal socket file descriptor will be dup()ed. In case of
  *  error, the current object will be in a closed state and a
  *  CentreonBroker::Exception will be thrown.
  *
- *  \param[in] n4s Net4Stream to duplicate.
+ *  \param[in] n4s Net6Stream to duplicate.
  *
  *  \return *this
  */
-Net4Stream& Net4Stream::operator=(const Net4Stream& n4s)
+Net6Stream& Net6Stream::operator=(const Net6Stream& n4s)
   throw (CentreonBroker::Exception)
 {
   if (this->sockfd_ >= 0)
@@ -134,12 +134,12 @@ Net4Stream& Net4Stream::operator=(const Net4Stream& n4s)
 }
 
 /**
- *  \brief Close the Net4Stream socket.
+ *  \brief Close the Net6Stream socket.
  *
  *  Close the current socket. If called directly, it won't be possible to use
  *  the object without error anymore.
  */
-void Net4Stream::Close() throw ()
+void Net6Stream::Close() throw ()
 {
   shutdown(this->sockfd_, SHUT_RDWR);
   close(this->sockfd_);
@@ -160,7 +160,7 @@ void Net4Stream::Close() throw ()
  *  \return Number of bytes read from the network stream. 0 if the connection
  *          has been shut down.
  */
-int Net4Stream::Receive(char* buffer, int size)
+int Net6Stream::Receive(char* buffer, int size)
   throw (CentreonBroker::Exception)
 {
   int ret;
@@ -184,7 +184,7 @@ int Net4Stream::Receive(char* buffer, int size)
  *  \return Number of bytes actually sent to the network stream. 0 if the
  *          connection has been shut down.
  */
-int Net4Stream::Send(const char* buffer, int size)
+int Net6Stream::Send(const char* buffer, int size)
   throw (CentreonBroker::Exception)
 {
   int ret;
@@ -199,7 +199,7 @@ int Net4Stream::Send(const char* buffer, int size)
 /******************************************************************************
 *                                                                             *
 *                                                                             *
-*                               Net4Acceptor                                  *
+*                               Net6Acceptor                                  *
 *                                                                             *
 *                                                                             *
 ******************************************************************************/
@@ -219,12 +219,12 @@ int Net4Stream::Send(const char* buffer, int size)
  *  instance listening on the same port and with the same parameters as the
  *  given object. In case of error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] n4a Net6Acceptor to duplicate.
  *
- *  \see Net4Acceptor
+ *  \see Net6Acceptor
  *  \see operator=
  */
-void Net4Acceptor::InternalCopy(const Net4Acceptor& n4a)
+void Net6Acceptor::InternalCopy(const Net6Acceptor& n4a)
   throw (CentreonBroker::Exception)
 {
   this->sockfd_ = dup(n4a.sockfd_);
@@ -240,33 +240,33 @@ void Net4Acceptor::InternalCopy(const Net4Acceptor& n4a)
 **************************************/
 
 /**
- *  \brief Net4Acceptor default constructor.
+ *  \brief Net6Acceptor default constructor.
  *
- *  Build a Net4Acceptor.
+ *  Build a Net6Acceptor.
  */
-Net4Acceptor::Net4Acceptor() throw () : sockfd_(-1) {}
+Net6Acceptor::Net6Acceptor() throw () : sockfd_(-1) {}
 
 /**
- *  \brief Net4Acceptor copy constructor.
+ *  \brief Net6Acceptor copy constructor.
  *
  *  Duplicate the already listening acceptor. The resulting acceptor will have
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] n4a Net6Acceptor to duplicate.
  */
-Net4Acceptor::Net4Acceptor(const Net4Acceptor& n4a)
+Net6Acceptor::Net6Acceptor(const Net6Acceptor& n4a)
   throw (CentreonBroker::Exception) : Acceptor(n4a), sockfd_(-1)
 {
   this->InternalCopy(n4a);
 }
 
 /**
- *  \brief Net4Acceptor destructor.
+ *  \brief Net6Acceptor destructor.
  *
  *  Will close the socket if it has not already been done.
  */
-Net4Acceptor::~Net4Acceptor() throw ()
+Net6Acceptor::~Net6Acceptor() throw ()
 {
   if (this->sockfd_ >= 0)
     this->Close();
@@ -279,11 +279,11 @@ Net4Acceptor::~Net4Acceptor() throw ()
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net4Acceptor to duplicate.
+ *  \param[in] n4a Net6Acceptor to duplicate.
  *
  *  \return *this
  */
-Net4Acceptor& Net4Acceptor::operator=(const Net4Acceptor& n4a)
+Net6Acceptor& Net6Acceptor::operator=(const Net6Acceptor& n4a)
   throw (CentreonBroker::Exception)
 {
   if (this->sockfd_ >= 0)
@@ -298,19 +298,19 @@ Net4Acceptor& Net4Acceptor::operator=(const Net4Acceptor& n4a)
  *
  *  Once the acceptor is in a listening state, one can wait for incoming
  *  client by using this method. Once a client is properly connected, this
- *  method will return a Stream object (in fact a Net4Stream object). In case
+ *  method will return a Stream object (in fact a Net6Stream object). In case
  *  of error, a CentreonBroker::Exception is thrown.
  *
  *  \return A stream object representing the new client connection.
  */
-Stream* Net4Acceptor::Accept()
+Stream* Net6Acceptor::Accept()
 {
   int fd;
 
   fd = accept(this->sockfd_, NULL, NULL);
   if (fd < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
-  return (new Net4Stream(fd));
+  return (new Net6Stream(fd));
 }
 
 /**
@@ -319,7 +319,7 @@ Stream* Net4Acceptor::Accept()
  *  Shutdown the socket properly. No more client connection can be made through
  *  this acceptor.
  */
-void Net4Acceptor::Close() throw ()
+void Net6Acceptor::Close() throw ()
 {
   shutdown(this->sockfd_, SHUT_RDWR);
   fsync(this->sockfd_);
@@ -331,7 +331,7 @@ void Net4Acceptor::Close() throw ()
 /**
  *  \brief Put the acceptor in listen mode.
  *
- *  Before being able to Accept() new clients, the Net4Acceptor has to be put
+ *  Before being able to Accept() new clients, the Net6Acceptor has to be put
  *  in the listen mode. Call this method with the desired port to do so. In
  *  case of error, a CentreonBroker::Exception is thrown.
  *
@@ -339,17 +339,17 @@ void Net4Acceptor::Close() throw ()
  *  \param[in] iface IP address of the interface the acceptor should be to.
  *                   If NULL (default), bind to all available interfaces.
  */
-void Net4Acceptor::Listen(unsigned short port, const char* iface)
+void Net6Acceptor::Listen(unsigned short port, const char* iface)
   throw (CentreonBroker::Exception)
 {
-  struct sockaddr_in sin;
+  struct sockaddr_in6 sin;
 
   // Check that the socket has not already been opened
   if (this->sockfd_ >= 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
 
   // Create the new socket
-  this->sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+  this->sockfd_ = socket(AF_INET6, SOCK_STREAM, 0);
   if (this->sockfd_ < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
 
@@ -357,14 +357,13 @@ void Net4Acceptor::Listen(unsigned short port, const char* iface)
   memset(&sin, 0, sizeof(sin));
   if (iface)
     {
-      sin.sin_addr.s_addr = inet_addr(iface);
-      if ((in_addr_t)-1 == sin.sin_addr.s_addr)
+      if (inet_pton(AF_INET6, iface, sin.sin6_addr.s6_addr) != 1)
 	throw (CentreonBroker::Exception(errno, strerror(errno)));
     }
   else
-    sin.sin_addr.s_addr = INADDR_ANY;
-  sin.sin_family = AF_INET;
-  sin.sin_port = htons(port);
+    memcpy(&sin.sin6_addr, &in6addr_any, sizeof(in6addr_any));
+  sin.sin6_family = AF_INET6;
+  sin.sin6_port = htons(port);
 
   // Bind
   if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))

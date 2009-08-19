@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef IO_NET4_H_
-# define IO_NET4_H_
+#ifndef IO_NET6_H_
+# define IO_NET6_H_
 
 # include "exception.h"
 # include "io/io.h"
@@ -29,27 +29,27 @@ namespace            CentreonBroker
   namespace          IO
   {
     /**
-     *  \class Net4Stream net4.h "io/net4.h"
-     *  \brief A connected IPv4 Berkeley style socket.
+     *  \class Net6Stream net6.h "io/net6.h"
+     *  \brief A connected IPv6 Berkeley style socket.
      *
-     *  A Net4Stream is an already connected IPv4 socket. It is undefined how
+     *  A Net6Stream is an already connected IPv6 socket. It is undefined how
      *  this socket has been initialized.
      *
-     *  \see Net4Acceptor
+     *  \see Net6Acceptor
      */
-    class            Net4Stream : public Stream
+    class            Net6Stream : public Stream
     {
      private:
       int            sockfd_;
-      void           InternalCopy(const Net4Stream& n4s)
+      void           InternalCopy(const Net6Stream& n6s)
                        throw (CentreonBroker::Exception);
 
      public:
-                     Net4Stream(int sockfd) throw ();
-                     Net4Stream(const Net4Stream& n4s)
+                     Net6Stream(int sockfd) throw ();
+                     Net6Stream(const Net6Stream& n6s)
                        throw (CentreonBroker::Exception);
-                     ~Net4Stream() throw ();
-      Net4Stream&    operator=(const Net4Stream& n4s)
+                     ~Net6Stream() throw ();
+      Net6Stream&    operator=(const Net6Stream& n6s)
                        throw (CentreonBroker::Exception);
       void           Close() throw ();
       int            Receive(char* buffer, int size)
@@ -59,11 +59,11 @@ namespace            CentreonBroker
     };
 
     /**
-     *  \class Net4Acceptor net4.h "io/net4.h"
+     *  \class Net6Acceptor net6.h "io/net6.h"
      *  \brief Listen on a specified port to wait for incoming clients.
      *
      *  This class is used to listen on a specified port of the local host. If
-     *  one network client connects to this port, the Net4Acceptor can generate
+     *  one network client connects to this port, the Net6Acceptor can generate
      *  a new Stream object corresponding to this specific client.
      *
      *  Usage is pretty simple. Just call the Listen() method with the desired
@@ -72,21 +72,21 @@ namespace            CentreonBroker
      *  Close() to shut it down. If you want to, start the cycle again with a
      *  potentially different port.
      *
-     *  \see Net4Stream
+     *  \see Net6Stream
      */
-    class            Net4Acceptor : public Acceptor
+    class            Net6Acceptor : public Acceptor
     {
      private:
       int            sockfd_;
-      void           InternalCopy(const Net4Acceptor& n4a)
+      void           InternalCopy(const Net6Acceptor& n6a)
                        throw (CentreonBroker::Exception);
 
      public:
-                     Net4Acceptor() throw ();
-                     Net4Acceptor(const Net4Acceptor& n4a)
+                     Net6Acceptor() throw ();
+                     Net6Acceptor(const Net6Acceptor& n6a)
                        throw (CentreonBroker::Exception);
-                     ~Net4Acceptor() throw ();
-		     Net4Acceptor&  operator=(const Net4Acceptor& n4a)
+                     ~Net6Acceptor() throw ();
+      Net6Acceptor&  operator=(const Net6Acceptor& n6a)
                        throw (CentreonBroker::Exception);
       Stream*        Accept();
       void           Close() throw ();
@@ -96,4 +96,4 @@ namespace            CentreonBroker
   }
 }
 
-#endif /* !IO_NET4_H_ */
+#endif /* !IO_NET6_H_ */
