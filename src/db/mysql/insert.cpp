@@ -155,6 +155,17 @@ void MySQLInsert::Execute()
 }
 
 /**
+ *  Get the primary key of the last inserted element.
+ *
+ *  \return Primary key of the last inserted element.
+ */
+unsigned int MySQLInsert::InsertId()
+{
+  return (this->stmt ? mysql_stmt_insert_id(this->stmt)
+                     : mysql_insert_id(this->mysql));
+}
+
+/**
  *  \brief Prepare the INSERT query on the MySQL server.
  *
  *  Prepare the INSERT statement on the server for a later execution.

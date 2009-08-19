@@ -123,9 +123,8 @@ void MySQLQuery::Execute()
 void MySQLQuery::Prepare()
 {
 #ifndef NDEBUG
-  logging.LogDebug("Preparing MySQL statement...", true);
+  logging.LogDebug("Preparing MySQL statement...");
   logging.LogDebug(this->query.c_str());
-  logging.Deindent();
 #endif /* !NDEBUG */
   this->stmt = mysql_stmt_init(this->mysql);
   if (!this->stmt)

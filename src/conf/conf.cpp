@@ -331,7 +331,6 @@ void Conf::Load(const std::string& filename)
 
 #ifndef NDEBUG
   logging.LogDebug("Loading configuration file...");
-  logging.Indent();
 #endif /* !NDEBUG */
   this->filename_ = filename;
   ifs.open(filename.c_str());
@@ -359,14 +358,8 @@ void Conf::Load(const std::string& filename)
     }
   else
     {
-#ifndef NDEBUG
-      logging.Deindent();
-#endif /* !NDEBUG */
       throw (Exception(0, "Could not load configuration file"));
     }
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   this->in_it_ = this->inputs_.begin();
   this->log_it_ = this->logs_.begin();
   this->out_it_ = this->outputs_.begin();

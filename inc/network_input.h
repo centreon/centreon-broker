@@ -32,6 +32,9 @@ namespace                    CentreonBroker
   class                      ClientAcceptor;
 
   /**
+   *  \class NetworkInput network_input.h "network_input.h"
+   *  \brief Generate events from a network stream.
+   *
    *  The NetworkInput class treats data coming from a client and parse it to
    *  generate appropriate Events.
    */
@@ -55,7 +58,7 @@ namespace                    CentreonBroker
     boost::thread*           thread_;
     boost::mutex             threadm_;
                              NetworkInput(ClientAcceptor* parent,
-                               IO::Stream* stream);
+                                          IO::Stream* stream);
                              NetworkInput(const NetworkInput& ni);
     NetworkInput&            operator=(const NetworkInput& ni);
     void                     HandleAcknowledgement();

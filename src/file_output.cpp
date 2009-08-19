@@ -95,9 +95,6 @@ void FileOutput::operator()()
 {
   try
     {
-      // Allocate ressources for thread logging
-      logging.ThreadStart();
-
       // While thread has not been canceled
       while (!this->exit_)
 	{
@@ -120,15 +117,12 @@ void FileOutput::operator()()
     }
   catch (std::exception& e)
     {
-      logging.LogError("Caught exception while writing to file", true);
+      logging.LogError("Caught exception while writing to file");
       logging.LogError(e.what());
-      logging.Deindent();
     }
   catch (...)
     {
     }
-  // Free ressources for thread logging
-  logging.ThreadEnd();
   return ;
 }
 
@@ -140,7 +134,7 @@ void FileOutput::Close()
   if (this->thread_)
     {
 #ifndef NDEBUG
-      logging.LogDebug("Finishing file-writing thread...", true);
+      logging.LogDebug("Finishing file-writing thread...");
       logging.LogDebug("Cancelling thread execution...");
 #endif /* !NDEBUG */
       this->exit_ = true;
@@ -156,10 +150,6 @@ void FileOutput::Close()
       this->thread_->join();
       delete (this->thread_);
       this->thread_ = NULL;
-
-#ifndef NDEBUG
-      logging.Deindent();
-#endif /* !NDEBUG */
     }
   if (this->ofs.is_open())
     {
@@ -180,9 +170,8 @@ void FileOutput::Open(const char* filename)
 {
   assert(filename);
 #ifndef NDEBUG
-  logging.LogDebug("Opening file...", true);
+  logging.LogDebug("Opening file...");
   logging.LogDebug(filename);
-  logging.Deindent();
 #endif /* !NDEBUG */
 
   // Open file

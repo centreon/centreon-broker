@@ -51,6 +51,7 @@ namespace          CentreonBroker
                    MySQLInsert(MYSQL* myconn);
       virtual      ~MySQLInsert();
       void         Execute();
+      unsigned int InsertId();
       void         Prepare();
       virtual void SetArg(bool arg);
       virtual void SetArg(double arg);

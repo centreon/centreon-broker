@@ -18,7 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
+#include <boost/thread.hpp>
 #include <cassert>
+#include <sstream>
 #include <syslog.h>
 #include "logging.h"
 
@@ -63,12 +65,17 @@ void Logging::Output::Clean()
       delete (this->stream_);
       this->stream_ = NULL;
     }
+  return ;
 }
 
 /**
+ *  \brief Copy data members of Logging::Output.
+ *
  *  Make a copy of internal parameters. The parameters hold in the output
  *  variable will be transfered to the current instance and discarded in
  *  output.
+ *
+ *  \param[in] output Object to copy data from.
  */
 void Logging::Output::InternalCopy(const Logging::Output& output)
 {
@@ -91,15 +98,19 @@ void Logging::Output::InternalCopy(const Logging::Output& output)
 **************************************/
 
 /**
- *  Output default constructor (does nothing).
+ *  \brief Output default constructor.
+ *
+ *  Does nothing.
  */
-Logging::Output::Output() : flags_(0), stream_(NULL)
-{
-}
+Logging::Output::Output() : flags_(0), stream_(NULL) {}
 
 /**
- *  Output copy constructor. The parameters hold in output will be transfered
- *  to the current instance and discarded in output.
+ *  \brief Output copy constructor.
+ *
+ *  The parameters hold in output will be transfered to the current instance
+ *  and discarded in output.
+ *
+ *  \param[in] output Object to copy data from.
  */
 Logging::Output::Output(const Logging::Output& output)
 {
@@ -107,7 +118,9 @@ Logging::Output::Output(const Logging::Output& output)
 }
 
 /**
- *  Output destructor. Will close the wrapped file if open.
+ *  \brief Output destructor.
+ *
+ *  Will close the wrapped file if open.
  */
 Logging::Output::~Output() throw ()
 {
@@ -121,8 +134,12 @@ Logging::Output::~Output() throw ()
 }
 
 /**
- *  Output operator= overload. The parameters hold in output will be transfered
- *  to the current instance and discarded in output.
+ *  \brief Overload of the assignment operator.
+ *
+ *  The parameters hold in output will be transfered to the current instance
+ *  and discarded in output.
+ *
+ *  \param[in] output Object to copy data from.
  */
 Logging::Output& Logging::Output::operator=(const Logging::Output& output)
 {
@@ -152,69 +169,87 @@ Logging::Output& Logging::Output::operator=(const Logging::Output& output)
 **************************************/
 
 /**
- *  Logging copy constructor (shouldn't be used).
+ *  \brief Logging copy constructor.
+ *
+ *  Shouldn't be used (call abort()).
  */
 Logging::Logging(const Logging& l)
 {
   (void)l;
   assert(false);
+  abort();
 }
 
 /**
- *  Logging operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Shouldn't be used (call abort()).
  */
 Logging& Logging::operator=(const Logging& l)
 {
   (void)l;
   assert(false);
+  abort();
   return (*this);
 }
 
 /**
- *  Log a message into the appropriate outputs.
+ *  \brief Log a message into the appropriate outputs.
+ *
+ *  This is the basic method used to log messages to streams. It will browse
+ *  the stream list and push the message if the flags match.
+ *
+ *  \param[in] str Message to log.
+ *  \param[in] flag Type of message.
  */
-void Logging::LogBase(const char* str, int flags, bool indent) throw ()
+void Logging::LogBase(const char* str, Logging::MsgType msg_type) throw ()
 {
   try
     {
-      int idnt;
       boost::unique_lock<boost::mutex> lock(this->mutex_);
-      boost::thread::id self;
+      std::string full_msg;
 
-      self = boost::this_thread::get_id();
-      idnt = (*this->indent_.find(self)).second;
+      // Build the full message string
+      {
+	std::ostringstream ss;
 
-      for (std::vector<Output>::iterator ito = this->outputs_.begin();
+	full_msg = "[";
+	ss << boost::this_thread::get_id();
+	full_msg.append(ss.str());
+	full_msg.append("] ");
+	full_msg.append(str);
+      }
+
+      // Browse all outputs
+      for (std::list<Output>::iterator ito = this->outputs_.begin();
 	   ito != this->outputs_.end();
 	   ito++)
-	if ((*ito).flags_ & flags)
-	  {
-	    std::ostream* os;
+	if ((*ito).flags_ & msg_type)
+	  *(*ito).stream_ << full_msg << std::endl;
 
-	    os = (*ito).stream_;
-	    *os << '[' << self << "] ";
-	    for (int i = 0; i < idnt; i++)
-	      *os << "  ";
-	    *os << str << std::endl;
-	  }
-      if (this->use_syslog_ && (this->syslog_flags_ & flags))
+      // Special case : stderr
+      if (this->stderr_flags_ & msg_type)
+	std::cerr << full_msg << std::endl;
+
+      // Special case : stdout
+      if (this->stdout_flags_ & msg_type)
+	std::cout << full_msg << std::endl;
+
+      // Syslog
+      if (this->syslog_flags_ & msg_type)
 	{
 	  int priority;
 
-	  if (flags & DEBUG)
+	  if (msg_type & DEBUG)
 	    priority = LOG_DEBUG;
-	  else if (flags & ERROR)
+	  else if (msg_type & ERROR)
 	    priority = LOG_ERR;
 	  else
 	    priority = LOG_INFO;
 	  syslog(priority, str, NULL);
 	}
-      if (indent)
-	this->indent_[self]++;
     }
-  catch (...)
-    {
-    }
+  catch (...) {}
   return ;
 }
 
@@ -227,9 +262,10 @@ void Logging::LogBase(const char* str, int flags, bool indent) throw ()
 /**
  *  Logging default constructor.
  */
-Logging::Logging() : syslog_flags_(0), use_syslog_(false)
-{
-}
+Logging::Logging()
+  : stderr_flags_(0),
+    stdout_flags_(0),
+    syslog_flags_(0) {}
 
 /**
  *  Logging destructor.
@@ -237,88 +273,102 @@ Logging::Logging() : syslog_flags_(0), use_syslog_(false)
 Logging::~Logging() throw ()
 {
   // Outputs will self-destruct, we only have to close syslog, if necessary.
-  if (this->use_syslog_)
+  if (this->syslog_flags_)
     closelog();
-}
-
-/**
- *  Remove a level of indentation to the current thread.
- */
-void Logging::Deindent() throw ()
-{
-  try
-    {
-      boost::unique_lock<boost::mutex> lock(this->mutex_);
-
-      this->indent_[boost::this_thread::get_id()]--;
-    }
-  catch (...)
-    {
-    }
-  return ;
-}
-
-/**
- *  Add a level of indentation to the current thread.
- */
-void Logging::Indent() throw ()
-{
-  try
-    {
-      boost::unique_lock<boost::mutex> lock(this->mutex_);
-
-      this->indent_[boost::this_thread::get_id()]++;
-    }
-  catch (...)
-    {
-    }
-  return ;
 }
 
 #ifndef NDEBUG
 /**
  *  Add a debug output.
+ *
+ *  \param[in] str Debug message to log.
  */
-void Logging::LogDebug(const char* str, bool indent) throw ()
+void Logging::LogDebug(const char* str) throw ()
 {
-  this->LogBase(str, DEBUG, indent);
+  this->LogBase(str, DEBUG);
   return ;
 }
 #endif /* !NDEBUG */
 
 /**
  *  Add an error output.
+ *
+ *  \param[in] str Error message to log.
  */
-void Logging::LogError(const char* str, bool indent) throw ()
+void Logging::LogError(const char* str) throw ()
 {
-  this->LogBase(str, ERROR, indent);
+  this->LogBase(str, ERROR);
   return ;
 }
 
 /**
  *  Specify a file on which log should be sent.
+ *
+ *  \param[in] filename  Path of the file to log to.
+ *  \param[in] log_flags Specify which kind of messages should be log. Specify
+ *                       0 (default) to remove the file.
  */
 void Logging::LogInFile(const char* filename, int log_flags)
 {
-  Output out;
+  boost::unique_lock<boost::mutex> lock(this->mutex_);
 
-  out.filename_ = filename;
-  out.flags_ = log_flags;
-  out.stream_ = new std::ofstream;
-  out.stream_->open(filename);
-  if (out.stream_->is_open())
-    this->outputs_.push_back(out);
+  // Add or modify an output
+  if (log_flags)
+    {
+      // Try to find the output
+      for (std::list<Output>::iterator it = this->outputs_.begin();
+	   it != this->outputs_.end();
+	   it++)
+	if (it->filename_ == filename)
+	  {
+	    it->flags_ = log_flags;
+	    return ;
+	  }
+
+      // We didn't find it so add it.
+      {
+	Output out;
+
+	out.filename_ = filename;
+	out.flags_ = log_flags;
+	out.stream_ = new std::ofstream;
+	out.stream_->open(filename);
+	this->outputs_.push_back(out);
+      }
+    }
+  // Remove output
+  else
+    {
+      for (std::list<Output>::iterator it = this->outputs_.begin();
+           it != this->outputs_.end();
+	   it++)
+	if (it->filename_ == filename)
+	  this->outputs_.erase(it);
+    }
+  return ;
+}
+
+/**
+ *  Add an info output.
+ *
+ *  \param[in] str Informational message to log.
+ */
+void Logging::LogInfo(const char* str) throw ()
+{
+  this->LogBase(str, INFO);
   return ;
 }
 
 /**
  *  Determines whether or not output should be sent to the syslog facility.
+ *
+ *  \param[in] log_flags Specify which kind of messages should be sent to the
+ *                       syslog facility (0 for none).
  */
-void Logging::LogInSyslog(bool use_syslog, int log_flags) throw ()
+void Logging::LogInSyslog(int log_flags) throw ()
 {
   this->syslog_flags_ = log_flags;
-  this->use_syslog_ = use_syslog;
-  if (this->use_syslog_)
+  if (this->syslog_flags_)
     openlog("CentreonBroker", 0, LOG_USER);
   else
     closelog();
@@ -326,36 +376,25 @@ void Logging::LogInSyslog(bool use_syslog, int log_flags) throw ()
 }
 
 /**
- *  Add an info output.
+ *  Determines whether or not output should be sent to stderr.
+ *
+ *  \param[in] log_flags Specify which kind of messages should be sent to
+ *                       stderr (0 for none).
  */
-void Logging::LogInfo(const char* str, bool indent) throw ()
+void Logging::LogToStderr(int log_flags) throw ()
 {
-  this->LogBase(str, INFO, indent);
+  this->stderr_flags_ = log_flags;
   return ;
 }
 
 /**
- *  Signal when a thread is over so that allocated ressources are freed.
+ *  Determines whether or not output should be sent to stdout.
+ *
+ *  \param[in] log_flags Specify which kind of messages should be sent to
+ *                       stdout (0 for none).
  */
-void Logging::ThreadEnd()
+void Logging::LogToStdout(int log_flags) throw ()
 {
-  boost::unique_lock<boost::mutex> lock(this->mutex_);
-  std::map<boost::thread::id, int>::iterator it;
-
-  it = this->indent_.find(boost::this_thread::get_id());
-  if (it != this->indent_.end())
-    this->indent_.erase(it);
-  return ;
-}
-
-/**
- *  Signal when a thread start so that necessary logging ressources are
- *  allocated.
- */
-void Logging::ThreadStart()
-{
-  boost::unique_lock<boost::mutex> lock(this->mutex_);
-
-  this->indent_[boost::this_thread::get_id()] = 0;
+  this->stdout_flags_ = log_flags;
   return ;
 }
