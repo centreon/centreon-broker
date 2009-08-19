@@ -117,7 +117,7 @@ namespace          CentreonBroker
        *  \param[in] mapping Object-Relational mapping of the event type T.
        */
                          MySQLMappedUpdate(MYSQL* myconn,
-                                           const Mapping<T>& mapping)
+                                           const MappingGetters<T>& mapping)
         : MappedUpdate<T>(mapping), MySQLUpdate(myconn) {}
 
       /**

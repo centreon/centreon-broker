@@ -31,6 +31,13 @@ namespace            CentreonBroker
 {
   namespace          DB
   {
+    /**
+     *  \class MySQLSelect select.h "db/mysql/select.h"
+     *
+     *  MySQL SELECT query
+     *
+     *  \see Select
+     */
     class            MySQLSelect : virtual public Select,
                                    public MySQLHaveArgs,
                                    public MySQLHavePredicate
@@ -55,24 +62,73 @@ namespace            CentreonBroker
                      MySQLSelect(MYSQL* mysql);
       virtual        ~MySQLSelect();
       virtual void   Execute();
-      bool           GetBool();
-      double         GetDouble();
-      int            GetInt();
-      short          GetShort();
-      void           GetString(std::string& str);
-      bool           Next();
+      virtual bool   GetBool();
+      virtual double GetDouble();
+      virtual int    GetInt();
+      virtual short  GetShort();
+      virtual void   GetString(std::string& str);
+      virtual bool   Next();
       virtual void   Prepare();
     };
 
+    /**
+     *  \class MySQLMappedSelect select.h "db/mysql/select.h"
+     *
+     *  Object-relational MySQL SELECT query.
+     *
+     *  \see MappedSelect
+     */
     template             <typename T>
     class                MySQLMappedSelect : public MappedSelect<T>,
                                              public MySQLSelect
     {
+     protected:
+      /**
+       *  \brief MySQLMappedSelect copy constructor.
+       *
+       *  Build the new mapped query by copying data from the given object.
+       *
+       *  \param[in] myms Object to copy data from.
+       */
+                         MySQLMappedSelect(const MySQLMappedSelect& myms)
+        : MappedSelect<T>(myms), MySQLSelect(myms) {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy data of the given object to the current instance.
+       *
+       *  \param[in] myms Object to copy data from.
+       *
+       *  \return *this
+       */
+      MySQLMappedSelect& operator=(const MySQLMappedSelect& myms)
+      {
+	this->MappedSelect<T>::operator=(myms);
+	this->MySQLSelect::operator=(myms);
+	return (*this);
+      }
+
      public:
-                         MySQLMappedSelect();
-                         MySQLMappedSelect(const MySQLMappedSelect& myms);
-                         ~MySQLMappedSelect();
-      MySQLMappedSelect& operator=(const MySQLMappedSelect& myms);
+      /**
+       *  \brief MySQLMappedSelect constructor.
+       *
+       *  Build the MySQLMappedSelect object. Needs the MySQL connection object
+       *  on which the query will be executed.
+       *
+       *  \param[in] myconn  MySQL connection object.
+       *  \param[in] mapping Object-Relational mapping of the event type T.
+       */
+                         MySQLMappedSelect(MYSQL* myconn,
+                                           const MappingSetters<T>& mapping)
+	: MappedSelect<T>(mapping), MySQLSelect(myconn) {}
+
+      /**
+       *  \brief MySQLMappedInsert destructor.
+       *
+       *  Release acquired ressources.
+       */
+                         ~MySQLMappedSelect() {}
     };
   }
 }

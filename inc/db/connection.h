@@ -47,7 +47,9 @@ namespace                 CentreonBroker
     class                 MappedUpdate;
     // Misc
     template              <typename ObjectType>
-    class                 Mapping;
+    class                 MappingGetters;
+    template              <typename ObjectType>
+    class                 MappingSetters;
 
     /**
      *  \class Connection connection.h "db/connection.h"
@@ -91,13 +93,11 @@ namespace                 CentreonBroker
       virtual Truncate*   GetTruncate() = 0;
       virtual Update*     GetUpdate() = 0;
       template            <typename T>
-      MappedInsert<T>*    GetMappedInsert(const Mapping<T>& mapping);
-      /*
+      MappedInsert<T>*    GetMappedInsert(const MappingGetters<T>& mapping);
       template            <typename T>
-      MappedSelect<T>*    GetMappedSelect(const Mapping<T>& mapping);
-      */
+      MappedSelect<T>*    GetMappedSelect(const MappingSetters<T>& mapping);
       template            <typename T>
-      MappedUpdate<T>*    GetMappedUpdate(const Mapping<T>& mapping);
+      MappedUpdate<T>*    GetMappedUpdate(const MappingGetters<T>& mapping);
     };
   }
 }
@@ -117,47 +117,6 @@ namespace                 CentreonBroker
 # endif /* USE_POSTGRESQL */
 
 /**
- *  Return a DELETE query matching the DBMS. Because we can't override a
- *  template method, we will dynamic_cast the Connection to call the proper
- *  method.
- *
-template <typename T>                              // Template
-CentreonBroker::DB::MappedDelete<T>*               // Return type
-  CentreonBroker::DB::Connection::GetMappedDelete( // Method
-    const Mapping<T>& mapping)                     // Argument
-{
-  Delete<T>* del;
-
-  switch (this->dbms_)
-    {
-# ifdef USE_MYSQL
-     case MYSQL:
-      del = dynamic_cast<MySQLConnection*>(this)
-	->GetMappedDelete<T>(mapping);
-      break ;
-# endif /* USE_MYSQL *
-
-# ifdef USE_ORACLE
-     case ORACLE:
-# endif /* USE_ORACLE *
-
-# ifdef USE_POSTGRESQL
-     case POSTGRESQL:
-      del = dynamic_cast<PgSQLConnection*>(this)
-	->GetMappedDelete<T>(mapping);
-      break ;
-# endif /* USE_POSTGRESQL *
-
-     default:
-      assert(false);
-      throw (DBException(this->dbms_,
-			 DBException::QUERY_PREPARATION,
-			 "Unsupported DBMS"));
-    }
-  return (del);
-  }*/
-
-/**
  *  Return an INSERT query matching the DBMS. Because we can't override a
  *  template method, we will dynamic_cast the Connection to call the proper
  *  method.
@@ -165,7 +124,7 @@ CentreonBroker::DB::MappedDelete<T>*               // Return type
 template <typename T>                              // Template
 CentreonBroker::DB::MappedInsert<T>*               // Return type
   CentreonBroker::DB::Connection::GetMappedInsert( // Method
-    const Mapping<T>& mapping)                     // Argument
+    const MappingGetters<T>& mapping)              // Argument
 {
   MappedInsert<T>* insert;
 
@@ -199,13 +158,54 @@ CentreonBroker::DB::MappedInsert<T>*               // Return type
 }
 
 /**
+ *  Return a SELECT query matching the DBMS. Because we can't override a
+ *  template method, we will dynamic_cast the Connection to call the proper
+ *  method.
+ */
+template <typename T>                              // Template
+CentreonBroker::DB::MappedSelect<T>*               // Return type
+  CentreonBroker::DB::Connection::GetMappedSelect( // Method
+    const MappingSetters<T>& mapping)              // Argument
+{
+  MappedSelect<T>* select;
+
+  switch (this->dbms_)
+    {
+# ifdef USE_MYSQL
+     case MYSQL:
+      select = dynamic_cast<MySQLConnection*>(this)
+	->GetMappedSelect<T>(mapping);
+      break ;
+# endif /* USE_MYSQL */
+
+# ifdef USE_ORACLE
+     case ORACLE:
+# endif /* USE_ORACLE */
+
+# ifdef USE_POSTGRESQL
+     case POSTGRESQL:
+      select = dynamic_cast<PgSQLConnection*>(this)
+        ->GetMappedSelect<T>(mapping);
+      break ;
+# endif /* USE_POSTGRESQL */
+
+     default:
+      assert(false);
+      throw (DBException(this->dbms_,
+                         DBException::QUERY_PREPARATION,
+                         "Unsupported DBMS"));
+    }
+  return (select);
+}
+
+/**
  *  Return an UPDATE query matching the DBMS. Because we can't override a
  *  template, we will dynamic_cast the Connection to call the proper method.
  */
 template <typename T>                              // Template
 CentreonBroker::DB::MappedUpdate<T>*               // Return type
   CentreonBroker::DB::Connection::GetMappedUpdate( // Method
-    const Mapping<T>& mapping)                     // Argument
+    const MappingGetters<T>& mapping)              // Argument
 {
   MappedUpdate<T>* update;
 

@@ -69,7 +69,7 @@ namespace          CentreonBroker
        *
        *  \param[in] mapping The Object-Relational mapping of the object.
        */
-                   MappedInsert(const Mapping<T>& mapping)
+                   MappedInsert(const MappingGetters<T>& mapping)
 		     : HaveInFields<T>(mapping) {}
 
       /**

@@ -35,34 +35,70 @@
 # include "events/service.h"
 # include "events/service_status.h"
 
-namespace                                       CentreonBroker
+namespace  CentreonBroker
 {
   // Acknowledgement
-  extern DB::Mapping<Events::Acknowledgement>   acknowledgement_mapping;
+  extern DB::MappingGetters<Events::Acknowledgement>
+           acknowledgement_get_mapping;
+  extern DB::MappingSetters<Events::Acknowledgement>
+           acknowledgement_set_mapping;
   // Comment
-  extern DB::Mapping<Events::Comment>           comment_mapping;
+  extern DB::MappingGetters<Events::Comment>
+           comment_get_mapping;
+  extern DB::MappingSetters<Events::Comment>
+           comment_set_mapping;
   // Connection
-  extern DB::Mapping<Events::Connection>        connection_mapping;
+  extern DB::MappingGetters<Events::Connection>
+           connection_get_mapping;
+  extern DB::MappingSetters<Events::Connection>
+           connection_set_mapping;
   // ConnectionStatus
-  extern DB::Mapping<Events::ConnectionStatus>  connection_status_mapping;
+  extern DB::MappingGetters<Events::ConnectionStatus>
+           connection_status_get_mapping;
+  extern DB::MappingSetters<Events::ConnectionStatus>
+           connection_status_set_mapping;
   // Downtime
-  extern DB::Mapping<Events::Downtime>          downtime_mapping;
+  extern DB::MappingGetters<Events::Downtime>
+           downtime_get_mapping;
+  extern DB::MappingSetters<Events::Downtime>
+           downtime_set_mapping;
   // Host
-  extern DB::Mapping<Events::Host>              host_mapping;
+  extern DB::MappingGetters<Events::Host>
+           host_get_mapping;
+  extern DB::MappingSetters<Events::Host>
+           host_set_mapping;
   // HostGroup
-  extern DB::Mapping<Events::HostGroup>         host_group_mapping;
+  extern DB::MappingGetters<Events::HostGroup>
+           host_group_get_mapping;
+  extern DB::MappingSetters<Events::HostGroup>
+           host_group_set_mapping;
   // HostStatus
-  extern DB::Mapping<Events::HostStatus>        host_status_mapping;
+  extern DB::MappingGetters<Events::HostStatus>
+           host_status_get_mapping;
+  extern DB::MappingSetters<Events::HostStatus>
+           host_status_set_mapping;
   // Log
-  extern DB::Mapping<Events::Log>               log_mapping;
+  extern DB::MappingGetters<Events::Log>
+           log_get_mapping;
+  extern DB::MappingSetters<Events::Log>
+           log_set_mapping;
   // ProgramStatus
-  extern DB::Mapping<Events::ProgramStatus>     program_status_mapping;
+  extern DB::MappingGetters<Events::ProgramStatus>
+           program_status_get_mapping;
+  extern DB::MappingSetters<Events::ProgramStatus>
+           program_status_set_mapping;
   // Service
-  extern DB::Mapping<Events::Service>           service_mapping;
+  extern DB::MappingGetters<Events::Service>
+           service_get_mapping;
+  extern DB::MappingSetters<Events::Service>
+           service_set_mapping;
   // ServiceStatus
-  extern DB::Mapping<Events::ServiceStatus>     service_status_mapping;
+  extern DB::MappingGetters<Events::ServiceStatus>
+           service_status_get_mapping;
+  extern DB::MappingSetters<Events::ServiceStatus>
+           service_status_set_mapping;
 
-  void                                          InitMappings();
+  void     InitMappings();
 }
 
 #endif /* !MAPPING_H_ */
