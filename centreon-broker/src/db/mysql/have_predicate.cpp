@@ -194,9 +194,12 @@ MySQLHavePredicate::~MySQLHavePredicate() {}
  */
 void MySQLHavePredicate::PreparePredicate(std::string& query)
 {
-  this->query_ = &query;
-  this->query_->append(" WHERE ");
-  this->predicate->Accept(*this);
+  if (this->predicate)
+    {
+      this->query_ = &query;
+      this->query_->append(" WHERE ");
+      this->predicate->Accept(*this);
+    }
   return ;
 }
 
@@ -210,6 +213,7 @@ void MySQLHavePredicate::PreparePredicate(std::string& query)
  */
 void MySQLHavePredicate::ProcessPredicate(std::string& query)
 {
-  this->PreparePredicate(query);
+  if (this->predicate)
+    this->PreparePredicate(query);
   return ;
 }

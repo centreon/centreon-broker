@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 #include "db/db_exception.h"
 #include "db/mysql/select.h"
 
@@ -132,7 +133,11 @@ MySQLSelect::MySQLSelect(MYSQL* mysql) : MySQLHaveArgs(mysql) {}
  */
 MySQLSelect::~MySQLSelect()
 {
-  // XXX : free ressources
+  if (this->stmt)
+    ; // XXX : free result_.stmt
+  else
+    if (this->result_.std.res)
+      mysql_free_result(this->result_.std.res);
 }
 
 /**
@@ -300,11 +305,18 @@ bool MySQLSelect::Next()
   else
     {
       this->result_.std.row = mysql_fetch_row(this->result_.std.res);
-      ret = (this->result_.std.row == NULL);
+      if (NULL == this->result_.std.row)
+	{
+	  mysql_free_result(this->result_.std.res);
+	  this->result_.std.res = NULL;
+	  ret = false;
+	}
+      else
+	ret = true;
     }
 
   // Reset column counter
-  this->current_ = -1;
+  this->current_ = 0;
 
   return (ret);
 }
