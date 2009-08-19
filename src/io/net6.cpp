@@ -19,7 +19,6 @@
 */
 
 #include <arpa/inet.h>
-#include <cassert>
 #include <cerrno>
 #include <cstring>
 #include <netinet/in.h>
