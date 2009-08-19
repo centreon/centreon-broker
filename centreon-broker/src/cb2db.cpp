@@ -86,7 +86,6 @@ int main(int argc, char* argv[])
           // Process configuration file
 #ifndef NDEBUG
           logging.LogDebug("Processing configuration file...");
-          logging.Indent();
 #endif /* !NDEBUG */
           {
             const Conf::Input* input;
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
             while (l)
               {
                 if (l->GetType() == "syslog")
-                  logging.LogInSyslog(true, l->GetFlags());
+                  logging.LogInSyslog(l->GetFlags());
                 else if (l->GetType() == "file")
                   logging.LogInFile(l->GetPath().c_str(), l->GetFlags());
                 l = conf.GetNextLog();
@@ -156,9 +155,6 @@ int main(int argc, char* argv[])
                 output = conf.GetNextOutput();
               }
           }
-#ifndef NDEBUG
-          logging.Deindent();
-#endif /* !NDEBUG */
 
           // Catch ^C
           signal(SIGINT, term_handler);
@@ -173,9 +169,7 @@ int main(int argc, char* argv[])
       catch (std::exception& e)
         {
           logging.LogInfo("Process terminated because of this exception :");
-          logging.Indent();
           logging.LogInfo(e.what());
-          logging.Deindent();
           exit_code = 1;
         }
 

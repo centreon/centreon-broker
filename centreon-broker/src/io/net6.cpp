@@ -107,8 +107,7 @@ Net6Stream::Net6Stream(const Net6Stream& n4s) throw (CentreonBroker::Exception)
  */
 Net6Stream::~Net6Stream() throw ()
 {
-  if (this->sockfd_ >= 0)
-    this->Close();
+  this->Close();
 }
 
 /**
@@ -126,8 +125,7 @@ Net6Stream::~Net6Stream() throw ()
 Net6Stream& Net6Stream::operator=(const Net6Stream& n4s)
   throw (CentreonBroker::Exception)
 {
-  if (this->sockfd_ >= 0)
-    this->Close();
+  this->Close();
   this->Stream::operator=(n4s);
   this->InternalCopy(n4s);
   return (*this);
@@ -141,9 +139,12 @@ Net6Stream& Net6Stream::operator=(const Net6Stream& n4s)
  */
 void Net6Stream::Close() throw ()
 {
-  shutdown(this->sockfd_, SHUT_RDWR);
-  close(this->sockfd_);
-  this->sockfd_ = -1;
+  if (this->sockfd_ >= 0)
+    {
+      shutdown(this->sockfd_, SHUT_RDWR);
+      close(this->sockfd_);
+      this->sockfd_ = -1;
+    }
   return ;
 }
 
@@ -268,8 +269,7 @@ Net6Acceptor::Net6Acceptor(const Net6Acceptor& n4a)
  */
 Net6Acceptor::~Net6Acceptor() throw ()
 {
-  if (this->sockfd_ >= 0)
-    this->Close();
+  this->Close();
 }
 
 /**
@@ -286,8 +286,7 @@ Net6Acceptor::~Net6Acceptor() throw ()
 Net6Acceptor& Net6Acceptor::operator=(const Net6Acceptor& n4a)
   throw (CentreonBroker::Exception)
 {
-  if (this->sockfd_ >= 0)
-    this->Close();
+  this->Close();
   this->Acceptor::operator=(n4a);
   this->InternalCopy(n4a);
   return (*this);
@@ -321,10 +320,13 @@ Stream* Net6Acceptor::Accept()
  */
 void Net6Acceptor::Close() throw ()
 {
-  shutdown(this->sockfd_, SHUT_RDWR);
-  fsync(this->sockfd_);
-  close(this->sockfd_);
-  this->sockfd_ = -1;
+  if (this->sockfd_ >= 0)
+    {
+      shutdown(this->sockfd_, SHUT_RDWR);
+      fsync(this->sockfd_);
+      close(this->sockfd_);
+      this->sockfd_ = -1;
+    }
   return ;
 }
 
@@ -344,9 +346,8 @@ void Net6Acceptor::Listen(unsigned short port, const char* iface)
 {
   struct sockaddr_in6 sin;
 
-  // Check that the socket has not already been opened
-  if (this->sockfd_ >= 0)
-    throw (CentreonBroker::Exception(errno, strerror(errno)));
+  // Close the socket if it was previously open
+  this->Close();
 
   // Create the new socket
   this->sockfd_ = socket(AF_INET6, SOCK_STREAM, 0);
@@ -368,9 +369,6 @@ void Net6Acceptor::Listen(unsigned short port, const char* iface)
   // Bind
   if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))
       || listen(this->sockfd_, 0))
-    {
-      this->Close();
-      throw (CentreonBroker::Exception(errno, strerror(errno)));
-    }
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;
 }

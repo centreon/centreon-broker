@@ -1132,10 +1132,8 @@ void NetworkInput::operator()()
     }
   catch (std::exception& e)
     {
-      logging.LogError("Exception occured while processing network input",
-		       true);
+      logging.LogError("Exception occured while processing network input");
       logging.LogError(e.what());
-      logging.Deindent();
     }
   catch (...)
     {

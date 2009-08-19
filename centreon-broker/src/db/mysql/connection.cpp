@@ -76,14 +76,12 @@ MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
 MySQLConnection::MySQLConnection() throw (DBException)
   : Connection(Connection::MYSQL), myconn_(NULL)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Preparing MySQL for execution " \
-                                   "within this thread...");
-#endif /* !NDEBUG */
+  // Ensure that mysql_thread_init has been properly called even if the object
+  // wasn't used.
   if (mysql_thread_init())
     throw (DBException(0,
                        DBException::INITIALIZATION,
-                       "Error while initializing MySQL library"));
+                       "MySQL library initialization failed for this thread"));
 }
 
 /**
@@ -152,7 +150,7 @@ void MySQLConnection::Connect(const std::string& host,
 			      const std::string& db)
 {
 #ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Connecting to MySQL server...", true);
+  CentreonBroker::logging.LogDebug("Connecting to MySQL server...");
   CentreonBroker::logging.LogDebug((std::string("Host: ") + host).c_str());
   CentreonBroker::logging.LogDebug((std::string("User: ") + user).c_str());
   CentreonBroker::logging.LogDebug((std::string("DB: ") + db).c_str());
@@ -176,9 +174,6 @@ void MySQLConnection::Connect(const std::string& host,
     throw (DBException(mysql_errno(this->myconn_),
                        DBException::INITIALIZATION,
                        mysql_error(this->myconn_)));
-#ifndef NDEBUG
-  CentreonBroker::logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 

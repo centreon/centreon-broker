@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <cstdlib>
 #include "client_acceptor.h"
 #include "logging.h"
 #include "network_input.h"
@@ -35,7 +36,8 @@ using namespace CentreonBroker;
  *  \brief ClientAcceptor copy constructor.
  *
  *  The need to copy a client acceptor should be avoided and as such, the copy
- *  constructor is declared private.
+ *  constructor is declared private. Attempt to use it anyway will result in a
+ *  call to abort().
  *
  *  \param[in] ca Unused.
  */
@@ -43,13 +45,15 @@ ClientAcceptor::ClientAcceptor(const ClientAcceptor& ca)
 {
   (void)ca;
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignement operator.
  *
  *  The need to copy a client acceptor should be avoided and as such, the
- *  operator= overload is declared private.
+ *  operator= overload is declared private. Attempt to use it anyway will
+ *  result in a call to abort().
  *
  *  \param[in] ca Unused.
  *
@@ -59,6 +63,7 @@ ClientAcceptor& ClientAcceptor::operator=(const ClientAcceptor& ca)
 {
   (void)ca;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -71,7 +76,7 @@ ClientAcceptor& ClientAcceptor::operator=(const ClientAcceptor& ca)
 /**
  *  \brief ClientAcceptor default constructor.
  *
- *  Initialize internal data.
+ *  Initialize internal state.
  */
 ClientAcceptor::ClientAcceptor() throw (): acceptor_(NULL), thread_(NULL) {}
 
@@ -82,9 +87,10 @@ ClientAcceptor::ClientAcceptor() throw (): acceptor_(NULL), thread_(NULL) {}
  */
 ClientAcceptor::~ClientAcceptor()
 {
+  if (this->acceptor_)
+    this->acceptor_->Close();
   if (this->thread_)
     {
-      this->acceptor_->Close();
       {
 	boost::unique_lock<boost::mutex> lock(this->inputsm_);
 
@@ -112,7 +118,7 @@ ClientAcceptor::~ClientAcceptor()
 void ClientAcceptor::operator()()
 {
 #ifndef NDEBUG
-  logging.LogDebug("Client accepting thread started.");
+  logging.LogDebug("Acceptor thread started !");
 #endif /* !NDEBUG */
   try
     {
@@ -120,11 +126,11 @@ void ClientAcceptor::operator()()
 
       while (1)
 	{
+	  // Accept a new client.
 	  stream = this->acceptor_->Accept();
-	  if (!stream)
-	    break ;
-	  else
-	    {
+
+	  // Launch the processing object and append it to the list
+	  {
 	      boost::unique_lock<boost::mutex> lock(this->inputsm_);
 
 	      logging.LogInfo("New client incoming, " \
@@ -144,7 +150,7 @@ void ClientAcceptor::operator()()
       logging.LogError("Client acceptor failed because of an unknown " \
                        "exception, exiting accepting thread.");
     }
-  logging.LogInfo("Exiting client accepting thread.");
+  logging.LogInfo("Exiting acceptor thread.");
   return ;
 }
 
@@ -161,12 +167,16 @@ void ClientAcceptor::CleanupNetworkInput(NetworkInput* ni)
   boost::unique_lock<boost::mutex> lock(this->inputsm_);
   std::list<NetworkInput*>::iterator it;
 
+  // Find the pointer in the list
   it = std::find(this->inputs_.begin(), this->inputs_.end(), ni);
+
+  // If found delete it
   if (it != this->inputs_.end())
     {
       delete (*it);
       this->inputs_.erase(it);
     }
+
   return ;
 }
 

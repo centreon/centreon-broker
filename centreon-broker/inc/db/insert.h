@@ -25,9 +25,9 @@
 # include "db/have_table.h"
 # include "db/query.h"
 
-namespace          CentreonBroker
+namespace                  CentreonBroker
 {
-  namespace        DB
+  namespace                DB
   {
     /**
      *  \class Insert insert.h "db/insert.h"
@@ -37,17 +37,18 @@ namespace          CentreonBroker
      *  DBMS. Users can then manipulate every INSERT query object in an
      *  abstract manner.
      */
-    class          Insert : virtual public HaveFields,
-                            public HaveTable,
-                            virtual public Query
+    class                  Insert : virtual public HaveFields,
+                                    public HaveTable,
+                                    virtual public Query
     {
      protected:
-                   Insert();
-                   Insert(const Insert& insert);
-      Insert&      operator=(const Insert& insert);
+                           Insert();
+                           Insert(const Insert& insert);
+      Insert&              operator=(const Insert& insert);
 
      public:
-      virtual      ~Insert();
+      virtual              ~Insert();
+      virtual unsigned int InsertId() = 0;
     };
 
     /**
@@ -57,9 +58,9 @@ namespace          CentreonBroker
      *  Interface to manipulate object-relational INSERT query. Each DBMS
      *  provides its own concrete implementation of this interface.
      */
-    template       <typename T>
-    class          MappedInsert : public HaveInFields<T>,
-                                  virtual public Insert
+    template               <typename T>
+    class                  MappedInsert : public HaveInFields<T>,
+                                          virtual public Insert
     {
      protected:
       /**
@@ -69,8 +70,8 @@ namespace          CentreonBroker
        *
        *  \param[in] mapping The Object-Relational mapping of the object.
        */
-                   MappedInsert(const MappingGetters<T>& mapping)
-		     : HaveInFields<T>(mapping) {}
+                           MappedInsert(const MappingGetters<T>& mapping)
+	: HaveInFields<T>(mapping) {}
 
       /**
        *  \brief MappedInsert copy constructor.
@@ -80,7 +81,7 @@ namespace          CentreonBroker
        *
        *  \param[in] minsert Object to copy data from.
        */
-                   MappedInsert(const MappedInsert<T>& minsert)
+                           MappedInsert(const MappedInsert<T>& minsert)
         : HaveInFields<T>(minsert), Insert(minsert) {}
 
       /**
@@ -92,7 +93,7 @@ namespace          CentreonBroker
        *
        *  \return *this
        */
-      MappedInsert<T>& operator=(const MappedInsert<T>& minsert)
+      MappedInsert<T>&     operator=(const MappedInsert<T>& minsert)
       {
 	this->HaveInFields<T>::operator=(minsert);
 	this->Insert::operator=(minsert);
@@ -105,7 +106,7 @@ namespace          CentreonBroker
        *
        *  Release acquired ressources.
        */
-      virtual       ~MappedInsert() {}
+      virtual              ~MappedInsert() {}
     };
   }
 }

@@ -28,7 +28,6 @@
 # include "db/postgresql/connection.h"
 #endif /* USE_POSTGRESQL */
 #include "db/predicate.h"
-#include "db/truncate.h"
 #include "db_output.h"
 #include "exception.h"
 #include "events/comment.h"
@@ -160,12 +159,33 @@ void DBOutput::Connect()
  */
 void DBOutput::Disconnect()
 {
-  // XXX : delete statements
+  // XXX : if statements were in auto_ptr is would be easier
+  if (this->connection_status_stmt_)
+    {
+      delete (this->connection_status_stmt_);
+      this->connection_status_stmt_ = NULL;
+    }
+  if (this->host_status_stmt_)
+    {
+      delete (this->host_status_stmt_);
+      this->host_status_stmt_ = NULL;
+    }
+  if (this->program_status_stmt_)
+    {
+      delete (this->program_status_stmt_);
+      this->program_status_stmt_ = NULL;
+    }
+  if (this->service_status_stmt_)
+    {
+      delete (this->service_status_stmt_);
+      this->service_status_stmt_ = NULL;
+    }
   if (this->conn_)
     {
       delete (this->conn_);
       this->conn_ = NULL;
     }
+  this->instances_.clear();
   return ;
 }
 
@@ -182,17 +202,25 @@ void DBOutput::Disconnect()
 int DBOutput::GetInstanceId(const std::string& instance)
 {
   int id;
-  // XXX : instance ids should be synchronized with DB
   std::map<std::string, int>::iterator it;
 
   it = this->instances_.find(instance);
   if (it == this->instances_.end())
     {
-      id = this->instances_.size() + 1;
+      Events::ProgramStatus ps;
+      std::auto_ptr<DB::MappedInsert<Events::ProgramStatus> >
+        query(this->conn_->GetMappedInsert<Events::ProgramStatus>(
+          program_status_get_mapping));
+
+      ps.instance = instance;
+      query->SetTable("program_status");
+      query->SetArg(ps);
+      query->Execute();
+      id = query->InsertId();
       this->instances_[instance] = id;
     }
   else
-    id = this->instances_[instance];
+    id = it->second;
   return (id);
 }
 
@@ -336,7 +364,6 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing Acknowledgement event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Acknowledgement> >
     query(this->conn_->GetMappedInsert<Acknowledgement>(
@@ -346,9 +373,6 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
   query->SetArg(ack);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -359,7 +383,6 @@ void DBOutput::ProcessComment(const Comment& comment)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing Comment event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Comment> >
     query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
@@ -368,9 +391,6 @@ void DBOutput::ProcessComment(const Comment& comment)
   query->SetArg(comment);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -381,7 +401,6 @@ void DBOutput::ProcessConnection(const Connection& connection)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing Connection event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Connection> >
     query(this->conn_->GetMappedInsert<Connection>(
@@ -391,9 +410,6 @@ void DBOutput::ProcessConnection(const Connection& connection)
   query->SetArg(connection);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -405,7 +421,6 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing ConnectionStatus event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   try
     {
@@ -415,20 +430,12 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
   catch (DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
-	{
-#ifndef NDEBUG
-	  logging.Deindent();
-#endif /* !NDEBUG */
-	  throw ;
-	}
+        throw ;
     }
   if (this->connection_status_stmt_->GetUpdateCount() == 0)
     this->ProcessConnection(Connection(cs));
   else
     this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -438,7 +445,7 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
 void DBOutput::ProcessDowntime(const Downtime& downtime)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing Downtime event...", true);
+  logging.LogDebug("Processing Downtime event...");
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Downtime> >
     query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
@@ -447,9 +454,6 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
   query->SetArg(downtime);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -459,7 +463,7 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
 void DBOutput::ProcessHost(const Host& host)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing Host event...", true);
+  logging.LogDebug("Processing Host event...");
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Host> >
     query(this->conn_->GetMappedInsert<Host>(host_get_mapping));
@@ -468,9 +472,6 @@ void DBOutput::ProcessHost(const Host& host)
   query->SetArg(host);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -480,7 +481,7 @@ void DBOutput::ProcessHost(const Host& host)
 void DBOutput::ProcessHostGroup(const HostGroup& hg)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing HostGroup event...", true);
+  logging.LogDebug("Processing HostGroup event...");
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<HostGroup> >
     query(this->conn_->GetMappedInsert<HostGroup>(host_group_get_mapping));
@@ -489,9 +490,6 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
   query->SetArg(hg);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -501,7 +499,7 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
 void DBOutput::ProcessHostStatus(const HostStatus& hs)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing HostStatus event...", true);
+  logging.LogDebug("Processing HostStatus event...");
 #endif /* !NDEBUG */
   try
     {
@@ -511,20 +509,12 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
   catch (DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
-	{
-#ifndef NDEBUG
-	  logging.Deindent();
-#endif /* !NDEBUG */
-	  throw ;
-	}
+        throw ;
     }
   if (this->host_status_stmt_->GetUpdateCount() == 0)
     this->ProcessHost(Host(hs));
   else
     this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -534,7 +524,7 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
 void DBOutput::ProcessLog(const Log& log)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Processing Log event...", true);
+  logging.LogDebug("Processing Log event...");
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Log> >
     query(this->conn_->GetMappedInsert<Log>(log_get_mapping));
@@ -543,9 +533,6 @@ void DBOutput::ProcessLog(const Log& log)
   query->SetArg(log);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -556,7 +543,6 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing ProgramStatus event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   try
     {
@@ -568,12 +554,7 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
   catch (DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
-	{
-#ifndef NDEBUG
-	  logging.Deindent();
-#endif /* !NDEBUG */
-	  throw ;
-	}
+        throw ;
     }
   if (this->program_status_stmt_->GetUpdateCount() == 0)
     {
@@ -588,9 +569,6 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
     }
   else
     this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -601,7 +579,6 @@ void DBOutput::ProcessService(const Service& service)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing Service event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Service> >
     query(this->conn_->GetMappedInsert<Service>(service_get_mapping));
@@ -610,9 +587,6 @@ void DBOutput::ProcessService(const Service& service)
   query->SetArg(service);
   query->Execute();
   this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -623,7 +597,6 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
 {
 #ifndef NDEBUG
   logging.LogDebug("Processing ServiceStatus event...");
-  logging.Indent();
 #endif /* !NDEBUG */
   try
     {
@@ -639,9 +612,6 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
     this->ProcessService(Service(ss));
   else
     this->QueryExecuted();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
@@ -670,7 +640,15 @@ void DBOutput::QueryExecuted()
  *  \param[in] dbms Type of the database to use.
  */
 DBOutput::DBOutput(DB::Connection::DBMS dbms)
-  : dbms_(dbms) {}
+  : dbms_(dbms),
+    conn_(NULL),
+    connection_status_stmt_(NULL),
+    host_status_stmt_(NULL),
+    program_status_stmt_(NULL),
+    service_status_stmt_(NULL),
+    queries_(0),
+    exit_(false),
+    thread_(NULL) {}
 
 /**
  *  \brief DBOutput destructor.
@@ -682,26 +660,14 @@ DBOutput::~DBOutput()
 #ifndef NDEBUG
   logging.LogDebug("Deleting DBOutput...");
 #endif /* !NDEBUG */
-  // XXX : statement deletion should be in Disconnect
-  if (this->connection_status_stmt_)
-    delete (this->connection_status_stmt_);
-  if (this->host_status_stmt_)
-    delete (this->host_status_stmt_);
-  if (this->program_status_stmt_)
-    delete (this->program_status_stmt_);
-  if (this->service_status_stmt_)
-    delete (this->service_status_stmt_);
+  this->Disconnect();
   if (this->thread_)
     {
 #ifndef NDEBUG
-      logging.Indent();
-      logging.LogDebug("Waiting for the running thread to finish");
+      logging.LogDebug("Waiting for the running DBOutput thread to finish...");
 #endif /* !NDEBUG */
       this->thread_->join();
       delete (this->thread_);
-#ifndef NDEBUG
-      logging.Deindent();
-#endif /* !NDEBUG */
     }
 }
 
@@ -713,9 +679,6 @@ DBOutput::~DBOutput()
  */
 void DBOutput::operator()()
 {
-  // Allocate printing ressources for this thread.
-  logging.ThreadStart();
-
 #ifndef NDEBUG
   logging.LogDebug("New thread created (DBOutput)");
 #endif /* !NDEBUG */
@@ -737,15 +700,20 @@ void DBOutput::operator()()
       return ;
     }
 
+  // While nobody called Destroy()
   while (!this->exit_)
     {
       Event* event;
 
       try
         {
+	  // Prepare more common statements to reduce load on SQL server
 	  this->PrepareStatements();
+
+	  // While no exception happens (like when connection to DB is dropped)
           while (1)
             {
+	      // Wait for an event with timeout and execute proper commands
               event = this->events_.TimedWait(this->timeout_);
               if (event)
                 this->ProcessEvent(event);
@@ -767,17 +735,15 @@ void DBOutput::operator()()
       // reconnect later.
       catch (DB::DBException& dbe)
 	{
-	  logging.LogError("Recoverable DB error", true);
+	  logging.LogError("Recoverable DB error");
 	  logging.LogError(dbe.what());
-	  logging.Deindent();
 	}
 
       // Standard exception should be thrown if an unrecoverable error occured.
       catch (std::exception& e)
         {
-	  logging.LogError("Unrecoverable error", true);
+	  logging.LogError("Unrecoverable error");
 	  logging.LogError(e.what());
-	  logging.Deindent();
           break ;
         }
       catch (...)
@@ -786,6 +752,8 @@ void DBOutput::operator()()
 	  break ;
 	}
 
+      // A DB::DBException occured. Those are recoverable so try to connect
+      // again until it works.
       while (1)
 	{
 	  // Free connection ressources
@@ -798,6 +766,7 @@ void DBOutput::operator()()
 	      boost::thread::sleep(boost::get_system_time()
 				     + boost::posix_time::seconds(10));
 
+	      // Destroy() has been called ?
 	      if (!this->exit_)
 		{
 		  logging.LogInfo("Trying connection to DB server again...");
@@ -810,7 +779,7 @@ void DBOutput::operator()()
 	    {
 	    }
 	}
-      if (!this->exit_)
+      if (this->exit_)
 	break ;
     }
 #ifndef NDEBUG
@@ -820,8 +789,6 @@ void DBOutput::operator()()
   // Close connection
   this->Disconnect();
 
-  // Release printing ressources for this thread.
-  logging.ThreadEnd();
   return ;
 }
 
@@ -833,15 +800,12 @@ void DBOutput::operator()()
 void DBOutput::Destroy()
 {
 #ifndef NDEBUG
-  logging.LogDebug("Requesting DBOutput to stop processing...", true);
+  logging.LogDebug("Requesting DBOutput to stop processing...");
 #endif /* !NDEBUG */
   assert(this->thread_);
   this->exit_ = true;
   this->events_.CancelWait();
   this->thread_->interrupt();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
   return ;
 }
 
