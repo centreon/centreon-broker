@@ -58,18 +58,6 @@ namespace                      CentreonBroker
   class                           DBOutput : private EventSubscriber
   {
    private:
-    // Object-Relational mappings
-    DB::Mapping<Events::Acknowledgement>  acknowledgement_mapping_;
-    DB::Mapping<Events::Comment>          comment_mapping_;
-    DB::Mapping<Events::Connection>       connection_mapping_;
-    DB::Mapping<Events::ConnectionStatus> connection_status_mapping_;
-    DB::Mapping<Events::Downtime>         downtime_mapping_;
-    DB::Mapping<Events::Host>             host_mapping_;
-    DB::Mapping<Events::HostGroup>        host_group_mapping_;
-    DB::Mapping<Events::HostStatus>       host_status_mapping_;
-    DB::Mapping<Events::ProgramStatus>    program_status_mapping_;
-    DB::Mapping<Events::Service>          service_mapping_;
-    DB::Mapping<Events::ServiceStatus>    service_status_mapping_;
     // Connection informations
     DB::Connection::DBMS          dbms_;
     std::string                   host_;
@@ -93,8 +81,6 @@ namespace                      CentreonBroker
 
                                   DBOutput(const DBOutput& dbo);
     DBOutput&                     operator=(const DBOutput& dbo);
-    void                          CleanTable(const std::string& table);
-    void                          CleanTables();
     void                          Commit();
     void                          Connect();
     void                          Disconnect();

@@ -26,163 +26,329 @@
 # include <map>
 # include <string>
 # include "db/have_args.h"
+# include "db/select.h"
 
 namespace                        CentreonBroker
 {
   namespace                      DB
   {
-    class                        HaveFields;
-
-    template                     <typename ObjectType>
-    class                        Mapping
+    /**
+     *  \class MappingGetters mapping.hpp "db/mapping.hpp"
+     *  \brief Mapping to retrieve data from an object.
+     *
+     *  This class holds a map associating a field name with a boost::function.
+     *  This map is used to extract data from an object of type T. The map can
+     *  be defined by adding fields and their corresponding getters. Currently
+     *  the map is only used with SQL queries defined within CentreonBroker.
+     */
+    template                     <typename T>
+    class                        MappingGetters
     {
-     private:
-      /**
-       *  Make a copy of all internal data structures of the Mapping object to
-       *  the current instance.
-       */
-      void                       InternalCopy(const Mapping& mapping)
-      {
-	this->fields_ = mapping.fields_;
-	this->table_ = mapping.table_;
-	return ;
-      }
-
      public:
       std::map<std::string,
-	       boost::function2<void,
-                                HaveArgs*,
-                                const ObjectType&>
-                               > fields_;
-      std::string                table_;
+	       boost::function2<void, HaveArgs*, const T&> >
+                                getters;
 
       /**
-       *  Mapping default constructor.
+       *  MappingGetters default constructor.
        */
-                                 Mapping() {}
+                                 MappingGetters() {}
 
       /**
-       *  Mapping copy constructor.
+       *  \brief MappingGetters copy constructor.
+       *
+       *  Copy the mapping of the given object to the current instance.
+       *
+       *  \param[in] mapping Object to copy data from.
        */
-                                 Mapping(const Mapping& mapping)
+                                 MappingGetters(const MappingGetters& mapping)
+        : getters(mapping.getters) {}
+
+      /**
+       *  MappingGetters destructor.
+       */
+      virtual                    ~MappingGetters() {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy the mapping of the given object to the current instance.
+       *
+       *  \param[in] mapping Object to copy data from.
+       *
+       *  \return *this
+       */
+      MappingGetters&            operator=(const MappingGetters& mapping)
       {
-	this->InternalCopy(mapping);
-      }
-
-      /**
-       *  Mapping destructor.
-       */
-      virtual                    ~Mapping() {}
-
-      /**
-       *  Mapping operator= overload.
-       */
-      Mapping&                   operator=(const Mapping& mapping)
-      {
-	this->InternalCopy(mapping);
+	this->getters = mapping.getters;
 	return (*this);
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type bool to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddBoolField(const std::string& field,
-					      const boost::function1<bool,
-					      const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          bool T::* value)
       {
-        this->fields_[field] = boost::bind(
+        this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(bool)>(&HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
+          boost::bind(value, _2));
 	return ;
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type double to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddDoubleField(const std::string& field,
-						const boost::function1<double,
-                                                  const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          double T::* value)
       {
-	this->fields_[field] = boost::bind(
+        this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(double)>(&HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
-	return ;
+          boost::bind(value, _2));
+        return ;
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type int to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddIntField(const std::string& field,
-					     const boost::function1<int,
-                                               const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          int T::* value)
       {
-	this->fields_[field] = boost::bind(
+	this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(int)>(&HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
+          boost::bind(value, _2));
 	return ;
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type short to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddShortField(const std::string& field,
-					       const boost::function1<short,
-                                                 const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          short T::* value)
       {
-        this->fields_[field] = boost::bind(
+        this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(short)>(&HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
+          boost::bind(value, _2));
 	return ;
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type string to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddStringField(const std::string& field,
-						const boost::function1<
-						  const std::string&,
-                                                  const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          std::string T::* value)
       {
-	this->fields_[field] = boost::bind(
+        this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(const std::string&)>(
             &HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
+          boost::bind(value, _2));
 	return ;
       }
 
       /**
-       *  Add a field and its associated getter to the field list.
+       *  Add a field of type time_t to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       AddTimeField(const std::string& field,
-					      const boost::function1<time_t,
-                                                  const ObjectType&>& getter)
+      void                       AddField(const std::string& name,
+                                          time_t T::* value)
       {
-	this->fields_[field] = boost::bind(
+	this->getters[name] = boost::bind(
           static_cast<void (HaveArgs::*)(time_t)>(&HaveArgs::SetArg),
           _1,
-          boost::bind(getter, _2));
+          boost::bind(value, _2));
+	return ;
+      }
+    };
+
+    // Convenience functions in anonymous namespace.
+    namespace
+    {
+      template <typename T, typename U, typename V>
+      void WrapperAssignment(T& t, U T::* member, const V& val)
+      {
+	t.*member = val;
+	return ;
+      }
+
+      template <typename T>
+      std::string& WrapperString(T& t, std::string T::* member)
+      {
+	return (t.*member);
+      }
+    }
+
+    /**
+     *  \class MappingSetters mapping.hpp "db/mapping.hpp"
+     *  \brief Mapping to store data within an object.
+     *
+     *  This class holds a map associating a field name with a boost::function.
+     *  This map is used to extract data from an object of type T. The map can
+     *  be defined by adding fields and their corresponding getters. Currently
+     *  the map is only used with SQL queries defined within CentreonBroker.
+     */
+    template             <typename T>
+    class                MappingSetters
+    {
+     public:
+      std::map<std::string,
+               boost::function2<void, Select*, T&> >
+                         setters;
+
+      /**
+       *  MappingSetters default constructor.
+       */
+                         MappingSetters() {}
+
+      /**
+       *  \brief MappingSetters copy constructor.
+       *
+       *  Copy the mapping of the given object to the current instance.
+       *
+       *  \param[in] mapping Object to copy data from.
+       */
+                         MappingSetters(const MappingSetters& mapping)
+	: setters(mapping.setters) {}
+
+      /**
+       *  MappingSetters destructor.
+       */
+      virtual            ~MappingSetters() {}
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Copy the mapping of the given object to the current instance.
+       *
+       *  \param[in] mapping Object to copy data from.
+       *
+       *  \return *this
+       */
+      MappingSetters<T>& operator=(const MappingSetters<T>& mapping)
+      {
+	this->setters = mapping.setters;
+	return (*this);
+      }
+
+      /**
+       *  Add a field of type bool to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
+       */
+      void               AddField(const std::string& name,
+                                  bool T::* value)
+      {
+        this->setters[name] = boost::bind(
+          &CentreonBroker::DB::WrapperAssignment<T, bool, bool>,
+          _2,
+          value,
+          boost::bind(&CentreonBroker::DB::Select::GetBool, _1));
+        return ;
+      }
+
+      /**
+       *  Add a field of type double to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
+       */
+      void               AddField(const std::string& name,
+                                  double T::* value)
+      {
+        this->setters[name] = boost::bind(
+          &CentreonBroker::DB::WrapperAssignment<T, double, double>,
+          _2,
+          value,
+          boost::bind(&CentreonBroker::DB::Select::GetDouble, _1));
 	return ;
       }
 
       /**
-       *  Get the table name.
+       *  Add a field of type int to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      const std::string&         GetTable() const throw ()
+      void               AddField(const std::string& name,
+                                  int T::* value)
       {
-	return (this->table_);
+	this->setters[name] = boost::bind(
+          &CentreonBroker::DB::WrapperAssignment<T, int, int>,
+          _2,
+          value,
+          boost::bind(&CentreonBroker::DB::Select::GetInt, _1));
+	return ;
       }
 
       /**
-       *  Set the table name.
+       *  Add a field of type short to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
        */
-      void                       SetTable(const std::string& table)
+      void               AddField(const std::string& name,
+                                  short T::* value)
       {
-	this->table_ = table;
+	this->setters[name] = boost::bind(
+          &CentreonBroker::DB::WrapperAssignment<T, short, short>,
+          _2,
+          value,
+          boost::bind(&CentreonBroker::DB::Select::GetShort, _1));
+	return ;
+      }
+
+      /**
+       *  Add a field of type string to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
+       */
+      void               AddField(const std::string& name,
+                                  std::string T::* value)
+      {
+	this->setters[name] = boost::bind(
+          &CentreonBroker::DB::Select::GetString,
+          _1,
+          boost::bind(&CentreonBroker::DB::WrapperString<T>, _2, value));
+	return ;
+      }
+
+      /**
+       *  Add a field of type time_t to the mapping.
+       *
+       *  \param[in] name  The name of the field.
+       *  \param[in] value The pointer to member corresponding to the field.
+       */
+      void       AddField(const std::string& name,
+                          time_t T::* value)
+      {
+	this->setters[name] = boost::bind(
+          &CentreonBroker::DB::WrapperAssignment<T, time_t, int>,
+          _2,
+          value,
+          boost::bind(&CentreonBroker::DB::Select::GetInt, _1));
 	return ;
       }
     };

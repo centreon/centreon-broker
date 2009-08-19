@@ -58,17 +58,23 @@ namespace              CentreonBroker
         virtual bool   Next() = 0;
       };
 
+    // Forward declaration
+    template                   <typename T>
+    class                      MappingSetters;
+
     /**
      *  \class MappedSelect select.h "db/select.h"
      *  \brief Interface for object-relational SELECT queries.
      *
      *  Interface to manipulate object-relational SELECT queries.
      */
-    template           <typename T>
-    class               MappedSelect : virtual public Select
+    template                   <typename T>
+    class                      MappedSelect : virtual public Select
     {
      private:
-      const Mapping<T>& mapping_;
+      const MappingSetters<T>& mapping_;
+      std::list<boost::function2<void, Select*, T&> >
+                               setters_;
 
      protected:
       /**
@@ -78,8 +84,18 @@ namespace              CentreonBroker
        *
        *  \param[in] mapping The Object-Relational mapping of the object.
        */
-                        MappedSelect(const Mapping<T>& mapping)
-        : mapping_(mapping) {}
+                               MappedSelect(const MappingSetters<T>& mapping)
+        : mapping_(mapping)
+      {
+	for (typename std::map<std::string,
+                               boost::function2<void,
+                                                Select*,
+                                                T&> >::const_iterator
+               it = this->mapping_.fields_.begin();
+	     it != this->mapping_.fields_.end();
+	     it++)
+	  this->AddField(it->first);
+      }
 
       /**
        *  \brief MappedSelect copy constructor.
@@ -88,7 +104,7 @@ namespace              CentreonBroker
        *
        *  \param[in] ms Object to copy data from.
        */
-                        MappedSelect(const MappedSelect& ms)
+                               MappedSelect(const MappedSelect& ms)
         : Select(ms), mapping_(ms.mapping_) {}
 
       /**
@@ -98,10 +114,29 @@ namespace              CentreonBroker
        *
        *  \param[in] ms Object to copy data from.
        */
-      MappedSelect&     operator=(const MappedSelect& ms)
+      MappedSelect&            operator=(const MappedSelect& ms)
       {
 	this->Select::operator=(ms);
 	return (*this);
+      }
+
+      /**
+       *  Extract setters matching fields into a list.
+       */
+      void                     ExtractSetters()
+      {
+	for (std::list<std::string>::iterator it = this->fields.begin();
+             it != this->fields.end();
+             it++)
+	  {
+	    typename std::map<std::string,
+                              boost::function2<void,
+                                               Select*,
+                                               T&> >::const_iterator s;
+	    s = this->mapping_.fields_.find(*it);
+	    this->setters_.push_back(s->second);
+	  }
+	return ;
       }
 
      public:
@@ -110,16 +145,25 @@ namespace              CentreonBroker
        *
        *  Release acquired ressources.
        */
-      virtual           ~MappedSelect() {}
+      virtual                  ~MappedSelect() {}
 
       /**
        *  Get the next object from the database.
        *
        *  \param[out] t Object to put data into.
        */
-      virtual void      Get(T& t)
+      virtual void             Get(T& t)
       {
-	// XXX
+	if (this->setters_.empty())
+	  this->ExtractSetters();
+	for (typename std::list<boost::function2<void,
+                                                 Select*,
+                                                 T&> >::iterator
+               it = this->setters_.begin();
+             it != this->getters_.end();
+             it++)
+	  (*it).operator()(this, t);
+	return ;
       }
     };
   }

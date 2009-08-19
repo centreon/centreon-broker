@@ -79,7 +79,7 @@ namespace                 CentreonBroker
        *  \return A new MappedInsert query object.
        */
       template            <typename T>
-      MappedInsert<T>*    GetMappedInsert(const Mapping<T>& mapping)
+      MappedInsert<T>*    GetMappedInsert(const MappingGetters<T>& mapping)
       {
 	return (new MySQLMappedInsert<T>(this->myconn_, mapping));
       }
@@ -89,13 +89,11 @@ namespace                 CentreonBroker
        *
        *  \return A new MappedSelect query object.
        */
-      /*
       template            <typename T>
-      MappedSelect<T>*    GetMappedSelect(const Mapping<T>& mapping)
+      MappedSelect<T>*    GetMappedSelect(const MappingSetters<T>& mapping)
       {
 	return (new MySQLMappedSelect<T>(this->myconn_, mapping));
       }
-      */
 
       /**
        *  Get an object-relational UPDATE query.
@@ -103,7 +101,7 @@ namespace                 CentreonBroker
        *  \return A new MappedUpdate query object.
        */
       template            <typename T>
-      MappedUpdate<T>*    GetMappedUpdate(const Mapping<T>& mapping)
+      MappedUpdate<T>*    GetMappedUpdate(const MappingGetters<T>& mapping)
       {
 	return (new MySQLMappedUpdate<T>(this->myconn_, mapping));
       }

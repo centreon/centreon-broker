@@ -109,7 +109,7 @@ namespace          CentreonBroker
        *  \param[in] mapping Object-Relational mapping of the event type T.
        */
                          MySQLMappedInsert(MYSQL* myconn,
-                                           const Mapping<T>& mapping)
+                                           const MappingGetters<T>& mapping)
         : MappedInsert<T>(mapping), MySQLInsert(myconn) {}
 
       /**

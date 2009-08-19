@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include "db/data_member.hpp"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
 #include "events/connection.h"
@@ -33,845 +34,834 @@
 #include "mapping.h"
 
 using namespace CentreonBroker;
+using namespace CentreonBroker::DB;
 using namespace CentreonBroker::Events;
 
-/**
- *  Acknowledgement mapping.
- */
-DB::Mapping<Acknowledgement> CentreonBroker::acknowledgement_mapping;
+static const DB::DataMember<Acknowledgement> acknowledgement_dm[] =
+  {
+    DataMember<Acknowledgement>("acknowledgement_type",
+      &Acknowledgement::type),
+    DataMember<Acknowledgement>("author_name",
+      &Acknowledgement::author),
+    DataMember<Acknowledgement>("comment_data",
+      &Acknowledgement::comment),
+    DataMember<Acknowledgement>("entry_time",
+      &Acknowledgement::entry_time),
+    DataMember<Acknowledgement>("is_sticky",
+      &Acknowledgement::is_sticky),
+    DataMember<Acknowledgement>("notify_contacts",
+      &Acknowledgement::notify_contacts),
+    DataMember<Acknowledgement>("persistent_comment",
+      &Acknowledgement::persistent_comment),
+    DataMember<Acknowledgement>("state",
+      &Acknowledgement::state),
+    DataMember<Acknowledgement>()
+  };
+DB::MappingGetters<Events::Acknowledgement>
+  CentreonBroker::acknowledgement_get_mapping;
+DB::MappingSetters<Events::Acknowledgement>
+  CentreonBroker::acknowledgement_set_mapping;
 
-static void InitAcknowledgementMapping()
+static const DB::DataMember<Comment> comment_dm[] =
+  {
+    DataMember<Comment>("author_name",
+      &Comment::author),
+    DataMember<Comment>("comment_data",
+      &Comment::comment),
+    DataMember<Comment>("comment_time",
+      &Comment::comment_time),
+    DataMember<Comment>("comment_type",
+      &Comment::type),
+    DataMember<Comment>("deletion_time",
+      &Comment::deletion_time),
+    DataMember<Comment>("entry_time",
+      &Comment::entry_time),
+    DataMember<Comment>("entry_type",
+      &Comment::entry_type),
+    DataMember<Comment>("expire_time",
+      &Comment::expire_time),
+    DataMember<Comment>("expires",
+      &Comment::expires),
+    DataMember<Comment>("host_name",
+      &Comment::host),
+    DataMember<Comment>("internal_comment_id",
+      &Comment::internal_id),
+    DataMember<Comment>("persistent",
+      &Comment::persistent),
+    DataMember<Comment>("service_description",
+      &Comment::service),
+    DataMember<Comment>("source",
+      &Comment::source),
+    DataMember<Comment>()
+  };
+DB::MappingGetters<Events::Comment>
+  CentreonBroker::comment_get_mapping;
+DB::MappingSetters<Events::Comment>
+  CentreonBroker::comment_set_mapping;
+
+static const DB::DataMember<Connection> connection_dm[] =
+  {
+    DataMember<Connection>("agent_name",
+      &Connection::agent_name),
+    DataMember<Connection>("agent_version",
+      &Connection::agent_version),
+    DataMember<Connection>("bytes_processed",
+      &Connection::bytes_processed),
+    DataMember<Connection>("connect_source",
+      &Connection::connect_source),
+    DataMember<Connection>("connect_time",
+      &Connection::connect_time),
+    DataMember<Connection>("connect_type",
+      &Connection::connect_type),
+    DataMember<Connection>("data_start_time",
+      &Connection::data_start_time),
+    DataMember<Connection>("entries_processed",
+      &Connection::entries_processed),
+    DataMember<Connection>("lines_processed",
+      &Connection::lines_processed),
+    DataMember<Connection>("data_end_time",
+      &Connection::data_end_time),
+    DataMember<Connection>("disconnect_time",
+      &Connection::disconnect_time),
+    DataMember<Connection>("last_checkin_time",
+      &Connection::last_checkin_time),
+    DataMember<Connection>()
+  };
+DB::MappingGetters<Events::Connection>
+  CentreonBroker::connection_get_mapping;
+DB::MappingSetters<Events::Connection>
+  CentreonBroker::connection_set_mapping;
+
+static const DB::DataMember<ConnectionStatus> connection_status_dm[] =
+  {
+    DataMember<ConnectionStatus>("bytes_processed",
+      &ConnectionStatus::bytes_processed),
+    DataMember<ConnectionStatus>("data_end_time",
+      &ConnectionStatus::data_end_time),
+    DataMember<ConnectionStatus>("disconnect_time",
+      &ConnectionStatus::disconnect_time),
+    DataMember<ConnectionStatus>("entries_processed",
+      &ConnectionStatus::entries_processed),
+    DataMember<ConnectionStatus>("last_checkin_time",
+      &ConnectionStatus::last_checkin_time),
+    DataMember<ConnectionStatus>("lines_processed",
+      &ConnectionStatus::lines_processed),
+    DataMember<ConnectionStatus>()
+  };
+DB::MappingGetters<Events::ConnectionStatus>
+  CentreonBroker::connection_status_get_mapping;
+DB::MappingSetters<Events::ConnectionStatus>
+  CentreonBroker::connection_status_set_mapping;
+
+static const DB::DataMember<Downtime> downtime_dm[] =
+  {
+    DataMember<Downtime>("author_name",
+      &Downtime::author),
+    DataMember<Downtime>("comment_data",
+      &Downtime::comment),
+    DataMember<Downtime>("downtime_id",
+      &Downtime::id),
+    DataMember<Downtime>("downtime_type",
+      &Downtime::type),
+    DataMember<Downtime>("duration",
+      &Downtime::duration),
+    DataMember<Downtime>("end_time",
+      &Downtime::end_time),
+    DataMember<Downtime>("entry_time",
+      &Downtime::entry_time),
+    DataMember<Downtime>("fixed",
+      &Downtime::fixed),
+    DataMember<Downtime>("start_time",
+      &Downtime::start_time),
+    DataMember<Downtime>("triggered_by",
+      &Downtime::triggered_by),
+    DataMember<Downtime>("was_cancelled",
+      &Downtime::was_cancelled),
+    DataMember<Downtime>("was_started",
+      &Downtime::was_started),
+    DataMember<Downtime>()
+  };
+DB::MappingGetters<Events::Downtime>
+  CentreonBroker::downtime_get_mapping;
+DB::MappingSetters<Events::Downtime>
+  CentreonBroker::downtime_set_mapping;
+
+static const DB::DataMember<Host> host_dm[] =
+  {
+    DataMember<Host>("acknowledgement_type",
+      &Host::acknowledgement_type),
+    DataMember<Host>("action_url",
+      &Host::action_url),
+    DataMember<Host>("active_checks_enabled",
+      &Host::active_checks_enabled),
+    DataMember<Host>("address",
+      &Host::address),
+    DataMember<Host>("alias",
+      &Host::alias),
+    DataMember<Host>("check_command",
+      &Host::check_command),
+    DataMember<Host>("check_interval",
+      &Host::check_interval),
+    DataMember<Host>("check_freshness",
+      &Host::check_freshness),
+    DataMember<Host>("check_period",
+      &Host::check_period),
+    DataMember<Host>("check_type",
+      &Host::check_type),
+    DataMember<Host>("current_check_attempt",
+      &Host::current_check_attempt),
+    DataMember<Host>("current_notification_number",
+      &Host::current_notification_number),
+    DataMember<Host>("current_state",
+      &Host::current_state),
+    DataMember<Host>("display_name",
+      &Host::display_name),
+    DataMember<Host>("event_handler",
+      &Host::event_handler),
+    DataMember<Host>("event_handler_enabled",
+      &Host::event_handler_enabled),
+    DataMember<Host>("execution_time",
+     &Host::execution_time),
+    DataMember<Host>("failure_prediction_enabled",
+      &Host::failure_prediction_enabled),
+    DataMember<Host>("first_notification_delay",
+      &Host::first_notification_delay),
+    DataMember<Host>("flap_detection_enabled",
+      &Host::flap_detection_enabled),
+    DataMember<Host>("flap_detection_on_down",
+      &Host::flap_detection_on_down),
+    DataMember<Host>("flap_detection_on_unreachable",
+      &Host::flap_detection_on_unreachable),
+    DataMember<Host>("flap_detection_on_up",
+      &Host::flap_detection_on_up),
+    DataMember<Host>("freshness_threshold",
+      &Host::freshness_threshold),
+    DataMember<Host>("has_been_checked",
+      &Host::has_been_checked),
+    DataMember<Host>("have_2d_coords",
+      &Host::have_2d_coords),
+    DataMember<Host>("high_flap_threshold",
+      &Host::high_flap_threshold),
+    DataMember<Host>("host_name",
+      &Host::host),
+    DataMember<Host>("icon_image",
+      &Host::icon_image),
+    DataMember<Host>("icon_image_alt",
+      &Host::icon_image_alt),
+    DataMember<Host>("is_flapping",
+      &Host::is_flapping),
+    DataMember<Host>("last_check",
+      &Host::last_check),
+    DataMember<Host>("last_hard_state",
+      &Host::last_hard_state),
+    DataMember<Host>("last_hard_state_change",
+      &Host::last_hard_state_change),
+    DataMember<Host>("last_notification",
+      &Host::last_notification),
+    DataMember<Host>("last_state_change",
+      &Host::last_state_change),
+    DataMember<Host>("last_time_down",
+      &Host::last_time_down),
+    DataMember<Host>("last_time_unreachable",
+      &Host::last_time_unreachable),
+    DataMember<Host>("last_time_up",
+      &Host::last_time_up),
+    DataMember<Host>("last_update",
+      &Host::last_update),
+    DataMember<Host>("latency",
+      &Host::latency),
+    DataMember<Host>("long_output",
+      &Host::long_output),
+    DataMember<Host>("low_flap_threshold",
+      &Host::low_flap_threshold),
+    DataMember<Host>("max_check_attempts",
+      &Host::max_check_attempts),
+    DataMember<Host>("modified_attributes",
+      &Host::modified_attributes),
+    DataMember<Host>("next_check",
+      &Host::next_check),
+    DataMember<Host>("next_host_notification",
+      &Host::next_notification),
+    DataMember<Host>("no_more_notifications",
+      &Host::no_more_notifications),
+    DataMember<Host>("notes",
+      &Host::notes),
+    DataMember<Host>("notes_url",
+      &Host::notes_url),
+    DataMember<Host>("notification_interval",
+      &Host::notification_interval),
+    DataMember<Host>("notification_period",
+      &Host::notification_period),
+    DataMember<Host>("notifications_enabled",
+      &Host::notifications_enabled),
+    DataMember<Host>("notify_on_down",
+      &Host::notify_on_down),
+    DataMember<Host>("notify_on_downtime",
+      &Host::notify_on_downtime),
+    DataMember<Host>("notify_on_flapping",
+      &Host::notify_on_flapping),
+    DataMember<Host>("notify_on_recovery",
+      &Host::notify_on_recovery),
+    DataMember<Host>("notify_on_unreachable",
+      &Host::notify_on_unreachable),
+    DataMember<Host>("obsess_over_host",
+      &Host::obsess_over),
+    DataMember<Host>("output",
+      &Host::output),
+    DataMember<Host>("passive_checks_enabled",
+      &Host::passive_checks_enabled),
+    DataMember<Host>("percent_state_change",
+      &Host::percent_state_change),
+    DataMember<Host>("perf_data",
+      &Host::perf_data),
+    DataMember<Host>("problem_has_been_acknowledged",
+      &Host::problem_has_been_acknowledged),
+    DataMember<Host>("process_performance_data",
+      &Host::process_performance_data),
+    DataMember<Host>("retain_nonstatus_information",
+      &Host::retain_nonstatus_information),
+    DataMember<Host>("retain_status_information",
+      &Host::retain_status_information),
+    DataMember<Host>("retry_interval",
+      &Host::retry_interval),
+    DataMember<Host>("scheduled_downtime_depth",
+      &Host::scheduled_downtime_depth),
+    DataMember<Host>("should_be_scheduled",
+      &Host::should_be_scheduled),
+    DataMember<Host>("stalk_on_down",
+      &Host::stalk_on_down),
+    DataMember<Host>("stalk_on_unreachable",
+      &Host::stalk_on_unreachable),
+    DataMember<Host>("stalk_on_up",
+      &Host::stalk_on_up),
+    DataMember<Host>("state_type",
+      &Host::state_type),
+    DataMember<Host>("statusmap_image",
+      &Host::statusmap_image),
+    DataMember<Host>("vrml_image",
+      &Host::vrml_image),
+    DataMember<Host>("x_2d",
+      &Host::x_2d),
+    DataMember<Host>("y_2d",
+      &Host::y_2d),
+    DataMember<Host>()
+  };
+DB::MappingGetters<Events::Host>
+  CentreonBroker::host_get_mapping;
+DB::MappingSetters<Events::Host>
+  CentreonBroker::host_set_mapping;
+
+static const DB::DataMember<HostGroup> host_group_dm[] =
+  {
+    DataMember<HostGroup>("action_url",
+      &HostGroup::action_url),
+    DataMember<HostGroup>("alias",
+      &HostGroup::alias),
+    DataMember<HostGroup>("hostgroup_name",
+      &HostGroup::name),
+    DataMember<HostGroup>("notes",
+      &HostGroup::notes),
+    DataMember<HostGroup>("notes_url",
+      &HostGroup::notes_url),
+    DataMember<HostGroup>()
+  };
+DB::MappingGetters<Events::HostGroup>
+  CentreonBroker::host_group_get_mapping;
+DB::MappingSetters<Events::HostGroup>
+  CentreonBroker::host_group_set_mapping;
+
+static const DB::DataMember<HostStatus> host_status_dm[] =
+  {
+    DataMember<HostStatus>("acknowledgement_type",
+      &HostStatus::acknowledgement_type),
+    DataMember<HostStatus>("active_checks_enabled",
+      &HostStatus::active_checks_enabled),
+    DataMember<HostStatus>("check_command",
+      &HostStatus::check_command),
+    DataMember<HostStatus>("check_interval",
+      &HostStatus::check_interval),
+    DataMember<HostStatus>("check_period",
+      &HostStatus::check_period),
+    DataMember<HostStatus>("check_type",
+      &HostStatus::check_type),
+    DataMember<HostStatus>("current_check_attempt",
+      &HostStatus::current_check_attempt),
+    DataMember<HostStatus>("current_notification_number",
+      &HostStatus::current_notification_number),
+    DataMember<HostStatus>("current_state",
+      &HostStatus::current_state),
+    DataMember<HostStatus>("event_handler",
+      &HostStatus::event_handler),
+    DataMember<HostStatus>("event_handler_enabled",
+      &HostStatus::event_handler_enabled),
+    DataMember<HostStatus>("execution_time",
+      &HostStatus::execution_time),
+    DataMember<HostStatus>("failure_prediction_enabled",
+      &HostStatus::failure_prediction_enabled),
+    DataMember<HostStatus>("flap_detection_enabled",
+      &HostStatus::flap_detection_enabled),
+    DataMember<HostStatus>("has_been_checked",
+      &HostStatus::has_been_checked),
+    DataMember<HostStatus>("is_flapping",
+      &HostStatus::is_flapping),
+    DataMember<HostStatus>("last_check",
+      &HostStatus::last_check),
+    DataMember<HostStatus>("last_hard_state",
+      &HostStatus::last_hard_state),
+    DataMember<HostStatus>("last_hard_state_change",
+      &HostStatus::last_hard_state_change),
+    DataMember<HostStatus>("last_notification",
+      &HostStatus::last_notification),
+    DataMember<HostStatus>("last_state_change",
+      &HostStatus::last_state_change),
+    DataMember<HostStatus>("last_time_down",
+      &HostStatus::last_time_down),
+    DataMember<HostStatus>("last_time_unreachable",
+      &HostStatus::last_time_unreachable),
+    DataMember<HostStatus>("last_time_up",
+      &HostStatus::last_time_up),
+    DataMember<HostStatus>("last_update",
+      &HostStatus::last_update),
+    DataMember<HostStatus>("latency",
+      &HostStatus::latency),
+    DataMember<HostStatus>("long_output",
+      &HostStatus::long_output),
+    DataMember<HostStatus>("max_check_attempts",
+      &HostStatus::max_check_attempts),
+    DataMember<HostStatus>("modified_attributes",
+      &HostStatus::modified_attributes),
+    DataMember<HostStatus>("next_check",
+      &HostStatus::next_check),
+    DataMember<HostStatus>("next_host_notification",
+      &HostStatus::next_notification),
+    DataMember<HostStatus>("no_more_notifications",
+      &HostStatus::no_more_notifications),
+    DataMember<HostStatus>("notifications_enabled",
+      &HostStatus::notifications_enabled),
+    DataMember<HostStatus>("obsess_over_host",
+      &HostStatus::obsess_over),
+    DataMember<HostStatus>("output",
+      &HostStatus::output),
+    DataMember<HostStatus>("passive_checks_enabled",
+      &HostStatus::passive_checks_enabled),
+    DataMember<HostStatus>("percent_state_change",
+      &HostStatus::percent_state_change),
+    DataMember<HostStatus>("perf_data",
+      &HostStatus::perf_data),
+    DataMember<HostStatus>("problem_has_been_acknowledged",
+      &HostStatus::problem_has_been_acknowledged),
+    DataMember<HostStatus>("process_performance_data",
+      &HostStatus::process_performance_data),
+    DataMember<HostStatus>("retry_interval",
+      &HostStatus::retry_interval),
+    DataMember<HostStatus>("scheduled_downtime_depth",
+      &HostStatus::scheduled_downtime_depth),
+    DataMember<HostStatus>("should_be_scheduled",
+      &HostStatus::should_be_scheduled),
+    DataMember<HostStatus>("state_type",
+      &HostStatus::state_type),
+    DataMember<HostStatus>()
+  };
+DB::MappingGetters<Events::HostStatus>
+  CentreonBroker::host_status_get_mapping;
+DB::MappingSetters<Events::HostStatus>
+  CentreonBroker::host_status_set_mapping;
+
+static const DB::DataMember<Log> log_dm[] =
+  {
+    DataMember<Log>("ctime",
+      &Log::c_time),
+    DataMember<Log>("host_name",
+      &Log::host),
+    DataMember<Log>("msg_type",
+      &Log::msg_type),
+    DataMember<Log>("notification_cmd",
+      &Log::notification_cmd),
+    DataMember<Log>("notification_contact",
+      &Log::notification_contact),
+    DataMember<Log>("output",
+      &Log::output),
+    DataMember<Log>("retry",
+      &Log::retry),
+    DataMember<Log>("service_description",
+      &Log::service),
+    DataMember<Log>("status",
+      &Log::status),
+    DataMember<Log>("type",
+      &Log::type),
+    DataMember<Log>()
+  };
+DB::MappingGetters<Events::Log>
+  CentreonBroker::log_get_mapping;
+DB::MappingSetters<Events::Log>
+  CentreonBroker::log_set_mapping;
+
+static const DB::DataMember<ProgramStatus> program_status_dm[] =
+  {
+    DataMember<ProgramStatus>("active_host_checks_enabled",
+      &ProgramStatus::active_host_checks_enabled),
+    DataMember<ProgramStatus>("active_service_checks_enabled",
+      &ProgramStatus::active_service_checks_enabled),
+    DataMember<ProgramStatus>("daemon_mode",
+      &ProgramStatus::daemon_mode),
+    DataMember<ProgramStatus>("event_handlers_enabled",
+      &ProgramStatus::event_handler_enabled),
+    DataMember<ProgramStatus>("failure_prediction_enabled",
+      &ProgramStatus::failure_prediction_enabled),
+    DataMember<ProgramStatus>("flap_detection_enabled",
+      &ProgramStatus::flap_detection_enabled),
+    DataMember<ProgramStatus>("global_host_event_handler",
+      &ProgramStatus::global_host_event_handler),
+    DataMember<ProgramStatus>("global_service_event_handler",
+      &ProgramStatus::global_service_event_handler),
+    DataMember<ProgramStatus>("is_running",
+      &ProgramStatus::is_running),
+    DataMember<ProgramStatus>("last_alive",
+      &ProgramStatus::last_alive),
+    DataMember<ProgramStatus>("last_command_check",
+      &ProgramStatus::last_command_check),
+    DataMember<ProgramStatus>("last_log_rotation",
+      &ProgramStatus::last_log_rotation),
+    DataMember<ProgramStatus>("modified_host_attributes",
+      &ProgramStatus::modified_host_attributes),
+    DataMember<ProgramStatus>("modified_service_attributes",
+      &ProgramStatus::modified_service_attributes),
+    DataMember<ProgramStatus>("notifications_enabled",
+      &ProgramStatus::notifications_enabled),
+    DataMember<ProgramStatus>("obsess_over_hosts",
+      &ProgramStatus::obsess_over_hosts),
+    DataMember<ProgramStatus>("obsess_over_services",
+      &ProgramStatus::obsess_over_services),
+    DataMember<ProgramStatus>("passive_host_checks_enabled",
+      &ProgramStatus::passive_host_checks_enabled),
+    DataMember<ProgramStatus>("passive_service_checks_enabled",
+      &ProgramStatus::passive_service_checks_enabled),
+    DataMember<ProgramStatus>("pid",
+      &ProgramStatus::pid),
+    DataMember<ProgramStatus>("process_performance_data",
+      &ProgramStatus::process_performance_data),
+    DataMember<ProgramStatus>("program_end_time",
+      &ProgramStatus::program_end),
+    DataMember<ProgramStatus>("program_start",
+      &ProgramStatus::program_start),
+    DataMember<ProgramStatus>()
+  };
+DB::MappingGetters<Events::ProgramStatus>
+  CentreonBroker::program_status_get_mapping;
+DB::MappingSetters<Events::ProgramStatus>
+  CentreonBroker::program_status_set_mapping;
+
+static const DB::DataMember<Service> service_dm[] =
+  {
+    DataMember<Service>("acknowledgement_type",
+      &Service::acknowledgement_type),
+    DataMember<Service>("action_url",
+      &Service::action_url),
+    DataMember<Service>("active_checks_enabled",
+      &Service::active_checks_enabled),
+    DataMember<Service>("check_command",
+      &Service::check_command),
+    DataMember<Service>("check_interval",
+      &Service::check_interval),
+    DataMember<Service>("check_freshness",
+      &Service::check_freshness),
+    DataMember<Service>("check_period",
+      &Service::check_period),
+    DataMember<Service>("check_type",
+      &Service::check_type),
+    DataMember<Service>("current_attempt",
+      &Service::current_check_attempt),
+    DataMember<Service>("current_notification_number",
+      &Service::current_notification_number),
+    DataMember<Service>("current_state",
+      &Service::current_state),
+    DataMember<Service>("default_active_checks_enabled",
+      &Service::active_checks_enabled),
+    DataMember<Service>("default_event_handler_enabled",
+      &Service::event_handler_enabled),
+    DataMember<Service>("default_failure_prediction_enabled",
+      &Service::failure_prediction_enabled),
+    DataMember<Service>("default_flap_detection_enabled",
+      &Service::flap_detection_enabled),
+    DataMember<Service>("default_notifications_enabled",
+      &Service::notifications_enabled),
+    DataMember<Service>("default_passive_checks_enabled",
+      &Service::passive_checks_enabled),
+    DataMember<Service>("default_process_performance_data",
+      &Service::process_performance_data),
+    DataMember<Service>("display_name",
+      &Service::display_name),
+    DataMember<Service>("event_handler",
+      &Service::event_handler),
+    DataMember<Service>("event_handler_enabled",
+      &Service::event_handler_enabled),
+    DataMember<Service>("execution_time",
+      &Service::execution_time),
+    DataMember<Service>("failure_prediction_enabled",
+      &Service::failure_prediction_enabled),
+    DataMember<Service>("failure_prediction_options",
+      &Service::failure_prediction_options),
+    DataMember<Service>("first_notification_delay",
+      &Service::first_notification_delay),
+    DataMember<Service>("flap_detection_enabled",
+      &Service::flap_detection_enabled),
+    DataMember<Service>("flap_detection_on_critical",
+      &Service::flap_detection_on_critical),
+    DataMember<Service>("flap_detection_on_ok",
+      &Service::flap_detection_on_ok),
+    DataMember<Service>("flap_detection_on_unknown",
+      &Service::flap_detection_on_unknown),
+    DataMember<Service>("flap_detection_on_warning",
+      &Service::flap_detection_on_warning),
+    DataMember<Service>("freshness_threshold",
+      &Service::freshness_threshold),
+    DataMember<Service>("has_been_checked",
+      &Service::has_been_checked),
+    DataMember<Service>("high_flap_threshold",
+      &Service::high_flap_threshold),
+    DataMember<Service>("host_name",
+      &Service::host),
+    DataMember<Service>("icon_image",
+      &Service::icon_image),
+    DataMember<Service>("icon_image_alt",
+      &Service::icon_image_alt),
+    DataMember<Service>("is_flapping",
+      &Service::is_flapping),
+    DataMember<Service>("is_volatile",
+      &Service::is_volatile),
+    DataMember<Service>("last_check",
+      &Service::last_check),
+    DataMember<Service>("last_hard_state",
+      &Service::last_hard_state),
+    DataMember<Service>("last_hard_state_change",
+      &Service::last_hard_state_change),
+    DataMember<Service>("last_notification",
+      &Service::last_notification),
+    DataMember<Service>("last_state_change",
+      &Service::last_state_change),
+    DataMember<Service>("last_time_critical",
+      &Service::last_time_critical),
+    DataMember<Service>("last_time_ok",
+      &Service::last_time_ok),
+    DataMember<Service>("last_time_unknown",
+      &Service::last_time_unknown),
+    DataMember<Service>("last_time_warning",
+      &Service::last_time_warning),
+    DataMember<Service>("last_update",
+      &Service::last_update),
+    DataMember<Service>("latency",
+      &Service::latency),
+    DataMember<Service>("long_output",
+      &Service::long_output),
+    DataMember<Service>("low_flap_threshold",
+      &Service::low_flap_threshold),
+    DataMember<Service>("max_check_attempts",
+      &Service::max_check_attempts),
+    DataMember<Service>("modified_attributes",
+      &Service::modified_attributes),
+    DataMember<Service>("next_check",
+      &Service::next_check),
+    DataMember<Service>("next_notification",
+      &Service::next_notification),
+    DataMember<Service>("no_more_notifications",
+      &Service::no_more_notifications),
+    DataMember<Service>("notes",
+      &Service::notes),
+    DataMember<Service>("notes_url",
+      &Service::notes_url),
+    DataMember<Service>("notification_interval",
+      &Service::notification_interval),
+    DataMember<Service>("notification_period",
+      &Service::notification_period),
+    DataMember<Service>("notifications_enabled",
+      &Service::notifications_enabled),
+    DataMember<Service>("notified_on_critical",
+      &Service::notified_on_critical),
+    DataMember<Service>("notified_on_unknown",
+      &Service::notified_on_unknown),
+    DataMember<Service>("notified_on_warning",
+      &Service::notified_on_warning),
+    DataMember<Service>("notify_on_downtime",
+      &Service::notify_on_downtime),
+    DataMember<Service>("notify_on_flapping",
+      &Service::notify_on_flapping),
+    DataMember<Service>("notify_on_recovery",
+      &Service::notify_on_recovery),
+    DataMember<Service>("obsess_over_service",
+      &Service::obsess_over),
+    DataMember<Service>("output",
+      &Service::output),
+    DataMember<Service>("passive_checks_enabled",
+      &Service::passive_checks_enabled),
+    DataMember<Service>("percent_state_change",
+      &Service::percent_state_change),
+    DataMember<Service>("perf_data",
+      &Service::perf_data),
+    DataMember<Service>("problem_has_been_acknowledged",
+      &Service::problem_has_been_acknowledged),
+    DataMember<Service>("process_performance_data",
+      &Service::process_performance_data),
+    DataMember<Service>("retain_nonstatus_information",
+      &Service::retain_nonstatus_information),
+    DataMember<Service>("retain_status_information",
+      &Service::retain_status_information),
+    DataMember<Service>("retry_interval",
+      &Service::retry_interval),
+    DataMember<Service>("scheduled_downtime_depth",
+      &Service::scheduled_downtime_depth),
+    DataMember<Service>("service_description",
+      &Service::service),
+    DataMember<Service>("should_be_scheduled",
+      &Service::should_be_scheduled),
+    DataMember<Service>("stalk_on_critical",
+      &Service::stalk_on_critical),
+    DataMember<Service>("stalk_on_ok",
+      &Service::stalk_on_ok),
+    DataMember<Service>("stalk_on_unknown",
+      &Service::stalk_on_unknown),
+    DataMember<Service>("stalk_on_warning",
+      &Service::stalk_on_warning),
+    DataMember<Service>("state_type",
+      &Service::state_type),
+    DataMember<Service>()
+  };
+DB::MappingGetters<Events::Service>
+  CentreonBroker::service_get_mapping;
+DB::MappingSetters<Events::Service>
+  CentreonBroker::service_set_mapping;
+
+static const DB::DataMember<ServiceStatus> service_status_dm[] =
+  {
+    DataMember<ServiceStatus>("acknowledgement_type",
+      &ServiceStatus::acknowledgement_type),
+    DataMember<ServiceStatus>("active_checks_enabled",
+      &ServiceStatus::active_checks_enabled),
+    DataMember<ServiceStatus>("check_command",
+      &ServiceStatus::check_command),
+    DataMember<ServiceStatus>("check_interval",
+      &ServiceStatus::check_interval),
+    DataMember<ServiceStatus>("check_period",
+      &ServiceStatus::check_period),
+    DataMember<ServiceStatus>("check_type",
+      &ServiceStatus::check_type),
+    DataMember<ServiceStatus>("current_attempt",
+      &ServiceStatus::current_check_attempt),
+    DataMember<ServiceStatus>("current_notification_number",
+      &ServiceStatus::current_notification_number),
+    DataMember<ServiceStatus>("current_state",
+      &ServiceStatus::current_state),
+    DataMember<ServiceStatus>("event_handler",
+      &ServiceStatus::event_handler),
+    DataMember<ServiceStatus>("event_handler_enabled",
+      &ServiceStatus::event_handler_enabled),
+    DataMember<ServiceStatus>("execution_time",
+      &ServiceStatus::execution_time),
+    DataMember<ServiceStatus>("failure_prediction_enabled",
+      &ServiceStatus::failure_prediction_enabled),
+    DataMember<ServiceStatus>("flap_detection_enabled",
+      &ServiceStatus::flap_detection_enabled),
+    DataMember<ServiceStatus>("has_been_checked",
+      &ServiceStatus::has_been_checked),
+    DataMember<ServiceStatus>("is_flapping",
+      &ServiceStatus::is_flapping),
+    DataMember<ServiceStatus>("last_check",
+      &ServiceStatus::last_check),
+    DataMember<ServiceStatus>("last_hard_state",
+      &ServiceStatus::last_hard_state),
+    DataMember<ServiceStatus>("last_hard_state_change",
+      &ServiceStatus::last_hard_state_change),
+    DataMember<ServiceStatus>("last_notification",
+      &ServiceStatus::last_notification),
+    DataMember<ServiceStatus>("last_state_change",
+      &ServiceStatus::last_state_change),
+    DataMember<ServiceStatus>("last_time_critical",
+      &ServiceStatus::last_time_critical),
+    DataMember<ServiceStatus>("last_time_ok",
+      &ServiceStatus::last_time_ok),
+    DataMember<ServiceStatus>("last_time_unknown",
+      &ServiceStatus::last_time_unknown),
+    DataMember<ServiceStatus>("last_time_warning",
+      &ServiceStatus::last_time_warning),
+    DataMember<ServiceStatus>("last_update",
+      &ServiceStatus::last_update),
+    DataMember<ServiceStatus>("latency",
+      &ServiceStatus::latency),
+    DataMember<ServiceStatus>("long_output",
+      &ServiceStatus::long_output),
+    DataMember<ServiceStatus>("max_check_attempts",
+      &ServiceStatus::max_check_attempts),
+    DataMember<ServiceStatus>("modified_attributes",
+      &ServiceStatus::modified_attributes),
+    DataMember<ServiceStatus>("next_check",
+      &ServiceStatus::next_check),
+    DataMember<ServiceStatus>("next_notification",
+      &ServiceStatus::next_notification),
+    DataMember<ServiceStatus>("no_more_notifications",
+      &ServiceStatus::no_more_notifications),
+    DataMember<ServiceStatus>("notifications_enabled",
+      &ServiceStatus::notifications_enabled),
+    DataMember<ServiceStatus>("obsess_over_service",
+      &ServiceStatus::obsess_over),
+    DataMember<ServiceStatus>("output",
+      &ServiceStatus::output),
+    DataMember<ServiceStatus>("passive_checks_enabled",
+      &ServiceStatus::passive_checks_enabled),
+    DataMember<ServiceStatus>("percent_state_change",
+      &ServiceStatus::percent_state_change),
+    DataMember<ServiceStatus>("perf_data",
+      &ServiceStatus::perf_data),
+    DataMember<ServiceStatus>("problem_has_been_acknowledged",
+      &ServiceStatus::problem_has_been_acknowledged),
+    DataMember<ServiceStatus>("process_performance_data",
+      &ServiceStatus::process_performance_data),
+    DataMember<ServiceStatus>("retry_interval",
+      &ServiceStatus::retry_interval),
+    DataMember<ServiceStatus>("scheduled_downtime_depth",
+      &ServiceStatus::scheduled_downtime_depth),
+    DataMember<ServiceStatus>("should_be_scheduled",
+      &ServiceStatus::should_be_scheduled),
+    DataMember<ServiceStatus>("state_type",
+      &ServiceStatus::state_type),
+    DataMember<ServiceStatus>()
+  };
+DB::MappingGetters<Events::ServiceStatus>
+  CentreonBroker::service_status_get_mapping;
+DB::MappingSetters<Events::ServiceStatus>
+  CentreonBroker::service_status_set_mapping;
+
+template <typename T>
+void InitMapping(const DB::DataMember<T>* datamembers,
+                 DB::MappingGetters<T>& mapping_get,
+                 DB::MappingSetters<T>& mapping_set)
 {
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Acknowledgement mapping...");
-#endif /* !NDEBUG */
-  acknowledgement_mapping.SetTable("acknowledgements");
-  acknowledgement_mapping.AddShortField("acknowledgement_type",
-    &Acknowledgement::type);
-  acknowledgement_mapping.AddStringField("author_name",
-    &Acknowledgement::author);
-  acknowledgement_mapping.AddStringField("comment_data",
-    &Acknowledgement::comment);
-  acknowledgement_mapping.AddTimeField("entry_time",
-    &Acknowledgement::entry_time);
-  acknowledgement_mapping.AddShortField("is_sticky",
-    &Acknowledgement::is_sticky);
-  acknowledgement_mapping.AddShortField("notify_contacts",
-    &Acknowledgement::notify_contacts);
-  acknowledgement_mapping.AddShortField("persistent_comment",
-    &Acknowledgement::persistent_comment);
-  acknowledgement_mapping.AddShortField("state",
-    &Acknowledgement::state);
-  return ;
-}
-
-/**
- *  Comment mapping.
- */
-DB::Mapping<Comment> CentreonBroker::comment_mapping;
-
-static void InitCommentMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Comment mapping...");
-#endif /* !NDEBUG */
-  comment_mapping.SetTable("comment");
-  comment_mapping.AddStringField("author_name",
-    &Comment::author);
-  comment_mapping.AddStringField("comment_data",
-    &Comment::comment);
-  comment_mapping.AddTimeField("comment_time",
-    &Comment::comment_time);
-  comment_mapping.AddShortField("comment_type",
-    &Comment::type);
-  comment_mapping.AddTimeField("deletion_time",
-    &Comment::deletion_time);
-  comment_mapping.AddTimeField("entry_time",
-    &Comment::entry_time);
-  comment_mapping.AddShortField("entry_type",
-    &Comment::entry_type);
-  comment_mapping.AddTimeField("expire_time",
-    &Comment::expire_time);
-  comment_mapping.AddBoolField("expires",
-    &Comment::expires);
-  comment_mapping.AddStringField("host_name",
-    &Comment::host);
-  comment_mapping.AddIntField("internal_comment_id",
-    &Comment::internal_id);
-  comment_mapping.AddBoolField("persistent",
-    &Comment::persistent);
-  comment_mapping.AddStringField("service_description",
-    &Comment::service);
-  comment_mapping.AddShortField("source",
-    &Comment::source);
-  return ;
-}
-
-/**
- *  Connection mapping.
- */
-DB::Mapping<Connection> CentreonBroker::connection_mapping;
-
-static void InitConnectionMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Connection mapping...");
-#endif /* !NDEBUG */
-  connection_mapping.SetTable("connection_info");
-  connection_mapping.AddStringField("agent_name",
-    &Connection::agent_name);
-  connection_mapping.AddStringField("agent_version",
-    &Connection::agent_version);
-  connection_mapping.AddIntField("bytes_processed",
-    &Connection::bytes_processed);
-  connection_mapping.AddStringField("connect_source",
-    &Connection::connect_source);
-  connection_mapping.AddTimeField("connect_time",
-    &Connection::connect_time);
-  connection_mapping.AddStringField("connect_type",
-    &Connection::connect_type);
-  connection_mapping.AddTimeField("data_start_time",
-    &Connection::data_start_time);
-  connection_mapping.AddIntField("entries_processed",
-    &Connection::entries_processed);
-  connection_mapping.AddIntField("lines_processed",
-    &Connection::lines_processed);
-  connection_mapping.AddTimeField("data_end_time",
-    &Connection::data_end_time);
-  connection_mapping.AddTimeField("disconnect_time",
-    &Connection::disconnect_time);
-  connection_mapping.AddTimeField("last_checkin_time",
-    &Connection::last_checkin_time);
-  return ;
-}
-
-/**
- *  ConnectionStatus mapping.
- */
-DB::Mapping<ConnectionStatus> CentreonBroker::connection_status_mapping;
-
-static void InitConnectionStatusMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ConnectionStatus mapping...");
-#endif /* !NDEBUG */
-  connection_status_mapping.SetTable("connection_info");
-  connection_status_mapping.AddIntField("bytes_processed",
-    &ConnectionStatus::bytes_processed);
-  connection_status_mapping.AddTimeField("data_end_time",
-    &ConnectionStatus::data_end_time);
-  connection_status_mapping.AddTimeField("disconnect_time",
-    &ConnectionStatus::disconnect_time);
-  connection_status_mapping.AddIntField("entries_processed",
-    &ConnectionStatus::entries_processed);
-  connection_status_mapping.AddTimeField("last_checkin_time",
-    &ConnectionStatus::last_checkin_time);
-  connection_status_mapping.AddIntField("lines_processed",
-    &ConnectionStatus::lines_processed);
-  return ;
-}
-
-/**
- *  Downtime mapping.
- */
-DB::Mapping<Downtime> CentreonBroker::downtime_mapping;
-
-static void InitDowntimeMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Downtime mapping...");
-#endif /* !NDEBUG */
-  downtime_mapping.SetTable("scheduled_downtime");
-  downtime_mapping.AddStringField("author_name",
-    &Downtime::author);
-  downtime_mapping.AddStringField("comment_data",
-    &Downtime::comment);
-  downtime_mapping.AddIntField("downtime_id",
-    &Downtime::id);
-  downtime_mapping.AddShortField("downtime_type",
-    &Downtime::type);
-  downtime_mapping.AddShortField("duration",
-    &Downtime::duration);
-  downtime_mapping.AddTimeField("end_time",
-    &Downtime::end_time);
-  downtime_mapping.AddTimeField("entry_time",
-    &Downtime::entry_time);
-  downtime_mapping.AddBoolField("fixed",
-    &Downtime::fixed);
-  downtime_mapping.AddTimeField("start_time",
-    &Downtime::start_time);
-  downtime_mapping.AddIntField("triggered_by",
-    &Downtime::triggered_by);
-  downtime_mapping.AddBoolField("was_cancelled",
-    &Downtime::was_cancelled);
-  downtime_mapping.AddBoolField("was_started",
-    &Downtime::was_started);
-  return ;
-}
-
-/**
- *  Host mapping.
- */
-DB::Mapping<Host> CentreonBroker::host_mapping;
-
-static void InitHostMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Host mapping...");
-#endif /* !NDEBUG */
-  host_mapping.SetTable("host");
-  host_mapping.AddShortField("acknowledgement_type",
-    &Host::acknowledgement_type);
-  host_mapping.AddStringField("action_url",
-    &Host::action_url);
-  host_mapping.AddBoolField("active_checks_enabled",
-    &Host::active_checks_enabled);
-  host_mapping.AddStringField("address",
-    &Host::address);
-  host_mapping.AddStringField("alias",
-    &Host::alias);
-  host_mapping.AddStringField("check_command",
-    &Host::check_command);
-  host_mapping.AddDoubleField("check_interval",
-    &Host::check_interval);
-  host_mapping.AddBoolField("check_freshness",
-    &Host::check_freshness);
-  host_mapping.AddStringField("check_period",
-    &Host::check_period);
-  host_mapping.AddShortField("check_type",
-    &Host::check_type);
-  host_mapping.AddShortField("current_check_attempt",
-    &Host::current_check_attempt);
-  host_mapping.AddShortField("current_notification_number",
-    &Host::current_notification_number);
-  host_mapping.AddShortField("current_state",
-    &Host::current_state);
-  host_mapping.AddStringField("display_name",
-    &Host::display_name);
-  host_mapping.AddStringField("event_handler",
-    &Host::event_handler);
-  host_mapping.AddBoolField("event_handler_enabled",
-    &Host::event_handler_enabled);
-  host_mapping.AddDoubleField("execution_time",
-    &Host::execution_time);
-  host_mapping.AddBoolField("failure_prediction_enabled",
-    &Host::failure_prediction_enabled);
-  host_mapping.AddDoubleField("first_notification_delay",
-    &Host::first_notification_delay);
-  host_mapping.AddBoolField("flap_detection_enabled",
-    &Host::flap_detection_enabled);
-  host_mapping.AddShortField("flap_detection_on_down",
-    &Host::flap_detection_on_down);
-  host_mapping.AddShortField("flap_detection_on_unreachable",
-    &Host::flap_detection_on_unreachable);
-  host_mapping.AddShortField("flap_detection_on_up",
-    &Host::flap_detection_on_up);
-  host_mapping.AddDoubleField("freshness_threshold",
-    &Host::freshness_threshold);
-  host_mapping.AddBoolField("has_been_checked",
-    &Host::has_been_checked);
-  host_mapping.AddShortField("have_2d_coords",
-    &Host::have_2d_coords);
-  host_mapping.AddDoubleField("high_flap_threshold",
-    &Host::high_flap_threshold);
-  host_mapping.AddStringField("host_name",
-    &Host::host);
-  host_mapping.AddStringField("icon_image",
-    &Host::icon_image);
-  host_mapping.AddStringField("icon_image_alt",
-    &Host::icon_image_alt);
-  host_mapping.AddBoolField("is_flapping",
-    &Host::is_flapping);
-  host_mapping.AddTimeField("last_check",
-    &Host::last_check);
-  host_mapping.AddShortField("last_hard_state",
-    &Host::last_hard_state);
-  host_mapping.AddTimeField("last_hard_state_change",
-    &Host::last_hard_state_change);
-  host_mapping.AddTimeField("last_notification",
-    &Host::last_notification);
-  host_mapping.AddTimeField("last_state_change",
-    &Host::last_state_change);
-  host_mapping.AddTimeField("last_time_down",
-    &Host::last_time_down);
-  host_mapping.AddTimeField("last_time_unreachable",
-    &Host::last_time_unreachable);
-  host_mapping.AddTimeField("last_time_up",
-    &Host::last_time_up);
-  host_mapping.AddTimeField("last_update",
-    &Host::last_update);
-  host_mapping.AddDoubleField("latency",
-    &Host::latency);
-  host_mapping.AddStringField("long_output",
-    &Host::long_output);
-  host_mapping.AddDoubleField("low_flap_threshold",
-    &Host::low_flap_threshold);
-  host_mapping.AddShortField("max_check_attempts",
-    &Host::max_check_attempts);
-  host_mapping.AddIntField("modified_attributes",
-    &Host::modified_attributes);
-  host_mapping.AddTimeField("next_check",
-    &Host::next_check);
-  host_mapping.AddTimeField("next_host_notification",
-    &Host::next_notification);
-  host_mapping.AddBoolField("no_more_notifications",
-    &Host::no_more_notifications);
-  host_mapping.AddStringField("notes",
-    &Host::notes);
-  host_mapping.AddStringField("notes_url",
-    &Host::notes_url);
-  host_mapping.AddDoubleField("notification_interval",
-    &Host::notification_interval);
-  host_mapping.AddStringField("notification_period",
-    &Host::notification_period);
-  host_mapping.AddBoolField("notifications_enabled",
-    &Host::notifications_enabled);
-  host_mapping.AddShortField("notify_on_down",
-    &Host::notify_on_down);
-  host_mapping.AddShortField("notify_on_downtime",
-    &Host::notify_on_downtime);
-  host_mapping.AddShortField("notify_on_flapping",
-    &Host::notify_on_flapping);
-  host_mapping.AddShortField("notify_on_recovery",
-    &Host::notify_on_recovery);
-  host_mapping.AddShortField("notify_on_unreachable",
-    &Host::notify_on_unreachable);
-  host_mapping.AddBoolField("obsess_over_host",
-    &Host::obsess_over);
-  host_mapping.AddStringField("output",
-    &Host::output);
-  host_mapping.AddBoolField("passive_checks_enabled",
-    &Host::passive_checks_enabled);
-  host_mapping.AddDoubleField("percent_state_change",
-    &Host::percent_state_change);
-  host_mapping.AddStringField("perf_data",
-    &Host::perf_data);
-  host_mapping.AddBoolField("problem_has_been_acknowledged",
-    &Host::problem_has_been_acknowledged);
-  host_mapping.AddBoolField("process_performance_data",
-    &Host::process_performance_data);
-  host_mapping.AddBoolField("retain_nonstatus_information",
-    &Host::retain_nonstatus_information);
-  host_mapping.AddBoolField("retain_status_information",
-    &Host::retain_status_information);
-  host_mapping.AddDoubleField("retry_interval",
-    &Host::retry_interval);
-  host_mapping.AddShortField("scheduled_downtime_depth",
-    &Host::scheduled_downtime_depth);
-  host_mapping.AddBoolField("should_be_scheduled",
-    &Host::should_be_scheduled);
-  host_mapping.AddShortField("stalk_on_down",
-    &Host::stalk_on_down);
-  host_mapping.AddShortField("stalk_on_unreachable",
-    &Host::stalk_on_unreachable);
-  host_mapping.AddShortField("stalk_on_up",
-    &Host::stalk_on_up);
-  host_mapping.AddShortField("state_type",
-    &Host::state_type);
-  host_mapping.AddStringField("statusmap_image",
-    &Host::statusmap_image);
-  host_mapping.AddStringField("vrml_image",
-    &Host::vrml_image);
-  host_mapping.AddShortField("x_2d",
-    &Host::x_2d);
-  host_mapping.AddShortField("y_2d",
-    &Host::y_2d);
-  return ;
-}
-
-/**
- *  HostGroup mapping.
- */
-DB::Mapping<HostGroup> CentreonBroker::host_group_mapping;
-
-static void InitHostGroupMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing HostGroup mapping...");
-#endif /* !NDEBUG */
-  host_group_mapping.SetTable("hostgroup");
-  host_group_mapping.AddStringField("action_url",
-    &HostGroup::action_url);
-  host_group_mapping.AddStringField("alias",
-    &HostGroup::alias);
-  host_group_mapping.AddStringField("hostgroup_name",
-    &HostGroup::name);
-  host_group_mapping.AddStringField("notes",
-    &HostGroup::notes);
-  host_group_mapping.AddStringField("notes_url",
-    &HostGroup::notes_url);
-  return ;
-}
-
-/**
- *  HostStatus mapping.
- */
-DB::Mapping<HostStatus> CentreonBroker::host_status_mapping;
-
-static void InitHostStatusMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing HostStatus mapping...");
-#endif /* !NDEBUG */
-  host_status_mapping.SetTable("host");
-  host_status_mapping.AddShortField("acknowledgement_type",
-    &HostStatus::acknowledgement_type);
-  host_status_mapping.AddBoolField("active_checks_enabled",
-    &HostStatus::active_checks_enabled);
-  host_status_mapping.AddStringField("check_command",
-    &HostStatus::check_command);
-  host_status_mapping.AddDoubleField("check_interval",
-    &HostStatus::check_interval);
-  host_status_mapping.AddStringField("check_period",
-    &HostStatus::check_period);
-  host_status_mapping.AddShortField("check_type",
-    &HostStatus::check_type);
-  host_status_mapping.AddShortField("current_check_attempt",
-    &HostStatus::current_check_attempt);
-  host_status_mapping.AddShortField("current_notification_number",
-    &HostStatus::current_notification_number);
-  host_status_mapping.AddShortField("current_state",
-    &HostStatus::current_state);
-  host_status_mapping.AddStringField("event_handler",
-    &HostStatus::event_handler);
-  host_status_mapping.AddBoolField("event_handler_enabled",
-    &HostStatus::event_handler_enabled);
-  host_status_mapping.AddDoubleField("execution_time",
-    &HostStatus::execution_time);
-  host_status_mapping.AddBoolField("failure_prediction_enabled",
-    &HostStatus::failure_prediction_enabled);
-  host_status_mapping.AddBoolField("flap_detection_enabled",
-    &HostStatus::flap_detection_enabled);
-  host_status_mapping.AddBoolField("has_been_checked",
-    &HostStatus::has_been_checked);
-  host_status_mapping.AddBoolField("is_flapping",
-    &HostStatus::is_flapping);
-  host_status_mapping.AddTimeField("last_check",
-    &HostStatus::last_check);
-  host_status_mapping.AddShortField("last_hard_state",
-    &HostStatus::last_hard_state);
-  host_status_mapping.AddTimeField("last_hard_state_change",
-    &HostStatus::last_hard_state_change);
-  host_status_mapping.AddTimeField("last_notification",
-    &HostStatus::last_notification);
-  host_status_mapping.AddTimeField("last_state_change",
-    &HostStatus::last_state_change);
-  host_status_mapping.AddTimeField("last_time_down",
-    &HostStatus::last_time_down);
-  host_status_mapping.AddTimeField("last_time_unreachable",
-    &HostStatus::last_time_unreachable);
-  host_status_mapping.AddTimeField("last_time_up",
-    &HostStatus::last_time_up);
-  host_status_mapping.AddTimeField("last_update",
-    &HostStatus::last_update);
-  host_status_mapping.AddDoubleField("latency",
-    &HostStatus::latency);
-  host_status_mapping.AddStringField("long_output",
-    &HostStatus::long_output);
-  host_status_mapping.AddShortField("max_check_attempts",
-    &HostStatus::max_check_attempts);
-  host_status_mapping.AddIntField("modified_attributes",
-    &HostStatus::modified_attributes);
-  host_status_mapping.AddTimeField("next_check",
-    &HostStatus::next_check);
-  host_status_mapping.AddTimeField("next_host_notification",
-    &HostStatus::next_notification);
-  host_status_mapping.AddBoolField("no_more_notifications",
-    &HostStatus::no_more_notifications);
-  host_status_mapping.AddBoolField("notifications_enabled",
-    &HostStatus::notifications_enabled);
-  host_status_mapping.AddBoolField("obsess_over_host",
-    &HostStatus::obsess_over);
-  host_status_mapping.AddStringField("output",
-    &HostStatus::output);
-  host_status_mapping.AddBoolField("passive_checks_enabled",
-    &HostStatus::passive_checks_enabled);
-  host_status_mapping.AddDoubleField("percent_state_change",
-    &HostStatus::percent_state_change);
-  host_status_mapping.AddStringField("perf_data",
-    &HostStatus::perf_data);
-  host_status_mapping.AddBoolField("problem_has_been_acknowledged",
-    &HostStatus::problem_has_been_acknowledged);
-  host_status_mapping.AddBoolField("process_performance_data",
-    &HostStatus::process_performance_data);
-  host_status_mapping.AddDoubleField("retry_interval",
-    &HostStatus::retry_interval);
-  host_status_mapping.AddShortField("scheduled_downtime_depth",
-    &HostStatus::scheduled_downtime_depth);
-  host_status_mapping.AddBoolField("should_be_scheduled",
-    &HostStatus::should_be_scheduled);
-  host_status_mapping.AddShortField("state_type",
-    &HostStatus::state_type);
-  return ;
-}
-
-DB::Mapping<Log> CentreonBroker::log_mapping;
-
-static void InitLogMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Log mapping");
-#endif /* !NDEBUG */
-  log_mapping.SetTable("log");
-  log_mapping.AddTimeField("ctime",
-    &Log::c_time);
-  log_mapping.AddStringField("host_name",
-    &Log::host);
-  log_mapping.AddIntField("msg_type",
-    &Log::msg_type);
-  log_mapping.AddStringField("notification_cmd",
-    &Log::notification_cmd);
-  log_mapping.AddStringField("notification_contact",
-    &Log::notification_contact);
-  log_mapping.AddStringField("output",
-    &Log::output);
-  log_mapping.AddIntField("retry",
-    &Log::retry);
-  log_mapping.AddStringField("service_description",
-    &Log::service);
-  log_mapping.AddStringField("status",
-    &Log::status);
-  log_mapping.AddStringField("type",
-    &Log::type);
-  return ;
-}
-
-DB::Mapping<ProgramStatus> CentreonBroker::program_status_mapping;
-
-static void InitProgramStatusMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ProgramStatus mapping");
-#endif /* !NDEBUG */
-  program_status_mapping.SetTable("program_status");
-  program_status_mapping.AddBoolField("active_host_checks_enabled",
-    &ProgramStatus::active_host_checks_enabled);
-  program_status_mapping.AddBoolField("active_service_checks_enabled",
-    &ProgramStatus::active_service_checks_enabled);
-  program_status_mapping.AddBoolField("daemon_mode",
-    &ProgramStatus::daemon_mode);
-  program_status_mapping.AddBoolField("event_handlers_enabled",
-    &ProgramStatus::event_handler_enabled);
-  program_status_mapping.AddBoolField("failure_prediction_enabled",
-    &ProgramStatus::failure_prediction_enabled);
-  program_status_mapping.AddBoolField("flap_detection_enabled",
-    &ProgramStatus::flap_detection_enabled);
-  program_status_mapping.AddStringField("global_host_event_handler",
-    &ProgramStatus::global_host_event_handler);
-  program_status_mapping.AddStringField("global_service_event_handler",
-    &ProgramStatus::global_service_event_handler);
-  program_status_mapping.AddBoolField("is_running",
-    &ProgramStatus::is_running);
-  program_status_mapping.AddTimeField("last_alive",
-    &ProgramStatus::last_alive);
-  program_status_mapping.AddTimeField("last_command_check",
-    &ProgramStatus::last_command_check);
-  program_status_mapping.AddTimeField("last_log_rotation",
-    &ProgramStatus::last_log_rotation);
-  program_status_mapping.AddIntField("modified_host_attributes",
-    &ProgramStatus::modified_host_attributes);
-  program_status_mapping.AddIntField("modified_service_attributes",
-    &ProgramStatus::modified_service_attributes);
-  program_status_mapping.AddBoolField("notifications_enabled",
-    &ProgramStatus::notifications_enabled);
-  program_status_mapping.AddBoolField("obsess_over_hosts",
-    &ProgramStatus::obsess_over_hosts);
-  program_status_mapping.AddBoolField("obsess_over_services",
-    &ProgramStatus::obsess_over_services);
-  program_status_mapping.AddBoolField("passive_host_checks_enabled",
-    &ProgramStatus::passive_host_checks_enabled);
-  program_status_mapping.AddBoolField("passive_service_checks_enabled",
-    &ProgramStatus::passive_service_checks_enabled);
-  program_status_mapping.AddIntField("pid",
-    &ProgramStatus::pid);
-  program_status_mapping.AddBoolField("process_performance_data",
-    &ProgramStatus::process_performance_data);
-  program_status_mapping.AddTimeField("program_end_time",
-    &ProgramStatus::program_end);
-  program_status_mapping.AddTimeField("program_start",
-    &ProgramStatus::program_start);
-  return ;
-}
-
-DB::Mapping<Service> CentreonBroker::service_mapping;
-
-static void InitServiceMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Service mapping...");
-#endif /* !NDEBUG */
-  service_mapping.SetTable("service");
-  service_mapping.AddShortField("acknowledgement_type",
-    &Service::acknowledgement_type);
-  service_mapping.AddStringField("action_url",
-    &Service::action_url);
-  service_mapping.AddBoolField("active_checks_enabled",
-    &Service::active_checks_enabled);
-  service_mapping.AddStringField("check_command",
-    &Service::check_command);
-  service_mapping.AddDoubleField("check_interval",
-    &Service::check_interval);
-  service_mapping.AddBoolField("check_freshness",
-    &Service::check_freshness);
-  service_mapping.AddStringField("check_period",
-    &Service::check_period);
-  service_mapping.AddShortField("check_type",
-    &Service::check_type);
-  service_mapping.AddShortField("current_attempt",
-    &Service::current_check_attempt);
-  service_mapping.AddShortField("current_notification_number",
-    &Service::current_notification_number);
-  service_mapping.AddShortField("current_state",
-    &Service::current_state);
-  service_mapping.AddShortField("default_active_checks_enabled",
-    &Service::active_checks_enabled);
-  service_mapping.AddShortField("default_event_handler_enabled",
-    &Service::event_handler_enabled);
-  service_mapping.AddShortField("default_failure_prediction_enabled",
-    &Service::failure_prediction_enabled);
-  service_mapping.AddShortField("default_flap_detection_enabled",
-    &Service::flap_detection_enabled);
-  service_mapping.AddShortField("default_notifications_enabled",
-    &Service::notifications_enabled);
-  service_mapping.AddShortField("default_passive_checks_enabled",
-    &Service::passive_checks_enabled);
-  service_mapping.AddShortField("default_process_performance_data",
-    &Service::process_performance_data);
-  service_mapping.AddStringField("display_name",
-    &Service::display_name);
-  service_mapping.AddStringField("event_handler",
-    &Service::event_handler);
-  service_mapping.AddBoolField("event_handler_enabled",
-    &Service::event_handler_enabled);
-  service_mapping.AddDoubleField("execution_time",
-    &Service::execution_time);
-  service_mapping.AddBoolField("failure_prediction_enabled",
-    &Service::failure_prediction_enabled);
-  service_mapping.AddStringField("failure_prediction_options",
-    &Service::failure_prediction_options);
-  service_mapping.AddDoubleField("first_notification_delay",
-    &Service::first_notification_delay);
-  service_mapping.AddBoolField("flap_detection_enabled",
-    &Service::flap_detection_enabled);
-  service_mapping.AddShortField("flap_detection_on_critical",
-    &Service::flap_detection_on_critical);
-  service_mapping.AddShortField("flap_detection_on_ok",
-    &Service::flap_detection_on_ok);
-  service_mapping.AddShortField("flap_detection_on_unknown",
-    &Service::flap_detection_on_unknown);
-  service_mapping.AddShortField("flap_detection_on_warning",
-    &Service::flap_detection_on_warning);
-  service_mapping.AddDoubleField("freshness_threshold",
-    &Service::freshness_threshold);
-  service_mapping.AddBoolField("has_been_checked",
-    &Service::has_been_checked);
-  service_mapping.AddDoubleField("high_flap_threshold",
-    &Service::high_flap_threshold);
-  service_mapping.AddStringField("host_name",
-    &Service::host);
-  service_mapping.AddStringField("icon_image",
-    &Service::icon_image);
-  service_mapping.AddStringField("icon_image_alt",
-    &Service::icon_image_alt);
-  service_mapping.AddBoolField("is_flapping",
-    &Service::is_flapping);
-  service_mapping.AddBoolField("is_volatile",
-    &Service::is_volatile);
-  service_mapping.AddTimeField("last_check",
-    &Service::last_check);
-  service_mapping.AddShortField("last_hard_state",
-    &Service::last_hard_state);
-  service_mapping.AddTimeField("last_hard_state_change",
-    &Service::last_hard_state_change);
-  service_mapping.AddTimeField("last_notification",
-    &Service::last_notification);
-  service_mapping.AddTimeField("last_state_change",
-    &Service::last_state_change);
-  service_mapping.AddTimeField("last_time_critical",
-    &Service::last_time_critical);
-  service_mapping.AddTimeField("last_time_ok",
-    &Service::last_time_ok);
-  service_mapping.AddTimeField("last_time_unknown",
-    &Service::last_time_unknown);
-  service_mapping.AddTimeField("last_time_warning",
-    &Service::last_time_warning);
-  service_mapping.AddTimeField("last_update",
-    &Service::last_update);
-  service_mapping.AddDoubleField("latency",
-    &Service::latency);
-  service_mapping.AddStringField("long_output",
-    &Service::long_output);
-  service_mapping.AddDoubleField("low_flap_threshold",
-    &Service::low_flap_threshold);
-  service_mapping.AddShortField("max_check_attempts",
-    &Service::max_check_attempts);
-  service_mapping.AddIntField("modified_attributes",
-    &Service::modified_attributes);
-  service_mapping.AddTimeField("next_check",
-    &Service::next_check);
-  service_mapping.AddTimeField("next_notification",
-    &Service::next_notification);
-  service_mapping.AddBoolField("no_more_notifications",
-    &Service::no_more_notifications);
-  service_mapping.AddStringField("notes",
-    &Service::notes);
-  service_mapping.AddStringField("notes_url",
-    &Service::notes_url);
-  service_mapping.AddDoubleField("notification_interval",
-    &Service::notification_interval);
-  service_mapping.AddStringField("notification_period",
-    &Service::notification_period);
-  service_mapping.AddBoolField("notifications_enabled",
-    &Service::notifications_enabled);
-  service_mapping.AddBoolField("notified_on_critical",
-    &Service::notified_on_critical);
-  service_mapping.AddBoolField("notified_on_unknown",
-    &Service::notified_on_unknown);
-  service_mapping.AddBoolField("notified_on_warning",
-    &Service::notified_on_warning);
-  service_mapping.AddShortField("notify_on_downtime",
-    &Service::notify_on_downtime);
-  service_mapping.AddShortField("notify_on_flapping",
-    &Service::notify_on_flapping);
-  service_mapping.AddShortField("notify_on_recovery",
-    &Service::notify_on_recovery);
-  service_mapping.AddBoolField("obsess_over_service",
-    &Service::obsess_over);
-  service_mapping.AddStringField("output",
-    &Service::output);
-  service_mapping.AddBoolField("passive_checks_enabled",
-    &Service::passive_checks_enabled);
-  service_mapping.AddDoubleField("percent_state_change",
-    &Service::percent_state_change);
-  service_mapping.AddStringField("perf_data",
-    &Service::perf_data);
-  service_mapping.AddBoolField("problem_has_been_acknowledged",
-    &Service::problem_has_been_acknowledged);
-  service_mapping.AddBoolField("process_performance_data",
-    &Service::process_performance_data);
-  service_mapping.AddBoolField("retain_nonstatus_information",
-    &Service::retain_nonstatus_information);
-  service_mapping.AddBoolField("retain_status_information",
-    &Service::retain_status_information);
-  service_mapping.AddDoubleField("retry_interval",
-    &Service::retry_interval);
-  service_mapping.AddShortField("scheduled_downtime_depth",
-    &Service::scheduled_downtime_depth);
-  service_mapping.AddStringField("service_description",
-    &Service::service);
-  service_mapping.AddBoolField("should_be_scheduled",
-    &Service::should_be_scheduled);
-  service_mapping.AddShortField("stalk_on_critical",
-    &Service::stalk_on_critical);
-  service_mapping.AddShortField("stalk_on_ok",
-    &Service::stalk_on_ok);
-  service_mapping.AddShortField("stalk_on_unknown",
-    &Service::stalk_on_unknown);
-  service_mapping.AddShortField("stalk_on_warning",
-    &Service::stalk_on_warning);
-  service_mapping.AddShortField("state_type",
-    &Service::state_type);
-  return ;
-}
-
-DB::Mapping<ServiceStatus> CentreonBroker::service_status_mapping;
-
-static void InitServiceStatusMapping()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ServiceStatus mapping...");
-#endif /* !NDEBUG */
-  service_status_mapping.SetTable("service");
-  service_status_mapping.AddShortField("acknowledgement_type",
-    &ServiceStatus::acknowledgement_type);
-  service_status_mapping.AddBoolField("active_checks_enabled",
-    &ServiceStatus::active_checks_enabled);
-  service_status_mapping.AddStringField("check_command",
-    &ServiceStatus::check_command);
-  service_status_mapping.AddDoubleField("check_interval",
-    &ServiceStatus::check_interval);
-  service_status_mapping.AddStringField("check_period",
-    &ServiceStatus::check_period);
-  service_status_mapping.AddShortField("check_type",
-    &ServiceStatus::check_type);
-  service_status_mapping.AddShortField("current_attempt",
-    &ServiceStatus::current_check_attempt);
-  service_status_mapping.AddShortField("current_notification_number",
-    &ServiceStatus::current_notification_number);
-  service_status_mapping.AddShortField("current_state",
-    &ServiceStatus::current_state);
-  service_status_mapping.AddStringField("event_handler",
-    &ServiceStatus::event_handler);
-  service_status_mapping.AddBoolField("event_handler_enabled",
-    &ServiceStatus::event_handler_enabled);
-  service_status_mapping.AddDoubleField("execution_time",
-    &ServiceStatus::execution_time);
-  service_status_mapping.AddBoolField("failure_prediction_enabled",
-    &ServiceStatus::failure_prediction_enabled);
-  service_status_mapping.AddBoolField("flap_detection_enabled",
-    &ServiceStatus::flap_detection_enabled);
-  service_status_mapping.AddBoolField("has_been_checked",
-    &ServiceStatus::has_been_checked);
-  service_status_mapping.AddBoolField("is_flapping",
-    &ServiceStatus::is_flapping);
-  service_status_mapping.AddTimeField("last_check",
-    &ServiceStatus::last_check);
-  service_status_mapping.AddShortField("last_hard_state",
-    &ServiceStatus::last_hard_state);
-  service_status_mapping.AddTimeField("last_hard_state_change",
-    &ServiceStatus::last_hard_state_change);
-  service_status_mapping.AddTimeField("last_notification",
-    &ServiceStatus::last_notification);
-  service_status_mapping.AddTimeField("last_state_change",
-    &ServiceStatus::last_state_change);
-  service_status_mapping.AddTimeField("last_time_critical",
-    &ServiceStatus::last_time_critical);
-  service_status_mapping.AddTimeField("last_time_ok",
-    &ServiceStatus::last_time_ok);
-  service_status_mapping.AddTimeField("last_time_unknown",
-    &ServiceStatus::last_time_unknown);
-  service_status_mapping.AddTimeField("last_time_warning",
-    &ServiceStatus::last_time_warning);
-  service_status_mapping.AddTimeField("last_update",
-    &ServiceStatus::last_update);
-  service_status_mapping.AddDoubleField("latency",
-    &ServiceStatus::latency);
-  service_status_mapping.AddStringField("long_output",
-    &ServiceStatus::long_output);
-  service_status_mapping.AddShortField("max_check_attempts",
-    &ServiceStatus::max_check_attempts);
-  service_status_mapping.AddIntField("modified_attributes",
-    &ServiceStatus::modified_attributes);
-  service_status_mapping.AddTimeField("next_check",
-    &ServiceStatus::next_check);
-  service_status_mapping.AddTimeField("next_notification",
-    &ServiceStatus::next_notification);
-  service_status_mapping.AddBoolField("no_more_notifications",
-    &ServiceStatus::no_more_notifications);
-  service_status_mapping.AddBoolField("notifications_enabled",
-    &ServiceStatus::notifications_enabled);
-  service_status_mapping.AddBoolField("obsess_over_service",
-    &ServiceStatus::obsess_over);
-  service_status_mapping.AddStringField("output",
-    &ServiceStatus::output);
-  service_status_mapping.AddBoolField("passive_checks_enabled",
-    &ServiceStatus::passive_checks_enabled);
-  service_status_mapping.AddDoubleField("percent_state_change",
-    &ServiceStatus::percent_state_change);
-  service_status_mapping.AddStringField("perf_data",
-    &ServiceStatus::perf_data);
-  service_status_mapping.AddBoolField("problem_has_been_acknowledged",
-    &ServiceStatus::problem_has_been_acknowledged);
-  service_status_mapping.AddBoolField("process_performance_data",
-    &ServiceStatus::process_performance_data);
-  service_status_mapping.AddDoubleField("retry_interval",
-    &ServiceStatus::retry_interval);
-  service_status_mapping.AddShortField("scheduled_downtime_depth",
-    &ServiceStatus::scheduled_downtime_depth);
-  service_status_mapping.AddBoolField("should_be_scheduled",
-    &ServiceStatus::should_be_scheduled);
-  service_status_mapping.AddShortField("state_type",
-    &ServiceStatus::state_type);
+  for (unsigned int i = 0; datamembers[i].name; i++)
+    switch (datamembers[i].type)
+      {
+       case 'b':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.b);
+        mapping_set.AddField(datamembers[i].name, datamembers[i].value.b);
+	break ;
+       case 'd':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.d);
+	mapping_set.AddField(datamembers[i].name, datamembers[i].value.d);
+	break ;
+       case 'i':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.i);
+	mapping_set.AddField(datamembers[i].name, datamembers[i].value.i);
+	break ;
+       case 's':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.s);
+	mapping_set.AddField(datamembers[i].name, datamembers[i].value.s);
+	break ;
+       case 'S':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.S);
+	mapping_set.AddField(datamembers[i].name, datamembers[i].value.S);
+	break ;
+       case 't':
+	mapping_get.AddField(datamembers[i].name, datamembers[i].value.t);
+	mapping_set.AddField(datamembers[i].name, datamembers[i].value.t);
+	break ;
+      }
   return ;
 }
 
@@ -880,18 +870,43 @@ void CentreonBroker::InitMappings()
 #ifndef NDEBUG
   logging.LogDebug("Initializing Object-Relational mappings...", true);
 #endif /* !NDEBUG */
-  InitAcknowledgementMapping();
-  InitCommentMapping();
-  InitConnectionMapping();
-  InitConnectionStatusMapping();
-  InitDowntimeMapping();
-  InitHostMapping();
-  InitHostGroupMapping();
-  InitHostStatusMapping();
-  InitLogMapping();
-  InitProgramStatusMapping();
-  InitServiceMapping();
-  InitServiceStatusMapping();
+  InitMapping<Events::Acknowledgement>(acknowledgement_dm,
+    acknowledgement_get_mapping,
+    acknowledgement_set_mapping);
+  InitMapping<Events::Comment>(comment_dm,
+    comment_get_mapping,
+    comment_set_mapping);
+  InitMapping<Events::Connection>(connection_dm,
+    connection_get_mapping,
+    connection_set_mapping);
+  InitMapping<Events::ConnectionStatus>(connection_status_dm,
+    connection_status_get_mapping,
+    connection_status_set_mapping);
+  InitMapping<Events::Downtime>(downtime_dm,
+    downtime_get_mapping,
+    downtime_set_mapping);
+  InitMapping<Events::Host>(host_dm,
+    host_get_mapping,
+    host_set_mapping);
+  InitMapping<Events::HostGroup>(host_group_dm,
+    host_group_get_mapping,
+    host_group_set_mapping);
+  InitMapping<Events::HostStatus>(host_status_dm,
+    host_status_get_mapping,
+    host_status_set_mapping);
+  InitMapping<Events::Log>(log_dm,
+    log_get_mapping,
+    log_set_mapping);
+  InitMapping<Events::ProgramStatus>(program_status_dm,
+    program_status_get_mapping,
+    program_status_set_mapping);
+  InitMapping<Events::Service>(service_dm,
+    service_get_mapping,
+    service_set_mapping);
+  InitMapping<Events::ServiceStatus>(service_status_dm,
+    service_status_get_mapping,
+    service_status_set_mapping);
+
 #ifndef NDEBUG
   logging.Deindent();
   logging.LogDebug("Object-Relational mappings initialized");

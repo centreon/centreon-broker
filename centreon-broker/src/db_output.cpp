@@ -76,54 +76,6 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
 }
 
 /**
- *  Purge a table before starting event processing.
- */
-void DBOutput::CleanTable(const std::string& table)
-{
-#ifndef NDEBUG
-  {
-    std::string debug;
-
-    debug = "Truncating table `";
-    debug += table;
-    debug += "`...";
-    logging.LogDebug(debug.c_str());
-    logging.Indent();
-  }
-#endif /* !NDEBUG */
-  std::auto_ptr<DB::Truncate> truncate(this->conn_->GetTruncate());
-
-  truncate->SetTable(table);
-  truncate->Execute();
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
-  return ;
-}
-
-/**
- *  Purge tables before starting event processing.
- */
-void DBOutput::CleanTables()
-{
-#ifndef NDEBUG
-  logging.LogDebug("Initial table purge...", true);
-#endif /* !NDEBUG */
-  this->CleanTable(this->acknowledgement_mapping_.GetTable());
-  this->CleanTable(this->comment_mapping_.GetTable());
-  this->CleanTable(this->connection_mapping_.GetTable());
-  this->CleanTable(this->downtime_mapping_.GetTable());
-  this->CleanTable(this->host_mapping_.GetTable());
-  this->CleanTable(this->host_group_mapping_.GetTable());
-  this->CleanTable(this->program_status_mapping_.GetTable());
-  this->CleanTable(this->service_mapping_.GetTable());
-#ifndef NDEBUG
-  logging.Deindent();
-#endif /* !NDEBUG */
-  return ;
-}
-
-/**
  *  \brief Commit the current transaction and reset timeout.
  *
  *  Ask the underlying database to commit the current transaction. The timeout
@@ -179,19 +131,21 @@ void DBOutput::Connect()
   // Initialize internal auto-commit timeout
   this->Commit();
 
-  // XXX : synchronize data with server
-  /*
-    std::auto_ptr<DB::Select> query = this->conn_->GetSelectQuery();
+  {
+    std::auto_ptr<DB::Select> query(this->conn_->GetSelect());
+
     query->AddField("instance_id");
     query->AddField("instance_name");
     query->SetTable("program_status");
-    query->Prepare();
     query->Execute();
-    while (query.HasNext())
-    {
-      this->instances_[query->GetString("instance_name")] = query->GetInt("instance_id");
-    }
-  */
+    while (query->Next())
+      {
+	std::string name;
+
+	query->GetString(name);
+	this->instances_[name] = query->GetInt();
+      }
+  }
 
   return ;
 }
@@ -268,47 +222,6 @@ void DBOutput::OnEvent(Event* e) throw ()
 }
 
 /**
- *  Initialize object-relational mappings.
- */
-void DBOutput::PrepareMappings()
-{
-  // Connection mapping.
-  this->connection_mapping_.AddIntField("instance_id",
-					boost::bind(&DBOutput::GetInstanceId,
-						    this,
-						    boost::bind(
-					  &Connection::instance,
-					  _1)));
-
-  // Host mapping.
-  this->host_mapping_.AddIntField("instance_id",
-				  boost::bind(&DBOutput::GetInstanceId,
-					      this,
-					      boost::bind(
-                                                &Host::instance,
-						_1)));
-
-  // ProgramStatus mapping.
-  this->program_status_mapping_.AddIntField("instance_id",
-					    boost::bind(
-					      &DBOutput::GetInstanceId,
-					      this,
-					      boost::bind(
-                                          &ProgramStatus::instance,
-					  _1)));
-
-  // Service mapping.
-  this->service_mapping_.AddIntField("instance_id",
-				     boost::bind(&DBOutput::GetInstanceId,
-						 this,
-						 boost::bind(
-				       &ProgramStatus::instance,
-				       _1)));
-
-  return ;
-}
-
-/**
  *  Prepare most often used statements.
  */
 void DBOutput::PrepareStatements()
@@ -316,7 +229,7 @@ void DBOutput::PrepareStatements()
   // ConnectionStatus update statement.
   this->connection_status_stmt_ =
     this->conn_->GetMappedUpdate<ConnectionStatus>(
-      this->connection_status_mapping_);
+      connection_status_get_mapping);
   this->connection_status_stmt_->SetTable("connection_info");
   this->connection_status_stmt_->SetPredicate(DB::Equal(
     DB::Field("instance_id"),
@@ -325,7 +238,7 @@ void DBOutput::PrepareStatements()
 
   // HostStatus update statement.
   this->host_status_stmt_ = this->conn_->GetMappedUpdate<HostStatus>(
-                              this->host_status_mapping_);
+                              host_status_get_mapping);
   this->host_status_stmt_->SetTable("host");
   this->host_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
@@ -337,7 +250,7 @@ void DBOutput::PrepareStatements()
 
   // ProgramStatus update statement.
   this->program_status_stmt_ = this->conn_->GetMappedUpdate<ProgramStatus>(
-                                 this->program_status_mapping_);
+                                 program_status_get_mapping);
   this->program_status_stmt_->SetTable("program_status");
   this->program_status_stmt_->SetPredicate(
     DB::Equal(DB::Field("instance_id"),
@@ -346,7 +259,7 @@ void DBOutput::PrepareStatements()
 
   // ServiceStatus update statement.
   this->service_status_stmt_ = this->conn_->GetMappedUpdate<ServiceStatus>(
-                                 this->service_status_mapping_);
+                                 service_status_get_mapping);
   this->service_status_stmt_->SetTable("service");
   this->service_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
@@ -427,7 +340,7 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Acknowledgement> >
     query(this->conn_->GetMappedInsert<Acknowledgement>(
-            this->acknowledgement_mapping_));
+            acknowledgement_get_mapping));
 
   query->SetTable("acknowledgement");
   query->SetArg(ack);
@@ -449,7 +362,7 @@ void DBOutput::ProcessComment(const Comment& comment)
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Comment> >
-    query(this->conn_->GetMappedInsert<Comment>(this->comment_mapping_));
+    query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
 
   query->SetTable("comment");
   query->SetArg(comment);
@@ -472,7 +385,7 @@ void DBOutput::ProcessConnection(const Connection& connection)
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Connection> >
     query(this->conn_->GetMappedInsert<Connection>(
-            this->connection_mapping_));
+            connection_get_mapping));
 
   query->SetTable("connection_info");
   query->SetArg(connection);
@@ -528,7 +441,7 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
   logging.LogDebug("Processing Downtime event...", true);
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Downtime> >
-    query(this->conn_->GetMappedInsert<Downtime>(this->downtime_mapping_));
+    query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
 
   query->SetTable("downtime");
   query->SetArg(downtime);
@@ -549,7 +462,7 @@ void DBOutput::ProcessHost(const Host& host)
   logging.LogDebug("Processing Host event...", true);
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Host> >
-    query(this->conn_->GetMappedInsert<Host>(this->host_mapping_));
+    query(this->conn_->GetMappedInsert<Host>(host_get_mapping));
 
   query->SetTable("host");
   query->SetArg(host);
@@ -570,7 +483,7 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
   logging.LogDebug("Processing HostGroup event...", true);
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<HostGroup> >
-    query(this->conn_->GetMappedInsert<HostGroup>(this->host_group_mapping_));
+    query(this->conn_->GetMappedInsert<HostGroup>(host_group_get_mapping));
 
   query->SetTable("host_group");
   query->SetArg(hg);
@@ -624,7 +537,7 @@ void DBOutput::ProcessLog(const Log& log)
   logging.LogDebug("Processing Log event...", true);
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Log> >
-    query(this->conn_->GetMappedInsert<Log>(log_mapping));
+    query(this->conn_->GetMappedInsert<Log>(log_get_mapping));
 
   query->SetTable("log");
   query->SetArg(log);
@@ -648,7 +561,8 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
   try
     {
       this->program_status_stmt_->SetArg(ps);
-      ((DB::HaveArgs*)(this->program_status_stmt_))->SetArg(this->GetInstanceId(ps.instance));
+      ((DB::HaveArgs*)(this->program_status_stmt_))->SetArg(
+        this->GetInstanceId(ps.instance));
       this->program_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -665,7 +579,7 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
     {
       std::auto_ptr<DB::MappedInsert<ProgramStatus> >
         query(this->conn_->GetMappedInsert<ProgramStatus>(
-          this->program_status_mapping_));
+          program_status_get_mapping));
 
       query->SetTable("program_status");
       query->SetArg(ps);
@@ -690,7 +604,7 @@ void DBOutput::ProcessService(const Service& service)
   logging.Indent();
 #endif /* !NDEBUG */
   std::auto_ptr<DB::MappedInsert<Service> >
-    query(this->conn_->GetMappedInsert<Service>(this->service_mapping_));
+    query(this->conn_->GetMappedInsert<Service>(service_get_mapping));
 
   query->SetTable("service");
   query->SetArg(service);
@@ -756,21 +670,7 @@ void DBOutput::QueryExecuted()
  *  \param[in] dbms Type of the database to use.
  */
 DBOutput::DBOutput(DB::Connection::DBMS dbms)
-  : acknowledgement_mapping_(acknowledgement_mapping),
-    comment_mapping_(comment_mapping),
-    connection_mapping_(connection_mapping),
-    connection_status_mapping_(connection_status_mapping),
-    downtime_mapping_(downtime_mapping),
-    host_mapping_(host_mapping),
-    host_group_mapping_(host_group_mapping),
-    host_status_mapping_(host_status_mapping),
-    program_status_mapping_(program_status_mapping),
-    service_mapping_(service_mapping),
-    service_status_mapping_(service_status_mapping),
-    dbms_(dbms)
-{
-  this->PrepareMappings();
-}
+  : dbms_(dbms) {}
 
 /**
  *  \brief DBOutput destructor.
@@ -825,7 +725,6 @@ void DBOutput::operator()()
       logging.LogDebug("Initial connection to the database...");
 #endif /* !NDEBUG */
       this->Connect();
-      this->CleanTables();
     }
   // An error occured on initialization, we won't try to go any further as it
   // is likely that something fatal happened (unreachable server, no memory

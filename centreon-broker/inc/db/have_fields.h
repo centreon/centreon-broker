@@ -23,6 +23,7 @@
 
 # include <boost/function.hpp>
 # include <list>
+# include <map>
 # include <string>
 # include "db/have_args.h"
 
@@ -49,16 +50,11 @@ namespace                    CentreonBroker
       void                   AddField(const std::string& field);
       void                   RemoveField(const std::string& field);
     };
-  }
-}
 
-// XXX : for a historical reason, db/mapping.hpp includes db/have_fields.h
-# include "db/mapping.hpp"
+    // Forward declaration
+    template                   <typename T>
+    class                      MappingGetters;
 
-namespace                    CentreonBroker
-{
-  namespace                  DB
-  {
     /**
      *  \class HaveInFields have_fields.h "db/have_fields.h"
      *  \brief Query accepting fields as input parameters.
@@ -70,13 +66,13 @@ namespace                    CentreonBroker
      *  \see Insert
      *  \see Update
      */
-    template                 <typename T>
-    class                    HaveInFields : virtual public HaveFields
+    template                   <typename T>
+    class                      HaveInFields : virtual public HaveFields
     {
      private:
       std::list<boost::function2<void, HaveArgs*, const T&> >
-                             getters_;
-      const Mapping<T>&      mapping_;
+                               getters_;
+      const MappingGetters<T>& mapping_;
 
      protected:
       /**
@@ -86,15 +82,15 @@ namespace                    CentreonBroker
        *
        *  \param[in] mapping Object-Relational mapping of the event type T.
        */
-                             HaveInFields(const Mapping<T>& mapping)
+                               HaveInFields(const MappingGetters<T>& mapping)
         : mapping_(mapping)
       {
 	for (typename std::map<std::string,
                                boost::function2<void,
                                                 HaveArgs*,
                                                 const T&> >::const_iterator
-               it = this->mapping_.fields_.begin();
-	     it != this->mapping_.fields_.end();
+               it = this->mapping_.getters.begin();
+	     it != this->mapping_.getters.end();
 	     it++)
 	  this->AddField(it->first);
       }
@@ -106,7 +102,7 @@ namespace                    CentreonBroker
        *
        *  \param[in] hif Object to copy data from.
        */
-                             HaveInFields(const HaveInFields& hif)
+                               HaveInFields(const HaveInFields& hif)
         : HaveFields(hif), mapping_(hif.mapping_) {}
 
 
@@ -115,7 +111,7 @@ namespace                    CentreonBroker
        *
        *  Release acquired ressources.
        */
-      virtual                ~HaveInFields() {}
+      virtual                  ~HaveInFields() {}
 
       /**
        *  \brief Overload of the assignment operator.
@@ -126,18 +122,16 @@ namespace                    CentreonBroker
        *
        *  \return *this
        */
-      HaveInFields           operator=(const HaveInFields& hif)
+      HaveInFields             operator=(const HaveInFields& hif)
       {
 	this->HaveFields::operator=(hif);
 	return (*this);
       }
 
       /**
-       *  \brief Extract getters matching fields.
-       *
        *  Extract getters matching fields into a list.
        */
-      void                   ExtractGetters()
+      void                     ExtractGetters()
       {
 	for (std::list<std::string>::iterator it = this->fields.begin();
 	     it != this->fields.end();
@@ -148,7 +142,7 @@ namespace                    CentreonBroker
                                                HaveArgs*,
                                                const T&> >::const_iterator g;
 
-	    g = this->mapping_.fields_.find(*it);
+	    g = this->mapping_.getters.find(*it);
 	    this->getters_.push_back(g->second);
 	  }
 	return ;
@@ -162,7 +156,7 @@ namespace                    CentreonBroker
        *
        *  \param[in] arg Object containing data.
        */
-      void                   SetArg(const T& arg)
+      void                     SetArg(const T& arg)
       {
 	if (this->getters_.empty())
 	  this->ExtractGetters();
@@ -173,6 +167,7 @@ namespace                    CentreonBroker
              it != this->getters_.end();
              it++)
 	  (*it).operator()(this, arg);
+	return ;
       }
     };
   }

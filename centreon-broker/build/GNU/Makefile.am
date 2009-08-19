@@ -72,7 +72,6 @@ if MYSQL
 cb2db_SOURCES +=	../../src/db/mysql/connection.cpp		\
 			../../src/db/mysql/delete.cpp			\
 			../../src/db/mysql/have_args.cpp		\
-			../../src/db/mysql/have_fields.cpp		\
 			../../src/db/mysql/have_predicate.cpp		\
 			../../src/db/mysql/insert.cpp			\
 			../../src/db/mysql/query.cpp			\
