@@ -370,7 +370,9 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
             acknowledgement_get_mapping));
 
   query->SetTable("acknowledgement");
+  query->AddField("instance_id");
   query->SetArg(ack);
+  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(ack.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -388,7 +390,9 @@ void DBOutput::ProcessComment(const Comment& comment)
     query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
 
   query->SetTable("comment");
+  query->AddField("instance_id");
   query->SetArg(comment);
+  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(comment.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -407,7 +411,10 @@ void DBOutput::ProcessConnection(const Connection& connection)
             connection_get_mapping));
 
   query->SetTable("connection_info");
+  query->AddField("instance_id");
   query->SetArg(connection);
+  ((DB::HaveArgs*)query.get())->SetArg(
+    this->GetInstanceId(connection.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -425,6 +432,8 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
   try
     {
       this->connection_status_stmt_->SetArg(cs);
+      ((DB::HaveArgs*)this->connection_status_stmt_)->SetArg(
+        this->GetInstanceId(cs.instance));
       this->connection_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -451,7 +460,9 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
     query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
 
   query->SetTable("downtime");
+  query->AddField("instance_id");
   query->SetArg(downtime);
+  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(downtime.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -469,7 +480,9 @@ void DBOutput::ProcessHost(const Host& host)
     query(this->conn_->GetMappedInsert<Host>(host_get_mapping));
 
   query->SetTable("host");
+  query->AddField("instance_id");
   query->SetArg(host);
+  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(host.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -504,6 +517,9 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
   try
     {
       this->host_status_stmt_->SetArg(hs);
+      ((DB::HaveArgs*)this->host_status_stmt_)->SetArg(
+        this->GetInstanceId(hs.instance));
+      ((DB::HaveArgs*)this->host_status_stmt_)->SetArg(hs.host);
       this->host_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -584,7 +600,9 @@ void DBOutput::ProcessService(const Service& service)
     query(this->conn_->GetMappedInsert<Service>(service_get_mapping));
 
   query->SetTable("service");
+  query->AddField("instance_id");
   query->SetArg(service);
+  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(service.instance));
   query->Execute();
   this->QueryExecuted();
   return ;
@@ -601,6 +619,10 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
   try
     {
       this->service_status_stmt_->SetArg(ss);
+      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(
+        this->GetInstanceId(ss.instance));
+      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(ss.host);
+      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(ss.service);
       this->service_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -660,7 +682,6 @@ DBOutput::~DBOutput()
 #ifndef NDEBUG
   logging.LogDebug("Deleting DBOutput...");
 #endif /* !NDEBUG */
-  this->Disconnect();
   if (this->thread_)
     {
 #ifndef NDEBUG
@@ -668,6 +689,11 @@ DBOutput::~DBOutput()
 #endif /* !NDEBUG */
       this->thread_->join();
       delete (this->thread_);
+    }
+  if (this->conn_)
+    {
+      this->conn_->Disconnect();
+      delete (this->conn_);
     }
 }
 
