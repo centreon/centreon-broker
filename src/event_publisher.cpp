@@ -18,8 +18,10 @@
 **  For more information : contact@centreon.com
 */
 
+#include <boost/thread/mutex.hpp>
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 #include "event_publisher.h"
 #include "event_subscriber.h"
 #include "events/event.h"
@@ -32,8 +34,8 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
-EventPublisher* EventPublisher::instance_ = NULL;
-boost::mutex    EventPublisher::instancem_;
+std::auto_ptr<EventPublisher> instance;
+boost::mutex                  instancem;
 
 /**************************************
 *                                     *
@@ -49,15 +51,13 @@ boost::mutex    EventPublisher::instancem_;
  *
  *  \see GetInstance
  */
-EventPublisher::EventPublisher()
-{
-}
+EventPublisher::EventPublisher() {}
 
 /**
  *  \brief EventPublisher copy constructor.
  *
  *  EventPublisher shouldn't be copied, so the copy constructor is declared
- *  private.
+ *  private. Attempt to use it will call abort().
  *
  *  \param ep Unused.
  */
@@ -65,13 +65,14 @@ EventPublisher::EventPublisher(const EventPublisher& ep)
 {
   (void)ep;
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignement operator.
  *
  *  EventPublisher shouldn't be copied, so the assignement operator is declared
- *  private.
+ *  private. Attempt to use it will call abort().
  *
  *  \param ep Unused.
  *
@@ -81,6 +82,7 @@ EventPublisher& EventPublisher::operator=(const EventPublisher& ep)
 {
   (void)ep;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -91,27 +93,11 @@ EventPublisher& EventPublisher::operator=(const EventPublisher& ep)
 **************************************/
 
 /**
- *  This function will be called on termination to free ressources used by the
- *  EventPublisher.
- */
-static void delete_eventpublisher()
-{
-  assert(EventPublisher::GetInstance());
-  delete (EventPublisher::GetInstance());
-  return ;
-}
-
-/**
  *  \brief EventPublisher destructor.
  *
  *  Free all internal ressources.
  */
-EventPublisher::~EventPublisher()
-{
-  EventPublisher::instancem_.lock();
-  EventPublisher::instance_ = NULL;
-  EventPublisher::instancem_.unlock();
-}
+EventPublisher::~EventPublisher() {}
 
 /**
  *  \brief Retrieve the instance of EventPublisher.
@@ -121,27 +107,18 @@ EventPublisher::~EventPublisher()
  *
  *  \return The EventPublisher instance.
  */
-EventPublisher* EventPublisher::GetInstance()
+EventPublisher& EventPublisher::GetInstance()
 {
-  if (!EventPublisher::instance_)
+  // This is the double lock pattern. It's not 100% safe, but it seems to have
+  // the best safeness/performance ratio.
+  if (!instance.get())
     {
-      EventPublisher::instancem_.lock();
-      if (!EventPublisher::instance_)
-	{
-	  try
-	    {
-	      EventPublisher::instance_ = new (EventPublisher);
-	    }
-	  catch (...) // Do not leave the mutex locked.
-	    {
-	      EventPublisher::instancem_.unlock();
-	      throw ;
-	    }
-	  atexit(delete_eventpublisher);
-	  EventPublisher::instancem_.unlock();
-	}
+      boost::unique_lock<boost::mutex> lock(instancem);
+
+      if (!instance.get())
+	instance.reset(new (EventPublisher));
     }
-  return (EventPublisher::instance_);
+  return (*instance);
 }
 
 /**

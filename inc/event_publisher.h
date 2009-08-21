@@ -26,10 +26,9 @@
 
 namespace                       CentreonBroker
 {
+  // Forward declarations.
   namespace                     Events
-  {
-    class                       Event;
-  }
+  { class                       Event; }
   class                         EventSubscriber;
 
   /**
@@ -49,16 +48,13 @@ namespace                       CentreonBroker
    private:
     std::list<EventSubscriber*> subscribers_;
     boost::mutex                subscribersm_;
-    static EventPublisher*      instance_;
-    static boost::mutex         instancem_;
                                 EventPublisher();
-                                EventPublisher(const
-                                               EventPublisher& ep);
+                                EventPublisher(const EventPublisher& ep);
     EventPublisher&             operator=(const EventPublisher& ep);
 
    public:
                                 ~EventPublisher();
-    static EventPublisher*      GetInstance();
+    static EventPublisher&      GetInstance();
     void                        Publish(Events::Event* ev);
     void                        Subscribe(EventSubscriber* es);
     void                        Unsubscribe(EventSubscriber* es);

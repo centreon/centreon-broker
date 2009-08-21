@@ -160,7 +160,7 @@ static inline void HandleObject(const std::string& instance,
 	}
       key = strtol(key_str, NULL, 0);
     }
-  EventPublisher::GetInstance()->Publish(event);
+  EventPublisher::GetInstance().Publish(event);
   return ;
 }
 
@@ -583,7 +583,7 @@ void NetworkInput::HandleInitialization()
       key = this->GetLine();
     }
   conn_info->data_start_time = time(NULL);
-  EventPublisher::GetInstance()->Publish(conn_info);
+  EventPublisher::GetInstance().Publish(conn_info);
   return ;
 }
 
@@ -778,7 +778,7 @@ void NetworkInput::HandleLog()
 	}
       key = strtol(key_str, NULL, 0);
     }
-  EventPublisher::GetInstance()->Publish(log);
+  EventPublisher::GetInstance().Publish(log);
   return ;
 }
 
@@ -1121,7 +1121,7 @@ void NetworkInput::operator()()
 		    this->conn_status_.entries_processed++;
 		    this->conn_status_.last_checkin_time =
                       this->last_checkin_time_;
-		    EventPublisher::GetInstance()->Publish(
+		    EventPublisher::GetInstance().Publish(
 		      new ConnectionStatus(this->conn_status_));
 		    break ;
 		  }
@@ -1143,7 +1143,7 @@ void NetworkInput::operator()()
   this->conn_status_.disconnect_time = time(NULL);
   try
     {
-      EventPublisher::GetInstance()->Publish(new ConnectionStatus(
+      EventPublisher::GetInstance().Publish(new ConnectionStatus(
 		                               this->conn_status_));
     }
   catch (...)

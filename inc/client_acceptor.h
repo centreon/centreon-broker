@@ -22,10 +22,11 @@
 # define CLIENT_ACCEPTOR_H_
 
 # include <boost/thread.hpp>
+# include <memory>
 # include "io/io.h"
 # include "network_input.h"
 
-namespace           CentreonBroker
+namespace                        CentreonBroker
 {
   /**
    *  \class ClientAcceptor client_acceptor.h "client_acceptor.h"
@@ -40,22 +41,23 @@ namespace           CentreonBroker
    *  \see NetworkInput
    *  \see Acceptor
    */
-  class                      ClientAcceptor
+  class                          ClientAcceptor
   {
    private:
-    IO::Acceptor*            acceptor_;
-    std::list<NetworkInput*> inputs_;
-    boost::mutex             inputsm_;
-    boost::thread*           thread_;
-                             ClientAcceptor(const ClientAcceptor& ca);
-    ClientAcceptor&          operator=(const ClientAcceptor& ca);
+    std::auto_ptr<IO::Acceptor>  acceptor_;
+    std::list<std::auto_ptr<NetworkInput> >
+                                 inputs_;
+    boost::mutex                 inputsm_;
+    std::auto_ptr<boost::thread> thread_;
+                                 ClientAcceptor(const ClientAcceptor& ca);
+    ClientAcceptor&              operator=(const ClientAcceptor& ca);
 
    public:
-                             ClientAcceptor() throw ();
-                             ~ClientAcceptor();
-    void                     operator()();
-    void                     CleanupNetworkInput(NetworkInput* ni);
-    void                     Run(IO::Acceptor* acceptor);
+                                 ClientAcceptor() throw ();
+                                 ~ClientAcceptor();
+    void                         operator()() throw ();
+    void                         CleanupNetworkInput(NetworkInput* ni);
+    void                         Run(IO::Acceptor* acceptor);
   };
 }
 

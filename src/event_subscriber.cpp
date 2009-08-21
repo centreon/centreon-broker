@@ -25,40 +25,60 @@ using namespace CentreonBroker;
 
 /**************************************
 *                                     *
-*           Public Methods            *
+*          Protected Methods          *
 *                                     *
 **************************************/
 
 /**
- *  EventSubscriber constructor.
+ *  \brief EventSubscriber default constructor.
+ *
+ *  Subscribe to the EventPublisher.
  */
 EventSubscriber::EventSubscriber()
 {
-  EventPublisher::GetInstance()->Subscribe(this);
+  EventPublisher::GetInstance().Subscribe(this);
 }
 
 /**
  *  EventSubscriber copy constructor.
+ *
+ *  Does the same as the EventSubscriber default constructor.
+ *
+ *  \param[in] es Unused.
  */
 EventSubscriber::EventSubscriber(const EventSubscriber& es)
 {
   (void)es;
-  EventPublisher::GetInstance()->Subscribe(this);
+  EventPublisher::GetInstance().Subscribe(this);
 }
 
 /**
- *  EventSubscriber destructor.
- */
-EventSubscriber::~EventSubscriber()
-{
-  EventPublisher::GetInstance()->Unsubscribe(this);
-}
-
-/**
- *  EventSubscriber operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Does nothing.
+ *
+ *  \param[in] es Unused.
+ *
+ *  \return *this
  */
 EventSubscriber& EventSubscriber::operator=(const EventSubscriber& es)
 {
   (void)es;
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief EventSubscriber destructor.
+ *
+ *  Unsubscribe from the EventPublisher.
+ */
+EventSubscriber::~EventSubscriber()
+{
+  EventPublisher::GetInstance().Unsubscribe(this);
 }
