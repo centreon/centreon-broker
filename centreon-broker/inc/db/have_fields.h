@@ -143,7 +143,8 @@ namespace                    CentreonBroker
                                                const T&> >::const_iterator g;
 
 	    g = this->mapping_.getters.find(*it);
-	    this->getters_.push_back(g->second);
+	    if (g != this->mapping_.getters.end())
+	      this->getters_.push_back(g->second);
 	  }
 	return ;
       }

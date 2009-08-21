@@ -61,6 +61,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/status.cpp			\
 			../../src/exception.cpp				\
 			../../src/file_output.cpp			\
+			../../src/io/fd.cpp				\
 			../../src/io/io.cpp				\
 			../../src/io/net4.cpp				\
 			../../src/io/net6.cpp				\

@@ -21,9 +21,9 @@
 #ifndef IO_IO_H_
 # define IO_IO_H_
 
-namespace             CentreonBroker
+namespace                  CentreonBroker
 {
-  namespace           IO
+  namespace                IO
   {
     /**
      *  \class Stream io.h "io/io.h"
@@ -39,18 +39,18 @@ namespace             CentreonBroker
      *  \see Net6Stream
      *  \see UnixStream
      */
-    class             Stream
+    class                  Stream
     {
      protected:
-                      Stream(const Stream& stream) throw ();
-      Stream&         operator=(const Stream& stream) throw ();
+                           Stream(const Stream& stream) throw ();
+      Stream&              operator=(const Stream& stream) throw ();
 
      public:
-                      Stream() throw ();
-      virtual         ~Stream();
-      virtual void    Close() = 0;
-      virtual int     Receive(char* buffer, int size) = 0;
-      virtual int     Send(const char* buffer, int size) = 0;
+                           Stream() throw ();
+      virtual              ~Stream();
+      virtual void         Close() = 0;
+      virtual unsigned int Receive(char* buffer, unsigned int size) = 0;
+      virtual unsigned int Send(const char* buffer, unsigned int size) = 0;
     };
 
     /**
@@ -68,17 +68,17 @@ namespace             CentreonBroker
      *  \see UnixAcceptor
      *  \see Stream
      */
-    class             Acceptor
+    class                  Acceptor
     {
      protected:
-                      Acceptor(const Acceptor& acceptor) throw ();
-      Acceptor&       operator=(const Acceptor& acceptor) throw ();
+                           Acceptor(const Acceptor& acceptor) throw ();
+      Acceptor&            operator=(const Acceptor& acceptor) throw ();
 
      public:
-                      Acceptor() throw ();
-      virtual         ~Acceptor();
-      virtual Stream* Accept() = 0;
-      virtual void    Close() = 0;
+                           Acceptor() throw ();
+      virtual              ~Acceptor();
+      virtual Stream*      Accept() = 0;
+      virtual void         Close() = 0;
     };
   }
 }

@@ -29,37 +29,6 @@ namespace            CentreonBroker
   namespace          IO
   {
     /**
-     *  \class UnixStream unix.h "io/unix.h"
-     *  \brief A Unix domain socket.
-     *
-     *  A UnixStream is an already connected Unix domain socket, which is an
-     *  IPC mechanism (for use on localhost). It is undefined how this socket
-     *  has been initialized.
-     *
-     *  \see UnixAcceptor
-     */
-    class            UnixStream : public Stream
-    {
-     private:
-      int            sockfd_;
-      void           InternalCopy(const UnixStream& us)
-                       throw (CentreonBroker::Exception);
-
-     public:
-                     UnixStream(int sockfd) throw ();
-                     UnixStream(const UnixStream& us)
-                       throw (CentreonBroker::Exception);
-                     ~UnixStream() throw ();
-      UnixStream&    operator=(const UnixStream& us)
-                       throw (CentreonBroker::Exception);
-      void           Close() throw ();
-      int            Receive(char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-      int            Send(const char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-    };
-
-    /**
      *  \class UnixAcceptor unix.h "io/unix.h"
      *  \brief Listen on a specified Unix domain socket for incoming clients.
      *
@@ -74,7 +43,7 @@ namespace            CentreonBroker
      *  call Close() to shut it down. If you want to, start the cycle again
      *  with a potentially different socket name.
      *
-     *  \see UnixStream
+     *  \see SocketStream
      */
     class            UnixAcceptor : public Acceptor
     {

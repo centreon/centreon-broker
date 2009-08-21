@@ -29,36 +29,6 @@ namespace            CentreonBroker
   namespace          IO
   {
     /**
-     *  \class Net6Stream net6.h "io/net6.h"
-     *  \brief A connected IPv6 Berkeley style socket.
-     *
-     *  A Net6Stream is an already connected IPv6 socket. It is undefined how
-     *  this socket has been initialized.
-     *
-     *  \see Net6Acceptor
-     */
-    class            Net6Stream : public Stream
-    {
-     private:
-      int            sockfd_;
-      void           InternalCopy(const Net6Stream& n6s)
-                       throw (CentreonBroker::Exception);
-
-     public:
-                     Net6Stream(int sockfd) throw ();
-                     Net6Stream(const Net6Stream& n6s)
-                       throw (CentreonBroker::Exception);
-                     ~Net6Stream() throw ();
-      Net6Stream&    operator=(const Net6Stream& n6s)
-                       throw (CentreonBroker::Exception);
-      void           Close() throw ();
-      int            Receive(char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-      int            Send(const char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-    };
-
-    /**
      *  \class Net6Acceptor net6.h "io/net6.h"
      *  \brief Listen on a specified port to wait for incoming clients.
      *
@@ -72,7 +42,7 @@ namespace            CentreonBroker
      *  Close() to shut it down. If you want to, start the cycle again with a
      *  potentially different port.
      *
-     *  \see Net6Stream
+     *  \see SocketStream
      */
     class            Net6Acceptor : public Acceptor
     {

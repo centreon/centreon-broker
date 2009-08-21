@@ -29,36 +29,6 @@ namespace            CentreonBroker
   namespace          IO
   {
     /**
-     *  \class Net4Stream net4.h "io/net4.h"
-     *  \brief A connected IPv4 Berkeley style socket.
-     *
-     *  A Net4Stream is an already connected IPv4 socket. It is undefined how
-     *  this socket has been initialized.
-     *
-     *  \see Net4Acceptor
-     */
-    class            Net4Stream : public Stream
-    {
-     private:
-      int            sockfd_;
-      void           InternalCopy(const Net4Stream& n4s)
-                       throw (CentreonBroker::Exception);
-
-     public:
-                     Net4Stream(int sockfd) throw ();
-                     Net4Stream(const Net4Stream& n4s)
-                       throw (CentreonBroker::Exception);
-                     ~Net4Stream() throw ();
-      Net4Stream&    operator=(const Net4Stream& n4s)
-                       throw (CentreonBroker::Exception);
-      void           Close() throw ();
-      int            Receive(char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-      int            Send(const char* buffer, int size)
-                       throw (CentreonBroker::Exception);
-    };
-
-    /**
      *  \class Net4Acceptor net4.h "io/net4.h"
      *  \brief Listen on a specified port to wait for incoming clients.
      *
@@ -72,7 +42,7 @@ namespace            CentreonBroker
      *  Close() to shut it down. If you want to, start the cycle again with a
      *  potentially different port.
      *
-     *  \see Net4Stream
+     *  \see SocketStream
      */
     class            Net4Acceptor : public Acceptor
     {
