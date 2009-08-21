@@ -18,27 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "conf/log.h"
 
 using namespace CentreonBroker::Conf;
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  Copy all internal data of the given object to the current instance.
- */
-void Log::InternalCopy(const Log& l)
-{
-  memcpy(this->ints_, l.ints_, sizeof(this->ints_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = l.strings_[i];
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -47,94 +29,181 @@ void Log::InternalCopy(const Log& l)
 **************************************/
 
 /**
- *  Log default constructor.
+ *  \brief Log default constructor.
+ *
+ *  Initialize members to default values.
  */
-Log::Log()
-{
-  memset(this->ints_, 0, sizeof(this->ints_));
-}
+Log::Log() : flags_(0), type_(Log::UNKNOWN) {}
 
 /**
- *  Log copy constructor.
+ *  \brief Log copy constructor.
+ *
+ *  Copy all parameters of the given object to the current instance.
+ *
+ *  \param[in] l Object to copy data from.
  */
 Log::Log(const Log& l)
 {
-  this->InternalCopy(l);
+  this->operator=(l);
 }
 
 /**
  *  Log destructor.
  */
-Log::~Log()
-{
-}
+Log::~Log() {}
 
 /**
- *  Log operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all parameters of the given object to the current instance.
+ *
+ *  \param[in] l Object to copy data from.
+ *
+ *  \return *this
  */
 Log& Log::operator=(const Log& l)
 {
-  this->InternalCopy(l);
+  this->file_path_ = l.file_path_;
+  this->flags_     = l.flags_;
+  this->name_      = l.name_;
+  this->type_      = l.type_;
   return (*this);
 }
 
 /**
- *  Verify if two Log objects are identical.
+ *  \brief Overload of the equal to operator.
+ *
+ *  Check if the current instance and the given object are equal. To be
+ *  declared equals, every parameter should be equal.
+ *
+ *  \return True if the two objects are equal, false otherwise.
  */
-bool Log::operator==(const Log& l)
+bool Log::operator==(const Log& l) const
 {
-  return ((this->ints_[FLAGS] == l.ints_[FLAGS])
-	  && (this->strings_[PATH] == l.strings_[PATH])
-	  && (this->strings_[TYPE] == l.strings_[TYPE]));
+  return ((this->file_path_ == l.file_path_)
+          && (this->flags_ == l.flags_)
+          && (this->name_ == l.name_)
+          && (this->type_ == l.type_));
 }
 
 /**
- *  Get the flags.
+ *  Overload of the not equal to operator.
+ *
+ *  \return The complement of the operator== return value.
+ *
+ *  \see operator==
  */
-int Log::GetFlags() const throw ()
+bool Log::operator!=(const Log& l) const
 {
-  return (this->ints_[FLAGS]);
+  return (!(*this == l));
 }
 
 /**
- *  Get the name of the output file.
+ *  \brief Get the path to the log file.
+ *
+ *  If the object is of type FILE, this method returns the path of the file
+ *  were logs should be written to.
+ *
+ *  \return The path to the log file.
+ *
+ *  \see SetFilePath
  */
-const std::string& Log::GetPath() const throw ()
+const std::string& Log::GetFilePath() const throw ()
 {
-  return (this->strings_[PATH]);
+  return (this->file_path_);
 }
 
 /**
- *  Get the type of the log (syslog or file).
+ *  \brief Get the flags applying to the logging object.
+ *
+ *  These flags defines what kind of messages should be logged to the log
+ *  object. Refer to the CentreonBroker::Logging class for more informations.
+ *
+ *  \return The flags applying to the logging object.
+ *
+ *  \see SetFlags
+ *  \see CentreonBroker::Logging
  */
-const std::string& Log::GetType() const throw ()
+unsigned int Log::GetFlags() const throw ()
 {
-  return (this->strings_[TYPE]);
+  return (this->flags_);
 }
 
 /**
- *  Set the flags.
+ *  Get the name of log object.
+ *
+ *  \return The name of the log object.
+ *
+ *  \see SetName
  */
-void Log::SetFlags(int flags) throw ()
+const std::string& Log::GetName() const throw ()
 {
-  this->ints_[FLAGS] = flags;
+  return (this->name_);
+}
+
+/**
+ *  \brief Get the type of the log object.
+ *
+ *  The type of a log object is a value of the Log::Type enum. Supported values
+ *  are FILE (for a standalone log file), STDERR (log messages will be sent to
+ *  stderr), STDOUT (log messages will be sent to stdout) and SYSLOG (log
+ *  messages will be recorded in the syslog facility.
+ *
+ *  \see SetType
+ */
+Log::Type Log::GetType() const throw ()
+{
+  return (this->type_);
+}
+
+/**
+ *  Set the path to the log file.
+ *
+ *  \param[in] fp The path to the log file.
+ *
+ *  \see GetFilePath
+ */
+void Log::SetFilePath(const std::string& fp)
+{
+  this->file_path_ = fp;
   return ;
 }
 
 /**
- *  Set the file name.
+ *  Set the flags applying to the logging object.
+ *
+ *  \param[in] flags The flags applying to the logging object.
+ *
+ *  \see GetFlags
  */
-void Log::SetPath(const std::string& path)
+void Log::SetFlags(unsigned int flags) throw ()
 {
-  this->strings_[PATH] = path;
+  this->flags_ = flags;
   return ;
 }
 
 /**
- *  Set the log type.
+ *  Set the name of the log object.
+ *
+ *  \param[in] name The name of the log object.
+ *
+ *  \see GetName
  */
-void Log::SetType(const std::string& type)
+void Log::SetName(const std::string& name)
 {
-  this->strings_[TYPE] = type;
+  this->name_ = name;
+  return ;
+}
+
+/**
+ *  Set the type of the log object.
+ *
+ *  \param[in] type Type of the log object.
+ *
+ *  \see GetType
+ */
+void Log::SetType(Log::Type type) throw ()
+{
+  this->type_ = type;
   return ;
 }

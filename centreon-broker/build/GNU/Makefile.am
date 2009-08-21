@@ -23,9 +23,9 @@ AUTOMAKE_OPTIONS=	subdir-objects
 bin_PROGRAMS	=	cb2db
 cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/client_acceptor.cpp			\
-			../../src/conf/conf.cpp				\
 			../../src/conf/input.cpp			\
 			../../src/conf/log.cpp				\
+			../../src/conf/manager.cpp			\
 			../../src/conf/output.cpp			\
 			../../src/db/connection.cpp			\
 			../../src/db/db_exception.cpp			\
