@@ -23,10 +23,11 @@
 
 # include <boost/system/system_error.hpp>
 
-namespace        CentreonBroker
+namespace                 CentreonBroker
 {
   /**
-   *  \brief     CentreonBroker root exception class.
+   *  \class Exception exception.h "exception.h"
+   *  \brief CentreonBroker root exception class.
    *
    *  Exception is the main class of exceptions thrown within CentreonBroker
    *  code. It directly subclass boost::system::system_error and only adds the
@@ -43,7 +44,6 @@ namespace        CentreonBroker
                           Exception(int val, const char* msg);
                           ~Exception() throw ();
       Exception&          operator=(const Exception& e);
-      virtual const char* what() const throw ();
     };
 }
 

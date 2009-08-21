@@ -78,7 +78,7 @@ ClientAcceptor& ClientAcceptor::operator=(const ClientAcceptor& ca)
  *
  *  Initialize internal state.
  */
-ClientAcceptor::ClientAcceptor() throw (): acceptor_(NULL), thread_(NULL) {}
+ClientAcceptor::ClientAcceptor() throw () {}
 
 /**
  *  \brief ClientAcceptor destructor.
@@ -87,24 +87,24 @@ ClientAcceptor::ClientAcceptor() throw (): acceptor_(NULL), thread_(NULL) {}
  */
 ClientAcceptor::~ClientAcceptor()
 {
-  if (this->acceptor_)
+  // Close the acceptor socket
+  if (this->acceptor_.get())
     this->acceptor_->Close();
-  if (this->thread_)
-    {
-      {
-	boost::unique_lock<boost::mutex> lock(this->inputsm_);
 
-	for (std::list<NetworkInput*>::iterator it = this->inputs_.begin();
-	     it != this->inputs_.end();
-	     it++)
-	  delete (*it);
-	this->inputs_.clear();
-      }
+  // Wait for the thread to finish (it will catch an exception because of the
+  // closed socket acceptor).
+  if (this->thread_.get())
+    {
       this->thread_->join();
-      delete (this->thread_);
+      this->thread_.reset();
     }
-  if (this->acceptor_)
-    delete (this->acceptor_);
+
+  // Delete all associated NetworkInput
+  {
+    boost::unique_lock<boost::mutex> lock(this->inputsm_);
+
+    this->inputs_.clear();
+  }
 }
 
 /**
@@ -115,31 +115,36 @@ ClientAcceptor::~ClientAcceptor()
  *  loop it self is really simple : 1) wait for new client 2) launch processing
  *  thread.
  */
-void ClientAcceptor::operator()()
+void ClientAcceptor::operator()() throw ()
 {
 #ifndef NDEBUG
   logging.LogDebug("Acceptor thread started !");
 #endif /* !NDEBUG */
   try
     {
-      IO::Stream* stream;
-
       while (1)
-	{
-	  // Accept a new client.
-	  stream = this->acceptor_->Accept();
+        {
+          // Accept a new client.
+          std::auto_ptr<IO::Stream> stream(this->acceptor_->Accept());
 
-	  // Launch the processing object and append it to the list
-	  {
-	      boost::unique_lock<boost::mutex> lock(this->inputsm_);
+          // Launch the processing object and append it to the list
+          {
+              boost::unique_lock<boost::mutex> lock(this->inputsm_);
 
-	      logging.LogInfo("New client incoming, " \
+              logging.LogInfo("New client incoming, " \
                               "launching processing thread...");
-	      this->inputs_.push_back(new NetworkInput(this, stream));
-	    }
-	}
+
+              std::auto_ptr<NetworkInput> ni(new NetworkInput(this, stream.get()));
+
+              // Once constructed, a NetworkInput will handle the destruction
+              // of the stream
+              stream.release();
+              this->inputs_.push_back(ni.get());
+              ni.release();
+            }
+        }
     }
-  catch (std::exception& e)
+  catch (const std::exception& e)
     {
       logging.LogError("Client acceptor failed because of an exception :");
       logging.LogError(e.what());
@@ -165,17 +170,16 @@ void ClientAcceptor::operator()()
 void ClientAcceptor::CleanupNetworkInput(NetworkInput* ni)
 {
   boost::unique_lock<boost::mutex> lock(this->inputsm_);
-  std::list<NetworkInput*>::iterator it;
+  std::list<std::auto_ptr<NetworkInput> >::iterator it;
 
   // Find the pointer in the list
-  it = std::find(this->inputs_.begin(), this->inputs_.end(), ni);
+  for (it = this->inputs_.begin(); it != this->inputs_.end(); it++)
+    if (it->get() == ni)
+      break ;
 
   // If found delete it
   if (it != this->inputs_.end())
-    {
-      delete (*it);
-      this->inputs_.erase(it);
-    }
+    this->inputs_.erase(it);
 
   return ;
 }
@@ -189,7 +193,7 @@ void ClientAcceptor::CleanupNetworkInput(NetworkInput* ni)
  */
 void ClientAcceptor::Run(IO::Acceptor* acceptor)
 {
-  this->acceptor_ = acceptor;
-  this->thread_ = new boost::thread(boost::ref(*this));
+  this->acceptor_.reset(acceptor);
+  this->thread_.reset(new boost::thread(boost::ref(*this)));
   return ;
 }

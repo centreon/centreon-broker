@@ -23,59 +23,57 @@
 using namespace CentreonBroker;
 
 /**
- *  Exception copy constructor.
+ *  \brief Exception copy constructor.
+ *
+ *  Copy data from the given Exception to the current instance.
+ *
+ *  \param[in] e Object to copy data from.
  */
-Exception::Exception(const Exception& e) : boost::system::system_error(e)
-{
-}
+Exception::Exception(const Exception& e) : boost::system::system_error(e) {}
 
 /**
  *  Build an Exception from a Boost system_error.
+ *
+ *
+ *  \param[in] se Boost exception containing data that will be copied to the
+ *                current instance.
  */
 Exception::Exception(const boost::system::system_error& se)
-  : boost::system::system_error(se)
-{
-}
+  : boost::system::system_error(se) {}
 
 /**
  *  Build an Exception from an error_code.
+ *
+ *  \param[in] error_code Exception error code.
  */
-Exception::Exception(int error_code)
-  : boost::system::system_error(boost::system::error_code(error_code,
-                                  boost::system::system_category))
-{
-}
+Exception::Exception(int error_code) : boost::system::system_error(
+  boost::system::error_code(error_code, boost::system::system_category)) {}
 
 /**
  *  Build an Exception from an error_code and a message.
+ *
+ *  \param[in] error_code Exception error code.
+ *  \param[in] what_msg   Exception message.
  */
 Exception::Exception(int error_code, const char* what_msg)
-  : boost::system::system_error(boost::system::error_code(error_code,
-                                  boost::system::system_category),
-                                what_msg)
-{
-}
+  : boost::system::system_error(
+      boost::system::error_code(error_code, boost::system::system_category),
+      what_msg) {}
 
 /**
  *  Exception destructor.
  */
-Exception::~Exception() throw ()
-{
-}
+Exception::~Exception() throw () {}
 
 /**
- *  Exception operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data from the given Exception to the current instance.
+ *
+ *  \param[in] e Object to copy data from.
  */
 Exception& Exception::operator=(const Exception& e)
 {
   boost::system::system_error::operator=(e);
   return (*this);
-}
-
-/**
- *  Get the error message associated with the exception.
- */
-const char* Exception::what() const throw ()
-{
-  return (this->boost::system::system_error::what());
 }
