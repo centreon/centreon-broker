@@ -18,20 +18,23 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "conf/output.h"
 
 using namespace CentreonBroker::Conf;
 
 /**
- *  Output default constructor.
+ *  \brief Output default constructor.
+ *
+ *  Initialize members to default values.
  */
-Output::Output()
-{
-}
+Output::Output() : type_(Output::UNKNOWN) {}
 
 /**
- *  Output copy constructor.
+ *  \brief Output copy constructor.
+ *
+ *  Copy parameters from the given object to the current instance.
+ *
+ *  \param[in] output Object to copy data from.
  */
 Output::Output(const Output& output)
 {
@@ -41,148 +44,209 @@ Output::Output(const Output& output)
 /**
  *  Output destructor.
  */
-Output::~Output()
-{
-}
+Output::~Output() {}
 
 /**
- *  Output operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy parameters from the given object to the current instance.
+ *
+ *  \param[in] output Object to copy data from.
+ *
+ *  \return *this
  */
 Output& Output::operator=(const Output& output)
 {
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = output.strings_[i];
+  this->db_       = output.db_;
+  this->host_     = output.host_;
+  this->name_     = output.name_;
+  this->password_ = output.password_;
+  this->type_     = output.type_;
+  this->user_     = output.user_;
   return (*this);
 }
 
 /**
- *  Output operator== overload.
+ *  \brief Overload of the equal operator.
+ *
+ *  Check if the current instance and the given object are equal. All fields
+ *  are checked to declare both objects equal.
+ *
+ *  \return True if all parameters are equal, false otherwise.
  */
-bool Output::operator==(const Output& output)
+bool Output::operator==(const Output& output) const
 {
-  bool result;
-
-  result = true;
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    result = result && (output.strings_[i] == this->strings_[i]);
-  return (result);
+  return ((this->db_ == output.db_)
+          && (this->host_ == output.host_)
+          && (this->name_ == output.name_)
+          && (this->password_ == output.password_)
+          && (this->type_ == output.type_)
+          && (this->user_ == output.user_));
 }
 
 /**
- *  Returns the DB name.
+ *  Overload of the not equal to operator.
+ *
+ *  \return The complement of the return value of operator==.
  */
-const std::string& Output::GetDb() const throw ()
+bool Output::operator!=(const Output& output) const
 {
-  return (this->strings_[DB]);
+  return (!(*this == output));
 }
 
 /**
- *  Returns the type of the DB.
+ *  Overload of the less than operator.
+ *
+ *  \param[in] output Object to compare to.
+ *
+ *  \return this->GetName() < input.GetName()
  */
-const std::string& Output::GetDbms() const throw ()
+bool Output::operator<(const Output& output) const
 {
-  return (this->strings_[DBMS]);
+  return (this->name_ < output.name_);
 }
 
 /**
- *  Returns the host name to use when connecting to DB.
+ *  Get the name of the DB the output object should use.
+ *
+ *  \return The name of the DB the output object should use.
+ *
+ *  \see SetDB
+ */
+const std::string& Output::GetDB() const throw ()
+{
+  return (this->db_);
+}
+
+/**
+ *  Get the host name / IP address of the database server.
+ *
+ *  \return The host name / IP address of the database server.
+ *
+ *  \see SetHost
  */
 const std::string& Output::GetHost() const throw ()
 {
-  return (this->strings_[HOST]);
+  return (this->host_);
 }
 
 /**
- *  Returns the password to use when connecting to DB.
+ *  Get the name of the output.
+ *
+ *  \return The name of the output.
+ */
+const std::string& Output::GetName() const throw ()
+{
+  return (this->name_);
+}
+
+/**
+ *  Get the password to use when connecting to the DB server.
+ *
+ *  \return Password to use when connecting to the DB server.
  */
 const std::string& Output::GetPassword() const throw ()
 {
-  return (this->strings_[PASSWORD]);
+  return (this->password_);
 }
 
 /**
- *  Returns the prefix of table names.
+ *  \brief Get the type of the output.
+ *
+ *  The return value if a value of the enum Type. Currently, only databases
+ *  systems are supported (MYSQL, ORACLE and POSTGRESQL).
+ *
+ *  \return The type of the output.
  */
-const std::string& Output::GetPrefix() const throw ()
+Output::Type Output::GetType() const throw ()
 {
-  return (this->strings_[PREFIX]);
+  return (this->type_);
 }
 
 /**
- *  Returns the type of the input (file or DB).
- */
-const std::string& Output::GetType() const throw ()
-{
-  return (this->strings_[TYPE]);
-}
-
-/**
- *  Returns the user name to use when connecting to DB.
+ *  Get the user name to use when connecting to the DB server.
+ *
+ *  \return User name to use when connecting to the DB server.
  */
 const std::string& Output::GetUser() const throw ()
 {
-  return (this->strings_[USER]);
+  return (this->user_);
 }
 
 /**
- *  Set the DB name.
+ *  Set the name of the DB the output object should use.
+ *
+ *  \param[in] The name of the DB the output object should use.
+ *
+ *  \see GetDB
  */
-void Output::SetDb(const std::string& db)
+void Output::SetDB(const std::string& db)
 {
-  this->strings_[DB] = db;
+  this->db_ = db;
   return ;
 }
 
 /**
- *  Set the type of the DB.
- */
-void Output::SetDbms(const std::string& dbms)
-{
-  this->strings_[DBMS] = dbms;
-  return ;
-}
-
-/**
- *  Set the host name.
+ *  Set the host name / IP address of the database server.
+ *
+ *  \param[in] host The host name / IP address of the database server.
+ *
+ *  \see GetHost
  */
 void Output::SetHost(const std::string& host)
 {
-  this->strings_[HOST] = host;
+  this->host_ = host;
   return ;
 }
 
 /**
- *  Set the password to use when connecting to DB.
+ *  Set the name of the output.
+ *
+ *  \param[in] The name of the output.
+ *
+ *  \see GetName
+ */
+void Output::SetName(const std::string& name)
+{
+  this->name_ = name;
+  return ;
+}
+
+/**
+ *  Set the password to use when connecting to the DB server.
+ *
+ *  \param[in] password Password to use when connecting to the DB server.
+ *
+ *  \see GetPassword
  */
 void Output::SetPassword(const std::string& password)
 {
-  this->strings_[PASSWORD] = password;
+  this->password_ = password;
   return ;
 }
 
 /**
- *  Set the table prefix.
+ *  Set the type of the output.
+ *
+ *  \param[in] type The type of the output.
+ *
+ *  \see GetType
  */
-void Output::SetPrefix(const std::string& prefix)
+void Output::SetType(Output::Type type) throw ()
 {
-  this->strings_[PREFIX] = prefix;
+  this->type_ = type;
   return ;
 }
 
 /**
- *  Set the type of the output (file or db).
- */
-void Output::SetType(const std::string& type)
-{
-  this->strings_[TYPE] = type;
-  return ;
-}
-
-/**
- *  Set the user name to use when connecting to the DB.
+ *  Set the user name to use when connecting to the DB server.
+ *
+ *  \param[in] User name to use when connecting to the DB server.
+ *
+ *  \see GetUser
  */
 void Output::SetUser(const std::string& user)
 {
-  this->strings_[USER] = user;
+  this->user_ = user;
   return ;
 }

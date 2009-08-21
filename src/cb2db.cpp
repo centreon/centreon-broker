@@ -24,13 +24,7 @@
 #ifdef USE_MYSQL
 # include <mysql.h>
 #endif /* USE_MYSQL */
-#include "client_acceptor.h"
-#include "conf/conf.h"
-#include "db_output.h"
-#include "io/net4.h"
-#ifdef USE_TLS
-# include "io/tls.h"
-#endif /* USE_TLS */
+#include "conf/manager.h"
 #include "logging.h"
 #include "mapping.h"
 
@@ -55,7 +49,7 @@ static void term_handler(int signum)
  */
 int main(int argc, char* argv[])
 {
-  Conf::Conf conf;
+  Conf::Manager conf_manager;
   int exit_code;
   std::vector<DBOutput*> dbs;
   std::vector<ClientAcceptor*> sockets;
@@ -81,88 +75,18 @@ int main(int argc, char* argv[])
           InitMappings();
 
           // Load configuration file
-          conf.Load(argv[1]);
-
-          // Process configuration file
-#ifndef NDEBUG
-          logging.LogDebug("Processing configuration file...");
-#endif /* !NDEBUG */
-          {
-            const Conf::Input* input;
-
-            input = conf.GetNextInput();
-            while (input)
-              {
-                ClientAcceptor* ca;
-		IO::Acceptor* a;
-
-#ifdef USE_TLS
-/*		if (input->GetTLS())
-		  {
-		    IO::TLSAcceptor* tls_acceptor;
-
-		    tls_acceptor = new IO::TLSAcceptor;
-		    // XXX : TLS configuration
-		    a = tls_acceptor;
-		  }
-		else
-		{*/
-#endif /* USE_TLS */
-		    IO::Net4Acceptor* net4_acceptor;
-
-		    net4_acceptor = new IO::Net4Acceptor;
-		    net4_acceptor->Listen(input->GetPort());
-		    a = net4_acceptor;
-#ifdef USE_TLS
-		    //}
-#endif /* USE_TLS */
-		ca = new ClientAcceptor;
-		ca->Run(a);
-                sockets.push_back(ca);
-                input = conf.GetNextInput();
-              }
-          }
-          {
-            const Conf::Log* l;
-
-            l = conf.GetNextLog();
-            while (l)
-              {
-                if (l->GetType() == "syslog")
-                  logging.LogInSyslog(l->GetFlags());
-                else if (l->GetType() == "file")
-                  logging.LogInFile(l->GetPath().c_str(), l->GetFlags());
-                l = conf.GetNextLog();
-              }
-          }
-          {
-            const Conf::Output* output;
-
-            output = conf.GetNextOutput();
-            while (output)
-              {
-                DBOutput* dbo;
-
-                if (output->GetDbms() == "postgresql")
-                  dbo = new DBOutput(DB::Connection::POSTGRESQL);
-                else
-                  dbo = new DBOutput(DB::Connection::MYSQL);
-                dbo->Init(output->GetHost(),
-                          output->GetUser(),
-                          output->GetPassword(),
-                          output->GetDb());
-                dbs.push_back(dbo);
-                output = conf.GetNextOutput();
-              }
-          }
+	  conf_manager.Open(argv[1]);
 
           // Catch ^C
           signal(SIGINT, term_handler);
 
-          // Everything loader, ready to go
+          // Everything loaded, ready to go
           logging.LogInfo("Initialization completed, waiting for clients...");
           while (!gl_shall_exit)
 	    pause();
+
+	  // Unload everything
+	  conf_manager.Close();
 
           exit_code = 0;
         }

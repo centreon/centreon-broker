@@ -18,21 +18,29 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "conf/input.h"
 
 using namespace CentreonBroker::Conf;
 
-/**
- *  Input constructor.
- */
-Input::Input()
-{
-  memset(this->ushorts_, 0, sizeof(this->ushorts_));
-}
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
 
 /**
- *  Input copy constructor.
+ *  \brief Input constructor.
+ *
+ *  Initialize members to their default values.
+ */
+Input::Input() : type_(Input::UNKNOWN), port_(0) {}
+
+/**
+ *  \brief Input copy constructor.
+ *
+ *  Copy all parameters from the given object to the current instance.
+ *
+ *  \param[in] input Object to copy data from.
  */
 Input::Input(const Input& input)
 {
@@ -42,117 +50,222 @@ Input::Input(const Input& input)
 /**
  *  Input destructor.
  */
-Input::~Input()
-{
-}
+Input::~Input() {}
 
 /**
- *  Input operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy all parameters from the given object to the current instance.
+ *
+ *  \param[in] input Object to copy data from.
+ *
+ *  \return *this
  */
 Input& Input::operator=(const Input& input)
 {
-  memcpy(this->ushorts_, input.ushorts_, sizeof(this->ushorts_));
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    this->strings_[i] = input.strings_[i];
+  this->name_ = input.name_;
+  this->type_ = input.type_;
+  switch (input.type_)
+    {
+     case IPV4:
+     case IPV6:
+      this->interface_ = input.interface_;
+      this->port_ = input.port_;
+      break ;
+     case UNIX:
+      this->socket_path_ = input.socket_path_;
+      break ;
+     default:
+      ;
+    }
   return (*this);
 }
 
 /**
- *  Input operator== overload.
+ *  \brief Overload of the equal to operator.
+ *
+ *  Check if the two objects are equal. First the types are compared, then the
+ *  names and finally specific values. If any comparison is false, the return
+ *  value will be false.
+ *
+ *  \param[in] input Object to check against the current instance.
+ *
+ *  \return True if the two objects are equal, false otherwise.
  */
-bool Input::operator==(const Input& input)
+bool Input::operator==(const Input& input) const
 {
   bool match;
 
-  match = (this->ushorts_[PORT] == input.ushorts_[PORT]);
-  for (unsigned int i = 0; i < STRING_NB; i++)
-    match = (match && (this->strings_[i] == input.strings_[i]));
+  if ((this->type_ == input.type_)
+      && (this->name_ == input.name_))
+    {
+      switch (this->type_)
+	{
+	case IPV4:
+	case IPV6:
+	  match = ((this->interface_ == input.interface_)
+                   && (this->port_ == input.port_));
+	  break ;
+	case UNIX:
+	  match = (this->socket_path_ == input.socket_path_);
+	  break ;
+	default:
+	  match = true;
+	}
+    }
+  else
+    match = false;
   return (match);
 }
 
 /**
- *  Returns the port of the socket input.
+ *  Overload of the not equal to operator.
+ *
+ *  \return The complement of the return value of operator==.
  */
-unsigned short Input::GetPort() const throw ()
+bool Input::operator!=(const Input& input) const
 {
-  return (this->ushorts_[PORT]);
+  return (!(*this == input));
 }
 
 /**
- *  Get the Certificate Authority verification file used to verify the peer.
+ *  Overload of the less than operator.
+ *
+ *  \param[in] input Object to compare to.
+ *
+ *  \return this->GetName() < input.GetName()
  */
-const std::string& Input::GetTlsCa() const throw ()
+bool Input::operator<(const Input& input) const
 {
-  return (this->strings_[TLS_CA]);
+  return (this->name_ < input.name_);
 }
 
 /**
- *  Get the certificate that will be used by the client to encrypt the
- *  connection.
+ *  Get the interface on which the input IP object should listen.
+ *
+ *  \return The IP address of the interface on which the input IP object should
+ *          listen (empty for all).
+ *
+ *  \see SetIPInterface
  */
-const std::string& Input::GetTlsCertificate() const throw ()
+const std::string& Input::GetIPInterface() const throw ()
 {
-  return (this->strings_[TLS_CERTIFICATE]);
+  return (this->interface_);
 }
 
 /**
- *  Get the private key file used to decrypt the connection.
+ *  Get the port on which the input IP object should listen.
+ *
+ *  \return The port on which the input IP object should listen.
+ *
+ *  \see SetIPPort
  */
-const std::string& Input::GetTlsKey() const throw ()
+unsigned short Input::GetIPPort() const throw ()
 {
-  return (this->strings_[TLS_KEY]);
+  return (this->port_);
 }
 
 /**
- *  Returns the type of the output (file or socket).
+ *  Get the name of the input.
+ *
+ *  \return The name of the input.
+ *
+ *  \see SetName
  */
-const std::string& Input::GetType() const throw ()
+const std::string& Input::GetName() const throw ()
 {
-  return (this->strings_[TYPE]);
+  return (this->name_);
 }
 
 /**
- *  Set the port on which the socket should listen.
+ *  \brief Get the type of the input.
+ *
+ *  The type of the input determines which parameters are available.
+ *
+ *  \return The type of the input.
+ *
+ *  \see SetType
  */
-void Input::SetPort(unsigned short port) throw ()
+Input::Type Input::GetType() const throw ()
 {
-  this->ushorts_[PORT] = port;
+  return (this->type_);
+}
+
+/**
+ *  \brief Get the Unix domain socket path.
+ *
+ *  In case of an Input of type UNIX, get the path of the socket that should be
+ *  used.
+ *
+ *  \return The Unix domain socket path.
+ */
+const std::string& Input::GetUnixSocketPath() const throw ()
+{
+  return (this->socket_path_);
+}
+
+/**
+ *  Set the interface on which the input IP object should listen.
+ *
+ *  \param[in] iface The IP address of the interface on which the input IP
+ *                   object shoud listen (empty for all).
+ *
+ *  \see GetIPInterface
+ */
+void Input::SetIPInterface(const std::string& iface)
+{
+  this->interface_ = iface;
   return ;
 }
 
 /**
- *  Set the CA file used to verify the peer.
+ *  Set the port on which the input IP object shoud listen.
+ *
+ *  \param[in] port The port on which the input IP object should listen.
+ *
+ *  \see GetIPPort
  */
-void Input::SetTlsCa(const std::string& ca)
+void Input::SetIPPort(unsigned short port) throw ()
 {
-  this->strings_[TLS_CA] = ca;
+  this->port_ = port;
   return ;
 }
 
 /**
- *  Set the certificate that will be used by the client to encrypt the
- *  connection.
+ *  Set the name of the input.
+ *
+ *  \param[in] name The name of the input.
+ *
+ *  \see GetName
  */
-void Input::SetTlsCertificate(const std::string& certificate)
+void Input::SetName(const std::string& name)
 {
-  this->strings_[TLS_CERTIFICATE] = certificate;
+  this->name_ = name;
   return ;
 }
 
 /**
- *  Set the private key that will be used to decrypt the connection.
+ *  Set the type of the input.
+ *
+ *  \param[in] type The type of the input.
+ *
+ *  \see GetType
  */
-void Input::SetTlsKey(const std::string& key)
+void Input::SetType(Input::Type type) throw ()
 {
-  this->strings_[TLS_KEY] = key;
+  this->type_ = type;
   return ;
 }
 
 /**
- *  Set the type of the input (file or socket).
+ *  Set the Unix domain socket path.
+ *
+ *  \param[in] usp The Unix domain socket path.
+ *
+ *  \see GetUnixSocketPath
  */
-void Input::SetType(const std::string& type)
+void Input::SetUnixSocketPath(const std::string& usp)
 {
-  this->strings_[TYPE] = type;
+  this->socket_path_ = usp;
   return ;
 }

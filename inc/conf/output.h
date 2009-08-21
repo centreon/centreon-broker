@@ -27,41 +27,53 @@ namespace                CentreonBroker
 {
   namespace              Conf
   {
+    /**
+     *  \class Output output.h "conf/output.h"
+     *  \brief Holds configuration parameters of an output.
+     *
+     *  The Output class holds configuration parameters of an output source.
+     *  Currently only database outputs are supported.
+     */
     class                Output
     {
-     private:
-      enum               String
+     public:
+      enum               Type
       {
-	DB = 0,
-	DBMS,
-	HOST,
-	PASSWORD,
-	PREFIX,
-	TYPE,
-	USER,
-	STRING_NB
+	UNKNOWN = 1,
+	MYSQL,
+	ORACLE,
+	POSTGRESQL
       };
-      std::string        strings_[STRING_NB];
+
+     private:
+      std::string        db_;
+      std::string        host_;
+      std::string        name_;
+      std::string        password_;
+      Type               type_;
+      std::string        user_;
 
      public:
                          Output();
                          Output(const Output& output);
                          ~Output();
       Output&            operator=(const Output& output);
-      bool               operator==(const Output& output);
-      const std::string& GetDb() const throw ();
-      const std::string& GetDbms() const throw ();
+      bool               operator==(const Output& output) const;
+      bool               operator!=(const Output& output) const;
+      bool               operator<(const Output& output) const;
+      // Getters
+      const std::string& GetDB() const throw ();
       const std::string& GetHost() const throw ();
+      const std::string& GetName() const throw ();
       const std::string& GetPassword() const throw ();
-      const std::string& GetPrefix() const throw ();
-      const std::string& GetType() const throw ();
+      Type               GetType() const throw ();
       const std::string& GetUser() const throw ();
-      void               SetDb(const std::string& db);
-      void               SetDbms(const std::string& dbms);
+      // Setters
+      void               SetDB(const std::string& db);
       void               SetHost(const std::string& host);
+      void               SetName(const std::string& name);
       void               SetPassword(const std::string& password);
-      void               SetPrefix(const std::string& prefix);
-      void               SetType(const std::string& type);
+      void               SetType(Type type) throw ();
       void               SetUser(const std::string& user);
     };
   }

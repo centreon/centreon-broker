@@ -27,41 +27,55 @@ namespace                CentreonBroker
 {
   namespace              Conf
   {
+    /**
+     *  \class Input input.h "conf/input.h"
+     *  \brief Holds configuration parameters of an input.
+     *
+     *  The Input class holds configuration parameters of an input source. This
+     *  source can be of any type : Unix socket, IPv4 socket, ... Users should
+     *  check its type before fetching arguments.
+     *
+     *  \see GetType
+     */
     class                Input
     {
+     public:
+      enum               Type
+      {
+	UNKNOWN = 1,
+	IPV4,
+	IPV6,
+	UNIX
+      };
      private:
-      enum               UShort
-      {
-	PORT = 0,
-	USHORT_NB
-      };
-      enum               String
-      {
-	TLS_CA = 0,
-	TLS_CERTIFICATE,
-	TLS_KEY,
-	TYPE,
-	STRING_NB
-      };
-      unsigned short     ushorts_[USHORT_NB];
-      std::string        strings_[STRING_NB];
+      std::string        name_;
+      Type               type_;
+      // IP specific
+      std::string        interface_;
+      unsigned short     port_;
+      // Unix specific
+      std::string        socket_path_;
 
      public:
                          Input();
                          Input(const Input& input);
                          ~Input();
       Input&             operator=(const Input& input);
-      bool               operator==(const Input& input);
-      unsigned short     GetPort() const throw ();
-      const std::string& GetTlsCa() const throw ();
-      const std::string& GetTlsCertificate() const throw ();
-      const std::string& GetTlsKey() const throw ();
-      const std::string& GetType() const throw ();
-      void               SetPort(unsigned short port) throw ();
-      void               SetTlsCa(const std::string& ca);
-      void               SetTlsCertificate(const std::string& certificate);
-      void               SetTlsKey(const std::string& key);
-      void               SetType(const std::string& type);
+      bool               operator==(const Input& input) const;
+      bool               operator!=(const Input& input) const;
+      bool               operator<(const Input& input) const;
+      // Getters
+      const std::string& GetIPInterface() const throw ();
+      unsigned short     GetIPPort() const throw ();
+      const std::string& GetName() const throw ();
+      Type               GetType() const throw ();
+      const std::string& GetUnixSocketPath() const throw ();
+      // Setters
+      void               SetIPInterface(const std::string& iface);
+      void               SetIPPort(unsigned short port) throw ();
+      void               SetName(const std::string& name);
+      void               SetType(Type type) throw ();
+      void               SetUnixSocketPath(const std::string& usp);
     };
   }
 }

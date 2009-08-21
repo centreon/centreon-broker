@@ -27,36 +27,51 @@ namespace                CentreonBroker
 {
   namespace              Conf
   {
+    /**
+     *  \class Log log.h "conf/log.h"
+     *  \brief Holds configuration parameters of a logging object.
+     *
+     *  The Log class holds configuration parameters for a logging object. This
+     *  can be some file, stdout, stderr or syslog. Users should check the type
+     *  before fetching parameters.
+     *
+     *  \see GetType
+     */
     class                Log
     {
+     public:
+      enum               Type
+      {
+	UNKNOWN = 1,
+	FILE,
+	STDERR,
+	STDOUT,
+	SYSLOG
+      };
+
      private:
-      enum               Int
-      {
-	FLAGS = 0,
-	INT_NB
-      };
-      enum               String
-      {
-	PATH = 0,
-	TYPE,
-	STRING_NB
-      };
-      int                ints_[INT_NB];
-      std::string        strings_[STRING_NB];
-      void               InternalCopy(const Log& l);
+      std::string        file_path_;
+      unsigned int       flags_;
+      std::string        name_;
+      Type               type_;
 
      public:
                          Log();
                          Log(const Log& l);
                          ~Log();
       Log&               operator=(const Log& l);
-      bool               operator==(const Log& l);
-      int                GetFlags() const throw ();
-      const std::string& GetPath() const throw ();
-      const std::string& GetType() const throw ();
-      void               SetFlags(int flags) throw ();
-      void               SetPath(const std::string& path);
-      void               SetType(const std::string& type);
+      bool               operator==(const Log& l) const;
+      bool               operator!=(const Log& l) const;
+      // Getters
+      const std::string& GetFilePath() const throw ();
+      unsigned int       GetFlags() const throw ();
+      const std::string& GetName() const throw ();
+      Type               GetType() const throw ();
+      // Setters
+      void               SetFilePath(const std::string& fp);
+      void               SetFlags(unsigned int flags) throw ();
+      void               SetName(const std::string& name);
+      void               SetType(Type type) throw ();
     };
   }
 }
