@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include "conf/global.h"
 #include "conf/output.h"
 
 using namespace CentreonBroker::Conf;
@@ -27,7 +28,11 @@ using namespace CentreonBroker::Conf;
  *
  *  Initialize members to default values.
  */
-Output::Output() : type_(Output::UNKNOWN) {}
+Output::Output()
+  : connection_retry_interval_(global_conf.output.connection_retry_interval),
+    query_commit_interval_(global_conf.output.query_commit_interval),
+    time_commit_interval_(global_conf.output.time_commit_interval),
+    type_(Output::UNKNOWN) {}
 
 /**
  *  \brief Output copy constructor.
@@ -57,12 +62,15 @@ Output::~Output() {}
  */
 Output& Output::operator=(const Output& output)
 {
-  this->db_       = output.db_;
-  this->host_     = output.host_;
-  this->name_     = output.name_;
-  this->password_ = output.password_;
-  this->type_     = output.type_;
-  this->user_     = output.user_;
+  this->connection_retry_interval_ = output.connection_retry_interval_;
+  this->db_                        = output.db_;
+  this->host_                      = output.host_;
+  this->name_                      = output.name_;
+  this->password_                  = output.password_;
+  this->query_commit_interval_     = output.query_commit_interval_;
+  this->time_commit_interval_      = output.time_commit_interval_;
+  this->type_                      = output.type_;
+  this->user_                      = output.user_;
   return (*this);
 }
 
@@ -76,10 +84,14 @@ Output& Output::operator=(const Output& output)
  */
 bool Output::operator==(const Output& output) const
 {
-  return ((this->db_ == output.db_)
+  return ((this->connection_retry_interval_
+           == output.connection_retry_interval_)
+          && (this->db_ == output.db_)
           && (this->host_ == output.host_)
           && (this->name_ == output.name_)
           && (this->password_ == output.password_)
+          && (this->query_commit_interval_ == output.query_commit_interval_)
+          && (this->time_commit_interval_ == output.time_commit_interval_)
           && (this->type_ == output.type_)
           && (this->user_ == output.user_));
 }
@@ -104,6 +116,20 @@ bool Output::operator!=(const Output& output) const
 bool Output::operator<(const Output& output) const
 {
   return (this->name_ < output.name_);
+}
+
+/**
+ *  Get the amount of time in seconds that the output object should wait before
+ *  attempting to reconnect to the database server.
+ *
+ *  \return The amount of time in seconds that the output object should wait
+ *          before attempting to reconnect to the database server.
+ *
+ *  \see SetConnectionRetryInterval
+ */
+unsigned int Output::GetConnectionRetryInterval() const throw ()
+{
+  return (this->connection_retry_interval_);
 }
 
 /**
@@ -151,6 +177,30 @@ const std::string& Output::GetPassword() const throw ()
 }
 
 /**
+ *  Get the maximum number of queries that can be executed before a transaction
+ *  commit occurs.
+ *
+ *  \return The maximum number of queries that can be executed before a
+ *          transaction commit occurs.
+ */
+unsigned int Output::GetQueryCommitInterval() const throw ()
+{
+  return (this->query_commit_interval_);
+}
+
+/**
+ *  Get the maximum amount of time in seconds that can elapse before a
+ *  transaction commit occurs.
+ *
+ *  \return The maximum amount of time in seconds that can elapse before a
+ *          transaction commit occurs.
+ */
+unsigned int Output::GetTimeCommitInterval() const throw ()
+{
+  return (this->time_commit_interval_);
+}
+
+/**
  *  \brief Get the type of the output.
  *
  *  The return value if a value of the enum Type. Currently, only databases
@@ -171,6 +221,21 @@ Output::Type Output::GetType() const throw ()
 const std::string& Output::GetUser() const throw ()
 {
   return (this->user_);
+}
+
+/**
+ *  Set the amount of time in seconds that the output object should wait before
+ *  attempting to reconnect to the database server.
+ *
+ *  \param[in] cri The amount of time in seconds that the output object should
+ *                 wait before attempting to reconnect to the database server.
+ *
+ *  \see GetConnectionRetryInterval
+ */
+void Output::SetConnectionRetryInterval(unsigned int cri) throw ()
+{
+  this->connection_retry_interval_ = cri;
+  return ;
 }
 
 /**
@@ -222,6 +287,36 @@ void Output::SetName(const std::string& name)
 void Output::SetPassword(const std::string& password)
 {
   this->password_ = password;
+  return ;
+}
+
+/**
+ *  Set the maximum number of queries that can be executed before a transaction
+ *  commit occurs.
+ *
+ *  \param[in] qci The maximum number of queries that can be executed before a
+ *                 transaction commit occurs.
+ *
+ *  \see GetQueryCommitInterval
+ */
+void Output::SetQueryCommitInterval(unsigned int qci) throw ()
+{
+  this->query_commit_interval_ = qci;
+  return ;
+}
+
+/**
+ *  Set the maximum amount of time in seconds that can elapse before a
+ *  transaction commit occurs.
+ *
+ *  \param[in] tci The maximum amount of time in seconds that can elapse before
+ *                 a transaction commit occurs.
+ *
+ *  \see GetTimeCommitInterval
+ */
+void Output::SetTimeCommitInterval(unsigned int tci) throw ()
+{
+  this->time_commit_interval_ = tci;
   return ;
 }
 
