@@ -22,6 +22,7 @@
 # define DB_OUTPUT_H_
 
 # include <boost/thread.hpp>
+# include <memory>
 # include <string>
 # include <vector>
 # include "db/connection.h"
@@ -61,6 +62,10 @@ namespace                       CentreonBroker
   class                         DBOutput : private EventSubscriber
   {
    private:
+    // Configuration
+    unsigned int                connection_retry_interval_;
+    unsigned int                query_commit_interval_;
+    unsigned int                time_commit_interval_;
     // Connection informations
     DB::Connection::DBMS        dbms_;
     std::string                 host_;
@@ -77,7 +82,7 @@ namespace                       CentreonBroker
     DB::MappedUpdate<Events::ServiceStatus>*
                                 service_status_stmt_;
     // Performance objects
-    int                         queries_;
+    unsigned int                queries_;
     boost::system_time          timeout_;
     // Events
     WaitableList<Events::Event> events_;
@@ -124,6 +129,9 @@ namespace                       CentreonBroker
                                      const std::string& user,
                                      const std::string& password,
                                      const std::string& db);
+    void                        SetConnectionRetryInterval(unsigned int cri);
+    void                        SetQueryCommitInterval(unsigned int qci);
+    void                        SetTimeCommitInterval(unsigned int tci);
   };
 }
 

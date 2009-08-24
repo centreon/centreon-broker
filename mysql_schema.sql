@@ -261,7 +261,8 @@ CREATE TABLE IF NOT EXISTS `host` (
   `x_2d` smallint NOT NULL default '0',
   `y_2d` smallint NOT NULL default '0',
 
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX (`instance_id`, `host_name`)
 ) ENGINE=InnoDB;
 
 
@@ -421,7 +422,8 @@ CREATE TABLE IF NOT EXISTS `service` (
   `stalk_on_unknown` smallint NOT NULL default '0',
   `stalk_on_warning` smallint NOT NULL default '0',
 
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX (`instance_id`, `host_name`, `service_description`)
 ) ENGINE=InnoDB;
 
 

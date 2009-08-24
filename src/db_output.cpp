@@ -48,7 +48,8 @@ using namespace CentreonBroker::Events;
 /**
  *  \brief DBOutput copy constructor.
  *
- *  As DBOutput are not copiable, the copy constructor is declared private.
+ *  As DBOutput are not copiable, the copy constructor is declared private. Any
+ *  attempt to use it will result in a call to abort().
  *
  *  \param[in] dbo Unused.
  */
@@ -56,12 +57,14 @@ DBOutput::DBOutput(const DBOutput& dbo) : EventSubscriber()
 {
   (void)dbo;
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignment operator.
  *
  *  As DBOutput are not copiable, the assignment operator is declared private.
+ *  Any attempt to use it will result in a call to abort().
  *
  *  \param[in] dbo Unused.
  *
@@ -71,6 +74,7 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
 {
   (void)dbo;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -82,10 +86,16 @@ DBOutput& DBOutput::operator=(const DBOutput& dbo)
  */
 void DBOutput::Commit()
 {
+  // Commit the transaction on the database server.
   this->conn_->Commit();
+
+  // Reset the queries counter.
   this->queries_ = 0;
-  // XXX : timeout should be configurable
-  this->timeout_ = boost::get_system_time() + boost::posix_time::seconds(7);
+
+  // Reset the transaction timeout.
+  this->timeout_ = boost::get_system_time()
+                   + boost::posix_time::seconds(this->time_commit_interval_);
+
   return ;
 }
 
@@ -130,11 +140,13 @@ void DBOutput::Connect()
   // Initialize internal auto-commit timeout
   this->Commit();
 
+  // Fetch already existing instances from the database and store them in a
+  // cache.
   {
     std::auto_ptr<DB::Select> query(this->conn_->GetSelect());
 
-    query->AddField("instance_id");
     query->AddField("instance_name");
+    query->AddField("instance_id");
     query->SetTable("program_status");
     query->Execute();
     while (query->Next())
@@ -642,9 +654,12 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
  */
 void DBOutput::QueryExecuted()
 {
-  // XXX : query number should be configurable
-  if (++this->queries_ >= 10000)
+  // Increment the number of executed queries. If this number is greater than
+  // the query_commit_interval configuration option, the transaction is
+  // commited.
+  if (++this->queries_ >= this->query_commit_interval_)
     this->Commit();
+
   return ;
 }
 
@@ -787,10 +802,10 @@ void DBOutput::operator()()
 
 	  try
 	    {
-	      // XXX : retry interval should be configurable
 	      // Wait before trying to reconnect.
 	      boost::thread::sleep(boost::get_system_time()
-				     + boost::posix_time::seconds(10));
+		                   + boost::posix_time::seconds(
+                                       this->connection_retry_interval_));
 
 	      // Destroy() has been called ?
 	      if (!this->exit_)
@@ -856,5 +871,50 @@ void DBOutput::Init(const std::string& host,
   this->db_ = db;
   this->exit_ = false;
   this->thread_ = new boost::thread(boost::ref(*this));
+  return ;
+}
+
+/**
+ *  \brief Set the connection retry interval.
+ *
+ *  Specify the amount of time, in seconds, that the DBOutput object should
+ *  wait before attempting to reconnect to its database.
+ *
+ *  \param[in] cri Number of seconds that the DBOutput object should wait
+ *                 before attempting to reconnect to the database.
+ */
+void DBOutput::SetConnectionRetryInterval(unsigned int cri)
+{
+  this->connection_retry_interval_ = cri;
+  return ;
+}
+
+/**
+ *  \brief Set the query commit interval.
+ *
+ *  Specify the maximum number of queries that can be executed before a
+ *  transaction commit occurs.
+ *
+ *  \param[in] qci Maximum number of queries that can be executed before a
+ *                 transaction commit occurs.
+ */
+void DBOutput::SetQueryCommitInterval(unsigned int qci)
+{
+  this->query_commit_interval_ = qci;
+  return ;
+}
+
+/**
+ *  \brief Set the time commit interval.
+ *
+ *  Specify the maximum amount of time, in seconds, that can elapse before a
+ *  transaction commit occurs.
+ *
+ *  \param[in] tci Maximum amount of time, in seconds, that can elapse before a
+ *                 transaction commit occurs.
+ */
+void DBOutput::SetTimeCommitInterval(unsigned int tci)
+{
+  this->time_commit_interval_ = tci;
   return ;
 }

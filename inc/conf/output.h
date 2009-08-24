@@ -46,10 +46,13 @@ namespace                CentreonBroker
       };
 
      private:
+      unsigned int       connection_retry_interval_;
       std::string        db_;
       std::string        host_;
       std::string        name_;
       std::string        password_;
+      unsigned int       query_commit_interval_;
+      unsigned int       time_commit_interval_;
       Type               type_;
       std::string        user_;
 
@@ -62,17 +65,23 @@ namespace                CentreonBroker
       bool               operator!=(const Output& output) const;
       bool               operator<(const Output& output) const;
       // Getters
+      unsigned int       GetConnectionRetryInterval() const throw ();
       const std::string& GetDB() const throw ();
       const std::string& GetHost() const throw ();
       const std::string& GetName() const throw ();
       const std::string& GetPassword() const throw ();
+      unsigned int       GetQueryCommitInterval() const throw ();
+      unsigned int       GetTimeCommitInterval() const throw ();
       Type               GetType() const throw ();
       const std::string& GetUser() const throw ();
       // Setters
+      void               SetConnectionRetryInterval(unsigned int cri) throw ();
       void               SetDB(const std::string& db);
       void               SetHost(const std::string& host);
       void               SetName(const std::string& name);
       void               SetPassword(const std::string& password);
+      void               SetQueryCommitInterval(unsigned int qci) throw ();
+      void               SetTimeCommitInterval(unsigned int tci) throw ();
       void               SetType(Type type) throw ();
       void               SetUser(const std::string& user);
     };
