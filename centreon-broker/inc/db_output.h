@@ -75,10 +75,14 @@ namespace                       CentreonBroker
     DB::Connection*             conn_;
     DB::MappedUpdate<Events::ConnectionStatus>*
                                 connection_status_stmt_;
+    DB::MappedInsert<Events::Host>*
+                                host_stmt_;
     DB::MappedUpdate<Events::HostStatus>*
                                 host_status_stmt_;
     DB::MappedUpdate<Events::ProgramStatus>*
                                 program_status_stmt_;
+    DB::MappedInsert<Events::Service>*
+                                service_stmt_;
     DB::MappedUpdate<Events::ServiceStatus>*
                                 service_status_stmt_;
     // Performance objects

@@ -57,7 +57,7 @@ void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
         delete (static_cast<short*>(bind->buffer));
         break ;
        case MYSQL_TYPE_STRING:
-        delete (static_cast<char*>(bind->buffer));
+        bind->buffer = NULL;
         break ;
        default:
 	;
@@ -303,7 +303,9 @@ void MySQLHaveArgs::SetArg(short arg)
 }
 
 /**
- *  Set the next argument as a string.
+ *  Set the next argument as a string. For performance reasons, strings are not
+ *  copied. Therefore, provided strings should remains valid at least until
+ *  query execution.
  *
  *  \param[in] arg Next value.
  */
@@ -312,17 +314,17 @@ void MySQLHaveArgs::SetArg(const std::string& arg)
   if (this->stmt)
     {
       MYSQL_BIND* mybind;
-      size_t size;
 
       mybind = this->args_ + this->arg_;
-      this->CleanArg(mybind);
-      memset(mybind, 0, sizeof(*mybind));
-      mybind->buffer_type = MYSQL_TYPE_STRING;
-      size = arg.size() + 1;
-      mybind->buffer = static_cast<void*>(new char[size]);
-      mybind->buffer_length = size;
-      mybind->length = &(mybind->buffer_length);
-      memcpy(mybind->buffer, arg.c_str(), size);
+      if (mybind->buffer_type != MYSQL_TYPE_STRING)
+	{
+	  this->CleanArg(mybind);
+	  memset(mybind, 0, sizeof(*mybind));
+	  mybind->buffer_type = MYSQL_TYPE_STRING;
+	  mybind->length = &(mybind->buffer_length);
+	}
+      mybind->buffer_length = arg.size() + 1;
+      mybind->buffer = const_cast<char*>(arg.c_str());
       this->arg_++;
     }
   else
