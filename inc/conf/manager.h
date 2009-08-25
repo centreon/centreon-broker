@@ -28,13 +28,13 @@
 # include "conf/log.h"
 # include "conf/output.h"
 
-namespace            CentreonBroker
+namespace             CentreonBroker
 {
   // Forward declarations
-  class              ClientAcceptor;
-  class              DBOutput;
+  class               ClientAcceptor;
+  class               DBOutput;
 
-  namespace          Conf
+  namespace           Conf
   {
     /**
      *  \class Manager manager.h "conf/manager.h"
@@ -46,24 +46,28 @@ namespace            CentreonBroker
      *
      *  \see GetType
      */
-    class            Manager
+    class             Manager
     {
      private:
-      std::string    filename_;
+      std::string     filename_;
       std::map<Input, CentreonBroker::ClientAcceptor*>
-                     inputs_;
-      std::list<Log> logs_;
+                      inputs_;
+      std::list<Log>  logs_;
       std::map<Output, CentreonBroker::DBOutput*>
-                     outputs_;
+                      outputs_;
+                      Manager();
+                      Manager(const Manager& manager);
+      Manager&        operator=(const Manager& manager);
+      void            Parse(std::list<Input>& inputs,
+                            std::list<Log>& logs,
+                            std::list<Output>& outputs);
 
      public:
-                     Manager();
-                     Manager(const Manager& manager);
-                     ~Manager();
-      Manager&       operator=(const Manager& manager);
-      void           Close();
-      void           Open(const std::string& filename);
-      void           Update();
+                      ~Manager();
+      void            Close();
+      static Manager& GetInstance();
+      void            Open(const std::string& filename);
+      void            Update();
     };
   }
 }

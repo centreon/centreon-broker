@@ -18,6 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
+#include <algorithm>
+#include <boost/thread/mutex.hpp>
+#include <csignal>
 #include <cstring>
 #include "client_acceptor.h"
 #include "conf/input.h"
@@ -35,97 +38,33 @@ using namespace CentreonBroker::Conf;
 
 /**************************************
 *                                     *
-*          Static functions           *
+*           Static Objects            *
 *                                     *
 **************************************/
 
 /**
- *  Create a new ClientAcceptor object from its configuration.
- *
- *  \param[in] conf Configuration of the new ClientAcceptor.
- *
- *  \return A new configured ClientAcceptor.
+ *  The configuration manager pointer and its associated mutex.
  */
-static ClientAcceptor* CreateInput(const Input& conf)
-{
-  ClientAcceptor* ca;
-  IO::Acceptor* acceptor;
-  IO::Net4Acceptor* n4a;
-  IO::Net6Acceptor* n6a;
-  IO::UnixAcceptor* ua;
-
-  switch (conf.GetType())
-    {
-     case Input::IPV4:
-      n4a = new IO::Net4Acceptor;
-      if (conf.GetIPInterface().empty())
-	n4a->Listen(conf.GetIPPort());
-      else
-	n4a->Listen(conf.GetIPPort(), conf.GetIPInterface().c_str());
-      acceptor = n4a;
-      break ;
-
-     case Input::IPV6:
-      n6a = new IO::Net6Acceptor;
-      if (conf.GetIPInterface().empty())
-	n6a->Listen(conf.GetIPPort());
-      else
-	n6a->Listen(conf.GetIPPort(), conf.GetIPInterface().c_str());
-      acceptor = n6a;
-      break ;
-
-     case Input::UNIX:
-      ua = new IO::UnixAcceptor;
-      ua->Listen(conf.GetUnixSocketPath().c_str());
-      acceptor = ua;
-      break ;
-
-     default:
-       // XXX : throw exception or do something else
-       ;
-    }
-  ca = new CentreonBroker::ClientAcceptor;
-  ca->Run(acceptor);
-  return (ca);
-}
+static std::auto_ptr<Manager> instance;
+static boost::mutex           instancem;
 
 /**
- *  Create a new DBOutput object from its configuration.
+ *  Get or build the instance of the configuration manager.
  *
- *  \param[in] conf Configuration of the new DBOutput.
- *
- *  \return A new configured DBOutput.
+ *  \return The potentially newly created configuration manager.
  */
-static DBOutput* CreateOutput(const Output& conf)
+Manager& Manager::GetInstance()
 {
-  DBOutput* dbo;
-
-  switch (conf.GetType())
+  // This is the double lock pattern. It's not 100% safe, but it seems to have
+  // the best safeness/performance ratio.
+  if (!instance.get())
     {
-#ifdef USE_MYSQL
-     case Output::MYSQL:
-      dbo = new DBOutput(DB::Connection::MYSQL);
-      break ;
-#endif /* USE_MYSQL */
+      boost::unique_lock<boost::mutex> lock(instancem);
 
-#ifdef USE_ORACLE
-     case Output::ORACLE:
-      dbo = new DBOutput(DB::Connection::ORACLE);
-      break ;
-#endif /* USE_ORACLE */
-
-#ifdef USE_POSTGRESQL
-     case Output::POSTGRESQL:
-      dbo = new DBOutput(DB::Connection::POSTGRESQL);
-      break ;
-#endif /* USE_POSTGRESQL */
-
-     default:
-      // XXX : throw exception or something
-      ;
+      if (!instance.get())
+	instance.reset(new Manager());
     }
-  dbo->Init(conf.GetHost(), conf.GetUser(), conf.GetPassword(), conf.GetDB());
-  return (dbo);
+  return (*instance);
 }
 
 /**
@@ -320,31 +259,16 @@ static void HandleOutput(std::ifstream& ifs, Output& out)
 }
 
 /**
- *  Register a new log output to the logging facility.
- *
- *  \param[in] conf Configuration of the new log output.
+ *  Helper function to update configuration. This method is called whenever
+ *  SIGUSR1 is received.
  */
-static void RegisterLog(const Log& log)
+static void UpdateHelper(int signum)
 {
-  switch (log.GetType())
-    {
-     case Log::FILE:
-      CentreonBroker::logging.LogInFile(log.GetFilePath().c_str(),
-                                        log.GetFlags());
-      break ;
-     case Log::STDERR:
-      CentreonBroker::logging.LogToStderr(log.GetFlags());
-      break ;
-     case Log::STDOUT:
-      CentreonBroker::logging.LogToStdout(log.GetFlags());
-      break ;
-     case Log::SYSLOG:
-      CentreonBroker::logging.LogInSyslog(log.GetFlags());
-      break ;
-    default:
-      // XXX : throw exception or something
-      ;
-    }
+  (void)signum;
+  CentreonBroker::logging.LogInfo("Configuration file update requested...");
+  CentreonBroker::logging.LogInfo("  WARNING: this feature is still " \
+                                  "experimental.");
+  instance->Update();
   return ;
 }
 
@@ -441,9 +365,26 @@ void Manager::Close()
  */
 void Manager::Open(const std::string& filename)
 {
+  this->filename_ = filename;
+  this->Update();
+  return ;
+}
+
+/**
+ *  Parse the configuration file and store resulting configuration in
+ *  appropriate objects.
+ *
+ *  \param[out] inputs  Object where inputs configurations will be stored.
+ *  \param[out] logs    Object where logs configurations will be stored.
+ *  \param[out] outputs Object where outputs configurations will be stored.
+ */
+void Manager::Parse(std::list<Input>& inputs,
+                    std::list<Log>& logs,
+                    std::list<Output>& outputs)
+{
   std::ifstream ifs;
 
-  ifs.open(filename.c_str());
+  ifs.open(this->filename_.c_str());
   if (ifs)
     {
       char buffer[1024];
@@ -468,8 +409,7 @@ void Manager::Open(const std::string& filename)
 	      if (name)
 		log.SetName(name);
 	      HandleLog(ifs, log);
-	      RegisterLog(log);
-	      this->logs_.push_back(log);
+	      logs.push_back(log);
 	    }
 	  else if (!strcmp(cmd, "input"))
 	    {
@@ -478,7 +418,7 @@ void Manager::Open(const std::string& filename)
 	      if (name)
 		in.SetName(name);
 	      HandleInput(ifs, in);
-	      this->inputs_[in] = CreateInput(in);
+	      inputs.push_back(in);
 	    }
 	  else if (!strcmp(cmd, "output"))
 	    {
@@ -487,7 +427,7 @@ void Manager::Open(const std::string& filename)
 	      if (name)
 		out.SetName(name);
 	      HandleOutput(ifs, out);
-	      this->outputs_[out] = CreateOutput(out);
+	      outputs.push_back(out);
 	    }
 	  ifs.getline(buffer, sizeof(buffer));
 	}
@@ -503,4 +443,218 @@ void Manager::Open(const std::string& filename)
  */
 void Manager::Update()
 {
+  std::list<Input> inputs;
+  std::list<Input>::iterator inputs_it;
+  std::list<Log> logs;
+  std::list<Log>::iterator logs_it;
+  std::list<Output> outputs;
+  std::list<Output>::iterator outputs_it;
+
+  this->Parse(inputs, logs, outputs);
+
+  // Remove logs that are not present in conf anymore or which don't have the
+  // same configuration.
+  for (std::list<Log>::iterator it = this->logs_.begin();
+       it != this->logs_.end();)
+    {
+      logs_it = std::find(logs.begin(), logs.end(), *it);
+      if (logs.end() == logs_it)
+	{
+#ifndef NDEBUG
+	  CentreonBroker::logging.LogDebug("Removing unwanted log object...");
+#endif /* !NDEBUG */
+	  switch (it->GetType())
+	    {
+             case Log::FILE:
+              CentreonBroker::logging.LogInFile(it->GetFilePath().c_str(), 0);
+              break ;
+             case Log::STDERR:
+	      CentreonBroker::logging.LogToStderr(0);
+	      break ;
+             case Log::STDOUT:
+	      CentreonBroker::logging.LogToStdout(0);
+	      break ;
+             case Log::SYSLOG:
+	      CentreonBroker::logging.LogInSyslog(0);
+	      break ;
+             default:
+	      ;
+	    }
+	  this->logs_.erase(it++);
+	}
+      else
+	{
+	  logs.erase(logs_it);
+	  it++;
+	}
+    }
+
+  // Add new logs.
+  for (logs_it = logs.begin(); logs_it != logs.end(); logs_it++)
+    {
+#ifndef NDEBUG
+      CentreonBroker::logging.LogDebug("Adding new logging object...");
+#endif /* !NDEBUG */
+      switch (logs_it->GetType())
+	{
+         case Log::FILE:
+	  CentreonBroker::logging.LogInFile(logs_it->GetFilePath().c_str(),
+                                            logs_it->GetFlags());
+	  break ;
+         case Log::STDERR:
+	  CentreonBroker::logging.LogToStderr(logs_it->GetFlags());
+	  break ;
+         case Log::STDOUT:
+	  CentreonBroker::logging.LogToStdout(logs_it->GetFlags());
+	  break ;
+         case Log::SYSLOG:
+	  CentreonBroker::logging.LogInSyslog(logs_it->GetFlags());
+	  break ;
+         default:
+	  ;
+	}
+      this->logs_.push_back(*logs_it);
+    }
+
+  // Remove outputs that are not present in conf anymore or which don't have
+  // the same configuration.
+  for (std::map<Output, DBOutput*>::iterator it = this->outputs_.begin();
+       it != this->outputs_.end();)
+    {
+      outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
+      if (outputs.end() == outputs_it)
+	{
+#ifndef NDEBUG
+	  CentreonBroker::logging.LogDebug("Removing unwanted output object...");
+#endif /* !NDEBUG */
+	  delete (it->second);
+	  this->outputs_.erase(it++);
+	}
+      else
+	{
+	  outputs.erase(outputs_it);
+	  it++;
+	}
+    }
+
+  // Add new outputs.
+  for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
+    {
+      std::auto_ptr<CentreonBroker::DBOutput> dbo(
+        new CentreonBroker::DBOutput(CentreonBroker::DB::Connection::MYSQL));
+      const Output& output(*outputs_it);
+
+#ifndef NDEBUG
+      CentreonBroker::logging.LogDebug("Adding new output object...");
+#endif /* !NDEBUG */
+      dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
+      dbo->SetQueryCommitInterval(output.GetQueryCommitInterval());
+      dbo->SetTimeCommitInterval(output.GetTimeCommitInterval());
+      dbo->Init(output.GetHost(),
+                output.GetUser(),
+                output.GetPassword(),
+                output.GetDB());
+      this->outputs_[output] = dbo.get();
+      dbo.release();
+    }
+
+  // Remove inputs that are not present in conf anymore or which don't have the
+  // same configuration.
+  for (std::map<Input, CentreonBroker::ClientAcceptor*>::iterator
+         it = this->inputs_.begin();
+       it != this->inputs_.end();)
+    {
+      inputs_it = std::find(inputs.begin(), inputs.end(), it->first);
+      if (inputs.end() == inputs_it)
+	{
+#ifndef NDEBUG
+	  CentreonBroker::logging.LogDebug("Removing unwanted input object...");
+#endif /* !NDEBUG */
+	  delete (it->second);
+	  this->inputs_.erase(it++);
+	}
+      else
+	{
+	  inputs.erase(inputs_it);
+	  it++;
+	}
+    }
+
+  // Add new inputs.
+  for (inputs_it = inputs.begin(); inputs_it != inputs.end(); inputs_it++)
+    {
+#ifndef NDEBUG
+      CentreonBroker::logging.LogDebug("Adding new input object...");
+#endif /* !NDEBUG */
+      switch (inputs_it->GetType())
+	{
+         case Input::IPV4:
+	  {
+	    std::auto_ptr<CentreonBroker::IO::Net4Acceptor> acceptor(
+              new CentreonBroker::IO::Net4Acceptor());
+
+	    if (inputs_it->GetIPInterface().empty())
+	      acceptor->Listen(inputs_it->GetIPPort());
+	    else
+	      acceptor->Listen(inputs_it->GetIPPort(),
+                               inputs_it->GetIPInterface().c_str());
+
+	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
+              new CentreonBroker::ClientAcceptor());
+
+	    ca->Run(acceptor.get());
+	    acceptor.release();
+	    this->inputs_[*inputs_it] = ca.get();
+	    ca.release();
+	  }
+	  break ;
+         case Input::IPV6:
+	  {
+	    std::auto_ptr<CentreonBroker::IO::Net6Acceptor> acceptor(
+              new CentreonBroker::IO::Net6Acceptor());
+
+	    if (inputs_it->GetIPInterface().empty())
+	      acceptor->Listen(inputs_it->GetIPPort());
+	    else
+	      acceptor->Listen(inputs_it->GetIPPort(),
+                               inputs_it->GetIPInterface().c_str());
+
+	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
+              new CentreonBroker::ClientAcceptor());
+
+	    ca->Run(acceptor.get());
+	    acceptor.release();
+	    this->inputs_[*inputs_it] = ca.get();
+	    ca.release();
+	  }
+	  break ;
+         case Input::UNIX:
+	  {
+	    std::auto_ptr<CentreonBroker::IO::UnixAcceptor> acceptor(
+              new CentreonBroker::IO::UnixAcceptor());
+
+	    acceptor->Listen(inputs_it->GetUnixSocketPath().c_str());
+
+	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
+              new CentreonBroker::ClientAcceptor());
+
+	    ca->Run(acceptor.get());
+	    acceptor.release();
+	    this->inputs_[*inputs_it] = ca.get();
+	    ca.release();
+	  }
+	  break ;
+         default:
+	  ;
+	}
+    }
+
+  // (Re-)Register handler of SIGUSR1
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Registering handler for runtime " \
+                                   "configuration update...");
+#endif /* !NDEBUG */
+  signal(SIGUSR1, UpdateHelper);
+
+  return ;
 }

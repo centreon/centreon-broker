@@ -137,7 +137,13 @@ bool Input::operator!=(const Input& input) const
  */
 bool Input::operator<(const Input& input) const
 {
-  return (this->name_ < input.name_);
+  bool ret;
+
+  if (this->interface_ != input.interface_)
+    ret = (this->interface_ < input.interface_);
+  else
+    ret = this->port_ < input.port_;
+  return (ret);
 }
 
 /**

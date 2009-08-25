@@ -34,8 +34,8 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
-std::auto_ptr<EventPublisher> instance;
-boost::mutex                  instancem;
+static std::auto_ptr<EventPublisher> instance;
+static boost::mutex                  instancem;
 
 /**************************************
 *                                     *
