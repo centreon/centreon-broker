@@ -115,7 +115,15 @@ bool Output::operator!=(const Output& output) const
  */
 bool Output::operator<(const Output& output) const
 {
-  return (this->name_ < output.name_);
+  bool ret;
+
+  if (this->host_ != output.host_)
+    ret = (this->host_ < output.host_);
+  else if (this->db_ != output.db_)
+    ret = (this->db_ < output.db_);
+  else
+    ret = (this->user_ < output.user_);
+  return (ret);
 }
 
 /**

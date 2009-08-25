@@ -49,7 +49,6 @@ static void term_handler(int signum)
  */
 int main(int argc, char* argv[])
 {
-  Conf::Manager conf_manager;
   int exit_code;
   std::vector<DBOutput*> dbs;
   std::vector<ClientAcceptor*> sockets;
@@ -75,7 +74,7 @@ int main(int argc, char* argv[])
           InitMappings();
 
           // Load configuration file
-	  conf_manager.Open(argv[1]);
+	  Conf::Manager::GetInstance().Open(argv[1]);
 
           // Catch ^C
           signal(SIGINT, term_handler);
@@ -86,7 +85,7 @@ int main(int argc, char* argv[])
 	    pause();
 
 	  // Unload everything
-	  conf_manager.Close();
+	  Conf::Manager::GetInstance().Close();
 
           exit_code = 0;
         }
