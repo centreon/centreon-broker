@@ -20,6 +20,7 @@
 
 #include <boost/bind.hpp>
 #include <memory>
+#include "db/connection.h"
 #include "db/db_exception.h"
 #ifdef USE_MYSQL
 # include "db/mysql/connection.h"
@@ -35,6 +36,7 @@
 #include "events/host.h"
 #include "events/host_status.h"
 #include "logging.h"
+#include "nagios/broker.h"
 
 using namespace CentreonBroker;
 using namespace CentreonBroker::Events;
@@ -177,6 +179,11 @@ void DBOutput::Disconnect()
       delete (this->connection_status_stmt_);
       this->connection_status_stmt_ = NULL;
     }
+  if (this->host_stmt_)
+    {
+      delete (this->host_stmt_);
+      this->host_stmt_ = NULL;
+    }
   if (this->host_status_stmt_)
     {
       delete (this->host_status_stmt_);
@@ -186,6 +193,11 @@ void DBOutput::Disconnect()
     {
       delete (this->program_status_stmt_);
       this->program_status_stmt_ = NULL;
+    }
+  if (this->service_stmt_)
+    {
+      delete (this->service_stmt_);
+      this->service_stmt_ = NULL;
     }
   if (this->service_status_stmt_)
     {
@@ -276,6 +288,13 @@ void DBOutput::PrepareStatements()
     DB::Placeholder()));
   this->connection_status_stmt_->Prepare();
 
+  // Host insert statement.
+  this->host_stmt_ = this->conn_->GetMappedInsert<Host>(
+                       host_get_mapping);
+  this->host_stmt_->SetTable("host");
+  this->host_stmt_->AddField("instance_id");
+  this->host_stmt_->Prepare();
+
   // HostStatus update statement.
   this->host_status_stmt_ = this->conn_->GetMappedUpdate<HostStatus>(
                               host_status_get_mapping);
@@ -296,6 +315,13 @@ void DBOutput::PrepareStatements()
     DB::Equal(DB::Field("instance_id"),
 	      DB::Placeholder()));
   this->program_status_stmt_->Prepare();
+
+  // Service insert statement.
+  this->service_stmt_ = this->conn_->GetMappedInsert<Service>(
+                          service_get_mapping);
+  this->service_stmt_->SetTable("service");
+  this->service_stmt_->AddField("instance_id");
+  this->service_stmt_->Prepare();
 
   // ServiceStatus update statement.
   this->service_status_stmt_ = this->conn_->GetMappedUpdate<ServiceStatus>(
@@ -398,15 +424,28 @@ void DBOutput::ProcessComment(const Comment& comment)
 #ifndef NDEBUG
   logging.LogDebug("Processing Comment event...");
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<Comment> >
-    query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
+  if ((comment.GetType() == NEBTYPE_COMMENT_ADD)
+      || comment.GetType() == NEBTYPE_COMMENT_LOAD)
+    {
+      std::auto_ptr<DB::MappedInsert<Comment> >
+	query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
 
-  query->SetTable("comment");
-  query->AddField("instance_id");
-  query->SetArg(comment);
-  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(comment.instance));
-  query->Execute();
-  this->QueryExecuted();
+      query->SetTable("comment");
+      query->AddField("instance_id");
+      query->SetArg(comment);
+      ((DB::HaveArgs*)query.get())->SetArg(
+        this->GetInstanceId(comment.instance));
+      query->Execute();
+      this->QueryExecuted();
+    }
+  else if (comment.GetType() == NEBTYPE_COMMENT_DELETE)
+    {
+      std::auto_ptr<DB::Delete> query(this->conn_->GetDelete());
+
+      query->SetPredicate(DB::Equal(DB::Field("internal_comment_id"),
+                                    DB::Terminal(comment.internal_id)));
+      query->Execute();
+    }
   return ;
 }
 
@@ -488,14 +527,9 @@ void DBOutput::ProcessHost(const Host& host)
 #ifndef NDEBUG
   logging.LogDebug("Processing Host event...");
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<Host> >
-    query(this->conn_->GetMappedInsert<Host>(host_get_mapping));
-
-  query->SetTable("host");
-  query->AddField("instance_id");
-  query->SetArg(host);
-  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(host.instance));
-  query->Execute();
+  this->host_stmt_->SetArg(host);
+  ((DB::HaveArgs*)this->host_stmt_)->SetArg(this->GetInstanceId(host.instance));
+  this->host_stmt_->Execute();
   this->QueryExecuted();
   return ;
 }
@@ -608,14 +642,10 @@ void DBOutput::ProcessService(const Service& service)
 #ifndef NDEBUG
   logging.LogDebug("Processing Service event...");
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<Service> >
-    query(this->conn_->GetMappedInsert<Service>(service_get_mapping));
-
-  query->SetTable("service");
-  query->AddField("instance_id");
-  query->SetArg(service);
-  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(service.instance));
-  query->Execute();
+  this->service_stmt_->SetArg(service);
+  ((DB::HaveArgs*)this->service_stmt_)->SetArg(
+    this->GetInstanceId(service.instance));
+  this->service_stmt_->Execute();
   this->QueryExecuted();
   return ;
 }
