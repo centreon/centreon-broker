@@ -52,8 +52,8 @@ namespace               CentreonBroker
                            throw ();
                          ~TLSStream();
       void               Close();
-      int                Receive(char* buffer, int size);
-      int                Send(const char* buffer, int size);
+      unsigned int       Receive(char* buffer, unsigned int size);
+      unsigned int       Send(const char* buffer, unsigned int size);
     };
 
     /**

@@ -20,11 +20,13 @@
 
 #include <csignal>
 #include <cstdlib>
+#include <gnutls/gnutls.h>
 #include <iostream>
 #ifdef USE_MYSQL
 # include <mysql.h>
 #endif /* USE_MYSQL */
 #include "conf/manager.h"
+#include "exception.h"
 #include "logging.h"
 #include "mapping.h"
 
@@ -69,6 +71,10 @@ int main(int argc, char* argv[])
 #ifdef USE_MYSQL
           mysql_library_init(0, NULL, NULL);
 #endif /* USE_MYSQL */
+#ifdef USE_TLS
+	  if (gnutls_global_init() != GNUTLS_E_SUCCESS)
+	    throw (Exception(0, "Initialization of GNU TLS failed."));
+#endif /* USE_TLS */
 
           // Load Object-Relational mappings
           InitMappings();
@@ -96,6 +102,9 @@ int main(int argc, char* argv[])
           exit_code = 1;
         }
 
+#ifdef USE_TLS
+      gnutls_global_deinit();
+#endif /* USE_TLS */
 #ifdef USE_MYSQL
       mysql_library_end();
 #endif /* USE_MYSQL */

@@ -33,7 +33,8 @@ using namespace CentreonBroker::Conf;
  *
  *  Initialize members to their default values.
  */
-Input::Input() : type_(Input::UNKNOWN), port_(0) {}
+Input::Input()
+  : type_(Input::UNKNOWN), port_(0), compress_(false), tls_(false) {}
 
 /**
  *  \brief Input copy constructor.
@@ -63,7 +64,12 @@ Input::~Input() {}
  */
 Input& Input::operator=(const Input& input)
 {
+  this->ca_ = input.ca_;
+  this->cert_ = input.cert_;
+  this->compress_ = input.compress_;
+  this->key_ = input.key_;
   this->name_ = input.name_;
+  this->tls_ = input.tls_;
   this->type_ = input.type_;
   switch (input.type_)
     {
@@ -97,7 +103,12 @@ bool Input::operator==(const Input& input) const
   bool match;
 
   if ((this->type_ == input.type_)
-      && (this->name_ == input.name_))
+      && (this->name_ == input.name_)
+      && (this->ca_ == input.ca_)
+      && (this->cert_ == input.cert_)
+      && (this->compress_ == input.compress_)
+      && (this->key_ == input.key_)
+      && (this->tls_ == input.tls_))
     {
       switch (this->type_)
 	{
@@ -133,16 +144,44 @@ bool Input::operator!=(const Input& input) const
  *
  *  \param[in] input Object to compare to.
  *
- *  \return this->GetName() < input.GetName()
+ *  \return true if *this is less than input, false otherwise.
  */
 bool Input::operator<(const Input& input) const
 {
   bool ret;
 
-  if (this->interface_ != input.interface_)
-    ret = (this->interface_ < input.interface_);
+  if (this->type_ != input.type_)
+    ret = (this->type_ < input.type_);
+  else if (this->compress_ != input.compress_)
+    ret = input.compress_;
+  else if (this->tls_ != input.tls_)
+    ret = input.tls_;
+  else if (this->name_ != input.name_)
+    ret = (this->name_ < input.name_);
+  else if (this->ca_ != input.ca_)
+    ret = (this->ca_ < input.ca_);
+  else if (this->cert_ != input.cert_)
+    ret = (this->cert_ < input.cert_);
+  else if (this->key_ != input.key_)
+    ret = (this->key_ < input.key_);
+  else if ((IPV4 == this->type_) || (IPV6 == this->type_))
+    {
+      if (this->port_ != input.port_)
+	ret = (this->port_ < input.port_);
+      else if (this->interface_ != input.interface_)
+	ret = (this->interface_ < input.interface_);
+      else
+	ret = false;
+    }
+  else if (UNIX == this->type_)
+    {
+      if (this->socket_path_ == input.socket_path_)
+	ret = (this->socket_path_ < input.socket_path_);
+      else
+	ret = false;
+    }
   else
-    ret = this->port_ < input.port_;
+    ret = false;
   return (ret);
 }
 
@@ -181,6 +220,66 @@ unsigned short Input::GetIPPort() const throw ()
 const std::string& Input::GetName() const throw ()
 {
   return (this->name_);
+}
+
+/**
+ *  Determines whether or not TLS should be activated on the input.
+ *
+ *  \return true if TLS has to be activated.
+ */
+bool Input::GetTLS() const throw ()
+{
+  return (this->tls_);
+}
+
+/**
+ *  Get the path of the trusted Certificate Authority certificate used for
+ *  client authentication.
+ *
+ *  \return Path to the trusted CA's certificate.
+ *
+ *  \see SetTLSCA
+ */
+const std::string& Input::GetTLSCA() const throw ()
+{
+  return (this->ca_);
+}
+
+/**
+ *  Get the path of the public certificate to use for encryption.
+ *
+ *  \return Path of the public certificate.
+ *
+ *  \see SetTLSCert
+ */
+const std::string& Input::GetTLSCert() const throw ()
+{
+  return (this->cert_);
+}
+
+/**
+ *  Determines whether or not the TLS layer should provide compression as well
+ *  as encryption.
+ *
+ *  \return true if compression is requested, false otherwise.
+ *
+ *  \see SetTLSCompress
+ */
+bool Input::GetTLSCompress() const throw ()
+{
+  return (this->compress_);
+}
+
+/**
+ *  Get the path of the private key to use for decryption.
+ *
+ *  \return Path of the private key.
+ *
+ *  \see SetTLSKey
+ */
+const std::string& Input::GetTLSKey() const throw ()
+{
+  return (this->key_);
 }
 
 /**
@@ -247,6 +346,71 @@ void Input::SetIPPort(unsigned short port) throw ()
 void Input::SetName(const std::string& name)
 {
   this->name_ = name;
+  return ;
+}
+
+/**
+ *  Set whether or not TLS should be activated on the input.
+ *
+ *  \param[in] true if TLS has to be activated, false otherwise.
+ */
+void Input::SetTLS(bool tls) throw ()
+{
+  this->tls_ = tls;
+  return ;
+}
+
+/**
+ *  Set the path of the trusted Certificate Authority certificate used for
+ *  client authentication.
+ *
+ *  \param[in] ca Path to the trusted CA's certificate.
+ *
+ *  \see GetTLSCA
+ */
+void Input::SetTLSCA(const std::string& ca)
+{
+  this->ca_ = ca;
+  return ;
+}
+
+/**
+ *  Set the path of the public certificate to use for encryption.
+ *
+ *  \param[in] cert Path of the public certificate.
+ *
+ *  \see GetTLSCert
+ */
+void Input::SetTLSCert(const std::string& cert)
+{
+  this->cert_ = cert;
+  return ;
+}
+
+/**
+ *  Set whether or not the TLS layer should provide compression as well as
+ *  encryption.
+ *
+ *  \param[in] compress true if compression if requested, false otherwise.
+ *
+ *  \see GetTLSCompress
+ */
+void Input::SetTLSCompress(bool compress) throw ()
+{
+  this->compress_ = compress;
+  return ;
+}
+
+/**
+ *  Set the path of the private key to use for decryption.
+ *
+ *  \param[in] Path of the private key.
+ *
+ *  \see GetTLSKey
+ */
+void Input::SetTLSKey(const std::string& key)
+{
+  this->key_ = key;
   return ;
 }
 

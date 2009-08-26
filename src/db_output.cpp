@@ -424,8 +424,8 @@ void DBOutput::ProcessComment(const Comment& comment)
 #ifndef NDEBUG
   logging.LogDebug("Processing Comment event...");
 #endif /* !NDEBUG */
-  if ((comment.GetType() == NEBTYPE_COMMENT_ADD)
-      || comment.GetType() == NEBTYPE_COMMENT_LOAD)
+  if ((comment.type == NEBTYPE_COMMENT_ADD)
+      || comment.type == NEBTYPE_COMMENT_LOAD)
     {
       std::auto_ptr<DB::MappedInsert<Comment> >
 	query(this->conn_->GetMappedInsert<Comment>(comment_get_mapping));
@@ -438,7 +438,7 @@ void DBOutput::ProcessComment(const Comment& comment)
       query->Execute();
       this->QueryExecuted();
     }
-  else if (comment.GetType() == NEBTYPE_COMMENT_DELETE)
+  else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
       std::auto_ptr<DB::Delete> query(this->conn_->GetDelete());
 
@@ -507,15 +507,29 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
 #ifndef NDEBUG
   logging.LogDebug("Processing Downtime event...");
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<Downtime> >
-    query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
+  if ((downtime.type == NEBTYPE_DOWNTIME_ADD)
+      || (downtime.type == NEBTYPE_DOWNTIME_LOAD))
+    {
+      std::auto_ptr<DB::MappedInsert<Downtime> >
+	query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
 
-  query->SetTable("downtime");
-  query->AddField("instance_id");
-  query->SetArg(downtime);
-  ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(downtime.instance));
-  query->Execute();
-  this->QueryExecuted();
+      query->SetTable("downtime");
+      query->AddField("instance_id");
+      query->SetArg(downtime);
+      ((DB::HaveArgs*)query.get())->SetArg(
+        this->GetInstanceId(downtime.instance));
+      query->Execute();
+      this->QueryExecuted();
+    }
+  else if (downtime.type == NEBTYPE_DOWNTIME_START)
+    {
+      // XXX : update
+    }
+  else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
+           || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
+    {
+      // XXX : delete
+    }
   return ;
 }
 
@@ -545,7 +559,7 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
   std::auto_ptr<DB::MappedInsert<HostGroup> >
     query(this->conn_->GetMappedInsert<HostGroup>(host_group_get_mapping));
 
-  query->SetTable("host_group");
+  query->SetTable("host_hostgroup");
   query->SetArg(hg);
   query->Execute();
   this->QueryExecuted();

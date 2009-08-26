@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <cstdlib>
 #include <gnutls/gnutls.h>
 #include "exception.h"
 #include "io/tls.h"
@@ -70,20 +71,21 @@ static ssize_t PushHelper(gnutls_transport_ptr_t ptr,
  *  \brief TLSStream copy constructor.
  *
  *  TLSStreams are not copiable, that's why the copy constructor is declared
- *  private.
+ *  private. Any attempt to use it will result in a call to abort().
  *
  *  \param[in] tls_stream Unused.
  */
 TLSStream::TLSStream(const TLSStream& tls_stream) : Stream(tls_stream)
 {
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignement operator.
  *
  *  TLSStreams are not copiable, that's why the copy constructor is declared
- *  private.
+ *  private. Any attempt to use it will result in a call to abort().
  *
  *  \param[in] tls_stream Unused.
  *
@@ -93,6 +95,7 @@ TLSStream& TLSStream::operator=(const TLSStream& tls_stream)
 {
   (void)tls_stream;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -116,13 +119,7 @@ TLSStream& TLSStream::operator=(const TLSStream& tls_stream)
  *                     that should be used.
  */
 TLSStream::TLSStream(Stream* lower, gnutls_session_t* session) throw ()
-  : lower_(lower), session_(session)
-{
-  gnutls_transport_set_lowat(*this->session_, 0);
-  gnutls_transport_set_pull_function(*this->session_, PullHelper);
-  gnutls_transport_set_push_function(*this->session_, PushHelper);
-  gnutls_transport_set_ptr(*this->session_, this->lower_);
-}
+  : lower_(lower), session_(session) {}
 
 /**
  *  \brief TLSStream destructor.
@@ -132,8 +129,7 @@ TLSStream::TLSStream(Stream* lower, gnutls_session_t* session) throw ()
  */
 TLSStream::~TLSStream()
 {
-  if (this->lower_ || this->session_)
-    this->Close();
+  this->Close();
 }
 
 /**
@@ -144,13 +140,19 @@ TLSStream::~TLSStream()
  */
 void TLSStream::Close()
 {
-  gnutls_bye(*this->session_, GNUTLS_SHUT_RDWR);
-  gnutls_deinit(*this->session_);
-  delete (this->session_);
-  this->session_ = NULL;
-  this->lower_->Close();
-  delete (this->lower_);
-  this->lower_ = NULL;
+  if (this->session_)
+    {
+      gnutls_bye(*this->session_, GNUTLS_SHUT_RDWR);
+      gnutls_deinit(*this->session_);
+      delete (this->session_);
+      this->session_ = NULL;
+    }
+  if (this->lower_)
+    {
+      this->lower_->Close();
+      delete (this->lower_);
+      this->lower_ = NULL;
+    }
   return ;
 }
 
@@ -167,17 +169,14 @@ void TLSStream::Close()
  *  \return Number of bytes read from the network stream. 0 if the session has
  *          been shut down.
  */
-int TLSStream::Receive(char* buffer, int size)
+unsigned int TLSStream::Receive(char* buffer, unsigned int size)
 {
   int ret;
 
-  do
-    {
-      ret = gnutls_record_recv(*this->session_, buffer, size);
-    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-  if (ret != GNUTLS_E_SUCCESS)
+  ret = gnutls_record_recv(*this->session_, buffer, size);
+  if (ret < 0)
     throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  return (ret);
+  return ((unsigned int)ret);
 }
 
 /**
@@ -193,17 +192,14 @@ int TLSStream::Receive(char* buffer, int size)
  *  \return Number of bytes actually sent through the TLS session. 0 if the
  *          connection has been shut down.
  */
-int TLSStream::Send(const char* buffer, int size)
+unsigned int TLSStream::Send(const char* buffer, unsigned int size)
 {
   int ret;
 
-  do
-    {
-      ret = gnutls_record_send(*this->session_, buffer, size);
-    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-  if (ret != GNUTLS_E_SUCCESS)
+  ret = gnutls_record_send(*this->session_, buffer, size);
+  if (ret < 0)
     throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  return (ret);
+  return ((unsigned int)ret);
 }
 
 
@@ -245,6 +241,7 @@ static const unsigned char dh_params_2048[] =
  *  \brief TLSAcceptor copy constructor.
  *
  *  As TLSAcceptors are not copiable, the copy constructor is declared private.
+ *  Any attempt to use it will result in a call to abort().
  *
  *  \param[in] tls_acceptor Unused.
  */
@@ -253,12 +250,14 @@ TLSAcceptor::TLSAcceptor(const TLSAcceptor& tls_acceptor)
 {
   (void)tls_acceptor;
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignement operator.
  *
  *  As TLSAcceptors are not copiable, the operator= method is declared private.
+ *  Any attempt to use it will result in a call to abort().
  *
  *  \param[in] tls_acceptor Unused.
  *
@@ -268,6 +267,7 @@ TLSAcceptor& TLSAcceptor::operator=(const TLSAcceptor& tls_acceptor)
 {
   (void)tls_acceptor;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -313,15 +313,7 @@ TLSAcceptor::TLSAcceptor()
  */
 TLSAcceptor::~TLSAcceptor()
 {
-  if (this->lower_)
-    this->Close();
-  else if (this->cred_init_)
-    {
-      if (this->cert_based_)
-	gnutls_certificate_free_credentials(this->cred_.cert);
-      else
-	gnutls_anon_free_server_credentials(this->cred_.anon);
-    }
+  this->Close();
   gnutls_dh_params_deinit(this->dh_params_);
 }
 
@@ -363,12 +355,22 @@ Stream* TLSAcceptor::Accept()
 	  if (ret != GNUTLS_E_SUCCESS)
 	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
 
-	  // Set the certificate to use for encryption ...
+	  // Set the encryption method (normal ciphers with anonymous
+	  // Diffie-Hellman and optionnally compresion).
+	  ret = gnutls_priority_set_direct(*session,
+                                           (this->compression_
+                                            ? "NORMAL:+ANON-DH:%COMPAT"
+                                            : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
+                                           NULL);
+	  if (ret != GNUTLS_E_SUCCESS)
+	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+	  // Set the anonymous credentials to use for encryption ...
 	  if (!this->cert_based_)
             ret = gnutls_credentials_set(*session,
                                          GNUTLS_CRD_ANON,
                                          this->cred_.anon);
-	  // ... or the anonymous credentials.
+	  // ... or the certificates.
 	  else
 	    {
               ret = gnutls_credentials_set(*session,
@@ -380,15 +382,11 @@ Stream* TLSAcceptor::Accept()
           if (ret != GNUTLS_E_SUCCESS)
             throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
 
-	  // Set the encryption method (normal ciphers with anonymous
-	  // Diffie-Hellman and optionnally compresion).
-	  ret = gnutls_priority_set_direct(*session,
-                                           (this->compression_
-                                            ? "NORMAL:+ANON-DH"
-                                            : "NORMAL:+ANON-DH:+COMP-DEFLATE"),
-                                           NULL);
-	  if (ret != GNUTLS_E_SUCCESS)
-	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+	  // Bind the TLS session with the stream from the lower layer.
+          gnutls_transport_set_lowat(*session, 0);
+          gnutls_transport_set_pull_function(*session, PullHelper);
+          gnutls_transport_set_push_function(*session, PushHelper);
+          gnutls_transport_set_ptr(*session, lower);
 
 	  // Perform the TLS handshake.
 	  do
@@ -399,7 +397,7 @@ Stream* TLSAcceptor::Accept()
 	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
 
 	  // If set, check if the peer's certificate is valid.
-	  if (!this->check_cert_)
+	  if (this->check_cert_)
 	    {
 	      unsigned int status;
 
@@ -446,19 +444,23 @@ Stream* TLSAcceptor::Accept()
  */
 void TLSAcceptor::Close()
 {
-  this->lower_->Close();
-  this->lower_ = NULL;
+  if (this->lower_)
+    {
+      this->lower_->Close();
+      delete (this->lower_);
+      this->lower_ = NULL;
+    }
   if (this->cred_init_)
     {
       if (this->cert_based_)
 	gnutls_certificate_free_credentials(this->cred_.cert);
       else
 	gnutls_anon_free_server_credentials(this->cred_.anon);
+      this->cred_init_ = false;
     }
   this->cert_based_ = false;
   this->check_cert_ = false;
   this->compression_ = false;
-  this->cred_init_ = false;
   return ;
 }
 
