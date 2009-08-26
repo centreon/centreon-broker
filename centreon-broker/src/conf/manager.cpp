@@ -30,6 +30,7 @@
 #include "db_output.h"
 #include "io/net4.h"
 #include "io/net6.h"
+#include "io/tls.h"
 #include "io/unix.h"
 #include "logging.h"
 
@@ -98,12 +99,22 @@ static void HandleInput(std::ifstream& ifs, Input& in)
 
       if ('#' == key[0])
 	; // Skip line
+      else if (!strcmp(key, "ca"))
+	in.SetTLSCA(value ? value : "");
+      else if (!strcmp(key, "cert"))
+	in.SetTLSCert(value ? value : "");
+      else if (!strcmp(key, "compress"))
+	in.SetTLSCompress(value ? strtoul(value, NULL, 0) : false);
       else if (!strcmp(key, "interface"))
 	in.SetIPInterface(value ? value : "");
+      else if (!strcmp(key, "key"))
+	in.SetTLSKey(value ? value : "");
       else if (!strcmp(key, "port"))
 	in.SetIPPort(value ? strtoul(value, NULL, 0) : 0);
       else if (!strcmp(key, "socket"))
 	in.SetUnixSocketPath(value ? value : "");
+      else if (!strcmp(key, "tls") && value)
+	in.SetTLS(!strcmp(value, "yes") || strtoul(value, NULL, 0));
       else if (!strcmp(key, "type"))
 	{
 	  if (value)
@@ -586,67 +597,82 @@ void Manager::Update()
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new input object...");
 #endif /* !NDEBUG */
+      std::auto_ptr<CentreonBroker::IO::Acceptor> acceptor;
+
       switch (inputs_it->GetType())
 	{
          case Input::IPV4:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::Net4Acceptor> acceptor(
+	    std::auto_ptr<CentreonBroker::IO::Net4Acceptor> net4a(
               new CentreonBroker::IO::Net4Acceptor());
 
 	    if (inputs_it->GetIPInterface().empty())
-	      acceptor->Listen(inputs_it->GetIPPort());
+	      net4a->Listen(inputs_it->GetIPPort());
 	    else
-	      acceptor->Listen(inputs_it->GetIPPort(),
-                               inputs_it->GetIPInterface().c_str());
-
-	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
-              new CentreonBroker::ClientAcceptor());
-
-	    ca->Run(acceptor.get());
-	    acceptor.release();
-	    this->inputs_[*inputs_it] = ca.get();
-	    ca.release();
+	      net4a->Listen(inputs_it->GetIPPort(),
+                            inputs_it->GetIPInterface().c_str());
+	    acceptor.reset(net4a.get());
+	    net4a.release();
 	  }
 	  break ;
          case Input::IPV6:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::Net6Acceptor> acceptor(
+	    std::auto_ptr<CentreonBroker::IO::Net6Acceptor> net6a(
               new CentreonBroker::IO::Net6Acceptor());
 
 	    if (inputs_it->GetIPInterface().empty())
-	      acceptor->Listen(inputs_it->GetIPPort());
+	      net6a->Listen(inputs_it->GetIPPort());
 	    else
-	      acceptor->Listen(inputs_it->GetIPPort(),
+	      net6a->Listen(inputs_it->GetIPPort(),
                                inputs_it->GetIPInterface().c_str());
-
-	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
-              new CentreonBroker::ClientAcceptor());
-
-	    ca->Run(acceptor.get());
-	    acceptor.release();
-	    this->inputs_[*inputs_it] = ca.get();
-	    ca.release();
+	    acceptor.reset(net6a.get());
+	    net6a.release();
 	  }
 	  break ;
          case Input::UNIX:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::UnixAcceptor> acceptor(
+	    std::auto_ptr<CentreonBroker::IO::UnixAcceptor> unixa(
               new CentreonBroker::IO::UnixAcceptor());
 
-	    acceptor->Listen(inputs_it->GetUnixSocketPath().c_str());
-
-	    std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
-              new CentreonBroker::ClientAcceptor());
-
-	    ca->Run(acceptor.get());
-	    acceptor.release();
-	    this->inputs_[*inputs_it] = ca.get();
-	    ca.release();
+	    unixa->Listen(inputs_it->GetUnixSocketPath().c_str());
+	    acceptor.reset(unixa.get());
+	    unixa.release();
 	  }
 	  break ;
          default:
 	  ;
 	}
+
+      // Check for TLS support
+      if (((Input::IPV4 == inputs_it->GetType())
+	   || (Input::IPV6 == inputs_it->GetType())
+           || (Input::UNIX == inputs_it->GetType()))
+          && inputs_it->GetTLS())
+	{
+	  std::auto_ptr<CentreonBroker::IO::TLSAcceptor> tlsa(
+            new CentreonBroker::IO::TLSAcceptor());
+
+	  if (!inputs_it->GetTLSCert().empty()
+              && !inputs_it->GetTLSKey().empty())
+	    tlsa->SetCert(inputs_it->GetTLSCert().c_str(),
+                          inputs_it->GetTLSKey().c_str());
+	  if (!inputs_it->GetTLSCA().empty())
+	    tlsa->SetTrustedCA(inputs_it->GetTLSCA().c_str());
+	  tlsa->SetCompression(inputs_it->GetTLSCompress());
+	  tlsa->Listen(acceptor.get());
+	  acceptor.release();
+	  acceptor.reset(tlsa.get());
+	  tlsa.release();
+	}
+
+      // Create the new client acceptor
+      std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
+        new CentreonBroker::ClientAcceptor());
+
+      ca->Run(acceptor.get());
+      acceptor.release();
+      this->inputs_[*inputs_it] = ca.get();
+      ca.release();
     }
 
   // (Re-)Register handler of SIGUSR1

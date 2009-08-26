@@ -88,7 +88,7 @@ AC_MSG_CHECKING([whether the program should support TLS])
 AC_ARG_ENABLE([tls],
 	AS_HELP_STRING([--enable-tls], [TLS code should be compiled]),
 	[enable_tls=$enableval],
-	[enable_tls="no"])
+	[enable_tls="yes"])
 AC_MSG_RESULT($enable_tls)
 if test "x$enable_tls" = "xyes"
 then

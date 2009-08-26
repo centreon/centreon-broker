@@ -53,6 +53,12 @@ namespace                CentreonBroker
       // IP specific
       std::string        interface_;
       unsigned short     port_;
+      // TLS specific
+      std::string        ca_;
+      std::string        cert_;
+      bool               compress_;
+      std::string        key_;
+      bool               tls_;
       // Unix specific
       std::string        socket_path_;
 
@@ -68,12 +74,22 @@ namespace                CentreonBroker
       const std::string& GetIPInterface() const throw ();
       unsigned short     GetIPPort() const throw ();
       const std::string& GetName() const throw ();
+      bool               GetTLS() const throw ();
+      const std::string& GetTLSCA() const throw ();
+      const std::string& GetTLSCert() const throw ();
+      bool               GetTLSCompress() const throw ();
+      const std::string& GetTLSKey() const throw ();
       Type               GetType() const throw ();
       const std::string& GetUnixSocketPath() const throw ();
       // Setters
       void               SetIPInterface(const std::string& iface);
       void               SetIPPort(unsigned short port) throw ();
       void               SetName(const std::string& name);
+      void               SetTLS(bool tls) throw ();
+      void               SetTLSCA(const std::string& ca);
+      void               SetTLSCert(const std::string& key);
+      void               SetTLSCompress(bool compress) throw ();
+      void               SetTLSKey(const std::string& key);
       void               SetType(Type type) throw ();
       void               SetUnixSocketPath(const std::string& usp);
     };
