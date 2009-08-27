@@ -22,7 +22,6 @@
 #include <mysql.h>
 #include "db/db_exception.h"
 #include "db/mysql/connection.h"
-#include "db/mysql/truncate.h"
 #include "logging.h"
 
 using namespace CentreonBroker::DB;
@@ -40,10 +39,10 @@ using namespace CentreonBroker::DB;
  *
  *  \param[in] myconn Object to copy data from.
  */
-MySQLConnection::MySQLConnection(const MySQLConnection& myconn) throw ()
+MySQLConnection::MySQLConnection(const MySQLConnection& myconn)
   : Connection(myconn)
 {
-  (void)myconn;
+  // XXX
 }
 
 /**
@@ -56,9 +55,8 @@ MySQLConnection::MySQLConnection(const MySQLConnection& myconn) throw ()
  *  \return *this
  */
 MySQLConnection& MySQLConnection::operator=(const MySQLConnection& myconn)
-  throw ()
 {
-  (void)myconn;
+  // XXX
   return (*this);
 }
 
@@ -91,8 +89,7 @@ MySQLConnection::MySQLConnection() throw (DBException)
  */
 MySQLConnection::~MySQLConnection() throw ()
 {
-  if (this->myconn_)
-    this->Disconnect();
+  this->Disconnect();
   mysql_thread_end();
 }
 
@@ -185,9 +182,11 @@ void MySQLConnection::Disconnect() throw ()
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Disconnecting from MySQL server...");
 #endif /* !NDEBUG */
-  assert(this->myconn_);
-  mysql_close(this->myconn_);
-  this->myconn_ = NULL;
+  if (this->myconn_)
+    {
+      mysql_close(this->myconn_);
+      this->myconn_ = NULL;
+    }
   return ;
 }
 
@@ -225,7 +224,7 @@ Insert* MySQLConnection::GetInsert()
 Select* MySQLConnection::GetSelect()
 {
 #ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Creating MYSQL SELECT query...");
+  CentreonBroker::logging.LogDebug("Creating MySQL SELECT query...");
 #endif /* !NDEBUG */
   return (new MySQLSelect(this->myconn_));
 }

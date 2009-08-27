@@ -52,9 +52,8 @@ namespace                 CentreonBroker
     {
      private:
       ::MYSQL*            myconn_;
-                          MySQLConnection(const MySQLConnection& myconn)
-                            throw ();
-      MySQLConnection&    operator=(const MySQLConnection& myconn) throw ();
+                          MySQLConnection(const MySQLConnection& myconn);
+      MySQLConnection&    operator=(const MySQLConnection& myconn);
 
      public:
                           MySQLConnection() throw (DBException);

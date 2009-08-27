@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <cstring>
 #include <sstream>
 #include "db/db_exception.h"
@@ -41,6 +42,7 @@ using namespace CentreonBroker::DB;
  */
 void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
 {
+  assert(bind);
   if (bind->buffer)
     switch (bind->buffer_type)
       {
@@ -153,7 +155,7 @@ void MySQLHaveArgs::Execute()
  *  When the underlying query is being prepared, the MySQLHaveArgs object is
  *  responsible of allocating the MYSQL_BIND structure that will hold query
  *  arguments. For this purpose it will call the overriden GetArgCount()
- *  method. Control is then transfered to the MySQLQuery::Prepare method.
+ *  method. Control is then transfered to the MySQLQuery::Prepare() method.
  */
 void MySQLHaveArgs::Prepare()
 {
@@ -329,8 +331,14 @@ void MySQLHaveArgs::SetArg(const std::string& arg)
     }
   else
     {
+      char* safe_str;
+
+      // XXX : potential leak
+      safe_str = new char[arg.size() * 2 + 1];
+      mysql_real_escape_string(this->mysql, safe_str, arg.c_str(), arg.size());
       this->query.append("\"");
-      this->query.append(arg);
+      this->query.append(safe_str);
+      delete [] safe_str;
       this->query.append("\"");
     }
   return ;

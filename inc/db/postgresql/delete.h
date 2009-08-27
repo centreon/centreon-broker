@@ -18,36 +18,35 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_MYSQL_DELETE_H_
-# define DB_MYSQL_DELETE_H_
+#ifndef DB_POSTGRESQL_DELETE_H_
+# define DB_POSTGRESQL_DELETE_H_
 
 # include "db/delete.h"
-# include "db/mysql/have_args.h"
-# include "db/mysql/have_predicate.h"
+# include "db/postgresql/have_args.h"
+# include "db/postgresql/have_predicate.h"
 
 namespace          CentreonBroker
 {
   namespace        DB
   {
-    class          MySQLDelete : public Delete,
-                                 public MySQLHaveArgs,
+    class          PgSQLDelete : public Delete,
+                                 public PgSQLHaveArgs,
                                  public MySQLHavePredicate
     {
      private:
       void         GenerateQueryBeginning();
-      unsigned int GetArgCount() throw ();
 
      protected:
-                   MySQLDelete(const MySQLDelete& mydelete);
-      MySQLDelete& operator=(const MySQLDelete& mydelete);
+                   PgSQLDelete(const PgSQLDelete& pgdelete);
+      PgSQLDelete& operator=(const PgSQLDelete& pgdelete);
 
      public:
-                   MySQLDelete(MYSQL* myconn);
-      virtual      ~MySQLDelete();
+                   PgSQLDelete(PGconn* pgconn);
+      virtual      ~PgSQLDelete();
       void         Execute();
       void         Prepare();
     };
   }
 }
 
-#endif /* !DB_MYSQL_DELETE_H_ */
+#endif /* !DB_POSTGRESQL_DELETE_H_ */
