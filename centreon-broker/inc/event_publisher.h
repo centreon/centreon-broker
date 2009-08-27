@@ -57,6 +57,8 @@ namespace                       CentreonBroker
     static EventPublisher&      GetInstance();
     void                        Publish(Events::Event* ev);
     void                        Subscribe(EventSubscriber* es);
+    void                        Subscribe(EventSubscriber* from,
+                                          EventSubscriber* to);
     void                        Unsubscribe(EventSubscriber* es);
   };
 }

@@ -64,6 +64,7 @@ namespace                       CentreonBroker
    private:
     // Configuration
     unsigned int                connection_retry_interval_;
+    std::string                 dumpfile_;
     unsigned int                query_commit_interval_;
     unsigned int                time_commit_interval_;
     // Connection informations
@@ -134,6 +135,7 @@ namespace                       CentreonBroker
                                      const std::string& password,
                                      const std::string& db);
     void                        SetConnectionRetryInterval(unsigned int cri);
+    void                        SetDumpFile(const std::string& df);
     void                        SetQueryCommitInterval(unsigned int qci);
     void                        SetTimeCommitInterval(unsigned int tci);
   };

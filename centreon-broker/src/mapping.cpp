@@ -37,7 +37,7 @@ using namespace CentreonBroker;
 using namespace CentreonBroker::DB;
 using namespace CentreonBroker::Events;
 
-static const DB::DataMember<Acknowledgement> acknowledgement_dm[] =
+const DB::DataMember<Acknowledgement> CentreonBroker::acknowledgement_dm[] =
   {
     DataMember<Acknowledgement>("acknowledgement_type",
       &Acknowledgement::type),
@@ -62,7 +62,7 @@ DB::MappingGetters<Events::Acknowledgement>
 DB::MappingSetters<Events::Acknowledgement>
   CentreonBroker::acknowledgement_set_mapping;
 
-static const DB::DataMember<Comment> comment_dm[] =
+const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
   {
     DataMember<Comment>("author_name",
       &Comment::author),
@@ -99,7 +99,7 @@ DB::MappingGetters<Events::Comment>
 DB::MappingSetters<Events::Comment>
   CentreonBroker::comment_set_mapping;
 
-static const DB::DataMember<Connection> connection_dm[] =
+const DB::DataMember<Connection> CentreonBroker::connection_dm[] =
   {
     DataMember<Connection>("agent_name",
       &Connection::agent_name),
@@ -132,7 +132,7 @@ DB::MappingGetters<Events::Connection>
 DB::MappingSetters<Events::Connection>
   CentreonBroker::connection_set_mapping;
 
-static const DB::DataMember<ConnectionStatus> connection_status_dm[] =
+const DB::DataMember<ConnectionStatus> CentreonBroker::connection_status_dm[] =
   {
     DataMember<ConnectionStatus>("bytes_processed",
       &ConnectionStatus::bytes_processed),
@@ -153,7 +153,7 @@ DB::MappingGetters<Events::ConnectionStatus>
 DB::MappingSetters<Events::ConnectionStatus>
   CentreonBroker::connection_status_set_mapping;
 
-static const DB::DataMember<Downtime> downtime_dm[] =
+const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
   {
     DataMember<Downtime>("author_name",
       &Downtime::author),
@@ -186,7 +186,7 @@ DB::MappingGetters<Events::Downtime>
 DB::MappingSetters<Events::Downtime>
   CentreonBroker::downtime_set_mapping;
 
-static const DB::DataMember<Host> host_dm[] =
+const DB::DataMember<Host> CentreonBroker::host_dm[] =
   {
     DataMember<Host>("acknowledgement_type",
       &Host::acknowledgement_type),
@@ -351,7 +351,7 @@ DB::MappingGetters<Events::Host>
 DB::MappingSetters<Events::Host>
   CentreonBroker::host_set_mapping;
 
-static const DB::DataMember<HostGroup> host_group_dm[] =
+const DB::DataMember<HostGroup> CentreonBroker::host_group_dm[] =
   {
     DataMember<HostGroup>("action_url",
       &HostGroup::action_url),
@@ -370,7 +370,7 @@ DB::MappingGetters<Events::HostGroup>
 DB::MappingSetters<Events::HostGroup>
   CentreonBroker::host_group_set_mapping;
 
-static const DB::DataMember<HostStatus> host_status_dm[] =
+const DB::DataMember<HostStatus> CentreonBroker::host_status_dm[] =
   {
     DataMember<HostStatus>("acknowledgement_type",
       &HostStatus::acknowledgement_type),
@@ -467,7 +467,7 @@ DB::MappingGetters<Events::HostStatus>
 DB::MappingSetters<Events::HostStatus>
   CentreonBroker::host_status_set_mapping;
 
-static const DB::DataMember<Log> log_dm[] =
+const DB::DataMember<Log> CentreonBroker::log_dm[] =
   {
     DataMember<Log>("ctime",
       &Log::c_time),
@@ -496,7 +496,7 @@ DB::MappingGetters<Events::Log>
 DB::MappingSetters<Events::Log>
   CentreonBroker::log_set_mapping;
 
-static const DB::DataMember<ProgramStatus> program_status_dm[] =
+const DB::DataMember<ProgramStatus> CentreonBroker::program_status_dm[] =
   {
     DataMember<ProgramStatus>("active_host_checks_enabled",
       &ProgramStatus::active_host_checks_enabled),
@@ -551,7 +551,7 @@ DB::MappingGetters<Events::ProgramStatus>
 DB::MappingSetters<Events::ProgramStatus>
   CentreonBroker::program_status_set_mapping;
 
-static const DB::DataMember<Service> service_dm[] =
+const DB::DataMember<Service> CentreonBroker::service_dm[] =
   {
     DataMember<Service>("acknowledgement_type",
       &Service::acknowledgement_type),
@@ -730,7 +730,7 @@ DB::MappingGetters<Events::Service>
 DB::MappingSetters<Events::Service>
   CentreonBroker::service_set_mapping;
 
-static const DB::DataMember<ServiceStatus> service_status_dm[] =
+const DB::DataMember<ServiceStatus> CentreonBroker::service_status_dm[] =
   {
     DataMember<ServiceStatus>("acknowledgement_type",
       &ServiceStatus::acknowledgement_type),

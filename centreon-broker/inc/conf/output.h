@@ -48,6 +48,7 @@ namespace                CentreonBroker
      private:
       unsigned int       connection_retry_interval_;
       std::string        db_;
+      std::string        dumpfile_;
       std::string        host_;
       std::string        name_;
       std::string        password_;
@@ -67,6 +68,7 @@ namespace                CentreonBroker
       // Getters
       unsigned int       GetConnectionRetryInterval() const throw ();
       const std::string& GetDB() const throw ();
+      const std::string& GetDumpFile() const throw ();
       const std::string& GetHost() const throw ();
       const std::string& GetName() const throw ();
       const std::string& GetPassword() const throw ();
@@ -77,6 +79,7 @@ namespace                CentreonBroker
       // Setters
       void               SetConnectionRetryInterval(unsigned int cri) throw ();
       void               SetDB(const std::string& db);
+      void               SetDumpFile(const std::string& df);
       void               SetHost(const std::string& host);
       void               SetName(const std::string& name);
       void               SetPassword(const std::string& password);

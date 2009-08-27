@@ -31,10 +31,12 @@
 #include "db/predicate.h"
 #include "db_output.h"
 #include "exception.h"
+#include "event_publisher.h"
 #include "events/comment.h"
 #include "events/event.h"
 #include "events/host.h"
 #include "events/host_status.h"
+#include "file_output.h"
 #include "logging.h"
 #include "nagios/broker.h"
 
@@ -753,7 +755,10 @@ DBOutput::DBOutput(DB::Connection::DBMS dbms)
     service_status_stmt_(NULL),
     queries_(0),
     exit_(false),
-    thread_(NULL) {}
+    thread_(NULL)
+{
+  EventPublisher::GetInstance().Subscribe(this);
+}
 
 /**
  *  \brief DBOutput destructor.
@@ -819,6 +824,9 @@ void DBOutput::operator()()
 	  // Prepare more common statements to reduce load on SQL server
 	  this->PrepareStatements();
 
+	  // Load historical data from dumpfile
+	  // XXX
+
 	  // While no exception happens (like when connection to DB is dropped)
           while (1)
             {
@@ -868,6 +876,34 @@ void DBOutput::operator()()
 	  // Free connection ressources
 	  this->Disconnect();
 
+	  // Create a dump file, it might be a while before we can reconnect to
+	  // the DB server.
+	  FileOutput dumpfile;
+
+	  try
+	    {
+	      if (!this->dumpfile_.empty())
+		{
+		  dumpfile.Open(this->dumpfile_.c_str());
+		  dumpfile.Lock();
+		  dumpfile.StoreEvents(this->events_);
+		  EventPublisher::GetInstance().Subscribe(this, &dumpfile);
+		  dumpfile.StoreEvents(this->events_);
+		  dumpfile.Unlock();
+		  dumpfile.Run();
+		}
+	    }
+	  catch (std::exception& e)
+	    {
+	      logging.LogError("Error while opening dump file...");
+	      logging.LogError(e.what());
+	      dumpfile.Close();
+	    }
+	  catch (...)
+	    {
+	      dumpfile.Close();
+	    }
+
 	  try
 	    {
 	      // Wait before trying to reconnect.
@@ -882,6 +918,12 @@ void DBOutput::operator()()
 		  this->Connect();
 		}
 	      break ;
+
+	      // Restore original state
+	      // XXX : what if dumpfile is not working ?
+	      this->events_.Lock();
+	      EventPublisher::GetInstance().Subscribe(&dumpfile, this);
+	      this->events_.Unlock();
 	    }
 	  // If an exception occur, try to sleep a bit then try again
 	  catch (...)
@@ -911,10 +953,10 @@ void DBOutput::Destroy()
 #ifndef NDEBUG
   logging.LogDebug("Requesting DBOutput to stop processing...");
 #endif /* !NDEBUG */
-  assert(this->thread_);
   this->exit_ = true;
   this->events_.CancelWait();
-  this->thread_->interrupt();
+  if (this->thread_)
+    this->thread_->interrupt();
   return ;
 }
 
@@ -954,6 +996,17 @@ void DBOutput::Init(const std::string& host,
 void DBOutput::SetConnectionRetryInterval(unsigned int cri)
 {
   this->connection_retry_interval_ = cri;
+  return ;
+}
+
+/**
+ *  Set the name of the file where events should be dumped on failure/exit.
+ *
+ *  \param[in] df Name of the file where events should be dumped.
+ */
+void DBOutput::SetDumpFile(const std::string& df)
+{
+  this->dumpfile_ = df;
   return ;
 }
 
