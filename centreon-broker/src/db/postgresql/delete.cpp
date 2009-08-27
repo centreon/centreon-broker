@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/mysql/delete.h"
+#include "db/postgresql/delete.h"
 
 using namespace CentreonBroker::DB;
 
@@ -31,27 +31,15 @@ using namespace CentreonBroker::DB;
 /**
  *  \brief Generate the first part of the query string.
  *
- *  Expand the query object to a literal query string comprehensible by MySQL.
+ *  Expand the query object to a literal query string comprehensible by
+ *  PostgreSQL.
  */
-void MySQLDelete::GenerateQueryBeginning()
+void PgSQLDelete::GenerateQuery()
 {
-  this->query = "DELETE FROM `";
+  this->query = "DELETE FROM \"";
   this->query.append(this->table);
-  this->query.append("`");
+  this->query.append("\"");
   return ;
-}
-
-/**
- *  \brief Returns the number of argument this query accepts.
- *
- *  This overriden method is used by MySQLHaveArgs to allocate its argument
- *  buffer.
- *
- *  \return Number of arguments to be set in this query.
- */
-unsigned int MySQLDelete::GetArgCount() throw ()
-{
-  return (this->placeholders);
 }
 
 /**************************************
@@ -61,34 +49,34 @@ unsigned int MySQLDelete::GetArgCount() throw ()
 **************************************/
 
 /**
- *  \brief MySQLDelete copy constructor.
+ *  \brief PgSQLDelete copy constructor.
  *
  *  Build the new instance by copying data from the given object.
  *
- *  \param[in] mydelete Object to copy data from.
+ *  \param[in] pgdelete Object to copy data from.
  */
-MySQLDelete::MySQLDelete(const MySQLDelete& mydelete)
-  : HaveArgs(mydelete),
-    HavePredicate(mydelete),
-    Query(mydelete),
-    Delete(mydelete),
-    MySQLHaveArgs(mydelete),
-    MySQLHavePredicate(mydelete) {}
+PgSQLDelete::PgSQLDelete(const PgSQLDelete& pgdelete)
+  : HaveArgs(pgdelete),
+    HavePredicate(pgdelete),
+    Query(pgdelete),
+    Delete(pgdelete),
+    PgSQLHaveArgs(pgdelete),
+    PgSQLHavePredicate(pgdelete) {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
  *  Copy data from the given object to the current instance.
  *
- *  \param[in] mydelete Object to copy data from.
+ *  \param[in] pgdelete Object to copy data from.
  *
  *  \return *this
  */
-MySQLDelete& MySQLDelete::operator=(const MySQLDelete& mydelete)
+PgSQLDelete& PgSQLDelete::operator=(const PgSQLDelete& pgdelete)
 {
-  this->Delete::operator=(mydelete);
-  this->MySQLHaveArgs::operator=(mydelete);
-  this->MySQLHavePredicate::operator=(mydelete);
+  this->Delete::operator=(pgdelete);
+  this->PgSQLHaveArgs::operator=(pgdelete);
+  this->PgSQLHavePredicate::operator=(pgdelete);
   return (*this);
 }
 
@@ -99,41 +87,41 @@ MySQLDelete& MySQLDelete::operator=(const MySQLDelete& mydelete)
 **************************************/
 
 /**
- *  \brief MySQLDelete constructor. Needs the MySQL connection object.
+ *  \brief PgSQLDelete constructor. Needs the PostgreSQL connection object.
  *
- *  Build a new MySQL DELETE query.
+ *  Build a new PostgreSQL DELETE query.
  *
- *  \param[in] myconn The MySQL connection object on which the query will be
- *                    executed.
+ *  \param[in] pgconn The PostgreSQL connection object on which the query will
+ *                    be executed.
  */
-MySQLDelete::MySQLDelete(MYSQL* myconn) : MySQLHaveArgs(myconn) {}
+PgSQLDelete::PgSQLDelete(PGconn* pgconn) : PgSQLHaveArgs(pgconn) {}
 
 /**
- *  \brief MySQLDelete destructor.
+ *  \brief PgSQLDelete destructor.
  *
  *  Release all acquired ressources.
  */
-MySQLDelete::~MySQLDelete() {}
+PgSQLDelete::~PgSQLDelete() {}
 
 /**
  *  \brief Execute the DELETE query.
  *
- *  Execute the DELETE query on the MySQL server as it has been configured.
+ *  Execute the DELETE query on the PostgreSQL server as it has been configured.
  */
-void MySQLDelete::Execute()
+void PgSQLDelete::Execute()
 {
-  // If the query has not been prepared, generate the query string
+  // If the query has not been prepared, generate the query string.
   if (!this->stmt)
     {
       // Generate the first part of the query.
       this->GenerateQueryBeginning();
 
       // Generate the predicate string (if any).
-      this->MySQLHavePredicate::ProcessPredicate(this->query);
+      this->PgSQLHavePredicate::ProcessPredicate(this->query);
     }
 
   // Execute the query (prepared or not).
-  this->MySQLHaveArgs::Execute();
+  this->PgSQLHaveArgs::Execute();
 
   return ;
 }
@@ -141,18 +129,18 @@ void MySQLDelete::Execute()
 /**
  *  \brief Prepare the DELETE query.
  *
- *  Prepare the DELETE query on the MySQL server.
+ *  Prepare the DELETE query on the PostgreSQL server.
  */
-void MySQLDelete::Prepare()
+void PgSQLDelete::Prepare()
 {
   // Generate the query string.
   this->GenerateQueryBeginning();
 
   // Append the predicate (if any).
-  this->MySQLHavePredicate::PreparePredicate(this->query);
+  this->PgSQLHavePredicate::PreparePredicate(this->query);
 
   // Prepare the query against the DB server.
-  this->MySQLHaveArgs::Prepare();
+  this->PgSQLHaveArgs::Prepare();
 
   return ;
 }

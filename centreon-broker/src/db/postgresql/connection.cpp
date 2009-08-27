@@ -19,9 +19,9 @@
 */
 
 #include <cassert>
+#include <libpq-fe.h>
 #include "db/db_exception.h"
 #include "db/postgresql/connection.h"
-#include "db/postgresql/truncate.h"
 #include "logging.h"
 
 using namespace CentreonBroker::DB;
@@ -33,23 +33,30 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
- *  PgSQLConnection copy constructor.
+ *  \brief PgSQLConnection copy constructor.
+ *
+ *  Build a new object by copying data from the given object.
+ *
+ *  \param[in] pgconn Object to copy data from.
  */
 PgSQLConnection::PgSQLConnection(const PgSQLConnection& pgconn)
-  : Connection(Connection::POSTGRESQL)
+  : Connection(pgconn)
 {
-  (void)pgconn;
-  assert(false);
-  return ;
+  // XXX
 }
 
 /**
- *  PgSQL operator= overload.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Copy data of the given object to the current instance.
+ *
+ *  \param[in] pgconn Object to copy data from.
+ *
+ *  \return *this
  */
 PgSQLConnection& PgSQLConnection::operator=(const PgSQLConnection& pgconn)
 {
-  (void)pgconn;
-  assert(false);
+  // XXX
   return (*this);
 }
 
@@ -60,24 +67,30 @@ PgSQLConnection& PgSQLConnection::operator=(const PgSQLConnection& pgconn)
 **************************************/
 
 /**
- *  PgSQLConnection default constructor.
+ *  \brief PgSQLConnection default constructor.
+ *
+ *  Initialize object to its default state.
  */
-PgSQLConnection::PgSQLConnection()
-  : Connection(Connection::POSTGRESQL), pgconn_(NULL)
+PgSQLConnection::PgSQLConnection() throw ()
+  : Connection(Connection::POSTGRESQL), pgconn_(NULL) {}
+
+/**
+ *  \brief PgSQLConnection destructor.
+ *
+ *  Release acquired ressources.
+ */
+PgSQLConnection::~PgSQLConnection() throw ()
 {
+  this->Disconnect();
 }
 
 /**
- *  PgSQLConnection destructor.
- */
-PgSQLConnection::~PgSQLConnection()
-{
-  if (this->pgconn_)
-    this->Disconnect();
-}
-
-/**
- *  Toggle the auto-commit mode of the connection.
+ *  \brief Toggle the auto-commit mode of the connection.
+ *
+ *  Set whether or not the database engine should commit queries automatically.
+ *
+ *  \param[in] activate true if data should be committed automatically, false
+ *                      otherwise.
  */
 void PgSQLConnection::AutoCommit(bool activate)
 {
@@ -94,7 +107,7 @@ void PgSQLConnection::AutoCommit(bool activate)
     CentreonBroker::logging.LogDebug("Deactivating PostgreSQL " \
 				     "auto-commit mode...");
 #endif /* !NDEBUG */
-  // For now we only support autocommit activation, not deactivation
+  // XXX : for now we only support autocommit activation, not deactivation
   res = PQexec(this->pgconn_, "BEGIN;");
   if (!res)
     {
@@ -145,7 +158,12 @@ void PgSQLConnection::Commit()
 }
 
 /**
- *  Connect to the specified PostgreSQL server.
+ *  Connect to the PostgreSQL server.
+ *
+ *  \param[in] host     Host to connect to.
+ *  \param[in] user     User name to use for authentication.
+ *  \param[in] password Password to use for authentication.
+ *  \param[in] db       Database to use.
  */
 void PgSQLConnection::Connect(const std::string& host,
 			      const std::string& user,
@@ -184,24 +202,80 @@ void PgSQLConnection::Connect(const std::string& host,
 /**
  *  Disconnect from the PostgreSQL server.
  */
-void PgSQLConnection::Disconnect()
+void PgSQLConnection::Disconnect() throw ()
 {
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Disconnecting from PostgreSQL server...");
 #endif /* !NDEBUG */
-  assert(this->pgconn_);
-  PQfinish(this->pgconn_);
-  this->pgconn_ = NULL;
+  if (this->pgconn_)
+    {
+      PQfinish(this->pgconn_);
+      this->pgconn_ = NULL;
+    }
   return ;
 }
 
 /**
- *  Get the PostgreSQL TRUNCATE query object.
+ *  Get a DELETE query.
+ *
+ *  \return A new Delete query object.
  */
-Truncate* PgSQLConnection::GetTruncateQuery()
+Delete* PgSQLConnection::GetDelete()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating PostgreSQL DELETE query...");
+#endif /* !NDEBUG */
+  return (new PgSQLDelete(this->pgconn_));
+}
+
+/**
+ *  Get an INSERT query.
+ *
+ *  \return A new Insert query object.
+ */
+Insert* PgSQLConnection::GetInsert()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating PostgreSQL INSERT query...");
+#endif /* !NDEBUG */
+  return (new PgSQLInsert(this->pgconn_));
+}
+
+/**
+ *  Get a SELECT query.
+ *
+ *  \return A new Select query object.
+ */
+Select* PgSQLConnection::GetSelect()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating PostgreSQL SELECT query...");
+#endif /* !NDEBUG */
+  return (new PgSQLSelect(this->pgconn_));
+}
+
+/**
+ *  Get a TRUNCATE query.
+ *
+ *  \return A new Truncate query object.
+ */
+Truncate* PgSQLConnection::GetTruncate()
 {
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Creating PostgreSQL TRUNCATE query...");
 #endif /* !NDEBUG */
   return (new PgSQLTruncate(this->pgconn_));
+}
+
+/**
+ *  Get an UPDATE query.
+ *
+ *  \return A new Update query object.
+ */
+Update* PgSQLConnection::GetUpdate()
+{
+#ifndef NDEBUG
+  CentreonBroker::logging.LogDebug("Creating PostgreSQL UPDATE query...");
+#endif /* !NDEBUG */
+  return (new PgSQLUpdate(this->pgconn_));
 }

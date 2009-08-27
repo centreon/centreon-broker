@@ -29,24 +29,36 @@
 
 # include <libpq-fe.h>
 # include <string>
-# include "db/postgresql/delete.hpp"
-# include "db/postgresql/insert.hpp"
-# include "db/postgresql/update.hpp"
+# include "db/db_exception.h"
+# include "db/postgresql/delete.h"
+# include "db/postgresql/insert.h"
+# include "db/postgresql/select.h"
+# include "db/postgresql/truncate.h"
+# include "db/postgresql/update.h"
 
 namespace              CentreonBroker
 {
   namespace            DB
   {
+    /**
+     *  \class PgSQLConnection connection.h "db/postgresql/connection.h"
+     *  \brief PostgreSQL connection object.
+     *
+     *  This class holds informations about the current PostgreSQL session. It
+     *  is used to generate query objects.
+     *
+     *  \see Connection
+     */
     class              PgSQLConnection : public Connection
     {
      private:
       PGconn*          pgconn_;
-                       PgSQLConnection(const PgSQLConnection& pgconn);
-      PgSQLConnection& operator=(const PgSQLConnection& pgconn);
+                       PgSQLConnection(const PgSQLConnection& pgconn) throw ();
+      PgSQLConnection& operator=(const PgSQLConnection& pgconn) throw ();
 
      public:
-                       PgSQLConnection();
-                       ~PgSQLConnection();
+                       PgSQLConnection() throw (DBException);
+                       ~PgSQLConnection() throw ();
       void             AutoCommit(bool activate = true);
       void             Commit();
       void             Connect(const std::string& host,
@@ -54,24 +66,43 @@ namespace              CentreonBroker
 		               const std::string& password,
                                const std::string& db);
       void             Disconnect();
-      Truncate*        GetTruncateQuery();
+      Delete*          GetDelete();
+      Insert*          GetInsert();
+      Select*          GetSelect();
+      Truncate*        GetTruncate();
+      Update*          GetUpdate();
 
-      template         <typename ObjectType>
-      Delete<ObjectType>* GetDeleteQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational INSERT query.
+       *
+       *  \return A new MappedInsert query object.
+       */
+      template         <typename T>
+      MappedInsert<T>* GetMappedInsert(const MappingGetters<T>& mapping)
       {
-	return (new PgSQLDelete<ObjectType>(this->pgconn_, mapping));
+	return (new PgSQLMappedInsert<T>(this->pgconn_, mapping));
       }
 
-      template         <typename ObjectType>
-      Insert<ObjectType>* GetInsertQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational SELECT query.
+       *
+       *  \return A new MappedSelect query object.
+       */
+      template         <typename T>
+      MappedSelect<T>* GetMappedSelect(const MappingSetter<T>& mapping)
       {
-	return (new PgSQLInsert<ObjectType>(this->pgconn_, mapping));
+	return (new PgSQLMappedSelect(this->pgconn_, mapping));
       }
 
-      template         <typename ObjectType>
-      Update<ObjectType>* GetUpdateQuery(const Mapping<ObjectType>& mapping)
+      /**
+       *  Get an object-relational UPDATE query.
+       *
+       *  \return A new MappedUpdate query object.
+       */
+      template         <typename T>
+      MappedUpdate<T>* GetMappedUpdate(const MappingGetters<T>& mapping)
       {
-	return (new PgSQLUpdate<ObjectType>(this->pgconn_, mapping));
+	return (new PgSQLMappedUpdate<T>(this->pgconn_, mapping));
       }
     };
   }

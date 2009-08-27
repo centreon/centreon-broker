@@ -91,7 +91,8 @@ endif
 # Add PostgreSQL files if PostgreSQL is enabled
 if POSTGRESQL
 cb2db_SOURCES +=	../../src/db/postgresql/connection.cpp		\
-			../../src/db/postgresql/have_fields.cpp		\
+			../../src/db/postgresql/delete.cpp		\
+			../../src/db/postgresql/have_args.cpp		\
 			../../src/db/postgresql/query.cpp		\
 			../../src/db/postgresql/truncate.cpp
 endif
