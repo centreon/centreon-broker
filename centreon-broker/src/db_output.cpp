@@ -513,7 +513,7 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
       std::auto_ptr<DB::MappedInsert<Downtime> >
 	query(this->conn_->GetMappedInsert<Downtime>(downtime_get_mapping));
 
-      query->SetTable("downtime");
+      query->SetTable("scheduled_downtime");
       query->AddField("instance_id");
       query->SetArg(downtime);
       ((DB::HaveArgs*)query.get())->SetArg(
@@ -523,12 +523,36 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
     }
   else if (downtime.type == NEBTYPE_DOWNTIME_START)
     {
-      // XXX : update
+      std::auto_ptr<DB::Update> query(this->conn_->GetUpdate());
+
+      query->SetTable("scheduled_downtime");
+      query->AddField("start_time");
+      query->AddField("was_started");
+      query->SetPredicate(DB::And(DB::Equal(DB::Field("instance_id"),
+                                            DB::Terminal(this->GetInstanceId(
+                                                           downtime.instance))
+                                            ),
+                                  DB::Equal(DB::Field("downtime_id"),
+                                            DB::Terminal(downtime.id))));
+      query->SetArg(time(NULL));
+      query->SetArg(true);
+      query->Execute();
+      this->QueryExecuted();
     }
   else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
            || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
     {
-      // XXX : delete
+      std::auto_ptr<DB::Delete> query(this->conn_->GetDelete());
+
+      query->SetTable("scheduled_downtime");
+      query->SetPredicate(DB::And(DB::Equal(DB::Field("instance_id"),
+                                            DB::Terminal(this->GetInstanceId(
+                                                           downtime.instance))
+                                            ),
+                                  DB::Equal(DB::Field("downtime_id"),
+                                            DB::Terminal(downtime.id))));
+      query->Execute();
+      this->QueryExecuted();
     }
   return ;
 }
