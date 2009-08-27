@@ -23,34 +23,43 @@
 
 # include <boost/thread.hpp>
 # include <fstream>
+# include <memory>
+# include "db/data_member.hpp"
 # include "event_subscriber.h"
 # include "waitable_list.hpp"
 
-namespace                       CentreonBroker
+namespace                        CentreonBroker
 {
   // Forward declarations
-  namespace                     Events
+  namespace                      Events
   {
-    class                       Event;
+    class                        Event;
   }
 
-  class                         FileOutput : private EventSubscriber
+  class                          FileOutput : public EventSubscriber
   {
    private:
-    WaitableList<Events::Event> events_;
-    volatile bool               exit_;
-    std::ofstream               ofs;
-    boost::thread*              thread_;
-                                FileOutput(const FileOutput& fo);
-    FileOutput&                 operator=(const FileOutput& fo);
-    void                        OnEvent(Events::Event* e) throw ();
+    WaitableList<Events::Event>  events_;
+    volatile bool                exit_;
+    std::ofstream                ofs;
+    std::auto_ptr<boost::thread> thread_;
+                                 FileOutput(const FileOutput& fo);
+    FileOutput&                  operator=(const FileOutput& fo);
+    template                     <typename T>
+    void                         Dump(const T& event,
+                                      const DB::DataMember<T> dm[]);
+    void                         OnEvent(Events::Event* e) throw ();
 
    public:
-                                FileOutput();
-                                ~FileOutput();
-    void                        operator()();
-    void                        Close();
-    void                        Open(const char* filename);
+                                 FileOutput();
+                                 ~FileOutput();
+    void                         operator()();
+    void                         Close();
+    void                         Lock();
+    void                         Open(const char* filename);
+    void                         Run();
+    void                         StoreEvents(WaitableList<Events::Event>& ev);
+    void                         Unlock();
   };
 }
 

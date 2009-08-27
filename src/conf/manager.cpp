@@ -240,12 +240,14 @@ static void HandleOutput(std::ifstream& ifs, Output& out)
 
       if ('#' == key[0])
 	; // Skip line
-      else if (!strcmp(key, "db"))
-	out.SetDB(value ? value : "");
-      else if (!strcmp(key, "host"))
-	out.SetHost(value ? value : "");
-      else if (!strcmp(key, "password"))
-	out.SetPassword(value ? value : "");
+      else if (!strcmp(key, "db") && value)
+	out.SetDB(value);
+      else if (!strcmp(key, "dumpfile") && value)
+	out.SetDumpFile(value);
+      else if (!strcmp(key, "host") && value)
+	out.SetHost(value);
+      else if (!strcmp(key, "password") && value)
+	out.SetPassword(value);
       else if (!strcmp(key, "type"))
 	{
 	  if (value)
@@ -262,8 +264,8 @@ static void HandleOutput(std::ifstream& ifs, Output& out)
 	  else
 	    out.SetType(Output::UNKNOWN);
 	}
-      else if (!strcmp(key, "user"))
-	out.SetUser(value ? value : "");
+      else if (!strcmp(key, "user") && value)
+	out.SetUser(value);
       ifs.getline(buffer, sizeof(buffer));
     }
   return ;
@@ -559,6 +561,7 @@ void Manager::Update()
       CentreonBroker::logging.LogDebug("Adding new output object...");
 #endif /* !NDEBUG */
       dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
+      dbo->SetDumpFile(output.GetDumpFile());
       dbo->SetQueryCommitInterval(output.GetQueryCommitInterval());
       dbo->SetTimeCommitInterval(output.GetTimeCommitInterval());
       dbo->Init(output.GetHost(),

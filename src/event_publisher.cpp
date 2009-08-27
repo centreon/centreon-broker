@@ -154,7 +154,25 @@ void EventPublisher::Subscribe(EventSubscriber* es)
 {
   boost::unique_lock<boost::mutex> lock(this->subscribersm_);
 
-  this->subscribers_.push_front(es);
+  this->subscribers_.push_back(es);
+  return ;
+}
+
+/**
+ *  \brief Delete a subscriber and add another.
+ *
+ *  Atomically exchange two subscribers. The first is removed and the second is
+ *  added to the subscribers list.
+ *
+ *  \param[in] from Subscriber to remove.
+ *  \param[in] to   Subscriber to add.
+ */
+void EventPublisher::Subscribe(EventSubscriber* from, EventSubscriber* to)
+{
+  boost::unique_lock<boost::mutex> lock(this->subscribersm_);
+
+  this->subscribers_.remove(from);
+  this->subscribers_.push_back(to);
   return ;
 }
 

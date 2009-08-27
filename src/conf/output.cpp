@@ -64,6 +64,7 @@ Output& Output::operator=(const Output& output)
 {
   this->connection_retry_interval_ = output.connection_retry_interval_;
   this->db_                        = output.db_;
+  this->dumpfile_                  = output.dumpfile_;
   this->host_                      = output.host_;
   this->name_                      = output.name_;
   this->password_                  = output.password_;
@@ -87,6 +88,7 @@ bool Output::operator==(const Output& output) const
   return ((this->connection_retry_interval_
            == output.connection_retry_interval_)
           && (this->db_ == output.db_)
+	  && (this->dumpfile_ == output.dumpfile_)
           && (this->host_ == output.host_)
           && (this->name_ == output.name_)
           && (this->password_ == output.password_)
@@ -150,6 +152,19 @@ unsigned int Output::GetConnectionRetryInterval() const throw ()
 const std::string& Output::GetDB() const throw ()
 {
   return (this->db_);
+}
+
+/**
+ *  Get the path of the file where events should be dumped in case of
+ *  error/exit.
+ *
+ *  \return Path of the file where events should be dumped.
+ *
+ *  \see SetDumpFile
+ */
+const std::string& Output::GetDumpFile() const throw ()
+{
+  return (this->dumpfile_);
 }
 
 /**
@@ -256,6 +271,20 @@ void Output::SetConnectionRetryInterval(unsigned int cri) throw ()
 void Output::SetDB(const std::string& db)
 {
   this->db_ = db;
+  return ;
+}
+
+/**
+ *  Set the path of the file where events should be dumped in case of
+ *  error/exit.
+ *
+ *  \param[in] df Path of the file where events should be dumped.
+ *
+ *  \see GetDumpFile
+ */
+void Output::SetDumpFile(const std::string& df)
+{
+  this->dumpfile_ = df;
   return ;
 }
 

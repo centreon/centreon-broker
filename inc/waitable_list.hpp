@@ -164,6 +164,27 @@ namespace                     CentreonBroker
     }
 
     /**
+     *  Get the internal list of objects.
+     *
+     *  \return The internal list of objects.
+     */
+    std::list<T*>&            List()
+    {
+      return (this->list_);
+    }
+
+    /**
+     *  \brief Lock the internal mutex.
+     *
+     *  This method can be useful when directly accessing the internal list.
+     */
+    void                      Lock()
+    {
+      this->mutex_.lock();
+      return ;
+    }
+
+    /**
      *  \brief Wait until an element is received or until the timeout occur.
      *
      *  Wait on the list until an element is received through Add() or until
@@ -191,6 +212,19 @@ namespace                     CentreonBroker
 	  this->list_.pop_front();
 	}
       return (t);
+    }
+
+    /**
+     *  \brief Unlock the mutex.
+     *
+     *  Unlock the internal mutex previously locked by a call to Lock().
+     *
+     *  \see Lock
+     */
+    void                      Unlock()
+    {
+      this->mutex_.unlock();
+      return ;
     }
 
     /**

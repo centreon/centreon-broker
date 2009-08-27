@@ -34,10 +34,7 @@ using namespace CentreonBroker;
  *
  *  Subscribe to the EventPublisher.
  */
-EventSubscriber::EventSubscriber()
-{
-  EventPublisher::GetInstance().Subscribe(this);
-}
+EventSubscriber::EventSubscriber() {}
 
 /**
  *  EventSubscriber copy constructor.

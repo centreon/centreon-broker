@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <errmsg.h>
 #include "db/db_exception.h"
 #include "db/mysql/query.h"
 #include "logging.h"
@@ -98,9 +99,20 @@ void MySQLQuery::Execute()
       logging.LogDebug("Executing MySQL prepared statement...");
 #endif /* !NDEBUG */
       if (mysql_stmt_execute(this->stmt))
-	throw (DBException(mysql_stmt_errno(this->stmt),
-                           DBException::QUERY_EXECUTION,
-                           mysql_stmt_error(this->stmt)));
+	{
+	  int ec;
+
+	  ec = mysql_stmt_errno(this->stmt);
+	  if ((CR_SERVER_GONE_ERROR == ec)
+              || (CR_SERVER_LOST == ec))
+            throw (DBException(ec,
+                               DBException::CONNECTION,
+                               mysql_stmt_error(this->stmt)));
+          else
+            throw (DBException(ec,
+                               DBException::QUERY_EXECUTION,
+                               mysql_stmt_error(this->stmt)));
+	}
     }
   else
     {
@@ -108,9 +120,20 @@ void MySQLQuery::Execute()
       logging.LogDebug("Executing MySQL standard query...");
 #endif /* !NDEBUG */
       if (mysql_query(this->mysql, this->query.c_str()))
-	throw (DBException(mysql_errno(this->mysql),
-                           DBException::QUERY_EXECUTION,
-                           mysql_error(this->mysql)));
+        {
+	  int ec;
+
+	  ec = mysql_errno(this->mysql);
+          if ((CR_SERVER_GONE_ERROR == ec)
+              || (CR_SERVER_LOST == ec))
+            throw (DBException(ec,
+                               DBException::CONNECTION,
+                               mysql_error(this->mysql)));
+          else
+            throw (DBException(ec,
+                               DBException::QUERY_EXECUTION,
+                               mysql_error(this->mysql)));
+        }
     }
   return ;
 }

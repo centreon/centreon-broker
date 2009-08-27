@@ -43,6 +43,7 @@ namespace          CentreonBroker
       {
 	UNKNOWN = 0,
 	COMMIT,
+	CONNECTION,
 	INITIALIZATION,
 	PREDICATE,
 	QUERY_EXECUTION,
