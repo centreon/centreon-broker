@@ -22,7 +22,6 @@
 # define DB_POSTGRESQL_TRUNCATE_H_
 
 # include <libpq-fe.h>
-# include "db/db_exception.h"
 # include "db/postgresql/query.h"
 # include "db/truncate.h"
 
@@ -30,19 +29,26 @@ namespace            CentreonBroker
 {
   namespace          DB
   {
+    /**
+     *  \class PgSQLTruncate truncate.h "db/postgresql/truncate.h"
+     *
+     *  PostgreSQL TRUNCATE query.
+     *
+     *  \see Truncate
+     */
     class            PgSQLTruncate : public Truncate, public PgSQLQuery
     {
      private:
-                     PgSQLTruncate(const PgSQLTruncate& pgtruncate) throw ();
-      PgSQLTruncate& operator=(const PgSQLTruncate& pgtruncate) throw ();
+                     PgSQLTruncate(const PgSQLTruncate& pgtruncate);
+      PgSQLTruncate& operator=(const PgSQLTruncate& pgtruncate);
 
      public:
                      PgSQLTruncate(PGconn* pgconn);
                      ~PgSQLTruncate();
       void           Execute();
-      void           Prepare() throw (DBException);
+      void           Prepare();
     };
   }
 }
 
-#endif /* !DB_MYSQL_TRUNCATE_H_ */
+#endif /* !DB_POSTGRESQL_TRUNCATE_H_ */

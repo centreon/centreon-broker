@@ -93,8 +93,12 @@ if POSTGRESQL
 cb2db_SOURCES +=	../../src/db/postgresql/connection.cpp		\
 			../../src/db/postgresql/delete.cpp		\
 			../../src/db/postgresql/have_args.cpp		\
+			../../src/db/postgresql/have_predicate.cpp	\
+			../../src/db/postgresql/insert.cpp		\
 			../../src/db/postgresql/query.cpp		\
-			../../src/db/postgresql/truncate.cpp
+			../../src/db/postgresql/select.cpp		\
+			../../src/db/postgresql/truncate.cpp		\
+			../../src/db/postgresql/update.cpp
 endif
 
 # Add TLS files is TLS is enabled

@@ -77,7 +77,7 @@ void MySQLTruncate::BuildQuery()
 **************************************/
 
 /**
- *  \brief MySQLTruncate default constructor.
+ *  \brief MySQLTruncate constructor.
  *
  *  Initialize the MySQL TRUNCATE query.
  *
