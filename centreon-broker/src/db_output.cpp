@@ -585,7 +585,7 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
   std::auto_ptr<DB::MappedInsert<HostGroup> >
     query(this->conn_->GetMappedInsert<HostGroup>(host_group_get_mapping));
 
-  query->SetTable("host_hostgroup");
+  query->SetTable("hostgroup");
   query->SetArg(hg);
   query->Execute();
   this->QueryExecuted();
@@ -682,9 +682,26 @@ void DBOutput::ProcessService(const Service& service)
 #ifndef NDEBUG
   logging.LogDebug("Processing Service event...");
 #endif /* !NDEBUG */
-  this->service_stmt_->SetArg(service);
+  // When processing the service definition, we have to fetch the corresponding
+  // host_id before inserting it.
+  std::auto_ptr<DB::Select> query(this->conn_->GetSelect());
+  Service myservice(service);
+
+  query->SetTable("host");
+  query->AddField("host_id");
+  query->SetPredicate(DB::And(DB::Equal(DB::Field("instance_id"),
+                                        DB::Terminal(this->GetInstanceId(
+                                                       myservice.instance))),
+                              DB::Equal(DB::Field("host_name"),
+                                        DB::Terminal(myservice.host.c_str()))));
+  query->Execute();
+  if (query->Next())
+    myservice.host_id = query->GetInt();
+  query.reset();
+
+  this->service_stmt_->SetArg(myservice);
   ((DB::HaveArgs*)this->service_stmt_)->SetArg(
-    this->GetInstanceId(service.instance));
+    this->GetInstanceId(myservice.instance));
   this->service_stmt_->Execute();
   this->QueryExecuted();
   return ;
@@ -869,40 +886,44 @@ void DBOutput::operator()()
 	  break ;
 	}
 
+      // Create a dump file, it might be a while before we can reconnect to
+      // the DB server.
+      FileOutput dumpfile;
+      bool switched;
+
+      switched = false;
+      try
+ 	{
+	  if (!this->dumpfile_.empty())
+	    {
+	      dumpfile.Open(this->dumpfile_.c_str());
+	      dumpfile.Lock();
+	      dumpfile.StoreEvents(this->events_);
+	      EventPublisher::GetInstance().Subscribe(this, &dumpfile);
+	      switched = true;
+	      dumpfile.StoreEvents(this->events_);
+	      dumpfile.Unlock();
+	      dumpfile.Run();
+	    }
+	}
+      catch (std::exception& e)
+	{
+	  logging.LogError("Error while using dump file...");
+	  logging.LogError(e.what());
+	  dumpfile.Close();
+	}
+      catch (...)
+	{
+	  logging.LogError("Unknown error while using dump file...");
+	  dumpfile.Close();
+	}
+
       // A DB::DBException occured. Those are recoverable so try to connect
       // again until it works.
       while (1)
 	{
 	  // Free connection ressources
 	  this->Disconnect();
-
-	  // Create a dump file, it might be a while before we can reconnect to
-	  // the DB server.
-	  FileOutput dumpfile;
-
-	  try
-	    {
-	      if (!this->dumpfile_.empty())
-		{
-		  dumpfile.Open(this->dumpfile_.c_str());
-		  dumpfile.Lock();
-		  dumpfile.StoreEvents(this->events_);
-		  EventPublisher::GetInstance().Subscribe(this, &dumpfile);
-		  dumpfile.StoreEvents(this->events_);
-		  dumpfile.Unlock();
-		  dumpfile.Run();
-		}
-	    }
-	  catch (std::exception& e)
-	    {
-	      logging.LogError("Error while opening dump file...");
-	      logging.LogError(e.what());
-	      dumpfile.Close();
-	    }
-	  catch (...)
-	    {
-	      dumpfile.Close();
-	    }
 
 	  try
 	    {
@@ -916,14 +937,17 @@ void DBOutput::operator()()
 		{
 		  logging.LogInfo("Trying connection to DB server again...");
 		  this->Connect();
+		  // Restore original state
+		  // XXX : what if dumpfile is not working ?
+		  if (switched)
+		    {
+		      this->events_.Lock();
+		      EventPublisher::GetInstance().Subscribe(&dumpfile, this);
+		      this->events_.Unlock();
+		    }
 		}
 	      break ;
 
-	      // Restore original state
-	      // XXX : what if dumpfile is not working ?
-	      this->events_.Lock();
-	      EventPublisher::GetInstance().Subscribe(&dumpfile, this);
-	      this->events_.Unlock();
 	    }
 	  // If an exception occur, try to sleep a bit then try again
 	  catch (...)

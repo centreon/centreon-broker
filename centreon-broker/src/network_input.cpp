@@ -19,6 +19,7 @@
 */
 
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include "client_acceptor.h"
 #include "event_publisher.h"
@@ -43,6 +44,38 @@ using namespace CentreonBroker::Events;
 
 /**************************************
 *                                     *
+*           Static Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Parse a custom var and if matching set the corresponding host_id.
+ */
+static void CustomVarToHost(Host& host, const char* custom_var)
+{
+  int skip;
+
+  skip = strcspn(custom_var, ":");
+  if (!strncmp(custom_var, "HOST_ID", skip) && (custom_var[skip] == ':'))
+    host.host_id = strtol(strrchr(custom_var + skip, ':') + 1, NULL, 0);
+  return ;
+}
+
+/**
+ *  Parse a custom var and if matching set the corresponding service_id.
+ */
+static void CustomVarToService(Service& service, const char* custom_var)
+{
+  int skip;
+
+  skip = strcspn(custom_var, ":");
+  if (!strncmp(custom_var, "SERVICE_ID", skip) && (custom_var[skip] == ':'))
+    service.service_id = strtol(strrchr(custom_var + skip, ':') + 1, NULL, 0);
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
@@ -64,6 +97,7 @@ struct KeySetter
     short (Event::* set_short);
     std::string (Event::* set_string);
     time_t (Event::* set_timet);
+    void (* set_undefined)(Event&, const char*);
   } setter;
 
   KeySetter() : key(0), type('\0')
@@ -80,6 +114,8 @@ struct KeySetter
   { this->setter.set_string = ss; }
   KeySetter(int k, time_t (Event::* st)) : key(k), type('t')
   { this->setter.set_timet = st; }
+  KeySetter(int k, void (* su)(Event&, const char*)) : key(k), type('u')
+  { this->setter.set_undefined = su; }
 };
 
 /**
@@ -143,6 +179,9 @@ static inline void HandleObject(const std::string& instance,
                                                                  NULL,
                                                                  0);
                 break ;
+               case 'u':
+		key_setters[i].setter.set_undefined(*event, value_str);
+		break ;
                default:
                 logging.LogError("Error while parsing protocol.");
                 assert(false);
@@ -179,6 +218,8 @@ NetworkInput::NetworkInput(ClientAcceptor* parent, IO::Stream* stream)
 #ifndef NDEBUG
   logging.LogDebug("New connection accepted, launching client thread...");
 #endif /* !NDEBUG */
+  boost::unique_lock<boost::mutex> lock(this->threadm_);
+
   this->buffer_[0] = '\0';
   this->thread_ = new boost::thread(boost::ref(*this));
 }
@@ -325,6 +366,8 @@ void NetworkInput::HandleHost()
         &Host::action_url),
       KeySetter<Host>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
         &Host::active_checks_enabled),
+      KeySetter<Host>(NDO_DATA_CUSTOMVARIABLE,
+        &CustomVarToHost),
       KeySetter<Host>(NDO_DATA_DISPLAYNAME,
         &Host::display_name),
       KeySetter<Host>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
@@ -848,6 +891,8 @@ void NetworkInput::HandleService()
         &Service::action_url),
       KeySetter<Service>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
         &Service::active_checks_enabled),
+      KeySetter<Service>(NDO_DATA_CUSTOMVARIABLE,
+        &CustomVarToService),
       KeySetter<Service>(NDO_DATA_DISPLAYNAME,
         &Service::display_name),
       KeySetter<Service>(NDO_DATA_FIRSTNOTIFICATIONDELAY,

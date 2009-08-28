@@ -325,7 +325,7 @@ void MySQLHaveArgs::SetArg(const std::string& arg)
 	  mybind->buffer_type = MYSQL_TYPE_STRING;
 	  mybind->length = &(mybind->buffer_length);
 	}
-      mybind->buffer_length = arg.size() + 1;
+      mybind->buffer_length = arg.size();
       mybind->buffer = const_cast<char*>(arg.c_str());
       this->arg_++;
     }

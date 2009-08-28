@@ -117,7 +117,7 @@ void MySQLHavePredicate::Visit(const Terminal& terminal)
       ss << terminal.GetShort();
       break ;
      case 'S':
-      ss << terminal.GetString();
+      ss << '"' << terminal.GetString() << '"';
       break ;
      case 't':
       ss << terminal.GetTime();

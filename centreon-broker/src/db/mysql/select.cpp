@@ -162,11 +162,14 @@ void MySQLSelect::Execute()
   this->MySQLHaveArgs::Execute();
 
   // Extract the result set
-  this->result_.std.res = mysql_use_result(this->mysql);
-  if (!this->result_.std.res)
-    throw (DBException(mysql_errno(this->mysql),
-                       DBException::QUERY_EXECUTION,
-                       mysql_error(this->mysql)));
+  if (!this->stmt)
+    {
+      this->result_.std.res = mysql_use_result(this->mysql);
+      if (!this->result_.std.res)
+        throw (DBException(mysql_errno(this->mysql),
+                           DBException::QUERY_EXECUTION,
+                           mysql_error(this->mysql)));
+    }
 
   return ;
 }
@@ -229,7 +232,17 @@ int MySQLSelect::GetInt()
       ret = *(int*)(this->result_.stmt[this->current_].buffer);
     }
   else
-    ret = *(int*)(this->result_.std.row[this->current_]);
+    {
+      unsigned long length;
+      char* buffer;
+
+      length = mysql_fetch_lengths(this->result_.std.res)[this->current_];
+      buffer = new char[length + 1];
+      memcpy(buffer, this->result_.std.row[this->current_], length);
+      buffer[length] = '\0';
+      ret = strtol(buffer, NULL, 0);
+      delete [] buffer;
+    }
   this->current_++;
   return (ret);
 }

@@ -247,6 +247,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   `flap_detection_on_unreachable` smallint default NULL,
   `flap_detection_on_up` smallint NOT NULL default '0',
   `have_2d_coords` smallint NOT NULL default '0',
+  `host_id` int NOT NULL default '0',                   -- not in Merlin, fetched from custom vars
   `notification_interval` double NOT NULL default '0',  -- mediumint(9)
   `notify_on_down` smallint NOT NULL default '0',       -- notified_on_down int
   `notify_on_downtime` smallint NOT NULL default '0',
