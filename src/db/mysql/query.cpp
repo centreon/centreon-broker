@@ -118,6 +118,7 @@ void MySQLQuery::Execute()
     {
 #ifndef NDEBUG
       logging.LogDebug("Executing MySQL standard query...");
+      logging.LogDebug(this->query.c_str());
 #endif /* !NDEBUG */
       if (mysql_query(this->mysql, this->query.c_str()))
         {

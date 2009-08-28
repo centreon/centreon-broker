@@ -46,6 +46,7 @@ void Service::InternalCopy(const Service& s)
   this->notified_on_critical       = s.notified_on_critical;
   this->notified_on_unknown        = s.notified_on_unknown;
   this->notified_on_warning        = s.notified_on_warning;
+  this->service_id                 = s.service_id;
   this->stalk_on_critical          = s.stalk_on_critical;
   this->stalk_on_unknown           = s.stalk_on_unknown;
   this->stalk_on_warning           = s.stalk_on_warning;
@@ -68,6 +69,7 @@ void Service::ZeroInitialize()
   this->notified_on_critical = false;
   this->notified_on_unknown = false;
   this->notified_on_warning = false;
+  this->service_id = 0;
   this->stalk_on_critical = 0;
   this->stalk_on_ok = 0;
   this->stalk_on_unknown = 0;

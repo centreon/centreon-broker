@@ -46,6 +46,7 @@ namespace                CentreonBroker
       bool               notified_on_critical;
       bool               notified_on_unknown;
       bool               notified_on_warning;
+      int                service_id;
       short              stalk_on_critical;
       short              stalk_on_ok;
       short              stalk_on_unknown;

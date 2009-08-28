@@ -45,6 +45,7 @@ void HostService::InternalCopy(const HostService& hs)
   this->first_notification_delay     = hs.first_notification_delay;
   this->freshness_threshold          = hs.freshness_threshold;
   this->high_flap_threshold          = hs.high_flap_threshold;
+  this->host_id                      = hs.host_id;
   this->icon_image                   = hs.icon_image;
   this->icon_image_alt               = hs.icon_image_alt;
   this->low_flap_threshold           = hs.low_flap_threshold;
@@ -76,6 +77,7 @@ HostService::HostService()
     first_notification_delay(0.0),
     freshness_threshold(0.0),
     high_flap_threshold(0.0),
+    host_id(0),
     low_flap_threshold(0.0),
     notification_interval(0.0),
     notify_on_downtime(0),
