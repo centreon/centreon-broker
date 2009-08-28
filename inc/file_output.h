@@ -24,6 +24,7 @@
 # include <boost/thread.hpp>
 # include <fstream>
 # include <memory>
+# include <string>
 # include "db/data_member.hpp"
 # include "event_subscriber.h"
 # include "waitable_list.hpp"
@@ -39,16 +40,22 @@ namespace                        CentreonBroker
   class                          FileOutput : public EventSubscriber
   {
    private:
+    unsigned int                 current_;
     WaitableList<Events::Event>  events_;
     volatile bool                exit_;
-    std::ofstream                ofs;
+    unsigned int                 max_size_;
+    std::ofstream                ofs_;
+    std::string                  path_;
     std::auto_ptr<boost::thread> thread_;
                                  FileOutput(const FileOutput& fo);
     FileOutput&                  operator=(const FileOutput& fo);
     template                     <typename T>
     void                         Dump(const T& event,
-                                      const DB::DataMember<T> dm[]);
+                                      const DB::DataMember<T> dm[],
+                                      unsigned int& wb);
+    void                         FileClose();
     void                         OnEvent(Events::Event* e) throw ();
+    void                         OpenNext();
 
    public:
                                  FileOutput();
@@ -56,8 +63,9 @@ namespace                        CentreonBroker
     void                         operator()();
     void                         Close();
     void                         Lock();
-    void                         Open(const char* filename);
+    void                         Open(const std::string& base_path);
     void                         Run();
+    void                         SetMaxSize(unsigned int max_size) throw ();
     void                         StoreEvents(WaitableList<Events::Event>& ev);
     void                         Unlock();
   };

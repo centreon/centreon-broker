@@ -20,6 +20,8 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
+#include <dirent.h>
 #include "event_publisher.h"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
@@ -75,35 +77,65 @@ FileOutput& FileOutput::operator=(const FileOutput& fo)
  *  Dump an event.
  */
 template <typename T>
-void FileOutput::Dump(const T& event, const DB::DataMember<T> dm[])
+void FileOutput::Dump(const T& event,
+                      const DB::DataMember<T> dm[],
+                      unsigned int& wb)
 {
-  this->ofs << event.GetType() << std::endl
-            << event.instance << std::endl;
+  int type;
+
+  type = event.GetType();
+  this->ofs_.write((const char*)&type, sizeof(type));
+  this->ofs_.write(event.instance.c_str(), event.instance.size() + 1);
   for (unsigned int i = 0; dm[i].name; i++)
     {
       switch (dm[i].type)
 	{
          case 'b':
-	  this->ofs << event.*dm[i].value.b << std::endl;
+	   this->ofs_.write((const char*)&(event.*dm[i].value.b),
+                            sizeof(bool));
+	  wb += sizeof(bool);
 	  break ;
          case 'd':
-	  this->ofs << event.*dm[i].value.d << std::endl;
+	   this->ofs_.write((const char*)&(event.*dm[i].value.d),
+                            sizeof(double));
+	  wb += sizeof(double);
 	  break ;
          case 'i':
-	  this->ofs << event.*dm[i].value.i << std::endl;
+	   this->ofs_.write((const char*)&(event.*dm[i].value.i),
+                            sizeof(int));
+	  wb += sizeof(int);
 	  break ;
          case 's':
-	  this->ofs << event.*dm[i].value.s << std::endl;
+	   this->ofs_.write((const char*)&(event.*dm[i].value.s),
+                            sizeof(short));
+	  wb += sizeof(short);
 	  break ;
          case 'S':
-	  this->ofs << event.*dm[i].value.S << std::endl;
-	  break ;
+	  {
+	    unsigned int size;
+
+	    size = (event.*dm[i].value.S).size() + 1;
+	    this->ofs_.write((event.*dm[i].value.S).c_str(), size);
+	    wb += size;
+	    break ;
+	  }
          case 't':
-	  this->ofs << event.*dm[i].value.t << std::endl;
+	   this->ofs_.write((const char*)&(event.*dm[i].value.t),
+                            sizeof(time_t));
+	  wb += sizeof(time_t);
 	  break ;
 	}
     }
-  this->ofs << std::endl;
+  return ;
+}
+
+/**
+ *  Close the internal file handle.
+ */
+void FileOutput::FileClose()
+{
+  if (this->ofs_.is_open())
+    this->ofs_.close();
   return ;
 }
 
@@ -127,6 +159,24 @@ void FileOutput::OnEvent(Events::Event* e) throw ()
   return ;
 }
 
+/**
+ *  Open the next file.
+ */
+void FileOutput::OpenNext()
+{
+  std::stringstream ss;
+
+  ss << this->path_ << this->current_ + 1;
+#ifndef NDEBUG
+  logging.LogDebug("Opening file...");
+  logging.LogDebug(ss.str().c_str());
+#endif /* !NDEBUG */
+  this->ofs_.open(ss.str().c_str());
+  if (this->ofs_.fail())
+    throw (Exception(0, "Could not open output file"));
+  return ;
+}
+
 /**************************************
 *                                     *
 *            Public Methods           *
@@ -136,7 +186,7 @@ void FileOutput::OnEvent(Events::Event* e) throw ()
 /**
  *  FileOutput default constructor.
  */
-FileOutput::FileOutput() : exit_(true) {}
+FileOutput::FileOutput() : exit_(true), max_size_(0) {}
 
 /**
  *  FileOutput destructor.
@@ -154,6 +204,9 @@ void FileOutput::operator()()
 {
   try
     {
+      unsigned int wb;
+
+      wb = 0;
       // While thread has not been canceled
       while (!this->exit_)
 	{
@@ -168,62 +221,74 @@ void FileOutput::operator()()
                  case Events::Event::ACKNOWLEDGEMENT:
                   this->Dump<Events::Acknowledgement>(
                     *static_cast<Events::Acknowledgement*>(e),
-                    acknowledgement_dm);
+                    acknowledgement_dm,
+                    wb);
                   break ;
                  case Events::Event::COMMENT:
                   this->Dump<Events::Comment>(
                     *static_cast<Events::Comment*>(e),
-                    comment_dm);
+                    comment_dm,
+                    wb);
                   break ;
                  case Events::Event::CONNECTION:
                   this->Dump<Events::Connection>(
                     *static_cast<Events::Connection*>(e),
-                    connection_dm);
+                    connection_dm,
+                    wb);
                   break ;
                  case Events::Event::CONNECTIONSTATUS:
                   this->Dump<Events::ConnectionStatus>(
                     *static_cast<Events::ConnectionStatus*>(e),
-                    connection_status_dm);
+                    connection_status_dm,
+                    wb);
                   break ;
                  case Events::Event::DOWNTIME:
                   this->Dump<Events::Downtime>(
                     *static_cast<Events::Downtime*>(e),
-                    downtime_dm);
+                    downtime_dm,
+                    wb);
                   break ;
                  case Events::Event::HOST:
                   this->Dump<Events::Host>(
                     *static_cast<Events::Host*>(e),
-                    host_dm);
+                    host_dm,
+                    wb);
                   break ;
                  case Events::Event::HOSTGROUP:
                   this->Dump<Events::HostGroup>(
                     *static_cast<Events::HostGroup*>(e),
-                    host_group_dm);
+                    host_group_dm,
+                    wb);
                   break ;
                  case Events::Event::HOSTSTATUS:
                   this->Dump<Events::HostStatus>(
                     *static_cast<Events::HostStatus*>(e),
-                    host_status_dm);
+                    host_status_dm,
+                    wb);
                   break ;
                  case Events::Event::LOG:
                   this->Dump<Events::Log>(
                     *static_cast<Events::Log*>(e),
-                    log_dm);
+                    log_dm,
+                    wb);
                   break ;
                  case Events::Event::PROGRAMSTATUS:
                   this->Dump<Events::ProgramStatus>(
                     *static_cast<Events::ProgramStatus*>(e),
-                    program_status_dm);
+                    program_status_dm,
+                    wb);
                   break ;
                  case Events::Event::SERVICE:
                   this->Dump<Events::Service>(
                     *static_cast<Events::Service*>(e),
-                    service_dm);
+                    service_dm,
+                    wb);
                   break ;
                  case Events::Event::SERVICESTATUS:
                   this->Dump<Events::ServiceStatus>(
                     *static_cast<Events::ServiceStatus*>(e),
-                    service_status_dm);
+                    service_status_dm,
+                    wb);
                   break ;
                  default:
                   logging.LogInfo("Invalid type of event processed");
@@ -269,15 +334,10 @@ void FileOutput::Close()
       this->thread_->join();
       this->thread_.reset();
     }
-  if (this->ofs.is_open())
-    {
-#ifndef NDEBUG
-      logging.LogDebug("Closing file...");
-#endif /* !NDEBUG */
 
-      // Close file stream
-      this->ofs.close();
-    }
+  // Close the file
+  this->FileClose();
+
   return ;
 }
 
@@ -301,18 +361,55 @@ void FileOutput::Lock()
  *
  *  \param[in] filename Path of the file to open.
  */
-void FileOutput::Open(const char* filename)
+void FileOutput::Open(const std::string& base_path)
 {
-  assert(filename);
-#ifndef NDEBUG
-  logging.LogDebug("Opening file...");
-  logging.LogDebug(filename);
-#endif /* !NDEBUG */
+  std::string base_dir;
+  std::string base_file;
 
-  // Open file
-  this->ofs.open(filename);
-  if (this->ofs.fail())
-    throw (Exception(0, "Could not open output file."));
+  // Copy base path
+  this->path_ = base_path;
+
+  // Extract bases
+  {
+    size_t size;
+
+    size = this->path_.find_last_of('/');
+    if (size == std::string::npos)
+      base_dir = "./";
+    else
+      {
+	base_dir = this->path_;
+	base_dir.resize(size);
+	base_file = this->path_.substr(size + 1);
+      }
+  }
+
+  // Browse directory
+  this->current_ = 0;
+  {
+    DIR* dir;
+    struct dirent* entry;
+
+    dir = opendir(base_dir.c_str());
+    if (!dir)
+      throw (Exception(errno, strerror(errno)));
+    while ((entry = readdir(dir)))
+      {
+	if (!strncmp(entry->d_name, base_file.c_str(), base_file.size()))
+	  {
+	    char* err;
+	    unsigned int val;
+
+	    val = strtoul(entry->d_name + base_file.size(), &err, 0);
+	    if (*err != '\0' && val > this->current_)
+	      this->current_ = val;
+	  }
+      }
+    closedir(dir);
+  }
+
+  // Really open the proper file
+  this->OpenNext();
 
   return ;
 }

@@ -896,6 +896,9 @@ void DBOutput::operator()()
  	{
 	  if (!this->dumpfile_.empty())
 	    {
+#ifndef NDEBUG
+	      logging.LogDebug("Opening dump file...");
+#endif /* !NDEBUG */
 	      dumpfile.Open(this->dumpfile_.c_str());
 	      dumpfile.Lock();
 	      dumpfile.StoreEvents(this->events_);
