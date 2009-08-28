@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_MYSQL_HAVE_PREDICATE_H_
-# define DB_MYSQL_HAVE_PREDICATE_H_
+#ifndef DB_POSTGRESQL_HAVE_PREDICATE_H_
+# define DB_POSTGRESQL_HAVE_PREDICATE_H_
 
 # include <string>
 # include "db/have_predicate.h"
@@ -30,13 +30,13 @@ namespace                 CentreonBroker
   namespace               DB
   {
     /**
-     *  \class MySQLHavePredicate have_predicate.h "db/mysql/have_predicate.h"
-     *  \brief MySQL query with a predicate.
+     *  \class PgSQLHavePredicate have_predicate.h "db/postgresql/have_predicate.h"
+     *  \brief PostgreSQL query with a predicate.
      *
      *  This class subclass PredicateVisitor to expand the predicate set in the
-     *  query to a MySQL-specific string.
+     *  query to a PostgreSQL-specific string.
      */
-    class                 MySQLHavePredicate : virtual public HavePredicate,
+    class                 PgSQLHavePredicate : virtual public HavePredicate,
                                                private PredicateVisitor
     {
      private:
@@ -49,17 +49,16 @@ namespace                 CentreonBroker
 
      protected:
       unsigned int        placeholders;
-                          MySQLHavePredicate();
-                          MySQLHavePredicate(const MySQLHavePredicate& myhp);
-      MySQLHavePredicate& operator=(const MySQLHavePredicate& myhp);
+                          PgSQLHavePredicate();
+                          PgSQLHavePredicate(const PgSQLHavePredicate& pghp);
+      virtual             ~PgSQLHavePredicate();
+      PgSQLHavePredicate& operator=(const PgSQLHavePredicate& pghp);
 
      public:
-      // XXX : move to protected
-      virtual             ~MySQLHavePredicate();
       void                PreparePredicate(std::string& query);
       void                ProcessPredicate(std::string& query);
     };
   }
 }
 
-#endif /* !DB_MYSQL_HAVE_PREDICATE_H_ */
+#endif /* !DB_POSTGRESQL_HAVE_PREDICATE_H_ */
