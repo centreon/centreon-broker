@@ -36,6 +36,7 @@
 #include "events/event.h"
 #include "events/host.h"
 #include "events/host_status.h"
+#include "file_input.h"
 #include "file_output.h"
 #include "logging.h"
 #include "nagios/broker.h"
@@ -842,8 +843,46 @@ void DBOutput::operator()()
 	  this->PrepareStatements();
 
 	  // Load historical data from dumpfile
-	  // XXX
+	  if (!this->dumpfile_.empty())
+	    {
+#ifndef NDEBUG
+	      logging.LogDebug("Trying to open dump file...");
+#endif /* !NDEBUG */
+	      FileInput fileinput;
+	      bool opened;
+	      std::stringstream ss;
 
+	      try
+		{
+		  fileinput.Open(this->dumpfile_);
+#ifndef NDEBUG
+		  logging.LogDebug("Dump file opened.");
+#endif /* !NDEBUG */
+		  opened = true;
+		}
+	      catch (...)
+		{
+		  opened = false;
+		}
+	      if (opened)
+		{
+#ifndef NDEBUG
+		  logging.LogDebug("Loading historical data from dumped file...");
+#endif /* !NDEBUG */
+		  Event* event;
+
+		  while ((event = fileinput.NextEvent()))
+		    {
+		      event->AddReader(this);
+		      this->ProcessEvent(event);
+		    }
+		  fileinput.Close();
+		}
+	    }
+
+#ifndef NDEBUG
+	  logging.LogDebug("Launching event processing loop...");
+#endif /* !NDEBUG */
 	  // While no exception happens (like when connection to DB is dropped)
           while (1)
             {
