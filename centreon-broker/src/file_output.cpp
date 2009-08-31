@@ -85,7 +85,10 @@ void FileOutput::Dump(const T& event,
 
   type = event.GetType();
   this->ofs_.write((const char*)&type, sizeof(type));
-  this->ofs_.write(event.instance.c_str(), event.instance.size() + 1);
+  type = event.instance.size();
+  this->ofs_.write((const char*)&type, sizeof(type));
+  this->ofs_.write(event.instance.c_str(), type);
+  wb += type + 2 * sizeof(type);
   for (unsigned int i = 0; dm[i].name; i++)
     {
       switch (dm[i].type)
@@ -114,7 +117,9 @@ void FileOutput::Dump(const T& event,
 	  {
 	    unsigned int size;
 
-	    size = (event.*dm[i].value.S).size() + 1;
+	    size = (event.*dm[i].value.S).size();
+	    this->ofs_.write((const char*)&size, sizeof(size));
+	    wb += sizeof(size);
 	    this->ofs_.write((event.*dm[i].value.S).c_str(), size);
 	    wb += size;
 	    break ;
@@ -186,7 +191,7 @@ void FileOutput::OpenNext()
 /**
  *  FileOutput default constructor.
  */
-FileOutput::FileOutput() : exit_(true), max_size_(0) {}
+FileOutput::FileOutput() : exit_(true), max_size_(100000000) {}
 
 /**
  *  FileOutput destructor.
@@ -296,6 +301,14 @@ void FileOutput::operator()()
 
 	      // We're finished with the event
 	      e->RemoveReader(this);
+
+	      // Check if we have to move to the next file
+	      if (wb >= this->max_size_)
+		{
+		  wb = 0;
+		  this->FileClose();
+		  this->OpenNext();
+		}
 	    }
 	}
     }
@@ -401,7 +414,7 @@ void FileOutput::Open(const std::string& base_path)
 	    unsigned int val;
 
 	    val = strtoul(entry->d_name + base_file.size(), &err, 0);
-	    if (*err != '\0' && val > this->current_)
+	    if ('\0' == *err && val > this->current_)
 	      this->current_ = val;
 	  }
       }
