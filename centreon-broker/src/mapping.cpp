@@ -871,84 +871,173 @@ void InitMapping(const DB::DataMember<T>* datamembers,
   return ;
 }
 
-void CentreonBroker::InitMappings()
+/**
+ *  \brief Destroy Object-Relational mappings.
+ *
+ *  All mappings previously initialized with MappingsInit() are destroyed and
+ *  related memory is free.
+ *
+ *  \see MappingsInit
+ */
+void CentreonBroker::MappingsDestroy()
 {
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Object-Relational mappings...");
-  logging.LogDebug("Initializing Acknowledgement mapping...");
+  logging.LogDebug("Destroying Acknowledgement mapping ...");
+#endif /* !NDEBUG */
+  acknowledgement_get_mapping.Clear();
+  acknowledgement_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Comment mapping ...");
+#endif /* !NDEBUG */
+  comment_get_mapping.Clear();
+  comment_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Connection mapping ...");
+#endif /* !NDEBUG */
+  connection_get_mapping.Clear();
+  connection_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying ConnectionStatus mapping ...");
+#endif /* !NDEBUG */
+  connection_status_get_mapping.Clear();
+  connection_status_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Downtime mapping ...");
+#endif /* !NDEBUG */
+  downtime_get_mapping.Clear();
+  downtime_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Host mapping ...");
+#endif /* !NDEBUG */
+  host_get_mapping.Clear();
+  host_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying HostGroup mapping ...");
+#endif /* !NDEBUG */
+  host_group_get_mapping.Clear();
+  host_group_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying HostStatus mapping ...");
+#endif /* !NDEBUG */
+  host_status_get_mapping.Clear();
+  host_status_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Log mapping ...");
+#endif /* !NDEBUG */
+  log_get_mapping.Clear();
+  log_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying ProgramStatus mapping ...");
+#endif /* !NDEBUG */
+  program_status_get_mapping.Clear();
+  program_status_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying Service mapping ...");
+#endif /* !NDEBUG */
+  service_get_mapping.Clear();
+  service_set_mapping.Clear();
+
+#ifndef NDEBUG
+  logging.LogDebug("Destroying ServiceStatus mapping ...");
+#endif /* !NDEBUG */
+  service_status_get_mapping.Clear();
+  service_status_set_mapping.Clear();
+
+  return ;
+}
+
+/**
+ *  \brief Initialize Object-Relational mappings for every type of event.
+ *
+ *  When done, mappings should be cleaned with MappingsDestroy.
+ *
+ *  \see MappingsDelete
+ */
+void CentreonBroker::MappingsInit()
+{
+#ifndef NDEBUG
+  logging.LogDebug("Initializing Acknowledgement mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Acknowledgement>(acknowledgement_dm,
     acknowledgement_get_mapping,
     acknowledgement_set_mapping);
+
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Comment mapping...");
+  logging.LogDebug("Initializing Comment mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Comment>(comment_dm,
     comment_get_mapping,
     comment_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Connection mapping...");
+  logging.LogDebug("Initializing Connection mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Connection>(connection_dm,
     connection_get_mapping,
     connection_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing ConnectionStatus mapping...");
+  logging.LogDebug("Initializing ConnectionStatus mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::ConnectionStatus>(connection_status_dm,
     connection_status_get_mapping,
     connection_status_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Downtime mapping...");
+  logging.LogDebug("Initializing Downtime mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Downtime>(downtime_dm,
     downtime_get_mapping,
     downtime_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Host mapping...");
+  logging.LogDebug("Initializing Host mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Host>(host_dm,
     host_get_mapping,
     host_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing HostGroup mapping...");
+  logging.LogDebug("Initializing HostGroup mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::HostGroup>(host_group_dm,
     host_group_get_mapping,
     host_group_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing HostStatus mapping...");
+  logging.LogDebug("Initializing HostStatus mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::HostStatus>(host_status_dm,
     host_status_get_mapping,
     host_status_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Log mapping...");
+  logging.LogDebug("Initializing Log mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Log>(log_dm,
     log_get_mapping,
     log_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing ProgramStatus mapping...");
+  logging.LogDebug("Initializing ProgramStatus mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::ProgramStatus>(program_status_dm,
     program_status_get_mapping,
     program_status_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing Service mapping...");
+  logging.LogDebug("Initializing Service mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Service>(service_dm,
     service_get_mapping,
     service_set_mapping);
 #ifndef NDEBUG
-  logging.LogDebug("Initializing ServiceStatus mapping...");
+  logging.LogDebug("Initializing ServiceStatus mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::ServiceStatus>(service_status_dm,
     service_status_get_mapping,
     service_status_set_mapping);
 
-#ifndef NDEBUG
-  logging.LogDebug("Object-Relational mappings initialized");
-#endif /* !NDEBUG */
   return ;
 }

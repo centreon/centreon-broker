@@ -273,7 +273,7 @@ static void HandleOutput(std::ifstream& ifs, Output& out)
 
 /**
  *  Helper function to update configuration. This method is called whenever
- *  SIGUSR1 is received.
+ *  SIGHUP is received.
  */
 static void UpdateHelper(int signum)
 {
@@ -678,12 +678,12 @@ void Manager::Update()
       ca.release();
     }
 
-  // (Re-)Register handler of SIGUSR1
+  // (Re-)Register handler of SIGHUP
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Registering handler for runtime " \
                                    "configuration update...");
 #endif /* !NDEBUG */
-  signal(SIGUSR1, UpdateHelper);
+  signal(SIGHUP, UpdateHelper);
 
   return ;
 }

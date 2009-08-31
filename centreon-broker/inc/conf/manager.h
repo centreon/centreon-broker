@@ -42,7 +42,7 @@ namespace             CentreonBroker
      *
      *  The ConfManager will handle parsing of CentreonBroker's configuration
      *  file and create/delete objects as necessary. User can request an update
-     *  by sending SIGUSR1 to the process.
+     *  by sending SIGHUP to the process.
      *
      *  \see GetType
      */
@@ -67,7 +67,7 @@ namespace             CentreonBroker
       void            Close();
       static Manager& GetInstance();
       void            Open(const std::string& filename);
-      void            Update();
+      void            Update(); // XXX : throw ()
     };
   }
 }

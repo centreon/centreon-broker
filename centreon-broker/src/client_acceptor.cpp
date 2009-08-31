@@ -103,6 +103,10 @@ ClientAcceptor::~ClientAcceptor()
   {
     boost::unique_lock<boost::mutex> lock(this->inputsm_);
 
+    for (std::list<NetworkInput*>::iterator it = this->inputs_.begin();
+         it != this->inputs_.end();
+         ++it)
+      delete (*it);
     this->inputs_.clear();
   }
 }
@@ -170,16 +174,19 @@ void ClientAcceptor::operator()() throw ()
 void ClientAcceptor::CleanupNetworkInput(NetworkInput* ni)
 {
   boost::unique_lock<boost::mutex> lock(this->inputsm_);
-  std::list<std::auto_ptr<NetworkInput> >::iterator it;
+  std::list<NetworkInput*>::iterator it;
 
   // Find the pointer in the list
   for (it = this->inputs_.begin(); it != this->inputs_.end(); it++)
-    if (it->get() == ni)
+    if (*it == ni)
       break ;
 
   // If found delete it
   if (it != this->inputs_.end())
-    this->inputs_.erase(it);
+    {
+      delete (*it);
+      this->inputs_.erase(it);
+    }
 
   return ;
 }

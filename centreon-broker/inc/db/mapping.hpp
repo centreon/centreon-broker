@@ -180,6 +180,15 @@ namespace                        CentreonBroker
           boost::bind(value, _2));
 	return ;
       }
+
+      /**
+       *  Release memory held internaly.
+       */
+      void                       Clear()
+      {
+	this->getters.clear();
+	return ;
+      }
     };
 
     // Convenience functions in anonymous namespace.
@@ -349,6 +358,15 @@ namespace                        CentreonBroker
           _2,
           value,
           boost::bind(&CentreonBroker::DB::Select::GetInt, _1));
+	return ;
+      }
+
+      /**
+       *  Release memory help internaly.
+       */
+      void       Clear()
+      {
+	this->setters.clear();
 	return ;
       }
     };
