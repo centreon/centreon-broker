@@ -22,7 +22,6 @@
 # define CLIENT_ACCEPTOR_H_
 
 # include <boost/thread.hpp>
-# include <memory>
 # include "io/io.h"
 # include "network_input.h"
 
@@ -45,8 +44,7 @@ namespace                        CentreonBroker
   {
    private:
     std::auto_ptr<IO::Acceptor>  acceptor_;
-    std::list<std::auto_ptr<NetworkInput> >
-                                 inputs_;
+    std::list<NetworkInput*>     inputs_;
     boost::mutex                 inputsm_;
     std::auto_ptr<boost::thread> thread_;
                                  ClientAcceptor(const ClientAcceptor& ca);

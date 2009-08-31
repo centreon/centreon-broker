@@ -123,7 +123,8 @@ namespace  CentreonBroker
   extern DB::MappingSetters<Events::ServiceStatus>
            service_status_set_mapping;
 
-  void     InitMappings();
+  void     MappingsDestroy();
+  void     MappingsInit();
 }
 
 #endif /* !MAPPING_H_ */
