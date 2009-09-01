@@ -119,7 +119,7 @@ static void HandleInput(std::ifstream& ifs, Input& in)
 	{
 	  if (value)
 	    {
-	      if (!strcmp(value, "ipv4"))
+	      if (!strcmp(value, "ip" || !strcmp(value, "ipv4"))
 		in.SetType(Input::IPV4);
 	      else if (!strcmp(value, "ipv6"))
 		in.SetType(Input::IPV6);

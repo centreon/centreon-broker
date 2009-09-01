@@ -34,7 +34,7 @@ one or more databases.
 
                        ______________
                       /              \
-                      |   Network    |    Listen on a socket (default 5668)
+                      |    Client    |    Listen on a socket (default 5668)
                       |   Acceptor   |    waiting for new clients.
                       \______________/
 
@@ -76,12 +76,8 @@ one or more databases.
 ---------
 
 As you can see in the schema above, cb2db can accept multiple Nagios instances
-connections. Also, as soon as we will start to implement the ndomod part of
-Centreon-Broker, we will likely add the following features :
-
-  - IPv6 socket
-  - Unix domain socket
-  - multiple listening sockets
+connections. These can be of different kinds : IPv4, IPv6 or Unix, all of them
+with or without TLS.
 
   3.1 TLS
   -------
@@ -91,11 +87,11 @@ encrypted event flow (for more information on TLS, please refer to
 http://en.wikipedia.org/wiki/Transport_Layer_Security). To make TLS work in
 CentreonBroker, you need at least two files :
 
-  - one containing your public key (`tls_certificate` config file parameter)
-  - one containing your private key (`tls_key config` file parameter)
+  - one containing your public key (`cert` config file parameter)
+  - one containing your private key (`key` config file parameter)
 
 Optionnally you can also have a Certificate Authority (CA) public key if you
-want to provide authentication (`tls_ca` config file parameter).
+want to provide authentication (`ca` config file parameter).
 
 If your are not familiar with certificate generation and want to provide only
 encrypted event flow, type the following commands :
@@ -124,12 +120,18 @@ generated server certificate like this :
 cb2db does not fully support the integral list of Nagios events, but the main
 ones are :
 
+  - NDO_API_ACKNOWLEDGEMENTDATA
+  - NDO_API_COMMENTDATA
+  - NDO_API_DOWNTIMEDATA
   - NDO_API_HOSTDEFINITION
+  - NDO_API_HOSTGROUPDEFINITION
   - NDO_API_HOSTSTATUSDATA
+  - NDO_API_LOGDATA
+  - NDO_API_PROGRAMSTATUSDATA
   - NDO_API_SERVICEDEFINITION
   - NDO_API_SERVICESTATUSDATA
 
-More will come soon.
+More will come.
 
 
 5 Configuration file
@@ -156,15 +158,25 @@ syntax.
  5.1 Input parameters
  --------------------
 
-port                Port number on which we should listen.
-tls_ca              If you want to provide client authentication, set this to
+ca                  If you want to provide client authentication, set this to
                     the filename of the CA's certificate who signed clients'
                     certificates.
-tls_certificate     If you want to provide TLS support on socket, set this
+cert                If you want to provide TLS support on socket, set this
                     parameter to the filename of the public key.
-tls_key             If you want to provide TLS support on socket, set this
+compress            When using TLS, specify whether or not the data stream
+                    should be compressed as well as encrypted.
+interface           In case that CentreonBroker should listen on a specific
+                    interface, give the IP address of this interface in this
+                    parameter.
+key                 If you want to provide TLS support on socket, set this
                     parameter to the filename of the private key.
-type                Can only be 'socket', as only such inputs are supported.
+port                Port number on which we should listen.
+socket              For an input of type 'unix', specify the path of the
+                    socket.
+tls                 Whether or not TLS should be activated on this input.
+                    Default is 'no'.
+type                Can be 'ip' (equal to 'ipv4'), 'ipv6' or 'unix'. This
+                    parameter is mandatory.
 
  5.2 Logging parameters
  ----------------------
@@ -172,33 +184,26 @@ type                Can only be 'socket', as only such inputs are supported.
 To define a log output, simply defines a `log` block. The following variables
 are available :
 
-flags               determines what kind of information should be sent. You can
+flags               Determines what kind of information should be sent. You can
                     OR the following macros : DEBUG, ERROR and INFO.
-path                for a log type `file`, specify the file on which data shall
+path                For a log type `file`, specify the file on which data shall
                     be sent
-type                currently `syslog` or `file`
+type                Can be 'file', 'stderr', 'stdout' or 'syslog'.
 
  5.3 Output parameters
  ---------------------
 
 db                  DB name.
-dbms                One of mysql, postgresql or in the future oracle.
+dumpfile            Base path of the file to use to dump events. A number will
+                    be appended to this base.
 host                DB server host.
 password            DB password used to authenticate.
-prefix              Prefix used on each table name (not yet used).
-type                Only 'db' is currently supported.
+type                Can be 'mysql', 'oracle' or 'postgresql'.
 user                DB user name used to authenticate.
 
 
 6 Output
 --------
-
-Right now, only database output is supported but we plan to add file output
-too. This will help for debugging purposes, backlog in case of database failure
-or just because you want plain-text output :-)
-
- 6.1 Database
- ------------
 
 MySQL is currently the only DBMS supported and implemented (but PostgreSQL
 support has been started). The current implementation makes use of a nice
