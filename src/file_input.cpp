@@ -174,7 +174,7 @@ FileInput& FileInput::operator=(const FileInput& fi)
 {
   this->Close();
   this->path_ = fi.path_;
-  if (fi.ifs_.is_open())
+  if (!fi.ifs_.fail())
     {
       this->current_ = fi.current_ - 1;
       this->OpenNext();

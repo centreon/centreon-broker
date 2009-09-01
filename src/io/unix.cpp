@@ -166,7 +166,7 @@ void UnixAcceptor::Close() throw ()
 void UnixAcceptor::Listen(const char* sock_path)
   throw (CentreonBroker::Exception)
 {
-  struct sockaddr_un sun;
+  struct sockaddr_un sockaddrun;
 
   // Close the socket if it was previously open
   this->Close();
@@ -177,12 +177,12 @@ void UnixAcceptor::Listen(const char* sock_path)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
 
   // Set the binding structure
-  sun.sun_family = AF_UNIX;
-  strncpy(sun.sun_path, sock_path, sizeof(sun.sun_path) - 1);
-  sun.sun_path[sizeof(sun.sun_path) - 1] = '\0';
+  sockaddrun.sun_family = AF_UNIX;
+  strncpy(sockaddrun.sun_path, sock_path, sizeof(sockaddrun.sun_path) - 1);
+  sockaddrun.sun_path[sizeof(sockaddrun.sun_path) - 1] = '\0';
 
   // Bind
-  if (bind(this->sockfd_, (struct sockaddr*)&sun, sizeof(sun))
+  if (bind(this->sockfd_, (struct sockaddr*)&sockaddrun, sizeof(sockaddrun))
       || listen(this->sockfd_, 0))
     throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;

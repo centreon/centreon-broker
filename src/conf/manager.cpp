@@ -30,7 +30,9 @@
 #include "db_output.h"
 #include "io/net4.h"
 #include "io/net6.h"
-#include "io/tls.h"
+#ifdef USE_TLS
+# include "io/tls.h"
+#endif /* USE_TLS */
 #include "io/unix.h"
 #include "logging.h"
 
@@ -99,27 +101,29 @@ static void HandleInput(std::ifstream& ifs, Input& in)
 
       if ('#' == key[0])
 	; // Skip line
+#ifdef USE_TLS
       else if (!strcmp(key, "ca"))
 	in.SetTLSCA(value ? value : "");
       else if (!strcmp(key, "cert"))
 	in.SetTLSCert(value ? value : "");
       else if (!strcmp(key, "compress"))
 	in.SetTLSCompress(value ? strtoul(value, NULL, 0) : false);
-      else if (!strcmp(key, "interface"))
-	in.SetIPInterface(value ? value : "");
       else if (!strcmp(key, "key"))
 	in.SetTLSKey(value ? value : "");
+      else if (!strcmp(key, "tls") && value)
+	in.SetTLS(!strcmp(value, "yes") || strtoul(value, NULL, 0));
+#endif /* USE_TLS */
+      else if (!strcmp(key, "interface"))
+	in.SetIPInterface(value ? value : "");
       else if (!strcmp(key, "port"))
 	in.SetIPPort(value ? strtoul(value, NULL, 0) : 0);
       else if (!strcmp(key, "socket"))
 	in.SetUnixSocketPath(value ? value : "");
-      else if (!strcmp(key, "tls") && value)
-	in.SetTLS(!strcmp(value, "yes") || strtoul(value, NULL, 0));
       else if (!strcmp(key, "type"))
 	{
 	  if (value)
 	    {
-	      if (!strcmp(value, "ip" || !strcmp(value, "ipv4"))
+	      if (!strcmp(value, "ip") || !strcmp(value, "ipv4"))
 		in.SetType(Input::IPV4);
 	      else if (!strcmp(value, "ipv6"))
 		in.SetType(Input::IPV6);
@@ -646,6 +650,7 @@ void Manager::Update()
 	  ;
 	}
 
+#ifdef USE_TLS
       // Check for TLS support
       if (((Input::IPV4 == inputs_it->GetType())
 	   || (Input::IPV6 == inputs_it->GetType())
@@ -667,6 +672,7 @@ void Manager::Update()
 	  acceptor.reset(tlsa.get());
 	  tlsa.release();
 	}
+#endif /* USE_TLS */
 
       // Create the new client acceptor
       std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
