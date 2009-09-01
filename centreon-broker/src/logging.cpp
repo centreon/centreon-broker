@@ -54,40 +54,35 @@ Logging CentreonBroker::logging;
 **************************************/
 
 /**
- *  Clean the current object (ie. close wrapped file if necessary).
+ *  \brief Copy data members of Logging::OutputFile.
+ *
+ *  If the given object is open, filename and flags will be copied to the
+ *  current instance and the file will be opened.
+ *
+ *  \param[in] output Object to copy data from.
  */
-void Logging::Output::Clean()
+void Logging::OutputFile::InternalCopy(const Logging::OutputFile& output_file)
 {
-  if (this->stream_)
+  if (output_file.stream.is_open())
     {
-      if (this->stream_->is_open())
-	this->stream_->close();
-      delete (this->stream_);
-      this->stream_ = NULL;
+      this->filename = output_file.filename;
+      this->flags = output_file.flags;
+      this->RealOpen();
     }
   return ;
 }
 
 /**
- *  \brief Copy data members of Logging::Output.
+ *  \brief Really open the file.
  *
- *  Make a copy of internal parameters. The parameters hold in the output
- *  variable will be transfered to the current instance and discarded in
- *  output.
- *
- *  \param[in] output Object to copy data from.
+ *  This private method really opens the file handle. This method is used by
+ *  the copy constructor, the assignment operator and the standard Open()
+ *  method.
  */
-void Logging::Output::InternalCopy(const Logging::Output& output)
+void Logging::OutputFile::RealOpen()
 {
-  Output* o;
-
-  o = const_cast<Output*>(&output);
-  this->filename_ = o->filename_;
-  o->filename_.clear();
-  this->flags_ = o->flags_;
-  o->flags_ = 0;
-  this->stream_ = o->stream_;
-  o->stream_ = NULL;
+  this->stream.clear();
+  this->stream.open(this->filename.c_str());
   return ;
 }
 
@@ -98,35 +93,35 @@ void Logging::Output::InternalCopy(const Logging::Output& output)
 **************************************/
 
 /**
- *  \brief Output default constructor.
+ *  \brief OutputFile default constructor.
  *
  *  Does nothing.
  */
-Logging::Output::Output() : flags_(0), stream_(NULL) {}
+Logging::OutputFile::OutputFile() : flags(0) {}
 
 /**
- *  \brief Output copy constructor.
+ *  \brief OutputFile copy constructor.
  *
- *  The parameters hold in output will be transfered to the current instance
- *  and discarded in output.
+ *  If the given object is open, filename and flags will be copied to the
+ *  current instance and the file will be opened.
  *
  *  \param[in] output Object to copy data from.
  */
-Logging::Output::Output(const Logging::Output& output)
+Logging::OutputFile::OutputFile(const Logging::OutputFile& output_file)
 {
-  this->InternalCopy(output);
+  this->InternalCopy(output_file);
 }
 
 /**
- *  \brief Output destructor.
+ *  \brief OutputFile destructor.
  *
  *  Will close the wrapped file if open.
  */
-Logging::Output::~Output() throw ()
+Logging::OutputFile::~OutputFile() throw ()
 {
   try
     {
-      this->Clean();
+      this->Close();
     }
   catch (...)
     {
@@ -136,16 +131,44 @@ Logging::Output::~Output() throw ()
 /**
  *  \brief Overload of the assignment operator.
  *
- *  The parameters hold in output will be transfered to the current instance
- *  and discarded in output.
+ *  If the given object is open, filename and flags will be copied to the
+ *  current instance and the file will be opened.
  *
  *  \param[in] output Object to copy data from.
  */
-Logging::Output& Logging::Output::operator=(const Logging::Output& output)
+Logging::OutputFile& Logging::OutputFile::operator=(
+  const Logging::OutputFile& output_file)
 {
-  this->Clean();
-  this->InternalCopy(output);
+  this->Close();
+  this->InternalCopy(output_file);
   return (*this);
+}
+
+/**
+ *  If the current stream is open, close it.
+ */
+void Logging::OutputFile::Close()
+{
+  if (this->stream.is_open())
+    this->stream.close();
+  return ;
+}
+
+/**
+ *  \brief Open an output file.
+ *
+ *  Open the file given as a parameter and associate it with some flags. If a
+ *  file was previously opened, it's closed.
+ *
+ *  \param[in] filename The path to the file that should be opened.
+ */
+bool Logging::OutputFile::Open(const std::string& filename, unsigned int flags)
+{
+  this->Close();
+  this->filename = filename;
+  this->flags = flags;
+  this->RealOpen();
+  return (!this->stream.is_open());
 }
 
 
@@ -221,11 +244,11 @@ void Logging::LogBase(const char* str, Logging::MsgType msg_type) throw ()
       }
 
       // Browse all outputs
-      for (std::list<Output>::iterator ito = this->outputs_.begin();
+      for (std::list<OutputFile>::iterator ito = this->outputs_.begin();
 	   ito != this->outputs_.end();
 	   ito++)
-	if ((*ito).flags_ & msg_type)
-	  *(*ito).stream_ << full_msg << std::endl;
+	if ((*ito).flags & msg_type)
+	  (*ito).stream << full_msg << std::endl;
 
       // Special case : stderr
       if (this->stderr_flags_ & msg_type)
@@ -306,7 +329,7 @@ void Logging::LogError(const char* str) throw ()
  *
  *  \param[in] filename  Path of the file to log to.
  *  \param[in] log_flags Specify which kind of messages should be log. Specify
- *                       0 (default) to remove the file.
+ *                       0 (default) to remove the file from the outputs.
  */
 void Logging::LogInFile(const char* filename, int log_flags)
 {
@@ -316,34 +339,44 @@ void Logging::LogInFile(const char* filename, int log_flags)
   if (log_flags)
     {
       // Try to find the output
-      for (std::list<Output>::iterator it = this->outputs_.begin();
+      for (std::list<OutputFile>::iterator it = this->outputs_.begin();
 	   it != this->outputs_.end();
 	   it++)
-	if (it->filename_ == filename)
+	if (it->filename == filename)
 	  {
-	    it->flags_ = log_flags;
+	    it->flags = log_flags;
 	    return ;
 	  }
 
       // We didn't find it so add it.
-      {
-	Output out;
+      try
+	{
+          // Add an element at the end of the list
+	  this->outputs_.push_back(OutputFile());
 
-	out.filename_ = filename;
-	out.flags_ = log_flags;
-	out.stream_ = new std::ofstream;
-	out.stream_->open(filename);
-	this->outputs_.push_back(out);
-      }
+	  // Get a reference to the last element
+	  OutputFile& out(this->outputs_.back());
+
+	  // Initialize it
+          if (out.Open(filename, log_flags))
+            this->outputs_.pop_back();
+        }
+      catch (...)
+        {
+          this->outputs_.pop_back();
+        }
     }
   // Remove output
   else
     {
-      for (std::list<Output>::iterator it = this->outputs_.begin();
+      for (std::list<OutputFile>::iterator it = this->outputs_.begin();
            it != this->outputs_.end();
-	   it++)
-	if (it->filename_ == filename)
-	  this->outputs_.erase(it);
+	   ++it)
+	if (it->filename == filename)
+          {
+            this->outputs_.erase(it);
+            break ;
+          }
     }
   return ;
 }

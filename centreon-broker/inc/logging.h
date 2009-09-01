@@ -26,7 +26,7 @@
 # include <list>
 # include <string>
 
-namespace               CentreonBroker
+namespace                 CentreonBroker
 {
   /**
    *  \class Logging logging.h "logging.h"
@@ -36,11 +36,18 @@ namespace               CentreonBroker
    *  Those messages are broadcasted to all configured streams. Each stream can
    *  receive only specific messages like informational (INFO), debug (DEBUG)
    *  or error (ERROR).
+   *
+   *  Please note that some memory will likely be leaked. This is an issue from
+   *  the Boost library. When any message is logged, the logging facility calls
+   *  the boost::this_thread::get_id() method. When this method is called from
+   *  a thread that has not been created by Boost (like the main thread), the
+   *  get_id() method allocates some memory that would normally be free on
+   *  thread termination.
    */
-  class                 Logging
+  class                   Logging
   {
    public:
-    enum                MsgType
+    enum                  MsgType
     {
       DEBUG = 1,
       ERROR = 2,
@@ -48,47 +55,53 @@ namespace               CentreonBroker
     };
 
    private:
-    class               Output
+    /**
+     *  This small class represents an output file and manage its handle
+     *  internally.
+     */
+    class                 OutputFile
     {
      private:
-      void              Clean();
-      void              InternalCopy(const Logging::Output& output);
+      void                InternalCopy(const Logging::OutputFile& output_file);
+      void                RealOpen();
 
      public:
-      std::string       filename_;
-      int               flags_;
-      std::ofstream*    stream_;
-
-                        Output();
-                        Output(const Output& output);
-                        ~Output() throw ();
-      Output&           operator=(const Output& output);
+      std::string         filename;
+      unsigned int        flags;
+      std::ofstream       stream;
+                          OutputFile();
+                          OutputFile(const OutputFile& output_file);
+                          ~OutputFile() throw ();
+      OutputFile&         operator=(const OutputFile& output_file);
+      void                Close();
+      bool                Open(const std::string& filename,
+                               unsigned int flags = DEBUG | ERROR | INFO);
     };
 
-    boost::mutex        mutex_;
-    std::list<Output>   outputs_;
-    int                 stderr_flags_;
-    int                 stdout_flags_;
-    int                 syslog_flags_;
-                        Logging(const Logging& logging);
-    Logging&            operator=(const Logging& logging);
-    void                LogBase(const char* str, MsgType msg_type) throw ();
+    boost::mutex          mutex_;
+    std::list<OutputFile> outputs_;
+    int                   stderr_flags_;
+    int                   stdout_flags_;
+    int                   syslog_flags_;
+                          Logging(const Logging& logging);
+    Logging&              operator=(const Logging& logging);
+    void                  LogBase(const char* str, MsgType msg_type) throw ();
 
    public:
-                        Logging();
-                        ~Logging() throw ();
+                          Logging();
+                          ~Logging() throw ();
 # ifndef NDEBUG
-    void                LogDebug(const char* str) throw ();
+    void                  LogDebug(const char* str) throw ();
 # endif /* !NDEBUG */
-    void                LogError(const char* str) throw ();
-    void                LogInFile(const char* filename, int log_flags);
-    void                LogInfo(const char* str) throw ();
-    void                LogInSyslog(int log_flags) throw ();
-    void                LogToStderr(int log_flags) throw ();
-    void                LogToStdout(int log_flags) throw ();
+    void                  LogError(const char* str) throw ();
+    void                  LogInFile(const char* filename, int log_flags);
+    void                  LogInfo(const char* str) throw ();
+    void                  LogInSyslog(int log_flags) throw ();
+    void                  LogToStderr(int log_flags) throw ();
+    void                  LogToStdout(int log_flags) throw ();
   };
 
-  extern Logging        logging;
+  extern Logging          logging;
 }
 
 #endif /* !LOGGING_H_ */

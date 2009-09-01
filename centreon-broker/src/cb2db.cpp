@@ -22,6 +22,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/mutex.hpp>
 #include <csignal>
+#include <cstdlib>
 #ifdef USE_TLS
 # include <gnutls/gnutls.h>
 #endif /* USE_TLS */
