@@ -18,13 +18,13 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DB_MYSQL_UPDATE_H_
-# define DB_MYSQL_UPDATE_H_
+#ifndef DB_POSTGRESQL_UPDATE_H_
+# define DB_POSTGRESQL_UPDATE_H_
 
 # include <ctime>
 # include <string>
-# include "db/mysql/have_args.h"
-# include "db/mysql/have_predicate.h"
+# include "db/postgresql/have_args.h"
+# include "db/postgresql/have_predicate.h"
 # include "db/update.h"
 
 namespace          CentreonBroker
@@ -32,16 +32,15 @@ namespace          CentreonBroker
   namespace        DB
   {
     /**
-     *  \class MySQLUpdate update.h "db/mysql/update.h"
+     *  \class PgSQLUpdate update.h "db/postgresql/update.h"
      *
-     *  MySQL UPDATE query.
+     *  PostgreSQL UPDATE query.
      *
      *  \see Update
      */
-    class          MySQLUpdate :  public MySQLHaveArgs,
-                                  public MySQLHavePredicate,
-                                  virtual public Update
-
+    class          PgSQLUpdate : public PgSQLHaveArgs,
+                                 public PgSQLHavePredicate,
+                                 virtual public Update
     {
      private:
       std::list<std::string>::iterator
@@ -50,13 +49,12 @@ namespace          CentreonBroker
       void         GenerateQueryBeginning();
 
      protected:
-                   MySQLUpdate(const MySQLUpdate& myupdate);
-      MySQLUpdate& operator=(const MySQLUpdate& myupdate);
-      unsigned int GetArgCount() throw ();
+                   PgSQLUpdate(const PgSQLUpdate& pgupdate);
+      PgSQLUpdate& operator=(const PgSQLUpdate& pgupdate);
 
      public:
-                   MySQLUpdate(MYSQL* myconn);
-      virtual      ~MySQLUpdate();
+                   PgSQLUpdate(PGconn* pgconn);
+      virtual      ~PgSQLUpdate();
       void         Execute();
       unsigned int GetUpdateCount();
       virtual void Prepare();
@@ -69,65 +67,65 @@ namespace          CentreonBroker
     };
 
     /**
-     *  \class MySQLMappedUpdate update.h "db/mysql/update.h"
+     *  \class PgSQLMappedUpdate update.h "db/postgresql/update.h"
      *
-     *  Object-relational MySQL UPDATE query.
+     *  Object-relational PostgreSQL UPDATE query.
      *
      *  \see MappedUpdate
      */
     template             <typename T>
-    class                MySQLMappedUpdate : public MappedUpdate<T>,
-                                             public MySQLUpdate
+    class                PgSQLMappedUpdate : public MappedUpdate<T>,
+                                             public PgSQLUpdate
     {
      protected:
       /**
-       *  \brief MySQLMappedUpdate copy constructor.
+       *  \brief PgSQLMappedUpdate copy constructor.
        *
        *  Build the new mapped query by copying data from the given object.
        *
-       *  \param[in] mymupdate Object to copy data from.
+       *  \param[in] pgmupdate Object to copy data from.
        */
-                         MySQLMappedUpdate(const MySQLMappedUpdate& mymupdate)
-        : MappedUpdate<T>(mymupdate), MySQLUpdate(mymupdate) {}
+                         PgSQLMappedUpdate(const PgSQLMappedUpdate& pgmupdate)
+	: MappedUpdate<T>(pgmupdate), PgSQLUpdate(pgmupdate) {}
 
       /**
        *  \brief Overload of the assignment operator.
        *
        *  Copy data of the given object to the current instance.
        *
-       *  \param[in] mymupdate Object to copy data from.
+       *  \param[in] pgmupdate Object to copy data from.
        *
        *  \return *this
        */
-      MySQLMappedUpdate& operator=(const MySQLMappedUpdate& mymupdate)
+      PgSQLMappedUpdate& operator=(const PgSQLMappedUpdate& pgmupdate)
       {
-	this->MappedUpdate<T>::operator=(mymupdate);
-	this->MySQLUpdate::operator=(mymupdate);
-	return (*this);
+        this->MappedUpdate<T>::operator=(pgmupdate);
+        this->PgSQLUpdate::operator=(pgmupdate);
+        return (*this);
       }
 
      public:
       /**
-       *  \brief MySQLMappedUpdate constructor.
+       *  \brief PgSQLMappedUpdate constructor.
        *
-       *  Build the MySQLMappedUpdate object. Needs the MySQL connection object
-       *  on which the query will be executed.
+       *  Build the PgSQLMappedUpdate object. Needs the PostgreSQL connection
+       *  object on which the query will be executed.
        *
-       *  \param[in] myconn  MySQL connection object.
+       *  \param[in] pgconn  PostgreSQL connection object.
        *  \param[in] mapping Object-Relational mapping of the event type T.
        */
-                         MySQLMappedUpdate(MYSQL* myconn,
+                         PgSQLMappedUpdate(PGconn* pgconn,
                                            const MappingGetters<T>& mapping)
-        : MappedUpdate<T>(mapping), MySQLUpdate(myconn) {}
+        : MappedUpdate<T>(mapping), PgSQLUpdate(pgconn) {}
 
       /**
-       *  \brief MySQLMappedUpdate destructor.
+       *  \brief PgSQLMappedUpdate destructor.
        *
        *  Release acquired ressources.
        */
-                         ~MySQLMappedUpdate() {}
+                         ~PgSQLMappedUpdate() {}
     };
   }
 }
 
-#endif /* !DB_MYSQL_UPDATE_H_ */
+#endif /* !DB_POSTGRESQL_UPDATE_H_ */

@@ -39,7 +39,7 @@ PgSQLTruncate::PgSQLTruncate(const PgSQLTruncate& pgtruncate)
   : HaveTable(pgtruncate),
     Query(pgtruncate),
     Truncate(pgtruncate),
-    PgSQLQuery(pgtruncate) {}
+    PgSQLQuery(NULL) {}
 
 /**
  *  \brief Overload of the assignment operator.
@@ -53,7 +53,6 @@ PgSQLTruncate::PgSQLTruncate(const PgSQLTruncate& pgtruncate)
 PgSQLTruncate& PgSQLTruncate::operator=(const PgSQLTruncate& pgtruncate)
 {
   this->Truncate::operator=(pgtruncate);
-  this->PgSQLQuery::operator=(pgtruncate);
   return (*this);
 }
 
@@ -100,7 +99,7 @@ PgSQLTruncate::~PgSQLTruncate() {}
 void PgSQLTruncate::Execute()
 {
   // Build the query string if necessary
-  if (!this->stmt)
+  if (this->stmt_name.empty())
     this->BuildQuery();
 
   // Really execute the query

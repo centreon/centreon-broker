@@ -96,7 +96,7 @@ void MySQLQuery::Execute()
   if (this->stmt)
     {
 #ifndef NDEBUG
-      logging.LogDebug("Executing MySQL prepared statement...");
+      logging.LogDebug("Executing MySQL prepared statement ...");
 #endif /* !NDEBUG */
       if (mysql_stmt_execute(this->stmt))
 	{
@@ -117,7 +117,7 @@ void MySQLQuery::Execute()
   else
     {
 #ifndef NDEBUG
-      logging.LogDebug("Executing MySQL standard query...");
+      logging.LogDebug("Executing MySQL standard query ...");
       logging.LogDebug(this->query.c_str());
 #endif /* !NDEBUG */
       if (mysql_query(this->mysql, this->query.c_str()))

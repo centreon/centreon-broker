@@ -41,6 +41,7 @@ namespace            CentreonBroker
      private:
                      PgSQLTruncate(const PgSQLTruncate& pgtruncate);
       PgSQLTruncate& operator=(const PgSQLTruncate& pgtruncate);
+      void           BuildQuery();
 
      public:
                      PgSQLTruncate(PGconn* pgconn);

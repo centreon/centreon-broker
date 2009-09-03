@@ -71,7 +71,7 @@ PgSQLConnection& PgSQLConnection::operator=(const PgSQLConnection& pgconn)
  *
  *  Initialize object to its default state.
  */
-PgSQLConnection::PgSQLConnection() throw ()
+PgSQLConnection::PgSQLConnection()
   : Connection(Connection::POSTGRESQL), pgconn_(NULL) {}
 
 /**
@@ -79,7 +79,7 @@ PgSQLConnection::PgSQLConnection() throw ()
  *
  *  Release acquired ressources.
  */
-PgSQLConnection::~PgSQLConnection() throw ()
+PgSQLConnection::~PgSQLConnection()
 {
   this->Disconnect();
 }
@@ -173,11 +173,10 @@ void PgSQLConnection::Connect(const std::string& host,
   std::string conninfo;
 
 #ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Connecting to PostgreSQL server...", true);
+  CentreonBroker::logging.LogDebug("Connecting to PostgreSQL server...");
   CentreonBroker::logging.LogDebug((std::string("Host: ") + host).c_str());
   CentreonBroker::logging.LogDebug((std::string("User: ") + user).c_str());
   CentreonBroker::logging.LogDebug((std::string("DB: ") + db).c_str());
-  CentreonBroker::logging.Deindent();
 #endif /* !NDEBUG */
   conninfo = "host=";
   conninfo += host;
@@ -202,7 +201,7 @@ void PgSQLConnection::Connect(const std::string& host,
 /**
  *  Disconnect from the PostgreSQL server.
  */
-void PgSQLConnection::Disconnect() throw ()
+void PgSQLConnection::Disconnect()
 {
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Disconnecting from PostgreSQL server...");

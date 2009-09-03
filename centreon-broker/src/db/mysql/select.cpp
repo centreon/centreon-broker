@@ -19,7 +19,7 @@
 */
 
 #include <cassert>
-#include <iostream>
+#include <cstdlib>
 #include "db/db_exception.h"
 #include "db/mysql/select.h"
 
@@ -35,6 +35,7 @@ using namespace CentreonBroker::DB;
  *  \brief MySQLSelect copy constructor.
  *
  *  As this query is not copiable, the copy constructor is declared private.
+ *  Any attempt to use this method will result in a call to abort().
  *
  *  \param[in] mys Unused.
  */
@@ -47,12 +48,14 @@ MySQLSelect::MySQLSelect(const MySQLSelect& mys)
     MySQLHavePredicate(mys)
 {
   assert(false);
+  abort();
 }
 
 /**
  *  \brief Overload of the assignment operator.
  *
  *  As this query is not copiable, the assignment operator is declared private.
+ *  Any attempt to use this method will result in a call to abort().
  *
  *  \param[in] mys Unused.
  *
@@ -62,6 +65,7 @@ MySQLSelect& MySQLSelect::operator=(const MySQLSelect& mys)
 {
   (void)mys;
   assert(false);
+  abort();
   return (*this);
 }
 

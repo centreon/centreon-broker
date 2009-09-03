@@ -88,7 +88,7 @@ void PgSQLHavePredicate::Visit(const Placeholder& placeholder)
   std::stringstream ss;
 
   (void)placeholder;
-  ss << "$" << ++this->placeholders;
+  ss << "$" << (this->current_arg_ + ++this->placeholders);
   this->query_->append(ss.str());
   return ;
 }
@@ -194,10 +194,12 @@ PgSQLHavePredicate& PgSQLHavePredicate::operator=(const PgSQLHavePredicate& p)
  *
  *  \param[out] query Query string on which the predicate will be append.
  */
-void PgSQLHavePredicate::PreparePredicate(std::string& query)
+void PgSQLHavePredicate::PreparePredicate(std::string& query,
+                                          unsigned int current_arg)
 {
   if (this->predicate)
     {
+      this->current_arg_ = current_arg;
       this->query_ = &query;
       this->query_->append(" WHERE ");
       this->predicate->Accept(*this);
@@ -216,6 +218,6 @@ void PgSQLHavePredicate::PreparePredicate(std::string& query)
 void PgSQLHavePredicate::ProcessPredicate(std::string& query)
 {
   if (this->predicate)
-    this->PreparePredicate(query);
+    this->PreparePredicate(query, 0);
   return ;
 }
