@@ -557,13 +557,24 @@ void Manager::Update()
   // Add new outputs.
   for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
     {
-      std::auto_ptr<CentreonBroker::DBOutput> dbo(
-        new CentreonBroker::DBOutput(CentreonBroker::DB::Connection::MYSQL));
+      std::auto_ptr<CentreonBroker::DBOutput> dbo;
       const Output& output(*outputs_it);
 
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new output object...");
 #endif /* !NDEBUG */
+
+#ifdef USE_MYSQL
+      if (Output::MYSQL == output.GetType())
+	dbo.reset(new DBOutput(DB::Connection::MYSQL));
+      else
+#endif /* USE_MYSQL */
+
+#ifdef USE_POSTGRESQL
+      if (Output::POSTGRESQL == output.GetType())
+	dbo.reset(new DBOutput(DB::Connection::POSTGRESQL));
+#endif /* USE_POSTGRESQL */
+
       dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
       dbo->SetDumpFile(output.GetDumpFile());
       dbo->SetQueryCommitInterval(output.GetQueryCommitInterval());

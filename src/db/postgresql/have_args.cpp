@@ -80,7 +80,7 @@ PgSQLHaveArgs::PgSQLHaveArgs(PGconn* pgconn)
  *  \param[in] pha Object to copy data from.
  */
 PgSQLHaveArgs::PgSQLHaveArgs(const PgSQLHaveArgs& pha)
-  : HaveArgs(pha), Query(pha), PgSQLQuery(pha)
+  : HaveArgs(pha), Query(pha), PgSQLQuery(NULL)
 {
   // XXX : copy arguments
 }
@@ -134,7 +134,7 @@ PgSQLHaveArgs& PgSQLHaveArgs::operator=(const PgSQLHaveArgs& pha)
  */
 void PgSQLHaveArgs::Execute()
 {
-  if (this->stmt && this->args_count_ > 0)
+  if (!this->stmt_name.empty() && this->args_count_ > 0)
     {
       assert(this->args_values_);
       assert(this->args_length_);
@@ -166,14 +166,14 @@ void PgSQLHaveArgs::Prepare()
 
   // Prepare the statement object
   this->PgSQLQuery::Prepare();
-  assert(this->pgconn);
+  assert(this->pgconn_);
   assert(!this->stmt_name.empty());
 
   // Fetch the statement's argument count
   {
     PGresult* res;
 
-    res = PQdescribePrepared(this->pgconn, this->stmt_name.c_str());
+    res = PQdescribePrepared(this->pgconn_, this->stmt_name.c_str());
     if (!res)
       throw (DBException(0,
 			 DBException::QUERY_PREPARATION,
@@ -216,15 +216,15 @@ void PgSQLHaveArgs::Prepare()
  */
 void PgSQLHaveArgs::SetArg(bool arg)
 {
-  if (this->stmt)
+  if (!this->stmt_name.empty())
     {
       assert(this->args_format_);
       assert(this->args_length_);
       assert(this->args_values_);
       if (!this->args_format_[this->arg_]
-          || (this->args_length_ != sizeof(bool)))
+          || (this->args_length_[this->arg_] != sizeof(bool)))
         {
-          this->DeleteArg(this->arg_);
+          this->CleanArg(this->arg_);
           this->args_format_[this->arg_] = 1;
           this->args_length_[this->arg_] = sizeof(bool);
           this->args_values_[this->arg_] = (char*)(new bool);
@@ -246,15 +246,15 @@ void PgSQLHaveArgs::SetArg(bool arg)
  */
 void PgSQLHaveArgs::SetArg(double arg)
 {
-  if (this->stmt)
+  if (!this->stmt_name.empty())
     {
       assert(this->args_format_);
       assert(this->args_length_);
       assert(this->args_values_);
       if (!this->args_format_[this->arg_]
-          || (this->args_length_ != sizeof(double)))
+          || (this->args_length_[this->arg_] != sizeof(double)))
         {
-          this->DeleteArg(this->arg_);
+          this->CleanArg(this->arg_);
           this->args_format_[this->arg_] = 1;
           this->args_length_[this->arg_] = sizeof(double);
           this->args_values_[this->arg_] = (char*)(new double);
@@ -278,15 +278,15 @@ void PgSQLHaveArgs::SetArg(double arg)
  */
 void PgSQLHaveArgs::SetArg(int arg)
 {
-  if (this->stmt)
+  if (!this->stmt_name.empty())
     {
       assert(this->args_format_);
       assert(this->args_length_);
       assert(this->args_values_);
       if (!this->args_format_[this->arg_]
-          || (this->args_length_ != sizeof(int)))
+          || (this->args_length_[this->arg_] != sizeof(int)))
         {
-          this->DeleteArg(this->arg_);
+          this->CleanArg(this->arg_);
           this->args_format_[this->arg_] = 1;
           this->args_length_[this->arg_] = sizeof(int);
           this->args_values_[this->arg_] = (char*)(new int);
@@ -310,15 +310,15 @@ void PgSQLHaveArgs::SetArg(int arg)
  */
 void PgSQLHaveArgs::SetArg(short arg)
 {
-  if (this->stmt)
+  if (!this->stmt_name.empty())
     {
       assert(this->args_format_);
       assert(this->args_length_);
       assert(this->args_values_);
       if (!this->args_format_[this->arg_]
-          || (this->args_length_ != sizeof(short)))
+          || (this->args_length_[this->arg_] != sizeof(short)))
         {
-          this->DeleteArg(this->arg_);
+          this->CleanArg(this->arg_);
           this->args_format_[this->arg_] = 1;
           this->args_length_[this->arg_] = sizeof(short);
           this->args_values_[this->arg_] = (char*)(new short);
@@ -342,14 +342,14 @@ void PgSQLHaveArgs::SetArg(short arg)
  */
 void PgSQLHaveArgs::SetArg(const std::string& arg)
 {
-  if (this->stmt)
+  if (!this->stmt_name.empty())
     {
       assert(this->args_format_);
       assert(this->args_length_);
       assert(this->args_values_);
       if (this->args_format_[this->arg_])
 	{
-	  this->DeleteArg(this->arg_);
+	  this->CleanArg(this->arg_);
 	  this->args_format_[this->arg_] = 0;
 	}
       this->args_length_[this->arg_] = arg.size();
@@ -361,7 +361,7 @@ void PgSQLHaveArgs::SetArg(const std::string& arg)
 
       // XXX : potential leak
       safe_str = new char[arg.size() * 2 + 1];
-      PQescapeStringConn(this->pgconn,
+      PQescapeStringConn(this->pgconn_,
                          safe_str,
                          arg.c_str(),
                          arg.size(),

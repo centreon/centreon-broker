@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <sstream>
 #include "db/postgresql/insert.h"
 
 using namespace CentreonBroker::DB;
@@ -83,7 +84,7 @@ PgSQLInsert::PgSQLInsert(const PgSQLInsert& pginsert)
  *
  *  Copy data from the given object to the current instance.
  *
- *  \param[in] myinsert Object to copy data from.
+ *  \param[in] pginsert Object to copy data from.
  *
  *  \return *this
  */
@@ -127,7 +128,7 @@ void PgSQLInsert::Execute()
   // If the query has not been prepared, the current state of the query is
   // 'INSERT INTO "table"(field1, ..., fieldN) VALUES(value1, ..., valueN, ' so
   // finish it
-  if (!this->stmt)
+  if (this->stmt_name.empty())
     {
       // XXX : fix because the query object cannot handle a second execution
       this->query.resize(this->query.size() - 2);
@@ -168,7 +169,7 @@ void PgSQLInsert::Prepare()
     {
       std::stringstream ss;
 
-      ss << '"' << i + 1;
+      ss << '$' << i + 1;
       this->query.append(ss.str());
       this->query.append(", ");
     }
@@ -188,7 +189,7 @@ void PgSQLInsert::Prepare()
  */
 void PgSQLInsert::SetArg(bool arg)
 {
-  if (!this->stmt && this->query.empty())
+  if (this->stmt_name.empty() && this->query.empty())
     this->GenerateQueryBeginning();
   this->PgSQLHaveArgs::SetArg(arg);
   this->query.append(", ");
@@ -202,7 +203,7 @@ void PgSQLInsert::SetArg(bool arg)
  */
 void PgSQLInsert::SetArg(double arg)
 {
-  if (!this->stmt && this->query.empty())
+  if (this->stmt_name.empty() && this->query.empty())
     this->GenerateQueryBeginning();
   this->PgSQLHaveArgs::SetArg(arg);
   this->query.append(", ");
@@ -216,7 +217,7 @@ void PgSQLInsert::SetArg(double arg)
  */
 void PgSQLInsert::SetArg(int arg)
 {
-  if (!this->stmt && this->query.empty())
+  if (this->stmt_name.empty() && this->query.empty())
     this->GenerateQueryBeginning();
   this->PgSQLHaveArgs::SetArg(arg);
   this->query.append(", ");
@@ -230,7 +231,7 @@ void PgSQLInsert::SetArg(int arg)
  */
 void PgSQLInsert::SetArg(short arg)
 {
-  if (!this->stmt && this->query.empty())
+  if (this->stmt_name.empty() && this->query.empty())
     this->GenerateQueryBeginning();
   this->PgSQLHaveArgs::SetArg(arg);
   this->query.append(", ");
@@ -244,7 +245,7 @@ void PgSQLInsert::SetArg(short arg)
  */
 void PgSQLInsert::SetArg(const std::string& arg)
 {
-  if (!this->stmt && this->query.empty())
+  if (this->stmt_name.empty() && this->query.empty())
     this->GenerateQueryBeginning();
   this->PgSQLHaveArgs::SetArg(arg);
   this->query.append(", ");

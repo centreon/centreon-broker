@@ -34,7 +34,7 @@ using namespace CentreonBroker::DB;
  *  Expand the query object to a literal query string comprehensible by
  *  PostgreSQL.
  */
-void PgSQLDelete::GenerateQuery()
+void PgSQLDelete::GenerateQueryBeginning()
 {
   this->query = "DELETE FROM \"";
   this->query.append(this->table);
@@ -111,7 +111,7 @@ PgSQLDelete::~PgSQLDelete() {}
 void PgSQLDelete::Execute()
 {
   // If the query has not been prepared, generate the query string.
-  if (!this->stmt)
+  if (this->stmt_name.empty())
     {
       // Generate the first part of the query.
       this->GenerateQueryBeginning();
@@ -137,7 +137,7 @@ void PgSQLDelete::Prepare()
   this->GenerateQueryBeginning();
 
   // Append the predicate (if any).
-  this->PgSQLHavePredicate::PreparePredicate(this->query);
+  this->PgSQLHavePredicate::PreparePredicate(this->query, 0);
 
   // Prepare the query against the DB server.
   this->PgSQLHaveArgs::Prepare();

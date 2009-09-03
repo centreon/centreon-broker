@@ -31,7 +31,7 @@ namespace          CentreonBroker
   {
     class          PgSQLDelete : public Delete,
                                  public PgSQLHaveArgs,
-                                 public MySQLHavePredicate
+                                 public PgSQLHavePredicate
     {
      private:
       void         GenerateQueryBeginning();

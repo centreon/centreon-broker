@@ -35,6 +35,7 @@
 # include "db/postgresql/select.h"
 # include "db/postgresql/truncate.h"
 # include "db/postgresql/update.h"
+# include "mapping.h"
 
 namespace              CentreonBroker
 {
@@ -53,12 +54,12 @@ namespace              CentreonBroker
     {
      private:
       PGconn*          pgconn_;
-                       PgSQLConnection(const PgSQLConnection& pgconn) throw ();
-      PgSQLConnection& operator=(const PgSQLConnection& pgconn) throw ();
+                       PgSQLConnection(const PgSQLConnection& pgconn);
+      PgSQLConnection& operator=(const PgSQLConnection& pgconn);
 
      public:
-                       PgSQLConnection() throw (DBException);
-                       ~PgSQLConnection() throw ();
+                       PgSQLConnection();
+                       ~PgSQLConnection();
       void             AutoCommit(bool activate = true);
       void             Commit();
       void             Connect(const std::string& host,
@@ -89,9 +90,9 @@ namespace              CentreonBroker
        *  \return A new MappedSelect query object.
        */
       template         <typename T>
-      MappedSelect<T>* GetMappedSelect(const MappingSetter<T>& mapping)
+      MappedSelect<T>* GetMappedSelect(const MappingSetters<T>& mapping)
       {
-	return (new PgSQLMappedSelect(this->pgconn_, mapping));
+	return (new PgSQLMappedSelect<T>(this->pgconn_, mapping));
       }
 
       /**

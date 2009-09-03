@@ -22,6 +22,7 @@
 # define DB_POSTGRESQL_QUERY_H_
 
 # include <libpq-fe.h>
+# include <string>
 # include "db/query.h"
 
 namespace          CentreonBroker
@@ -32,26 +33,26 @@ namespace          CentreonBroker
     {
      private:
       static int   query_nb;
-                   PgSQLQuery(const PgSQLQuery& pgquery) throw ();
-      PgSQLQuery&  operator=(const PgSQLQuery& pgquery) throw ();
+                   PgSQLQuery(const PgSQLQuery& pgquery);
+      PgSQLQuery&  operator=(const PgSQLQuery& pgquery);
 
      protected:
-      unsigned int nparams_;
-      int*         param_format_;
-      int*         param_length_;
-      char**       param_values_;
       PGconn*      pgconn_;
-      std::string  query_;
-      PGresult*    result_;
-      std::string  stmt_name_;
+      std::string  query;
+      PGresult*    result;
+      std::string  stmt_name;
+                   PgSQLQuery(PGconn* pgconn);
 
      public:
-                   PgSQLQuery(PGconn* pgconn) throw ();
       virtual      ~PgSQLQuery();
-      void         Execute() throw (DBException);
+      virtual void Execute();
+      void         Execute(unsigned int arg_count,
+                           char** values,
+                           int* lengths,
+                           int* format);
       virtual void Prepare();
     };
   }
 }
 
-#endif /* !DB_MYSQL_QUERY_H_ */
+#endif /* !DB_POSTGRESQL_QUERY_H_ */

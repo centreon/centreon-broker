@@ -18,6 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
+#include <cassert>
+#include <cstdlib>
+#include "db/db_exception.h"
 #include "db/postgresql/query.h"
 #include "logging.h"
 
@@ -38,21 +41,35 @@ int PgSQLQuery::query_nb = 0;
 **************************************/
 
 /**
- *  PgSQLQuery copy constructor. Because queries are not copyable, this is
- *  declared private.
+ *  \brief PgSQLQuery copy constructor.
+ *
+ *  Because queries are not copyable, this method is declared private. Any
+ *  attempt to use it will result in a call to abort().
+ *
+ *  \param[in] pgquery Unused.
  */
-PgSQLQuery::PgSQLQuery(const PgSQLQuery& pgquery) throw () : Query()
+PgSQLQuery::PgSQLQuery(const PgSQLQuery& pgquery) : Query(pgquery)
 {
   (void)pgquery;
+  assert(false);
+  abort();
 }
 
 /**
- *  PgSQLQuery operator= overload. Because queries are not copyable, this is
- *  declared private.
+ *  \brief Overload of the assignment operator.
+ *
+ *  Because queries are not copyable, this method is declared private. Any
+ *  attempt to use it will result in a call to abort().
+ *
+ *  \param[in] pgquery Unused.
+ *
+ *  \return *this
  */
-PgSQLQuery& PgSQLQuery::operator=(const PgSQLQuery& pgquery) throw ()
+PgSQLQuery& PgSQLQuery::operator=(const PgSQLQuery& pgquery)
 {
   (void)pgquery;
+  assert(false);
+  abort();
   return (*this);
 }
 
@@ -63,104 +80,158 @@ PgSQLQuery& PgSQLQuery::operator=(const PgSQLQuery& pgquery) throw ()
 **************************************/
 
 /**
- *  PgSQLQuery constructor. It needs the PgSQL connection object from which it
- *  depends.
+ *  \brief PgSQLQuery constructor.
+ *
+ *  Build a PostgreSQL query using the PostgreSQL connection object from which
+ *  it depends.
+ *
+ *  \param[in] pgconn PostgreSQL connection object.
  */
-PgSQLQuery::PgSQLQuery(PGconn* pgconn) throw ()
-  : nparams_(0),
-    param_format_(NULL),
-    param_length_(NULL),
-    param_values_(NULL),
-    pgconn_(pgconn),
-    result_(NULL)
-{
-}
+PgSQLQuery::PgSQLQuery(PGconn* pgconn)
+  : pgconn_(pgconn),
+    result(NULL) {}
 
 /**
- *  PgSQLQuery destructor.
+ *  \brief PgSQLQuery destructor.
+ *
+ *  Delete all ressources acquired by this query.
  */
 PgSQLQuery::~PgSQLQuery()
 {
-  assert(this->pgconn_);
   // XXX : DEALLOCATE statement
-  if (this->result_)
-    PQclear(this->result_);
+  if (this->result)
+    PQclear(this->result);
 }
 
 /**
  *  Execute the query.
  */
-void PgSQLQuery::Execute() throw (DBException)
+void PgSQLQuery::Execute()
 {
+  if (this->result)
+    PQclear(this->result);
+  if (!this->stmt_name.empty())
+    {
 #ifndef NDEBUG
-  logging.LogDebug("Executing PostgreSQL prepared statement...");
+      logging.LogDebug("Executing PostgreSQL prepared statement...");
 #endif /* !NDEBUG */
-  assert(!this->stmt_name_.empty());
-  if (this->result_)
-    PQclear(this->result_);
-  this->result_ = PQexecPrepared(this->pgconn_,
-                                 this->stmt_name_.c_str(),
-                                 this->nparams_,
-                                 this->param_values_,
-                                 this->param_length_,
-                                 this->param_format_,
-                                 0);
-  if (!this->result_)
-    throw (DBException(0,
-		       DBException::QUERY_EXECUTION,
-		       "Could not allocate memory."));
-  else if (PQresultStatus(this->result_) != PGRES_COMMAND_OK
-	   && PQresultStatus(this->result_) != PGRES_TUPLES_OK)
+      this->result = PQexecPrepared(this->pgconn_,
+                                    this->stmt_name.c_str(),
+                                    0,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    0);
+    }
+  else
+    {
+#ifndef NDEBUG
+      logging.LogDebug("Executing PostgreSQL standard query ...");
+      logging.LogDebug(this->query.c_str());
+#endif /* !NDEBUG */
+      this->result = PQexec(this->pgconn_, this->query.c_str());
+    }
+  if (!this->result)
     throw (DBException(0,
                        DBException::QUERY_EXECUTION,
-                       PQresultErrorMessage(this->result_)));
+                       "Could not allocate memory."));
+  else if (PQresultStatus(this->result) != PGRES_COMMAND_OK
+           && PQresultStatus(this->result) != PGRES_TUPLES_OK)
+    {
+      DBException dbe(0,
+                      DBException::QUERY_EXECUTION,
+                      PQresultErrorMessage(this->result));
+
+      PQclear(this->result);
+      this->result = NULL;
+      throw (dbe);
+    }
   return ;
 }
 
 /**
- *  Prepare the query.
+ *  Execute the query.
+ */
+void PgSQLQuery::Execute(unsigned int arg_count,
+                         char** values,
+                         int* lengths,
+                         int* format)
+{
+  if (this->result)
+    PQclear(this->result);
+#ifndef NDEBUG
+  logging.LogDebug("Executing PostgreSQL prepared statement...");
+#endif /* !NDEBUG */
+  this->result = PQexecPrepared(this->pgconn_,
+                                this->stmt_name.c_str(),
+                                arg_count,
+                                values,
+                                lengths,
+                                format,
+                                0);
+  if (!this->result)
+    throw (DBException(0,
+                       DBException::QUERY_EXECUTION,
+                       "Could not allocate memory."));
+  else if (PQresultStatus(this->result) != PGRES_COMMAND_OK
+           && PQresultStatus(this->result) != PGRES_TUPLES_OK)
+    {
+      DBException dbe(0,
+                      DBException::QUERY_EXECUTION,
+                      PQresultErrorMessage(this->result));
+
+      PQclear(this->result);
+      this->result = NULL;
+      throw (dbe);
+    }
+  return ;
+}
+
+/**
+ *  \brief Prepare the query.
+ *
+ *  Prepare the query on the PostgreSQL server for later execution.
  */
 void PgSQLQuery::Prepare()
 {
 #ifndef NDEBUG
-  logging.LogDebug("Preparing PostgreSQL statement...", true);
-  logging.LogDebug(this->query_.c_str());
-  logging.Deindent();
+  logging.LogDebug("Preparing PostgreSQL statement...");
+  logging.LogDebug(this->query.c_str());
 #endif /* !NDEBUG */
+
   // Generate the statement name
   {
     std::stringstream ss;
 
     // XXX : query_nb should be locked
     ss << "stmt" << ++query_nb;
-    this->stmt_name_ = ss.str();
+    this->stmt_name = ss.str();
   }
+
   // Prepare the query
-  {
-    PGresult* res;
+  PGresult* res;
 
-    res = PQprepare(this->pgconn_,
-		    this->stmt_name_.c_str(),
-		    this->query_.c_str(),
-		    0,
-		    NULL);
-    if (!res)
-      {
-	this->stmt_name_.clear();
-	throw (DBException(0,
-			   DBException::QUERY_PREPARATION,
-			   "Could not allocate memory."));
-      }
-    else if (PQresultStatus(res) != PGRES_COMMAND_OK)
-      {
-	DBException dbe(0,
-			DBException::QUERY_PREPARATION,
-			PQresultErrorMessage(res));
+  res = PQprepare(this->pgconn_,
+                  this->stmt_name.c_str(),
+                  this->query.c_str(),
+                  0,
+                  NULL);
+  if (!res)
+    {
+      this->stmt_name.clear();
+      throw (DBException(0,
+                         DBException::QUERY_PREPARATION,
+                         "Could not allocate memory."));
+    }
+  else if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+      DBException dbe(0,
+                      DBException::QUERY_PREPARATION,
+                      PQresultErrorMessage(res));
 
-	this->stmt_name_.clear();
-	PQclear(res);
-	throw (dbe);
-      }
-  }
+      this->stmt_name.clear();
+      PQclear(res);
+      throw (dbe);
+    }
   return ;
 }

@@ -40,6 +40,7 @@ namespace                 CentreonBroker
                                                private PredicateVisitor
     {
      private:
+      unsigned int        current_arg_;
       std::string*        query_;
       void                Visit(const And& a_n_d);
       void                Visit(const Equal& equal);
@@ -55,7 +56,8 @@ namespace                 CentreonBroker
       PgSQLHavePredicate& operator=(const PgSQLHavePredicate& pghp);
 
      public:
-      void                PreparePredicate(std::string& query);
+      void                PreparePredicate(std::string& query,
+                                           unsigned int current_arg);
       void                ProcessPredicate(std::string& query);
     };
   }

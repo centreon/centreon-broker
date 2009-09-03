@@ -557,15 +557,15 @@ CREATE TABLE IF NOT EXISTS `hosts_parenthosts` (
 
 
 CREATE TABLE IF NOT EXISTS `log` (
-  `log_id` int(11) NOT NULL auto_increment,
-  `ctime` int(11) default NULL,
+  `log_id` int NOT NULL auto_increment,
+  `ctime` int default NULL,
   `host_name` varchar(255) default NULL,
-  `instance` int(11) NOT NULL default '1',
+  `instance` int NOT NULL default '1',
   `msg_type` enum('0','1','2','3','4','5','6','7','8','9','10','11') NOT NULL,
   `notification_cmd` varchar(255) default NULL,
   `notification_contact` varchar(255) default NULL,
   `output` text,
-  `retry` int(255) NOT NULL,
+  `retry` int NOT NULL,
   `service_description` varchar(255) default NULL,
   `status` varchar(255) default NULL,
   `type` varchar(255) default NULL,
