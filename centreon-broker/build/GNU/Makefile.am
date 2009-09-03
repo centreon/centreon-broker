@@ -20,7 +20,15 @@
 
 AUTOMAKE_OPTIONS=	subdir-objects
 
-bin_PROGRAMS	=	cb2db
+bin_PROGRAMS	=	cb2db cbmod
+
+
+#######################################
+#                                     #
+#                cb2db                #
+#                                     #
+#######################################
+
 cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/client_acceptor.cpp			\
 			../../src/conf/global.cpp			\
@@ -106,3 +114,16 @@ endif
 if TLS
 cb2db_SOURCES +=	../../src/io/tls.cpp
 endif
+
+
+#######################################
+#                                     #
+#                cbmod                #
+#                                     #
+#######################################
+
+cbmod_CXXFLAGS	=	$(CXXFLAGS) -I../../inc/cbmod
+
+cbmod_SOURCES	=	../../src/cbmod/callbacks.cpp			\
+			../../src/cbmod/cbmod.cpp			\
+			../../src/cbmod/dbuffer.cpp
