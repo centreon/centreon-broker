@@ -20,7 +20,7 @@
 
 #include <cassert>
 #include <sstream>
-#include "db/mysql/have_predicate.h"
+#include "db/oracle/have_predicate.h"
 
 using namespace CentreonBroker::DB;
 
@@ -37,7 +37,7 @@ using namespace CentreonBroker::DB;
  *
  *  \param[in] a_n_d Predicate to expand.
  */
-void MySQLHavePredicate::Visit(const And& a_n_d)
+void OracleHavePredicate::Visit(const And& a_n_d)
 {
   a_n_d.Left().Accept(*this);
   this->query_->append(" AND ");
@@ -52,7 +52,7 @@ void MySQLHavePredicate::Visit(const And& a_n_d)
  *
  *  \param[in] equal Predicate to expand.
  */
-void MySQLHavePredicate::Visit(const Equal& equal)
+void OracleHavePredicate::Visit(const Equal& equal)
 {
   equal.Left().Accept(*this);
   this->query_->append("=");
@@ -67,7 +67,7 @@ void MySQLHavePredicate::Visit(const Equal& equal)
  *
  *  \param[in] field Field to append.
  */
-void MySQLHavePredicate::Visit(const Field& field)
+void OracleHavePredicate::Visit(const Field& field)
 {
   this->query_->append(field.Name());
   return ;
@@ -76,18 +76,20 @@ void MySQLHavePredicate::Visit(const Field& field)
 /**
  *  \brief Add a placeholder in the predicate.
  *
- *  When exploring a predicate and a placeholder is found, a ? is appened to
- *  the predicate string. This is an argument that will have to be set later
- *  before query execution.
+ *  When exploring a predicate and a placeholder is found, the token ':X' where
+ *  X is a number is appened to the predicate string. This is an argument that
+ *  will have to be set later before query execution.
  *
  *  \param[in] placeholder Specify that the query contains an undefined
  *                         argument.
  */
-void MySQLHavePredicate::Visit(const Placeholder& placeholder)
+void OracleHavePredicate::Visit(const Placeholder& placeholder)
 {
+  std::ostringstream ss;
+
   (void)placeholder;
-  this->query_->append("?");
-  this->placeholders++;
+  ss << ":" << this->current_arg_ + ++this->placeholders;
+  this->query_->append(ss.str());
   return ;
 }
 
@@ -98,7 +100,7 @@ void MySQLHavePredicate::Visit(const Placeholder& placeholder)
  *
  *  \param[in] terminal Terminal to append.
  */
-void MySQLHavePredicate::Visit(const Terminal& terminal)
+void OracleHavePredicate::Visit(const Terminal& terminal)
 {
   std::stringstream ss;
 
@@ -136,46 +138,47 @@ void MySQLHavePredicate::Visit(const Terminal& terminal)
 **************************************/
 
 /**
- *  \brief MySQLHavePredicate default constructor.
+ *  \brief OracleHavePredicate default constructor.
  *
  *  Initialize members to their default value.
  */
-MySQLHavePredicate::MySQLHavePredicate() : placeholders(0) {}
+OracleHavePredicate::OracleHavePredicate() : placeholders(0) {}
 
 /**
- *  \brief MySQLHavePredicate copy constructor.
+ *  \brief OracleHavePredicate copy constructor.
  *
  *  Build the new object by copying data from the given object.
  *
- *  \param[in] myhp Object to copy data from.
+ *  \param[in] ohp Object to copy data from.
  */
-MySQLHavePredicate::MySQLHavePredicate(const MySQLHavePredicate& myhp)
-  : HaveArgs(myhp), HavePredicate(myhp), PredicateVisitor(myhp)
+OracleHavePredicate::OracleHavePredicate(const OracleHavePredicate& ohp)
+  : HaveArgs(ohp), HavePredicate(ohp), PredicateVisitor(ohp)
 {
-  this->placeholders = myhp.placeholders;
+  this->placeholders = ohp.placeholders;
 }
 
 /**
- *  \brief MySQLHavePredicate destructor.
+ *  \brief OracleHavePredicate destructor.
  *
  *  Release previously acquired ressources.
  */
-MySQLHavePredicate::~MySQLHavePredicate() {}
+OracleHavePredicate::~OracleHavePredicate() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
  *  Copy data from the given object to the current instance.
  *
- *  \param[in] myhp Object to copy data from.
+ *  \param[in] ohp Object to copy data from.
  *
  *  \return *this
  */
-MySQLHavePredicate& MySQLHavePredicate::operator=(const MySQLHavePredicate& m)
+OracleHavePredicate& OracleHavePredicate::operator=(
+  const OracleHavePredicate& ohp)
 {
-  this->HavePredicate::operator=(m);
-  this->PredicateVisitor::operator=(m);
-  this->placeholders = m.placeholders;
+  this->HavePredicate::operator=(ohp);
+  this->PredicateVisitor::operator=(ohp);
+  this->placeholders = ohp.placeholders;
   return (*this);
 }
 
@@ -192,8 +195,10 @@ MySQLHavePredicate& MySQLHavePredicate::operator=(const MySQLHavePredicate& m)
  *
  *  \param[out] query Query string on which the predicate will be append.
  */
-void MySQLHavePredicate::PreparePredicate(std::string& query)
+void OracleHavePredicate::PreparePredicate(std::string& query,
+                                           unsigned int current_arg)
 {
+  this->current_arg_ = current_arg;
   if (this->predicate)
     {
       this->query_ = &query;
@@ -211,9 +216,9 @@ void MySQLHavePredicate::PreparePredicate(std::string& query)
  *
  *  \param[out] query Query string on which the predicate will be append.
  */
-void MySQLHavePredicate::ProcessPredicate(std::string& query)
+void OracleHavePredicate::ProcessPredicate(std::string& query)
 {
   if (this->predicate)
-    this->PreparePredicate(query);
+    this->PreparePredicate(query, 0);
   return ;
 }
