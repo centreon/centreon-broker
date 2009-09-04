@@ -570,6 +570,12 @@ void Manager::Update()
       else
 #endif /* USE_MYSQL */
 
+#ifdef USE_ORACLE
+      if (Output::ORACLE == output.GetType())
+        dbo.reset(new DBOutput(DB::Connection::ORACLE));
+      else
+#endif /* USE_ORACLE */
+
 #ifdef USE_POSTGRESQL
       if (Output::POSTGRESQL == output.GetType())
 	dbo.reset(new DBOutput(DB::Connection::POSTGRESQL));

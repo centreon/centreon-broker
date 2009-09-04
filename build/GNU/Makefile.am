@@ -95,6 +95,15 @@ endif
 
 # Add Oracle files if Oracle is enabled
 if ORACLE
+cb2db_SOURCES +=	../../src/db/oracle/connection.cpp		\
+			../../src/db/oracle/delete.cpp			\
+			../../src/db/oracle/have_args.cpp		\
+			../../src/db/oracle/have_predicate.cpp		\
+			../../src/db/oracle/insert.cpp			\
+			../../src/db/oracle/query.cpp			\
+			../../src/db/oracle/select.cpp			\
+			../../src/db/oracle/truncate.cpp		\
+			../../src/db/oracle/update.cpp
 endif
 
 # Add PostgreSQL files if PostgreSQL is enabled

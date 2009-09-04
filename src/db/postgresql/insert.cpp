@@ -158,20 +158,19 @@ unsigned int PgSQLInsert::InsertId()
  */
 void PgSQLInsert::Prepare()
 {
-  int fields_nb;
+  unsigned int fields_nb;
 
   // Generate the first part of the query
   this->GenerateQueryBeginning();
 
-  // Append as many ? as fields
+  // Append as many $X as fields
   fields_nb = this->fields.size();
-  for (int i = 0; i < fields_nb; i++)
+  for (unsigned int i = 1; i <= fields_nb; ++i)
     {
-      std::stringstream ss;
+      std::ostringstream ss;
 
-      ss << '$' << i + 1;
+      ss << '$' << i << ", ";
       this->query.append(ss.str());
-      this->query.append(", ");
     }
   this->query.resize(this->query.size() - 2);
   this->query.append(")");

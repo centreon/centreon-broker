@@ -110,7 +110,7 @@ namespace                 CentreonBroker
 # endif /* USE_MYSQL */
 
 # ifdef USE_ORACLE
-//# include "db/oracle/connection.h"
+# include "db/oracle/connection.h"
 # endif /* USE_ORACLE */
 
 # ifdef USE_POSTGRESQL
@@ -140,6 +140,9 @@ CentreonBroker::DB::MappedInsert<T>*               // Return type
 
 # ifdef USE_ORACLE
      case ORACLE:
+      insert = dynamic_cast<OracleConnection*>(this)
+        ->GetMappedInsert<T>(mapping);
+      break ;
 # endif /* USE_ORACLE */
 
 # ifdef USE_POSTGRESQL
@@ -175,12 +178,15 @@ CentreonBroker::DB::MappedSelect<T>*               // Return type
 # ifdef USE_MYSQL
      case MYSQL:
       select = dynamic_cast<MySQLConnection*>(this)
-	->GetMappedSelect<T>(mapping);
+        ->GetMappedSelect<T>(mapping);
       break ;
 # endif /* USE_MYSQL */
 
 # ifdef USE_ORACLE
      case ORACLE:
+      select = dynamic_cast<OracleConnection*>(this)
+        ->GetMappedSelect<T>(mapping);
+      break ;
 # endif /* USE_ORACLE */
 
 # ifdef USE_POSTGRESQL
@@ -221,6 +227,9 @@ CentreonBroker::DB::MappedUpdate<T>*               // Return type
 
 # ifdef USE_ORACLE
      case ORACLE:
+      update = dynamic_cast<OracleConnection*>(this)
+        ->GetMappedUpdate<T>(mapping);
+      break ;
 # endif /* USE_ORACLE */
 
 # ifdef USE_POSTGRESQL

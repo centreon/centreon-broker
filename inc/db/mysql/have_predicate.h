@@ -51,11 +51,10 @@ namespace                 CentreonBroker
       unsigned int        placeholders;
                           MySQLHavePredicate();
                           MySQLHavePredicate(const MySQLHavePredicate& myhp);
+      virtual             ~MySQLHavePredicate();
       MySQLHavePredicate& operator=(const MySQLHavePredicate& myhp);
 
      public:
-      // XXX : move to protected
-      virtual             ~MySQLHavePredicate();
       void                PreparePredicate(std::string& query);
       void                ProcessPredicate(std::string& query);
     };
