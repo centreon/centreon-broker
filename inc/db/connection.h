@@ -21,6 +21,7 @@
 #ifndef DB_CONNECTION_H_
 # define DB_CONNECTION_H_
 
+# include <string>
 # include "db/db_exception.h"
 
 namespace                 CentreonBroker
