@@ -886,7 +886,7 @@ void DBOutput::operator()()
 	  // While no exception happens (like when connection to DB is dropped)
           while (1)
             {
-	      // Wait for an event with timeout and execute proper commands
+              // Wait for an event with timeout and execute proper commands
               event = this->events_.TimedWait(this->timeout_);
               if (event)
                 this->ProcessEvent(event);

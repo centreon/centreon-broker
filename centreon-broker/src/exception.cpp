@@ -18,9 +18,41 @@
 **  For more information : contact@centreon.com
 */
 
+#include <stddef.h>
 #include "exception.h"
 
 using namespace CentreonBroker;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Copy internal data from an object to the current instance.
+ *
+ *  Copy data members defined within the Exception class (namely the error code
+ *  and the message) from the given object to the current instance. This method
+ *  is used by the copy constructor and the assignment operator.
+ *
+ *  \param[in] e Object to copy data from.
+ *
+ *  \see Exception
+ *  \see operator=
+ */
+void Exception::InternalCopy(const Exception& e) throw ()
+{
+  this->ec_ = e.ec_;
+  this->msg_ = e.msg_;
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
 
 /**
  *  \brief Exception copy constructor.
@@ -29,36 +61,26 @@ using namespace CentreonBroker;
  *
  *  \param[in] e Object to copy data from.
  */
-Exception::Exception(const Exception& e) : boost::system::system_error(e) {}
+Exception::Exception(const Exception& e) throw () : std::exception(e)
+{
+  this->InternalCopy(e);
+}
 
 /**
- *  Build an Exception from a Boost system_error.
- *
- *
- *  \param[in] se Boost exception containing data that will be copied to the
- *                current instance.
- */
-Exception::Exception(const boost::system::system_error& se)
-  : boost::system::system_error(se) {}
-
-/**
- *  Build an Exception from an error_code.
+ *  Build an Exception from an error code.
  *
  *  \param[in] error_code Exception error code.
  */
-Exception::Exception(int error_code) : boost::system::system_error(
-  boost::system::error_code(error_code, boost::system::system_category)) {}
+Exception::Exception(int error_code) throw () : ec_(error_code), msg_(NULL) {}
 
 /**
- *  Build an Exception from an error_code and a message.
+ *  Build an Exception from an error code and a message.
  *
  *  \param[in] error_code Exception error code.
  *  \param[in] what_msg   Exception message.
  */
-Exception::Exception(int error_code, const char* what_msg)
-  : boost::system::system_error(
-      boost::system::error_code(error_code, boost::system::system_category),
-      what_msg) {}
+Exception::Exception(int error_code, const char* msg) throw ()
+  : ec_(error_code), msg_(msg) {}
 
 /**
  *  Exception destructor.
@@ -72,8 +94,39 @@ Exception::~Exception() throw () {}
  *
  *  \param[in] e Object to copy data from.
  */
-Exception& Exception::operator=(const Exception& e)
+Exception& Exception::operator=(const Exception& e) throw ()
 {
-  boost::system::system_error::operator=(e);
+  this->std::exception::operator=(e);
+  this->InternalCopy(e);
   return (*this);
+}
+
+/**
+ *  Get the exception error code.
+ *
+ *  \return Exception error code.
+ */
+int Exception::GetErrorCode() const throw ()
+{
+  return (this->ec_);
+}
+
+/**
+ *  Get the exception message.
+ *
+ *  \return exception message.
+ */
+const char* Exception::GetMsg() const throw ()
+{
+  return (this->msg_);
+}
+
+/**
+ *  Get the exception message.
+ *
+ *  \return exception message.
+ */
+const char* Exception::what() const throw ()
+{
+  return (this->GetMsg());
 }

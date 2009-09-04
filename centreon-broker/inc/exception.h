@@ -21,30 +21,36 @@
 #ifndef EXCEPTION_H_
 # define EXCEPTION_H_
 
-# include <boost/system/system_error.hpp>
+# include <exception>
 
-namespace                 CentreonBroker
+namespace         CentreonBroker
 {
   /**
    *  \class Exception exception.h "exception.h"
    *  \brief CentreonBroker root exception class.
    *
    *  Exception is the main class of exceptions thrown within CentreonBroker
-   *  code. It directly subclass boost::system::system_error and only adds the
-   *  ability to construct the exception from an error code and an error
-   *  message (ie. throw (Exception(error_code, error_msg));). For more
-   *  information, please refer to boost::system::system_error.
+   *  code. It directly subclass std::exception. It has the ability to
+   *  construct the exception from an error code and an error message (ie.
+   *  throw (Exception(error_code, error_msg)); ).
    */
-  class                   Exception : public boost::system::system_error
-    {
-     public:
-                          Exception(const Exception& e);
-                          Exception(const boost::system::system_error& se);
-                          Exception(int val);
-                          Exception(int val, const char* msg);
-                          ~Exception() throw ();
-      Exception&          operator=(const Exception& e);
-    };
+  class           Exception : public std::exception
+  {
+   private:
+    int         ec_;
+    const char* msg_;
+    void        InternalCopy(const Exception& e) throw ();
+
+   public:
+                Exception(const Exception& e) throw ();
+                Exception(int val) throw ();
+                Exception(int val, const char* msg) throw ();
+                ~Exception() throw ();
+    Exception&  operator=(const Exception& e) throw ();
+    int         GetErrorCode() const throw ();
+    const char* GetMsg() const throw ();
+    const char* what() const throw ();
+  };
 }
 
 #endif /* !EXCEPTION_H_ */
