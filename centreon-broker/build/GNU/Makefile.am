@@ -20,7 +20,7 @@
 
 AUTOMAKE_OPTIONS=	subdir-objects
 
-bin_PROGRAMS	=	cb2db cbmod
+bin_PROGRAMS	=	cb2db cbmod.so
 
 
 #######################################
@@ -141,15 +141,15 @@ cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 #                                     #
 #######################################
 
-cbmod_SOURCES	=	../../src/cbmod/callbacks.cpp			\
+cbmod_so_SOURCES=	../../src/cbmod/callbacks.cpp			\
 			../../src/cbmod/cbmod.cpp			\
 			../../src/cbmod/dbuffer.cpp			\
 			../../src/cbmod/sender.cpp
 
 # Configure compilation flags properly
-cbmod_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cbmod	\
+cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cbmod	\
 			$(BOOST_CPPFLAGS)
-cbmod_CXXFLAGS	=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS) -shared	\
+cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS) -shared	\
 			-fPIC
-cbmod_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
+cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
 			$(BOOST_THREAD_LIB) $(LIBGNUTLS_LIBS)
