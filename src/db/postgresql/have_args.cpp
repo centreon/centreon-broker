@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <cstring>
 #include <sstream>
 #include "db/db_exception.h"

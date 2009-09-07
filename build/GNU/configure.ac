@@ -28,36 +28,40 @@ m4_include(macros/ax_lib_oracle_oci.m4)
 m4_include(macros/ax_lib_postgresql.m4)
 m4_include(macros/libgnutls.m4)
 
-#
-# Main code
-#
+#######################################
+#                                     #
+#        Autoconf entry point         #
+#                                     #
+#######################################
+
 AC_INIT([CentreonBroker], 0.1.0, mkermagoret@merethis.com, centreonbroker)
 
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
 
-# Check if program should be debug aware
-AC_MSG_CHECKING([whether the program should be compiled in debug mode])
+##
+##  DEBUG
+##
+AC_MSG_CHECKING([whether binaries should be compiled in debug mode])
 AC_ARG_ENABLE([debug],
 	AS_HELP_STRING([--enable-debug], [Debug flags]),
 	[enable_debug=$enableval],
 	[enable_debug="no"])
 AC_MSG_RESULT($enable_debug)
-if test "x$enable_debug" = "xyes"
+if test "x$enable_debug" '!=' 'xyes'
 then
-	DEBUG_CFLAGS="-g";
-else
 	AC_DEFINE(NDEBUG)
 fi
-AC_SUBST([DEBUG_CFLAGS])
 
-# Mandatory Boost dependencies
+##
+##  BOOST
+##
 AX_BOOST_BASE
 AX_BOOST_THREAD
-# We should check if all these libraries are present. If not, compilation will
-# fail. However I don't know how to do it...
 
-# Optional MySQL dependency
+##
+##  MYSQL
+##
 AX_LIB_MYSQL
 if test x"$want_mysql" = "xyes"
 then
@@ -65,7 +69,9 @@ then
 fi
 AM_CONDITIONAL([MYSQL], [test x"$want_mysql" = "xyes"])
 
-# Optional Oracle dependency
+##
+##  ORACLE
+##
 AX_LIB_ORACLE_OCI
 if test x"$HAVE_ORACLE_OCI" = "xyes"
 then
@@ -73,7 +79,9 @@ then
 fi
 AM_CONDITIONAL([ORACLE], [test x"$HAVE_ORACLE_OCI" = "xyes"])
 
-# Optional PostgreSQL dependency
+##
+##  POSTGRESQL
+##
 AX_LIB_POSTGRESQL
 if test x"$want_postgresql" = "xyes"
 then
@@ -81,28 +89,19 @@ then
 fi
 AM_CONDITIONAL([POSTGRESQL], [test x"$want_postgresql" = "xyes"])
 
-# Optional TLS support
-AC_MSG_CHECKING([whether the program should support TLS])
-AC_ARG_ENABLE([tls],
-	AS_HELP_STRING([--enable-tls], [TLS code should be compiled]),
-	[enable_tls=$enableval],
-	[enable_tls="yes"])
-AC_MSG_RESULT($enable_tls)
-if test "x$enable_tls" = "xyes"
+##
+##  TLS
+##
+AM_PATH_LIBGNUTLS
+if test "x$LIBGNUTLS_CFLAGS" != "x"
 then
-	AM_PATH_LIBGNUTLS
 	AC_DEFINE([USE_TLS])
 fi
-AM_CONDITIONAL([TLS], [test x"$enable_tls" = "xyes"])
+AM_CONDITIONAL([TLS], [test x"$LIBGNUTLS_CFLAGS" != "x"])
 
-# Configure tools flags according to previous tests
-CPPFLAGS="$CPPFLAGS -I../../inc $BOOST_CPPFLAGS $MYSQL_CPPFLAGS"
-CXXFLAGS="-std=c++0x -W -Wall -pedantic -O2 $DEBUG_CFLAGS $ORACLE_OCI_CFLAGS \
-	$POSTGRESQL_CFLAGS $LIBGNUTLS_CFLAGS"
-LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $MYSQL_LDFLAGS $ORACLE_OCI_LDFLAGS \
-	$POSTGRESQL_LDFLAGS $LIBGNUTLS_LIBS"
-LIBS="$LIBS $BOOST_ASIO_LIB $BOOST_THREAD_LIB"
-
+##
+##  OUTPUT
+##
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT

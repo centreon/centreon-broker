@@ -13,9 +13,20 @@ AC_DEFUN([AM_PATH_LIBGNUTLS],
 [dnl
 dnl Get the cflags and libraries from the libgnutls-config script
 dnl
-AC_ARG_WITH(libgnutls-prefix,
-          [  --with-libgnutls-prefix=PFX   Prefix where libgnutls is installed (optional)],
-          libgnutls_config_prefix="$withval", libgnutls_config_prefix="")
+AC_MSG_CHECKING([for TLS support])
+AC_ARG_WITH(tls,
+          [  --with-tls=PFX   Prefix where libgnutls is installed (optional)],
+          enable_gnutls="$withval", enable_gnutls="yes")
+
+  if test "x$enable_gnutls" = "xno" ; then
+    AC_MSG_RESULT([no])
+  else
+    AC_MSG_RESULT([yes])
+    if test "x$enable_gnutls" = "xyes" ; then
+      lignutls_config_prefix=""
+    else
+      libgnutls_config_prefix="$enable_gnutls"
+    fi
 
   if test x$libgnutls_config_prefix != x ; then
      if test x${LIBGNUTLS_CONFIG+set} != xset ; then
@@ -155,6 +166,7 @@ main ()
   rm -f conf.libgnutlstest
   AC_SUBST(LIBGNUTLS_CFLAGS)
   AC_SUBST(LIBGNUTLS_LIBS)
+  fi
 ])
 
 dnl *-*wedit:notab*-*  Please keep this as the last line.

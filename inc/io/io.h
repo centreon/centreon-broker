@@ -49,8 +49,8 @@ namespace                  CentreonBroker
                            Stream() throw ();
       virtual              ~Stream();
       virtual void         Close() = 0;
-      virtual unsigned int Receive(char* buffer, unsigned int size) = 0;
-      virtual unsigned int Send(const char* buffer, unsigned int size) = 0;
+      virtual unsigned int Receive(void* buffer, unsigned int size) = 0;
+      virtual unsigned int Send(const void* buffer, unsigned int size) = 0;
     };
 
     /**
