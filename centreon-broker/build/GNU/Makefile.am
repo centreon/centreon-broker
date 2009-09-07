@@ -124,6 +124,16 @@ if TLS
 cb2db_SOURCES +=	../../src/io/tls.cpp
 endif
 
+# Configure compilation flags properly
+cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cb2db	\
+			$(BOOST_CPPFLAGS) $(MYSQL_CPPFLAGS)
+cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(ORACLE_OCI_CFLAGS)		\
+			$(POSTGRESQL_CFLAGS) $(LIBGNUTLS_CFLAGS)
+cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
+			$(BOOST_THREAD_LIB) $(MYSQL_LDFLAGS)		\
+			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
+			$(LIBGNUTLS_LIBS)
+
 
 #######################################
 #                                     #
@@ -131,8 +141,15 @@ endif
 #                                     #
 #######################################
 
-cbmod_CXXFLAGS	=	$(CXXFLAGS) -I../../inc/cbmod
-
 cbmod_SOURCES	=	../../src/cbmod/callbacks.cpp			\
 			../../src/cbmod/cbmod.cpp			\
-			../../src/cbmod/dbuffer.cpp
+			../../src/cbmod/dbuffer.cpp			\
+			../../src/cbmod/sender.cpp
+
+# Configure compilation flags properly
+cbmod_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cbmod	\
+			$(BOOST_CPPFLAGS)
+cbmod_CXXFLAGS	=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS) -shared	\
+			-fPIC
+cbmod_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
+			$(BOOST_THREAD_LIB) $(LIBGNUTLS_LIBS)

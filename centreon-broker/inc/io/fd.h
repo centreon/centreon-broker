@@ -57,9 +57,9 @@ namespace           CentreonBroker
       FDStream&     operator=(const FDStream& fds)
                       throw (CentreonBroker::Exception);
       virtual void  Close() throw ();
-      unsigned int  Receive(char* buffer, unsigned int size)
+      unsigned int  Receive(void* buffer, unsigned int size)
                       throw (CentreonBroker::Exception);
-      unsigned int  Send(const char* buffer, unsigned int size)
+      unsigned int  Send(const void* buffer, unsigned int size)
                       throw (CentreonBroker::Exception);
     };
 

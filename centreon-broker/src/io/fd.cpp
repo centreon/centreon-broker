@@ -167,7 +167,7 @@ void FDStream::Close() throw ()
  *
  *  \return Number of bytes read from the FD. 0 if the FD has been closed.
  */
-unsigned int FDStream::Receive(char* buffer, unsigned int size)
+unsigned int FDStream::Receive(void* buffer, unsigned int size)
   throw (CentreonBroker::Exception)
 {
   int ret;
@@ -191,7 +191,7 @@ unsigned int FDStream::Receive(char* buffer, unsigned int size)
  *  \return Number of bytes actually sent to the network stream. 0 if the FD
  *          has been closed.
  */
-unsigned int FDStream::Send(const char* buffer, unsigned int size)
+unsigned int FDStream::Send(const void* buffer, unsigned int size)
   throw (CentreonBroker::Exception)
 {
   int ret;

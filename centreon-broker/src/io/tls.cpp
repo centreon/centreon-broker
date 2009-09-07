@@ -46,7 +46,7 @@ using namespace CentreonBroker::IO;
  */
 static ssize_t PullHelper(gnutls_transport_ptr_t ptr, void* data, size_t size)
 {
-  return (static_cast<Stream*>(ptr)->Receive(static_cast<char*>(data), size));
+  return (static_cast<Stream*>(ptr)->Receive(data, size));
 }
 
 /**
@@ -57,8 +57,7 @@ static ssize_t PushHelper(gnutls_transport_ptr_t ptr,
                           const void* data,
                           size_t size)
 {
-  return (static_cast<Stream*>(ptr)->Send(static_cast<const char*>(data),
-                                          size));
+  return (static_cast<Stream*>(ptr)->Send(data, size));
 }
 
 /**************************************
@@ -169,7 +168,7 @@ void TLSStream::Close()
  *  \return Number of bytes read from the network stream. 0 if the session has
  *          been shut down.
  */
-unsigned int TLSStream::Receive(char* buffer, unsigned int size)
+unsigned int TLSStream::Receive(void* buffer, unsigned int size)
 {
   int ret;
 
@@ -192,7 +191,7 @@ unsigned int TLSStream::Receive(char* buffer, unsigned int size)
  *  \return Number of bytes actually sent through the TLS session. 0 if the
  *          connection has been shut down.
  */
-unsigned int TLSStream::Send(const char* buffer, unsigned int size)
+unsigned int TLSStream::Send(const void* buffer, unsigned int size)
 {
   int ret;
 
