@@ -45,6 +45,7 @@
 
 AC_DEFUN([AX_LIB_POSTGRESQL],
 [
+    AC_MSG_CHECKING([for PostgreSQL support])
     AC_ARG_WITH([postgresql],
         AC_HELP_STRING([--with-postgresql=@<:@ARG@:>@],
             [use PostgreSQL library @<:@default=no@:>@, optionally specify path to pg_config]
@@ -61,6 +62,7 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
         ],
         [want_postgresql="no"]
     )
+    AC_MSG_RESULT($want_postgresql)
 
     POSTGRESQL_CFLAGS=""
     POSTGRESQL_LDFLAGS=""

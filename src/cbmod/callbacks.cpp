@@ -22,6 +22,13 @@
 #include "callbacks.h"
 #include "dbuffer.h"
 #include "nagios/nebstructs.h"
+#include "sender.h"
+
+// Extern global sender.
+namespace CentreonBroker
+{
+  extern Sender* gl_sender;
+}
 
 /**
  *  \brief Function that process acknowledgement data.
@@ -57,7 +64,8 @@ int CentreonBroker::CallbackAcknowledgement(int callback_type,
       buffer->Append((bool)ack_data->persistent_comment);
       buffer->Append((short)ack_data->state);
 
-      // XXX : send buffer
+      gl_sender->AddData(buffer.get());
+      buffer.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -99,7 +107,8 @@ int CentreonBroker::CallbackComment(int callback_type, void* data) throw ()
       buffer->Append(comment_data->service_description);
       buffer->Append((short)comment_data->source);
 
-      // XXX : send buffer
+      gl_sender->AddData(buffer.get());
+      buffer.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -140,7 +149,8 @@ int CentreonBroker::CallbackDowntime(int callback_type, void* data) throw ()
       // XXX : was_cancelled
       // XXX : was_started
 
-      // XXX : send buffer
+      gl_sender->AddData(buffer.get());
+      buffer.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -205,7 +215,8 @@ int CentreonBroker::CallbackLog(int callback_type, void* data) throw ()
       // XXX : status
       // XXX : type
 
-      // XXX : send buffer
+      gl_sender->AddData(buffer.get());
+      buffer.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -261,7 +272,8 @@ int CentreonBroker::CallbackProgramStatus(int callback_type,
       // XXX : program_end_time
       buffer->Append((int)prog_status_data->program_start);
 
-      // XXX : send buffer
+      gl_sender->AddData(buffer.get());
+      buffer.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}

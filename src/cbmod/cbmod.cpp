@@ -24,8 +24,21 @@
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
 #include "nagios/nebmodules.h"
+#include "sender.h"
 
 using namespace CentreonBroker;
+
+/**************************************
+*                                     *
+*           Global Objects            *
+*                                     *
+**************************************/
+
+// Sender object
+namespace CentreonBroker
+{
+  Sender* gl_sender = NULL;
+}
 
 /**************************************
 *                                     *
@@ -51,7 +64,7 @@ static struct
   };
 
 // Module handle
-static void* gl_mod_handle = NULL;
+static void*   gl_mod_handle = NULL;
 
 /**************************************
 *                                     *
@@ -104,6 +117,17 @@ extern "C"
     (void)reason;
 
     deregister_callbacks();
+    try
+      {
+        if (gl_sender)
+          {
+            delete (gl_sender);
+            gl_sender = NULL;
+          }
+      }
+    // Avoid exception propagation in C code.
+    catch (...) {}
+
     return (0);
   }
 
@@ -146,6 +170,22 @@ extern "C"
                         "convert internal Nagios events to a proper data "    \
                         "stream that can then be parsed by CentreonBroker's " \
                         "cb2db.");
+
+    try
+      {
+        // Create sender.
+        gl_sender = new Sender();
+
+        // Parse configuration file.
+        // XXX
+
+        // Launch worker thread.
+        gl_sender->Run();
+      }
+    catch (...)
+      {
+        return (-1);
+      }
 
     // Register callbacks.
     for (unsigned int i = 0;
