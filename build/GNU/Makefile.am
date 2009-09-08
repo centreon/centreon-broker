@@ -33,6 +33,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/client_acceptor.cpp			\
 			../../src/conf/global.cpp			\
 			../../src/conf/input.cpp			\
+			../../src/conf/lexer.cpp			\
 			../../src/conf/log.cpp				\
 			../../src/conf/manager.cpp			\
 			../../src/conf/output.cpp			\
