@@ -48,6 +48,7 @@ namespace                CentreonBroker
         ASSIGNMENT,
         BLOCK_END,
         BLOCK_START,
+        END,
         PIPE,
         STRING
       };

@@ -298,10 +298,14 @@ bool Lexer::GetToken(Token& token)
 
       // We reached the end of the byte stream.
       if (!c)
-        ret = true;
+        {
+          token.SetType(Token::END);
+          ret = true;
+        }
       // There's some tokenizable data.
       else
         {
+          ret = false;
           switch (c)
             {
              case '=':
@@ -320,7 +324,10 @@ bool Lexer::GetToken(Token& token)
                   c = this->NextChar();
                 } while (c && c != '\n');
               if (!c)
-                ret = true;
+                {
+                  token.SetType(Token::END);
+                  ret = true;
+                }
               // If we haven't reach the end of the file,
               // retrieve the next token
               else

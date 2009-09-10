@@ -73,6 +73,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/file_input.cpp			\
 			../../src/file_output.cpp			\
 			../../src/io/fd.cpp				\
+			../../src/io/file.cpp				\
 			../../src/io/io.cpp				\
 			../../src/io/net4.cpp				\
 			../../src/io/net6.cpp				\
