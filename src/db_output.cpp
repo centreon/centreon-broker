@@ -121,13 +121,19 @@ void DBOutput::Connect()
     {
 #ifdef USE_MYSQL
      case DB::Connection::MYSQL:
-      this->conn_ = new DB::MySQLConnection;
+      this->conn_.reset(new DB::MySQLConnection);
       break;
 #endif /* USE_MYSQL */
 
+#ifdef USE_ORACLE
+     case DB::Connection::ORACLE:
+      this->conn_.reset(new DB::OracleConnection);
+      break ;
+#endif /* USE_ORACLE */
+
 #ifdef USE_POSTGRESQL
      case DB::Connection::POSTGRESQL:
-      this->conn_ = new DB::PgSQLConnection;
+      this->conn_.reset(new DB::PgSQLConnection);
       break ;
 #endif /* USE_POSTGRESQL */
 
@@ -176,42 +182,13 @@ void DBOutput::Connect()
  */
 void DBOutput::Disconnect()
 {
-  // XXX : if statements were in auto_ptr is would be easier
-  if (this->connection_status_stmt_)
-    {
-      delete (this->connection_status_stmt_);
-      this->connection_status_stmt_ = NULL;
-    }
-  if (this->host_stmt_)
-    {
-      delete (this->host_stmt_);
-      this->host_stmt_ = NULL;
-    }
-  if (this->host_status_stmt_)
-    {
-      delete (this->host_status_stmt_);
-      this->host_status_stmt_ = NULL;
-    }
-  if (this->program_status_stmt_)
-    {
-      delete (this->program_status_stmt_);
-      this->program_status_stmt_ = NULL;
-    }
-  if (this->service_stmt_)
-    {
-      delete (this->service_stmt_);
-      this->service_stmt_ = NULL;
-    }
-  if (this->service_status_stmt_)
-    {
-      delete (this->service_status_stmt_);
-      this->service_status_stmt_ = NULL;
-    }
-  if (this->conn_)
-    {
-      delete (this->conn_);
-      this->conn_ = NULL;
-    }
+  this->connection_status_stmt_.reset();
+  this->host_stmt_.reset();
+  this->host_status_stmt_.reset();
+  this->program_status_stmt_.reset();
+  this->service_stmt_.reset();
+  this->service_status_stmt_.reset();
+  this->conn_.reset();
   this->instances_.clear();
   return ;
 }
@@ -282,9 +259,9 @@ void DBOutput::OnEvent(Event* e) throw ()
 void DBOutput::PrepareStatements()
 {
   // ConnectionStatus update statement.
-  this->connection_status_stmt_ =
+  this->connection_status_stmt_.reset(
     this->conn_->GetMappedUpdate<ConnectionStatus>(
-      connection_status_get_mapping);
+      connection_status_get_mapping));
   this->connection_status_stmt_->SetTable("connection_info");
   this->connection_status_stmt_->SetPredicate(DB::Equal(
     DB::Field("instance_id"),
@@ -292,15 +269,14 @@ void DBOutput::PrepareStatements()
   this->connection_status_stmt_->Prepare();
 
   // Host insert statement.
-  this->host_stmt_ = this->conn_->GetMappedInsert<Host>(
-                       host_get_mapping);
+  this->host_stmt_.reset(this->conn_->GetMappedInsert<Host>(host_get_mapping));
   this->host_stmt_->SetTable("host");
   this->host_stmt_->AddField("instance_id");
   this->host_stmt_->Prepare();
 
   // HostStatus update statement.
-  this->host_status_stmt_ = this->conn_->GetMappedUpdate<HostStatus>(
-                              host_status_get_mapping);
+  this->host_status_stmt_.reset(this->conn_->GetMappedUpdate<HostStatus>(
+                                  host_status_get_mapping));
   this->host_status_stmt_->SetTable("host");
   this->host_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
@@ -311,8 +287,8 @@ void DBOutput::PrepareStatements()
   this->host_status_stmt_->Prepare();
 
   // ProgramStatus update statement.
-  this->program_status_stmt_ = this->conn_->GetMappedUpdate<ProgramStatus>(
-                                 program_status_get_mapping);
+  this->program_status_stmt_.reset(this->conn_->GetMappedUpdate<ProgramStatus>(
+                                     program_status_get_mapping));
   this->program_status_stmt_->SetTable("program_status");
   this->program_status_stmt_->SetPredicate(
     DB::Equal(DB::Field("instance_id"),
@@ -320,15 +296,15 @@ void DBOutput::PrepareStatements()
   this->program_status_stmt_->Prepare();
 
   // Service insert statement.
-  this->service_stmt_ = this->conn_->GetMappedInsert<Service>(
-                          service_get_mapping);
+  this->service_stmt_.reset(this->conn_->GetMappedInsert<Service>(
+                              service_get_mapping));
   this->service_stmt_->SetTable("service");
   this->service_stmt_->AddField("instance_id");
   this->service_stmt_->Prepare();
 
   // ServiceStatus update statement.
-  this->service_status_stmt_ = this->conn_->GetMappedUpdate<ServiceStatus>(
-                                 service_status_get_mapping);
+  this->service_status_stmt_.reset(this->conn_->GetMappedUpdate<ServiceStatus>(
+                                     service_status_get_mapping));
   this->service_status_stmt_->SetTable("service");
   this->service_status_stmt_->SetPredicate(
     DB::And(DB::Equal(DB::Field("instance_id"),
@@ -339,6 +315,7 @@ void DBOutput::PrepareStatements()
 			      DB::Placeholder()))
 	    ));
   this->service_status_stmt_->Prepare();
+
   return ;
 }
 
@@ -486,7 +463,7 @@ void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
   try
     {
       this->connection_status_stmt_->SetArg(cs);
-      ((DB::HaveArgs*)this->connection_status_stmt_)->SetArg(
+      ((DB::HaveArgs*)this->connection_status_stmt_.get())->SetArg(
         this->GetInstanceId(cs.instance));
       this->connection_status_stmt_->Execute();
     }
@@ -569,7 +546,7 @@ void DBOutput::ProcessHost(const Host& host)
   logging.LogDebug("Processing Host event...");
 #endif /* !NDEBUG */
   this->host_stmt_->SetArg(host);
-  ((DB::HaveArgs*)this->host_stmt_)->SetArg(this->GetInstanceId(host.instance));
+  ((DB::HaveArgs*)this->host_stmt_.get())->SetArg(this->GetInstanceId(host.instance));
   this->host_stmt_->Execute();
   this->QueryExecuted();
   return ;
@@ -604,9 +581,9 @@ void DBOutput::ProcessHostStatus(const HostStatus& hs)
   try
     {
       this->host_status_stmt_->SetArg(hs);
-      ((DB::HaveArgs*)this->host_status_stmt_)->SetArg(
+      ((DB::HaveArgs*)this->host_status_stmt_.get())->SetArg(
         this->GetInstanceId(hs.instance));
-      ((DB::HaveArgs*)this->host_status_stmt_)->SetArg(hs.host);
+      ((DB::HaveArgs*)this->host_status_stmt_.get())->SetArg(hs.host);
       this->host_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -650,7 +627,7 @@ void DBOutput::ProcessProgramStatus(const ProgramStatus& ps)
   try
     {
       this->program_status_stmt_->SetArg(ps);
-      ((DB::HaveArgs*)(this->program_status_stmt_))->SetArg(
+      ((DB::HaveArgs*)(this->program_status_stmt_.get()))->SetArg(
         this->GetInstanceId(ps.instance));
       this->program_status_stmt_->Execute();
     }
@@ -701,7 +678,7 @@ void DBOutput::ProcessService(const Service& service)
   query.reset();
 
   this->service_stmt_->SetArg(myservice);
-  ((DB::HaveArgs*)this->service_stmt_)->SetArg(
+  ((DB::HaveArgs*)this->service_stmt_.get())->SetArg(
     this->GetInstanceId(myservice.instance));
   this->service_stmt_->Execute();
   this->QueryExecuted();
@@ -719,10 +696,10 @@ void DBOutput::ProcessServiceStatus(const ServiceStatus& ss)
   try
     {
       this->service_status_stmt_->SetArg(ss);
-      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(
+      ((DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(
         this->GetInstanceId(ss.instance));
-      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(ss.host);
-      ((DB::HaveArgs*)this->service_status_stmt_)->SetArg(ss.service);
+      ((DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(ss.host);
+      ((DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(ss.service);
       this->service_status_stmt_->Execute();
     }
   catch (DB::DBException& dbe)
@@ -795,11 +772,6 @@ DBOutput::~DBOutput()
 #endif /* !NDEBUG */
       this->thread_->join();
       delete (this->thread_);
-    }
-  if (this->conn_)
-    {
-      this->conn_->Disconnect();
-      delete (this->conn_);
     }
 }
 
