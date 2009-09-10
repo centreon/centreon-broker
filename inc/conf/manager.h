@@ -58,16 +58,16 @@ namespace             CentreonBroker
                       Manager();
                       Manager(const Manager& manager);
       Manager&        operator=(const Manager& manager);
-      void            Parse(std::list<Input>& inputs,
-                            std::list<Log>& logs,
-                            std::list<Output>& outputs);
+      void            Analyze(std::list<Input>& inputs,
+                              std::list<Log>& logs,
+                              std::list<Output>& outputs);
 
      public:
                       ~Manager();
       void            Close();
       static Manager& GetInstance();
       void            Open(const std::string& filename);
-      void            Update(); // XXX : throw ()
+      void            Update() throw ();
     };
   }
 }

@@ -18,16 +18,17 @@
 **  For more information : contact@centreon.com
 */
 
-#include <algorithm>
 #include <boost/thread/mutex.hpp>
 #include <csignal>
-#include <cstring>
+#include <cstdlib>
+#include <memory>
 #include "client_acceptor.h"
-#include "conf/input.h"
-#include "conf/log.h"
-#include "conf/output.h"
+#include "conf/lexer.h"
 #include "conf/manager.h"
 #include "db_output.h"
+#include "exception.h"
+#include "io/file.h"
+#include "io/io.h"
 #include "io/net4.h"
 #include "io/net6.h"
 #ifdef USE_TLS
@@ -38,6 +39,9 @@
 
 using namespace CentreonBroker;
 using namespace CentreonBroker::Conf;
+
+#define INVALID_TOKEN_MSG "Invalid token encountered while parsing " \
+                          "configuration file ..."
 
 /**************************************
 *                                     *
@@ -73,69 +77,62 @@ Manager& Manager::GetInstance()
 /**
  *  Process configuration options of an Input.
  *
- *  \param[in]  ifs Input stream.
- *  \param[out] in  Object that will be set with extracted parameters.
+ *  \param[in]  lexer Lexer of the configuration file.
+ *  \param[out] in    Object that will be set with extracted parameters.
  */
-static void HandleInput(std::ifstream& ifs, Input& in)
+static void HandleInput(Lexer& lexer, Input& in)
 {
-  char buffer[2048];
-
 #ifndef NDEBUG
-  logging.LogDebug("Input definition...");
+  logging.LogDebug("Input definition ...");
 #endif /* !NDEBUG */
-  ifs.getline(buffer, sizeof(buffer));
-  while (ifs.good())
+  Token var;
+
+  for (lexer.GetToken(var);
+       var.GetType() == Token::STRING;
+       lexer.GetToken(var))
     {
-      char* key;
-      char* value;
+      Token val;
 
-      key = buffer + strspn(buffer, " \t");
-      if ('}' == key[0])
-	break ;
-      value = strchr(key, '=');
-      if (value)
+      // Check if the current token is valid (var name).
+      if (var.GetType() != Token::STRING
+          // And the next one too (=).
+          || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+          // And the next-next one too (var value).
+	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	throw (Exception(0, INVALID_TOKEN_MSG));
+
+      // Extract var strings.
+      const std::string& var_str = var.GetText();
+      const std::string& val_str = val.GetText();
+
+      // Parse variable.
+      if (var_str == "interface")
+	in.SetIPInterface(val_str);
+      else if (var_str == "port")
+	in.SetIPPort(strtoul(val_str.c_str(), NULL, 0));
+      else if (var_str == "socket")
+	in.SetUnixSocketPath(val_str);
+      else if (var_str == "type")
 	{
-	  *value = '\0';
-	  value++;
+	  if ((val_str == "ip") || (val_str == "ipv4"))
+	    in.SetType(Input::IPV4);
+	  else if (val_str == "ipv6")
+	    in.SetType(Input::IPV6);
+	  else if (val_str == "unix")
+	    in.SetType(Input::UNIX);
 	}
-
-      if ('#' == key[0])
-	; // Skip line
 #ifdef USE_TLS
-      else if (!strcmp(key, "ca"))
-	in.SetTLSCA(value ? value : "");
-      else if (!strcmp(key, "cert"))
-	in.SetTLSCert(value ? value : "");
-      else if (!strcmp(key, "compress"))
-	in.SetTLSCompress(value ? strtoul(value, NULL, 0) : false);
-      else if (!strcmp(key, "key"))
-	in.SetTLSKey(value ? value : "");
-      else if (!strcmp(key, "tls") && value)
-	in.SetTLS(!strcmp(value, "yes") || strtoul(value, NULL, 0));
+      else if (var_str == "ca")
+	in.SetTLSCA(val_str);
+      else if (var_str == "cert")
+	in.SetTLSCert(val_str);
+      else if (var_str == "compress")
+	in.SetTLSCompress(strtoul(val_str.c_str(), NULL, 0));
+      else if (var_str == "key")
+	in.SetTLSKey(val_str);
+      else if (var_str == "tls")
+	in.SetTLS((val_str == "yes") || strtoul(val_str.c_str(), NULL, 0));
 #endif /* USE_TLS */
-      else if (!strcmp(key, "interface"))
-	in.SetIPInterface(value ? value : "");
-      else if (!strcmp(key, "port"))
-	in.SetIPPort(value ? strtoul(value, NULL, 0) : 0);
-      else if (!strcmp(key, "socket"))
-	in.SetUnixSocketPath(value ? value : "");
-      else if (!strcmp(key, "type"))
-	{
-	  if (value)
-	    {
-	      if (!strcmp(value, "ip") || !strcmp(value, "ipv4"))
-		in.SetType(Input::IPV4);
-	      else if (!strcmp(value, "ipv6"))
-		in.SetType(Input::IPV6);
-	      else if (!strcmp(value, "unix"))
-		in.SetType(Input::UNIX);
-	      else
-		in.SetType(Input::UNKNOWN);
-	    }
-	  else
-	    in.SetType(Input::UNKNOWN);
-	}
-      ifs.getline(buffer, sizeof(buffer));
     }
   return ;
 }
@@ -143,72 +140,77 @@ static void HandleInput(std::ifstream& ifs, Input& in)
 /**
  *  Process configuration options of a Log.
  *
- *  \param[in]  ifs Input stream.
- *  \param[out] log Object that will be set with extracted parameters.
+ *  \param[in]  lexer Lexer of the configuration file.
+ *  \param[out] log   Object that will be set with extracted parameters.
  */
-static void HandleLog(std::ifstream& ifs, Log& log)
+static void HandleLog(Lexer& lexer, Log& log)
 {
-  char buffer[2048];
-
 #ifndef NDEBUG
-  logging.LogDebug("Log definition");
+  logging.LogDebug("Log definition ...");
 #endif /* !NDEBUG */
-  ifs.getline(buffer, sizeof(buffer));
-  while (ifs.good())
+  Token var;
+
+  for (lexer.GetToken(var);
+       var.GetType() != Token::END && var.GetType() != Token::BLOCK_END;
+       lexer.GetToken(var))
     {
-      char* key;
-      char* value;
+      Token val;
 
-      key = buffer + strspn(buffer, " \t");
-      if ('}' == key[0])
-	break ;
-      value = strchr(key, '=');
-      if (value)
-	{
-	  *value = '\0';
-	  value++;
-	}
+      // Check if the current token is valid (var name).
+      if ((var.GetType() != Token::STRING)
+          // And the next one too (=).
+	  || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+	  // And the next-next one too (var value).
+	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	throw (Exception(0, INVALID_TOKEN_MSG));
 
-      if ('#' == key[0])
-	; // Skip line
-      else if (!strcmp(key, "flags"))
+      // Extract var strings.
+      const std::string var_str = var.GetText();
+      const std::string val_str = val.GetText();
+
+      // Parse variable.
+      if (var_str == "flags")
 	{
 	  unsigned int flags;
-	  char* val;
 
 	  flags = 0;
-	  val = strtok(value, " |");
-	  while (val)
+
+	  // We will break when there's no more pipes.
+	  do
 	    {
-	      if (!strcmp("DEBUG", val))
+	      if (val.GetText() == "DEBUG")
 		flags |= CentreonBroker::Logging::DEBUG;
-	      else if (!strcmp("ERROR", val))
+	      else if (val.GetText() == "ERROR")
 		flags |= CentreonBroker::Logging::ERROR;
-	      else if (!strcmp("INFO", val))
+	      else if (val.GetText() == "INFO")
 		flags |= CentreonBroker::Logging::INFO;
-	      val = strtok(NULL, " |");
-	    }
+	      lexer.ContextSave();
+	      if (lexer.GetToken(val)
+                  || (val.GetType() != Token::PIPE)
+		  || lexer.GetToken(val)
+                  || (val.GetType() != Token::STRING))
+		{
+		  lexer.ContextRestore();
+		  val.SetType(Token::UNKNOWN);
+		}
+	      else
+		lexer.ContextPop();
+	    } while (val.GetType() == Token::STRING);
 	  log.SetFlags(flags);
 	}
-      else if (!strcmp(key, "path"))
-	log.SetFilePath(value);
-      else if (!strcmp(key, "type"))
+      else if (var_str == "path")
+	log.SetFilePath(val_str);
+      else if (var_str == "type")
 	{
-	  if (value)
-	    {
-	      if (!strcmp(value, "file"))
-		log.SetType(Log::FILE);
-	      else if (!strcmp(value, "stderr"))
-		log.SetType(Log::STDERR);
-	      else if (!strcmp(value, "stdout"))
-		log.SetType(Log::STDOUT);
-	      else if (!strcmp(value, "syslog"))
-		log.SetType(Log::SYSLOG);
-	    }
-	  else
-	    log.SetType(Log::UNKNOWN);
+	  if (val_str == "file")
+	    log.SetType(Log::FILE);
+	  else if (val_str == "stderr")
+	    log.SetType(Log::STDERR);
+	  else if (val_str == "stdout")
+	    log.SetType(Log::STDOUT);
+	  else if (val_str == "syslog")
+	    log.SetType(Log::SYSLOG);
 	}
-      ifs.getline(buffer, sizeof(buffer));
     }
   return ;
 }
@@ -216,61 +218,54 @@ static void HandleLog(std::ifstream& ifs, Log& log)
 /**
  *  Process configuration options of an Output.
  *
- *  \param[in]  ifs Input stream.
- *  \param[out] out Object that will be set with extracted parameters.
+ *  \param[in]  lexer Lexer of the configuration file.
+ *  \param[out] out   Object that will be set with extracted parameters.
  */
-static void HandleOutput(std::ifstream& ifs, Output& out)
+static void HandleOutput(Lexer& lexer, Output& out)
 {
-  char buffer[2048];
-
 #ifndef NDEBUG
-  logging.LogDebug("Output definition");
+  logging.LogDebug("Output definition ...");
 #endif /* !NDEBUG */
-  ifs.getline(buffer, sizeof(buffer));
-  while (ifs.good())
+  Token var;
+
+  for (lexer.GetToken(var);
+       var.GetType() != Token::END && var.GetType() != Token::BLOCK_END;
+       lexer.GetToken(var))
     {
-      char* key;
-      char* value;
+      Token val;
 
-      key = buffer + strspn(buffer, " \t");
-      if ('}' == key[0])
-	break ;
-      value = strchr(key, '=');
-      if (value)
-	{
-	  *value = '\0';
-	  value++;
-	}
+      // Check if the current token is valid (var name).
+      if (var.GetType() != Token::STRING
+	  // And the next one too (=).
+	  || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+	  // And the next-next one too (var value).
+	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	throw (Exception(0, INVALID_TOKEN_MSG));
 
-      if ('#' == key[0])
-	; // Skip line
-      else if (!strcmp(key, "db") && value)
-	out.SetDB(value);
-      else if (!strcmp(key, "dumpfile") && value)
-	out.SetDumpFile(value);
-      else if (!strcmp(key, "host") && value)
-	out.SetHost(value);
-      else if (!strcmp(key, "password") && value)
-	out.SetPassword(value);
-      else if (!strcmp(key, "type"))
+      // Extract var strings.
+      const std::string& var_str = var.GetText();
+      const std::string& val_str = val.GetText();
+
+      // Parse variable.
+      if (var_str == "db")
+	out.SetDB(val_str);
+      else if (var_str == "dumpfile")
+	out.SetDumpFile(val_str);
+      else if (var_str == "host")
+	out.SetHost(val_str);
+      else if (var_str == "password")
+	out.SetPassword(val_str);
+      else if (var_str == "type")
 	{
-	  if (value)
-	    {
-	      if (!strcmp(value, "mysql"))
-		out.SetType(Output::MYSQL);
-	      else if (!strcmp(value, "oracle"))
-		out.SetType(Output::ORACLE);
-	      else if (!strcmp(value, "postgresql"))
-		out.SetType(Output::POSTGRESQL);
-	      else
-		out.SetType(Output::UNKNOWN);
-	    }
-	  else
-	    out.SetType(Output::UNKNOWN);
+	  if (val_str == "mysql")
+	    out.SetType(Output::MYSQL);
+	  else if (val_str == "oracle")
+	    out.SetType(Output::ORACLE);
+	  else if (val_str == "postgresql")
+	    out.SetType(Output::POSTGRESQL);
 	}
-      else if (!strcmp(key, "user") && value)
-	out.SetUser(value);
-      ifs.getline(buffer, sizeof(buffer));
+      else if (var_str == "user")
+	out.SetUser(val_str);
     }
   return ;
 }
@@ -279,19 +274,21 @@ static void HandleOutput(std::ifstream& ifs, Output& out)
  *  Helper function to update configuration. This method is called whenever
  *  SIGHUP is received.
  */
-static void UpdateHelper(int signum)
+static void UpdateHelper(int signum) throw ()
 {
   (void)signum;
+  signal(SIGHUP, SIG_IGN);
   CentreonBroker::logging.LogInfo("Configuration file update requested...");
   CentreonBroker::logging.LogInfo("  WARNING: this feature is still " \
                                   "experimental.");
   instance->Update();
+  signal(SIGHUP, UpdateHelper);
   return ;
 }
 
 /**************************************
 *                                     *
-*           Public Methods            *
+*           Private Methods           *
 *                                     *
 **************************************/
 
@@ -316,16 +313,6 @@ Manager::Manager(const Manager& manager)
 }
 
 /**
- *  \brief Manager destructor.
- *
- *  Delete all objects created by the file parsing.
- */
-Manager::~Manager()
-{
-  this->Close();
-}
-
-/**
  *  \brief Overload of the assignment operator.
  *
  *  Open the file stored within the given object, parse it and take actions as
@@ -339,6 +326,91 @@ Manager& Manager::operator=(const Manager& manager)
 {
   this->Open(manager.filename_);
   return (*this);
+}
+
+/**
+ *  Parse and analyze the configuration file and store resulting configuration
+ *  in appropriate objects.
+ *
+ *  \param[out] inputs  Object where inputs configurations will be stored.
+ *  \param[out] logs    Object where logs configurations will be stored.
+ *  \param[out] outputs Object where outputs configurations will be stored.
+ */
+void Manager::Analyze(std::list<Input>& inputs,
+                      std::list<Log>& logs,
+                      std::list<Output>& outputs)
+{
+  std::auto_ptr<IO::FileStream> filestream(
+    new IO::FileStream(this->filename_, IO::FileStream::READ));
+  Token val;
+  Token var;
+  Lexer lexer(filestream.get());
+
+  filestream.release();
+  for (lexer.GetToken(var), lexer.GetToken(val);
+       var.GetType() == Token::STRING;
+       lexer.GetToken(var), lexer.GetToken(val))
+    {
+      switch (val.GetType())
+	{
+	 // Assignment sign, we're setting a variable.
+         case Token::ASSIGNMENT:
+	  if (lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	    throw (Exception(0, INVALID_TOKEN_MSG));
+	  // XXX : set global variable
+	  break ;
+	 // Block name, can safely be discarded.
+         case Token::STRING:
+	  if (lexer.GetToken(val) || val.GetType() != Token::BLOCK_START)
+	    throw (Exception(0, INVALID_TOKEN_MSG));
+	 // Starting a bloc, launching proper handler.
+         case Token::BLOCK_START:
+          if (var.GetText() == "input")
+	    {
+	      Input in;
+
+	      HandleInput(lexer, in);
+	      inputs.push_back(in);
+	    }
+	  else if (var.GetText() == "log")
+	    {
+	      Log log;
+
+	      HandleLog(lexer, log);
+	      logs.push_back(log);
+	    }
+	  else if (var.GetText() == "output")
+	    {
+	      Output out;
+
+	      HandleOutput(lexer, out);
+	      outputs.push_back(out);
+	    }
+	  else
+	    throw (Exception(0, INVALID_TOKEN_MSG));
+	  break ;
+         // Invalid token.
+	 default:
+	  throw (Exception(0, INVALID_TOKEN_MSG));
+	};
+    }
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Manager destructor.
+ *
+ *  Delete all objects created by the file parsing.
+ */
+Manager::~Manager()
+{
+  this->Close();
 }
 
 /**
@@ -370,6 +442,8 @@ void Manager::Close()
     }
   this->outputs_.clear();
 
+  // Does nothing of the log outputs. This way, they will remain valid until
+  // the program exits.
   this->logs_.clear();
 
   return ;
@@ -388,77 +462,9 @@ void Manager::Open(const std::string& filename)
 }
 
 /**
- *  Parse the configuration file and store resulting configuration in
- *  appropriate objects.
- *
- *  \param[out] inputs  Object where inputs configurations will be stored.
- *  \param[out] logs    Object where logs configurations will be stored.
- *  \param[out] outputs Object where outputs configurations will be stored.
- */
-void Manager::Parse(std::list<Input>& inputs,
-                    std::list<Log>& logs,
-                    std::list<Output>& outputs)
-{
-  std::ifstream ifs;
-
-  ifs.open(this->filename_.c_str());
-  if (ifs)
-    {
-      char buffer[1024];
-
-      ifs.getline(buffer, sizeof(buffer));
-      while (ifs.good())
-	{
-	  char* cmd;
-	  char* lasts;
-	  char* name;
-
-	  cmd = strtok_r(buffer, " \t", &lasts);
-	  if (!cmd)
-	    cmd = buffer; // empty string
-	  name = strtok_r(NULL, " \t", &lasts);
-	  if (buffer[0] == '#')
-	    ;
-	  else if (!strcmp(cmd, "log"))
-	    {
-	      Log log;
-
-	      if (name)
-		log.SetName(name);
-	      HandleLog(ifs, log);
-	      logs.push_back(log);
-	    }
-	  else if (!strcmp(cmd, "input"))
-	    {
-	      Input in;
-
-	      if (name)
-		in.SetName(name);
-	      HandleInput(ifs, in);
-	      inputs.push_back(in);
-	    }
-	  else if (!strcmp(cmd, "output"))
-	    {
-	      Output out;
-
-	      if (name)
-		out.SetName(name);
-	      HandleOutput(ifs, out);
-	      outputs.push_back(out);
-	    }
-	  ifs.getline(buffer, sizeof(buffer));
-	}
-      ifs.close();
-    }
-  else
-    throw (CentreonBroker::Exception(0, "Could not load configuration file"));
-  return ;
-}
-
-/**
  *  Update a previously opened configuration file.
  */
-void Manager::Update()
+void Manager::Update() throw ()
 {
   std::list<Input> inputs;
   std::list<Input>::iterator inputs_it;
@@ -467,7 +473,7 @@ void Manager::Update()
   std::list<Output> outputs;
   std::list<Output>::iterator outputs_it;
 
-  this->Parse(inputs, logs, outputs);
+  this->Analyze(inputs, logs, outputs);
 
   // Remove logs that are not present in conf anymore or which don't have the
   // same configuration.
