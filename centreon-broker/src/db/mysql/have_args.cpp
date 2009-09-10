@@ -107,7 +107,12 @@ MySQLHaveArgs::MySQLHaveArgs(const MySQLHaveArgs& mha)
  */
 MySQLHaveArgs::~MySQLHaveArgs()
 {
-  // XXX : arguments destruction
+  if (this->args_)
+    {
+      for (unsigned int i = 0; i < this->args_count_; ++i)
+        this->CleanArg(this->args_ + i);
+      delete [] this->args_;
+    }
 }
 
 /**

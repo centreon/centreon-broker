@@ -73,18 +73,19 @@ namespace                       CentreonBroker
     std::string                 user_;
     std::string                 password_;
     std::string                 db_;
-    DB::Connection*             conn_;
-    DB::MappedUpdate<Events::ConnectionStatus>*
+    std::auto_ptr<DB::Connection>
+                                conn_;
+    std::auto_ptr<DB::MappedUpdate<Events::ConnectionStatus> >
                                 connection_status_stmt_;
-    DB::MappedInsert<Events::Host>*
+    std::auto_ptr<DB::MappedInsert<Events::Host> >
                                 host_stmt_;
-    DB::MappedUpdate<Events::HostStatus>*
+    std::auto_ptr<DB::MappedUpdate<Events::HostStatus> >
                                 host_status_stmt_;
-    DB::MappedUpdate<Events::ProgramStatus>*
+    std::auto_ptr<DB::MappedUpdate<Events::ProgramStatus> >
                                 program_status_stmt_;
-    DB::MappedInsert<Events::Service>*
+    std::auto_ptr<DB::MappedInsert<Events::Service> >
                                 service_stmt_;
-    DB::MappedUpdate<Events::ServiceStatus>*
+    std::auto_ptr<DB::MappedUpdate<Events::ServiceStatus> >
                                 service_status_stmt_;
     // Performance objects
     unsigned int                queries_;
