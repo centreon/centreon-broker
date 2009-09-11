@@ -33,18 +33,19 @@ using namespace CentreonBroker::DB;
  *
  *  Initialize members to their default values.
  */
-HavePredicate::HavePredicate() throw () : predicate(NULL) {}
+HavePredicate::HavePredicate() throw () {}
 
 /**
  *  \brief HavePredicate copy constructor.
  *
- *  Build the new instance by copying data from the given object.
+ *  Build the new instance by copying the predicate from the given object.
  *
- *  \param[in] hp Object to copy data from.
+ *  \param[in] hp Object to copy the predicate from.
  */
 HavePredicate::HavePredicate(const HavePredicate& hp) : HaveArgs(hp)
 {
-  // XXX : copy predicate
+  if (hp.predicate.get())
+    this->predicate.reset(hp.predicate->Duplicate());
 }
 
 /**
@@ -52,24 +53,40 @@ HavePredicate::HavePredicate(const HavePredicate& hp) : HaveArgs(hp)
  *
  *  Release previously acquired ressources.
  */
-HavePredicate::~HavePredicate()
-{
-  if (this->predicate)
-    delete (this->predicate);
-}
+HavePredicate::~HavePredicate() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data of the given object to the current instance.
+ *  Copy the predicate of the given object to the current instance.
  *
- *  \param[in] hp Object to copy data from.
+ *  \param[in] hp Object to copy the predicate from.
  *
  *  \return *this
  */
 HavePredicate& HavePredicate::operator=(const HavePredicate& hp)
 {
   this->HaveArgs::operator=(hp);
-  // XXX : copy predicate
+  if (hp.predicate.get())
+    this->predicate.reset(hp.predicate->Duplicate());
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Set the query predicate.
+ *
+ *  The predicate argument will be duplicated within the object.
+ *
+ *  \param[in] pred Query predicate.
+ */
+void HavePredicate::SetPredicate(const Predicate& pred)
+{
+  this->predicate.reset(pred.Duplicate());
+  return ;
 }

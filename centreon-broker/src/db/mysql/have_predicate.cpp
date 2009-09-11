@@ -194,7 +194,7 @@ MySQLHavePredicate& MySQLHavePredicate::operator=(const MySQLHavePredicate& m)
  */
 void MySQLHavePredicate::PreparePredicate(std::string& query)
 {
-  if (this->predicate)
+  if (this->predicate.get())
     {
       this->query_ = &query;
       this->query_->append(" WHERE ");
@@ -213,7 +213,7 @@ void MySQLHavePredicate::PreparePredicate(std::string& query)
  */
 void MySQLHavePredicate::ProcessPredicate(std::string& query)
 {
-  if (this->predicate)
+  if (this->predicate.get())
     this->PreparePredicate(query);
   return ;
 }

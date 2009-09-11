@@ -27,6 +27,46 @@ using namespace CentreonBroker::DB;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Clean the current object data.
+ *
+ *  Clean all data in the current object. If the query has been prepared,
+ *  delete the statement object.
+ */
+void MySQLQuery::Clean()
+{
+  this->mysql = NULL;
+  this->query.clear();
+  if (this->stmt)
+    {
+      mysql_stmt_close(this->stmt);
+      this->stmt = NULL;
+    }
+  return ;
+}
+
+/**
+ *  \brief Copy internal data from the given object to the current instance.
+ *
+ *  Copy the MySQL connection object, the query string from the given object.
+ *  However, even if the given object was prepared, the InternalCopy() method
+ *  won't prepare the current object.
+ *
+ *  \param[in] myquery Object to copy data from.
+ */
+void MySQLQuery::InternalCopy(const MySQLQuery& myquery)
+{
+  this->mysql = myquery.mysql;
+  this->query = myquery.query;
+  return ;
+}
+
+/**************************************
+*                                     *
 *          Protected Methods          *
 *                                     *
 **************************************/
@@ -44,19 +84,21 @@ MySQLQuery::MySQLQuery(MYSQL* myconn) : mysql(myconn), stmt(NULL) {}
 /**
  *  \brief MySQLQuery copy constructor.
  *
- *  Build the MySQL query by copying data from the given query.
+ *  Build the MySQL query by copying data from the given query. However even if
+ *  the myquery object was prepared, the current instance won't be.
  *
  *  \param[in] myquery Object to copy data from.
  */
-MySQLQuery::MySQLQuery(const MySQLQuery& myquery) : Query(myquery)
+MySQLQuery::MySQLQuery(const MySQLQuery& myquery) : Query(myquery), stmt(NULL)
 {
-  // XXX : copy data
+  this->InternalCopy(myquery);
 }
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data from the given query object to the current instance.
+ *  Copy data from the given query object to the current instance. If the
+ *  myquery object was prepared, the current instance will be too.
  *
  *  \param[in] myquery Object to copy data from.
  *
@@ -64,8 +106,11 @@ MySQLQuery::MySQLQuery(const MySQLQuery& myquery) : Query(myquery)
  */
 MySQLQuery& MySQLQuery::operator=(const MySQLQuery& myquery)
 {
+  this->Clean();
   this->Query::operator=(myquery);
-  // XXX : copy data
+  this->InternalCopy(myquery);
+  if (myquery.stmt)
+    this->Prepare();
   return (*this);
 }
 
@@ -82,8 +127,7 @@ MySQLQuery& MySQLQuery::operator=(const MySQLQuery& myquery)
  */
 MySQLQuery::~MySQLQuery()
 {
-  if (this->stmt)
-    mysql_stmt_close(this->stmt);
+  this->Clean();
 }
 
 /**
