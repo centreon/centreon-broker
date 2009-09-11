@@ -21,34 +21,35 @@
 #ifndef DB_HAVE_PREDICATE_H_
 # define DB_HAVE_PREDICATE_H_
 
+# include <memory>
 # include "db/have_args.h"
 # include "db/predicate.h"
 
-namespace            CentreonBroker
+namespace                      CentreonBroker
 {
-  namespace          DB
+  namespace                    DB
   {
-    class            HavePredicate : virtual public HaveArgs
+    /**
+     *  \class HavePredicate have_predicate.h "db/have_predicate.h"
+     *  \brief Queries having a predicate subclass this class.
+     *
+     *  All queries having a predicate subclass this class which provides an
+     *  interface for setting the query predicate. How the predicate will be
+     *  expanded is up to the concrete class.
+     *
+     *  \see Predicate
+     */
+    class                      HavePredicate : virtual public HaveArgs
     {
      protected:
-      Predicate*     predicate;
-                     HavePredicate() throw ();
-                     HavePredicate(const HavePredicate& hp);
-      HavePredicate& operator=(const HavePredicate& hp);
+      std::auto_ptr<Predicate> predicate;
+                               HavePredicate() throw ();
+                               HavePredicate(const HavePredicate& hp);
+      virtual                  ~HavePredicate();
+      HavePredicate&           operator=(const HavePredicate& hp);
 
      public:
-      virtual        ~HavePredicate();
-      template       <typename PredicateT>
-      void           SetPredicate(const PredicateT& pred)
-      {
-	if (this->predicate)
-	  {
-            delete (this->predicate);
-            this->predicate = NULL;
-	  }
-        this->predicate = new PredicateT(pred);
-        return ;
-      }
+      void                     SetPredicate(const Predicate& pred);
     };
   }
 }

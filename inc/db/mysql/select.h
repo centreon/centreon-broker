@@ -27,9 +27,9 @@
 # include "db/mysql/have_predicate.h"
 # include "db/select.h"
 
-namespace            CentreonBroker
+namespace              CentreonBroker
 {
-  namespace          DB
+  namespace            DB
   {
     /**
      *  \class MySQLSelect select.h "db/mysql/select.h"
@@ -38,37 +38,42 @@ namespace            CentreonBroker
      *
      *  \see Select
      */
-    class            MySQLSelect : virtual public Select,
-                                   public MySQLHaveArgs,
-                                   public MySQLHavePredicate
+    class              MySQLSelect : virtual public Select,
+                                     public MySQLHaveArgs,
+                                     public MySQLHavePredicate
     {
      private:
-      unsigned int   current_;
+      unsigned int     current_;
       union
       {
 	struct
 	{
-	  MYSQL_RES* res;
-	  MYSQL_ROW  row;
-	}            std;
-	MYSQL_BIND*  stmt;
-      }              result_;
-                     MySQLSelect(const MySQLSelect& mys);
-      MySQLSelect&   operator=(const MySQLSelect& mys);
-      void           GenerateQueryStart();
-      unsigned int   GetArgCount() throw ();
+	  MYSQL_RES*   res;
+	  MYSQL_ROW    row;
+	}              std;
+	struct
+	{
+	  unsigned int count;
+	  MYSQL_BIND*  res;
+	}              stmt;
+      }                result_;
+                       MySQLSelect(const MySQLSelect& mys);
+      MySQLSelect&     operator=(const MySQLSelect& mys);
+      void             CleanArgs();
+      void             GenerateQueryStart();
+      unsigned int     GetArgCount() throw ();
 
      public:
-                     MySQLSelect(MYSQL* mysql);
-      virtual        ~MySQLSelect();
-      virtual void   Execute();
-      virtual bool   GetBool();
-      virtual double GetDouble();
-      virtual int    GetInt();
-      virtual short  GetShort();
-      virtual void   GetString(std::string& str);
-      virtual bool   Next();
-      virtual void   Prepare();
+                       MySQLSelect(MYSQL* mysql);
+      virtual          ~MySQLSelect();
+      virtual void     Execute();
+      virtual bool     GetBool();
+      virtual double   GetDouble();
+      virtual int      GetInt();
+      virtual short    GetShort();
+      virtual void     GetString(std::string& str);
+      virtual bool     Next();
+      virtual void     Prepare();
     };
 
     /**

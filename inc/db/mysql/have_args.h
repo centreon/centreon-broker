@@ -46,7 +46,9 @@ namespace                  CentreonBroker
       unsigned int         arg_;
       MYSQL_BIND*          args_;
       unsigned int         args_count_;
+      void                 Clean();
       void                 CleanArg(MYSQL_BIND* bind);
+      void                 InternalCopy(const MySQLHaveArgs& mha);
 
      protected:
                            MySQLHaveArgs(MYSQL* mysql);

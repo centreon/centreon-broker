@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <boost/scoped_array.hpp>
 #include <cassert>
 #include <cstring>
 #include <sstream>
@@ -33,6 +34,27 @@ using namespace CentreonBroker::DB;
 **************************************/
 
 /**
+ *  \brief Clean all arguments.
+ *
+ *  Delete all memory associated with arguments.
+ *
+ *  \see CleanArg
+ */
+void MySQLHaveArgs::Clean()
+{
+  if (this->args_)
+    {
+      // Delete every single argument buffer.
+      for (unsigned int i = 0; i < this->args_count_; ++i)
+        this->CleanArg(this->args_ + i);
+
+      // Delete argument table.
+      delete [] this->args_;
+    }
+  return ;
+}
+
+/**
  *  \brief Clean a MYSQL_BIND structure.
  *
  *  MYSQL_BIND structures might hold allocated memory. Release such ressources
@@ -44,6 +66,7 @@ void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
 {
   assert(bind);
   if (bind->buffer)
+    // Only numeric types have a duplicated buffer.
     switch (bind->buffer_type)
       {
        case MYSQL_TYPE_TINY:
@@ -58,13 +81,78 @@ void MySQLHaveArgs::CleanArg(MYSQL_BIND* bind)
        case MYSQL_TYPE_SHORT:
         delete (static_cast<short*>(bind->buffer));
         break ;
-       case MYSQL_TYPE_STRING:
-        bind->buffer = NULL;
-        break ;
-       default:
-	;
       }
   memset(bind, 0, sizeof(*bind));
+  return ;
+}
+
+/**
+ *  \brief Copy arguments stored in the parameter to the current instance.
+ *
+ *  All arguments stored in the mha parameter will be copied to the current
+ *  instance. The only exception is for strings, where only the pointer will be
+ *  copied. This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  \param[in] mha Object to copy arguments from.
+ */
+void MySQLHaveArgs::InternalCopy(const MySQLHaveArgs& mha)
+{
+  if (mha.args_)
+    {
+      // Create the argument table.
+      this->args_count_ = mha.args_count_;
+      this->args_ = new MYSQL_BIND[this->args_count_];
+
+      // If any further allocation fail, we will have to free all allocated
+      // memory until now.
+      try
+        {
+          for (this->arg_ = 0; this->arg_ < this->args_count_; ++this->arg_)
+            {
+              MYSQL_BIND* bind1;
+              MYSQL_BIND* bind2;
+
+              // Copy full structures.
+              bind1 = this->args_ + this->arg_;
+              bind2 = mha.args_ + this->arg_;
+              memcpy(bind1, bind2, sizeof(*bind1));
+
+              // For numeric types, the buffers will be duplicated.
+              switch (bind1->buffer_type)
+                {
+                 case MYSQL_TYPE_TINY:
+                  bind1->buffer = static_cast<void*>(new char);
+                  memcpy(bind1->buffer, bind2->buffer, sizeof(char));
+                  break ;
+                 case MYSQL_TYPE_DOUBLE:
+                  bind1->buffer = static_cast<void*>(new double);
+                  memcpy(bind1->buffer, bind2->buffer, sizeof(double));
+                  break ;
+                 case MYSQL_TYPE_LONG:
+                  bind1->buffer = static_cast<void*>(new int);
+                  memcpy(bind1->buffer, bind2->buffer, sizeof(int));
+                  break ;
+                 case MYSQL_TYPE_SHORT:
+                  bind1->buffer = static_cast<void*>(new short);
+                  memcpy(bind1->buffer, bind2->buffer, sizeof(short));
+                  break ;
+                };
+            }
+        }
+      // If an allocation fail, leave the object in a clean state.
+      catch (const std::bad_alloc& ba)
+        {
+          // Set the number of arguments processed (that will be cleaned).
+          this->args_count_ = this->arg_;
+          this->Clean();
+
+          // Rethrow the exception.
+          throw ;
+        }
+
+      this->arg_ = mha.arg_;
+    }
   return ;
 }
 
@@ -97,7 +185,7 @@ MySQLHaveArgs::MySQLHaveArgs(MYSQL* mysql)
 MySQLHaveArgs::MySQLHaveArgs(const MySQLHaveArgs& mha)
   : HaveArgs(mha), Query(mha), MySQLQuery(mha)
 {
-  // XXX : copy arguments
+  this->InternalCopy(mha);
 }
 
 /**
@@ -107,12 +195,7 @@ MySQLHaveArgs::MySQLHaveArgs(const MySQLHaveArgs& mha)
  */
 MySQLHaveArgs::~MySQLHaveArgs()
 {
-  if (this->args_)
-    {
-      for (unsigned int i = 0; i < this->args_count_; ++i)
-        this->CleanArg(this->args_ + i);
-      delete [] this->args_;
-    }
+  this->Clean();
 }
 
 /**
@@ -126,7 +209,10 @@ MySQLHaveArgs::~MySQLHaveArgs()
  */
 MySQLHaveArgs& MySQLHaveArgs::operator=(const MySQLHaveArgs& mha)
 {
-  // XXX : copy arguments
+  this->Clean();
+  this->HaveArgs::operator=(mha);
+  this->MySQLQuery::operator=(mha);
+  this->InternalCopy(mha);
   return (*this);
 }
 
@@ -164,13 +250,19 @@ void MySQLHaveArgs::Execute()
  */
 void MySQLHaveArgs::Prepare()
 {
+  // Count the total number of arguments in the query to allocate arguments
+  // structures accordingly.
   this->args_count_ = this->GetArgCount();
+
+  // Allocate memory.
   if (this->args_count_)
     {
       this->args_ = new MYSQL_BIND[this->args_count_];
       memset(this->args_, 0, this->args_count_ * sizeof(*this->args_));
       this->arg_ = 0;
     }
+
+  // Prepare the MySQL query.
   this->MySQLQuery::Prepare();
   return ;
 }
@@ -188,14 +280,14 @@ void MySQLHaveArgs::SetArg(bool arg)
 
       mybind = this->args_ + this->arg_;
       if (mybind->buffer_type != MYSQL_TYPE_TINY)
-	{
-	  this->CleanArg(mybind);
-	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_TINY;
-	  mybind->buffer = static_cast<void*>(new char);
-	  mybind->buffer_length = sizeof(char);
-	  mybind->length = &(mybind->buffer_length);
-	}
+        {
+          this->CleanArg(mybind);
+          memset(mybind, 0, sizeof(*mybind));
+          mybind->buffer_type = MYSQL_TYPE_TINY;
+          mybind->buffer = static_cast<void*>(new char);
+          mybind->buffer_length = sizeof(char);
+          mybind->length = &(mybind->buffer_length);
+        }
       *static_cast<char*>(mybind->buffer) = (arg ? 1 : 0);
       this->arg_++;
     }
@@ -220,14 +312,14 @@ void MySQLHaveArgs::SetArg(double arg)
 
       mybind = this->args_ + this->arg_;
       if (mybind->buffer_type != MYSQL_TYPE_DOUBLE)
-	{
-	  this->CleanArg(mybind);
-	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_DOUBLE;
-	  mybind->buffer = static_cast<void*>(new double);
-	  mybind->buffer_length = sizeof(double);
-	  mybind->length = &(mybind->buffer_length);
-	}
+        {
+          this->CleanArg(mybind);
+          memset(mybind, 0, sizeof(*mybind));
+          mybind->buffer_type = MYSQL_TYPE_DOUBLE;
+          mybind->buffer = static_cast<void*>(new double);
+          mybind->buffer_length = sizeof(double);
+          mybind->length = &(mybind->buffer_length);
+        }
       *static_cast<double*>(mybind->buffer) = arg;
       this->arg_++;
     }
@@ -254,14 +346,14 @@ void MySQLHaveArgs::SetArg(int arg)
 
       mybind = this->args_ + this->arg_;
       if (mybind->buffer_type != MYSQL_TYPE_LONG)
-	{
-	  this->CleanArg(mybind);
-	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_LONG;
-	  mybind->buffer = static_cast<void*>(new int);
-	  mybind->buffer_length = sizeof(int);
-	  mybind->length = &(mybind->buffer_length);
-	}
+        {
+          this->CleanArg(mybind);
+          memset(mybind, 0, sizeof(*mybind));
+          mybind->buffer_type = MYSQL_TYPE_LONG;
+          mybind->buffer = static_cast<void*>(new int);
+          mybind->buffer_length = sizeof(int);
+          mybind->length = &(mybind->buffer_length);
+        }
       *static_cast<int*>(mybind->buffer) = arg;
       this->arg_++;
     }
@@ -288,14 +380,14 @@ void MySQLHaveArgs::SetArg(short arg)
 
       mybind = this->args_ + this->arg_;
       if (mybind->buffer_type != MYSQL_TYPE_SHORT)
-	{
-	  this->CleanArg(mybind);
-	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_SHORT;
-	  mybind->buffer = static_cast<void*>(new short);
-	  mybind->buffer_length = sizeof(short);
-	  mybind->length = &(mybind->buffer_length);
-	}
+        {
+          this->CleanArg(mybind);
+          memset(mybind, 0, sizeof(*mybind));
+          mybind->buffer_type = MYSQL_TYPE_SHORT;
+          mybind->buffer = static_cast<void*>(new short);
+          mybind->buffer_length = sizeof(short);
+          mybind->length = &(mybind->buffer_length);
+        }
       *static_cast<short*>(mybind->buffer) = arg;
       this->arg_++;
     }
@@ -324,26 +416,26 @@ void MySQLHaveArgs::SetArg(const std::string& arg)
 
       mybind = this->args_ + this->arg_;
       if (mybind->buffer_type != MYSQL_TYPE_STRING)
-	{
-	  this->CleanArg(mybind);
-	  memset(mybind, 0, sizeof(*mybind));
-	  mybind->buffer_type = MYSQL_TYPE_STRING;
-	  mybind->length = &(mybind->buffer_length);
-	}
+        {
+          this->CleanArg(mybind);
+          memset(mybind, 0, sizeof(*mybind));
+          mybind->buffer_type = MYSQL_TYPE_STRING;
+          mybind->length = &(mybind->buffer_length);
+        }
       mybind->buffer_length = arg.size();
       mybind->buffer = const_cast<char*>(arg.c_str());
       this->arg_++;
     }
   else
     {
-      char* safe_str;
+      boost::scoped_array<char> safe_str(new char[arg.size() * 2 + 1]);
 
-      // XXX : potential leak
-      safe_str = new char[arg.size() * 2 + 1];
-      mysql_real_escape_string(this->mysql, safe_str, arg.c_str(), arg.size());
+      mysql_real_escape_string(this->mysql,
+                               safe_str.get(),
+                               arg.c_str(),
+                               arg.size());
       this->query.append("\"");
-      this->query.append(safe_str);
-      delete [] safe_str;
+      this->query.append(safe_str.get());
       this->query.append("\"");
     }
   return ;

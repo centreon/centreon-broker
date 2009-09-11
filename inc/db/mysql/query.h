@@ -29,8 +29,21 @@ namespace          CentreonBroker
 {
   namespace        DB
   {
+    /**
+     *  \class MySQLQuery query.h "db/mysql/query.h"
+     *  \brief Root of all MySQL queries.
+     *
+     *  All MySQL queries classes subclass this class which holds the MySQL
+     *  query string or the prepared statement object (depending on its usage).
+     *
+     *  \see Query
+     */
     class          MySQLQuery : virtual public Query
     {
+     private:
+      void         Clean();
+      void         InternalCopy(const MySQLQuery& myquery);
+
      protected:
       MYSQL*       mysql;
       std::string  query;

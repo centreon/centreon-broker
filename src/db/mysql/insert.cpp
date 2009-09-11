@@ -68,8 +68,17 @@ void MySQLInsert::GenerateQueryBeginning()
  */
 unsigned int MySQLInsert::GetArgCount() throw ()
 {
-  // XXX : not really exception proof
-  return (this->fields.size());
+  size_t size;
+
+  try
+    {
+      size = this->fields.size();
+    }
+  catch (...)
+    {
+      size = 0;
+    }
+  return (size);
 }
 
 /**************************************
