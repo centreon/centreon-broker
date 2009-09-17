@@ -45,13 +45,12 @@ namespace                    CentreonBroker
    private:
     // Line processing parameters
     char                     buffer_[1024];
-    unsigned long            bytes_processed_;
     size_t                   discard_;
-    time_t                   last_checkin_time_;
     size_t                   length_;
-    unsigned long            lines_processed_;
     // Other parameters
+# ifdef PROCESS_CONNINFO
     Events::ConnectionStatus conn_status_;
+# endif /* PROCESS_CONNINFO */
     std::string              instance_;
     ClientAcceptor*          parent_;
     IO::Stream*              socket_;

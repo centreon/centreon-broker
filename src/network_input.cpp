@@ -207,11 +207,8 @@ static inline void HandleObject(const std::string& instance,
  *  NetworkInput constructor.
  */
 NetworkInput::NetworkInput(ClientAcceptor* parent, IO::Stream* stream)
-  : bytes_processed_(0L),
-    discard_(0),
-    last_checkin_time_(time(NULL)),
+  : discard_(0),
     length_(0),
-    lines_processed_(0L),
     parent_(parent),
     socket_(stream)
 {
@@ -1158,22 +1155,24 @@ void NetworkInput::operator()()
 	      for (unsigned int i = 0; handlers[i].event; i++)
 		if (handlers[i].event == event)
 		  {
-		    this->conn_status_.bytes_processed =
-                      this->bytes_processed_;
-		    this->conn_status_.lines_processed =
-                      this->lines_processed_;
+#ifdef PROCESS_CONNINFO
+#endif /* PROCESS_CONNINFO */
 		    (this->*(handlers[i].handler))();
+#ifdef PROCESS_CONNINFO
 		    this->conn_status_.entries_processed++;
 		    this->conn_status_.last_checkin_time =
                       this->last_checkin_time_;
 		    EventPublisher::GetInstance().Publish(
 		      new ConnectionStatus(this->conn_status_));
+#endif /* PROCESS_CONNINFO */
 		    break ;
 		  }
 	    }
 	  buffer = this->GetLine();
 	}
+#ifdef PROCESS_CONNINFO
       this->conn_status_.data_end_time = time(NULL);
+#endif /* PROCESS_CONNINFO */
     }
   catch (std::exception& e)
     {
@@ -1185,6 +1184,7 @@ void NetworkInput::operator()()
       logging.LogError(
         "Unknown exception occured while processing network input");
     }
+#ifdef PROCESS_CONNINFO
   this->conn_status_.disconnect_time = time(NULL);
   try
     {
@@ -1194,6 +1194,7 @@ void NetworkInput::operator()()
   catch (...)
     {
     }
+#endif /* PROCESS_CONNINFO */
   if (this->threadm_.try_lock())
     {
       this->socket_->Close();
@@ -1227,16 +1228,22 @@ char* NetworkInput::GetLine()
       old_length = this->length_;
       bytes_read = this->socket_->Receive(this->buffer_ + this->length_,
                      sizeof(this->buffer_) - this->length_ - 1);
-      this->bytes_processed_ += bytes_read;
+#ifdef PROCESS_CONNINFO
+      this->conn_status_.bytes_processed += bytes_read;
+#endif /* PROCESS_CONNINFO */
       this->length_ += bytes_read;
       this->buffer_[this->length_] = '\0';
-      this->last_checkin_time_ = time(NULL);
+#ifdef PROCESS_CONNINFO
+      this->conn_status_.last_checkin_time = time(NULL);
+#endif /* PROCESS_CONNINFO */
       // XXX : find a better way to correct this
       if (!bytes_read)
 	throw (Exception(0, "Socket is closed"));
     }
   this->discard_ = strcspn(this->buffer_, "\n");
   this->buffer_[this->discard_++] = '\0';
-  ++this->lines_processed_;
+#ifdef PROCESS_CONNINFO
+  ++this->conn_status_.lines_processed_;
+#endif /* PROCESS_CONNINFO */
   return (this->buffer_);
 }
