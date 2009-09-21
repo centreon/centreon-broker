@@ -336,6 +336,16 @@ bool Lexer::GetToken(Token& token)
              case '|':
               token.SetType(Token::PIPE);
               break ;
+             case '"':
+              {
+                std::string str;
+
+                for (c = this->NextChar(); c && c != '"'; c = this->NextChar())
+                  str.push_back(c);
+                token.SetText(str);
+                token.SetType(Token::STRING);
+              }
+              break ;
              default:
               {
                 std::string str;
