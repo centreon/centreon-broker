@@ -55,8 +55,6 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/event_subscriber.cpp			\
 			../../src/events/acknowledgement.cpp		\
 			../../src/events/comment.cpp			\
-			../../src/events/connection.cpp			\
-			../../src/events/connection_status.cpp		\
 			../../src/events/downtime.cpp			\
 			../../src/events/event.cpp			\
 			../../src/events/host.cpp			\

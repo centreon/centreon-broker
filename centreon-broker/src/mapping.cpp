@@ -21,8 +21,6 @@
 #include "db/data_member.hpp"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
-#include "events/connection.h"
-#include "events/connection_status.h"
 #include "events/host.h"
 #include "events/host_group.h"
 #include "events/host_status.h"
@@ -98,60 +96,6 @@ DB::MappingGetters<Events::Comment>
   CentreonBroker::comment_get_mapping;
 DB::MappingSetters<Events::Comment>
   CentreonBroker::comment_set_mapping;
-
-const DB::DataMember<Connection> CentreonBroker::connection_dm[] =
-  {
-    DataMember<Connection>("agent_name",
-      &Connection::agent_name),
-    DataMember<Connection>("agent_version",
-      &Connection::agent_version),
-    DataMember<Connection>("bytes_processed",
-      &Connection::bytes_processed),
-    DataMember<Connection>("connect_source",
-      &Connection::connect_source),
-    DataMember<Connection>("connect_time",
-      &Connection::connect_time),
-    DataMember<Connection>("connect_type",
-      &Connection::connect_type),
-    DataMember<Connection>("data_start_time",
-      &Connection::data_start_time),
-    DataMember<Connection>("entries_processed",
-      &Connection::entries_processed),
-    DataMember<Connection>("lines_processed",
-      &Connection::lines_processed),
-    DataMember<Connection>("data_end_time",
-      &Connection::data_end_time),
-    DataMember<Connection>("disconnect_time",
-      &Connection::disconnect_time),
-    DataMember<Connection>("last_checkin_time",
-      &Connection::last_checkin_time),
-    DataMember<Connection>()
-  };
-DB::MappingGetters<Events::Connection>
-  CentreonBroker::connection_get_mapping;
-DB::MappingSetters<Events::Connection>
-  CentreonBroker::connection_set_mapping;
-
-const DB::DataMember<ConnectionStatus> CentreonBroker::connection_status_dm[] =
-  {
-    DataMember<ConnectionStatus>("bytes_processed",
-      &ConnectionStatus::bytes_processed),
-    DataMember<ConnectionStatus>("data_end_time",
-      &ConnectionStatus::data_end_time),
-    DataMember<ConnectionStatus>("disconnect_time",
-      &ConnectionStatus::disconnect_time),
-    DataMember<ConnectionStatus>("entries_processed",
-      &ConnectionStatus::entries_processed),
-    DataMember<ConnectionStatus>("last_checkin_time",
-      &ConnectionStatus::last_checkin_time),
-    DataMember<ConnectionStatus>("lines_processed",
-      &ConnectionStatus::lines_processed),
-    DataMember<ConnectionStatus>()
-  };
-DB::MappingGetters<Events::ConnectionStatus>
-  CentreonBroker::connection_status_get_mapping;
-DB::MappingSetters<Events::ConnectionStatus>
-  CentreonBroker::connection_status_set_mapping;
 
 const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
   {
@@ -894,18 +838,6 @@ void CentreonBroker::MappingsDestroy()
   comment_set_mapping.Clear();
 
 #ifndef NDEBUG
-  logging.LogDebug("Destroying Connection mapping ...");
-#endif /* !NDEBUG */
-  connection_get_mapping.Clear();
-  connection_set_mapping.Clear();
-
-#ifndef NDEBUG
-  logging.LogDebug("Destroying ConnectionStatus mapping ...");
-#endif /* !NDEBUG */
-  connection_status_get_mapping.Clear();
-  connection_status_set_mapping.Clear();
-
-#ifndef NDEBUG
   logging.LogDebug("Destroying Downtime mapping ...");
 #endif /* !NDEBUG */
   downtime_get_mapping.Clear();
@@ -971,25 +903,12 @@ void CentreonBroker::MappingsInit()
   InitMapping<Events::Acknowledgement>(acknowledgement_dm,
     acknowledgement_get_mapping,
     acknowledgement_set_mapping);
-
 #ifndef NDEBUG
   logging.LogDebug("Initializing Comment mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Comment>(comment_dm,
     comment_get_mapping,
     comment_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Connection mapping ...");
-#endif /* !NDEBUG */
-  InitMapping<Events::Connection>(connection_dm,
-    connection_get_mapping,
-    connection_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ConnectionStatus mapping ...");
-#endif /* !NDEBUG */
-  InitMapping<Events::ConnectionStatus>(connection_status_dm,
-    connection_status_get_mapping,
-    connection_status_set_mapping);
 #ifndef NDEBUG
   logging.LogDebug("Initializing Downtime mapping ...");
 #endif /* !NDEBUG */

@@ -25,7 +25,6 @@
 #include "event_publisher.h"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
-#include "events/connection.h"
 #include "events/downtime.h"
 #include "events/host.h"
 #include "events/host_group.h"
@@ -595,10 +594,11 @@ void NetworkInput::HandleInitialization()
   char* key;
   char* tmp;
   const char* value;
-  Connection*  conn_info;
+  ProgramStatus* conn_info;
 
-  conn_info = new Connection;
-  conn_info->connect_time = time(NULL);
+  conn_info = new ProgramStatus;
+  conn_info->is_running = true;
+  conn_info->program_start = time(NULL);
   key = this->GetLine();
   while (strcmp(key, NDO_API_STARTDATADUMP))
     {
@@ -611,7 +611,11 @@ void NetworkInput::HandleInitialization()
 	  value = tmp + 2;
 	}
       if (!strcmp(key, NDO_API_INSTANCENAME))
-	this->instance_ = value;
+        {
+	  this->instance_ = value;
+          conn_info->instance = value;
+        }
+      /*
       else if (!strcmp(key, NDO_API_AGENT))
 	conn_info->agent_name = value;
       else if (!strcmp(key, NDO_API_AGENTVERSION))
@@ -620,9 +624,11 @@ void NetworkInput::HandleInitialization()
 	conn_info->connect_source = value;
       else if (!strcmp(key, NDO_API_CONNECTTYPE))
 	conn_info->connect_type = value;
+      */
       key = this->GetLine();
     }
-  conn_info->data_start_time = time(NULL);
+  conn_info->instance = this->instance_;
+  conn_info->program_start = time(NULL);
   EventPublisher::GetInstance().Publish(conn_info);
   return ;
 }
@@ -1155,24 +1161,12 @@ void NetworkInput::operator()()
 	      for (unsigned int i = 0; handlers[i].event; i++)
 		if (handlers[i].event == event)
 		  {
-#ifdef PROCESS_CONNINFO
-#endif /* PROCESS_CONNINFO */
 		    (this->*(handlers[i].handler))();
-#ifdef PROCESS_CONNINFO
-		    this->conn_status_.entries_processed++;
-		    this->conn_status_.last_checkin_time =
-                      this->last_checkin_time_;
-		    EventPublisher::GetInstance().Publish(
-		      new ConnectionStatus(this->conn_status_));
-#endif /* PROCESS_CONNINFO */
 		    break ;
 		  }
 	    }
 	  buffer = this->GetLine();
 	}
-#ifdef PROCESS_CONNINFO
-      this->conn_status_.data_end_time = time(NULL);
-#endif /* PROCESS_CONNINFO */
     }
   catch (std::exception& e)
     {
@@ -1184,17 +1178,6 @@ void NetworkInput::operator()()
       logging.LogError(
         "Unknown exception occured while processing network input");
     }
-#ifdef PROCESS_CONNINFO
-  this->conn_status_.disconnect_time = time(NULL);
-  try
-    {
-      EventPublisher::GetInstance().Publish(new ConnectionStatus(
-		                               this->conn_status_));
-    }
-  catch (...)
-    {
-    }
-#endif /* PROCESS_CONNINFO */
   if (this->threadm_.try_lock())
     {
       this->socket_->Close();
@@ -1228,22 +1211,13 @@ char* NetworkInput::GetLine()
       old_length = this->length_;
       bytes_read = this->socket_->Receive(this->buffer_ + this->length_,
                      sizeof(this->buffer_) - this->length_ - 1);
-#ifdef PROCESS_CONNINFO
-      this->conn_status_.bytes_processed += bytes_read;
-#endif /* PROCESS_CONNINFO */
       this->length_ += bytes_read;
       this->buffer_[this->length_] = '\0';
-#ifdef PROCESS_CONNINFO
-      this->conn_status_.last_checkin_time = time(NULL);
-#endif /* PROCESS_CONNINFO */
       // XXX : find a better way to correct this
       if (!bytes_read)
 	throw (Exception(0, "Socket is closed"));
     }
   this->discard_ = strcspn(this->buffer_, "\n");
   this->buffer_[this->discard_++] = '\0';
-#ifdef PROCESS_CONNINFO
-  ++this->conn_status_.lines_processed_;
-#endif /* PROCESS_CONNINFO */
   return (this->buffer_);
 }

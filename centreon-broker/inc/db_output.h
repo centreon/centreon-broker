@@ -38,8 +38,6 @@ namespace                       CentreonBroker
   {
     class                       Acknowledgement;
     class                       Comment;
-    class                       Connection;
-    class                       ConnectionStatus;
     class                       Downtime;
     class                       Event;
     class                       Host;
@@ -75,8 +73,6 @@ namespace                       CentreonBroker
     std::string                 db_;
     std::auto_ptr<DB::Connection>
                                 conn_;
-    std::auto_ptr<DB::MappedUpdate<Events::ConnectionStatus> >
-                                connection_status_stmt_;
     std::auto_ptr<DB::MappedInsert<Events::Host> >
                                 host_stmt_;
     std::auto_ptr<DB::MappedUpdate<Events::HostStatus> >
@@ -109,10 +105,6 @@ namespace                       CentreonBroker
     void                        ProcessAcknowledgement(
                                   const Events::Acknowledgement& ack);
     void                        ProcessComment(const Events::Comment& comment);
-    void                        ProcessConnection(
-                                  const Events::Connection& connection);
-    void                        ProcessConnectionStatus(
-                                  const Events::ConnectionStatus& cs);
     void                        ProcessDowntime(const Events::Downtime& downtime);
     void                        ProcessEvent(Events::Event* event);
     void                        ProcessHost(const Events::Host& host);
