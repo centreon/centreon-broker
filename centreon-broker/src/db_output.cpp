@@ -478,10 +478,19 @@ void DBOutput::ProcessHost(const Host& host)
 #ifndef NDEBUG
   logging.LogDebug("Processing Host event...");
 #endif /* !NDEBUG */
-  this->host_stmt_->SetArg(host);
-  ((DB::HaveArgs*)this->host_stmt_.get())->SetArg(this->GetInstanceId(host.instance));
-  this->host_stmt_->Execute();
-  this->QueryExecuted();
+  try
+    {
+      this->host_stmt_->SetArg(host);
+      ((DB::HaveArgs*)this->host_stmt_.get())->SetArg(
+        this->GetInstanceId(host.instance));
+      this->host_stmt_->Execute();
+      this->QueryExecuted();
+    }
+  catch (const DB::DBException& dbe) // usually because of a host redefinition
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
   return ;
 }
 
