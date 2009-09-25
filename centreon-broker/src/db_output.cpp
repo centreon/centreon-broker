@@ -619,11 +619,19 @@ void DBOutput::ProcessService(const Service& service)
     myservice.host_id = query->GetInt();
   query.reset();
 
-  this->service_stmt_->SetArg(myservice);
-  ((DB::HaveArgs*)this->service_stmt_.get())->SetArg(
-    this->GetInstanceId(myservice.instance));
-  this->service_stmt_->Execute();
-  this->QueryExecuted();
+  try
+    {
+      this->service_stmt_->SetArg(myservice);
+      ((DB::HaveArgs*)this->service_stmt_.get())->SetArg(
+        this->GetInstanceId(myservice.instance));
+      this->service_stmt_->Execute();
+      this->QueryExecuted();
+    }
+  catch (const DB::DBException& dbe) // usually because of a host redefinition
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
   return ;
 }
 
