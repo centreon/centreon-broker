@@ -182,7 +182,6 @@ void DBOutput::Connect()
  */
 void DBOutput::Disconnect()
 {
-  this->connection_status_stmt_.reset();
   this->host_stmt_.reset();
   this->host_status_stmt_.reset();
   this->program_status_stmt_.reset();
@@ -258,16 +257,6 @@ void DBOutput::OnEvent(Event* e) throw ()
  */
 void DBOutput::PrepareStatements()
 {
-  // ConnectionStatus update statement.
-  this->connection_status_stmt_.reset(
-    this->conn_->GetMappedUpdate<ConnectionStatus>(
-      connection_status_get_mapping));
-  this->connection_status_stmt_->SetTable("connection_info");
-  this->connection_status_stmt_->SetPredicate(DB::Equal(
-    DB::Field("instance_id"),
-    DB::Placeholder()));
-  this->connection_status_stmt_->Prepare();
-
   // Host insert statement.
   this->host_stmt_.reset(this->conn_->GetMappedInsert<Host>(host_get_mapping));
   this->host_stmt_->SetTable("host");
@@ -336,12 +325,6 @@ void DBOutput::ProcessEvent(Event* event)
       break ;
      case Event::COMMENT:
       ProcessComment(*static_cast<Comment*>(event));
-      break ;
-     case Event::CONNECTION:
-      ProcessConnection(*static_cast<Connection*>(event));
-      break ;
-     case Event::CONNECTIONSTATUS:
-      ProcessConnectionStatus(*static_cast<ConnectionStatus*>(event));
       break ;
      case Event::DOWNTIME:
       ProcessDowntime(*static_cast<Downtime*>(event));
@@ -426,56 +409,6 @@ void DBOutput::ProcessComment(const Comment& comment)
                                     DB::Terminal(comment.internal_id)));
       query->Execute();
     }
-  return ;
-}
-
-/**
- *  Process a Connection event.
- */
-void DBOutput::ProcessConnection(const Connection& connection)
-{
-#ifndef NDEBUG
-  logging.LogDebug("Processing Connection event...");
-#endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<Connection> >
-    query(this->conn_->GetMappedInsert<Connection>(
-            connection_get_mapping));
-
-  query->SetTable("connection_info");
-  query->AddField("instance_id");
-  query->SetArg(connection);
-  ((DB::HaveArgs*)query.get())->SetArg(
-    this->GetInstanceId(connection.instance));
-  query->Execute();
-  this->QueryExecuted();
-  return ;
-}
-
-
-/**
- *  Process a ConnectionStatus event.
- */
-void DBOutput::ProcessConnectionStatus(const ConnectionStatus& cs)
-{
-#ifndef NDEBUG
-  logging.LogDebug("Processing ConnectionStatus event...");
-#endif /* !NDEBUG */
-  try
-    {
-      this->connection_status_stmt_->SetArg(cs);
-      ((DB::HaveArgs*)this->connection_status_stmt_.get())->SetArg(
-        this->GetInstanceId(cs.instance));
-      this->connection_status_stmt_->Execute();
-    }
-  catch (DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
-  if (this->connection_status_stmt_->GetUpdateCount() == 0)
-    this->ProcessConnection(Connection(cs));
-  else
-    this->QueryExecuted();
   return ;
 }
 
@@ -744,7 +677,6 @@ void DBOutput::QueryExecuted()
 DBOutput::DBOutput(DB::Connection::DBMS dbms)
   : dbms_(dbms),
     conn_(NULL),
-    connection_status_stmt_(NULL),
     host_status_stmt_(NULL),
     program_status_stmt_(NULL),
     service_status_stmt_(NULL),

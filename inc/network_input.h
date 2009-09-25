@@ -23,7 +23,6 @@
 
 # include <boost/thread.hpp>
 # include <string>
-# include "events/connection_status.h"
 # include "io/io.h"
 
 namespace                    CentreonBroker

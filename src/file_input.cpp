@@ -260,40 +260,6 @@ Events::Event* FileInput::NextEvent()
           }
       }
       break ;
-     case Events::Event::CONNECTION:
-      {
-        std::auto_ptr<Events::Connection> conn(
-          new Events::Connection);
-
-        if (this->ReadEvent(*conn.get(), connection_dm))
-          {
-            conn.reset();
-            event = NULL;
-          }
-        else
-          {
-            event = conn.get();
-            conn.release();
-          }
-      }
-      break ;
-     case Events::Event::CONNECTIONSTATUS:
-      {
-        std::auto_ptr<Events::ConnectionStatus> conn_status(
-          new Events::ConnectionStatus);
-
-        if (this->ReadEvent(*conn_status.get(), connection_status_dm))
-          {
-            conn_status.reset();
-            event = NULL;
-          }
-        else
-          {
-            event = conn_status.get();
-            conn_status.release();
-          }
-      }
-      break ;
      case Events::Event::DOWNTIME:
       {
         std::auto_ptr<Events::Downtime> downtime(

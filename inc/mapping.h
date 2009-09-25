@@ -25,8 +25,6 @@
 # include "db/mapping.hpp"
 # include "events/acknowledgement.h"
 # include "events/comment.h"
-# include "events/connection.h"
-# include "events/connection_status.h"
 # include "events/downtime.h"
 # include "events/host.h"
 # include "events/host_group.h"
@@ -52,20 +50,6 @@ namespace  CentreonBroker
            comment_get_mapping;
   extern DB::MappingSetters<Events::Comment>
            comment_set_mapping;
-  // Connection
-  extern const DB::DataMember<Events::Connection>
-           connection_dm[];
-  extern DB::MappingGetters<Events::Connection>
-           connection_get_mapping;
-  extern DB::MappingSetters<Events::Connection>
-           connection_set_mapping;
-  // ConnectionStatus
-  extern const DB::DataMember<Events::ConnectionStatus>
-           connection_status_dm[];
-  extern DB::MappingGetters<Events::ConnectionStatus>
-           connection_status_get_mapping;
-  extern DB::MappingSetters<Events::ConnectionStatus>
-           connection_status_set_mapping;
   // Downtime
   extern const DB::DataMember<Events::Downtime>
            downtime_dm[];

@@ -25,8 +25,6 @@
 #include "event_publisher.h"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
-#include "events/connection.h"
-#include "events/connection_status.h"
 #include "events/downtime.h"
 #include "events/event.h"
 #include "events/host.h"
@@ -233,18 +231,6 @@ void FileOutput::operator()()
                   this->Dump<Events::Comment>(
                     *static_cast<Events::Comment*>(e),
                     comment_dm,
-                    wb);
-                  break ;
-                 case Events::Event::CONNECTION:
-                  this->Dump<Events::Connection>(
-                    *static_cast<Events::Connection*>(e),
-                    connection_dm,
-                    wb);
-                  break ;
-                 case Events::Event::CONNECTIONSTATUS:
-                  this->Dump<Events::ConnectionStatus>(
-                    *static_cast<Events::ConnectionStatus*>(e),
-                    connection_status_dm,
                     wb);
                   break ;
                  case Events::Event::DOWNTIME:
