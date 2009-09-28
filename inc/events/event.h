@@ -84,6 +84,7 @@ namespace                CentreonBroker
 	LOG,
 	PROGRAMSTATUS,
 	SERVICE,
+        SERVICEGROUP,
 	SERVICESTATUS
       };
       std::string        instance;

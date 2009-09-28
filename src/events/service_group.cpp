@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/host_group.h"
+#include "events/service_group.h"
 
 using namespace CentreonBroker::Events;
 
@@ -29,50 +29,51 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
- *  \brief HostGroup default constructor.
+ *  \brief ServiceGroup default constructor.
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-HostGroup::HostGroup() {}
+ServiceGroup::ServiceGroup() {}
 
 /**
- *  \brief HostGroup copy constructor.
+ *  \brief ServiceGroup copy constructor.
  *
- *  Copy internal data of the host group object to the current instance.
+ *  Copy internal data of the service group object to the current instance.
  *
- *  \param[in] host_group Object to copy from.
+ *  \param[in] service_group Object to copy from.
  */
-HostGroup::HostGroup(const HostGroup& host_group) : Group(host_group) {}
+ServiceGroup::ServiceGroup(const ServiceGroup& service_group)
+  : Group(service_group) {}
 
 /**
- *  HostGroup destructor.
+ *  ServiceGroup destructor.
  */
-HostGroup::~HostGroup() {}
+ServiceGroup::~ServiceGroup() {}
 
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy internal data of the host group object to the current instance.
+ *  Copy internal data of the service group object to the current instance.
  *
- *  \param[in] host_group Object to copy from.
+ *  \param[in] service_group Object to copy from.
  *
  *  \return *this
  */
-HostGroup& HostGroup::operator=(const HostGroup& host_group)
+ServiceGroup& ServiceGroup::operator=(const ServiceGroup& service_group)
 {
-  this->Group::operator=(host_group);
+  this->Group::operator=(service_group);
   return (*this);
 }
 
 /**
  *  \brief Get the event's type.
  *
- *  Returns the type of this event (Event::HOSTGROUP). This can be useful for
- *  runtime event type identification.
+ *  Returns the type of this event (Event::SERVICEGROUP). This can be useful
+ *  for runtime event type identification.
  *
- *  \return Event::HOSTGROUP
+ *  \return Event::SERVICEGROUP
  */
-int HostGroup::GetType() const throw ()
+int ServiceGroup::GetType() const throw ()
 {
-  return (Event::HOSTGROUP);
+  return (Event::SERVICEGROUP);
 }

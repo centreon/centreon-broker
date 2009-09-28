@@ -25,6 +25,8 @@
 #include <dirent.h>
 #include <sstream>
 #include <unistd.h>
+#include "events/host_group.h"
+#include "events/service_group.h"
 #include "exception.h"
 #include "file_input.h"
 #include "mapping.h"
@@ -299,7 +301,8 @@ Events::Event* FileInput::NextEvent()
         std::auto_ptr<Events::HostGroup> host_group(
           new Events::HostGroup);
 
-        if (this->ReadEvent(*host_group.get(), host_group_dm))
+        if (this->ReadEvent(*static_cast<Events::Group*>(host_group.get()),
+                            group_dm))
           {
             host_group.reset();
             event = NULL;
@@ -376,6 +379,24 @@ Events::Event* FileInput::NextEvent()
           {
             event = service.get();
             service.release();
+          }
+      }
+      break ;
+     case Events::Event::SERVICEGROUP:
+      {
+	std::auto_ptr<Events::ServiceGroup> service_group(
+          new Events::ServiceGroup);
+
+	if (this->ReadEvent(*static_cast<Events::Group*>(service_group.get()),
+                            group_dm))
+          {
+            service_group.reset();
+            event = NULL;
+          }
+        else
+          {
+            event = service_group.get();
+            service_group.release();
           }
       }
       break ;

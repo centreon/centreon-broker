@@ -18,31 +18,31 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_HOST_GROUP_H_
-# define EVENTS_HOST_GROUP_H_
+#ifndef EVENTS_SERVICE_GROUP_H_
+# define EVENTS_SERVICE_GROUP_H_
 
 # include "events/group.h"
 
-namespace        CentreonBroker
+namespace           CentreonBroker
 {
-  namespace      Events
+  namespace         Events
   {
     /**
-     *  \class HostGroup host_group.h "events/host_group.h"
-     *  \brief Represents a group of hosts within Nagios.
+     *  \class ServiceGroup service_group.h "events/service_group.h"
+     *  \brief Represents a group of services within Nagios.
      *
      *  XXX : need fix
      */
-    class        HostGroup : public Group
+    class           ServiceGroup : public Group
     {
      public:
-                 HostGroup();
-                 HostGroup(const HostGroup& host_group);
-                 ~HostGroup();
-      HostGroup& operator=(const HostGroup& host_group);
-      int        GetType() const throw ();
+                    ServiceGroup();
+                    ServiceGroup(const ServiceGroup& service_group);
+                    ~ServiceGroup();
+      ServiceGroup& operator=(const ServiceGroup& service_group);
+      int           GetType() const throw ();
     };
   }
 }
 
-#endif /* !EVENTS_HOST_GROUP_H_ */
+#endif /* !EVENTS_SERVICE_GROUP_H_ */
