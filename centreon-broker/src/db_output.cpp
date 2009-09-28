@@ -35,7 +35,9 @@
 #include "events/comment.h"
 #include "events/event.h"
 #include "events/host.h"
+#include "events/host_group.h"
 #include "events/host_status.h"
+#include "events/service_group.h"
 #include "file_input.h"
 #include "file_output.h"
 #include "logging.h"
@@ -347,6 +349,9 @@ void DBOutput::ProcessEvent(Event* event)
      case Event::SERVICE:
       ProcessService(*static_cast<Service*>(event));
       break ;
+     case Event::SERVICEGROUP:
+      ProcessServiceGroup(*static_cast<ServiceGroup*>(event));
+      break ;
      case Event::SERVICESTATUS:
       ProcessServiceStatus(*static_cast<ServiceStatus*>(event));
       break ;
@@ -478,11 +483,11 @@ void DBOutput::ProcessHost(const Host& host)
 #ifndef NDEBUG
   logging.LogDebug("Processing Host event...");
 #endif /* !NDEBUG */
+  this->host_stmt_->SetArg(host);
+  ((DB::HaveArgs*)this->host_stmt_.get())->SetArg(
+    this->GetInstanceId(host.instance));
   try
     {
-      this->host_stmt_->SetArg(host);
-      ((DB::HaveArgs*)this->host_stmt_.get())->SetArg(
-        this->GetInstanceId(host.instance));
       this->host_stmt_->Execute();
       this->QueryExecuted();
     }
@@ -502,13 +507,21 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
 #ifndef NDEBUG
   logging.LogDebug("Processing HostGroup event...");
 #endif /* !NDEBUG */
-  std::auto_ptr<DB::MappedInsert<HostGroup> >
-    query(this->conn_->GetMappedInsert<HostGroup>(host_group_get_mapping));
+  std::auto_ptr<DB::MappedInsert<Group> >
+    query(this->conn_->GetMappedInsert<Group>(group_get_mapping));
 
   query->SetTable("hostgroup");
   query->SetArg(hg);
-  query->Execute();
-  this->QueryExecuted();
+  try
+    {
+      query->Execute();
+      this->QueryExecuted();
+    }
+  catch (const DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+        throw ;
+    }
   return ;
 }
 
@@ -628,6 +641,32 @@ void DBOutput::ProcessService(const Service& service)
       this->QueryExecuted();
     }
   catch (const DB::DBException& dbe) // usually because of a host redefinition
+    {
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
+  return ;
+}
+
+/**
+ *  Process a ServiceGroup event.
+ */
+void DBOutput::ProcessServiceGroup(const ServiceGroup& sg)
+{
+#ifndef NDEBUG
+  logging.LogDebug("Processing ServiceGroup event ...");
+#endif /* !NDEBUG */
+  std::auto_ptr<DB::MappedInsert<Group> >
+    query(this->conn_->GetMappedInsert<Group>(group_get_mapping));
+
+  query->SetTable("servicegroup");
+  query->SetArg(sg);
+  try
+    {
+      query->Execute();
+      this->QueryExecuted();
+    }
+  catch (const DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
 	throw ;

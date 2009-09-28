@@ -33,6 +33,7 @@
 #include "events/log.h"
 #include "events/program_status.h"
 #include "events/service.h"
+#include "events/service_group.h"
 #include "events/service_status.h"
 #include "file_output.h"
 #include "logging.h"
@@ -246,9 +247,10 @@ void FileOutput::operator()()
                     wb);
                   break ;
                  case Events::Event::HOSTGROUP:
-                  this->Dump<Events::HostGroup>(
-                    *static_cast<Events::HostGroup*>(e),
-                    host_group_dm,
+                 case Events::Event::SERVICEGROUP:
+                  this->Dump<Events::Group>(
+                    *static_cast<Events::Group*>(e),
+                    group_dm,
                     wb);
                   break ;
                  case Events::Event::HOSTSTATUS:

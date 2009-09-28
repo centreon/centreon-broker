@@ -46,6 +46,7 @@ namespace                       CentreonBroker
     class                       ProgramStatus;
     class                       Query;
     class                       Service;
+    class                       ServiceGroup;
     class                       ServiceStatus;
   }
 
@@ -114,6 +115,8 @@ namespace                       CentreonBroker
     void                        ProcessProgramStatus(
                                   const Events::ProgramStatus& ps);
     void                        ProcessService(const Events::Service& service);
+    void                        ProcessServiceGroup(
+                                  const Events::ServiceGroup& sg);
     void                        ProcessServiceStatus(
                                   const Events::ServiceStatus& ss);
     void                        QueryExecuted();

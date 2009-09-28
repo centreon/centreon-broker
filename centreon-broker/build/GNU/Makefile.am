@@ -57,6 +57,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/comment.cpp			\
 			../../src/events/downtime.cpp			\
 			../../src/events/event.cpp			\
+			../../src/events/group.cpp			\
 			../../src/events/host.cpp			\
 			../../src/events/host_group.cpp			\
 			../../src/events/host_service.cpp		\
@@ -65,6 +66,7 @@ cb2db_SOURCES	=	../../src/cb2db.cpp				\
 			../../src/events/log.cpp			\
 			../../src/events/program_status.cpp		\
 			../../src/events/service.cpp			\
+			../../src/events/service_group.cpp		\
 			../../src/events/service_status.cpp		\
 			../../src/events/status.cpp			\
 			../../src/exception.cpp				\

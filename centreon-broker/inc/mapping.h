@@ -26,8 +26,8 @@
 # include "events/acknowledgement.h"
 # include "events/comment.h"
 # include "events/downtime.h"
+# include "events/group.h"
 # include "events/host.h"
-# include "events/host_group.h"
 # include "events/host_status.h"
 # include "events/log.h"
 # include "events/program_status.h"
@@ -57,6 +57,13 @@ namespace  CentreonBroker
            downtime_get_mapping;
   extern DB::MappingSetters<Events::Downtime>
            downtime_set_mapping;
+  // Group
+  extern const DB::DataMember<Events::Group>
+           group_dm[];
+  extern DB::MappingGetters<Events::Group>
+           group_get_mapping;
+  extern DB::MappingSetters<Events::Group>
+           group_set_mapping;
   // Host
   extern const DB::DataMember<Events::Host>
            host_dm[];
@@ -64,13 +71,6 @@ namespace  CentreonBroker
            host_get_mapping;
   extern DB::MappingSetters<Events::Host>
            host_set_mapping;
-  // HostGroup
-  extern const DB::DataMember<Events::HostGroup>
-           host_group_dm[];
-  extern DB::MappingGetters<Events::HostGroup>
-           host_group_get_mapping;
-  extern DB::MappingSetters<Events::HostGroup>
-           host_group_set_mapping;
   // HostStatus
   extern const DB::DataMember<Events::HostStatus>
            host_status_dm[];

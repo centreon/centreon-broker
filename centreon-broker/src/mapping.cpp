@@ -21,8 +21,8 @@
 #include "db/data_member.hpp"
 #include "events/acknowledgement.h"
 #include "events/comment.h"
+#include "events/group.h"
 #include "events/host.h"
-#include "events/host_group.h"
 #include "events/host_status.h"
 #include "events/log.h"
 #include "events/program_status.h"
@@ -129,6 +129,25 @@ DB::MappingGetters<Events::Downtime>
   CentreonBroker::downtime_get_mapping;
 DB::MappingSetters<Events::Downtime>
   CentreonBroker::downtime_set_mapping;
+
+const DB::DataMember<Group> CentreonBroker::group_dm[] =
+  {
+    DataMember<Group>("action_url",
+      &Group::action_url),
+    DataMember<Group>("alias",
+      &Group::alias),
+    DataMember<Group>("hostgroup_name",
+      &Group::name),
+    DataMember<Group>("notes",
+      &Group::notes),
+    DataMember<Group>("notes_url",
+      &Group::notes_url),
+    DataMember<Group>()
+  };
+DB::MappingGetters<Events::Group>
+  CentreonBroker::group_get_mapping;
+DB::MappingSetters<Events::Group>
+  CentreonBroker::group_set_mapping;
 
 const DB::DataMember<Host> CentreonBroker::host_dm[] =
   {
@@ -296,25 +315,6 @@ DB::MappingGetters<Events::Host>
   CentreonBroker::host_get_mapping;
 DB::MappingSetters<Events::Host>
   CentreonBroker::host_set_mapping;
-
-const DB::DataMember<HostGroup> CentreonBroker::host_group_dm[] =
-  {
-    DataMember<HostGroup>("action_url",
-      &HostGroup::action_url),
-    DataMember<HostGroup>("alias",
-      &HostGroup::alias),
-    DataMember<HostGroup>("hostgroup_name",
-      &HostGroup::name),
-    DataMember<HostGroup>("notes",
-      &HostGroup::notes),
-    DataMember<HostGroup>("notes_url",
-      &HostGroup::notes_url),
-    DataMember<HostGroup>()
-  };
-DB::MappingGetters<Events::HostGroup>
-  CentreonBroker::host_group_get_mapping;
-DB::MappingSetters<Events::HostGroup>
-  CentreonBroker::host_group_set_mapping;
 
 const DB::DataMember<HostStatus> CentreonBroker::host_status_dm[] =
   {
@@ -844,16 +844,16 @@ void CentreonBroker::MappingsDestroy()
   downtime_set_mapping.Clear();
 
 #ifndef NDEBUG
+  logging.LogDebug("Destroying Group mapping ...");
+#endif /* !NDEBUG */
+  group_get_mapping.Clear();
+  group_set_mapping.Clear();
+
+#ifndef NDEBUG
   logging.LogDebug("Destroying Host mapping ...");
 #endif /* !NDEBUG */
   host_get_mapping.Clear();
   host_set_mapping.Clear();
-
-#ifndef NDEBUG
-  logging.LogDebug("Destroying HostGroup mapping ...");
-#endif /* !NDEBUG */
-  host_group_get_mapping.Clear();
-  host_group_set_mapping.Clear();
 
 #ifndef NDEBUG
   logging.LogDebug("Destroying HostStatus mapping ...");
@@ -916,17 +916,17 @@ void CentreonBroker::MappingsInit()
     downtime_get_mapping,
     downtime_set_mapping);
 #ifndef NDEBUG
+  logging.LogDebug("Initializing Group mapping ...");
+#endif /* !NDEBUG */
+  InitMapping<Events::Group>(group_dm,
+    group_get_mapping,
+    group_set_mapping);
+#ifndef NDEBUG
   logging.LogDebug("Initializing Host mapping ...");
 #endif /* !NDEBUG */
   InitMapping<Events::Host>(host_dm,
     host_get_mapping,
     host_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing HostGroup mapping ...");
-#endif /* !NDEBUG */
-  InitMapping<Events::HostGroup>(host_group_dm,
-    host_group_get_mapping,
-    host_group_set_mapping);
 #ifndef NDEBUG
   logging.LogDebug("Initializing HostStatus mapping ...");
 #endif /* !NDEBUG */
