@@ -22,6 +22,8 @@
 #include <memory>
 #include "db/connection.h"
 #include "db/db_exception.h"
+#include "db/delete.h"
+#include "db/insert.h"
 #ifdef USE_MYSQL
 # include "db/mysql/connection.h"
 #endif /* USE_MYSQL */
@@ -29,6 +31,8 @@
 # include "db/postgresql/connection.h"
 #endif /* USE_POSTGRESQL */
 #include "db/predicate.h"
+#include "db/select.h"
+#include "db/update.h"
 #include "db_output.h"
 #include "exception.h"
 #include "event_publisher.h"
