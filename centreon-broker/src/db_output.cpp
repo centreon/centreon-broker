@@ -512,6 +512,7 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
 #ifndef NDEBUG
   logging.LogDebug("Processing HostGroup event...");
 #endif /* !NDEBUG */
+  int id;
   std::auto_ptr<DB::MappedInsert<Group> >
     query(this->conn_->GetMappedInsert<Group>(group_get_mapping));
 
@@ -520,12 +521,62 @@ void DBOutput::ProcessHostGroup(const HostGroup& hg)
   try
     {
       query->Execute();
+      id = query->InsertId();
       this->QueryExecuted();
     }
   catch (const DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
         throw ;
+
+      // Get ID of already inserted host group
+      std::auto_ptr<DB::Select> select(this->conn_->GetSelect());
+
+      select->SetTable("hostgroup");
+      select->AddField("id");
+      select->SetPredicate(DB::Equal(DB::Field("hostgroup_name"),
+                                     DB::Terminal(hg.name.c_str())));
+      select->Execute();
+      if (!select->Next()) // can't find host group
+	return ;
+      id = select->GetInt();
+    }
+  for (std::list<std::string>::const_iterator it = hg.members.begin();
+       it != hg.members.end();
+       ++it)
+    {
+      int host_id;
+      std::auto_ptr<DB::Select> select(this->conn_->GetSelect());
+
+      select->SetTable("host");
+      select->AddField("id");
+      select->SetPredicate(DB::And(DB::Equal(DB::Field("instance_id"),
+                                             DB::Terminal(this->GetInstanceId(
+                                                            hg.instance))),
+				   DB::Equal(DB::Field("host_name"),
+                                             DB::Terminal((*it).c_str()))));
+      select->Execute();
+      if (!select->Next())
+        continue ;
+      host_id = select->GetInt();
+      select.reset();
+
+      std::auto_ptr<DB::Insert> insert(this->conn_->GetInsert());
+      insert->SetTable("host_hostgroup");
+      insert->AddField("host");
+      insert->AddField("hostgroup");
+      insert->SetArg(host_id);
+      insert->SetArg(id);
+      try
+	{
+	  insert->Execute();
+	  this->QueryExecuted();
+	}
+      catch (const DB::DBException& dbe)
+	{
+	  if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+	    throw ;
+	}
     }
   return ;
 }
