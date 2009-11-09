@@ -162,9 +162,9 @@ void DBOutput::Connect()
   {
     std::auto_ptr<DB::Select> query(this->conn_->GetSelect());
 
+    query->SetTable("program_status");
     query->AddField("instance_name");
     query->AddField("instance_id");
-    query->SetTable("program_status");
     query->Execute();
     while (query->Next())
       {
@@ -913,10 +913,16 @@ void DBOutput::operator()()
 		{
 #ifndef NDEBUG
 		  logging.LogDebug("DBOutput deletion requested, " \
-                                   "exiting thread...");
+                                   "processing remaining events...");
 #endif /* !NDEBUG */
-		  break ;
-		}
+		  while (!this->events_.Empty())
+		    {
+                      event = this->events_.Wait();
+                      if (event)
+                        this->ProcessEvent(event);
+                    }
+                  break ;
+                }
             }
         }
 

@@ -300,9 +300,10 @@ CREATE TABLE IF NOT EXISTS `program_status` (
   -- check_service_freshness tinyint(2)
   `instance_address` varchar(120) default NULL,              -- not in Merlin
   `instance_description` varchar(128) default NULL,          -- not in Merlin
-  `program_end_time` int default NULL,                       -- not in Merlin
+  `program_end` int default NULL,                            -- not in Merlin
 
-  PRIMARY KEY (`instance_id`)
+  PRIMARY KEY (`instance_id`),
+  UNIQUE KEY (`instance_name`)
 ) ENGINE=InnoDB;
 
 
