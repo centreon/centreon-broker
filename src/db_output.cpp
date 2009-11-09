@@ -414,6 +414,7 @@ void DBOutput::ProcessComment(const Comment& comment)
     {
       std::auto_ptr<DB::Delete> query(this->conn_->GetDelete());
 
+      query->SetTable("comment");
       query->SetPredicate(DB::Equal(DB::Field("internal_comment_id"),
                                     DB::Terminal(comment.internal_id)));
       query->Execute();
@@ -644,7 +645,8 @@ void DBOutput::ProcessService(const Service& service)
       this->service_stmt_->Execute();
       this->QueryExecuted();
     }
-  catch (const DB::DBException& dbe) // usually because of a host redefinition
+  // usually because of a service redefinition
+  catch (const DB::DBException& dbe)
     {
       if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
 	throw ;
