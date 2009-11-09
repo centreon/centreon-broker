@@ -88,20 +88,22 @@ CREATE TABLE IF NOT EXISTS `comment` (
 
 
 CREATE TABLE IF NOT EXISTS `host_hostgroup` (
-  `host` int NOT NULL,     -- OK
-  `hostgroup` int NOT NULL -- OK
+  `host` int NOT NULL,             -- OK
+  `hostgroup` int NOT NULL,        -- OK
+  UNIQUE KEY (`host`, `hostgroup`)
 ) ENGINE=InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS `hostgroup` (
-  `id` int NOT NULL auto_increment,           -- OK
-  `instance_id` int NOT NULL,                 -- OK
-  `action_url` varchar(160) default NULL,     -- OK
-  `alias` varchar(255) default NULL,          -- OK (varchar(160) in Merlin)
-  `hostgroup_name` varchar(255) default NULL, -- OK (varchar(160) in Merlin)
-  `notes` varchar(160) default NULL,          -- OK
-  `notes_url` varchar(160) default NULL,      -- OK
-  PRIMARY KEY (`id`)
+  `id` int NOT NULL auto_increment,             -- OK
+  `instance_id` int NOT NULL,                   -- OK
+  `action_url` varchar(160) default NULL,       -- OK
+  `alias` varchar(255) default NULL,            -- OK (varchar(160) in Merlin)
+  `hostgroup_name` varchar(255) default NULL,   -- OK (varchar(160) in Merlin)
+  `notes` varchar(160) default NULL,            -- OK
+  `notes_url` varchar(160) default NULL,        -- OK
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`instance_id`, `hostgroup_name`)
 ) ENGINE=InnoDB;
 
 

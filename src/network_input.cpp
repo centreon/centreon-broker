@@ -48,6 +48,15 @@ using namespace CentreonBroker::Events;
 **************************************/
 
 /**
+ *  Append a member to the host group.
+ */
+static void AddHostGroupMember(HostGroup& host_group, const char* member)
+{
+  host_group.members.push_back(member);
+  return ;
+}
+
+/**
  *  Parse a custom var and if matching set the corresponding host_id.
  */
 static void CustomVarToHost(Host& host, const char* custom_var)
@@ -477,6 +486,8 @@ void NetworkInput::HandleHostGroup()
     {
       KeySetter<HostGroup>(NDO_DATA_HOSTGROUPALIAS,
         &HostGroup::alias),
+      KeySetter<HostGroup>(NDO_DATA_HOSTGROUPMEMBER,
+        &AddHostGroupMember),
       KeySetter<HostGroup>(NDO_DATA_HOSTGROUPNAME,
         &HostGroup::name),
       KeySetter<HostGroup>()

@@ -23,12 +23,12 @@
 
 # include <string>
 
-namespace          CentreonBroker
+namespace                CentreonBroker
 {
-  namespace        DB
+  namespace              DB
   {
     // This class is defined at the bottom of this file.
-    class          PredicateVisitor;
+    class                PredicateVisitor;
 
     /**
      *  \class Predicate predicate.h "db/predicate.h"
@@ -43,7 +43,7 @@ namespace          CentreonBroker
      *
      *  \see PredicateVisitor
      */
-    class          Predicate
+    class                Predicate
     {
      protected:
                          Predicate() throw ();

@@ -21,34 +21,36 @@
 #ifndef EVENTS_GROUP_H_
 # define EVENTS_GROUP_H_
 
+# include <list>
 # include <string>
 # include "events/event.h"
 
-namespace         CentreonBroker
+namespace                    CentreonBroker
 {
-  namespace       Events
+  namespace                  Events
   {
     /**
-     *  \class Group host_group.h "events/group.h"
+     *  \class Group group.h "events/group.h"
      *  \brief Base of host and service group classes.
      *
      *  XXX : need fix
      */
-    class         Group : public Event
+    class                    Group : public Event
     {
      private:
-      void        InternalCopy(const Group& group);
+      void                   InternalCopy(const Group& group);
 
      public:
-      std::string action_url;
-      std::string alias;
-      std::string name;
-      std::string notes;
-      std::string notes_url;
-                  Group();
-                  Group(const Group& group);
-                  ~Group();
-      Group&      operator=(const Group& group);
+      std::string            action_url;
+      std::string            alias;
+      std::list<std::string> members;
+      std::string            name;
+      std::string            notes;
+      std::string            notes_url;
+                             Group();
+                             Group(const Group& group);
+                             ~Group();
+      Group&                 operator=(const Group& group);
     };
   }
 }
