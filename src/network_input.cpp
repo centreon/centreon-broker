@@ -18,9 +18,10 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "client_acceptor.h"
 #include "event_publisher.h"
 #include "events/acknowledgement.h"
@@ -605,11 +606,10 @@ void NetworkInput::HandleInitialization()
   char* key;
   char* tmp;
   const char* value;
-  ProgramStatus* conn_info;
 
-  conn_info = new ProgramStatus;
-  conn_info->is_running = true;
-  conn_info->program_start = time(NULL);
+  this->info_.is_running = true;
+  this->info_.pid = getpid();
+  this->info_.program_start = time(NULL);
   key = this->GetLine();
   while (strcmp(key, NDO_API_STARTDATADUMP))
     {
@@ -622,10 +622,7 @@ void NetworkInput::HandleInitialization()
 	  value = tmp + 2;
 	}
       if (!strcmp(key, NDO_API_INSTANCENAME))
-        {
-	  this->instance_ = value;
-          conn_info->instance = value;
-        }
+        this->instance_ = value;
       /*
       else if (!strcmp(key, NDO_API_AGENT))
 	conn_info->agent_name = value;
@@ -638,9 +635,9 @@ void NetworkInput::HandleInitialization()
       */
       key = this->GetLine();
     }
-  conn_info->instance = this->instance_;
-  conn_info->program_start = time(NULL);
-  EventPublisher::GetInstance().Publish(conn_info);
+  this->info_.instance = this->instance_;
+  // XXX : new event might be lost
+  EventPublisher::GetInstance().Publish(new ProgramStatus(this->info_));
   return ;
 }
 
@@ -1189,6 +1186,20 @@ void NetworkInput::operator()()
       logging.LogError(
         "Unknown exception occured while processing network input");
     }
+
+  // Update instance status.
+  this->info_.is_running = false;
+  this->info_.program_end = time(NULL);
+  try
+    {
+      std::auto_ptr<ProgramStatus> info(new ProgramStatus(this->info_));
+
+      EventPublisher::GetInstance().Publish(info.get());
+      info.release();
+    }
+  catch (...) {}
+
+  // Perform cleanup if possible.
   if (this->threadm_.try_lock())
     {
       this->socket_->Close();

@@ -23,6 +23,7 @@
 
 # include <boost/thread.hpp>
 # include <string>
+# include "events/program_status.h"
 # include "io/io.h"
 
 namespace                    CentreonBroker
@@ -47,9 +48,7 @@ namespace                    CentreonBroker
     size_t                   discard_;
     size_t                   length_;
     // Other parameters
-# ifdef PROCESS_CONNINFO
-    Events::ConnectionStatus conn_status_;
-# endif /* PROCESS_CONNINFO */
+    Events::ProgramStatus    info_;
     std::string              instance_;
     ClientAcceptor*          parent_;
     IO::Stream*              socket_;
