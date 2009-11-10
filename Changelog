@@ -1,0 +1,17 @@
+------------------------
+
+     CentreonBroker
+
+------------------------
+
+
+v0.1.0
+------
+  - first release of CentreonBroker
+  - optimized database schema
+  - equivalent of NDOUtils' ndo2db : cb2db
+  - MySQL-compatible
+  - use prepared statements to lower DB server burden
+  - support multiple inputs
+  - support multiple outputs
+  - support TLS connections
