@@ -128,13 +128,14 @@ endif
 
 # Configure compilation flags properly
 cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cb2db	\
-			$(BOOST_CPPFLAGS) $(MYSQL_CPPFLAGS)
+			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)		\
+			$(MYSQL_CPPFLAGS)
 cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(ORACLE_OCI_CFLAGS)		\
 			$(POSTGRESQL_CFLAGS) $(LIBGNUTLS_CFLAGS)
 cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
-			$(BOOST_THREAD_LIB) $(MYSQL_LDFLAGS)		\
-			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
-			$(LIBGNUTLS_LIBS)
+			$(BOOST_THREAD_LIB) $(GNUTLS_LDFLAGS)		\
+			$(MYSQL_LDFLAGS) $(ORACLE_OCI_LDFLAGS)		\
+			$(POSTGRESQL_LDFLAGS)
 
 
 #######################################
@@ -150,8 +151,7 @@ cbmod_so_SOURCES=	../../src/cbmod/callbacks.cpp			\
 
 # Configure compilation flags properly
 cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cbmod	\
-			$(BOOST_CPPFLAGS)
-cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS) -shared	\
-			-fPIC
+			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)
+cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) -shared -fPIC
 cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
-			$(BOOST_THREAD_LIB) $(LIBGNUTLS_LIBS)
+			$(BOOST_THREAD_LIB) $(GNUTLS_LDFLAGS)

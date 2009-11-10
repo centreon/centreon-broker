@@ -63,10 +63,6 @@ AX_BOOST_THREAD
 ##  MYSQL
 ##
 AX_LIB_MYSQL
-if test x"$want_mysql" = "xyes"
-then
-	AC_DEFINE([USE_MYSQL])
-fi
 AM_CONDITIONAL([MYSQL], [test x"$want_mysql" = "xyes"])
 
 ##
@@ -83,21 +79,13 @@ AM_CONDITIONAL([ORACLE], [test x"$HAVE_ORACLE_OCI" = "xyes"])
 ##  POSTGRESQL
 ##
 AX_LIB_POSTGRESQL
-if test x"$want_postgresql" = "xyes"
-then
-	AC_DEFINE([USE_POSTGRESQL])
-fi
 AM_CONDITIONAL([POSTGRESQL], [test x"$want_postgresql" = "xyes"])
 
 ##
 ##  TLS
 ##
-AM_PATH_LIBGNUTLS
-if test "x$LIBGNUTLS_CFLAGS" != "x"
-then
-	AC_DEFINE([USE_TLS])
-fi
-AM_CONDITIONAL([TLS], [test x"$LIBGNUTLS_CFLAGS" != "x"])
+AM_LIB_GNUTLS
+AM_CONDITIONAL([TLS], [test x"$want_gnutls" = "xyes"])
 
 ##
 ##  OUTPUT
