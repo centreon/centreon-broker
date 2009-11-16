@@ -206,9 +206,13 @@ void MySQLUpdate::Prepare()
 void MySQLUpdate::SetArg(bool arg)
 {
   if (!this->stmt)
-    this->CheckArg();
-  this->MySQLHaveArgs::SetArg(arg);
-  this->query.append(", ");
+    {
+      this->CheckArg();
+      this->MySQLHaveArgs::SetArg(arg);
+      this->query.append(", ");
+    }
+  else
+    this->MySQLHaveArgs::SetArg(arg);
   return ;
 }
 
@@ -220,9 +224,13 @@ void MySQLUpdate::SetArg(bool arg)
 void MySQLUpdate::SetArg(double arg)
 {
   if (!this->stmt)
-    this->CheckArg();
-  this->MySQLHaveArgs::SetArg(arg);
-  this->query.append(", ");
+    {
+      this->CheckArg();
+      this->MySQLHaveArgs::SetArg(arg);
+      this->query.append(", ");
+    }
+  else
+    this->MySQLHaveArgs::SetArg(arg);
   return ;
 }
 
@@ -234,9 +242,13 @@ void MySQLUpdate::SetArg(double arg)
 void MySQLUpdate::SetArg(int arg)
 {
   if (!this->stmt)
-    this->CheckArg();
-  this->MySQLHaveArgs::SetArg(arg);
-  this->query.append(", ");
+    {
+      this->CheckArg();
+      this->MySQLHaveArgs::SetArg(arg);
+      this->query.append(", ");
+    }
+  else
+    this->MySQLHaveArgs::SetArg(arg);
   return ;
 }
 
@@ -248,9 +260,13 @@ void MySQLUpdate::SetArg(int arg)
 void MySQLUpdate::SetArg(short arg)
 {
   if (!this->stmt)
-    this->CheckArg();
-  this->MySQLHaveArgs::SetArg(arg);
-  this->query.append(", ");
+    {
+      this->CheckArg();
+      this->MySQLHaveArgs::SetArg(arg);
+      this->query.append(", ");
+    }
+  else
+    this->MySQLHaveArgs::SetArg(arg);
   return ;
 }
 
@@ -262,9 +278,13 @@ void MySQLUpdate::SetArg(short arg)
 void MySQLUpdate::SetArg(const std::string& arg)
 {
   if (!this->stmt)
-    this->CheckArg();
-  this->MySQLHaveArgs::SetArg(arg);
-  this->query.append(", ");
+    {
+      this->CheckArg();
+      this->MySQLHaveArgs::SetArg(arg);
+      this->query.append(", ");
+    }
+  else
+    this->MySQLHaveArgs::SetArg(arg);
   return ;
 }
 

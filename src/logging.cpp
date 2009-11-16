@@ -20,6 +20,7 @@
 
 #include <boost/thread.hpp>
 #include <cassert>
+#include <iostream>
 #include <sstream>
 #include <syslog.h>
 #include "logging.h"
