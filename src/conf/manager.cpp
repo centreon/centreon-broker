@@ -573,16 +573,20 @@ void Manager::Update() throw ()
 #ifdef USE_MYSQL
       if (Output::MYSQL == output.GetType())
 	dbo.reset(new DBOutput(DB::Connection::MYSQL));
-      else
 #endif /* USE_MYSQL */
 
 #ifdef USE_ORACLE
+# ifdef USE_MYSQL
+      else
+# endif /* USE_MYSQL */
       if (Output::ORACLE == output.GetType())
         dbo.reset(new DBOutput(DB::Connection::ORACLE));
-      else
 #endif /* USE_ORACLE */
 
 #ifdef USE_POSTGRESQL
+# if defined(USE_MYSQL) || defined(USE_ORACLE)
+      else
+# endif /* USE_MYSQL || USE_ORACLE */
       if (Output::POSTGRESQL == output.GetType())
 	dbo.reset(new DBOutput(DB::Connection::POSTGRESQL));
 #endif /* USE_POSTGRESQL */

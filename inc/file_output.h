@@ -40,10 +40,10 @@ namespace                        CentreonBroker
   class                          FileOutput : public EventSubscriber
   {
    private:
-    unsigned int                 current_;
     WaitableList<Events::Event>  events_;
     volatile bool                exit_;
     unsigned int                 max_size_;
+    unsigned int                 next_;
     std::ofstream                ofs_;
     std::string                  path_;
     std::auto_ptr<boost::thread> thread_;
