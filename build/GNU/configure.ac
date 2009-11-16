@@ -43,9 +43,15 @@ AC_PROG_CXX
 ##  DEBUG
 ##
 AC_MSG_CHECKING([whether binaries should be compiled in debug mode])
-AC_ARG_ENABLE([debug],
-	AS_HELP_STRING([--enable-debug], [Debug flags]),
-	[enable_debug=$enableval],
+AC_ARG_WITH([debug],
+	AS_HELP_STRING([--with-debug], [enable debug messages]),
+	[
+		if test x"$withval" = "xyes" ; then
+			enable_debug="yes"
+		else
+			enable_debug="no"
+		fi
+	],
 	[enable_debug="no"])
 AC_MSG_RESULT($enable_debug)
 if test "x$enable_debug" '!=' 'xyes'
