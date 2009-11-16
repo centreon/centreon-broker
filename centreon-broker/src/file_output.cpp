@@ -51,6 +51,8 @@ using namespace CentreonBroker;
  *  \brief FileOutput copy constructor.
  *
  *  Any attempt to use it will result in a call to abort().
+ *
+ *  \param[in] fo Unused.
  */
 FileOutput::FileOutput(const FileOutput& fo) : EventSubscriber()
 {
@@ -63,6 +65,8 @@ FileOutput::FileOutput(const FileOutput& fo) : EventSubscriber()
  *  \brief Overload of the assignment operator.
  *
  *  Any attempt to use it will result in a call to abort().
+ *
+ *  \param[in] fo Unused.
  */
 FileOutput& FileOutput::operator=(const FileOutput& fo)
 {
@@ -74,6 +78,10 @@ FileOutput& FileOutput::operator=(const FileOutput& fo)
 
 /**
  *  Dump an event.
+ *
+ *  \param[in]  event Event to dump.
+ *  \param[in]  dm    Description of event structure.
+ *  \param[out] wb    Will be increased by the number of bytes written.
  */
 template <typename T>
 void FileOutput::Dump(const T& event,
@@ -170,7 +178,7 @@ void FileOutput::OpenNext()
 {
   std::stringstream ss;
 
-  ss << this->path_ << this->current_ + 1;
+  ss << this->path_ << this->next_;
 #ifndef NDEBUG
   logging.LogDebug("Opening file...");
   logging.LogDebug(ss.str().c_str());
@@ -178,6 +186,7 @@ void FileOutput::OpenNext()
   this->ofs_.open(ss.str().c_str());
   if (this->ofs_.fail())
     throw (Exception(0, "Could not open output file"));
+  ++this->next_;
   return ;
 }
 
@@ -190,7 +199,7 @@ void FileOutput::OpenNext()
 /**
  *  FileOutput default constructor.
  */
-FileOutput::FileOutput() : exit_(true), max_size_(100000000) {}
+FileOutput::FileOutput() : exit_(true), max_size_(10000000) {}
 
 /**
  *  FileOutput destructor.
@@ -386,7 +395,7 @@ void FileOutput::Open(const std::string& base_path)
   }
 
   // Browse directory
-  this->current_ = 0;
+  this->next_ = 0;
   {
     DIR* dir;
     struct dirent* entry;
@@ -396,18 +405,19 @@ void FileOutput::Open(const std::string& base_path)
       throw (Exception(errno, strerror(errno)));
     while ((entry = readdir(dir)))
       {
-	if (!strncmp(entry->d_name, base_file.c_str(), base_file.size()))
-	  {
-	    char* err;
-	    unsigned int val;
+        if (!strncmp(entry->d_name, base_file.c_str(), base_file.size()))
+          {
+            char* err;
+            unsigned int val;
 
-	    val = strtoul(entry->d_name + base_file.size(), &err, 0);
-	    if ('\0' == *err && val > this->current_)
-	      this->current_ = val;
-	  }
+            val = strtoul(entry->d_name + base_file.size(), &err, 0);
+            if (('\0' == *err) && (val > this->next_))
+              this->next_ = val;
+          }
       }
     closedir(dir);
   }
+  ++this->next_;
 
   // Really open the proper file
   this->OpenNext();
