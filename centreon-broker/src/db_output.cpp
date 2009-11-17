@@ -383,8 +383,17 @@ void DBOutput::ProcessAcknowledgement(const Acknowledgement& ack)
   query->AddField("instance_id");
   query->SetArg(ack);
   ((DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(ack.instance));
-  query->Execute();
-  this->QueryExecuted();
+  try
+    {
+      query->Execute();
+      this->QueryExecuted();
+    }
+  catch (const DB::DBException& dbe) // acknowledgement redefinition
+    {
+      // XXX : shouldn't we try to update the comment ?
+      if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+        throw ;
+    }
   return ;
 }
 
@@ -407,8 +416,17 @@ void DBOutput::ProcessComment(const Comment& comment)
       query->SetArg(comment);
       ((DB::HaveArgs*)query.get())->SetArg(
         this->GetInstanceId(comment.instance));
-      query->Execute();
-      this->QueryExecuted();
+      try
+        {
+          query->Execute();
+          this->QueryExecuted();
+        }
+      catch (const DB::DBException& dbe) // comment redefinition
+        {
+          // XXX : shouldn't we try to update the comment ?
+          if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+            throw ;
+        }
     }
   else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
@@ -441,8 +459,17 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
       query->SetArg(downtime);
       ((DB::HaveArgs*)query.get())->SetArg(
         this->GetInstanceId(downtime.instance));
-      query->Execute();
-      this->QueryExecuted();
+      try
+        {
+          query->Execute();
+          this->QueryExecuted();
+        }
+      catch (const DB::DBException& dbe) // downtime redefinition
+        {
+          // XXX : shouldn't we try to update the downtime ?
+          if (dbe.GetReason() != DB::DBException::QUERY_EXECUTION)
+            throw ;
+        }
     }
   else if (downtime.type == NEBTYPE_DOWNTIME_START)
     {
@@ -461,6 +488,13 @@ void DBOutput::ProcessDowntime(const Downtime& downtime)
       query->SetArg(true);
       query->Execute();
       this->QueryExecuted();
+      if (query->GetUpdateCount() == 0)
+        {
+	  Downtime dt(downtime);
+
+          dt.type = NEBTYPE_DOWNTIME_ADD;
+          this->ProcessDowntime(dt);
+        }
     }
   else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
            || (downtime.type == NEBTYPE_DOWNTIME_DELETE))

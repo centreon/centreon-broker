@@ -257,7 +257,7 @@ void NetworkInput::HandleAcknowledgement()
   static const KeySetter<Acknowledgement> acknowledgement_setters[] =
     {
       KeySetter<Acknowledgement>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
-        &Acknowledgement::type),
+        &Acknowledgement::acknowledgement_type),
       KeySetter<Acknowledgement>(NDO_DATA_AUTHORNAME,
         &Acknowledgement::author),
       KeySetter<Acknowledgement>(NDO_DATA_COMMENT,
@@ -276,6 +276,8 @@ void NetworkInput::HandleAcknowledgement()
         &Acknowledgement::is_sticky),
       KeySetter<Acknowledgement>(NDO_DATA_TIMESTAMP,
         &Acknowledgement::entry_time),
+      KeySetter<Acknowledgement>(NDO_DATA_TYPE,
+        &Acknowledgement::type),
       KeySetter<Acknowledgement>()
     };
 
@@ -299,7 +301,7 @@ void NetworkInput::HandleComment()
       KeySetter<Comment>(NDO_DATA_COMMENTID,
         &Comment::internal_id),
       KeySetter<Comment>(NDO_DATA_COMMENTTYPE,
-        &Comment::type),
+        &Comment::comment_type),
       KeySetter<Comment>(NDO_DATA_ENTRYTIME,
         &Comment::entry_time),
       KeySetter<Comment>(NDO_DATA_ENTRYTYPE,
@@ -316,6 +318,8 @@ void NetworkInput::HandleComment()
         &Comment::service),
       KeySetter<Comment>(NDO_DATA_SOURCE,
         &Comment::source),
+      KeySetter<Comment>(NDO_DATA_TYPE,
+        &Comment::type),
       KeySetter<Comment>()
     };
 
@@ -337,7 +341,7 @@ void NetworkInput::HandleDowntime()
       KeySetter<Downtime>(NDO_DATA_DOWNTIMEID,
         &Downtime::id),
       KeySetter<Downtime>(NDO_DATA_DOWNTIMETYPE,
-        &Downtime::type),
+        &Downtime::downtime_type),
       KeySetter<Downtime>(NDO_DATA_DURATION,
         &Downtime::duration),
       KeySetter<Downtime>(NDO_DATA_ENDTIME,
@@ -354,6 +358,8 @@ void NetworkInput::HandleDowntime()
         &Downtime::start_time),
       KeySetter<Downtime>(NDO_DATA_TRIGGEREDBY,
         &Downtime::triggered_by),
+      KeySetter<Downtime>(NDO_DATA_TYPE,
+        &Downtime::type),
       KeySetter<Downtime>()
     };
 

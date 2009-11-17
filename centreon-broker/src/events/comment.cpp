@@ -46,6 +46,7 @@ void Comment::InternalCopy(const Comment& comment)
   this->author        = comment.author;
   this->comment       = comment.comment;
   this->comment_time  = comment.comment_time;
+  this->comment_type  = comment.comment_type;
   this->deletion_time = comment.deletion_time;
   this->entry_time    = comment.entry_time;
   this->entry_type    = comment.entry_type;
@@ -73,6 +74,7 @@ void Comment::InternalCopy(const Comment& comment)
  */
 Comment::Comment()
   :  comment_time(0),
+     comment_type(0),
      deletion_time(0),
      entry_time(0),
      entry_type(0),

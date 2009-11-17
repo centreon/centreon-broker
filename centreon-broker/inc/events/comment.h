@@ -44,6 +44,7 @@ namespace                CentreonBroker
       std::string        author;
       std::string        comment;
       time_t             comment_time;
+      short              comment_type;
       time_t             deletion_time;
       time_t             entry_time;
       short              entry_type;

@@ -46,6 +46,7 @@ namespace                CentreonBroker
      public:
       std::string        author;
       std::string        comment;
+      short              downtime_type;
       time_t             duration;
       time_t             end_time;
       time_t             entry_time;

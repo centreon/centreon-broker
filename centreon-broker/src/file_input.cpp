@@ -80,7 +80,7 @@ bool FileInput::ReadEvent(T& event, const DB::DataMember<T> dm[])
       this->ifs_.read(buffer, size);
       buffer[size] = '\0';
       event.instance = buffer;
-      for (unsigned int i = 0; dm[i].name; i++)
+      for (unsigned int i = 0; dm[i].type; i++)
         {
           switch (dm[i].type)
             {

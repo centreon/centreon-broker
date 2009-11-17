@@ -82,8 +82,9 @@ CREATE TABLE IF NOT EXISTS `comment` (
 
   `comment_time` int default NULL,                 -- not in Merlin
   `deletion_time` int default NULL,                -- not in Merlin
-  `internal_comment_id` int default NULL,          -- not in Merlin
-  PRIMARY KEY (`id`)
+  `internal_id` int default NULL,                  -- not in Merlin
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`internal_id`)
 ) ENGINE=InnoDB;
 
 
@@ -125,7 +126,8 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
 
   `was_cancelled` boolean default NULL,            -- not in Merlin
   `was_started` boolean default NULL,              -- not in Merlin
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`downtime_id`, `instance_id`)
 ) ENGINE=InnoDB;
 
 
