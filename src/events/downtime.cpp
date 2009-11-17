@@ -45,6 +45,7 @@ void Downtime::InternalCopy(const Downtime& downtime)
 {
   this->author        = downtime.author;
   this->comment       = downtime.comment;
+  this->downtime_type = downtime.downtime_type;
   this->duration      = downtime.duration;
   this->end_time      = downtime.end_time;
   this->entry_time    = downtime.entry_time;
@@ -72,7 +73,8 @@ void Downtime::InternalCopy(const Downtime& downtime)
  *  Set all members to their default value (0, NULL or equivalent).
  */
 Downtime::Downtime()
-  : duration(0),
+  : downtime_type(0),
+    duration(0),
     end_time(0),
     entry_time(0),
     fixed(false),

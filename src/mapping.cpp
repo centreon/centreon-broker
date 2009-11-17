@@ -38,7 +38,7 @@ using namespace CentreonBroker::Events;
 const DB::DataMember<Acknowledgement> CentreonBroker::acknowledgement_dm[] =
   {
     DataMember<Acknowledgement>("acknowledgement_type",
-      &Acknowledgement::type),
+      &Acknowledgement::acknowledgement_type),
     DataMember<Acknowledgement>("author_name",
       &Acknowledgement::author),
     DataMember<Acknowledgement>("comment_data",
@@ -53,6 +53,8 @@ const DB::DataMember<Acknowledgement> CentreonBroker::acknowledgement_dm[] =
       &Acknowledgement::persistent_comment),
     DataMember<Acknowledgement>("state",
       &Acknowledgement::state),
+    DataMember<Acknowledgement>(NULL,
+      &Acknowledgement::type),
     DataMember<Acknowledgement>()
   };
 DB::MappingGetters<Events::Acknowledgement>
@@ -69,7 +71,7 @@ const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
     DataMember<Comment>("comment_time",
       &Comment::comment_time),
     DataMember<Comment>("comment_type",
-      &Comment::type),
+      &Comment::comment_type),
     DataMember<Comment>("deletion_time",
       &Comment::deletion_time),
     DataMember<Comment>("entry_time",
@@ -82,7 +84,7 @@ const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
       &Comment::expires),
     DataMember<Comment>("host_name",
       &Comment::host),
-    DataMember<Comment>("internal_comment_id",
+    DataMember<Comment>("internal_id",
       &Comment::internal_id),
     DataMember<Comment>("persistent",
       &Comment::persistent),
@@ -90,6 +92,8 @@ const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
       &Comment::service),
     DataMember<Comment>("source",
       &Comment::source),
+    DataMember<Comment>(NULL,
+      &Comment::type),
     DataMember<Comment>()
   };
 DB::MappingGetters<Events::Comment>
@@ -106,7 +110,7 @@ const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
     DataMember<Downtime>("downtime_id",
       &Downtime::id),
     DataMember<Downtime>("downtime_type",
-      &Downtime::type),
+      &Downtime::downtime_type),
     DataMember<Downtime>("duration",
       &Downtime::duration),
     DataMember<Downtime>("end_time",
@@ -115,6 +119,10 @@ const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
       &Downtime::entry_time),
     DataMember<Downtime>("fixed",
       &Downtime::fixed),
+    DataMember<Downtime>("host_name",
+      &Downtime::host),
+    DataMember<Downtime>("service_description",
+      &Downtime::service),
     DataMember<Downtime>("start_time",
       &Downtime::start_time),
     DataMember<Downtime>("triggered_by",
@@ -123,6 +131,8 @@ const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
       &Downtime::was_cancelled),
     DataMember<Downtime>("was_started",
       &Downtime::was_started),
+    DataMember<Downtime>(NULL,
+      &Downtime::type),
     DataMember<Downtime>()
   };
 DB::MappingGetters<Events::Downtime>
@@ -786,34 +796,36 @@ void InitMapping(const DB::DataMember<T>* datamembers,
                  DB::MappingGetters<T>& mapping_get,
                  DB::MappingSetters<T>& mapping_set)
 {
-  for (unsigned int i = 0; datamembers[i].name; i++)
-    switch (datamembers[i].type)
-      {
-       case 'b':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.b);
-        mapping_set.AddField(datamembers[i].name, datamembers[i].value.b);
-	break ;
-       case 'd':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.d);
-	mapping_set.AddField(datamembers[i].name, datamembers[i].value.d);
-	break ;
-       case 'i':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.i);
-	mapping_set.AddField(datamembers[i].name, datamembers[i].value.i);
-	break ;
-       case 's':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.s);
-	mapping_set.AddField(datamembers[i].name, datamembers[i].value.s);
-	break ;
-       case 'S':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.S);
-	mapping_set.AddField(datamembers[i].name, datamembers[i].value.S);
-	break ;
-       case 't':
-	mapping_get.AddField(datamembers[i].name, datamembers[i].value.t);
-	mapping_set.AddField(datamembers[i].name, datamembers[i].value.t);
-	break ;
-      }
+  for (unsigned int i = 0; datamembers[i].type; i++)
+    if (datamembers[i].name)
+      switch (datamembers[i].type)
+        {
+         case 'b':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.b);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.b);
+          break ;
+         case 'd':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.d);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.d);
+          break ;
+         case 'i':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.i);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.i);
+          break ;
+         case 's':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.s);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.s);
+          break ;
+         case 'S':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.S);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.S);
+          break ;
+         case 't':
+          mapping_get.AddField(datamembers[i].name, datamembers[i].value.t);
+          mapping_set.AddField(datamembers[i].name, datamembers[i].value.t);
+          break ;
+        }
+
   return ;
 }
 

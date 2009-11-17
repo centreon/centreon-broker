@@ -43,6 +43,7 @@ namespace                CentreonBroker
       void               InternalCopy(const Acknowledgement& ack);
 
      public:
+      int                acknowledgement_type;
       std::string        author;
       std::string        comment;
       time_t             entry_time;

@@ -96,7 +96,7 @@ void FileOutput::Dump(const T& event,
   this->ofs_.write((const char*)&type, sizeof(type));
   this->ofs_.write(event.instance.c_str(), type);
   wb += type + 2 * sizeof(type);
-  for (unsigned int i = 0; dm[i].name; i++)
+  for (unsigned int i = 0; dm[i].type; i++)
     {
       switch (dm[i].type)
 	{

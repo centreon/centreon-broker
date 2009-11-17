@@ -43,16 +43,17 @@ using namespace CentreonBroker::Events;
  */
 void Acknowledgement::InternalCopy(const Acknowledgement& ack)
 {
-  this->author             = ack.author;
-  this->comment            = ack.comment;
-  this->entry_time         = ack.entry_time;
-  this->host               = ack.host;
-  this->is_sticky          = ack.is_sticky;
-  this->notify_contacts    = ack.notify_contacts;
-  this->persistent_comment = ack.persistent_comment;
-  this->service            = ack.service;
-  this->state              = ack.state;
-  this->type               = ack.type;
+  this->acknowledgement_type = ack.acknowledgement_type;
+  this->author               = ack.author;
+  this->comment              = ack.comment;
+  this->entry_time           = ack.entry_time;
+  this->host                 = ack.host;
+  this->is_sticky            = ack.is_sticky;
+  this->notify_contacts      = ack.notify_contacts;
+  this->persistent_comment   = ack.persistent_comment;
+  this->service              = ack.service;
+  this->state                = ack.state;
+  this->type                 = ack.type;
   return ;
 }
 
@@ -69,7 +70,8 @@ void Acknowledgement::InternalCopy(const Acknowledgement& ack)
  *  (0, NULL or equivalent).
  */
 Acknowledgement::Acknowledgement()
-  : entry_time(0),
+  : acknowledgement_type(0),
+    entry_time(0),
     is_sticky(false),
     notify_contacts(0),
     persistent_comment(0),
