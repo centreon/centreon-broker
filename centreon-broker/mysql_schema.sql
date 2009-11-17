@@ -16,7 +16,6 @@
 --   -acknowledgements
 --   +command
 --    comment
---   -connection_info
 --   +contact
 --   +contact_contactgroup
 --   +contactgroup
@@ -457,26 +456,6 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `state` smallint default NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
-
-
-CREATE TABLE IF NOT EXISTS `connection_info` (
-  `id` int NOT NULL auto_increment,
-  `instance_id` int NOT NULL default '0',
-  `agent_name` varchar(32) NOT NULL default '',
-  `agent_version` varchar(8) NOT NULL default '',
-  -- disposition varchar(16) (not needed ?)
-  `connect_source` varchar(16) NOT NULL default '',
-  `connect_type` varchar(16) NOT NULL default '',
-  `connect_time` int NOT NULL,
-  `disconnect_time` int NOT NULL,
-  `last_checkin_time` int NOT NULL,
-  `data_start_time` int NOT NULL,
-  `data_end_time` int NOT NULL,
-  `bytes_processed` int NOT NULL default '0',
-  `lines_processed` int NOT NULL default '0',
-  `entries_processed` int NOT NULL default '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci ;
 
 
 CREATE TABLE IF NOT EXISTS `customvariables` (
