@@ -64,6 +64,27 @@ namespace            CentreonBroker
       void           Listen(const char* sock_path)
                        throw (CentreonBroker::Exception);
     };
+
+    /**
+     *  \class UnixConnector unix.h "io/unix.h"
+     *  \brief Connect to an Unix domain socket.
+     *
+     *  Connect to a specific Unix domain socket.
+     *
+     *  \see SocketStream
+     */
+    class            UnixConnector : public SocketStream
+    {
+     public:
+                     UnixConnector() throw (CentreonBroker::Exception);
+                     UnixConnector(const UnixConnector& uc)
+                       throw (CentreonBroker::Exception);
+                     ~UnixConnector() throw ();
+      UnixConnector& operator=(const UnixConnector& uc)
+                       throw (CentreonBroker::Exception);
+      void           Connect(const char* sock_path)
+                       throw (CentreonBroker::Exception);
+    };
   }
 }
 
