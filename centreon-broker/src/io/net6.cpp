@@ -19,16 +19,26 @@
 */
 
 #include <arpa/inet.h>
-#include <cerrno>
-#include <cstring>
+#include <errno.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include "exception.h"
 #include "io/fd.h"
 #include "io/net6.h"
+#include "logging.h"
 
 using namespace CentreonBroker::IO;
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                               Net6Acceptor                                  *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
 
 /**************************************
 *                                     *
@@ -45,15 +55,15 @@ using namespace CentreonBroker::IO;
  *  instance listening on the same port and with the same parameters as the
  *  given object. In case of error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net6Acceptor to duplicate.
+ *  \param[in] n6a Net6Acceptor to duplicate.
  *
  *  \see Net6Acceptor
  *  \see operator=
  */
-void Net6Acceptor::InternalCopy(const Net6Acceptor& n4a)
+void Net6Acceptor::InternalCopy(const Net6Acceptor& n6a)
   throw (CentreonBroker::Exception)
 {
-  this->sockfd_ = dup(n4a.sockfd_);
+  this->sockfd_ = dup(n6a.sockfd_);
   if (this->sockfd_ < 0)
     throw (CentreonBroker::Exception(errno, strerror(errno)));
   return ;
@@ -79,12 +89,12 @@ Net6Acceptor::Net6Acceptor() throw () : sockfd_(-1) {}
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net6Acceptor to duplicate.
+ *  \param[in] n6a Net6Acceptor to duplicate.
  */
-Net6Acceptor::Net6Acceptor(const Net6Acceptor& n4a)
-  throw (CentreonBroker::Exception) : Acceptor(n4a), sockfd_(-1)
+Net6Acceptor::Net6Acceptor(const Net6Acceptor& n6a)
+  throw (CentreonBroker::Exception) : Acceptor(n6a), sockfd_(-1)
 {
-  this->InternalCopy(n4a);
+  this->InternalCopy(n6a);
 }
 
 /**
@@ -104,16 +114,16 @@ Net6Acceptor::~Net6Acceptor() throw ()
  *  the exact same parameters as the provided acceptor already have. In case of
  *  error, a CentreonBroker::Exception is thrown.
  *
- *  \param[in] n4a Net6Acceptor to duplicate.
+ *  \param[in] n6a Net6Acceptor to duplicate.
  *
  *  \return *this
  */
-Net6Acceptor& Net6Acceptor::operator=(const Net6Acceptor& n4a)
+Net6Acceptor& Net6Acceptor::operator=(const Net6Acceptor& n6a)
   throw (CentreonBroker::Exception)
 {
   this->Close();
-  this->Acceptor::operator=(n4a);
-  this->InternalCopy(n4a);
+  this->Acceptor::operator=(n6a);
+  this->InternalCopy(n6a);
   return (*this);
 }
 
@@ -184,7 +194,7 @@ void Net6Acceptor::Listen(unsigned short port, const char* iface)
   if (iface)
     {
       if (inet_pton(AF_INET6, iface, sin.sin6_addr.s6_addr) != 1)
-	throw (CentreonBroker::Exception(errno, strerror(errno)));
+        throw (CentreonBroker::Exception(errno, strerror(errno)));
     }
   else
     memcpy(&sin.sin6_addr, &in6addr_any, sizeof(in6addr_any));
@@ -195,5 +205,116 @@ void Net6Acceptor::Listen(unsigned short port, const char* iface)
   if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))
       || listen(this->sockfd_, 0))
     throw (CentreonBroker::Exception(errno, strerror(errno)));
+  return ;
+}
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                              Net6Connector                                  *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Net6Connector default constructor.
+ */
+Net6Connector::Net6Connector() throw (CentreonBroker::Exception)
+  : SocketStream(-1)
+{
+  this->fd_ = socket(AF_INET6, SOCK_STREAM, 0);
+  if (this->fd_ < 0)
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
+}
+
+/**
+ *  Net6Connector copy constructor.
+ *
+ *  \param[in] n6c Object to copy from.
+ */
+Net6Connector::Net6Connector(const Net6Connector& n6c)
+  throw (CentreonBroker::Exception) : SocketStream(n6c) {}
+
+/**
+ *  Net6Connector destructor.
+ */
+Net6Connector::~Net6Connector() throw () {}
+
+/**
+ *  Assignment operator overload.
+ *
+ *  \param[in] n6c Object to copy from.
+ *
+ *  \return *this
+ */
+Net6Connector& Net6Connector::operator=(const Net6Connector& n6c)
+  throw (CentreonBroker::Exception)
+{
+  this->SocketStream::operator=(n6c);
+  return (*this);
+}
+
+/**
+ *  \brief Connect to an host.
+ *
+ *  Connect to the specified host on the specified port.
+ *
+ *  \param[in] host Hostname or IP address to connect to.
+ *  \param[in] port Port on which connection will be made.
+ */
+void Net6Connector::Connect(const char* host, unsigned short port)
+  throw (CentreonBroker::Exception)
+{
+  sockaddr_in6 sin6;
+
+  // If host is not NULL.
+  if (host)
+    {
+      memset(&sin6, 0, sizeof(sin6));
+
+      // Address family (IPv6).
+      sin6.sin6_family = AF_INET6;
+
+      // Check if host is an IP address first, with the hope that we will avoid
+      // a DNS lookup.
+      if (inet_pton(AF_INET6, host, &sin6.sin6_addr.s6_addr) != 1)
+        {
+          // Not an IP address, check if it's an host name.
+          addrinfo* addr_info;
+          addrinfo hint;
+
+          addr_info = NULL;
+          memset(&hint, 0, sizeof(hint));
+          hint.ai_family = AF_INET6;
+          if (getaddrinfo(host, NULL, &hint, &addr_info))
+            {
+              CentreonBroker::logging.LogError("Invalid hostname provided :");
+              CentreonBroker::logging.LogError(host);
+              throw (CentreonBroker::Exception(0,
+                                               "Invalid hostname provided."));
+            }
+          memcpy(sin6.sin6_addr.s6_addr,
+                 ((sockaddr_in6*)addr_info->ai_addr)->sin6_addr.s6_addr,
+                 sizeof(sin6.sin6_addr.s6_addr));
+          freeaddrinfo(addr_info);
+        }
+
+      // Set port.
+      sin6.sin6_port = htons(port);
+
+      // Connect !
+      if (connect(this->fd_, (sockaddr*)&sin6, sizeof(sin6)))
+        throw (CentreonBroker::Exception(errno, strerror(errno)));
+    }
+  else
+    throw (CentreonBroker::Exception(0, "NULL hostname provided."));
+
   return ;
 }

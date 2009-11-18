@@ -22,6 +22,7 @@
 # define IO_NET6_H_
 
 # include "exception.h"
+# include "io/fd.h"
 # include "io/io.h"
 
 namespace            CentreonBroker
@@ -61,6 +62,27 @@ namespace            CentreonBroker
       Stream*        Accept();
       void           Close() throw ();
       void           Listen(unsigned short port, const char* iface = NULL)
+                       throw (CentreonBroker::Exception);
+    };
+
+    /**
+     *  \class Net6Connector net6.h "io/net6.h"
+     *  \brief Connect to an host.
+     *
+     *  Connect to an arbitrary host on an TCP/IPv6 network.
+     *
+     *  \see SocketStream
+     */
+    class            Net6Connector : public SocketStream
+    {
+     public:
+                     Net6Connector() throw (CentreonBroker::Exception);
+                     Net6Connector(const Net6Connector& n6c)
+                       throw (CentreonBroker::Exception);
+                     ~Net6Connector() throw ();
+      Net6Connector& operator=(const Net6Connector& n6c)
+                       throw (CentreonBroker::Exception);
+      void           Connect(const char* host, unsigned short port)
                        throw (CentreonBroker::Exception);
     };
   }

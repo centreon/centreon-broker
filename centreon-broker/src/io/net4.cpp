@@ -19,16 +19,27 @@
 */
 
 #include <arpa/inet.h>
-#include <cerrno>
-#include <cstring>
+#include <errno.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include "exception.h"
 #include "io/fd.h"
 #include "io/net4.h"
+#include "logging.h"
 
 using namespace CentreonBroker::IO;
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                Net4Acceptor                                 *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
 
 /**************************************
 *                                     *
@@ -185,7 +196,7 @@ void Net4Acceptor::Listen(unsigned short port, const char* iface)
     {
       sin.sin_addr.s_addr = inet_addr(iface);
       if ((in_addr_t)-1 == sin.sin_addr.s_addr)
-	throw (CentreonBroker::Exception(errno, strerror(errno)));
+        throw (CentreonBroker::Exception(errno, strerror(errno)));
     }
   else
     sin.sin_addr.s_addr = INADDR_ANY;
@@ -196,5 +207,115 @@ void Net4Acceptor::Listen(unsigned short port, const char* iface)
   if (bind(this->sockfd_, (struct sockaddr*)&sin, sizeof(sin))
       || listen(this->sockfd_, 0))
     throw (CentreonBroker::Exception(errno, strerror(errno)));
+  return ;
+}
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                Net4Connector                                *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Net4Connector default constructor.
+ */
+Net4Connector::Net4Connector() throw (CentreonBroker::Exception)
+  : SocketStream(-1)
+{
+  this->fd_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (this->fd_ < 0)
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
+}
+
+/**
+ *  Net4Connector copy constructor.
+ *
+ *  \param[in] n4c Object to copy from.
+ */
+Net4Connector::Net4Connector(const Net4Connector& n4c)
+  throw (CentreonBroker::Exception) : SocketStream(n4c) {}
+
+/**
+ *  Net4Connector destructor.
+ */
+Net4Connector::~Net4Connector() throw () {}
+
+/**
+ *  Assignment operator overload.
+ *
+ *  \param[in] n4c Object to copy from.
+ *
+ *  \return *this
+ */
+Net4Connector& Net4Connector::operator=(const Net4Connector& n4c)
+  throw (CentreonBroker::Exception)
+{
+  this->SocketStream::operator=(n4c);
+  return (*this);
+}
+
+/**
+ *  \brief Connect to an host.
+ *
+ *  Connect to the specified host on the specified port.
+ *
+ *  \param[in] host Hostname or IP address to connect to.
+ *  \param[in] port Port on which connection will be made.
+ */
+void Net4Connector::Connect(const char* host, unsigned short port)
+  throw (CentreonBroker::Exception)
+{
+  sockaddr_in sin;
+
+  // If host is not NULL.
+  if (host)
+    {
+      memset(&sin, 0, sizeof(sin));
+
+      // Address family (IPv4).
+      sin.sin_family = AF_INET;
+
+      // Check if host is an IP address first, with the hope that we will avoid
+      // a DNS lookup.
+      if (inet_pton(AF_INET, host, &sin.sin_addr.s_addr) != 1)
+        {
+          // Not an IP address, check if it's an host name.
+          addrinfo* addr_info;
+          addrinfo hint;
+
+          addr_info = NULL;
+          memset(&hint, 0, sizeof(hint));
+          hint.ai_family = AF_INET;
+          if (getaddrinfo(host, NULL, &hint, &addr_info))
+            {
+              CentreonBroker::logging.LogError("Invalid hostname provided :");
+              CentreonBroker::logging.LogError(host);
+              throw (CentreonBroker::Exception(0,
+                                               "Invalid hostname provided."));
+            }
+          sin.sin_addr.s_addr =
+            ((sockaddr_in*)addr_info->ai_addr)->sin_addr.s_addr;
+          freeaddrinfo(addr_info);
+        }
+
+      // Set port.
+      sin.sin_port = htons(port);
+
+      // Connect !
+      if (connect(this->fd_, (sockaddr*)&sin, sizeof(sin)))
+        throw (CentreonBroker::Exception(errno, strerror(errno)));
+    }
+  else
+    throw (CentreonBroker::Exception(0, "NULL hostname provided."));
+
   return ;
 }

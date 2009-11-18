@@ -78,7 +78,7 @@ namespace           CentreonBroker
                     SocketStream(int sockfd) throw ();
                     SocketStream(const SocketStream& sockstream)
                       throw (CentreonBroker::Exception);
-                    ~SocketStream() throw ();
+      virtual       ~SocketStream() throw ();
       SocketStream& operator=(const SocketStream& sockstream)
                       throw (CentreonBroker::Exception);
       void          Close() throw ();

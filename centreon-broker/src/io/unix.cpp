@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cerrno>
-#include <cstring>
+#include <errno.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -28,6 +28,14 @@
 #include "io/unix.h"
 
 using namespace CentreonBroker::IO;
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                 UnixAcceptor                                *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
 
 /**************************************
 *                                     *
@@ -185,5 +193,87 @@ void UnixAcceptor::Listen(const char* sock_path)
   if (bind(this->sockfd_, (struct sockaddr*)&sockaddrun, sizeof(sockaddrun))
       || listen(this->sockfd_, 0))
     throw (CentreonBroker::Exception(errno, strerror(errno)));
+  return ;
+}
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                               UnixConnector                                 *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  UnixConnector default constructor.
+ */
+UnixConnector::UnixConnector() throw (CentreonBroker::Exception)
+  : SocketStream(-1)
+{
+  this->fd_ = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (this->fd_ < 0)
+    throw (CentreonBroker::Exception(errno, strerror(errno)));
+}
+
+/**
+ *  UnixConnector copy constructor.
+ *
+ *  \param[in] uc Object to copy from.
+ */
+UnixConnector::UnixConnector(const UnixConnector& uc)
+  throw (CentreonBroker::Exception) : SocketStream(uc) {}
+
+/**
+ *  UnixConnector destructor.
+ */
+UnixConnector::~UnixConnector() throw () {}
+
+/**
+ *  Assignment operator overload.
+ *
+ *  \param[in] uc Object to copy from.
+ */
+UnixConnector& UnixConnector::operator=(const UnixConnector& uc)
+  throw (CentreonBroker::Exception)
+{
+  this->SocketStream::operator=(uc);
+  return (*this);
+}
+
+/**
+ *  \brief Connect to an Unix socket.
+ *
+ *  Connect to the specified Unix socket.
+ *
+ *  \param[in] sock_path Path to the Unix domain socket.
+ */
+void UnixConnector::Connect(const char* sock_path)
+  throw (CentreonBroker::Exception)
+{
+  sockaddr_un sun;
+
+  // If sock_path is not NULL.
+  if (sock_path)
+    {
+      // Set connection structure.
+      memset(&sun, 0, sizeof(sun));
+      sun.sun_family = AF_UNIX;
+      strncpy(sun.sun_path, sock_path, sizeof(sun.sun_path));
+      sun.sun_path[sizeof(sun.sun_path) - 1] = '\0';
+
+      // Connect !
+      if (connect(this->fd_, (sockaddr*)&sun, sizeof(sun)))
+        throw (CentreonBroker::Exception(errno, strerror(errno)));
+    }
+  else
+    throw (CentreonBroker::Exception(0, "NULL Unix socket path provided."));
+
   return ;
 }
