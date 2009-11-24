@@ -22,13 +22,66 @@
 # define IO_TLS_H_
 
 # include <gnutls/gnutls.h>
+# include <string>
 # include "exception.h"
 # include "io/io.h"
 
-namespace               CentreonBroker
+namespace                CentreonBroker
 {
-  namespace             IO
+  namespace              IO
   {
+    /**
+     *  \class TLSParams tls.h "io/tls.h"
+     *  \brief Configure parameters of a TLS connection (either incoming or
+     *         outgoing).
+     *
+     *  TLSParams is used by the TLSAcceptor and TLSConnector classes to
+     *  configure the future TLS connections.
+     */
+    class                TLSParams
+    {
+     public:
+      enum               ConnectionType
+      {
+        CLIENT = 1,
+        SERVER
+      };
+
+     private:
+      bool               anonymous_;
+      bool               check_cert_;
+      bool               compress_;
+      union
+      {
+	gnutls_certificate_credentials_t cert;
+	gnutls_anon_client_credentials_t client;
+	gnutls_anon_server_credentials_t server;
+      }                  cred_;
+      bool               init_;
+      ConnectionType     type_;
+                         TLSParams(const TLSParams& params);
+      TLSParams&         operator=(const TLSParams& params);
+      void               Clean() throw ();
+      void               InitAnonymous() throw (CentreonBroker::Exception);
+
+     protected:
+                         TLSParams(ConnectionType type)
+                           throw (CentreonBroker::Exception);
+      void               Apply(gnutls_session_t session)
+                           throw (CentreonBroker::Exception);
+
+     public:
+      virtual            ~TLSParams();
+      bool               CheckCert(gnutls_session_t session)
+                           throw (CentreonBroker::Exception);
+      void               Reset() throw (CentreonBroker::Exception);
+      void               SetCert(const std::string& cert,
+                                 const std::string& key);
+      void               SetCompression(bool compress = true);
+      void               SetTrustedCA(const std::string& ca_cert)
+                           throw (CentreonBroker::Exception);
+    };
+
     /**
      *  \class TLSStream tls.h "io/tls.h"
      *  \brief TLS wrapper of an underlying stream.
@@ -67,18 +120,9 @@ namespace               CentreonBroker
      *  Acceptor. Encryption will be automatically provided on the returned
      *  accepted streams.
      */
-    class                TLSAcceptor : public Acceptor
+    class                TLSAcceptor : public Acceptor, public TLSParams
     {
      private:
-      bool               cert_based_;
-      bool               check_cert_;
-      bool               compression_;
-      union
-      {
-	gnutls_anon_server_credentials_t anon;
-	gnutls_certificate_credentials_t cert;
-      }                  cred_;
-      bool               cred_init_;
       gnutls_dh_params_t dh_params_;
       Acceptor*          lower_;
                          TLSAcceptor(const TLSAcceptor& tls_acceptor);
@@ -90,12 +134,6 @@ namespace               CentreonBroker
       Stream*            Accept();
       void               Close();
       void               Listen(Acceptor* acceptor)
-                           throw (CentreonBroker::Exception);
-      void               SetCert(const char* cert, const char* key)
-                           throw (CentreonBroker::Exception);
-      void               SetCompression(bool compress_stream = true)
-                           throw ();
-      void               SetTrustedCA(const char* ca_cert)
                            throw (CentreonBroker::Exception);
     };
   }
