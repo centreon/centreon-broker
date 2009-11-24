@@ -144,13 +144,13 @@ cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 #                                     #
 #######################################
 
-cbmod_so_SOURCES=	../../src/cbmod/callbacks.cpp			\
-			../../src/cbmod/cbmod.cpp			\
-			../../src/cbmod/dbuffer.cpp			\
-			../../src/cbmod/sender.cpp
+cbmod_so_SOURCES=	../../src/module/callbacks.cpp			\
+			../../src/module/cbmod.cpp			\
+			../../src/module/dbuffer.cpp			\
+			../../src/module/sender.cpp
 
 # Configure compilation flags properly
-cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cbmod	\
+cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
 			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)
 cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) -shared -fPIC
 cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
