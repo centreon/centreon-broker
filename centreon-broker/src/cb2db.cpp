@@ -123,15 +123,6 @@ int main(int argc, char* argv[])
 #endif /* USE_ORACLE */
 
 
-          // Initialize GNU TLS library if supported
-#ifdef USE_TLS
-# ifndef NDEBUG
-          logging.LogDebug("Initializing GNU TLS library...");
-# endif /* !NDEBUG */
-          if (gnutls_global_init() != GNUTLS_E_SUCCESS)
-            throw (Exception(0, "GNU TLS library initialization failed."));
-#endif /* USE_TLS */
-
           // Load Object-Relational mappings
           MappingsInit();
 
@@ -146,7 +137,7 @@ int main(int argc, char* argv[])
                             "exiting.");
 
           // Everything's loaded, sleep until we have to exit
-          logging.LogInfo("Initialization completed successfully !");
+          logging.LogInfo("Initialization complete.");
           while (!gl_shall_exit)
             gl_cv.wait(lock);
 
@@ -155,15 +146,6 @@ int main(int argc, char* argv[])
 
           // Unload Object-Relational mappings
           MappingsDestroy();
-
-
-          // Unload GNU TLS library
-#ifdef USE_TLS
-# ifndef NDEBUG
-          logging.LogDebug("Unloading GNU TLS library ...");
-# endif /* !NDEBUG */
-          gnutls_global_deinit();
-#endif /* USE_TLS */
 
 
           // Unload OCILIB library

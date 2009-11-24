@@ -18,13 +18,473 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cassert>
-#include <cstdlib>
+#include <assert.h>
 #include <gnutls/gnutls.h>
+#include <stdlib.h>
+#include <string.h>
 #include "exception.h"
 #include "io/tls.h"
 
 using namespace CentreonBroker::IO;
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                             TLS Initialization                              *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Those 2048-bits wide Diffie-Hellman parameters were generated the
+ *  30/07/2009 on Ubuntu 9.04 x86 using OpenSSL 0.9.8g with generator 2.
+ */
+static const unsigned char dh_params_2048[] =
+  "-----BEGIN DH PARAMETERS-----\n" \
+  "MIIBCAKCAQEA93F3CN41kJooLbqcOdWHJPb+/zPV+mMs5Svb6PVH/XS3BK/tuuVu\n" \
+  "r9okkOzGr07KLPiKf+3MJSgHs9N91wPG6JcMcRys3fH1Tszh1i1317tE54o+oLPv\n" \
+  "jcs9P13lFlZm4gB7sjkR5If/ZtudoVwv7JS5WHIXrzew7iW+kT/QXCp+jkO1Vusc\n" \
+  "mQHlq4Fqt/p7zxOHVc8GBttE6/vEYipm2pdym1kBy62Z6rZLowkukngI5uzdQvB4\n" \
+  "Pmq5BmeRzGRClSkmRW4pUXiBac8SMAgMBl7cgAEaURR2D8Y4XltyXW51xzO1x1QM\n" \
+  "bOl9nneRY2Y8X3FOR1+Mzt+x44F+cWtqIwIBAg==\n" \
+  "-----END DH PARAMETERS-----\n";
+
+/**************************************
+*                                     *
+*             Definitions             *
+*                                     *
+**************************************/
+
+namespace   CentreonBroker
+{
+  namespace IO
+  {
+    class   TLSInitialization
+    {
+     private:
+      gnutls_dh_params_t dh_params_;
+      int                init_;
+
+      /**
+       *  \brief TLSInitialization copy constructor.
+       *
+       *  Should not be used. Any attempt to use this constructor will result
+       *  in a call to abort().
+       *
+       *  \param[in] tls_init Unused.
+       */
+                         TLSInitialization(const TLSInitialization& tls_init)
+      {
+        (void)tls_init;
+        assert(false);
+        abort();
+      }
+
+      /**
+       *  \brief Overload of the assignment operator.
+       *
+       *  Should not be used. Any attempt to use this operator will result in a
+       *  call to abort().
+       *
+       *  \param[in] tls_init Unused.
+       *
+       *  \return *this
+       */
+      TLSInitialization& operator=(const TLSInitialization& tls_init)
+      {
+        (void)tls_init;
+        assert(false);
+        abort();
+        return (*this);
+      }
+
+     public:
+      /**
+       *  \brief TLS initialization function.
+       *
+       *  Prepare all necessary ressources for TLS use.
+       */
+                         TLSInitialization() throw (CentreonBroker::Exception)
+        : init_(0)
+      {
+        const gnutls_datum_t dh_params =
+          { const_cast<unsigned char*>(dh_params_2048),
+            sizeof(dh_params_2048) };
+        int ret;
+
+        // Initialize GNU TLS library if supported
+#ifndef NDEBUG
+        logging.LogDebug("Initializing GNU TLS library ...");
+#endif /* !NDEBUG */
+        if (gnutls_global_init() != GNUTLS_E_SUCCESS)
+          throw (CentreonBroker::Exception(0, "GNU TLS library " \
+                                              "initialization failed."));
+        ++this->init_;
+
+        // Load Diffie-Hellman parameters.
+#ifndef NDEBUG
+        logging.LogDebug("Loading Diffie-Hellman parameters ...");
+#endif /* !NDEBUG */
+        ret = gnutls_dh_params_init(&this->dh_params_);
+        if (ret != GNUTLS_E_SUCCESS)
+          throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+        ret = gnutls_dh_params_import_pkcs3(this->dh_params_,
+                                            &dh_params,
+                                            GNUTLS_X509_FMT_PEM);
+        if (ret != GNUTLS_E_SUCCESS)
+          throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+      }
+
+      /**
+       *  Deinit the TLS library.
+       */
+                         ~TLSInitialization()
+      {
+        // Unload Diffie-Hellman parameters.
+#ifndef NDEBUG
+        logging.LogDebug("Unloading Diffie-Hellman parameters ...");
+#endif /* !NDEBUG */
+        gnutls_dh_params_deinit(this->dh_params_);
+
+        // Unload GNU TLS library
+#ifndef NDEBUG
+        logging.LogDebug("Unloading GNU TLS library ...");
+#endif /* !NDEBUG */
+        gnutls_global_deinit();
+      }
+
+      /**
+       *  Get the GNU TLS DH parameters.
+       */
+      gnutls_dh_params_t DHParams() const throw ()
+      {
+        return (this->dh_params_);
+      }
+    };
+  }
+}
+
+static TLSInitialization tls_init;
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                 TLSParams                                   *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief TLSParams copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  \param[in] params Unused.
+ */
+TLSParams::TLSParams(const TLSParams& params)
+{
+  (void)params;
+  assert(false);
+  abort();
+}
+
+/**
+ *  \brief Overload of the assignment operator.
+ *
+ *  Any call to this operator will result in a call to abort().
+ *
+ *  \param[in] params Unused.
+ *
+ *  \return *this.
+ */
+TLSParams& TLSParams::operator=(const TLSParams& params)
+{
+  (void)params;
+  assert(false);
+  abort();
+  return (*this);
+}
+
+/**
+ *  \brief Clean the TLSParams instance.
+ *
+ *  All allocated ressources will be released.
+ */
+void TLSParams::Clean() throw ()
+{
+  if (this->init_)
+    {
+      if (this->anonymous_)
+        {
+          if (CLIENT == this->type_)
+            gnutls_anon_free_client_credentials(this->cred_.client);
+          else
+            gnutls_anon_free_server_credentials(this->cred_.server);
+        }
+      else
+        gnutls_certificate_free_credentials(this->cred_.cert);
+      this->init_ = false;
+    }
+  return ;
+}
+
+/**
+ *  Initialize anonymous credentials.
+ */
+void TLSParams::InitAnonymous() throw (CentreonBroker::Exception)
+{
+  int ret;
+
+  this->anonymous_ = true;
+  if (CLIENT == this->type_)
+    ret = gnutls_anon_allocate_client_credentials(&this->cred_.client);
+  else
+    ret = gnutls_anon_allocate_server_credentials(&this->cred_.server);
+  if (ret != GNUTLS_E_SUCCESS)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+  if (this->type_ != CLIENT)
+    gnutls_anon_set_server_dh_params(this->cred_.server, tls_init.DHParams());
+  this->init_ = true;
+  return ;
+}
+
+/**************************************
+*                                     *
+*          Protected Methods          *
+*                                     *
+**************************************/
+
+/**
+ *  TLSParams constructor.
+ *
+ *  \param[in] type Either CLIENT or SERVER, depending on connection
+ *                  initialization. This cannot be modified after construction.
+ */
+TLSParams::TLSParams(TLSParams::ConnectionType type)
+  throw (CentreonBroker::Exception)
+  : anonymous_(false),
+    check_cert_(false),
+    compress_(false),
+    init_(false),
+    type_(type)
+{
+  this->InitAnonymous();
+}
+
+/**
+ *  Apply parameters to a GNU TLS session object.
+ *
+ *  \param[out] session Object on which parameters will be applied.
+ */
+void TLSParams::Apply(gnutls_session_t session)
+  throw (CentreonBroker::Exception)
+{
+  int ret;
+
+  // Set the encryption method (normal ciphers with anonymous Diffie-Hellman
+  // and optionnally compression).
+  ret = gnutls_priority_set_direct(session,
+                                   (this->compress_
+                                    ? "NORMAL:+ANON-DH:%COMPAT"
+                                    : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
+                                   NULL);
+  if (ret != GNUTLS_E_SUCCESS)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+  // Set proper credentials
+  if (this->anonymous_)
+    {
+      if (CLIENT == this->type_)
+        ret = gnutls_credentials_set(session,
+                                     GNUTLS_CRD_ANON,
+                                     this->cred_.client);
+      else
+        ret = gnutls_credentials_set(session,
+                                     GNUTLS_CRD_ANON,
+                                     this->cred_.server);
+    }
+  else
+    {
+      ret = gnutls_credentials_set(session,
+                                   GNUTLS_CRD_CERTIFICATE,
+                                   this->cred_.cert);
+      gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUIRE);
+    }
+  if (ret != GNUTLS_E_SUCCESS)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+  return ;
+}
+
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  TLSParams destructor.
+ */
+TLSParams::~TLSParams()
+{
+  this->Clean();
+}
+
+/**
+ *  \brief Check if the peer's certificate is valid.
+ *
+ *  Check if the certificate invalid or revoked or untrusted or insecure. In
+ *  those case, the connection should not be trusted. If no certificate is used
+ *  for this connection or no trusted CA has been set, the method will return
+ *  false.
+ *
+ *  \param[in] session Session on which checks will be performed.
+ *
+ *  \return false if the certificate is valid, true otherwise.
+ */
+bool TLSParams::CheckCert(gnutls_session_t session)
+  throw (CentreonBroker::Exception)
+{
+  bool invalid;
+
+  if (this->check_cert_)
+    {
+      int ret;
+      unsigned int status;
+
+      ret = gnutls_certificate_verify_peers2(session, &status);
+      if (ret != GNUTLS_E_SUCCESS)
+        throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+      invalid = status & (GNUTLS_CERT_INVALID
+                          | GNUTLS_CERT_REVOKED
+                          | GNUTLS_CERT_SIGNER_NOT_FOUND
+                          | GNUTLS_CERT_INSECURE_ALGORITHM);
+    }
+  else
+    invalid = false;
+  return (invalid);
+}
+
+/**
+ *  \brief Reset parameters to their default values.
+ *
+ *  Parameters are changed back to the default anonymous mode without
+ *  compression.
+ */
+void TLSParams::Reset() throw (CentreonBroker::Exception)
+{
+  this->Clean();
+  this->InitAnonymous();
+  return ;
+}
+
+/**
+ *  \brief Set certificates to use for connection encryption.
+ *
+ *  TLSAcceptor provides two encryption mode : anonymous and certificate-based.
+ *  If you want to use certificates for encryption, call this function with the
+ *  name of the PEM-encoded public certificate (cert) and the private key
+ *  (key). In case there was an error loading this pair, a
+ *  CentreonBroker::Exception is thrown.
+ *
+ *  \param[in] cert The path to the PEM-encoded public certificate.
+ *  \param[in] key  The path to the PEM-encoded private key.
+ */
+void TLSParams::SetCert(const std::string& cert, const std::string& key)
+{
+  int ret;
+
+  // Initialize credentials if necessary.
+  if (this->anonymous_)
+    {
+      this->Clean();
+      this->anonymous_ = false;
+      ret = gnutls_certificate_allocate_credentials(&this->cred_.cert);
+      if (ret != GNUTLS_E_SUCCESS)
+        throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+      gnutls_certificate_set_dh_params(this->cred_.cert, tls_init.DHParams());
+      this->check_cert_ = false;
+      this->init_ = true;
+    }
+
+  // Load certificate files.
+  ret = gnutls_certificate_set_x509_key_file(this->cred_.cert,
+                                             cert.c_str(),
+                                             key.c_str(),
+                                             GNUTLS_X509_FMT_PEM);
+  if (ret != GNUTLS_E_SUCCESS)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+  return ;
+}
+
+/**
+ *  \brief Set the compression mode (on/off).
+ *
+ *  Determines whether or not the encrypted stream should also be compressed
+ *  using the Deflate algorithm. This kind of compression usually works well on
+ *  text or other compressible data. The compression algorithm, may be useful
+ *  in high bandwidth TLS tunnels, and in cases where network usage has to be
+ *  minimized. As a drawback, compression increases latency.
+ *
+ *  \param[in] compress true if the stream should be compressed, false
+ *                      otherwise.
+ */
+void TLSParams::SetCompression(bool compress)
+{
+  this->compress_ = compress;
+  return ;
+}
+
+/**
+ *  \brief Set the trusted CA certificate.
+ *
+ *  If this parameter is set, certificate checking will be performed on the
+ *  connection against this CA certificate. The SetCert method should have been
+ *  called before. In case of error, a CentreonBroker::Exception will be
+ *  thrown.
+ *
+ *  \param[in] ca_cert The path to the PEM-encoded public certificate of the
+ *                     trusted Certificate Authority.
+ */
+void TLSParams::SetTrustedCA(const std::string& ca_cert)
+  throw (CentreonBroker::Exception)
+{
+  int ret;
+
+  // SetTrustedCA() _has to_ be called _after_ SetCert().
+  if (this->anonymous_)
+    throw (CentreonBroker::Exception(0, "Certificate used for encryption " \
+                                        "should be set before the trusted " \
+                                        "Certificate Authority's."));
+
+  // Load certificate.
+  ret = gnutls_certificate_set_x509_trust_file(this->cred_.cert,
+                                               ca_cert.c_str(),
+                                               GNUTLS_X509_FMT_PEM);
+  if (ret <= 0)
+    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+
+  // Certificate checking has to be performed.
+  this->check_cert_ = true;
+
+  return ;
+}
+
 
 /******************************************************************************
 *                                                                             *
@@ -212,26 +672,6 @@ unsigned int TLSStream::Send(const void* buffer, unsigned int size)
 
 /**************************************
 *                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Those 2048-bits wide Diffie-Hellman parameters were generated the
- *  30/07/2009 on Ubuntu 9.04 x86 using OpenSSL 0.9.8g with generator 2.
- */
-static const unsigned char dh_params_2048[] =
-  "-----BEGIN DH PARAMETERS-----\n" \
-  "MIIBCAKCAQEA93F3CN41kJooLbqcOdWHJPb+/zPV+mMs5Svb6PVH/XS3BK/tuuVu\n" \
-  "r9okkOzGr07KLPiKf+3MJSgHs9N91wPG6JcMcRys3fH1Tszh1i1317tE54o+oLPv\n" \
-  "jcs9P13lFlZm4gB7sjkR5If/ZtudoVwv7JS5WHIXrzew7iW+kT/QXCp+jkO1Vusc\n" \
-  "mQHlq4Fqt/p7zxOHVc8GBttE6/vEYipm2pdym1kBy62Z6rZLowkukngI5uzdQvB4\n" \
-  "Pmq5BmeRzGRClSkmRW4pUXiBac8SMAgMBl7cgAEaURR2D8Y4XltyXW51xzO1x1QM\n" \
-  "bOl9nneRY2Y8X3FOR1+Mzt+x44F+cWtqIwIBAg==\n" \
-  "-----END DH PARAMETERS-----\n";
-
-/**************************************
-*                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
@@ -245,7 +685,7 @@ static const unsigned char dh_params_2048[] =
  *  \param[in] tls_acceptor Unused.
  */
 TLSAcceptor::TLSAcceptor(const TLSAcceptor& tls_acceptor)
-  : Acceptor(tls_acceptor)
+  : Acceptor(tls_acceptor), TLSParams(TLSParams::SERVER)
 {
   (void)tls_acceptor;
   assert(false);
@@ -283,10 +723,7 @@ TLSAcceptor& TLSAcceptor::operator=(const TLSAcceptor& tls_acceptor)
  *  parameters. In case of error, a CentreonBroker::Exception is thrown.
  */
 TLSAcceptor::TLSAcceptor()
-  : cert_based_(false),
-    check_cert_(false),
-    compression_(false),
-    cred_init_(false),
+  : TLSParams(TLSParams::SERVER),
     lower_(NULL)
 {
   const gnutls_datum_t dh_params =
@@ -345,93 +782,50 @@ Stream* TLSAcceptor::Accept()
   if (lower)
     {
       try
-	{
-	  int ret;
+        {
+          int ret;
 
-	  // Initialize the TLS session
-	  session = new (gnutls_session_t);
-	  ret = gnutls_init(session, GNUTLS_SERVER);
-	  if (ret != GNUTLS_E_SUCCESS)
-	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-
-	  // Set the encryption method (normal ciphers with anonymous
-	  // Diffie-Hellman and optionnally compresion).
-	  ret = gnutls_priority_set_direct(*session,
-                                           (this->compression_
-                                            ? "NORMAL:+ANON-DH:%COMPAT"
-                                            : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
-                                           NULL);
-	  if (ret != GNUTLS_E_SUCCESS)
-	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-
-	  // Set the anonymous credentials to use for encryption ...
-	  if (!this->cert_based_)
-            ret = gnutls_credentials_set(*session,
-                                         GNUTLS_CRD_ANON,
-                                         this->cred_.anon);
-	  // ... or the certificates.
-	  else
-	    {
-              ret = gnutls_credentials_set(*session,
-                                           GNUTLS_CRD_CERTIFICATE,
-                                           this->cred_.cert);
-	      gnutls_certificate_server_set_request(*session,
-						    GNUTLS_CERT_REQUIRE);
-	    }
+          // Initialize the TLS session
+          session = new (gnutls_session_t);
+          ret = gnutls_init(session, GNUTLS_SERVER);
           if (ret != GNUTLS_E_SUCCESS)
             throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
 
-	  // Bind the TLS session with the stream from the lower layer.
+          // Apply TLS parameters.
+          this->Apply(*session);
+
+          // Bind the TLS session with the stream from the lower layer.
           gnutls_transport_set_lowat(*session, 0);
           gnutls_transport_set_pull_function(*session, PullHelper);
           gnutls_transport_set_push_function(*session, PushHelper);
           gnutls_transport_set_ptr(*session, lower);
 
-	  // Perform the TLS handshake.
-	  do
-	    {
-	      ret = gnutls_handshake(*session);
-	    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-	  if (ret != GNUTLS_E_SUCCESS)
-	    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
+          // Perform the TLS handshake.
+          do
+            {
+              ret = gnutls_handshake(*session);
+            } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
+          if (ret != GNUTLS_E_SUCCESS)
+            throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
 
-	  // If set, check if the peer's certificate is valid.
-	  if (this->check_cert_)
-	    {
-	      unsigned int status;
+          // Check certificate.
+          if (this->CheckCert(*session))
+            throw (CentreonBroker::Exception(0, "Invalid certificate used in" \
+                                                "TLS connection."));
 
-	      ret = gnutls_certificate_verify_peers2(*session, &status);
-	      if (ret != GNUTLS_E_SUCCESS)
-		throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-	      if (status & GNUTLS_CERT_INVALID)
-		throw (CentreonBroker::Exception(GNUTLS_CERT_INVALID,
-                  "The certificate is not signed by one of the known " \
-                  "authorities, or the signature is invalid."));
-	      else if (status & GNUTLS_CERT_REVOKED)
-		throw (CentreonBroker::Exception(GNUTLS_CERT_REVOKED,
-                  "The certificate has been revoked by its CA."));
-	      else if (status & GNUTLS_CERT_SIGNER_NOT_FOUND)
-		throw (CentreonBroker::Exception(GNUTLS_CERT_SIGNER_NOT_FOUND,
-                  "The issuer is not in the trusted certificates list."));
-	      else if (status & GNUTLS_CERT_INSECURE_ALGORITHM)
-		throw (CentreonBroker::Exception(GNUTLS_CERT_INSECURE_ALGORITHM,
-                  "The certificate was signed using an insecure algorithm " \
-		  "such as MD2 or MD5. These algorithms have been broken "  \
-                  "and should not be trusted."));
-	    }
-	  stream = new TLSStream(lower, session);
-	}
+          stream = new TLSStream(lower, session);
+        }
       catch (...)
-	{
-	  if (session)
-	    {
-	      gnutls_deinit(*session);
-	      delete (session);
-	    }
-	  lower->Close();
-	  delete (lower);
-	  throw ;
-	}
+        {
+          if (session)
+            {
+              gnutls_deinit(*session);
+              delete (session);
+            }
+          lower->Close();
+          delete (lower);
+          throw ;
+        }
     }
   return (stream);
 }
@@ -449,17 +843,6 @@ void TLSAcceptor::Close()
       delete (this->lower_);
       this->lower_ = NULL;
     }
-  if (this->cred_init_)
-    {
-      if (this->cert_based_)
-	gnutls_certificate_free_credentials(this->cred_.cert);
-      else
-	gnutls_anon_free_server_credentials(this->cred_.anon);
-      this->cred_init_ = false;
-    }
-  this->cert_based_ = false;
-  this->check_cert_ = false;
-  this->compression_ = false;
   return ;
 }
 
@@ -477,99 +860,6 @@ void TLSAcceptor::Close()
  */
 void TLSAcceptor::Listen(Acceptor* lower) throw (CentreonBroker::Exception)
 {
-  if (this->cert_based_)
-    gnutls_certificate_set_dh_params(this->cred_.cert, this->dh_params_);
-  else
-    {
-      int ret;
-
-      ret = gnutls_anon_allocate_server_credentials(&this->cred_.anon);
-      if (ret != GNUTLS_E_SUCCESS)
-	throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-      gnutls_anon_set_server_dh_params(this->cred_.anon, this->dh_params_);
-      this->cred_init_ = true;
-    }
   this->lower_ = lower;
-  return ;
-}
-
-/**
- *  \brief Set certificates to use for connection encryption.
- *
- *  TLSAcceptor provides two encryption mode : anonymous and certificate-based.
- *  If you want to use certificates for encryption, call this function with the
- *  name of the PEM-encoded public certificate (cert) and the private key
- *  (key). In case there was an error loading this pair, a
- *  CentreonBroker::Exception is thrown.
- *
- *  \param[in] cert The path to the PEM-encoded public certificate.
- *  \param[in] key  The path to the PEM-encoded private key.
- */
-void TLSAcceptor::SetCert(const char* cert, const char* key)
-  throw (CentreonBroker::Exception)
-{
-  int ret;
-
-  ret = gnutls_certificate_allocate_credentials(&this->cred_.cert);
-  if (ret != GNUTLS_E_SUCCESS)
-    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  ret = gnutls_certificate_set_x509_key_file(this->cred_.cert,
-                                             cert,
-                                             key,
-                                             GNUTLS_X509_FMT_PEM);
-  if (ret != GNUTLS_E_SUCCESS)
-    {
-      gnutls_certificate_free_credentials(this->cred_.cert);
-      throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-    }
-  this->cert_based_ = true;
-  this->cred_init_ = true;
-  return ;
-}
-
-/**
- *  \brief Set the compression mode (on/off).
- *
- *  Determines whether or not the encrypted stream should also be compressed
- *  using the Deflate algorithm. This kind of compression usually works well on
- *  text or other compressible data. The compression algorithm, may be useful
- *  in high bandwidth TLS tunnels, and in cases where network usage has to be
- *  minimized. As a drawback, compression increases latency.
- *
- *  \param[in] compress_stream True if the stream should be compressed, false
- *                             otherwise.
- */
-void TLSAcceptor::SetCompression(bool compress_stream) throw ()
-{
-  this->compression_ = compress_stream;
-  return ;
-}
-
-/**
- *  \brief Set the trusted CA certificate.
- *
- *  If this parameter is set, certificate checking will be performed on the
- *  connection against this CA certificate. The SetCert method should have been
- *  called before. In case of error, a CentreonBroker::Exception will be
- *  thrown.
- *
- *  \param[in] ca_cert The path to the PEM-encoded public certificate of the
- *                     trusted Certificate Authority.
- */
-void TLSAcceptor::SetTrustedCA(const char* ca_cert)
-  throw (CentreonBroker::Exception)
-{
-  int ret;
-
-  if (!this->cert_based_)
-    throw (CentreonBroker::Exception(0, "Certificate used for encryption " \
-                                        "should be set before the trusted " \
-                                        "Certificate Authority's."));
-  ret = gnutls_certificate_set_x509_trust_file(this->cred_.cert,
-                                               ca_cert,
-                                               GNUTLS_X509_FMT_PEM);
-  if (ret <= 0)
-    throw (CentreonBroker::Exception(ret, gnutls_strerror(ret)));
-  this->check_cert_ = true;
   return ;
 }
