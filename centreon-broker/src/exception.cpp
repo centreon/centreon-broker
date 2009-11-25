@@ -18,10 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include <stddef.h>
 #include "exception.h"
-
-using namespace CentreonBroker;
 
 /**************************************
 *                                     *
@@ -30,16 +27,17 @@ using namespace CentreonBroker;
 **************************************/
 
 /**
- *  \brief Copy internal data from an object to the current instance.
+ *  \brief Copy exception parameters from the argument to the current instance.
  *
  *  Copy data members defined within the Exception class (namely the error code
  *  and the message) from the given object to the current instance. This method
  *  is used by the copy constructor and the assignment operator.
+ *  \par Safety No throw guarantee.
  *
- *  \param[in] e Object to copy data from.
+ *  \param[in] e Exception to copy data from.
  *
- *  \see Exception
- *  \see operator=
+ *  \see Exception(const Exception&)
+ *  \see operator=(const Exception&)
  */
 void Exception::InternalCopy(const Exception& e) throw ()
 {
@@ -55,25 +53,6 @@ void Exception::InternalCopy(const Exception& e) throw ()
 **************************************/
 
 /**
- *  \brief Exception copy constructor.
- *
- *  Copy data from the given Exception to the current instance.
- *
- *  \param[in] e Object to copy data from.
- */
-Exception::Exception(const Exception& e) throw () : std::exception(e)
-{
-  this->InternalCopy(e);
-}
-
-/**
- *  Build an Exception from an error code.
- *
- *  \param[in] error_code Exception error code.
- */
-Exception::Exception(int error_code) throw () : ec_(error_code), msg_(NULL) {}
-
-/**
  *  Build an Exception from an error code and a message.
  *
  *  \param[in] error_code Exception error code.
@@ -83,6 +62,19 @@ Exception::Exception(int error_code, const char* msg) throw ()
   : ec_(error_code), msg_(msg) {}
 
 /**
+ *  \brief Exception copy constructor.
+ *
+ *  Copy the error code and the associated message from the given Exception
+ *  object to the current instance.
+ *
+ *  \param[in] e Exception to copy data from.
+ */
+Exception::Exception(const Exception& e) throw () : std::exception(e)
+{
+  this->InternalCopy(e);
+}
+
+/**
  *  Exception destructor.
  */
 Exception::~Exception() throw () {}
@@ -90,9 +82,11 @@ Exception::~Exception() throw () {}
 /**
  *  \brief Overload of the assignment operator.
  *
- *  Copy data from the given Exception to the current instance.
+ *  Copy the error code and the associated message from the given Exception
+ *  object to the current instance.
+ *  \par Safety No throw guarantee.
  *
- *  \param[in] e Object to copy data from.
+ *  \param[in] e Exception to copy data from.
  */
 Exception& Exception::operator=(const Exception& e) throw ()
 {
@@ -103,6 +97,7 @@ Exception& Exception::operator=(const Exception& e) throw ()
 
 /**
  *  Get the exception error code.
+ *  \par Safety No throw guarantee.
  *
  *  \return Exception error code.
  */
@@ -113,6 +108,7 @@ int Exception::GetErrorCode() const throw ()
 
 /**
  *  Get the exception message.
+ *  \par Safety No throw guarantee.
  *
  *  \return exception message.
  */
@@ -123,6 +119,7 @@ const char* Exception::GetMsg() const throw ()
 
 /**
  *  Get the exception message.
+ *  \par Safety No throw guarantee.
  *
  *  \return exception message.
  */

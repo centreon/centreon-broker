@@ -22,35 +22,32 @@
 # define EXCEPTION_H_
 
 # include <exception>
+# include <stddef.h>  // for NULL
 
-namespace         CentreonBroker
+/**
+ *  \class Exception exception.h "exception.h"
+ *  \brief CentreonBroker root exception class.
+ *
+ *  Exception is the main class of exceptions thrown within CentreonBroker
+ *  code. It directly subclass std::exception. It has the ability to construct
+ *  the exception from an error code and an error message (ie.
+ *  throw (Exception(error_code, error_msg)); ).
+ */
+class         Exception : public std::exception
 {
-  /**
-   *  \class Exception exception.h "exception.h"
-   *  \brief CentreonBroker root exception class.
-   *
-   *  Exception is the main class of exceptions thrown within CentreonBroker
-   *  code. It directly subclass std::exception. It has the ability to
-   *  construct the exception from an error code and an error message (ie.
-   *  throw (Exception(error_code, error_msg)); ).
-   */
-  class           Exception : public std::exception
-  {
-   private:
-    int         ec_;
-    const char* msg_;
-    void        InternalCopy(const Exception& e) throw ();
+ private:
+  int         ec_;
+  const char* msg_;
+  void        InternalCopy(const Exception& e) throw ();
 
-   public:
-                Exception(const Exception& e) throw ();
-                Exception(int val) throw ();
-                Exception(int val, const char* msg) throw ();
-                ~Exception() throw ();
-    Exception&  operator=(const Exception& e) throw ();
-    int         GetErrorCode() const throw ();
-    const char* GetMsg() const throw ();
-    const char* what() const throw ();
-  };
-}
+ public:
+              Exception(int val = 0, const char* msg = NULL) throw ();
+              Exception(const Exception& e) throw ();
+              ~Exception() throw ();
+  Exception&  operator=(const Exception& e) throw ();
+  int         GetErrorCode() const throw ();
+  const char* GetMsg() const throw ();
+  const char* what() const throw ();
+};
 
 #endif /* !EXCEPTION_H_ */
