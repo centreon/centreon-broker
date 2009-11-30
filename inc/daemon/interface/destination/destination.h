@@ -51,6 +51,7 @@ namespace          Interface
 
      public:
       virtual      ~Destination();
+      virtual void Close() = 0;
       virtual void Event(const Events::Event& event) = 0;
     };
   }
