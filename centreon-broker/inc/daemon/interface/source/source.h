@@ -51,7 +51,8 @@ namespace                    Interface
 
      public:
       virtual                ~Source();
-      virtual Events::Event& Event() = 0;
+      virtual void           Close() = 0;
+      virtual Events::Event* Event() = 0;
     };
   }
 }
