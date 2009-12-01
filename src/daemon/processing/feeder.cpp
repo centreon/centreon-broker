@@ -20,11 +20,11 @@
 
 #include <assert.h>
 #include <stdlib.h>                  // for abort
-#include "input/feeder.h"
 #include "interface/source.h"
 #include "multiplexing/publisher.h"
+#include "processing/feeder.h"
 
-using namespace Input;
+using namespace Processing;
 
 /**************************************
 *                                     *

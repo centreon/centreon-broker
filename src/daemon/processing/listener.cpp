@@ -20,9 +20,9 @@
 
 #include <assert.h>
 #include <stdlib.h>         // for abort
-#include "input/listener.h"
+#include "processing/listener.h"
 
-using namespace Input;
+using namespace Processing;
 
 /**************************************
 *                                     *

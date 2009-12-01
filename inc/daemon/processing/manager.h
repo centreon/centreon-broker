@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef INPUT_MANAGER_H_
-# define INPUT_MANAGER_H_
+#ifndef PROCESSING_MANAGER_H_
+# define PROCESSING_MANAGER_H_
 
 # include <map>
 # include <string>
@@ -30,19 +30,19 @@ namespace           Configuration
 namespace           Interface
 { class             Source; }
 
-namespace           Input
+namespace           Processing
 {
   // Forward declarations.
   class             Feeder;
   class             Listener;
 
   /**
-   *  \class Manager manager.h "input/manager.h"
+   *  \class Manager manager.h "processing/manager.h"
    *  \brief Manage event source objects.
    *
-   *  The Input::Manager class handles objects that generates events. These
-   *  objects are created/updated/deleted by this singleton according to the
-   *  specified configuration.
+   *  The Processing::Manager class handles objects that generates events.
+   *  These objects are created/updated/deleted by this singleton according to
+   *  the specified configuration.
    */
   class             Manager
   {
@@ -67,4 +67,4 @@ namespace           Input
   };
 }
 
-#endif /* !INPUT_MANAGER_H_ */
+#endif /* !PROCESSING_MANAGER_H_ */

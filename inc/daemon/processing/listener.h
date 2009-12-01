@@ -18,17 +18,17 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef INPUT_LISTENER_H_
-# define INPUT_LISTENER_H_
+#ifndef PROCESSING_LISTENER_H_
+# define PROCESSING_LISTENER_H_
 
 # include <memory>               // for auto_ptr
 # include "concurrency/thread.h"
 # include "io/acceptor.h"
 
-namespace                       Input
+namespace                       Processing
 {
   /**
-   *  \class Listener listener.h "input/listener.h"
+   *  \class Listener listener.h "processing/listener.h"
    *  \brief Waits for incoming connections on an acceptor.
    *
    *  The Listener class implements a mediator pattern and avoid acceptors from
@@ -57,4 +57,4 @@ namespace                       Input
   };
 }
 
-#endif /* !INPUT_LISTENER_H_ */
+#endif /* !PROCESSING_LISTENER_H_ */
