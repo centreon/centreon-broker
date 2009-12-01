@@ -23,31 +23,35 @@
 
 # include "events/event.h"
 
-namespace         CentreonBroker
+namespace       Events
 {
-  namespace       Events
+  /**
+   *  \class Status status.h "events/status.h"
+   *  \brief Root class of status events.
+   *
+   *  This is the root class of status events : host, program and service
+   *  status events.
+   *
+   *  \see HostStatus
+   *  \see ProgramStatus
+   *  \see ServiceStatus
+   */
+  class         Status : public Event
   {
-    /**
-     *  This is the root class of status events : host, program and service
-     *  status events.
-     */
-    class         Status : public Event
-    {
-     private:
-      void        InternalCopy(const Status& s) throw ();
+   private:
+    void        InternalCopy(const Status& s);
 
-     public:
-      bool        event_handler_enabled;
-      bool        failure_prediction_enabled;
-      bool        flap_detection_enabled;
-      bool        notifications_enabled;
-      bool        process_performance_data;
-                  Status();
-		  Status(const Status& s);
-      virtual     ~Status();
-      Status&     operator=(const Status& s);
-    };
-  }
+   public:
+    bool        event_handler_enabled;
+    bool        failure_prediction_enabled;
+    bool        flap_detection_enabled;
+    bool        notifications_enabled;
+    bool        process_performance_data;
+                Status();
+                Status(const Status& s);
+    virtual     ~Status();
+    Status&     operator=(const Status& s);
+  };
 }
 
 #endif /* !EVENTS_STATUS_H_ */

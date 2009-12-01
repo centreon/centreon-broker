@@ -21,45 +21,49 @@
 #ifndef EVENTS_PROGRAM_STATUS_H_
 # define EVENTS_PROGRAM_STATUS_H_
 
-# include <ctime> // for time_t
+# include <time.h>          // for time_t
 # include <string>
 # include "events/status.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class ProgramStatus program_status.h "events/program_status.h"
+   *  \brief Information about Nagios process.
+   *
+   *  ProgramStatus holds information about a Nagios process, like whether it
+   *  is running or not, in daemon mode or not, ...
+   */
+  class                ProgramStatus : public Status
   {
-    class                ProgramStatus : public Status
-    {
-     private:
-      void               InternalCopy(const ProgramStatus& ps);
+   private:
+    void               InternalCopy(const ProgramStatus& ps);
 
-     public:
-      bool               active_host_checks_enabled;
-      bool               active_service_checks_enabled;
-      bool               daemon_mode;
-      std::string        global_host_event_handler;
-      std::string        global_service_event_handler;
-      bool               is_running;
-      time_t             last_alive;
-      time_t             last_command_check;
-      time_t             last_log_rotation;
-      int                modified_host_attributes;
-      int                modified_service_attributes;
-      bool               obsess_over_hosts;
-      bool               obsess_over_services;
-      bool               passive_host_checks_enabled;
-      bool               passive_service_checks_enabled;
-      int                pid;
-      time_t             program_end;
-      time_t             program_start;
-                         ProgramStatus();
-			 ProgramStatus(const ProgramStatus& ps);
-			 ~ProgramStatus();
-      ProgramStatus&     operator=(const ProgramStatus& ps);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    bool               active_host_checks_enabled;
+    bool               active_service_checks_enabled;
+    bool               daemon_mode;
+    std::string        global_host_event_handler;
+    std::string        global_service_event_handler;
+    bool               is_running;
+    time_t             last_alive;
+    time_t             last_command_check;
+    time_t             last_log_rotation;
+    int                modified_host_attributes;
+    int                modified_service_attributes;
+    bool               obsess_over_hosts;
+    bool               obsess_over_services;
+    bool               passive_host_checks_enabled;
+    bool               passive_service_checks_enabled;
+    int                pid;
+    time_t             program_end;
+    time_t             program_start;
+                       ProgramStatus();
+                       ProgramStatus(const ProgramStatus& ps);
+                       ~ProgramStatus();
+    ProgramStatus&     operator=(const ProgramStatus& ps);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_PROGRAM_STATUS_H_ */

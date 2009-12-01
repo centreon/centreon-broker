@@ -20,7 +20,7 @@
 
 #include "events/host_group.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -72,7 +72,7 @@ HostGroup& HostGroup::operator=(const HostGroup& host_group)
  *
  *  \return Event::HOSTGROUP
  */
-int HostGroup::GetType() const throw ()
+int HostGroup::GetType() const
 {
   return (Event::HOSTGROUP);
 }

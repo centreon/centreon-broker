@@ -25,34 +25,35 @@
 # include <string>
 # include "events/event.h"
 
-namespace                    CentreonBroker
+namespace                  Events
 {
-  namespace                  Events
+  /**
+   *  \class Group group.h "events/group.h"
+   *  \brief Base of host and service group classes.
+   *
+   *  Nagios handles group. This can be service groups or host groups for
+   *  example.
+   *
+   *  \see HostGroup
+   *  \see ServiceGroup
+   */
+  class                    Group : public Event
   {
-    /**
-     *  \class Group group.h "events/group.h"
-     *  \brief Base of host and service group classes.
-     *
-     *  XXX : need fix
-     */
-    class                    Group : public Event
-    {
-     private:
-      void                   InternalCopy(const Group& group);
+   private:
+    void                   InternalCopy(const Group& group);
 
-     public:
-      std::string            action_url;
-      std::string            alias;
-      std::list<std::string> members;
-      std::string            name;
-      std::string            notes;
-      std::string            notes_url;
-                             Group();
-                             Group(const Group& group);
-                             ~Group();
-      Group&                 operator=(const Group& group);
-    };
-  }
+   public:
+    std::string            action_url;
+    std::string            alias;
+    std::list<std::string> members;
+    std::string            name;
+    std::string            notes;
+    std::string            notes_url;
+                           Group();
+                           Group(const Group& group);
+    virtual                ~Group();
+    Group&                 operator=(const Group& group);
+  };
 }
 
 #endif /* !EVENTS_GROUP_H_ */

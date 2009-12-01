@@ -20,7 +20,7 @@
 
 #include "events/program_status.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -126,7 +126,7 @@ ProgramStatus& ProgramStatus::operator=(const ProgramStatus& ps)
  *
  *  \return Event::PROGRAMSTATUS
  */
-int ProgramStatus::GetType() const throw ()
+int ProgramStatus::GetType() const
 {
   return (Event::PROGRAMSTATUS);
 }

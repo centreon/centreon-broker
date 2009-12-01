@@ -20,7 +20,7 @@
 
 #include "events/log.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -104,7 +104,7 @@ Log& Log::operator=(const Log& log)
  *
  *  \return Event::LOG
  */
-int Log::GetType() const throw ()
+int Log::GetType() const
 {
   return (Event::LOG);
 }

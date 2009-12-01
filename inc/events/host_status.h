@@ -21,38 +21,35 @@
 #ifndef EVENTS_HOST_STATUS_H_
 # define EVENTS_HOST_STATUS_H_
 
-# include <ctime> // for time_t
+# include <time.h>                       // for time_t
 # include "events/host_service_status.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  class                EventSubscriber;
+
+  /**
+   *  \class HostStatus host_status.h "events/host_status.h"
+   *  \brief HostStatus represents a status change of an host.
+   *
+   *  HostStatus are generated when the status of an host change. Appropriate
+   *  fields should be updated.
+   */
+  class                HostStatus : public HostServiceStatus
   {
-    class                EventSubscriber;
+   private:
+    void               InternalCopy(const HostStatus& hs);
 
-    /**
-     *  \class HostStatus host_status.h "events/host_status.h"
-     *  \brief HostStatus represents a status change of an host.
-     *
-     *  HostStatus are generated when the status of an host change. Appropriate
-     *  fields should be updated.
-     */
-    class                HostStatus : public HostServiceStatus
-    {
-     private:
-      void               InternalCopy(const HostStatus& hs);
-
-     public:
-      time_t             last_time_down;
-      time_t             last_time_unreachable;
-      time_t             last_time_up;
-                         HostStatus();
-			 HostStatus(const HostStatus& hs);
-			 ~HostStatus();
-      HostStatus&        operator=(const HostStatus& hs);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    time_t             last_time_down;
+    time_t             last_time_unreachable;
+    time_t             last_time_up;
+                       HostStatus();
+                       HostStatus(const HostStatus& hs);
+    virtual            ~HostStatus();
+    HostStatus&        operator=(const HostStatus& hs);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_HOST_STATUS_H_ */

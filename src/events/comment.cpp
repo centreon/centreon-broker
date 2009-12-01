@@ -20,7 +20,7 @@
 
 #include "events/comment.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -39,7 +39,7 @@ using namespace CentreonBroker::Events;
  *  \param[in] comment Object to copy from.
  *
  *  \see Comment(const Comment&)
- *  \see operator=
+ *  \see operator=(const Comment&)
  */
 void Comment::InternalCopy(const Comment& comment)
 {
@@ -119,16 +119,16 @@ Comment& Comment::operator=(const Comment& comment)
 }
 
 /**
- *  \brief Returns the type of this event (CentreonBroker::Event::COMMENT).
+ *  \brief Returns the type of this event (Event::COMMENT).
  *
  *  The type of this event can be useful for runtime determination of the type
  *  of an event.
  *
- *  \see CentreonBroker::Event
+ *  \see Event
  *
- *  \return CentreonBroker::Event::COMMENT
+ *  \return Event::COMMENT
  */
-int Comment::GetType() const throw ()
+int Comment::GetType() const
 {
   return (Event::COMMENT);
 }

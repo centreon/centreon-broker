@@ -21,40 +21,37 @@
 #ifndef EVENTS_SERVICE_STATUS_H_
 # define EVENTS_SERVICE_STATUS_H_
 
-# include <ctime> // for time_t
+# include <time.h>                       // for time_t
 # include <string>
 # include "events/host_service_status.h"
 
-namespace               CentreonBroker
+namespace               Events
 {
-  namespace               Events
+  class                 EventSubscriber;
+
+  /**
+   *  \class ServiceStatus service_status.h "events/service_status.h"
+   *  \brief When the status of a service change, such an event is generated.
+   *
+   *  This class represents a change in a service status.
+   */
+  class                ServiceStatus : public HostServiceStatus
   {
-    class                 EventSubscriber;
+   private:
+    void               InternalCopy(const ServiceStatus& ss);
 
-    /**
-     *  \class ServiceStatus service_status.h "events/service_status.h"
-     *  \brief When the status of a service change, such an event is generated.
-     *
-     *  This class represents a change in a service status.
-     */
-    class                ServiceStatus : public HostServiceStatus
-    {
-     private:
-      void               InternalCopy(const ServiceStatus& ss);
-
-     public:
-      time_t             last_time_critical;
-      time_t             last_time_ok;
-      time_t             last_time_unknown;
-      time_t             last_time_warning;
-      std::string        service;
-                         ServiceStatus();
-			 ServiceStatus(const ServiceStatus& ss);
-			 ~ServiceStatus();
-      ServiceStatus&     operator=(const ServiceStatus& ss);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    time_t             last_time_critical;
+    time_t             last_time_ok;
+    time_t             last_time_unknown;
+    time_t             last_time_warning;
+    std::string        service;
+                       ServiceStatus();
+                       ServiceStatus(const ServiceStatus& ss);
+    virtual            ~ServiceStatus();
+    ServiceStatus&     operator=(const ServiceStatus& ss);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_SERVICE_STATUS_H_ */

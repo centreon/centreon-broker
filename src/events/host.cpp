@@ -20,7 +20,7 @@
 
 #include "events/host.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -147,7 +147,7 @@ Host& Host::operator=(const Host& h)
  *
  *  \return Event::HOST
  */
-int Host::GetType() const throw ()
+int Host::GetType() const
 {
   return (Event::HOST);
 }

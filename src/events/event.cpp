@@ -18,14 +18,16 @@
 **  For more information : contact@centreon.com
 */
 
+#include "concurrency/lock.h"
 #include "events/event.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
-/**
- *  Event default constructor.
- */
-Event::Event() : readers_(0) {}
+/**************************************
+*                                     *
+*          Protected Methods          *
+*                                     *
+**************************************/
 
 /**
  *  \brief Event copy constructor.
@@ -39,11 +41,6 @@ Event::Event(const Event& event)
   this->instance = event.instance;
   this->readers_ = 0;
 }
-
-/**
- *  Event destructor.
- */
-Event::~Event() {}
 
 /**
  *  \brief Overload of the assignment operator.
@@ -60,6 +57,22 @@ Event& Event::operator=(const Event& event)
   return (*this);
 }
 
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Event default constructor.
+ */
+Event::Event() : readers_(0) {}
+
+/**
+ *  Event destructor.
+ */
+Event::~Event() {}
+
 /**
  *  \brief Add a reader to the event.
  *
@@ -70,14 +83,14 @@ Event& Event::operator=(const Event& event)
  *
  *  \see RemoveReader
  *
- *  \param[in] es Ignored.
+ *  \param[in] s Ignored.
  */
-void Event::AddReader(EventSubscriber* es)
+void Event::AddReader(Multiplexing::Subscriber* s)
 {
-  boost::unique_lock<boost::mutex> lock(this->mutex_);
+  Concurrency::Lock lock(this->mutex_);
 
-  (void)es;
-  this->readers_++;
+  (void)s;
+  ++this->readers_;
   return ;
 }
 
@@ -90,19 +103,19 @@ void Event::AddReader(EventSubscriber* es)
  *
  *  \see AddReader
  *
- *  \param[in] es Ignored.
+ *  \param[in] s Ignored.
  */
-void Event::RemoveReader(EventSubscriber* es)
+void Event::RemoveReader(const Multiplexing::Subscriber* s)
 {
   bool destroy;
 
-  (void)es;
-  this->mutex_.lock();
+  (void)s;
+  this->mutex_.Lock();
   if (--this->readers_ <= 0)
     destroy = true;
   else
     destroy = false;
-  this->mutex_.unlock();
+  this->mutex_.Unlock();
   if (destroy)
     delete (this);
   return ;

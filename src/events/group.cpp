@@ -20,7 +20,7 @@
 
 #include "events/group.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -39,7 +39,7 @@ using namespace CentreonBroker::Events;
  *  \param[in] group Object to copy from.
  *
  *  \see Group(const Group&)
- *  \see operator=
+ *  \see operator=(const Group&)
  */
 void Group::InternalCopy(const Group& group)
 {
