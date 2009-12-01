@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef INPUT_FEEDER_H_
-# define INPUT_FEEDER_H_
+#ifndef PROCESSING_FEEDER_H_
+# define PROCESSING_FEEDER_H_
 
 # include <memory>               // for auto_ptr
 # include "concurrency/thread.h"
@@ -28,10 +28,10 @@
 namespace               Interface
 { class                 Source; }
 
-namespace               Input
+namespace               Processing
 {
   /**
-   *  \class Feeder feeder.h "input/feeder.h"
+   *  \class Feeder feeder.h "processing/feeder.h"
    *  \brief Get Events from a source and bring them to the Publisher.
    *
    *  The Feeder class implements the mediator pattern and avoid event sources
@@ -57,4 +57,4 @@ namespace               Input
   };
 }
 
-#endif /* !INPUT_FEEDER_H_ */
+#endif /* !PROCESSING_FEEDER_H_ */
