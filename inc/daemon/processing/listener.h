@@ -39,12 +39,14 @@ namespace                       Processing
    public:
     enum                        Protocol
     {
-      NDO = 1,
+      UNKNOWN = 0,
+      NDO,
       XML
     };
 
    private:
     std::auto_ptr<IO::Acceptor> acceptor_;
+    Protocol                    protocol_;
     Concurrency::Thread         thread_;
                                 Listener(const Listener& listener);
     Listener&                   operator=(const Listener& listener);
@@ -53,7 +55,7 @@ namespace                       Processing
                                 Listener();
                                 ~Listener();
     void                        operator()();
-    void                        Init(IO::Acceptor* acceptor);
+    void                        Init(IO::Acceptor* acceptor, Protocol proto);
   };
 }
 

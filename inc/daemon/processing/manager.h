@@ -21,49 +21,45 @@
 #ifndef PROCESSING_MANAGER_H_
 # define PROCESSING_MANAGER_H_
 
-# include <map>
+# include <list>
 # include <string>
+# include <utility>
+# include "concurrency/mutex.h"
 
-// Forward declaration.
-namespace           Configuration
-{ class             Interface; }
-namespace           Interface
-{ class             Source; }
-
-namespace           Processing
+namespace              Processing
 {
   // Forward declarations.
-  class             Feeder;
-  class             Listener;
+  class                Feeder;
+  class                Listener;
 
   /**
    *  \class Manager manager.h "processing/manager.h"
    *  \brief Manage event source objects.
    *
-   *  The Processing::Manager class handles objects that generates events.
-   *  These objects are created/updated/deleted by this singleton according to
-   *  the specified configuration.
+   *  The Processing::Manager class handles objects that generates or store
+   *  events. These objects are created/updated/deleted by this singleton
+   *  according to the specified configuration.
    */
-  class             Manager
+  class                Manager
   {
    private:
-    std::map<std::string, Feeder*>
-                    feeders_;
-    std::map<std::string, Listener*>
-                    listeners_;
-                    Manager();
-                    Manager(const Manager& manager);
-                    ~Manager();
-    Manager&        operator=(const Manager& manager);
+    std::list<std::pair<std::string, Feeder*> >
+                       feeders_;
+    std::list<std::pair<std::string, Listener*> >
+                       listeners_;
+    Concurrency::Mutex mutex_;
+                       Manager();
+                       Manager(const Manager& manager);
+                       ~Manager();
+    Manager&           operator=(const Manager& manager);
 
    public:
-    void            Build(const Configuration::Interface& i);
-    void            Delete(const std::string& name);
-    void            Delete(const Feeder* feeder);
-    void            Delete(const Listener* listener);
-    static Manager& Instance();
-    void            Manage(Interface::Source* source);
-    void            Update(const Configuration::Interface& i);
+    void               Delete(const std::string& name);
+    void               Delete(const Feeder* feeder);
+    void               Delete(const Listener* listener);
+    static Manager&    Instance();
+    void               Manage(Feeder* feeder, const std::string& name = "");
+    void               Manage(Listener* listener, const std::string& nam = "");
   };
 }
 
