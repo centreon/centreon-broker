@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef INTERFACE_SOURCE_SOURCE_H_
-# define INTERFACE_SOURCE_SOURCE_H_
+#ifndef INTERFACE_SOURCE_H_
+# define INTERFACE_SOURCE_H_
 
 // Forward declaration.
 namespace                    Events
@@ -27,34 +27,30 @@ namespace                    Events
 
 namespace                    Interface
 {
-  namespace                  Source
+  /**
+   *  \class Source source.h "interface/source.h"
+   *  \brief Base interface for event-generating objects.
+   *
+   *  Interface::Source is the base interface used to get objects from an input
+   *  source. The underlying source can be either a XML stream, a database, ...
+   *
+   *  \see DB::DB
+   *  \see File::File
+   *  \see NDO::NDO
+   *  \see XML::XML
+   */
+  class                    Source
   {
-    /**
-     *  \class Source source.h "interface/source/source.h"
-     *  \brief Base interface for event-generating objects.
-     *
-     *  Interface::Source::Source is the base interface used to get objects
-     *  from an input source. The underlying source can be either a XML stream,
-     *  a database, ...
-     *
-     *  \see DB
-     *  \see File
-     *  \see NDO
-     *  \see XML
-     */
-    class                    Source
-    {
-     protected:
-                             Source();
-                             Source(const Source& source);
-      Source&                operator=(const Source& source);
+   protected:
+                           Source();
+                           Source(const Source& source);
+    Source&                operator=(const Source& source);
 
-     public:
-      virtual                ~Source();
-      virtual void           Close() = 0;
-      virtual Events::Event* Event() = 0;
-    };
-  }
+   public:
+    virtual                ~Source();
+    virtual void           Close() = 0;
+    virtual Events::Event* Event() = 0;
+  };
 }
 
-#endif /* !INTERFACE_SOURCE_SOURCE_H_ */
+#endif /* !INTERFACE_SOURCE_H_ */

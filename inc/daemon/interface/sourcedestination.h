@@ -21,8 +21,8 @@
 #ifndef INTERFACE_SOURCEDESTINATION_H_
 # define INTERFACE_SOURCEDESTINATION_H_
 
-# include "interface/destination/destination.h"
-# include "interface/source/source.h"
+# include "interface/destination.h"
+# include "interface/source.h"
 
 namespace              Interface
 {
@@ -36,9 +36,8 @@ namespace              Interface
    *  \see Source
    *  \see Destination
    */
-  class                SourceDestination :
-                         virtual public Source::Source,
-                         virtual public Destination::Destination
+  class                SourceDestination : virtual public Source,
+                                           virtual public Destination
   {
    protected:
                        SourceDestination();
