@@ -19,7 +19,11 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>        // for abort
+#include <stdlib.h>             // for abort
+#include "concurrency/lock.h"
+#include "exception.h"
+#include "processing/feeder.h"
+#include "processing/listener.h"
 #include "processing/manager.h"
 
 using namespace Processing;
@@ -81,21 +85,39 @@ Manager& Manager::operator=(const Manager& manager)
 **************************************/
 
 /**
- *  Build a new source object from its configuration.
- *
- *  \param[in] i Configuration of the new source.
- */
-void Manager::Build(const Configuration::Interface& i)
-{
-}
-
-/**
  *  Delete a source identified by its name.
  *
  *  \param[in] name Name of the source to delete.
  */
 void Manager::Delete(const std::string& name)
 {
+  std::list<std::pair<std::string, Feeder*> >::iterator end1;
+  std::list<std::pair<std::string, Listener*> >::iterator end2;
+  std::list<std::pair<std::string, Feeder*> >::iterator it1;
+  std::list<std::pair<std::string, Listener*> >::iterator it2;
+  Concurrency::Lock lock(this->mutex_);
+
+  // Try to find name among feeders.
+  end1 = this->feeders_.end();
+  for (it1 = this->feeders_.begin(); it1 != end1; ++it1)
+    if (it1->first == name)
+      {
+	delete (it1->second);
+	this->feeders_.erase(it1);
+	return ;
+      }
+
+  // Try to find name among listeners.
+  end2 = this->listeners_.end();
+  for (it2 = this->listeners_.begin(); it2 != end2; ++it2)
+    if (it2->first == name)
+      {
+	delete (it2->second);
+	this->listeners_.erase(it2);
+	break ;
+      }
+
+  return ;
 }
 
 /**
@@ -105,6 +127,19 @@ void Manager::Delete(const std::string& name)
  */
 void Manager::Delete(const Feeder* feeder)
 {
+  std::list<std::pair<std::string, Feeder*> >::iterator end;
+  std::list<std::pair<std::string, Feeder*> >::iterator it;
+  Concurrency::Lock lock(this->mutex_);
+
+  end = this->feeders_.end();
+  for (it = this->feeders_.begin(); it != end; ++it)
+    if (it->second == feeder)
+      {
+	delete (it->second);
+	this->feeders_.erase(it);
+	break ;
+      }
+  return ;
 }
 
 /**
@@ -114,6 +149,19 @@ void Manager::Delete(const Feeder* feeder)
  */
 void Manager::Delete(const Listener* listener)
 {
+  std::list<std::pair<std::string, Listener*> >::iterator end;
+  std::list<std::pair<std::string, Listener*> >::iterator it;
+  Concurrency::Lock lock(this->mutex_);
+
+  end = this->listeners_.end();
+  for (it = this->listeners_.begin(); it != end; ++it)
+    if (it->second == listener)
+      {
+	delete (it->second);
+	this->listeners_.erase(it);
+	break ;
+      }
+  return ;
 }
 
 /**
@@ -132,26 +180,36 @@ Manager& Manager::Instance()
 }
 
 /**
- *  \brief Manage an already opened event source.
+ *  \brief Manage an event feeder.
  *
- *  A new Feeder will be created to handle event retrieving and publishing.
- *  Upon successful return, the source will be owned by the Manager.
+ *  The Feeder should be managed before it is started.
  *
- *  \param[in] source Open event source.
+ *  \param[in] feeder Feeder to manager.
+ *  \param[in] name   Name of the new feeder.
  */
-void Manager::Manage(Interface::Source* source)
+void Manager::Manage(Feeder* feeder, const std::string& name)
 {
+  Concurrency::Lock lock(this->mutex_);
+
+  this->feeders_.push_back(std::pair<std::string, Feeder*>(name, feeder));
+  return ;
 }
 
 /**
- *  \brief Update an interface.
+ *  \brief Manage a listener.
  *
- *  The configuration must have the same name for the update to success. If the
- *  configuration changed, it is likely that the source object will be
- *  destroyed and reopened.
+ *  The Listener should be managed before it is started.
  *
- *  \param[in] i Configuration of an event source.
+ *  \param[in] listener Listener to manage.
+ *  \param[in] name     Name of the new listener.
+ *
+ *  \throw Exception Name already exists.
  */
-void Manager::Update(const Configuration::Interface& i)
+void Manager::Manage(Listener* listener, const std::string& name)
 {
+  Concurrency::Lock lock(this->mutex_);
+
+  this->listeners_.push_back(
+    std::pair<std::string, Listener*>(name, listener));
+  return ;
 }

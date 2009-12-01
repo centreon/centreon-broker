@@ -23,6 +23,7 @@
 #include "interface/source.h"
 #include "multiplexing/publisher.h"
 #include "processing/feeder.h"
+#include "processing/manager.h"
 
 using namespace Processing;
 
@@ -116,7 +117,7 @@ void Feeder::operator()()
           event.release();
           event.reset(this->source_->Event());
         }
-      // XXX : warn Manager
+      Manager::Instance().Delete(this);
     }
   catch (...) {}
   return ;

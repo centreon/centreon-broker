@@ -19,8 +19,11 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>         // for abort
+#include <stdlib.h>               // for abort
+#include "interface/ndo/source.h"
+#include "processing/feeder.h"
 #include "processing/listener.h"
+#include "processing/manager.h"
 
 using namespace Processing;
 
@@ -97,11 +100,32 @@ void Listener::operator()()
     {
       std::auto_ptr<IO::Stream> stream;
 
+      // Wait for initial connection.
       stream.reset(this->acceptor_->Accept());
+
       while (stream.get())
         {
-	  // XXX : add the NDO/XML object
-	  stream.reset(this->acceptor_->Accept());
+          std::auto_ptr<Interface::Source> source;
+
+	  /* XXX         // Open protocol object.
+          if (XML == this->protocol_)
+            source.reset(new Interface::XML::Source(stream.get()));
+	    else*/
+            source.reset(new Interface::NDO::Source(stream.get()));
+          stream.release();
+
+	  // Create feeding thread.
+	  std::auto_ptr<Processing::Feeder> feeder(new Processing::Feeder);
+
+	  feeder->Init(source.get());
+	  source.release();
+
+          // Register new connections.
+          Manager::Instance().Manage(feeder.get());
+          feeder.release();
+
+          // Wait for new connection.
+          stream.reset(this->acceptor_->Accept());
         }
     }
   catch (...) {}
@@ -116,10 +140,12 @@ void Listener::operator()()
  *  \par Safety Minimal exception safety.
  *
  *  \param[in] acceptor Acceptor on which incoming clients will be awaited.
+ *  \param[in] proto    Protocol to use on new connections.
  */
-void Listener::Init(IO::Acceptor* acceptor)
+void Listener::Init(IO::Acceptor* acceptor, Listener::Protocol proto)
 {
   this->acceptor_.reset(acceptor);
+  this->protocol_ = proto;
   try
     {
       this->thread_.Run(this);
