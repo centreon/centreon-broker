@@ -21,46 +21,43 @@
 #ifndef EVENTS_ACKNOWLEDGEMENT_H_
 # define EVENTS_ACKNOWLEDGEMENT_H_
 
-# include <ctime> // for time_t
+# include <time.h>         // for time_t
 # include <string>
 # include "events/event.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class Acknowledgement acknowledgement.h "events/acknowledgement.h"
+   *  \brief Represents an acknowledgement inside Nagios.
+   *
+   *  When some service or host is critical, Nagios will emit notifications
+   *  according to its configuration. To stop the notification process, a user
+   *  can acknowledge the problem.
+   */
+  class                Acknowledgement : public Event
   {
-    /**
-     *  \class Acknowledgement acknowledgement.h "events/acknowledgement.h"
-     *  \brief Represents an acknowledgement inside Nagios.
-     *
-     *  When some service or host is critical, Nagios will emit notifications
-     *  according to its configuration. To stop the notification process, a
-     *  user can acknowledge the problem.
-     */
-    class                Acknowledgement : public Event
-    {
-     private:
-      void               InternalCopy(const Acknowledgement& ack);
+   private:
+    void               InternalCopy(const Acknowledgement& ack);
 
-     public:
-      int                acknowledgement_type;
-      std::string        author;
-      std::string        comment;
-      time_t             entry_time;
-      std::string        host;
-      bool               is_sticky;
-      short              notify_contacts;
-      short              persistent_comment;
-      std::string        service;
-      short              state;
-      int                type;
-                         Acknowledgement();
-                         Acknowledgement(const Acknowledgement& ack);
-                         ~Acknowledgement();
-      Acknowledgement&   operator=(const Acknowledgement& ack);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    int                acknowledgement_type;
+    std::string        author;
+    std::string        comment;
+    time_t             entry_time;
+    std::string        host;
+    bool               is_sticky;
+    short              notify_contacts;
+    short              persistent_comment;
+    std::string        service;
+    short              state;
+    int                type;
+                       Acknowledgement();
+                       Acknowledgement(const Acknowledgement& ack);
+                       ~Acknowledgement();
+    Acknowledgement&   operator=(const Acknowledgement& ack);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_ACKNOWLEDGEMENT_H_ */

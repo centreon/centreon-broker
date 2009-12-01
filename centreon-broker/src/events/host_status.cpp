@@ -20,7 +20,7 @@
 
 #include "events/host_status.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -102,7 +102,7 @@ HostStatus& HostStatus::operator=(const HostStatus& hs)
  *
  *  \return Event::HOSTSTATUS
  */
-int HostStatus::GetType() const throw ()
+int HostStatus::GetType() const
 {
   return (Event::HOSTSTATUS);
 }

@@ -20,7 +20,7 @@
 
 #include "events/service.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -147,7 +147,7 @@ Service& Service::operator=(const Service& s)
  *
  *  \return Event::SERVICE
  */
-int Service::GetType() const throw ()
+int Service::GetType() const
 {
   return (Event::SERVICE);
 }

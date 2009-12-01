@@ -20,7 +20,7 @@
 
 #include "events/service_group.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -73,7 +73,7 @@ ServiceGroup& ServiceGroup::operator=(const ServiceGroup& service_group)
  *
  *  \return Event::SERVICEGROUP
  */
-int ServiceGroup::GetType() const throw ()
+int ServiceGroup::GetType() const
 {
   return (Event::SERVICEGROUP);
 }

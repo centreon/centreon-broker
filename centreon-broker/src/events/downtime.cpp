@@ -20,7 +20,7 @@
 
 #include "events/downtime.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -39,7 +39,7 @@ using namespace CentreonBroker::Events;
  *  \param[in] downtime Object to copy from.
  *
  *  \see Downtime(const Downtime&)
- *  \see operator=
+ *  \see operator=(const Downtime&)
  */
 void Downtime::InternalCopy(const Downtime& downtime)
 {
@@ -126,7 +126,7 @@ Downtime& Downtime::operator=(const Downtime& downtime)
  *
  *  \return Event::DOWNTIME
  */
-int Downtime::GetType() const throw ()
+int Downtime::GetType() const
 {
   return (Event::DOWNTIME);
 }

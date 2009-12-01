@@ -21,44 +21,50 @@
 #ifndef EVENTS_SERVICE_H_
 # define EVENTS_SERVICE_H_
 
-# include <ctime>
+# include <time.h>                  // for time_t
 # include <string>
 # include "events/host_service.h"
 # include "events/service_status.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class Service service.h "events/service.h"
+   *  \brief Service as handled by Nagios.
+   *
+   *  Holds full data regarding a service.
+   *
+   *  \see HostService
+   *  \see ServiceStatus
+   */
+  class                Service : public HostService, public ServiceStatus
   {
-    class                Service : public HostService, public ServiceStatus
-    {
-     private:
-      void               InternalCopy(const Service& s);
-      void               ZeroInitialize();
+   private:
+    void               InternalCopy(const Service& s);
+    void               ZeroInitialize();
 
-     public:
-      std::string        failure_prediction_options;
-      short              flap_detection_on_critical;
-      short              flap_detection_on_ok;
-      short              flap_detection_on_unknown;
-      short              flap_detection_on_warning;
-      bool               is_volatile;
-      bool               notified_on_critical;
-      bool               notified_on_unknown;
-      bool               notified_on_warning;
-      int                service_id;
-      short              stalk_on_critical;
-      short              stalk_on_ok;
-      short              stalk_on_unknown;
-      short              stalk_on_warning;
-                         Service();
-			 Service(const ServiceStatus& ss);
-			 Service(const Service& s);
-			 ~Service();
-      Service&           operator=(const Service& s);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    std::string        failure_prediction_options;
+    short              flap_detection_on_critical;
+    short              flap_detection_on_ok;
+    short              flap_detection_on_unknown;
+    short              flap_detection_on_warning;
+    bool               is_volatile;
+    bool               notified_on_critical;
+    bool               notified_on_unknown;
+    bool               notified_on_warning;
+    int                service_id;
+    short              stalk_on_critical;
+    short              stalk_on_ok;
+    short              stalk_on_unknown;
+    short              stalk_on_warning;
+                       Service();
+                       Service(const ServiceStatus& ss);
+                       Service(const Service& s);
+                       ~Service();
+    Service&           operator=(const Service& s);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_SERVICE_H_ */

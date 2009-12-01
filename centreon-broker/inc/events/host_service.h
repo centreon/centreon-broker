@@ -18,46 +18,52 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef HOST_SERVICE_H_
-# define HOST_SERVICE_H_
+#ifndef EVENTS_HOST_SERVICE_H_
+# define EVENTS_HOST_SERVICE_H_
 
 # include <string>
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class HostService host_service.h "events/host_service.h"
+   *  \brief Common class to Host and Service.
+   *
+   *  This class holds data members common to Host and Service classes.
+   *
+   *  \see Host
+   *  \see Service
+   */
+  class                HostService
   {
-    class                HostService
-    {
-     private:
-      void               InternalCopy(const HostService& hs);
+   private:
+    void               InternalCopy(const HostService& hs);
 
-     public:
-      std::string        action_url;
-      bool               check_freshness;
-      std::string        display_name;
-      double             first_notification_delay;
-      double             freshness_threshold;
-      double             high_flap_threshold;
-      int                host_id;
-      std::string        icon_image;
-      std::string        icon_image_alt;
-      double             low_flap_threshold;
-      std::string        notes;
-      std::string        notes_url;
-      double             notification_interval;
-      std::string        notification_period;
-      short              notify_on_downtime;
-      short              notify_on_flapping;
-      short              notify_on_recovery;
-      bool               retain_nonstatus_information;
-      bool               retain_status_information;
-                         HostService();
-			 HostService(const HostService& hs);
-      virtual            ~HostService();
-      HostService&       operator=(const HostService& hs);
-    };
-  }
+   public:
+    std::string        action_url;
+    bool               check_freshness;
+    std::string        display_name;
+    double             first_notification_delay;
+    double             freshness_threshold;
+    double             high_flap_threshold;
+    int                host_id;
+    std::string        icon_image;
+    std::string        icon_image_alt;
+    double             low_flap_threshold;
+    std::string        notes;
+    std::string        notes_url;
+    double             notification_interval;
+    std::string        notification_period;
+    short              notify_on_downtime;
+    short              notify_on_flapping;
+    short              notify_on_recovery;
+    bool               retain_nonstatus_information;
+    bool               retain_status_information;
+                       HostService();
+                       HostService(const HostService& hs);
+    virtual            ~HostService();
+    HostService&       operator=(const HostService& hs);
+  };
 }
 
-#endif /* !HOST_SERVICE_H_ */
+#endif /* !EVENTS_HOST_SERVICE_H_ */

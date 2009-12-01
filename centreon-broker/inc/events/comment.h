@@ -21,48 +21,45 @@
 #ifndef EVENTS_COMMENT_H_
 # define EVENTS_COMMENT_H_
 
-# include <ctime> // for time_t
+# include <time.h>         // for time_t
 # include <string>
 # include "events/event.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class Comment comment.h "events/comment.h"
+   *  \brief Represents a comment inside Nagios.
+   *
+   *  Some user can make a comment on whatever objects he wants.
+   */
+  class                Comment : public Event
   {
-    /**
-     *  \class Comment comment.h "events/comment.h"
-     *  \brief Represents a comment inside Nagios.
-     *
-     *  XXX : need fix
-     */
-    class                Comment : public Event
-    {
-     private:
-      void               InternalCopy(const Comment& comment);
+   private:
+    void               InternalCopy(const Comment& comment);
 
-     public:
-      std::string        author;
-      std::string        comment;
-      time_t             comment_time;
-      short              comment_type;
-      time_t             deletion_time;
-      time_t             entry_time;
-      short              entry_type;
-      time_t             expire_time;
-      bool               expires;
-      std::string        host;
-      int                internal_id;
-      bool               persistent;
-      std::string        service;
-      short              source;
-      short              type;
-                         Comment();
-                         Comment(const Comment& comment);
-                         ~Comment();
-      Comment&           operator=(const Comment& comment);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    std::string        author;
+    std::string        comment;
+    time_t             comment_time;
+    short              comment_type;
+    time_t             deletion_time;
+    time_t             entry_time;
+    short              entry_type;
+    time_t             expire_time;
+    bool               expires;
+    std::string        host;
+    int                internal_id;
+    bool               persistent;
+    std::string        service;
+    short              source;
+    short              type;
+                       Comment();
+                       Comment(const Comment& comment);
+                       ~Comment();
+    Comment&           operator=(const Comment& comment);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_COMMENT_H_ */

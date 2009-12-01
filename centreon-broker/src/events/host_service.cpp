@@ -20,7 +20,7 @@
 
 #include "events/host_service.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *

@@ -20,7 +20,7 @@
 
 #include "events/acknowledgement.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -39,7 +39,7 @@ using namespace CentreonBroker::Events;
  *  \param[in] ack Object to copy from.
  *
  *  \see Acknowledgement(const Acknowledgement&)
- *  \see operator=
+ *  \see operator=(const Acknowledgement&)
  */
 void Acknowledgement::InternalCopy(const Acknowledgement& ack)
 {
@@ -117,7 +117,7 @@ Acknowledgement& Acknowledgement::operator=(const Acknowledgement& ack)
  *
  *  \return Event::ACKNOWLEDGEMENT
  */
-int Acknowledgement::GetType() const throw ()
+int Acknowledgement::GetType() const
 {
   return (Event::ACKNOWLEDGEMENT);
 }

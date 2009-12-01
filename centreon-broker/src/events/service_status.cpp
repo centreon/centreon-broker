@@ -20,7 +20,7 @@
 
 #include "events/service_status.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -105,7 +105,7 @@ ServiceStatus& ServiceStatus::operator=(const ServiceStatus& ss)
  *
  *  \return Event::SERVICESTATUS
  */
-int ServiceStatus::GetType() const throw ()
+int ServiceStatus::GetType() const
 {
   return (Event::SERVICESTATUS);
 }

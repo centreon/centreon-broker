@@ -20,7 +20,7 @@
 
 #include "events/status.h"
 
-using namespace CentreonBroker::Events;
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -36,13 +36,13 @@ using namespace CentreonBroker::Events;
  *
  *  \param[in] s Object to copy data from.
  */
-void Status::InternalCopy(const Status& s) throw ()
+void Status::InternalCopy(const Status& s)
 {
-  this->event_handler_enabled = s.event_handler_enabled;
+  this->event_handler_enabled      = s.event_handler_enabled;
   this->failure_prediction_enabled = s.failure_prediction_enabled;
-  this->flap_detection_enabled = s.flap_detection_enabled;
-  this->notifications_enabled = s.notifications_enabled;
-  this->process_performance_data = s.process_performance_data;
+  this->flap_detection_enabled     = s.flap_detection_enabled;
+  this->notifications_enabled      = s.notifications_enabled;
+  this->process_performance_data   = s.process_performance_data;
   return ;
 }
 

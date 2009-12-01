@@ -21,37 +21,42 @@
 #ifndef EVENTS_LOG_H_
 # define EVENTS_LOG_H_
 
-# include <ctime> // for time_t
+# include <time.h>         // for time_t
 # include <string>
 # include "events/event.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class Log log.h "events/log.h"
+   *  \brief Nagios-generated log message.
+   *
+   *  From time to time, Nagios generates a log message. These messages can be
+   *  useful, especially when investigating problems. This class holds all
+   *  information related to a log entry.
+   */
+  class                Log : public Event
   {
-    class                Log : public Event
-    {
-     private:
-      void               InternalCopy(const Log& log);
+   private:
+    void               InternalCopy(const Log& log);
 
-     public:
-      time_t             c_time;
-      std::string        host;
-      int                msg_type;
-      std::string        notification_cmd;
-      std::string        notification_contact;
-      std::string        output;
-      int                retry;
-      std::string        service;
-      std::string        status;
-      std::string        type;
-                         Log();
-                         Log(const Log& log);
-                         ~Log();
-      Log&               operator=(const Log& log);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    time_t             c_time;
+    std::string        host;
+    int                msg_type;
+    std::string        notification_cmd;
+    std::string        notification_contact;
+    std::string        output;
+    int                retry;
+    std::string        service;
+    std::string        status;
+    std::string        type;
+                       Log();
+                       Log(const Log& log);
+                       ~Log();
+    Log&               operator=(const Log& log);
+    int                GetType() const;
+  };
 }
 
 #endif /* !EVENTS_LOG_H_ */

@@ -23,26 +23,23 @@
 
 # include "events/group.h"
 
-namespace           CentreonBroker
+namespace         Events
 {
-  namespace         Events
+  /**
+   *  \class ServiceGroup service_group.h "events/service_group.h"
+   *  \brief Represents a group of services within Nagios.
+   *
+   *  Group of services within Nagios.
+   */
+  class           ServiceGroup : public Group
   {
-    /**
-     *  \class ServiceGroup service_group.h "events/service_group.h"
-     *  \brief Represents a group of services within Nagios.
-     *
-     *  XXX : need fix
-     */
-    class           ServiceGroup : public Group
-    {
-     public:
-                    ServiceGroup();
-                    ServiceGroup(const ServiceGroup& service_group);
-                    ~ServiceGroup();
-      ServiceGroup& operator=(const ServiceGroup& service_group);
-      int           GetType() const throw ();
-    };
-  }
+   public:
+                  ServiceGroup();
+                  ServiceGroup(const ServiceGroup& service_group);
+                  ~ServiceGroup();
+    ServiceGroup& operator=(const ServiceGroup& service_group);
+    int           GetType() const;
+  };
 }
 
 #endif /* !EVENTS_SERVICE_GROUP_H_ */

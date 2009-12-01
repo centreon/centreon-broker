@@ -18,54 +18,51 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef DOWNTIME_H_
-# define DOWNTIME_H_
+#ifndef EVENTS_DOWNTIME_H_
+# define EVENTS_DOWNTIME_H_
 
-# include <ctime> // for time_t
+# include <time.h>         // for time_t
 # include <string>
 # include "events/event.h"
 
-namespace                CentreonBroker
+namespace              Events
 {
-  namespace              Events
+  /**
+   *  \class Downtime downtime.h "events/downtime.h"
+   *  \brief Represents a downtime inside Nagios.
+   *
+   *  A Nagios user may have the ability to define downtimes, which are time
+   *  periods inside which some host or service shall not generate any
+   *  notification. This can occur when an admin sys perform maintenance on a
+   *  server for example.
+   */
+  class                Downtime : public Event
   {
-    /**
-     *  \class Downtime downtime.h "events/downtime.h"
-     *  \brief Represents a downtime inside Nagios.
-     *
-     *  A Nagios user may have the ability to define downtimes, which are time
-     *  periods inside which some host or service shall not generate any
-     *  notification. This can occur when an admin sys perform maintenance on a
-     *  server for example.
-     */
-    class                Downtime : public Event
-    {
-     private:
-      void               InternalCopy(const Downtime& downtime);
+   private:
+    void               InternalCopy(const Downtime& downtime);
 
-     public:
-      std::string        author;
-      std::string        comment;
-      short              downtime_type;
-      time_t             duration;
-      time_t             end_time;
-      time_t             entry_time;
-      bool               fixed;
-      std::string        host;
-      int                id;
-      std::string        service;
-      time_t             start_time;
-      int                triggered_by;
-      short              type;
-      bool               was_cancelled;
-      bool               was_started;
-                         Downtime();
-			 Downtime(const Downtime& downtime);
-			 ~Downtime();
-      Downtime&          operator=(const Downtime& downtime);
-      int                GetType() const throw ();
-    };
-  }
+   public:
+    std::string        author;
+    std::string        comment;
+    short              downtime_type;
+    time_t             duration;
+    time_t             end_time;
+    time_t             entry_time;
+    bool               fixed;
+    std::string        host;
+    int                id;
+    std::string        service;
+    time_t             start_time;
+    int                triggered_by;
+    short              type;
+    bool               was_cancelled;
+    bool               was_started;
+                       Downtime();
+                       Downtime(const Downtime& downtime);
+                       ~Downtime();
+    Downtime&          operator=(const Downtime& downtime);
+    int                GetType() const;
+  };
 }
 
-#endif /* !DOWNTIME_H_ */
+#endif /* !EVENTS_DOWNTIME_H_ */
