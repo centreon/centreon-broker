@@ -26,8 +26,7 @@
 
 // Forward declaration.
 namespace               Interface
-{ namespace             Source
-  { class               Source; } }
+{ class                 Source; }
 
 namespace               Input
 {
@@ -44,7 +43,7 @@ namespace               Input
   class                 Feeder
   {
    private:
-    std::auto_ptr<Interface::Source::Source>
+    std::auto_ptr<Interface::Source>
                         source_;
     Concurrency::Thread thread_;
                         Feeder(const Feeder& feeder);
@@ -54,7 +53,7 @@ namespace               Input
                         Feeder();
                         ~Feeder();
     void                operator()();
-    void                Init(Interface::Source::Source* source);
+    void                Init(Interface::Source* source);
   };
 }
 

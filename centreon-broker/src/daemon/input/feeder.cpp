@@ -21,7 +21,7 @@
 #include <assert.h>
 #include <stdlib.h>                  // for abort
 #include "input/feeder.h"
-#include "interface/source/source.h"
+#include "interface/source.h"
 #include "multiplexing/publisher.h"
 
 using namespace Input;
@@ -133,7 +133,7 @@ void Feeder::operator()()
  *
  *  \param[in] source Event source object.
  */
-void Feeder::Init(Interface::Source::Source* source)
+void Feeder::Init(Interface::Source* source)
 {
   this->source_.reset(source);
   try

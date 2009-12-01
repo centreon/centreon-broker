@@ -28,10 +28,8 @@ namespace                     Configuration
 namespace                     Interface
 {
   // Forward declarations.
-  namespace                   Destination
-  { class                     Destination; }
-  namespace                   Source
-  { class                     Source; }
+  class                       Destination;
+  class                       Source;
   class                       SourceDestination;
 
   /**
@@ -41,8 +39,8 @@ namespace                     Interface
    *  The interface factory takes a configuration in input and produce the
    *  corresponding interface object.
    *
-   *  \see Source::Source
-   *  \see Destination::Destination
+   *  \see Source
+   *  \see Destination
    *  \see SourceDestination
    */
   class                       Factory
@@ -54,9 +52,9 @@ namespace                     Interface
     Factory&                  operator=(const Factory& factory);
 
    public:
-    Destination::Destination* Destination(const Configuration::Interface& i);
+    Interface::Destination*   Destination(const Configuration::Interface& i);
     static Factory&           Instance();
-    Source::Source*           Source(const Configuration::Interface& i);
+    Interface::Source*        Source(const Configuration::Interface& i);
     Interface::SourceDestination*
                               SourceDestination(const Configuration::Interface& i);
   };

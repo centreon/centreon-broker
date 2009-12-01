@@ -18,9 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include "interface/source/source.h"
+#include "interface/destination.h"
 
-using namespace Interface::Source;
+using namespace Interface;
 
 /**************************************
 *                                     *
@@ -29,37 +29,36 @@ using namespace Interface::Source;
 **************************************/
 
 /**
- *  Source default constructor.
+ *  Destination default constructor.
  */
-Source::Source() {}
+Destination::Destination() {}
 
 /**
- *  \brief Source copy constructor.
+ *  \brief Destination copy constructor.
  *
- *  As Source is an interface object with no data members, the copy constructor
- *  does nothing.
+ *  As Destination is an interface object with no data members, the copy
+ *  constructor does nothing.
  *
- *  \param[in] source Unused.
+ *  \param[in] destination Unused.
  */
-Source::Source(const Source& source)
+Destination::Destination(const Destination& destination)
 {
-  (void)source;
+  (void)destination;
 }
 
 /**
  *  \brief Assignment operator overload.
  *
- *  As Source is an interface object with no data members, the assignment
+ *  As Destination is an interface object with no data members, the assignment
  *  operator does nothing.
- *  \par Safety No throw guarantee.
  *
- *  \param[in] source Unused.
+ *  \param[in] destination Unused.
  *
  *  \return *this
  */
-Source& Source::operator=(const Source& source)
+Destination& Destination::operator=(const Destination& destination)
 {
-  (void)source;
+  (void)destination;
   return (*this);
 }
 
@@ -70,6 +69,6 @@ Source& Source::operator=(const Source& source)
 **************************************/
 
 /**
- *  Source destructor.
+ *  Destination destructor.
  */
-Source::~Source() {}
+Destination::~Destination() {}

@@ -77,8 +77,7 @@ Factory& Factory::operator=(const Factory& factory)
  *
  *  \throw Exception Destination creation failed.
  */
-Destination::Destination* Factory::Destination(
-                            const Configuration::Interface& i)
+Destination* Factory::Destination(const Configuration::Interface& i)
 {
 }
 
@@ -108,7 +107,7 @@ Factory& Factory::Instance()
  *
  *  \throw Exception Source creation failed.
  */
-Source::Source* Factory::Source(const Configuration::Interface& i)
+Source* Factory::Source(const Configuration::Interface& i)
 {
 }
 

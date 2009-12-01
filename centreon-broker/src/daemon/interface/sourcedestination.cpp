@@ -44,7 +44,7 @@ SourceDestination::SourceDestination() {}
  *  \see SourceDestination::SourceDestination()
  */
 SourceDestination::SourceDestination(const SourceDestination& sd)
-  : Source::Source(sd), Destination::Destination(sd) {}
+  : Source(sd), Destination(sd) {}
 
 /**
  *  \brief Assignment operator overload.
