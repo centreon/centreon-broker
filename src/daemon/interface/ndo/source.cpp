@@ -19,12 +19,255 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>                 // for abort
+#include <map>
+#include <stdlib.h>                 // for abort, strtod, strtol
+#include <string.h>                 // for strcmp
+#include "events/acknowledgement.h"
+#include "events/comment.h"
+#include "events/downtime.h"
+#include "events/host.h"
+#include "events/host_group.h"
+#include "events/host_status.h"
+#include "events/program_status.h"
+#include "events/service.h"
+#include "events/service_status.h"
 #include "interface/ndo/internal.h"
 #include "interface/ndo/source.h"
 #include "io/stream.h"
+#include "nagios/protoapi.h"
 
 using namespace Interface::NDO;
+
+/**************************************
+*                                     *
+*          Static Functions           *
+*                                     *
+**************************************/
+
+/**
+ *  Set a boolean within an object.
+ */
+template <typename T>
+static void set_boolean(T& t,
+                        const typename KeyField<T>::UHandler& field,
+                        const char* str)
+{
+  t.*(field.field_bool) = strtol(str, NULL, 0);
+  return ;
+}
+
+/**
+ *  Set a double within an object.
+ */
+template <typename T>
+static void set_double(T& t,
+                       const typename KeyField<T>::UHandler& field,
+                       const char* str)
+{
+  t.*(field.field_double) = strtod(str, NULL);
+  return ;
+}
+
+/**
+ *  Set an integer within an object.
+ */
+template <typename T>
+static void set_integer(T& t,
+                        const typename KeyField<T>::UHandler& field,
+                        const char* str)
+{
+  t.*(field.field_int) = strtol(str, NULL, 0);
+  return ;
+}
+
+/**
+ *  Set a short within an object.
+ */
+template <typename T>
+static void set_short(T& t,
+                      const typename KeyField<T>::UHandler& field,
+                      const char* str)
+{
+  t.*(field.field_short) = strtol(str, NULL, 0);
+  return ;
+}
+
+/**
+ *  Set a string within an object.
+ */
+template <typename T>
+static void set_string(T& t,
+                       const typename KeyField<T>::UHandler& field,
+                       const char* str)
+{
+  t.*(field.field_string) = str;
+  return ;
+}
+
+/**
+ *  Set a time_t within an object.
+ */
+template <typename T>
+static void set_timet(T& t,
+                      const typename KeyField<T>::UHandler& field,
+                      const char* str)
+{
+  t.*(field.field_timet) = strtol(str, NULL, 0);
+  return ;
+}
+
+/**
+ *  Execute an undefined setter.
+ */
+template <typename T>
+static void set_undefined(T& t,
+                          const typename KeyField<T>::UHandler& field,
+                          const char* str)
+{
+  field.field_undefined.setter(t, str);
+  return ;
+}
+
+/**************************************
+*                                     *
+*             Field Maps              *
+*                                     *
+**************************************/
+
+/**
+ *  Associate a static function to a field that should be set.
+ */
+template <typename T>
+struct   Field
+{
+  const typename KeyField<T>::UHandler* param;
+  void (* ptr)(T&, const typename KeyField<T>::UHandler&, const char*);
+};
+
+/**
+ *  Static protocol maps.
+ */
+static std::map<int, Field<Events::Acknowledgement> > acknowledgement_map;
+static std::map<int, Field<Events::Comment> >         comment_map;
+static std::map<int, Field<Events::Downtime> >        downtime_map;
+static std::map<int, Field<Events::Host> >            host_map;
+static std::map<int, Field<Events::HostGroup> >       host_group_map;
+static std::map<int, Field<Events::HostStatus> >      host_status_map;
+static std::map<int, Field<Events::ProgramStatus> >   program_status_map;
+static std::map<int, Field<Events::Service> >         service_map;
+static std::map<int, Field<Events::ServiceStatus> >   service_status_map;
+
+/**************************************
+*                                     *
+*          Maps Initializer           *
+*                                     *
+**************************************/
+
+/**
+ *  This class only holds a constructor which is used with the help of a static
+ *  object to build the protocol maps.
+ */
+class  MapInitializer
+{
+ private:
+  template <typename T>
+  void Initialize(const KeyField<T> fields[],
+                  std::map<int, Field<T> >& map)
+  {
+    for (unsigned int i = 0; fields[i].type; ++i)
+      {
+        Field<T>& field(map[fields[i].key]);
+
+        field.param = &fields[i].field;
+        switch (fields[i].type)
+          {
+           case 'b':
+            field.ptr = &set_boolean<T>;
+            break ;
+           case 'd':
+            field.ptr = &set_double<T>;
+            break ;
+           case 'i':
+            field.ptr = &set_integer<T>;
+            break ;
+           case 's':
+            field.ptr = &set_short<T>;
+            break ;
+           case 'S':
+            field.ptr = &set_string<T>;
+            break ;
+           case 't':
+            field.ptr = &set_timet<T>;
+            break ;
+           case 'u':
+            field.ptr = &set_undefined<T>;
+            break ;
+           default:
+            assert(false);
+            abort();
+          }
+      }
+  }
+
+ public:
+       MapInitializer()
+  {
+    this->Initialize<Events::Acknowledgement>(acknowledgement_fields,
+                                              acknowledgement_map);
+    this->Initialize<Events::Comment>(comment_fields, comment_map);
+    this->Initialize<Events::Downtime>(downtime_fields, downtime_map);
+    this->Initialize<Events::Host>(host_fields, host_map);
+    this->Initialize<Events::HostGroup>(host_group_fields, host_group_map);
+    this->Initialize<Events::HostStatus>(host_status_fields, host_status_map);
+    this->Initialize<Events::ProgramStatus>(program_status_fields,
+                                            program_status_map);
+    this->Initialize<Events::Service>(service_fields, service_map);
+    this->Initialize<Events::ServiceStatus>(service_status_fields,
+                                            service_status_map);
+  }
+};
+
+static MapInitializer map_initializer;
+
+/**************************************
+*                                     *
+*           Static Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Extract event parameters from the data stream.
+ */
+template <typename T>
+T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
+{
+  std::auto_ptr<T> event(new T);
+  int key;
+  const char* key_str;
+  const char* value_str;
+
+  while (1)
+    {
+      key_str = stream.Line();
+      if (key_str)
+        {
+          typename std::map<int, Field<T> >::const_iterator it;
+
+          key = strtol(key_str, NULL, 10);
+          value_str = strchr(key_str, '=');
+          value_str = (value_str ? value_str + 1 : "");
+          it = field_map.find(key);
+          if (it != field_map.end())
+            (*it->second.ptr)(*event.get(), *it->second.param, value_str);
+        }
+      else
+        {
+          event.reset();
+          break ;
+        }
+    }
+  return (event.release());
+}
 
 /**************************************
 *                                     *
@@ -41,7 +284,7 @@ using namespace Interface::NDO;
  *
  *  \param[in] source Unused.
  */
-Source::Source(const Source& source) : Interface::Source(source)
+Source::Source(const Source& source) : Interface::Source(source), stream_(NULL)
 {
   (void)source;
   assert(false);
@@ -94,17 +337,81 @@ Source::~Source() {}
  */
 void Source::Close()
 {
-  this->stream_->Close();
+  this->stream_.Close();
   return ;
 }
 
 /**
  *  \brief Get the next available event.
  *
- *  Extract the next available event on the input stream.
+ *  Extract the next available event on the input stream, NULL if the stream is
+ *  closed.
  *
- *  \return Next available event.
+ *  \return Next available event, NULL is stream is closed.
  */
 Events::Event* Source::Event()
 {
+  Events::Event* event;
+  const char* line;
+
+  // Get the next non-empty line.
+  do
+    {
+      line = this->stream_.Line();
+    } while (line && !line[0]);
+
+  if (line)
+    {
+      if (!strcmp(line, NDO_API_HELLO))
+        ; // XXX : initialization
+      else
+        {
+          int id;
+
+          id = strtol(line, NULL, 10);
+          switch (id)
+            {
+             case NDO_API_ACKNOWLEDGEMENTDATA:
+              event = HandleEvent<Events::Acknowledgement>(this->stream_,
+                        acknowledgement_map);
+              break ;
+             case NDO_API_COMMENTDATA:
+	      event = HandleEvent<Events::Comment>(this->stream_, comment_map);
+	      break ;
+             case NDO_API_DOWNTIMEDATA:
+              event = HandleEvent<Events::Downtime>(this->stream_,
+                        downtime_map);
+	      break ;
+             case NDO_API_HOSTDEFINITION:
+	      event = HandleEvent<Events::Host>(this->stream_, host_map);
+	      break ;
+             case NDO_API_HOSTGROUPDEFINITION:
+	      event = HandleEvent<Events::HostGroup>(this->stream_,
+                        host_group_map);
+	      break ;
+             case NDO_API_HOSTSTATUSDATA:
+	      event = HandleEvent<Events::HostStatus>(this->stream_,
+                        host_status_map);
+	      break ;
+             case NDO_API_LOGDATA:
+	      // XXX
+	      break ;
+             case NDO_API_PROGRAMSTATUSDATA:
+	      event = HandleEvent<Events::ProgramStatus>(this->stream_,
+                        program_status_map);
+	      break ;
+             case NDO_API_SERVICEDEFINITION:
+	      event = HandleEvent<Events::Service>(this->stream_,
+                        service_map);
+	      break ;
+             case NDO_API_SERVICESTATUSDATA:
+	      event = HandleEvent<Events::ServiceStatus>(this->stream_,
+                        service_status_map);
+              break ;
+            }
+        }
+    }
+  else
+    event = NULL;
+  return (event);
 }

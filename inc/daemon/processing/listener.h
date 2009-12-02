@@ -22,6 +22,7 @@
 # define PROCESSING_LISTENER_H_
 
 # include <memory>               // for auto_ptr
+# include "concurrency/mutex.h"
 # include "concurrency/thread.h"
 # include "io/acceptor.h"
 
@@ -46,8 +47,10 @@ namespace                       Processing
 
    private:
     std::auto_ptr<IO::Acceptor> acceptor_;
+    bool                        init_;
     Protocol                    protocol_;
     Concurrency::Thread         thread_;
+    Concurrency::Mutex          threadm_;
                                 Listener(const Listener& listener);
     Listener&                   operator=(const Listener& listener);
 

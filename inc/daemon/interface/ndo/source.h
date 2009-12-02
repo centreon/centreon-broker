@@ -21,12 +21,8 @@
 #ifndef INTERFACE_NDO_SOURCE_H_
 # define INTERFACE_NDO_SOURCE_H_
 
-# include <memory>             // for auto_ptr
 # include "interface/source.h"
-
-// Forward declaration.
-namespace                       IO
-{ class                         Stream; }
+# include "io/text.h"
 
 namespace                       Interface
 {
@@ -42,7 +38,7 @@ namespace                       Interface
     class                       Source : public Interface::Source
     {
      private:
-      std::auto_ptr<IO::Stream> stream_;
+      IO::Text                  stream_;
                                 Source(const Source& source);
       Source&                   operator=(const Source& source);
 

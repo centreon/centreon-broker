@@ -85,81 +85,45 @@ Manager& Manager::operator=(const Manager& manager)
 **************************************/
 
 /**
- *  Delete a source identified by its name.
- *
- *  \param[in] name Name of the source to delete.
- */
-void Manager::Delete(const std::string& name)
-{
-  std::list<std::pair<std::string, Feeder*> >::iterator end1;
-  std::list<std::pair<std::string, Listener*> >::iterator end2;
-  std::list<std::pair<std::string, Feeder*> >::iterator it1;
-  std::list<std::pair<std::string, Listener*> >::iterator it2;
-  Concurrency::Lock lock(this->mutex_);
-
-  // Try to find name among feeders.
-  end1 = this->feeders_.end();
-  for (it1 = this->feeders_.begin(); it1 != end1; ++it1)
-    if (it1->first == name)
-      {
-	delete (it1->second);
-	this->feeders_.erase(it1);
-	return ;
-      }
-
-  // Try to find name among listeners.
-  end2 = this->listeners_.end();
-  for (it2 = this->listeners_.begin(); it2 != end2; ++it2)
-    if (it2->first == name)
-      {
-	delete (it2->second);
-	this->listeners_.erase(it2);
-	break ;
-      }
-
-  return ;
-}
-
-/**
- *  Delete a source identified by its Feeder handle (for internal use).
+ *  Delete a source identified by its Feeder handle.
  *
  *  \param[in] feeder Handle of the feeder to delete.
  */
 void Manager::Delete(const Feeder* feeder)
 {
-  std::list<std::pair<std::string, Feeder*> >::iterator end;
-  std::list<std::pair<std::string, Feeder*> >::iterator it;
+  std::list<Feeder*>::iterator end;
+  std::list<Feeder*>::iterator it;
   Concurrency::Lock lock(this->mutex_);
 
   end = this->feeders_.end();
   for (it = this->feeders_.begin(); it != end; ++it)
-    if (it->second == feeder)
+    if (*it == feeder)
       {
-	delete (it->second);
-	this->feeders_.erase(it);
-	break ;
+        delete (*it);
+        this->feeders_.erase(it);
+        break ;
       }
   return ;
 }
 
 /**
- *  Delete a source identified by its Listener handle (for internal use).
+ *  Delete a source identified by its Listener handle.
  *
  *  \param[in] listener Handle of the listener to delete.
  */
 void Manager::Delete(const Listener* listener)
 {
-  std::list<std::pair<std::string, Listener*> >::iterator end;
-  std::list<std::pair<std::string, Listener*> >::iterator it;
+  std::list<Listener*>::iterator end;
+  std::list<Listener*>::iterator it;
   Concurrency::Lock lock(this->mutex_);
 
   end = this->listeners_.end();
   for (it = this->listeners_.begin(); it != end; ++it)
-    if (it->second == listener)
+    if (*it == listener)
       {
-	delete (it->second);
-	this->listeners_.erase(it);
-	break ;
+        delete (*it);
+        this->listeners_.erase(it);
+        break ;
       }
   return ;
 }
@@ -180,18 +144,17 @@ Manager& Manager::Instance()
 }
 
 /**
- *  \brief Manage an event feeder.
+ *  \brief Manage an event feeder (internal use).
  *
  *  The Feeder should be managed before it is started.
  *
  *  \param[in] feeder Feeder to manager.
- *  \param[in] name   Name of the new feeder.
  */
-void Manager::Manage(Feeder* feeder, const std::string& name)
+void Manager::Manage(Feeder* feeder)
 {
   Concurrency::Lock lock(this->mutex_);
 
-  this->feeders_.push_back(std::pair<std::string, Feeder*>(name, feeder));
+  this->feeders_.push_back(feeder);
   return ;
 }
 
@@ -201,15 +164,11 @@ void Manager::Manage(Feeder* feeder, const std::string& name)
  *  The Listener should be managed before it is started.
  *
  *  \param[in] listener Listener to manage.
- *  \param[in] name     Name of the new listener.
- *
- *  \throw Exception Name already exists.
  */
-void Manager::Manage(Listener* listener, const std::string& name)
+void Manager::Manage(Listener* listener)
 {
   Concurrency::Lock lock(this->mutex_);
 
-  this->listeners_.push_back(
-    std::pair<std::string, Listener*>(name, listener));
+  this->listeners_.push_back(listener);
   return ;
 }

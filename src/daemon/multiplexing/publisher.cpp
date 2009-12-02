@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include "concurrency/lock.h"
+#include "events/event.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
 
@@ -104,15 +105,23 @@ Publisher& Publisher::Instance()
 void Publisher::Publish(Events::Event* event)
 {
   std::list<Subscriber*>::iterator end;
+  std::list<Subscriber*>::iterator it;
   Concurrency::Lock lock(this->subscribersm_);
 
   end = this->subscribers_.end();
-  for (std::list<Subscriber*>::iterator it = this->subscribers_.begin();
-       it != end;
-       ++it)
-    // XXX : does need to register events ?
-    // XXX : event discrimination
-    (*it)->OnEvent(event);
+  it = this->subscribers_.begin();
+  if (it != end)
+    {
+      do
+	{
+	  // XXX : does need to register events ?
+	  // XXX : event discrimination
+	  (*it)->OnEvent(event);
+	  ++it;
+	} while (it != end);
+    }
+  else
+    delete (event);
   return ;
 }
 

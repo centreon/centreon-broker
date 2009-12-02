@@ -85,6 +85,15 @@ Text::Text(Stream* stream)
 Text::~Text() {}
 
 /**
+ *  Close the text stream.
+ */
+void Text::Close()
+{
+  this->stream_->Close();
+  return ;
+}
+
+/**
  *  Extract the next available text line.
  *
  *  \return Next available line, NULL if no more line is available.

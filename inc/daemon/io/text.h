@@ -48,6 +48,7 @@ namespace                 IO
    public:
                           Text(Stream* stream);
                           ~Text();
+    void                  Close();
     const char*           Line();
     unsigned int          Receive(void* buffer, unsigned int size);
     void                  Release();

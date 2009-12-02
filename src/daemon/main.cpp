@@ -18,7 +18,23 @@
 **  For more information : contact@centreon.com
 */
 
+#include <unistd.h>
+#include "io/net/ipv4.h"
+#include "processing/listener.h"
+#include "processing/manager.h"
+
 int main()
 {
+  std::auto_ptr<IO::Net::IPv4Acceptor> ipv4(new IO::Net::IPv4Acceptor);
+  std::auto_ptr<Processing::Listener> listener(new Processing::Listener);
+
+  ipv4->Listen(5667);
+  listener->Init(ipv4.get(), Processing::Listener::NDO);
+  ipv4.release();
+  Processing::Manager::Instance().Manage(listener.get());
+
+  sleep(4);
+
+  //Processing::Manager::Instance().Delete(listener.release());
   return (0);
 }

@@ -19,7 +19,8 @@
 */
 
 #include <sstream>
-#include <string.h>
+#include <stdlib.h>                 // for strtol
+#include <string.h>                 // for strcspn, strncmp
 #include "events/acknowledgement.h"
 #include "events/comment.h"
 #include "events/downtime.h"
