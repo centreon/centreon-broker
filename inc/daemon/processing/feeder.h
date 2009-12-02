@@ -22,6 +22,7 @@
 # define PROCESSING_FEEDER_H_
 
 # include <memory>               // for auto_ptr
+# include "concurrency/mutex.h"
 # include "concurrency/thread.h"
 
 // Forward declaration.
@@ -43,9 +44,11 @@ namespace               Processing
   class                 Feeder
   {
    private:
+    bool                init_;
     std::auto_ptr<Interface::Source>
                         source_;
     Concurrency::Thread thread_;
+    Concurrency::Mutex  threadm_;
                         Feeder(const Feeder& feeder);
     Feeder&             operator=(const Feeder& feeder);
 

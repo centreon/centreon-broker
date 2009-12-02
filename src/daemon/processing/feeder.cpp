@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <stdlib.h>                  // for abort
+#include "concurrency/lock.h"
 #include "interface/source.h"
 #include "multiplexing/publisher.h"
 #include "processing/feeder.h"
@@ -76,7 +77,7 @@ Feeder& Feeder::operator=(const Feeder& feeder)
 /**
  *  Feeder default constructor.
  */
-Feeder::Feeder() {}
+Feeder::Feeder() : init_(false) {}
 
 /**
  *  Feeder destructor.
@@ -85,13 +86,14 @@ Feeder::~Feeder()
 {
   try
     {
-      if (this->source_.get())
+      Concurrency::Lock lock(this->threadm_);
+
+      if (this->init_)
         {
-          // XXX : is this thread safe ?
-          this->source_->Close();
-          // Necessary to join the thread, because the destructor might end
-          // before the thread terminates, leading to undefined behavior.
+          if (this->source_.get())
+            this->source_->Close();
           this->thread_.Join();
+          this->init_ = false;
         }
     }
   catch (...) {}
@@ -117,7 +119,18 @@ void Feeder::operator()()
           event.release();
           event.reset(this->source_->Event());
         }
-      Manager::Instance().Delete(this);
+    }
+  catch (...) {}
+  try
+    {
+      // Mutex already locked == destructor being run.
+      if (this->threadm_.TryLock())
+        {
+          this->init_ = false;
+          this->threadm_.Unlock();
+          try { Manager::Instance().Delete(this); }
+          catch (...) {}
+        }
     }
   catch (...) {}
   return ;
@@ -136,14 +149,25 @@ void Feeder::operator()()
  */
 void Feeder::Init(Interface::Source* source)
 {
+  bool registered;
+
   this->source_.reset(source);
   try
     {
+      Concurrency::Lock lock(this->threadm_);
+
+      registered = false;
+      Manager::Instance().Manage(this);
+      registered = true;
       this->thread_.Run(this);
+      this->init_ = true;
     }
   catch (...)
     {
       this->source_.release();
+      if (registered)
+        try { Manager::Instance().Delete(this); }
+        catch (...) {}
       throw ;
     }
   return ;
