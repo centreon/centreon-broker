@@ -24,11 +24,12 @@
 # include <list>
 # include "concurrency/mutex.h"
 
-namespace                Processing
+namespace                        Processing
 {
   // Forward declarations.
-  class                  Feeder;
-  class                  Listener;
+  class                          Feeder;
+  class                          HighAvailability;
+  class                          Listener;
 
   /**
    *  \class Manager manager.h "processing/manager.h"
@@ -37,23 +38,26 @@ namespace                Processing
    *  The Processing::Manager class handles objects that generates or store
    *  events. These objects are registered and deleted through this singleton.
    */
-  class                  Manager
+  class                          Manager
   {
    private:
-    std::list<Feeder*>   feeders_;
-    std::list<Listener*> listeners_;
-    Concurrency::Mutex   mutex_;
-                         Manager();
-                         Manager(const Manager& manager);
-                         ~Manager();
-    Manager&             operator=(const Manager& manager);
+    std::list<Feeder*>           feeders_;
+    std::list<HighAvailability*> ha_;
+    std::list<Listener*>         listeners_;
+    Concurrency::Mutex           mutex_;
+                                 Manager();
+                                 Manager(const Manager& manager);
+                                 ~Manager();
+    Manager&                     operator=(const Manager& manager);
 
    public:
-    void                 Delete(const Feeder* feeder);
-    void                 Delete(const Listener* listener);
-    static Manager&      Instance();
-    void                 Manage(Feeder* feeder);
-    void                 Manage(Listener* listener);
+    void                         Delete(const Feeder* feeder);
+    void                         Delete(const HighAvailability* ha);
+    void                         Delete(const Listener* listener);
+    static Manager&              Instance();
+    void                         Manage(Feeder* feeder);
+    void                         Manage(HighAvailability* ha);
+    void                         Manage(Listener* listener);
   };
 }
 

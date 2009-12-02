@@ -19,10 +19,11 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>             // for abort
+#include <stdlib.h>                       // for abort
 #include "concurrency/lock.h"
 #include "exception.h"
 #include "processing/feeder.h"
+#include "processing/high_availability.h"
 #include "processing/listener.h"
 #include "processing/manager.h"
 
@@ -96,6 +97,24 @@ Manager::~Manager()
           try { delete (feeder); }
           catch (...) {}
         }
+
+      // Delete all high availability objects.
+      while (1)
+        {
+          HighAvailability* ha;
+          {
+            std::list<HighAvailability*>::iterator it;
+            Concurrency::Lock lock(this->mutex_);
+
+            it = this->ha_.begin();
+            if (this->ha_.end() == it)
+              break ;
+            ha = *it;
+            this->ha_.pop_front();
+          }
+          try { delete (ha); }
+          catch (...) {}
+        }
     }
   catch (...) {}
 }
@@ -126,7 +145,7 @@ Manager& Manager::operator=(const Manager& manager)
 **************************************/
 
 /**
- *  Delete a source identified by its Feeder handle.
+ *  Delete a feeder identified by its Feeder handle.
  *
  *  \param[in] feeder Handle of the feeder to delete.
  */
@@ -148,7 +167,29 @@ void Manager::Delete(const Feeder* feeder)
 }
 
 /**
- *  Delete a source identified by its Listener handle.
+ *  Delete HA object identified by its handle.
+ *
+ *  \param[in] ha Handle of the HA object to delete.
+ */
+void Manager::Delete(const HighAvailability* ha)
+{
+  std::list<HighAvailability*>::iterator end;
+  std::list<HighAvailability*>::iterator it;
+  Concurrency::Lock lock(this->mutex_);
+
+  end = this->ha_.end();
+  for (it = this->ha_.begin(); it != end; ++it)
+    if (*it == ha)
+      {
+        delete (*it);
+        this->ha_.erase(it);
+        break ;
+      }
+  return ;
+}
+
+/**
+ *  Delete a listener identified by its Listener handle.
  *
  *  \param[in] listener Handle of the listener to delete.
  */
@@ -196,6 +237,21 @@ void Manager::Manage(Feeder* feeder)
   Concurrency::Lock lock(this->mutex_);
 
   this->feeders_.push_back(feeder);
+  return ;
+}
+
+/**
+ *  \brief Manage an high availability object.
+ *
+ *  The HighAvailability object should be managed before it is started.
+ *
+ *  \param[in] ha HighAvailability object to manage.
+ */
+void Manager::Manage(HighAvailability* ha)
+{
+  Concurrency::Lock lock(this->mutex_);
+
+  this->ha_.push_back(ha);
   return ;
 }
 
