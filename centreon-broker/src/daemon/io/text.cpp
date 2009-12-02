@@ -77,7 +77,10 @@ Text& Text::operator=(const Text& text)
  *  \param[in] stream Stream on which Text should be based.
  */
 Text::Text(Stream* stream)
-  : closed_(false), discard_(0), length_(0), stream_(stream) {}
+  : closed_(false), discard_(0), length_(0), stream_(stream)
+{
+  this->buffer_[0] = '\0';
+}
 
 /**
  *  Text destructor.

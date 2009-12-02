@@ -376,36 +376,36 @@ Events::Event* Source::Event()
                         acknowledgement_map);
               break ;
              case NDO_API_COMMENTDATA:
-	      event = HandleEvent<Events::Comment>(this->stream_, comment_map);
-	      break ;
+              event = HandleEvent<Events::Comment>(this->stream_, comment_map);
+              break ;
              case NDO_API_DOWNTIMEDATA:
               event = HandleEvent<Events::Downtime>(this->stream_,
                         downtime_map);
-	      break ;
+              break ;
              case NDO_API_HOSTDEFINITION:
-	      event = HandleEvent<Events::Host>(this->stream_, host_map);
-	      break ;
+              event = HandleEvent<Events::Host>(this->stream_, host_map);
+              break ;
              case NDO_API_HOSTGROUPDEFINITION:
-	      event = HandleEvent<Events::HostGroup>(this->stream_,
+              event = HandleEvent<Events::HostGroup>(this->stream_,
                         host_group_map);
-	      break ;
+              break ;
              case NDO_API_HOSTSTATUSDATA:
-	      event = HandleEvent<Events::HostStatus>(this->stream_,
+              event = HandleEvent<Events::HostStatus>(this->stream_,
                         host_status_map);
-	      break ;
+              break ;
              case NDO_API_LOGDATA:
-	      // XXX
-	      break ;
+              // XXX
+              break ;
              case NDO_API_PROGRAMSTATUSDATA:
-	      event = HandleEvent<Events::ProgramStatus>(this->stream_,
+              event = HandleEvent<Events::ProgramStatus>(this->stream_,
                         program_status_map);
-	      break ;
+              break ;
              case NDO_API_SERVICEDEFINITION:
-	      event = HandleEvent<Events::Service>(this->stream_,
+              event = HandleEvent<Events::Service>(this->stream_,
                         service_map);
-	      break ;
+              break ;
              case NDO_API_SERVICESTATUSDATA:
-	      event = HandleEvent<Events::ServiceStatus>(this->stream_,
+              event = HandleEvent<Events::ServiceStatus>(this->stream_,
                         service_status_map);
               break ;
             }

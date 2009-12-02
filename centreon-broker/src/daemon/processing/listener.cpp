@@ -84,15 +84,19 @@ Listener::Listener() : init_(false) {}
  */
 Listener::~Listener()
 {
-  Concurrency::Lock lock(this->threadm_);
-
-  if (this->init_)
+  try
     {
-      if (this->acceptor_.get())
-        this->acceptor_->Close();
-      this->thread_.Join();
-      this->init_ = false;
+      Concurrency::Lock lock(this->threadm_);
+
+      if (this->init_)
+        {
+          if (this->acceptor_.get())
+            this->acceptor_->Close();
+          this->thread_.Join();
+          this->init_ = false;
+        }
     }
+  catch (...) {}
 }
 
 /**
@@ -106,10 +110,10 @@ Listener::~Listener()
  */
 void Listener::operator()()
 {
+  std::auto_ptr<IO::Stream> stream;
+
   try
     {
-      std::auto_ptr<IO::Stream> stream;
-
       // Wait for initial connection.
       stream.reset(this->acceptor_->Accept());
 
@@ -125,14 +129,11 @@ void Listener::operator()()
           stream.release();
 
           // Create feeding thread.
-          std::auto_ptr<Processing::Feeder> feeder(new Processing::Feeder);
+          std::auto_ptr<Feeder> feeder(new Feeder);
 
           feeder->Init(source.get());
           source.release();
-
-          // Register new connections.
-          Manager::Instance().Manage(feeder.get());
-          feeder.release();
+	  feeder.release();
 
           // Wait for new connection.
           stream.reset(this->acceptor_->Accept());
@@ -145,9 +146,9 @@ void Listener::operator()()
       if (this->threadm_.TryLock())
         {
           this->init_ = false;
-          try { Processing::Manager::Instance().Delete(this); }
-          catch (...) {}
           this->threadm_.Unlock();
+          try { Manager::Instance().Delete(this); }
+          catch (...) {}
         }
     }
   catch (...) {}
@@ -175,7 +176,7 @@ void Listener::Init(IO::Acceptor* acceptor, Listener::Protocol proto)
       Concurrency::Lock lock(this->threadm_);
 
       registered = false;
-      Processing::Manager::Instance().Manage(this);
+      Manager::Instance().Manage(this);
       registered = true;
       this->thread_.Run(this);
       this->init_ = true;
@@ -184,10 +185,7 @@ void Listener::Init(IO::Acceptor* acceptor, Listener::Protocol proto)
     {
       this->acceptor_.release();
       if (registered)
-        try
-          {
-            Processing::Manager::Instance().Delete(this);
-          }
+        try { Manager::Instance().Delete(this); }
         catch (...) {}
       throw ;
     }

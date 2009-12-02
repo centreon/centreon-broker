@@ -57,7 +57,48 @@ Manager::Manager(const Manager& manager)
 /**
  *  Manager destructor.
  */
-Manager::~Manager() {}
+Manager::~Manager()
+{
+  try
+    {
+      // Delete all listeners.
+      while (1)
+        {
+          Listener* listener;
+          {
+            std::list<Listener*>::iterator it;
+            Concurrency::Lock lock(this->mutex_);
+
+            it = this->listeners_.begin();
+            if (this->listeners_.end() != it)
+              break ;
+            listener = *it;
+            this->listeners_.pop_front();
+          }
+          try { delete (listener); }
+          catch (...) {}
+        }
+
+      // Delete all feeders.
+      while (1)
+        {
+          Feeder* feeder;
+          {
+            std::list<Feeder*>::iterator it;
+            Concurrency::Lock lock(this->mutex_);
+
+            it = this->feeders_.begin();
+            if (this->feeders_.end() == it)
+              break ;
+            feeder = *it;
+            this->feeders_.pop_front();
+          }
+          try { delete (feeder); }
+          catch (...) {}
+        }
+    }
+  catch (...) {}
+}
 
 /**
  *  \brief Assignment operator overload.
