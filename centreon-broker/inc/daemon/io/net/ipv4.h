@@ -21,6 +21,7 @@
 #ifndef IO_NET_IPV4_H_
 # define IO_NET_IPV4_H_
 
+# include <stddef.h>        // for NULL
 # include "io/acceptor.h"
 # include "io/net/socket.h"
 
