@@ -18,44 +18,33 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CONCURRENCY_THREAD_H_
-# define CONCURRENCY_THREAD_H_
-
-# include <stddef.h>    // for NULL
-# include <sys/types.h> // for pthread_t
+#ifndef CONCURRENCY_THREAD_LISTENER_H_
+# define CONCURRENCY_THREAD_LISTENER_H_
 
 namespace           Concurrency
 {
   // Forward declaration.
-  class             ThreadListener;
+  class             Thread;
 
   /**
-   *  \class Thread thread.h "concurrency/thread.h"
-   *  \brief Thread class.
+   *  \class ThreadListener thread_listener.h "concurrency/thread_listener.h"
+   *  \brief Listen thread events.
    *
-   *  This class represents a thread. It should be subclassed and the
-   *  operator()() should be overloaded.
+   *  Upon thread creation, it is possible to specify a listener which will
+   *  receive events from the thread.
    */
-  class             Thread
+  class             ThreadListener
   {
-   private:
-    bool            joinable_;
-    pthread_t       thread_;
-                    Thread(const Thread& thread);
-    Thread&         operator=(const Thread& thread);
-
    protected:
-    ThreadListener* listener;
+                    ThreadListener();
+                    ThreadListener(const ThreadListener& tl);
+    ThreadListener& operator=(const ThreadListener& tl);
 
    public:
-                    Thread();
-    virtual         ~Thread();
-    virtual void    operator()() = 0;
-    void            Cancel();
-    void            Detach();
-    void            Join();
-    void            Run(ThreadListener* tl = NULL);
+    virtual         ~ThreadListener();
+    virtual void    OnCreate(Thread* thread);
+    virtual void    OnExit(Thread* thread);
   };
 }
 
-#endif /* !CONCURRENCY_THREAD_H_ */
+#endif /* !CONCURRENCY_THREAD_LISTENER_H_ */

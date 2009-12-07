@@ -19,13 +19,12 @@
 */
 
 #include <assert.h>
-#include <memory>                 // for auto_ptr
-#include <stdlib.h>               // for abort
+#include <memory>                        // for auto_ptr
+#include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
 #include "interface/ndo/source.h"
 #include "processing/feeder.h"
 #include "processing/listener.h"
-#include "processing/manager.h"
 
 using namespace Processing;
 
@@ -43,7 +42,7 @@ using namespace Processing;
  *
  *  \param[in] listener Unused.
  */
-Listener::Listener(const Listener& listener)
+Listener::Listener(const Listener& listener) : Concurrency::Thread()
 {
   (void)listener;
   assert(false);
@@ -86,14 +85,14 @@ Listener::~Listener()
 {
   try
     {
-      Concurrency::Lock lock(this->threadm_);
+      Concurrency::Lock lock(this->initm_);
 
       if (this->init_)
         {
+          this->init_ = false;
           if (this->acceptor_.get())
             this->acceptor_->Close();
-          this->thread_.Join();
-          this->init_ = false;
+          this->Join();
         }
     }
   catch (...) {}
@@ -110,10 +109,10 @@ Listener::~Listener()
  */
 void Listener::operator()()
 {
-  std::auto_ptr<IO::Stream> stream;
-
   try
     {
+      std::auto_ptr<IO::Stream> stream;
+
       // Wait for initial connection.
       stream.reset(this->acceptor_->Accept());
 
@@ -131,9 +130,9 @@ void Listener::operator()()
           // Create feeding thread.
           std::auto_ptr<Feeder> feeder(new Feeder);
 
-          feeder->Init(source.get());
+          feeder->Init(source.get(), this->listener);
           source.release();
-	  feeder.release();
+          feeder.release();
 
           // Wait for new connection.
           stream.reset(this->acceptor_->Accept());
@@ -143,12 +142,10 @@ void Listener::operator()()
   try
     {
       // Mutex already locked == destructor being run.
-      if (this->threadm_.TryLock())
+      if (this->initm_.TryLock())
         {
           this->init_ = false;
-          this->threadm_.Unlock();
-          try { Manager::Instance().Delete(this); }
-          catch (...) {}
+          this->initm_.Unlock();
         }
     }
   catch (...) {}
@@ -165,28 +162,23 @@ void Listener::operator()()
  *  \param[in] acceptor Acceptor on which incoming clients will be awaited.
  *  \param[in] proto    Protocol to use on new connections.
  */
-void Listener::Init(IO::Acceptor* acceptor, Listener::Protocol proto)
+void Listener::Init(IO::Acceptor* acceptor,
+                    Listener::Protocol proto,
+                    Concurrency::ThreadListener* tl)
 {
-  bool registered;
+  Concurrency::Lock lock(this->initm_);
 
-  this->acceptor_.reset(acceptor);
-  this->protocol_ = proto;
   try
     {
-      Concurrency::Lock lock(this->threadm_);
-
-      registered = false;
-      Manager::Instance().Manage(this);
-      registered = true;
-      this->thread_.Run(this);
+      this->acceptor_.reset(acceptor);
       this->init_ = true;
+      this->protocol_ = proto;
+      this->Run(tl);
     }
   catch (...)
     {
       this->acceptor_.release();
-      if (registered)
-        try { Manager::Instance().Delete(this); }
-        catch (...) {}
+      this->init_ = false;
       throw ;
     }
   return ;

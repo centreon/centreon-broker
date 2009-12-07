@@ -43,7 +43,6 @@ namespace               Processing
     bool                init_;
     std::auto_ptr<Interface::Destination>
                         destination_;
-    Concurrency::Thread thread_;
     Concurrency::Mutex  threadm_;
                         HighAvailability(const HighAvailability& ha);
     HighAvailability&   operator=(const HighAvailability& ha);

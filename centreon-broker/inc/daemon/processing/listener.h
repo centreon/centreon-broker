@@ -35,7 +35,7 @@ namespace                       Processing
    *  The Listener class implements a mediator pattern and avoid acceptors from
    *  being tightly coupled to the Manager and Feeder.
    */
-  class                         Listener
+  class                         Listener : public Concurrency::Thread
   {
    public:
     enum                        Protocol
@@ -48,9 +48,8 @@ namespace                       Processing
    private:
     std::auto_ptr<IO::Acceptor> acceptor_;
     bool                        init_;
+    Concurrency::Mutex          initm_;
     Protocol                    protocol_;
-    Concurrency::Thread         thread_;
-    Concurrency::Mutex          threadm_;
                                 Listener(const Listener& listener);
     Listener&                   operator=(const Listener& listener);
 
@@ -58,7 +57,9 @@ namespace                       Processing
                                 Listener();
                                 ~Listener();
     void                        operator()();
-    void                        Init(IO::Acceptor* acceptor, Protocol proto);
+    void                        Init(IO::Acceptor* acceptor,
+                                     Protocol proto,
+                                     Concurrency::ThreadListener* tl = NULL);
   };
 }
 

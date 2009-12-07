@@ -19,10 +19,56 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>             // for abort
+#include <memory>                        // for auto_ptr
+#include <pthread.h>
+#include <stdlib.h>                      // for abort
+#include <string.h>                      // for strerror
 #include "concurrency/thread.h"
+#include "concurrency/thread_listener.h"
+#include "exception.h"
 
 using namespace Concurrency;
+
+/**************************************
+*                                     *
+*             Local Type              *
+*                                     *
+**************************************/
+
+struct ThreadHelperArg
+{
+  Thread*         t;
+  ThreadListener* tl;
+};
+
+/**************************************
+*                                     *
+*           Static Function           *
+*                                     *
+**************************************/
+
+/**
+ *  Entry point of all threads.
+ */
+void* ThreadHelper(void* arg)
+{
+  std::auto_ptr<ThreadHelperArg> harg(static_cast<ThreadHelperArg*>(arg));
+
+  try
+    {
+      if (harg->tl)
+        harg->tl->OnCreate(harg->t);
+      harg->t->operator()();
+    }
+  catch (...) {}
+  try
+    {
+      if (harg->tl)
+	harg->tl->OnExit(harg->t);
+    }
+  catch (...) {}
+  return (NULL);
+}
 
 /**************************************
 *                                     *
@@ -74,7 +120,7 @@ Thread& Thread::operator=(const Thread& thread)
 /**
  *  Thread default constructor.
  */
-Thread::Thread() : init_(false) {}
+Thread::Thread() : joinable_(false) {}
 
 /**
  *  \brief Thread destructor.
@@ -86,7 +132,7 @@ Thread::Thread() : init_(false) {}
 Thread::~Thread()
 {
   // If thread is running and is not detached.
-  if (this->init_)
+  if (this->joinable_)
     try
       {
         // Try to detach it first.
@@ -131,14 +177,14 @@ void Thread::Cancel()
  */
 void Thread::Detach()
 {
-  if (this->init_)
+  if (this->joinable_)
     {
       int ret;
 
       ret = pthread_detach(this->thread_);
       if (ret)
         throw (Exception(ret, strerror(ret)));
-      this->init_ = false;
+      this->joinable_ = false;
     }
   else
     throw (Exception(0, "Thread has already been detached."));
@@ -156,7 +202,7 @@ void Thread::Detach()
  */
 void Thread::Join()
 {
-  if (this->init_)
+  if (this->joinable_)
     {
       int ret;
       void* ptr;
@@ -164,8 +210,44 @@ void Thread::Join()
       ret = pthread_join(this->thread_, &ptr);
       if (ret)
         throw (Exception(ret, strerror(ret)));
+      this->joinable_ = false;
     }
   else
     throw (Exception(0, "Trying to join invalid or detached thread."));
+  return ;
+}
+
+/**
+ *  \brief Run the thread.
+ *
+ *  The thread will be run using the operator()() method as overload.
+ *  \par Safety Minimal exception safety.
+ *
+ *  \param[in] tl Optionnal thread listener.
+ */
+void Thread::Run(ThreadListener* tl)
+{
+  // Thread has not already been run.
+  if (!this->joinable_)
+    {
+      std::auto_ptr<ThreadHelperArg> arg(new ThreadHelperArg);
+      int ret;
+
+      // Set the thread helper argument.
+      arg->t = this;
+      arg->tl = tl;
+      this->listener = tl;
+
+      // Run the thread using an helper static method.
+      ret = pthread_create(&this->thread_, NULL, &ThreadHelper, arg.get());
+      if (ret)
+        throw (Exception(ret, strerror(ret)));
+      else
+        arg.release();
+      this->joinable_ = true;
+    }
+  else
+    throw (Exception(0, "Thread is already running " \
+                        "and has not been detached."));
   return ;
 }

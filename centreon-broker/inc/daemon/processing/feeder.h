@@ -41,14 +41,13 @@ namespace               Processing
    *  \see Events::Event
    *  \see Multiplexing::Publisher
    */
-  class                 Feeder
+  class                 Feeder : public Concurrency::Thread
   {
    private:
     bool                init_;
+    Concurrency::Mutex  initm_;
     std::auto_ptr<Interface::Source>
                         source_;
-    Concurrency::Thread thread_;
-    Concurrency::Mutex  threadm_;
                         Feeder(const Feeder& feeder);
     Feeder&             operator=(const Feeder& feeder);
 
@@ -56,7 +55,8 @@ namespace               Processing
                         Feeder();
                         ~Feeder();
     void                operator()();
-    void                Init(Interface::Source* source);
+    void                Init(Interface::Source* source,
+                             Concurrency::ThreadListener* tl = NULL);
   };
 }
 
