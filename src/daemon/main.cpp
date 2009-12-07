@@ -29,12 +29,13 @@ int main()
   std::auto_ptr<Processing::Listener> listener(new Processing::Listener);
 
   ipv4->Listen(5667);
-  listener->Init(ipv4.get(), Processing::Listener::NDO);
+  listener->Init(ipv4.get(),
+                 Processing::Listener::NDO,
+                 &Processing::Manager::Instance());
   ipv4.release();
-  Processing::Manager::Instance().Manage(listener.get());
+  listener.release();
 
-  sleep(30);
+  sleep(7);
 
-  //Processing::Manager::Instance().Delete(listener.release());
   return (0);
 }

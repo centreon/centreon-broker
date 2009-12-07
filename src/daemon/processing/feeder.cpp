@@ -19,12 +19,11 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>                  // for abort
+#include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
 #include "interface/source.h"
 #include "multiplexing/publisher.h"
 #include "processing/feeder.h"
-#include "processing/manager.h"
 
 using namespace Processing;
 
@@ -42,7 +41,7 @@ using namespace Processing;
  *
  *  \param[in] feeder Unused.
  */
-Feeder::Feeder(const Feeder& feeder)
+Feeder::Feeder(const Feeder& feeder) : Concurrency::Thread()
 {
   (void)feeder;
   assert(false);
@@ -86,13 +85,13 @@ Feeder::~Feeder()
 {
   try
     {
-      Concurrency::Lock lock(this->threadm_);
+      Concurrency::Lock lock(this->initm_);
 
       if (this->init_)
         {
           if (this->source_.get())
             this->source_->Close();
-          this->thread_.Join();
+          this->Join();
           this->init_ = false;
         }
     }
@@ -124,12 +123,10 @@ void Feeder::operator()()
   try
     {
       // Mutex already locked == destructor being run.
-      if (this->threadm_.TryLock())
-        {
-          this->init_ = false;
-          this->threadm_.Unlock();
-          try { Manager::Instance().Delete(this); }
-          catch (...) {}
+      if (this->initm_.TryLock())
+	{
+	  this->init_ = false;
+          this->initm_.Unlock();
         }
     }
   catch (...) {}
@@ -146,28 +143,23 @@ void Feeder::operator()()
  *  \par Safety Minimal exception safety.
  *
  *  \param[in] source Event source object.
+ *  \param[in] tl     Thread listener.
  */
-void Feeder::Init(Interface::Source* source)
+void Feeder::Init(Interface::Source* source,
+                  Concurrency::ThreadListener* tl)
 {
-  bool registered;
+  Concurrency::Lock lock(this->initm_);
 
-  this->source_.reset(source);
   try
     {
-      Concurrency::Lock lock(this->threadm_);
-
-      registered = false;
-      Manager::Instance().Manage(this);
-      registered = true;
-      this->thread_.Run(this);
       this->init_ = true;
+      this->source_.reset(source);
+      this->Run(tl);
     }
   catch (...)
     {
+      this->init_ = false;
       this->source_.release();
-      if (registered)
-        try { Manager::Instance().Delete(this); }
-        catch (...) {}
       throw ;
     }
   return ;

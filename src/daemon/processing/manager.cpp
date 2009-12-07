@@ -18,13 +18,13 @@
 **  For more information : contact@centreon.com
 */
 
+#include <algorithm>            // for find
 #include <assert.h>
-#include <stdlib.h>                       // for abort
+#include <memory>               // for auto_ptr
+#include <stdlib.h>             // for abort
 #include "concurrency/lock.h"
+#include "concurrency/thread.h"
 #include "exception.h"
-#include "processing/feeder.h"
-#include "processing/high_availability.h"
-#include "processing/listener.h"
 #include "processing/manager.h"
 
 using namespace Processing;
@@ -48,7 +48,7 @@ Manager::Manager() {}
  *
  *  \param[in] manager Unused.
  */
-Manager::Manager(const Manager& manager)
+Manager::Manager(const Manager& manager) : Concurrency::ThreadListener(manager)
 {
   (void)manager;
   assert(false);
@@ -62,57 +62,21 @@ Manager::~Manager()
 {
   try
     {
-      // Delete all listeners.
+      // Delete all threads.
       while (1)
         {
-          Listener* listener;
+	  Concurrency::Thread* thread;
           {
-            std::list<Listener*>::iterator it;
-            Concurrency::Lock lock(this->mutex_);
+            std::list<Concurrency::Thread*>::iterator it;
+            Concurrency::Lock lock(this->threadsm_);
 
-            it = this->listeners_.begin();
-            if (this->listeners_.end() != it)
+            it = this->threads_.begin();
+            if (this->threads_.end() == it)
               break ;
-            listener = *it;
-            this->listeners_.pop_front();
+            thread = *it;
+            this->threads_.pop_front();
           }
-          try { delete (listener); }
-          catch (...) {}
-        }
-
-      // Delete all feeders.
-      while (1)
-        {
-          Feeder* feeder;
-          {
-            std::list<Feeder*>::iterator it;
-            Concurrency::Lock lock(this->mutex_);
-
-            it = this->feeders_.begin();
-            if (this->feeders_.end() == it)
-              break ;
-            feeder = *it;
-            this->feeders_.pop_front();
-          }
-          try { delete (feeder); }
-          catch (...) {}
-        }
-
-      // Delete all high availability objects.
-      while (1)
-        {
-          HighAvailability* ha;
-          {
-            std::list<HighAvailability*>::iterator it;
-            Concurrency::Lock lock(this->mutex_);
-
-            it = this->ha_.begin();
-            if (this->ha_.end() == it)
-              break ;
-            ha = *it;
-            this->ha_.pop_front();
-          }
-          try { delete (ha); }
+          try { delete (thread); }
           catch (...) {}
         }
     }
@@ -145,68 +109,22 @@ Manager& Manager::operator=(const Manager& manager)
 **************************************/
 
 /**
- *  Delete a feeder identified by its Feeder handle.
+ *  Delete a thread identified by its handle.
  *
- *  \param[in] feeder Handle of the feeder to delete.
+ *  \param[in] thread Handle of the thread to delete.
  */
-void Manager::Delete(const Feeder* feeder)
+void Manager::Delete(const Concurrency::Thread* thread)
 {
-  std::list<Feeder*>::iterator end;
-  std::list<Feeder*>::iterator it;
-  Concurrency::Lock lock(this->mutex_);
+  std::list<Concurrency::Thread*>::iterator it;
+  Concurrency::Lock lock(this->threadsm_);
 
-  end = this->feeders_.end();
-  for (it = this->feeders_.begin(); it != end; ++it)
-    if (*it == feeder)
-      {
-        delete (*it);
-        this->feeders_.erase(it);
-        break ;
-      }
-  return ;
-}
+  it = std::find(this->threads_.begin(), this->threads_.end(), thread);
+  if (it != this->threads_.end())
+    {
+      std::auto_ptr<Concurrency::Thread> t(*it);
 
-/**
- *  Delete HA object identified by its handle.
- *
- *  \param[in] ha Handle of the HA object to delete.
- */
-void Manager::Delete(const HighAvailability* ha)
-{
-  std::list<HighAvailability*>::iterator end;
-  std::list<HighAvailability*>::iterator it;
-  Concurrency::Lock lock(this->mutex_);
-
-  end = this->ha_.end();
-  for (it = this->ha_.begin(); it != end; ++it)
-    if (*it == ha)
-      {
-        delete (*it);
-        this->ha_.erase(it);
-        break ;
-      }
-  return ;
-}
-
-/**
- *  Delete a listener identified by its Listener handle.
- *
- *  \param[in] listener Handle of the listener to delete.
- */
-void Manager::Delete(const Listener* listener)
-{
-  std::list<Listener*>::iterator end;
-  std::list<Listener*>::iterator it;
-  Concurrency::Lock lock(this->mutex_);
-
-  end = this->listeners_.end();
-  for (it = this->listeners_.begin(); it != end; ++it)
-    if (*it == listener)
-      {
-        delete (*it);
-        this->listeners_.erase(it);
-        break ;
-      }
+      this->threads_.erase(it);
+    }
   return ;
 }
 
@@ -226,46 +144,36 @@ Manager& Manager::Instance()
 }
 
 /**
- *  \brief Manage an event feeder (internal use).
+ *  \brief Manage a thread.
  *
  *  The Feeder should be managed before it is started.
  *
- *  \param[in] feeder Feeder to manager.
+ *  \param[in] thread Thread to manage.
  */
-void Manager::Manage(Feeder* feeder)
+void Manager::Manage(Concurrency::Thread* thread)
 {
-  Concurrency::Lock lock(this->mutex_);
+  Concurrency::Lock lock(this->threadsm_);
 
-  this->feeders_.push_back(feeder);
+  this->threads_.push_back(thread);
   return ;
 }
 
 /**
- *  \brief Manage an high availability object.
+ *  Callback method when a new thread is created.
  *
- *  The HighAvailability object should be managed before it is started.
- *
- *  \param[in] ha HighAvailability object to manage.
+ *  \param[in] thread New thread to manage.
  */
-void Manager::Manage(HighAvailability* ha)
+void Manager::OnCreate(Concurrency::Thread* thread)
 {
-  Concurrency::Lock lock(this->mutex_);
-
-  this->ha_.push_back(ha);
+  this->Manage(thread);
   return ;
 }
 
 /**
- *  \brief Manage a listener.
- *
- *  The Listener should be managed before it is started.
- *
- *  \param[in] listener Listener to manage.
+ *  Callback method called when a thread is about to exit.
  */
-void Manager::Manage(Listener* listener)
+void Manager::OnExit(Concurrency::Thread* thread)
 {
-  Concurrency::Lock lock(this->mutex_);
-
-  this->listeners_.push_back(listener);
+  this->Delete(thread);
   return ;
 }
