@@ -21,6 +21,7 @@
 #ifndef INTERFACE_NDO_SOURCE_H_
 # define INTERFACE_NDO_SOURCE_H_
 
+# include <string>
 # include "interface/source.h"
 # include "io/text.h"
 
@@ -38,9 +39,11 @@ namespace                       Interface
     class                       Source : public Interface::Source
     {
      private:
+      std::string               instance_;
       IO::Text                  stream_;
                                 Source(const Source& source);
       Source&                   operator=(const Source& source);
+      Events::Event*            Header();
 
      public:
                                 Source(IO::Stream* stream);

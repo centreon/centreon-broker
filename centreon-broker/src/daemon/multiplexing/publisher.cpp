@@ -113,12 +113,17 @@ void Publisher::Publish(Events::Event* event)
   if (it != end)
     {
       do
-	{
-	  // XXX : does need to register events ?
-	  // XXX : event discrimination
-	  (*it)->OnEvent(event);
-	  ++it;
-	} while (it != end);
+        {
+          event->AddReader(*it);
+          ++it;
+        } while (it != end);
+      for (it = this->subscribers_.begin(); it != end; ++it)
+        try
+          {
+            // XXX : event discrimination
+            (*it)->OnEvent(event);
+          }
+        catch (...) {}
     }
   else
     delete (event);

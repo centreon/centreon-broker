@@ -20,8 +20,9 @@
 
 #include <assert.h>
 #include <map>
+#include <memory>                   // for auto_ptr
 #include <stdlib.h>                 // for abort, strtod, strtol
-#include <string.h>                 // for strcmp
+#include <string.h>                 // for strcmp, strncmp
 #include "events/acknowledgement.h"
 #include "events/comment.h"
 #include "events/downtime.h"
@@ -310,6 +311,40 @@ Source& Source::operator=(const Source& source)
   return (*this);
 }
 
+/**
+ *  Parse the NDO header.
+ *
+ *  \return The initial event.
+ */
+Events::Event* Source::Header()
+{
+  const char* line;
+  std::auto_ptr<Events::ProgramStatus> pstatus(new Events::ProgramStatus);
+
+  while ((line = this->stream_.Line()) && strcmp(line, NDO_API_STARTDATADUMP))
+    {
+      const char* value;
+
+      value = strchr(line, ' ');
+      if (value)
+        {
+          ++value;
+          if (!strncmp(line,
+                       NDO_API_INSTANCENAME,
+                       sizeof(NDO_API_INSTANCENAME)))
+            {
+              pstatus->is_running = true;
+              this->instance_ = value;
+            }
+          else if (!strncmp(line,
+                            NDO_API_STARTTIME,
+                            sizeof(NDO_API_STARTTIME)))
+            pstatus->program_start = strtol(value, NULL, 0);
+        }
+    }
+  return (pstatus.release());
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -351,7 +386,7 @@ void Source::Close()
  */
 Events::Event* Source::Event()
 {
-  Events::Event* event;
+  std::auto_ptr<Events::Event> event;
   const char* line;
 
   // Get the next non-empty line.
@@ -363,7 +398,7 @@ Events::Event* Source::Event()
   if (line)
     {
       if (!strcmp(line, NDO_API_HELLO))
-        ; // XXX : initialization
+        event.reset(this->Header());
       else
         {
           int id;
@@ -372,46 +407,46 @@ Events::Event* Source::Event()
           switch (id)
             {
              case NDO_API_ACKNOWLEDGEMENTDATA:
-              event = HandleEvent<Events::Acknowledgement>(this->stream_,
-                        acknowledgement_map);
+              event.reset(HandleEvent<Events::Acknowledgement>(this->stream_,
+                            acknowledgement_map));
               break ;
              case NDO_API_COMMENTDATA:
-              event = HandleEvent<Events::Comment>(this->stream_, comment_map);
+              event.reset(HandleEvent<Events::Comment>(this->stream_, comment_map));
               break ;
              case NDO_API_DOWNTIMEDATA:
-              event = HandleEvent<Events::Downtime>(this->stream_,
-                        downtime_map);
+              event.reset(HandleEvent<Events::Downtime>(this->stream_,
+                            downtime_map));
               break ;
              case NDO_API_HOSTDEFINITION:
-              event = HandleEvent<Events::Host>(this->stream_, host_map);
+              event.reset(HandleEvent<Events::Host>(this->stream_, host_map));
               break ;
              case NDO_API_HOSTGROUPDEFINITION:
-              event = HandleEvent<Events::HostGroup>(this->stream_,
-                        host_group_map);
+              event.reset(HandleEvent<Events::HostGroup>(this->stream_,
+                            host_group_map));
               break ;
              case NDO_API_HOSTSTATUSDATA:
-              event = HandleEvent<Events::HostStatus>(this->stream_,
-                        host_status_map);
+              event.reset(HandleEvent<Events::HostStatus>(this->stream_,
+                            host_status_map));
               break ;
              case NDO_API_LOGDATA:
               // XXX
               break ;
              case NDO_API_PROGRAMSTATUSDATA:
-              event = HandleEvent<Events::ProgramStatus>(this->stream_,
-                        program_status_map);
+              event.reset(HandleEvent<Events::ProgramStatus>(this->stream_,
+                            program_status_map));
               break ;
              case NDO_API_SERVICEDEFINITION:
-              event = HandleEvent<Events::Service>(this->stream_,
-                        service_map);
+              event.reset(HandleEvent<Events::Service>(this->stream_,
+                            service_map));
               break ;
              case NDO_API_SERVICESTATUSDATA:
-              event = HandleEvent<Events::ServiceStatus>(this->stream_,
-                        service_status_map);
+              event.reset(HandleEvent<Events::ServiceStatus>(this->stream_,
+                            service_status_map));
               break ;
             }
         }
     }
-  else
-    event = NULL;
-  return (event);
+  if (event.get())
+    event->instance = this->instance_;
+  return (event.release());
 }

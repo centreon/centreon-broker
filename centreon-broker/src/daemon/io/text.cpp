@@ -123,12 +123,13 @@ const char* Text::Line()
                      sizeof(this->buffer_) - this->length_ - 1);
       if (!bytes_read)
         this->closed_ = true;
-      this->length_ += bytes_read;
+      else
+        this->length_ += bytes_read;
       this->buffer_[this->length_] = '\0'; // so that strchr does not fail
     }
   this->discard_ = strcspn(this->buffer_, "\n");
   this->buffer_[this->discard_++] = '\0';
-  return (this->buffer_[0] ? this->buffer_ : NULL);
+  return (this->length_ ? this->buffer_ : NULL);
 }
 
 /**
