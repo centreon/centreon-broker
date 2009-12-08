@@ -20,6 +20,10 @@
 
 #include <assert.h>
 #include <stdlib.h>                       // for abort
+#include "concurrency/lock.h"
+#include "events/event.h"
+#include "interface/sourcedestination.h"
+#include "processing/delivery.h"
 #include "processing/high_availability.h"
 
 using namespace Processing;
@@ -40,6 +44,9 @@ using namespace Processing;
  *  \param[in] ha Unused.
  */
 HighAvailability::HighAvailability(const HighAvailability& ha)
+  : Concurrency::ThreadListener(),
+    Interface::Source(),
+    Multiplexing::Subscriber()
 {
   (void)ha;
   assert(false);
@@ -74,7 +81,7 @@ HighAvailability& HighAvailability::operator=(const HighAvailability& ha)
 /**
  *  HighAvailability default constructor.
  */
-HighAvailability::HighAvailability() : init_(false) {}
+HighAvailability::HighAvailability() {}
 
 /**
  *  HighAvailability destructor.
@@ -85,17 +92,64 @@ HighAvailability::~HighAvailability()
 }
 
 /**
- *  HighAvailability thread entry point.
+ *  Close the event source (ie. deregister from Publisher).
  */
-void HighAvailability::operator()()
+void HighAvailability::Close()
 {
   // XXX
 }
 
 /**
+ *  Get the next available event.
+ *
+ *  \return Next available event.
+ */
+Events::Event* HighAvailability::Event()
+{
+  Events::Event* event;
+  Concurrency::Lock lock(this->eventsm_);
+
+  if (!this->events_.empty())
+    {
+      event = this->events_.front();
+      this->events_.pop_front();
+    }
+  else
+    {
+      this->eventscv_.Sleep(this->eventsm_);
+      lock.Release();
+      event = this->Event();
+    }
+  return (event);
+}
+
+/**
  *  Initialize the HighAvailability thread.
  */
-void HighAvailability::Init(Interface::Destination* destination)
+void HighAvailability::Init(Interface::SourceDestination* sd)
 {
-  // XXX
+  this->delivery_ = new Delivery;
+  this->delivery_->Init(this, sd);
+  return ;
+}
+
+/**
+ *  Callback method called when a new event has been published.
+ *
+ *  \param[in] event New event.
+ */
+void HighAvailability::OnEvent(Events::Event* event)
+{
+  try
+    {
+      Concurrency::Lock lock(this->eventsm_);
+
+      this->events_.push_back(event);
+      this->eventscv_.WakeAll();
+    }
+  catch (...)
+    {
+      event->RemoveReader(this);
+    }
+  return ;
 }

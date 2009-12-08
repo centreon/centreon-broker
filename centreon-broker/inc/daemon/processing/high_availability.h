@@ -21,37 +21,54 @@
 #ifndef PROCESSING_HIGH_AVAILABILITY_H_
 # define PROCESSING_HIGH_AVAILABILITY_H_
 
-# include <memory>               // for auto_ptr
+# include <list>
+# include <memory>                           // for auto_ptr
+# include "concurrency/condition_variable.h"
 # include "concurrency/mutex.h"
-# include "concurrency/thread.h"
+# include "concurrency/thread_listener.h"
+# include "interface/source.h"
+# include "multiplexing/subscriber.h"
 
-// Forward declaration.
+// Forward declarations.
+namespace               Events
+{ class                 Event; }
 namespace               Interface
-{ class                 Destination; }
+{ class                 SourceDestination; }
 
 namespace               Processing
 {
+  // Forward declaration.
+  class                 Delivery;
+
   /**
    *  \class HighAvailability high_availability.h "processing/high_availability.h"
    *  \brief Provides failover on output.
    *
    *  This class handles an output and can use failover when this output fails.
    */
-  class                 HighAvailability
+  class                 HighAvailability : public Concurrency::ThreadListener,
+                                           public Interface::Source,
+                                           public Multiplexing::Subscriber
   {
    private:
-    bool                init_;
-    std::auto_ptr<Interface::Destination>
-                        destination_;
-    Concurrency::Mutex  threadm_;
+    Delivery*           delivery_;
+    std::list<Events::Event*>
+                        events_;
+    Concurrency::ConditionVariable
+                        eventscv_;
+    Concurrency::Mutex  eventsm_;
+    std::auto_ptr<Interface::SourceDestination>
+                        sd_;
                         HighAvailability(const HighAvailability& ha);
     HighAvailability&   operator=(const HighAvailability& ha);
 
    public:
                         HighAvailability();
                         ~HighAvailability();
-    void                operator()();
-    void                Init(Interface::Destination* destination);
+    void                Close();
+    Events::Event*      Event();
+    void                Init(Interface::SourceDestination* sd);
+    void                OnEvent(Events::Event* event);
   };
 }
 
