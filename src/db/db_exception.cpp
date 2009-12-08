@@ -56,8 +56,7 @@ void DBException::InternalCopy(const DBException& dbe) throw ()
  *
  *  \param[in] dbe Object to copy data from.
  */
-DBException::DBException(const DBException& dbe)
-  : CentreonBroker::Exception(dbe)
+DBException::DBException(const DBException& dbe) : Exception(dbe)
 {
   this->InternalCopy(dbe);
 }
@@ -74,7 +73,7 @@ DBException::DBException(const DBException& dbe)
  *  \param[in] msg    The error message.
  */
 DBException::DBException(int val, DBException::Reason reason, const char* msg)
-  : CentreonBroker::Exception(val, msg), reason_(reason) {}
+  : Exception(val, msg), reason_(reason) {}
 
 /**
  *  DBException destructor.
@@ -92,7 +91,7 @@ DBException::~DBException() throw () {}
  */
 DBException& DBException::operator=(const DBException& dbe)
 {
-  this->CentreonBroker::Exception::operator=(dbe);
+  this->Exception::operator=(dbe);
   this->InternalCopy(dbe);
   return (*this);
 }
