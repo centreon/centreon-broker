@@ -36,7 +36,7 @@ namespace          CentreonBroker
      *  parameterized with an error code, a reason explained where the
      *  exception occured (DBException::Reason enum) and a message.
      */
-    class          DBException : public CentreonBroker::Exception
+    class          DBException : public Exception
     {
      public:
       enum         Reason
