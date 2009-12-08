@@ -39,6 +39,9 @@ namespace           Concurrency
    */
   class             Mutex
   {
+    // ConditionVariable needs to access the internal mutex object.
+    friend class    ConditionVariable;
+
    private:
     pthread_mutex_t mutex_;
     void            InitMutex();
