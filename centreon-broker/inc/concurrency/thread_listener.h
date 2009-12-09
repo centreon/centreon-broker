@@ -44,6 +44,7 @@ namespace           Concurrency
     virtual         ~ThreadListener();
     virtual void    OnCreate(Thread* thread);
     virtual void    OnExit(Thread* thread);
+    virtual void    OnFailure(Thread* thread);
   };
 }
 
