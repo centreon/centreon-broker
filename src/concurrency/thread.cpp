@@ -54,19 +54,31 @@ void* ThreadHelper(void* arg)
 {
   std::auto_ptr<ThreadHelperArg> harg(static_cast<ThreadHelperArg*>(arg));
 
+  // Thread is starting.
   try
     {
       if (harg->tl)
         harg->tl->OnCreate(harg->t);
       harg->t->operator()();
     }
-  catch (...) {}
+  catch (...)
+    {
+      // Exception caught. Thread execution failed.
+      try
+        {
+          if (harg->tl)
+            harg->tl->OnFailure(harg->t);
+        }
+      catch (...) {}
+    }
+  // Thread will exit soon.
   try
     {
       if (harg->tl)
 	harg->tl->OnExit(harg->t);
     }
   catch (...) {}
+
   return (NULL);
 }
 

@@ -95,3 +95,14 @@ void ThreadListener::OnExit(Thread* thread)
   (void)thread;
   return ;
 }
+
+/**
+ *  Method called on an arbitrary thread failure.
+ *
+ *  \param[in] thread Failing thread,
+ */
+void ThreadListener::OnFailure(Thread* thread)
+{
+  (void)thread;
+  return ;
+}
