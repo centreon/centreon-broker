@@ -24,10 +24,6 @@
 # include <string>
 # include "concurrency/mutex.h"
 
-// Forward declaration.
-namespace              Multiplexing
-{ class                Subscriber; }
-
 namespace              Events
 {
   /**
@@ -92,9 +88,9 @@ namespace              Events
     std::string        instance;
                        Event();
     virtual            ~Event();
-    void               AddReader(Multiplexing::Subscriber* es);
+    void               AddReader();
     virtual int        GetType() const = 0;
-    void               RemoveReader(const Multiplexing::Subscriber* s);
+    void               RemoveReader();
   };
 }
 

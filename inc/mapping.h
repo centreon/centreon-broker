@@ -34,81 +34,75 @@
 # include "events/service.h"
 # include "events/service_status.h"
 
-namespace  CentreonBroker
-{
-  // Acknowledgement
-  extern const DB::DataMember<Events::Acknowledgement>
-           acknowledgement_dm[];
-  extern DB::MappingGetters<Events::Acknowledgement>
-           acknowledgement_get_mapping;
-  extern DB::MappingSetters<Events::Acknowledgement>
-           acknowledgement_set_mapping;
-  // Comment
-  extern const DB::DataMember<Events::Comment>
-           comment_dm[];
-  extern DB::MappingGetters<Events::Comment>
-           comment_get_mapping;
-  extern DB::MappingSetters<Events::Comment>
-           comment_set_mapping;
-  // Downtime
-  extern const DB::DataMember<Events::Downtime>
-           downtime_dm[];
-  extern DB::MappingGetters<Events::Downtime>
-           downtime_get_mapping;
-  extern DB::MappingSetters<Events::Downtime>
-           downtime_set_mapping;
-  // Group
-  extern const DB::DataMember<Events::Group>
-           group_dm[];
-  extern DB::MappingGetters<Events::Group>
-           group_get_mapping;
-  extern DB::MappingSetters<Events::Group>
-           group_set_mapping;
-  // Host
-  extern const DB::DataMember<Events::Host>
-           host_dm[];
-  extern DB::MappingGetters<Events::Host>
-           host_get_mapping;
-  extern DB::MappingSetters<Events::Host>
-           host_set_mapping;
-  // HostStatus
-  extern const DB::DataMember<Events::HostStatus>
-           host_status_dm[];
-  extern DB::MappingGetters<Events::HostStatus>
-           host_status_get_mapping;
-  extern DB::MappingSetters<Events::HostStatus>
-           host_status_set_mapping;
-  // Log
-  extern const DB::DataMember<Events::Log>
-           log_dm[];
-  extern DB::MappingGetters<Events::Log>
-           log_get_mapping;
-  extern DB::MappingSetters<Events::Log>
-           log_set_mapping;
-  // ProgramStatus
-  extern const DB::DataMember<Events::ProgramStatus>
-           program_status_dm[];
-  extern DB::MappingGetters<Events::ProgramStatus>
-           program_status_get_mapping;
-  extern DB::MappingSetters<Events::ProgramStatus>
-           program_status_set_mapping;
-  // Service
-  extern const DB::DataMember<Events::Service>
-           service_dm[];
-  extern DB::MappingGetters<Events::Service>
-           service_get_mapping;
-  extern DB::MappingSetters<Events::Service>
-           service_set_mapping;
-  // ServiceStatus
-  extern const DB::DataMember<Events::ServiceStatus>
-           service_status_dm[];
-  extern DB::MappingGetters<Events::ServiceStatus>
-           service_status_get_mapping;
-  extern DB::MappingSetters<Events::ServiceStatus>
-           service_status_set_mapping;
+// Acknowledgement
+extern const CentreonBroker::DB::DataMember<Events::Acknowledgement> acknowledgement_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Acknowledgement>   acknowledgement_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Acknowledgement>   acknowledgement_set_mapping;
+// Comment
+extern const CentreonBroker::DB::DataMember<Events::Comment>
+comment_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Comment>
+comment_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Comment>
+comment_set_mapping;
+// Downtime
+extern const CentreonBroker::DB::DataMember<Events::Downtime>
+downtime_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Downtime>
+downtime_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Downtime>
+downtime_set_mapping;
+// Group
+extern const CentreonBroker::DB::DataMember<Events::Group>
+group_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Group>
+group_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Group>
+group_set_mapping;
+// Host
+extern const CentreonBroker::DB::DataMember<Events::Host>
+host_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Host>
+host_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Host>
+host_set_mapping;
+// HostStatus
+extern const CentreonBroker::DB::DataMember<Events::HostStatus>
+host_status_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::HostStatus>
+host_status_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::HostStatus>
+host_status_set_mapping;
+// Log
+extern const CentreonBroker::DB::DataMember<Events::Log>
+log_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Log>
+log_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Log>
+log_set_mapping;
+// ProgramStatus
+extern const CentreonBroker::DB::DataMember<Events::ProgramStatus>
+program_status_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::ProgramStatus>
+program_status_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::ProgramStatus>
+program_status_set_mapping;
+// Service
+extern const CentreonBroker::DB::DataMember<Events::Service>
+service_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::Service>
+service_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::Service>
+service_set_mapping;
+// ServiceStatus
+extern const CentreonBroker::DB::DataMember<Events::ServiceStatus>
+service_status_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::ServiceStatus>
+service_status_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::ServiceStatus>
+service_status_set_mapping;
 
-  void     MappingsDestroy();
-  void     MappingsInit();
-}
+void     MappingsDestroy();
+void     MappingsInit();
 
 #endif /* !MAPPING_H_ */

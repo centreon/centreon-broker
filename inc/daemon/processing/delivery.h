@@ -23,15 +23,17 @@
 
 # include "concurrency/thread.h"
 
-// Forward declaration.
+// Forward declarations.
+namespace                   Concurrency
+{ class                     ThreadListener; }
 namespace                   Interface
-{ class                     Destination; }
+{
+  class                     Destination;
+  class                     Source;
+}
 
 namespace                   Processing
 {
-  // Forward declaration.
-  class                     HighAvailability;
-
   /**
    *  \class Delivery delivery.h "processing/delivery.h"
    *  \brief Transfer events from a HighAvailability object to a destination.
@@ -42,7 +44,7 @@ namespace                   Processing
   {
    private:
     Interface::Destination* dest_;
-    HighAvailability*       ha_;
+    Interface::Source*      source_;
                             Delivery(const Delivery& delivery);
     Delivery&               operator=(const Delivery& delivery);
 
@@ -50,8 +52,9 @@ namespace                   Processing
                             Delivery();
                             ~Delivery();
     void                    operator()();
-    void                    Init(HighAvailability* ha,
-                                 Interface::Destination* destination);
+    void                    Init(Interface::Source* source,
+                                 Interface::Destination* destination,
+                                 Concurrency::ThreadListener* tl = NULL);
   };
 }
 

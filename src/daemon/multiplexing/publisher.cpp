@@ -112,18 +112,23 @@ void Publisher::Publish(Events::Event* event)
   it = this->subscribers_.begin();
   if (it != end)
     {
+      unsigned int size;
+
+      // Add as much readers to the event as there is of subscribers.
+      size = this->subscribers_.size();
+      for (unsigned int i = 0; i < size; ++i)
+        event->AddReader();
+
       do
         {
-          event->AddReader(*it);
-          ++it;
+          try
+            {
+              // XXX : event discrimination
+              (*it)->OnEvent(event);
+              ++it;
+            }
+          catch (...) {}
         } while (it != end);
-      for (it = this->subscribers_.begin(); it != end; ++it)
-        try
-          {
-            // XXX : event discrimination
-            (*it)->OnEvent(event);
-          }
-        catch (...) {}
     }
   else
     delete (event);
