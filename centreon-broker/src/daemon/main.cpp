@@ -19,7 +19,13 @@
 */
 
 #include <unistd.h>
+#include "db/mysql/connection.h"
+#include "interface/db/destination.h"
+#include "interface/ndo/source.h"
 #include "io/net/ipv4.h"
+#include "mapping.h"
+#include "multiplexing/publisher.h"
+#include "processing/high_availability.h"
 #include "processing/listener.h"
 #include "processing/manager.h"
 
@@ -27,7 +33,12 @@ int main()
 {
   std::auto_ptr<IO::Net::IPv4Acceptor> ipv4(new IO::Net::IPv4Acceptor);
   std::auto_ptr<Processing::Listener> listener(new Processing::Listener);
+  CentreonBroker::DB::Connection* conn;
+  Interface::DB::Destination* dest;
+  Processing::HighAvailability* ha;
 
+  MappingsInit();
+  Interface::NDO::Source::Initialize();
   ipv4->Listen(5667);
   listener->Init(ipv4.get(),
                  Processing::Listener::NDO,
@@ -35,7 +46,15 @@ int main()
   ipv4.release();
   listener.release();
 
-  sleep(7);
+  conn = new CentreonBroker::DB::MySQLConnection();
+  conn->Connect("localhost", "root", "123456789", "cb");
+  dest = new Interface::DB::Destination();
+  dest->Init(conn);
+  ha = new Processing::HighAvailability();
+  ha->Init(dest);
+
+  while (1)
+    pause();
 
   return (0);
 }

@@ -23,6 +23,7 @@
 #include "concurrency/lock.h"
 #include "events/event.h"
 #include "interface/sourcedestination.h"
+#include "multiplexing/publisher.h"
 #include "processing/delivery.h"
 #include "processing/high_availability.h"
 
@@ -126,10 +127,11 @@ Events::Event* HighAvailability::Event()
 /**
  *  Initialize the HighAvailability thread.
  */
-void HighAvailability::Init(Interface::SourceDestination* sd)
+void HighAvailability::Init(Interface::Destination* sd)
 {
   this->delivery_ = new Delivery;
   this->delivery_->Init(this, sd);
+  Multiplexing::Publisher::Instance().Subscribe(this);
   return ;
 }
 
@@ -140,16 +142,10 @@ void HighAvailability::Init(Interface::SourceDestination* sd)
  */
 void HighAvailability::OnEvent(Events::Event* event)
 {
-  try
-    {
-      Concurrency::Lock lock(this->eventsm_);
+  Concurrency::Lock lock(this->eventsm_);
 
-      this->events_.push_back(event);
-      this->eventscv_.WakeAll();
-    }
-  catch (...)
-    {
-      event->RemoveReader(this);
-    }
+  this->events_.push_back(event);
+  lock.Release();
+  this->eventscv_.WakeAll();
   return ;
 }

@@ -168,67 +168,45 @@ static std::map<int, Field<Events::ServiceStatus> >   service_status_map;
  *  This class only holds a constructor which is used with the help of a static
  *  object to build the protocol maps.
  */
-class  MapInitializer
+template <typename T>
+static void StaticInit(const KeyField<T> fields[],
+                       std::map<int, Field<T> >& map)
 {
- private:
-  template <typename T>
-  void Initialize(const KeyField<T> fields[],
-                  std::map<int, Field<T> >& map)
-  {
-    for (unsigned int i = 0; fields[i].type; ++i)
-      {
-        Field<T>& field(map[fields[i].key]);
+  for (unsigned int i = 0; fields[i].type; ++i)
+    {
+      Field<T>& field(map[fields[i].key]);
 
-        field.param = &fields[i].field;
-        switch (fields[i].type)
-          {
-           case 'b':
-            field.ptr = &set_boolean<T>;
-            break ;
-           case 'd':
-            field.ptr = &set_double<T>;
-            break ;
-           case 'i':
-            field.ptr = &set_integer<T>;
-            break ;
-           case 's':
-            field.ptr = &set_short<T>;
-            break ;
-           case 'S':
-            field.ptr = &set_string<T>;
-            break ;
-           case 't':
-            field.ptr = &set_timet<T>;
-            break ;
-           case 'u':
-            field.ptr = &set_undefined<T>;
-            break ;
-           default:
-            assert(false);
-            abort();
-          }
-      }
-  }
-
- public:
-       MapInitializer()
-  {
-    this->Initialize<Events::Acknowledgement>(acknowledgement_fields,
-                                              acknowledgement_map);
-    this->Initialize<Events::Comment>(comment_fields, comment_map);
-    this->Initialize<Events::Downtime>(downtime_fields, downtime_map);
-    this->Initialize<Events::Host>(host_fields, host_map);
-    this->Initialize<Events::HostGroup>(host_group_fields, host_group_map);
-    this->Initialize<Events::HostStatus>(host_status_fields, host_status_map);
-    this->Initialize<Events::ProgramStatus>(program_status_fields,
-                                            program_status_map);
-    this->Initialize<Events::Service>(service_fields, service_map);
-    this->Initialize<Events::ServiceStatus>(service_status_fields,
-                                            service_status_map);
-  }
-};
-
-static MapInitializer map_initializer;
+      field.param = &fields[i].field;
+      switch (fields[i].type)
+        {
+         case 'b':
+          field.ptr = &set_boolean<T>;
+          break ;
+         case 'd':
+          field.ptr = &set_double<T>;
+          break ;
+         case 'i':
+          field.ptr = &set_integer<T>;
+          break ;
+         case 's':
+          field.ptr = &set_short<T>;
+          break ;
+         case 'S':
+          field.ptr = &set_string<T>;
+          break ;
+         case 't':
+          field.ptr = &set_timet<T>;
+          break ;
+         case 'u':
+          field.ptr = &set_undefined<T>;
+          break ;
+         default:
+          assert(false);
+          abort();
+        }
+    }
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -255,6 +233,8 @@ T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
           typename std::map<int, Field<T> >::const_iterator it;
 
           key = strtol(key_str, NULL, 10);
+          if (NDO_API_ENDDATA == key)
+            break ;
           value_str = strchr(key_str, '=');
           value_str = (value_str ? value_str + 1 : "");
           it = field_map.find(key);
@@ -397,6 +377,7 @@ Events::Event* Source::Event()
 
   if (line)
     {
+      // Parse initial header.
       if (!strcmp(line, NDO_API_HELLO))
         event.reset(this->Header());
       else
@@ -450,3 +431,22 @@ Events::Event* Source::Event()
     event->instance = this->instance_;
   return (event.release());
 }
+
+/**
+ *  Initialize internal data structures that NDO::Source uses.
+ */
+void Source::Initialize()
+{
+  StaticInit<Events::Acknowledgement>(acknowledgement_fields,
+                                      acknowledgement_map);
+  StaticInit<Events::Comment>(comment_fields, comment_map);
+  StaticInit<Events::Downtime>(downtime_fields, downtime_map);
+  StaticInit<Events::Host>(host_fields, host_map);
+  StaticInit<Events::HostGroup>(host_group_fields, host_group_map);
+  StaticInit<Events::HostStatus>(host_status_fields, host_status_map);
+  StaticInit<Events::ProgramStatus>(program_status_fields, program_status_map);
+  StaticInit<Events::Service>(service_fields, service_map);
+  StaticInit<Events::ServiceStatus>(service_status_fields, service_status_map);
+  return ;
+}
+

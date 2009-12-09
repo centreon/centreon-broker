@@ -50,6 +50,7 @@ namespace                       Interface
       virtual                   ~Source();
       virtual void              Close();
       virtual Events::Event*    Event();
+      static void               Initialize();
     };
   }
 }

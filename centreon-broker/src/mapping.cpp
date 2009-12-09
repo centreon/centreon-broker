@@ -33,9 +33,9 @@
 
 using namespace CentreonBroker;
 using namespace CentreonBroker::DB;
-using namespace CentreonBroker::Events;
+using namespace Events;
 
-const DB::DataMember<Acknowledgement> CentreonBroker::acknowledgement_dm[] =
+const DB::DataMember<Acknowledgement> acknowledgement_dm[] =
   {
     DataMember<Acknowledgement>("acknowledgement_type",
       &Acknowledgement::acknowledgement_type),
@@ -58,11 +58,11 @@ const DB::DataMember<Acknowledgement> CentreonBroker::acknowledgement_dm[] =
     DataMember<Acknowledgement>()
   };
 DB::MappingGetters<Events::Acknowledgement>
-  CentreonBroker::acknowledgement_get_mapping;
+  acknowledgement_get_mapping;
 DB::MappingSetters<Events::Acknowledgement>
-  CentreonBroker::acknowledgement_set_mapping;
+  acknowledgement_set_mapping;
 
-const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
+const DB::DataMember<Comment> comment_dm[] =
   {
     DataMember<Comment>("author_name",
       &Comment::author),
@@ -97,11 +97,11 @@ const DB::DataMember<Comment> CentreonBroker::comment_dm[] =
     DataMember<Comment>()
   };
 DB::MappingGetters<Events::Comment>
-  CentreonBroker::comment_get_mapping;
+  comment_get_mapping;
 DB::MappingSetters<Events::Comment>
-  CentreonBroker::comment_set_mapping;
+  comment_set_mapping;
 
-const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
+const DB::DataMember<Downtime> downtime_dm[] =
   {
     DataMember<Downtime>("author_name",
       &Downtime::author),
@@ -136,11 +136,11 @@ const DB::DataMember<Downtime> CentreonBroker::downtime_dm[] =
     DataMember<Downtime>()
   };
 DB::MappingGetters<Events::Downtime>
-  CentreonBroker::downtime_get_mapping;
+  downtime_get_mapping;
 DB::MappingSetters<Events::Downtime>
-  CentreonBroker::downtime_set_mapping;
+  downtime_set_mapping;
 
-const DB::DataMember<Group> CentreonBroker::group_dm[] =
+const DB::DataMember<Group> group_dm[] =
   {
     DataMember<Group>("action_url",
       &Group::action_url),
@@ -155,11 +155,11 @@ const DB::DataMember<Group> CentreonBroker::group_dm[] =
     DataMember<Group>()
   };
 DB::MappingGetters<Events::Group>
-  CentreonBroker::group_get_mapping;
+  group_get_mapping;
 DB::MappingSetters<Events::Group>
-  CentreonBroker::group_set_mapping;
+  group_set_mapping;
 
-const DB::DataMember<Host> CentreonBroker::host_dm[] =
+const DB::DataMember<Host> host_dm[] =
   {
     DataMember<Host>("acknowledgement_type",
       &Host::acknowledgement_type),
@@ -322,11 +322,11 @@ const DB::DataMember<Host> CentreonBroker::host_dm[] =
     DataMember<Host>()
   };
 DB::MappingGetters<Events::Host>
-  CentreonBroker::host_get_mapping;
+  host_get_mapping;
 DB::MappingSetters<Events::Host>
-  CentreonBroker::host_set_mapping;
+  host_set_mapping;
 
-const DB::DataMember<HostStatus> CentreonBroker::host_status_dm[] =
+const DB::DataMember<HostStatus> host_status_dm[] =
   {
     DataMember<HostStatus>("acknowledgement_type",
       &HostStatus::acknowledgement_type),
@@ -419,11 +419,11 @@ const DB::DataMember<HostStatus> CentreonBroker::host_status_dm[] =
     DataMember<HostStatus>()
   };
 DB::MappingGetters<Events::HostStatus>
-  CentreonBroker::host_status_get_mapping;
+  host_status_get_mapping;
 DB::MappingSetters<Events::HostStatus>
-  CentreonBroker::host_status_set_mapping;
+  host_status_set_mapping;
 
-const DB::DataMember<Log> CentreonBroker::log_dm[] =
+const DB::DataMember<Log> log_dm[] =
   {
     DataMember<Log>("ctime",
       &Log::c_time),
@@ -448,11 +448,11 @@ const DB::DataMember<Log> CentreonBroker::log_dm[] =
     DataMember<Log>()
   };
 DB::MappingGetters<Events::Log>
-  CentreonBroker::log_get_mapping;
+  log_get_mapping;
 DB::MappingSetters<Events::Log>
-  CentreonBroker::log_set_mapping;
+  log_set_mapping;
 
-const DB::DataMember<ProgramStatus> CentreonBroker::program_status_dm[] =
+const DB::DataMember<ProgramStatus> program_status_dm[] =
   {
     DataMember<ProgramStatus>("active_host_checks_enabled",
       &ProgramStatus::active_host_checks_enabled),
@@ -505,11 +505,11 @@ const DB::DataMember<ProgramStatus> CentreonBroker::program_status_dm[] =
     DataMember<ProgramStatus>()
   };
 DB::MappingGetters<Events::ProgramStatus>
-  CentreonBroker::program_status_get_mapping;
+  program_status_get_mapping;
 DB::MappingSetters<Events::ProgramStatus>
-  CentreonBroker::program_status_set_mapping;
+  program_status_set_mapping;
 
-const DB::DataMember<Service> CentreonBroker::service_dm[] =
+const DB::DataMember<Service> service_dm[] =
   {
     DataMember<Service>("acknowledgement_type",
       &Service::acknowledgement_type),
@@ -688,11 +688,11 @@ const DB::DataMember<Service> CentreonBroker::service_dm[] =
     DataMember<Service>()
   };
 DB::MappingGetters<Events::Service>
-  CentreonBroker::service_get_mapping;
+  service_get_mapping;
 DB::MappingSetters<Events::Service>
-  CentreonBroker::service_set_mapping;
+  service_set_mapping;
 
-const DB::DataMember<ServiceStatus> CentreonBroker::service_status_dm[] =
+const DB::DataMember<ServiceStatus> service_status_dm[] =
   {
     DataMember<ServiceStatus>("acknowledgement_type",
       &ServiceStatus::acknowledgement_type),
@@ -787,9 +787,9 @@ const DB::DataMember<ServiceStatus> CentreonBroker::service_status_dm[] =
     DataMember<ServiceStatus>()
   };
 DB::MappingGetters<Events::ServiceStatus>
-  CentreonBroker::service_status_get_mapping;
+  service_status_get_mapping;
 DB::MappingSetters<Events::ServiceStatus>
-  CentreonBroker::service_status_set_mapping;
+  service_status_set_mapping;
 
 template <typename T>
 void InitMapping(const DB::DataMember<T>* datamembers,
@@ -837,7 +837,7 @@ void InitMapping(const DB::DataMember<T>* datamembers,
  *
  *  \see MappingsInit
  */
-void CentreonBroker::MappingsDestroy()
+void MappingsDestroy()
 {
 #ifndef NDEBUG
   logging.LogDebug("Destroying Acknowledgement mapping ...");
@@ -909,7 +909,7 @@ void CentreonBroker::MappingsDestroy()
  *
  *  \see MappingsDelete
  */
-void CentreonBroker::MappingsInit()
+void MappingsInit()
 {
 #ifndef NDEBUG
   logging.LogDebug("Initializing Acknowledgement mapping ...");

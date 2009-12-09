@@ -33,7 +33,7 @@
 namespace               Events
 { class                 Event; }
 namespace               Interface
-{ class                 SourceDestination; }
+{ class                 Destination; }
 
 namespace               Processing
 {
@@ -57,7 +57,8 @@ namespace               Processing
     Concurrency::ConditionVariable
                         eventscv_;
     Concurrency::Mutex  eventsm_;
-    std::auto_ptr<Interface::SourceDestination>
+    // Modify to SourceDestination
+    std::auto_ptr<Interface::Destination>
                         sd_;
                         HighAvailability(const HighAvailability& ha);
     HighAvailability&   operator=(const HighAvailability& ha);
@@ -67,7 +68,7 @@ namespace               Processing
                         ~HighAvailability();
     void                Close();
     Events::Event*      Event();
-    void                Init(Interface::SourceDestination* sd);
+    void                Init(Interface::Destination* sd);
     void                OnEvent(Events::Event* event);
   };
 }

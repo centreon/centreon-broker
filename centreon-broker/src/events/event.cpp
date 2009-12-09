@@ -79,43 +79,31 @@ Event::~Event() {}
  *  Specify that somebody is reading the Event. It shall not be destructed
  *  until the reader specify that he's done with the event.
  *
- *  For now, AddReader() only counts the number of times it has been called.
- *
  *  \see RemoveReader
- *
- *  \param[in] s Ignored.
  */
-void Event::AddReader(Multiplexing::Subscriber* s)
+void Event::AddReader()
 {
   Concurrency::Lock lock(this->mutex_);
 
-  (void)s;
   ++this->readers_;
   return ;
 }
 
 /**
- *  \brief Remove a reader from the event.
- *
- *  Remove an event reader. The current implementation only counts the number
- *  of calls made to AddReader and RemoveReader and if the numbers equal, the
- *  object self-destructs.
+ *  Remove a reader from the event.
  *
  *  \see AddReader
- *
- *  \param[in] s Ignored.
  */
-void Event::RemoveReader(const Multiplexing::Subscriber* s)
+void Event::RemoveReader()
 {
   bool destroy;
+  Concurrency::Lock lock(this->mutex_);
 
-  (void)s;
-  this->mutex_.Lock();
   if (--this->readers_ <= 0)
     destroy = true;
   else
     destroy = false;
-  this->mutex_.Unlock();
+  lock.Release();
   if (destroy)
     delete (this);
   return ;

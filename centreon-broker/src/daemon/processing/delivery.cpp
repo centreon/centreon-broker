@@ -22,8 +22,8 @@
 #include <stdlib.h>                       // for abort
 #include "events/event.h"
 #include "interface/destination.h"
+#include "interface/source.h"
 #include "processing/delivery.h"
-#include "processing/high_availability.h"
 
 using namespace Processing;
 
@@ -77,7 +77,7 @@ Delivery& Delivery::operator=(const Delivery& delivery)
 /**
  *  Delivery default constructor.
  */
-Delivery::Delivery() : dest_(NULL), ha_(NULL) {}
+Delivery::Delivery() : dest_(NULL), source_(NULL) {}
 
 /**
  *  Delivery destructor.
@@ -94,17 +94,17 @@ void Delivery::operator()()
   event = NULL;
   try
     {
-      while ((event = this->ha_->Event()))
+      while ((event = this->source_->Event()))
 	{
           this->dest_->Event(*event);
-	  event->RemoveReader(this->ha_);
+	  event->RemoveReader();
 	}
     }
   catch (...)
     {
       if (event)
-        event->RemoveReader(this->ha_);
-      // XXX : failure for HA
+        event->RemoveReader();
+      throw ;
     }
   return ;
 }
@@ -112,13 +112,16 @@ void Delivery::operator()()
 /**
  *  Launch processing thread.
  *
- *  \param[in] ha          HighAvailability object.
+ *  \param[in] source      Event source object.
  *  \param[in] destination Destination object on which events will be pushed.
+ *  \param[in] tl          Listener of this Delivery thread.
  */
-void Delivery::Init(HighAvailability* ha, Interface::Destination* destination)
+void Delivery::Init(Interface::Source* source,
+                    Interface::Destination* destination,
+                    Concurrency::ThreadListener* tl)
 {
-  this->ha_ = ha;
   this->dest_ = destination;
-  this->Run();
+  this->source_ = source;
+  this->Run(tl);
   return ;
 }
