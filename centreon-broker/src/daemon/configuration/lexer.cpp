@@ -18,13 +18,15 @@
 **  For more information : contact@centreon.com
 */
 
-#include <cassert>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-#include "conf/lexer.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include "configuration/lexer.h"
+#include "io/stream.h"
 
-using namespace CentreonBroker::Conf;
+using namespace Configuration;
+
 
 /******************************************************************************
 *                                                                             *
@@ -82,7 +84,7 @@ Token& Token::operator=(const Token& token)
  *
  *  \return The text associated with the token.
  */
-const std::string& Token::GetText() const throw ()
+const std::string& Token::GetText() const
 {
   return (this->text_);
 }
@@ -92,7 +94,7 @@ const std::string& Token::GetText() const throw ()
  *
  *  \return The type of the token.
  */
-Token::Type Token::GetType() const throw ()
+Token::Type Token::GetType() const
 {
   return (this->type_);
 }
@@ -113,7 +115,7 @@ void Token::SetText(const std::string& text)
  *
  *  \param[in] type The type of the token.
  */
-void Token::SetType(Token::Type type) throw ()
+void Token::SetType(Token::Type type)
 {
   this->type_ = type;
   return ;
@@ -199,7 +201,7 @@ char Lexer::NextChar()
 /**
  *  Push a character back to the buffer.
  */
-void Lexer::UngetChar(char c) throw ()
+void Lexer::UngetChar(char c)
 {
   this->buffer_[--this->current_] = c;
   return ;

@@ -18,27 +18,25 @@
 **  For more information : contact@centreon.com
 */
 
-#include <boost/thread/mutex.hpp>
-#include <csignal>
-#include <cstdlib>
+#include <algorithm>
 #include <memory>
-#include "client_acceptor.h"
-#include "conf/lexer.h"
-#include "conf/manager.h"
-#include "db_output.h"
+#include <signal.h>
+#include <stdlib.h>                       // for strtoul
+#include "concurrency/thread.h"
+#include "configuration/lexer.h"
+#include "configuration/interface.h"
+#include "configuration/manager.h"
+#include "db/mysql/connection.h"
 #include "exception.h"
+#include "interface/db/destination.h"
+#include "io/acceptor.h"
 #include "io/file.h"
-#include "io/io.h"
-#include "io/net4.h"
-#include "io/net6.h"
-#ifdef USE_TLS
-# include "io/tls.h"
-#endif /* USE_TLS */
-#include "io/unix.h"
+#include "io/net/ipv4.h"
+#include "io/net/ipv6.h"
+#include "io/net/unix.h"
 #include "logging.h"
-
-using namespace CentreonBroker;
-using namespace CentreonBroker::Conf;
+#include "processing/high_availability.h"
+#include "processing/listener.h"
 
 #define INVALID_TOKEN_MSG "Invalid token encountered while parsing " \
                           "configuration file ..."
@@ -50,28 +48,15 @@ using namespace CentreonBroker::Conf;
 **************************************/
 
 /**
- *  The configuration manager pointer and its associated mutex.
- */
-static std::auto_ptr<Manager> instance;
-static boost::mutex           instancem;
-
-/**
- *  Get or build the instance of the configuration manager.
+ *  Get the instance of the configuration manager.
  *
- *  \return The potentially newly created configuration manager.
+ *  \return The instance of the configuration manager.
  */
-Manager& Manager::GetInstance()
+Configuration::Manager& Configuration::Manager::Instance()
 {
-  // This is the double lock pattern. It's not 100% safe, but it seems to have
-  // the best safeness/performance ratio.
-  if (!instance.get())
-    {
-      boost::unique_lock<boost::mutex> lock(instancem);
+  static Configuration::Manager manager;
 
-      if (!instance.get())
-	instance.reset(new Manager());
-    }
-  return (*instance);
+  return (manager);
 }
 
 /**
@@ -80,26 +65,26 @@ Manager& Manager::GetInstance()
  *  \param[in]  lexer Lexer of the configuration file.
  *  \param[out] in    Object that will be set with extracted parameters.
  */
-static void HandleInput(Lexer& lexer, Input& in)
+static void HandleInput(Configuration::Lexer& lexer, Configuration::Interface& in)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Input definition ...");
+  CentreonBroker::logging.LogDebug("Input definition ...");
 #endif /* !NDEBUG */
-  Token var;
+  Configuration::Token var;
 
   for (lexer.GetToken(var);
-       var.GetType() == Token::STRING;
+       var.GetType() == Configuration::Token::STRING;
        lexer.GetToken(var))
     {
-      Token val;
+      Configuration::Token val;
 
       // Check if the current token is valid (var name).
-      if (var.GetType() != Token::STRING
+      if (var.GetType() != Configuration::Token::STRING
           // And the next one too (=).
-          || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+          || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
           // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
-	throw (Exception(0, INVALID_TOKEN_MSG));
+	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
+        throw (Exception(0, INVALID_TOKEN_MSG));
 
       // Extract var strings.
       const std::string& var_str = var.GetText();
@@ -107,19 +92,19 @@ static void HandleInput(Lexer& lexer, Input& in)
 
       // Parse variable.
       if (var_str == "interface")
-	in.SetIPInterface(val_str);
+	in.interface = val_str;
       else if (var_str == "port")
-	in.SetIPPort(strtoul(val_str.c_str(), NULL, 0));
+	in.port = strtoul(val_str.c_str(), NULL, 0);
       else if (var_str == "socket")
-	in.SetUnixSocketPath(val_str);
+	in.socket = val_str;
       else if (var_str == "type")
 	{
 	  if ((val_str == "ip") || (val_str == "ipv4"))
-	    in.SetType(Input::IPV4);
+	    in.type = Configuration::Interface::IPV4;
 	  else if (val_str == "ipv6")
-	    in.SetType(Input::IPV6);
+	    in.type = Configuration::Interface::IPV6;
 	  else if (val_str == "unix")
-	    in.SetType(Input::UNIX);
+	    in.type = Configuration::Interface::UNIX;
 	}
 #ifdef USE_TLS
       else if (var_str == "ca")
@@ -143,25 +128,25 @@ static void HandleInput(Lexer& lexer, Input& in)
  *  \param[in]  lexer Lexer of the configuration file.
  *  \param[out] log   Object that will be set with extracted parameters.
  */
-static void HandleLog(Lexer& lexer, Log& log)
+static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Log definition ...");
+  CentreonBroker::logging.LogDebug("Log definition ...");
 #endif /* !NDEBUG */
-  Token var;
+  Configuration::Token var;
 
   for (lexer.GetToken(var);
-       var.GetType() != Token::END && var.GetType() != Token::BLOCK_END;
+       var.GetType() != Configuration::Token::END && var.GetType() != Configuration::Token::BLOCK_END;
        lexer.GetToken(var))
     {
-      Token val;
+      Configuration::Token val;
 
       // Check if the current token is valid (var name).
-      if ((var.GetType() != Token::STRING)
+      if ((var.GetType() != Configuration::Token::STRING)
           // And the next one too (=).
-	  || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
 	  // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
 	throw (Exception(0, INVALID_TOKEN_MSG));
 
       // Extract var strings.
@@ -186,30 +171,30 @@ static void HandleLog(Lexer& lexer, Log& log)
 		flags |= CentreonBroker::Logging::INFO;
 	      lexer.ContextSave();
 	      if (lexer.GetToken(val)
-                  || (val.GetType() != Token::PIPE)
+                  || (val.GetType() != Configuration::Token::PIPE)
 		  || lexer.GetToken(val)
-                  || (val.GetType() != Token::STRING))
+                  || (val.GetType() != Configuration::Token::STRING))
 		{
 		  lexer.ContextRestore();
-		  val.SetType(Token::UNKNOWN);
+		  val.SetType(Configuration::Token::UNKNOWN);
 		}
 	      else
 		lexer.ContextPop();
-	    } while (val.GetType() == Token::STRING);
-	  log.SetFlags(flags);
+	    } while (val.GetType() == Configuration::Token::STRING);
+	  log.flags = flags;
 	}
       else if (var_str == "path")
-	log.SetFilePath(val_str);
+	log.file = val_str;
       else if (var_str == "type")
 	{
 	  if (val_str == "file")
-	    log.SetType(Log::FILE);
+	    log.type = Configuration::Log::FILE;
 	  else if (val_str == "stderr")
-	    log.SetType(Log::STDERR);
+	    log.type = Configuration::Log::STDERR;
 	  else if (val_str == "stdout")
-	    log.SetType(Log::STDOUT);
+	    log.type = Configuration::Log::STDOUT;
 	  else if (val_str == "syslog")
-	    log.SetType(Log::SYSLOG);
+	    log.type = Configuration::Log::SYSLOG;
 	}
     }
   return ;
@@ -221,25 +206,25 @@ static void HandleLog(Lexer& lexer, Log& log)
  *  \param[in]  lexer Lexer of the configuration file.
  *  \param[out] out   Object that will be set with extracted parameters.
  */
-static void HandleOutput(Lexer& lexer, Output& out)
+static void HandleOutput(Configuration::Lexer& lexer, Configuration::Interface& out)
 {
 #ifndef NDEBUG
-  logging.LogDebug("Output definition ...");
+  CentreonBroker::logging.LogDebug("Output definition ...");
 #endif /* !NDEBUG */
-  Token var;
+  Configuration::Token var;
 
   for (lexer.GetToken(var);
-       var.GetType() != Token::END && var.GetType() != Token::BLOCK_END;
+       var.GetType() != Configuration::Token::END && var.GetType() != Configuration::Token::BLOCK_END;
        lexer.GetToken(var))
     {
-      Token val;
+      Configuration::Token val;
 
       // Check if the current token is valid (var name).
-      if (var.GetType() != Token::STRING
+      if (var.GetType() != Configuration::Token::STRING
 	  // And the next one too (=).
-	  || lexer.GetToken(val) || (val.GetType() != Token::ASSIGNMENT)
+	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
 	  // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
 	throw (Exception(0, INVALID_TOKEN_MSG));
 
       // Extract var strings.
@@ -248,24 +233,24 @@ static void HandleOutput(Lexer& lexer, Output& out)
 
       // Parse variable.
       if (var_str == "db")
-	out.SetDB(val_str);
+	out.db = val_str;
       else if (var_str == "dumpfile")
-	out.SetDumpFile(val_str);
+	; // XXX out.SetDumpFile(val_str);
       else if (var_str == "host")
-	out.SetHost(val_str);
+	out.host = val_str;
       else if (var_str == "password")
-	out.SetPassword(val_str);
+	out.password = val_str;
       else if (var_str == "type")
 	{
 	  if (val_str == "mysql")
-	    out.SetType(Output::MYSQL);
+	    out.type = Configuration::Interface::MYSQL;
 	  else if (val_str == "oracle")
-	    out.SetType(Output::ORACLE);
+	    out.type = Configuration::Interface::ORACLE;
 	  else if (val_str == "postgresql")
-	    out.SetType(Output::POSTGRESQL);
+	    out.type = Configuration::Interface::POSTGRESQL;
 	}
       else if (var_str == "user")
-	out.SetUser(val_str);
+	out.user = val_str;
     }
   return ;
 }
@@ -274,14 +259,14 @@ static void HandleOutput(Lexer& lexer, Output& out)
  *  Helper function to update configuration. This method is called whenever
  *  SIGHUP is received.
  */
-static void UpdateHelper(int signum) throw ()
+static void UpdateHelper(int signum)
 {
   (void)signum;
   signal(SIGHUP, SIG_IGN);
   CentreonBroker::logging.LogInfo("Configuration file update requested...");
   CentreonBroker::logging.LogInfo("  WARNING: this feature is still " \
                                   "experimental.");
-  instance->Update();
+  Configuration::Manager::Instance().Update();
   signal(SIGHUP, UpdateHelper);
   return ;
 }
@@ -295,7 +280,7 @@ static void UpdateHelper(int signum) throw ()
 /**
  *  Manager default constructor.
  */
-Manager::Manager() {}
+Configuration::Manager::Manager() {}
 
 /**
  *  \brief Manager copy constructor.
@@ -307,7 +292,7 @@ Manager::Manager() {}
  *
  *  \see Open
  */
-Manager::Manager(const Manager& manager)
+Configuration::Manager::Manager(const Configuration::Manager& manager)
 {
   this->operator=(manager);
 }
@@ -322,10 +307,20 @@ Manager::Manager(const Manager& manager)
  *
  *  \see Open
  */
-Manager& Manager::operator=(const Manager& manager)
+Configuration::Manager& Configuration::Manager::operator=(const Configuration::Manager& manager)
 {
   this->Open(manager.filename_);
   return (*this);
+}
+
+/**
+ *  \brief Manager destructor.
+ *
+ *  Delete all objects created by the file parsing.
+ */
+Configuration::Manager::~Manager()
+{
+  this->Close();
 }
 
 /**
@@ -336,52 +331,54 @@ Manager& Manager::operator=(const Manager& manager)
  *  \param[out] logs    Object where logs configurations will be stored.
  *  \param[out] outputs Object where outputs configurations will be stored.
  */
-void Manager::Analyze(std::list<Input>& inputs,
-                      std::list<Log>& logs,
-                      std::list<Output>& outputs)
+void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs,
+                                     std::list<Configuration::Log>& logs,
+                                     std::list<Configuration::Interface>& outputs)
 {
-  std::auto_ptr<IO::FileStream> filestream(
-    new IO::FileStream(this->filename_, IO::FileStream::READ));
-  Token val;
-  Token var;
-  Lexer lexer(filestream.get());
+  std::auto_ptr<IO::File> filestream(new IO::File);
+  Configuration::Token val;
+  Configuration::Token var;
+
+  filestream->Open(this->filename_.c_str(), IO::File::READ);
+
+  Configuration::Lexer lexer(filestream.get());
 
   filestream.release();
   for (lexer.GetToken(var), lexer.GetToken(val);
-       var.GetType() == Token::STRING;
+       var.GetType() == Configuration::Token::STRING;
        lexer.GetToken(var), lexer.GetToken(val))
     {
       switch (val.GetType())
 	{
 	 // Assignment sign, we're setting a variable.
-         case Token::ASSIGNMENT:
-	  if (lexer.GetToken(val) || (val.GetType() != Token::STRING))
+	case Configuration::Token::ASSIGNMENT:
+	  if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
 	    throw (Exception(0, INVALID_TOKEN_MSG));
 	  // XXX : set global variable
 	  break ;
 	 // Block name, can safely be discarded.
-         case Token::STRING:
-	  if (lexer.GetToken(val) || val.GetType() != Token::BLOCK_START)
+	case Configuration::Token::STRING:
+	   if (lexer.GetToken(val) || val.GetType() != Configuration::Token::BLOCK_START)
 	    throw (Exception(0, INVALID_TOKEN_MSG));
 	 // Starting a bloc, launching proper handler.
-         case Token::BLOCK_START:
+	case Configuration::Token::BLOCK_START:
           if (var.GetText() == "input")
 	    {
-	      Input in;
+	      Configuration::Interface in;
 
 	      HandleInput(lexer, in);
 	      inputs.push_back(in);
 	    }
 	  else if (var.GetText() == "log")
 	    {
-	      Log log;
+	      Configuration::Log log;
 
 	      HandleLog(lexer, log);
 	      logs.push_back(log);
 	    }
 	  else if (var.GetText() == "output")
 	    {
-	      Output out;
+	      Configuration::Interface out;
 
 	      HandleOutput(lexer, out);
 	      outputs.push_back(out);
@@ -404,25 +401,15 @@ void Manager::Analyze(std::list<Input>& inputs,
 **************************************/
 
 /**
- *  \brief Manager destructor.
- *
  *  Delete all objects created by the file parsing.
  */
-Manager::~Manager()
-{
-  this->Close();
-}
-
-/**
- *  Delete all objects created by the file parsing.
- */
-void Manager::Close()
+void Configuration::Manager::Close()
 {
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Closing configuration manager...");
   CentreonBroker::logging.LogDebug("Closing input objects...");
 #endif /* !NDEBUG */
-  for (std::map<Input, CentreonBroker::ClientAcceptor*>::iterator
+  for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator
          it = this->inputs_.begin();
        it != this->inputs_.end();
        it++)
@@ -432,14 +419,11 @@ void Manager::Close()
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Closing output objects...");
 #endif /* !NDEBUG */
-  for (std::map<Output, CentreonBroker::DBOutput*>::iterator
+  for (std::map<Configuration::Interface, Processing::HighAvailability*>::iterator
          it = this->outputs_.begin();
        it != this->outputs_.end();
        it++)
-    {
-      it->second->Destroy();
-      delete (it->second);
-    }
+    delete (it->second);
   this->outputs_.clear();
 
   // Does nothing of the log outputs. This way, they will remain valid until
@@ -454,7 +438,7 @@ void Manager::Close()
  *
  *  \param[in] filename Configuration file.
  */
-void Manager::Open(const std::string& filename)
+void Configuration::Manager::Open(const std::string& filename)
 {
   this->filename_ = filename;
   this->Update();
@@ -464,20 +448,20 @@ void Manager::Open(const std::string& filename)
 /**
  *  Update a previously opened configuration file.
  */
-void Manager::Update() throw ()
+void Configuration::Manager::Update()
 {
-  std::list<Input> inputs;
-  std::list<Input>::iterator inputs_it;
-  std::list<Log> logs;
-  std::list<Log>::iterator logs_it;
-  std::list<Output> outputs;
-  std::list<Output>::iterator outputs_it;
+  std::list<Configuration::Interface> inputs;
+  std::list<Configuration::Interface>::iterator inputs_it;
+  std::list<Configuration::Log> logs;
+  std::list<Configuration::Log>::iterator logs_it;
+  std::list<Configuration::Interface> outputs;
+  std::list<Configuration::Interface>::iterator outputs_it;
 
   this->Analyze(inputs, logs, outputs);
 
   // Remove logs that are not present in conf anymore or which don't have the
   // same configuration.
-  for (std::list<Log>::iterator it = this->logs_.begin();
+  for (std::list<Configuration::Log>::iterator it = this->logs_.begin();
        it != this->logs_.end();)
     {
       logs_it = std::find(logs.begin(), logs.end(), *it);
@@ -486,18 +470,18 @@ void Manager::Update() throw ()
 #ifndef NDEBUG
 	  CentreonBroker::logging.LogDebug("Removing unwanted log object...");
 #endif /* !NDEBUG */
-	  switch (it->GetType())
+	  switch (it->type)
 	    {
-             case Log::FILE:
-              CentreonBroker::logging.LogInFile(it->GetFilePath().c_str(), 0);
+	    case Configuration::Log::FILE:
+              CentreonBroker::logging.LogInFile(it->file.c_str(), 0);
               break ;
-             case Log::STDERR:
+	    case Configuration::Log::STDERR:
 	      CentreonBroker::logging.LogToStderr(0);
 	      break ;
-             case Log::STDOUT:
+	    case Configuration::Log::STDOUT:
 	      CentreonBroker::logging.LogToStdout(0);
 	      break ;
-             case Log::SYSLOG:
+	    case Configuration::Log::SYSLOG:
 	      CentreonBroker::logging.LogInSyslog(0);
 	      break ;
              default:
@@ -518,20 +502,20 @@ void Manager::Update() throw ()
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new logging object...");
 #endif /* !NDEBUG */
-      switch (logs_it->GetType())
+      switch (logs_it->type)
 	{
-         case Log::FILE:
-	  CentreonBroker::logging.LogInFile(logs_it->GetFilePath().c_str(),
-                                            logs_it->GetFlags());
+	case Configuration::Log::FILE:
+	  CentreonBroker::logging.LogInFile(logs_it->file.c_str(),
+                                            logs_it->flags);
 	  break ;
-         case Log::STDERR:
-	  CentreonBroker::logging.LogToStderr(logs_it->GetFlags());
+	case Configuration::Log::STDERR:
+	  CentreonBroker::logging.LogToStderr(logs_it->flags);
 	  break ;
-         case Log::STDOUT:
-	  CentreonBroker::logging.LogToStdout(logs_it->GetFlags());
+	case Configuration::Log::STDOUT:
+	  CentreonBroker::logging.LogToStdout(logs_it->flags);
 	  break ;
-         case Log::SYSLOG:
-	  CentreonBroker::logging.LogInSyslog(logs_it->GetFlags());
+	case Configuration::Log::SYSLOG:
+	  CentreonBroker::logging.LogInSyslog(logs_it->flags);
 	  break ;
          default:
 	  ;
@@ -541,7 +525,7 @@ void Manager::Update() throw ()
 
   // Remove outputs that are not present in conf anymore or which don't have
   // the same configuration.
-  for (std::map<Output, DBOutput*>::iterator it = this->outputs_.begin();
+  for (std::map<Configuration::Interface, Processing::HighAvailability*>::iterator it = this->outputs_.begin();
        it != this->outputs_.end();)
     {
       outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
@@ -563,16 +547,18 @@ void Manager::Update() throw ()
   // Add new outputs.
   for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
     {
-      std::auto_ptr<CentreonBroker::DBOutput> dbo;
-      const Output& output(*outputs_it);
+      std::auto_ptr<CentreonBroker::DB::Connection> dbc;
+      std::auto_ptr< ::Interface::DB::Destination > dbd;
+      std::auto_ptr<Processing::HighAvailability> ha;
+      const Configuration::Interface& output(*outputs_it);
 
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new output object...");
 #endif /* !NDEBUG */
 
 #ifdef USE_MYSQL
-      if (Output::MYSQL == output.GetType())
-	dbo.reset(new DBOutput(DB::Connection::MYSQL));
+      if (Configuration::Interface::MYSQL == output.type)
+	dbc.reset(new CentreonBroker::DB::MySQLConnection());
 #endif /* USE_MYSQL */
 
 #ifdef USE_ORACLE
@@ -591,6 +577,7 @@ void Manager::Update() throw ()
 	dbo.reset(new DBOutput(DB::Connection::POSTGRESQL));
 #endif /* USE_POSTGRESQL */
 
+      /*
       dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
       dbo->SetDumpFile(output.GetDumpFile());
       dbo->SetQueryCommitInterval(output.GetQueryCommitInterval());
@@ -599,13 +586,21 @@ void Manager::Update() throw ()
                 output.GetUser(),
                 output.GetPassword(),
                 output.GetDB());
-      this->outputs_[output] = dbo.get();
-      dbo.release();
+      */
+      // XXX init
+      dbd.reset(new ::Interface::DB::Destination);
+      dbd->Init(dbc.get());
+      dbc.release();
+      ha.reset(new Processing::HighAvailability);
+      ha->Init(dbd.release());
+      ha.release();
+      this->outputs_[output] = ha.get();
+      ha.release();
     }
 
   // Remove inputs that are not present in conf anymore or which don't have the
   // same configuration.
-  for (std::map<Input, CentreonBroker::ClientAcceptor*>::iterator
+  for (std::map<Interface, Concurrency::Thread*>::iterator
          it = this->inputs_.begin();
        it != this->inputs_.end();)
     {
@@ -631,44 +626,44 @@ void Manager::Update() throw ()
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new input object...");
 #endif /* !NDEBUG */
-      std::auto_ptr<CentreonBroker::IO::Acceptor> acceptor;
+      std::auto_ptr<IO::Acceptor> acceptor;
 
-      switch (inputs_it->GetType())
+      switch (inputs_it->type)
 	{
-         case Input::IPV4:
+	case Configuration::Interface::IPV4:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::Net4Acceptor> net4a(
-              new CentreonBroker::IO::Net4Acceptor());
+	    std::auto_ptr<IO::Net::IPv4Acceptor> net4a(
+	       new IO::Net::IPv4Acceptor());
 
-	    if (inputs_it->GetIPInterface().empty())
-	      net4a->Listen(inputs_it->GetIPPort());
+	    if (inputs_it->interface.empty())
+	      net4a->Listen(inputs_it->port);
 	    else
-	      net4a->Listen(inputs_it->GetIPPort(),
-                            inputs_it->GetIPInterface().c_str());
+	      net4a->Listen(inputs_it->port,
+                            inputs_it->interface.c_str());
 	    acceptor.reset(net4a.get());
 	    net4a.release();
 	  }
 	  break ;
-         case Input::IPV6:
+	case Configuration::Interface::IPV6:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::Net6Acceptor> net6a(
-              new CentreonBroker::IO::Net6Acceptor());
+	    std::auto_ptr<IO::Net::IPv6Acceptor> net6a(
+	       new IO::Net::IPv6Acceptor());
 
-	    if (inputs_it->GetIPInterface().empty())
-	      net6a->Listen(inputs_it->GetIPPort());
+	    if (inputs_it->interface.empty())
+	      net6a->Listen(inputs_it->port);
 	    else
-	      net6a->Listen(inputs_it->GetIPPort(),
-                               inputs_it->GetIPInterface().c_str());
+	      net6a->Listen(inputs_it->port,
+                               inputs_it->interface.c_str());
 	    acceptor.reset(net6a.get());
 	    net6a.release();
 	  }
 	  break ;
-         case Input::UNIX:
+	case Configuration::Interface::UNIX:
 	  {
-	    std::auto_ptr<CentreonBroker::IO::UnixAcceptor> unixa(
-              new CentreonBroker::IO::UnixAcceptor());
+	    std::auto_ptr<IO::Net::UnixAcceptor> unixa(
+	       new IO::Net::UnixAcceptor());
 
-	    unixa->Listen(inputs_it->GetUnixSocketPath().c_str());
+	    unixa->Listen(inputs_it->socket.c_str());
 	    acceptor.reset(unixa.get());
 	    unixa.release();
 	  }
@@ -702,13 +697,13 @@ void Manager::Update() throw ()
 #endif /* USE_TLS */
 
       // Create the new client acceptor
-      std::auto_ptr<CentreonBroker::ClientAcceptor> ca(
-        new CentreonBroker::ClientAcceptor());
+      std::auto_ptr<Processing::Listener> listener(
+        new Processing::Listener());
 
-      ca->Run(acceptor.get());
+      listener->Init(acceptor.get(), Processing::Listener::NDO);
       acceptor.release();
-      this->inputs_[*inputs_it] = ca.get();
-      ca.release();
+      this->inputs_[*inputs_it] = listener.get();
+      listener.release();
     }
 
   // (Re-)Register handler of SIGHUP

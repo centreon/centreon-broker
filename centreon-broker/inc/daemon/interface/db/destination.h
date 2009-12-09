@@ -31,25 +31,25 @@
 # include "mapping.h"
 
 // Forward declaration.
-namespace                     Events
+namespace                         Events
 {
-  class                       Acknowledgement;
-  class                       Comment;
-  class                       Downtime;
-  class                       Event;
-  class                       Host;
-  class                       HostGroup;
-  class                       HostStatus;
-  class                       ProgramStatus;
-  class                       Query;
-  class                       Service;
-  class                       ServiceGroup;
-  class                       ServiceStatus;
+  class                           Acknowledgement;
+  class                           Comment;
+  class                           Downtime;
+  class                           Event;
+  class                           Host;
+  class                           HostGroup;
+  class                           HostStatus;
+  class                           ProgramStatus;
+  class                           Query;
+  class                           Service;
+  class                           ServiceGroup;
+  class                           ServiceStatus;
 }
 
-namespace Interface
+namespace                         Interface
 {
-  namespace DB
+  namespace                       DB
   {
     /**
      *  \class Destination destination.h "interface/db/destination.h"
