@@ -72,6 +72,9 @@ namespace       Configuration
                 Interface(const Interface& interface);
                 ~Interface();
     Interface&  operator=(const Interface& interface);
+    bool        operator==(const Interface& interface) const;
+    bool        operator!=(const Interface& interface) const;
+    bool        operator<(const Interface& interface) const;
   };
 }
 
