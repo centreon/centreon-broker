@@ -65,7 +65,6 @@ namespace       Configuration
     short       port;
     Protocol    protocol;
     std::string socket;
-    bool        tls;
     Type        type;
     std::string user;
                 Interface();

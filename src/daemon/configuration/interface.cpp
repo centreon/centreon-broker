@@ -48,7 +48,6 @@ void Interface::InternalCopy(const Interface& interface)
   this->port      = interface.port;
   this->protocol  = interface.protocol;
   this->socket    = interface.socket;
-  this->tls       = interface.tls;
   this->type      = interface.type;
   this->user      = interface.user;
   return ;
@@ -69,7 +68,6 @@ Interface::Interface()
   this->host     = "localhost";
   this->port     = 5668;
   this->protocol = UNKNOWN_PROTO;
-  this->tls      = false;
   this->type     = UNKNOWN_TYPE;
   this->user     = "root";
 }
@@ -101,4 +99,111 @@ Interface& Interface::operator=(const Interface& interface)
 {
   this->InternalCopy(interface);
   return (*this);
+}
+
+/**
+ *  Equality operator overload.
+ *
+ *  \param[in] interface Interface to compare to.
+ *
+ *  \return true if objects are equivalent, false otherwise.
+ */
+bool Interface::operator==(const Interface& interface) const
+{
+  bool ret;
+
+  if (this->type == interface.type)
+    switch (this->type)
+      {
+       case FILE:
+        ret = ((this->filename == interface.filename)
+               && (this->protocol == interface.protocol));
+        break ;
+       case IPV4:
+       case IPV6:
+        ret = ((this->host == interface.host)
+               && (this->interface == interface.interface)
+               && (this->port == interface.port)
+               && (this->protocol == interface.protocol));
+        break ;
+       case MYSQL:
+       case ORACLE:
+       case POSTGRESQL:
+        ret = ((this->db == interface.db)
+               && (this->host == interface.host)
+               && (this->password == interface.password)
+               && (this->user == interface.user));
+        break ;
+       case UNIX:
+        ret = (this->socket == interface.socket);
+        break ;
+       default:
+        ret = true;
+      }
+  else
+    ret = false;
+  return (ret);
+}
+
+/**
+ *  Non-equality operator overload.
+ *
+ *  \param[in] interface Interface to compare to.
+ *
+ *  \return true if objects are different, false otherwise.
+ */
+bool Interface::operator!=(const Interface& interface) const
+{
+  return (!this->operator==(interface));
+}
+
+/**
+ *  Strictly inferior operator overload.
+ *
+ *  \param[in] interface Interface to compare to.
+ *
+ *  \return true if current instance is strictly inferior to the argument.
+ */
+bool Interface::operator<(const Interface& interface) const
+{
+  bool ret;
+
+  if (this->type == interface.type)
+    switch (this->type)
+      {
+       case FILE:
+        ret = (this->filename < interface.filename);
+        break ;
+       case IPV4:
+       case IPV6:
+        if (this->host != interface.host)
+          ret = (this->host < interface.host);
+        else if (this->interface != interface.interface)
+          ret = (this->interface < interface.interface);
+        else if (this->port != interface.port)
+          ret = (this->port < interface.port);
+        else
+          ret = (this->protocol < interface.protocol);
+        break ;
+       case MYSQL:
+       case ORACLE:
+       case POSTGRESQL:
+        if (this->db != interface.db)
+          ret = (this->db < interface.db);
+        else if (this->host != interface.host)
+          ret = (this->host < interface.host);
+        else if (this->password != interface.password)
+          ret = (this->password < interface.password);
+        else
+          ret = (this->user < interface.user);
+        break ;
+       case UNIX:
+        ret = (this->socket < interface.socket);
+        break ;
+       default:
+        ret = true;
+      }
+  else
+    ret = (this->type < interface.type);
+  return (ret);
 }
