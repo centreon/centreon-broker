@@ -50,7 +50,7 @@ using namespace Interface::NDO;
  */
 template <typename T>
 static void set_boolean(T& t,
-                        const typename KeyField<T>::UHandler& field,
+                        const typename KeyField<T>::FieldPointer& field,
                         const char* str)
 {
   t.*(field.field_bool) = strtol(str, NULL, 0);
@@ -62,7 +62,7 @@ static void set_boolean(T& t,
  */
 template <typename T>
 static void set_double(T& t,
-                       const typename KeyField<T>::UHandler& field,
+                       const typename KeyField<T>::FieldPointer& field,
                        const char* str)
 {
   t.*(field.field_double) = strtod(str, NULL);
@@ -74,7 +74,7 @@ static void set_double(T& t,
  */
 template <typename T>
 static void set_integer(T& t,
-                        const typename KeyField<T>::UHandler& field,
+                        const typename KeyField<T>::FieldPointer& field,
                         const char* str)
 {
   t.*(field.field_int) = strtol(str, NULL, 0);
@@ -86,7 +86,7 @@ static void set_integer(T& t,
  */
 template <typename T>
 static void set_short(T& t,
-                      const typename KeyField<T>::UHandler& field,
+                      const typename KeyField<T>::FieldPointer& field,
                       const char* str)
 {
   t.*(field.field_short) = strtol(str, NULL, 0);
@@ -98,7 +98,7 @@ static void set_short(T& t,
  */
 template <typename T>
 static void set_string(T& t,
-                       const typename KeyField<T>::UHandler& field,
+                       const typename KeyField<T>::FieldPointer& field,
                        const char* str)
 {
   t.*(field.field_string) = str;
@@ -110,7 +110,7 @@ static void set_string(T& t,
  */
 template <typename T>
 static void set_timet(T& t,
-                      const typename KeyField<T>::UHandler& field,
+                      const typename KeyField<T>::FieldPointer& field,
                       const char* str)
 {
   t.*(field.field_timet) = strtol(str, NULL, 0);
@@ -122,7 +122,7 @@ static void set_timet(T& t,
  */
 template <typename T>
 static void set_undefined(T& t,
-                          const typename KeyField<T>::UHandler& field,
+                          const typename KeyField<T>::FieldPointer& field,
                           const char* str)
 {
   field.field_undefined.setter(t, str);
@@ -141,8 +141,8 @@ static void set_undefined(T& t,
 template <typename T>
 struct   Field
 {
-  const typename KeyField<T>::UHandler* param;
-  void (* ptr)(T&, const typename KeyField<T>::UHandler&, const char*);
+  const typename KeyField<T>::FieldPointer* param;
+  void (* ptr)(T&, const typename KeyField<T>::FieldPointer&, const char*);
 };
 
 /**
