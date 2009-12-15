@@ -22,6 +22,7 @@
 # define INTERFACE_NDO_INTERNAL_H_
 
 # include <string>
+# include "interface/field.h"
 
 // Forward declarations.
 namespace    Events
@@ -42,50 +43,24 @@ namespace    Interface
   namespace  NDO
   {
     /**
-     *  This template is used to store pointer to members of all events.
+     *  This template is used to associate a pointer to member with a NDO key.
      */
     template <typename T>
-    struct   KeyField
+    struct   KeyField : public Interface::Field<T>
     {
-      // Holds a getter and a setter.
-      struct GetterSetter
-      {
-	std::string (* getter)(const T&);
-	void (* setter)(T&, const char*);
-      };
       int    key;
-      char   type;
-      union  UHandler
-      {
-       public:
-        bool (T::* field_bool);
-        double (T::* field_double);
-        int (T::* field_int);
-        short (T::* field_short);
-        std::string (T::* field_string);
-        time_t (T::* field_timet);
-	GetterSetter field_undefined;
-      }      field;
 
-      KeyField() : key(0), type('\0')
-      { this->field.field_bool = NULL; }
-      KeyField(int k, bool (T::* b)) : key(k), type('b')
-      { this->field.field_bool = b; }
-      KeyField(int k, double (T::* d)) : key(k), type('d')
-      { this->field.field_double = d; }
-      KeyField(int k, int (T::* i)) : key(k), type('i')
-      { this->field.field_int = i; }
-      KeyField(int k, short (T::* s)) : key(k), type('s')
-      { this->field.field_short = s; }
-      KeyField(int k, std::string (T::* s)) : key(k), type('S')
-      { this->field.field_string = s; }
-      KeyField(int k, time_t (T::* t)) : key(k), type('t')
-      { this->field.field_timet = t; }
+      KeyField() : key(0) {}
+      KeyField(int k, bool (T::* b)) : Interface::Field<T>(b), key(k) {}
+      KeyField(int k, double (T::* d)) : Interface::Field<T>(d), key(k) {}
+      KeyField(int k, int (T::* i)) : Interface::Field<T>(i), key(k) {}
+      KeyField(int k, short (T::* s)) : Interface::Field<T>(s), key(k) {}
+      KeyField(int k, std::string (T::* s)) : Interface::Field<T>(s), key(k) {}
+      KeyField(int k, time_t (T::* t)) : Interface::Field<T>(t), key(k) {}
       KeyField(int k,
                std::string (* getter)(const T&),
-               void (* setter)(T&, const char*)) : key(k), type('u')
-      { this->field.field_undefined.getter = getter;
-        this->field.field_undefined.setter = setter; }
+               void (* setter)(T&, const char*))
+        : Interface::Field<T>(getter, setter), key(k) {}
     };
 
     // External arrays of pointer-to-members.
