@@ -24,6 +24,7 @@
 # include "events/acknowledgement.h"
 # include "events/comment.h"
 # include "events/downtime.h"
+# include "events/event.h"
 # include "events/host.h"
 # include "events/host_group.h"
 # include "events/host_status.h"

@@ -164,10 +164,6 @@ static std::map<int, Field<Events::ServiceStatus> >   service_status_map;
 *                                     *
 **************************************/
 
-/**
- *  This class only holds a constructor which is used with the help of a static
- *  object to build the protocol maps.
- */
 template <typename T>
 static void StaticInit(const KeyField<T> fields[],
                        std::map<int, Field<T> >& map)

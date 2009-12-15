@@ -19,11 +19,263 @@
 */
 
 #include <assert.h>
+#include <memory>                      // for auto_ptr
+#include <sstream>
 #include <stdlib.h>                    // for abort
+#include "events/events.h"
 #include "interface/xml/destination.h"
+#include "interface/xml/internal.h"
+#include "interface/xml/tinyxml.h"
 #include "io/stream.h"
 
 using namespace Interface::XML;
+
+/**************************************
+*                                     *
+*          Static Functions           *
+*                                     *
+**************************************/
+
+/**
+ *  Set a boolean on the XML document.
+ */
+template <typename T>
+static void set_boolean(const T& t,
+                        const NameField<T>& nf,
+                        TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::auto_ptr<TiXmlText> text;
+
+  if (t.*(nf.field.field_bool))
+    text.reset(new TiXmlText("true"));
+  else
+    text.reset(new TiXmlText("false"));
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set a double on the XML document.
+ */
+template <typename T>
+static void set_double(const T& t,
+                       const NameField<T>& nf,
+                       TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::stringstream ss;
+  std::auto_ptr<TiXmlText> text;
+
+  ss << t.*(nf.field.field_double);
+  text.reset(new TiXmlText(ss.str()));
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set an integer on the XML document.
+ */
+template <typename T>
+static void set_integer(const T& t,
+                        const NameField<T>& nf,
+                        TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::stringstream ss;
+  std::auto_ptr<TiXmlText> text;
+
+  ss << t.*(nf.field.field_int);
+  text.reset(new TiXmlText(ss.str()));
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set a list on the XML document.
+ */
+template <typename T>
+static void set_list(const T& t,
+                     const NameField<T>& nf,
+                     TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::list<std::string>::const_iterator end;
+  std::list<std::string>::const_iterator it;
+
+  end = (t.*(nf.field.field_list)).end();
+  for (it = (t.*(nf.field.field_list)).begin();
+       it != end;
+       ++it)
+    {
+      std::auto_ptr<TiXmlElement> host(new TiXmlElement(*it));
+
+      elem->LinkEndChild(host.get());
+      host.release();
+    }
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set a short on the XML document.
+ */
+template <typename T>
+static void set_short(const T& t,
+                      const NameField<T>& nf,
+                      TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::stringstream ss;
+  std::auto_ptr<TiXmlText> text;
+
+  ss << t.*(nf.field.field_short);
+  text.reset(new TiXmlText(ss.str()));
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set a string on the XML document.
+ */
+template <typename T>
+static void set_string(const T& t,
+                       const NameField<T>& nf,
+                       TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::auto_ptr<TiXmlText> text(new TiXmlText(t.*(nf.field.field_string)));
+
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**
+ *  Set a time_t on the XML document.
+ */
+template <typename T>
+static void set_timet(const T& t,
+                      const NameField<T>& nf,
+                      TiXmlNode& node)
+{
+  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
+  std::stringstream ss;
+  std::auto_ptr<TiXmlText> text;
+
+  ss << t.*(nf.field.field_timet);
+  text.reset(new TiXmlText(ss.str()));
+  elem->LinkEndChild(text.get());
+  text.release();
+  node.LinkEndChild(elem.get());
+  elem.release();
+  return ;
+}
+
+/**************************************
+*                                     *
+*             Field Lists             *
+*                                     *
+**************************************/
+
+/**
+ *  Associate a static function to a field that should be XML converted.
+ */
+template <typename T>
+struct   Field
+{
+  const NameField<T>* param;
+  void (* ptr)(const T&, const NameField<T>&, TiXmlNode&);
+};
+
+/**
+ *  Static lists.
+ */
+static std::list<Field<Events::Acknowledgement> > acknowledgement_list;
+static std::list<Field<Events::Comment> >         comment_list;
+static std::list<Field<Events::Downtime> >        downtime_list;
+static std::list<Field<Events::Host> >            host_list;
+static std::list<Field<Events::HostGroup> >       host_group_list;
+static std::list<Field<Events::HostStatus> >      host_status_list;
+static std::list<Field<Events::ProgramStatus> >   program_status_list;
+static std::list<Field<Events::Service> >         service_list;
+static std::list<Field<Events::ServiceStatus> >   service_status_list;
+
+/**************************************
+*                                     *
+*           Static Methods            *
+*                                     *
+**************************************/
+
+template <typename T>
+static void HandleEvent(const T& t,
+                        const std::list<Field<T> >& list,
+                        TiXmlNode& node)
+{
+  typename std::list<Field<T> >::const_iterator end;
+  typename std::list<Field<T> >::const_iterator it;
+
+  for (it = list.begin(); it != list.end(); ++it)
+    (*it->ptr)(t, *it->param, node);
+  return ;
+}
+
+template <typename T>
+static void StaticInit(const NameField<T> fields[],
+                       std::list<Field<T> >& list)
+{
+  for (unsigned int i = 0; fields[i].name; ++i)
+    {
+      list.push_back(Field<T>());
+
+      Field<T>& field(list.back());
+
+      field.param = fields + i;
+      switch (fields[i].type)
+        {
+         case 'b':
+          field.ptr = &set_boolean<T>;
+          break ;
+         case 'd':
+          field.ptr = &set_double<T>;
+          break ;
+         case 'i':
+          field.ptr = &set_integer<T>;
+          break ;
+         case 'l':
+          field.ptr = &set_list<T>;
+          break ;
+         case 's':
+          field.ptr = &set_short<T>;
+          break ;
+         case 'S':
+          field.ptr = &set_string<T>;
+          break ;
+         case 't':
+          field.ptr = &set_timet<T>;
+          break ;
+         default:
+          assert(false);
+          abort();
+        }
+    }
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -98,4 +350,77 @@ void Destination::Close()
  */
 void Destination::Event(const Events::Event& event)
 {
+  std::auto_ptr<TiXmlDocument> doc(new TiXmlDocument);
+  std::string str;
+
+  switch (event.GetType())
+    {
+     case Events::Event::ACKNOWLEDGEMENT:
+      HandleEvent(*static_cast<const Events::Acknowledgement*>(&event),
+                  acknowledgement_list,
+                  *doc.get());
+      break ;
+     case Events::Event::COMMENT:
+      HandleEvent(*static_cast<const Events::Comment*>(&event),
+                  comment_list,
+                  *doc.get());
+      break ;
+     case Events::Event::DOWNTIME:
+      HandleEvent(*static_cast<const Events::Downtime*>(&event),
+                  downtime_list,
+                  *doc.get());
+      break ;
+     case Events::Event::HOST:
+      HandleEvent(*static_cast<const Events::Host*>(&event),
+                  host_list,
+                  *doc.get());
+      break ;
+     case Events::Event::HOSTGROUP:
+      HandleEvent(*static_cast<const Events::HostGroup*>(&event),
+                  host_group_list,
+                  *doc.get());
+      break ;
+     case Events::Event::HOSTSTATUS:
+      HandleEvent(*static_cast<const Events::HostStatus*>(&event),
+                  host_status_list,
+                  *doc.get());
+      break ;
+     case Events::Event::PROGRAMSTATUS:
+      HandleEvent(*static_cast<const Events::ProgramStatus*>(&event),
+                  program_status_list,
+                  *doc.get());
+      break ;
+     case Events::Event::SERVICE:
+      HandleEvent(*static_cast<const Events::Service*>(&event),
+                  service_list,
+                  *doc.get());
+      break ;
+     case Events::Event::SERVICESTATUS:
+      HandleEvent(*static_cast<const Events::ServiceStatus*>(&event),
+                  service_status_list,
+                  *doc.get());
+      break ;
+     default:
+      ; // Unknown event.
+    }
+  str << *doc;
+  this->stream_->Send(str.c_str(), str.size());
+  return ;
+}
+
+/**
+ *  Initialize necessary data structures.
+ */
+void Destination::Init()
+{
+  StaticInit(acknowledgement_fields, acknowledgement_list);
+  StaticInit(comment_fields, comment_list);
+  StaticInit(downtime_fields, downtime_list);
+  StaticInit(host_fields, host_list);
+  StaticInit(host_group_fields, host_group_list);
+  StaticInit(host_status_fields, host_status_list);
+  StaticInit(program_status_fields, program_status_list);
+  StaticInit(service_fields, service_list);
+  StaticInit(service_status_fields, service_status_list);
+  return ;
 }

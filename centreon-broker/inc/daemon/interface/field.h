@@ -21,6 +21,7 @@
 #ifndef INTERFACE_FIELD_H_
 # define INTERFACE_FIELD_H_
 
+# include <list>
 # include <string>
 # include <time.h> // for time_t
 
@@ -45,10 +46,13 @@ namespace          Interface
       bool         (T::* field_bool);
       double       (T::* field_double);
       int          (T::* field_int);
+      std::list<std::string>
+                   (T::* field_list);
       short        (T::* field_short);
       std::string  (T::* field_string);
       time_t       (T::* field_timet);
       GetterSetter field_undefined;
+      void         *field_void;
     }              field;
     char           type;
 
@@ -61,16 +65,22 @@ namespace          Interface
     { this->field.field_double = d; }
     Field(int (T::* i)) : type('i')
     { this->field.field_int = i; }
+    Field(std::list<std::string> (T::* l)) : type('l')
+    { this->field.field_list = l; }
     Field(short (T::* s)) : type('s')
     { this->field.field_short = s; }
     Field(std::string (T::* s)) : type('S')
     { this->field.field_string = s; }
     Field(time_t (T::* t)) : type('t')
     { this->field.field_timet = t; }
+    // XXX : this is NDO-specific, should be replaced by void*
     Field(std::string (* getter)(const T&),
           void (* setter)(T&, const char*)) : type('u')
     { this->field.field_undefined.getter = getter;
       this->field.field_undefined.setter = setter; }
+    // !XXX
+    Field(void* ptr) : type('v')
+    { this->field.field_void = ptr; }
   };
 }
 
