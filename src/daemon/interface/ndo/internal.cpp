@@ -21,15 +21,7 @@
 #include <sstream>
 #include <stdlib.h>                 // for strtol
 #include <string.h>                 // for strcspn, strncmp
-#include "events/acknowledgement.h"
-#include "events/comment.h"
-#include "events/downtime.h"
-#include "events/host.h"
-#include "events/host_group.h"
-#include "events/host_status.h"
-#include "events/program_status.h"
-#include "events/service.h"
-#include "events/service_status.h"
+#include "events/events.h"
 #include "interface/ndo/internal.h"
 #include "nagios/protoapi.h"
 

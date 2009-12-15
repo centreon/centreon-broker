@@ -73,8 +73,6 @@ namespace              Events
       UNKNOWN = 0,
       ACKNOWLEDGEMENT,
       COMMENT,
-      CONNECTION,
-      CONNECTIONSTATUS,
       DOWNTIME,
       HOST,
       HOSTGROUP,
