@@ -49,12 +49,15 @@ namespace       Configuration
     {
       UNKNOWN_TYPE = 0,
       FILE,
-      IPV4,
-      IPV6,
+      IPV4_CLIENT,
+      IPV4_SERVER,
+      IPV6_CLIENT,
+      IPV6_SERVER,
       MYSQL,
       ORACLE,
       POSTGRESQL,
-      UNIX
+      UNIX_CLIENT,
+      UNIX_SERVER
     };
     std::string db;
     std::string filename;

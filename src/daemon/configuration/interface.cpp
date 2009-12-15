@@ -119,8 +119,10 @@ bool Interface::operator==(const Interface& interface) const
         ret = ((this->filename == interface.filename)
                && (this->protocol == interface.protocol));
         break ;
-       case IPV4:
-       case IPV6:
+       case IPV4_CLIENT:
+       case IPV4_SERVER:
+       case IPV6_CLIENT:
+       case IPV6_SERVER:
         ret = ((this->host == interface.host)
                && (this->interface == interface.interface)
                && (this->port == interface.port)
@@ -134,7 +136,8 @@ bool Interface::operator==(const Interface& interface) const
                && (this->password == interface.password)
                && (this->user == interface.user));
         break ;
-       case UNIX:
+       case UNIX_CLIENT:
+       case UNIX_SERVER:
         ret = (this->socket == interface.socket);
         break ;
        default:
@@ -174,8 +177,10 @@ bool Interface::operator<(const Interface& interface) const
        case FILE:
         ret = (this->filename < interface.filename);
         break ;
-       case IPV4:
-       case IPV6:
+       case IPV4_CLIENT:
+       case IPV4_SERVER:
+       case IPV6_CLIENT:
+       case IPV6_SERVER:
         if (this->host != interface.host)
           ret = (this->host < interface.host);
         else if (this->interface != interface.interface)
@@ -197,7 +202,8 @@ bool Interface::operator<(const Interface& interface) const
         else
           ret = (this->user < interface.user);
         break ;
-       case UNIX:
+       case UNIX_CLIENT:
+       case UNIX_SERVER:
         ret = (this->socket < interface.socket);
         break ;
        default:

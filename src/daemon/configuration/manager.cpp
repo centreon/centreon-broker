@@ -100,11 +100,11 @@ static void HandleInput(Configuration::Lexer& lexer, Configuration::Interface& i
       else if (var_str == "type")
 	{
 	  if ((val_str == "ip") || (val_str == "ipv4"))
-	    in.type = Configuration::Interface::IPV4;
+	    in.type = Configuration::Interface::IPV4_SERVER;
 	  else if (val_str == "ipv6")
-	    in.type = Configuration::Interface::IPV6;
+	    in.type = Configuration::Interface::IPV6_SERVER;
 	  else if (val_str == "unix")
-	    in.type = Configuration::Interface::UNIX;
+	    in.type = Configuration::Interface::UNIX_SERVER;
 	}
 #ifdef USE_TLS
       else if (var_str == "ca")
@@ -630,7 +630,7 @@ void Configuration::Manager::Update()
 
       switch (inputs_it->type)
 	{
-	case Configuration::Interface::IPV4:
+	case Configuration::Interface::IPV4_SERVER:
 	  {
 	    std::auto_ptr<IO::Net::IPv4Acceptor> net4a(
 	       new IO::Net::IPv4Acceptor());
@@ -644,7 +644,7 @@ void Configuration::Manager::Update()
 	    net4a.release();
 	  }
 	  break ;
-	case Configuration::Interface::IPV6:
+	case Configuration::Interface::IPV6_SERVER:
 	  {
 	    std::auto_ptr<IO::Net::IPv6Acceptor> net6a(
 	       new IO::Net::IPv6Acceptor());
@@ -658,7 +658,7 @@ void Configuration::Manager::Update()
 	    net6a.release();
 	  }
 	  break ;
-	case Configuration::Interface::UNIX:
+	case Configuration::Interface::UNIX_SERVER:
 	  {
 	    std::auto_ptr<IO::Net::UnixAcceptor> unixa(
 	       new IO::Net::UnixAcceptor());
@@ -674,9 +674,9 @@ void Configuration::Manager::Update()
 
 #ifdef USE_TLS
       // Check for TLS support
-      if (((Input::IPV4 == inputs_it->GetType())
-	   || (Input::IPV6 == inputs_it->GetType())
-           || (Input::UNIX == inputs_it->GetType()))
+      if (((Input::IPV4_SERVER == inputs_it->GetType())
+	   || (Input::IPV6_SERVER == inputs_it->GetType())
+           || (Input::UNIX_SERVER == inputs_it->GetType()))
           && inputs_it->GetTLS())
 	{
 	  std::auto_ptr<CentreonBroker::IO::TLSAcceptor> tlsa(
