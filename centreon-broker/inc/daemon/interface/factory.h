@@ -22,15 +22,24 @@
 # define INTERFACE_FACTORY_H_
 
 // Forward declaration.
-namespace                     Configuration
-{ class                       Interface; }
+namespace                   Configuration
+{ class                     Interface; }
+namespace                   IO
+{ class                     Acceptor;
+  namespace                 Net
+  {
+    class                   IPv4Connector;
+    class                   IPv6Connector;
+    class                   UnixConnector;
+  }
+}
 
-namespace                     Interface
+namespace                   Interface
 {
   // Forward declarations.
-  class                       Destination;
-  class                       Source;
-  class                       SourceDestination;
+  class                     Destination;
+  class                     Source;
+  class                     SourceDestination;
 
   /**
    *  \class Factory factory.h "interface/factory.h"
@@ -43,20 +52,25 @@ namespace                     Interface
    *  \see Destination
    *  \see SourceDestination
    */
-  class                       Factory
+  class                     Factory
   {
    private:
-                              Factory();
-                              Factory(const Factory& factory);
-                              ~Factory();
-    Factory&                  operator=(const Factory& factory);
+                            Factory();
+                            Factory(const Factory& factory);
+                            ~Factory();
+    Factory&                operator=(const Factory& factory);
+    IO::Net::IPv4Connector* IPv4Connector(const Configuration::Interface& i);
+    IO::Net::IPv6Connector* IPv6Connector(const Configuration::Interface& i);
+    IO::Net::UnixConnector* UnixConnector(const Configuration::Interface& i);
 
    public:
-    Interface::Destination*   Destination(const Configuration::Interface& i);
-    static Factory&           Instance();
-    Interface::Source*        Source(const Configuration::Interface& i);
+    IO::Acceptor*           Acceptor(const Configuration::Interface& i);
+    Interface::Destination* Destination(const Configuration::Interface& i);
+    static Factory&         Instance();
+    Interface::Source*      Source(const Configuration::Interface& i);
     Interface::SourceDestination*
-                              SourceDestination(const Configuration::Interface& i);
+                            SourceDestination(
+                              const Configuration::Interface& i);
   };
 }
 
