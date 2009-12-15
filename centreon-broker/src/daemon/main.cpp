@@ -22,11 +22,13 @@
 #include "db/mysql/connection.h"
 #include "interface/db/destination.h"
 #include "interface/ndo/source.h"
+#include "interface/xml/destination.h"
 #include "io/net/ipv4.h"
 #include "mapping.h"
 #include "multiplexing/publisher.h"
 #include "processing/high_availability.h"
 #include "processing/listener.h"
+#include "processing/listener_destination.h"
 #include "processing/manager.h"
 
 int main()
@@ -39,6 +41,7 @@ int main()
 
   MappingsInit();
   Interface::NDO::Source::Initialize();
+  Interface::XML::Destination::Initialize();
   ipv4->Listen(5667);
   listener->Init(ipv4.get(),
                  Processing::Listener::NDO,
@@ -50,8 +53,14 @@ int main()
   conn->Connect("localhost", "root", "123456789", "cb");
   dest = new Interface::DB::Destination();
   dest->Init(conn);
-  ha = new Processing::HighAvailability();
-  ha->Init(dest);
+  /*ha = new Processing::HighAvailability();
+    ha->Init(dest);*/
+  std::auto_ptr<Processing::ListenerDestination> ld(new Processing::ListenerDestination);
+  std::auto_ptr<IO::Net::IPv4Acceptor> acceptor(new IO::Net::IPv4Acceptor);
+
+  acceptor->Listen(4242);
+  ld->Init(acceptor.get(), Processing::ListenerDestination::XML);
+  acceptor.release();
 
   while (1)
     pause();

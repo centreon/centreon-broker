@@ -52,7 +52,7 @@ namespace          Interface
       virtual      ~Destination();
       virtual void Close();
       virtual void Event(const Events::Event& event);
-      static void  Init();
+      static void  Initialize();
     };
   }
 }

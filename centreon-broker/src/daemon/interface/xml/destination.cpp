@@ -351,58 +351,70 @@ void Destination::Close()
 void Destination::Event(const Events::Event& event)
 {
   std::auto_ptr<TiXmlDocument> doc(new TiXmlDocument);
+  std::auto_ptr<TiXmlElement> xml_event;
   std::string str;
 
   switch (event.GetType())
     {
      case Events::Event::ACKNOWLEDGEMENT:
+      xml_event.reset(new TiXmlElement("acknowledgement"));
       HandleEvent(*static_cast<const Events::Acknowledgement*>(&event),
                   acknowledgement_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::COMMENT:
+      xml_event.reset(new TiXmlElement("comment"));
       HandleEvent(*static_cast<const Events::Comment*>(&event),
                   comment_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::DOWNTIME:
+      xml_event.reset(new TiXmlElement("downtime"));
       HandleEvent(*static_cast<const Events::Downtime*>(&event),
                   downtime_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::HOST:
+      xml_event.reset(new TiXmlElement("host"));
       HandleEvent(*static_cast<const Events::Host*>(&event),
                   host_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::HOSTGROUP:
+      xml_event.reset(new TiXmlElement("host_group"));
       HandleEvent(*static_cast<const Events::HostGroup*>(&event),
                   host_group_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::HOSTSTATUS:
+      xml_event.reset(new TiXmlElement("host_status"));
       HandleEvent(*static_cast<const Events::HostStatus*>(&event),
                   host_status_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::PROGRAMSTATUS:
+      xml_event.reset(new TiXmlElement("program_status"));
       HandleEvent(*static_cast<const Events::ProgramStatus*>(&event),
                   program_status_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::SERVICE:
+      xml_event.reset(new TiXmlElement("service"));
       HandleEvent(*static_cast<const Events::Service*>(&event),
                   service_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      case Events::Event::SERVICESTATUS:
+      xml_event.reset(new TiXmlElement("service_status"));
       HandleEvent(*static_cast<const Events::ServiceStatus*>(&event),
                   service_status_list,
-                  *doc.get());
+                  *xml_event);
       break ;
      default:
-      ; // Unknown event.
+      return ;
     }
+  doc->LinkEndChild(xml_event.get());
+  xml_event.release();
   str << *doc;
   this->stream_->Send(str.c_str(), str.size());
   return ;
@@ -411,7 +423,7 @@ void Destination::Event(const Events::Event& event)
 /**
  *  Initialize necessary data structures.
  */
-void Destination::Init()
+void Destination::Initialize()
 {
   StaticInit(acknowledgement_fields, acknowledgement_list);
   StaticInit(comment_fields, comment_list);
