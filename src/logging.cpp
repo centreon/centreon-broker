@@ -18,11 +18,14 @@
 **  For more information : contact@centreon.com
 */
 
-#include <boost/thread.hpp>
-#include <cassert>
-#include <iostream>
+#include <assert.h>
+#include <iomanip>            // for hex
+#include <iostream>           // for cerr, cout
+#include <pthread.h>          // for pthread_self
 #include <sstream>
+#include <stdlib.h>           // for abort
 #include <syslog.h>
+#include "concurrency/lock.h"
 #include "logging.h"
 
 using namespace CentreonBroker;
@@ -117,8 +120,9 @@ Logging::OutputFile::OutputFile(const Logging::OutputFile& output_file)
  *  \brief OutputFile destructor.
  *
  *  Will close the wrapped file if open.
+ *  \par Safety No throw guarantee.
  */
-Logging::OutputFile::~OutputFile() throw ()
+Logging::OutputFile::~OutputFile()
 {
   try
     {
@@ -222,56 +226,57 @@ Logging& Logging::operator=(const Logging& l)
  *
  *  This is the basic method used to log messages to streams. It will browse
  *  the stream list and push the message if the flags match.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] str Message to log.
  *  \param[in] flag Type of message.
  */
-void Logging::LogBase(const char* str, Logging::MsgType msg_type) throw ()
+void Logging::LogBase(const char* str, Logging::MsgType msg_type)
 {
   try
     {
-      boost::unique_lock<boost::mutex> lock(this->mutex_);
+      Concurrency::Lock lock(this->mutex_);
       std::string full_msg;
 
       // Build the full message string
       {
-	std::ostringstream ss;
+        std::ostringstream ss;
 
-	full_msg = "[";
-	ss << boost::this_thread::get_id();
-	full_msg.append(ss.str());
-	full_msg.append("] ");
-	full_msg.append(str);
+        full_msg = "[";
+        ss << std::hex << (unsigned long)pthread_self() << std::dec;
+        full_msg.append(ss.str());
+        full_msg.append("] ");
+        full_msg.append(str);
       }
 
       // Browse all outputs
       for (std::list<OutputFile>::iterator ito = this->outputs_.begin();
-	   ito != this->outputs_.end();
-	   ito++)
-	if ((*ito).flags & msg_type)
-	  (*ito).stream << full_msg << std::endl;
+           ito != this->outputs_.end();
+           ito++)
+        if ((*ito).flags & msg_type)
+          (*ito).stream << full_msg << std::endl;
 
       // Special case : stderr
       if (this->stderr_flags_ & msg_type)
-	std::cerr << full_msg << std::endl;
+        std::cerr << full_msg << std::endl;
 
       // Special case : stdout
       if (this->stdout_flags_ & msg_type)
-	std::cout << full_msg << std::endl;
+        std::cout << full_msg << std::endl;
 
       // Syslog
       if (this->syslog_flags_ & msg_type)
-	{
-	  int priority;
+        {
+          int priority;
 
-	  if (msg_type & DEBUG)
-	    priority = LOG_DEBUG;
-	  else if (msg_type & ERROR)
-	    priority = LOG_ERR;
-	  else
-	    priority = LOG_INFO;
-	  syslog(priority, str, NULL);
-	}
+          if (msg_type & DEBUG)
+            priority = LOG_DEBUG;
+          else if (msg_type & ERROR)
+            priority = LOG_ERR;
+          else
+            priority = LOG_INFO;
+          syslog(priority, str, NULL);
+        }
     }
   catch (...) {}
   return ;
@@ -287,14 +292,14 @@ void Logging::LogBase(const char* str, Logging::MsgType msg_type) throw ()
  *  Logging default constructor.
  */
 Logging::Logging()
-  : stderr_flags_(0),
+  : stderr_flags_(-1),
     stdout_flags_(0),
     syslog_flags_(0) {}
 
 /**
  *  Logging destructor.
  */
-Logging::~Logging() throw ()
+Logging::~Logging()
 {
   // Outputs will self-destruct, we only have to close syslog, if necessary.
   if (this->syslog_flags_)
@@ -304,10 +309,11 @@ Logging::~Logging() throw ()
 #ifndef NDEBUG
 /**
  *  Add a debug output.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] str Debug message to log.
  */
-void Logging::LogDebug(const char* str) throw ()
+void Logging::LogDebug(const char* str)
 {
   this->LogBase(str, DEBUG);
   return ;
@@ -316,10 +322,11 @@ void Logging::LogDebug(const char* str) throw ()
 
 /**
  *  Add an error output.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] str Error message to log.
  */
-void Logging::LogError(const char* str) throw ()
+void Logging::LogError(const char* str)
 {
   this->LogBase(str, ERROR);
   return ;
@@ -334,31 +341,31 @@ void Logging::LogError(const char* str) throw ()
  */
 void Logging::LogInFile(const char* filename, int log_flags)
 {
-  boost::unique_lock<boost::mutex> lock(this->mutex_);
+  Concurrency::Lock lock(this->mutex_);
 
   // Add or modify an output
   if (log_flags)
     {
       // Try to find the output
       for (std::list<OutputFile>::iterator it = this->outputs_.begin();
-	   it != this->outputs_.end();
-	   it++)
-	if (it->filename == filename)
-	  {
-	    it->flags = log_flags;
-	    return ;
-	  }
+           it != this->outputs_.end();
+           it++)
+        if (it->filename == filename)
+          {
+            it->flags = log_flags;
+            return ;
+          }
 
       // We didn't find it so add it.
       try
-	{
+        {
           // Add an element at the end of the list
-	  this->outputs_.push_back(OutputFile());
+          this->outputs_.push_back(OutputFile());
 
-	  // Get a reference to the last element
-	  OutputFile& out(this->outputs_.back());
+          // Get a reference to the last element
+          OutputFile& out(this->outputs_.back());
 
-	  // Initialize it
+          // Initialize it
           if (out.Open(filename, log_flags))
             this->outputs_.pop_back();
         }
@@ -372,8 +379,8 @@ void Logging::LogInFile(const char* filename, int log_flags)
     {
       for (std::list<OutputFile>::iterator it = this->outputs_.begin();
            it != this->outputs_.end();
-	   ++it)
-	if (it->filename == filename)
+           ++it)
+        if (it->filename == filename)
           {
             this->outputs_.erase(it);
             break ;
@@ -384,10 +391,11 @@ void Logging::LogInFile(const char* filename, int log_flags)
 
 /**
  *  Add an info output.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] str Informational message to log.
  */
-void Logging::LogInfo(const char* str) throw ()
+void Logging::LogInfo(const char* str)
 {
   this->LogBase(str, INFO);
   return ;
@@ -395,11 +403,12 @@ void Logging::LogInfo(const char* str) throw ()
 
 /**
  *  Determines whether or not output should be sent to the syslog facility.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] log_flags Specify which kind of messages should be sent to the
  *                       syslog facility (0 for none).
  */
-void Logging::LogInSyslog(int log_flags) throw ()
+void Logging::LogInSyslog(int log_flags)
 {
   this->syslog_flags_ = log_flags;
   if (this->syslog_flags_)
@@ -411,11 +420,12 @@ void Logging::LogInSyslog(int log_flags) throw ()
 
 /**
  *  Determines whether or not output should be sent to stderr.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] log_flags Specify which kind of messages should be sent to
  *                       stderr (0 for none).
  */
-void Logging::LogToStderr(int log_flags) throw ()
+void Logging::LogToStderr(int log_flags)
 {
   this->stderr_flags_ = log_flags;
   return ;
@@ -423,11 +433,12 @@ void Logging::LogToStderr(int log_flags) throw ()
 
 /**
  *  Determines whether or not output should be sent to stdout.
+ *  \par Safety No throw guarantee.
  *
  *  \param[in] log_flags Specify which kind of messages should be sent to
  *                       stdout (0 for none).
  */
-void Logging::LogToStdout(int log_flags) throw ()
+void Logging::LogToStdout(int log_flags)
 {
   this->stdout_flags_ = log_flags;
   return ;
