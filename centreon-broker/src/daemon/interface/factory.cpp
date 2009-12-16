@@ -20,6 +20,8 @@
 
 #include <memory>
 #include "configuration/interface.h"
+#include "db/mysql/connection.h"
+#include "interface/db/destination.h"
 #include "interface/factory.h"
 #include "interface/ndo/source.h"
 #include "interface/xml/destination.h"
@@ -193,17 +195,18 @@ Destination* Factory::Destination(const Configuration::Interface& i)
     {
      case Configuration::Interface::FILE:
       {
-	std::auto_ptr<IO::Split> split(new IO::Split);
+        std::auto_ptr<IO::Split> split(new IO::Split);
 
-	// XXX : set file num + file size
-	split->BaseFile(i.filename);
-	dest = new Interface::XML::Destination(split.get());
-	split.release();
+        // XXX : set file num + file size
+        split->BaseFile(i.filename);
+        dest = new Interface::XML::Destination(split.get());
+        split.release();
       }
      case Configuration::Interface::IPV4_CLIENT:
       {
         std::auto_ptr<IO::Net::IPv4Connector> ipv4c(this->IPv4Connector(i));
 
+        ipv4c->Connect(i.host.c_str(), i.port);
         dest = new Interface::XML::Destination(ipv4c.get());
         ipv4c.release();
       }
@@ -212,19 +215,29 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Net::IPv6Connector> ipv6c(this->IPv6Connector(i));
 
+        ipv6c->Connect(i.host.c_str(), i.port);
         dest = new Interface::XML::Destination(ipv6c.get());
         ipv6c.release();
       }
       break ;
      case Configuration::Interface::MYSQL:
       {
-        // XXX
+        std::auto_ptr<CentreonBroker::DB::MySQLConnection> myconn(
+          new CentreonBroker::DB::MySQLConnection);
+        std::auto_ptr<Interface::DB::Destination> mydest;
+
+        myconn->Connect(i.host, i.user, i.password, i.db);
+        mydest.reset(new Interface::DB::Destination);
+        mydest->Init(myconn.get());
+        myconn.release();
+        dest = mydest.release();
       }
       break ;
      case Configuration::Interface::UNIX_CLIENT:
       {
         std::auto_ptr<IO::Net::UnixConnector> uc(this->UnixConnector(i));
 
+        uc->Connect(i.socket.c_str());
         dest = new Interface::XML::Destination(uc.get());
         uc.release();
       }
@@ -270,11 +283,11 @@ Source* Factory::Source(const Configuration::Interface& i)
     {
      case Configuration::Interface::FILE:
       {
-	std::auto_ptr<IO::Split> split(new IO::Split);
+        std::auto_ptr<IO::Split> split(new IO::Split);
 
-	// XXX : set file num + file size
-	source = new Interface::NDO::Source(split.get());
-	split.release();
+        // XXX : set file num + file size
+        source = new Interface::NDO::Source(split.get());
+        split.release();
       }
       break ;
      case Configuration::Interface::IPV4_CLIENT:

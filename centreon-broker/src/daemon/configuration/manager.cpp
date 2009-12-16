@@ -29,6 +29,7 @@
 #include "db/mysql/connection.h"
 #include "exception.h"
 #include "interface/db/destination.h"
+#include "interface/factory.h"
 #include "io/acceptor.h"
 #include "io/file.h"
 #include "io/net/ipv4.h"
@@ -467,21 +468,19 @@ void Configuration::Manager::Update()
       logs_it = std::find(logs.begin(), logs.end(), *it);
       if (logs.end() == logs_it)
 	{
-#ifndef NDEBUG
-	  CentreonBroker::logging.LogDebug("Removing unwanted log object...");
-#endif /* !NDEBUG */
+	  LOGDEBUG("Removing unwanted log object...");
 	  switch (it->type)
 	    {
-	    case Configuration::Log::FILE:
+             case Configuration::Log::FILE:
               CentreonBroker::logging.LogInFile(it->file.c_str(), 0);
               break ;
-	    case Configuration::Log::STDERR:
+             case Configuration::Log::STDERR:
 	      CentreonBroker::logging.LogToStderr(0);
 	      break ;
-	    case Configuration::Log::STDOUT:
+             case Configuration::Log::STDOUT:
 	      CentreonBroker::logging.LogToStdout(0);
 	      break ;
-	    case Configuration::Log::SYSLOG:
+             case Configuration::Log::SYSLOG:
 	      CentreonBroker::logging.LogInSyslog(0);
 	      break ;
              default:
@@ -497,7 +496,7 @@ void Configuration::Manager::Update()
     }
 
   // Add new logs.
-  for (logs_it = logs.begin(); logs_it != logs.end(); logs_it++)
+  for (logs_it = logs.begin(); logs_it != logs.end(); ++logs_it)
     {
 #ifndef NDEBUG
       CentreonBroker::logging.LogDebug("Adding new logging object...");
@@ -547,35 +546,11 @@ void Configuration::Manager::Update()
   // Add new outputs.
   for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
     {
-      std::auto_ptr<CentreonBroker::DB::Connection> dbc;
-      std::auto_ptr< ::Interface::DB::Destination > dbd;
+      std::auto_ptr< ::Interface::Destination > dbd;
       std::auto_ptr<Processing::HighAvailability> ha;
       const Configuration::Interface& output(*outputs_it);
 
-#ifndef NDEBUG
-      CentreonBroker::logging.LogDebug("Adding new output object...");
-#endif /* !NDEBUG */
-
-#ifdef USE_MYSQL
-      if (Configuration::Interface::MYSQL == output.type)
-	dbc.reset(new CentreonBroker::DB::MySQLConnection());
-#endif /* USE_MYSQL */
-
-#ifdef USE_ORACLE
-# ifdef USE_MYSQL
-      else
-# endif /* USE_MYSQL */
-      if (Output::ORACLE == output.GetType())
-        dbo.reset(new DBOutput(DB::Connection::ORACLE));
-#endif /* USE_ORACLE */
-
-#ifdef USE_POSTGRESQL
-# if defined(USE_MYSQL) || defined(USE_ORACLE)
-      else
-# endif /* USE_MYSQL || USE_ORACLE */
-      if (Output::POSTGRESQL == output.GetType())
-	dbo.reset(new DBOutput(DB::Connection::POSTGRESQL));
-#endif /* USE_POSTGRESQL */
+      LOGDEBUG("Adding new output object...");
 
       /*
       dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
@@ -587,13 +562,11 @@ void Configuration::Manager::Update()
                 output.GetPassword(),
                 output.GetDB());
       */
-      // XXX init
-      dbd.reset(new ::Interface::DB::Destination);
-      dbd->Init(dbc.get());
-      dbc.release();
+
+      dbd.reset(::Interface::Factory::Instance().Destination(output));
       ha.reset(new Processing::HighAvailability);
-      ha->Init(dbd.release());
-      ha.release();
+      ha->Init(dbd.get());
+      dbd.release();
       this->outputs_[output] = ha.get();
       ha.release();
     }
@@ -607,9 +580,7 @@ void Configuration::Manager::Update()
       inputs_it = std::find(inputs.begin(), inputs.end(), it->first);
       if (inputs.end() == inputs_it)
 	{
-#ifndef NDEBUG
-	  CentreonBroker::logging.LogDebug("Removing unwanted input object...");
-#endif /* !NDEBUG */
+	  LOGDEBUG("Removing unwanted input object...");
 	  delete (it->second);
 	  this->inputs_.erase(it++);
 	}
@@ -621,11 +592,9 @@ void Configuration::Manager::Update()
     }
 
   // Add new inputs.
-  for (inputs_it = inputs.begin(); inputs_it != inputs.end(); inputs_it++)
+  for (inputs_it = inputs.begin(); inputs_it != inputs.end(); ++inputs_it)
     {
-#ifndef NDEBUG
-      CentreonBroker::logging.LogDebug("Adding new input object...");
-#endif /* !NDEBUG */
+      LOGDEBUG("Adding new input object...");
       std::auto_ptr<IO::Acceptor> acceptor;
 
       switch (inputs_it->type)

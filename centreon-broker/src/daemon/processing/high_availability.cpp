@@ -131,6 +131,7 @@ void HighAvailability::Init(Interface::Destination* sd)
 {
   this->delivery_ = new Delivery;
   this->delivery_->Init(this, sd);
+  this->sd_.reset(sd);
   Multiplexing::Publisher::Instance().Subscribe(this);
   return ;
 }
