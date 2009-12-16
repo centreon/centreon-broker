@@ -20,7 +20,7 @@
 
 AUTOMAKE_OPTIONS=	subdir-objects
 
-bin_PROGRAMS	=	cb2db cbmod.so
+bin_PROGRAMS	=	cb2db #cbmod.so
 
 
 #######################################
@@ -29,58 +29,79 @@ bin_PROGRAMS	=	cb2db cbmod.so
 #                                     #
 #######################################
 
-cb2db_SOURCES	=	../../src/cb2db.cpp				\
-			../../src/client_acceptor.cpp			\
-			../../src/conf/global.cpp			\
-			../../src/conf/input.cpp			\
-			../../src/conf/lexer.cpp			\
-			../../src/conf/log.cpp				\
-			../../src/conf/manager.cpp			\
-			../../src/conf/output.cpp			\
-			../../src/db/connection.cpp			\
-			../../src/db/db_exception.cpp			\
-			../../src/db/delete.cpp				\
-			../../src/db/have_args.cpp			\
-			../../src/db/have_fields.cpp			\
-			../../src/db/have_predicate.cpp			\
-			../../src/db/have_table.cpp			\
-			../../src/db/insert.cpp				\
-			../../src/db/predicate.cpp			\
-			../../src/db/query.cpp				\
-			../../src/db/select.cpp				\
-			../../src/db/truncate.cpp			\
-			../../src/db/update.cpp				\
-			../../src/db_output.cpp				\
-			../../src/event_publisher.cpp			\
-			../../src/event_subscriber.cpp			\
-			../../src/events/acknowledgement.cpp		\
-			../../src/events/comment.cpp			\
-			../../src/events/downtime.cpp			\
-			../../src/events/event.cpp			\
-			../../src/events/group.cpp			\
-			../../src/events/host.cpp			\
-			../../src/events/host_group.cpp			\
-			../../src/events/host_service.cpp		\
-			../../src/events/host_service_status.cpp	\
-			../../src/events/host_status.cpp		\
-			../../src/events/log.cpp			\
-			../../src/events/program_status.cpp		\
-			../../src/events/service.cpp			\
-			../../src/events/service_group.cpp		\
-			../../src/events/service_status.cpp		\
-			../../src/events/status.cpp			\
-			../../src/exception.cpp				\
-			../../src/file_input.cpp			\
-			../../src/file_output.cpp			\
-			../../src/io/fd.cpp				\
-			../../src/io/file.cpp				\
-			../../src/io/io.cpp				\
-			../../src/io/net4.cpp				\
-			../../src/io/net6.cpp				\
-			../../src/io/unix.cpp				\
-			../../src/logging.cpp				\
-			../../src/mapping.cpp				\
-			../../src/network_input.cpp
+cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
+		../../src/concurrency/lock.cpp				\
+		../../src/concurrency/mutex.cpp				\
+		../../src/concurrency/thread.cpp			\
+		../../src/concurrency/thread_listener.cpp		\
+		../../src/daemon/configuration/interface.cpp		\
+		../../src/daemon/configuration/lexer.cpp		\
+		../../src/daemon/configuration/log.cpp			\
+		../../src/daemon/configuration/manager.cpp		\
+		../../src/daemon/interface/db/destination.cpp		\
+		../../src/daemon/interface/destination.cpp		\
+		../../src/daemon/interface/factory.cpp			\
+		../../src/daemon/interface/ndo/internal.cpp		\
+		../../src/daemon/interface/ndo/source.cpp		\
+		../../src/daemon/interface/source.cpp			\
+		../../src/daemon/interface/sourcedestination.cpp	\
+		../../src/daemon/interface/xml/destination.cpp		\
+		../../src/daemon/interface/xml/internal.cpp		\
+		../../src/daemon/interface/xml/tinystr.cpp		\
+		../../src/daemon/interface/xml/tinyxml.cpp		\
+		../../src/daemon/interface/xml/tinyxmlerror.cpp		\
+		../../src/daemon/interface/xml/tinyxmlparser.cpp	\
+		../../src/daemon/io/acceptor.cpp			\
+		../../src/daemon/io/fd.cpp				\
+		../../src/daemon/io/file.cpp				\
+		../../src/daemon/io/net/ipv4.cpp			\
+		../../src/daemon/io/net/ipv6.cpp			\
+		../../src/daemon/io/net/socket.cpp			\
+		../../src/daemon/io/net/unix.cpp			\
+		../../src/daemon/io/split.cpp				\
+		../../src/daemon/io/stream.cpp				\
+		../../src/daemon/io/text.cpp				\
+		../../src/daemon/main.cpp				\
+		../../src/daemon/multiplexing/publisher.cpp		\
+		../../src/daemon/multiplexing/subscriber.cpp		\
+		../../src/daemon/processing/delivery.cpp		\
+		../../src/daemon/processing/feeder.cpp			\
+		../../src/daemon/processing/high_availability.cpp	\
+		../../src/daemon/processing/listener.cpp		\
+		../../src/daemon/processing/listener_destination.cpp	\
+		../../src/daemon/processing/manager.cpp			\
+		../../src/db/connection.cpp				\
+		../../src/db/db_exception.cpp				\
+		../../src/db/delete.cpp					\
+		../../src/db/have_args.cpp				\
+		../../src/db/have_fields.cpp				\
+		../../src/db/have_predicate.cpp				\
+		../../src/db/have_table.cpp				\
+		../../src/db/insert.cpp					\
+		../../src/db/predicate.cpp				\
+		../../src/db/query.cpp					\
+		../../src/db/select.cpp					\
+		../../src/db/truncate.cpp				\
+		../../src/db/update.cpp					\
+		../../src/events/acknowledgement.cpp			\
+		../../src/events/comment.cpp				\
+		../../src/events/downtime.cpp				\
+		../../src/events/event.cpp				\
+		../../src/events/group.cpp				\
+		../../src/events/host.cpp				\
+		../../src/events/host_group.cpp				\
+		../../src/events/host_service.cpp			\
+		../../src/events/host_service_status.cpp		\
+		../../src/events/host_status.cpp			\
+		../../src/events/log.cpp				\
+		../../src/events/program_status.cpp			\
+		../../src/events/service.cpp				\
+		../../src/events/service_group.cpp			\
+		../../src/events/service_status.cpp			\
+		../../src/events/status.cpp				\
+		../../src/exception.cpp					\
+		../../src/logging.cpp					\
+		../../src/mapping.cpp
 
 # Add MySQL files if MySQL is enabled
 if MYSQL
@@ -127,15 +148,14 @@ cb2db_SOURCES +=	../../src/io/tls.cpp
 endif
 
 # Configure compilation flags properly
-cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/cb2db	\
+cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/daemon	\
 			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)		\
 			$(MYSQL_CPPFLAGS)
 cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(ORACLE_OCI_CFLAGS)		\
 			$(POSTGRESQL_CFLAGS) $(LIBGNUTLS_CFLAGS)
 cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
-			$(BOOST_THREAD_LIB) $(GNUTLS_LDFLAGS)		\
-			$(MYSQL_LDFLAGS) $(ORACLE_OCI_LDFLAGS)		\
-			$(POSTGRESQL_LDFLAGS)
+			$(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)		\
+			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)
 
 
 #######################################
@@ -144,14 +164,14 @@ cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 #                                     #
 #######################################
 
-cbmod_so_SOURCES=	../../src/module/callbacks.cpp			\
-			../../src/module/cbmod.cpp			\
-			../../src/module/dbuffer.cpp			\
-			../../src/module/sender.cpp
+#cbmod_so_SOURCES=	../../src/module/callbacks.cpp			\
+#			../../src/module/cbmod.cpp			\
+#			../../src/module/dbuffer.cpp			\
+#			../../src/module/sender.cpp
 
 # Configure compilation flags properly
-cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
-			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)
-cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) -shared -fPIC
-cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
-			$(BOOST_THREAD_LIB) $(GNUTLS_LDFLAGS)
+#cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
+#			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)
+#cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) -shared -fPIC
+#cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
+#			$(GNUTLS_LDFLAGS)

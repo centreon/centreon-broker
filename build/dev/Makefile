@@ -1,0 +1,115 @@
+# Utilities
+CXX	=	g++
+RM	=	rm -rf
+
+# Targets
+SRC	=	../../src/concurrency/condition_variable.cpp		\
+		../../src/concurrency/lock.cpp				\
+		../../src/concurrency/mutex.cpp				\
+		../../src/concurrency/thread.cpp			\
+		../../src/concurrency/thread_listener.cpp		\
+		../../src/daemon/configuration/interface.cpp		\
+		../../src/daemon/configuration/lexer.cpp		\
+		../../src/daemon/configuration/log.cpp			\
+		../../src/daemon/configuration/manager.cpp		\
+		../../src/daemon/interface/db/destination.cpp		\
+		../../src/daemon/interface/destination.cpp		\
+		../../src/daemon/interface/factory.cpp			\
+		../../src/daemon/interface/ndo/internal.cpp		\
+		../../src/daemon/interface/ndo/source.cpp		\
+		../../src/daemon/interface/source.cpp			\
+		../../src/daemon/interface/sourcedestination.cpp	\
+		../../src/daemon/interface/xml/destination.cpp		\
+		../../src/daemon/interface/xml/internal.cpp		\
+		../../src/daemon/interface/xml/tinystr.cpp		\
+		../../src/daemon/interface/xml/tinyxml.cpp		\
+		../../src/daemon/interface/xml/tinyxmlerror.cpp		\
+		../../src/daemon/interface/xml/tinyxmlparser.cpp	\
+		../../src/daemon/io/acceptor.cpp			\
+		../../src/daemon/io/fd.cpp				\
+		../../src/daemon/io/file.cpp				\
+		../../src/daemon/io/net/ipv4.cpp			\
+		../../src/daemon/io/net/ipv6.cpp			\
+		../../src/daemon/io/net/socket.cpp			\
+		../../src/daemon/io/net/unix.cpp			\
+		../../src/daemon/io/split.cpp				\
+		../../src/daemon/io/stream.cpp				\
+		../../src/daemon/io/text.cpp				\
+		../../src/daemon/main.cpp				\
+		../../src/daemon/multiplexing/publisher.cpp		\
+		../../src/daemon/multiplexing/subscriber.cpp		\
+		../../src/daemon/processing/delivery.cpp		\
+		../../src/daemon/processing/feeder.cpp			\
+		../../src/daemon/processing/high_availability.cpp	\
+		../../src/daemon/processing/listener.cpp		\
+		../../src/daemon/processing/listener_destination.cpp	\
+		../../src/daemon/processing/manager.cpp			\
+		../../src/db/connection.cpp				\
+		../../src/db/db_exception.cpp				\
+		../../src/db/delete.cpp					\
+		../../src/db/have_args.cpp				\
+		../../src/db/have_fields.cpp				\
+		../../src/db/have_predicate.cpp				\
+		../../src/db/have_table.cpp				\
+		../../src/db/insert.cpp					\
+		../../src/db/mysql/connection.cpp			\
+		../../src/db/mysql/delete.cpp				\
+		../../src/db/mysql/have_args.cpp			\
+		../../src/db/mysql/have_predicate.cpp			\
+		../../src/db/mysql/insert.cpp				\
+		../../src/db/mysql/query.cpp				\
+		../../src/db/mysql/select.cpp				\
+		../../src/db/mysql/truncate.cpp				\
+		../../src/db/mysql/update.cpp				\
+		../../src/db/predicate.cpp				\
+		../../src/db/query.cpp					\
+		../../src/db/select.cpp					\
+		../../src/db/truncate.cpp				\
+		../../src/db/update.cpp					\
+		../../src/events/acknowledgement.cpp			\
+		../../src/events/comment.cpp				\
+		../../src/events/downtime.cpp				\
+		../../src/events/event.cpp				\
+		../../src/events/group.cpp				\
+		../../src/events/host.cpp				\
+		../../src/events/host_group.cpp				\
+		../../src/events/host_service.cpp			\
+		../../src/events/host_service_status.cpp		\
+		../../src/events/host_status.cpp			\
+		../../src/events/log.cpp				\
+		../../src/events/program_status.cpp			\
+		../../src/events/service.cpp				\
+		../../src/events/service_group.cpp			\
+		../../src/events/service_status.cpp			\
+		../../src/events/status.cpp				\
+		../../src/exception.cpp					\
+		../../src/logging.cpp					\
+		../../src/mapping.cpp
+OBJ	=	$(SRC:.cpp=.o)
+NAME	=	cb2db
+
+# Parameters
+INCLUDE		=	-I../../inc/daemon -I../../inc
+MACROS		=	-DUSE_MYSQL -DTIXML_USE_STL
+# GCC CXXFLAGS
+CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
+# ICC CXXFLAGS
+#CXXFLAGS	=	-w1 -Wall -Wcheck
+CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
+LDFLAGS		=	-lpthread `mysql_config --libs_r` -lboost_thread-mt #-lefence
+
+# Rules
+all	:	$(NAME)
+
+$(NAME)	:	$(OBJ)
+	$(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
+
+clean	:
+	$(RM) $(OBJ) `find . -name '*~' -or -name '#*#'`
+
+fclean	:	clean
+	$(RM) $(NAME)
+
+re	:	fclean all
+
+.PHONY	:	all clean fclean re

@@ -22,7 +22,6 @@
 # Include macro files
 #
 m4_include(macros/ax_boost_base.m4)
-m4_include(macros/ax_boost_thread.m4)
 m4_include(macros/ax_lib_mysql.m4)
 m4_include(macros/ax_lib_oracle_oci.m4)
 m4_include(macros/ax_lib_postgresql.m4)
@@ -63,7 +62,6 @@ fi
 ##  BOOST
 ##
 AX_BOOST_BASE
-AX_BOOST_THREAD
 
 ##
 ##  MYSQL
@@ -86,6 +84,11 @@ AM_CONDITIONAL([ORACLE], [test x"$HAVE_ORACLE_OCI" = "xyes"])
 ##
 AX_LIB_POSTGRESQL
 AM_CONDITIONAL([POSTGRESQL], [test x"$want_postgresql" = "xyes"])
+
+##
+##  TINYXML
+##
+AC_DEFINE([TIXML_USE_STL])
 
 ##
 ##  TLS
