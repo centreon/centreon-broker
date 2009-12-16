@@ -21,10 +21,10 @@
 #ifndef LOGGING_H_
 # define LOGGING_H_
 
-# include <boost/thread/mutex.hpp>
 # include <fstream>
 # include <list>
 # include <string>
+# include "concurrency/mutex.h"
 
 namespace                 CentreonBroker
 {
@@ -36,13 +36,6 @@ namespace                 CentreonBroker
    *  Those messages are broadcasted to all configured streams. Each stream can
    *  receive only specific messages like informational (INFO), debug (DEBUG)
    *  or error (ERROR).
-   *
-   *  Please note that some memory will likely be leaked. This is an issue from
-   *  the Boost library. When any message is logged, the logging facility calls
-   *  the boost::this_thread::get_id() method. When this method is called from
-   *  a thread that has not been created by Boost (like the main thread), the
-   *  get_id() method allocates some memory that would normally be free on
-   *  thread termination.
    */
   class                   Logging
   {
@@ -71,37 +64,45 @@ namespace                 CentreonBroker
       std::ofstream       stream;
                           OutputFile();
                           OutputFile(const OutputFile& output_file);
-                          ~OutputFile() throw ();
+                          ~OutputFile();
       OutputFile&         operator=(const OutputFile& output_file);
       void                Close();
       bool                Open(const std::string& filename,
                                unsigned int flags = DEBUG | ERROR | INFO);
     };
 
-    boost::mutex          mutex_;
+    Concurrency::Mutex    mutex_;
     std::list<OutputFile> outputs_;
     int                   stderr_flags_;
     int                   stdout_flags_;
     int                   syslog_flags_;
                           Logging(const Logging& logging);
     Logging&              operator=(const Logging& logging);
-    void                  LogBase(const char* str, MsgType msg_type) throw ();
+    void                  LogBase(const char* str, MsgType msg_type);
 
    public:
                           Logging();
-                          ~Logging() throw ();
+                          ~Logging();
 # ifndef NDEBUG
-    void                  LogDebug(const char* str) throw ();
+    void                  LogDebug(const char* str);
 # endif /* !NDEBUG */
-    void                  LogError(const char* str) throw ();
+    void                  LogError(const char* str);
     void                  LogInFile(const char* filename, int log_flags);
-    void                  LogInfo(const char* str) throw ();
-    void                  LogInSyslog(int log_flags) throw ();
-    void                  LogToStderr(int log_flags) throw ();
-    void                  LogToStdout(int log_flags) throw ();
+    void                  LogInfo(const char* str);
+    void                  LogInSyslog(int log_flags);
+    void                  LogToStderr(int log_flags);
+    void                  LogToStdout(int log_flags);
   };
 
   extern Logging          logging;
 }
+
+# ifndef NDEBUG
+#  define LOGDEBUG(msg) (CentreonBroker::logging.LogDebug(msg))
+# else
+#  define LOGDEBUG(msg) ((void)msg)
+# endif /* !NDEBUG */
+# define LOGERROR(msg) (CentreonBroker::logging.LogError(msg))
+# define LOGINFO(msg) (CentreonBroker::logging.LogInfo(msg))
 
 #endif /* !LOGGING_H_ */

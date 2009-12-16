@@ -18,52 +18,154 @@
 **  For more information : contact@centreon.com
 */
 
-#include <unistd.h>
-#include "db/mysql/connection.h"
-#include "interface/db/destination.h"
+#include <iostream>                         // for cerr
+#ifdef USE_MYSQL
+# include <mysql.h>                         // for mysql_library_init
+#endif /* USE_MYSQL */
+#include <signal.h>
+#include "concurrency/condition_variable.h"
+#include "concurrency/lock.h"
+#include "concurrency/mutex.h"
+#include "configuration/manager.h"
+#include "exception.h"
 #include "interface/ndo/source.h"
 #include "interface/xml/destination.h"
-#include "io/net/ipv4.h"
-#include "mapping.h"
-#include "multiplexing/publisher.h"
-#include "processing/high_availability.h"
-#include "processing/listener.h"
-#include "processing/listener_destination.h"
-#include "processing/manager.h"
+#include "logging.h"
 
-int main()
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Condition variable used to wake up the main thread when receiving SIGTERM.
+static Concurrency::ConditionVariable gl_cv;
+// Mutex linked to the condition variable above.
+static Concurrency::Mutex             gl_mutex;
+// Determines whether or not SIGTERM has been received.
+static bool                           gl_exit = false;
+// Original SIGTERM handler.
+static void (*                        gl_sigterm_handler)(int) = NULL;
+
+/**
+ *  Function called on termination request (when program receives SIGTERM).
+ *  \par Safety No throw guarantee.
+ *
+ *  \param[in] signum Signal number.
+ */
+static void term_handler(int signum)
 {
-  std::auto_ptr<IO::Net::IPv4Acceptor> ipv4(new IO::Net::IPv4Acceptor);
-  std::auto_ptr<Processing::Listener> listener(new Processing::Listener);
-  CentreonBroker::DB::Connection* conn;
-  Interface::DB::Destination* dest;
-  Processing::HighAvailability* ha;
+  try
+    {
+      Concurrency::Lock lock(gl_mutex);
 
-  MappingsInit();
-  Interface::NDO::Source::Initialize();
-  Interface::XML::Destination::Initialize();
-  ipv4->Listen(5667);
-  listener->Init(ipv4.get(),
-                 Processing::Listener::NDO,
-                 &Processing::Manager::Instance());
-  ipv4.release();
-  listener.release();
+      // Signal number is ignored.
+      (void)signum;
+      // Main thread should exit.
+      gl_exit = true;
+      // Wake up main thread.
+      gl_cv.WakeAll();
+      // Restore original signal handler.
+      signal(SIGTERM, gl_sigterm_handler);
+    }
+  catch (const std::exception& e)
+    {
+      LOGERROR(e.what());
+    }
+  catch (...)
+    {
+      LOGERROR("Unknown exception occured while " \
+               "executing termination handler.");
+    }
+  return ;
+}
 
-  conn = new CentreonBroker::DB::MySQLConnection();
-  conn->Connect("localhost", "root", "123456789", "cb");
-  dest = new Interface::DB::Destination();
-  dest->Init(conn);
-  /*ha = new Processing::HighAvailability();
-    ha->Init(dest);*/
-  std::auto_ptr<Processing::ListenerDestination> ld(new Processing::ListenerDestination);
-  std::auto_ptr<IO::Net::IPv4Acceptor> acceptor(new IO::Net::IPv4Acceptor);
+/**************************************
+*                                     *
+*          Public Functions           *
+*                                     *
+**************************************/
 
-  acceptor->Listen(4242);
-  ld->Init(acceptor.get(), Processing::ListenerDestination::XML);
-  acceptor.release();
+/**
+ *  \brief Program entry point.
+ *
+ *  main() is the first function called when the program starts.
+ *  \par Safety No throw guarantee.
+ *
+ *  \param[in] argc Number of arguments received on the command line.
+ *  \param[in] argv Arguments received on the command line, stored in an array.
+ *
+ *  \return 0 on normal termination, any other value on failure.
+ */
+int main(int argc, char* argv[])
+{
+  int exit_code;
 
-  while (1)
-    pause();
+  try
+    {
+      // Check the command line.
+      if (argc != 2)
+        {
+          std::cerr << "USAGE: " << argv[0] << " <configfile>" << std::endl;
+          exit_code = 1;
+        }
+      else
+        {
+          // Lock termination mutex.
+          Concurrency::Lock lock(gl_mutex);
 
-  return (0);
+#ifdef USE_MYSQL
+          // Initialize MySQL library.
+          LOGDEBUG("Initializing MySQL library ...");
+          if (mysql_library_init(0, NULL, NULL))
+            throw (Exception(0, "MySQL library initialization failed."));
+#endif /* USE_MYSQL */
+
+          // Initialize all interface objects.
+          LOGDEBUG("Initializing NDO engine (source) ...");
+          Interface::NDO::Source::Initialize();
+          LOGDEBUG("Initializing XML engine (destination) ...");
+          Interface::XML::Destination::Initialize();
+
+          // Load configuration file.
+          Configuration::Manager::Instance().Open(argv[1]);
+
+          // Register handler for SIGTERM.
+          gl_sigterm_handler = signal(SIGTERM, term_handler);
+          if (SIG_ERR == gl_sigterm_handler)
+            LOGINFO("Unable to register termination handler. Unpredictable " \
+                    "behavior will occur when exiting.");
+
+          // Everything's loaded, sleep until we have to exit.
+          while (!gl_exit)
+            gl_cv.Sleep(gl_mutex);
+
+          // Unload configuration.
+          Configuration::Manager::Instance().Close();
+
+#ifdef USE_MYSQL
+          // Unload MySQL library.
+          LOGDEBUG("Unloading MySQL library ...");
+          mysql_library_end();
+#endif /* USE_MYSQL */
+
+          // Everything went well.
+          exit_code = 0;
+        }
+    }
+  // Standard exception.
+  catch (const std::exception& e)
+    {
+      std::cerr << "Caught exception :" << std::endl
+                << '\t' << e.what() << std::endl;
+      exit_code = 1;
+    }
+  // Unknown exception.
+  catch (...)
+    {
+      std::cerr << "Caught unknown exception, aborting execution ..."
+                << std::endl;
+      exit_code = 1;
+    }
+  return (exit_code);
 }
