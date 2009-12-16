@@ -64,12 +64,9 @@ void Interface::InternalCopy(const Interface& interface)
  */
 Interface::Interface()
 {
-  this->db       = "cb";
-  this->host     = "localhost";
   this->port     = 5668;
-  this->protocol = UNKNOWN_PROTO;
+  this->protocol = NDO;
   this->type     = UNKNOWN_TYPE;
-  this->user     = "root";
 }
 
 /**

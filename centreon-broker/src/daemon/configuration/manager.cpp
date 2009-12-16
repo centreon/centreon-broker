@@ -61,18 +61,17 @@ Configuration::Manager& Configuration::Manager::Instance()
 }
 
 /**
- *  Process configuration options of an Input.
+ *  Process configuration options of an Interface.
  *
  *  \param[in]  lexer Lexer of the configuration file.
- *  \param[out] in    Object that will be set with extracted parameters.
+ *  \param[out] i     Object that will be set with extracted parameters.
  */
-static void HandleInput(Configuration::Lexer& lexer, Configuration::Interface& in)
+static void HandleInterface(Configuration::Lexer& lexer,
+                            Configuration::Interface& i)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Input definition ...");
-#endif /* !NDEBUG */
   Configuration::Token var;
 
+  LOGDEBUG("Interface definition ...");
   for (lexer.GetToken(var);
        var.GetType() == Configuration::Token::STRING;
        lexer.GetToken(var))
@@ -84,7 +83,7 @@ static void HandleInput(Configuration::Lexer& lexer, Configuration::Interface& i
           // And the next one too (=).
           || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
           // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
+          || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
         throw (Exception(0, INVALID_TOKEN_MSG));
 
       // Extract var strings.
@@ -92,32 +91,60 @@ static void HandleInput(Configuration::Lexer& lexer, Configuration::Interface& i
       const std::string& val_str = val.GetText();
 
       // Parse variable.
-      if (var_str == "interface")
-	in.interface = val_str;
+      if (var_str == "db")
+        i.db = val_str;
+      else if (var_str == "host")
+        {
+          i.host = val_str;
+          if (Configuration::Interface::IPV4_SERVER == i.type)
+            i.type = Configuration::Interface::IPV4_CLIENT;
+          else if (Configuration::Interface::IPV6_SERVER == i.type)
+            i.type = Configuration::Interface::IPV6_CLIENT;
+          else if (Configuration::Interface::UNIX_SERVER == i.type)
+            i.type = Configuration::Interface::UNIX_CLIENT;
+        }
+      else if (var_str == "interface")
+        i.interface = val_str;
+      else if (var_str == "password")
+        i.password = val_str;
       else if (var_str == "port")
-	in.port = strtoul(val_str.c_str(), NULL, 0);
+        i.port = strtoul(val_str.c_str(), NULL, 0);
+      else if (var_str == "protocol")
+        i.protocol = ((val_str == "xml") ? Configuration::Interface::XML
+                                         : Configuration::Interface::NDO);
       else if (var_str == "socket")
-	in.socket = val_str;
+        i.socket = val_str;
+      else if (var_str == "user")
+        i.user = val_str;
       else if (var_str == "type")
-	{
-	  if ((val_str == "ip") || (val_str == "ipv4"))
-	    in.type = Configuration::Interface::IPV4_SERVER;
-	  else if (val_str == "ipv6")
-	    in.type = Configuration::Interface::IPV6_SERVER;
-	  else if (val_str == "unix")
-	    in.type = Configuration::Interface::UNIX_SERVER;
-	}
+        {
+          if ((val_str == "ip") || (val_str == "ipv4"))
+            i.type = (i.host.empty() ? Configuration::Interface::IPV4_SERVER
+                                     : Configuration::Interface::IPV4_CLIENT);
+          else if (val_str == "ipv6")
+            i.type = (i.host.empty() ? Configuration::Interface::IPV6_SERVER
+                                     : Configuration::Interface::IPV6_CLIENT);
+          else if (val_str == "mysql")
+            i.type = Configuration::Interface::MYSQL;
+          else if (val_str == "oracle")
+            i.type = Configuration::Interface::ORACLE;
+          else if (val_str == "postgresql")
+            i.type = Configuration::Interface::POSTGRESQL;
+          else if (val_str == "unix")
+            i.type = (i.host.empty() ? Configuration::Interface::UNIX_SERVER
+                                     : Configuration::Interface::UNIX_CLIENT);
+        }
 #ifdef USE_TLS
       else if (var_str == "ca")
-	in.SetTLSCA(val_str);
+        in.SetTLSCA(val_str);
       else if (var_str == "cert")
-	in.SetTLSCert(val_str);
+        in.SetTLSCert(val_str);
       else if (var_str == "compress")
-	in.SetTLSCompress(strtoul(val_str.c_str(), NULL, 0));
+        in.SetTLSCompress(strtoul(val_str.c_str(), NULL, 0));
       else if (var_str == "key")
-	in.SetTLSKey(val_str);
+        in.SetTLSKey(val_str);
       else if (var_str == "tls")
-	in.SetTLS((val_str == "yes") || strtoul(val_str.c_str(), NULL, 0));
+        in.SetTLS((val_str == "yes") || strtoul(val_str.c_str(), NULL, 0));
 #endif /* USE_TLS */
     }
   return ;
@@ -145,10 +172,10 @@ static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
       // Check if the current token is valid (var name).
       if ((var.GetType() != Configuration::Token::STRING)
           // And the next one too (=).
-	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
-	  // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
-	throw (Exception(0, INVALID_TOKEN_MSG));
+          || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
+          // And the next-next one too (var value).
+          || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
+        throw (Exception(0, INVALID_TOKEN_MSG));
 
       // Extract var strings.
       const std::string var_str = var.GetText();
@@ -156,102 +183,47 @@ static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
 
       // Parse variable.
       if (var_str == "flags")
-	{
-	  unsigned int flags;
+        {
+          unsigned int flags;
 
-	  flags = 0;
+          flags = 0;
 
-	  // We will break when there's no more pipes.
-	  do
-	    {
-	      if (val.GetText() == "DEBUG")
-		flags |= CentreonBroker::Logging::DEBUG;
-	      else if (val.GetText() == "ERROR")
-		flags |= CentreonBroker::Logging::ERROR;
-	      else if (val.GetText() == "INFO")
-		flags |= CentreonBroker::Logging::INFO;
-	      lexer.ContextSave();
-	      if (lexer.GetToken(val)
+          // We will break when there's no more pipes.
+          do
+            {
+              if (val.GetText() == "DEBUG")
+                flags |= CentreonBroker::Logging::DEBUG;
+              else if (val.GetText() == "ERROR")
+                flags |= CentreonBroker::Logging::ERROR;
+              else if (val.GetText() == "INFO")
+                flags |= CentreonBroker::Logging::INFO;
+              lexer.ContextSave();
+              if (lexer.GetToken(val)
                   || (val.GetType() != Configuration::Token::PIPE)
-		  || lexer.GetToken(val)
+                  || lexer.GetToken(val)
                   || (val.GetType() != Configuration::Token::STRING))
-		{
-		  lexer.ContextRestore();
-		  val.SetType(Configuration::Token::UNKNOWN);
-		}
-	      else
-		lexer.ContextPop();
-	    } while (val.GetType() == Configuration::Token::STRING);
-	  log.flags = flags;
-	}
+                {
+                  lexer.ContextRestore();
+                  val.SetType(Configuration::Token::UNKNOWN);
+                }
+              else
+                lexer.ContextPop();
+            } while (val.GetType() == Configuration::Token::STRING);
+          log.flags = flags;
+        }
       else if (var_str == "path")
-	log.file = val_str;
+        log.file = val_str;
       else if (var_str == "type")
-	{
-	  if (val_str == "file")
-	    log.type = Configuration::Log::FILE;
-	  else if (val_str == "stderr")
-	    log.type = Configuration::Log::STDERR;
-	  else if (val_str == "stdout")
-	    log.type = Configuration::Log::STDOUT;
-	  else if (val_str == "syslog")
-	    log.type = Configuration::Log::SYSLOG;
-	}
-    }
-  return ;
-}
-
-/**
- *  Process configuration options of an Output.
- *
- *  \param[in]  lexer Lexer of the configuration file.
- *  \param[out] out   Object that will be set with extracted parameters.
- */
-static void HandleOutput(Configuration::Lexer& lexer, Configuration::Interface& out)
-{
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Output definition ...");
-#endif /* !NDEBUG */
-  Configuration::Token var;
-
-  for (lexer.GetToken(var);
-       var.GetType() != Configuration::Token::END && var.GetType() != Configuration::Token::BLOCK_END;
-       lexer.GetToken(var))
-    {
-      Configuration::Token val;
-
-      // Check if the current token is valid (var name).
-      if (var.GetType() != Configuration::Token::STRING
-	  // And the next one too (=).
-	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::ASSIGNMENT)
-	  // And the next-next one too (var value).
-	  || lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
-	throw (Exception(0, INVALID_TOKEN_MSG));
-
-      // Extract var strings.
-      const std::string& var_str = var.GetText();
-      const std::string& val_str = val.GetText();
-
-      // Parse variable.
-      if (var_str == "db")
-	out.db = val_str;
-      else if (var_str == "dumpfile")
-	; // XXX out.SetDumpFile(val_str);
-      else if (var_str == "host")
-	out.host = val_str;
-      else if (var_str == "password")
-	out.password = val_str;
-      else if (var_str == "type")
-	{
-	  if (val_str == "mysql")
-	    out.type = Configuration::Interface::MYSQL;
-	  else if (val_str == "oracle")
-	    out.type = Configuration::Interface::ORACLE;
-	  else if (val_str == "postgresql")
-	    out.type = Configuration::Interface::POSTGRESQL;
-	}
-      else if (var_str == "user")
-	out.user = val_str;
+        {
+          if (val_str == "file")
+            log.type = Configuration::Log::FILE;
+          else if (val_str == "stderr")
+            log.type = Configuration::Log::STDERR;
+          else if (val_str == "stdout")
+            log.type = Configuration::Log::STDOUT;
+          else if (val_str == "syslog")
+            log.type = Configuration::Log::SYSLOG;
+        }
     }
   return ;
 }
@@ -350,47 +322,47 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
        lexer.GetToken(var), lexer.GetToken(val))
     {
       switch (val.GetType())
-	{
-	 // Assignment sign, we're setting a variable.
-	case Configuration::Token::ASSIGNMENT:
-	  if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
-	    throw (Exception(0, INVALID_TOKEN_MSG));
-	  // XXX : set global variable
-	  break ;
-	 // Block name, can safely be discarded.
-	case Configuration::Token::STRING:
-	   if (lexer.GetToken(val) || val.GetType() != Configuration::Token::BLOCK_START)
-	    throw (Exception(0, INVALID_TOKEN_MSG));
-	 // Starting a bloc, launching proper handler.
-	case Configuration::Token::BLOCK_START:
+        {
+         // Assignment sign, we're setting a variable.
+        case Configuration::Token::ASSIGNMENT:
+          if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
+            throw (Exception(0, INVALID_TOKEN_MSG));
+          // XXX : set global variable
+          break ;
+         // Block name, can safely be discarded.
+        case Configuration::Token::STRING:
+           if (lexer.GetToken(val) || val.GetType() != Configuration::Token::BLOCK_START)
+            throw (Exception(0, INVALID_TOKEN_MSG));
+         // Starting a bloc, launching proper handler.
+        case Configuration::Token::BLOCK_START:
           if (var.GetText() == "input")
-	    {
-	      Configuration::Interface in;
+            {
+              Configuration::Interface in;
 
-	      HandleInput(lexer, in);
-	      inputs.push_back(in);
-	    }
-	  else if (var.GetText() == "log")
-	    {
-	      Configuration::Log log;
+              HandleInterface(lexer, in);
+              inputs.push_back(in);
+            }
+          else if (var.GetText() == "log")
+            {
+              Configuration::Log log;
 
-	      HandleLog(lexer, log);
-	      logs.push_back(log);
-	    }
-	  else if (var.GetText() == "output")
-	    {
-	      Configuration::Interface out;
+              HandleLog(lexer, log);
+              logs.push_back(log);
+            }
+          else if (var.GetText() == "output")
+            {
+              Configuration::Interface out;
 
-	      HandleOutput(lexer, out);
-	      outputs.push_back(out);
-	    }
-	  else
-	    throw (Exception(0, INVALID_TOKEN_MSG));
-	  break ;
+              HandleInterface(lexer, out);
+              outputs.push_back(out);
+            }
+          else
+            throw (Exception(0, INVALID_TOKEN_MSG));
+          break ;
          // Invalid token.
-	 default:
-	  throw (Exception(0, INVALID_TOKEN_MSG));
-	};
+         default:
+          throw (Exception(0, INVALID_TOKEN_MSG));
+        };
     }
   return ;
 }
@@ -467,32 +439,32 @@ void Configuration::Manager::Update()
     {
       logs_it = std::find(logs.begin(), logs.end(), *it);
       if (logs.end() == logs_it)
-	{
-	  LOGDEBUG("Removing unwanted log object...");
-	  switch (it->type)
-	    {
+        {
+          LOGDEBUG("Removing unwanted log object...");
+          switch (it->type)
+            {
              case Configuration::Log::FILE:
               CentreonBroker::logging.LogInFile(it->file.c_str(), 0);
               break ;
              case Configuration::Log::STDERR:
-	      CentreonBroker::logging.LogToStderr(0);
-	      break ;
+              CentreonBroker::logging.LogToStderr(0);
+              break ;
              case Configuration::Log::STDOUT:
-	      CentreonBroker::logging.LogToStdout(0);
-	      break ;
+              CentreonBroker::logging.LogToStdout(0);
+              break ;
              case Configuration::Log::SYSLOG:
-	      CentreonBroker::logging.LogInSyslog(0);
-	      break ;
+              CentreonBroker::logging.LogInSyslog(0);
+              break ;
              default:
-	      ;
-	    }
-	  this->logs_.erase(it++);
-	}
+              ;
+            }
+          this->logs_.erase(it++);
+        }
       else
-	{
-	  logs.erase(logs_it);
-	  it++;
-	}
+        {
+          logs.erase(logs_it);
+          it++;
+        }
     }
 
   // Add new logs.
@@ -502,23 +474,23 @@ void Configuration::Manager::Update()
       CentreonBroker::logging.LogDebug("Adding new logging object...");
 #endif /* !NDEBUG */
       switch (logs_it->type)
-	{
-	case Configuration::Log::FILE:
-	  CentreonBroker::logging.LogInFile(logs_it->file.c_str(),
+        {
+        case Configuration::Log::FILE:
+          CentreonBroker::logging.LogInFile(logs_it->file.c_str(),
                                             logs_it->flags);
-	  break ;
-	case Configuration::Log::STDERR:
-	  CentreonBroker::logging.LogToStderr(logs_it->flags);
-	  break ;
-	case Configuration::Log::STDOUT:
-	  CentreonBroker::logging.LogToStdout(logs_it->flags);
-	  break ;
-	case Configuration::Log::SYSLOG:
-	  CentreonBroker::logging.LogInSyslog(logs_it->flags);
-	  break ;
+          break ;
+        case Configuration::Log::STDERR:
+          CentreonBroker::logging.LogToStderr(logs_it->flags);
+          break ;
+        case Configuration::Log::STDOUT:
+          CentreonBroker::logging.LogToStdout(logs_it->flags);
+          break ;
+        case Configuration::Log::SYSLOG:
+          CentreonBroker::logging.LogInSyslog(logs_it->flags);
+          break ;
          default:
-	  ;
-	}
+          ;
+        }
       this->logs_.push_back(*logs_it);
     }
 
@@ -529,18 +501,18 @@ void Configuration::Manager::Update()
     {
       outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
       if (outputs.end() == outputs_it)
-	{
+        {
 #ifndef NDEBUG
-	  CentreonBroker::logging.LogDebug("Removing unwanted output object...");
+          CentreonBroker::logging.LogDebug("Removing unwanted output object...");
 #endif /* !NDEBUG */
-	  delete (it->second);
-	  this->outputs_.erase(it++);
-	}
+          delete (it->second);
+          this->outputs_.erase(it++);
+        }
       else
-	{
-	  outputs.erase(outputs_it);
-	  it++;
-	}
+        {
+          outputs.erase(outputs_it);
+          it++;
+        }
     }
 
   // Add new outputs.
@@ -579,16 +551,16 @@ void Configuration::Manager::Update()
     {
       inputs_it = std::find(inputs.begin(), inputs.end(), it->first);
       if (inputs.end() == inputs_it)
-	{
-	  LOGDEBUG("Removing unwanted input object...");
-	  delete (it->second);
-	  this->inputs_.erase(it++);
-	}
+        {
+          LOGDEBUG("Removing unwanted input object...");
+          delete (it->second);
+          this->inputs_.erase(it++);
+        }
       else
-	{
-	  inputs.erase(inputs_it);
-	  it++;
-	}
+        {
+          inputs.erase(inputs_it);
+          it++;
+        }
     }
 
   // Add new inputs.
@@ -598,71 +570,71 @@ void Configuration::Manager::Update()
       std::auto_ptr<IO::Acceptor> acceptor;
 
       switch (inputs_it->type)
-	{
-	case Configuration::Interface::IPV4_SERVER:
-	  {
-	    std::auto_ptr<IO::Net::IPv4Acceptor> net4a(
-	       new IO::Net::IPv4Acceptor());
+        {
+        case Configuration::Interface::IPV4_SERVER:
+          {
+            std::auto_ptr<IO::Net::IPv4Acceptor> net4a(
+               new IO::Net::IPv4Acceptor());
 
-	    if (inputs_it->interface.empty())
-	      net4a->Listen(inputs_it->port);
-	    else
-	      net4a->Listen(inputs_it->port,
+            if (inputs_it->interface.empty())
+              net4a->Listen(inputs_it->port);
+            else
+              net4a->Listen(inputs_it->port,
                             inputs_it->interface.c_str());
-	    acceptor.reset(net4a.get());
-	    net4a.release();
-	  }
-	  break ;
-	case Configuration::Interface::IPV6_SERVER:
-	  {
-	    std::auto_ptr<IO::Net::IPv6Acceptor> net6a(
-	       new IO::Net::IPv6Acceptor());
+            acceptor.reset(net4a.get());
+            net4a.release();
+          }
+          break ;
+        case Configuration::Interface::IPV6_SERVER:
+          {
+            std::auto_ptr<IO::Net::IPv6Acceptor> net6a(
+               new IO::Net::IPv6Acceptor());
 
-	    if (inputs_it->interface.empty())
-	      net6a->Listen(inputs_it->port);
-	    else
-	      net6a->Listen(inputs_it->port,
+            if (inputs_it->interface.empty())
+              net6a->Listen(inputs_it->port);
+            else
+              net6a->Listen(inputs_it->port,
                                inputs_it->interface.c_str());
-	    acceptor.reset(net6a.get());
-	    net6a.release();
-	  }
-	  break ;
-	case Configuration::Interface::UNIX_SERVER:
-	  {
-	    std::auto_ptr<IO::Net::UnixAcceptor> unixa(
-	       new IO::Net::UnixAcceptor());
+            acceptor.reset(net6a.get());
+            net6a.release();
+          }
+          break ;
+        case Configuration::Interface::UNIX_SERVER:
+          {
+            std::auto_ptr<IO::Net::UnixAcceptor> unixa(
+               new IO::Net::UnixAcceptor());
 
-	    unixa->Listen(inputs_it->socket.c_str());
-	    acceptor.reset(unixa.get());
-	    unixa.release();
-	  }
-	  break ;
+            unixa->Listen(inputs_it->socket.c_str());
+            acceptor.reset(unixa.get());
+            unixa.release();
+          }
+          break ;
          default:
-	  ;
-	}
+          ;
+        }
 
 #ifdef USE_TLS
       // Check for TLS support
       if (((Input::IPV4_SERVER == inputs_it->GetType())
-	   || (Input::IPV6_SERVER == inputs_it->GetType())
+           || (Input::IPV6_SERVER == inputs_it->GetType())
            || (Input::UNIX_SERVER == inputs_it->GetType()))
           && inputs_it->GetTLS())
-	{
-	  std::auto_ptr<CentreonBroker::IO::TLSAcceptor> tlsa(
+        {
+          std::auto_ptr<CentreonBroker::IO::TLSAcceptor> tlsa(
             new CentreonBroker::IO::TLSAcceptor());
 
-	  if (!inputs_it->GetTLSCert().empty()
+          if (!inputs_it->GetTLSCert().empty()
               && !inputs_it->GetTLSKey().empty())
-	    tlsa->SetCert(inputs_it->GetTLSCert().c_str(),
+            tlsa->SetCert(inputs_it->GetTLSCert().c_str(),
                           inputs_it->GetTLSKey().c_str());
-	  if (!inputs_it->GetTLSCA().empty())
-	    tlsa->SetTrustedCA(inputs_it->GetTLSCA().c_str());
-	  tlsa->SetCompression(inputs_it->GetTLSCompress());
-	  tlsa->Listen(acceptor.get());
-	  acceptor.release();
-	  acceptor.reset(tlsa.get());
-	  tlsa.release();
-	}
+          if (!inputs_it->GetTLSCA().empty())
+            tlsa->SetTrustedCA(inputs_it->GetTLSCA().c_str());
+          tlsa->SetCompression(inputs_it->GetTLSCompress());
+          tlsa->Listen(acceptor.get());
+          acceptor.release();
+          acceptor.reset(tlsa.get());
+          tlsa.release();
+        }
 #endif /* USE_TLS */
 
       // Create the new client acceptor
