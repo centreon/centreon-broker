@@ -206,7 +206,6 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Net::IPv4Connector> ipv4c(this->IPv4Connector(i));
 
-        ipv4c->Connect(i.host.c_str(), i.port);
         dest = new Interface::XML::Destination(ipv4c.get());
         ipv4c.release();
       }
@@ -215,7 +214,6 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Net::IPv6Connector> ipv6c(this->IPv6Connector(i));
 
-        ipv6c->Connect(i.host.c_str(), i.port);
         dest = new Interface::XML::Destination(ipv6c.get());
         ipv6c.release();
       }
@@ -237,7 +235,6 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Net::UnixConnector> uc(this->UnixConnector(i));
 
-        uc->Connect(i.socket.c_str());
         dest = new Interface::XML::Destination(uc.get());
         uc.release();
       }
