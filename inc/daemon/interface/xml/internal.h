@@ -76,6 +76,7 @@ namespace         Interface
     extern const NameField<Events::Host>            host_fields[];
     extern const NameField<Events::HostGroup>       host_group_fields[];
     extern const NameField<Events::HostStatus>      host_status_fields[];
+    extern const NameField<Events::Log>             log_fields[];
     extern const NameField<Events::ProgramStatus>   program_status_fields[];
     extern const NameField<Events::Service>         service_fields[];
     extern const NameField<Events::ServiceStatus>   service_status_fields[];
