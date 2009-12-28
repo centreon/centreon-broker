@@ -390,8 +390,6 @@ const NameField<HostStatus> Interface::XML::host_status_fields[] =
     NameField<HostStatus>()
   };
 
-// XXX : Log is here !
-/*
 const NameField<Log> Interface::XML::log_fields[] =
   {
     NameField<Log>("ctime",
@@ -416,7 +414,6 @@ const NameField<Log> Interface::XML::log_fields[] =
       &Log::type),
     NameField<Log>()
   };
-*/
 
 const NameField<ProgramStatus> Interface::XML::program_status_fields[] =
   {

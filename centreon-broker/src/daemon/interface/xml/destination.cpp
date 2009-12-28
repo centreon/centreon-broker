@@ -212,6 +212,7 @@ static std::list<Field<Events::Downtime> >        downtime_list;
 static std::list<Field<Events::Host> >            host_list;
 static std::list<Field<Events::HostGroup> >       host_group_list;
 static std::list<Field<Events::HostStatus> >      host_status_list;
+static std::list<Field<Events::Log> >             log_list;
 static std::list<Field<Events::ProgramStatus> >   program_status_list;
 static std::list<Field<Events::Service> >         service_list;
 static std::list<Field<Events::ServiceStatus> >   service_status_list;
@@ -392,6 +393,12 @@ void Destination::Event(const Events::Event& event)
                   host_status_list,
                   *xml_event);
       break ;
+     case Events::Event::LOG:
+      xml_event.reset(new TiXmlElement("log"));
+      HandleEvent(*static_cast<const Events::Log*>(&event),
+                  log_list,
+                  *xml_event);
+      break ;
      case Events::Event::PROGRAMSTATUS:
       xml_event.reset(new TiXmlElement("program_status"));
       HandleEvent(*static_cast<const Events::ProgramStatus*>(&event),
@@ -431,6 +438,7 @@ void Destination::Initialize()
   StaticInit(host_fields, host_list);
   StaticInit(host_group_fields, host_group_list);
   StaticInit(host_status_fields, host_status_list);
+  StaticInit(log_fields, log_list);
   StaticInit(program_status_fields, program_status_list);
   StaticInit(service_fields, service_list);
   StaticInit(service_status_fields, service_status_list);
