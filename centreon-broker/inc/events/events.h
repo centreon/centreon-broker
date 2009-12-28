@@ -28,6 +28,7 @@
 # include "events/host.h"
 # include "events/host_group.h"
 # include "events/host_status.h"
+# include "events/log.h"
 # include "events/program_status.h"
 # include "events/service.h"
 # include "events/service_status.h"
