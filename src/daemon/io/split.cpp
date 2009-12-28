@@ -79,10 +79,12 @@ unsigned int Split::BrowseDir(unsigned int* min, unsigned int* max)
     {
       if (!strncmp(entry->d_name, name, namelen))
 	{
+          char* ptr;
 	  unsigned int nb;
 
-	  // XXX : check if the last part is really a number.
-	  nb = strtoul(entry->d_name + namelen, NULL, 10);
+	  nb = strtoul(entry->d_name + namelen, &ptr, 10);
+          if (*ptr) // Last part of filename wasn't a proper number.
+            continue ;
 	  if (my_min > nb)
 	    my_min = nb;
 	  if (my_max < nb)

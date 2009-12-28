@@ -20,8 +20,9 @@
 
 #include <sstream>
 #include <stdlib.h>                 // for strtol
-#include <string.h>                 // for strcspn, strncmp
+#include <string.h>                 // for strcspn, strdup, strncmp
 #include "events/events.h"
+#include "exception.h"
 #include "interface/ndo/internal.h"
 #include "nagios/protoapi.h"
 
@@ -58,9 +59,185 @@ std::string GetHostGroupMembers(const HostGroup& host_group)
 /**
  *  Append a member to the host group.
  */
-static void AddHostGroupMember(HostGroup& host_group, const char* member)
+static void SetHostGroupMember(HostGroup& host_group, const char* member)
 {
   host_group.members.push_back(member);
+  return ;
+}
+
+/**
+ *  Extract NDO-formated log data to the C++ object.
+ */
+#define LOGDATA_EXTRACT data = strtok_r(NULL, ";", &lasts);                   \
+                        if (!data)                                            \
+                          throw (Exception(0, "Log data extraction failed."));
+static void SetLogData(Log& log, const char* data)
+{
+  char* datadup;
+
+  datadup = strdup(data);
+  if (!datadup)
+    throw (Exception(0, "Log data extraction failed."));
+  try
+    {
+      char* data;
+      char* lasts;
+
+      data = strtok_r(datadup, " ", &lasts);
+      if (!data)
+        return ;
+      log.c_time = strtol(data, NULL, 0);
+      data = strtok_r(NULL, ":", &lasts);
+      if (!data)
+	throw (Exception(0, "Log data extraction failed."));
+      if (!strcmp(data, "SERVICE ALERT"))
+	{
+	  log.msg_type = 0;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.service = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	  LOGDATA_EXTRACT;
+	  log.retry = strtol(data, NULL, 0);
+	  LOGDATA_EXTRACT;
+	  log.output = data;
+	}
+      else if (!strcmp(data, "HOST ALERT"))
+	{
+	  log.msg_type = 1;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	  LOGDATA_EXTRACT;
+	  log.retry = strtol(data, NULL, 0);
+	  LOGDATA_EXTRACT;
+	  log.output = data;
+	}
+      else if (!strcmp(data, "SERVICE NOTIFICATION"))
+	{
+	  log.msg_type = 2;
+	  LOGDATA_EXTRACT;
+	  log.notification_contact = data;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.service = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.notification_cmd = data;
+	  LOGDATA_EXTRACT;
+	  log.output = data;
+	}
+      else if (!strcmp(data, "HOST NOTIFICATION"))
+	{
+	  log.msg_type = 3;
+	  LOGDATA_EXTRACT;
+	  log.notification_contact = data;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.notification_cmd = data;
+	  LOGDATA_EXTRACT;
+	  log.output = data;
+	}
+      else if (!strcmp(data, "CURRENT SERVICE STATE"))
+	{
+	  log.msg_type = 6;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.service = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	}
+      else if (!strcmp(data, "CURRENT HOST STATE"))
+	{
+	  log.msg_type = 7;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	}
+      else if (!strcmp(data, "INITIAL HOST STATE"))
+	{
+	  log.msg_type = 9;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	}
+      else if (!strcmp(data, "INITIAL SERVICE STATE"))
+	{
+	  log.msg_type = 8;
+	  LOGDATA_EXTRACT;
+	  log.host = data;
+	  LOGDATA_EXTRACT;
+	  log.service = data;
+	  LOGDATA_EXTRACT;
+	  log.status = data;
+	  LOGDATA_EXTRACT;
+	  log.type = data;
+	}
+      else if (!strcmp(data, "EXTERNAL_COMMAND"))
+	{
+	  LOGDATA_EXTRACT;
+	  if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM"))
+	    {
+	      log.msg_type = 10;
+	      LOGDATA_EXTRACT;
+	      log.host = data;
+	      LOGDATA_EXTRACT;
+	      log.service = data;
+	      LOGDATA_EXTRACT;
+	      log.notification_contact = data;
+	      LOGDATA_EXTRACT;
+	      log.output = data;
+	    }
+	  else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM"))
+	    {
+	      log.msg_type = 11;
+	      LOGDATA_EXTRACT;
+	      log.host = data;
+	      LOGDATA_EXTRACT;
+	      log.notification_contact = data;
+	      LOGDATA_EXTRACT;
+	      log.output = data;
+	    }
+	  else
+	    throw (Exception(0, "Log data extraction failed."));
+	}
+      else if (!strcmp(data, "Warning"))
+	{
+	  log.msg_type = 4;
+	  data = strtok_r(NULL, "", &lasts);
+	  if (!data)
+	    throw (Exception(0, "Log data extraction failed."));
+	  log.output = data;
+	}
+      else
+	{
+	  log.msg_type = 5;
+	  log.output = datadup;
+	}
+    }
+  catch (...) {}
+  free(datadup);
   return ;
 }
 
@@ -305,7 +482,7 @@ const KeyField<HostGroup> Interface::NDO::host_group_fields[] =
       &HostGroup::alias),
     KeyField<HostGroup>(NDO_DATA_HOSTGROUPMEMBER,
       &GetHostGroupMembers,
-      &AddHostGroupMember),
+      &SetHostGroupMember),
     KeyField<HostGroup>(NDO_DATA_HOSTGROUPNAME,
       &HostGroup::name),
     KeyField<HostGroup>()
@@ -401,6 +578,15 @@ const KeyField<HostStatus> Interface::NDO::host_status_fields[] =
     KeyField<HostStatus>(NDO_DATA_STATETYPE,
       &HostStatus::state_type),
     KeyField<HostStatus>()
+  };
+
+// Log fields.
+const KeyField<Log> Interface::NDO::log_fields[] =
+  {
+    KeyField<Log>(NDO_DATA_LOGENTRY,
+                  NULL,
+                  &SetLogData),
+    KeyField<Log>()
   };
 
 // ProgramStatus fields.

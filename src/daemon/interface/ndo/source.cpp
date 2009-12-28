@@ -23,15 +23,7 @@
 #include <memory>                   // for auto_ptr
 #include <stdlib.h>                 // for abort, strtod, strtol
 #include <string.h>                 // for strcmp, strncmp
-#include "events/acknowledgement.h"
-#include "events/comment.h"
-#include "events/downtime.h"
-#include "events/host.h"
-#include "events/host_group.h"
-#include "events/host_status.h"
-#include "events/program_status.h"
-#include "events/service.h"
-#include "events/service_status.h"
+#include "events/events.h"
 #include "interface/ndo/internal.h"
 #include "interface/ndo/source.h"
 #include "io/stream.h"
@@ -154,6 +146,7 @@ static std::map<int, Field<Events::Downtime> >        downtime_map;
 static std::map<int, Field<Events::Host> >            host_map;
 static std::map<int, Field<Events::HostGroup> >       host_group_map;
 static std::map<int, Field<Events::HostStatus> >      host_status_map;
+static std::map<int, Field<Events::Log> >             log_map;
 static std::map<int, Field<Events::ProgramStatus> >   program_status_map;
 static std::map<int, Field<Events::Service> >         service_map;
 static std::map<int, Field<Events::ServiceStatus> >   service_status_map;
@@ -406,7 +399,8 @@ Events::Event* Source::Event()
                             host_status_map));
               break ;
              case NDO_API_LOGDATA:
-              // XXX
+              event.reset(HandleEvent<Events::Log>(this->stream_,
+                                                   log_map));
               break ;
              case NDO_API_PROGRAMSTATUSDATA:
               event.reset(HandleEvent<Events::ProgramStatus>(this->stream_,
@@ -440,6 +434,7 @@ void Source::Initialize()
   StaticInit<Events::Host>(host_fields, host_map);
   StaticInit<Events::HostGroup>(host_group_fields, host_group_map);
   StaticInit<Events::HostStatus>(host_status_fields, host_status_map);
+  StaticInit<Events::Log>(log_fields, log_map);
   StaticInit<Events::ProgramStatus>(program_status_fields, program_status_map);
   StaticInit<Events::Service>(service_fields, service_map);
   StaticInit<Events::ServiceStatus>(service_status_fields, service_status_map);
