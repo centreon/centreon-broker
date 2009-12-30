@@ -20,12 +20,11 @@
 
 #include <assert.h>
 #include <map>
-#include <memory>                   // for auto_ptr
-#include <stdlib.h>                 // for abort, strtod, strtol
-#include <string.h>                 // for strcmp, strncmp
+#include <sstream>                     // for stringstream
+#include <stdlib.h>                    // for abort
 #include "events/events.h"
+#include "interface/ndo/destination.h"
 #include "interface/ndo/internal.h"
-#include "interface/ndo/source.h"
 #include "io/stream.h"
 #include "nagios/protoapi.h"
 
@@ -41,11 +40,12 @@ using namespace Interface::NDO;
  *  Set a boolean within an object.
  */
 template <typename T>
-static void set_boolean(T& t,
+static void set_boolean(const T& t,
+                        int id,
                         const typename KeyField<T>::FieldPointer& field,
-                        const char* str)
+                        std::stringstream& buffer)
 {
-  t.*(field.field_bool) = strtol(str, NULL, 0);
+  buffer << id << "=" << (t.*(field.field_bool) ? "1" : "0") << "\n";
   return ;
 }
 
@@ -53,11 +53,12 @@ static void set_boolean(T& t,
  *  Set a double within an object.
  */
 template <typename T>
-static void set_double(T& t,
+static void set_double(const T& t,
+                       int id,
                        const typename KeyField<T>::FieldPointer& field,
-                       const char* str)
+                       std::stringstream& buffer)
 {
-  t.*(field.field_double) = strtod(str, NULL);
+  buffer << id << "=" << t.*(field.field_double) << "\n";
   return ;
 }
 
@@ -65,11 +66,12 @@ static void set_double(T& t,
  *  Set an integer within an object.
  */
 template <typename T>
-static void set_integer(T& t,
+static void set_integer(const T& t,
+                        int id,
                         const typename KeyField<T>::FieldPointer& field,
-                        const char* str)
+                        std::stringstream& buffer)
 {
-  t.*(field.field_int) = strtol(str, NULL, 0);
+  buffer << id << "=" << t.*(field.field_int) << "\n";
   return ;
 }
 
@@ -77,11 +79,12 @@ static void set_integer(T& t,
  *  Set a short within an object.
  */
 template <typename T>
-static void set_short(T& t,
+static void set_short(const T& t,
+                      int id,
                       const typename KeyField<T>::FieldPointer& field,
-                      const char* str)
+                      std::stringstream& buffer)
 {
-  t.*(field.field_short) = strtol(str, NULL, 0);
+  buffer << id << "=" << t.*(field.field_short) << "\n";
   return ;
 }
 
@@ -89,11 +92,12 @@ static void set_short(T& t,
  *  Set a string within an object.
  */
 template <typename T>
-static void set_string(T& t,
+static void set_string(const T& t,
+                       int id,
                        const typename KeyField<T>::FieldPointer& field,
-                       const char* str)
+                       std::stringstream& buffer)
 {
-  t.*(field.field_string) = str;
+  buffer << id << "=" << t.*(field.field_string) << "\n";
   return ;
 }
 
@@ -101,11 +105,12 @@ static void set_string(T& t,
  *  Set a time_t within an object.
  */
 template <typename T>
-static void set_timet(T& t,
+static void set_timet(const T& t,
+                      int id,
                       const typename KeyField<T>::FieldPointer& field,
-                      const char* str)
+                      std::stringstream& buffer)
 {
-  t.*(field.field_timet) = strtol(str, NULL, 0);
+  buffer << id << "=" << t.*(field.field_timet) << "\n";
   return ;
 }
 
@@ -113,11 +118,13 @@ static void set_timet(T& t,
  *  Execute an undefined setter.
  */
 template <typename T>
-static void set_undefined(T& t,
+static void set_undefined(const T& t,
+                          int id,
                           const typename KeyField<T>::FieldPointer& field,
-                          const char* str)
+                          std::stringstream& buffer)
 {
-  field.field_undefined.setter(t, str);
+  (void)id;
+  buffer << field.field_undefined.getter(t);
   return ;
 }
 
@@ -134,7 +141,10 @@ template <typename T>
 struct   Field
 {
   const typename KeyField<T>::FieldPointer* param;
-  void (* ptr)(T&, const typename KeyField<T>::FieldPointer&, const char*);
+  void (* ptr)(const T&,
+               int id,
+               const typename KeyField<T>::FieldPointer&,
+               std::stringstream& buffer);
 };
 
 /**
@@ -204,39 +214,21 @@ static void StaticInit(const KeyField<T> fields[],
 **************************************/
 
 /**
- *  Extract event parameters from the data stream.
+ *  Extract event parameters and send them to the data stream.
  */
 template <typename T>
-T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
+void HandleEvent(const T& event,
+                 const std::map<int, Field<T> >& field_map,
+                 std::stringstream& buffer)
 {
-  std::auto_ptr<T> event(new T);
-  int key;
-  const char* key_str;
-  const char* value_str;
+  typename std::map<int, Field<T> >::const_iterator end;
 
-  while (1)
-    {
-      key_str = stream.Line();
-      if (key_str)
-        {
-          typename std::map<int, Field<T> >::const_iterator it;
-
-          key = strtol(key_str, NULL, 10);
-          if (NDO_API_ENDDATA == key)
-            break ;
-          value_str = strchr(key_str, '=');
-          value_str = (value_str ? value_str + 1 : "");
-          it = field_map.find(key);
-          if (it != field_map.end())
-            (*it->second.ptr)(*event.get(), *it->second.param, value_str);
-        }
-      else
-        {
-          event.reset();
-          break ;
-        }
-    }
-  return (event.release());
+  end = field_map.end();
+  for (typename std::map<int, Field<T> >::const_iterator it = field_map.begin();
+       it != end;
+       ++it)
+    (it->second.ptr)(event, it->first, *it->second.param, buffer);
+  return ;
 }
 
 /**************************************
@@ -246,15 +238,16 @@ T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
 **************************************/
 
 /**
- *  \brief Source copy constructor.
+ *  \brief Destination copy constructor.
  *
- *  As Source is not copyable, any attempt to use the copy constructor will
- *  result in a call to abort().
+ *  As Destination is not copyable, any attempt to use the copy constructor
+ *  will result in a call to abort().
  *  \par Safety No exception safety.
  *
- *  \param[in] source Unused.
+ *  \param[in] destination Unused.
  */
-Source::Source(const Source& source) : Interface::Source(source), stream_(NULL)
+Destination::Destination(const Destination& destination)
+  : Interface::Destination(destination)
 {
   assert(false);
   abort();
@@ -263,54 +256,20 @@ Source::Source(const Source& source) : Interface::Source(source), stream_(NULL)
 /**
  *  \brief Assignment operator overload.
  *
- *  As Source is not copyable, any attempt to use the assignment operator will
- *  result in a call to abort().
+ *  As Destination is not copyable, any attempt to use the assignment operator
+ *  will result in a call to abort().
  *  \par Safety No exception safety.
  *
- *  \param[in] source Unused.
+ *  \param[in] destination Unused.
  *
  *  \return *this
  */
-Source& Source::operator=(const Source& source)
+Destination& Destination::operator=(const Destination& destination)
 {
-  (void)source;
+  (void)destination;
   assert(false);
   abort();
   return (*this);
-}
-
-/**
- *  Parse the NDO header.
- *
- *  \return The initial event.
- */
-Events::Event* Source::Header()
-{
-  const char* line;
-  std::auto_ptr<Events::ProgramStatus> pstatus(new Events::ProgramStatus);
-
-  while ((line = this->stream_.Line()) && strcmp(line, NDO_API_STARTDATADUMP))
-    {
-      const char* value;
-
-      value = strchr(line, ' ');
-      if (value)
-        {
-          ++value;
-          if (!strncmp(line,
-                       NDO_API_INSTANCENAME,
-                       sizeof(NDO_API_INSTANCENAME)))
-            {
-              pstatus->is_running = true;
-              this->instance_ = value;
-            }
-          else if (!strncmp(line,
-                            NDO_API_STARTTIME,
-                            sizeof(NDO_API_STARTTIME)))
-            pstatus->program_start = strtol(value, NULL, 0);
-        }
-    }
-  return (pstatus.release());
 }
 
 /**************************************
@@ -320,27 +279,27 @@ Events::Event* Source::Header()
 **************************************/
 
 /**
- *  \brief Source constructor.
+ *  \brief Destination constructor.
  *
- *  Build an NDO input source that uses the stream object as raw binary input.
- *  The stream object must not be NULL and is owned by the Source object upon
- *  successful return from the constructor.
+ *  Build an NDO destination object that uses the stream object as its output.
+ *  The stream object must not be NULL and is owned by the Destination object
+ *  upon successful return from the constructor.
  *
- *  \param[in] stream Input stream object.
+ *  \param[in] stream Output stream object.
  */
-Source::Source(IO::Stream* stream) : stream_(stream) {}
+Destination::Destination(IO::Stream* stream) : stream_(stream) {}
 
 /**
- *  Source destructor.
+ *  Destination destructor.
  */
-Source::~Source() {}
+Destination::~Destination() {}
 
 /**
- *  Close the source object.
+ *  Close the destination object.
  */
-void Source::Close()
+void Destination::Close()
 {
-  this->stream_.Close();
+  this->stream_->Close();
   return ;
 }
 
@@ -352,79 +311,105 @@ void Source::Close()
  *
  *  \return Next available event, NULL is stream is closed.
  */
-Events::Event* Source::Event()
+void Destination::Event(const Events::Event& event)
 {
-  std::auto_ptr<Events::Event> event;
-  const char* line;
+  std::stringstream buffer;
 
-  // Get the next non-empty line.
-  do
+  switch (event.GetType())
     {
-      line = this->stream_.Line();
-    } while (line && !line[0]);
-
-  if (line)
-    {
-      // Parse initial header.
-      if (!strcmp(line, NDO_API_HELLO))
-        event.reset(this->Header());
-      else
-        {
-          int id;
-
-          id = strtol(line, NULL, 10);
-          switch (id)
-            {
-             case NDO_API_ACKNOWLEDGEMENTDATA:
-              event.reset(HandleEvent<Events::Acknowledgement>(this->stream_,
-                            acknowledgement_map));
-              break ;
-             case NDO_API_COMMENTDATA:
-              event.reset(HandleEvent<Events::Comment>(this->stream_, comment_map));
-              break ;
-             case NDO_API_DOWNTIMEDATA:
-              event.reset(HandleEvent<Events::Downtime>(this->stream_,
-                            downtime_map));
-              break ;
-             case NDO_API_HOSTDEFINITION:
-              event.reset(HandleEvent<Events::Host>(this->stream_, host_map));
-              break ;
-             case NDO_API_HOSTGROUPDEFINITION:
-              event.reset(HandleEvent<Events::HostGroup>(this->stream_,
-                            host_group_map));
-              break ;
-             case NDO_API_HOSTSTATUSDATA:
-              event.reset(HandleEvent<Events::HostStatus>(this->stream_,
-                            host_status_map));
-              break ;
-             case NDO_API_LOGDATA:
-              event.reset(HandleEvent<Events::Log>(this->stream_,
-                                                   log_map));
-              break ;
-             case NDO_API_PROGRAMSTATUSDATA:
-              event.reset(HandleEvent<Events::ProgramStatus>(this->stream_,
-                            program_status_map));
-              break ;
-             case NDO_API_SERVICEDEFINITION:
-              event.reset(HandleEvent<Events::Service>(this->stream_,
-                            service_map));
-              break ;
-             case NDO_API_SERVICESTATUSDATA:
-              event.reset(HandleEvent<Events::ServiceStatus>(this->stream_,
-                            service_status_map));
-              break ;
-            }
-        }
+     case Events::Event::ACKNOWLEDGEMENT:
+      buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
+      HandleEvent<Events::Acknowledgement>(
+        *static_cast<const Events::Acknowledgement*>(&event),
+        acknowledgement_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::COMMENT:
+      buffer << NDO_API_COMMENTDATA << ":\n";
+      HandleEvent<Events::Comment>(
+        *static_cast<const Events::Comment*>(&event),
+        comment_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::DOWNTIME:
+      buffer << NDO_API_DOWNTIMEDATA << ":\n";
+      HandleEvent<Events::Downtime>(
+        *static_cast<const Events::Downtime*>(&event),
+        downtime_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::HOST:
+      buffer << NDO_API_HOSTDEFINITION << ":\n";
+      HandleEvent<Events::Host>(
+        *static_cast<const Events::Host*>(&event),
+        host_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::HOSTGROUP:
+      buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
+      HandleEvent<Events::HostGroup>(
+        *static_cast<const Events::HostGroup*>(&event),
+        host_group_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::HOSTSTATUS:
+      buffer << NDO_API_HOSTSTATUSDATA << ":\n";
+      HandleEvent<Events::HostStatus>(
+        *static_cast<const Events::HostStatus*>(&event),
+        host_status_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::LOG:
+      buffer << NDO_API_LOGDATA << ":\n";
+      HandleEvent<Events::Log>(
+        *static_cast<const Events::Log*>(&event),
+        log_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::PROGRAMSTATUS:
+      buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
+      HandleEvent<Events::ProgramStatus>(
+        *static_cast<const Events::ProgramStatus*>(&event),
+        program_status_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::SERVICE:
+      buffer << NDO_API_SERVICEDEFINITION << ":\n";
+      HandleEvent<Events::Service>(
+        *static_cast<const Events::Service*>(&event),
+        service_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case Events::Event::SERVICESTATUS:
+      buffer << NDO_API_SERVICESTATUSDATA << ":\n";
+      HandleEvent<Events::ServiceStatus>(
+        *static_cast<const Events::ServiceStatus*>(&event),
+        service_status_map,
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
     }
-  if (event.get())
-    event->instance = this->instance_;
-  return (event.release());
+  buffer << "\n";
+
+  // Send data.
+  this->stream_->Send(buffer.str().c_str(), buffer.str().size());
+
+  return ;
 }
 
 /**
- *  Initialize internal data structures that NDO::Source uses.
+ *  Initialize internal data structures that NDO::Destination uses.
  */
-void Source::Initialize()
+void Destination::Initialize()
 {
   StaticInit<Events::Acknowledgement>(acknowledgement_fields,
                                       acknowledgement_map);
