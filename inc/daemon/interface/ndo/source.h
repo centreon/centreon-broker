@@ -25,9 +25,9 @@
 # include "interface/source.h"
 # include "io/text.h"
 
-namespace                       Interface
+namespace                    Interface
 {
-  namespace                     NDO
+  namespace                  NDO
   {
     /**
      *  \class Source source.h "interface/ndo/source.h"
@@ -36,21 +36,21 @@ namespace                       Interface
      *  The Interface::NDO::Source class converts an input stream into events
      *  using the NDO protocol.
      */
-    class                       Source : public Interface::Source
+    class                    Source : public Interface::Source
     {
      private:
-      std::string               instance_;
-      IO::Text                  stream_;
-                                Source(const Source& source);
-      Source&                   operator=(const Source& source);
-      Events::Event*            Header();
+      std::string            instance_;
+      IO::Text               stream_;
+                             Source(const Source& source);
+      Source&                operator=(const Source& source);
+      Events::Event*         Header();
 
      public:
-                                Source(IO::Stream* stream);
-      virtual                   ~Source();
-      virtual void              Close();
-      virtual Events::Event*    Event();
-      static void               Initialize();
+                             Source(IO::Stream* stream);
+      virtual                ~Source();
+      virtual void           Close();
+      virtual Events::Event* Event();
+      static void            Initialize();
     };
   }
 }

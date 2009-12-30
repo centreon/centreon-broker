@@ -107,7 +107,7 @@
 
 /************** COMMON DATA ATTRIBUTES **************/
 
-#define NDO_MAX_DATA_TYPES                           266
+#define NDO_MAX_DATA_TYPES                           267
 
 #define NDO_DATA_NONE                                0
 
@@ -385,5 +385,8 @@
 #define NDO_DATA_HASBEENMODIFIED                     263
 #define NDO_DATA_CONTACT                             264
 #define NDO_DATA_LASTSTATE                           265
+
+/* CentreonBroker addon. */
+#define NDO_DATA_INSTANCE                            266
 
 #endif

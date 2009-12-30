@@ -28,6 +28,7 @@
 #include "concurrency/mutex.h"
 #include "configuration/manager.h"
 #include "exception.h"
+#include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
 #include "interface/xml/destination.h"
 #include "logging.h"
@@ -123,9 +124,10 @@ int main(int argc, char* argv[])
 #endif /* USE_MYSQL */
 
           // Initialize all interface objects.
-	  LOGDEBUG("Initializing DB engine (destination) ...");
-	  MappingsInit();
+          LOGDEBUG("Initializing DB engine (destination) ...");
+          MappingsInit();
           LOGDEBUG("Initializing NDO engine (source) ...");
+          Interface::NDO::Destination::Initialize();
           Interface::NDO::Source::Initialize();
           LOGDEBUG("Initializing XML engine (destination) ...");
           Interface::XML::Destination::Initialize();
@@ -146,9 +148,9 @@ int main(int argc, char* argv[])
           // Unload configuration.
           Configuration::Manager::Instance().Close();
 
-	  // Destroy O/R mapping.
-	  LOGDEBUG("Unloading DB engine ...");
-	  MappingsDestroy();
+          // Destroy O/R mapping.
+          LOGDEBUG("Unloading DB engine ...");
+          MappingsDestroy();
 
 #ifdef USE_MYSQL
           // Unload MySQL library.
