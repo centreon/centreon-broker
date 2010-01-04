@@ -26,13 +26,7 @@ namespace                   Configuration
 { class                     Interface; }
 namespace                   IO
 { class                     Acceptor;
-  namespace                 Net
-  {
-    class                   IPv4Connector;
-    class                   IPv6Connector;
-    class                   UnixConnector;
-  }
-}
+  class                     Stream; }
 
 namespace                   Interface
 {
@@ -59,9 +53,11 @@ namespace                   Interface
                             Factory(const Factory& factory);
                             ~Factory();
     Factory&                operator=(const Factory& factory);
-    IO::Net::IPv4Connector* IPv4Connector(const Configuration::Interface& i);
-    IO::Net::IPv6Connector* IPv6Connector(const Configuration::Interface& i);
-    IO::Net::UnixConnector* UnixConnector(const Configuration::Interface& i);
+    IO::Stream*             IPv4Connector(const Configuration::Interface& i);
+    IO::Stream*             IPv6Connector(const Configuration::Interface& i);
+    IO::Stream*             TLSConnector(const Configuration::Interface& i,
+                                         IO::Stream* stream);
+    IO::Stream*             UnixConnector(const Configuration::Interface& i);
 
    public:
     IO::Acceptor*           Acceptor(const Configuration::Interface& i);

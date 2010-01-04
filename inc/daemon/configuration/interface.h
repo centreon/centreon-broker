@@ -59,15 +59,20 @@ namespace       Configuration
       UNIX_CLIENT,
       UNIX_SERVER
     };
+    std::string ca;
+    std::string cert;
+    bool        compress;
     std::string db;
     std::string filename;
     std::string host;
     std::string interface;
+    std::string key;
     std::string name;
     std::string password;
     short       port;
     Protocol    protocol;
     std::string socket;
+    bool        tls;
     Type        type;
     std::string user;
                 Interface();

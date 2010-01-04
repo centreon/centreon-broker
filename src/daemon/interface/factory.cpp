@@ -30,6 +30,7 @@
 #include "io/net/ipv6.h"
 #include "io/net/unix.h"
 #include "io/split.h"
+#include "io/tls/connector.h"
 
 using namespace Interface;
 
@@ -79,13 +80,16 @@ Factory& Factory::operator=(const Factory& factory)
  *
  *  \return A connected IPv4 connector.
  */
-IO::Net::IPv4Connector* Factory::IPv4Connector(
-  const Configuration::Interface& i)
+IO::Stream* Factory::IPv4Connector(const Configuration::Interface& i)
 {
   std::auto_ptr<IO::Net::IPv4Connector> ipv4c(new IO::Net::IPv4Connector);
 
   ipv4c->Connect(i.host.c_str(), i.port);
-  return (ipv4c.release());
+  return (
+#ifdef USE_TLS
+          i.tls ? this->TLSConnector(i, ipv4c.release()) :
+#endif /* USE_TLS */
+                  ipv4c.release());
 }
 
 /**
@@ -95,14 +99,41 @@ IO::Net::IPv4Connector* Factory::IPv4Connector(
  *
  *  \return A connected IPv6 connector.
  */
-IO::Net::IPv6Connector* Factory::IPv6Connector(
-  const Configuration::Interface& i)
+IO::Stream* Factory::IPv6Connector(const Configuration::Interface& i)
 {
   std::auto_ptr<IO::Net::IPv6Connector> ipv6c(new IO::Net::IPv6Connector);
 
   ipv6c->Connect(i.host.c_str(), i.port);
-  return (ipv6c.release());
+  return (
+#ifdef USE_TLS
+          i.tls ? this->TLSConnector(i, ipv6c.release()) :
+#endif /* USE_TLS */
+                  ipv6c.release());
 }
+
+#ifdef USE_TLS
+/**
+ *  Wraps a Stream within a TLS layer.
+ *
+ *  \return The stream object wrapped in a TLS object.
+ */
+IO::Stream* Factory::TLSConnector(const Configuration::Interface& i,
+                                  IO::Stream* stream)
+{
+  std::auto_ptr<IO::Stream> tmp(stream);
+  std::auto_ptr<IO::TLS::Connector> connector(new IO::TLS::Connector(stream));
+
+  tmp.release();
+  if (!i.cert.empty())
+    connector->SetCert(i.cert, i.key);
+  if (!i.ca.empty())
+    connector->SetTrustedCA(i.ca);
+  if (i.compress)
+    connector->SetCompression(true);
+  connector->Connect();
+  return (connector.release());
+}
+#endif /* USE_TLS */
 
 /**
  *  Build a Unix connector according to the configuration provided.
@@ -111,13 +142,16 @@ IO::Net::IPv6Connector* Factory::IPv6Connector(
  *
  *  \return A connected Unix connector.
  */
-IO::Net::UnixConnector* Factory::UnixConnector(
-  const Configuration::Interface& i)
+IO::Stream* Factory::UnixConnector(const Configuration::Interface& i)
 {
   std::auto_ptr<IO::Net::UnixConnector> uc(new IO::Net::UnixConnector);
 
   uc->Connect(i.socket.c_str());
-  return (uc.release());
+  return (
+#ifdef USE_TLS
+          i.tls ? this->TLSConnector(i, uc.release()) :
+#endif /* USE_TLS */
+                  uc.release());
 }
 
 /**************************************
@@ -205,7 +239,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       }
      case Configuration::Interface::IPV4_CLIENT:
       {
-        std::auto_ptr<IO::Net::IPv4Connector> ipv4c(this->IPv4Connector(i));
+        std::auto_ptr<IO::Stream> ipv4c(this->IPv4Connector(i));
 
         if (Configuration::Interface::XML == i.protocol)
           dest = new Interface::XML::Destination(ipv4c.get());
@@ -216,7 +250,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       break ;
      case Configuration::Interface::IPV6_CLIENT:
       {
-        std::auto_ptr<IO::Net::IPv6Connector> ipv6c(this->IPv6Connector(i));
+        std::auto_ptr<IO::Stream> ipv6c(this->IPv6Connector(i));
 
         if (Configuration::Interface::XML == i.protocol)
           dest = new Interface::XML::Destination(ipv6c.get());
@@ -240,7 +274,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       break ;
      case Configuration::Interface::UNIX_CLIENT:
       {
-        std::auto_ptr<IO::Net::UnixConnector> uc(this->UnixConnector(i));
+        std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));
 
         if (Configuration::Interface::XML == i.protocol)
           dest = new Interface::XML::Destination(uc.get());
@@ -299,7 +333,7 @@ Source* Factory::Source(const Configuration::Interface& i)
       break ;
      case Configuration::Interface::IPV4_CLIENT:
       {
-        std::auto_ptr<IO::Net::IPv4Connector> ipv4c(this->IPv4Connector(i));
+        std::auto_ptr<IO::Stream> ipv4c(this->IPv4Connector(i));
 
         source = new Interface::NDO::Source(ipv4c.get());
         ipv4c.release();
@@ -307,7 +341,7 @@ Source* Factory::Source(const Configuration::Interface& i)
       break ;
      case Configuration::Interface::IPV6_CLIENT:
       {
-        std::auto_ptr<IO::Net::IPv6Connector> ipv6c(this->IPv6Connector(i));
+        std::auto_ptr<IO::Stream> ipv6c(this->IPv6Connector(i));
 
         source = new Interface::NDO::Source(ipv6c.get());
         ipv6c.release();
@@ -315,7 +349,7 @@ Source* Factory::Source(const Configuration::Interface& i)
       break ;
      case Configuration::Interface::UNIX_CLIENT:
       {
-        std::auto_ptr<IO::Net::UnixConnector> uc(this->UnixConnector(i));
+        std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));
 
         source = new Interface::NDO::Source(uc.get());
         uc.release();

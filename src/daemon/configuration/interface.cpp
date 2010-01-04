@@ -39,15 +39,20 @@ using namespace Configuration;
  */
 void Interface::InternalCopy(const Interface& interface)
 {
+  this->ca        = interface.ca;
+  this->cert      = interface.cert;
+  this->compress  = interface.compress;
   this->db        = interface.db;
   this->filename  = interface.filename;
   this->host      = interface.host;
   this->interface = interface.interface;
+  this->key       = interface.key;
   this->name      = interface.name;
   this->password  = interface.password;
   this->port      = interface.port;
   this->protocol  = interface.protocol;
   this->socket    = interface.socket;
+  this->tls       = interface.tls;
   this->type      = interface.type;
   this->user      = interface.user;
   return ;
@@ -66,6 +71,7 @@ Interface::Interface()
 {
   this->port     = 5668;
   this->protocol = NDO;
+  this->tls      = false;
   this->type     = UNKNOWN_TYPE;
 }
 
@@ -123,7 +129,12 @@ bool Interface::operator==(const Interface& interface) const
         ret = ((this->host == interface.host)
                && (this->interface == interface.interface)
                && (this->port == interface.port)
-               && (this->protocol == interface.protocol));
+               && (this->protocol == interface.protocol)
+               && (this->tls == interface.tls)
+               && (!this->tls || ((this->ca == interface.ca)
+                                  && (this->cert == interface.cert)
+                                  && (this->compress == interface.compress)
+                                  && (this->key == interface.key))));
         break ;
        case MYSQL:
        case ORACLE:
@@ -135,7 +146,12 @@ bool Interface::operator==(const Interface& interface) const
         break ;
        case UNIX_CLIENT:
        case UNIX_SERVER:
-        ret = (this->socket == interface.socket);
+        ret = ((this->socket == interface.socket)
+               && (this->tls == interface.tls)
+               && (!this->tls || ((this->ca == interface.ca)
+                                  && (this->cert == interface.cert)
+                                  && (this->compress == interface.compress)
+                                  && (this->key == interface.key))));
         break ;
        default:
         ret = true;
@@ -184,8 +200,18 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->interface < interface.interface);
         else if (this->port != interface.port)
           ret = (this->port < interface.port);
-        else
+        else if (this->protocol != interface.protocol)
           ret = (this->protocol < interface.protocol);
+        else if (this->tls != interface.tls)
+          ret = (this->tls < interface.tls);
+        else if (this->ca != interface.ca)
+          ret = (this->ca < interface.ca);
+        else if (this->cert != interface.cert)
+          ret = (this->cert < interface.cert);
+        else if (this->compress != interface.compress)
+          ret = (this->compress < interface.compress);
+        else
+          ret = (this->key < interface.key);
         break ;
        case MYSQL:
        case ORACLE:
@@ -196,12 +222,33 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->host < interface.host);
         else if (this->password != interface.password)
           ret = (this->password < interface.password);
-        else
+        else if (this->user != interface.user)
           ret = (this->user < interface.user);
+        else if (this->tls != interface.tls)
+          ret = (this->tls < interface.tls);
+        else if (this->ca != interface.ca)
+          ret = (this->ca < interface.ca);
+        else if (this->cert != interface.cert)
+          ret = (this->cert < interface.cert);
+        else if (this->compress != interface.compress)
+          ret = (this->compress < interface.compress);
+        else
+          ret = (this->key < interface.key);
         break ;
        case UNIX_CLIENT:
        case UNIX_SERVER:
-        ret = (this->socket < interface.socket);
+        if (this->socket != interface.socket)
+          ret = (this->socket < interface.socket);
+        else if (this->tls != interface.tls)
+          ret = (this->tls < interface.tls);
+        else if (this->ca != interface.ca)
+          ret = (this->ca < interface.ca);
+        else if (this->cert != interface.cert)
+          ret = (this->cert < interface.cert);
+        else if (this->compress != interface.compress)
+          ret = (this->compress < interface.compress);
+        else
+          ret = (this->key < interface.key);
         break ;
        default:
         ret = true;
