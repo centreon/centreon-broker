@@ -145,7 +145,11 @@ endif
 
 # Add TLS files is TLS is enabled
 if TLS
-cb2db_SOURCES +=	../../src/io/tls.cpp
+cb2db_SOURCES +=	../../src/daemon/io/tls/acceptor.cpp		\
+			../../src/daemon/io/tls/connector.cpp		\
+			../../src/daemon/io/tls/internal.cpp		\
+			../../src/daemon/io/tls/params.cpp		\
+			../../src/daemon/io/tls/stream.cpp
 endif
 
 # Configure compilation flags properly

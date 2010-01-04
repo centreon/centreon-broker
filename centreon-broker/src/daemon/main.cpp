@@ -31,6 +31,9 @@
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
 #include "interface/xml/destination.h"
+#ifdef USE_TLS
+# include "io/tls/internal.h"
+#endif /* USE_TLS */
 #include "logging.h"
 #include "mapping.h"
 
@@ -123,6 +126,12 @@ int main(int argc, char* argv[])
             throw (Exception(0, "MySQL library initialization failed."));
 #endif /* USE_MYSQL */
 
+#ifdef USE_TLS
+          // Initialize GNU TLS.
+          LOGDEBUG("Initializing GNU TLS library ...");
+          IO::TLS::Initialize();
+#endif /* USE_TLS */
+
           // Initialize all interface objects.
           LOGDEBUG("Initializing DB engine (destination) ...");
           MappingsInit();
@@ -151,6 +160,12 @@ int main(int argc, char* argv[])
           // Destroy O/R mapping.
           LOGDEBUG("Unloading DB engine ...");
           MappingsDestroy();
+
+#ifdef USE_TLS
+          // Unload GNU TLS library.
+          LOGDEBUG("Unloading GNU TLS library ...");
+          IO::TLS::Destroy();
+#endif /* USE_TLS */
 
 #ifdef USE_MYSQL
           // Unload MySQL library.
