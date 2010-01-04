@@ -77,6 +77,8 @@ ConditionVariable& ConditionVariable::operator=(const ConditionVariable& cv)
 
 /**
  *  ConditionVariable default constructor.
+ *
+ *  \throw Exception Condition variable initialization failed.
  */
 ConditionVariable::ConditionVariable()
 {
@@ -102,7 +104,7 @@ ConditionVariable::~ConditionVariable()
  *  other thread calls Wake() or WakeAll(). At that time, the mutex will be
  *  locked again prior to running the thread again.
  *
- *  \param[in,out] mutex Mutex that should be locked.
+ *  \param[in,out] mutex Mutex that should be locked when calling Sleep().
  */
 void ConditionVariable::Sleep(Mutex& mutex)
 {
