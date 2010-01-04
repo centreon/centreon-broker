@@ -44,13 +44,12 @@ namespace           Concurrency
 
    private:
     pthread_mutex_t mutex_;
-    void            InitMutex();
+                    Mutex(const Mutex& mutex);
+    Mutex&          operator=(const Mutex& mutex);
 
    public:
                     Mutex();
-                    Mutex(const Mutex& mutex);
                     ~Mutex();
-    Mutex&          operator=(const Mutex& mutex);
     void            Lock();
     bool            TryLock();
     void            Unlock();

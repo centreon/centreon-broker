@@ -31,7 +31,7 @@ namespace  Concurrency
    *  \brief Handle locking/unlocking of a mutex.
    *
    *  To avoid forgetting about releasing a locked mutex, the Lock will handle
-   *  those operations for you on its creation and its destruction.
+   *  these operations on its creation and its destruction.
    *
    *  \see Mutex
    */
