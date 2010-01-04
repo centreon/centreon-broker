@@ -136,15 +136,15 @@ static void HandleInterface(Configuration::Lexer& lexer,
         }
 #ifdef USE_TLS
       else if (var_str == "ca")
-        in.SetTLSCA(val_str);
+        i.ca = val_str;
       else if (var_str == "cert")
-        in.SetTLSCert(val_str);
+        i.cert = val_str;
       else if (var_str == "compress")
-        in.SetTLSCompress(strtoul(val_str.c_str(), NULL, 0));
+        i.compress = strtoul(val_str.c_str(), NULL, 0);
       else if (var_str == "key")
-        in.SetTLSKey(val_str);
+        i.key = val_str;
       else if (var_str == "tls")
-        in.SetTLS((val_str == "yes") || strtoul(val_str.c_str(), NULL, 0));
+        i.tls = ((val_str == "yes") || strtoul(val_str.c_str(), NULL, 0));
 #endif /* USE_TLS */
     }
   return ;
