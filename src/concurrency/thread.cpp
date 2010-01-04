@@ -64,20 +64,20 @@ void* ThreadHelper(void* arg)
   catch (...)
     {
       // Exception caught. Thread execution failed.
-      try
-        {
-          if (harg->tl)
+      if (harg->tl)
+        try
+          {
             harg->tl->OnFailure(harg->t);
-        }
-      catch (...) {}
+          }
+        catch (...) {}
     }
   // Thread will exit soon.
-  try
-    {
-      if (harg->tl)
-	harg->tl->OnExit(harg->t);
-    }
-  catch (...) {}
+  if (harg->tl)
+    try
+      {
+        harg->tl->OnExit(harg->t);
+      }
+    catch (...) {}
 
   return (NULL);
 }
@@ -137,8 +137,8 @@ Thread::Thread() : joinable_(false) {}
 /**
  *  \brief Thread destructor.
  *
- *  If the thread is still running, it won't be Cancel()'d but instead
- *  Detach()'d.
+ *  If the thread is still running, it's completion will be awaited (Join()'d)
+ *  if it has not been detached.
  *  \par Safety No exception guarantee.
  */
 Thread::~Thread()
@@ -147,14 +147,14 @@ Thread::~Thread()
   if (this->joinable_)
     try
       {
-        // Try to detach it first.
-        this->Detach();
+        // Wait for thread execution completion.
+        this->Join();
       }
     catch (...)
       {
         try
           {
-            // If we couldn't detach the thread, try to cancel its execution.
+            // If we couldn't reach the thread, try to cancel its execution.
             this->Cancel();
             this->Join();
           }
@@ -261,5 +261,6 @@ void Thread::Run(ThreadListener* tl)
   else
     throw (Exception(0, "Thread is already running " \
                         "and has not been detached."));
+
   return ;
 }

@@ -32,6 +32,8 @@ namespace           Concurrency
    *
    *  Upon thread creation, it is possible to specify a listener which will
    *  receive events from the thread.
+   *
+   *  \see Thread
    */
   class             ThreadListener
   {
