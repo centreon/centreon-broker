@@ -18,8 +18,10 @@
 **  For more information : contact@centreon.com
 */
 
+#include <assert.h>
 #include <errno.h>             // for EBUSY
 #include <pthread.h>
+#include <stdlib.h>            // for abort
 #include <string.h>            // for strerror
 #include "concurrency/mutex.h"
 #include "exception.h"
@@ -33,18 +35,38 @@ using namespace Concurrency;
 **************************************/
 
 /**
- *  Initialize the OS-specific internal mutex object.
+ *  \brief Mutex copy constructor.
  *
- *  \throw Exception Mutex initialization failed.
+ *  Copying a mutex makes no sense. Therefore any attempt to use this copy
+ *  constructor will result in a call to abort().
+ *  \par Safety No exception safety.
+ *
+ *  \param[in] mutex Unused.
  */
-void Mutex::InitMutex()
+Mutex::Mutex(const Mutex& mutex)
 {
-  int ret;
+  (void)mutex;
+  assert(false);
+  abort();
+}
 
-  ret = pthread_mutex_init(&this->mutex_, NULL);
-  if (ret)
-    throw (Exception(ret, strerror(ret)));
-  return ;
+/**
+ *  \brief Assignment operator overload.
+ *
+ *  Copying a mutex makes no sense. Therefore any attempt to use this
+ *  assignment operator will result in a call to abort().
+ *  \par Safety No exception safety.
+ *
+ *  \param[in] mutex Unused.
+ *
+ *  \return *this
+ */
+Mutex& Mutex::operator=(const Mutex& mutex)
+{
+  (void)mutex;
+  assert(false);
+  abort();
+  return (*this);
 }
 
 /**************************************
@@ -60,23 +82,12 @@ void Mutex::InitMutex()
  */
 Mutex::Mutex()
 {
-  this->InitMutex();
-}
+  int ret;
 
-/**
- *  \brief Mutex copy constructor.
- *
- *  As it is useless to copy a mutex, the copy constructor has the same effects
- *  as the default constructor.
- *
- *  \param[in] mutex Unused.
- *
- *  \see Mutex::Mutex()
- */
-Mutex::Mutex(const Mutex& mutex)
-{
-  (void)mutex;
-  this->InitMutex();
+  ret = pthread_mutex_init(&this->mutex_, NULL);
+  if (ret)
+    throw (Exception(ret, strerror(ret)));
+  return ;
 }
 
 /**
@@ -89,27 +100,11 @@ Mutex::~Mutex()
 }
 
 /**
- *  \brief Assignment operator overload.
- *
- *  As it is useless to copy a mutex, the assignment operator has no effect.
- *  \par Safety No throw guarantee.
- *
- *  \param[in] mutex Unused.
- *
- *  \return *this
- */
-Mutex& Mutex::operator=(const Mutex& mutex)
-{
-  (void)mutex;
-  return (*this);
-}
-
-/**
  *  \brief Lock a mutex.
  *
- *  Only one mutex can hold the lock at a time. Also the thread that locked the
- *  mutex is the only one allowed to release it. The mutex should be unlocked
- *  as soon as possible to avoid as much lock contention as possible.
+ *  Only one thread can hold the lock at a time. Also the thread that locked
+ *  the mutex is the only one allowed to release it. The mutex should be
+ *  unlocked as soon as possible to avoid as much lock contention as possible.
  *  \par Safety Basic exception safety.
  *
  *  \throw Exception Mutex locking failed.
@@ -140,7 +135,7 @@ bool Mutex::TryLock()
   int ret;
 
   ret = pthread_mutex_trylock(&this->mutex_);
-  if (ret && ret != EBUSY)
+  if (ret && ret != EBUSY) // EBUSY indicates that the mutex is already locked.
     throw (Exception(ret, strerror(ret)));
   return (ret != EBUSY);
 }
