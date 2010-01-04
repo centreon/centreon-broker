@@ -36,6 +36,11 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/io/split.cpp				\
 		../../src/daemon/io/stream.cpp				\
 		../../src/daemon/io/text.cpp				\
+		../../src/daemon/io/tls/acceptor.cpp			\
+		../../src/daemon/io/tls/connector.cpp			\
+		../../src/daemon/io/tls/internal.cpp			\
+		../../src/daemon/io/tls/params.cpp			\
+		../../src/daemon/io/tls/stream.cpp			\
 		../../src/daemon/main.cpp				\
 		../../src/daemon/multiplexing/publisher.cpp		\
 		../../src/daemon/multiplexing/subscriber.cpp		\
@@ -93,11 +98,12 @@ NAME	=	cb2db
 INCLUDE		=	-I../../inc/daemon -I../../inc
 MACROS		=	-DUSE_MYSQL -DTIXML_USE_STL
 # GCC CXXFLAGS
-CXXFLAGS	=	-O3 -pedantic -Wall -Wextra
+CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
+#CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
-LDFLAGS		=	-lpthread `mysql_config --libs_r` -lboost_thread-mt #-lefence
+LDFLAGS		=	-lpthread `mysql_config --libs_r` -lboost_thread-mt -lgnutls #-lefence
 
 # Rules
 all	:	$(NAME)
