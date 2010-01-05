@@ -20,7 +20,9 @@
 
 #include <memory>
 #include "configuration/interface.h"
-#include "db/mysql/connection.h"
+#ifdef USE_MYSQL
+# include "db/mysql/connection.h"
+#endif /* USE_MYSQL */
 #include "interface/db/destination.h"
 #include "interface/factory.h"
 #include "interface/ndo/destination.h"
@@ -269,6 +271,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
         ipv6c.release();
       }
       break ;
+#ifdef USE_MYSQL
      case Configuration::Interface::MYSQL:
       {
         std::auto_ptr<CentreonBroker::DB::MySQLConnection> myconn(
@@ -282,6 +285,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
         dest = mydest.release();
       }
       break ;
+#endif /* USE_MYSQL */
      case Configuration::Interface::UNIX_CLIENT:
       {
         std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));

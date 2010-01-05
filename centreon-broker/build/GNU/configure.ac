@@ -25,6 +25,7 @@ m4_include(macros/ax_boost_base.m4)
 m4_include(macros/ax_lib_mysql.m4)
 m4_include(macros/ax_lib_oracle_oci.m4)
 m4_include(macros/ax_lib_postgresql.m4)
+m4_include(macros/ax_pthread.m4)
 m4_include(macros/libgnutls.m4)
 
 #######################################
@@ -62,6 +63,13 @@ fi
 ##  BOOST
 ##
 AX_BOOST_BASE
+
+##
+##  PTHREAD
+##
+AX_PTHREAD(
+	[],
+	[AC_MSG_ERROR([pthread library is mandatory])])
 
 ##
 ##  MYSQL

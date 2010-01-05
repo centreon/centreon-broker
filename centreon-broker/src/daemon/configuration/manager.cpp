@@ -26,7 +26,6 @@
 #include "configuration/lexer.h"
 #include "configuration/interface.h"
 #include "configuration/manager.h"
-#include "db/mysql/connection.h"
 #include "exception.h"
 #include "interface/db/destination.h"
 #include "interface/factory.h"

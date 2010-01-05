@@ -52,16 +52,6 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/interface/xml/tinyxml.cpp		\
 		../../src/daemon/interface/xml/tinyxmlerror.cpp		\
 		../../src/daemon/interface/xml/tinyxmlparser.cpp	\
-		../../src/daemon/io/acceptor.cpp			\
-		../../src/daemon/io/fd.cpp				\
-		../../src/daemon/io/file.cpp				\
-		../../src/daemon/io/net/ipv4.cpp			\
-		../../src/daemon/io/net/ipv6.cpp			\
-		../../src/daemon/io/net/socket.cpp			\
-		../../src/daemon/io/net/unix.cpp			\
-		../../src/daemon/io/split.cpp				\
-		../../src/daemon/io/stream.cpp				\
-		../../src/daemon/io/text.cpp				\
 		../../src/daemon/main.cpp				\
 		../../src/daemon/multiplexing/publisher.cpp		\
 		../../src/daemon/multiplexing/subscriber.cpp		\
@@ -101,6 +91,16 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\
+		../../src/io/acceptor.cpp				\
+		../../src/io/fd.cpp					\
+		../../src/io/file.cpp					\
+		../../src/io/net/ipv4.cpp				\
+		../../src/io/net/ipv6.cpp				\
+		../../src/io/net/socket.cpp				\
+		../../src/io/net/unix.cpp				\
+		../../src/io/split.cpp					\
+		../../src/io/stream.cpp					\
+		../../src/io/text.cpp					\
 		../../src/logging.cpp					\
 		../../src/mapping.cpp
 
@@ -145,22 +145,24 @@ endif
 
 # Add TLS files is TLS is enabled
 if TLS
-cb2db_SOURCES +=	../../src/daemon/io/tls/acceptor.cpp		\
-			../../src/daemon/io/tls/connector.cpp		\
-			../../src/daemon/io/tls/internal.cpp		\
-			../../src/daemon/io/tls/params.cpp		\
-			../../src/daemon/io/tls/stream.cpp
+cb2db_SOURCES +=	../../src/io/tls/acceptor.cpp			\
+			../../src/io/tls/connector.cpp			\
+			../../src/io/tls/internal.cpp			\
+			../../src/io/tls/params.cpp			\
+			../../src/io/tls/stream.cpp
 endif
 
 # Configure compilation flags properly
 cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/daemon	\
 			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)		\
 			$(MYSQL_CPPFLAGS)
-cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(ORACLE_OCI_CFLAGS)		\
-			$(POSTGRESQL_CFLAGS) $(LIBGNUTLS_CFLAGS)
+cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS)		\
+			$(ORACLE_OCI_CFLAGS) $(POSTGRESQL_CFLAGS)	\
+			$(PTHREAD_CFLAGS)
 cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 			$(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)		\
-			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)
+			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
+			$(PTHREAD_LIBS)
 
 
 #######################################
