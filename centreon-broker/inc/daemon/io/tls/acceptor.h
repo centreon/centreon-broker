@@ -54,7 +54,7 @@ namespace                IO
                          ~Acceptor();
       Stream*            Accept();
       void               Close();
-      void               Listen(Acceptor* acceptor);
+      void               Listen(IO::Acceptor* acceptor);
     };
   }
 }

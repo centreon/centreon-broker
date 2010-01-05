@@ -158,9 +158,7 @@ static void HandleInterface(Configuration::Lexer& lexer,
  */
 static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Log definition ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Log definition ...");
   Configuration::Token var;
 
   for (lexer.GetToken(var);
@@ -236,9 +234,8 @@ static void UpdateHelper(int signum)
 {
   (void)signum;
   signal(SIGHUP, SIG_IGN);
-  CentreonBroker::logging.LogInfo("Configuration file update requested...");
-  CentreonBroker::logging.LogInfo("  WARNING: this feature is still " \
-                                  "experimental.");
+  LOGINFO("Configuration file update requested...");
+  LOGINFO("  WARNING: this feature is still experimental.");
   Configuration::Manager::Instance().Update();
   signal(SIGHUP, UpdateHelper);
   return ;
@@ -378,10 +375,9 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
  */
 void Configuration::Manager::Close()
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Closing configuration manager...");
-  CentreonBroker::logging.LogDebug("Closing input objects...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Closing configuration manager...");
+
+  LOGDEBUG("Closing input objects...");
   for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator
          it = this->inputs_.begin();
        it != this->inputs_.end();
@@ -389,9 +385,7 @@ void Configuration::Manager::Close()
     delete (it->second);
   this->inputs_.clear();
 
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Closing output objects...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Closing output objects...");
   for (std::map<Configuration::Interface, Processing::HighAvailability*>::iterator
          it = this->outputs_.begin();
        it != this->outputs_.end();
@@ -470,9 +464,7 @@ void Configuration::Manager::Update()
   // Add new logs.
   for (logs_it = logs.begin(); logs_it != logs.end(); ++logs_it)
     {
-#ifndef NDEBUG
-      CentreonBroker::logging.LogDebug("Adding new logging object...");
-#endif /* !NDEBUG */
+      LOGDEBUG("Adding new logging object...");
       switch (logs_it->type)
         {
         case Configuration::Log::FILE:
@@ -502,9 +494,7 @@ void Configuration::Manager::Update()
       outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
       if (outputs.end() == outputs_it)
         {
-#ifndef NDEBUG
-          CentreonBroker::logging.LogDebug("Removing unwanted output object...");
-#endif /* !NDEBUG */
+          LOGDEBUG("Removing unwanted output object...");
           delete (it->second);
           this->outputs_.erase(it++);
         }
@@ -567,75 +557,8 @@ void Configuration::Manager::Update()
   for (inputs_it = inputs.begin(); inputs_it != inputs.end(); ++inputs_it)
     {
       LOGDEBUG("Adding new input object...");
-      std::auto_ptr<IO::Acceptor> acceptor;
-
-      switch (inputs_it->type)
-        {
-        case Configuration::Interface::IPV4_SERVER:
-          {
-            std::auto_ptr<IO::Net::IPv4Acceptor> net4a(
-               new IO::Net::IPv4Acceptor());
-
-            if (inputs_it->interface.empty())
-              net4a->Listen(inputs_it->port);
-            else
-              net4a->Listen(inputs_it->port,
-                            inputs_it->interface.c_str());
-            acceptor.reset(net4a.get());
-            net4a.release();
-          }
-          break ;
-        case Configuration::Interface::IPV6_SERVER:
-          {
-            std::auto_ptr<IO::Net::IPv6Acceptor> net6a(
-               new IO::Net::IPv6Acceptor());
-
-            if (inputs_it->interface.empty())
-              net6a->Listen(inputs_it->port);
-            else
-              net6a->Listen(inputs_it->port,
-                               inputs_it->interface.c_str());
-            acceptor.reset(net6a.get());
-            net6a.release();
-          }
-          break ;
-        case Configuration::Interface::UNIX_SERVER:
-          {
-            std::auto_ptr<IO::Net::UnixAcceptor> unixa(
-               new IO::Net::UnixAcceptor());
-
-            unixa->Listen(inputs_it->socket.c_str());
-            acceptor.reset(unixa.get());
-            unixa.release();
-          }
-          break ;
-         default:
-          ;
-        }
-
-#ifdef USE_TLS
-      // Check for TLS support
-      if (((Input::IPV4_SERVER == inputs_it->GetType())
-           || (Input::IPV6_SERVER == inputs_it->GetType())
-           || (Input::UNIX_SERVER == inputs_it->GetType()))
-          && inputs_it->GetTLS())
-        {
-          std::auto_ptr<CentreonBroker::IO::TLSAcceptor> tlsa(
-            new CentreonBroker::IO::TLSAcceptor());
-
-          if (!inputs_it->GetTLSCert().empty()
-              && !inputs_it->GetTLSKey().empty())
-            tlsa->SetCert(inputs_it->GetTLSCert().c_str(),
-                          inputs_it->GetTLSKey().c_str());
-          if (!inputs_it->GetTLSCA().empty())
-            tlsa->SetTrustedCA(inputs_it->GetTLSCA().c_str());
-          tlsa->SetCompression(inputs_it->GetTLSCompress());
-          tlsa->Listen(acceptor.get());
-          acceptor.release();
-          acceptor.reset(tlsa.get());
-          tlsa.release();
-        }
-#endif /* USE_TLS */
+      std::auto_ptr<IO::Acceptor> acceptor(
+        ::Interface::Factory::Instance().Acceptor(*inputs_it));
 
       // Create the new client acceptor
       std::auto_ptr<Processing::Listener> listener(
@@ -648,10 +571,7 @@ void Configuration::Manager::Update()
     }
 
   // (Re-)Register handler of SIGHUP
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Registering handler for runtime " \
-                                   "configuration update...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Registering handler for runtime configuration update...");
   signal(SIGHUP, UpdateHelper);
 
   return ;

@@ -193,7 +193,7 @@ void Acceptor::Close()
  *
  *  \param[in] lower The underlying Acceptor.
  */
-void Acceptor::Listen(Acceptor* lower)
+void Acceptor::Listen(IO::Acceptor* lower)
 {
   this->lower_.reset(lower);
   return ;

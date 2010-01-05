@@ -30,7 +30,10 @@
 #include "io/net/ipv6.h"
 #include "io/net/unix.h"
 #include "io/split.h"
-#include "io/tls/connector.h"
+#ifdef USE_TLS
+# include "io/tls/acceptor.h"
+# include "io/tls/connector.h"
+#endif /* USE_TLS */
 
 using namespace Interface;
 
@@ -169,7 +172,7 @@ IO::Stream* Factory::UnixConnector(const Configuration::Interface& i)
  */
 IO::Acceptor* Factory::Acceptor(const Configuration::Interface& i)
 {
-  IO::Acceptor* acceptor;
+  std::auto_ptr<IO::Acceptor> acceptor;
 
   switch (i.type)
     {
@@ -181,8 +184,7 @@ IO::Acceptor* Factory::Acceptor(const Configuration::Interface& i)
           ipv4a->Listen(i.port);
         else
           ipv4a->Listen(i.port, i.interface.c_str());
-        acceptor = ipv4a.get();
-        ipv4a.release();
+        acceptor.reset(ipv4a.release());
       }
       break ;
      case Configuration::Interface::IPV6_SERVER:
@@ -193,8 +195,7 @@ IO::Acceptor* Factory::Acceptor(const Configuration::Interface& i)
           ipv6a->Listen(i.port);
         else
           ipv6a->Listen(i.port, i.interface.c_str());
-        acceptor = ipv6a.get();
-        ipv6a.release();
+        acceptor.reset(ipv6a.release());
       }
       break ;
      case Configuration::Interface::UNIX_SERVER:
@@ -202,14 +203,23 @@ IO::Acceptor* Factory::Acceptor(const Configuration::Interface& i)
         std::auto_ptr<IO::Net::UnixAcceptor> ua(new IO::Net::UnixAcceptor);
 
         ua->Listen(i.socket.c_str());
-        acceptor = ua.get();
-        ua.release();
+        acceptor.reset(ua.release());
       }
       break ;
      default:
-      acceptor = NULL;
+      ;
     }
-  return (acceptor);
+#ifdef USE_TLS
+  if (i.tls)
+    {
+      std::auto_ptr<IO::TLS::Acceptor> tlsa(new IO::TLS::Acceptor);
+
+      tlsa->Listen(acceptor.get());
+      acceptor.release();
+      acceptor.reset(tlsa.release());
+    }
+#endif /* !USE_TLS */
+  return (acceptor.get());
 }
 
 /**

@@ -96,7 +96,7 @@ NAME	=	cb2db
 
 # Parameters
 INCLUDE		=	-I../../inc/daemon -I../../inc
-MACROS		=	-DUSE_MYSQL -DTIXML_USE_STL
+MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
 #CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
