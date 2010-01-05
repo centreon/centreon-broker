@@ -20,7 +20,7 @@ are :
 
   Required:
     - Boost
-    - Boost::Thread
+    - pthread
   Optional:
     - libmysql (for MySQL support)
     - libpq (for PostgreSQL support)
