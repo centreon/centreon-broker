@@ -39,22 +39,24 @@ using namespace Configuration;
  */
 void Interface::InternalCopy(const Interface& interface)
 {
-  this->ca        = interface.ca;
-  this->cert      = interface.cert;
-  this->compress  = interface.compress;
   this->db        = interface.db;
   this->filename  = interface.filename;
   this->host      = interface.host;
   this->interface = interface.interface;
-  this->key       = interface.key;
   this->name      = interface.name;
   this->password  = interface.password;
   this->port      = interface.port;
   this->protocol  = interface.protocol;
   this->socket    = interface.socket;
-  this->tls       = interface.tls;
   this->type      = interface.type;
   this->user      = interface.user;
+#ifdef USE_TLS
+  this->ca        = interface.ca;
+  this->cert      = interface.cert;
+  this->compress  = interface.compress;
+  this->key       = interface.key;
+  this->tls       = interface.tls;
+#endif /* USE_TLS */
   return ;
 }
 
@@ -71,8 +73,11 @@ Interface::Interface()
 {
   this->port     = 5668;
   this->protocol = NDO;
-  this->tls      = false;
   this->type     = UNKNOWN_TYPE;
+#ifdef USE_TLS
+  this->compress = false;
+  this->tls      = false;
+#endif /* USE_TLS */
 }
 
 /**
@@ -130,11 +135,14 @@ bool Interface::operator==(const Interface& interface) const
                && (this->interface == interface.interface)
                && (this->port == interface.port)
                && (this->protocol == interface.protocol)
+#ifdef USE_TLS
                && (this->tls == interface.tls)
                && (!this->tls || ((this->ca == interface.ca)
                                   && (this->cert == interface.cert)
                                   && (this->compress == interface.compress)
-                                  && (this->key == interface.key))));
+                                  && (this->key == interface.key)))
+#endif /* USE_TLS */
+              );
         break ;
        case MYSQL:
        case ORACLE:
@@ -147,11 +155,14 @@ bool Interface::operator==(const Interface& interface) const
        case UNIX_CLIENT:
        case UNIX_SERVER:
         ret = ((this->socket == interface.socket)
+#ifdef USE_TLS
                && (this->tls == interface.tls)
                && (!this->tls || ((this->ca == interface.ca)
                                   && (this->cert == interface.cert)
                                   && (this->compress == interface.compress)
-                                  && (this->key == interface.key))));
+                                  && (this->key == interface.key)))
+#endif /* USE_TLS */
+              );
         break ;
        default:
         ret = true;
@@ -202,6 +213,7 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->port < interface.port);
         else if (this->protocol != interface.protocol)
           ret = (this->protocol < interface.protocol);
+#ifdef USE_TLS
         else if (this->tls != interface.tls)
           ret = (this->tls < interface.tls);
         else if (this->ca != interface.ca)
@@ -210,8 +222,11 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->cert < interface.cert);
         else if (this->compress != interface.compress)
           ret = (this->compress < interface.compress);
-        else
+        else if (this->key != interface.key)
           ret = (this->key < interface.key);
+#endif /* USE_TLS */
+        else
+          ret = false;
         break ;
        case MYSQL:
        case ORACLE:
@@ -222,23 +237,14 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->host < interface.host);
         else if (this->password != interface.password)
           ret = (this->password < interface.password);
-        else if (this->user != interface.user)
-          ret = (this->user < interface.user);
-        else if (this->tls != interface.tls)
-          ret = (this->tls < interface.tls);
-        else if (this->ca != interface.ca)
-          ret = (this->ca < interface.ca);
-        else if (this->cert != interface.cert)
-          ret = (this->cert < interface.cert);
-        else if (this->compress != interface.compress)
-          ret = (this->compress < interface.compress);
         else
-          ret = (this->key < interface.key);
+          ret = (this->user < interface.user);
         break ;
        case UNIX_CLIENT:
        case UNIX_SERVER:
         if (this->socket != interface.socket)
           ret = (this->socket < interface.socket);
+#ifdef USE_TLS
         else if (this->tls != interface.tls)
           ret = (this->tls < interface.tls);
         else if (this->ca != interface.ca)
@@ -247,11 +253,14 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->cert < interface.cert);
         else if (this->compress != interface.compress)
           ret = (this->compress < interface.compress);
-        else
+        else if (this->key != interface.key)
           ret = (this->key < interface.key);
+#endif /* USE_TLS */
+        else
+          ret = false;
         break ;
        default:
-        ret = true;
+        ret = false;
       }
   else
     ret = (this->type < interface.type);
