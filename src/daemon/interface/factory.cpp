@@ -221,7 +221,7 @@ IO::Acceptor* Factory::Acceptor(const Configuration::Interface& i)
       acceptor.reset(tlsa.release());
     }
 #endif /* !USE_TLS */
-  return (acceptor.get());
+  return (acceptor.release());
 }
 
 /**
