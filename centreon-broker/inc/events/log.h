@@ -49,8 +49,8 @@ namespace              Events
     std::string        output;
     int                retry;
     std::string        service;
-    std::string        status;
-    std::string        type;
+    short              status;
+    short              type;
                        Log();
                        Log(const Log& log);
                        ~Log();
