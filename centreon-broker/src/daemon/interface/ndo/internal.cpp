@@ -71,11 +71,11 @@ static void SetHostGroupMember(HostGroup& host_group, const char* member)
 #define LOGDATA_EXTRACT data = strtok_r(NULL, ";", &lasts);                   \
                         if (!data)                                            \
                           throw (Exception(0, "Log data extraction failed."));
-static void SetLogData(Log& log, const char* data)
+static void SetLogData(Log& log, const char* log_data)
 {
   char* datadup;
 
-  datadup = strdup(data);
+  datadup = strdup(log_data);
   if (!datadup)
     throw (Exception(0, "Log data extraction failed."));
   try
@@ -83,11 +83,7 @@ static void SetLogData(Log& log, const char* data)
       char* data;
       char* lasts;
 
-      data = strtok_r(datadup, " ", &lasts);
-      if (!data)
-        return ;
-      log.c_time = strtol(data, NULL, 0);
-      data = strtok_r(NULL, ":", &lasts);
+      data = strtok_r(datadup, ":", &lasts);
       if (!data)
 	throw (Exception(0, "Log data extraction failed."));
       if (!strcmp(data, "SERVICE ALERT"))
@@ -104,7 +100,7 @@ static void SetLogData(Log& log, const char* data)
 	  LOGDATA_EXTRACT;
 	  log.retry = strtol(data, NULL, 0);
 	  LOGDATA_EXTRACT;
-	  log.output = data;
+	  log.output = log_data;
 	}
       else if (!strcmp(data, "HOST ALERT"))
 	{
@@ -118,7 +114,7 @@ static void SetLogData(Log& log, const char* data)
 	  LOGDATA_EXTRACT;
 	  log.retry = strtol(data, NULL, 0);
 	  LOGDATA_EXTRACT;
-	  log.output = data;
+	  log.output = log_data;
 	}
       else if (!strcmp(data, "SERVICE NOTIFICATION"))
 	{
@@ -134,7 +130,7 @@ static void SetLogData(Log& log, const char* data)
 	  LOGDATA_EXTRACT;
 	  log.notification_cmd = data;
 	  LOGDATA_EXTRACT;
-	  log.output = data;
+	  log.output = log_data;
 	}
       else if (!strcmp(data, "HOST NOTIFICATION"))
 	{
@@ -148,7 +144,7 @@ static void SetLogData(Log& log, const char* data)
 	  LOGDATA_EXTRACT;
 	  log.notification_cmd = data;
 	  LOGDATA_EXTRACT;
-	  log.output = data;
+	  log.output = log_data;
 	}
       else if (!strcmp(data, "CURRENT SERVICE STATE"))
 	{
@@ -207,7 +203,7 @@ static void SetLogData(Log& log, const char* data)
 	      LOGDATA_EXTRACT;
 	      log.notification_contact = data;
 	      LOGDATA_EXTRACT;
-	      log.output = data;
+	      log.output = log_data;
 	    }
 	  else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM"))
 	    {
@@ -217,7 +213,7 @@ static void SetLogData(Log& log, const char* data)
 	      LOGDATA_EXTRACT;
 	      log.notification_contact = data;
 	      LOGDATA_EXTRACT;
-	      log.output = data;
+	      log.output = log_data;
 	    }
 	  else
 	    throw (Exception(0, "Log data extraction failed."));
@@ -228,12 +224,12 @@ static void SetLogData(Log& log, const char* data)
 	  data = strtok_r(NULL, "", &lasts);
 	  if (!data)
 	    throw (Exception(0, "Log data extraction failed."));
-	  log.output = data;
+	  log.output = log_data;
 	}
       else
 	{
 	  log.msg_type = 5;
-	  log.output = datadup;
+	  log.output = log_data;
 	}
     }
   catch (...) {}
@@ -600,6 +596,8 @@ const KeyField<Log> Interface::NDO::log_fields[] =
     KeyField<Log>(NDO_DATA_LOGENTRY,
                   NULL,
                   &SetLogData),
+    KeyField<Log>(NDO_DATA_LOGENTRYTIME,
+      &Log::c_time),
     KeyField<Log>()
   };
 
