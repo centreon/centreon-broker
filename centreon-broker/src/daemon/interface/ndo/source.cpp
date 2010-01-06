@@ -413,6 +413,18 @@ Events::Event* Source::Event()
               event.reset(HandleEvent<Events::ServiceStatus>(this->stream_,
                             service_status_map));
               break ;
+             default:
+              // Skip this event.
+              while (id != NDO_API_ENDDATA)
+                {
+                  line = this->stream_.Line();
+                  if (line)
+                    id = strtol(line, NULL, 10);
+                  else
+                    break ;
+                }
+              if (line)
+                event.reset(this->Event());
             }
         }
     }
