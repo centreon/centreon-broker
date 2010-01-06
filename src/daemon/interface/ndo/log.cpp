@@ -103,111 +103,112 @@ void Interface::NDO::SetLogData(Events::Log& log, const char* log_data)
       // First part is the log description.
       lasts = datadup + strcspn(datadup, ":");
       if (*lasts)
-	{
-	  *lasts = '\0';
-	  lasts = lasts + 1 + strspn(lasts + 1, " ");
-	}
+        {
+          *lasts = '\0';
+          lasts = lasts + 1 + strspn(lasts + 1, " ");
+        }
       if (!strcmp(datadup, "SERVICE ALERT"))
-	{
-	  log.msg_type = 0;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.service = log_extract(&lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.retry = strtol(log_extract(&lasts), NULL, 0);
-	  log.output = log_extract(&lasts);
-	}
+        {
+          log.msg_type = 0;
+          log.host = log_extract_first(lasts, &lasts);
+          log.service = log_extract(&lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+          log.retry = strtol(log_extract(&lasts), NULL, 0);
+          log.output = log_extract(&lasts);
+        }
       else if (!strcmp(datadup, "HOST ALERT"))
-	{
-	  log.msg_type = 1;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.type = type_id(log_extract(&lasts));
-	  log.retry = strtol(log_extract(&lasts), NULL, 0);
-	  log.output = log_extract(&lasts);
-	}
+        {
+          log.msg_type = 1;
+          log.host = log_extract_first(lasts, &lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+          log.retry = strtol(log_extract(&lasts), NULL, 0);
+          log.output = log_extract(&lasts);
+        }
       else if (!strcmp(datadup, "SERVICE NOTIFICATION"))
-	{
-	  log.msg_type = 2;
-	  log.notification_contact = log_extract_first(lasts, &lasts);
-	  log.host = log_extract(&lasts);
-	  log.service = log_extract(&lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.notification_cmd = log_extract(&lasts);
-	  log.output = log_extract(&lasts);
-	}
+        {
+          log.msg_type = 2;
+          log.notification_contact = log_extract_first(lasts, &lasts);
+          log.host = log_extract(&lasts);
+          log.service = log_extract(&lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.notification_cmd = log_extract(&lasts);
+          log.output = log_extract(&lasts);
+        }
       else if (!strcmp(datadup, "HOST NOTIFICATION"))
-	{
-	  log.msg_type = 3;
-	  log.notification_contact = log_extract_first(lasts, &lasts);
-	  log.host = log_extract(&lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.notification_cmd = log_extract(&lasts);
-	  log.output = log_extract(&lasts);
-	}
+        {
+          log.msg_type = 3;
+          log.notification_contact = log_extract_first(lasts, &lasts);
+          log.host = log_extract(&lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.notification_cmd = log_extract(&lasts);
+          log.output = log_extract(&lasts);
+        }
       else if (!strcmp(datadup, "CURRENT SERVICE STATE"))
-	{
-	  log.msg_type = 6;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.service = log_extract(&lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.type = type_id(log_extract(&lasts));
-	}
+        {
+          log.msg_type = 6;
+          log.host = log_extract_first(lasts, &lasts);
+          log.service = log_extract(&lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+        }
       else if (!strcmp(datadup, "CURRENT HOST STATE"))
-	{
-	  log.msg_type = 7;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.type = type_id(log_extract(&lasts));
-	}
+        {
+          log.msg_type = 7;
+          log.host = log_extract_first(lasts, &lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+        }
       else if (!strcmp(datadup, "INITIAL HOST STATE"))
-	{
-	  log.msg_type = 9;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.type = type_id(log_extract(&lasts));
-	}
+        {
+          log.msg_type = 9;
+          log.host = log_extract_first(lasts, &lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+        }
       else if (!strcmp(datadup, "INITIAL SERVICE STATE"))
-	{
-	  log.msg_type = 8;
-	  log.host = log_extract_first(lasts, &lasts);
-	  log.service = log_extract(&lasts);
-	  log.status = status_id(log_extract(&lasts));
-	  log.type = type_id(log_extract(&lasts));
-	}
+        {
+          log.msg_type = 8;
+          log.host = log_extract_first(lasts, &lasts);
+          log.service = log_extract(&lasts);
+          log.status = status_id(log_extract(&lasts));
+          log.type = type_id(log_extract(&lasts));
+        }
       else if (!strcmp(datadup, "EXTERNAL_COMMAND"))
-	{
-	  char* data;
+        {
+          char* data;
 
-	  data = log_extract_first(lasts, &lasts);
-	  if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM"))
-	    {
-	      log.msg_type = 10;
-	      log.host = log_extract(&lasts);
-	      log.service = log_extract(&lasts);
-	      log.notification_contact = log_extract(&lasts);
-	      log.output = log_extract(&lasts);
-	    }
-	  else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM"))
-	    {
-	      log.msg_type = 11;
-	      log.host = log_extract(&lasts);
-	      log.notification_contact = log_extract(&lasts);
-	      log.output = log_extract(&lasts);
-	    }
-	  else
-	    // XXX : seems like it should be something else ...
-	    throw (Exception(0, "Log data extraction failed."));
-	}
+          data = log_extract_first(lasts, &lasts);
+          if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM"))
+            {
+              log.msg_type = 10;
+              log.host = log_extract(&lasts);
+              log.service = log_extract(&lasts);
+              log.notification_contact = log_extract(&lasts);
+              log.output = log_extract(&lasts);
+            }
+          else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM"))
+            {
+              log.msg_type = 11;
+              log.host = log_extract(&lasts);
+              log.notification_contact = log_extract(&lasts);
+              log.output = log_extract(&lasts);
+            }
+          else
+            // XXX : seems like it should be something else ...
+            throw (Exception(0, "Log data extraction failed."));
+        }
       else if (!strcmp(datadup, "Warning"))
-	{
-	  log.msg_type = 4;
-	  log.output = lasts;
-	}
+        {
+          log.msg_type = 4;
+          log.output = lasts;
+        }
       else
-	{
-	  log.msg_type = 5;
-	  log.output = log_data;
-	}
+        {
+          log.msg_type = 5;
+          log.output = log_data;
+        }
     }
   catch (...) {}
   free(datadup);
