@@ -86,6 +86,7 @@ static void SetLogData(Log& log, const char* log_data)
       data = strtok_r(datadup, ":", &lasts);
       if (!data)
 	throw (Exception(0, "Log data extraction failed."));
+      ++lasts;
       if (!strcmp(data, "SERVICE ALERT"))
 	{
 	  log.msg_type = 0;
