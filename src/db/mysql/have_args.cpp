@@ -327,7 +327,7 @@ void MySQLHaveArgs::SetArg(double arg)
     {
       std::stringstream ss;
 
-      ss << arg;
+      ss << "'" << arg << "'";
       this->query.append(ss.str());
     }
   return ;
@@ -361,7 +361,7 @@ void MySQLHaveArgs::SetArg(int arg)
     {
       std::stringstream ss;
 
-      ss << arg;
+      ss << "'" << arg << "'";
       this->query.append(ss.str());
     }
   return ;
@@ -395,7 +395,7 @@ void MySQLHaveArgs::SetArg(short arg)
     {
       std::stringstream ss;
 
-      ss << arg;
+      ss << "'" << arg << "'";
       this->query.append(ss.str());
     }
   return ;
@@ -434,9 +434,9 @@ void MySQLHaveArgs::SetArg(const std::string& arg)
                                safe_str.get(),
                                arg.c_str(),
                                arg.size());
-      this->query.append("\"");
+      this->query.append("'");
       this->query.append(safe_str.get());
-      this->query.append("\"");
+      this->query.append("'");
     }
   return ;
 }
