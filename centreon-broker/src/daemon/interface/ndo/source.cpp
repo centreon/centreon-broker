@@ -299,14 +299,14 @@ Events::Event* Source::Header()
           ++value;
           if (!strncmp(line,
                        NDO_API_INSTANCENAME,
-                       sizeof(NDO_API_INSTANCENAME)))
+                       sizeof(NDO_API_INSTANCENAME) - 1))
             {
               pstatus->is_running = true;
               this->instance_ = value;
             }
           else if (!strncmp(line,
                             NDO_API_STARTTIME,
-                            sizeof(NDO_API_STARTTIME)))
+                            sizeof(NDO_API_STARTTIME) - 1))
             pstatus->program_start = strtol(value, NULL, 0);
         }
     }
