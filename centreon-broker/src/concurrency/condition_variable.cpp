@@ -21,7 +21,8 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stdlib.h>                         // for abort
-#include <string.h>                         // for strerror
+#include <string.h>                         // for memset, strerror
+#include <time.h>                           // for struct timespec
 #include "concurrency/condition_variable.h"
 #include "concurrency/mutex.h"
 #include "exception.h"
@@ -111,6 +112,30 @@ void ConditionVariable::Sleep(Mutex& mutex)
   int ret;
 
   ret = pthread_cond_wait(&this->cv_, &mutex.mutex_);
+  if (ret)
+    throw (Exception(ret, strerror(ret)));
+  return ;
+}
+
+/**
+ *  \brief Sleep until a specified condition occurs or the deadline was
+ *         exceeded.
+ *
+ *  The mutex will be unlocked and the current thread will be paused until some
+ *  other thread calls Wake() or WakeAll() or the deadline is exceeded. At that
+ *  time, the mutex will be locked again prior to running the thread again.
+ *
+ *  \param[in,out] mutex    Mutex that should be locked when calling Sleep().
+ *  \param[in]     deadline Time that shouldn't be exceeded while sleeping.
+ */
+void ConditionVariable::Sleep(Mutex& mutex, time_t deadline)
+{
+  int ret;
+  struct timespec ts;
+
+  memset(&ts, 0, sizeof(ts));
+  ts.tv_sec = deadline;
+  ret = pthread_cond_timedwait(&this->cv_, &mutex.mutex_, &ts);
   if (ret)
     throw (Exception(ret, strerror(ret)));
   return ;

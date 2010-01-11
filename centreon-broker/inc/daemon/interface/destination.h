@@ -50,7 +50,7 @@ namespace          Interface
    public:
     virtual      ~Destination();
     virtual void Close() = 0;
-    virtual void Event(const Events::Event& event) = 0;
+    virtual void Event(Events::Event* event) = 0;
   };
 }
 

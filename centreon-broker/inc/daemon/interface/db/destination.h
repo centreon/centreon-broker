@@ -84,13 +84,12 @@ namespace                         Interface
                                     const Events::Acknowledgement& ack);
       void                        ProcessComment(const Events::Comment& comment);
       void                        ProcessDowntime(const Events::Downtime& downtime);
-      void                        Event(const Events::Event& event);
       void                        ProcessHost(const Events::Host& host);
       void                        ProcessHostGroup(const Events::HostGroup& hg);
       void                        ProcessHostStatus(const Events::HostStatus& hs);
       void                        ProcessLog(const Events::Log& log);
       void                        ProcessProgramStatus(
-				    const Events::ProgramStatus& ps);
+                                    const Events::ProgramStatus& ps);
       void                        ProcessService(const Events::Service& service);
       void                        ProcessServiceGroup(
                                     const Events::ServiceGroup& sg);
@@ -101,6 +100,7 @@ namespace                         Interface
                                   Destination();
                                   ~Destination();
       void                        Close();
+      void                        Event(Events::Event* event);
       void                        Init(CentreonBroker::DB::Connection* conn);
     };
   }
