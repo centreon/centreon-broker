@@ -21,6 +21,10 @@
 #include <assert.h>
 #include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
+#include "configuration/interface.h"
+#include "events/event.h"
+#include "interface/destination.h"
+#include "interface/factory.h"
 #include "interface/source.h"
 #include "multiplexing/publisher.h"
 #include "processing/feeder.h"
@@ -76,26 +80,25 @@ Feeder& Feeder::operator=(const Feeder& feeder)
 /**
  *  Feeder default constructor.
  */
-Feeder::Feeder() : init_(false) {}
+Feeder::Feeder() : dest_(NULL), source_(NULL) {}
 
 /**
  *  Feeder destructor.
  */
 Feeder::~Feeder()
 {
-  try
+  if (this->dest_ || this->source_)
     {
-      Concurrency::Lock lock(this->initm_);
-
-      if (this->init_)
-        {
-          if (this->source_.get())
-            this->source_->Close();
-          this->Join();
-          this->init_ = false;
-        }
+      if (this->source_conf_.get())
+	this->source_->Close();
+      if (this->dest_conf_.get())
+	this->dest_->Close();
+      this->Join();
+      if (this->source_conf_.get())
+	delete (this->source_);
+      if (this->dest_conf_.get())
+	delete (this->dest_);
     }
-  catch (...) {}
 }
 
 /**
@@ -107,60 +110,76 @@ Feeder::~Feeder()
  */
 void Feeder::operator()()
 {
+  std::auto_ptr<Events::Event> event;
+
   try
     {
-      std::auto_ptr<Events::Event> event;
-
       event.reset(this->source_->Event());
       while (event.get())
         {
-          Multiplexing::Publisher::Instance().Publish(event.get());
+          this->dest_->Event(event.get());
           event.release();
           event.reset(this->source_->Event());
         }
     }
-  catch (...) {}
-  try
+  catch (...)
     {
-      // Mutex already locked == destructor being run.
-      if (this->initm_.TryLock())
-	{
-	  this->init_ = false;
-          this->initm_.Unlock();
-        }
+      if (event.get())
+        event->RemoveReader();
     }
-  catch (...) {}
   return ;
 }
 
 /**
- *  \brief Initialize the Feeder.
- *
- *  Launch the processing thread. The thread will get events from the source
- *  specified as a parameter and give them to the event publisher. Upon
- *  successful return from this method, the source object's lifetime will be
- *  handled by the Feeder.
- *  \par Safety Minimal exception safety.
- *
- *  \param[in] source Event source object.
- *  \param[in] tl     Thread listener.
+ *  Run the feeder thread.
  */
-void Feeder::Init(Interface::Source* source,
-                  Concurrency::ThreadListener* tl)
+void Feeder::Run(const Configuration::Interface& source,
+                 const Configuration::Interface& dest,
+                 Concurrency::ThreadListener* listener)
 {
-  Concurrency::Lock lock(this->initm_);
+  this->source_conf_.reset(new Configuration::Interface(source));
+  this->dest_conf_.reset(new Configuration::Interface(dest));
+  this->source_ = Interface::Factory::Instance().Source(*this->source_conf_);
+  this->dest_ = Interface::Factory::Instance().Destination(*this->dest_conf_);
+  this->Run(*this->source_, *this->dest_, listener);
+  return ;
+}
 
-  try
-    {
-      this->init_ = true;
-      this->source_.reset(source);
-      this->Run(tl);
-    }
-  catch (...)
-    {
-      this->init_ = false;
-      this->source_.release();
-      throw ;
-    }
+/**
+ *  Run the feeder thread.
+ */
+void Feeder::Run(const Configuration::Interface& source,
+                 Interface::Destination& dest,
+                 Concurrency::ThreadListener* listener)
+{
+  this->source_conf_.reset(new Configuration::Interface(source));
+  this->source_ = Interface::Factory::Instance().Source(*this->source_conf_);
+  this->Run(*this->source_, dest, listener);
+  return ;
+}
+
+/**
+ *  Run the feeder thread.
+ */
+void Feeder::Run(Interface::Source& source,
+                 const Configuration::Interface& dest,
+                 Concurrency::ThreadListener* listener)
+{
+  this->dest_conf_.reset(new Configuration::Interface(dest));
+  this->dest_ = Interface::Factory::Instance().Destination(*this->dest_conf_);
+  this->Run(source, *this->dest_, listener);
+  return ;
+}
+
+/**
+ *  Run the feeder thread.
+ */
+void Feeder::Run(Interface::Source& source,
+                 Interface::Destination& dest,
+                 Concurrency::ThreadListener* listener)
+{
+  this->source_ = &source;
+  this->dest_ = &dest;
+  this->Concurrency::Thread::Run(listener);
   return ;
 }

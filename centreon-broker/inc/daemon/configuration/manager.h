@@ -30,8 +30,6 @@
 // Forward declarations
 namespace           Concurrency
 { class             Thread; }
-namespace           Processing
-{ class             HighAvailability; }
 
 namespace           Configuration
 {
@@ -50,7 +48,7 @@ namespace           Configuration
     std::map<Interface, Concurrency::Thread*>
                     inputs_;
     std::list<Log>  logs_;
-    std::map<Interface, Processing::HighAvailability*>
+    std::map<Interface, Concurrency::Thread*>
                     outputs_;
                     Manager();
                     Manager(const Manager& manager);

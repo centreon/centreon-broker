@@ -23,6 +23,7 @@
 #include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
 #include "interface/ndo/source.h"
+#include "multiplexing/publisher.h"
 #include "processing/feeder.h"
 #include "processing/listener.h"
 
@@ -130,7 +131,9 @@ void Listener::operator()()
           // Create feeding thread.
           std::auto_ptr<Feeder> feeder(new Feeder);
 
-          feeder->Init(source.get(), this->listener);
+          feeder->Run(*source.get(),
+                      Multiplexing::Publisher::Instance(),
+                      this->listener);
           source.release();
           feeder.release();
 

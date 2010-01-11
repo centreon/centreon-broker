@@ -151,7 +151,10 @@ Events::Event* Subscriber::Event(time_t deadline)
 
   if (this->events_.empty())
     {
-      this->cv_.Sleep(this->mutex_, deadline);
+      if (-1 == deadline)
+        this->cv_.Sleep(this->mutex_);
+      else
+        this->cv_.Sleep(this->mutex_, deadline);
       if (!this->events_.empty())
         {
           event.reset(this->events_.front());

@@ -23,7 +23,9 @@
 #include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
 #include "interface/xml/destination.h"
-#include "processing/high_availability.h"
+#include "multiplexing/publisher.h"
+#include "multiplexing/subscriber.h"
+#include "processing/feeder.h"
 #include "processing/listener_destination.h"
 
 using namespace Processing;
@@ -128,11 +130,13 @@ void ListenerDestination::operator()()
           stream.release();
 
           // Create high availability object.
-          std::auto_ptr<HighAvailability> ha(new HighAvailability);
+          std::auto_ptr<Feeder> feeder(new Feeder);
 
-          ha->Init(dest.get());
+          // XXX
+          feeder->Run(*Multiplexing::Publisher::Instance().Subscribe(),
+                      *dest.get());
           dest.release();
-          ha.release();
+          feeder.release();
 
           // Wait for new connection.
           stream.reset(this->acceptor_->Accept());
