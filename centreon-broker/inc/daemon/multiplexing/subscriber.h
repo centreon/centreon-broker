@@ -21,33 +21,49 @@
 #ifndef MULTIPLEXING_SUBSCRIBER_H_
 # define MULTIPLEXING_SUBSCRIBER_H_
 
-// Forward declaration.
-namespace        Events
-{ class          Event; }
+# include <list>
+# include <time.h>                           // for time_t
+# include "concurrency/condition_variable.h"
+# include "concurrency/mutex.h"
+# include "interface/destination.h"
+# include "interface/source.h"
 
-namespace        Multiplexing
+namespace                      Multiplexing
 {
   /**
    *  \class Subscriber subscriber.h "multiplexing/subscriber.h"
-   *  \brief A Subscriber can receive events published by the Publisher.
+   *  \brief Receive events from the Publisher and make them available through
+   *         the Interface::Source interface.
    *
-   *  A Subscriber can subscribe against the Publisher to receive events when
-   *  they occur. The process is simple : at startup the Subscriber subscribes
-   *  against the Publisher and will then be called through its OnEvent()
-   *  method whenever an event occurs.
+   *  This class is used as a cornerstone in event multiplexing. Each output
+   *  willing to receive events will request a Subscriber object from the
+   *  Publisher which will broadcast events to every Subscriber object when it
+   *  receives one.
    *
    *  \see Publisher
    */
-  class          Subscriber
+  class                        Subscriber : public Interface::Destination,
+                                            public Interface::Source
   {
-   protected:
-                 Subscriber();
-                 Subscriber(const Subscriber& subscriber);
-    Subscriber&  operator=(const Subscriber& subscriber);
+    friend class               Multiplexing::Publisher;
+
+   private:
+    mutable Concurrency::ConditionVariable
+                               cv_;
+    mutable Concurrency::Mutex mutex_;
+    std::list<Events::Event*>  events_;
+                               Subscriber();
+                               Subscriber(const Subscriber& subscriber);
+    Subscriber&                operator=(const Subscriber& subscriber);
+    void                       Clean();
+    void                       InternalCopy(const Subscriber& subscr);
 
    public:
-    virtual      ~Subscriber();
-    virtual void OnEvent(Events::Event* e) = 0;
+                               ~Subscriber();
+    void                       Close();
+    Events::Event*             Event();
+    Events::Event*             Event(time_t deadline);
+    void                       Event(Events::Event* event);
   };
 }
 
