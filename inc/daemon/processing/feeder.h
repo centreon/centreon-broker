@@ -22,18 +22,22 @@
 # define PROCESSING_FEEDER_H_
 
 # include <memory>               // for auto_ptr
-# include "concurrency/mutex.h"
 # include "concurrency/thread.h"
 
-// Forward declaration.
+// Forward declarations.
+namespace               Configuration
+{ class                 Interface; }
+namespace               Concurrency
+{ class                 ThreadListener; }
 namespace               Interface
-{ class                 Source; }
+{ class                 Destination;
+  class                 Source; }
 
 namespace               Processing
 {
   /**
    *  \class Feeder feeder.h "processing/feeder.h"
-   *  \brief Get Events from a source and bring them to the Publisher.
+   *  \brief Get Events from a source and bring it to a destination.
    *
    *  The Feeder class implements the mediator pattern and avoid event sources
    *  to be tightly coupled with the event publisher.
@@ -44,10 +48,13 @@ namespace               Processing
   class                 Feeder : public Concurrency::Thread
   {
    private:
-    bool                init_;
-    Concurrency::Mutex  initm_;
-    std::auto_ptr<Interface::Source>
-                        source_;
+    Interface::Destination*
+                        dest_;
+    std::auto_ptr<Configuration::Interface>
+                        dest_conf_;
+    Interface::Source*  source_;
+    std::auto_ptr<Configuration::Interface>
+                        source_conf_;
                         Feeder(const Feeder& feeder);
     Feeder&             operator=(const Feeder& feeder);
 
@@ -55,8 +62,20 @@ namespace               Processing
                         Feeder();
                         ~Feeder();
     void                operator()();
-    void                Init(Interface::Source* source,
-                             Concurrency::ThreadListener* tl = NULL);
+    void                Run(const Configuration::Interface& source,
+                            const Configuration::Interface& dest,
+                            Concurrency::ThreadListener* listener = NULL);
+    void                Run(const Configuration::Interface& source,
+                            Interface::Destination& dest,
+                            Concurrency::ThreadListener* listener = NULL);
+    void                Run(Interface::Source& source,
+                            const Configuration::Interface& dest,
+                            Concurrency::ThreadListener* listener = NULL);
+    void                Run(Interface::Source& source,
+                            Interface::Destination& dest,
+                            Concurrency::ThreadListener* listener = NULL);
+    //void                UpdateSource(const Configuration::Interface& source);
+    //void                UpdateDestination(const Configuration::Interface& d);
   };
 }
 

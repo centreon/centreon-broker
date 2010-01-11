@@ -35,7 +35,9 @@
 #include "io/net/ipv6.h"
 #include "io/net/unix.h"
 #include "logging.h"
-#include "processing/high_availability.h"
+#include "multiplexing/publisher.h"
+#include "multiplexing/subscriber.h"
+#include "processing/feeder.h"
 #include "processing/listener.h"
 
 #define INVALID_TOKEN_MSG "Invalid token encountered while parsing " \
@@ -385,7 +387,7 @@ void Configuration::Manager::Close()
   this->inputs_.clear();
 
   LOGDEBUG("Closing output objects...");
-  for (std::map<Configuration::Interface, Processing::HighAvailability*>::iterator
+  for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator
          it = this->outputs_.begin();
        it != this->outputs_.end();
        it++)
@@ -487,7 +489,7 @@ void Configuration::Manager::Update()
 
   // Remove outputs that are not present in conf anymore or which don't have
   // the same configuration.
-  for (std::map<Configuration::Interface, Processing::HighAvailability*>::iterator it = this->outputs_.begin();
+  for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator it = this->outputs_.begin();
        it != this->outputs_.end();)
     {
       outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
@@ -508,7 +510,7 @@ void Configuration::Manager::Update()
   for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
     {
       std::auto_ptr< ::Interface::Destination > dbd;
-      std::auto_ptr<Processing::HighAvailability> ha;
+      std::auto_ptr<Processing::Feeder> feeder;
       const Configuration::Interface& output(*outputs_it);
 
       LOGDEBUG("Adding new output object...");
@@ -525,11 +527,13 @@ void Configuration::Manager::Update()
       */
 
       dbd.reset(::Interface::Factory::Instance().Destination(output));
-      ha.reset(new Processing::HighAvailability);
-      ha->Init(dbd.get());
+      feeder.reset(new Processing::Feeder);
+      // XXX
+      feeder->Run(*Multiplexing::Publisher::Instance().Subscribe(),
+                  *dbd.get());
       dbd.release();
-      this->outputs_[output] = ha.get();
-      ha.release();
+      this->outputs_[output] = feeder.get();
+      feeder.release();
     }
 
   // Remove inputs that are not present in conf anymore or which don't have the
