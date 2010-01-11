@@ -23,6 +23,7 @@
 
 # include <list>
 # include "concurrency/mutex.h"
+# include "interface/destination.h"
 
 // Forward declaration.
 namespace                  Events
@@ -44,7 +45,7 @@ namespace                  Multiplexing
    *
    *  \see Subscriber
    */
-  class                    Publisher
+  class                    Publisher : public Interface::Destination
   {
    private:
     std::list<Subscriber*> subscribers_;
@@ -55,9 +56,10 @@ namespace                  Multiplexing
     Publisher&             operator=(const Publisher& publisher);
 
    public:
+    void                   Close();
+    void                   Event(Events::Event* event);
     static Publisher&      Instance();
-    void                   Publish(Events::Event* event);
-    void                   Subscribe(Subscriber* subscriber);
+    Subscriber*            Subscribe();
     void                   Unsubscribe(const Subscriber* subscriber);
   };
 }

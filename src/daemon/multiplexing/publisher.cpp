@@ -18,7 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#include <algorithm>
+#include <algorithm>                 // for remove
+#include <memory>                    // for auto_ptr
 #include "concurrency/lock.h"
 #include "events/event.h"
 #include "multiplexing/publisher.h"
@@ -46,14 +47,29 @@ Publisher::Publisher() {}
  *  \param[in] publisher Unused.
  */
 Publisher::Publisher(const Publisher& publisher)
-{
-  (void)publisher;
-}
+  : Interface::Destination(publisher) {}
 
 /**
  *  Publisher destructor.
  */
-Publisher::~Publisher() {}
+Publisher::~Publisher()
+{
+  // Delete all Subscribers objects.
+  this->subscribersm_.Lock();
+  while (!this->subscribers_.empty())
+    {
+      Subscriber* subscriber;
+
+      subscriber = this->subscribers_.front();
+      this->subscribers_.pop_front();
+      // We need to unlock the mutex while destroying the Subscriber because it
+      // will call the Unsubscribe method.
+      this->subscribersm_.Unlock();
+      delete (subscriber);
+      this->subscribersm_.Lock();
+    }
+  this->subscribersm_.Unlock();
+}
 
 /**
  *  \brief Assignment operator overload.
@@ -79,6 +95,42 @@ Publisher& Publisher::operator=(const Publisher& publisher)
 **************************************/
 
 /**
+ *  Does nothing on Publisher.
+ */
+void Publisher::Close()
+{
+  return ;
+}
+
+/**
+ *  \brief Publish an event to all subscribers.
+ *
+ *  As soon as the method returns, the Event object is owned by the Publisher,
+ *  meaning that it'll be automatically destroyed when necessary.
+ *
+ *  \param[in] event Event to publish.
+ */
+void Publisher::Event(Events::Event* event)
+{
+  std::list<Subscriber*>::iterator end;
+  Concurrency::Lock lock(this->subscribersm_);
+
+  // Add object to every subscriber.
+  end = this->subscribers_.end();
+  for (std::list<Subscriber*>::iterator it = this->subscribers_.begin();
+       it != end;
+       ++it)
+    {
+      event->AddReader();
+      (*it)->Event(event);
+    }
+  // Self deregistration.
+  event->RemoveReader();
+
+  return ;
+}
+
+/**
  *  \brief Get the single instance of Publisher.
  *
  *  Publisher is a singleton. Therefore only one object exists. It is stored
@@ -95,61 +147,20 @@ Publisher& Publisher::Instance()
 }
 
 /**
- *  \brief Publish an event to all subscribers.
- *
- *  As soon as the method returns, the Event object is owned by the Publisher,
- *  meaning that it'll be automatically destroyed when necessary.
- *
- *  \param[in] event Event to publish.
- */
-void Publisher::Publish(Events::Event* event)
-{
-  std::list<Subscriber*>::iterator end;
-  std::list<Subscriber*>::iterator it;
-  Concurrency::Lock lock(this->subscribersm_);
-
-  end = this->subscribers_.end();
-  it = this->subscribers_.begin();
-  if (it != end)
-    {
-      unsigned int size;
-
-      // Add as much readers to the event as there is of subscribers.
-      size = this->subscribers_.size();
-      for (unsigned int i = 0; i < size; ++i)
-        event->AddReader();
-
-      do
-        {
-          try
-            {
-              // XXX : event discrimination
-              (*it)->OnEvent(event);
-              ++it;
-            }
-          catch (...) {}
-        } while (it != end);
-    }
-  else
-    delete (event);
-  return ;
-}
-
-/**
  *  \brief Subscribe to event notifications.
  *
- *  A Subscriber which subscribe to event publication will be notified of
- *  appropriate events through its OnEvent() method.
+ *  Return an object that will automatically be filled with new events.
  *  \par Safety Strong exception safety.
  *
- *  \param[in] subscriber New subscriber.
+ *  \return New subscriber object.
  */
-void Publisher::Subscribe(Subscriber* subscriber)
+Subscriber* Publisher::Subscribe()
 {
   Concurrency::Lock lock(this->subscribersm_);
+  std::auto_ptr<Subscriber> subscriber(new Subscriber());
 
-  this->subscribers_.push_front(subscriber);
-  return ;
+  this->subscribers_.push_front(subscriber.get());
+  return (subscriber.release());
 }
 
 /**
