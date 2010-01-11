@@ -311,97 +311,104 @@ void Destination::Close()
  *
  *  \return Next available event, NULL is stream is closed.
  */
-void Destination::Event(const Events::Event& event)
+void Destination::Event(Events::Event* event)
 {
-  std::stringstream buffer;
-
-  switch (event.GetType())
+  try
     {
-     case Events::Event::ACKNOWLEDGEMENT:
-      buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
-      HandleEvent<Events::Acknowledgement>(
-        *static_cast<const Events::Acknowledgement*>(&event),
-        acknowledgement_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::COMMENT:
-      buffer << NDO_API_COMMENTDATA << ":\n";
-      HandleEvent<Events::Comment>(
-        *static_cast<const Events::Comment*>(&event),
-        comment_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::DOWNTIME:
-      buffer << NDO_API_DOWNTIMEDATA << ":\n";
-      HandleEvent<Events::Downtime>(
-        *static_cast<const Events::Downtime*>(&event),
-        downtime_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::HOST:
-      buffer << NDO_API_HOSTDEFINITION << ":\n";
-      HandleEvent<Events::Host>(
-        *static_cast<const Events::Host*>(&event),
-        host_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::HOSTGROUP:
-      buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
-      HandleEvent<Events::HostGroup>(
-        *static_cast<const Events::HostGroup*>(&event),
-        host_group_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::HOSTSTATUS:
-      buffer << NDO_API_HOSTSTATUSDATA << ":\n";
-      HandleEvent<Events::HostStatus>(
-        *static_cast<const Events::HostStatus*>(&event),
-        host_status_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::LOG:
-      buffer << NDO_API_LOGDATA << ":\n";
-      HandleEvent<Events::Log>(
-        *static_cast<const Events::Log*>(&event),
-        log_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::PROGRAMSTATUS:
-      buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
-      HandleEvent<Events::ProgramStatus>(
-        *static_cast<const Events::ProgramStatus*>(&event),
-        program_status_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::SERVICE:
-      buffer << NDO_API_SERVICEDEFINITION << ":\n";
-      HandleEvent<Events::Service>(
-        *static_cast<const Events::Service*>(&event),
-        service_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case Events::Event::SERVICESTATUS:
-      buffer << NDO_API_SERVICESTATUSDATA << ":\n";
-      HandleEvent<Events::ServiceStatus>(
-        *static_cast<const Events::ServiceStatus*>(&event),
-        service_status_map,
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-    }
-  buffer << "\n";
+      std::stringstream buffer;
 
-  // Send data.
-  this->stream_->Send(buffer.str().c_str(), buffer.str().size());
+      switch (event->GetType())
+        {
+         case Events::Event::ACKNOWLEDGEMENT:
+          buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
+          HandleEvent<Events::Acknowledgement>(
+            *static_cast<Events::Acknowledgement*>(event),
+            acknowledgement_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::COMMENT:
+          buffer << NDO_API_COMMENTDATA << ":\n";
+          HandleEvent<Events::Comment>(
+            *static_cast<Events::Comment*>(event),
+            comment_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::DOWNTIME:
+          buffer << NDO_API_DOWNTIMEDATA << ":\n";
+          HandleEvent<Events::Downtime>(
+            *static_cast<Events::Downtime*>(event),
+            downtime_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::HOST:
+          buffer << NDO_API_HOSTDEFINITION << ":\n";
+          HandleEvent<Events::Host>(
+            *static_cast<Events::Host*>(event),
+            host_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::HOSTGROUP:
+          buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
+          HandleEvent<Events::HostGroup>(
+            *static_cast<Events::HostGroup*>(event),
+            host_group_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::HOSTSTATUS:
+          buffer << NDO_API_HOSTSTATUSDATA << ":\n";
+          HandleEvent<Events::HostStatus>(
+            *static_cast<Events::HostStatus*>(event),
+            host_status_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::LOG:
+          buffer << NDO_API_LOGDATA << ":\n";
+          HandleEvent<Events::Log>(
+            *static_cast<Events::Log*>(event),
+            log_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::PROGRAMSTATUS:
+          buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
+          HandleEvent<Events::ProgramStatus>(
+            *static_cast<Events::ProgramStatus*>(event),
+            program_status_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::SERVICE:
+          buffer << NDO_API_SERVICEDEFINITION << ":\n";
+          HandleEvent<Events::Service>(
+            *static_cast<Events::Service*>(event),
+            service_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::SERVICESTATUS:
+          buffer << NDO_API_SERVICESTATUSDATA << ":\n";
+          HandleEvent<Events::ServiceStatus>(
+            *static_cast<Events::ServiceStatus*>(event),
+            service_status_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+        }
+      buffer << "\n";
+
+      // Send data.
+      this->stream_->Send(buffer.str().c_str(), buffer.str().size());
+    }
+  catch (...) {}
+
+  // Self event deregistration.
+  event->RemoveReader();
 
   return ;
 }

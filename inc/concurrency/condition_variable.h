@@ -21,7 +21,7 @@
 #ifndef CONCURRENCY_CONDITION_VARIABLE_H_
 # define CONCURRENCY_CONDITION_VARIABLE_H_
 
-# include <sys/types.h> // for pthread_cond_t
+# include <sys/types.h> // for pthread_cond_t, time_t
 
 namespace              Concurrency
 {
@@ -45,6 +45,7 @@ namespace              Concurrency
                        ConditionVariable();
                        ~ConditionVariable();
     void               Sleep(Mutex& mutex);
+    void               Sleep(Mutex& mutex, time_t deadline);
     void               Wake();
     void               WakeAll();
   };

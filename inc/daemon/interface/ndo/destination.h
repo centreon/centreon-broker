@@ -51,7 +51,7 @@ namespace          Interface
                    Destination(IO::Stream* stream);
       virtual      ~Destination();
       virtual void Close();
-      virtual void Event(const Events::Event& event);
+      virtual void Event(Events::Event* event);
       static void  Initialize();
     };
   }

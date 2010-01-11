@@ -233,58 +233,6 @@ void Destination::PrepareStatements()
 }
 
 /**
- *  \brief Process an event.
- *
- *  When an event is poped from the list, it will be processed by this method.
- *  We will determine the true event type and process it accordingly.
- *
- *  \param[in] event Event that should be stored in the database.
- */
-void Destination::Event(const Events::Event& event)
-{
-  switch (event.GetType())
-    {
-    case Events::Event::ACKNOWLEDGEMENT:
-      ProcessAcknowledgement(*static_cast<const Events::Acknowledgement*>(&event));
-      break ;
-    case Events::Event::COMMENT:
-      ProcessComment(*static_cast<const Events::Comment*>(&event));
-      break ;
-    case Events::Event::DOWNTIME:
-      ProcessDowntime(*static_cast<const Events::Downtime*>(&event));
-      break ;
-    case Events::Event::HOST:
-       ProcessHost(*static_cast<const Events::Host*>(&event));
-      break ;
-    case Events::Event::HOSTGROUP:
-      ProcessHostGroup(*static_cast<const Events::HostGroup*>(&event));
-      break ;
-    case Events::Event::HOSTSTATUS:
-      ProcessHostStatus(*static_cast<const Events::HostStatus*>(&event));
-      break ;
-    case Events::Event::LOG:
-      ProcessLog(*static_cast<const Events::Log*>(&event));
-      break ;
-    case Events::Event::PROGRAMSTATUS:
-      ProcessProgramStatus(*static_cast<const Events::ProgramStatus*>(&event));
-      break ;
-    case Events::Event::SERVICE:
-      ProcessService(*static_cast<const Events::Service*>(&event));
-      break ;
-    case Events::Event::SERVICEGROUP:
-      ProcessServiceGroup(*static_cast<const Events::ServiceGroup*>(&event));
-      break ;
-    case Events::Event::SERVICESTATUS:
-      ProcessServiceStatus(*static_cast<const Events::ServiceStatus*>(&event));
-      break ;
-     default:
-      assert(false);
-      throw (Exception(event.GetType(), "Invalid event type encountered"));
-    }
-  return ;
-}
-
-/**
  *  Process an Acknowledgement event.
  */
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
@@ -728,6 +676,66 @@ Destination::~Destination()
 void Destination::Close()
 {
   // XXX
+}
+
+/**
+ *  \brief Process an event.
+ *
+ *  When an event is poped from the list, it will be processed by this method.
+ *  We will determine the true event type and process it accordingly.
+ *
+ *  \param[in] event Event that should be stored in the database.
+ */
+void Destination::Event(Events::Event* event)
+{
+  try
+    {
+      switch (event->GetType())
+        {
+         case Events::Event::ACKNOWLEDGEMENT:
+          ProcessAcknowledgement(*static_cast<Events::Acknowledgement*>(event));
+          break ;
+         case Events::Event::COMMENT:
+          ProcessComment(*static_cast<Events::Comment*>(event));
+          break ;
+         case Events::Event::DOWNTIME:
+          ProcessDowntime(*static_cast<Events::Downtime*>(event));
+          break ;
+         case Events::Event::HOST:
+          ProcessHost(*static_cast<Events::Host*>(event));
+          break ;
+         case Events::Event::HOSTGROUP:
+          ProcessHostGroup(*static_cast<Events::HostGroup*>(event));
+          break ;
+         case Events::Event::HOSTSTATUS:
+          ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
+          break ;
+         case Events::Event::LOG:
+          ProcessLog(*static_cast<Events::Log*>(event));
+          break ;
+         case Events::Event::PROGRAMSTATUS:
+          ProcessProgramStatus(*static_cast<Events::ProgramStatus*>(event));
+          break ;
+         case Events::Event::SERVICE:
+          ProcessService(*static_cast<Events::Service*>(event));
+          break ;
+         case Events::Event::SERVICEGROUP:
+          ProcessServiceGroup(*static_cast<Events::ServiceGroup*>(event));
+          break ;
+         case Events::Event::SERVICESTATUS:
+          ProcessServiceStatus(*static_cast<Events::ServiceStatus*>(event));
+          break ;
+         default:
+          assert(false);
+          throw (Exception(event->GetType(), "Invalid event type encountered"));
+        }
+    }
+  catch (...) {}
+
+  // Event self deregistration.
+  event->RemoveReader();
+
+  return ;
 }
 
 /**

@@ -55,9 +55,7 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/main.cpp				\
 		../../src/daemon/multiplexing/publisher.cpp		\
 		../../src/daemon/multiplexing/subscriber.cpp		\
-		../../src/daemon/processing/delivery.cpp		\
 		../../src/daemon/processing/feeder.cpp			\
-		../../src/daemon/processing/high_availability.cpp	\
 		../../src/daemon/processing/listener.cpp		\
 		../../src/daemon/processing/listener_destination.cpp	\
 		../../src/daemon/processing/manager.cpp			\
