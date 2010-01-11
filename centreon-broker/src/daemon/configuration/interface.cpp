@@ -39,6 +39,8 @@ using namespace Configuration;
  */
 void Interface::InternalCopy(const Interface& interface)
 {
+  if (interface.failover.get())
+    this->failover.reset(interface.failover.get());
   this->db        = interface.db;
   this->filename  = interface.filename;
   this->host      = interface.host;
@@ -105,6 +107,7 @@ Interface::~Interface() {}
  */
 Interface& Interface::operator=(const Interface& interface)
 {
+  this->failover.reset();
   this->InternalCopy(interface);
   return (*this);
 }
@@ -125,7 +128,11 @@ bool Interface::operator==(const Interface& interface) const
       {
        case FILE:
         ret = ((this->filename == interface.filename)
-               && (this->protocol == interface.protocol));
+               && (this->protocol == interface.protocol)
+               && ((!this->failover.get() && !(interface.failover.get()))
+                   || (this->failover.get() && interface.failover.get()
+                       && (*this->failover == *interface.failover))
+                   ));
         break ;
        case IPV4_CLIENT:
        case IPV4_SERVER:
@@ -142,7 +149,9 @@ bool Interface::operator==(const Interface& interface) const
                                   && (this->compress == interface.compress)
                                   && (this->key == interface.key)))
 #endif /* USE_TLS */
-              );
+               && ((!this->failover.get() && !(interface.failover.get()))
+                   || (this->failover.get() && interface.failover.get()
+                       && (*this->failover == *interface.failover))));
         break ;
        case MYSQL:
        case ORACLE:
@@ -150,7 +159,10 @@ bool Interface::operator==(const Interface& interface) const
         ret = ((this->db == interface.db)
                && (this->host == interface.host)
                && (this->password == interface.password)
-               && (this->user == interface.user));
+               && (this->user == interface.user)
+               && ((!this->failover.get() && !(interface.failover.get()))
+                   || (this->failover.get() && interface.failover.get()
+                       && (*this->failover == *interface.failover))));
         break ;
        case UNIX_CLIENT:
        case UNIX_SERVER:
@@ -162,7 +174,9 @@ bool Interface::operator==(const Interface& interface) const
                                   && (this->compress == interface.compress)
                                   && (this->key == interface.key)))
 #endif /* USE_TLS */
-              );
+               && ((!this->failover.get() && !(interface.failover.get()))
+                   || (this->failover.get() && interface.failover.get()
+                       && (*this->failover == *interface.failover))));
         break ;
        default:
         ret = true;
@@ -199,7 +213,12 @@ bool Interface::operator<(const Interface& interface) const
     switch (this->type)
       {
        case FILE:
-        ret = (this->filename < interface.filename);
+        if (this->filename != interface.filename)
+          ret = (this->filename < interface.filename);
+        else if (this->failover.get() && interface.failover.get())
+          ret = (*this->failover < *interface.failover);
+        else
+          ret = false;
         break ;
        case IPV4_CLIENT:
        case IPV4_SERVER:
@@ -225,6 +244,8 @@ bool Interface::operator<(const Interface& interface) const
         else if (this->key != interface.key)
           ret = (this->key < interface.key);
 #endif /* USE_TLS */
+        else if (this->failover.get() && interface.failover.get())
+          ret = (*this->failover < *interface.failover);
         else
           ret = false;
         break ;
@@ -237,8 +258,12 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->host < interface.host);
         else if (this->password != interface.password)
           ret = (this->password < interface.password);
-        else
+        else if (this->user != interface.user)
           ret = (this->user < interface.user);
+        else if (this->failover.get() && interface.failover.get())
+          ret = (*this->failover < *interface.failover);
+        else
+          ret = false;
         break ;
        case UNIX_CLIENT:
        case UNIX_SERVER:
@@ -256,6 +281,8 @@ bool Interface::operator<(const Interface& interface) const
         else if (this->key != interface.key)
           ret = (this->key < interface.key);
 #endif /* USE_TLS */
+        else if (this->failover.get() && interface.failover.get())
+          ret = (*this->failover < *interface.failover);
         else
           ret = false;
         break ;

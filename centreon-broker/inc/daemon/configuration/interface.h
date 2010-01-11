@@ -21,9 +21,10 @@
 #ifndef CONFIGURATION_INTERFACE_H_
 # define CONFIGURATION_INTERFACE_H_
 
+# include <memory>
 # include <string>
 
-namespace       Configuration
+namespace                    Configuration
 {
   /**
    *  \class Interface interface.h "configuration/interface.h"
@@ -33,19 +34,19 @@ namespace       Configuration
    *  either be an XML stream, a database, a file, ... This class holds the
    *  configuration of an interface.
    */
-  class         Interface
+  class                      Interface
   {
    private:
-    void        InternalCopy(const Interface& interface);
+    void                     InternalCopy(const Interface& interface);
 
    public:
-    enum        Protocol
+    enum                     Protocol
     {
       UNKNOWN_PROTO = 0,
       NDO,
       XML
     };
-    enum        Type
+    enum                     Type
     {
       UNKNOWN_TYPE = 0,
       FILE,
@@ -59,31 +60,32 @@ namespace       Configuration
       UNIX_CLIENT,
       UNIX_SERVER
     };
-    std::string db;
-    std::string filename;
-    std::string host;
-    std::string interface;
-    std::string name;
-    std::string password;
-    short       port;
-    Protocol    protocol;
-    std::string socket;
-    Type        type;
-    std::string user;
+    std::string              db;
+    std::auto_ptr<Interface> failover;
+    std::string              filename;
+    std::string              host;
+    std::string              interface;
+    std::string              name;
+    std::string              password;
+    short                    port;
+    Protocol                 protocol;
+    std::string              socket;
+    Type                     type;
+    std::string              user;
 # ifdef USE_TLS
-    std::string ca;
-    std::string cert;
-    bool        compress;
-    std::string key;
-    bool        tls;
+    std::string              ca;
+    std::string              cert;
+    bool                     compress;
+    std::string              key;
+    bool                     tls;
 # endif /* USE_TLS */
-                Interface();
-                Interface(const Interface& interface);
-                ~Interface();
-    Interface&  operator=(const Interface& interface);
-    bool        operator==(const Interface& interface) const;
-    bool        operator!=(const Interface& interface) const;
-    bool        operator<(const Interface& interface) const;
+                             Interface();
+                             Interface(const Interface& interface);
+                             ~Interface();
+    Interface&               operator=(const Interface& interface);
+    bool                     operator==(const Interface& interface) const;
+    bool                     operator!=(const Interface& interface) const;
+    bool                     operator<(const Interface& interface) const;
   };
 }
 
