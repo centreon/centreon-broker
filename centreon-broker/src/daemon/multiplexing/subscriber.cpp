@@ -18,10 +18,13 @@
 **  For more information : contact@centreon.com
 */
 
-#include <memory>                    // for auto_ptr
+#include <algorithm>
+#include <assert.h>
+#include <memory>
+#include <stdlib.h>                  // for abort
 #include "concurrency/lock.h"
 #include "events/event.h"
-#include "multiplexing/publisher.h"
+#include "multiplexing/internal.h"
 #include "multiplexing/subscriber.h"
 
 using namespace Multiplexing;
@@ -33,35 +36,36 @@ using namespace Multiplexing;
 **************************************/
 
 /**
- *  Subscriber default constructor.
- */
-Subscriber::Subscriber() {}
-
-/**
- *  Subscriber copy constructor.
+ *  \brief Subscriber copy constructor.
  *
- *  \param[in] subscriber Object to copy.
+ *  Subscriber is not copyable. Any attempt to use the copy constructor will
+ *  result in a call to abort().
+ *
+ *  \param[in] subscriber Unused.
  */
 Subscriber::Subscriber(const Subscriber& subscriber)
   : Interface::Destination(subscriber),
     Interface::Source(subscriber)
 {
-  this->InternalCopy(subscriber);
+  assert(false);
+  abort();
 }
 
 /**
- *  Assignment operator overload.
+ *  \brief Assignment operator overload.
  *
- *  \param[in] subscriber Object to copy.
+ *  Subscriber is not copyable. Any attempt to use the assignment operator will
+ *  result in a call to abort().
+ *
+ *  \param[in] subscriber Unused.
  *
  *  \return *this
  */
 Subscriber& Subscriber::operator=(const Subscriber& subscriber)
 {
-  this->Clean();
-  this->Interface::Destination::operator=(subscriber);
-  this->Interface::Source::operator=(subscriber);
-  this->InternalCopy(subscriber);
+  (void)subscriber;
+  assert(false);
+  abort();
   return (*this);
 }
 
@@ -70,35 +74,15 @@ Subscriber& Subscriber::operator=(const Subscriber& subscriber)
  */
 void Subscriber::Clean()
 {
-  std::list<Events::Event*>::iterator end;
   Concurrency::Lock lock(this->mutex_);
 
-  end = this->events_.end();
-  for (std::list<Events::Event*>::iterator it = this->events_.begin();
-       it != end;
-       ++it)
-    (*it)->RemoveReader();
-  return ;
-}
-
-/**
- *  Copy data from the given object to the current instance.
- *
- *  \param[in] subscr Object to copy.
- */
-void Subscriber::InternalCopy(const Subscriber& subscr)
-{
-  std::list<Events::Event*>::const_iterator end;
-  Concurrency::Lock lock1(this->mutex_);
-  Concurrency::Lock lock2(subscr.mutex_);
-
-  end = subscr.events_.begin();
-  for (std::list<Events::Event*>::const_iterator it = subscr.events_.begin();
-       it != end;
-       ++it)
+  while (!this->events_.empty())
     {
-      (*it)->AddReader();
-      this->events_.push_back(*it);
+      Events::Event* event;
+
+      event = this->events_.front();
+      this->events_.pop();
+      event->RemoveReader();
     }
   return ;
 }
@@ -110,19 +94,32 @@ void Subscriber::InternalCopy(const Subscriber& subscr)
 **************************************/
 
 /**
+ *  Subscriber default constructor.
+ */
+Subscriber::Subscriber()
+{
+  Concurrency::Lock lock(gl_subscribersm);
+
+  gl_subscribers.push_back(this);
+}
+
+/**
  *  Subscriber destructor.
  */
 Subscriber::~Subscriber()
 {
   this->Clean();
-  Publisher::Instance().Unsubscribe(this);
+  this->Close();
 }
 
 /**
- *  Does nothing.
+ *  Unregister from event publishing notifications.
  */
 void Subscriber::Close()
 {
+  Concurrency::Lock lock(gl_subscribersm);
+
+  std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
   return ;
 }
 
@@ -158,13 +155,13 @@ Events::Event* Subscriber::Event(time_t deadline)
       if (!this->events_.empty())
         {
           event.reset(this->events_.front());
-          this->events_.pop_front();
+          this->events_.pop();
         }
     }
   else
     {
       event.reset(this->events_.front());
-      this->events_.pop_front();
+      this->events_.pop();
     }
   return (event.release());
 }
@@ -178,7 +175,7 @@ void Subscriber::Event(Events::Event* event)
 {
   Concurrency::Lock lock(this->mutex_);
 
-  this->events_.push_back(event);
+  this->events_.push(event);
   this->cv_.Wake();
   return ;
 }

@@ -48,6 +48,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/interface/xml/tinyxmlerror.cpp		\
 		../../src/daemon/interface/xml/tinyxmlparser.cpp	\
 		../../src/daemon/main.cpp				\
+		../../src/daemon/multiplexing/internal.cpp		\
 		../../src/daemon/multiplexing/publisher.cpp		\
 		../../src/daemon/multiplexing/subscriber.cpp		\
 		../../src/daemon/processing/feeder.cpp			\

@@ -19,7 +19,7 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>                      // for abort
+#include <stdlib.h>                  // for abort
 #include "concurrency/lock.h"
 #include "configuration/interface.h"
 #include "events/event.h"
@@ -80,7 +80,7 @@ Feeder& Feeder::operator=(const Feeder& feeder)
 /**
  *  Feeder default constructor.
  */
-Feeder::Feeder() : dest_(NULL), source_(NULL) {}
+Feeder::Feeder() : dest_(NULL), source_(NULL), source_dest_(NULL) {}
 
 /**
  *  Feeder destructor.
@@ -89,10 +89,7 @@ Feeder::~Feeder()
 {
   if (this->dest_ || this->source_)
     {
-      if (this->source_conf_.get())
-	this->source_->Close();
-      if (this->dest_conf_.get())
-	this->dest_->Close();
+      this->Cancel();
       this->Join();
       if (this->source_conf_.get())
 	delete (this->source_);
@@ -110,22 +107,57 @@ Feeder::~Feeder()
  */
 void Feeder::operator()()
 {
-  std::auto_ptr<Events::Event> event;
+  while (1)
+    {
+      Events::Event* event;
 
-  try
-    {
-      event.reset(this->source_->Event());
-      while (event.get())
-        {
-          this->dest_->Event(event.get());
-          event.release();
-          event.reset(this->source_->Event());
-        }
-    }
-  catch (...)
-    {
-      if (event.get())
-        event->RemoveReader();
+      event = NULL;
+      try
+	{
+	  // Connection to source interface.
+	  {
+	    Concurrency::Lock lock(this->sourcem_);
+
+	    if (this->source_conf_.get())
+	      this->source_ = Interface::Factory::Instance().Source(
+				*this->source_conf_);
+	  }
+	  // Connection to destination interface.
+	  {
+	    Concurrency::Lock lock(this->destm_);
+
+	    // XXX : should be SourceDestination
+	    if (this->dest_conf_.get())
+	      this->dest_ = Interface::Factory::Instance().Destination(
+			      *this->dest_conf_);
+	  }
+
+	  // XXX : check failover
+	  {
+	    Concurrency::Lock lock(this->destm_);
+
+	    event = this->source_->Event();
+	  }
+	  while (event)
+	    {
+	      this->dest_->Event(event);
+	      event = NULL;
+
+	      Concurrency::Lock lock(this->destm_);
+
+	      event = this->source_->Event();
+	    }
+	}
+      catch (const std::exception& e)
+	{
+	}
+      catch (...)
+	{
+	}
+      if (event)
+	event->RemoveReader();
+      break ;
+      // XXX : launch failover
     }
   return ;
 }
@@ -139,8 +171,6 @@ void Feeder::Run(const Configuration::Interface& source,
 {
   this->source_conf_.reset(new Configuration::Interface(source));
   this->dest_conf_.reset(new Configuration::Interface(dest));
-  this->source_ = Interface::Factory::Instance().Source(*this->source_conf_);
-  this->dest_ = Interface::Factory::Instance().Destination(*this->dest_conf_);
   this->Run(*this->source_, *this->dest_, listener);
   return ;
 }
@@ -153,7 +183,6 @@ void Feeder::Run(const Configuration::Interface& source,
                  Concurrency::ThreadListener* listener)
 {
   this->source_conf_.reset(new Configuration::Interface(source));
-  this->source_ = Interface::Factory::Instance().Source(*this->source_conf_);
   this->Run(*this->source_, dest, listener);
   return ;
 }
@@ -166,7 +195,6 @@ void Feeder::Run(Interface::Source& source,
                  Concurrency::ThreadListener* listener)
 {
   this->dest_conf_.reset(new Configuration::Interface(dest));
-  this->dest_ = Interface::Factory::Instance().Destination(*this->dest_conf_);
   this->Run(source, *this->dest_, listener);
   return ;
 }

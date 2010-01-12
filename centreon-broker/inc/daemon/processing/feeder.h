@@ -22,6 +22,7 @@
 # define PROCESSING_FEEDER_H_
 
 # include <memory>               // for auto_ptr
+# include "concurrency/mutex.h"
 # include "concurrency/thread.h"
 
 // Forward declarations.
@@ -31,7 +32,8 @@ namespace               Concurrency
 { class                 ThreadListener; }
 namespace               Interface
 { class                 Destination;
-  class                 Source; }
+  class                 Source;
+  class                 SourceDestination; }
 
 namespace               Processing
 {
@@ -50,11 +52,16 @@ namespace               Processing
    private:
     Interface::Destination*
                         dest_;
+    Concurrency::Mutex  destm_;
     std::auto_ptr<Configuration::Interface>
                         dest_conf_;
+    Feeder*             failover_;
     Interface::Source*  source_;
+    Concurrency::Mutex  sourcem_;
     std::auto_ptr<Configuration::Interface>
                         source_conf_;
+    Interface::SourceDestination*
+                        source_dest_;
                         Feeder(const Feeder& feeder);
     Feeder&             operator=(const Feeder& feeder);
 

@@ -129,12 +129,15 @@ void Listener::operator()()
           stream.release();
 
           // Create feeding thread.
+          std::auto_ptr<Multiplexing::Publisher> publisher(
+            new Multiplexing::Publisher);
           std::auto_ptr<Feeder> feeder(new Feeder);
 
-          feeder->Run(*source.get(),
-                      Multiplexing::Publisher::Instance(),
+          feeder->Run(*source,
+                      *publisher,
                       this->listener);
           source.release();
+          publisher.release();
           feeder.release();
 
           // Wait for new connection.
