@@ -43,6 +43,7 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/interface/factory.cpp			\
 		../../src/daemon/interface/ndo/destination.cpp		\
 		../../src/daemon/interface/ndo/internal.cpp		\
+		../../src/daemon/interface/ndo/log.cpp			\
 		../../src/daemon/interface/ndo/source.cpp		\
 		../../src/daemon/interface/source.cpp			\
 		../../src/daemon/interface/sourcedestination.cpp	\
