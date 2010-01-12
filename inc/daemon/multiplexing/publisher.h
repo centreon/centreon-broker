@@ -21,46 +21,27 @@
 #ifndef MULTIPLEXING_PUBLISHER_H_
 # define MULTIPLEXING_PUBLISHER_H_
 
-# include <list>
-# include "concurrency/mutex.h"
 # include "interface/destination.h"
-
-// Forward declaration.
-namespace                  Events
-{ class                    Event; }
 
 namespace                  Multiplexing
 {
-  // Forward declaration.
-  class                    Subscriber;
-
   /**
    *  \class Publisher publisher.h "multiplexing/publisher.h"
    *  \brief Publish events to registered Subscribers.
    *
-   *  The Publisher is a singleton that is responsible of broadcasting events
-   *  to every Subscriber which previously registered. The Publisher first
-   *  receives events through its Publish() method and then send them to every
-   *  Subscriber which Subscribe()'d.
+   *  A Publisher object broadcast an event sent to it to every Subscriber.
    *
    *  \see Subscriber
    */
   class                    Publisher : public Interface::Destination
   {
-   private:
-    std::list<Subscriber*> subscribers_;
-    Concurrency::Mutex     subscribersm_;
+   public:
                            Publisher();
                            Publisher(const Publisher& publisher);
                            ~Publisher();
     Publisher&             operator=(const Publisher& publisher);
-
-   public:
     void                   Close();
     void                   Event(Events::Event* event);
-    static Publisher&      Instance();
-    Subscriber*            Subscribe();
-    void                   Unsubscribe(const Subscriber* subscriber);
   };
 }
 

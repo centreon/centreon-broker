@@ -21,7 +21,7 @@
 #ifndef MULTIPLEXING_SUBSCRIBER_H_
 # define MULTIPLEXING_SUBSCRIBER_H_
 
-# include <list>
+# include <queue>
 # include <time.h>                           // for time_t
 # include "concurrency/condition_variable.h"
 # include "concurrency/mutex.h"
@@ -32,33 +32,29 @@ namespace                      Multiplexing
 {
   /**
    *  \class Subscriber subscriber.h "multiplexing/subscriber.h"
-   *  \brief Receive events from the Publisher and make them available through
-   *         the Interface::Source interface.
+   *  \brief Receive events from Publishers and make them available through the
+   *         Interface::Source interface.
    *
    *  This class is used as a cornerstone in event multiplexing. Each output
-   *  willing to receive events will request a Subscriber object from the
-   *  Publisher which will broadcast events to every Subscriber object when it
-   *  receives one.
+   *  willing to receive events will request a Subscriber object. All Publisher
+   *  objects broadcast events they receive to every Subscriber objects.
    *
    *  \see Publisher
    */
   class                        Subscriber : public Interface::Destination,
                                             public Interface::Source
   {
-    friend class               Multiplexing::Publisher;
-
    private:
     mutable Concurrency::ConditionVariable
                                cv_;
+    std::queue<Events::Event*> events_;
     mutable Concurrency::Mutex mutex_;
-    std::list<Events::Event*>  events_;
-                               Subscriber();
                                Subscriber(const Subscriber& subscriber);
     Subscriber&                operator=(const Subscriber& subscriber);
     void                       Clean();
-    void                       InternalCopy(const Subscriber& subscr);
 
    public:
+                               Subscriber();
                                ~Subscriber();
     void                       Close();
     Events::Event*             Event();

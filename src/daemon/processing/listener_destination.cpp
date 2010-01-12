@@ -131,10 +131,13 @@ void ListenerDestination::operator()()
 
           // Create high availability object.
           std::auto_ptr<Feeder> feeder(new Feeder);
+          std::auto_ptr<Multiplexing::Subscriber> subscr(
+            new Multiplexing::Subscriber);
 
           // XXX
-          feeder->Run(*Multiplexing::Publisher::Instance().Subscribe(),
-                      *dest.get());
+          feeder->Run(*subscr,
+                      *dest);
+          subscr.release();
           dest.release();
           feeder.release();
 

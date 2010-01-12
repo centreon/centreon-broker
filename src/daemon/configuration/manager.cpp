@@ -512,6 +512,7 @@ void Configuration::Manager::Update()
       std::auto_ptr< ::Interface::Destination > dbd;
       std::auto_ptr<Processing::Feeder> feeder;
       const Configuration::Interface& output(*outputs_it);
+      std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
       LOGDEBUG("Adding new output object...");
 
@@ -527,10 +528,12 @@ void Configuration::Manager::Update()
       */
 
       dbd.reset(::Interface::Factory::Instance().Destination(output));
+      subscriber.reset(new Multiplexing::Subscriber);
       feeder.reset(new Processing::Feeder);
       // XXX
-      feeder->Run(*Multiplexing::Publisher::Instance().Subscribe(),
-                  *dbd.get());
+      feeder->Run(*subscriber,
+                  *dbd);
+      subscriber.release();
       dbd.release();
       this->outputs_[output] = feeder.get();
       feeder.release();
