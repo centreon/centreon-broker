@@ -51,6 +51,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/multiplexing/internal.cpp		\
 		../../src/daemon/multiplexing/publisher.cpp		\
 		../../src/daemon/multiplexing/subscriber.cpp		\
+		../../src/daemon/processing/failover_out.cpp		\
 		../../src/daemon/processing/feeder.cpp			\
 		../../src/daemon/processing/listener.cpp		\
 		../../src/daemon/processing/listener_destination.cpp	\
@@ -118,8 +119,8 @@ NAME	=	cb2db
 INCLUDE		=	-I../../inc/daemon -I../../inc
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
-#CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
-CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
+CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
+#CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
