@@ -131,10 +131,10 @@ void Listener::operator()()
           // Create feeding thread.
           std::auto_ptr<Multiplexing::Publisher> publisher(
             new Multiplexing::Publisher);
-          std::auto_ptr<Feeder> feeder(new Feeder);
+          std::auto_ptr<FeederOnce> feeder(new FeederOnce);
 
-          feeder->Run(*source,
-                      *publisher,
+          feeder->Run(source.get(),
+                      publisher.get(),
                       this->listener);
           source.release();
           publisher.release();

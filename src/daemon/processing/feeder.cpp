@@ -24,12 +24,19 @@
 #include "configuration/interface.h"
 #include "events/event.h"
 #include "interface/destination.h"
-#include "interface/factory.h"
 #include "interface/source.h"
-#include "multiplexing/publisher.h"
 #include "processing/feeder.h"
 
 using namespace Processing;
+
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                  Feeder                                     *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
 
 /**************************************
 *                                     *
@@ -80,134 +87,197 @@ Feeder& Feeder::operator=(const Feeder& feeder)
 /**
  *  Feeder default constructor.
  */
-Feeder::Feeder() : dest_(NULL), source_(NULL), source_dest_(NULL) {}
+Feeder::Feeder() : exit_(true) {}
 
 /**
  *  Feeder destructor.
  */
 Feeder::~Feeder()
 {
-  if (this->dest_ || this->source_)
+  if (!this->exit_)
     {
-      this->Cancel();
+      this->Exit();
       this->Join();
-      if (this->source_conf_.get())
-	delete (this->source_);
-      if (this->dest_conf_.get())
-	delete (this->dest_);
     }
 }
 
 /**
- *  \brief Overload of the parenthesis operator.
- *
- *  This method is used as the entry point of the thread that will get events
- *  from the source.
- *  \par Safety No throw guarantee.
+ *  Warn the thread that it should quit ASAP.
  */
-void Feeder::operator()()
+void Feeder::Exit()
 {
-  while (1)
+  this->exit_ = true;
+  return ;
+}
+
+/**
+ *  Send events from the source to the destination.
+ */
+void Feeder::Feed(Interface::Source* source,
+                  Interface::Destination* dest)
+{
+  Events::Event* event;
+
+  event = NULL;
+  try
     {
-      Events::Event* event;
-
-      event = NULL;
-      try
-	{
-	  // Connection to source interface.
-	  {
-	    Concurrency::Lock lock(this->sourcem_);
-
-	    if (this->source_conf_.get())
-	      this->source_ = Interface::Factory::Instance().Source(
-				*this->source_conf_);
-	  }
-	  // Connection to destination interface.
-	  {
-	    Concurrency::Lock lock(this->destm_);
-
-	    // XXX : should be SourceDestination
-	    if (this->dest_conf_.get())
-	      this->dest_ = Interface::Factory::Instance().Destination(
-			      *this->dest_conf_);
-	  }
-
-	  // XXX : check failover
-	  {
-	    Concurrency::Lock lock(this->destm_);
-
-	    event = this->source_->Event();
-	  }
-	  while (event)
-	    {
-	      this->dest_->Event(event);
-	      event = NULL;
-
-	      Concurrency::Lock lock(this->destm_);
-
-	      event = this->source_->Event();
-	    }
-	}
-      catch (const std::exception& e)
-	{
-	}
-      catch (...)
-	{
-	}
+      // Fetch first event.
+      event = source->Event();
+      while (event)
+        {
+          // Send event.
+	  dest->Event(event);
+	  event = NULL;
+          // Fetch next event.
+	  event = source->Event();
+        }
+    }
+  catch (...)
+    {
       if (event)
-	event->RemoveReader();
-      break ;
-      // XXX : launch failover
+        event->RemoveReader();
+      throw ;
     }
   return ;
 }
 
+
+/******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                FeederOnce                                   *
+*                                                                             *
+*                                                                             *
+******************************************************************************/
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
 /**
- *  Run the feeder thread.
+ *  \brief Copy constructor.
+ *
+ *  FeederOnce is not copyable ; therefore any attempt to use the copy
+ *  constructor will result in a call to abort().
+ *  \par Safety No exception safety.
+ *
+ *  \param[in] fo Unused.
  */
-void Feeder::Run(const Configuration::Interface& source,
-                 const Configuration::Interface& dest,
-                 Concurrency::ThreadListener* listener)
+FeederOnce::FeederOnce(const FeederOnce& fo)
+  : Interface::Source(),
+    Interface::Destination(),
+    Processing::Feeder(),
+    Interface::SourceDestination()
 {
-  this->source_conf_.reset(new Configuration::Interface(source));
-  this->dest_conf_.reset(new Configuration::Interface(dest));
-  this->Run(*this->source_, *this->dest_, listener);
+  (void)fo;
+  assert(false);
+  abort();
+}
+
+/**
+ *  \brief Assignment operator overload.
+ *
+ *  FeederOnce is not copyable ; therefore any attempt to use the assignment
+ *  operator will result in a call to abort().
+ *  \par Safety No exception safety.
+ *
+ *  \param[in] fo Unused.
+ *
+ *  \return *this
+ */
+FeederOnce& FeederOnce::operator=(const FeederOnce& fo)
+{
+  (void)fo;
+  assert(false);
+  abort();
+  return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Default constructor.
+ */
+FeederOnce::FeederOnce() {}
+
+/**
+ *  Destructor.
+ */
+FeederOnce::~FeederOnce()
+{
+  // XXX : thread synchronization
+}
+
+/**
+ *  Feeder thread entry point.
+ */
+void FeederOnce::operator()()
+{
+  this->Feed(this, this);
   return ;
 }
 
 /**
- *  Run the feeder thread.
+ *  Close.
  */
-void Feeder::Run(const Configuration::Interface& source,
-                 Interface::Destination& dest,
-                 Concurrency::ThreadListener* listener)
+void FeederOnce::Close()
 {
-  this->source_conf_.reset(new Configuration::Interface(source));
-  this->Run(*this->source_, dest, listener);
   return ;
 }
 
 /**
- *  Run the feeder thread.
+ *  Get next available event.
  */
-void Feeder::Run(Interface::Source& source,
-                 const Configuration::Interface& dest,
-                 Concurrency::ThreadListener* listener)
+Events::Event* FeederOnce::Event()
 {
-  this->dest_conf_.reset(new Configuration::Interface(dest));
-  this->Run(source, *this->dest_, listener);
+  Concurrency::Lock lock(this->sourcem_);
+
+  return (this->source_->Event());
+}
+
+/**
+ *  Store event.
+ */
+void FeederOnce::Event(Events::Event* event)
+{
+  Concurrency::Lock lock(this->destm_);
+
+  this->dest_->Event(event);
   return ;
 }
 
 /**
- *  Run the feeder thread.
+ *  Run feeder thread.
  */
-void Feeder::Run(Interface::Source& source,
-                 Interface::Destination& dest,
-                 Concurrency::ThreadListener* listener)
+void FeederOnce::Run(Interface::Source* source,
+		     Interface::Destination* dest,
+		     Concurrency::ThreadListener* tl)
 {
-  this->source_ = &source;
-  this->dest_ = &dest;
-  this->Concurrency::Thread::Run(listener);
+  try
+    {
+      {
+	Concurrency::Lock lock(this->destm_);
+
+	this->dest_.reset(dest);
+      }
+      {
+	Concurrency::Lock lock(this->sourcem_);
+
+	this->source_.reset(source);
+      }
+      this->Concurrency::Thread::Run(tl);
+    }
+  catch (...)
+    {
+      this->dest_.reset();
+      this->source_.reset();
+      throw ;
+    }
   return ;
 }

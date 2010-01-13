@@ -21,21 +21,11 @@
 #ifndef PROCESSING_FEEDER_H_
 # define PROCESSING_FEEDER_H_
 
-# include <memory>               // for auto_ptr
 # include "concurrency/mutex.h"
 # include "concurrency/thread.h"
+# include "interface/sourcedestination.h"
 
-// Forward declarations.
-namespace               Configuration
-{ class                 Interface; }
-namespace               Concurrency
-{ class                 ThreadListener; }
-namespace               Interface
-{ class                 Destination;
-  class                 Source;
-  class                 SourceDestination; }
-
-namespace               Processing
+namespace              Processing
 {
   /**
    *  \class Feeder feeder.h "processing/feeder.h"
@@ -47,42 +37,54 @@ namespace               Processing
    *  \see Events::Event
    *  \see Multiplexing::Publisher
    */
-  class                 Feeder : public Concurrency::Thread
+  class                Feeder : public Concurrency::Thread
   {
    private:
-    Interface::Destination*
-                        dest_;
-    Concurrency::Mutex  destm_;
-    std::auto_ptr<Configuration::Interface>
-                        dest_conf_;
-    Feeder*             failover_;
-    Interface::Source*  source_;
-    Concurrency::Mutex  sourcem_;
-    std::auto_ptr<Configuration::Interface>
-                        source_conf_;
-    Interface::SourceDestination*
-                        source_dest_;
-                        Feeder(const Feeder& feeder);
-    Feeder&             operator=(const Feeder& feeder);
+                       Feeder(const Feeder& feeder);
+    Feeder&            operator=(const Feeder&feeder);
+
+   protected:
+    bool               exit_;
 
    public:
-                        Feeder();
-                        ~Feeder();
-    void                operator()();
-    void                Run(const Configuration::Interface& source,
-                            const Configuration::Interface& dest,
-                            Concurrency::ThreadListener* listener = NULL);
-    void                Run(const Configuration::Interface& source,
-                            Interface::Destination& dest,
-                            Concurrency::ThreadListener* listener = NULL);
-    void                Run(Interface::Source& source,
-                            const Configuration::Interface& dest,
-                            Concurrency::ThreadListener* listener = NULL);
-    void                Run(Interface::Source& source,
-                            Interface::Destination& dest,
-                            Concurrency::ThreadListener* listener = NULL);
-    //void                UpdateSource(const Configuration::Interface& source);
-    //void                UpdateDestination(const Configuration::Interface& d);
+                       Feeder();
+    virtual            ~Feeder();
+    void               Exit();
+    void               Feed(Interface::Source* source,
+                            Interface::Destination* dest);
+  };
+
+  /**
+   *  \class FeederOnce feeder.h "processing/feeder.h"
+   *  \brief Get Events from a source and bring it to a destination with no
+   *         failover.
+   *
+   *  Act on two already opened interface and send events from the source to
+   *  the destination. If an error occur both interfaces are destroyed.
+   */
+  class                FeederOnce : public Feeder,
+                                    public Interface::SourceDestination
+  {
+   private:
+    std::auto_ptr<Interface::Destination>
+                       dest_;
+    Concurrency::Mutex destm_;
+    std::auto_ptr<Interface::Source>
+                       source_;
+    Concurrency::Mutex sourcem_;
+                       FeederOnce(const FeederOnce& fo);
+    FeederOnce&        operator=(const FeederOnce& fo);
+
+   public:
+                       FeederOnce();
+    virtual            ~FeederOnce();
+    virtual void       operator()();
+    void               Close();
+    Events::Event*     Event();
+    void               Event(Events::Event* event);
+    void               Run(Interface::Source* source,
+                           Interface::Destination* dest,
+                           Concurrency::ThreadListener* tl = NULL);
   };
 }
 
