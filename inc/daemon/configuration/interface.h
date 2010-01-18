@@ -62,6 +62,7 @@ namespace                    Configuration
     };
     std::string              db;
     std::auto_ptr<Interface> failover;
+    std::string              failover_name;
     std::string              filename;
     std::string              host;
     std::string              interface;
