@@ -80,6 +80,7 @@ namespace              Processing
     void               Connect();
     Events::Event*     Event();
     void               Event(Events::Event* event);
+    void               Exit();
     void               Run(Interface::Source* source,
                            const Configuration::Interface& dest_conf,
                            Concurrency::ThreadListener* tl = NULL);
