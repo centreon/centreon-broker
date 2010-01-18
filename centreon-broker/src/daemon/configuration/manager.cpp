@@ -94,6 +94,8 @@ static void HandleInterface(Configuration::Lexer& lexer,
       // Parse variable.
       if (var_str == "db")
         i.db = val_str;
+      else if (var_str == "failover")
+        i.failover_name = val_str;
       else if (var_str == "filename")
         i.filename = val_str;
       else if (var_str == "host")
@@ -365,6 +367,36 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
          default:
           throw (Exception(0, INVALID_TOKEN_MSG));
         };
+    }
+
+  // Assign failovers.
+  std::list<Configuration::Interface>::iterator it;
+  it = outputs.begin();
+  while (it != outputs.end())
+    {
+      if (!it->failover_name.empty())
+        {
+          std::list<Configuration::Interface>::iterator failover;
+
+          // Find failover.
+          for (failover = outputs.begin();
+               failover != outputs.end();
+               ++failover)
+            if (failover->name == it->failover_name)
+              break ;
+
+          // Failover found. Store it in base object and remove it from list.
+          if (failover != outputs.end())
+            {
+              it->failover.reset(new Configuration::Interface(*failover));
+              outputs.erase(failover);
+              it = outputs.begin();
+            }
+          else
+            throw (Exception(0, "Could not find failover name."));
+        }
+      else
+        ++it;
     }
   return ;
 }
