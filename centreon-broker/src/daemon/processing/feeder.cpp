@@ -123,13 +123,13 @@ void Feeder::Feed(Interface::Source* source,
     {
       // Fetch first event.
       event = source->Event();
-      while (event)
+      while (!this->exit_ && event)
         {
           // Send event.
-	  dest->Event(event);
-	  event = NULL;
+          dest->Event(event);
+          event = NULL;
           // Fetch next event.
-	  event = source->Event();
+          event = source->Event();
         }
     }
   catch (...)
@@ -211,7 +211,11 @@ FeederOnce::FeederOnce() {}
  */
 FeederOnce::~FeederOnce()
 {
-  // XXX : thread synchronization
+  try
+    {
+      this->Join();
+    }
+  catch (...) {}
 }
 
 /**
@@ -253,28 +257,49 @@ void FeederOnce::Event(Events::Event* event)
 }
 
 /**
+ *  Tell the thread that processing should stop.
+ */
+void FeederOnce::Exit()
+{
+  // Set exit flag.
+  this->Feeder::Exit();
+
+  // Close source.
+  {
+    Concurrency::Lock lock(this->sourcem_);
+
+    if (this->source_.get())
+      this->source_->Close();
+  }
+
+  return ;
+}
+
+/**
  *  Run feeder thread.
  */
 void FeederOnce::Run(Interface::Source* source,
-		     Interface::Destination* dest,
-		     Concurrency::ThreadListener* tl)
+                     Interface::Destination* dest,
+                     Concurrency::ThreadListener* tl)
 {
   try
     {
       {
-	Concurrency::Lock lock(this->destm_);
+        Concurrency::Lock lock(this->destm_);
 
-	this->dest_.reset(dest);
+        this->dest_.reset(dest);
       }
       {
-	Concurrency::Lock lock(this->sourcem_);
+        Concurrency::Lock lock(this->sourcem_);
 
-	this->source_.reset(source);
+        this->source_.reset(source);
       }
+      this->exit_ = false;
       this->Concurrency::Thread::Run(tl);
     }
   catch (...)
     {
+      this->exit_ = true;
       this->dest_.reset();
       this->source_.reset();
       throw ;
