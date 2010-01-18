@@ -225,7 +225,11 @@ FailoverOut::FailoverOut() {}
 /**
  *  Destructor.
  */
-FailoverOut::~FailoverOut() {}
+FailoverOut::~FailoverOut()
+{
+  this->Exit();
+  this->Join();
+}
 
 /**
  *  Connect the destination object.
@@ -261,6 +265,21 @@ void FailoverOut::Event(Events::Event* event)
   Concurrency::Lock lock(this->destm_);
 
   this->dest_->Event(event);
+  return ;
+}
+
+/**
+ *  Tell the processing thread to stop ASAP.
+ */
+void FailoverOut::Exit()
+{
+  {
+    Concurrency::Lock lock(this->sourcem_);
+
+    if (this->source_.get())
+      this->source_->Close();
+  }
+  this->Feeder::Exit();
   return ;
 }
 
@@ -356,7 +375,8 @@ FailoverOutAsIn::FailoverOutAsIn() {}
  */
 FailoverOutAsIn::~FailoverOutAsIn()
 {
-  // XXX : thread synchronization
+  this->Exit();
+  this->Join();
 }
 
 /**

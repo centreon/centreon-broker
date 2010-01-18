@@ -204,7 +204,7 @@ bool Split::OpenNextOutputFile()
   this->out_offset_ = 0;
 
   // Return whether or not the file opening succeeded.
-  return (this->ofs_);
+  return (!this->ofs_.is_open());
 }
 
 /**************************************
