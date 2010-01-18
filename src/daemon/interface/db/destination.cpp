@@ -668,6 +668,7 @@ Destination::Destination()
  */
 Destination::~Destination()
 {
+  this->Disconnect();
 }
 
 /**

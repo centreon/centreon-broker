@@ -55,12 +55,13 @@ namespace              Processing
    public:
                        FailoverOutAsIn();
                        ~FailoverOutAsIn();
+    void               Close();
     void               Connect();
     Events::Event*     Event();
     void               Event(Events::Event* event);
     void               Run(Interface::Source* source,
-			   const Configuration::Interface& dest_conf,
-			   Concurrency::ThreadListener* tl = NULL);
+                           const Configuration::Interface& dest_conf,
+                           Concurrency::ThreadListener* tl = NULL);
   };
 }
 
@@ -139,23 +140,30 @@ FailoverOutBase::~FailoverOutBase() {}
  */
 void FailoverOutBase::operator()()
 {
-  while (1)
+  while (!this->exit_)
     {
       try
-	{
-	  this->Connect();
-	  if (this->failover_.get())
-	    {
-	      this->Feed(this->failover_.get(), this);
-	      this->failover_->Exit();
-	      this->Feed(this->failover_.get(), this);
-	    }
-	  this->Feed(this, this);
-	}
+        {
+          this->Connect();
+          if (this->failover_.get())
+            {
+              this->Feed(this->failover_.get(), this);
+              this->failover_->Exit();
+              this->Feed(this->failover_.get(), this);
+            }
+          this->Feed(this, this);
+        }
       catch (...)
-	{
-	  // XXX : sleep
-	}
+        {
+          if (!this->failover_.get() && this->dest_conf_->failover.get())
+            {
+              this->failover_.reset(new FailoverOutAsIn);
+              this->failover_->Run(this,
+                                   *this->dest_conf_);
+            }
+          // XXX : configure
+          sleep(5);
+        }
     }
   return ;
 }
@@ -232,6 +240,14 @@ FailoverOut::~FailoverOut()
 }
 
 /**
+ *  Close current objects.
+ */
+void FailoverOut::Close()
+{
+  // XXX
+}
+
+/**
  *  Connect the destination object.
  */
 void FailoverOut::Connect()
@@ -291,8 +307,8 @@ void FailoverOut::Exit()
  *  \param[in] tl        Listener of the thread.
  */
 void FailoverOut::Run(Interface::Source* source,
-		      const Configuration::Interface& dest_conf,
-		      Concurrency::ThreadListener* tl)
+                      const Configuration::Interface& dest_conf,
+                      Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->destm_);
@@ -304,6 +320,7 @@ void FailoverOut::Run(Interface::Source* source,
 
     this->source_.reset(source);
   }
+  this->exit_ = false;
   this->Concurrency::Thread::Run(tl);
   return ;
 }
@@ -380,6 +397,14 @@ FailoverOutAsIn::~FailoverOutAsIn()
 }
 
 /**
+ *  Close FailoverOutAsIn.
+ */
+void FailoverOutAsIn::Close()
+{
+  // XXX
+}
+
+/**
  *  Connect output object.
  */
 void FailoverOutAsIn::Connect()
@@ -416,8 +441,8 @@ void FailoverOutAsIn::Event(Events::Event* event)
  *  Launch failover thread.
  */
 void FailoverOutAsIn::Run(Interface::Source* source,
-			  const Configuration::Interface& dest_conf,
-			  Concurrency::ThreadListener* tl)
+                          const Configuration::Interface& dest_conf,
+                          Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->source_destm_);

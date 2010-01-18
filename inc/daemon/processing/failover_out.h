@@ -77,6 +77,7 @@ namespace              Processing
    public:
                        FailoverOut();
                        ~FailoverOut();
+    void               Close();
     void               Connect();
     Events::Event*     Event();
     void               Event(Events::Event* event);

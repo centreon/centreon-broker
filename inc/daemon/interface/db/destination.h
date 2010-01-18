@@ -60,8 +60,6 @@ namespace                         Interface
     class                         Destination : public Interface::Destination
     {
      private:
-      std::auto_ptr<CentreonBroker::DB::Connection>
-                                  conn_;
       std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Host> >
                                   host_stmt_;
       std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::HostStatus> >
@@ -72,6 +70,8 @@ namespace                         Interface
                                   service_stmt_;
       std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::ServiceStatus> >
                                   service_status_stmt_;
+      std::auto_ptr<CentreonBroker::DB::Connection>
+                                  conn_; // Connection object is necessary after statements.
       std::map<std::string, int>  instances_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);

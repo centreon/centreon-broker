@@ -37,6 +37,7 @@
 #include "logging.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
+#include "processing/failover_out.h"
 #include "processing/feeder.h"
 #include "processing/listener.h"
 
@@ -374,7 +375,7 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
   it = outputs.begin();
   while (it != outputs.end())
     {
-      if (!it->failover_name.empty())
+      if (!it->failover.get() && !it->failover_name.empty())
         {
           std::list<Configuration::Interface>::iterator failover;
 
@@ -543,11 +544,9 @@ void Configuration::Manager::Update()
     }
 
   // Add new outputs.
-  for (outputs_it = outputs.begin(); outputs_it != outputs.end(); outputs_it++)
+  for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
     {
-      std::auto_ptr< ::Interface::Destination > dbd;
-      std::auto_ptr<Processing::FeederOnce> feeder;
-      const Configuration::Interface& output(*outputs_it);
+      std::auto_ptr<Processing::FailoverOut> feeder;
       std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
       LOGDEBUG("Adding new output object...");
@@ -563,15 +562,13 @@ void Configuration::Manager::Update()
                 output.GetDB());
       */
 
-      dbd.reset(::Interface::Factory::Instance().Destination(output));
       subscriber.reset(new Multiplexing::Subscriber);
-      feeder.reset(new Processing::FeederOnce);
+      feeder.reset(new Processing::FailoverOut);
       // XXX
       feeder->Run(subscriber.get(),
-                  dbd.get());
+                  *outputs_it);
       subscriber.release();
-      dbd.release();
-      this->outputs_[output] = feeder.get();
+      this->outputs_[*outputs_it] = feeder.get();
       feeder.release();
     }
 
