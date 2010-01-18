@@ -39,7 +39,7 @@ namespace          Interface
      *  The Interface::NDO::Destination class converts events to an output
      *  stream using the NDO protocol.
      */
-    class          Destination : public Interface::Destination
+    class          Destination : virtual public Interface::Destination
     {
      private:
       std::auto_ptr<IO::Stream>

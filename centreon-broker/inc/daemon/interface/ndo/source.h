@@ -36,7 +36,7 @@ namespace                    Interface
      *  The Interface::NDO::Source class converts an input stream into events
      *  using the NDO protocol.
      */
-    class                    Source : public Interface::Source
+    class                    Source : virtual public Interface::Source
     {
      private:
       std::string            instance_;

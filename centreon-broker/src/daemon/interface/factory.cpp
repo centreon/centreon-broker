@@ -27,6 +27,7 @@
 #include "interface/factory.h"
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
+#include "interface/ndo/sourcedestination.h"
 #include "interface/xml/destination.h"
 #include "io/net/ipv4.h"
 #include "io/net/ipv6.h"
@@ -79,6 +80,21 @@ Factory& Factory::operator=(const Factory& factory)
 }
 
 /**
+ *  Build a file according to the configuration provided.
+ *
+ *  \param[in] i Configuration of the file.
+ *
+ *  \return An open file.
+ */
+IO::Stream* Factory::File(const Configuration::Interface& i)
+{
+  std::auto_ptr<IO::Split> split;
+
+  split->BaseFile(i.filename);
+  return (split.release());
+}
+
+/**
  *  Build an IPv4 connector according to the configuration provided.
  *
  *  \param[in] i Configuration of the IPv4 connector.
@@ -114,6 +130,30 @@ IO::Stream* Factory::IPv6Connector(const Configuration::Interface& i)
           i.tls ? this->TLSConnector(i, ipv6c.release()) :
 #endif /* USE_TLS */
                   ipv6c.release());
+}
+
+IO::Stream* Factory::Stream(const Configuration::Interface& i)
+{
+  std::auto_ptr<IO::Stream> stream;
+
+  switch (i.type)
+    {
+     case Configuration::Interface::FILE:
+      stream.reset(this->File(i));
+      break ;
+     case Configuration::Interface::IPV4_CLIENT:
+      stream.reset(this->IPv4Connector(i));
+      break ;
+     case Configuration::Interface::IPV6_CLIENT:
+      stream.reset(this->IPv6Connector(i));
+      break ;
+     case Configuration::Interface::UNIX_CLIENT:
+      stream.reset(this->UnixConnector(i));
+      break ;
+     default:
+      ;
+    }
+  return (stream.release());
 }
 
 #ifdef USE_TLS
@@ -246,9 +286,13 @@ Destination* Factory::Destination(const Configuration::Interface& i)
 
         // XXX : set file num + file size
         split->BaseFile(i.filename);
-        dest = new Interface::XML::Destination(split.get());
+        if (Configuration::Interface::XML == i.protocol)
+          dest = new Interface::XML::Destination(split.get());
+        else
+          dest = new Interface::NDO::Destination(split.get());
         split.release();
       }
+      break ;
      case Configuration::Interface::IPV4_CLIENT:
       {
         std::auto_ptr<IO::Stream> ipv4c(this->IPv4Connector(i));
@@ -332,48 +376,13 @@ Factory& Factory::Instance()
  */
 Source* Factory::Source(const Configuration::Interface& i)
 {
-  Interface::Source* source;
+  std::auto_ptr<Interface::NDO::Source> source;
+  std::auto_ptr<IO::Stream> stream;
 
-  switch (i.type)
-    {
-     case Configuration::Interface::FILE:
-      {
-        std::auto_ptr<IO::Split> split(new IO::Split);
-
-        // XXX : set file num + file size
-        source = new Interface::NDO::Source(split.get());
-        split.release();
-      }
-      break ;
-     case Configuration::Interface::IPV4_CLIENT:
-      {
-        std::auto_ptr<IO::Stream> ipv4c(this->IPv4Connector(i));
-
-        source = new Interface::NDO::Source(ipv4c.get());
-        ipv4c.release();
-      }
-      break ;
-     case Configuration::Interface::IPV6_CLIENT:
-      {
-        std::auto_ptr<IO::Stream> ipv6c(this->IPv6Connector(i));
-
-        source = new Interface::NDO::Source(ipv6c.get());
-        ipv6c.release();
-      }
-      break ;
-     case Configuration::Interface::UNIX_CLIENT:
-      {
-        std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));
-
-        source = new Interface::NDO::Source(uc.get());
-        uc.release();
-      }
-      break ;
-     default:
-      source = NULL;
-    }
-
-  return (source);
+  stream.reset(this->Stream(i));
+  source.reset(new Interface::NDO::Source(stream.get()));
+  stream.release();
+  return (source.release());
 }
 
 /**
@@ -389,4 +398,15 @@ Source* Factory::Source(const Configuration::Interface& i)
 SourceDestination* Factory::SourceDestination(
                      const Configuration::Interface& i)
 {
+  std::auto_ptr<Interface::SourceDestination> sd;
+  std::auto_ptr<IO::Stream> streamd(this->Stream(i));
+  std::auto_ptr<IO::Stream> streams(this->Stream(i));
+
+  if (streamd.get() && streams.get())
+    {
+      sd.reset(new NDO::SourceDestination(streams.get(), streamd.get()));
+      streamd.release();
+      streams.release();
+    }
+  return (sd.get());
 }

@@ -94,6 +94,8 @@ static void HandleInterface(Configuration::Lexer& lexer,
       // Parse variable.
       if (var_str == "db")
         i.db = val_str;
+      else if (var_str == "filename")
+        i.filename = val_str;
       else if (var_str == "host")
         {
           i.host = val_str;
@@ -119,7 +121,9 @@ static void HandleInterface(Configuration::Lexer& lexer,
         i.user = val_str;
       else if (var_str == "type")
         {
-          if ((val_str == "ip") || (val_str == "ipv4"))
+          if (val_str == "file")
+            i.type = Configuration::Interface::FILE;
+          else if ((val_str == "ip") || (val_str == "ipv4"))
             i.type = (i.host.empty() ? Configuration::Interface::IPV4_SERVER
                                      : Configuration::Interface::IPV4_CLIENT);
           else if (val_str == "ipv6")
