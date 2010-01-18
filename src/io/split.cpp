@@ -98,8 +98,10 @@ unsigned int Split::BrowseDir(unsigned int* min, unsigned int* max)
   delete [] path;
 
   // Return found values.
-  *min = my_min;
-  *max = my_max;
+  if (min)
+    *min = my_min;
+  if (max)
+    *max = my_max;
   return (entries);
 }
 
@@ -199,6 +201,7 @@ bool Split::OpenNextOutputFile()
 
   // Open next file.
   this->ofs_.open(ss.str().c_str());
+  this->out_offset_ = 0;
 
   // Return whether or not the file opening succeeded.
   return (this->ofs_);
@@ -218,7 +221,7 @@ Split::Split()
     current_out_(0),
     max_file_size_(UINT_MAX),
     max_files_(UINT_MAX),
-    out_offset_(0) {}
+    out_offset_(UINT_MAX) {}
 
 /**
  *  Split copy constructor.

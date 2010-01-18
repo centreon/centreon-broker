@@ -53,8 +53,10 @@ namespace                   Interface
                             Factory(const Factory& factory);
                             ~Factory();
     Factory&                operator=(const Factory& factory);
+    IO::Stream*             File(const Configuration::Interface& i);
     IO::Stream*             IPv4Connector(const Configuration::Interface& i);
     IO::Stream*             IPv6Connector(const Configuration::Interface& i);
+    IO::Stream*             Stream(const Configuration::Interface& i);
     IO::Stream*             TLSConnector(const Configuration::Interface& i,
                                          IO::Stream* stream);
     IO::Stream*             UnixConnector(const Configuration::Interface& i);
