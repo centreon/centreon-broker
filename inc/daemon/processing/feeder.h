@@ -49,7 +49,7 @@ namespace              Processing
    public:
                        Feeder();
     virtual            ~Feeder();
-    void               Exit();
+    virtual void       Exit();
     void               Feed(Interface::Source* source,
                             Interface::Destination* dest);
   };
@@ -82,6 +82,7 @@ namespace              Processing
     void               Close();
     Events::Event*     Event();
     void               Event(Events::Event* event);
+    void               Exit();
     void               Run(Interface::Source* source,
                            Interface::Destination* dest,
                            Concurrency::ThreadListener* tl = NULL);

@@ -128,7 +128,8 @@ const char* Text::Line()
       this->buffer_[this->length_] = '\0'; // so that strchr does not fail
     }
   this->discard_ = strcspn(this->buffer_, "\n");
-  this->buffer_[this->discard_++] = '\0';
+  if (this->buffer_[this->discard_] != '\0')
+    this->buffer_[this->discard_++] = '\0';
   return (this->length_ ? this->buffer_ : NULL);
 }
 
