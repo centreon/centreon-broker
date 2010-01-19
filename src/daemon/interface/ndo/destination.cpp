@@ -124,7 +124,8 @@ static void set_undefined(const T& t,
                           std::stringstream& buffer)
 {
   (void)id;
-  buffer << field.field_undefined.getter(t);
+  if (field.field_undefined.getter)
+    buffer << field.field_undefined.getter(t);
   return ;
 }
 
@@ -247,7 +248,7 @@ void HandleEvent(const T& event,
  *  \param[in] destination Unused.
  */
 Destination::Destination(const Destination& destination)
-  : Interface::Destination(destination)
+  : Base(NULL), Interface::Destination(destination)
 {
   assert(false);
   abort();
@@ -287,7 +288,7 @@ Destination& Destination::operator=(const Destination& destination)
  *
  *  \param[in] stream Output stream object.
  */
-Destination::Destination(IO::Stream* stream) : stream_(stream) {}
+Destination::Destination(IO::Stream* stream) : Base(stream) {}
 
 /**
  *  Destination destructor.
@@ -299,7 +300,7 @@ Destination::~Destination() {}
  */
 void Destination::Close()
 {
-  this->stream_->Close();
+  this->stream_.Close();
   return ;
 }
 
@@ -403,7 +404,7 @@ void Destination::Event(Events::Event* event)
       buffer << "\n";
 
       // Send data.
-      this->stream_->Send(buffer.str().c_str(), buffer.str().size());
+      this->stream_.Send(buffer.str().c_str(), buffer.str().size());
     }
   catch (...) {}
 

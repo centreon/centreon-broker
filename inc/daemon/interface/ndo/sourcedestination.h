@@ -40,16 +40,15 @@ namespace                Interface
      *  \see Interface::NDO::Destination
      */
     class                SourceDestination : public Interface::SourceDestination,
-                                             public Source,
-                                             public Destination
+                                             public Interface::NDO::Source,
+                                             public Interface::NDO::Destination
     {
      private:
                          SourceDestination(const SourceDestination& sd);
       SourceDestination& operator=(const SourceDestination& sd);
 
      public:
-                         SourceDestination(IO::Stream* source,
-                                           IO::Stream* destination);
+                         SourceDestination(IO::Stream* stream);
 			 ~SourceDestination();
       void               Close();
     };

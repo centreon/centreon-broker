@@ -88,7 +88,7 @@ Factory& Factory::operator=(const Factory& factory)
  */
 IO::Stream* Factory::File(const Configuration::Interface& i)
 {
-  std::auto_ptr<IO::Split> split;
+  std::auto_ptr<IO::Split> split(new IO::Split);
 
   split->BaseFile(i.filename);
   return (split.release());
@@ -399,14 +399,12 @@ SourceDestination* Factory::SourceDestination(
                      const Configuration::Interface& i)
 {
   std::auto_ptr<Interface::SourceDestination> sd;
-  std::auto_ptr<IO::Stream> streamd(this->Stream(i));
-  std::auto_ptr<IO::Stream> streams(this->Stream(i));
+  std::auto_ptr<IO::Stream> stream(this->Stream(i));
 
-  if (streamd.get() && streams.get())
+  if (stream.get())
     {
-      sd.reset(new NDO::SourceDestination(streams.get(), streamd.get()));
-      streamd.release();
-      streams.release();
+      sd.reset(new NDO::SourceDestination(stream.get()));
+      stream.release();
     }
-  return (sd.get());
+  return (sd.release());
 }

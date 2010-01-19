@@ -25,6 +25,7 @@
 #include "interface/destination.h"
 #include "interface/factory.h"
 #include "interface/sourcedestination.h"
+#include "logging.h"
 #include "processing/failover_out.h"
 
 using namespace Processing;
@@ -39,7 +40,7 @@ namespace              Processing
 {
   class                FailoverOutAsIn : public FailoverOutBase
   {
-    friend class       FailoverOut;
+    friend class       FailoverOutBase;
 
    private:
     Interface::Source* source_;
@@ -144,22 +145,32 @@ void FailoverOutBase::operator()()
     {
       try
         {
+	  LOGDEBUG("Connecting output ...");
           this->Connect();
+	  LOGDEBUG("Connection successful !");
           if (this->failover_.get())
             {
-              this->Feed(this->failover_.get(), this);
+	      LOGDEBUG("Fetching events from the failover object ...");
+              if (this->failover_->source_dest_.get())
+                this->Feed(this->failover_->source_dest_.get(), this);
+	      LOGDEBUG("Killing failover thread ...");
               this->failover_->Exit();
-              this->Feed(this->failover_.get(), this);
+              this->failover_->Join();
+	      LOGDEBUG("Destroying failover object ...");
+	      this->failover_.reset();
             }
+	  LOGDEBUG("Launching feeding loop ...");
           this->Feed(this, this);
         }
       catch (...)
         {
+          LOGERROR("Event feeding failed.");
           if (!this->failover_.get() && this->dest_conf_->failover.get())
             {
+	      LOGDEBUG("Launching output failover ...");
               this->failover_.reset(new FailoverOutAsIn);
               this->failover_->Run(this,
-                                   *this->dest_conf_);
+                                   *this->dest_conf_->failover);
             }
           // XXX : configure
           sleep(5);
@@ -244,7 +255,19 @@ FailoverOut::~FailoverOut()
  */
 void FailoverOut::Close()
 {
-  // XXX
+  {
+    Concurrency::Lock lock(this->sourcem_);
+
+    if (this->source_.get())
+      this->source_->Close();
+  }
+  {
+    Concurrency::Lock lock(this->destm_);
+
+    if (this->dest_.get())
+      this->dest_->Close();
+  }
+  return ;
 }
 
 /**
@@ -254,6 +277,8 @@ void FailoverOut::Connect()
 {
   Concurrency::Lock lock(this->destm_);
 
+  // Delete destination first before opening another.
+  this->dest_.reset();
   this->dest_.reset(
     Interface::Factory::Instance().Destination(*this->dest_conf_));
   return ;
@@ -411,6 +436,8 @@ void FailoverOutAsIn::Connect()
 {
   Concurrency::Lock lock(this->source_destm_);
 
+  // Close before reopening.
+  this->source_dest_.reset();
   this->source_dest_.reset(Interface::Factory::Instance().SourceDestination(
     *this->source_dest_conf_));
   return ;
@@ -433,7 +460,7 @@ void FailoverOutAsIn::Event(Events::Event* event)
 {
   Concurrency::Lock lock(this->source_destm_);
 
-  ((Interface::Destination*)(this->source_dest_.get()))->Event(event);
+  static_cast<Interface::Destination*>(this->source_dest_.get())->Event(event);
   return ;
 }
 
@@ -454,6 +481,7 @@ void FailoverOutAsIn::Run(Interface::Source* source,
 
     this->source_ = source;
   }
+  this->exit_ = false;
   this->Concurrency::Thread::Run(tl);
   return ;
 }

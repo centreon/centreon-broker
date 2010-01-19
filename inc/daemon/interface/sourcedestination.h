@@ -36,8 +36,8 @@ namespace              Interface
    *  \see Source
    *  \see Destination
    */
-  class                SourceDestination : virtual public Source,
-                                           virtual public Destination
+  class                SourceDestination : virtual public Interface::Source,
+                                           virtual public Interface::Destination
   {
    protected:
                        SourceDestination();

@@ -314,11 +314,14 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
                                      std::list<Configuration::Interface>& outputs)
 {
   std::auto_ptr<IO::File> filestream(new IO::File);
+  std::string name;
   Configuration::Token val;
   Configuration::Token var;
 
+  // Open configuration file.
   filestream->Open(this->filename_.c_str(), IO::File::READ);
 
+  // The lexer will split the configuration file into undividable tokens.
   Configuration::Lexer lexer(filestream.get());
 
   filestream.release();
@@ -326,25 +329,28 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
        var.GetType() == Configuration::Token::STRING;
        lexer.GetToken(var), lexer.GetToken(val))
     {
+      name.clear();
       switch (val.GetType())
         {
-         // Assignment sign, we're setting a variable.
-        case Configuration::Token::ASSIGNMENT:
+          // Assignment sign, we're setting a variable.
+         case Configuration::Token::ASSIGNMENT:
           if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
             throw (Exception(0, INVALID_TOKEN_MSG));
           // XXX : set global variable
           break ;
-         // Block name, can safely be discarded.
-        case Configuration::Token::STRING:
-           if (lexer.GetToken(val) || val.GetType() != Configuration::Token::BLOCK_START)
-            throw (Exception(0, INVALID_TOKEN_MSG));
-         // Starting a bloc, launching proper handler.
-        case Configuration::Token::BLOCK_START:
+          // Block name.
+         case Configuration::Token::STRING:
+          name = val.GetText();
+          if (lexer.GetToken(val) || val.GetType() != Configuration::Token::BLOCK_START)
+           throw (Exception(0, INVALID_TOKEN_MSG));
+          // Starting a block, launching proper handler.
+         case Configuration::Token::BLOCK_START:
           if (var.GetText() == "input")
             {
               Configuration::Interface in;
 
               HandleInterface(lexer, in);
+              in.name = name;
               inputs.push_back(in);
             }
           else if (var.GetText() == "log")
@@ -359,12 +365,13 @@ void Configuration::Manager::Analyze(std::list<Configuration::Interface>& inputs
               Configuration::Interface out;
 
               HandleInterface(lexer, out);
+              out.name = name;
               outputs.push_back(out);
             }
           else
             throw (Exception(0, INVALID_TOKEN_MSG));
           break ;
-         // Invalid token.
+          // Invalid token.
          default:
           throw (Exception(0, INVALID_TOKEN_MSG));
         };

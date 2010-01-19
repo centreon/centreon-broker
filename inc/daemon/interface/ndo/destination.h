@@ -23,10 +23,7 @@
 
 # include <memory>                  // for auto_ptr
 # include "interface/destination.h"
-
-// Forward declaration.
-namespace          IO
-{ class            Stream; }
+# include "interface/ndo/base.h"
 
 namespace          Interface
 {
@@ -39,11 +36,10 @@ namespace          Interface
      *  The Interface::NDO::Destination class converts events to an output
      *  stream using the NDO protocol.
      */
-    class          Destination : virtual public Interface::Destination
+    class          Destination : virtual public Base,
+                                 virtual public Interface::Destination
     {
      private:
-      std::auto_ptr<IO::Stream>
-                   stream_;
                    Destination(const Destination& dest);
       Destination& operator=(const Destination& dest);
 

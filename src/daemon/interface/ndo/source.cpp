@@ -254,7 +254,7 @@ T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
  *
  *  \param[in] source Unused.
  */
-Source::Source(const Source& source) : Interface::Source(source), stream_(NULL)
+Source::Source(const Source& source) : Base(NULL), Interface::Source(source)
 {
   assert(false);
   abort();
@@ -328,7 +328,7 @@ Events::Event* Source::Header()
  *
  *  \param[in] stream Input stream object.
  */
-Source::Source(IO::Stream* stream) : stream_(stream) {}
+Source::Source(IO::Stream* stream) : Base(stream) {}
 
 /**
  *  Source destructor.

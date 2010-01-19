@@ -22,8 +22,8 @@
 # define INTERFACE_NDO_SOURCE_H_
 
 # include <string>
+# include "interface/ndo/base.h"
 # include "interface/source.h"
-# include "io/text.h"
 
 namespace                    Interface
 {
@@ -36,11 +36,11 @@ namespace                    Interface
      *  The Interface::NDO::Source class converts an input stream into events
      *  using the NDO protocol.
      */
-    class                    Source : virtual public Interface::Source
+    class                    Source : virtual public Base,
+                                      virtual public Interface::Source
     {
      private:
       std::string            instance_;
-      IO::Text               stream_;
                              Source(const Source& source);
       Source&                operator=(const Source& source);
       Events::Event*         Header();
