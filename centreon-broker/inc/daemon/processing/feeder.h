@@ -44,7 +44,7 @@ namespace              Processing
     Feeder&            operator=(const Feeder&feeder);
 
    protected:
-    bool               exit_;
+    volatile bool      exit_;
 
    public:
                        Feeder();

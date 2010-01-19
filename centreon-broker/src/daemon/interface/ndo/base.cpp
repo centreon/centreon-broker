@@ -19,8 +19,8 @@
 */
 
 #include <assert.h>
-#include <stdlib.h>                          // for abort
-#include "interface/ndo/sourcedestination.h"
+#include <stdlib.h>             // for abort
+#include "interface/ndo/base.h"
 
 using namespace Interface::NDO;
 
@@ -33,21 +33,15 @@ using namespace Interface::NDO;
 /**
  *  \brief Copy constructor.
  *
- *  As SourceDestination is not copyable, any attempt to use the copy
- *  constructor will result in a call to abort().
+ *  Base is not copyable. Any attempt to use the copy constructor will result
+ *  in a call to abort().
  *  \par Safety No exception safety.
  *
- *  \param[in] sd Unused.
+ *  \param[in] base Unused.
  */
-SourceDestination::SourceDestination(const SourceDestination& sd)
-  : Interface::Source(),
-    Interface::Destination(),
-    Base(NULL),
-    Interface::SourceDestination(),
-    Source(NULL),
-    Destination(NULL)
+Base::Base(const Base& base) : stream_(NULL)
 {
-  (void)sd;
+  (void)base;
   assert(false);
   abort();
 }
@@ -55,17 +49,17 @@ SourceDestination::SourceDestination(const SourceDestination& sd)
 /**
  *  \brief Assignment operator overload.
  *
- *  As SourceDestination is not copyable, any attempt to use the assignment
- *  operator will result in a call to abort().
+ *  Base is not copyable. Any attempt to use the assignment operator will
+ *  result in a call to abort().
  *  \par Safety No exception safety.
  *
- *  \param[in] sd Unused.
+ *  \param[in] base Unused.
  *
  *  \return *this
  */
-SourceDestination& SourceDestination::operator=(const SourceDestination& sd)
+Base& Base::operator=(const Base& base)
 {
-  (void)sd;
+  (void)base;
   assert(false);
   abort();
   return (*this);
@@ -80,22 +74,11 @@ SourceDestination& SourceDestination::operator=(const SourceDestination& sd)
 /**
  *  Constructor.
  *
- *  \param[in] stream Stream on which I/O operations will occur.
+ *  \param[in] stream Stream on which NDO protocol will act.
  */
-SourceDestination::SourceDestination(IO::Stream* stream)
-  : Base(stream), Source(stream), Destination(stream) {}
+Base::Base(IO::Stream* stream) : stream_(stream) {}
 
 /**
  *  Destructor.
  */
-SourceDestination::~SourceDestination() {}
-
-/**
- *  Close the underlying streams.
- */
-void SourceDestination::Close()
-{
-  this->Source::Close();
-  this->Destination::Close();
-  return ;
-}
+Base::~Base() {}

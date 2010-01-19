@@ -40,24 +40,25 @@ using namespace Configuration;
 void Interface::InternalCopy(const Interface& interface)
 {
   if (interface.failover.get())
-    this->failover.reset(interface.failover.get());
-  this->db        = interface.db;
-  this->filename  = interface.filename;
-  this->host      = interface.host;
-  this->interface = interface.interface;
-  this->name      = interface.name;
-  this->password  = interface.password;
-  this->port      = interface.port;
-  this->protocol  = interface.protocol;
-  this->socket    = interface.socket;
-  this->type      = interface.type;
-  this->user      = interface.user;
+    this->failover.reset(new Interface(*interface.failover));
+  this->db            = interface.db;
+  this->failover_name = interface.failover_name;
+  this->filename      = interface.filename;
+  this->host          = interface.host;
+  this->interface     = interface.interface;
+  this->name          = interface.name;
+  this->password      = interface.password;
+  this->port          = interface.port;
+  this->protocol      = interface.protocol;
+  this->socket        = interface.socket;
+  this->type          = interface.type;
+  this->user          = interface.user;
 #ifdef USE_TLS
-  this->ca        = interface.ca;
-  this->cert      = interface.cert;
-  this->compress  = interface.compress;
-  this->key       = interface.key;
-  this->tls       = interface.tls;
+  this->ca            = interface.ca;
+  this->cert          = interface.cert;
+  this->compress      = interface.compress;
+  this->key           = interface.key;
+  this->tls           = interface.tls;
 #endif /* USE_TLS */
   return ;
 }

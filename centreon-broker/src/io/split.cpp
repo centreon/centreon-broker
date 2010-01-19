@@ -153,7 +153,20 @@ bool Split::OpenNextInputFile()
 
   // Close previously opened file.
   if (this->ifs_.is_open())
-    this->ifs_.close();
+    {
+      if (this->current_in_ < this->current_out_)
+        {
+          this->ifs_.close();
+          ss << this->basefile_ << this->current_in_;
+          unlink(ss.str().c_str());
+	}
+      else
+        return (true);
+    }
+
+  // Find the lowest file id.
+  this->BrowseDir(&this->current_in_);
+  --this->current_in_;
 
   // Build file name.
   ss << this->basefile_ << ++this->current_in_;
@@ -162,7 +175,7 @@ bool Split::OpenNextInputFile()
   this->ifs_.open(ss.str().c_str());
 
   // Return whether or not the file opening succeeded.
-  return (this->ifs_);
+  return (!this->ifs_.is_open());
 }
 
 /**
@@ -330,11 +343,6 @@ unsigned int Split::Receive(void* buffer, unsigned int size)
   char *buf;
   unsigned int remaining;
 
-  // Check if file has been opened.
-  if (!this->ifs_.is_open())
-    if (this->OpenNextInputFile())
-      throw (Exception(0, "Could not open input file."));
-
   // Run as long as not all data has been read.
   buf = static_cast<char*>(buffer);
   remaining = size;
@@ -342,17 +350,15 @@ unsigned int Split::Receive(void* buffer, unsigned int size)
     {
       unsigned int rb;
 
-      rb = this->ifs_.readsome(buf, size);
-      if (!rb)
+      rb = this->ifs_.readsome(buf, remaining);
+      if (!rb || !this->ifs_.good())
         {
-          this->CloseInput();
           if (this->OpenNextInputFile())
             break ;
         }
       buf += rb;
       remaining -= rb;
     }
-
   // Return number of bytes actually received.
   return (size - remaining);
 }

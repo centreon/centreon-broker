@@ -35,6 +35,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/interface/db/destination.cpp		\
 		../../src/daemon/interface/destination.cpp		\
 		../../src/daemon/interface/factory.cpp			\
+		../../src/daemon/interface/ndo/base.cpp			\
 		../../src/daemon/interface/ndo/destination.cpp		\
 		../../src/daemon/interface/ndo/internal.cpp		\
 		../../src/daemon/interface/ndo/log.cpp			\
