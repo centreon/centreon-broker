@@ -18,22 +18,32 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_H_
-# define EVENTS_EVENTS_H_
+#ifndef EVENTS_HOST_GROUP_MEMBER_H_
+# define EVENTS_HOST_GROUP_MEMBER_H_
 
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
-# include "events/event.h"
-# include "events/host.h"
-# include "events/host_group.h"
-# include "events/host_group_member.h"
-# include "events/host_status.h"
-# include "events/log.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_group.h"
-# include "events/service_group_member.h"
-# include "events/service_status.h"
+# include <string>
+# include "events/group_member.h"
 
-#endif /* EVENTS_EVENTS_H_ */
+namespace        Events
+{
+  /**
+   *  \class HostGroupMember host_group_member.h "events/host_group_member.h"
+   *  \brief Member of a host group.
+   *
+   *  Base class defining that an host is part of a host group.
+   *
+   *  \see Host
+   *  \see HostGroup
+   */
+  class              HostGroupMember : public GroupMember
+  {
+   public:
+                     HostGroupMember();
+                     HostGroupMember(const HostGroupMember& hgm);
+    virtual          ~HostGroupMember();
+    HostGroupMember& operator=(const HostGroupMember& hgm);
+    int              GetType() const;
+  };
+}
+
+#endif /* !EVENTS_HOST_GROUP_MEMBER_H_ */

@@ -76,11 +76,13 @@ namespace              Events
       DOWNTIME,
       HOST,
       HOSTGROUP,
+      HOSTGROUPMEMBER,
       HOSTSTATUS,
       LOG,
       PROGRAMSTATUS,
       SERVICE,
       SERVICEGROUP,
+      SERVICEGROUPMEMBER,
       SERVICESTATUS
     };
     std::string        instance;

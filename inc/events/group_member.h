@@ -18,22 +18,36 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_H_
-# define EVENTS_EVENTS_H_
+#ifndef EVENTS_GROUP_MEMBER_H_
+# define EVENTS_GROUP_MEMBER_H_
 
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
+# include <string>
 # include "events/event.h"
-# include "events/host.h"
-# include "events/host_group.h"
-# include "events/host_group_member.h"
-# include "events/host_status.h"
-# include "events/log.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_group.h"
-# include "events/service_group_member.h"
-# include "events/service_status.h"
 
-#endif /* EVENTS_EVENTS_H_ */
+namespace        Events
+{
+  /**
+   *  \class GroupMember group_member.h "events/group_member.h"
+   *  \brief Member of a group.
+   *
+   *  Base class defining that a member is part of a group.
+   *
+   *  \see HostGroupMember
+   *  \see ServiceGroupMember
+   */
+  class          GroupMember : public Event
+  {
+   private:
+    void         InternalCopy(const GroupMember& gm);
+
+   public:
+    std::string  group;
+    std::string  member;
+                 GroupMember();
+                 GroupMember(const GroupMember& gm);
+    virtual      ~GroupMember();
+    GroupMember& operator=(const GroupMember& gm);
+  };
+}
+
+#endif /* !EVENTS_GROUP_MEMBER_H_ */
