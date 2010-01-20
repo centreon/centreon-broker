@@ -57,7 +57,6 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/processing/feeder.cpp			\
 		../../src/daemon/processing/listener.cpp		\
 		../../src/daemon/processing/listener_destination.cpp	\
-		../../src/daemon/processing/manager.cpp			\
 		../../src/db/connection.cpp				\
 		../../src/db/db_exception.cpp				\
 		../../src/db/delete.cpp					\
