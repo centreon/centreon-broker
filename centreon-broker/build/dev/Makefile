@@ -85,8 +85,10 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/downtime.cpp				\
 		../../src/events/event.cpp				\
 		../../src/events/group.cpp				\
+		../../src/events/group_member.cpp			\
 		../../src/events/host.cpp				\
 		../../src/events/host_group.cpp				\
+		../../src/events/host_group_member.cpp			\
 		../../src/events/host_service.cpp			\
 		../../src/events/host_service_status.cpp		\
 		../../src/events/host_status.cpp			\
@@ -94,6 +96,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/program_status.cpp			\
 		../../src/events/service.cpp				\
 		../../src/events/service_group.cpp			\
+		../../src/events/service_group_member.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\

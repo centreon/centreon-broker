@@ -38,13 +38,16 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/configuration/lexer.cpp		\
 		../../src/daemon/configuration/log.cpp			\
 		../../src/daemon/configuration/manager.cpp		\
+		../../src/daemon/configuration/parser.cpp		\
 		../../src/daemon/interface/db/destination.cpp		\
 		../../src/daemon/interface/destination.cpp		\
 		../../src/daemon/interface/factory.cpp			\
+		../../src/daemon/interface/ndo/base.cpp			\
 		../../src/daemon/interface/ndo/destination.cpp		\
 		../../src/daemon/interface/ndo/internal.cpp		\
 		../../src/daemon/interface/ndo/log.cpp			\
 		../../src/daemon/interface/ndo/source.cpp		\
+		../../src/daemon/interface/ndo/sourcedestination.cpp	\
 		../../src/daemon/interface/source.cpp			\
 		../../src/daemon/interface/sourcedestination.cpp	\
 		../../src/daemon/interface/xml/destination.cpp		\
@@ -61,7 +64,6 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/processing/feeder.cpp			\
 		../../src/daemon/processing/listener.cpp		\
 		../../src/daemon/processing/listener_destination.cpp	\
-		../../src/daemon/processing/manager.cpp			\
 		../../src/db/connection.cpp				\
 		../../src/db/db_exception.cpp				\
 		../../src/db/delete.cpp					\
@@ -80,8 +82,10 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/downtime.cpp				\
 		../../src/events/event.cpp				\
 		../../src/events/group.cpp				\
+		../../src/events/group_member.cpp			\
 		../../src/events/host.cpp				\
 		../../src/events/host_group.cpp				\
+		../../src/events/host_group_member.cpp			\
 		../../src/events/host_service.cpp			\
 		../../src/events/host_service_status.cpp		\
 		../../src/events/host_status.cpp			\
@@ -89,6 +93,7 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/program_status.cpp			\
 		../../src/events/service.cpp				\
 		../../src/events/service_group.cpp			\
+		../../src/events/service_group_member.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\
