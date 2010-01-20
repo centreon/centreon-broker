@@ -141,7 +141,7 @@ FailoverOutBase::~FailoverOutBase() {}
  */
 void FailoverOutBase::operator()()
 {
-  while (!this->exit_)
+  while (!this->should_exit)
     {
       try
         {
@@ -343,7 +343,6 @@ void FailoverOut::Run(Interface::Source* source,
 
     this->source_.reset(source);
   }
-  this->exit_ = false;
   this->Concurrency::Thread::Run(tl);
   return ;
 }
@@ -479,7 +478,6 @@ void FailoverOutAsIn::Run(Interface::Source* source,
 
     this->source_ = source;
   }
-  this->exit_ = false;
   this->Concurrency::Thread::Run(tl);
   return ;
 }

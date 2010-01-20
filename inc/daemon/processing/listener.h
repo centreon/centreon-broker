@@ -57,6 +57,7 @@ namespace                       Processing
                                 Listener();
                                 ~Listener();
     void                        operator()();
+    void                        Exit();
     void                        Init(IO::Acceptor* acceptor,
                                      Protocol proto,
                                      Concurrency::ThreadListener* tl = NULL);

@@ -43,13 +43,9 @@ namespace              Processing
                        Feeder(const Feeder& feeder);
     Feeder&            operator=(const Feeder&feeder);
 
-   protected:
-    volatile bool      exit_;
-
    public:
                        Feeder();
     virtual            ~Feeder();
-    virtual void       Exit();
     void               Feed(Interface::Source* source,
                             Interface::Destination* dest);
   };
