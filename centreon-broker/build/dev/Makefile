@@ -32,6 +32,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/configuration/lexer.cpp		\
 		../../src/daemon/configuration/log.cpp			\
 		../../src/daemon/configuration/manager.cpp		\
+		../../src/daemon/configuration/parser.cpp		\
 		../../src/daemon/interface/db/destination.cpp		\
 		../../src/daemon/interface/destination.cpp		\
 		../../src/daemon/interface/factory.cpp			\

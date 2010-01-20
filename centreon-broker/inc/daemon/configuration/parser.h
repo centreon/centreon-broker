@@ -18,37 +18,37 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CONCURRENCY_CONDITION_VARIABLE_H_
-# define CONCURRENCY_CONDITION_VARIABLE_H_
+#ifndef CONFIGURATION_PARSER_H_
+# define CONFIGURATION_PARSER_H_
 
-# include <sys/types.h> // for pthread_cond_t, time_t
+# include <list>
 
-namespace              Concurrency
+namespace   Configuration
 {
   // Forward declaration.
-  class                Mutex;
+  class     Interface;
+  class     Log;
 
   /**
-   *  \class ConditionVariable condition_variable.h "concurrency/condition_variable.h"
-   *  \brief Condition variable.
+   *  \class Parser parser.h "configuration/parser.h"
+   *  \brief Parse a configuration file.
    *
-   *  Represents a condition variable.
+   *  Parse a configuration file and generate proper configuration objects.
    */
-  class                ConditionVariable
+  class     Parser
   {
    private:
-    pthread_cond_t     cv_;
-                       ConditionVariable(const ConditionVariable& cv);
-    ConditionVariable& operator=(const ConditionVariable& cv);
+            Parser(const Parser& parser);
+    Parser& operator=(const Parser& parser);
 
    public:
-                       ConditionVariable();
-                       ~ConditionVariable();
-    void               Sleep(Mutex& mutex);
-    bool               Sleep(Mutex& mutex, time_t deadline);
-    void               Wake();
-    void               WakeAll();
+            Parser();
+            ~Parser();
+    void    Parse(const std::string& filename,
+                  std::list<Interface>& inputs,
+                  std::list<Log>& logs,
+                  std::list<Interface>& outputs);
   };
 }
 
-#endif /* !CONCURRENCY_CONDITION_VARIABLE_H_ */
+#endif /* !CONFIGURATION_PARSER_H_ */
