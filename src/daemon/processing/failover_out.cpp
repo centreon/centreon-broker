@@ -315,8 +315,6 @@ void FailoverOut::Event(Events::Event* event)
 void FailoverOut::Exit()
 {
   {
-    Concurrency::Lock lock(this->sourcem_);
-
     if (this->source_.get())
       this->source_->Close();
   }

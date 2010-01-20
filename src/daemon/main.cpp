@@ -23,6 +23,7 @@
 # include <mysql.h>                         // for mysql_library_init
 #endif /* USE_MYSQL */
 #include <signal.h>
+#include <time.h>                           // for time
 #include "concurrency/condition_variable.h"
 #include "concurrency/lock.h"
 #include "concurrency/mutex.h"
@@ -60,6 +61,7 @@ static void (*                        gl_sigterm_handler)(int) = NULL;
  */
 static void term_handler(int signum)
 {
+  LOGINFO("Termination signal caught. Cleaning up ...");
   try
     {
       Concurrency::Lock lock(gl_mutex);
@@ -150,11 +152,16 @@ int main(int argc, char* argv[])
             LOGINFO("Unable to register termination handler. Unpredictable " \
                     "behavior will occur when exiting.");
 
-          // Everything's loaded, sleep until we have to exit.
+          // Everything's loaded, sleep for 60 seconds, then perform some
+          // potential cleanup and sleep again.
           while (!gl_exit)
-            gl_cv.Sleep(gl_mutex);
+            {
+              gl_cv.Sleep(gl_mutex, time(NULL) + 60);
+              Configuration::Manager::Instance().Reap();
+            }
 
           // Unload configuration.
+          LOGDEBUG("Unloading configuration ...");
           Configuration::Manager::Instance().Close();
 
           // Destroy O/R mapping.

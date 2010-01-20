@@ -19,6 +19,7 @@
 */
 
 #include <assert.h>
+#include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>                         // for abort
 #include <string.h>                         // for memset, strerror
@@ -127,8 +128,10 @@ void ConditionVariable::Sleep(Mutex& mutex)
  *
  *  \param[in,out] mutex    Mutex that should be locked when calling Sleep().
  *  \param[in]     deadline Time that shouldn't be exceeded while sleeping.
+ *
+ *  \return true if the timeout occured, false otherwise.
  */
-void ConditionVariable::Sleep(Mutex& mutex, time_t deadline)
+bool ConditionVariable::Sleep(Mutex& mutex, time_t deadline)
 {
   int ret;
   struct timespec ts;
@@ -136,9 +139,9 @@ void ConditionVariable::Sleep(Mutex& mutex, time_t deadline)
   memset(&ts, 0, sizeof(ts));
   ts.tv_sec = deadline;
   ret = pthread_cond_timedwait(&this->cv_, &mutex.mutex_, &ts);
-  if (ret)
+  if (ret && (ret != ETIMEDOUT))
     throw (Exception(ret, strerror(ret)));
-  return ;
+  return (ETIMEDOUT == ret);
 }
 
 /**

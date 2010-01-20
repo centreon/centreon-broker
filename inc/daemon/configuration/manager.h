@@ -24,12 +24,16 @@
 # include <list>
 # include <map>
 # include <string>
+# include "concurrency/mutex.h"
+# include "concurrency/thread_listener.h"
 # include "configuration/interface.h"
 # include "configuration/log.h"
 
 // Forward declarations
 namespace           Concurrency
 { class             Thread; }
+namespace           Processing
+{ class             Feeder; }
 
 namespace           Configuration
 {
@@ -41,27 +45,29 @@ namespace           Configuration
    *  and create/delete objects as necessary. User can request an update by
    *  sending SIGHUP to the process.
    */
-  class             Manager
+  class             Manager : public Concurrency::ThreadListener
   {
    private:
     std::string     filename_;
     std::map<Interface, Concurrency::Thread*>
                     inputs_;
     std::list<Log>  logs_;
-    std::map<Interface, Concurrency::Thread*>
+    Concurrency::Mutex mutex_;
+    std::map<Interface, Processing::Feeder*>
                     outputs_;
+    std::list<Concurrency::Thread*>
+                    to_reap_;
                     Manager();
                     Manager(const Manager& manager);
     Manager&        operator=(const Manager& manager);
                     ~Manager();
-    void            Analyze(std::list<Interface>& inputs,
-                            std::list<Log>& logs,
-                            std::list<Interface>& outputs);
 
    public:
     void            Close();
     static Manager& Instance();
+    void            OnExit(Concurrency::Thread* thread);
     void            Open(const std::string& filename);
+    void            Reap();
     void            Update();
   };
 }
