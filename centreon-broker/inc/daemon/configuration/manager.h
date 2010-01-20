@@ -30,12 +30,12 @@
 # include "configuration/log.h"
 
 // Forward declarations
-namespace           Concurrency
-{ class             Thread; }
-namespace           Processing
-{ class             Feeder; }
+namespace              Concurrency
+{ class                Thread; }
+namespace              Processing
+{ class                Feeder; }
 
-namespace           Configuration
+namespace              Configuration
 {
   /**
    *  \class Manager manager.h "configuration/manager.h"
@@ -45,30 +45,33 @@ namespace           Configuration
    *  and create/delete objects as necessary. User can request an update by
    *  sending SIGHUP to the process.
    */
-  class             Manager : public Concurrency::ThreadListener
+  class                Manager : public Concurrency::ThreadListener
   {
    private:
-    std::string     filename_;
+    std::string        filename_;
     std::map<Interface, Concurrency::Thread*>
-                    inputs_;
-    std::list<Log>  logs_;
+                       inputs_;
+    std::list<Log>     logs_;
     Concurrency::Mutex mutex_;
     std::map<Interface, Processing::Feeder*>
-                    outputs_;
+                       outputs_;
     std::list<Concurrency::Thread*>
-                    to_reap_;
-                    Manager();
-                    Manager(const Manager& manager);
-    Manager&        operator=(const Manager& manager);
-                    ~Manager();
+                       spontaneous_;
+    std::list<Concurrency::Thread*>
+                       to_reap_;
+                       Manager();
+                       Manager(const Manager& manager);
+    Manager&           operator=(const Manager& manager);
+                       ~Manager();
 
    public:
-    void            Close();
-    static Manager& Instance();
-    void            OnExit(Concurrency::Thread* thread);
-    void            Open(const std::string& filename);
-    void            Reap();
-    void            Update();
+    void               Close();
+    static Manager&    Instance();
+    void               OnCreate(Concurrency::Thread* thread);
+    void               OnExit(Concurrency::Thread* thread);
+    void               Open(const std::string& filename);
+    void               Reap();
+    void               Update();
   };
 }
 

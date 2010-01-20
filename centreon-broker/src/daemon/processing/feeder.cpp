@@ -87,27 +87,19 @@ Feeder& Feeder::operator=(const Feeder& feeder)
 /**
  *  Feeder default constructor.
  */
-Feeder::Feeder() : exit_(true) {}
+Feeder::Feeder() {}
 
 /**
  *  Feeder destructor.
  */
 Feeder::~Feeder()
 {
-  if (!this->exit_)
+  try
     {
       this->Exit();
       this->Join();
     }
-}
-
-/**
- *  Warn the thread that it should quit ASAP.
- */
-void Feeder::Exit()
-{
-  this->exit_ = true;
-  return ;
+  catch (...) {}
 }
 
 /**
@@ -123,7 +115,7 @@ void Feeder::Feed(Interface::Source* source,
     {
       // Fetch first event.
       event = source->Event();
-      while (!this->exit_ && event)
+      while (!this->should_exit && event)
         {
           // Send event.
           dest->Event(event);
@@ -138,6 +130,11 @@ void Feeder::Feed(Interface::Source* source,
         event->RemoveReader();
       throw ;
     }
+
+  // In case we read an event but have to exit.
+  if (event)
+    event->RemoveReader();
+
   return ;
 }
 
@@ -213,6 +210,7 @@ FeederOnce::~FeederOnce()
 {
   try
     {
+      this->Exit();
       this->Join();
     }
   catch (...) {}
@@ -232,6 +230,10 @@ void FeederOnce::operator()()
  */
 void FeederOnce::Close()
 {
+  // Close source.
+  if (this->source_.get())
+    this->source_->Close();
+
   return ;
 }
 
@@ -262,15 +264,10 @@ void FeederOnce::Event(Events::Event* event)
 void FeederOnce::Exit()
 {
   // Set exit flag.
-  this->Feeder::Exit();
+  this->Thread::Exit();
 
-  // Close source.
-  {
-    Concurrency::Lock lock(this->sourcem_);
-
-    if (this->source_.get())
-      this->source_->Close();
-  }
+  // Close.
+  this->Close();
 
   return ;
 }
@@ -294,12 +291,10 @@ void FeederOnce::Run(Interface::Source* source,
 
         this->source_.reset(source);
       }
-      this->exit_ = false;
       this->Concurrency::Thread::Run(tl);
     }
   catch (...)
     {
-      this->exit_ = true;
       this->dest_.reset();
       this->source_.reset();
       throw ;

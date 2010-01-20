@@ -45,6 +45,7 @@ namespace           Concurrency
     Thread&         operator=(const Thread& thread);
 
    protected:
+    volatile bool   should_exit;
     ThreadListener* listener;
 
    public:
@@ -53,6 +54,7 @@ namespace           Concurrency
     virtual void    operator()() = 0;
     void            Cancel();
     void            Detach();
+    virtual void    Exit();
     void            Join();
     void            Run(ThreadListener* tl = NULL);
   };

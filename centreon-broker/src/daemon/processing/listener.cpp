@@ -159,6 +159,21 @@ void Listener::operator()()
 }
 
 /**
+ *  Ask thread to exit ASAP.
+ */
+void Listener::Exit()
+{
+  // Set exit flag.
+  this->Thread::Exit();
+
+  // Close acceptor.
+  if (this->acceptor_.get())
+    this->acceptor_->Close();
+
+  return ;
+}
+
+/**
  *  \brief Launch processing thread.
  *
  *  Launch the thread waiting on incoming connections. Upon successful return

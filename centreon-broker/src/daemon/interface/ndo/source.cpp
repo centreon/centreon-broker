@@ -424,7 +424,7 @@ Events::Event* Source::Event()
                     break ;
                 }
               if (line)
-                event.reset(this->Event());
+                return (this->Event());
             }
         }
     }

@@ -144,41 +144,81 @@ void Configuration::Manager::Close()
   Concurrency::Lock lock(this->mutex_);
 
   LOGDEBUG("Closing configuration manager...");
-  LOGDEBUG("Closing input objects...");
+
+  // Ask input threads to quit ASAP.
+  LOGDEBUG("Closing input objects ...");
   for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator
          it = this->inputs_.begin();
        it != this->inputs_.end();
        ++it)
-    ;//it->second->Exit();
+    it->second->Exit();
 
-  this->inputs_.clear();
-
-  LOGDEBUG("Closing output objects...");
+  LOGDEBUG("Closing output objects ...");
   for (std::map<Configuration::Interface, Processing::Feeder*>::iterator
          it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
     it->second->Exit();
 
+  LOGDEBUG("Shuting down remaining threads ...");
+  for (std::list<Concurrency::Thread*>::iterator
+         it = this->spontaneous_.begin();
+       it != this->spontaneous_.end();
+       ++it)
+    (*it)->Exit();
+
   // Does nothing of the log outputs. This way, they will remain valid until
   // the program exits.
   this->logs_.clear();
 
   // Wait for all threads to have exited.
-  LOGDEBUG("Waiting for output threads termination ...");
+  LOGDEBUG("Waiting for threads termination ...");
   lock.Release();
   this->mutex_.Lock();
-  while (!this->outputs_.empty())
+  while (!this->inputs_.empty()
+         || !this->outputs_.empty()
+         || !this->spontaneous_.empty())
     {
       this->mutex_.Unlock();
-      sleep(200);
+      sleep(1);
       this->mutex_.Lock();
     }
   this->mutex_.Unlock();
 
   // Reap them all.
-  LOGDEBUG("Reaping events ...");
+  LOGDEBUG("Reaping last objects ...");
   this->Reap();
+
+  return ;
+}
+
+/**
+ *  Callback called when a new thread has just been created.
+ *
+ *  \param[in] thread Handle of the newly created thread.
+ */
+void Configuration::Manager::OnCreate(Concurrency::Thread* thread)
+{
+  Concurrency::Lock lock(this->mutex_);
+
+  // Search for thread handle in input list.
+  for (std::map<Interface, Concurrency::Thread*>::iterator
+         it = this->inputs_.begin();
+       it != this->inputs_.end();
+       ++it)
+    if (it->second == thread)
+      return ;
+
+  // Search for thread handle in output list.
+  for (std::map<Interface, Processing::Feeder*>::iterator
+	 it = this->outputs_.begin();
+       it != this->outputs_.end();
+       ++it)
+    if (it->second == thread)
+      return ;
+
+  // Not found, store it as spontaneous.
+  this->spontaneous_.push_back(thread);
 
   return ;
 }
@@ -199,7 +239,7 @@ void Configuration::Manager::OnExit(Concurrency::Thread* thread)
        ++it)
     if (it->second == thread)
       {
-	to_reap_.push_back(thread);
+	this->to_reap_.push_back(thread);
 	this->inputs_.erase(it);
 	return ;
       }
@@ -211,9 +251,20 @@ void Configuration::Manager::OnExit(Concurrency::Thread* thread)
        ++it)
     if (it->second == thread)
       {
-	to_reap_.push_back(thread);
+	this->to_reap_.push_back(thread);
 	this->outputs_.erase(it);
+        return ;
       }
+
+  // Search for thread handle in spontaneous list.
+  std::list<Concurrency::Thread*>::iterator it;
+
+  it = std::find(this->spontaneous_.begin(), this->spontaneous_.end(), thread);
+  if (it != this->spontaneous_.end())
+    {
+      this->to_reap_.push_back(thread);
+      this->spontaneous_.erase(it);
+    }
 
   return ;
 }
@@ -235,17 +286,20 @@ void Configuration::Manager::Open(const std::string& filename)
  */
 void Configuration::Manager::Reap()
 {
-  Concurrency::Lock lock(this->mutex_);
+  while (1) // Condition is within the loop.
+    {
+      Concurrency::Lock lock(this->mutex_);
 
-  // Delete all terminated threads.
-  for (std::list<Concurrency::Thread*>::iterator it = this->to_reap_.begin();
-       it != this->to_reap_.end();
-       ++it)
-    if (*it)
-      {
-	delete (*it);
-	*it = NULL;
-      }
+      // Check that there are some threads to reap.
+      if (this->to_reap_.empty())
+	break ;
+
+      // Delete current thread.
+      std::auto_ptr<Concurrency::Thread> thread(this->to_reap_.front());
+
+      this->to_reap_.pop_front();
+      lock.Release();
+    }
 
   return ;
 }
@@ -350,24 +404,12 @@ void Configuration::Manager::Update()
     }
 
   // Add new outputs.
-  for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
+  /*for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
     {
       std::auto_ptr<Processing::FailoverOut> feeder;
       std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
       LOGDEBUG("Adding new output object...");
-
-      /*
-      dbo->SetConnectionRetryInterval(output.GetConnectionRetryInterval());
-      dbo->SetDumpFile(output.GetDumpFile());
-      dbo->SetQueryCommitInterval(output.GetQueryCommitInterval());
-      dbo->SetTimeCommitInterval(output.GetTimeCommitInterval());
-      dbo->Init(output.GetHost(),
-                output.GetUser(),
-                output.GetPassword(),
-                output.GetDB());
-      */
-
       subscriber.reset(new Multiplexing::Subscriber);
       feeder.reset(new Processing::FailoverOut);
       // XXX
@@ -376,7 +418,7 @@ void Configuration::Manager::Update()
       subscriber.release();
       this->outputs_[*outputs_it] = feeder.get();
       feeder.release();
-    }
+      }*/
 
   // Remove inputs that are not present in conf anymore or which don't have the
   // same configuration.
@@ -409,7 +451,7 @@ void Configuration::Manager::Update()
       std::auto_ptr<Processing::Listener> listener(
         new Processing::Listener());
 
-      listener->Init(acceptor.get(), Processing::Listener::NDO);
+      listener->Init(acceptor.get(), Processing::Listener::NDO, this);
       acceptor.release();
       this->inputs_[*inputs_it] = listener.get();
       listener.release();

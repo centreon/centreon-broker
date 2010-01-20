@@ -132,7 +132,7 @@ Thread& Thread::operator=(const Thread& thread)
 /**
  *  Thread default constructor.
  */
-Thread::Thread() : joinable_(false) {}
+Thread::Thread() : joinable_(false), should_exit(true) {}
 
 /**
  *  \brief Thread destructor.
@@ -204,6 +204,15 @@ void Thread::Detach()
 }
 
 /**
+ *  Request thread to exit ASAP.
+ */
+void Thread::Exit()
+{
+  this->should_exit = true;
+  return ;
+}
+
+/**
  *  \brief Waits for thread completion.
  *
  *  Waits for the current thread to terminate. The thread shall not have been
@@ -251,12 +260,17 @@ void Thread::Run(ThreadListener* tl)
       this->listener = tl;
 
       // Run the thread using an helper static method.
+      this->joinable_ = true;
+      this->should_exit = false;
       ret = pthread_create(&this->thread_, NULL, &ThreadHelper, arg.get());
       if (ret)
-        throw (Exception(ret, strerror(ret)));
+        {
+          this->joinable_ = false;
+          this->should_exit = true;
+          throw (Exception(ret, strerror(ret)));
+        }
       else
         arg.release();
-      this->joinable_ = true;
     }
   else
     throw (Exception(0, "Thread is already running " \
