@@ -103,11 +103,13 @@
 #define NDO_API_CONTACTGROUPDEFINITION               411
 #define NDO_API_HOSTEXTINFODEFINITION                412    /* no longer used */
 #define NDO_API_SERVICEEXTINFODEFINITION             413    /* no longer used */
+#define NDO_API_HOSTGROUPMEMBERDEFINITION            414
+#define NDO_API_SERVICEGROUPMEMBERDEFINITION         415
 
 
 /************** COMMON DATA ATTRIBUTES **************/
 
-#define NDO_MAX_DATA_TYPES                           267
+#define NDO_MAX_DATA_TYPES                           269
 
 #define NDO_DATA_NONE                                0
 
@@ -388,5 +390,7 @@
 
 /* CentreonBroker addon. */
 #define NDO_DATA_INSTANCE                            266
+#define NDO_DATA_HOSTID                              267
+#define NDO_DATA_SERVICEID                           268
 
 #endif

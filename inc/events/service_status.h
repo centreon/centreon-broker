@@ -46,6 +46,7 @@ namespace               Events
     time_t             last_time_unknown;
     time_t             last_time_warning;
     std::string        service;
+    int                service_id;
                        ServiceStatus();
                        ServiceStatus(const ServiceStatus& ss);
     virtual            ~ServiceStatus();

@@ -397,7 +397,10 @@ Events::Event* Source::Event()
               event.reset(HandleEvent<Events::HostGroup>(this->stream_,
                             host_group_map));
               break ;
-              // XXX : HostGroupMember
+             case NDO_API_HOSTGROUPMEMBERDEFINITION:
+              event.reset(HandleEvent<Events::HostGroupMember>(this->stream_,
+                            host_group_member_map));
+              break ;
              case NDO_API_HOSTSTATUSDATA:
               event.reset(HandleEvent<Events::HostStatus>(this->stream_,
                             host_status_map));
@@ -418,7 +421,10 @@ Events::Event* Source::Event()
               event.reset(HandleEvent<Events::ServiceGroup>(this->stream_,
                             service_group_map));
               break ;
-              // XXX : ServiceGroupMember
+             case NDO_API_SERVICEGROUPMEMBERDEFINITION:
+              event.reset(HandleEvent<Events::ServiceGroupMember>(this->stream_,
+                            service_group_member_map));
+              break ;
              case NDO_API_SERVICESTATUSDATA:
               event.reset(HandleEvent<Events::ServiceStatus>(this->stream_,
                             service_status_map));
