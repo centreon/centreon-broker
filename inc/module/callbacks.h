@@ -21,15 +21,12 @@
 #ifndef CALLBACKS_H_
 # define CALLBACKS_H_
 
-namespace CentreonBroker
-{
-  int CallbackAcknowledgement(int callback_type, void* data) throw ();
-  int CallbackComment(int callback_type, void* data) throw ();
-  int CallbackDowntime(int callback_type, void* data) throw ();
-  int CallbackHostStatus(int callback_type, void* data) throw ();
-  int CallbackLog(int callback_type, void* data) throw ();
-  int CallbackProgramStatus(int callback_type, void* data) throw ();
-  int CallbackServiceStatus(int callback_type, void* data) throw ();
-}
+int CallbackAcknowledgement(int callback_type, void* data);
+int CallbackComment(int callback_type, void* data);
+int CallbackDowntime(int callback_type, void* data);
+int CallbackHostStatus(int callback_type, void* data);
+int CallbackLog(int callback_type, void* data);
+int CallbackProgramStatus(int callback_type, void* data);
+int CallbackServiceStatus(int callback_type, void* data);
 
 #endif /* !CALLBACKS_H_ */
