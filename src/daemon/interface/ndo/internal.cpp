@@ -323,6 +323,18 @@ const KeyField<HostGroup> Interface::NDO::host_group_fields[] =
     KeyField<HostGroup>()
   };
 
+// HostGroupMember fields.
+const KeyField<HostGroupMember> Interface::NDO::host_group_member_fields[] =
+  {
+    KeyField<HostGroupMember>(NDO_DATA_HOSTGROUPMEMBER,
+      &HostGroupMember::member),
+    KeyField<HostGroupMember>(NDO_DATA_HOSTGROUPNAME,
+      &HostGroupMember::group),
+    KeyField<HostGroupMember>(NDO_DATA_INSTANCE,
+      &HostGroupMember::instance),
+    KeyField<HostGroupMember>()
+  };
+
 // HostStatus fields.
 const KeyField<HostStatus> Interface::NDO::host_status_fields[] =
   {
@@ -581,6 +593,34 @@ const KeyField<Service> Interface::NDO::service_fields[] =
     KeyField<Service>(NDO_DATA_STALKSERVICEONWARNING,
       &Service::stalk_on_warning),
     KeyField<Service>()
+  };
+
+// ServiceGroup fields.
+const KeyField<ServiceGroup> Interface::NDO::service_group_fields[] =
+  {
+    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPALIAS,
+      &ServiceGroup::alias),
+    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPMEMBER,
+      NULL,
+      NULL),
+    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPNAME,
+      &ServiceGroup::name),
+    KeyField<ServiceGroup>(NDO_DATA_INSTANCE,
+      &ServiceGroup::instance),
+    KeyField<ServiceGroup>()
+  };
+
+// ServiceGroupMember fields.
+const KeyField<ServiceGroupMember>
+  Interface::NDO::service_group_member_fields[] =
+  {
+    KeyField<ServiceGroupMember>(NDO_DATA_INSTANCE,
+      &ServiceGroupMember::instance),
+    KeyField<ServiceGroupMember>(NDO_DATA_SERVICEGROUPMEMBER,
+      &ServiceGroupMember::member),
+    KeyField<ServiceGroupMember>(NDO_DATA_SERVICEGROUPNAME,
+      &ServiceGroupMember::group),
+    KeyField<ServiceGroupMember>()
   };
 
 // ServiceStatus fields.
