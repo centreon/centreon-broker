@@ -23,6 +23,7 @@
 #include "events/events.h"
 #include "multiplexing/publisher.h"
 #include "nagios/nebstructs.h"
+#include "nagios/objects.h"
 
 // Extern global sender.
 extern Multiplexing::Publisher gl_publisher;
@@ -177,10 +178,63 @@ int CallbackHostStatus(int callback_type, void* data)
   (void)callback_type;
   try
     {
-      nebstruct_host_status_data* host_status_data;
+      host* h;
+      std::auto_ptr<Events::HostStatus> host_status(new Events::HostStatus);
 
-      host_status_data = static_cast<nebstruct_host_status_data*>(data);
-      // XXX : processing
+      h = static_cast<host*>(
+        static_cast<nebstruct_host_status_data*>(data)->object_ptr);
+      host_status->acknowledgement_type = h->acknowledgement_type;
+      host_status->active_checks_enabled = h->checks_enabled;
+      host_status->check_command = h->host_check_command;
+      host_status->check_interval = h->check_interval;
+      host_status->check_period = h->check_period;
+      host_status->check_type = h->check_type;
+      host_status->current_check_attempt = h->current_attempt;
+      host_status->current_notification_number
+        = h->current_notification_number;
+      host_status->current_state = h->current_state;
+      host_status->event_handler = h->event_handler;
+      host_status->event_handler_enabled = h->event_handler_enabled;
+      host_status->execution_time = h->execution_time;
+      host_status->failure_prediction_enabled = h->failure_prediction_enabled;
+      host_status->flap_detection_enabled = h->flap_detection_enabled;
+      host_status->has_been_checked = h->has_been_checked;
+      host_status->host = h->name;
+      // host_status->host_id = XXX;
+      host_status->is_flapping = h->is_flapping;
+      host_status->last_check = h->last_check;
+      host_status->last_hard_state = h->last_hard_state;
+      host_status->last_hard_state_change = h->last_hard_state_change;
+      host_status->last_notification = h->last_host_notification;
+      host_status->last_state_change = h->last_state_change;
+      host_status->last_time_down = h->last_time_down;
+      host_status->last_time_unreachable = h->last_time_unreachable;
+      host_status->last_time_up = h->last_time_up;
+      // host_status->last_update = XXX;
+      host_status->latency = h->latency;
+      host_status->long_output = h->long_plugin_output;
+      host_status->max_check_attempts = h->max_attempts;
+      host_status->modified_attributes = h->modified_attributes;
+      host_status->next_check = h->next_check;
+      host_status->next_notification = h->next_host_notification;
+      host_status->no_more_notifications = h->no_more_notifications;
+      host_status->notifications_enabled = h->notifications_enabled;
+      host_status->obsess_over = h->obsess_over_host;
+      host_status->output = h->plugin_output;
+      host_status->passive_checks_enabled = h->accept_passive_host_checks;
+      host_status->percent_state_change = h->percent_state_change;
+      host_status->perf_data = h->perf_data;
+      host_status->problem_has_been_acknowledged
+        = h->problem_has_been_acknowledged;
+      host_status->process_performance_data = h->process_performance_data;
+      host_status->retry_interval = h->retry_interval;
+      host_status->scheduled_downtime_depth = h->scheduled_downtime_depth;
+      host_status->should_be_scheduled = h->should_be_scheduled;
+      host_status->state_type = h->state_type;
+
+      host_status->AddReader();
+      gl_publisher.Event(host_status.get());
+      host_status.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -253,41 +307,41 @@ int CallbackProgramStatus(int callback_type, void* data)
       program_status->active_host_checks_enabled
         = program_status_data->active_host_checks_enabled;
       program_status->active_service_checks_enabled
-	= program_status_data->active_service_checks_enabled;
+        = program_status_data->active_service_checks_enabled;
       program_status->daemon_mode = program_status_data->daemon_mode;
       program_status->event_handler_enabled
-	= program_status_data->event_handlers_enabled;
+        = program_status_data->event_handlers_enabled;
       program_status->failure_prediction_enabled
-	= program_status_data->failure_prediction_enabled;
+        = program_status_data->failure_prediction_enabled;
       program_status->flap_detection_enabled
-	= program_status_data->flap_detection_enabled;
+        = program_status_data->flap_detection_enabled;
       program_status->global_host_event_handler
-	= program_status_data->global_host_event_handler;
+        = program_status_data->global_host_event_handler;
       program_status->global_service_event_handler
-	= program_status_data->global_service_event_handler;
+        = program_status_data->global_service_event_handler;
       // program_status->is_running = XXX;
       // program_status->last_alive = XXX;
       program_status->last_command_check
-	= program_status_data->last_command_check;
+        = program_status_data->last_command_check;
       program_status->last_log_rotation
-	= program_status_data->last_log_rotation;
+        = program_status_data->last_log_rotation;
       program_status->modified_host_attributes
-	= program_status_data->modified_host_attributes;
+        = program_status_data->modified_host_attributes;
       program_status->modified_service_attributes
-	= program_status_data->modified_service_attributes;
+        = program_status_data->modified_service_attributes;
       program_status->notifications_enabled
-	= program_status_data->notifications_enabled;
+        = program_status_data->notifications_enabled;
       program_status->obsess_over_hosts
-	= program_status_data->obsess_over_hosts;
+        = program_status_data->obsess_over_hosts;
       program_status->obsess_over_services
-	= program_status_data->obsess_over_services;
+        = program_status_data->obsess_over_services;
       program_status->passive_host_checks_enabled
-	= program_status_data->passive_host_checks_enabled;
+        = program_status_data->passive_host_checks_enabled;
       program_status->passive_service_checks_enabled
-	= program_status_data->passive_service_checks_enabled;
+        = program_status_data->passive_service_checks_enabled;
       program_status->pid = program_status_data->pid;
       program_status->process_performance_data
-	= program_status_data->process_performance_data;
+        = program_status_data->process_performance_data;
       // program_status->program_end = XXX;
       program_status->program_start = program_status_data->program_start;
 
@@ -318,11 +372,69 @@ int CallbackServiceStatus(int callback_type, void* data)
   (void)callback_type;
   try
     {
-      nebstruct_service_status_data* service_status_data;
+      service* s;
+      std::auto_ptr<Events::ServiceStatus> service_status(
+        new Events::ServiceStatus);
 
-      service_status_data = static_cast<nebstruct_service_status_data*>(data);
+      s = static_cast<service*>(
+        static_cast<nebstruct_service_status_data*>(data)->object_ptr);
+      service_status->acknowledgement_type = s->acknowledgement_type;
+      service_status->active_checks_enabled = s->checks_enabled;
+      service_status->check_command = s->service_check_command;
+      service_status->check_interval = s->check_interval;
+      service_status->check_period = s->check_period;
+      service_status->check_type = s->check_type;
+      service_status->current_check_attempt = s->current_attempt;
+      service_status->current_notification_number
+        = s->current_notification_number;
+      service_status->current_state = s->current_state;
+      service_status->event_handler = s->event_handler;
+      service_status->event_handler_enabled = s->event_handler_enabled;
+      service_status->execution_time = s->execution_time;
+      service_status->failure_prediction_enabled
+        = s->failure_prediction_enabled;
+      service_status->flap_detection_enabled = s->flap_detection_enabled;
+      service_status->has_been_checked = s->has_been_checked;
+      service_status->host = s->host_name;
+      // service_status->host_id = XXX;
+      service_status->is_flapping = s->is_flapping;
+      service_status->last_check = s->last_check;
+      service_status->last_hard_state = s->last_hard_state;
+      service_status->last_hard_state_change = s->last_hard_state_change;
+      service_status->last_notification = s->last_notification;
+      service_status->last_state_change = s->last_state_change;
+      service_status->last_time_critical = s->last_time_critical;
+      service_status->last_time_ok = s->last_time_ok;
+      service_status->last_time_unknown = s->last_time_unknown;
+      service_status->last_time_warning = s->last_time_warning;
+      // service_status->last_update = XXX;
+      service_status->latency = s->latency;
+      service_status->long_output = s->long_plugin_output;
+      service_status->max_check_attempts = s->max_attempts;
+      service_status->modified_attributes = s->modified_attributes;
+      service_status->next_check = s->next_check;
+      service_status->next_notification = s->next_notification;
+      service_status->no_more_notifications = s->no_more_notifications;
+      service_status->notifications_enabled = s->notifications_enabled;
+      service_status->obsess_over = s->obsess_over_service;
+      service_status->output = s->plugin_output;
+      service_status->passive_checks_enabled
+        = s->accept_passive_service_checks;
+      service_status->percent_state_change = s->percent_state_change;
+      service_status->perf_data = s->perf_data;
+      service_status->problem_has_been_acknowledged
+        = s->problem_has_been_acknowledged;
+      service_status->process_performance_data = s->process_performance_data;
+      service_status->retry_interval = s->retry_interval;
+      service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
+      service_status->service = s->description;
+      // service_status->service_id = XXX;
+      service_status->should_be_scheduled = s->should_be_scheduled;
+      service_status->state_type = s->state_type;
 
-      // XXX : processing
+      service_status->AddReader();
+      gl_publisher.Event(service_status.get());
+      service_status.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
