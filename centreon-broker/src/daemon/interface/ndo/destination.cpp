@@ -364,7 +364,14 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
-          // XXX : HostGroupMember
+         case Events::Event::HOSTGROUPMEMBER:
+          buffer << NDO_API_HOSTGROUPMEMBERDEFINITION << ":\n";
+          HandleEvent<Events::HostGroupMember>(
+            *static_cast<Events::HostGroupMember*>(event),
+            host_group_member_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::HOSTSTATUS:
           buffer << NDO_API_HOSTSTATUSDATA << ":\n";
           HandleEvent<Events::HostStatus>(
@@ -405,7 +412,14 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
-          // XXX : ServiceGroupMember
+         case Events::Event::SERVICEGROUPMEMBER:
+          buffer << NDO_API_SERVICEGROUPMEMBERDEFINITION << ":\n";
+          HandleEvent<Events::ServiceGroupMember>(
+            *static_cast<Events::ServiceGroupMember*>(event),
+            service_group_member_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::SERVICESTATUS:
           buffer << NDO_API_SERVICESTATUSDATA << ":\n";
           HandleEvent<Events::ServiceStatus>(

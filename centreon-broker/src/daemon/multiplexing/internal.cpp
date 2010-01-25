@@ -26,8 +26,15 @@
 *                                     *
 **************************************/
 
+// List of hosts.
+std::map<std::pair<std::string, std::string>, int> Multiplexing::gl_hosts;
+Concurrency::Mutex                                 Multiplexing::gl_hostsm;
+
+// List of services.
+std::map<std::pair<std::pair<std::string, std::string>, std::string>, int>
+                                     Multiplexing::gl_services;
+Concurrency::Mutex                   Multiplexing::gl_servicesm;
+
 // List of subscribers.
 std::list<Multiplexing::Subscriber*> Multiplexing::gl_subscribers;
-
-// Mutex preventing concurrent access to gl_subscribers.
 Concurrency::Mutex                   Multiplexing::gl_subscribersm;

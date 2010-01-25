@@ -46,7 +46,6 @@ namespace              Events
     double             first_notification_delay;
     double             freshness_threshold;
     double             high_flap_threshold;
-    int                host_id;
     std::string        icon_image;
     std::string        icon_image_alt;
     double             low_flap_threshold;

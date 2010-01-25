@@ -18,13 +18,50 @@
 **  For more information : contact@centreon.com
 */
 
+#include <algorithm>
+#include <utility>
 #include "concurrency/lock.h"
-#include "events/event.h"
+#include "events/events.h"
 #include "multiplexing/internal.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
 
 using namespace Multiplexing;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Get the ID of the host.
+ */
+static void SetHostID(Events::HostServiceStatus* hss)
+{
+  std::map<std::pair<std::string, std::string>, int>::iterator it;
+  Concurrency::Lock lock(gl_hostsm);
+
+  it = gl_hosts.find(std::make_pair(hss->instance, hss->host));
+  if (it != gl_hosts.end())
+    hss->host_id = it->second;
+  return ;
+}
+
+/**
+ *  Get the ID of the service.
+ */
+static void SetServiceID(Events::ServiceStatus* ss)
+{
+  std::map<std::pair<std::pair<std::string, std::string>, std::string>, int>::iterator it;
+  Concurrency::Lock lock(gl_servicesm);
+
+  it = gl_services.find(std::make_pair(std::make_pair(ss->instance, ss->host),
+                                       ss->service));
+  if (it != gl_services.end())
+    ss->service_id = it->second;
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -97,6 +134,41 @@ void Publisher::Event(Events::Event* event)
 {
   std::list<Subscriber*>::iterator end;
   Concurrency::Lock lock(gl_subscribersm);
+
+  // Check event type.
+  switch (event->GetType())
+    {
+     case Events::Event::HOST:
+      {
+	Events::Host* host;
+	Concurrency::Lock lock(gl_hostsm);
+
+	host = static_cast<Events::Host*>(event);
+	gl_hosts[std::make_pair(host->instance, host->host)]
+          = host->host_id;
+      }
+      break ;
+     case Events::Event::HOSTSTATUS:
+      SetHostID(static_cast<Events::HostServiceStatus*>(event));
+      break ;
+     case Events::Event::SERVICE:
+      {
+	Events::Service* service;
+	Concurrency::Lock lock(gl_servicesm);
+
+	service = static_cast<Events::Service*>(event);
+	gl_services[std::make_pair(std::make_pair(service->instance,
+                                                  service->host),
+                                   service->service)] = service->service_id;
+      }
+      break ;
+     case Events::Event::SERVICESTATUS:
+      SetHostID(static_cast<Events::HostServiceStatus*>(event));
+      SetServiceID(static_cast<Events::ServiceStatus*>(event));
+      break ;
+     default:
+      ; // Avoid compiler warning.
+    }
 
   // Send object to every subscriber.
   end = gl_subscribers.end();
