@@ -22,8 +22,8 @@
 CXX	=	g++
 RM	=	rm -rf
 
-# Targets
-SRC	=	../../src/concurrency/condition_variable.cpp		\
+# cb2db
+SRC1	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/concurrency/lock.cpp				\
 		../../src/concurrency/mutex.cpp				\
 		../../src/concurrency/thread.cpp			\
@@ -33,27 +33,7 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/daemon/configuration/log.cpp			\
 		../../src/daemon/configuration/manager.cpp		\
 		../../src/daemon/configuration/parser.cpp		\
-		../../src/daemon/interface/db/destination.cpp		\
-		../../src/daemon/interface/destination.cpp		\
-		../../src/daemon/interface/factory.cpp			\
-		../../src/daemon/interface/ndo/base.cpp			\
-		../../src/daemon/interface/ndo/destination.cpp		\
-		../../src/daemon/interface/ndo/internal.cpp		\
-		../../src/daemon/interface/ndo/log.cpp			\
-		../../src/daemon/interface/ndo/source.cpp		\
-		../../src/daemon/interface/ndo/sourcedestination.cpp	\
-		../../src/daemon/interface/source.cpp			\
-		../../src/daemon/interface/sourcedestination.cpp	\
-		../../src/daemon/interface/xml/destination.cpp		\
-		../../src/daemon/interface/xml/internal.cpp		\
-		../../src/daemon/interface/xml/tinystr.cpp		\
-		../../src/daemon/interface/xml/tinyxml.cpp		\
-		../../src/daemon/interface/xml/tinyxmlerror.cpp		\
-		../../src/daemon/interface/xml/tinyxmlparser.cpp	\
 		../../src/daemon/main.cpp				\
-		../../src/daemon/multiplexing/internal.cpp		\
-		../../src/daemon/multiplexing/publisher.cpp		\
-		../../src/daemon/multiplexing/subscriber.cpp		\
 		../../src/daemon/processing/failover_out.cpp		\
 		../../src/daemon/processing/feeder.cpp			\
 		../../src/daemon/processing/listener.cpp		\
@@ -100,6 +80,23 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\
+		../../src/interface/db/destination.cpp			\
+		../../src/interface/destination.cpp			\
+		../../src/interface/factory.cpp				\
+		../../src/interface/ndo/base.cpp			\
+		../../src/interface/ndo/destination.cpp			\
+		../../src/interface/ndo/internal.cpp			\
+		../../src/interface/ndo/log.cpp				\
+		../../src/interface/ndo/source.cpp			\
+		../../src/interface/ndo/sourcedestination.cpp		\
+		../../src/interface/source.cpp				\
+		../../src/interface/sourcedestination.cpp		\
+		../../src/interface/xml/destination.cpp			\
+		../../src/interface/xml/internal.cpp			\
+		../../src/interface/xml/tinystr.cpp			\
+		../../src/interface/xml/tinyxml.cpp			\
+		../../src/interface/xml/tinyxmlerror.cpp		\
+		../../src/interface/xml/tinyxmlparser.cpp		\
 		../../src/io/acceptor.cpp				\
 		../../src/io/fd.cpp					\
 		../../src/io/file.cpp					\
@@ -116,12 +113,44 @@ SRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/io/tls/params.cpp				\
 		../../src/io/tls/stream.cpp				\
 		../../src/logging.cpp					\
-		../../src/mapping.cpp
-OBJ	=	$(SRC:.cpp=.o)
-NAME	=	cb2db
+		../../src/mapping.cpp					\
+		../../src/multiplexing/internal.cpp			\
+		../../src/multiplexing/publisher.cpp			\
+		../../src/multiplexing/subscriber.cpp
+OBJ1	=	$(SRC1:.cpp=.o)
+NAME1	=	cb2db
+
+# cbmod
+SRC2	=	../../src/events/acknowledgement.cpp			\
+		../../src/events/comment.cpp				\
+		../../src/events/downtime.cpp				\
+		../../src/events/event.cpp				\
+		../../src/events/group.cpp				\
+		../../src/events/group_member.cpp			\
+		../../src/events/host.cpp				\
+		../../src/events/host_group.cpp				\
+		../../src/events/host_group_member.cpp			\
+		../../src/events/host_service.cpp			\
+		../../src/events/host_service_status.cpp		\
+		../../src/events/host_status.cpp			\
+		../../src/events/log.cpp				\
+		../../src/events/program_status.cpp			\
+		../../src/events/service.cpp				\
+		../../src/events/service_group.cpp			\
+		../../src/events/service_group_member.cpp		\
+		../../src/events/service_status.cpp			\
+		../../src/events/status.cpp				\
+		../../src/exception.cpp					\
+		../../src/module/callbacks.cpp				\
+		../../src/module/main.cpp				\
+		../../src/multiplexing/internal.cpp			\
+		../../src/multiplexing/publisher.cpp			\
+		../../src/multiplexing/subscriber.cpp
+OBJ2	=	$(SRC2:.cpp=.o)
+NAME2	=	cbmod.so
 
 # Parameters
-INCLUDE		=	-I../../inc/daemon -I../../inc
+INCLUDE		=	-I../../inc/daemon -I../../inc/module -I../../inc
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 #CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
@@ -132,17 +161,20 @@ CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
 LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls #-lefence
 
 # Rules
-all	:	$(NAME)
+all		:	$(NAME1) $(NAME2)
 
-$(NAME)	:	$(OBJ)
-	$(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
+$(NAME1)	:	$(OBJ1)
+	$(CXX) -o $(NAME1) $(OBJ1) $(LDFLAGS)
 
-clean	:
+$(NAME2)	:	$(OBJ2)
+	$(CXX) -shared -o $(NAME2) $(OBJ2) $(LDFLAGS)
+
+clean		:
 	$(RM) $(OBJ) `find . -name '*~' -or -name '#*#'`
 
-fclean	:	clean
+fclean		:	clean
 	$(RM) $(NAME)
 
-re	:	fclean all
+re		:	fclean all
 
-.PHONY	:	all clean fclean re
+.PHONY		:	all clean fclean re

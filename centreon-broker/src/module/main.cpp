@@ -18,15 +18,11 @@
 **  For more information : contact@centreon.com
 */
 
-#include <stdbool.h>
 #include <stddef.h>
 #include "callbacks.h"
+#include "multiplexing/publisher.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
-#include "nagios/nebmodules.h"
-#include "sender.h"
-
-using namespace CentreonBroker;
 
 /**************************************
 *                                     *
@@ -34,11 +30,8 @@ using namespace CentreonBroker;
 *                                     *
 **************************************/
 
-// Sender object
-namespace CentreonBroker
-{
-  Sender* gl_sender = NULL;
-}
+// Sender object.
+Multiplexing::Publisher gl_publisher;
 
 /**************************************
 *                                     *
@@ -115,15 +108,9 @@ extern "C"
   {
     (void)flags;
     (void)reason;
-
-    deregister_callbacks();
     try
       {
-        if (gl_sender)
-          {
-            delete (gl_sender);
-            gl_sender = NULL;
-          }
+        deregister_callbacks();
       }
     // Avoid exception propagation in C code.
     catch (...) {}
@@ -159,7 +146,7 @@ extern "C"
     neb_set_module_info(gl_mod_handle, NEBMODULE_MODINFO_AUTHOR, "Merethis");
     neb_set_module_info(gl_mod_handle,
                         NEBMODULE_MODINFO_COPYRIGHT,
-                        "Copyright 2009 Merethis");
+                        "Copyright 2009-2010 Merethis");
     neb_set_module_info(gl_mod_handle, NEBMODULE_MODINFO_VERSION, "0.1.0");
     neb_set_module_info(gl_mod_handle,
                         NEBMODULE_MODINFO_LICENSE,
@@ -173,14 +160,8 @@ extern "C"
 
     try
       {
-        // Create sender.
-        gl_sender = new Sender();
-
         // Parse configuration file.
         // XXX
-
-        // Launch worker thread.
-        gl_sender->Run();
       }
     catch (...)
       {

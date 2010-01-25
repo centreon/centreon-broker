@@ -20,15 +20,12 @@
 
 #include <memory>
 #include "callbacks.h"
-#include "dbuffer.h"
+#include "events/events.h"
+#include "multiplexing/publisher.h"
 #include "nagios/nebstructs.h"
-#include "sender.h"
 
 // Extern global sender.
-namespace CentreonBroker
-{
-  extern Sender* gl_sender;
-}
+extern Multiplexing::Publisher gl_publisher;
 
 /**
  *  \brief Function that process acknowledgement data.
@@ -43,29 +40,30 @@ namespace CentreonBroker
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackAcknowledgement(int callback_type,
-                                            void* data) throw ()
+int CallbackAcknowledgement(int callback_type, void* data)
 {
   (void)callback_type;
   try
     {
       nebstruct_acknowledgement_data* ack_data;
-      std::auto_ptr<DBuffer> buffer(new DBuffer);
+      std::auto_ptr<Events::Acknowledgement> ack(new Events::Acknowledgement);
 
       ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
-      buffer->Append(ack_data->host_name);
-      buffer->Append(ack_data->service_description);
-      buffer->Append((short)ack_data->type);
-      buffer->Append(ack_data->author_name);
-      buffer->Append(ack_data->comment_data);
-      // XXX : entry_time
-      buffer->Append((bool)ack_data->is_sticky);
-      buffer->Append((bool)ack_data->notify_contacts);
-      buffer->Append((bool)ack_data->persistent_comment);
-      buffer->Append((short)ack_data->state);
+      ack->acknowledgement_type = ack_data->type; // XXX : duplicate with type
+      ack->author = ack_data->author_name;
+      ack->comment = ack_data->comment_data;
+      //ack->entry_time = XXX;
+      ack->host = ack_data->host_name;
+      ack->is_sticky = ack_data->is_sticky;
+      ack->notify_contacts = ack_data->notify_contacts;
+      ack->persistent_comment = ack_data->persistent_comment;
+      ack->service = ack_data->service_description;
+      ack->state = ack_data->state;
+      ack->type = ack_data->type; // XXX : duplicate with acknowledgement_type
 
-      gl_sender->AddData(buffer.get());
-      buffer.release();
+      ack->AddReader();
+      gl_publisher.Event(ack.get());
+      ack.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -83,32 +81,34 @@ int CentreonBroker::CallbackAcknowledgement(int callback_type,
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackComment(int callback_type, void* data) throw ()
+int CallbackComment(int callback_type, void* data)
 {
   (void)callback_type;
   try
     {
-      std::auto_ptr<DBuffer> buffer(new DBuffer);
       nebstruct_comment_data* comment_data;
+      std::auto_ptr<Events::Comment> comment(new Events::Comment);
 
       comment_data = static_cast<nebstruct_comment_data*>(data);
-      buffer->Append(comment_data->author_name);
-      buffer->Append(comment_data->comment_data);
-      // XXX : comment_time
-      buffer->Append((short)comment_data->type);
-      // XXX : deletion_time
-      // XXX : entry_time
-      buffer->Append((short)comment_data->entry_type);
-      buffer->Append((int)comment_data->expire_time);
-      buffer->Append((bool)comment_data->expires);
-      buffer->Append(comment_data->host_name);
-      buffer->Append((int)comment_data->comment_id);
-      buffer->Append((bool)comment_data->persistent);
-      buffer->Append(comment_data->service_description);
-      buffer->Append((short)comment_data->source);
+      comment->author = comment_data->author_name;
+      comment->comment = comment_data->comment_data;
+      // comment->comment_time = XXX;
+      comment->comment_type = comment_data->type;
+      // comment->deletion_time = XXX;
+      // comment->entry_time = XXX;
+      comment->entry_type = comment_data->entry_type;
+      comment->expire_time = comment_data->expire_time;
+      comment->expires = comment_data->expires;
+      comment->host = comment_data->host_name;
+      comment->internal_id = comment_data->comment_id;
+      comment->persistent = comment_data->persistent;
+      comment->service = comment_data->service_description;
+      comment->source = comment_data->source;
+      // comment->type = XXX;
 
-      gl_sender->AddData(buffer.get());
-      buffer.release();
+      comment->AddReader();
+      gl_publisher.Event(comment.get());
+      comment.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -126,31 +126,34 @@ int CentreonBroker::CallbackComment(int callback_type, void* data) throw ()
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackDowntime(int callback_type, void* data) throw ()
+int CallbackDowntime(int callback_type, void* data)
 {
   (void)callback_type;
   try
     {
-      std::auto_ptr<DBuffer> buffer(new DBuffer);
       nebstruct_downtime_data* downtime_data;
+      std::auto_ptr<Events::Downtime> downtime(new Events::Downtime);
 
       downtime_data = static_cast<nebstruct_downtime_data*>(data);
-      buffer->Append(downtime_data->author_name);
-      buffer->Append(downtime_data->comment_data);
-      buffer->Append((int)downtime_data->downtime_id);
-      buffer->Append((short)downtime_data->type);
-      buffer->Append((int)downtime_data->duration);
-      buffer->Append((int)downtime_data->end_time);
-      buffer->Append((bool)downtime_data->fixed);
-      buffer->Append(downtime_data->host_name);
-      buffer->Append(downtime_data->service_description);
-      buffer->Append((int)downtime_data->start_time);
-      buffer->Append((int)downtime_data->triggered_by);
-      // XXX : was_cancelled
-      // XXX : was_started
+      downtime->author = downtime_data->author_name;
+      downtime->comment = downtime_data->comment_data;
+      downtime->downtime_type = downtime_data->type; // XXX : duplicate with type
+      downtime->duration = downtime_data->duration;
+      downtime->end_time = downtime_data->end_time;
+      //downtime->entry_time = XXX;
+      downtime->fixed = downtime_data->fixed;
+      downtime->host = downtime_data->host_name;
+      downtime->id = downtime_data->downtime_id;
+      downtime->service = downtime_data->service_description;
+      downtime->start_time = downtime_data->start_time;
+      downtime->triggered_by = downtime_data->triggered_by;
+      downtime->type = downtime_data->type; // XXX : duplicate with downtime_type
+      // downtime->was_cancelled = XXX;
+      // downtime->was_started = XXX;
 
-      gl_sender->AddData(buffer.get());
-      buffer.release();
+      downtime->AddReader();
+      gl_publisher.Event(downtime.get());
+      downtime.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -169,7 +172,7 @@ int CentreonBroker::CallbackDowntime(int callback_type, void* data) throw ()
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackHostStatus(int callback_type, void* data) throw ()
+int CallbackHostStatus(int callback_type, void* data)
 {
   (void)callback_type;
   try
@@ -195,28 +198,29 @@ int CentreonBroker::CallbackHostStatus(int callback_type, void* data) throw ()
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackLog(int callback_type, void* data) throw ()
+int CallbackLog(int callback_type, void* data)
 {
   (void)callback_type;
   try
     {
-      std::auto_ptr<DBuffer> buffer(new DBuffer);
       nebstruct_log_data* log_data;
+      std::auto_ptr<Events::Log> log(new Events::Log);
 
       log_data = static_cast<nebstruct_log_data*>(data);
-      buffer->Append((int)log_data->entry_time);
-      // XXX : host_name
-      buffer->Append(log_data->data_type);
-      // XXX : notification_cmd
-      // XXX : notification_contact
-      buffer->Append(log_data->data);
-      // XXX : retry
-      // XXX : service_description
-      // XXX : status
-      // XXX : type
+      log->c_time = log_data->entry_time;
+      // log->host = XXX;
+      log->msg_type = log_data->data_type;
+      // log->notification_cmd = XXX;
+      // log->notification_contact = XXX;
+      log->output = log_data->data;
+      // log->retry = XXX;
+      // log->service = XXX;
+      // log->status = XXX;
+      // log->type = XXX;
 
-      gl_sender->AddData(buffer.get());
-      buffer.release();
+      log->AddReader();
+      gl_publisher.Event(log.get());
+      log.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -236,44 +240,60 @@ int CentreonBroker::CallbackLog(int callback_type, void* data) throw ()
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackProgramStatus(int callback_type,
-                                          void* data) throw ()
+int CallbackProgramStatus(int callback_type, void* data)
 {
   (void)callback_type;
   try
     {
-      std::auto_ptr<DBuffer> buffer(new DBuffer);
-      nebstruct_program_status_data* prog_status_data;
+      nebstruct_program_status_data* program_status_data;
+      std::auto_ptr<Events::ProgramStatus> program_status(
+                                             new Events::ProgramStatus);
 
-      prog_status_data = static_cast<nebstruct_program_status_data*>(data);
-      buffer->Append((bool)prog_status_data->active_host_checks_enabled);
-      buffer->Append((bool)prog_status_data->active_service_checks_enabled);
-      buffer->Append((bool)prog_status_data->daemon_mode);
-      buffer->Append((bool)prog_status_data->event_handlers_enabled);
-      buffer->Append((bool)prog_status_data->failure_prediction_enabled);
-      buffer->Append((bool)prog_status_data->flap_detection_enabled);
-      buffer->Append(prog_status_data->global_host_event_handler);
-      // XXX : instance_address
-      // XXX : instance_description
-      buffer->Append(prog_status_data->global_service_event_handler);
-      // XXX : is_running
-      // XXX : last_alive
-      buffer->Append((int)prog_status_data->last_command_check);
-      buffer->Append((int)prog_status_data->last_log_rotation);
-      buffer->Append((int)prog_status_data->modified_host_attributes);
-      buffer->Append((int)prog_status_data->modified_service_attributes);
-      buffer->Append((bool)prog_status_data->notifications_enabled);
-      buffer->Append((bool)prog_status_data->obsess_over_hosts);
-      buffer->Append((bool)prog_status_data->obsess_over_services);
-      buffer->Append((bool)prog_status_data->passive_host_checks_enabled);
-      buffer->Append((bool)prog_status_data->passive_service_checks_enabled);
-      buffer->Append(prog_status_data->pid);
-      buffer->Append((bool)prog_status_data->process_performance_data);
-      // XXX : program_end_time
-      buffer->Append((int)prog_status_data->program_start);
+      program_status_data = static_cast<nebstruct_program_status_data*>(data);
+      program_status->active_host_checks_enabled
+        = program_status_data->active_host_checks_enabled;
+      program_status->active_service_checks_enabled
+	= program_status_data->active_service_checks_enabled;
+      program_status->daemon_mode = program_status_data->daemon_mode;
+      program_status->event_handler_enabled
+	= program_status_data->event_handlers_enabled;
+      program_status->failure_prediction_enabled
+	= program_status_data->failure_prediction_enabled;
+      program_status->flap_detection_enabled
+	= program_status_data->flap_detection_enabled;
+      program_status->global_host_event_handler
+	= program_status_data->global_host_event_handler;
+      program_status->global_service_event_handler
+	= program_status_data->global_service_event_handler;
+      // program_status->is_running = XXX;
+      // program_status->last_alive = XXX;
+      program_status->last_command_check
+	= program_status_data->last_command_check;
+      program_status->last_log_rotation
+	= program_status_data->last_log_rotation;
+      program_status->modified_host_attributes
+	= program_status_data->modified_host_attributes;
+      program_status->modified_service_attributes
+	= program_status_data->modified_service_attributes;
+      program_status->notifications_enabled
+	= program_status_data->notifications_enabled;
+      program_status->obsess_over_hosts
+	= program_status_data->obsess_over_hosts;
+      program_status->obsess_over_services
+	= program_status_data->obsess_over_services;
+      program_status->passive_host_checks_enabled
+	= program_status_data->passive_host_checks_enabled;
+      program_status->passive_service_checks_enabled
+	= program_status_data->passive_service_checks_enabled;
+      program_status->pid = program_status_data->pid;
+      program_status->process_performance_data
+	= program_status_data->process_performance_data;
+      // program_status->program_end = XXX;
+      program_status->program_start = program_status_data->program_start;
 
-      gl_sender->AddData(buffer.get());
-      buffer.release();
+      program_status->AddReader();
+      gl_publisher.Event(program_status.get());
+      program_status.release();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -293,8 +313,7 @@ int CentreonBroker::CallbackProgramStatus(int callback_type,
  *
  *  \return 0 on success.
  */
-int CentreonBroker::CallbackServiceStatus(int callback_type,
-                                          void* data) throw ()
+int CallbackServiceStatus(int callback_type, void* data)
 {
   (void)callback_type;
   try
