@@ -404,7 +404,7 @@ void Configuration::Manager::Update()
     }
 
   // Add new outputs.
-  /*for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
+  for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
     {
       std::auto_ptr<Processing::FailoverOut> feeder;
       std::auto_ptr<Multiplexing::Subscriber> subscriber;
@@ -418,7 +418,7 @@ void Configuration::Manager::Update()
       subscriber.release();
       this->outputs_[*outputs_it] = feeder.get();
       feeder.release();
-      }*/
+    }
 
   // Remove inputs that are not present in conf anymore or which don't have the
   // same configuration.

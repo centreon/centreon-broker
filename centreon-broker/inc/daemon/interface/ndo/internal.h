@@ -32,9 +32,12 @@ namespace    Events
   class      Downtime;
   class      Host;
   class      HostGroup;
+  class      HostGroupMember;
   class      HostStatus;
   class      ProgramStatus;
   class      Service;
+  class      ServiceGroup;
+  class      ServiceGroupMember;
   class      ServiceStatus;
 }
 
@@ -69,10 +72,14 @@ namespace    Interface
     extern const KeyField<Events::Downtime>        downtime_fields[];
     extern const KeyField<Events::Host>            host_fields[];
     extern const KeyField<Events::HostGroup>       host_group_fields[];
+    extern const KeyField<Events::HostGroupMember> host_group_member_fields[];
     extern const KeyField<Events::HostStatus>      host_status_fields[];
     extern const KeyField<Events::Log>             log_fields[];
     extern const KeyField<Events::ProgramStatus>   program_status_fields[];
     extern const KeyField<Events::Service>         service_fields[];
+    extern const KeyField<Events::ServiceGroup>    service_group_fields[];
+    extern const KeyField<Events::ServiceGroupMember>
+      service_group_member_fields[];
     extern const KeyField<Events::ServiceStatus>   service_status_fields[];
   }
 }
