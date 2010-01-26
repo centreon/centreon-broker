@@ -19,22 +19,13 @@
 */
 
 #include <iostream>                         // for cerr
-#ifdef USE_MYSQL
-# include <mysql.h>                         // for mysql_library_init
-#endif /* USE_MYSQL */
 #include <signal.h>
 #include <time.h>                           // for time
 #include "concurrency/condition_variable.h"
 #include "concurrency/lock.h"
 #include "concurrency/mutex.h"
 #include "configuration/manager.h"
-#include "exception.h"
-#include "interface/ndo/destination.h"
-#include "interface/ndo/source.h"
-#include "interface/xml/destination.h"
-#ifdef USE_TLS
-# include "io/tls/internal.h"
-#endif /* USE_TLS */
+#include "init.h"
 #include "logging.h"
 #include "mapping.h"
 
@@ -121,27 +112,8 @@ int main(int argc, char* argv[])
           // Lock termination mutex.
           Concurrency::Lock lock(gl_mutex);
 
-#ifdef USE_MYSQL
-          // Initialize MySQL library.
-          LOGDEBUG("Initializing MySQL library ...");
-          if (mysql_library_init(0, NULL, NULL))
-            throw (Exception(0, "MySQL library initialization failed."));
-#endif /* USE_MYSQL */
-
-#ifdef USE_TLS
-          // Initialize GNU TLS.
-          LOGDEBUG("Initializing GNU TLS library ...");
-          IO::TLS::Initialize();
-#endif /* USE_TLS */
-
-          // Initialize all interface objects.
-          LOGDEBUG("Initializing DB engine (destination) ...");
-          MappingsInit();
-          LOGDEBUG("Initializing NDO engine (source) ...");
-          Interface::NDO::Destination::Initialize();
-          Interface::NDO::Source::Initialize();
-          LOGDEBUG("Initializing XML engine (destination) ...");
-          Interface::XML::Destination::Initialize();
+          // Global initialization.
+          Init();
 
           // Load configuration file.
           Configuration::Manager::Instance().Open(argv[1]);
@@ -160,25 +132,8 @@ int main(int argc, char* argv[])
               Configuration::Manager::Instance().Reap();
             }
 
-          // Unload configuration.
-          LOGDEBUG("Unloading configuration ...");
-          Configuration::Manager::Instance().Close();
-
-          // Destroy O/R mapping.
-          LOGDEBUG("Unloading DB engine ...");
-          MappingsDestroy();
-
-#ifdef USE_TLS
-          // Unload GNU TLS library.
-          LOGDEBUG("Unloading GNU TLS library ...");
-          IO::TLS::Destroy();
-#endif /* USE_TLS */
-
-#ifdef USE_MYSQL
-          // Unload MySQL library.
-          LOGDEBUG("Unloading MySQL library ...");
-          mysql_library_end();
-#endif /* USE_MYSQL */
+          // Global unloading.
+          Deinit();
 
           // Everything went well.
           exit_code = 0;
