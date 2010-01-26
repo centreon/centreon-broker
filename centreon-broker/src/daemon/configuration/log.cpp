@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <syslog.h>            // for LOG_USER
 #include "configuration/log.h"
 
 using namespace Configuration;
@@ -33,7 +34,7 @@ using namespace Configuration;
  *
  *  Initialize members to default values.
  */
-Log::Log() : flags(0), type(Log::UNKNOWN) {}
+Log::Log() : facility(LOG_USER), flags(0), type(Log::UNKNOWN) {}
 
 /**
  *  \brief Log copy constructor.
@@ -63,10 +64,11 @@ Log::~Log() {}
  */
 Log& Log::operator=(const Log& l)
 {
-  this->file  = l.file;
-  this->flags = l.flags;
-  this->name  = l.name;
-  this->type  = l.type;
+  this->facility = l.facility;
+  this->file     = l.file;
+  this->flags    = l.flags;
+  this->name     = l.name;
+  this->type     = l.type;
   return (*this);
 }
 
@@ -80,7 +82,9 @@ Log& Log::operator=(const Log& l)
  */
 bool Log::operator==(const Log& l) const
 {
-  return ((this->file     == l.file)
+  // XXX : checks should be more extensive.
+  return ((this->facility == l.facility)
+          && (this->file  == l.file)
           && (this->flags == l.flags)
           && (this->name  == l.name)
           && (this->type  == l.type));

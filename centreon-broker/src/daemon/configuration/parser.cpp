@@ -168,7 +168,9 @@ static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
       const std::string val_str = val.GetText();
 
       // Parse variable.
-      if (var_str == "flags")
+      if (var_str == "facility")
+        log.facility = strtol(val_str.c_str(), NULL, 0);
+      else if (var_str == "flags")
         {
           unsigned int flags;
 

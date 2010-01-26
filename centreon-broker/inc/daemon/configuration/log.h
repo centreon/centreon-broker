@@ -44,6 +44,7 @@ namespace              Configuration
       STDOUT,
       SYSLOG
     };
+    int                facility;
     std::string        file;
     unsigned int       flags;
     std::string        name;

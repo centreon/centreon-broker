@@ -22,22 +22,12 @@
 CXX	=	g++
 RM	=	rm -rf
 
-# cb2db
-SRC1	=	../../src/concurrency/condition_variable.cpp		\
+# Common source files.
+COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/concurrency/lock.cpp				\
 		../../src/concurrency/mutex.cpp				\
 		../../src/concurrency/thread.cpp			\
 		../../src/concurrency/thread_listener.cpp		\
-		../../src/daemon/configuration/interface.cpp		\
-		../../src/daemon/configuration/lexer.cpp		\
-		../../src/daemon/configuration/log.cpp			\
-		../../src/daemon/configuration/manager.cpp		\
-		../../src/daemon/configuration/parser.cpp		\
-		../../src/daemon/main.cpp				\
-		../../src/daemon/processing/failover_out.cpp		\
-		../../src/daemon/processing/feeder.cpp			\
-		../../src/daemon/processing/listener.cpp		\
-		../../src/daemon/processing/listener_destination.cpp	\
 		../../src/db/connection.cpp				\
 		../../src/db/db_exception.cpp				\
 		../../src/db/delete.cpp					\
@@ -117,35 +107,25 @@ SRC1	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/multiplexing/internal.cpp			\
 		../../src/multiplexing/publisher.cpp			\
 		../../src/multiplexing/subscriber.cpp
+COMOBJ	=	$(COMSRC:.cpp=.o)
+
+# cb2db
+SRC1	=	../../src/daemon/configuration/interface.cpp		\
+		../../src/daemon/configuration/lexer.cpp		\
+		../../src/daemon/configuration/log.cpp			\
+		../../src/daemon/configuration/manager.cpp		\
+		../../src/daemon/configuration/parser.cpp		\
+		../../src/daemon/main.cpp				\
+		../../src/daemon/processing/failover_out.cpp		\
+		../../src/daemon/processing/feeder.cpp			\
+		../../src/daemon/processing/listener.cpp		\
+		../../src/daemon/processing/listener_destination.cpp
 OBJ1	=	$(SRC1:.cpp=.o)
 NAME1	=	cb2db
 
 # cbmod
-SRC2	=	../../src/events/acknowledgement.cpp			\
-		../../src/events/comment.cpp				\
-		../../src/events/downtime.cpp				\
-		../../src/events/event.cpp				\
-		../../src/events/group.cpp				\
-		../../src/events/group_member.cpp			\
-		../../src/events/host.cpp				\
-		../../src/events/host_group.cpp				\
-		../../src/events/host_group_member.cpp			\
-		../../src/events/host_service.cpp			\
-		../../src/events/host_service_status.cpp		\
-		../../src/events/host_status.cpp			\
-		../../src/events/log.cpp				\
-		../../src/events/program_status.cpp			\
-		../../src/events/service.cpp				\
-		../../src/events/service_group.cpp			\
-		../../src/events/service_group_member.cpp		\
-		../../src/events/service_status.cpp			\
-		../../src/events/status.cpp				\
-		../../src/exception.cpp					\
-		../../src/module/callbacks.cpp				\
-		../../src/module/main.cpp				\
-		../../src/multiplexing/internal.cpp			\
-		../../src/multiplexing/publisher.cpp			\
-		../../src/multiplexing/subscriber.cpp
+SRC2	=	../../src/module/callbacks.cpp				\
+		../../src/module/main.cpp
 OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
 
@@ -163,17 +143,17 @@ LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls #-lefence
 # Rules
 all		:	$(NAME1) $(NAME2)
 
-$(NAME1)	:	$(OBJ1)
-	$(CXX) -o $(NAME1) $(OBJ1) $(LDFLAGS)
+$(NAME1)	:	$(COMOBJ) $(OBJ1)
+	$(CXX) -o $(NAME1) $(COMOBJ) $(OBJ1) $(LDFLAGS)
 
-$(NAME2)	:	$(OBJ2)
-	$(CXX) -shared -o $(NAME2) $(OBJ2) $(LDFLAGS)
+$(NAME2)	:	$(COMOBJ) $(OBJ2)
+	$(CXX) -shared -o $(NAME2) $(COMOBJ) $(OBJ2) $(LDFLAGS)
 
 clean		:
-	$(RM) $(OBJ) `find . -name '*~' -or -name '#*#'`
+	$(RM) $(COMOBJ) $(OBJ1) $(OBJ2) `find . -name '*~' -or -name '#*#'`
 
 fclean		:	clean
-	$(RM) $(NAME)
+	$(RM) $(NAME1) $(NAME2)
 
 re		:	fclean all
 
