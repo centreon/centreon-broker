@@ -28,6 +28,11 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/concurrency/mutex.cpp				\
 		../../src/concurrency/thread.cpp			\
 		../../src/concurrency/thread_listener.cpp		\
+		../../src/configuration/interface.cpp			\
+		../../src/configuration/lexer.cpp			\
+		../../src/configuration/log.cpp				\
+		../../src/configuration/manager.cpp			\
+		../../src/configuration/parser.cpp			\
 		../../src/db/connection.cpp				\
 		../../src/db/db_exception.cpp				\
 		../../src/db/delete.cpp					\
@@ -107,20 +112,15 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/mapping.cpp					\
 		../../src/multiplexing/internal.cpp			\
 		../../src/multiplexing/publisher.cpp			\
-		../../src/multiplexing/subscriber.cpp
+		../../src/multiplexing/subscriber.cpp			\
+		../../src/processing/failover_out.cpp			\
+		../../src/processing/feeder.cpp				\
+		../../src/processing/listener.cpp			\
+		../../src/processing/listener_destination.cpp
 COMOBJ	=	$(COMSRC:.cpp=.o)
 
 # cb2db
-SRC1	=	../../src/daemon/configuration/interface.cpp		\
-		../../src/daemon/configuration/lexer.cpp		\
-		../../src/daemon/configuration/log.cpp			\
-		../../src/daemon/configuration/manager.cpp		\
-		../../src/daemon/configuration/parser.cpp		\
-		../../src/daemon/main.cpp				\
-		../../src/daemon/processing/failover_out.cpp		\
-		../../src/daemon/processing/feeder.cpp			\
-		../../src/daemon/processing/listener.cpp		\
-		../../src/daemon/processing/listener_destination.cpp
+SRC1	=	../../src/daemon/main.cpp
 OBJ1	=	$(SRC1:.cpp=.o)
 NAME1	=	cb2db
 

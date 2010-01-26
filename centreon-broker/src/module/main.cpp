@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include "callbacks.h"
+#include "configuration/manager.h"
 #include "init.h"
 #include "multiplexing/publisher.h"
 #include "nagios/common.h"
@@ -167,8 +168,11 @@ extern "C"
         // Initialize necessary structures.
         Init();
 
-        // Parse configuration file.
-        // XXX
+        // Load configuration file.
+        if (args)
+          Configuration::Manager::Instance().Open(args);
+        else
+          throw (1);
       }
     catch (...)
       {
