@@ -31,14 +31,13 @@
 --   +host_contact
 --   +host_contactgroup
 --    host_hostgroup
---   +host_parents
+--    host_parents
 --   +hostdependency
 --   +hostescalation
 --   +hostescalation_contact
 --   +hostescalation_contactgroup
 --    hostgroup
 --   -hosts_commands
---   -hosts_parenthosts
 --   -log
 --   +notification
 --   -processevents
@@ -91,6 +90,13 @@ CREATE TABLE IF NOT EXISTS `host_hostgroup` (
   `host` int NOT NULL,             -- OK
   `hostgroup` int NOT NULL,        -- OK
   UNIQUE KEY (`host`, `hostgroup`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `host_parents` (
+  `host` int NOT NULL,           -- OK
+  `parents` int NOT NULL,        -- OK
+  UNIQUE KEY (`host`, `parents`)
 ) ENGINE=InnoDB;
 
 
@@ -533,13 +539,6 @@ CREATE TABLE IF NOT EXISTS `hosts_commands` (
   `event_handler_command` text,
   PRIMARY KEY (`host_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-CREATE TABLE IF NOT EXISTS `hosts_parenthosts` (
-  `host_id` int NOT NULL default '0',
-  `host_child_id` int NOT NULL default '0',
-  UNIQUE KEY `instance_id` (`host_id`,`host_child_id`)
-) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Parent hosts';
 
 
 CREATE TABLE IF NOT EXISTS `log` (
