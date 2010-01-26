@@ -51,14 +51,18 @@ int CallbackAcknowledgement(int callback_type, void* data)
 
       ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
       ack->acknowledgement_type = ack_data->type; // XXX : duplicate with type
-      ack->author = ack_data->author_name;
-      ack->comment = ack_data->comment_data;
+      if (ack_data->author_name)
+        ack->author = ack_data->author_name;
+      if (ack_data->comment_data)
+        ack->comment = ack_data->comment_data;
       //ack->entry_time = XXX;
-      ack->host = ack_data->host_name;
+      if (ack_data->host_name)
+        ack->host = ack_data->host_name;
       ack->is_sticky = ack_data->is_sticky;
       ack->notify_contacts = ack_data->notify_contacts;
       ack->persistent_comment = ack_data->persistent_comment;
-      ack->service = ack_data->service_description;
+      if (ack_data->service_description)
+        ack->service = ack_data->service_description;
       ack->state = ack_data->state;
       ack->type = ack_data->type; // XXX : duplicate with acknowledgement_type
 
@@ -91,8 +95,10 @@ int CallbackComment(int callback_type, void* data)
       std::auto_ptr<Events::Comment> comment(new Events::Comment);
 
       comment_data = static_cast<nebstruct_comment_data*>(data);
-      comment->author = comment_data->author_name;
-      comment->comment = comment_data->comment_data;
+      if (comment_data->author_name)
+        comment->author = comment_data->author_name;
+      if (comment_data->comment_data)
+        comment->comment = comment_data->comment_data;
       // comment->comment_time = XXX;
       comment->comment_type = comment_data->type;
       // comment->deletion_time = XXX;
@@ -100,10 +106,12 @@ int CallbackComment(int callback_type, void* data)
       comment->entry_type = comment_data->entry_type;
       comment->expire_time = comment_data->expire_time;
       comment->expires = comment_data->expires;
-      comment->host = comment_data->host_name;
+      if (comment_data->host_name)
+        comment->host = comment_data->host_name;
       comment->internal_id = comment_data->comment_id;
       comment->persistent = comment_data->persistent;
-      comment->service = comment_data->service_description;
+      if (comment_data->service_description)
+        comment->service = comment_data->service_description;
       comment->source = comment_data->source;
       // comment->type = XXX;
 
@@ -136,16 +144,20 @@ int CallbackDowntime(int callback_type, void* data)
       std::auto_ptr<Events::Downtime> downtime(new Events::Downtime);
 
       downtime_data = static_cast<nebstruct_downtime_data*>(data);
-      downtime->author = downtime_data->author_name;
-      downtime->comment = downtime_data->comment_data;
+      if (downtime_data->author_name)
+        downtime->author = downtime_data->author_name;
+      if (downtime_data->comment_data)
+        downtime->comment = downtime_data->comment_data;
       downtime->downtime_type = downtime_data->type; // XXX : duplicate with type
       downtime->duration = downtime_data->duration;
       downtime->end_time = downtime_data->end_time;
       //downtime->entry_time = XXX;
       downtime->fixed = downtime_data->fixed;
-      downtime->host = downtime_data->host_name;
+      if (downtime_data->host_name)
+        downtime->host = downtime_data->host_name;
       downtime->id = downtime_data->downtime_id;
-      downtime->service = downtime_data->service_description;
+      if (downtime_data->service_description)
+        downtime->service = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
       downtime->triggered_by = downtime_data->triggered_by;
       downtime->type = downtime_data->type; // XXX : duplicate with downtime_type
@@ -185,21 +197,25 @@ int CallbackHostStatus(int callback_type, void* data)
         static_cast<nebstruct_host_status_data*>(data)->object_ptr);
       host_status->acknowledgement_type = h->acknowledgement_type;
       host_status->active_checks_enabled = h->checks_enabled;
-      host_status->check_command = h->host_check_command;
+      if (h->host_check_command)
+        host_status->check_command = h->host_check_command;
       host_status->check_interval = h->check_interval;
-      host_status->check_period = h->check_period;
+      if (h->check_period)
+        host_status->check_period = h->check_period;
       host_status->check_type = h->check_type;
       host_status->current_check_attempt = h->current_attempt;
       host_status->current_notification_number
         = h->current_notification_number;
       host_status->current_state = h->current_state;
-      host_status->event_handler = h->event_handler;
+      if (h->event_handler)
+        host_status->event_handler = h->event_handler;
       host_status->event_handler_enabled = h->event_handler_enabled;
       host_status->execution_time = h->execution_time;
       host_status->failure_prediction_enabled = h->failure_prediction_enabled;
       host_status->flap_detection_enabled = h->flap_detection_enabled;
       host_status->has_been_checked = h->has_been_checked;
-      host_status->host = h->name;
+      if (h->name)
+        host_status->host = h->name;
       // host_status->host_id = XXX;
       host_status->is_flapping = h->is_flapping;
       host_status->last_check = h->last_check;
@@ -212,7 +228,8 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->last_time_up = h->last_time_up;
       // host_status->last_update = XXX;
       host_status->latency = h->latency;
-      host_status->long_output = h->long_plugin_output;
+      if (h->long_plugin_output)
+        host_status->long_output = h->long_plugin_output;
       host_status->max_check_attempts = h->max_attempts;
       host_status->modified_attributes = h->modified_attributes;
       host_status->next_check = h->next_check;
@@ -220,10 +237,12 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->no_more_notifications = h->no_more_notifications;
       host_status->notifications_enabled = h->notifications_enabled;
       host_status->obsess_over = h->obsess_over_host;
-      host_status->output = h->plugin_output;
+      if (h->plugin_output)
+        host_status->output = h->plugin_output;
       host_status->passive_checks_enabled = h->accept_passive_host_checks;
       host_status->percent_state_change = h->percent_state_change;
-      host_status->perf_data = h->perf_data;
+      if (h->perf_data)
+        host_status->perf_data = h->perf_data;
       host_status->problem_has_been_acknowledged
         = h->problem_has_been_acknowledged;
       host_status->process_performance_data = h->process_performance_data;
@@ -315,10 +334,12 @@ int CallbackProgramStatus(int callback_type, void* data)
         = program_status_data->failure_prediction_enabled;
       program_status->flap_detection_enabled
         = program_status_data->flap_detection_enabled;
-      program_status->global_host_event_handler
-        = program_status_data->global_host_event_handler;
-      program_status->global_service_event_handler
-        = program_status_data->global_service_event_handler;
+      if (program_status_data->global_host_event_handler)
+        program_status->global_host_event_handler
+          = program_status_data->global_host_event_handler;
+      if (program_status_data->global_service_event_handler)
+        program_status->global_service_event_handler
+          = program_status_data->global_service_event_handler;
       // program_status->is_running = XXX;
       // program_status->last_alive = XXX;
       program_status->last_command_check
@@ -380,22 +401,26 @@ int CallbackServiceStatus(int callback_type, void* data)
         static_cast<nebstruct_service_status_data*>(data)->object_ptr);
       service_status->acknowledgement_type = s->acknowledgement_type;
       service_status->active_checks_enabled = s->checks_enabled;
-      service_status->check_command = s->service_check_command;
+      if (s->service_check_command)
+        service_status->check_command = s->service_check_command;
       service_status->check_interval = s->check_interval;
-      service_status->check_period = s->check_period;
+      if (s->check_period)
+        service_status->check_period = s->check_period;
       service_status->check_type = s->check_type;
       service_status->current_check_attempt = s->current_attempt;
       service_status->current_notification_number
         = s->current_notification_number;
       service_status->current_state = s->current_state;
-      service_status->event_handler = s->event_handler;
+      if (s->event_handler)
+        service_status->event_handler = s->event_handler;
       service_status->event_handler_enabled = s->event_handler_enabled;
       service_status->execution_time = s->execution_time;
       service_status->failure_prediction_enabled
         = s->failure_prediction_enabled;
       service_status->flap_detection_enabled = s->flap_detection_enabled;
       service_status->has_been_checked = s->has_been_checked;
-      service_status->host = s->host_name;
+      if (s->host_name)
+        service_status->host = s->host_name;
       // service_status->host_id = XXX;
       service_status->is_flapping = s->is_flapping;
       service_status->last_check = s->last_check;
@@ -409,7 +434,8 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->last_time_warning = s->last_time_warning;
       // service_status->last_update = XXX;
       service_status->latency = s->latency;
-      service_status->long_output = s->long_plugin_output;
+      if (s->long_plugin_output)
+        service_status->long_output = s->long_plugin_output;
       service_status->max_check_attempts = s->max_attempts;
       service_status->modified_attributes = s->modified_attributes;
       service_status->next_check = s->next_check;
@@ -417,17 +443,20 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->no_more_notifications = s->no_more_notifications;
       service_status->notifications_enabled = s->notifications_enabled;
       service_status->obsess_over = s->obsess_over_service;
-      service_status->output = s->plugin_output;
+      if (s->plugin_output)
+        service_status->output = s->plugin_output;
       service_status->passive_checks_enabled
         = s->accept_passive_service_checks;
       service_status->percent_state_change = s->percent_state_change;
-      service_status->perf_data = s->perf_data;
+      if (s->perf_data)
+        service_status->perf_data = s->perf_data;
       service_status->problem_has_been_acknowledged
         = s->problem_has_been_acknowledged;
       service_status->process_performance_data = s->process_performance_data;
       service_status->retry_interval = s->retry_interval;
       service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
-      service_status->service = s->description;
+      if (s->description)
+        service_status->service = s->description;
       // service_status->service_id = XXX;
       service_status->should_be_scheduled = s->should_be_scheduled;
       service_status->state_type = s->state_type;
