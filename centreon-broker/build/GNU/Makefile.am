@@ -198,6 +198,7 @@ cbmod_so_SOURCES=	../../src/events/acknowledgement.cpp		\
 			../../src/events/status.cpp			\
 			../../src/exception.cpp				\
 			../../src/module/callbacks.cpp			\
+			../../src/module/initial.cpp			\
 			../../src/module/main.cpp			\
 			../../src/multiplexing/internal.cpp		\
 			../../src/multiplexing/publisher.cpp		\
