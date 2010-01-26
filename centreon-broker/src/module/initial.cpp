@@ -20,8 +20,7 @@
 
 #include <memory>
 #include "initial.h"
-#include "events/host.h"
-#include "events/service.h"
+#include "events/events.h"
 #include "multiplexing/publisher.h"
 #include "nagios/objects.h"
 
@@ -32,15 +31,51 @@ extern Multiplexing::Publisher gl_publisher;
 extern "C"
 {
   extern host* host_list;
+  extern hostgroup* hostgroup_list;
   extern service* service_list;
+  extern servicegroup* servicegroup_list;
 }
 
 /**
- *  Send to the global publisher the list of host within Nagios.
+ *  Send to the global publisher the list of host groups within Nagios.
+ */
+void SendHostGroupList()
+{
+  for (hostgroup* hg = hostgroup_list; hg; hg = hg->next)
+    {
+      // Dump host group.
+      std::auto_ptr<Events::HostGroup> host_group(new Events::HostGroup);
+
+      host_group->alias = hg->alias;
+      host_group->name = hg->group_name;
+
+      host_group->AddReader();
+      gl_publisher.Event(host_group.get());
+      host_group.release();
+
+      // Dump host group members.
+      for (hostsmember* hgm = hg->members; hgm; hgm = hgm->next)
+        {
+          std::auto_ptr<Events::HostGroupMember> host_group_member(
+            new Events::HostGroupMember);
+
+          host_group_member->group = hg->group_name;
+          host_group_member->member = hgm->host_name;
+
+          host_group_member->AddReader();
+          gl_publisher.Event(host_group_member.get());
+          host_group_member.release();
+        }
+    }
+  return ;
+}
+
+/**
+ *  Send to the global publisher the list of hosts within Nagios.
  */
 void SendHostList()
 {
-  for (host* h = host_list; h != NULL; h = h->next)
+  for (host* h = host_list; h; h = h->next)
     {
       std::auto_ptr<Events::Host> my_host(new Events::Host);
 
@@ -133,11 +168,47 @@ void SendHostList()
 }
 
 /**
+ *  Send to the global publisher the list of service groups within Nagios.
+ */
+void SendServiceGroupList()
+{
+  for (servicegroup* sg = servicegroup_list; sg; sg = sg->next)
+    {
+      // Dump service group.
+      std::auto_ptr<Events::ServiceGroup> service_group(
+        new Events::ServiceGroup);
+
+      service_group->alias = sg->alias;
+      service_group->name = sg->group_name;
+
+      service_group->AddReader();
+      gl_publisher.Event(service_group.get());
+      service_group.release();
+
+      // Dump service group members.
+      for (servicesmember* sgm = sg->members; sgm; sgm = sgm->next)
+        {
+          std::auto_ptr<Events::ServiceGroupMember> service_group_member(
+            new Events::ServiceGroupMember);
+
+          service_group_member->group = sg->group_name;
+          service_group_member->host = sgm->host_name;
+          service_group_member->member = sgm->service_description;
+
+          service_group_member->AddReader();
+          gl_publisher.Event(service_group_member.get());
+          service_group_member.release();
+        }
+    }
+  return ;
+}
+
+/**
  *  Send to the global publisher the list of services within Nagios.
  */
 void SendServiceList()
 {
-  for (service* s = service_list; s != NULL; s = s->next)
+  for (service* s = service_list; s; s = s->next)
     {
       std::auto_ptr<Events::Service> my_service(new Events::Service);
 

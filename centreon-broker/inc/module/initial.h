@@ -21,7 +21,9 @@
 #ifndef INITIAL_H_
 # define INITIAL_H_
 
+void SendHostGroupList();
 void SendHostList();
+void SendServiceGroupList();
 void SendServiceList();
 
 #endif /* !INITIAL_H_ */
