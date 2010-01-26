@@ -313,7 +313,7 @@ int CallbackLog(int callback_type, void* data)
  *
  *  \return 0 on success.
  */
-int CallbackProcessData(int callback_type, void *data)
+int CallbackProcess(int callback_type, void *data)
 {
   (void)callback_type;
   try
