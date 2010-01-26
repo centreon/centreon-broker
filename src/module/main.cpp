@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include "callbacks.h"
+#include "init.h"
 #include "multiplexing/publisher.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
@@ -111,6 +112,9 @@ extern "C"
     try
       {
         deregister_callbacks();
+
+        // Release allocated memory.
+        Deinit();
       }
     // Avoid exception propagation in C code.
     catch (...) {}
@@ -160,6 +164,9 @@ extern "C"
 
     try
       {
+        // Initialize necessary structures.
+        Init();
+
         // Parse configuration file.
         // XXX
       }

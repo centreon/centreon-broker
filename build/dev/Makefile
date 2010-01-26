@@ -70,6 +70,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\
+		../../src/init.cpp					\
 		../../src/interface/db/destination.cpp			\
 		../../src/interface/destination.cpp			\
 		../../src/interface/factory.cpp				\
