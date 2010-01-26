@@ -32,6 +32,9 @@
 *                                     *
 **************************************/
 
+// Specify the event broker API version.
+NEB_API_VERSION(CURRENT_NEB_API_VERSION)
+
 // Sender object.
 Multiplexing::Publisher gl_publisher;
 
