@@ -18,10 +18,12 @@
 **  For more information : contact@centreon.com
 */
 
-#include <stddef.h>
+#include <stddef.h>                 // for NULL
+#include <unistd.h>                 // for sleep
 #include "callbacks.h"
 #include "configuration/manager.h"
 #include "init.h"
+#include "initial.h"
 #include "multiplexing/publisher.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
@@ -171,11 +173,20 @@ extern "C"
         // Initialize necessary structures.
         Init();
 
-        // Load configuration file.
-        if (args)
-          Configuration::Manager::Instance().Open(args);
-        else
+        if (!args)
           throw (1);
+
+        // Load configuration file.
+        Configuration::Manager::Instance().Open(args);
+
+        // Give enough time to newly created threads to run.
+        sleep(1);
+
+        // Dump initial configuration.
+        SendHostList();
+        SendHostGroupList();
+        SendServiceList();
+        SendServiceGroupList();
       }
     catch (...)
       {

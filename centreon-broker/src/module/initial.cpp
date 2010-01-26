@@ -46,8 +46,10 @@ void SendHostGroupList()
       // Dump host group.
       std::auto_ptr<Events::HostGroup> host_group(new Events::HostGroup);
 
-      host_group->alias = hg->alias;
-      host_group->name = hg->group_name;
+      if (hg->alias)
+        host_group->alias = hg->alias;
+      if (hg->group_name)
+        host_group->name = hg->group_name;
 
       host_group->AddReader();
       gl_publisher.Event(host_group.get());
@@ -59,8 +61,10 @@ void SendHostGroupList()
           std::auto_ptr<Events::HostGroupMember> host_group_member(
             new Events::HostGroupMember);
 
-          host_group_member->group = hg->group_name;
-          host_group_member->member = hgm->host_name;
+          if (hg->group_name)
+            host_group_member->group = hg->group_name;
+          if (hgm->host_name)
+            host_group_member->member = hgm->host_name;
 
           host_group_member->AddReader();
           gl_publisher.Event(host_group_member.get());
@@ -80,20 +84,27 @@ void SendHostList()
       std::auto_ptr<Events::Host> my_host(new Events::Host);
 
       // my_host->acknowledgement_type = XXX;
-      my_host->action_url = h->action_url;
+      if (h->action_url)
+        my_host->action_url = h->action_url;
       my_host->active_checks_enabled = h->checks_enabled;
-      my_host->address = h->address;
-      my_host->alias = h->alias;
+      if (h->address)
+        my_host->address = h->address;
+      if (h->alias)
+        my_host->alias = h->alias;
       my_host->check_freshness = h->check_freshness;
-      my_host->check_command = h->host_check_command;
+      if (h->host_check_command)
+        my_host->check_command = h->host_check_command;
       my_host->check_interval = h->check_interval;
-      my_host->check_period = h->check_period;
+      if (h->check_period)
+        my_host->check_period = h->check_period;
       // my_host->check_type = XXX;
       // my_host->current_check_attempt = XXX;
       // my_host->current_notification_number = XXX;
       // my_host->current_state = XXX;
-      my_host->display_name = h->display_name;
-      my_host->event_handler = h->event_handler;
+      if (h->display_name)
+        my_host->display_name = h->display_name;
+      if (h->event_handler)
+        my_host->event_handler = h->event_handler;
       my_host->event_handler_enabled = h->event_handler_enabled;
       // my_host->execution_time = XXX;
       my_host->failure_prediction_enabled = h->failure_prediction_enabled;
@@ -107,10 +118,13 @@ void SendHostList()
       // my_host->has_been_checked = XXX;
       my_host->have_2d_coords = h->have_2d_coords;
       my_host->high_flap_threshold = h->high_flap_threshold;
-      my_host->host = h->name;
+      if (h->name)
+        my_host->host = h->name;
       // my_host->host_id = XXX;
-      my_host->icon_image = h->icon_image;
-      my_host->icon_image_alt = h->icon_image_alt;
+      if (h->icon_image)
+        my_host->icon_image = h->icon_image;
+      if (h->icon_image_alt)
+        my_host->icon_image_alt = h->icon_image_alt;
       // my_host->is_flapping = XXX;
       // my_host->last_check = XXX;
       // my_host->last_hard_state = XXX;
@@ -129,10 +143,13 @@ void SendHostList()
       // my_host->next_check = XXX;
       // my_host->next_notification = XXX;
       // my_host->no_more_notifications = XXX;
-      my_host->notes = h->notes;
-      my_host->notes_url = h->notes_url;
+      if (h->notes)
+        my_host->notes = h->notes;
+      if (h->notes_url)
+        my_host->notes_url = h->notes_url;
       my_host->notification_interval = h->notification_interval;
-      my_host->notification_period = h->notification_period;
+      if (h->notification_period)
+        my_host->notification_period = h->notification_period;
       my_host->notifications_enabled = h->notifications_enabled;
       my_host->notify_on_down = h->notify_on_down;
       my_host->notify_on_downtime = h->notify_on_downtime;
@@ -155,8 +172,10 @@ void SendHostList()
       my_host->stalk_on_unreachable = h->stalk_on_unreachable;
       my_host->stalk_on_up = h->stalk_on_up;
       // my_host->state_type = XXX;
-      my_host->statusmap_image = h->statusmap_image;
-      my_host->vrml_image = h->vrml_image;
+      if (h->statusmap_image)
+        my_host->statusmap_image = h->statusmap_image;
+      if (h->vrml_image)
+        my_host->vrml_image = h->vrml_image;
       my_host->x_2d = h->x_2d;
       my_host->y_2d = h->y_2d;
 
@@ -178,8 +197,10 @@ void SendServiceGroupList()
       std::auto_ptr<Events::ServiceGroup> service_group(
         new Events::ServiceGroup);
 
-      service_group->alias = sg->alias;
-      service_group->name = sg->group_name;
+      if (sg->alias)
+        service_group->alias = sg->alias;
+      if (sg->group_name)
+        service_group->name = sg->group_name;
 
       service_group->AddReader();
       gl_publisher.Event(service_group.get());
@@ -191,9 +212,12 @@ void SendServiceGroupList()
           std::auto_ptr<Events::ServiceGroupMember> service_group_member(
             new Events::ServiceGroupMember);
 
-          service_group_member->group = sg->group_name;
-          service_group_member->host = sgm->host_name;
-          service_group_member->member = sgm->service_description;
+          if (sg->group_name)
+            service_group_member->group = sg->group_name;
+          if (sgm->host_name)
+            service_group_member->host = sgm->host_name;
+          if (sgm->service_description)
+            service_group_member->member = sgm->service_description;
 
           service_group_member->AddReader();
           gl_publisher.Event(service_group_member.get());
@@ -213,22 +237,28 @@ void SendServiceList()
       std::auto_ptr<Events::Service> my_service(new Events::Service);
 
       // my_service->acknowledgement_type = XXX;
-      my_service->action_url = s->action_url;
+      if (s->action_url)
+        my_service->action_url = s->action_url;
       my_service->active_checks_enabled = s->checks_enabled;
-      my_service->check_command = s->service_check_command;
+      if (s->service_check_command)
+        my_service->check_command = s->service_check_command;
       my_service->check_freshness = s->check_freshness;
       my_service->check_interval = s->check_interval;
-      my_service->check_period = s->check_period;
+      if (s->check_period)
+        my_service->check_period = s->check_period;
       // my_service->check_type = XXX;
       // my_service->current_check_attempt = XXX;
       // my_service->current_notification_number = XXX;
       // my_service->current_state = XXX;
-      my_service->display_name = s->display_name;
-      my_service->event_handler = s->event_handler;
+      if (s->display_name)
+        my_service->display_name = s->display_name;
+      if (s->event_handler)
+        my_service->event_handler = s->event_handler;
       my_service->event_handler_enabled = s->event_handler_enabled;
       // my_service->execution_time = XXX;
       my_service->failure_prediction_enabled = s->failure_prediction_enabled;
-      my_service->failure_prediction_options = s->failure_prediction_options;
+      if (s->failure_prediction_options)
+        my_service->failure_prediction_options = s->failure_prediction_options;
       my_service->first_notification_delay = s->first_notification_delay;
       my_service->flap_detection_enabled = s->flap_detection_enabled;
       my_service->flap_detection_on_critical = s->flap_detection_on_critical;
@@ -238,10 +268,13 @@ void SendServiceList()
       my_service->freshness_threshold = s->freshness_threshold;
       // my_service->has_been_checked = XXX;
       my_service->high_flap_threshold = s->high_flap_threshold;
-      my_service->host = s->host_name;
+      if (s->host_name)
+        my_service->host = s->host_name;
       // my_service->host_id = XXX;
-      my_service->icon_image = s->icon_image;
-      my_service->icon_image_alt = s->icon_image_alt;
+      if (s->icon_image)
+        my_service->icon_image = s->icon_image;
+      if (s->icon_image_alt)
+        my_service->icon_image_alt = s->icon_image_alt;
       // my_service->is_flapping = XXX;
       my_service->is_volatile = s->is_volatile;
       // my_service->last_check = XXX;
@@ -262,10 +295,13 @@ void SendServiceList()
       // my_service->next_check = XXX;
       // my_service->next_notification = XXX;
       // my_service->no_more_notifications = XXX;
-      my_service->notes = s->notes;
-      my_service->notes_url = s->notes_url;
+      if (s->notes)
+        my_service->notes = s->notes;
+      if (s->notes_url)
+        my_service->notes_url = s->notes_url;
       my_service->notification_interval = s->notification_interval;
-      my_service->notification_period = s->notification_period;
+      if (s->notification_period)
+        my_service->notification_period = s->notification_period;
       my_service->notifications_enabled = s->notifications_enabled;
       my_service->notified_on_critical = s->notify_on_critical;
       my_service->notified_on_unknown = s->notify_on_unknown;
@@ -285,7 +321,8 @@ void SendServiceList()
       my_service->retain_status_information = s->retain_status_information;
       my_service->retry_interval = s->retry_interval;
       // my_service->scheduled_downtime_depth = XXX;
-      my_service->service = s->description;
+      if (s->description)
+        my_service->service = s->description;
       // my_service->service_id = XXX;
       // my_service->should_be_scheduled = XXX;
       my_service->stalk_on_critical = s->stalk_on_critical;
