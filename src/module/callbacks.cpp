@@ -21,7 +21,9 @@
 #include <memory>
 #include "callbacks.h"
 #include "events/events.h"
+#include "initial.h"
 #include "multiplexing/publisher.h"
+#include "nagios/broker.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
 
@@ -294,6 +296,38 @@ int CallbackLog(int callback_type, void* data)
       log->AddReader();
       gl_publisher.Event(log.get());
       log.release();
+    }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  \brief Function that process process data.
+ *
+ *  This function is called by Nagios when some process data is available.
+ *
+ *  \param[in] callback_type Type of the callback (NEBCALLBACK_PROCESS_DATA).
+ *  \param[in] data          A pointer to a nebstruct_process_data containing
+ *                           the process data.
+ *
+ *  \return 0 on success.
+ */
+int CallbackProcessData(int callback_type, void *data)
+{
+  (void)callback_type;
+  try
+    {
+      nebstruct_process_data* process_data;
+
+      process_data = static_cast<nebstruct_process_data*>(data);
+      if (NEBTYPE_PROCESS_START == process_data->type)
+        {
+          SendHostList();
+          SendHostGroupList();
+          SendServiceList();
+          SendServiceGroupList();
+        }
     }
   // Avoid exception propagation in C code.
   catch (...) {}

@@ -23,7 +23,6 @@
 #include "callbacks.h"
 #include "configuration/manager.h"
 #include "init.h"
-#include "initial.h"
 #include "multiplexing/publisher.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
@@ -59,6 +58,7 @@ static struct
     { NEBCALLBACK_DOWNTIME_DATA, CallbackDowntime, false },
     { NEBCALLBACK_HOST_STATUS_DATA, CallbackHostStatus, false },
     { NEBCALLBACK_LOG_DATA, CallbackLog, false },
+    { NEBCALLBACK_PROCESS_DATA, CallbackProcess, false },
     { NEBCALLBACK_PROGRAM_STATUS_DATA, CallbackProgramStatus, false },
     { NEBCALLBACK_SERVICE_STATUS_DATA, CallbackServiceStatus, false }
   };
@@ -181,12 +181,6 @@ extern "C"
 
         // Give enough time to newly created threads to run.
         sleep(1);
-
-        // Dump initial configuration.
-        SendHostList();
-        SendHostGroupList();
-        SendServiceList();
-        SendServiceGroupList();
       }
     catch (...)
       {

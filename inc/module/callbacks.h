@@ -26,6 +26,7 @@ int CallbackComment(int callback_type, void* data);
 int CallbackDowntime(int callback_type, void* data);
 int CallbackHostStatus(int callback_type, void* data);
 int CallbackLog(int callback_type, void* data);
+int CallbackProcess(int callback_type, void* data);
 int CallbackProgramStatus(int callback_type, void* data);
 int CallbackServiceStatus(int callback_type, void* data);
 
