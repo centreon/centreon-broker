@@ -24,6 +24,7 @@
 # include <fstream>
 # include <list>
 # include <string>
+# include <syslog.h>            // for LOG_USER
 # include "concurrency/mutex.h"
 
 namespace                 CentreonBroker
@@ -89,7 +90,7 @@ namespace                 CentreonBroker
     void                  LogError(const char* str);
     void                  LogInFile(const char* filename, int log_flags);
     void                  LogInfo(const char* str);
-    void                  LogInSyslog(int log_flags);
+    void                  LogInSyslog(int log_flags, int facility = LOG_USER);
     void                  LogToStderr(int log_flags);
     void                  LogToStdout(int log_flags);
   };

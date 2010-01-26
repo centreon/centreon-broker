@@ -407,14 +407,15 @@ void Logging::LogInfo(const char* str)
  *
  *  \param[in] log_flags Specify which kind of messages should be sent to the
  *                       syslog facility (0 for none).
+ *  \param[in] facility  Syslog facility number.
  */
-void Logging::LogInSyslog(int log_flags)
+void Logging::LogInSyslog(int log_flags, int facility)
 {
+  if (this->syslog_flags_)
+    closelog();
   this->syslog_flags_ = log_flags;
   if (this->syslog_flags_)
-    openlog("CentreonBroker", 0, LOG_USER);
-  else
-    closelog();
+    openlog("CentreonBroker", 0, facility);
   return ;
 }
 
