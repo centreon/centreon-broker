@@ -19,6 +19,8 @@
 */
 
 #include <memory>
+#include <stdlib.h>                 // for strtol
+#include <string.h>                 // for strcmp
 #include "initial.h"
 #include "events/events.h"
 #include "multiplexing/publisher.h"
@@ -120,7 +122,6 @@ void SendHostList()
       my_host->high_flap_threshold = h->high_flap_threshold;
       if (h->name)
         my_host->host = h->name;
-      // my_host->host_id = XXX;
       if (h->icon_image)
         my_host->icon_image = h->icon_image;
       if (h->icon_image_alt)
@@ -178,6 +179,13 @@ void SendHostList()
         my_host->vrml_image = h->vrml_image;
       my_host->x_2d = h->x_2d;
       my_host->y_2d = h->y_2d;
+
+      // Search host_id through customvars.
+      for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
+        if (cv->variable_name
+            && cv->variable_value
+            && !strcmp(cv->variable_name, "HOST_ID"))
+          my_host->host_id = strtol(cv->variable_value, NULL, 0);
 
       my_host->AddReader();
       gl_publisher.Event(my_host.get());
@@ -270,7 +278,6 @@ void SendServiceList()
       my_service->high_flap_threshold = s->high_flap_threshold;
       if (s->host_name)
         my_service->host = s->host_name;
-      // my_service->host_id = XXX;
       if (s->icon_image)
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
@@ -323,13 +330,22 @@ void SendServiceList()
       // my_service->scheduled_downtime_depth = XXX;
       if (s->description)
         my_service->service = s->description;
-      // my_service->service_id = XXX;
       // my_service->should_be_scheduled = XXX;
       my_service->stalk_on_critical = s->stalk_on_critical;
       my_service->stalk_on_ok = s->stalk_on_ok;
       my_service->stalk_on_unknown = s->stalk_on_unknown;
       my_service->stalk_on_warning = s->stalk_on_warning;
       // my_service->state_type = XXX;
+
+      // Search host_id and service_id through customvars.
+      for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next)
+        if (cv->variable_name && cv->variable_value)
+          {
+            if (!strcmp(cv->variable_name, "HOST_ID"))
+              my_service->host_id = strtol(cv->variable_value, NULL, 0);
+            else if (!strcmp(cv->variable_name, "SERVICE_ID"))
+              my_service->service_id = strtol(cv->variable_value, NULL, 0);
+          }
 
       my_service->AddReader();
       gl_publisher.Event(my_service.get());
