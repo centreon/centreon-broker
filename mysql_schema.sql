@@ -1,9 +1,10 @@
 -- ----------------------------------------------------------------------------
 --                                                                           --
---    After discussing with Andreas Ericsson (who seems to be a nice and     --
---    competent guy), CentreonBroker will try to adopt Merlin's database     --
---    schema (ie. Merlin's schema will be kind of imported into              --
---    CentreonBroker).                                                       --
+--                     CentreonBroker's database schema                      --
+--                                                                           --
+--                                                                           --
+--  This schema tries to adopt Merlin's, so tables should be as similar as   --
+--  possible.                                                                --
 --                                                                           --
 -- ----------------------------------------------------------------------------
 

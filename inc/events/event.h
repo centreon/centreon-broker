@@ -77,6 +77,7 @@ namespace              Events
       HOST,
       HOSTGROUP,
       HOSTGROUPMEMBER,
+      HOSTPARENT,
       HOSTSTATUS,
       LOG,
       PROGRAMSTATUS,

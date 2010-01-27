@@ -64,6 +64,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/host.cpp				\
 		../../src/events/host_group.cpp				\
 		../../src/events/host_group_member.cpp			\
+		../../src/events/host_parent.cpp			\
 		../../src/events/host_service.cpp			\
 		../../src/events/host_service_status.cpp		\
 		../../src/events/host_status.cpp			\
