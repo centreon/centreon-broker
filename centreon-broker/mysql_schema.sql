@@ -33,7 +33,7 @@
 --   +host_contactgroup
 --    host_hostgroup
 --    host_parents
---   +hostdependency
+--    hostdependency
 --   +hostescalation
 --   +hostescalation_contact
 --   +hostescalation_contactgroup
@@ -49,7 +49,7 @@
 --   +service_contact
 --   +service_contactgroup
 --    service_servicegroup
---   +servicedependency
+--    servicedependency
 --   +serviceescalation
 --   +serviceescalation_contact
 --   +serviceescalation_contactgroup
@@ -140,6 +140,18 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
 CREATE TABLE IF NOT EXISTS `service_servicegroup` (
   `service` int NOT NULL,     -- OK
   `servicegroup` int NOT NULL -- OK
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `servicedependency` (
+  `id` int NOT NULL auto_increment,                        -- OK
+  `service` int NOT NULL,                                  -- OK
+  `dependent_service` int NOT NULL,                        -- OK
+  `dependency_period` varchar(75) default NULL,            -- OK
+  `inherits_parent` boolean default NULL,                  -- OK
+  `execution_failure_options` varchar(15) default NULL,    -- OK
+  `notification_failure_options` varchar(15) default NULL, -- OK
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
 
@@ -275,6 +287,20 @@ CREATE TABLE IF NOT EXISTS `host` (
   PRIMARY KEY (`id`),
   INDEX (`instance_id`, `host_name`),
   UNIQUE (`instance_id`, `host_name`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `hostdependency` (
+  `id` int NOT NULL auto_increment,                        -- OK
+  `host` int NOT NULL,                                     -- host_name in Merlin
+  `dependent_host` int NOT NULL,                           -- dependent_host_name in Merlin
+  `dependency_period` varchar(75) default NULL,            -- OK
+  `inherits_parent` boolean default NULL,                  -- OK
+  `execution_failure_options` varchar(15) default NULL,    -- OK
+  `notification_failure_options` varchar(15) default NULL, -- OK
+  PRIMARY KEY (`id`)
+
+  -- instance_id int
 ) ENGINE=InnoDB;
 
 

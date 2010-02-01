@@ -75,6 +75,7 @@ namespace              Events
       COMMENT,
       DOWNTIME,
       HOST,
+      HOSTDEPENDENCY,
       HOSTGROUP,
       HOSTGROUPMEMBER,
       HOSTPARENT,
@@ -82,6 +83,7 @@ namespace              Events
       LOG,
       PROGRAMSTATUS,
       SERVICE,
+      SERVICEDEPENDENCY,
       SERVICEGROUP,
       SERVICEGROUPMEMBER,
       SERVICESTATUS

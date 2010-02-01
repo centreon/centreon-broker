@@ -57,11 +57,13 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/db/update.cpp					\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/comment.cpp				\
+		../../src/events/dependency.cpp				\
 		../../src/events/downtime.cpp				\
 		../../src/events/event.cpp				\
 		../../src/events/group.cpp				\
 		../../src/events/group_member.cpp			\
 		../../src/events/host.cpp				\
+		../../src/events/host_dependency.cpp			\
 		../../src/events/host_group.cpp				\
 		../../src/events/host_group_member.cpp			\
 		../../src/events/host_parent.cpp			\
@@ -71,6 +73,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/log.cpp				\
 		../../src/events/program_status.cpp			\
 		../../src/events/service.cpp				\
+		../../src/events/service_dependency.cpp			\
 		../../src/events/service_group.cpp			\
 		../../src/events/service_group_member.cpp		\
 		../../src/events/service_status.cpp			\
