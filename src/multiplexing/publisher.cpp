@@ -160,6 +160,7 @@ void Publisher::Event(Events::Event* event)
 	gl_services[std::make_pair(std::make_pair(service->instance,
                                                   service->host),
                                    service->service)] = service->service_id;
+        SetHostID(static_cast<Events::HostServiceStatus*>(event));
       }
       break ;
      case Events::Event::SERVICESTATUS:
