@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/host_parent.h"
+#include "events/host_dependency.h"
 
 using namespace Events;
 
@@ -31,42 +31,41 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-HostParent::HostParent() {}
+HostDependency::HostDependency() {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] hp Object to copy from.
+ *  \param[in] host_dependency Object to copy from.
  */
-HostParent::HostParent(const HostParent& hp)
-  : Event(hp), host(hp.host), parent(hp.parent) {}
+HostDependency::HostDependency(const HostDependency& host_dependency)
+  : Dependency(host_dependency) {}
 
 /**
  *  Destructor.
  */
-HostParent::~HostParent() {}
+HostDependency::~HostDependency() {}
 
 /**
  *  Assignment operator overload.
  *
- *  \param[in] hp Object to copy from.
+ *  \param[in] host_dependency Object to copy from.
  *
  *  \return *this
  */
-HostParent& HostParent::operator=(const HostParent& hp)
+HostDependency& HostDependency::operator=(
+  const HostDependency& host_dependency)
 {
-  this->Event::operator=(hp);
-  this->host = hp.host;
-  this->parent = hp.parent;
+  this->HostDependency::operator=(host_dependency);
   return (*this);
 }
 
 /**
- *  Get the type of this event (Event::HOSTPARENT).
+ *  Get the type of this object (Event::HOSTDEPENDENCY).
  *
- *  \return Event::HOSTPARENT
+ *  \return Event::HOSTDEPENDENCY
  */
-int HostParent::GetType() const
+int HostDependency::GetType() const
 {
-  return (Event::HOSTPARENT);
+  return (Event::HOSTDEPENDENCY);
 }
