@@ -22,6 +22,7 @@
 #include "callbacks.h"
 #include "events/events.h"
 #include "initial.h"
+#include "logging.h"
 #include "module/internal.h"
 #include "nagios/broker.h"
 #include "nagios/nebstructs.h"
@@ -42,6 +43,7 @@
  */
 int CallbackAcknowledgement(int callback_type, void* data)
 {
+  LOGDEBUG("Processing acknowledgement ...");
   (void)callback_type;
   try
     {
@@ -87,6 +89,7 @@ int CallbackAcknowledgement(int callback_type, void* data)
  */
 int CallbackComment(int callback_type, void* data)
 {
+  LOGDEBUG("Processing comment ...");
   (void)callback_type;
   try
     {
@@ -136,6 +139,7 @@ int CallbackComment(int callback_type, void* data)
  */
 int CallbackDowntime(int callback_type, void* data)
 {
+  LOGDEBUG("Processing downtime ...");
   (void)callback_type;
   try
     {
@@ -186,6 +190,7 @@ int CallbackDowntime(int callback_type, void* data)
  */
 int CallbackHostStatus(int callback_type, void* data)
 {
+  LOGDEBUG("Processing host status ...");
   (void)callback_type;
   try
     {
@@ -278,6 +283,7 @@ int CallbackHostStatus(int callback_type, void* data)
  */
 int CallbackLog(int callback_type, void* data)
 {
+  LOGDEBUG("Processing log ...");
   (void)callback_type;
   try
     {
@@ -318,6 +324,7 @@ int CallbackLog(int callback_type, void* data)
  */
 int CallbackProcess(int callback_type, void *data)
 {
+  LOGDEBUG("Processing Nagios process event ...");
   (void)callback_type;
   try
     {
@@ -347,6 +354,7 @@ int CallbackProcess(int callback_type, void *data)
  */
 int CallbackProgramStatus(int callback_type, void* data)
 {
+  LOGDEBUG("Processing program status ...");
   (void)callback_type;
   try
     {
@@ -422,6 +430,7 @@ int CallbackProgramStatus(int callback_type, void* data)
  */
 int CallbackServiceStatus(int callback_type, void* data)
 {
+  LOGDEBUG("Processing service status ...");
   (void)callback_type;
   try
     {
