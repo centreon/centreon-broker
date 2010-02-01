@@ -151,20 +151,23 @@ struct   Field
 /**
  *  Static protocol maps.
  */
-static std::map<int, Field<Events::Acknowledgement> > acknowledgement_map;
-static std::map<int, Field<Events::Comment> >         comment_map;
-static std::map<int, Field<Events::Downtime> >        downtime_map;
-static std::map<int, Field<Events::Host> >            host_map;
-static std::map<int, Field<Events::HostGroup> >       host_group_map;
-static std::map<int, Field<Events::HostGroupMember> > host_group_member_map;
-static std::map<int, Field<Events::HostStatus> >      host_status_map;
-static std::map<int, Field<Events::Log> >             log_map;
-static std::map<int, Field<Events::ProgramStatus> >   program_status_map;
-static std::map<int, Field<Events::Service> >         service_map;
-static std::map<int, Field<Events::ServiceGroup> >    service_group_map;
+static std::map<int, Field<Events::Acknowledgement> >   acknowledgement_map;
+static std::map<int, Field<Events::Comment> >           comment_map;
+static std::map<int, Field<Events::Downtime> >          downtime_map;
+static std::map<int, Field<Events::Host> >              host_map;
+static std::map<int, Field<Events::HostDependency> >    host_dependency_map;
+static std::map<int, Field<Events::HostGroup> >         host_group_map;
+static std::map<int, Field<Events::HostGroupMember> >   host_group_member_map;
+static std::map<int, Field<Events::HostParent> >        host_parent_map;
+static std::map<int, Field<Events::HostStatus> >        host_status_map;
+static std::map<int, Field<Events::Log> >               log_map;
+static std::map<int, Field<Events::ProgramStatus> >     program_status_map;
+static std::map<int, Field<Events::Service> >           service_map;
+static std::map<int, Field<Events::ServiceDependency> > service_dependency_map;
+static std::map<int, Field<Events::ServiceGroup> >      service_group_map;
 static std::map<int, Field<Events::ServiceGroupMember> >
-                                                      service_group_member_map;
-static std::map<int, Field<Events::ServiceStatus> >   service_status_map;
+  service_group_member_map;
+static std::map<int, Field<Events::ServiceStatus> >     service_status_map;
 
 /**************************************
 *                                     *
@@ -356,6 +359,14 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::HOSTDEPENDENCY:
+          buffer << NDO_API_HOSTDEPENDENCYDEFINITION << ":\n";
+          HandleEvent<Events::HostDependency>(
+            *static_cast<Events::HostDependency*>(event),
+            host_dependency_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::HOSTGROUP:
           buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
           HandleEvent<Events::HostGroup>(
@@ -369,6 +380,14 @@ void Destination::Event(Events::Event* event)
           HandleEvent<Events::HostGroupMember>(
             *static_cast<Events::HostGroupMember*>(event),
             host_group_member_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::HOSTPARENT:
+          buffer << NDO_API_HOSTPARENT << ":\n";
+          HandleEvent<Events::HostParent>(
+            *static_cast<Events::HostParent*>(event),
+            host_parent_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -404,6 +423,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::SERVICEDEPENDENCY:
+          buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";
+          HandleEvent<Events::ServiceDependency>(
+            *static_cast<Events::ServiceDependency*>(event),
+            service_dependency_map,
+            buffer);
+          buffer << NDO_API_ENDDATA << ":\n";
          case Events::Event::SERVICEGROUP:
           buffer << NDO_API_SERVICEGROUPDEFINITION << ":\n";
           HandleEvent<Events::ServiceGroup>(
@@ -452,13 +478,18 @@ void Destination::Initialize()
   StaticInit<Events::Comment>(comment_fields, comment_map);
   StaticInit<Events::Downtime>(downtime_fields, downtime_map);
   StaticInit<Events::Host>(host_fields, host_map);
+  StaticInit<Events::HostDependency>(host_dependency_fields,
+                                     host_dependency_map);
   StaticInit<Events::HostGroup>(host_group_fields, host_group_map);
   StaticInit<Events::HostGroupMember>(host_group_member_fields,
                                       host_group_member_map);
+  StaticInit<Events::HostParent>(host_parent_fields, host_parent_map);
   StaticInit<Events::HostStatus>(host_status_fields, host_status_map);
   StaticInit<Events::Log>(log_fields, log_map);
   StaticInit<Events::ProgramStatus>(program_status_fields, program_status_map);
   StaticInit<Events::Service>(service_fields, service_map);
+  StaticInit<Events::ServiceDependency>(service_dependency_fields,
+                                        service_dependency_map);
   StaticInit<Events::ServiceGroup>(service_group_fields, service_group_map);
   StaticInit<Events::ServiceGroupMember>(service_group_member_fields,
                                          service_group_member_map);

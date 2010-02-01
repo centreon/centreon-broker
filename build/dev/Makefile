@@ -136,7 +136,7 @@ OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
 
 # Parameters
-INCLUDE		=	-I../../inc/daemon -I../../inc/module -I../../inc
+INCLUDE		=	-I../../inc/module -I../../inc
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 #CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
