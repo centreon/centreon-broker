@@ -31,7 +31,7 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-HostParent::HostParent() {}
+HostParent::HostParent() : host(0), parent(0) {}
 
 /**
  *  Copy constructor.

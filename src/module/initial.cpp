@@ -78,6 +78,7 @@ void SendHostGroupList()
  */
 void SendHostList()
 {
+  // Dump hosts.
   for (host* h = host_list; h; h = h->next)
     {
       std::auto_ptr<Events::Host> my_host(new Events::Host);
@@ -190,10 +191,33 @@ void SendHostList()
       my_host->AddReader();
       gl_publisher.Event(my_host.get());
       my_host.release();
-
-      // Dump parent hosts.
-      // XXX
     }
+
+  // Dump parents hosts.
+  for (host* h = host_list; h; h = h->next)
+    for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next)
+      {
+	std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
+	std::map<std::string, int>::const_iterator it;
+
+	if (h->name)
+	  {
+	    it = gl_hosts.find(h->name);
+	    if (it != gl_hosts.end())
+	      hp->host = it->second;
+	  }
+	if (parent->host_name)
+	  {
+	    it = gl_hosts.find(parent->host_name);
+	    if (it != gl_hosts.end())
+	      hp->parent = it->second;
+	  }
+
+	hp->AddReader();
+	gl_publisher.Event(hp.get());
+	hp.release();
+      }
+
   return ;
 }
 
