@@ -43,9 +43,7 @@ namespace       Events
    public:
     std::string dependency_period;
     int         dependent_object;
-    std::string execution_failure_options;
     bool        inherits_parent;
-    std::string notification_failure_options;
     int         object;
                 Dependency();
                 Dependency(const Dependency& dependency);

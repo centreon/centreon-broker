@@ -37,12 +37,10 @@ using namespace Events;
  */
 void Dependency::InternalCopy(const Dependency& dependency)
 {
-  this->dependency_period            = dependency.dependency_period;
-  this->dependent_object             = dependency.dependent_object;
-  this->execution_failure_options    = dependency.execution_failure_options;
-  this->inherits_parent              = dependency.inherits_parent;
-  this->notification_failure_options = dependency.notification_failure_options;
-  this->object                       = dependency.object;
+  this->dependency_period = dependency.dependency_period;
+  this->dependent_object  = dependency.dependent_object;
+  this->inherits_parent   = dependency.inherits_parent;
+  this->object            = dependency.object;
   return ;
 }
 

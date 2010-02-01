@@ -30,15 +30,60 @@
 extern "C"
 {
   extern host* host_list;
+  extern hostdependency* hostdependency_list;
   extern hostgroup* hostgroup_list;
   extern service* service_list;
+  extern servicedependency* servicedependency_list;
   extern servicegroup* servicegroup_list;
+}
+
+/**************************************
+*                                     *
+*          Static Functions           *
+*                                     *
+**************************************/
+
+/**
+ *  Send to the global publisher the list of host dependencies within Nagios.
+ */
+static void SendHostDependenciesList()
+{
+  std::map<std::string, int>::const_iterator it;
+
+  // Dump host dependencies.
+  for (hostdependency* hd = hostdependency_list; hd; hd = hd->next)
+    {
+      std::auto_ptr<Events::HostDependency> host_dependency(
+        new Events::HostDependency);
+
+      if (hd->dependency_period)
+        host_dependency->dependency_period = hd->dependency_period;
+      if (hd->dependent_host_name)
+	{
+	  it = gl_hosts.find(hd->dependent_host_name);
+	  if (it != gl_hosts.end())
+	    host_dependency->dependent_object = it->second;
+	}
+      host_dependency->inherits_parent = hd->inherits_parent;
+      if (hd->host_name)
+	{
+	  it = gl_hosts.find(hd->host_name);
+	  if (it != gl_hosts.end())
+	    host_dependency->object = it->second;
+	}
+
+      host_dependency->AddReader();
+      gl_publisher.Event(host_dependency.get());
+      host_dependency.release();
+    }
+
+  return ;
 }
 
 /**
  *  Send to the global publisher the list of host groups within Nagios.
  */
-void SendHostGroupList()
+static void SendHostGroupList()
 {
   for (hostgroup* hg = hostgroup_list; hg; hg = hg->next)
     {
@@ -76,7 +121,7 @@ void SendHostGroupList()
 /**
  *  Send to the global publisher the list of hosts within Nagios.
  */
-void SendHostList()
+static void SendHostList()
 {
   // Dump hosts.
   for (host* h = host_list; h; h = h->next)
@@ -193,30 +238,89 @@ void SendHostList()
       my_host.release();
     }
 
-  // Dump parents hosts.
+  return ;
+}
+
+/**
+ *  Send to the global publisher the list of host parents within Nagios.
+ */
+static void SendHostParentsList()
+{
+  int host_id;
+  std::map<std::string, int>::const_iterator it;
+
+  // Browse host list.
   for (host* h = host_list; h; h = h->next)
-    for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next)
-      {
-	std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
-	std::map<std::string, int>::const_iterator it;
+    {
+      // Search host_id.
+      if (h->name)
+	{
+	  it = gl_hosts.find(h->name);
+	  if (it != gl_hosts.end())
+	    host_id = it->second;
+	  else
+	    host_id = 0;
+	}
+      else
+	host_id = 0;
 
-	if (h->name)
-	  {
-	    it = gl_hosts.find(h->name);
-	    if (it != gl_hosts.end())
-	      hp->host = it->second;
-	  }
-	if (parent->host_name)
-	  {
-	    it = gl_hosts.find(parent->host_name);
-	    if (it != gl_hosts.end())
-	      hp->parent = it->second;
-	  }
+      // Browse parents list.
+      for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next)
+	{
+	  std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
 
-	hp->AddReader();
-	gl_publisher.Event(hp.get());
-	hp.release();
-      }
+	  if (parent->host_name)
+	    {
+	      it = gl_hosts.find(parent->host_name);
+	      if (it != gl_hosts.end())
+		hp->parent = it->second;
+	    }
+
+	  hp->AddReader();
+	  gl_publisher.Event(hp.get());
+	  hp.release();
+	}
+    }
+
+  return ;
+}
+
+/**
+ *  Send to the global publisher the list of service dependencies within
+ *  Nagios.
+ */
+static void SendServiceDependenciesList()
+{
+  std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+
+  // Dump service dependencies.
+  for (servicedependency* sd = servicedependency_list; sd; sd = sd->next)
+    {
+      std::auto_ptr<Events::ServiceDependency> service_dependency(
+        new Events::ServiceDependency);
+
+      if (sd->dependent_host_name && sd->dependent_service_description)
+	{
+	  it = gl_services.find(std::make_pair<std::string, std::string>(
+                 sd->dependent_host_name, sd->dependent_service_description));
+	  if (it != gl_services.end())
+	    service_dependency->dependent_object = it->second;
+	}
+      if (sd->dependency_period)
+	service_dependency->dependency_period = sd->dependency_period;
+      service_dependency->inherits_parent = sd->inherits_parent;
+      if (sd->host_name && sd->service_description)
+	{
+	  it = gl_services.find(std::make_pair<std::string, std::string>(
+                 sd->host_name, sd->service_description));
+	  if (it != gl_services.end())
+	    service_dependency->object = it->second;
+	}
+
+      service_dependency->AddReader();
+      gl_publisher.Event(service_dependency.get());
+      service_dependency.release();
+    }
 
   return ;
 }
@@ -224,7 +328,7 @@ void SendHostList()
 /**
  *  Send to the global publisher the list of service groups within Nagios.
  */
-void SendServiceGroupList()
+static void SendServiceGroupList()
 {
   for (servicegroup* sg = servicegroup_list; sg; sg = sg->next)
     {
@@ -265,7 +369,7 @@ void SendServiceGroupList()
 /**
  *  Send to the global publisher the list of services within Nagios.
  */
-void SendServiceList()
+static void SendServiceList()
 {
   for (service* s = service_list; s; s = s->next)
     {
@@ -383,5 +487,26 @@ void SendServiceList()
       gl_publisher.Event(my_service.get());
       my_service.release();
     }
+  return ;
+}
+
+/**************************************
+*                                     *
+*          Global Functions           *
+*                                     *
+**************************************/
+
+/**
+ *  Send initial configuration to the global publisher.
+ */
+void SendInitialConfiguration()
+{
+  SendHostList();
+  SendHostParentsList();
+  SendServiceList();
+  SendHostGroupList();
+  SendServiceGroupList();
+  SendHostDependenciesList();
+  SendServiceDependenciesList();
   return ;
 }
