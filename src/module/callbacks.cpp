@@ -22,13 +22,10 @@
 #include "callbacks.h"
 #include "events/events.h"
 #include "initial.h"
-#include "multiplexing/publisher.h"
+#include "module/internal.h"
 #include "nagios/broker.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
-
-// Extern global sender.
-extern Multiplexing::Publisher gl_publisher;
 
 /**
  *  \brief Function that process acknowledgement data.
@@ -218,7 +215,6 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->has_been_checked = h->has_been_checked;
       if (h->name)
         host_status->host = h->name;
-      // host_status->host_id = XXX;
       host_status->is_flapping = h->is_flapping;
       host_status->last_check = h->last_check;
       host_status->last_hard_state = h->last_hard_state;
@@ -252,6 +248,13 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->scheduled_downtime_depth = h->scheduled_downtime_depth;
       host_status->should_be_scheduled = h->should_be_scheduled;
       host_status->state_type = h->state_type;
+      {
+        std::map<std::string, int>::const_iterator it;
+
+        it = gl_hosts.find(host_status->host);
+        if (it != gl_hosts.end())
+          host_status->host_id = it->second;
+      }
 
       host_status->AddReader();
       gl_publisher.Event(host_status.get());
@@ -455,7 +458,6 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->has_been_checked = s->has_been_checked;
       if (s->host_name)
         service_status->host = s->host_name;
-      // service_status->host_id = XXX;
       service_status->is_flapping = s->is_flapping;
       service_status->last_check = s->last_check;
       service_status->last_hard_state = s->last_hard_state;
@@ -491,9 +493,23 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
       if (s->description)
         service_status->service = s->description;
-      // service_status->service_id = XXX;
       service_status->should_be_scheduled = s->should_be_scheduled;
       service_status->state_type = s->state_type;
+      {
+	std::map<std::string, int>::const_iterator it;
+
+	it = gl_hosts.find(service_status->host);
+	if (it != gl_hosts.end())
+	  service_status->host_id = it->second;
+      }
+      {
+	std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+
+	it = gl_services.find(std::make_pair(service_status->host,
+					     service_status->service));
+	if (it != gl_services.end())
+	  service_status->service_id = it->second;
+      }
 
       service_status->AddReader();
       gl_publisher.Event(service_status.get());

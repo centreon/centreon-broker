@@ -23,11 +23,8 @@
 #include <string.h>                 // for strcmp
 #include "initial.h"
 #include "events/events.h"
-#include "multiplexing/publisher.h"
+#include "module/internal.h"
 #include "nagios/objects.h"
-
-// Extern global sender.
-extern Multiplexing::Publisher gl_publisher;
 
 // Internal Nagios host list.
 extern "C"
@@ -185,11 +182,17 @@ void SendHostList()
         if (cv->variable_name
             && cv->variable_value
             && !strcmp(cv->variable_name, "HOST_ID"))
-          my_host->host_id = strtol(cv->variable_value, NULL, 0);
+          {
+            my_host->host_id = strtol(cv->variable_value, NULL, 0);
+            gl_hosts[my_host->host] = my_host->host_id;
+          }
 
       my_host->AddReader();
       gl_publisher.Event(my_host.get());
       my_host.release();
+
+      // Dump parent hosts.
+      // XXX
     }
   return ;
 }
@@ -344,7 +347,12 @@ void SendServiceList()
             if (!strcmp(cv->variable_name, "HOST_ID"))
               my_service->host_id = strtol(cv->variable_value, NULL, 0);
             else if (!strcmp(cv->variable_name, "SERVICE_ID"))
-              my_service->service_id = strtol(cv->variable_value, NULL, 0);
+              {
+                my_service->service_id = strtol(cv->variable_value, NULL, 0);
+                gl_services[std::make_pair(my_service->host,
+                                           my_service->service)]
+                  = my_service->service_id;
+              }
           }
 
       my_service->AddReader();
