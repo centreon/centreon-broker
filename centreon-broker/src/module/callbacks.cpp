@@ -325,12 +325,7 @@ int CallbackProcess(int callback_type, void *data)
 
       process_data = static_cast<nebstruct_process_data*>(data);
       if (NEBTYPE_PROCESS_START == process_data->type)
-        {
-          SendHostList();
-          SendHostGroupList();
-          SendServiceList();
-          SendServiceGroupList();
-        }
+        SendInitialConfiguration();
     }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -496,19 +491,19 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->should_be_scheduled = s->should_be_scheduled;
       service_status->state_type = s->state_type;
       {
-	std::map<std::string, int>::const_iterator it;
+        std::map<std::string, int>::const_iterator it;
 
-	it = gl_hosts.find(service_status->host);
-	if (it != gl_hosts.end())
-	  service_status->host_id = it->second;
+        it = gl_hosts.find(service_status->host);
+        if (it != gl_hosts.end())
+          service_status->host_id = it->second;
       }
       {
-	std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+        std::map<std::pair<std::string, std::string>, int>::const_iterator it;
 
-	it = gl_services.find(std::make_pair(service_status->host,
-					     service_status->service));
-	if (it != gl_services.end())
-	  service_status->service_id = it->second;
+        it = gl_services.find(std::make_pair(service_status->host,
+                                             service_status->service));
+        if (it != gl_services.end())
+          service_status->service_id = it->second;
       }
 
       service_status->AddReader();
