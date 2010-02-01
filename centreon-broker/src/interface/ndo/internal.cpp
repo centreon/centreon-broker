@@ -310,6 +310,20 @@ const KeyField<Host> Interface::NDO::host_fields[] =
     KeyField<Host>()
   };
 
+// HostDependency fields.
+const KeyField<HostDependency> Interface::NDO::host_dependency_fields[] =
+  {
+    KeyField<HostDependency>(NDO_DATA_DEPENDENCYPERIOD,
+      &HostDependency::dependency_period),
+    KeyField<HostDependency>(NDO_DATA_DEPENDENTHOSTNAME,
+      &HostDependency::dependent_object),
+    KeyField<HostDependency>(NDO_DATA_INHERITSPARENT,
+      &HostDependency::inherits_parent),
+    KeyField<HostDependency>(NDO_DATA_HOSTNAME,
+      &HostDependency::object),
+    KeyField<HostDependency>()
+  };
+
 // HostGroup fields.
 const KeyField<HostGroup> Interface::NDO::host_group_fields[] =
   {
@@ -335,6 +349,16 @@ const KeyField<HostGroupMember> Interface::NDO::host_group_member_fields[] =
     KeyField<HostGroupMember>(NDO_DATA_INSTANCE,
       &HostGroupMember::instance),
     KeyField<HostGroupMember>()
+  };
+
+// HostParent fields.
+const KeyField<HostParent> Interface::NDO::host_parent_fields[] =
+  {
+    KeyField<HostParent>(NDO_DATA_HOSTNAME,
+      &HostParent::host),
+    KeyField<HostParent>(NDO_DATA_PARENTHOST,
+      &HostParent::parent),
+    KeyField<HostParent>()
   };
 
 // HostStatus fields.
@@ -601,6 +625,20 @@ const KeyField<Service> Interface::NDO::service_fields[] =
     KeyField<Service>(NDO_DATA_STALKSERVICEONWARNING,
       &Service::stalk_on_warning),
     KeyField<Service>()
+  };
+
+// ServiceDependency fields.
+const KeyField<ServiceDependency> Interface::NDO::service_dependency_fields[] =
+  {
+    KeyField<ServiceDependency>(NDO_DATA_DEPENDENCYPERIOD,
+      &ServiceDependency::dependency_period),
+    KeyField<ServiceDependency>(NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
+      &ServiceDependency::dependent_object),
+    KeyField<ServiceDependency>(NDO_DATA_INHERITSPARENT,
+      &ServiceDependency::inherits_parent),
+    KeyField<ServiceDependency>(NDO_DATA_SERVICEDESCRIPTION,
+      &ServiceDependency::object),
+    KeyField<ServiceDependency>()
   };
 
 // ServiceGroup fields.
