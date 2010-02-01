@@ -23,7 +23,7 @@
 #include "callbacks.h"
 #include "configuration/manager.h"
 #include "init.h"
-#include "multiplexing/publisher.h"
+#include "module/internal.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
 
@@ -35,6 +35,12 @@
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
+
+// List of host IDs.
+std::map<std::string, int> gl_hosts;
+
+// List of service IDs.
+std::map<std::pair<std::string, std::string>, int> gl_services;
 
 // Sender object.
 Multiplexing::Publisher gl_publisher;
