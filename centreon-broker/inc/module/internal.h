@@ -26,6 +26,9 @@
 # include <utility>
 # include "multiplexing/publisher.h"
 
+// Configuration file name.
+extern std::string gl_configuration_file;
+
 // List of host IDs.
 extern std::map<std::string, int> gl_hosts;
 
