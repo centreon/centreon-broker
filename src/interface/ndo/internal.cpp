@@ -646,9 +646,6 @@ const KeyField<ServiceGroup> Interface::NDO::service_group_fields[] =
   {
     KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPALIAS,
       &ServiceGroup::alias),
-    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPMEMBER,
-      NULL,
-      NULL),
     KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPNAME,
       &ServiceGroup::name),
     KeyField<ServiceGroup>(NDO_DATA_INSTANCE,
