@@ -116,7 +116,7 @@ void Destination::Connect()
   }
 
   // Deactivate autocommit.
-  this->conn_->AutoCommit(false);
+  this->conn_->AutoCommit(true);
 
   return ;
 }
@@ -398,6 +398,30 @@ void Destination::ProcessHost(const Events::Host& host)
 }
 
 /**
+ *  Process a HostDependency event.
+ */
+void Destination::ProcessHostDependency(const Events::HostDependency& hd)
+{
+  LOGDEBUG("Processing HostDependency event ...");
+  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostDependency> >
+    query(this->conn_->GetMappedInsert<Events::HostDependency>(
+      host_dependency_get_mapping));
+
+  query->SetTable("hostdependency");
+  query->SetArg(hd);
+  try
+    {
+      query->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+        throw ;
+    }
+  return ;
+}
+
+/**
  *  Process a HostGroup event.
  */
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
@@ -468,6 +492,30 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
           if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
             throw ;
         }
+    }
+  return ;
+}
+
+/**
+ *  Process a HostParent event.
+ */
+void Destination::ProcessHostParent(const Events::HostParent& hp)
+{
+  LOGDEBUG("Processing HostParent event ...");
+  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostParent> >
+    query(this->conn_->GetMappedInsert<Events::HostParent>(
+      host_parent_get_mapping));
+
+  query->SetTable("host_parents");
+  query->SetArg(hp);
+  try
+    {
+      query->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+        throw ;
     }
   return ;
 }
@@ -581,6 +629,30 @@ void Destination::ProcessService(const Events::Service& service)
       this->service_stmt_->Execute();
     }
   // usually because of a service redefinition
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+        throw ;
+    }
+  return ;
+}
+
+/**
+ *  Process a ServiceDependency event.
+ */
+void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
+{
+  LOGDEBUG("Processing ServiceDependency event ...");
+  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ServiceDependency> >
+    query(this->conn_->GetMappedInsert<Events::ServiceDependency>(
+      service_dependency_get_mapping));
+
+  query->SetTable("servicedependency");
+  query->SetArg(sd);
+  try
+    {
+      query->Execute();
+    }
   catch (const CentreonBroker::DB::DBException& dbe)
     {
       if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
@@ -706,8 +778,14 @@ void Destination::Event(Events::Event* event)
          case Events::Event::HOST:
           ProcessHost(*static_cast<Events::Host*>(event));
           break ;
+         case Events::Event::HOSTDEPENDENCY:
+          ProcessHostDependency(*static_cast<Events::HostDependency*>(event));
+          break ;
          case Events::Event::HOSTGROUP:
           ProcessHostGroup(*static_cast<Events::HostGroup*>(event));
+          break ;
+         case Events::Event::HOSTPARENT:
+          ProcessHostParent(*static_cast<Events::HostParent*>(event));
           break ;
          case Events::Event::HOSTSTATUS:
           ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
@@ -721,6 +799,9 @@ void Destination::Event(Events::Event* event)
          case Events::Event::SERVICE:
           ProcessService(*static_cast<Events::Service*>(event));
           break ;
+         case Events::Event::SERVICEDEPENDENCY:
+          ProcessServiceDependency(*static_cast<Events::ServiceDependency*>(event));
+          break ;
          case Events::Event::SERVICEGROUP:
           ProcessServiceGroup(*static_cast<Events::ServiceGroup*>(event));
           break ;
@@ -728,8 +809,9 @@ void Destination::Event(Events::Event* event)
           ProcessServiceStatus(*static_cast<Events::ServiceStatus*>(event));
           break ;
          default:
-          assert(false);
-          throw (Exception(event->GetType(), "Invalid event type encountered"));
+          ; // XXX : temporary patch
+          //assert(false);
+          //throw (Exception(event->GetType(), "Invalid event type encountered"));
         }
     }
   catch (...)
