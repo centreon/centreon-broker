@@ -19,7 +19,6 @@
 */
 
 #include <stddef.h>                 // for NULL
-#include <unistd.h>                 // for sleep
 #include "callbacks.h"
 #include "configuration/manager.h"
 #include "init.h"
@@ -35,6 +34,9 @@
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
+
+// Configuration file name.
+std::string gl_configuration_file;
 
 // List of host IDs.
 std::map<std::string, int> gl_hosts;
@@ -148,7 +150,7 @@ extern "C"
    *
    *  \return 0 on success, any other value on failure.
    */
-  int nebmodule_init(int flags, char* args, void* handle)
+  int nebmodule_init(int flags, const char* args, void* handle)
   {
     (void)flags;
 
@@ -179,14 +181,9 @@ extern "C"
         // Initialize necessary structures.
         Init();
 
-        if (!args)
-          throw (1);
-
-        // Load configuration file.
-        Configuration::Manager::Instance().Open(args);
-
-        // Give enough time to newly created threads to run.
-        sleep(1);
+        // Set configuration file.
+        if (args)
+          gl_configuration_file = args;
       }
     catch (...)
       {

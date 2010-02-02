@@ -20,6 +20,7 @@
 
 #include <memory>
 #include "callbacks.h"
+#include "configuration/manager.h"
 #include "events/events.h"
 #include "initial.h"
 #include "logging.h"
@@ -331,8 +332,11 @@ int CallbackProcess(int callback_type, void *data)
       nebstruct_process_data* process_data;
 
       process_data = static_cast<nebstruct_process_data*>(data);
-      if (NEBTYPE_PROCESS_START == process_data->type)
-        SendInitialConfiguration();
+      if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type)
+        {
+          Configuration::Manager::Instance().Open(gl_configuration_file);
+          SendInitialConfiguration();
+        }
     }
   // Avoid exception propagation in C code.
   catch (...) {}
