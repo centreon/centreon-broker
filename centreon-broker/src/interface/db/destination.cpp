@@ -406,8 +406,8 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
   CentreonBroker::logging.LogDebug("Processing HostGroup event...");
 #endif /* !NDEBUG */
   int id;
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Group> >
-    query(this->conn_->GetMappedInsert<Events::Group>(group_get_mapping));
+  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostGroup> >
+    query(this->conn_->GetMappedInsert<Events::HostGroup>(host_group_get_mapping));
 
   query->SetTable("hostgroup");
   query->SetArg(hg);
@@ -597,8 +597,9 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 #ifndef NDEBUG
   CentreonBroker::logging.LogDebug("Processing ServiceGroup event ...");
 #endif /* !NDEBUG */
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Group> >
-    query(this->conn_->GetMappedInsert<Events::Group>(group_get_mapping));
+  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ServiceGroup> >
+    query(this->conn_->GetMappedInsert<Events::ServiceGroup>(
+      service_group_get_mapping));
 
   query->SetTable("servicegroup");
   query->SetArg(sg);

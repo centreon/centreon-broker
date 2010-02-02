@@ -23,16 +23,7 @@
 
 # include "db/data_member.hpp"
 # include "db/mapping.hpp"
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
-# include "events/group.h"
-# include "events/host.h"
-# include "events/host_status.h"
-# include "events/log.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_status.h"
+# include "events/events.h"
 
 // Acknowledgement
 extern const CentreonBroker::DB::DataMember<Events::Acknowledgement> acknowledgement_dm[];
@@ -52,13 +43,6 @@ extern CentreonBroker::DB::MappingGetters<Events::Downtime>
 downtime_get_mapping;
 extern CentreonBroker::DB::MappingSetters<Events::Downtime>
 downtime_set_mapping;
-// Group
-extern const CentreonBroker::DB::DataMember<Events::Group>
-group_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Group>
-group_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Group>
-group_set_mapping;
 // Host
 extern const CentreonBroker::DB::DataMember<Events::Host>
 host_dm[];
@@ -66,6 +50,27 @@ extern CentreonBroker::DB::MappingGetters<Events::Host>
 host_get_mapping;
 extern CentreonBroker::DB::MappingSetters<Events::Host>
 host_set_mapping;
+// HostDependency
+extern const CentreonBroker::DB::DataMember<Events::HostDependency>
+host_dependency_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::HostDependency>
+host_dependency_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::HostDependency>
+host_dependency_set_mapping;
+// HostGroup
+extern const CentreonBroker::DB::DataMember<Events::HostGroup>
+host_group_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::HostGroup>
+host_group_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::HostGroup>
+host_group_set_mapping;
+// HostParent
+extern const CentreonBroker::DB::DataMember<Events::HostParent>
+host_parent_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::HostParent>
+host_parent_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::HostParent>
+host_parent_set_mapping;
 // HostStatus
 extern const CentreonBroker::DB::DataMember<Events::HostStatus>
 host_status_dm[];
@@ -94,6 +99,20 @@ extern CentreonBroker::DB::MappingGetters<Events::Service>
 service_get_mapping;
 extern CentreonBroker::DB::MappingSetters<Events::Service>
 service_set_mapping;
+// ServiceDependency
+extern const CentreonBroker::DB::DataMember<Events::ServiceDependency>
+service_dependency_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::ServiceDependency>
+service_dependency_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::ServiceDependency>
+service_dependency_set_mapping;
+// ServiceGroup
+extern const CentreonBroker::DB::DataMember<Events::ServiceGroup>
+service_group_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::ServiceGroup>
+service_group_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::ServiceGroup>
+service_group_set_mapping;
 // ServiceStatus
 extern const CentreonBroker::DB::DataMember<Events::ServiceStatus>
 service_status_dm[];

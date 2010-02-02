@@ -140,25 +140,6 @@ DB::MappingGetters<Events::Downtime>
 DB::MappingSetters<Events::Downtime>
   downtime_set_mapping;
 
-const DB::DataMember<Group> group_dm[] =
-  {
-    DataMember<Group>("action_url",
-      &Group::action_url),
-    DataMember<Group>("alias",
-      &Group::alias),
-    DataMember<Group>("hostgroup_name",
-      &Group::name),
-    DataMember<Group>("notes",
-      &Group::notes),
-    DataMember<Group>("notes_url",
-      &Group::notes_url),
-    DataMember<Group>()
-  };
-DB::MappingGetters<Events::Group>
-  group_get_mapping;
-DB::MappingSetters<Events::Group>
-  group_set_mapping;
-
 const DB::DataMember<Host> host_dm[] =
   {
     DataMember<Host>("acknowledgement_type",
@@ -325,6 +306,55 @@ DB::MappingGetters<Events::Host>
   host_get_mapping;
 DB::MappingSetters<Events::Host>
   host_set_mapping;
+
+const DB::DataMember<HostDependency> host_dependency_dm[] =
+  {
+    DataMember<HostDependency>("dependency_period",
+      &HostDependency::dependency_period),
+    DataMember<HostDependency>("dependent_host",
+      &HostDependency::dependent_object),
+    DataMember<HostDependency>("host",
+      &HostDependency::object),
+    DataMember<HostDependency>("inherits_parent",
+      &HostDependency::inherits_parent),
+    DataMember<HostDependency>()
+  };
+DB::MappingGetters<Events::HostDependency>
+  host_dependency_get_mapping;
+DB::MappingSetters<Events::HostDependency>
+  host_dependency_set_mapping;
+
+const DB::DataMember<HostGroup> host_group_dm[] =
+  {
+    DataMember<HostGroup>("action_url",
+      &HostGroup::action_url),
+    DataMember<HostGroup>("alias",
+      &HostGroup::alias),
+    DataMember<HostGroup>("hostgroup_name",
+      &HostGroup::name),
+    DataMember<HostGroup>("notes",
+      &HostGroup::notes),
+    DataMember<HostGroup>("notes_url",
+      &HostGroup::notes_url),
+    DataMember<HostGroup>()
+  };
+DB::MappingGetters<Events::HostGroup>
+  host_group_get_mapping;
+DB::MappingSetters<Events::HostGroup>
+  host_group_set_mapping;
+
+const DB::DataMember<HostParent> host_parent_dm[] =
+  {
+    DataMember<HostParent>("host",
+      &HostParent::host),
+    DataMember<HostParent>("parents",
+      &HostParent::parent),
+    DataMember<HostParent>()
+  };
+DB::MappingGetters<Events::HostParent>
+  host_parent_get_mapping;
+DB::MappingSetters<Events::HostParent>
+  host_parent_set_mapping;
 
 const DB::DataMember<HostStatus> host_status_dm[] =
   {
@@ -692,6 +722,42 @@ DB::MappingGetters<Events::Service>
 DB::MappingSetters<Events::Service>
   service_set_mapping;
 
+const DB::DataMember<ServiceDependency> service_dependency_dm[] =
+  {
+    DataMember<ServiceDependency>("dependency_period",
+      &ServiceDependency::dependency_period),
+    DataMember<ServiceDependency>("dependent_service",
+      &ServiceDependency::dependent_object),
+    DataMember<ServiceDependency>("inherits_parent",
+      &ServiceDependency::inherits_parent),
+    DataMember<ServiceDependency>("service",
+      &ServiceDependency::object),
+    DataMember<ServiceDependency>()
+  };
+DB::MappingGetters<Events::ServiceDependency>
+  service_dependency_get_mapping;
+DB::MappingSetters<Events::ServiceDependency>
+  service_dependency_set_mapping;
+
+const DB::DataMember<ServiceGroup> service_group_dm[] =
+  {
+    DataMember<ServiceGroup>("action_url",
+      &ServiceGroup::action_url),
+    DataMember<ServiceGroup>("alias",
+      &ServiceGroup::alias),
+    DataMember<ServiceGroup>("notes",
+      &ServiceGroup::notes),
+    DataMember<ServiceGroup>("notes_url",
+      &ServiceGroup::notes_url),
+    DataMember<ServiceGroup>("servicegroup_name",
+      &ServiceGroup::name),
+    DataMember<ServiceGroup>()
+  };
+DB::MappingGetters<Events::ServiceGroup>
+  service_group_get_mapping;
+DB::MappingSetters<Events::ServiceGroup>
+  service_group_set_mapping;
+
 const DB::DataMember<ServiceStatus> service_status_dm[] =
   {
     DataMember<ServiceStatus>("acknowledgement_type",
@@ -839,63 +905,59 @@ void InitMapping(const DB::DataMember<T>* datamembers,
  */
 void MappingsDestroy()
 {
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Acknowledgement mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Acknowledgement mapping ...");
   acknowledgement_get_mapping.Clear();
   acknowledgement_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Comment mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Comment mapping ...");
   comment_get_mapping.Clear();
   comment_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Downtime mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Downtime mapping ...");
   downtime_get_mapping.Clear();
   downtime_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Group mapping ...");
-#endif /* !NDEBUG */
-  group_get_mapping.Clear();
-  group_set_mapping.Clear();
-
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Host mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Host mapping ...");
   host_get_mapping.Clear();
   host_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying HostStatus mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying HostDependency mapping ...");
+  host_dependency_get_mapping.Clear();
+  host_dependency_set_mapping.Clear();
+
+  LOGDEBUG("Destroying HostGroup mapping ...");
+  host_group_get_mapping.Clear();
+  host_group_set_mapping.Clear();
+
+  LOGDEBUG("Destroying HostParent mapping ...");
+  host_parent_get_mapping.Clear();
+  host_parent_set_mapping.Clear();
+
+  LOGDEBUG("Destroying HostStatus mapping ...");
   host_status_get_mapping.Clear();
   host_status_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Log mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Log mapping ...");
   log_get_mapping.Clear();
   log_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying ProgramStatus mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying ProgramStatus mapping ...");
   program_status_get_mapping.Clear();
   program_status_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying Service mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying Service mapping ...");
   service_get_mapping.Clear();
   service_set_mapping.Clear();
 
-#ifndef NDEBUG
-  logging.LogDebug("Destroying ServiceStatus mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Destroying ServiceDependency mapping ...");
+  service_dependency_get_mapping.Clear();
+  service_dependency_set_mapping.Clear();
+
+  LOGDEBUG("Destroying ServiceGroup mapping ...");
+  service_group_get_mapping.Clear();
+  service_group_set_mapping.Clear();
+
+  LOGDEBUG("Destroying ServiceStatus mapping ...");
   service_status_get_mapping.Clear();
   service_status_set_mapping.Clear();
 
@@ -911,63 +973,72 @@ void MappingsDestroy()
  */
 void MappingsInit()
 {
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Acknowledgement mapping ...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Initializing Acknowledgement mapping ...");
   InitMapping<Events::Acknowledgement>(acknowledgement_dm,
     acknowledgement_get_mapping,
     acknowledgement_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Comment mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing Comment mapping ...");
   InitMapping<Events::Comment>(comment_dm,
     comment_get_mapping,
     comment_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Downtime mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing Downtime mapping ...");
   InitMapping<Events::Downtime>(downtime_dm,
     downtime_get_mapping,
     downtime_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Group mapping ...");
-#endif /* !NDEBUG */
-  InitMapping<Events::Group>(group_dm,
-    group_get_mapping,
-    group_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Host mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing Host mapping ...");
   InitMapping<Events::Host>(host_dm,
     host_get_mapping,
     host_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing HostStatus mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing HostDependency mapping ...");
+  InitMapping<Events::HostDependency>(host_dependency_dm,
+    host_dependency_get_mapping,
+    host_dependency_set_mapping);
+
+  LOGDEBUG("Initializing HostGroup mapping ...");
+  InitMapping<Events::HostGroup>(host_group_dm,
+    host_group_get_mapping,
+    host_group_set_mapping);
+
+  LOGDEBUG("Initializing HostParent mapping ...");
+  InitMapping<Events::HostParent>(host_parent_dm,
+    host_parent_get_mapping,
+    host_parent_set_mapping);
+
+  LOGDEBUG("Initializing HostStatus mapping ...");
   InitMapping<Events::HostStatus>(host_status_dm,
     host_status_get_mapping,
     host_status_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Log mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing Log mapping ...");
   InitMapping<Events::Log>(log_dm,
     log_get_mapping,
     log_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ProgramStatus mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing ProgramStatus mapping ...");
   InitMapping<Events::ProgramStatus>(program_status_dm,
     program_status_get_mapping,
     program_status_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing Service mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing Service mapping ...");
   InitMapping<Events::Service>(service_dm,
     service_get_mapping,
     service_set_mapping);
-#ifndef NDEBUG
-  logging.LogDebug("Initializing ServiceStatus mapping ...");
-#endif /* !NDEBUG */
+
+  LOGDEBUG("Initializing ServiceDependency mapping ...");
+  InitMapping<Events::ServiceDependency>(service_dependency_dm,
+    service_dependency_get_mapping,
+    service_dependency_set_mapping);
+
+  LOGDEBUG("Initializing ServiceGroup mapping ...");
+  InitMapping<Events::ServiceGroup>(service_group_dm,
+    service_group_get_mapping,
+    service_group_set_mapping);
+
+  LOGDEBUG("Initializing ServiceStatus mapping ...");
   InitMapping<Events::ServiceStatus>(service_status_dm,
     service_status_get_mapping,
     service_status_set_mapping);
