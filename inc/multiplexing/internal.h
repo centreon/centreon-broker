@@ -22,26 +22,12 @@
 # define MULTIPLEXING_INTERNAL_H_
 
 # include <list>
-# include <map>
-# include <string>
-# include <utility>
 # include "concurrency/mutex.h"
 
 namespace                       Multiplexing
 {
   // Forward declaration.
   class                         Subscriber;
-
-  // List of hosts.
-  extern std::map<std::pair<std::string, std::string>, int>
-                                gl_hosts;
-  extern Concurrency::Mutex     gl_hostsm;
-
-  // List of services.
-  extern std::map<std::pair<std::pair<std::string, std::string>, std::string>,
-                  int>
-                                gl_services;
-  extern Concurrency::Mutex     gl_servicesm;
 
   // Internal multiplexing variables.
   extern std::list<Subscriber*> gl_subscribers;
