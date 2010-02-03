@@ -211,7 +211,7 @@ void Configuration::Manager::OnCreate(Concurrency::Thread* thread)
 
   // Search for thread handle in output list.
   for (std::map<Interface, Concurrency::Thread*>::iterator
-	 it = this->outputs_.begin();
+         it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
     if (it->second == thread)
@@ -239,20 +239,20 @@ void Configuration::Manager::OnExit(Concurrency::Thread* thread)
        ++it)
     if (it->second == thread)
       {
-	this->to_reap_.push_back(thread);
-	this->inputs_.erase(it);
-	return ;
+        this->to_reap_.push_back(thread);
+        this->inputs_.erase(it);
+        return ;
       }
 
   // Search for thread handle in output list.
   for (std::map<Interface, Concurrency::Thread*>::iterator
-	 it = this->outputs_.begin();
+         it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
     if (it->second == thread)
       {
-	this->to_reap_.push_back(thread);
-	this->outputs_.erase(it);
+        this->to_reap_.push_back(thread);
+        this->outputs_.erase(it);
         return ;
       }
 
@@ -292,7 +292,7 @@ void Configuration::Manager::Reap()
 
       // Check that there are some threads to reap.
       if (this->to_reap_.empty())
-	break ;
+        break ;
 
       // Delete current thread.
       std::auto_ptr<Concurrency::Thread> thread(this->to_reap_.front());
@@ -408,36 +408,39 @@ void Configuration::Manager::Update()
     {
       LOGDEBUG("Adding new output object...");
       if ((Configuration::Interface::IPV4_SERVER == outputs_it->type)
-	  || (Configuration::Interface::IPV6_SERVER == outputs_it->type)
-	  || (Configuration::Interface::UNIX_SERVER == outputs_it->type))
-	{
-	  std::auto_ptr<IO::Acceptor> acceptor(
+          || (Configuration::Interface::IPV6_SERVER == outputs_it->type)
+          || (Configuration::Interface::UNIX_SERVER == outputs_it->type))
+        {
+          std::auto_ptr<IO::Acceptor> acceptor(
             ::Interface::Factory::Instance().Acceptor(*outputs_it));
-	  std::auto_ptr<Processing::Listener> listener(
+          std::auto_ptr<Processing::Listener> listener(
             new Processing::Listener);
 
-	  listener->Init(acceptor.get(),
-			 Processing::Listener::NDO,
-			 Processing::Listener::OUT,
-			 this);
-	  acceptor.release();
-	  this->outputs_[*outputs_it] = listener.get();
-	  listener.release();
-	}
+          listener->Init(acceptor.get(),
+                         ((outputs_it->protocol
+                           == Configuration::Interface::NDO)
+                          ? Processing::Listener::NDO
+                          : Processing::Listener::XML),
+                         Processing::Listener::OUT,
+                         this);
+          acceptor.release();
+          this->outputs_[*outputs_it] = listener.get();
+          listener.release();
+        }
       else
-	{
-	  std::auto_ptr<Processing::FailoverOut> feeder;
-	  std::auto_ptr<Multiplexing::Subscriber> subscriber;
+        {
+          std::auto_ptr<Processing::FailoverOut> feeder;
+          std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
-	  subscriber.reset(new Multiplexing::Subscriber);
-	  feeder.reset(new Processing::FailoverOut);
-	  feeder->Run(subscriber.get(),
-		      *outputs_it,
-		      this);
-	  subscriber.release();
-	  this->outputs_[*outputs_it] = feeder.get();
-	  feeder.release();
-	}
+          subscriber.reset(new Multiplexing::Subscriber);
+          feeder.reset(new Processing::FailoverOut);
+          feeder->Run(subscriber.get(),
+                      *outputs_it,
+                      this);
+          subscriber.release();
+          this->outputs_[*outputs_it] = feeder.get();
+          feeder.release();
+        }
     }
 
   // Remove inputs that are not present in conf anymore or which don't have the
@@ -465,38 +468,41 @@ void Configuration::Manager::Update()
     {
       LOGDEBUG("Adding new input object...");
       if ((Configuration::Interface::IPV4_SERVER == inputs_it->type)
-	  || (Configuration::Interface::IPV6_SERVER == inputs_it->type)
-	  || (Configuration::Interface::UNIX_SERVER == inputs_it->type))
-	{
-	  std::auto_ptr<IO::Acceptor> acceptor(
+          || (Configuration::Interface::IPV6_SERVER == inputs_it->type)
+          || (Configuration::Interface::UNIX_SERVER == inputs_it->type))
+        {
+          std::auto_ptr<IO::Acceptor> acceptor(
             ::Interface::Factory::Instance().Acceptor(*inputs_it));
-	  std::auto_ptr<Processing::Listener> listener(
+          std::auto_ptr<Processing::Listener> listener(
             new Processing::Listener);
 
-	  listener->Init(acceptor.get(),
-			 Processing::Listener::NDO,
-			 Processing::Listener::IN,
-			 this);
-	  acceptor.release();
-	  this->inputs_[*inputs_it] = listener.get();
-	  listener.release();
-	}
+          listener->Init(acceptor.get(),
+                         ((inputs_it->protocol
+                           == Configuration::Interface::NDO)
+                          ? Processing::Listener::NDO
+                          : Processing::Listener::XML),
+                         Processing::Listener::IN,
+                         this);
+          acceptor.release();
+          this->inputs_[*inputs_it] = listener.get();
+          listener.release();
+        }
       else
-	{
-	  /*
-	  std::auto_ptr<Processing::FailoverOut> feeder;
-	  std::auto_ptr<Multiplexing::Subscriber> subscriber;
+        {
+          /*
+          std::auto_ptr<Processing::FailoverOut> feeder;
+          std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
-	  subscriber.reset(new Multiplexing::Subscriber);
-	  feeder.reset(new Processing::FailoverOut);
-	  feeder->Run(subscriber.get(),
-		      *outputs_it,
-		      this);
-	  subscriber.release();
-	  this->outputs_[*outputs_it] = feeder.get();
-	  feeder.release();
-	  */
-	}
+          subscriber.reset(new Multiplexing::Subscriber);
+          feeder.reset(new Processing::FailoverOut);
+          feeder->Run(subscriber.get(),
+                      *outputs_it,
+                      this);
+          subscriber.release();
+          this->outputs_[*outputs_it] = feeder.get();
+          feeder.release();
+          */
+        }
     }
 
   return ;
