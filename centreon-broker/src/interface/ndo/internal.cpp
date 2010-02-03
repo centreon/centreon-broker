@@ -18,11 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include <sstream>
-#include <stdlib.h>                 // for strtol
-#include <string.h>                 // for strcspn, strdup, strncmp
 #include "events/events.h"
-#include "exception.h"
 #include "interface/ndo/internal.h"
 #include "nagios/protoapi.h"
 

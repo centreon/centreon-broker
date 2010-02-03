@@ -179,16 +179,22 @@ struct   Field
 /**
  *  Static lists.
  */
-static std::list<Field<Events::Acknowledgement> > acknowledgement_list;
-static std::list<Field<Events::Comment> >         comment_list;
-static std::list<Field<Events::Downtime> >        downtime_list;
-static std::list<Field<Events::Host> >            host_list;
-static std::list<Field<Events::HostGroup> >       host_group_list;
-static std::list<Field<Events::HostStatus> >      host_status_list;
-static std::list<Field<Events::Log> >             log_list;
-static std::list<Field<Events::ProgramStatus> >   program_status_list;
-static std::list<Field<Events::Service> >         service_list;
-static std::list<Field<Events::ServiceStatus> >   service_status_list;
+static std::list<Field<Events::Acknowledgement> >    acknowledgement_list;
+static std::list<Field<Events::Comment> >            comment_list;
+static std::list<Field<Events::Downtime> >           downtime_list;
+static std::list<Field<Events::Host> >               host_list;
+static std::list<Field<Events::HostDependency> >     host_dependency_list;
+static std::list<Field<Events::HostGroup> >          host_group_list;
+static std::list<Field<Events::HostGroupMember> >    host_group_member_list;
+static std::list<Field<Events::HostParent> >         host_parent_list;
+static std::list<Field<Events::HostStatus> >         host_status_list;
+static std::list<Field<Events::Log> >                log_list;
+static std::list<Field<Events::ProgramStatus> >      program_status_list;
+static std::list<Field<Events::Service> >            service_list;
+static std::list<Field<Events::ServiceDependency> >  service_dependency_list;
+static std::list<Field<Events::ServiceGroup> >       service_group_list;
+static std::list<Field<Events::ServiceGroupMember> > service_group_member_list;
+static std::list<Field<Events::ServiceStatus> >      service_status_list;
 
 /**************************************
 *                                     *
@@ -353,10 +359,28 @@ void Destination::Event(Events::Event* event)
             host_list,
             *xml_event);
           break ;
+         case Events::Event::HOSTDEPENDENCY:
+          xml_event.reset(new TiXmlElement("host_dependency"));
+          HandleEvent(*static_cast<Events::HostDependency*>(event),
+            host_dependency_list,
+            *xml_event);
+          break ;
          case Events::Event::HOSTGROUP:
           xml_event.reset(new TiXmlElement("host_group"));
           HandleEvent(*static_cast<Events::HostGroup*>(event),
             host_group_list,
+            *xml_event);
+          break ;
+         case Events::Event::HOSTGROUPMEMBER:
+          xml_event.reset(new TiXmlElement("host_group_member"));
+          HandleEvent(*static_cast<Events::HostGroupMember*>(event),
+             host_group_member_list,
+            *xml_event);
+          break ;
+         case Events::Event::HOSTPARENT:
+          xml_event.reset(new TiXmlElement("host_parent"));
+          HandleEvent(*static_cast<Events::HostParent*>(event),
+            host_parent_list,
             *xml_event);
           break ;
          case Events::Event::HOSTSTATUS:
@@ -381,6 +405,24 @@ void Destination::Event(Events::Event* event)
           xml_event.reset(new TiXmlElement("service"));
           HandleEvent(*static_cast<Events::Service*>(event),
             service_list,
+            *xml_event);
+          break ;
+         case Events::Event::SERVICEDEPENDENCY:
+          xml_event.reset(new TiXmlElement("service_dependency"));
+          HandleEvent(*static_cast<Events::ServiceDependency*>(event),
+            service_dependency_list,
+            *xml_event);
+          break ;
+         case Events::Event::SERVICEGROUP:
+          xml_event.reset(new TiXmlElement("service_group"));
+          HandleEvent(*static_cast<Events::ServiceGroup*>(event),
+            service_group_list,
+            *xml_event);
+          break ;
+         case Events::Event::SERVICEGROUPMEMBER:
+          xml_event.reset(new TiXmlElement("service_group_member"));
+          HandleEvent(*static_cast<Events::ServiceGroupMember*>(event),
+            service_group_member_list,
             *xml_event);
           break ;
          case Events::Event::SERVICESTATUS:
@@ -415,11 +457,17 @@ void Destination::Initialize()
   StaticInit(comment_fields, comment_list);
   StaticInit(downtime_fields, downtime_list);
   StaticInit(host_fields, host_list);
+  StaticInit(host_dependency_fields, host_dependency_list);
   StaticInit(host_group_fields, host_group_list);
+  StaticInit(host_group_member_fields, host_group_member_list);
+  StaticInit(host_parent_fields, host_parent_list);
   StaticInit(host_status_fields, host_status_list);
   StaticInit(log_fields, log_list);
   StaticInit(program_status_fields, program_status_list);
   StaticInit(service_fields, service_list);
+  StaticInit(service_dependency_fields, service_dependency_list);
+  StaticInit(service_group_fields, service_group_list);
+  StaticInit(service_group_member_fields, service_group_member_list);
   StaticInit(service_status_fields, service_status_list);
   return ;
 }

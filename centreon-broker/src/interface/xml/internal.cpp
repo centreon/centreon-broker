@@ -24,6 +24,7 @@
 using namespace Events;
 using namespace Interface::XML;
 
+// Acknowledgement fields.
 const NameField<Acknowledgement> Interface::XML::acknowledgement_fields[] =
   {
     NameField<Acknowledgement>("acknowledgement_type",
@@ -34,12 +35,18 @@ const NameField<Acknowledgement> Interface::XML::acknowledgement_fields[] =
       &Acknowledgement::comment),
     NameField<Acknowledgement>("entry_time",
       &Acknowledgement::entry_time),
+    NameField<Acknowledgement>("host",
+      &Acknowledgement::host),
+    NameField<Acknowledgement>("instance",
+      &Acknowledgement::instance),
     NameField<Acknowledgement>("is_sticky",
       &Acknowledgement::is_sticky),
     NameField<Acknowledgement>("notify_contacts",
       &Acknowledgement::notify_contacts),
     NameField<Acknowledgement>("persistent_comment",
       &Acknowledgement::persistent_comment),
+    NameField<Acknowledgement>("service",
+      &Acknowledgement::service),
     NameField<Acknowledgement>("state",
       &Acknowledgement::state),
     NameField<Acknowledgement>("type",
@@ -47,6 +54,7 @@ const NameField<Acknowledgement> Interface::XML::acknowledgement_fields[] =
     NameField<Acknowledgement>()
   };
 
+// Comment fields.
 const NameField<Comment> Interface::XML::comment_fields[] =
   {
     NameField<Comment>("author_name",
@@ -69,6 +77,8 @@ const NameField<Comment> Interface::XML::comment_fields[] =
       &Comment::expires),
     NameField<Comment>("host_name",
       &Comment::host),
+    NameField<Comment>("instance",
+      &Comment::instance),
     NameField<Comment>("internal_id",
       &Comment::internal_id),
     NameField<Comment>("persistent",
@@ -82,6 +92,7 @@ const NameField<Comment> Interface::XML::comment_fields[] =
     NameField<Comment>()
   };
 
+// Downtime fields.
 const NameField<Downtime> Interface::XML::downtime_fields[] =
   {
     NameField<Downtime>("author_name",
@@ -102,6 +113,8 @@ const NameField<Downtime> Interface::XML::downtime_fields[] =
       &Downtime::fixed),
     NameField<Downtime>("host_name",
       &Downtime::host),
+    NameField<Downtime>("instance",
+      &Downtime::instance),
     NameField<Downtime>("service_description",
       &Downtime::service),
     NameField<Downtime>("start_time",
@@ -117,6 +130,7 @@ const NameField<Downtime> Interface::XML::downtime_fields[] =
     NameField<Downtime>()
   };
 
+// Host fields.
 const NameField<Host> Interface::XML::host_fields[] =
   {
     NameField<Host>("acknowledgement_type",
@@ -280,6 +294,21 @@ const NameField<Host> Interface::XML::host_fields[] =
     NameField<Host>()
   };
 
+// HostDependency fields.
+const NameField<HostDependency> Interface::XML::host_dependency_fields[] =
+  {
+    NameField<HostDependency>("dependency_period",
+      &HostDependency::dependency_period),
+    NameField<HostDependency>("dependent_host",
+      &HostDependency::dependent_object),
+    NameField<HostDependency>("host",
+      &HostDependency::object),
+    NameField<HostDependency>("inherits_parent",
+      &HostDependency::inherits_parent),
+    NameField<HostDependency>()
+  };
+
+// HostGroup fields.
 const NameField<HostGroup> Interface::XML::host_group_fields[] =
   {
     NameField<HostGroup>("action_url",
@@ -288,6 +317,8 @@ const NameField<HostGroup> Interface::XML::host_group_fields[] =
       &HostGroup::alias),
     NameField<HostGroup>("hostgroup_name",
       &HostGroup::name),
+    NameField<HostGroup>("instance",
+      &HostGroup::instance),
     NameField<HostGroup>("notes",
       &HostGroup::notes),
     NameField<HostGroup>("notes_url",
@@ -295,6 +326,29 @@ const NameField<HostGroup> Interface::XML::host_group_fields[] =
     NameField<HostGroup>()
   };
 
+// HostGroupMember fields.
+const NameField<HostGroupMember> Interface::XML::host_group_member_fields[] =
+  {
+    NameField<HostGroupMember>("group",
+      &HostGroupMember::group),
+    NameField<HostGroupMember>("instance",
+      &HostGroupMember::instance),
+    NameField<HostGroupMember>("member",
+      &HostGroupMember::member),
+    NameField<HostGroupMember>()
+  };
+
+// HostParent fields.
+const NameField<HostParent> Interface::XML::host_parent_fields[] =
+  {
+    NameField<HostParent>("host",
+      &HostParent::host),
+    NameField<HostParent>("parent",
+      &HostParent::parent),
+    NameField<HostParent>()
+  };
+
+// HostStatus fields.
 const NameField<HostStatus> Interface::XML::host_status_fields[] =
   {
     NameField<HostStatus>("acknowledgement_type",
@@ -388,12 +442,15 @@ const NameField<HostStatus> Interface::XML::host_status_fields[] =
     NameField<HostStatus>()
   };
 
+// Log fields.
 const NameField<Log> Interface::XML::log_fields[] =
   {
     NameField<Log>("ctime",
       &Log::c_time),
     NameField<Log>("host_name",
       &Log::host),
+    NameField<Log>("instance",
+      &Log::instance),
     NameField<Log>("msg_type",
       &Log::msg_type),
     NameField<Log>("notification_cmd",
@@ -413,6 +470,7 @@ const NameField<Log> Interface::XML::log_fields[] =
     NameField<Log>()
   };
 
+// ProgramStatus fields.
 const NameField<ProgramStatus> Interface::XML::program_status_fields[] =
   {
     NameField<ProgramStatus>("active_host_checks_enabled",
@@ -466,6 +524,7 @@ const NameField<ProgramStatus> Interface::XML::program_status_fields[] =
     NameField<ProgramStatus>()
   };
 
+// Service fields.
 const NameField<Service> Interface::XML::service_fields[] =
   {
     NameField<Service>("acknowledgement_type",
@@ -645,6 +704,45 @@ const NameField<Service> Interface::XML::service_fields[] =
     NameField<Service>()
   };
 
+// ServiceDependency fields.
+const NameField<ServiceDependency> Interface::XML::service_dependency_fields[] =
+  {
+    NameField<ServiceDependency>("dependency_period",
+      &ServiceDependency::dependency_period),
+    NameField<ServiceDependency>("dependent_service",
+      &ServiceDependency::dependent_object),
+    NameField<ServiceDependency>("inherits_parent",
+      &ServiceDependency::inherits_parent),
+    NameField<ServiceDependency>("service",
+      &ServiceDependency::object),
+    NameField<ServiceDependency>()
+  };
+
+// ServiceGroup fields.
+const NameField<ServiceGroup> Interface::XML::service_group_fields[] =
+  {
+    NameField<ServiceGroup>("alias",
+      &ServiceGroup::alias),
+    NameField<ServiceGroup>("instance",
+      &ServiceGroup::instance),
+    NameField<ServiceGroup>("name",
+      &ServiceGroup::name),
+    NameField<ServiceGroup>()
+  };
+
+// ServiceGroupMember fields.
+const NameField<ServiceGroupMember> Interface::XML::service_group_member_fields[] =
+  {
+    NameField<ServiceGroupMember>("group",
+      &ServiceGroupMember::group),
+    NameField<ServiceGroupMember>("instance",
+      &ServiceGroupMember::instance),
+    NameField<ServiceGroupMember>("member",
+      &ServiceGroupMember::member),
+    NameField<ServiceGroupMember>()
+  };
+
+// ServiceStatus fields.
 const NameField<ServiceStatus> Interface::XML::service_status_fields[] =
   {
     NameField<ServiceStatus>("acknowledgement_type",

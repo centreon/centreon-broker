@@ -63,10 +63,6 @@ namespace    Interface
       KeyField(int k, short (T::* s)) : Interface::Field<T>(s), key(k) {}
       KeyField(int k, std::string (T::* s)) : Interface::Field<T>(s), key(k) {}
       KeyField(int k, time_t (T::* t)) : Interface::Field<T>(t), key(k) {}
-      KeyField(int k,
-               std::string (* getter)(const T&),
-               void (* setter)(T&, const char*))
-        : Interface::Field<T>(getter, setter), key(k) {}
     };
 
     // External arrays of pointer-to-members.

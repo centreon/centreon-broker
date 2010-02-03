@@ -31,10 +31,16 @@ namespace         Events
   class           Comment;
   class           Downtime;
   class           Host;
+  class           HostDependency;
   class           HostGroup;
+  class           HostGroupMember;
+  class           HostParent;
   class           HostStatus;
   class           ProgramStatus;
   class           Service;
+  class           ServiceDependency;
+  class           ServiceGroup;
+  class           ServiceGroupMember;
   class           ServiceStatus;
 }
 
@@ -63,8 +69,6 @@ namespace         Interface
         : Interface::Field<T>(s), name(n) {}
       NameField(const char* n, time_t (T::* t))
         : Interface::Field<T>(t), name(n) {}
-      NameField(const char* n, void* ptr)
-        : Interface::Field<T>(ptr), name(n) {}
     };
 
     // External arrays of pointer-to-members.
@@ -72,11 +76,19 @@ namespace         Interface
     extern const NameField<Events::Comment>         comment_fields[];
     extern const NameField<Events::Downtime>        downtime_fields[];
     extern const NameField<Events::Host>            host_fields[];
+    extern const NameField<Events::HostDependency>  host_dependency_fields[];
     extern const NameField<Events::HostGroup>       host_group_fields[];
+    extern const NameField<Events::HostGroupMember> host_group_member_fields[];
+    extern const NameField<Events::HostParent>      host_parent_fields[];
     extern const NameField<Events::HostStatus>      host_status_fields[];
     extern const NameField<Events::Log>             log_fields[];
     extern const NameField<Events::ProgramStatus>   program_status_fields[];
     extern const NameField<Events::Service>         service_fields[];
+    extern const NameField<Events::ServiceDependency>
+      service_dependency_fields[];
+    extern const NameField<Events::ServiceGroup>    service_group_fields[];
+    extern const NameField<Events::ServiceGroupMember>
+      service_group_member_fields[];
     extern const NameField<Events::ServiceStatus>   service_status_fields[];
   }
 }
