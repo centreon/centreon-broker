@@ -29,21 +29,16 @@ bin_PROGRAMS	=	cb2db cbmod.so
 #                                     #
 #######################################
 
-cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
+common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/concurrency/lock.cpp				\
 		../../src/concurrency/mutex.cpp				\
 		../../src/concurrency/thread.cpp			\
 		../../src/concurrency/thread_listener.cpp		\
-		../../src/daemon/configuration/interface.cpp		\
-		../../src/daemon/configuration/lexer.cpp		\
-		../../src/daemon/configuration/log.cpp			\
-		../../src/daemon/configuration/manager.cpp		\
-		../../src/daemon/configuration/parser.cpp		\
-		../../src/daemon/main.cpp				\
-		../../src/daemon/processing/failover_out.cpp		\
-		../../src/daemon/processing/feeder.cpp			\
-		../../src/daemon/processing/listener.cpp		\
-		../../src/daemon/processing/listener_destination.cpp	\
+		../../src/configuration/interface.cpp			\
+		../../src/configuration/lexer.cpp			\
+		../../src/configuration/log.cpp				\
+		../../src/configuration/manager.cpp			\
+		../../src/configuration/parser.cpp			\
 		../../src/db/connection.cpp				\
 		../../src/db/db_exception.cpp				\
 		../../src/db/delete.cpp					\
@@ -59,31 +54,35 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/db/update.cpp					\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/comment.cpp				\
+		../../src/events/dependency.cpp				\
 		../../src/events/downtime.cpp				\
 		../../src/events/event.cpp				\
 		../../src/events/group.cpp				\
 		../../src/events/group_member.cpp			\
 		../../src/events/host.cpp				\
+		../../src/events/host_dependency.cpp			\
 		../../src/events/host_group.cpp				\
 		../../src/events/host_group_member.cpp			\
+		../../src/events/host_parent.cpp			\
 		../../src/events/host_service.cpp			\
 		../../src/events/host_service_status.cpp		\
 		../../src/events/host_status.cpp			\
 		../../src/events/log.cpp				\
 		../../src/events/program_status.cpp			\
 		../../src/events/service.cpp				\
+		../../src/events/service_dependency.cpp			\
 		../../src/events/service_group.cpp			\
 		../../src/events/service_group_member.cpp		\
 		../../src/events/service_status.cpp			\
 		../../src/events/status.cpp				\
 		../../src/exception.cpp					\
+		../../src/init.cpp					\
 		../../src/interface/db/destination.cpp			\
 		../../src/interface/destination.cpp			\
 		../../src/interface/factory.cpp				\
 		../../src/interface/ndo/base.cpp			\
 		../../src/interface/ndo/destination.cpp			\
 		../../src/interface/ndo/internal.cpp			\
-		../../src/interface/ndo/log.cpp				\
 		../../src/interface/ndo/source.cpp			\
 		../../src/interface/ndo/sourcedestination.cpp		\
 		../../src/interface/source.cpp				\
@@ -108,11 +107,15 @@ cb2db_SOURCES=	../../src/concurrency/condition_variable.cpp		\
 		../../src/mapping.cpp					\
 		../../src/multiplexing/internal.cpp			\
 		../../src/multiplexing/publisher.cpp			\
-		../../src/multiplexing/subscriber.cpp
+		../../src/multiplexing/subscriber.cpp			\
+		../../src/processing/failover_out.cpp			\
+		../../src/processing/feeder.cpp				\
+		../../src/processing/listener.cpp			\
+		../../src/processing/listener_destination.cpp
 
 # Add MySQL files if MySQL is enabled
 if MYSQL
-cb2db_SOURCES +=	../../src/db/mysql/connection.cpp		\
+common_src +=		../../src/db/mysql/connection.cpp		\
 			../../src/db/mysql/delete.cpp			\
 			../../src/db/mysql/have_args.cpp		\
 			../../src/db/mysql/have_predicate.cpp		\
@@ -125,7 +128,7 @@ endif
 
 # Add Oracle files if Oracle is enabled
 if ORACLE
-cb2db_SOURCES +=	../../src/db/oracle/connection.cpp		\
+common_src +=		../../src/db/oracle/connection.cpp		\
 			../../src/db/oracle/delete.cpp			\
 			../../src/db/oracle/have_args.cpp		\
 			../../src/db/oracle/have_predicate.cpp		\
@@ -138,7 +141,7 @@ endif
 
 # Add PostgreSQL files if PostgreSQL is enabled
 if POSTGRESQL
-cb2db_SOURCES +=	../../src/db/postgresql/connection.cpp		\
+common_src +=		../../src/db/postgresql/connection.cpp		\
 			../../src/db/postgresql/delete.cpp		\
 			../../src/db/postgresql/have_args.cpp		\
 			../../src/db/postgresql/have_predicate.cpp	\
@@ -151,12 +154,15 @@ endif
 
 # Add TLS files is TLS is enabled
 if TLS
-cb2db_SOURCES +=	../../src/io/tls/acceptor.cpp			\
+common_src +=		../../src/io/tls/acceptor.cpp			\
 			../../src/io/tls/connector.cpp			\
 			../../src/io/tls/internal.cpp			\
 			../../src/io/tls/params.cpp			\
 			../../src/io/tls/stream.cpp
 endif
+
+cb2db_SOURCES =	$(common_src)						\
+		../../src/daemon/main.cpp
 
 # Configure compilation flags properly
 cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/daemon	\
@@ -177,36 +183,19 @@ cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 #                                     #
 #######################################
 
-cbmod_so_SOURCES=	../../src/events/acknowledgement.cpp		\
-			../../src/events/comment.cpp			\
-			../../src/events/downtime.cpp			\
-			../../src/events/event.cpp			\
-			../../src/events/group.cpp			\
-			../../src/events/group_member.cpp		\
-			../../src/events/host.cpp			\
-			../../src/events/host_group.cpp			\
-			../../src/events/host_group_member.cpp		\
-			../../src/events/host_service.cpp		\
-			../../src/events/host_service_status.cpp	\
-			../../src/events/host_status.cpp		\
-			../../src/events/log.cpp			\
-			../../src/events/program_status.cpp		\
-			../../src/events/service.cpp			\
-			../../src/events/service_group.cpp		\
-			../../src/events/service_group_member.cpp	\
-			../../src/events/service_status.cpp		\
-			../../src/events/status.cpp			\
-			../../src/exception.cpp				\
+cbmod_so_SOURCES=	$(common_src)					\
 			../../src/module/callbacks.cpp			\
 			../../src/module/initial.cpp			\
-			../../src/module/main.cpp			\
-			../../src/multiplexing/internal.cpp		\
-			../../src/multiplexing/publisher.cpp		\
-			../../src/multiplexing/subscriber.cpp
+			../../src/module/main.cpp
 
 # Configure compilation flags properly
 cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
-			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)
-cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) -shared -fPIC
-cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS) -shared -fPIC	\
-			$(GNUTLS_LDFLAGS)
+			$(BOOST_CPPFLAGS) $(LIBGNUTLS_CPPFLAGS)		\
+			$(MYSQL_CPPFLAGS)
+cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS)		\
+			$(ORACLE_OCI_CFLAGS) $(POSTGRESQL_CFLAGS)	\
+			$(PTHREAD_CFLAGS) -shared -fPIC
+cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
+			$(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)		\
+			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
+			$(PTHREAD_LIBS) -shared -fPIC
