@@ -40,6 +40,7 @@ namespace                         Events
   class                           Host;
   class                           HostDependency;
   class                           HostGroup;
+  class                           HostGroupMember;
   class                           HostParent;
   class                           HostStatus;
   class                           ProgramStatus;
@@ -47,6 +48,7 @@ namespace                         Events
   class                           Service;
   class                           ServiceDependency;
   class                           ServiceGroup;
+  class                           ServiceGroupMember;
   class                           ServiceStatus;
 }
 
@@ -90,6 +92,7 @@ namespace                         Interface
       void                        ProcessHost(const Events::Host& host);
       void                        ProcessHostDependency(const Events::HostDependency& hd);
       void                        ProcessHostGroup(const Events::HostGroup& hg);
+      void                        ProcessHostGroupMember(const Events::HostGroupMember& hgm);
       void                        ProcessHostParent(const Events::HostParent& hp);
       void                        ProcessHostStatus(const Events::HostStatus& hs);
       void                        ProcessLog(const Events::Log& log);
@@ -99,6 +102,7 @@ namespace                         Interface
       void                        ProcessServiceDependency(const Events::ServiceDependency& sd);
       void                        ProcessServiceGroup(
                                     const Events::ServiceGroup& sg);
+      void                        ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm);
       void                        ProcessServiceStatus(
                                     const Events::ServiceStatus& ss);
 
