@@ -33,14 +33,21 @@ namespace                       Processing
    *  \brief Waits for incoming connections on an acceptor.
    *
    *  The Listener class implements a mediator pattern and avoid acceptors from
-   *  being tightly coupled to the Manager and Feeder.
+   *  being tightly coupled with other objects. Listener can either wait on
+   *  input acceptors or output acceptors.
    */
   class                         Listener : public Concurrency::Thread
   {
    public:
+    enum                        INOUT
+    {
+      UNKNOWNIO = 0,
+      IN,
+      OUT
+    };
     enum                        Protocol
     {
-      UNKNOWN = 0,
+      UNKNOWNPROTO = 0,
       NDO,
       XML
     };
@@ -49,9 +56,13 @@ namespace                       Processing
     std::auto_ptr<IO::Acceptor> acceptor_;
     bool                        init_;
     Concurrency::Mutex          initm_;
-    Protocol                    protocol_;
+    void                        (Listener::* run_thread_)(IO::Stream*);
                                 Listener(const Listener& listener);
     Listener&                   operator=(const Listener& listener);
+    void                        RunNDOIn(IO::Stream* stream);
+    void                        RunNDOOut(IO::Stream* stream);
+    //    void                        RunXMLIn(IO::Stream* stream);
+    void                        RunXMLOut(IO::Stream* stream);
 
    public:
                                 Listener();
@@ -60,6 +71,7 @@ namespace                       Processing
     void                        Exit();
     void                        Init(IO::Acceptor* acceptor,
                                      Protocol proto,
+                                     INOUT io,
                                      Concurrency::ThreadListener* tl = NULL);
   };
 }

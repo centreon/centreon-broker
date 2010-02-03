@@ -118,8 +118,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/multiplexing/subscriber.cpp			\
 		../../src/processing/failover_out.cpp			\
 		../../src/processing/feeder.cpp				\
-		../../src/processing/listener.cpp			\
-		../../src/processing/listener_destination.cpp
+		../../src/processing/listener.cpp
 COMOBJ	=	$(COMSRC:.cpp=.o)
 
 # cb2db

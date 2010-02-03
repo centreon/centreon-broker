@@ -451,7 +451,10 @@ void Configuration::Manager::Update()
       std::auto_ptr<Processing::Listener> listener(
         new Processing::Listener());
 
-      listener->Init(acceptor.get(), Processing::Listener::NDO, this);
+      listener->Init(acceptor.get(),
+                     Processing::Listener::NDO,
+                     Processing::Listener::IN,
+                     this);
       acceptor.release();
       this->inputs_[*inputs_it] = listener.get();
       listener.release();
