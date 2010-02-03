@@ -426,15 +426,15 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
  */
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing HostGroup event...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Processing HostGroup event...");
   int id;
   std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostGroup> >
     query(this->conn_->GetMappedInsert<Events::HostGroup>(host_group_get_mapping));
 
   query->SetTable("hostgroup");
+  query->AddField("instance_id");
   query->SetArg(hg);
+  ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(hg.instance));
   try
     {
       query->Execute();
@@ -444,54 +444,67 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
     {
       if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
         throw ;
-
-      // Get ID of already inserted host group
-      std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
-
-      select->SetTable("hostgroup");
-      select->AddField("id");
-      select->SetPredicate(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("hostgroup_name"),
-                                     CentreonBroker::DB::Terminal(hg.name.c_str())));
-      select->Execute();
-      if (!select->Next()) // can't find host group
-        return ;
-      id = select->GetInt();
     }
-  for (std::list<std::string>::const_iterator it = hg.members.begin();
-       it != hg.members.end();
-       ++it)
+  return ;
+}
+
+/**
+ *  Process a HostGroupMember event.
+ */
+void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
+{
+  LOGDEBUG("Processing HostGroupMember event ...");
+  int host_group_id;
+  int host_id;
+
+  // Get ID of host group.
+  std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
+
+  select->SetTable("hostgroup");
+  select->AddField("id");
+  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("hostgroup_name"),
+                                                 CentreonBroker::DB::Terminal(hgm.group.c_str())),
+                                               CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("instance_id"),
+                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
+                                                   hgm.instance)))));
+  select->Execute();
+  if (!select->Next()) // can't find host group
+    return ;
+  host_group_id = select->GetInt();
+
+  // Get ID of host.
+  select.reset(this->conn_->GetSelect());
+  select->SetTable("host");
+  select->AddField("id");
+  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("host_name"),
+                                                 CentreonBroker::DB::Terminal(hgm.member.c_str())),
+                                               CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("instance_id"),
+                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
+                                                   hgm.instance)))));
+  select->Execute();
+  if (!select->Next()) // can't find host
+    return ;
+  host_id = select->GetInt();
+
+  // Insert member relationship.
+  std::auto_ptr<CentreonBroker::DB::Insert> insert(this->conn_->GetInsert());
+  insert->SetTable("host_hostgroup");
+  insert->AddField("host");
+  insert->AddField("hostgroup");
+  insert->SetArg(host_id);
+  insert->SetArg(host_group_id);
+  try
     {
-      int host_id;
-      std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
-
-      select->SetTable("host");
-      select->AddField("id");
-      select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                             CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                            hg.instance))),
-                                   CentreonBroker::DB::Equal(CentreonBroker::DB::Field("host_name"),
-                                             CentreonBroker::DB::Terminal((*it).c_str()))));
-      select->Execute();
-      if (!select->Next())
-        continue ;
-      host_id = select->GetInt();
-      select.reset();
-
-      std::auto_ptr<CentreonBroker::DB::Insert> insert(this->conn_->GetInsert());
-      insert->SetTable("host_hostgroup");
-      insert->AddField("host");
-      insert->AddField("hostgroup");
-      insert->SetArg(host_id);
-      insert->SetArg(id);
-      try
-        {
-          insert->Execute();
-        }
-      catch (const CentreonBroker::DB::DBException& dbe)
-        {
-          if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-            throw ;
-        }
+      insert->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+        throw ;
     }
   return ;
 }
@@ -674,10 +687,77 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
       service_group_get_mapping));
 
   query->SetTable("servicegroup");
+  query->AddField("instance_id");
   query->SetArg(sg);
+  ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(sg.instance));
   try
     {
       query->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+        throw ;
+    }
+  return ;
+}
+
+/**
+ *  Process a ServiceGroupMember event.
+ */
+void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm)
+{
+  LOGDEBUG("Processing ServiceGroupMember event ...");
+  int service_group_id;
+  int service_id;
+
+  // Get ID of service group.
+  std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
+
+  select->SetTable("servicegroup");
+  select->AddField("id");
+  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("servicegroup_name"),
+                                                 CentreonBroker::DB::Terminal(sgm.group.c_str())),
+                                               CentreonBroker::DB::Equal(
+                                                 CentreonBroker::DB::Field("instance_id"),
+                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
+                                                   sgm.instance)))));
+  select->Execute();
+  if (!select->Next()) // can't find service group
+    return ;
+  service_group_id = select->GetInt();
+
+  // Get ID of service.
+  select.reset(this->conn_->GetSelect());
+  select->SetTable("service");
+  select->AddField("id");
+  select->SetPredicate(CentreonBroker::DB::And(
+                         CentreonBroker::DB::And(
+                           CentreonBroker::DB::Equal(
+                             CentreonBroker::DB::Field("host_name"),
+                             CentreonBroker::DB::Terminal(sgm.host.c_str())),
+                           CentreonBroker::DB::Equal(
+                             CentreonBroker::DB::Field("service_description"),
+                             CentreonBroker::DB::Terminal(sgm.member.c_str()))),
+                         CentreonBroker::DB::Equal(
+                           CentreonBroker::DB::Field("instance_id"),
+                           CentreonBroker::DB::Terminal(this->GetInstanceId(sgm.instance)))));
+  select->Execute();
+  if (!select->Next()) // can't find service
+    return ;
+  service_id = select->GetInt();
+
+  // Insert member relationship.
+  std::auto_ptr<CentreonBroker::DB::Insert> insert(this->conn_->GetInsert());
+  insert->SetTable("service_servicegroup");
+  insert->AddField("service");
+  insert->AddField("servicegroup");
+  insert->SetArg(service_id);
+  insert->SetArg(service_group_id);
+  try
+    {
+      insert->Execute();
     }
   catch (const CentreonBroker::DB::DBException& dbe)
     {
@@ -784,6 +864,9 @@ void Destination::Event(Events::Event* event)
          case Events::Event::HOSTGROUP:
           ProcessHostGroup(*static_cast<Events::HostGroup*>(event));
           break ;
+         case Events::Event::HOSTGROUPMEMBER:
+          ProcessHostGroupMember(*static_cast<Events::HostGroupMember*>(event));
+          break ;
          case Events::Event::HOSTPARENT:
           ProcessHostParent(*static_cast<Events::HostParent*>(event));
           break ;
@@ -805,13 +888,15 @@ void Destination::Event(Events::Event* event)
          case Events::Event::SERVICEGROUP:
           ProcessServiceGroup(*static_cast<Events::ServiceGroup*>(event));
           break ;
+         case Events::Event::SERVICEGROUPMEMBER:
+          ProcessServiceGroupMember(*static_cast<Events::ServiceGroupMember*>(event));
+          break ;
          case Events::Event::SERVICESTATUS:
           ProcessServiceStatus(*static_cast<Events::ServiceStatus*>(event));
           break ;
          default:
-          ; // XXX : temporary patch
-          //assert(false);
-          //throw (Exception(event->GetType(), "Invalid event type encountered"));
+          assert(false);
+          throw (Exception(event->GetType(), "Invalid event type encountered"));
         }
     }
   catch (...)
