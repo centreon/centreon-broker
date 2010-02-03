@@ -32,8 +32,6 @@
 // Forward declarations
 namespace              Concurrency
 { class                Thread; }
-namespace              Processing
-{ class                Feeder; }
 
 namespace              Configuration
 {
@@ -53,7 +51,7 @@ namespace              Configuration
                        inputs_;
     std::list<Log>     logs_;
     Concurrency::Mutex mutex_;
-    std::map<Interface, Processing::Feeder*>
+    std::map<Interface, Concurrency::Thread*>
                        outputs_;
     std::list<Concurrency::Thread*>
                        spontaneous_;
