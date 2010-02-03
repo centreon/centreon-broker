@@ -110,8 +110,7 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/multiplexing/subscriber.cpp			\
 		../../src/processing/failover_out.cpp			\
 		../../src/processing/feeder.cpp				\
-		../../src/processing/listener.cpp			\
-		../../src/processing/listener_destination.cpp
+		../../src/processing/listener.cpp
 
 # Add MySQL files if MySQL is enabled
 if MYSQL

@@ -22,8 +22,11 @@
 #include <memory>                        // for auto_ptr
 #include <stdlib.h>                      // for abort
 #include "concurrency/lock.h"
+#include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
+#include "interface/xml/destination.h"
 #include "multiplexing/publisher.h"
+#include "multiplexing/subscriber.h"
 #include "processing/feeder.h"
 #include "processing/listener.h"
 
@@ -66,6 +69,92 @@ Listener& Listener::operator=(const Listener& listener)
   assert(false);
   abort();
   return (*this);
+}
+
+/**
+ *  Run a thread on an input stream with NDO protocol.
+ */
+void Listener::RunNDOIn(IO::Stream* stream)
+{
+  std::auto_ptr<IO::Stream> s(stream);
+  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
+  std::auto_ptr<Multiplexing::Publisher> publishr(new Multiplexing::Publisher);
+  std::auto_ptr<Interface::NDO::Source>
+    source(new Interface::NDO::Source(s.get()));
+
+  s.release();
+  feeder->Run(source.get(),
+              publishr.get(),
+              this->listener);
+  source.release();
+  publishr.release();
+  feeder.release();
+  return ;
+}
+
+/**
+ *  Run a thread on an output stream with NDO protocol.
+ */
+void Listener::RunNDOOut(IO::Stream* stream)
+{
+  std::auto_ptr<IO::Stream> s(stream);
+  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
+  std::auto_ptr<Multiplexing::Subscriber> subscribr(
+    new Multiplexing::Subscriber);
+  std::auto_ptr<Interface::NDO::Destination>
+    destination(new Interface::NDO::Destination(s.get()));
+
+  s.release();
+  feeder->Run(subscribr.get(),
+              destination.get(),
+              this->listener);
+  subscribr.release();
+  destination.release();
+  feeder.release();
+  return ;
+}
+
+/**
+ *  Run a thread on an input stream with XML protocol.
+ *
+void Listener::RunXMLIn(IO::Stream* stream)
+{
+  std::auto_ptr<IO::Stream> s(stream);
+  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
+  std::auto_ptr<Multiplexing::Publisher> publishr(new Multiplexing::Publisher);
+  std::auto_ptr<Interface::XML::Source>
+    source(new Interface::XML::Source(s.get()));
+
+  s.release();
+  feeder->Run(source.get(),
+              publishr.get(),
+              this->listener);
+  source.release();
+  publishr.release();
+  feeder.release();
+  return ;
+  }*/
+
+/**
+ *  Run a thread on an output stream with XML protocol.
+ */
+void Listener::RunXMLOut(IO::Stream* stream)
+{
+  std::auto_ptr<IO::Stream> s(stream);
+  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
+  std::auto_ptr<Multiplexing::Subscriber> subscribr(
+    new Multiplexing::Subscriber);
+  std::auto_ptr<Interface::XML::Destination>
+    destination(new Interface::XML::Destination(s.get()));
+
+  s.release();
+  feeder->Run(subscribr.get(),
+              destination.get(),
+              this->listener);
+  subscribr.release();
+  destination.release();
+  feeder.release();
+  return ;
 }
 
 /**************************************
@@ -119,26 +208,8 @@ void Listener::operator()()
 
       while (stream.get())
         {
-          std::auto_ptr<Interface::Source> source;
-
-          /* XXX         // Open protocol object.
-          if (XML == this->protocol_)
-            source.reset(new Interface::XML::Source(stream.get()));
-            else*/
-            source.reset(new Interface::NDO::Source(stream.get()));
-          stream.release();
-
-          // Create feeding thread.
-          std::auto_ptr<Multiplexing::Publisher> publisher(
-            new Multiplexing::Publisher);
-          std::auto_ptr<FeederOnce> feeder(new FeederOnce);
-
-          feeder->Run(source.get(),
-                      publisher.get(),
-                      this->listener);
-          source.release();
-          publisher.release();
-          feeder.release();
+          // Process stream.
+          (this->*(this->run_thread_))(stream.release());
 
           // Wait for new connection.
           stream.reset(this->acceptor_->Accept());
@@ -182,9 +253,12 @@ void Listener::Exit()
  *
  *  \param[in] acceptor Acceptor on which incoming clients will be awaited.
  *  \param[in] proto    Protocol to use on new connections.
+ *  \param[in] io       Should we act on input or output objects ?
+ *  \param[in] tl       Listener for all created threads.
  */
 void Listener::Init(IO::Acceptor* acceptor,
                     Listener::Protocol proto,
+                    Listener::INOUT io,
                     Concurrency::ThreadListener* tl)
 {
   Concurrency::Lock lock(this->initm_);
@@ -193,7 +267,21 @@ void Listener::Init(IO::Acceptor* acceptor,
     {
       this->acceptor_.reset(acceptor);
       this->init_ = true;
-      this->protocol_ = proto;
+      if ((NDO == proto))
+        {
+          if (OUT == io)
+            this->run_thread_ = &Processing::Listener::RunNDOOut;
+          else
+            this->run_thread_ = &Processing::Listener::RunNDOIn;
+        }
+      else
+        {
+          if (OUT == io)
+            this->run_thread_ = &Processing::Listener::RunXMLOut;
+          /*
+            else
+            this->run_thread_ = &Processing::Listener::RunXMLIn;*/
+        }
       this->Run(tl);
     }
   catch (...)
