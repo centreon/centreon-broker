@@ -18,19 +18,13 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef INTERFACE_NDO_LOG_H_
-# define INTERFACE_NDO_LOG_H_
+#ifndef MODULE_SET_LOG_DATA_H_
+# define MODULE_SET_LOG_DATA_H_
 
 // Forward declaration.
 namespace   Events
 { class     Log; }
 
-namespace   Interface
-{
-  namespace NDO
-  {
-    void    SetLogData(Events::Log& log, const char* log_data);
-  }
-}
+void        SetLogData(Events::Log& log, const char* log_data);
 
-#endif /* !INTERFACE_NDO_LOG_H_ */
+#endif /* !MODULE_SET_LOG_DATA_H_ */

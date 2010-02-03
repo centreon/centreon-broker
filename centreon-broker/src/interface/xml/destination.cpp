@@ -101,33 +101,6 @@ static void set_integer(const T& t,
 }
 
 /**
- *  Set a list on the XML document.
- */
-template <typename T>
-static void set_list(const T& t,
-                     const NameField<T>& nf,
-                     TiXmlNode& node)
-{
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::list<std::string>::const_iterator end;
-  std::list<std::string>::const_iterator it;
-
-  end = (t.*(nf.field.field_list)).end();
-  for (it = (t.*(nf.field.field_list)).begin();
-       it != end;
-       ++it)
-    {
-      std::auto_ptr<TiXmlElement> host(new TiXmlElement(*it));
-
-      elem->LinkEndChild(host.get());
-      host.release();
-    }
-  node.LinkEndChild(elem.get());
-  elem.release();
-  return ;
-}
-
-/**
  *  Set a short on the XML document.
  */
 template <typename T>
@@ -257,9 +230,6 @@ static void StaticInit(const NameField<T> fields[],
           break ;
          case 'i':
           field.ptr = &set_integer<T>;
-          break ;
-         case 'l':
-          field.ptr = &set_list<T>;
           break ;
          case 's':
           field.ptr = &set_short<T>;

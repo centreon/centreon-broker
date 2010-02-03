@@ -288,8 +288,6 @@ const NameField<HostGroup> Interface::XML::host_group_fields[] =
       &HostGroup::alias),
     NameField<HostGroup>("hostgroup_name",
       &HostGroup::name),
-    NameField<HostGroup>("members",
-      &HostGroup::members),
     NameField<HostGroup>("notes",
       &HostGroup::notes),
     NameField<HostGroup>("notes_url",

@@ -22,7 +22,7 @@
 #include <string.h>
 #include "events/log.h"
 #include "exception.h"
-#include "interface/ndo/log.h"
+#include "module/set_log_data.h"
 
 /**
  *  Extract the first element of a log string.
@@ -85,9 +85,9 @@ static int type_id(const char* type)
 }
 
 /**
- *  Extract NDO-formated log data to the C++ object.
+ *  Extract Nagios-formated log data to the C++ object.
  */
-void Interface::NDO::SetLogData(Events::Log& log, const char* log_data)
+void SetLogData(Events::Log& log, const char* log_data)
 {
   char* datadup;
 

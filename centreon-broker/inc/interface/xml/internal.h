@@ -57,8 +57,6 @@ namespace         Interface
         : Interface::Field<T>(d), name(n) {}
       NameField(const char* n, int (T::* i))
         : Interface::Field<T>(i), name(n) {}
-      NameField(const char* n, std::list<std::string> (T::* l))
-        : Interface::Field<T>(l), name(n) {}
       NameField(const char* n, short (T::* s))
         : Interface::Field<T>(s), name(n) {}
       NameField(const char* n, std::string (T::* s))

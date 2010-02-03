@@ -109,18 +109,6 @@ static void set_timet(T& t,
   return ;
 }
 
-/**
- *  Execute an undefined setter.
- */
-template <typename T>
-static void set_undefined(T& t,
-                          const typename KeyField<T>::FieldPointer& field,
-                          const char* str)
-{
-  field.field_undefined.setter(t, str);
-  return ;
-}
-
 /**************************************
 *                                     *
 *             Field Maps              *
@@ -192,9 +180,6 @@ static void StaticInit(const KeyField<T> fields[],
           break ;
          case 't':
           field.ptr = &set_timet<T>;
-          break ;
-         case 'u':
-          field.ptr = &set_undefined<T>;
           break ;
          default:
           assert(false);

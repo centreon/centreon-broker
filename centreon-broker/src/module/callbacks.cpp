@@ -25,6 +25,7 @@
 #include "initial.h"
 #include "logging.h"
 #include "module/internal.h"
+#include "module/set_log_data.h"
 #include "nagios/broker.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
@@ -293,15 +294,12 @@ int CallbackLog(int callback_type, void* data)
 
       log_data = static_cast<nebstruct_log_data*>(data);
       log->c_time = log_data->entry_time;
-      // log->host = XXX;
       log->msg_type = log_data->data_type;
-      // log->notification_cmd = XXX;
-      // log->notification_contact = XXX;
-      log->output = log_data->data;
-      // log->retry = XXX;
-      // log->service = XXX;
-      // log->status = XXX;
-      // log->type = XXX;
+      if (log_data->data)
+        {
+          log->output = log_data->data;
+          SetLogData(*log, log_data->data);
+        }
 
       log->AddReader();
       gl_publisher.Event(log.get());
