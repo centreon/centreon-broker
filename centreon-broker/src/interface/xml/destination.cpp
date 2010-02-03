@@ -42,19 +42,12 @@ using namespace Interface::XML;
 template <typename T>
 static void set_boolean(const T& t,
                         const NameField<T>& nf,
-                        TiXmlNode& node)
+                        TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::auto_ptr<TiXmlText> text;
-
   if (t.*(nf.field.field_bool))
-    text.reset(new TiXmlText("true"));
+    elem.SetAttribute(nf.name, "true");
   else
-    text.reset(new TiXmlText("false"));
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+    elem.SetAttribute(nf.name, "false");
   return ;
 }
 
@@ -64,18 +57,9 @@ static void set_boolean(const T& t,
 template <typename T>
 static void set_double(const T& t,
                        const NameField<T>& nf,
-                       TiXmlNode& node)
+                       TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::stringstream ss;
-  std::auto_ptr<TiXmlText> text;
-
-  ss << t.*(nf.field.field_double);
-  text.reset(new TiXmlText(ss.str()));
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+  elem.SetAttribute(nf.name, t.*(nf.field.field_double));
   return ;
 }
 
@@ -85,18 +69,9 @@ static void set_double(const T& t,
 template <typename T>
 static void set_integer(const T& t,
                         const NameField<T>& nf,
-                        TiXmlNode& node)
+                        TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::stringstream ss;
-  std::auto_ptr<TiXmlText> text;
-
-  ss << t.*(nf.field.field_int);
-  text.reset(new TiXmlText(ss.str()));
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+  elem.SetAttribute(nf.name, t.*(nf.field.field_int));
   return ;
 }
 
@@ -106,18 +81,9 @@ static void set_integer(const T& t,
 template <typename T>
 static void set_short(const T& t,
                       const NameField<T>& nf,
-                      TiXmlNode& node)
+                      TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::stringstream ss;
-  std::auto_ptr<TiXmlText> text;
-
-  ss << t.*(nf.field.field_short);
-  text.reset(new TiXmlText(ss.str()));
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+  elem.SetAttribute(nf.name, t.*(nf.field.field_short));
   return ;
 }
 
@@ -127,15 +93,9 @@ static void set_short(const T& t,
 template <typename T>
 static void set_string(const T& t,
                        const NameField<T>& nf,
-                       TiXmlNode& node)
+                       TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::auto_ptr<TiXmlText> text(new TiXmlText(t.*(nf.field.field_string)));
-
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+  elem.SetAttribute(nf.name, t.*(nf.field.field_string));
   return ;
 }
 
@@ -145,18 +105,9 @@ static void set_string(const T& t,
 template <typename T>
 static void set_timet(const T& t,
                       const NameField<T>& nf,
-                      TiXmlNode& node)
+                      TiXmlElement& elem)
 {
-  std::auto_ptr<TiXmlElement> elem(new TiXmlElement(nf.name));
-  std::stringstream ss;
-  std::auto_ptr<TiXmlText> text;
-
-  ss << t.*(nf.field.field_timet);
-  text.reset(new TiXmlText(ss.str()));
-  elem->LinkEndChild(text.get());
-  text.release();
-  node.LinkEndChild(elem.get());
-  elem.release();
+  elem.SetAttribute(nf.name, (int)(t.*(nf.field.field_timet)));
   return ;
 }
 
@@ -173,7 +124,7 @@ template <typename T>
 struct   Field
 {
   const NameField<T>* param;
-  void (* ptr)(const T&, const NameField<T>&, TiXmlNode&);
+  void (* ptr)(const T&, const NameField<T>&, TiXmlElement&);
 };
 
 /**
@@ -205,13 +156,13 @@ static std::list<Field<Events::ServiceStatus> >      service_status_list;
 template <typename T>
 static void HandleEvent(const T& t,
                         const std::list<Field<T> >& list,
-                        TiXmlNode& node)
+                        TiXmlElement& elem)
 {
   typename std::list<Field<T> >::const_iterator end;
   typename std::list<Field<T> >::const_iterator it;
 
   for (it = list.begin(); it != list.end(); ++it)
-    (*it->ptr)(t, *it->param, node);
+    (*it->ptr)(t, *it->param, elem);
   return ;
 }
 
