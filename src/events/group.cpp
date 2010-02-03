@@ -45,7 +45,6 @@ void Group::InternalCopy(const Group& group)
 {
   this->action_url = group.action_url;
   this->alias      = group.alias;
-  this->members    = group.members;
   this->name       = group.name;
   this->notes      = group.notes;
   this->notes_url  = group.notes_url;

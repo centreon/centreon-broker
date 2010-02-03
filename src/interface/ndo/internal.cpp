@@ -24,73 +24,10 @@
 #include "events/events.h"
 #include "exception.h"
 #include "interface/ndo/internal.h"
-#include "interface/ndo/log.h"
 #include "nagios/protoapi.h"
 
 using namespace Events;
 using namespace Interface::NDO;
-
-/**************************************
-*                                     *
-*          Static Functions           *
-*                                     *
-**************************************/
-
-/**
- *  Get all members of the host group.
- */
-std::string GetHostGroupMembers(const HostGroup& host_group)
-{
-  std::string result;
-  std::list<std::string>::const_iterator end;
-
-  end = host_group.members.end();
-  for (std::list<std::string>::const_iterator it = host_group.members.begin();
-       it != end;
-       ++it)
-    {
-      std::stringstream ss;
-
-      ss << NDO_DATA_HOSTGROUPMEMBER << '=' << (*it) << '\n';
-      result.append(ss.str());
-    }
-  return (result);
-}
-
-/**
- *  Append a member to the host group.
- */
-static void SetHostGroupMember(HostGroup& host_group, const char* member)
-{
-  host_group.members.push_back(member);
-  return ;
-}
-
-/**
- *  Parse a custom var and if matching set the corresponding host_id.
- */
-static void CustomVarToHost(Host& host, const char* custom_var)
-{
-  int skip;
-
-  skip = strcspn(custom_var, ":");
-  if (!strncmp(custom_var, "HOST_ID", skip) && (custom_var[skip] == ':'))
-    host.host_id = strtol(strrchr(custom_var + skip, ':') + 1, NULL, 0);
-  return ;
-}
-
-/**
- *  Parse a custom var and if matching set the corresponding service_id.
- */
-static void CustomVarToService(Service& service, const char* custom_var)
-{
-  int skip;
-
-  skip = strcspn(custom_var, ":");
-  if (!strncmp(custom_var, "SERVICE_ID", skip) && (custom_var[skip] == ':'))
-    service.service_id = strtol(strrchr(custom_var + skip, ':') + 1, NULL, 0);
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -203,9 +140,6 @@ const KeyField<Host> Interface::NDO::host_fields[] =
       &Host::action_url),
     KeyField<Host>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
       &Host::active_checks_enabled),
-    KeyField<Host>(NDO_DATA_CUSTOMVARIABLE,
-      NULL,
-      &CustomVarToHost),
     KeyField<Host>(NDO_DATA_DISPLAYNAME,
       &Host::display_name),
     KeyField<Host>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
@@ -329,9 +263,6 @@ const KeyField<HostGroup> Interface::NDO::host_group_fields[] =
   {
     KeyField<HostGroup>(NDO_DATA_HOSTGROUPALIAS,
       &HostGroup::alias),
-    KeyField<HostGroup>(NDO_DATA_HOSTGROUPMEMBER,
-      &GetHostGroupMembers,
-      &SetHostGroupMember),
     KeyField<HostGroup>(NDO_DATA_HOSTGROUPNAME,
       &HostGroup::name),
     KeyField<HostGroup>(NDO_DATA_INSTANCE,
@@ -460,13 +391,25 @@ const KeyField<HostStatus> Interface::NDO::host_status_fields[] =
 // Log fields.
 const KeyField<Log> Interface::NDO::log_fields[] =
   {
+    KeyField<Log>(NDO_DATA_CONTACT,
+      &Log::notification_contact),
+    KeyField<Log>(NDO_DATA_HOST,
+      &Log::host),
+    KeyField<Log>(NDO_DATA_HOSTNOTIFICATIONCOMMAND, // not necessarily host
+      &Log::notification_cmd),
     KeyField<Log>(NDO_DATA_INSTANCE,
       &Log::instance),
-    KeyField<Log>(NDO_DATA_LOGENTRY,
-                  NULL,
-                  &SetLogData),
     KeyField<Log>(NDO_DATA_LOGENTRYTIME,
       &Log::c_time),
+    KeyField<Log>(NDO_DATA_LOGENTRYTYPE,
+      &Log::type),
+    // XXX : msg_type
+    KeyField<Log>(NDO_DATA_OUTPUT,
+      &Log::output),
+    // XXX : retry
+    KeyField<Log>(NDO_DATA_SERVICE,
+      &Log::service),
+    // XXX : status
     KeyField<Log>()
   };
 
@@ -525,9 +468,6 @@ const KeyField<Service> Interface::NDO::service_fields[] =
       &Service::action_url),
     KeyField<Service>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
       &Service::active_checks_enabled),
-    KeyField<Service>(NDO_DATA_CUSTOMVARIABLE,
-      NULL,
-      &CustomVarToService),
     KeyField<Service>(NDO_DATA_DISPLAYNAME,
       &Service::display_name),
     KeyField<Service>(NDO_DATA_FIRSTNOTIFICATIONDELAY,

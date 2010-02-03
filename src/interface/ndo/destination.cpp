@@ -114,21 +114,6 @@ static void set_timet(const T& t,
   return ;
 }
 
-/**
- *  Execute an undefined setter.
- */
-template <typename T>
-static void set_undefined(const T& t,
-                          int id,
-                          const typename KeyField<T>::FieldPointer& field,
-                          std::stringstream& buffer)
-{
-  (void)id;
-  if (field.field_undefined.getter)
-    buffer << field.field_undefined.getter(t);
-  return ;
-}
-
 /**************************************
 *                                     *
 *             Field Maps              *
@@ -203,9 +188,6 @@ static void StaticInit(const KeyField<T> fields[],
           break ;
          case 't':
           field.ptr = &set_timet<T>;
-          break ;
-         case 'u':
-          field.ptr = &set_undefined<T>;
           break ;
          default:
           assert(false);
