@@ -390,6 +390,7 @@ void Destination::Event(Events::Event* event)
       doc->LinkEndChild(xml_event.get());
       xml_event.release();
       str << *doc;
+      str.append("\n");
       this->stream_->Send(str.c_str(), str.size());
     }
   catch (...) {}
