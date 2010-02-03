@@ -154,7 +154,7 @@ void Configuration::Manager::Close()
     it->second->Exit();
 
   LOGDEBUG("Closing output objects ...");
-  for (std::map<Configuration::Interface, Processing::Feeder*>::iterator
+  for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator
          it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
@@ -210,7 +210,7 @@ void Configuration::Manager::OnCreate(Concurrency::Thread* thread)
       return ;
 
   // Search for thread handle in output list.
-  for (std::map<Interface, Processing::Feeder*>::iterator
+  for (std::map<Interface, Concurrency::Thread*>::iterator
 	 it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
@@ -245,7 +245,7 @@ void Configuration::Manager::OnExit(Concurrency::Thread* thread)
       }
 
   // Search for thread handle in output list.
-  for (std::map<Interface, Processing::Feeder*>::iterator
+  for (std::map<Interface, Concurrency::Thread*>::iterator
 	 it = this->outputs_.begin();
        it != this->outputs_.end();
        ++it)
@@ -386,7 +386,7 @@ void Configuration::Manager::Update()
 
   // Remove outputs that are not present in conf anymore or which don't have
   // the same configuration.
-  for (std::map<Configuration::Interface, Processing::Feeder*>::iterator it = this->outputs_.begin();
+  for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator it = this->outputs_.begin();
        it != this->outputs_.end();)
     {
       outputs_it = std::find(outputs.begin(), outputs.end(), it->first);
@@ -406,18 +406,38 @@ void Configuration::Manager::Update()
   // Add new outputs.
   for (outputs_it = outputs.begin(); outputs_it != outputs.end(); ++outputs_it)
     {
-      std::auto_ptr<Processing::FailoverOut> feeder;
-      std::auto_ptr<Multiplexing::Subscriber> subscriber;
-
       LOGDEBUG("Adding new output object...");
-      subscriber.reset(new Multiplexing::Subscriber);
-      feeder.reset(new Processing::FailoverOut);
-      // XXX
-      feeder->Run(subscriber.get(),
-                  *outputs_it);
-      subscriber.release();
-      this->outputs_[*outputs_it] = feeder.get();
-      feeder.release();
+      if ((Configuration::Interface::IPV4_SERVER == outputs_it->type)
+	  || (Configuration::Interface::IPV6_SERVER == outputs_it->type)
+	  || (Configuration::Interface::UNIX_SERVER == outputs_it->type))
+	{
+	  std::auto_ptr<IO::Acceptor> acceptor(
+            ::Interface::Factory::Instance().Acceptor(*outputs_it));
+	  std::auto_ptr<Processing::Listener> listener(
+            new Processing::Listener);
+
+	  listener->Init(acceptor.get(),
+			 Processing::Listener::NDO,
+			 Processing::Listener::OUT,
+			 this);
+	  acceptor.release();
+	  this->outputs_[*outputs_it] = listener.get();
+	  listener.release();
+	}
+      else
+	{
+	  std::auto_ptr<Processing::FailoverOut> feeder;
+	  std::auto_ptr<Multiplexing::Subscriber> subscriber;
+
+	  subscriber.reset(new Multiplexing::Subscriber);
+	  feeder.reset(new Processing::FailoverOut);
+	  feeder->Run(subscriber.get(),
+		      *outputs_it,
+		      this);
+	  subscriber.release();
+	  this->outputs_[*outputs_it] = feeder.get();
+	  feeder.release();
+	}
     }
 
   // Remove inputs that are not present in conf anymore or which don't have the
@@ -444,20 +464,39 @@ void Configuration::Manager::Update()
   for (inputs_it = inputs.begin(); inputs_it != inputs.end(); ++inputs_it)
     {
       LOGDEBUG("Adding new input object...");
-      std::auto_ptr<IO::Acceptor> acceptor(
-        ::Interface::Factory::Instance().Acceptor(*inputs_it));
+      if ((Configuration::Interface::IPV4_SERVER == inputs_it->type)
+	  || (Configuration::Interface::IPV6_SERVER == inputs_it->type)
+	  || (Configuration::Interface::UNIX_SERVER == inputs_it->type))
+	{
+	  std::auto_ptr<IO::Acceptor> acceptor(
+            ::Interface::Factory::Instance().Acceptor(*inputs_it));
+	  std::auto_ptr<Processing::Listener> listener(
+            new Processing::Listener);
 
-      // Create the new client acceptor
-      std::auto_ptr<Processing::Listener> listener(
-        new Processing::Listener());
+	  listener->Init(acceptor.get(),
+			 Processing::Listener::NDO,
+			 Processing::Listener::IN,
+			 this);
+	  acceptor.release();
+	  this->inputs_[*inputs_it] = listener.get();
+	  listener.release();
+	}
+      else
+	{
+	  /*
+	  std::auto_ptr<Processing::FailoverOut> feeder;
+	  std::auto_ptr<Multiplexing::Subscriber> subscriber;
 
-      listener->Init(acceptor.get(),
-                     Processing::Listener::NDO,
-                     Processing::Listener::IN,
-                     this);
-      acceptor.release();
-      this->inputs_[*inputs_it] = listener.get();
-      listener.release();
+	  subscriber.reset(new Multiplexing::Subscriber);
+	  feeder.reset(new Processing::FailoverOut);
+	  feeder->Run(subscriber.get(),
+		      *outputs_it,
+		      this);
+	  subscriber.release();
+	  this->outputs_[*outputs_it] = feeder.get();
+	  feeder.release();
+	  */
+	}
     }
 
   return ;
