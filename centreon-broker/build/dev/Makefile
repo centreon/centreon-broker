@@ -130,6 +130,7 @@ NAME1	=	cb2db
 # cbmod
 SRC2	=	../../src/module/callbacks.cpp				\
 		../../src/module/initial.cpp				\
+		../../src/module/set_log_data.cpp			\
 		../../src/module/main.cpp
 OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
