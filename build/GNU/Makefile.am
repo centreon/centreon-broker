@@ -186,6 +186,7 @@ cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
 cbmod_so_SOURCES=	$(common_src)					\
 			../../src/module/callbacks.cpp			\
 			../../src/module/initial.cpp			\
+			../../src/module/set_log_data.cpp		\
 			../../src/module/main.cpp
 
 # Configure compilation flags properly
