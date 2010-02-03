@@ -21,6 +21,8 @@
 #include <memory>
 #include "callbacks.h"
 #include "configuration/manager.h"
+// XXX : dirty hack
+#include "configuration/parser.h"
 #include "events/events.h"
 #include "initial.h"
 #include "logging.h"
@@ -61,6 +63,7 @@ int CallbackAcknowledgement(int callback_type, void* data)
       //ack->entry_time = XXX;
       if (ack_data->host_name)
         ack->host = ack_data->host_name;
+      ack->instance = gl_instance;
       ack->is_sticky = ack_data->is_sticky;
       ack->notify_contacts = ack_data->notify_contacts;
       ack->persistent_comment = ack_data->persistent_comment;
@@ -112,6 +115,7 @@ int CallbackComment(int callback_type, void* data)
       comment->expires = comment_data->expires;
       if (comment_data->host_name)
         comment->host = comment_data->host_name;
+      comment->instance = gl_instance;
       comment->internal_id = comment_data->comment_id;
       comment->persistent = comment_data->persistent;
       if (comment_data->service_description)
@@ -161,6 +165,7 @@ int CallbackDowntime(int callback_type, void* data)
       if (downtime_data->host_name)
         downtime->host = downtime_data->host_name;
       downtime->id = downtime_data->downtime_id;
+      downtime->instance = gl_instance;
       if (downtime_data->service_description)
         downtime->service = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
@@ -294,12 +299,13 @@ int CallbackLog(int callback_type, void* data)
 
       log_data = static_cast<nebstruct_log_data*>(data);
       log->c_time = log_data->entry_time;
-      log->msg_type = log_data->data_type;
+      log->instance = gl_instance;
       if (log_data->data)
         {
           log->output = log_data->data;
           SetLogData(*log, log_data->data);
         }
+      log->type = log_data->data_type;
 
       log->AddReader();
       gl_publisher.Event(log.get());
@@ -382,6 +388,7 @@ int CallbackProgramStatus(int callback_type, void* data)
       if (program_status_data->global_service_event_handler)
         program_status->global_service_event_handler
           = program_status_data->global_service_event_handler;
+      program_status->instance = gl_instance;
       // program_status->is_running = XXX;
       // program_status->last_alive = XXX;
       program_status->last_command_check

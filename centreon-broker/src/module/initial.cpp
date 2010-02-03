@@ -21,8 +21,10 @@
 #include <memory>
 #include <stdlib.h>                 // for strtol
 #include <string.h>                 // for strcmp
-#include "initial.h"
+// XXX : dirty hack
+#include "configuration/parser.h"
 #include "events/events.h"
+#include "initial.h"
 #include "module/internal.h"
 #include "nagios/objects.h"
 
@@ -59,18 +61,18 @@ static void SendHostDependenciesList()
       if (hd->dependency_period)
         host_dependency->dependency_period = hd->dependency_period;
       if (hd->dependent_host_name)
-	{
-	  it = gl_hosts.find(hd->dependent_host_name);
-	  if (it != gl_hosts.end())
-	    host_dependency->dependent_object = it->second;
-	}
+        {
+          it = gl_hosts.find(hd->dependent_host_name);
+          if (it != gl_hosts.end())
+            host_dependency->dependent_object = it->second;
+        }
       host_dependency->inherits_parent = hd->inherits_parent;
       if (hd->host_name)
-	{
-	  it = gl_hosts.find(hd->host_name);
-	  if (it != gl_hosts.end())
-	    host_dependency->object = it->second;
-	}
+        {
+          it = gl_hosts.find(hd->host_name);
+          if (it != gl_hosts.end())
+            host_dependency->object = it->second;
+        }
 
       host_dependency->AddReader();
       gl_publisher.Event(host_dependency.get());
@@ -92,6 +94,7 @@ static void SendHostGroupList()
 
       if (hg->alias)
         host_group->alias = hg->alias;
+      host_group->instance = gl_instance;
       if (hg->group_name)
         host_group->name = hg->group_name;
 
@@ -107,6 +110,7 @@ static void SendHostGroupList()
 
           if (hg->group_name)
             host_group_member->group = hg->group_name;
+          host_group_member->instance = gl_instance;
           if (hgm->host_name)
             host_group_member->member = hgm->host_name;
 
@@ -170,6 +174,7 @@ static void SendHostList()
       if (h->icon_image_alt)
         my_host->icon_image_alt = h->icon_image_alt;
       // my_host->is_flapping = XXX;
+      my_host->instance = gl_instance;
       // my_host->last_check = XXX;
       // my_host->last_hard_state = XXX;
       // my_host->last_hard_state_change = XXX;
@@ -254,32 +259,32 @@ static void SendHostParentsList()
     {
       // Search host_id.
       if (h->name)
-	{
-	  it = gl_hosts.find(h->name);
-	  if (it != gl_hosts.end())
-	    host_id = it->second;
-	  else
-	    host_id = 0;
-	}
+        {
+          it = gl_hosts.find(h->name);
+          if (it != gl_hosts.end())
+            host_id = it->second;
+          else
+            host_id = 0;
+        }
       else
-	host_id = 0;
+        host_id = 0;
 
       // Browse parents list.
       for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next)
-	{
-	  std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
+        {
+          std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
 
-	  if (parent->host_name)
-	    {
-	      it = gl_hosts.find(parent->host_name);
-	      if (it != gl_hosts.end())
-		hp->parent = it->second;
-	    }
+          if (parent->host_name)
+            {
+              it = gl_hosts.find(parent->host_name);
+              if (it != gl_hosts.end())
+                hp->parent = it->second;
+            }
 
-	  hp->AddReader();
-	  gl_publisher.Event(hp.get());
-	  hp.release();
-	}
+          hp->AddReader();
+          gl_publisher.Event(hp.get());
+          hp.release();
+        }
     }
 
   return ;
@@ -300,22 +305,22 @@ static void SendServiceDependenciesList()
         new Events::ServiceDependency);
 
       if (sd->dependent_host_name && sd->dependent_service_description)
-	{
-	  it = gl_services.find(std::make_pair<std::string, std::string>(
+        {
+          it = gl_services.find(std::make_pair<std::string, std::string>(
                  sd->dependent_host_name, sd->dependent_service_description));
-	  if (it != gl_services.end())
-	    service_dependency->dependent_object = it->second;
-	}
+          if (it != gl_services.end())
+            service_dependency->dependent_object = it->second;
+        }
       if (sd->dependency_period)
-	service_dependency->dependency_period = sd->dependency_period;
+        service_dependency->dependency_period = sd->dependency_period;
       service_dependency->inherits_parent = sd->inherits_parent;
       if (sd->host_name && sd->service_description)
-	{
-	  it = gl_services.find(std::make_pair<std::string, std::string>(
+        {
+          it = gl_services.find(std::make_pair<std::string, std::string>(
                  sd->host_name, sd->service_description));
-	  if (it != gl_services.end())
-	    service_dependency->object = it->second;
-	}
+          if (it != gl_services.end())
+            service_dependency->object = it->second;
+        }
 
       service_dependency->AddReader();
       gl_publisher.Event(service_dependency.get());
@@ -355,6 +360,7 @@ static void SendServiceGroupList()
             service_group_member->group = sg->group_name;
           if (sgm->host_name)
             service_group_member->host = sgm->host_name;
+          service_group_member->instance = gl_instance;
           if (sgm->service_description)
             service_group_member->member = sgm->service_description;
 
@@ -413,6 +419,7 @@ static void SendServiceList()
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
         my_service->icon_image_alt = s->icon_image_alt;
+      my_service->instance = gl_instance;
       // my_service->is_flapping = XXX;
       my_service->is_volatile = s->is_volatile;
       // my_service->last_check = XXX;

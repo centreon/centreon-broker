@@ -35,6 +35,9 @@
 
 using namespace Configuration;
 
+// XXX : dirty hack to support module instance
+std::string gl_instance;
+
 /**************************************
 *                                     *
 *           Static Objects            *
@@ -314,6 +317,8 @@ void Parser::Parse(const std::string& filename,
          case Configuration::Token::ASSIGNMENT:
           if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
             throw (Exception(0, INVALID_TOKEN_MSG));
+          if (var.GetText() == "instance")
+            gl_instance = val.GetText();
           // XXX : set global variable
           break ;
           // Block name.

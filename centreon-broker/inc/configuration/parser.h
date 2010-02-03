@@ -22,6 +22,10 @@
 # define CONFIGURATION_PARSER_H_
 
 # include <list>
+# include <string>
+
+// XXX : dirty hack to support module instance
+extern std::string gl_instance;
 
 namespace   Configuration
 {

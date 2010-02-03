@@ -86,7 +86,6 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/interface/ndo/base.cpp			\
 		../../src/interface/ndo/destination.cpp			\
 		../../src/interface/ndo/internal.cpp			\
-		../../src/interface/ndo/log.cpp				\
 		../../src/interface/ndo/source.cpp			\
 		../../src/interface/ndo/sourcedestination.cpp		\
 		../../src/interface/source.cpp				\
