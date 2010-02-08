@@ -164,7 +164,7 @@ void FailoverOutBase::operator()()
         }
       catch (...)
         {
-          LOGERROR("Event feeding failed.");
+          LOGERROR("Output event feeding failed.");
           if (!this->failover_.get() && this->dest_conf_->failover.get())
             {
 	      LOGDEBUG("Launching output failover ...");

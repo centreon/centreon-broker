@@ -116,6 +116,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/multiplexing/internal.cpp			\
 		../../src/multiplexing/publisher.cpp			\
 		../../src/multiplexing/subscriber.cpp			\
+		../../src/processing/failover_in.cpp			\
 		../../src/processing/failover_out.cpp			\
 		../../src/processing/feeder.cpp				\
 		../../src/processing/listener.cpp
