@@ -35,6 +35,7 @@
 #include "logging.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
+#include "processing/failover_in.h"
 #include "processing/failover_out.h"
 #include "processing/feeder.h"
 #include "processing/listener.h"
@@ -489,19 +490,17 @@ void Configuration::Manager::Update()
         }
       else
         {
-          /*
-          std::auto_ptr<Processing::FailoverOut> feeder;
-          std::auto_ptr<Multiplexing::Subscriber> subscriber;
+          std::auto_ptr<Processing::FailoverIn> feeder;
+          std::auto_ptr<Multiplexing::Publisher> publisher;
 
-          subscriber.reset(new Multiplexing::Subscriber);
-          feeder.reset(new Processing::FailoverOut);
-          feeder->Run(subscriber.get(),
-                      *outputs_it,
+          publisher.reset(new Multiplexing::Publisher);
+          feeder.reset(new Processing::FailoverIn);
+          feeder->Run(*inputs_it,
+                      publisher.get(),
                       this);
-          subscriber.release();
-          this->outputs_[*outputs_it] = feeder.get();
+          publisher.release();
+          this->inputs_[*inputs_it] = feeder.get();
           feeder.release();
-          */
         }
     }
 
