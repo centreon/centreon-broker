@@ -78,18 +78,18 @@ unsigned int Split::BrowseDir(unsigned int* min, unsigned int* max)
   while ((entry = readdir(dir)))
     {
       if (!strncmp(entry->d_name, name, namelen))
-	{
+        {
           char* ptr;
-	  unsigned int nb;
+          unsigned int nb;
 
-	  nb = strtoul(entry->d_name + namelen, &ptr, 10);
+          nb = strtoul(entry->d_name + namelen, &ptr, 10);
           if (*ptr) // Last part of filename wasn't a proper number.
             continue ;
-	  if (my_min > nb)
-	    my_min = nb;
-	  if (my_max < nb)
-	    my_max = nb;
-	}
+          if (my_min > nb)
+            my_min = nb;
+          if (my_max < nb)
+            my_max = nb;
+        }
       ++entries;
     }
   closedir(dir);
@@ -159,9 +159,18 @@ bool Split::OpenNextInputFile()
           this->ifs_.close();
           ss << this->basefile_ << this->current_in_;
           unlink(ss.str().c_str());
-	}
+        }
       else
-        return (true);
+        {
+          if ((this->current_in_ == this->current_out_)
+              && this->ofs_.is_open())
+            {
+              this->ofs_.close();
+              ss << this->basefile_ << this->current_in_;
+              unlink(ss.str().c_str());
+            }
+          return (true);
+        }
     }
 
   // Find the lowest file id.
