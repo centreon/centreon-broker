@@ -132,6 +132,7 @@ static std::map<int, Field<Events::Acknowledgement> >   acknowledgement_map;
 static std::map<int, Field<Events::Comment> >           comment_map;
 static std::map<int, Field<Events::Downtime> >          downtime_map;
 static std::map<int, Field<Events::Host> >              host_map;
+static std::map<int, Field<Events::HostCheck> >         host_check_map;
 static std::map<int, Field<Events::HostDependency> >    host_dependency_map;
 static std::map<int, Field<Events::HostGroup> >         host_group_map;
 static std::map<int, Field<Events::HostGroupMember> >   host_group_member_map;
@@ -140,6 +141,7 @@ static std::map<int, Field<Events::HostStatus> >        host_status_map;
 static std::map<int, Field<Events::Log> >               log_map;
 static std::map<int, Field<Events::ProgramStatus> >     program_status_map;
 static std::map<int, Field<Events::Service> >           service_map;
+static std::map<int, Field<Events::ServiceCheck> >      service_check_map;
 static std::map<int, Field<Events::ServiceDependency> > service_dependency_map;
 static std::map<int, Field<Events::ServiceGroup> >      service_group_map;
 static std::map<int, Field<Events::ServiceGroupMember> >
@@ -378,6 +380,10 @@ Events::Event* Source::Event()
               event.reset(HandleEvent<Events::Downtime>(this->stream_,
                             downtime_map));
               break ;
+             case NDO_API_HOSTCHECKDATA:
+              event.reset(HandleEvent<Events::HostCheck>(this->stream_,
+                            host_check_map));
+              break ;
              case NDO_API_HOSTDEFINITION:
               event.reset(HandleEvent<Events::Host>(this->stream_, host_map));
               break ;
@@ -408,6 +414,10 @@ Events::Event* Source::Event()
              case NDO_API_PROGRAMSTATUSDATA:
               event.reset(HandleEvent<Events::ProgramStatus>(this->stream_,
                             program_status_map));
+              break ;
+             case NDO_API_SERVICECHECKDATA:
+              event.reset(HandleEvent<Events::ServiceCheck>(this->stream_,
+                            service_check_map));
               break ;
              case NDO_API_SERVICEDEFINITION:
               event.reset(HandleEvent<Events::Service>(this->stream_,
@@ -462,6 +472,7 @@ void Source::Initialize()
   StaticInit<Events::Comment>(comment_fields, comment_map);
   StaticInit<Events::Downtime>(downtime_fields, downtime_map);
   StaticInit<Events::Host>(host_fields, host_map);
+  StaticInit<Events::HostCheck>(host_check_fields, host_check_map);
   StaticInit<Events::HostDependency>(host_dependency_fields,
                                      host_dependency_map);
   StaticInit<Events::HostGroup>(host_group_fields, host_group_map);
@@ -472,6 +483,7 @@ void Source::Initialize()
   StaticInit<Events::Log>(log_fields, log_map);
   StaticInit<Events::ProgramStatus>(program_status_fields, program_status_map);
   StaticInit<Events::Service>(service_fields, service_map);
+  StaticInit<Events::ServiceCheck>(service_check_fields, service_check_map);
   StaticInit<Events::ServiceDependency>(service_dependency_fields,
                                         service_dependency_map);
   StaticInit<Events::ServiceGroup>(service_group_fields, service_group_map);

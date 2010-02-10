@@ -31,6 +31,7 @@ namespace    Events
   class      Comment;
   class      Downtime;
   class      Host;
+  class      HostCheck;
   class      HostDependency;
   class      HostGroup;
   class      HostGroupMember;
@@ -38,6 +39,7 @@ namespace    Events
   class      HostStatus;
   class      ProgramStatus;
   class      Service;
+  class      ServiceCheck;
   class      ServiceDependency;
   class      ServiceGroup;
   class      ServiceGroupMember;
@@ -70,6 +72,7 @@ namespace    Interface
     extern const KeyField<Events::Comment>         comment_fields[];
     extern const KeyField<Events::Downtime>        downtime_fields[];
     extern const KeyField<Events::Host>            host_fields[];
+    extern const KeyField<Events::HostCheck>       host_check_fields[];
     extern const KeyField<Events::HostDependency>  host_dependency_fields[];
     extern const KeyField<Events::HostGroup>       host_group_fields[];
     extern const KeyField<Events::HostGroupMember> host_group_member_fields[];
@@ -78,6 +81,7 @@ namespace    Interface
     extern const KeyField<Events::Log>             log_fields[];
     extern const KeyField<Events::ProgramStatus>   program_status_fields[];
     extern const KeyField<Events::Service>         service_fields[];
+    extern const KeyField<Events::ServiceCheck>    service_check_fields[];
     extern const KeyField<Events::ServiceDependency>
       service_dependency_fields[];
     extern const KeyField<Events::ServiceGroup>    service_group_fields[];

@@ -50,6 +50,13 @@ extern CentreonBroker::DB::MappingGetters<Events::Host>
 host_get_mapping;
 extern CentreonBroker::DB::MappingSetters<Events::Host>
 host_set_mapping;
+// HostCheck
+extern const CentreonBroker::DB::DataMember<Events::HostCheck>
+host_check_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::HostCheck>
+host_check_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::HostCheck>
+host_check_set_mapping;
 // HostDependency
 extern const CentreonBroker::DB::DataMember<Events::HostDependency>
 host_dependency_dm[];
@@ -99,6 +106,13 @@ extern CentreonBroker::DB::MappingGetters<Events::Service>
 service_get_mapping;
 extern CentreonBroker::DB::MappingSetters<Events::Service>
 service_set_mapping;
+// ServiceCheck
+extern const CentreonBroker::DB::DataMember<Events::ServiceCheck>
+service_check_dm[];
+extern CentreonBroker::DB::MappingGetters<Events::ServiceCheck>
+service_check_get_mapping;
+extern CentreonBroker::DB::MappingSetters<Events::ServiceCheck>
+service_check_set_mapping;
 // ServiceDependency
 extern const CentreonBroker::DB::DataMember<Events::ServiceDependency>
 service_dependency_dm[];
