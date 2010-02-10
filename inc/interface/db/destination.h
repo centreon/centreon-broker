@@ -38,6 +38,7 @@ namespace                         Events
   class                           Downtime;
   class                           Event;
   class                           Host;
+  class                           HostCheck;
   class                           HostDependency;
   class                           HostGroup;
   class                           HostGroupMember;
@@ -46,6 +47,7 @@ namespace                         Events
   class                           ProgramStatus;
   class                           Query;
   class                           Service;
+  class                           ServiceCheck;
   class                           ServiceDependency;
   class                           ServiceGroup;
   class                           ServiceGroupMember;
@@ -90,6 +92,7 @@ namespace                         Interface
       void                        ProcessComment(const Events::Comment& comment);
       void                        ProcessDowntime(const Events::Downtime& downtime);
       void                        ProcessHost(const Events::Host& host);
+      void                        ProcessHostCheck(const Events::HostCheck& host_check);
       void                        ProcessHostDependency(const Events::HostDependency& hd);
       void                        ProcessHostGroup(const Events::HostGroup& hg);
       void                        ProcessHostGroupMember(const Events::HostGroupMember& hgm);
@@ -99,6 +102,7 @@ namespace                         Interface
       void                        ProcessProgramStatus(
                                     const Events::ProgramStatus& ps);
       void                        ProcessService(const Events::Service& service);
+      void                        ProcessServiceCheck(const Events::ServiceCheck& service_check);
       void                        ProcessServiceDependency(const Events::ServiceDependency& sd);
       void                        ProcessServiceGroup(
                                     const Events::ServiceGroup& sg);

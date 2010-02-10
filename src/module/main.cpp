@@ -64,10 +64,12 @@ static struct
     { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, CallbackAcknowledgement, false },
     { NEBCALLBACK_COMMENT_DATA, CallbackComment, false },
     { NEBCALLBACK_DOWNTIME_DATA, CallbackDowntime, false },
+    { NEBCALLBACK_HOST_CHECK_DATA, CallbackHostCheck, false },
     { NEBCALLBACK_HOST_STATUS_DATA, CallbackHostStatus, false },
     { NEBCALLBACK_LOG_DATA, CallbackLog, false },
     { NEBCALLBACK_PROCESS_DATA, CallbackProcess, false },
     { NEBCALLBACK_PROGRAM_STATUS_DATA, CallbackProgramStatus, false },
+    { NEBCALLBACK_SERVICE_CHECK_DATA, CallbackServiceCheck, false },
     { NEBCALLBACK_SERVICE_STATUS_DATA, CallbackServiceStatus, false }
   };
 

@@ -18,27 +18,30 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_H_
-# define EVENTS_EVENTS_H_
+#ifndef EVENTS_SERVICE_CHECK_H_
+# define EVENTS_SERVICE_CHECK_H_
 
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
-# include "events/event.h"
-# include "events/host.h"
-# include "events/host_check.h"
-# include "events/host_dependency.h"
-# include "events/host_group.h"
-# include "events/host_group_member.h"
-# include "events/host_parent.h"
-# include "events/host_status.h"
-# include "events/log.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_check.h"
-# include "events/service_dependency.h"
-# include "events/service_group.h"
-# include "events/service_group_member.h"
-# include "events/service_status.h"
+# include <string>
+# include "events/check.h"
 
-#endif /* EVENTS_EVENTS_H_ */
+namespace         Events
+{
+  /**
+   *  \class ServiceCheck service_check.h "events/service_check.h"
+   *  \brief Check that has been executed on a service.
+   *
+   *  Once a check has been executed on a service, an object of this class is
+   *  sent.
+   */
+  class           ServiceCheck : public Check
+  {
+   public:
+                  ServiceCheck();
+                  ServiceCheck(const ServiceCheck& service_check);
+    virtual       ~ServiceCheck();
+    ServiceCheck& operator=(const ServiceCheck& service_check);
+    int           GetType() const;
+  };
+}
+
+#endif /* !EVENTS_SERVICE_CHECK_H_ */

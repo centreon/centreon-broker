@@ -263,6 +263,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   -- total_service_check_interval int
   -- total_services int
   `check_interval` double NOT NULL default '0',         -- smallint
+  `command_line` text default NULL,
   `event_handler` varchar(255) NOT NULL default '',     -- int in Merlin
   `first_notification_delay` double default NULL,       -- int
   `flap_detection_on_down` smallint default NULL,
@@ -432,6 +433,7 @@ CREATE TABLE IF NOT EXISTS `service` (
   -- start_time int
   -- timeout int
   `check_interval` double NOT NULL default '0',                      -- smallint
+  `command_line` text default NULL,
   `default_active_checks_enabled` smallint NOT NULL default '0',
   `default_event_handler_enabled` smallint NOT NULL default '0',
   `default_failure_prediction_enabled` smallint NOT NULL default '0',

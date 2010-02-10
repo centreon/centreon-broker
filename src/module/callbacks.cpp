@@ -184,6 +184,50 @@ int CallbackDowntime(int callback_type, void* data)
 }
 
 /**
+ *  \brief Function that process host check data.
+ *
+ *  This function is called by Nagios when some host check data are available.
+ *
+ *  \param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_HOST_CHECK_DATA).
+ *  \param[in] data          A pointer to a nebstruct_host_check_data
+ *                           containing the host check data.
+ *
+ *  \return 0 on success.
+ */
+int CallbackHostCheck(int callback_type, void* data)
+{
+  LOGDEBUG("Processing host check ...");
+  (void)callback_type;
+  try
+    {
+      nebstruct_host_check_data* hcdata;
+      std::auto_ptr<Events::HostCheck> host_check(new Events::HostCheck);
+
+      hcdata = static_cast<nebstruct_host_check_data*>(data);
+      if (hcdata->command_line)
+        {
+          host_check->command_line = hcdata->command_line;
+          if (hcdata->host_name)
+            {
+              std::map<std::string, int>::const_iterator it;
+
+              it = gl_hosts.find(hcdata->host_name);
+              if (it != gl_hosts.end())
+                host_check->id = it->second;
+            }
+
+          host_check->AddReader();
+          gl_publisher.Event(host_check.get());
+          host_check.release();
+        }
+    }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
  *  \brief Function that process host status data.
  *
  *  This function is called by Nagios when some host status data are available.
@@ -418,6 +462,53 @@ int CallbackProgramStatus(int callback_type, void* data)
       program_status->AddReader();
       gl_publisher.Event(program_status.get());
       program_status.release();
+    }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  \brief Function that process service check data.
+ *
+ *  This function is called by Nagios when some service check data are
+ *  available.
+ *
+ *  \param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_SERVICE_CHECK_DATA).
+ *  \param[in] data          A pointer to a nebstruct_service_check_data
+ *                           containing the service check data.
+ *
+ *  \return 0 on success.
+ */
+int CallbackServiceCheck(int callback_type, void* data)
+{
+  LOGDEBUG("Processing service check ...");
+  (void)callback_type;
+  try
+    {
+      nebstruct_service_check_data* scdata;
+      std::auto_ptr<Events::ServiceCheck> service_check(
+        new Events::ServiceCheck);
+
+      scdata = static_cast<nebstruct_service_check_data*>(data);
+      if (scdata->command_line)
+        {
+          service_check->command_line = scdata->command_line;
+          if (scdata->host_name && scdata->service_description)
+            {
+              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+
+              it = gl_services.find(std::make_pair(scdata->host_name,
+                                                   scdata->service_description));
+              if (it != gl_services.end())
+                service_check->id = it->second;
+            }
+
+	  service_check->AddReader();
+	  gl_publisher.Event(service_check.get());
+	  service_check.release();
+        }
     }
   // Avoid exception propagation in C code.
   catch (...) {}

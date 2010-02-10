@@ -19,15 +19,7 @@
 */
 
 #include "db/data_member.hpp"
-#include "events/acknowledgement.h"
-#include "events/comment.h"
-#include "events/group.h"
-#include "events/host.h"
-#include "events/host_status.h"
-#include "events/log.h"
-#include "events/program_status.h"
-#include "events/service.h"
-#include "events/service_status.h"
+#include "events/events.h"
 #include "logging.h"
 #include "mapping.h"
 
@@ -306,6 +298,17 @@ DB::MappingGetters<Events::Host>
   host_get_mapping;
 DB::MappingSetters<Events::Host>
   host_set_mapping;
+
+const DB::DataMember<HostCheck> host_check_dm[] =
+  {
+    DataMember<HostCheck>("command_line",
+      &HostCheck::command_line),
+    DataMember<HostCheck>()
+  };
+DB::MappingGetters<Events::HostCheck>
+  host_check_get_mapping;
+DB::MappingSetters<Events::HostCheck>
+  host_check_set_mapping;
 
 const DB::DataMember<HostDependency> host_dependency_dm[] =
   {
@@ -722,6 +725,17 @@ DB::MappingGetters<Events::Service>
 DB::MappingSetters<Events::Service>
   service_set_mapping;
 
+const DB::DataMember<ServiceCheck> service_check_dm[] =
+  {
+    DataMember<ServiceCheck>("command_line",
+      &ServiceCheck::command_line),
+    DataMember<ServiceCheck>()
+  };
+DB::MappingGetters<Events::ServiceCheck>
+  service_check_get_mapping;
+DB::MappingSetters<Events::ServiceCheck>
+  service_check_set_mapping;
+
 const DB::DataMember<ServiceDependency> service_dependency_dm[] =
   {
     DataMember<ServiceDependency>("dependency_period",
@@ -921,6 +935,10 @@ void MappingsDestroy()
   host_get_mapping.Clear();
   host_set_mapping.Clear();
 
+  LOGDEBUG("Destroying HostCheck mapping ...");
+  host_check_get_mapping.Clear();
+  host_check_set_mapping.Clear();
+
   LOGDEBUG("Destroying HostDependency mapping ...");
   host_dependency_get_mapping.Clear();
   host_dependency_set_mapping.Clear();
@@ -993,6 +1011,11 @@ void MappingsInit()
     host_get_mapping,
     host_set_mapping);
 
+  LOGDEBUG("Initializing HostCheck mapping ...");
+  InitMapping<Events::HostCheck>(host_check_dm,
+    host_check_get_mapping,
+    host_check_set_mapping);
+
   LOGDEBUG("Initializing HostDependency mapping ...");
   InitMapping<Events::HostDependency>(host_dependency_dm,
     host_dependency_get_mapping,
@@ -1027,6 +1050,11 @@ void MappingsInit()
   InitMapping<Events::Service>(service_dm,
     service_get_mapping,
     service_set_mapping);
+
+  LOGDEBUG("Initializing ServiceCheck mapping ...");
+  InitMapping<Events::ServiceCheck>(service_check_dm,
+    service_check_get_mapping,
+    service_check_set_mapping);
 
   LOGDEBUG("Initializing ServiceDependency mapping ...");
   InitMapping<Events::ServiceDependency>(service_dependency_dm,

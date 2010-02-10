@@ -18,27 +18,37 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_H_
-# define EVENTS_EVENTS_H_
+#ifndef EVENTS_CHECK_H_
+# define EVENTS_CHECK_H_
 
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
+# include <string>
 # include "events/event.h"
-# include "events/host.h"
-# include "events/host_check.h"
-# include "events/host_dependency.h"
-# include "events/host_group.h"
-# include "events/host_group_member.h"
-# include "events/host_parent.h"
-# include "events/host_status.h"
-# include "events/log.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_check.h"
-# include "events/service_dependency.h"
-# include "events/service_group.h"
-# include "events/service_group_member.h"
-# include "events/service_status.h"
 
-#endif /* EVENTS_EVENTS_H_ */
+namespace       Events
+{
+  /**
+   *  \class Check check.h "events/check.h"
+   *  \brief Check that has been executed.
+   *
+   *  Once a check has been executed (the check itself, not deduced
+   *  information), this kind of event is sent.
+   *
+   *  \see HostCheck
+   *  \see ServiceCheck
+   */
+  class         Check : public Event
+  {
+   private:
+    void        InternalCopy(const Check& check);
+
+   public:
+    std::string command_line;
+    int         id;
+                Check();
+                Check(const Check& check);
+    virtual     ~Check();
+    Check&      operator=(const Check& check);
+  };
+}
+
+#endif /* !EVENTS_CHECK_H_ */

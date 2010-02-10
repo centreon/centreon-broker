@@ -240,6 +240,16 @@ const KeyField<Host> Interface::NDO::host_fields[] =
     KeyField<Host>()
   };
 
+// HostCheck fields.
+const KeyField<HostCheck> Interface::NDO::host_check_fields[] =
+  {
+    KeyField<HostCheck>(NDO_DATA_COMMANDLINE,
+      &HostCheck::command_line),
+    KeyField<HostCheck>(NDO_DATA_HOSTID,
+      &HostCheck::id),
+    KeyField<HostCheck>()
+  };
+
 // HostDependency fields.
 const KeyField<HostDependency> Interface::NDO::host_dependency_fields[] =
   {
@@ -561,6 +571,16 @@ const KeyField<Service> Interface::NDO::service_fields[] =
     KeyField<Service>(NDO_DATA_STALKSERVICEONWARNING,
       &Service::stalk_on_warning),
     KeyField<Service>()
+  };
+
+// ServiceCheck fields.
+const KeyField<ServiceCheck> Interface::NDO::service_check_fields[] =
+  {
+    KeyField<ServiceCheck>(NDO_DATA_COMMANDLINE,
+      &ServiceCheck::command_line),
+    KeyField<ServiceCheck>(NDO_DATA_SERVICEID,
+      &ServiceCheck::id),
+    KeyField<ServiceCheck>()
   };
 
 // ServiceDependency fields.
