@@ -97,7 +97,7 @@ HostServiceStatus::HostServiceStatus()
     check_type(0),
     current_check_attempt(0),
     current_notification_number(0),
-    current_state(0),
+    current_state(4), // Pending
     execution_time(0.0),
     has_been_checked(false),
     host_id(0),
