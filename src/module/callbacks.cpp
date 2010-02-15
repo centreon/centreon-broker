@@ -271,6 +271,7 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->has_been_checked = h->has_been_checked;
       if (h->name)
         host_status->host = h->name;
+      host_status->instance = gl_instance;
       host_status->is_flapping = h->is_flapping;
       host_status->last_check = h->last_check;
       host_status->last_hard_state = h->last_hard_state;
@@ -562,6 +563,7 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->has_been_checked = s->has_been_checked;
       if (s->host_name)
         service_status->host = s->host_name;
+      service_status->instance = gl_instance;
       service_status->is_flapping = s->is_flapping;
       service_status->last_check = s->last_check;
       service_status->last_hard_state = s->last_hard_state;
