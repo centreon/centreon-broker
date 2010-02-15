@@ -59,6 +59,7 @@ namespace              Processing
     void               Close();
     void               Connect();
     Events::Event*     Event();
+    void               Exit();
     void               Event(Events::Event* event);
     void               Run(Interface::Source* source,
                            const Configuration::Interface& dest_conf,
@@ -164,7 +165,7 @@ void FailoverOutBase::operator()()
         }
       catch (...)
         {
-          LOGERROR("Event feeding failed.");
+          LOGERROR("Output event feeding failed.");
           if (!this->failover_.get() && this->dest_conf_->failover.get())
             {
 	      LOGDEBUG("Launching output failover ...");
@@ -414,8 +415,12 @@ FailoverOutAsIn::FailoverOutAsIn() {}
  */
 FailoverOutAsIn::~FailoverOutAsIn()
 {
-  this->Exit();
-  this->Join();
+  try
+    {
+      this->Exit();
+      this->Join();
+    }
+  catch (...) {}
 }
 
 /**
@@ -423,7 +428,10 @@ FailoverOutAsIn::~FailoverOutAsIn()
  */
 void FailoverOutAsIn::Close()
 {
-  // XXX
+  Concurrency::Lock lock(this->source_destm_);
+
+  this->source_dest_.reset();
+  return ;
 }
 
 /**
@@ -458,6 +466,16 @@ void FailoverOutAsIn::Event(Events::Event* event)
   Concurrency::Lock lock(this->source_destm_);
 
   static_cast<Interface::Destination*>(this->source_dest_.get())->Event(event);
+  return ;
+}
+
+/**
+ *  Ask the thread to exit ASAP.
+ */
+void FailoverOutAsIn::Exit()
+{
+  this->Close();
+  this->Feeder::Exit();
   return ;
 }
 

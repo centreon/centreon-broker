@@ -18,1030 +18,1618 @@
 **  For more information : contact@centreon.com
 */
 
-#include "db/data_member.hpp"
-#include "events/acknowledgement.h"
-#include "events/comment.h"
-#include "events/group.h"
-#include "events/host.h"
-#include "events/host_status.h"
-#include "events/log.h"
-#include "events/program_status.h"
-#include "events/service.h"
-#include "events/service_status.h"
-#include "logging.h"
+#include "events/events.h"
 #include "mapping.h"
+#include "nagios/protoapi.h"
 
-using namespace CentreonBroker;
-using namespace CentreonBroker::DB;
 using namespace Events;
 
-const DB::DataMember<Acknowledgement> acknowledgement_dm[] =
+// Acknowledgement mapping.
+const MappedData<Acknowledgement> acknowledgement_mapping[] =
   {
-    DataMember<Acknowledgement>("acknowledgement_type",
-      &Acknowledgement::acknowledgement_type),
-    DataMember<Acknowledgement>("author_name",
-      &Acknowledgement::author),
-    DataMember<Acknowledgement>("comment_data",
-      &Acknowledgement::comment),
-    DataMember<Acknowledgement>("entry_time",
-      &Acknowledgement::entry_time),
-    DataMember<Acknowledgement>("is_sticky",
-      &Acknowledgement::is_sticky),
-    DataMember<Acknowledgement>("notify_contacts",
-      &Acknowledgement::notify_contacts),
-    DataMember<Acknowledgement>("persistent_comment",
-      &Acknowledgement::persistent_comment),
-    DataMember<Acknowledgement>("state",
-      &Acknowledgement::state),
-    DataMember<Acknowledgement>(NULL,
-      &Acknowledgement::type),
-    DataMember<Acknowledgement>()
+    MappedData<Acknowledgement>(
+      &Acknowledgement::acknowledgement_type,
+      NDO_DATA_ACKNOWLEDGEMENTTYPE,
+      "acknowledgement_type"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::author,
+      NDO_DATA_AUTHORNAME,
+      "author_name"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::comment,
+      NDO_DATA_COMMENT,
+      "comment_data"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::entry_time,
+      NDO_DATA_TIMESTAMP,
+      "entry_time"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::host, // XXX : should be replaced by host_id
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::instance, // XXX : should be replaced with instance_id or removed
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::is_sticky,
+      NDO_DATA_STICKY,
+      "is_sticky"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::notify_contacts,
+      NDO_DATA_NOTIFYCONTACTS,
+      "notify_contacts"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::persistent_comment,
+      NDO_DATA_PERSISTENT,
+      "persistent_comment"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::service, // XXX : should be replaced by service_id
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::state,
+      NDO_DATA_STATE,
+      "state"),
+    MappedData<Acknowledgement>( // XXX : wtf is it here for ?
+      &Acknowledgement::type,
+      NDO_DATA_TYPE,
+      NULL),
+    MappedData<Acknowledgement>()
   };
-DB::MappingGetters<Events::Acknowledgement>
-  acknowledgement_get_mapping;
-DB::MappingSetters<Events::Acknowledgement>
-  acknowledgement_set_mapping;
 
-const DB::DataMember<Comment> comment_dm[] =
+// Comment mapping.
+const MappedData<Comment> comment_mapping[] =
   {
-    DataMember<Comment>("author_name",
-      &Comment::author),
-    DataMember<Comment>("comment_data",
-      &Comment::comment),
-    DataMember<Comment>("comment_time",
-      &Comment::comment_time),
-    DataMember<Comment>("comment_type",
-      &Comment::comment_type),
-    DataMember<Comment>("deletion_time",
-      &Comment::deletion_time),
-    DataMember<Comment>("entry_time",
-      &Comment::entry_time),
-    DataMember<Comment>("entry_type",
-      &Comment::entry_type),
-    DataMember<Comment>("expire_time",
-      &Comment::expire_time),
-    DataMember<Comment>("expires",
-      &Comment::expires),
-    DataMember<Comment>("host_name",
-      &Comment::host),
-    DataMember<Comment>("internal_id",
-      &Comment::internal_id),
-    DataMember<Comment>("persistent",
-      &Comment::persistent),
-    DataMember<Comment>("service_description",
-      &Comment::service),
-    DataMember<Comment>("source",
-      &Comment::source),
-    DataMember<Comment>(NULL,
-      &Comment::type),
-    DataMember<Comment>()
+    MappedData<Comment>(
+      &Comment::author,
+      NDO_DATA_AUTHORNAME,
+      "author_name"),
+    MappedData<Comment>(
+      &Comment::comment,
+      NDO_DATA_COMMENT,
+      "comment_data"),
+    MappedData<Comment>(
+      &Comment::comment_time, // XXX : wtf is it here for ?
+      0,
+      "comment_time"),
+    MappedData<Comment>(
+      &Comment::comment_type,
+      NDO_DATA_COMMENTTYPE,
+      "comment_type"),
+    MappedData<Comment>(
+      &Comment::deletion_time, // XXX : wtf is it here for ?
+      0,
+      "deletion_time"),
+    MappedData<Comment>(
+      &Comment::entry_time,
+      NDO_DATA_ENTRYTIME,
+      "entry_time"),
+    MappedData<Comment>(
+      &Comment::entry_type,
+      NDO_DATA_ENTRYTYPE,
+      "entry_type"),
+    MappedData<Comment>(
+      &Comment::expire_time,
+      NDO_DATA_EXPIRATIONTIME,
+      "expire_time"),
+    MappedData<Comment>(
+      &Comment::expires,
+      NDO_DATA_EXPIRES,
+      "expires"),
+    MappedData<Comment>(
+      &Comment::host, // XXX : should be replaced by host_id
+      NDO_DATA_HOST,
+      "host_name"),
+    MappedData<Comment>(
+      &Comment::instance, // XXX : should be replaced by instance_id or removed
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Comment>(
+      &Comment::internal_id,
+      NDO_DATA_COMMENTID,
+      "internal_id"),
+    MappedData<Comment>(
+      &Comment::persistent,
+      NDO_DATA_PERSISTENT,
+      "persistent"),
+    MappedData<Comment>(
+      &Comment::service, // XXX : should be replaced by service_id
+      NDO_DATA_SERVICE,
+      "service_description"),
+    MappedData<Comment>(
+      &Comment::source,
+      NDO_DATA_SOURCE,
+      "source"),
+    MappedData<Comment>( // XXX : wtf is it here for ?
+      &Comment::type,
+      NDO_DATA_TYPE,
+      NULL),
+    MappedData<Comment>()
   };
-DB::MappingGetters<Events::Comment>
-  comment_get_mapping;
-DB::MappingSetters<Events::Comment>
-  comment_set_mapping;
 
-const DB::DataMember<Downtime> downtime_dm[] =
+// Downtime mapping.
+const MappedData<Downtime> downtime_mapping[] =
   {
-    DataMember<Downtime>("author_name",
-      &Downtime::author),
-    DataMember<Downtime>("comment_data",
-      &Downtime::comment),
-    DataMember<Downtime>("downtime_id",
-      &Downtime::id),
-    DataMember<Downtime>("downtime_type",
-      &Downtime::downtime_type),
-    DataMember<Downtime>("duration",
-      &Downtime::duration),
-    DataMember<Downtime>("end_time",
-      &Downtime::end_time),
-    DataMember<Downtime>("entry_time",
-      &Downtime::entry_time),
-    DataMember<Downtime>("fixed",
-      &Downtime::fixed),
-    DataMember<Downtime>("host_name",
-      &Downtime::host),
-    DataMember<Downtime>("service_description",
-      &Downtime::service),
-    DataMember<Downtime>("start_time",
-      &Downtime::start_time),
-    DataMember<Downtime>("triggered_by",
-      &Downtime::triggered_by),
-    DataMember<Downtime>("was_cancelled",
-      &Downtime::was_cancelled),
-    DataMember<Downtime>("was_started",
-      &Downtime::was_started),
-    DataMember<Downtime>(NULL,
-      &Downtime::type),
-    DataMember<Downtime>()
+    MappedData<Downtime>(
+      &Downtime::author,
+      NDO_DATA_AUTHORNAME,
+      "author_name"),
+    MappedData<Downtime>(
+      &Downtime::comment,
+      NDO_DATA_COMMENT,
+      "comment_data"),
+    MappedData<Downtime>(
+      &Downtime::downtime_type,
+      NDO_DATA_DOWNTIMETYPE,
+      "downtime_type"),
+    MappedData<Downtime>(
+      &Downtime::duration,
+      NDO_DATA_DURATION,
+      "duration"),
+    MappedData<Downtime>(
+      &Downtime::end_time,
+      NDO_DATA_ENDTIME,
+      "end_time"),
+    MappedData<Downtime>(
+      &Downtime::entry_time,
+      NDO_DATA_ENTRYTIME,
+      "entry_time"),
+    MappedData<Downtime>(
+      &Downtime::fixed,
+      NDO_DATA_FIXED,
+      "fixed"),
+    MappedData<Downtime>(
+      &Downtime::host, // XXX : should be replaced by host_id
+      NDO_DATA_HOST,
+      "host_name"),
+    MappedData<Downtime>(
+      &Downtime::id,
+      NDO_DATA_DOWNTIMEID,
+      "downtime_id"),
+    MappedData<Downtime>(
+      &Downtime::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Downtime>(
+      &Downtime::service, // XXX : should be replaced by service_id
+      NDO_DATA_SERVICE,
+      "service_description"),
+    MappedData<Downtime>(
+      &Downtime::start_time,
+      NDO_DATA_STARTTIME,
+      "start_time"),
+    MappedData<Downtime>(
+      &Downtime::triggered_by,
+      NDO_DATA_TRIGGEREDBY,
+      "triggered_by"),
+    MappedData<Downtime>( // XXX : wtf is it here for ?
+      &Downtime::type,
+      NDO_DATA_TYPE,
+      NULL),
+    MappedData<Downtime>(
+      &Downtime::was_cancelled, // XXX : wtf is it here for ?
+      0,
+      "was_cancelled"),
+    MappedData<Downtime>(
+      &Downtime::was_started, // XXX : wtf is it here for ?
+      0,
+      "was_started"),
+    MappedData<Downtime>()
   };
-DB::MappingGetters<Events::Downtime>
-  downtime_get_mapping;
-DB::MappingSetters<Events::Downtime>
-  downtime_set_mapping;
 
-const DB::DataMember<Host> host_dm[] =
+// Host mapping.
+const MappedData<Host> host_mapping[] =
   {
-    DataMember<Host>("acknowledgement_type",
-      &Host::acknowledgement_type),
-    DataMember<Host>("action_url",
-      &Host::action_url),
-    DataMember<Host>("active_checks_enabled",
-      &Host::active_checks_enabled),
-    DataMember<Host>("address",
-      &Host::address),
-    DataMember<Host>("alias",
-      &Host::alias),
-    DataMember<Host>("check_command",
-      &Host::check_command),
-    DataMember<Host>("check_interval",
-      &Host::check_interval),
-    DataMember<Host>("check_freshness",
-      &Host::check_freshness),
-    DataMember<Host>("check_period",
-      &Host::check_period),
-    DataMember<Host>("check_type",
-      &Host::check_type),
-    DataMember<Host>("current_check_attempt",
-      &Host::current_check_attempt),
-    DataMember<Host>("current_notification_number",
-      &Host::current_notification_number),
-    DataMember<Host>("current_state",
-      &Host::current_state),
-    DataMember<Host>("display_name",
-      &Host::display_name),
-    DataMember<Host>("event_handler",
-      &Host::event_handler),
-    DataMember<Host>("event_handler_enabled",
-      &Host::event_handler_enabled),
-    DataMember<Host>("execution_time",
-     &Host::execution_time),
-    DataMember<Host>("failure_prediction_enabled",
-      &Host::failure_prediction_enabled),
-    DataMember<Host>("first_notification_delay",
-      &Host::first_notification_delay),
-    DataMember<Host>("flap_detection_enabled",
-      &Host::flap_detection_enabled),
-    DataMember<Host>("flap_detection_on_down",
-      &Host::flap_detection_on_down),
-    DataMember<Host>("flap_detection_on_unreachable",
-      &Host::flap_detection_on_unreachable),
-    DataMember<Host>("flap_detection_on_up",
-      &Host::flap_detection_on_up),
-    DataMember<Host>("freshness_threshold",
-      &Host::freshness_threshold),
-    DataMember<Host>("has_been_checked",
-      &Host::has_been_checked),
-    DataMember<Host>("have_2d_coords",
-      &Host::have_2d_coords),
-    DataMember<Host>("high_flap_threshold",
-      &Host::high_flap_threshold),
-    DataMember<Host>("host_id",
-      &Host::host_id),
-    DataMember<Host>("host_name",
-      &Host::host),
-    DataMember<Host>("icon_image",
-      &Host::icon_image),
-    DataMember<Host>("icon_image_alt",
-      &Host::icon_image_alt),
-    DataMember<Host>("is_flapping",
-      &Host::is_flapping),
-    DataMember<Host>("last_check",
-      &Host::last_check),
-    DataMember<Host>("last_hard_state",
-      &Host::last_hard_state),
-    DataMember<Host>("last_hard_state_change",
-      &Host::last_hard_state_change),
-    DataMember<Host>("last_notification",
-      &Host::last_notification),
-    DataMember<Host>("last_state_change",
-      &Host::last_state_change),
-    DataMember<Host>("last_time_down",
-      &Host::last_time_down),
-    DataMember<Host>("last_time_unreachable",
-      &Host::last_time_unreachable),
-    DataMember<Host>("last_time_up",
-      &Host::last_time_up),
-    DataMember<Host>("last_update",
-      &Host::last_update),
-    DataMember<Host>("latency",
-      &Host::latency),
-    DataMember<Host>("long_output",
-      &Host::long_output),
-    DataMember<Host>("low_flap_threshold",
-      &Host::low_flap_threshold),
-    DataMember<Host>("max_check_attempts",
-      &Host::max_check_attempts),
-    DataMember<Host>("modified_attributes",
-      &Host::modified_attributes),
-    DataMember<Host>("next_check",
-      &Host::next_check),
-    DataMember<Host>("next_host_notification",
-      &Host::next_notification),
-    DataMember<Host>("no_more_notifications",
-      &Host::no_more_notifications),
-    DataMember<Host>("notes",
-      &Host::notes),
-    DataMember<Host>("notes_url",
-      &Host::notes_url),
-    DataMember<Host>("notification_interval",
-      &Host::notification_interval),
-    DataMember<Host>("notification_period",
-      &Host::notification_period),
-    DataMember<Host>("notifications_enabled",
-      &Host::notifications_enabled),
-    DataMember<Host>("notify_on_down",
-      &Host::notify_on_down),
-    DataMember<Host>("notify_on_downtime",
-      &Host::notify_on_downtime),
-    DataMember<Host>("notify_on_flapping",
-      &Host::notify_on_flapping),
-    DataMember<Host>("notify_on_recovery",
-      &Host::notify_on_recovery),
-    DataMember<Host>("notify_on_unreachable",
-      &Host::notify_on_unreachable),
-    DataMember<Host>("obsess_over_host",
-      &Host::obsess_over),
-    DataMember<Host>("output",
-      &Host::output),
-    DataMember<Host>("passive_checks_enabled",
-      &Host::passive_checks_enabled),
-    DataMember<Host>("percent_state_change",
-      &Host::percent_state_change),
-    DataMember<Host>("perf_data",
-      &Host::perf_data),
-    DataMember<Host>("problem_has_been_acknowledged",
-      &Host::problem_has_been_acknowledged),
-    DataMember<Host>("process_performance_data",
-      &Host::process_performance_data),
-    DataMember<Host>("retain_nonstatus_information",
-      &Host::retain_nonstatus_information),
-    DataMember<Host>("retain_status_information",
-      &Host::retain_status_information),
-    DataMember<Host>("retry_interval",
-      &Host::retry_interval),
-    DataMember<Host>("scheduled_downtime_depth",
-      &Host::scheduled_downtime_depth),
-    DataMember<Host>("should_be_scheduled",
-      &Host::should_be_scheduled),
-    DataMember<Host>("stalk_on_down",
-      &Host::stalk_on_down),
-    DataMember<Host>("stalk_on_unreachable",
-      &Host::stalk_on_unreachable),
-    DataMember<Host>("stalk_on_up",
-      &Host::stalk_on_up),
-    DataMember<Host>("state_type",
-      &Host::state_type),
-    DataMember<Host>("statusmap_image",
-      &Host::statusmap_image),
-    DataMember<Host>("vrml_image",
-      &Host::vrml_image),
-    DataMember<Host>("x_2d",
-      &Host::x_2d),
-    DataMember<Host>("y_2d",
-      &Host::y_2d),
-    DataMember<Host>()
+    MappedData<Host>(
+      &Host::acknowledgement_type,
+      NDO_DATA_ACKNOWLEDGEMENTTYPE,
+      "acknowledgement_type"),
+    MappedData<Host>(
+      &Host::action_url,
+      NDO_DATA_ACTIONURL,
+      "action_url"),
+    MappedData<Host>(
+      &Host::active_checks_enabled,
+      NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+      "active_checks_enabled"),
+    MappedData<Host>(
+      &Host::address,
+      NDO_DATA_HOSTADDRESS,
+      "address"),
+    MappedData<Host>(
+      &Host::alias,
+      NDO_DATA_HOSTALIAS,
+      "alias"),
+    MappedData<Host>(
+      &Host::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<Host>(
+      &Host::check_freshness,
+      NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
+      "check_freshness"),
+    MappedData<Host>(
+      &Host::check_interval,
+      NDO_DATA_NORMALCHECKINTERVAL,
+      "check_interval"),
+    MappedData<Host>(
+      &Host::check_period,
+      NDO_DATA_HOSTCHECKPERIOD,
+      "check_period"),
+    MappedData<Host>(
+      &Host::check_type,
+      NDO_DATA_CHECKTYPE,
+      "check_type"),
+    MappedData<Host>(
+      &Host::current_check_attempt,
+      NDO_DATA_CURRENTCHECKATTEMPT,
+      "current_check_attempt"),
+    MappedData<Host>(
+      &Host::current_notification_number,
+      NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+      "current_notification_number"),
+    MappedData<Host>(
+      &Host::current_state,
+      NDO_DATA_CURRENTSTATE,
+      "current_state"),
+    MappedData<Host>(
+      &Host::display_name,
+      NDO_DATA_DISPLAYNAME,
+      "display_name"),
+    MappedData<Host>(
+      &Host::event_handler,
+      NDO_DATA_EVENTHANDLER,
+      "event_handler"),
+    MappedData<Host>(
+      &Host::event_handler_enabled,
+      NDO_DATA_EVENTHANDLERENABLED,
+      "event_handler_enabled"),
+    MappedData<Host>(
+      &Host::execution_time,
+      NDO_DATA_EXECUTIONTIME,
+      "execution_time"),
+    MappedData<Host>(
+      &Host::failure_prediction_enabled,
+      NDO_DATA_FAILUREPREDICTIONENABLED,
+      "failure_prediction_enabled"),
+    MappedData<Host>(
+      &Host::first_notification_delay,
+      NDO_DATA_FIRSTNOTIFICATIONDELAY,
+      "first_notification_delay"),
+    MappedData<Host>(
+      &Host::flap_detection_enabled,
+      NDO_DATA_FLAPDETECTIONENABLED,
+      "flap_detection_enabled"),
+    MappedData<Host>(
+      &Host::flap_detection_on_down,
+      NDO_DATA_FLAPDETECTIONONDOWN,
+      "flap_detection_on_down"),
+    MappedData<Host>(
+      &Host::flap_detection_on_unreachable,
+      NDO_DATA_FLAPDETECTIONONUNREACHABLE,
+      "flap_detection_on_unreachable"),
+    MappedData<Host>(
+      &Host::flap_detection_on_up,
+      NDO_DATA_FLAPDETECTIONONUP,
+      "flap_detection_on_up"),
+    MappedData<Host>(
+      &Host::freshness_threshold,
+      NDO_DATA_HOSTFRESHNESSTHRESHOLD,
+      "freshness_threshold"),
+    MappedData<Host>(
+      &Host::has_been_checked,
+      NDO_DATA_HASBEENCHECKED,
+      "has_been_checked"),
+    MappedData<Host>(
+      &Host::have_2d_coords,
+      NDO_DATA_HAVE2DCOORDS,
+      "have_2d_coords"),
+    MappedData<Host>(
+      &Host::high_flap_threshold,
+      NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
+      "high_flap_threshold"),
+    MappedData<Host>(
+      &Host::host,
+      NDO_DATA_HOSTNAME,
+      "host_name"),
+    MappedData<Host>(
+      &Host::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<Host>(
+      &Host::icon_image,
+      NDO_DATA_ICONIMAGE,
+      "icon_image"),
+    MappedData<Host>(
+      &Host::icon_image_alt,
+      NDO_DATA_ICONIMAGEALT,
+      "icon_image_alt"),
+    MappedData<Host>(
+      &Host::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Host>(
+      &Host::is_flapping,
+      NDO_DATA_ISFLAPPING,
+      "is_flapping"),
+    MappedData<Host>(
+      &Host::last_check,
+      NDO_DATA_LASTHOSTCHECK,
+      "last_check"),
+    MappedData<Host>(
+      &Host::last_hard_state,
+      NDO_DATA_LASTHARDSTATE,
+      "last_hard_state"),
+    MappedData<Host>(
+      &Host::last_hard_state_change,
+      NDO_DATA_LASTHARDSTATECHANGE,
+      "last_hard_state_change"),
+    MappedData<Host>(
+      &Host::last_notification,
+      NDO_DATA_LASTHOSTNOTIFICATION,
+      "last_notification"),
+    MappedData<Host>(
+      &Host::last_state_change,
+      NDO_DATA_LASTSTATECHANGE,
+      "last_state_change"),
+    MappedData<Host>(
+      &Host::last_time_down,
+      NDO_DATA_LASTTIMEDOWN,
+      "last_time_down"),
+    MappedData<Host>(
+      &Host::last_time_unreachable,
+      NDO_DATA_LASTTIMEUNREACHABLE,
+      "last_time_unreachable"),
+    MappedData<Host>(
+      &Host::last_time_up,
+      NDO_DATA_LASTTIMEUP,
+      "last_time_up"),
+    MappedData<Host>(
+      &Host::last_update,
+      0, // XXX : should find macro
+      "last_update"),
+    MappedData<Host>(
+      &Host::latency,
+      NDO_DATA_LATENCY,
+      "latency"),
+    MappedData<Host>(
+      &Host::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<Host>(
+      &Host::low_flap_threshold,
+      NDO_DATA_LOWHOSTFLAPTHRESHOLD,
+      "low_flap_threshold"),
+    MappedData<Host>(
+      &Host::max_check_attempts,
+      NDO_DATA_MAXCHECKATTEMPTS,
+      "max_check_attempts"),
+    MappedData<Host>(
+      &Host::modified_attributes,
+      NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+      "modified_attributes"),
+    MappedData<Host>(
+      &Host::next_check,
+      NDO_DATA_NEXTHOSTCHECK,
+      "next_check"),
+    MappedData<Host>(
+      &Host::next_notification,
+      NDO_DATA_NEXTHOSTNOTIFICATION,
+      "next_host_notification"),
+    MappedData<Host>(
+      &Host::no_more_notifications,
+      NDO_DATA_NOMORENOTIFICATIONS,
+      "no_more_notifications"),
+    MappedData<Host>(
+      &Host::notes,
+      NDO_DATA_NOTES,
+      "notes"),
+    MappedData<Host>(
+      &Host::notes_url,
+      NDO_DATA_NOTESURL,
+      "notes_url"),
+    MappedData<Host>(
+      &Host::notification_interval,
+      NDO_DATA_HOSTNOTIFICATIONINTERVAL,
+      "notification_interval"),
+    MappedData<Host>(
+      &Host::notification_period,
+      NDO_DATA_HOSTNOTIFICATIONPERIOD,
+      "notification_period"),
+    MappedData<Host>(
+      &Host::notifications_enabled,
+      NDO_DATA_NOTIFICATIONSENABLED,
+      "notifications_enabled"),
+    MappedData<Host>(
+      &Host::notify_on_down,
+      NDO_DATA_NOTIFYHOSTDOWN,
+      "notify_on_down"),
+    MappedData<Host>(
+      &Host::notify_on_downtime,
+      NDO_DATA_NOTIFYHOSTDOWNTIME,
+      "notify_on_downtime"),
+    MappedData<Host>(
+      &Host::notify_on_flapping,
+      NDO_DATA_NOTIFYHOSTFLAPPING,
+      "notify_on_flapping"),
+    MappedData<Host>(
+      &Host::notify_on_recovery,
+      NDO_DATA_NOTIFYHOSTRECOVERY,
+      "notify_on_recovery"),
+    MappedData<Host>(
+      &Host::notify_on_unreachable,
+      NDO_DATA_NOTIFYHOSTUNREACHABLE,
+      "notify_on_unreachable"),
+    MappedData<Host>(
+      &Host::obsess_over,
+      NDO_DATA_OBSESSOVERHOST,
+      "obsess_over_host"),
+    MappedData<Host>(
+      &Host::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Host>(
+      &Host::passive_checks_enabled,
+      NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+      "passive_checks_enabled"),
+    MappedData<Host>(
+      &Host::percent_state_change,
+      NDO_DATA_PERCENTSTATECHANGE,
+      "percent_state_change"),
+    MappedData<Host>(
+      &Host::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
+    MappedData<Host>(
+      &Host::problem_has_been_acknowledged,
+      NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+      "problem_has_been_acknowledged"),
+    MappedData<Host>(
+      &Host::process_performance_data,
+      NDO_DATA_PROCESSPERFORMANCEDATA,
+      "process_performance_data"),
+    MappedData<Host>(
+      &Host::retain_nonstatus_information,
+      NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
+      "retain_nonstatus_information"),
+    MappedData<Host>(
+      &Host::retain_status_information,
+      NDO_DATA_RETAINHOSTSTATUSINFORMATION,
+      "retain_status_information"),
+    MappedData<Host>(
+      &Host::retry_interval,
+      NDO_DATA_RETRYCHECKINTERVAL,
+      "retry_interval"),
+    MappedData<Host>(
+      &Host::scheduled_downtime_depth,
+      NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+      "scheduled_downtime_depth"),
+    MappedData<Host>(
+      &Host::should_be_scheduled,
+      NDO_DATA_SHOULDBESCHEDULED,
+      "should_be_scheduled"),
+    MappedData<Host>(
+      &Host::stalk_on_down,
+      NDO_DATA_STALKHOSTONDOWN,
+      "stalk_on_down"),
+    MappedData<Host>(
+      &Host::stalk_on_unreachable,
+      NDO_DATA_STALKHOSTONUNREACHABLE,
+      "stalk_on_unreachable"),
+    MappedData<Host>(
+      &Host::stalk_on_up,
+      NDO_DATA_STALKHOSTONUP,
+      "stalk_on_up"),
+    MappedData<Host>(
+      &Host::state_type,
+      NDO_DATA_STATETYPE,
+      "state_type"),
+    MappedData<Host>(
+      &Host::statusmap_image,
+      NDO_DATA_STATUSMAPIMAGE,
+      "statusmap_image"),
+    MappedData<Host>(
+      &Host::vrml_image,
+      NDO_DATA_VRMLIMAGE,
+      "vrml_image"),
+    MappedData<Host>(
+      &Host::x_2d,
+      NDO_DATA_X2D,
+      "x_2d"),
+    MappedData<Host>(
+      &Host::y_2d,
+      NDO_DATA_Y2D,
+      "y_2d"),
+    MappedData<Host>()
   };
-DB::MappingGetters<Events::Host>
-  host_get_mapping;
-DB::MappingSetters<Events::Host>
-  host_set_mapping;
 
-const DB::DataMember<HostDependency> host_dependency_dm[] =
+// HostCheck mapping.
+const MappedData<HostCheck> host_check_mapping[] =
   {
-    DataMember<HostDependency>("dependency_period",
-      &HostDependency::dependency_period),
-    DataMember<HostDependency>("dependent_host",
-      &HostDependency::dependent_object),
-    DataMember<HostDependency>("host",
-      &HostDependency::object),
-    DataMember<HostDependency>("inherits_parent",
-      &HostDependency::inherits_parent),
-    DataMember<HostDependency>()
+    MappedData<HostCheck>(
+      &HostCheck::command_line,
+      NDO_DATA_COMMANDLINE,
+      "command_line"),
+    MappedData<HostCheck>(
+      &HostCheck::id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<HostCheck>( // XXX : wtf is it here for ?
+      &HostCheck::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostCheck>()
   };
-DB::MappingGetters<Events::HostDependency>
-  host_dependency_get_mapping;
-DB::MappingSetters<Events::HostDependency>
-  host_dependency_set_mapping;
 
-const DB::DataMember<HostGroup> host_group_dm[] =
+// HostDependency mapping.
+const MappedData<HostDependency> host_dependency_mapping[] =
   {
-    DataMember<HostGroup>("action_url",
-      &HostGroup::action_url),
-    DataMember<HostGroup>("alias",
-      &HostGroup::alias),
-    DataMember<HostGroup>("hostgroup_name",
-      &HostGroup::name),
-    DataMember<HostGroup>("notes",
-      &HostGroup::notes),
-    DataMember<HostGroup>("notes_url",
-      &HostGroup::notes_url),
-    DataMember<HostGroup>()
+    MappedData<HostDependency>(
+      &HostDependency::dependency_period,
+      NDO_DATA_DEPENDENCYPERIOD,
+      "dependency_period"),
+    MappedData<HostDependency>(
+      &HostDependency::dependent_object,
+      NDO_DATA_DEPENDENTHOSTNAME, // XXX : bad macro name
+      "dependent_host"),
+    MappedData<HostDependency>(
+      &HostDependency::inherits_parent,
+      NDO_DATA_INHERITSPARENT,
+      "inherits_parent"),
+    MappedData<HostDependency>( // XXX : wtf is it here for ?
+      &HostDependency::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostDependency>(
+      &HostDependency::object,
+      NDO_DATA_HOST,
+      "host"),
+    // XXX : where is execution_failure_options ?
+    // XXX : where is notification_failure_options ?
+    MappedData<HostDependency>()
   };
-DB::MappingGetters<Events::HostGroup>
-  host_group_get_mapping;
-DB::MappingSetters<Events::HostGroup>
-  host_group_set_mapping;
 
-const DB::DataMember<HostParent> host_parent_dm[] =
+// HostGroup mapping.
+const MappedData<HostGroup> host_group_mapping[] =
   {
-    DataMember<HostParent>("host",
-      &HostParent::host),
-    DataMember<HostParent>("parents",
-      &HostParent::parent),
-    DataMember<HostParent>()
+    MappedData<HostGroup>(
+      &HostGroup::action_url,
+      NDO_DATA_ACTIONURL,
+      "action_url"),
+    MappedData<HostGroup>(
+      &HostGroup::alias,
+      NDO_DATA_HOSTGROUPALIAS,
+      "alias"),
+    MappedData<HostGroup>( // XXX : should be replaced by instance_id
+      &HostGroup::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostGroup>(
+      &HostGroup::name,
+      NDO_DATA_HOSTGROUPNAME,
+      "hostgroup_name"),
+    MappedData<HostGroup>(
+      &HostGroup::notes,
+      NDO_DATA_NOTES,
+      "notes"),
+    MappedData<HostGroup>(
+      &HostGroup::notes_url,
+      NDO_DATA_NOTESURL,
+      "notes_url"),
+    MappedData<HostGroup>()
   };
-DB::MappingGetters<Events::HostParent>
-  host_parent_get_mapping;
-DB::MappingSetters<Events::HostParent>
-  host_parent_set_mapping;
 
-const DB::DataMember<HostStatus> host_status_dm[] =
+// HostGroupMember mapping.
+const MappedData<HostGroupMember> host_group_member_mapping[] =
   {
-    DataMember<HostStatus>("acknowledgement_type",
-      &HostStatus::acknowledgement_type),
-    DataMember<HostStatus>("active_checks_enabled",
-      &HostStatus::active_checks_enabled),
-    DataMember<HostStatus>("check_command",
-      &HostStatus::check_command),
-    DataMember<HostStatus>("check_interval",
-      &HostStatus::check_interval),
-    DataMember<HostStatus>("check_period",
-      &HostStatus::check_period),
-    DataMember<HostStatus>("check_type",
-      &HostStatus::check_type),
-    DataMember<HostStatus>("current_check_attempt",
-      &HostStatus::current_check_attempt),
-    DataMember<HostStatus>("current_notification_number",
-      &HostStatus::current_notification_number),
-    DataMember<HostStatus>("current_state",
-      &HostStatus::current_state),
-    DataMember<HostStatus>("event_handler",
-      &HostStatus::event_handler),
-    DataMember<HostStatus>("event_handler_enabled",
-      &HostStatus::event_handler_enabled),
-    DataMember<HostStatus>("execution_time",
-      &HostStatus::execution_time),
-    DataMember<HostStatus>("failure_prediction_enabled",
-      &HostStatus::failure_prediction_enabled),
-    DataMember<HostStatus>("flap_detection_enabled",
-      &HostStatus::flap_detection_enabled),
-    DataMember<HostStatus>("has_been_checked",
-      &HostStatus::has_been_checked),
-    DataMember<HostStatus>("is_flapping",
-      &HostStatus::is_flapping),
-    DataMember<HostStatus>("last_check",
-      &HostStatus::last_check),
-    DataMember<HostStatus>("last_hard_state",
-      &HostStatus::last_hard_state),
-    DataMember<HostStatus>("last_hard_state_change",
-      &HostStatus::last_hard_state_change),
-    DataMember<HostStatus>("last_notification",
-      &HostStatus::last_notification),
-    DataMember<HostStatus>("last_state_change",
-      &HostStatus::last_state_change),
-    DataMember<HostStatus>("last_time_down",
-      &HostStatus::last_time_down),
-    DataMember<HostStatus>("last_time_unreachable",
-      &HostStatus::last_time_unreachable),
-    DataMember<HostStatus>("last_time_up",
-      &HostStatus::last_time_up),
-    DataMember<HostStatus>("last_update",
-      &HostStatus::last_update),
-    DataMember<HostStatus>("latency",
-      &HostStatus::latency),
-    DataMember<HostStatus>("long_output",
-      &HostStatus::long_output),
-    DataMember<HostStatus>("max_check_attempts",
-      &HostStatus::max_check_attempts),
-    DataMember<HostStatus>("modified_attributes",
-      &HostStatus::modified_attributes),
-    DataMember<HostStatus>("next_check",
-      &HostStatus::next_check),
-    DataMember<HostStatus>("next_host_notification",
-      &HostStatus::next_notification),
-    DataMember<HostStatus>("no_more_notifications",
-      &HostStatus::no_more_notifications),
-    DataMember<HostStatus>("notifications_enabled",
-      &HostStatus::notifications_enabled),
-    DataMember<HostStatus>("obsess_over_host",
-      &HostStatus::obsess_over),
-    DataMember<HostStatus>("output",
-      &HostStatus::output),
-    DataMember<HostStatus>("passive_checks_enabled",
-      &HostStatus::passive_checks_enabled),
-    DataMember<HostStatus>("percent_state_change",
-      &HostStatus::percent_state_change),
-    DataMember<HostStatus>("perf_data",
-      &HostStatus::perf_data),
-    DataMember<HostStatus>("problem_has_been_acknowledged",
-      &HostStatus::problem_has_been_acknowledged),
-    DataMember<HostStatus>("process_performance_data",
-      &HostStatus::process_performance_data),
-    DataMember<HostStatus>("retry_interval",
-      &HostStatus::retry_interval),
-    DataMember<HostStatus>("scheduled_downtime_depth",
-      &HostStatus::scheduled_downtime_depth),
-    DataMember<HostStatus>("should_be_scheduled",
-      &HostStatus::should_be_scheduled),
-    DataMember<HostStatus>("state_type",
-      &HostStatus::state_type),
-    DataMember<HostStatus>()
+    MappedData<HostGroupMember>(
+      &HostGroupMember::group, // XXX : should be replaced by hostgroup_id
+      NDO_DATA_HOSTGROUPNAME,
+      NULL),
+    MappedData<HostGroupMember>( // XXX : wtf is it here for ?
+      &HostGroupMember::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostGroupMember>(
+      &HostGroupMember::member, // XXX : should be replaced by host_id
+      NDO_DATA_HOSTGROUPMEMBER,
+      NULL),
+    MappedData<HostGroupMember>()
   };
-DB::MappingGetters<Events::HostStatus>
-  host_status_get_mapping;
-DB::MappingSetters<Events::HostStatus>
-  host_status_set_mapping;
 
-const DB::DataMember<Log> log_dm[] =
+// HostParent mapping.
+const MappedData<HostParent> host_parent_mapping[] =
   {
-    DataMember<Log>("ctime",
-      &Log::c_time),
-    DataMember<Log>("host_name",
-      &Log::host),
-    DataMember<Log>("msg_type",
-      &Log::msg_type),
-    DataMember<Log>("notification_cmd",
-      &Log::notification_cmd),
-    DataMember<Log>("notification_contact",
-      &Log::notification_contact),
-    DataMember<Log>("output",
-      &Log::output),
-    DataMember<Log>("retry",
-      &Log::retry),
-    DataMember<Log>("service_description",
-      &Log::service),
-    DataMember<Log>("status",
-      &Log::status),
-    DataMember<Log>("type",
-      &Log::type),
-    DataMember<Log>()
+    MappedData<HostParent>(
+      &HostParent::host,
+      NDO_DATA_HOST,
+      "host"),
+    MappedData<HostParent>( // XXX : wtf is it here for ?
+      &HostParent::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostParent>(
+      &HostParent::parent,
+      NDO_DATA_PARENTHOST,
+      "parents"),
+    MappedData<HostParent>()
   };
-DB::MappingGetters<Events::Log>
-  log_get_mapping;
-DB::MappingSetters<Events::Log>
-  log_set_mapping;
 
-const DB::DataMember<ProgramStatus> program_status_dm[] =
+// HostStatus mapping.
+const MappedData<HostStatus> host_status_mapping[] =
   {
-    DataMember<ProgramStatus>("active_host_checks_enabled",
-      &ProgramStatus::active_host_checks_enabled),
-    DataMember<ProgramStatus>("active_service_checks_enabled",
-      &ProgramStatus::active_service_checks_enabled),
-    DataMember<ProgramStatus>("daemon_mode",
-      &ProgramStatus::daemon_mode),
-    DataMember<ProgramStatus>("event_handlers_enabled",
-      &ProgramStatus::event_handler_enabled),
-    DataMember<ProgramStatus>("failure_prediction_enabled",
-      &ProgramStatus::failure_prediction_enabled),
-    DataMember<ProgramStatus>("flap_detection_enabled",
-      &ProgramStatus::flap_detection_enabled),
-    DataMember<ProgramStatus>("global_host_event_handler",
-      &ProgramStatus::global_host_event_handler),
-    DataMember<ProgramStatus>("global_service_event_handler",
-      &ProgramStatus::global_service_event_handler),
-    DataMember<ProgramStatus>("instance_name",
-      &ProgramStatus::instance),
-    DataMember<ProgramStatus>("is_running",
-      &ProgramStatus::is_running),
-    DataMember<ProgramStatus>("last_alive",
-      &ProgramStatus::last_alive),
-    DataMember<ProgramStatus>("last_command_check",
-      &ProgramStatus::last_command_check),
-    DataMember<ProgramStatus>("last_log_rotation",
-      &ProgramStatus::last_log_rotation),
-    DataMember<ProgramStatus>("modified_host_attributes",
-      &ProgramStatus::modified_host_attributes),
-    DataMember<ProgramStatus>("modified_service_attributes",
-      &ProgramStatus::modified_service_attributes),
-    DataMember<ProgramStatus>("notifications_enabled",
-      &ProgramStatus::notifications_enabled),
-    DataMember<ProgramStatus>("obsess_over_hosts",
-      &ProgramStatus::obsess_over_hosts),
-    DataMember<ProgramStatus>("obsess_over_services",
-      &ProgramStatus::obsess_over_services),
-    DataMember<ProgramStatus>("passive_host_checks_enabled",
-      &ProgramStatus::passive_host_checks_enabled),
-    DataMember<ProgramStatus>("passive_service_checks_enabled",
-      &ProgramStatus::passive_service_checks_enabled),
-    DataMember<ProgramStatus>("pid",
-      &ProgramStatus::pid),
-    DataMember<ProgramStatus>("process_performance_data",
-      &ProgramStatus::process_performance_data),
-    DataMember<ProgramStatus>("program_end",
-      &ProgramStatus::program_end),
-    DataMember<ProgramStatus>("program_start",
-      &ProgramStatus::program_start),
-    DataMember<ProgramStatus>()
+    MappedData<HostStatus>(
+      &HostStatus::acknowledgement_type,
+      NDO_DATA_ACKNOWLEDGEMENTTYPE,
+      "acknowledgement_type"),
+    MappedData<HostStatus>(
+      &HostStatus::active_checks_enabled,
+      NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+      "active_checks_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<HostStatus>(
+      &HostStatus::check_interval,
+      NDO_DATA_NORMALCHECKINTERVAL,
+      "check_interval"),
+    MappedData<HostStatus>(
+      &HostStatus::check_period,
+      NDO_DATA_HOSTCHECKPERIOD,
+      "check_period"),
+    MappedData<HostStatus>(
+      &HostStatus::check_type,
+      NDO_DATA_CHECKTYPE,
+      "check_type"),
+    MappedData<HostStatus>(
+      &HostStatus::current_check_attempt,
+      NDO_DATA_CURRENTCHECKATTEMPT,
+      "current_check_attempt"),
+    MappedData<HostStatus>(
+      &HostStatus::current_notification_number,
+      NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+      "current_notification_number"),
+    MappedData<HostStatus>(
+      &HostStatus::current_state,
+      NDO_DATA_CURRENTSTATE,
+      "current_state"),
+    MappedData<HostStatus>(
+      &HostStatus::event_handler,
+      NDO_DATA_EVENTHANDLER,
+      "event_handler"),
+    MappedData<HostStatus>(
+      &HostStatus::event_handler_enabled,
+      NDO_DATA_EVENTHANDLERENABLED,
+      "event_handler_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::execution_time,
+      NDO_DATA_EXECUTIONTIME,
+      "execution_time"),
+    MappedData<HostStatus>(
+      &HostStatus::failure_prediction_enabled,
+      NDO_DATA_FAILUREPREDICTIONENABLED,
+      "failure_prediction_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::flap_detection_enabled,
+      NDO_DATA_FLAPDETECTIONENABLED,
+      "flap_detection_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::has_been_checked,
+      NDO_DATA_HASBEENCHECKED,
+      "has_been_checked"),
+    MappedData<HostStatus>(
+      &HostStatus::host,
+      NDO_DATA_HOSTNAME,
+      "host_name"),
+    MappedData<HostStatus>(
+      &HostStatus::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<HostStatus>(
+      &HostStatus::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<HostStatus>(
+      &HostStatus::is_flapping,
+      NDO_DATA_ISFLAPPING,
+      "is_flapping"),
+    MappedData<HostStatus>(
+      &HostStatus::last_check,
+      NDO_DATA_LASTHOSTCHECK,
+      "last_check"),
+    MappedData<HostStatus>(
+      &HostStatus::last_hard_state,
+      NDO_DATA_LASTHARDSTATE,
+      "last_hard_state"),
+    MappedData<HostStatus>(
+      &HostStatus::last_hard_state_change,
+      NDO_DATA_LASTHARDSTATECHANGE,
+      "last_hard_state_change"),
+    MappedData<HostStatus>(
+      &HostStatus::last_notification,
+      NDO_DATA_LASTHOSTNOTIFICATION,
+      "last_notification"),
+    MappedData<HostStatus>(
+      &HostStatus::last_state_change,
+      NDO_DATA_LASTSTATECHANGE,
+      "last_state_change"),
+    MappedData<HostStatus>(
+      &HostStatus::last_time_down,
+      NDO_DATA_LASTTIMEDOWN,
+      "last_time_down"),
+    MappedData<HostStatus>(
+      &HostStatus::last_time_unreachable,
+      NDO_DATA_LASTTIMEUNREACHABLE,
+      "last_time_unreachable"),
+    MappedData<HostStatus>(
+      &HostStatus::last_time_up,
+      NDO_DATA_LASTTIMEUP,
+      "last_time_up"),
+    MappedData<HostStatus>(
+      &HostStatus::last_update,
+      0, // XXX : should find macro
+      "last_update"),
+    MappedData<HostStatus>(
+      &HostStatus::latency,
+      NDO_DATA_LATENCY,
+      "latency"),
+    MappedData<HostStatus>(
+      &HostStatus::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<HostStatus>(
+      &HostStatus::max_check_attempts,
+      NDO_DATA_MAXCHECKATTEMPTS,
+      "max_check_attempts"),
+    MappedData<HostStatus>(
+      &HostStatus::modified_attributes,
+      NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+      "modified_attributes"),
+    MappedData<HostStatus>(
+      &HostStatus::next_check,
+      NDO_DATA_NEXTHOSTCHECK,
+      "next_check"),
+    MappedData<HostStatus>(
+      &HostStatus::next_notification,
+      NDO_DATA_NEXTHOSTNOTIFICATION,
+      "next_host_notification"),
+    MappedData<HostStatus>(
+      &HostStatus::no_more_notifications,
+      NDO_DATA_NOMORENOTIFICATIONS,
+      "no_more_notifications"),
+    MappedData<HostStatus>(
+      &HostStatus::notifications_enabled,
+      NDO_DATA_NOTIFICATIONSENABLED,
+      "notifications_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::obsess_over,
+      NDO_DATA_OBSESSOVERHOST,
+      "obsess_over_host"),
+    MappedData<HostStatus>(
+      &HostStatus::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<HostStatus>(
+      &HostStatus::passive_checks_enabled,
+      NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+      "passive_checks_enabled"),
+    MappedData<HostStatus>(
+      &HostStatus::percent_state_change,
+      NDO_DATA_PERCENTSTATECHANGE,
+      "percent_state_change"),
+    MappedData<HostStatus>(
+      &HostStatus::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
+    MappedData<HostStatus>(
+      &HostStatus::problem_has_been_acknowledged,
+      NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+      "problem_has_been_acknowledged"),
+    MappedData<HostStatus>(
+      &HostStatus::process_performance_data,
+      NDO_DATA_PROCESSPERFORMANCEDATA,
+      "process_performance_data"),
+    MappedData<HostStatus>(
+      &HostStatus::retry_interval,
+      NDO_DATA_RETRYCHECKINTERVAL,
+      "retry_interval"),
+    MappedData<HostStatus>(
+      &HostStatus::scheduled_downtime_depth,
+      NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+      "scheduled_downtime_depth"),
+    MappedData<HostStatus>(
+      &HostStatus::should_be_scheduled,
+      NDO_DATA_SHOULDBESCHEDULED,
+      "should_be_scheduled"),
+    MappedData<HostStatus>(
+      &HostStatus::state_type,
+      NDO_DATA_STATETYPE,
+      "state_type"),
+    MappedData<HostStatus>()
   };
-DB::MappingGetters<Events::ProgramStatus>
-  program_status_get_mapping;
-DB::MappingSetters<Events::ProgramStatus>
-  program_status_set_mapping;
 
-const DB::DataMember<Service> service_dm[] =
+// Log mapping.
+const MappedData<Log> log_mapping[] =
   {
-    DataMember<Service>("acknowledgement_type",
-      &Service::acknowledgement_type),
-    DataMember<Service>("action_url",
-      &Service::action_url),
-    DataMember<Service>("active_checks_enabled",
-      &Service::active_checks_enabled),
-    DataMember<Service>("check_command",
-      &Service::check_command),
-    DataMember<Service>("check_interval",
-      &Service::check_interval),
-    DataMember<Service>("check_freshness",
-      &Service::check_freshness),
-    DataMember<Service>("check_period",
-      &Service::check_period),
-    DataMember<Service>("check_type",
-      &Service::check_type),
-    DataMember<Service>("current_attempt",
-      &Service::current_check_attempt),
-    DataMember<Service>("current_notification_number",
-      &Service::current_notification_number),
-    DataMember<Service>("current_state",
-      &Service::current_state),
-    DataMember<Service>("default_active_checks_enabled",
-      &Service::active_checks_enabled),
-    DataMember<Service>("default_event_handler_enabled",
-      &Service::event_handler_enabled),
-    DataMember<Service>("default_failure_prediction_enabled",
-      &Service::failure_prediction_enabled),
-    DataMember<Service>("default_flap_detection_enabled",
-      &Service::flap_detection_enabled),
-    DataMember<Service>("default_notifications_enabled",
-      &Service::notifications_enabled),
-    DataMember<Service>("default_passive_checks_enabled",
-      &Service::passive_checks_enabled),
-    DataMember<Service>("default_process_performance_data",
-      &Service::process_performance_data),
-    DataMember<Service>("display_name",
-      &Service::display_name),
-    DataMember<Service>("event_handler",
-      &Service::event_handler),
-    DataMember<Service>("event_handler_enabled",
-      &Service::event_handler_enabled),
-    DataMember<Service>("execution_time",
-      &Service::execution_time),
-    DataMember<Service>("failure_prediction_enabled",
-      &Service::failure_prediction_enabled),
-    DataMember<Service>("failure_prediction_options",
-      &Service::failure_prediction_options),
-    DataMember<Service>("first_notification_delay",
-      &Service::first_notification_delay),
-    DataMember<Service>("flap_detection_enabled",
-      &Service::flap_detection_enabled),
-    DataMember<Service>("flap_detection_on_critical",
-      &Service::flap_detection_on_critical),
-    DataMember<Service>("flap_detection_on_ok",
-      &Service::flap_detection_on_ok),
-    DataMember<Service>("flap_detection_on_unknown",
-      &Service::flap_detection_on_unknown),
-    DataMember<Service>("flap_detection_on_warning",
-      &Service::flap_detection_on_warning),
-    DataMember<Service>("freshness_threshold",
-      &Service::freshness_threshold),
-    DataMember<Service>("has_been_checked",
-      &Service::has_been_checked),
-    DataMember<Service>("high_flap_threshold",
-      &Service::high_flap_threshold),
-    DataMember<Service>("host_id",
-      &Service::host_id),
-    DataMember<Service>("host_name",
-      &Service::host),
-    DataMember<Service>("icon_image",
-      &Service::icon_image),
-    DataMember<Service>("icon_image_alt",
-      &Service::icon_image_alt),
-    DataMember<Service>("is_flapping",
-      &Service::is_flapping),
-    DataMember<Service>("is_volatile",
-      &Service::is_volatile),
-    DataMember<Service>("last_check",
-      &Service::last_check),
-    DataMember<Service>("last_hard_state",
-      &Service::last_hard_state),
-    DataMember<Service>("last_hard_state_change",
-      &Service::last_hard_state_change),
-    DataMember<Service>("last_notification",
-      &Service::last_notification),
-    DataMember<Service>("last_state_change",
-      &Service::last_state_change),
-    DataMember<Service>("last_time_critical",
-      &Service::last_time_critical),
-    DataMember<Service>("last_time_ok",
-      &Service::last_time_ok),
-    DataMember<Service>("last_time_unknown",
-      &Service::last_time_unknown),
-    DataMember<Service>("last_time_warning",
-      &Service::last_time_warning),
-    DataMember<Service>("last_update",
-      &Service::last_update),
-    DataMember<Service>("latency",
-      &Service::latency),
-    DataMember<Service>("long_output",
-      &Service::long_output),
-    DataMember<Service>("low_flap_threshold",
-      &Service::low_flap_threshold),
-    DataMember<Service>("max_check_attempts",
-      &Service::max_check_attempts),
-    DataMember<Service>("modified_attributes",
-      &Service::modified_attributes),
-    DataMember<Service>("next_check",
-      &Service::next_check),
-    DataMember<Service>("next_notification",
-      &Service::next_notification),
-    DataMember<Service>("no_more_notifications",
-      &Service::no_more_notifications),
-    DataMember<Service>("notes",
-      &Service::notes),
-    DataMember<Service>("notes_url",
-      &Service::notes_url),
-    DataMember<Service>("notification_interval",
-      &Service::notification_interval),
-    DataMember<Service>("notification_period",
-      &Service::notification_period),
-    DataMember<Service>("notifications_enabled",
-      &Service::notifications_enabled),
-    DataMember<Service>("notified_on_critical",
-      &Service::notified_on_critical),
-    DataMember<Service>("notified_on_unknown",
-      &Service::notified_on_unknown),
-    DataMember<Service>("notified_on_warning",
-      &Service::notified_on_warning),
-    DataMember<Service>("notify_on_downtime",
-      &Service::notify_on_downtime),
-    DataMember<Service>("notify_on_flapping",
-      &Service::notify_on_flapping),
-    DataMember<Service>("notify_on_recovery",
-      &Service::notify_on_recovery),
-    DataMember<Service>("obsess_over_service",
-      &Service::obsess_over),
-    DataMember<Service>("output",
-      &Service::output),
-    DataMember<Service>("passive_checks_enabled",
-      &Service::passive_checks_enabled),
-    DataMember<Service>("percent_state_change",
-      &Service::percent_state_change),
-    DataMember<Service>("perf_data",
-      &Service::perf_data),
-    DataMember<Service>("problem_has_been_acknowledged",
-      &Service::problem_has_been_acknowledged),
-    DataMember<Service>("process_performance_data",
-      &Service::process_performance_data),
-    DataMember<Service>("retain_nonstatus_information",
-      &Service::retain_nonstatus_information),
-    DataMember<Service>("retain_status_information",
-      &Service::retain_status_information),
-    DataMember<Service>("retry_interval",
-      &Service::retry_interval),
-    DataMember<Service>("scheduled_downtime_depth",
-      &Service::scheduled_downtime_depth),
-    DataMember<Service>("service_description",
-      &Service::service),
-    DataMember<Service>("service_id",
-      &Service::service_id),
-    DataMember<Service>("should_be_scheduled",
-      &Service::should_be_scheduled),
-    DataMember<Service>("stalk_on_critical",
-      &Service::stalk_on_critical),
-    DataMember<Service>("stalk_on_ok",
-      &Service::stalk_on_ok),
-    DataMember<Service>("stalk_on_unknown",
-      &Service::stalk_on_unknown),
-    DataMember<Service>("stalk_on_warning",
-      &Service::stalk_on_warning),
-    DataMember<Service>("state_type",
-      &Service::state_type),
-    DataMember<Service>()
+    MappedData<Log>(
+      &Log::c_time,
+      NDO_DATA_LOGENTRYTIME,
+      "ctime"),
+    MappedData<Log>(
+      &Log::host, // XXX : should be replaced by host_id
+      NDO_DATA_HOST,
+      "host_name"),
+    MappedData<Log>(
+      &Log::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Log>(
+      &Log::msg_type,
+      0, // XXX : should find macro
+      "msg_type"),
+    MappedData<Log>(
+      &Log::notification_cmd,
+      0, // XXX : should find macro
+      "notification_cmd"),
+    MappedData<Log>(
+      &Log::notification_contact,
+      NDO_DATA_CONTACT,
+      "notification_contact"),
+    MappedData<Log>(
+      &Log::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Log>(
+      &Log::retry,
+      0, // XXX : should find macro
+      "retry"),
+    MappedData<Log>(
+      &Log::service, // XXX : should be replaced by service_id
+      NDO_DATA_SERVICE,
+      "service_description"),
+    MappedData<Log>(
+      &Log::status,
+      0, // XXX : should find macro
+      "status"),
+    MappedData<Log>(
+      &Log::type,
+      NDO_DATA_TYPE,
+      "type"),
+    MappedData<Log>()
   };
-DB::MappingGetters<Events::Service>
-  service_get_mapping;
-DB::MappingSetters<Events::Service>
-  service_set_mapping;
 
-const DB::DataMember<ServiceDependency> service_dependency_dm[] =
+// ProgramStatus mapping.
+const MappedData<ProgramStatus> program_status_mapping[] =
   {
-    DataMember<ServiceDependency>("dependency_period",
-      &ServiceDependency::dependency_period),
-    DataMember<ServiceDependency>("dependent_service",
-      &ServiceDependency::dependent_object),
-    DataMember<ServiceDependency>("inherits_parent",
-      &ServiceDependency::inherits_parent),
-    DataMember<ServiceDependency>("service",
-      &ServiceDependency::object),
-    DataMember<ServiceDependency>()
+    MappedData<ProgramStatus>(
+      &ProgramStatus::active_host_checks_enabled,
+      NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+      "active_host_checks_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::active_service_checks_enabled,
+      NDO_DATA_ACTIVESERVICECHECKSENABLED,
+      "active_service_checks_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::daemon_mode,
+      NDO_DATA_DAEMONMODE,
+      "daemon_mode"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::event_handler_enabled,
+      NDO_DATA_EVENTHANDLERENABLED,
+      "event_handlers_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::failure_prediction_enabled,
+      NDO_DATA_FAILUREPREDICTIONENABLED,
+      "failure_prediction_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::flap_detection_enabled,
+      NDO_DATA_FLAPDETECTIONENABLED,
+      "flap_detection_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::global_host_event_handler,
+      NDO_DATA_GLOBALHOSTEVENTHANDLER,
+      "global_host_event_handler"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::global_service_event_handler,
+      NDO_DATA_GLOBALSERVICEEVENTHANDLER,
+      "global_service_event_handler"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::instance,
+      NDO_DATA_INSTANCE,
+      "instance_name"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::is_running,
+      0, // XXX : should find macro
+      "is_running"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::last_alive,
+      0, // XXX : should find macro
+      "last_alive"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::last_command_check,
+      NDO_DATA_LASTCOMMANDCHECK,
+      "last_command_check"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::last_log_rotation,
+      NDO_DATA_LASTLOGROTATION,
+      "last_log_rotation"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::modified_host_attributes,
+      NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+      "modified_host_attributes"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::modified_service_attributes,
+      NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+      "modified_service_attributes"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::notifications_enabled,
+      NDO_DATA_NOTIFICATIONSENABLED,
+      "notifications_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::obsess_over_hosts,
+      NDO_DATA_OBSESSOVERHOST,
+      "obsess_over_hosts"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::obsess_over_services,
+      NDO_DATA_OBSESSOVERSERVICE,
+      "obsess_over_services"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::passive_host_checks_enabled,
+      NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+      "passive_host_checks_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::passive_service_checks_enabled,
+      NDO_DATA_PASSIVESERVICECHECKSENABLED,
+      "passive_service_checks_enabled"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::pid,
+      NDO_DATA_PROCESSID,
+      "pid"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::process_performance_data,
+      NDO_DATA_PROCESSPERFORMANCEDATA,
+      "process_performance_data"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::program_end,
+      0, // XXX : should find macro
+      "program_end"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::program_start,
+      NDO_DATA_PROGRAMSTARTTIME,
+      "program_start"),
+    // XXX : no instance_address
+    // XXX : no instance_description
+    MappedData<ProgramStatus>()
   };
-DB::MappingGetters<Events::ServiceDependency>
-  service_dependency_get_mapping;
-DB::MappingSetters<Events::ServiceDependency>
-  service_dependency_set_mapping;
 
-const DB::DataMember<ServiceGroup> service_group_dm[] =
+// Service mapping.
+const MappedData<Service> service_mapping[] =
   {
-    DataMember<ServiceGroup>("action_url",
-      &ServiceGroup::action_url),
-    DataMember<ServiceGroup>("alias",
-      &ServiceGroup::alias),
-    DataMember<ServiceGroup>("notes",
-      &ServiceGroup::notes),
-    DataMember<ServiceGroup>("notes_url",
-      &ServiceGroup::notes_url),
-    DataMember<ServiceGroup>("servicegroup_name",
-      &ServiceGroup::name),
-    DataMember<ServiceGroup>()
+    MappedData<Service>(
+      &Service::acknowledgement_type,
+      NDO_DATA_ACKNOWLEDGEMENTTYPE,
+      "acknowledgement_type"),
+    MappedData<Service>(
+      &Service::action_url,
+      NDO_DATA_ACTIONURL,
+      "action_url"),
+    MappedData<Service>(
+      &Service::active_checks_enabled,
+      NDO_DATA_ACTIVESERVICECHECKSENABLED,
+      "active_checks_enabled"),
+    MappedData<Service>(
+      &Service::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<Service>(
+      &Service::check_freshness,
+      NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
+      "check_freshness"),
+    MappedData<Service>(
+      &Service::check_interval,
+      NDO_DATA_NORMALCHECKINTERVAL,
+      "check_interval"),
+    MappedData<Service>(
+      &Service::check_period,
+      NDO_DATA_SERVICECHECKPERIOD,
+      "check_period"),
+    MappedData<Service>(
+      &Service::check_type,
+      NDO_DATA_CHECKTYPE,
+      "check_type"),
+    MappedData<Service>(
+      &Service::current_check_attempt,
+      NDO_DATA_CURRENTCHECKATTEMPT,
+      "current_check_attempt"),
+    MappedData<Service>(
+      &Service::current_notification_number,
+      NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+      "current_notification_number"),
+    MappedData<Service>(
+      &Service::current_state,
+      NDO_DATA_CURRENTSTATE,
+      "current_state"),
+    MappedData<Service>(
+      &Service::display_name,
+      NDO_DATA_DISPLAYNAME,
+      "display_name"),
+    MappedData<Service>(
+      &Service::event_handler,
+      NDO_DATA_EVENTHANDLER,
+      "event_handler"),
+    MappedData<Service>(
+      &Service::event_handler_enabled,
+      NDO_DATA_EVENTHANDLERENABLED,
+      "event_handler_enabled"),
+    MappedData<Service>(
+      &Service::execution_time,
+      NDO_DATA_EXECUTIONTIME,
+      "execution_time"),
+    MappedData<Service>(
+      &Service::failure_prediction_enabled,
+      NDO_DATA_FAILUREPREDICTIONENABLED,
+      "failure_prediction_enabled"),
+    MappedData<Service>(
+      &Service::failure_prediction_options,
+      NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
+      "failure_prediction_options"),
+    MappedData<Service>(
+      &Service::first_notification_delay,
+      NDO_DATA_FIRSTNOTIFICATIONDELAY,
+      "first_notification_delay"),
+    MappedData<Service>(
+      &Service::flap_detection_enabled,
+      NDO_DATA_FLAPDETECTIONENABLED,
+      "flap_detection_enabled"),
+    MappedData<Service>(
+      &Service::flap_detection_on_critical,
+      NDO_DATA_FLAPDETECTIONONCRITICAL,
+      "flap_detection_on_critical"),
+    MappedData<Service>(
+      &Service::flap_detection_on_ok,
+      NDO_DATA_FLAPDETECTIONONOK,
+      "flap_detection_on_ok"),
+    MappedData<Service>(
+      &Service::flap_detection_on_unknown,
+      NDO_DATA_FLAPDETECTIONONUNKNOWN,
+      "flap_detection_on_unknown"),
+    MappedData<Service>(
+      &Service::flap_detection_on_warning,
+      NDO_DATA_FLAPDETECTIONONWARNING,
+      "flap_detection_on_waning"),
+    MappedData<Service>(
+      &Service::freshness_threshold,
+      NDO_DATA_SERVICEFRESHNESSTHRESHOLD,
+      "freshness_threshold"),
+    MappedData<Service>(
+      &Service::has_been_checked,
+      NDO_DATA_HASBEENCHECKED,
+      "has_been_checked"),
+    MappedData<Service>(
+      &Service::high_flap_threshold,
+      NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
+      "high_flap_threshold"),
+    MappedData<Service>(
+      &Service::host,
+      NDO_DATA_HOSTNAME,
+      "host_name"),
+    MappedData<Service>(
+      &Service::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<Service>(
+      &Service::icon_image,
+      NDO_DATA_ICONIMAGE,
+      "icon_image"),
+    MappedData<Service>(
+      &Service::icon_image_alt,
+      NDO_DATA_ICONIMAGEALT,
+      "icon_image_alt"),
+    MappedData<Service>(
+      &Service::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<Service>(
+      &Service::is_flapping,
+      NDO_DATA_ISFLAPPING,
+      "is_flapping"),
+    MappedData<Service>(
+      &Service::is_volatile,
+      NDO_DATA_SERVICEISVOLATILE,
+      "is_volatile"),
+    MappedData<Service>(
+      &Service::last_check,
+      NDO_DATA_LASTSERVICECHECK,
+      "last_check"),
+    MappedData<Service>(
+      &Service::last_hard_state,
+      NDO_DATA_LASTHARDSTATE,
+      "last_hard_state"),
+    MappedData<Service>(
+      &Service::last_hard_state_change,
+      NDO_DATA_LASTHARDSTATECHANGE,
+      "last_hard_state_change"),
+    MappedData<Service>(
+      &Service::last_notification,
+      NDO_DATA_LASTSERVICENOTIFICATION,
+      "last_notification"),
+    MappedData<Service>(
+      &Service::last_state_change,
+      NDO_DATA_LASTSTATECHANGE,
+      "last_state_change"),
+    MappedData<Service>(
+      &Service::last_time_critical,
+      NDO_DATA_LASTTIMECRITICAL,
+      "last_time_critical"),
+    MappedData<Service>(
+      &Service::last_time_ok,
+      NDO_DATA_LASTTIMEOK,
+      "last_time_ok"),
+    MappedData<Service>(
+      &Service::last_time_unknown,
+      NDO_DATA_LASTTIMEUNKNOWN,
+      "last_time_unknown"),
+    MappedData<Service>(
+      &Service::last_time_warning,
+      NDO_DATA_LASTTIMEWARNING,
+      "last_time_warning"),
+    MappedData<Service>(
+      &Service::last_update,
+      0, // XXX : should find macro
+      "last_update"),
+    MappedData<Service>(
+      &Service::latency,
+      NDO_DATA_LATENCY,
+      "latency"),
+    MappedData<Service>(
+      &Service::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<Service>(
+      &Service::low_flap_threshold,
+      NDO_DATA_LOWSERVICEFLAPTHRESHOLD,
+      "low_flap_threshold"),
+    MappedData<Service>(
+      &Service::max_check_attempts,
+      NDO_DATA_MAXCHECKATTEMPTS,
+      "max_check_attempts"),
+    MappedData<Service>(
+      &Service::modified_attributes,
+      NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+      "modified_attributes"),
+    MappedData<Service>(
+      &Service::next_check,
+      NDO_DATA_NEXTSERVICECHECK,
+      "next_check"),
+    MappedData<Service>(
+      &Service::next_notification,
+      NDO_DATA_NEXTSERVICENOTIFICATION,
+      "next_notification"),
+    MappedData<Service>(
+      &Service::no_more_notifications,
+      NDO_DATA_NOMORENOTIFICATIONS,
+      "no_more_notifications"),
+    MappedData<Service>(
+      &Service::notes,
+      NDO_DATA_NOTES,
+      "notes"),
+    MappedData<Service>(
+      &Service::notes_url,
+      NDO_DATA_NOTESURL,
+      "notes_url"),
+    MappedData<Service>(
+      &Service::notification_interval,
+      NDO_DATA_SERVICENOTIFICATIONINTERVAL,
+      "notification_interval"),
+    MappedData<Service>(
+      &Service::notification_period,
+      NDO_DATA_SERVICENOTIFICATIONPERIOD,
+      "notification_period"),
+    MappedData<Service>(
+      &Service::notifications_enabled,
+      NDO_DATA_NOTIFICATIONSENABLED,
+      "notifications_enabled"),
+    MappedData<Service>(
+      &Service::notified_on_critical,
+      NDO_DATA_NOTIFYSERVICECRITICAL,
+      "notified_on_critical"),
+    MappedData<Service>(
+      &Service::notified_on_unknown,
+      NDO_DATA_NOTIFYSERVICEUNKNOWN,
+      "notified_on_unknown"),
+    MappedData<Service>(
+      &Service::notified_on_warning,
+      NDO_DATA_NOTIFYSERVICEWARNING,
+      "notified_on_warning"),
+    MappedData<Service>(
+      &Service::notify_on_downtime,
+      NDO_DATA_NOTIFYSERVICEDOWNTIME,
+      "notify_on_downtime"),
+    MappedData<Service>(
+      &Service::notify_on_flapping,
+      NDO_DATA_NOTIFYSERVICEFLAPPING,
+      "notify_on_flapping"),
+    MappedData<Service>(
+      &Service::notify_on_recovery,
+      NDO_DATA_NOTIFYSERVICERECOVERY,
+      "notify_on_recovery"),
+    MappedData<Service>(
+      &Service::obsess_over,
+      NDO_DATA_OBSESSOVERSERVICE,
+      "obsess_over_service"),
+    MappedData<Service>(
+      &Service::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Service>(
+      &Service::passive_checks_enabled,
+      NDO_DATA_PASSIVESERVICECHECKSENABLED,
+      "passive_checks_enabled"),
+    MappedData<Service>(
+      &Service::percent_state_change,
+      NDO_DATA_PERCENTSTATECHANGE,
+      "percent_state_change"),
+    MappedData<Service>(
+      &Service::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
+    MappedData<Service>(
+      &Service::problem_has_been_acknowledged,
+      NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+      "problem_has_been_acknowledged"),
+    MappedData<Service>(
+      &Service::process_performance_data,
+      NDO_DATA_PROCESSPERFORMANCEDATA,
+      "process_performance_data"),
+    MappedData<Service>(
+      &Service::retain_nonstatus_information,
+      NDO_DATA_RETAINSERVICENONSTATUSINFORMATION,
+      "retain_nonstatus_information"),
+    MappedData<Service>(
+      &Service::retain_status_information,
+      NDO_DATA_RETAINSERVICESTATUSINFORMATION,
+      "retain_status_information"),
+    MappedData<Service>(
+      &Service::retry_interval,
+      NDO_DATA_RETRYCHECKINTERVAL,
+      "retry_interval"),
+    MappedData<Service>(
+      &Service::scheduled_downtime_depth,
+      NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+      "scheduled_downtime_depth"),
+    MappedData<Service>(
+      &Service::service,
+      NDO_DATA_SERVICEDESCRIPTION,
+      "service_description"),
+    MappedData<Service>(
+      &Service::service_id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<Service>(
+      &Service::should_be_scheduled,
+      NDO_DATA_SHOULDBESCHEDULED,
+      "should_be_scheduled"),
+    MappedData<Service>(
+      &Service::stalk_on_critical,
+      NDO_DATA_STALKSERVICEONCRITICAL,
+      "stalk_on_critical"),
+    MappedData<Service>(
+      &Service::stalk_on_ok,
+      NDO_DATA_STALKSERVICEONOK,
+      "stalk_on_ok"),
+    MappedData<Service>(
+      &Service::stalk_on_unknown,
+      NDO_DATA_STALKSERVICEONUNKNOWN,
+      "stalk_on_unknown"),
+    MappedData<Service>(
+      &Service::stalk_on_warning,
+      NDO_DATA_STALKSERVICEONWARNING,
+      "stalk_on_warning"),
+    MappedData<Service>(
+      &Service::state_type,
+      NDO_DATA_STATETYPE,
+      "state_type"),
+    MappedData<Service>()
   };
-DB::MappingGetters<Events::ServiceGroup>
-  service_group_get_mapping;
-DB::MappingSetters<Events::ServiceGroup>
-  service_group_set_mapping;
 
-const DB::DataMember<ServiceStatus> service_status_dm[] =
+// ServiceCheck mapping.
+const MappedData<ServiceCheck> service_check_mapping[] =
   {
-    DataMember<ServiceStatus>("acknowledgement_type",
-      &ServiceStatus::acknowledgement_type),
-    DataMember<ServiceStatus>("active_checks_enabled",
-      &ServiceStatus::active_checks_enabled),
-    DataMember<ServiceStatus>("check_command",
-      &ServiceStatus::check_command),
-    DataMember<ServiceStatus>("check_interval",
-      &ServiceStatus::check_interval),
-    DataMember<ServiceStatus>("check_period",
-      &ServiceStatus::check_period),
-    DataMember<ServiceStatus>("check_type",
-      &ServiceStatus::check_type),
-    DataMember<ServiceStatus>("current_attempt",
-      &ServiceStatus::current_check_attempt),
-    DataMember<ServiceStatus>("current_notification_number",
-      &ServiceStatus::current_notification_number),
-    DataMember<ServiceStatus>("current_state",
-      &ServiceStatus::current_state),
-    DataMember<ServiceStatus>("event_handler",
-      &ServiceStatus::event_handler),
-    DataMember<ServiceStatus>("event_handler_enabled",
-      &ServiceStatus::event_handler_enabled),
-    DataMember<ServiceStatus>("execution_time",
-      &ServiceStatus::execution_time),
-    DataMember<ServiceStatus>("failure_prediction_enabled",
-      &ServiceStatus::failure_prediction_enabled),
-    DataMember<ServiceStatus>("flap_detection_enabled",
-      &ServiceStatus::flap_detection_enabled),
-    DataMember<ServiceStatus>("has_been_checked",
-      &ServiceStatus::has_been_checked),
-    DataMember<ServiceStatus>("is_flapping",
-      &ServiceStatus::is_flapping),
-    DataMember<ServiceStatus>("last_check",
-      &ServiceStatus::last_check),
-    DataMember<ServiceStatus>("last_hard_state",
-      &ServiceStatus::last_hard_state),
-    DataMember<ServiceStatus>("last_hard_state_change",
-      &ServiceStatus::last_hard_state_change),
-    DataMember<ServiceStatus>("last_notification",
-      &ServiceStatus::last_notification),
-    DataMember<ServiceStatus>("last_state_change",
-      &ServiceStatus::last_state_change),
-    DataMember<ServiceStatus>("last_time_critical",
-      &ServiceStatus::last_time_critical),
-    DataMember<ServiceStatus>("last_time_ok",
-      &ServiceStatus::last_time_ok),
-    DataMember<ServiceStatus>("last_time_unknown",
-      &ServiceStatus::last_time_unknown),
-    DataMember<ServiceStatus>("last_time_warning",
-      &ServiceStatus::last_time_warning),
-    DataMember<ServiceStatus>("last_update",
-      &ServiceStatus::last_update),
-    DataMember<ServiceStatus>("latency",
-      &ServiceStatus::latency),
-    DataMember<ServiceStatus>("long_output",
-      &ServiceStatus::long_output),
-    DataMember<ServiceStatus>("max_check_attempts",
-      &ServiceStatus::max_check_attempts),
-    DataMember<ServiceStatus>("modified_attributes",
-      &ServiceStatus::modified_attributes),
-    DataMember<ServiceStatus>("next_check",
-      &ServiceStatus::next_check),
-    DataMember<ServiceStatus>("next_notification",
-      &ServiceStatus::next_notification),
-    DataMember<ServiceStatus>("no_more_notifications",
-      &ServiceStatus::no_more_notifications),
-    DataMember<ServiceStatus>("notifications_enabled",
-      &ServiceStatus::notifications_enabled),
-    DataMember<ServiceStatus>("obsess_over_service",
-      &ServiceStatus::obsess_over),
-    DataMember<ServiceStatus>("output",
-      &ServiceStatus::output),
-    DataMember<ServiceStatus>("passive_checks_enabled",
-      &ServiceStatus::passive_checks_enabled),
-    DataMember<ServiceStatus>("percent_state_change",
-      &ServiceStatus::percent_state_change),
-    DataMember<ServiceStatus>("perf_data",
-      &ServiceStatus::perf_data),
-    DataMember<ServiceStatus>("problem_has_been_acknowledged",
-      &ServiceStatus::problem_has_been_acknowledged),
-    DataMember<ServiceStatus>("process_performance_data",
-      &ServiceStatus::process_performance_data),
-    DataMember<ServiceStatus>("retry_interval",
-      &ServiceStatus::retry_interval),
-    DataMember<ServiceStatus>("scheduled_downtime_depth",
-      &ServiceStatus::scheduled_downtime_depth),
-    DataMember<ServiceStatus>("should_be_scheduled",
-      &ServiceStatus::should_be_scheduled),
-    DataMember<ServiceStatus>("state_type",
-      &ServiceStatus::state_type),
-    DataMember<ServiceStatus>()
+    MappedData<ServiceCheck>(
+      &ServiceCheck::command_line,
+      NDO_DATA_COMMANDLINE,
+      "command_line"),
+    MappedData<ServiceCheck>(
+      &ServiceCheck::id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<ServiceCheck>( // XXX : wtf is it here for ?
+      &ServiceCheck::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<ServiceCheck>()
   };
-DB::MappingGetters<Events::ServiceStatus>
-  service_status_get_mapping;
-DB::MappingSetters<Events::ServiceStatus>
-  service_status_set_mapping;
 
-template <typename T>
-void InitMapping(const DB::DataMember<T>* datamembers,
-                 DB::MappingGetters<T>& mapping_get,
-                 DB::MappingSetters<T>& mapping_set)
-{
-  for (unsigned int i = 0; datamembers[i].type; i++)
-    if (datamembers[i].name)
-      switch (datamembers[i].type)
-        {
-         case 'b':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.b);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.b);
-          break ;
-         case 'd':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.d);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.d);
-          break ;
-         case 'i':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.i);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.i);
-          break ;
-         case 's':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.s);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.s);
-          break ;
-         case 'S':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.S);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.S);
-          break ;
-         case 't':
-          mapping_get.AddField(datamembers[i].name, datamembers[i].value.t);
-          mapping_set.AddField(datamembers[i].name, datamembers[i].value.t);
-          break ;
-        }
+// ServiceDependency mapping.
+const MappedData<ServiceDependency> service_dependency_mapping[] =
+  {
+    MappedData<ServiceDependency>(
+      &ServiceDependency::dependency_period,
+      NDO_DATA_DEPENDENCYPERIOD,
+      "dependency_period"),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::dependent_object,
+      NDO_DATA_DEPENDENTSERVICEDESCRIPTION, // XXX : bad macro name
+      "dependent_service"),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::inherits_parent,
+      NDO_DATA_INHERITSPARENT,
+      "inherits_parent"),
+    MappedData<ServiceDependency>( // XXX : wtf is it here for ?
+      &ServiceDependency::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::object,
+      NDO_DATA_SERVICE,
+      "service"),
+    // XXX : where is execution_failure_options ?
+    // XXX : where is notification_failure_options ?
+    MappedData<ServiceDependency>()
+  };
 
-  return ;
-}
+// ServiceGroup mapping.
+const MappedData<ServiceGroup> service_group_mapping[] =
+  {
+    MappedData<ServiceGroup>(
+      &ServiceGroup::action_url,
+      NDO_DATA_ACTIONURL,
+      "action_url"),
+    MappedData<ServiceGroup>(
+      &ServiceGroup::alias,
+      NDO_DATA_SERVICEGROUPALIAS,
+      "alias"),
+    MappedData<ServiceGroup>( // XXX : should be replaced by instance_id
+      &ServiceGroup::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<ServiceGroup>(
+      &ServiceGroup::name,
+      NDO_DATA_SERVICEGROUPNAME,
+      "servicegroup_name"),
+    MappedData<ServiceGroup>(
+      &ServiceGroup::notes,
+      NDO_DATA_NOTES,
+      "notes"),
+    MappedData<ServiceGroup>(
+      &ServiceGroup::notes_url,
+      NDO_DATA_NOTESURL,
+      "notes_url"),
+    MappedData<ServiceGroup>()
+  };
 
-/**
- *  \brief Destroy Object-Relational mappings.
- *
- *  All mappings previously initialized with MappingsInit() are destroyed and
- *  related memory is free.
- *
- *  \see MappingsInit
- */
-void MappingsDestroy()
-{
-  LOGDEBUG("Destroying Acknowledgement mapping ...");
-  acknowledgement_get_mapping.Clear();
-  acknowledgement_set_mapping.Clear();
+// ServiceGroupMember mapping.
+const MappedData<ServiceGroupMember> service_group_member_mapping[] =
+  {
+    MappedData<ServiceGroupMember>(
+      &ServiceGroupMember::group, // XXX : should be replaced by servicegroup_id
+      NDO_DATA_SERVICEGROUPNAME,
+      NULL),
+    MappedData<ServiceGroupMember>( // XXX : wtf is it here for ?
+      &ServiceGroupMember::instance,
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<ServiceGroupMember>(
+      &ServiceGroupMember::member, // XXX : should be replaced by service_id
+      NDO_DATA_SERVICEGROUPMEMBER,
+      NULL),
+    MappedData<ServiceGroupMember>()
+  };
 
-  LOGDEBUG("Destroying Comment mapping ...");
-  comment_get_mapping.Clear();
-  comment_set_mapping.Clear();
-
-  LOGDEBUG("Destroying Downtime mapping ...");
-  downtime_get_mapping.Clear();
-  downtime_set_mapping.Clear();
-
-  LOGDEBUG("Destroying Host mapping ...");
-  host_get_mapping.Clear();
-  host_set_mapping.Clear();
-
-  LOGDEBUG("Destroying HostDependency mapping ...");
-  host_dependency_get_mapping.Clear();
-  host_dependency_set_mapping.Clear();
-
-  LOGDEBUG("Destroying HostGroup mapping ...");
-  host_group_get_mapping.Clear();
-  host_group_set_mapping.Clear();
-
-  LOGDEBUG("Destroying HostParent mapping ...");
-  host_parent_get_mapping.Clear();
-  host_parent_set_mapping.Clear();
-
-  LOGDEBUG("Destroying HostStatus mapping ...");
-  host_status_get_mapping.Clear();
-  host_status_set_mapping.Clear();
-
-  LOGDEBUG("Destroying Log mapping ...");
-  log_get_mapping.Clear();
-  log_set_mapping.Clear();
-
-  LOGDEBUG("Destroying ProgramStatus mapping ...");
-  program_status_get_mapping.Clear();
-  program_status_set_mapping.Clear();
-
-  LOGDEBUG("Destroying Service mapping ...");
-  service_get_mapping.Clear();
-  service_set_mapping.Clear();
-
-  LOGDEBUG("Destroying ServiceDependency mapping ...");
-  service_dependency_get_mapping.Clear();
-  service_dependency_set_mapping.Clear();
-
-  LOGDEBUG("Destroying ServiceGroup mapping ...");
-  service_group_get_mapping.Clear();
-  service_group_set_mapping.Clear();
-
-  LOGDEBUG("Destroying ServiceStatus mapping ...");
-  service_status_get_mapping.Clear();
-  service_status_set_mapping.Clear();
-
-  return ;
-}
-
-/**
- *  \brief Initialize Object-Relational mappings for every type of event.
- *
- *  When done, mappings should be cleaned with MappingsDestroy.
- *
- *  \see MappingsDelete
- */
-void MappingsInit()
-{
-  LOGDEBUG("Initializing Acknowledgement mapping ...");
-  InitMapping<Events::Acknowledgement>(acknowledgement_dm,
-    acknowledgement_get_mapping,
-    acknowledgement_set_mapping);
-
-  LOGDEBUG("Initializing Comment mapping ...");
-  InitMapping<Events::Comment>(comment_dm,
-    comment_get_mapping,
-    comment_set_mapping);
-
-  LOGDEBUG("Initializing Downtime mapping ...");
-  InitMapping<Events::Downtime>(downtime_dm,
-    downtime_get_mapping,
-    downtime_set_mapping);
-
-  LOGDEBUG("Initializing Host mapping ...");
-  InitMapping<Events::Host>(host_dm,
-    host_get_mapping,
-    host_set_mapping);
-
-  LOGDEBUG("Initializing HostDependency mapping ...");
-  InitMapping<Events::HostDependency>(host_dependency_dm,
-    host_dependency_get_mapping,
-    host_dependency_set_mapping);
-
-  LOGDEBUG("Initializing HostGroup mapping ...");
-  InitMapping<Events::HostGroup>(host_group_dm,
-    host_group_get_mapping,
-    host_group_set_mapping);
-
-  LOGDEBUG("Initializing HostParent mapping ...");
-  InitMapping<Events::HostParent>(host_parent_dm,
-    host_parent_get_mapping,
-    host_parent_set_mapping);
-
-  LOGDEBUG("Initializing HostStatus mapping ...");
-  InitMapping<Events::HostStatus>(host_status_dm,
-    host_status_get_mapping,
-    host_status_set_mapping);
-
-  LOGDEBUG("Initializing Log mapping ...");
-  InitMapping<Events::Log>(log_dm,
-    log_get_mapping,
-    log_set_mapping);
-
-  LOGDEBUG("Initializing ProgramStatus mapping ...");
-  InitMapping<Events::ProgramStatus>(program_status_dm,
-    program_status_get_mapping,
-    program_status_set_mapping);
-
-  LOGDEBUG("Initializing Service mapping ...");
-  InitMapping<Events::Service>(service_dm,
-    service_get_mapping,
-    service_set_mapping);
-
-  LOGDEBUG("Initializing ServiceDependency mapping ...");
-  InitMapping<Events::ServiceDependency>(service_dependency_dm,
-    service_dependency_get_mapping,
-    service_dependency_set_mapping);
-
-  LOGDEBUG("Initializing ServiceGroup mapping ...");
-  InitMapping<Events::ServiceGroup>(service_group_dm,
-    service_group_get_mapping,
-    service_group_set_mapping);
-
-  LOGDEBUG("Initializing ServiceStatus mapping ...");
-  InitMapping<Events::ServiceStatus>(service_status_dm,
-    service_status_get_mapping,
-    service_status_set_mapping);
-
-  return ;
-}
+// ServiceStatus mapping.
+const MappedData<ServiceStatus> service_status_mapping[] =
+  {
+    MappedData<ServiceStatus>(
+      &ServiceStatus::acknowledgement_type,
+      NDO_DATA_ACKNOWLEDGEMENTTYPE,
+      "acknowledgement_type"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::active_checks_enabled,
+      NDO_DATA_ACTIVESERVICECHECKSENABLED,
+      "active_checks_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::check_interval,
+      NDO_DATA_NORMALCHECKINTERVAL,
+      "check_interval"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::check_period,
+      NDO_DATA_SERVICECHECKPERIOD,
+      "check_period"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::check_type,
+      NDO_DATA_CHECKTYPE,
+      "check_type"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::current_check_attempt,
+      NDO_DATA_CURRENTCHECKATTEMPT,
+      "current_check_attempt"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::current_notification_number,
+      NDO_DATA_CURRENTNOTIFICATIONNUMBER,
+      "current_notification_number"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::current_state,
+      NDO_DATA_CURRENTSTATE,
+      "current_state"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::event_handler,
+      NDO_DATA_EVENTHANDLER,
+      "event_handler"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::event_handler_enabled,
+      NDO_DATA_EVENTHANDLERENABLED,
+      "event_handler_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::execution_time,
+      NDO_DATA_EXECUTIONTIME,
+      "execution_time"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::failure_prediction_enabled,
+      NDO_DATA_FAILUREPREDICTIONENABLED,
+      "failure_prediction_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::flap_detection_enabled,
+      NDO_DATA_FLAPDETECTIONENABLED,
+      "flap_detection_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::has_been_checked,
+      NDO_DATA_HASBEENCHECKED,
+      "has_been_checked"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::host,
+      NDO_DATA_HOSTNAME,
+      "host_name"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::instance, // XXX : should be replaced by instance_id
+      NDO_DATA_INSTANCE,
+      NULL),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::is_flapping,
+      NDO_DATA_ISFLAPPING,
+      "is_flapping"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_check,
+      NDO_DATA_LASTSERVICECHECK,
+      "last_check"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_hard_state,
+      NDO_DATA_LASTHARDSTATE,
+      "last_hard_state"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_hard_state_change,
+      NDO_DATA_LASTHARDSTATECHANGE,
+      "last_hard_state_change"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_notification,
+      NDO_DATA_LASTSERVICENOTIFICATION,
+      "last_notification"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_state_change,
+      NDO_DATA_LASTSTATECHANGE,
+      "last_state_change"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_time_critical,
+      NDO_DATA_LASTTIMECRITICAL,
+      "last_time_critical"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_time_ok,
+      NDO_DATA_LASTTIMEOK,
+      "last_time_ok"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_time_unknown,
+      NDO_DATA_LASTTIMEUNKNOWN,
+      "last_time_unknown"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_time_warning,
+      NDO_DATA_LASTTIMEWARNING,
+      "last_time_warning"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::last_update,
+      0, // XXX : should find macro
+      "last_update"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::latency,
+      NDO_DATA_LATENCY,
+      "latency"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::max_check_attempts,
+      NDO_DATA_MAXCHECKATTEMPTS,
+      "max_check_attempts"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::modified_attributes,
+      NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+      "modified_attributes"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::next_check,
+      NDO_DATA_NEXTSERVICECHECK,
+      "next_check"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::next_notification,
+      NDO_DATA_NEXTSERVICENOTIFICATION,
+      "next_notification"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::no_more_notifications,
+      NDO_DATA_NOMORENOTIFICATIONS,
+      "no_more_notifications"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::notifications_enabled,
+      NDO_DATA_NOTIFICATIONSENABLED,
+      "notifications_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::obsess_over,
+      NDO_DATA_OBSESSOVERSERVICE,
+      "obsess_over_service"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::passive_checks_enabled,
+      NDO_DATA_PASSIVESERVICECHECKSENABLED,
+      "passive_checks_enabled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::percent_state_change,
+      NDO_DATA_PERCENTSTATECHANGE,
+      "percent_state_change"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::problem_has_been_acknowledged,
+      NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
+      "problem_has_been_acknowledged"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::process_performance_data,
+      NDO_DATA_PROCESSPERFORMANCEDATA,
+      "process_performance_data"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::retry_interval,
+      NDO_DATA_RETRYCHECKINTERVAL,
+      "retry_interval"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::scheduled_downtime_depth,
+      NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
+      "scheduled_downtime_depth"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::service,
+      NDO_DATA_SERVICEDESCRIPTION,
+      "service_description"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::service_id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::should_be_scheduled,
+      NDO_DATA_SHOULDBESCHEDULED,
+      "should_be_scheduled"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::state_type,
+      NDO_DATA_STATETYPE,
+      "state_type"),
+    MappedData<ServiceStatus>()
+  };

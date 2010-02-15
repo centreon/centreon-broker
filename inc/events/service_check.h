@@ -18,18 +18,30 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CALLBACKS_H_
-# define CALLBACKS_H_
+#ifndef EVENTS_SERVICE_CHECK_H_
+# define EVENTS_SERVICE_CHECK_H_
 
-int CallbackAcknowledgement(int callback_type, void* data);
-int CallbackComment(int callback_type, void* data);
-int CallbackDowntime(int callback_type, void* data);
-int CallbackHostCheck(int callback_type, void* data);
-int CallbackHostStatus(int callback_type, void* data);
-int CallbackLog(int callback_type, void* data);
-int CallbackProcess(int callback_type, void* data);
-int CallbackProgramStatus(int callback_type, void* data);
-int CallbackServiceCheck(int callback_type, void* data);
-int CallbackServiceStatus(int callback_type, void* data);
+# include <string>
+# include "events/check.h"
 
-#endif /* !CALLBACKS_H_ */
+namespace         Events
+{
+  /**
+   *  \class ServiceCheck service_check.h "events/service_check.h"
+   *  \brief Check that has been executed on a service.
+   *
+   *  Once a check has been executed on a service, an object of this class is
+   *  sent.
+   */
+  class           ServiceCheck : public Check
+  {
+   public:
+                  ServiceCheck();
+                  ServiceCheck(const ServiceCheck& service_check);
+    virtual       ~ServiceCheck();
+    ServiceCheck& operator=(const ServiceCheck& service_check);
+    int           GetType() const;
+  };
+}
+
+#endif /* !EVENTS_SERVICE_CHECK_H_ */

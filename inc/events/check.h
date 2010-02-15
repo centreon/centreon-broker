@@ -18,18 +18,37 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CALLBACKS_H_
-# define CALLBACKS_H_
+#ifndef EVENTS_CHECK_H_
+# define EVENTS_CHECK_H_
 
-int CallbackAcknowledgement(int callback_type, void* data);
-int CallbackComment(int callback_type, void* data);
-int CallbackDowntime(int callback_type, void* data);
-int CallbackHostCheck(int callback_type, void* data);
-int CallbackHostStatus(int callback_type, void* data);
-int CallbackLog(int callback_type, void* data);
-int CallbackProcess(int callback_type, void* data);
-int CallbackProgramStatus(int callback_type, void* data);
-int CallbackServiceCheck(int callback_type, void* data);
-int CallbackServiceStatus(int callback_type, void* data);
+# include <string>
+# include "events/event.h"
 
-#endif /* !CALLBACKS_H_ */
+namespace       Events
+{
+  /**
+   *  \class Check check.h "events/check.h"
+   *  \brief Check that has been executed.
+   *
+   *  Once a check has been executed (the check itself, not deduced
+   *  information), this kind of event is sent.
+   *
+   *  \see HostCheck
+   *  \see ServiceCheck
+   */
+  class         Check : public Event
+  {
+   private:
+    void        InternalCopy(const Check& check);
+
+   public:
+    std::string command_line;
+    int         id;
+                Check();
+                Check(const Check& check);
+    virtual     ~Check();
+    Check&      operator=(const Check& check);
+  };
+}
+
+#endif /* !EVENTS_CHECK_H_ */

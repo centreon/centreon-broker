@@ -145,7 +145,10 @@ void MySQLUpdate::Execute()
 {
   // XXX : does not support multiple execution
   if (!this->stmt)
-    this->ProcessPredicate(this->query);
+    {
+      this->query.resize(this->query.size() - 2); // Remove last ", "
+      this->ProcessPredicate(this->query);
+    }
   this->MySQLHaveArgs::Execute();
   return ;
 }

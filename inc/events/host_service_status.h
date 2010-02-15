@@ -25,7 +25,7 @@
 # include <string>
 # include "events/status.h"
 
-namespace                   Events
+namespace              Events
 {
   /**
    *  \class HostServiceStatus host_service_status.h "events/host_service_status.h"

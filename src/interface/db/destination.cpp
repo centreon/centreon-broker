@@ -398,6 +398,33 @@ void Destination::ProcessHost(const Events::Host& host)
 }
 
 /**
+ *  Process an HostCheck event.
+ */
+void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
+{
+  LOGDEBUG("Processing HostCheck event ...");
+  std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::HostCheck> >
+    query(this->conn_->GetMappedUpdate<Events::HostCheck>(
+      host_check_get_mapping));
+
+  query->SetTable("host");
+  query->SetArg(host_check);
+  query->SetPredicate(CentreonBroker::DB::Equal(
+                        CentreonBroker::DB::Field("host_id"),
+                        CentreonBroker::DB::Terminal(host_check.id)));
+  try
+    {
+      query->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
+  return ;
+}
+
+/**
  *  Process a HostDependency event.
  */
 void Destination::ProcessHostDependency(const Events::HostDependency& hd)
@@ -651,6 +678,33 @@ void Destination::ProcessService(const Events::Service& service)
 }
 
 /**
+ *  Process a ServiceCheck event.
+ */
+void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
+{
+  LOGDEBUG("Processing ServiceCheck event ...");
+  std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::ServiceCheck> >
+    query(this->conn_->GetMappedUpdate<Events::ServiceCheck>(
+      service_check_get_mapping));
+
+  query->SetTable("service");
+  query->SetArg(service_check);
+  query->SetPredicate(CentreonBroker::DB::Equal(
+                        CentreonBroker::DB::Field("service_id"),
+                        CentreonBroker::DB::Terminal(service_check.id)));
+  try
+    {
+      query->Execute();
+    }
+  catch (const CentreonBroker::DB::DBException& dbe)
+    {
+      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
+	throw ;
+    }
+  return ;
+}
+
+/**
  *  Process a ServiceDependency event.
  */
 void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
@@ -858,6 +912,9 @@ void Destination::Event(Events::Event* event)
          case Events::Event::HOST:
           ProcessHost(*static_cast<Events::Host*>(event));
           break ;
+         case Events::Event::HOSTCHECK:
+          ProcessHostCheck(*static_cast<Events::HostCheck*>(event));
+          break ;
          case Events::Event::HOSTDEPENDENCY:
           ProcessHostDependency(*static_cast<Events::HostDependency*>(event));
           break ;
@@ -881,6 +938,9 @@ void Destination::Event(Events::Event* event)
           break ;
          case Events::Event::SERVICE:
           ProcessService(*static_cast<Events::Service*>(event));
+          break ;
+         case Events::Event::SERVICECHECK:
+          ProcessServiceCheck(*static_cast<Events::ServiceCheck*>(event));
           break ;
          case Events::Event::SERVICEDEPENDENCY:
           ProcessServiceDependency(*static_cast<Events::ServiceDependency*>(event));
