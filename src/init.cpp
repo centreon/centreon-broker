@@ -24,8 +24,7 @@
 #include "configuration/manager.h"
 #include "exception.h"
 #include "init.h"
-#include "interface/ndo/destination.h"
-#include "interface/ndo/source.h"
+#include "interface/ndo/internal.h"
 #include "interface/xml/destination.h"
 #ifdef USE_TLS
 # include "io/tls/internal.h"
@@ -50,7 +49,7 @@ void Deinit()
 
   // Destroy O/R mapping.
   LOGDEBUG("Unloading DB engine ...");
-  MappingsDestroy();
+  // XXX : MappingsDestroy();
 
 #ifdef USE_TLS
   // Unload GNU TLS library.
@@ -86,12 +85,11 @@ void Init()
 #endif /* USE_TLS */
 
   // Initialize all interface objects.
-  LOGDEBUG("Initializing DB engine (destination) ...");
-  MappingsInit();
-  LOGDEBUG("Initializing NDO engine (source) ...");
-  Interface::NDO::Destination::Initialize();
-  Interface::NDO::Source::Initialize();
-  LOGDEBUG("Initializing XML engine (destination) ...");
+  LOGDEBUG("Initializing DB engine ...");
+  //MappingsInit();
+  LOGDEBUG("Initializing NDO engine ...");
+  Interface::NDO::Initialize();
+  LOGDEBUG("Initializing XML engine ...");
   Interface::XML::Destination::Initialize();
 
   return ;

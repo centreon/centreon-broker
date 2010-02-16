@@ -18,708 +18,282 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/events.h"
+#include <assert.h>
+#include <sstream>
+#include <stdlib.h>                 // for abort, strtol
 #include "interface/ndo/internal.h"
-#include "nagios/protoapi.h"
 
-using namespace Events;
 using namespace Interface::NDO;
 
 /**************************************
 *                                     *
-*            Global Arrays            *
+*          Static Functions           *
 *                                     *
 **************************************/
 
-// Acknowledgement fields.
-const KeyField<Acknowledgement> Interface::NDO::acknowledgement_fields[] =
-  {
-    KeyField<Acknowledgement>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
-      &Acknowledgement::acknowledgement_type),
-    KeyField<Acknowledgement>(NDO_DATA_AUTHORNAME,
-      &Acknowledgement::author),
-    KeyField<Acknowledgement>(NDO_DATA_COMMENT,
-      &Acknowledgement::comment),
-    KeyField<Acknowledgement>(NDO_DATA_HOST,
-      &Acknowledgement::host),
-    KeyField<Acknowledgement>(NDO_DATA_INSTANCE,
-      &Acknowledgement::instance),
-    KeyField<Acknowledgement>(NDO_DATA_NOTIFYCONTACTS,
-      &Acknowledgement::notify_contacts),
-    KeyField<Acknowledgement>(NDO_DATA_PERSISTENT,
-      &Acknowledgement::persistent_comment),
-    KeyField<Acknowledgement>(NDO_DATA_SERVICE,
-      &Acknowledgement::service),
-    KeyField<Acknowledgement>(NDO_DATA_STATE,
-      &Acknowledgement::state),
-    KeyField<Acknowledgement>(NDO_DATA_STICKY,
-      &Acknowledgement::is_sticky),
-    KeyField<Acknowledgement>(NDO_DATA_TIMESTAMP,
-      &Acknowledgement::entry_time),
-    KeyField<Acknowledgement>(NDO_DATA_TYPE,
-      &Acknowledgement::type),
-    KeyField<Acknowledgement>()
-  };
+/**
+ *  Get a boolean from an object.
+ */
+template <typename T>
+static void get_boolean(const T& t,
+                        const DataMember<T>& member,
+                        std::stringstream& buffer)
+{
+  buffer << (t.*(member.b) ? "1" : "0");
+  return ;
+}
 
-// Comment fields.
-const KeyField<Comment> Interface::NDO::comment_fields[] =
-  {
-    KeyField<Comment>(NDO_DATA_AUTHORNAME,
-      &Comment::author),
-    KeyField<Comment>(NDO_DATA_COMMENT,
-      &Comment::comment),
-    KeyField<Comment>(NDO_DATA_COMMENTID,
-      &Comment::internal_id),
-    KeyField<Comment>(NDO_DATA_COMMENTTYPE,
-      &Comment::comment_type),
-    KeyField<Comment>(NDO_DATA_ENTRYTIME,
-      &Comment::entry_time),
-    KeyField<Comment>(NDO_DATA_ENTRYTYPE,
-      &Comment::entry_type),
-    KeyField<Comment>(NDO_DATA_EXPIRATIONTIME,
-      &Comment::expire_time),
-    KeyField<Comment>(NDO_DATA_EXPIRES,
-      &Comment::expires),
-    KeyField<Comment>(NDO_DATA_HOST,
-      &Comment::host),
-    KeyField<Comment>(NDO_DATA_INSTANCE,
-      &Comment::instance),
-    KeyField<Comment>(NDO_DATA_PERSISTENT,
-      &Comment::persistent),
-    KeyField<Comment>(NDO_DATA_SERVICE,
-       &Comment::service),
-    KeyField<Comment>(NDO_DATA_SOURCE,
-      &Comment::source),
-    KeyField<Comment>(NDO_DATA_TYPE,
-      &Comment::type),
-    KeyField<Comment>()
-  };
+/**
+ *  Get a double from an object.
+ */
+template <typename T>
+static void get_double(const T& t,
+                       const DataMember<T>& member,
+                       std::stringstream& buffer)
+{
+  buffer << t.*(member.d);
+  return ;
+}
 
-// Downtime fields.
-const KeyField<Downtime> Interface::NDO::downtime_fields[] =
-  {
-    KeyField<Downtime>(NDO_DATA_AUTHORNAME,
-      &Downtime::author),
-    KeyField<Downtime>(NDO_DATA_COMMENT,
-      &Downtime::comment),
-    KeyField<Downtime>(NDO_DATA_DOWNTIMEID,
-      &Downtime::id),
-    KeyField<Downtime>(NDO_DATA_DOWNTIMETYPE,
-      &Downtime::downtime_type),
-    KeyField<Downtime>(NDO_DATA_DURATION,
-      &Downtime::duration),
-    KeyField<Downtime>(NDO_DATA_ENDTIME,
-      &Downtime::end_time),
-    KeyField<Downtime>(NDO_DATA_ENTRYTIME,
-      &Downtime::entry_time),
-    KeyField<Downtime>(NDO_DATA_FIXED,
-      &Downtime::fixed),
-    KeyField<Downtime>(NDO_DATA_HOST,
-      &Downtime::host),
-    KeyField<Downtime>(NDO_DATA_INSTANCE,
-      &Downtime::instance),
-    KeyField<Downtime>(NDO_DATA_SERVICE,
-      &Downtime::service),
-    KeyField<Downtime>(NDO_DATA_STARTTIME,
-      &Downtime::start_time),
-    KeyField<Downtime>(NDO_DATA_TRIGGEREDBY,
-      &Downtime::triggered_by),
-    KeyField<Downtime>(NDO_DATA_TYPE,
-      &Downtime::type),
-    KeyField<Downtime>()
-  };
+/**
+ *  Get an integer from an object.
+ */
+template <typename T>
+static void get_integer(const T& t,
+                        const DataMember<T>& member,
+                        std::stringstream& buffer)
+{
+  buffer << t.*(member.i);
+  return ;
+}
 
-// Host fields.
-const KeyField<Host> Interface::NDO::host_fields[] =
-  {
-    KeyField<Host>(NDO_DATA_ACTIONURL,
-      &Host::action_url),
-    KeyField<Host>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      &Host::active_checks_enabled),
-    KeyField<Host>(NDO_DATA_DISPLAYNAME,
-      &Host::display_name),
-    KeyField<Host>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
-      &Host::first_notification_delay),
-    KeyField<Host>(NDO_DATA_FLAPDETECTIONONDOWN,
-      &Host::flap_detection_on_down),
-    KeyField<Host>(NDO_DATA_FLAPDETECTIONONUNREACHABLE,
-      &Host::flap_detection_on_unreachable),
-    KeyField<Host>(NDO_DATA_FLAPDETECTIONONUP,
-      &Host::flap_detection_on_up),
-    KeyField<Host>(NDO_DATA_HAVE2DCOORDS,
-      &Host::have_2d_coords),
-    //{ NDO_DATA_HAVE3DCOORDS }
-    KeyField<Host>(NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
-      &Host::high_flap_threshold),
-    KeyField<Host>(NDO_DATA_HOSTADDRESS,
-      &Host::address),
-    KeyField<Host>(NDO_DATA_HOSTALIAS,
-      &Host::alias),
-    KeyField<Host>(NDO_DATA_HOSTCHECKCOMMAND,
-      &Host::check_command),
-    KeyField<Host>(NDO_DATA_HOSTCHECKINTERVAL,
-      &Host::check_interval),
-    KeyField<Host>(NDO_DATA_HOSTCHECKPERIOD,
-      &Host::check_period),
-    KeyField<Host>(NDO_DATA_HOSTEVENTHANDLER,
-      &Host::event_handler),
-    KeyField<Host>(NDO_DATA_HOSTEVENTHANDLERENABLED,
-      &Host::event_handler_enabled),
-    KeyField<Host>(NDO_DATA_HOSTFAILUREPREDICTIONENABLED,
-      &Host::failure_prediction_enabled),
-    //{ NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS },
-    KeyField<Host>(NDO_DATA_HOSTFLAPDETECTIONENABLED,
-      &Host::flap_detection_enabled),
-    KeyField<Host>(NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
-      &Host::check_freshness),
-    KeyField<Host>(NDO_DATA_HOSTFRESHNESSTHRESHOLD,
-      &Host::freshness_threshold),
-    KeyField<Host>(NDO_DATA_HOSTID,
-      &Host::host_id),
-    KeyField<Host>(NDO_DATA_HOSTMAXCHECKATTEMPTS,
-      &Host::max_check_attempts),
-    KeyField<Host>(NDO_DATA_HOSTNAME,
-      &Host::host),
-    KeyField<Host>(NDO_DATA_HOSTNOTIFICATIONINTERVAL,
-      &Host::notification_interval),
-    KeyField<Host>(NDO_DATA_HOSTNOTIFICATIONPERIOD,
-      &Host::notification_period),
-    KeyField<Host>(NDO_DATA_HOSTNOTIFICATIONSENABLED,
-      &Host::notifications_enabled),
-    KeyField<Host>(NDO_DATA_HOSTRETRYINTERVAL,
-      &Host::retry_interval),
-    KeyField<Host>(NDO_DATA_ICONIMAGE,
-      &Host::icon_image),
-    KeyField<Host>(NDO_DATA_ICONIMAGEALT,
-      &Host::icon_image_alt),
-    KeyField<Host>(NDO_DATA_INSTANCE,
-      &Host::instance),
-    KeyField<Host>(NDO_DATA_LOWHOSTFLAPTHRESHOLD,
-      &Host::low_flap_threshold),
-    KeyField<Host>(NDO_DATA_NOTES,
-      &Host::notes),
-    KeyField<Host>(NDO_DATA_NOTESURL,
-      &Host::notes_url),
-    KeyField<Host>(NDO_DATA_NOTIFYHOSTDOWN,
-      &Host::notify_on_down),
-    KeyField<Host>(NDO_DATA_NOTIFYHOSTDOWNTIME,
-      &Host::notify_on_downtime),
-    KeyField<Host>(NDO_DATA_NOTIFYHOSTFLAPPING,
-      &Host::notify_on_flapping),
-    KeyField<Host>(NDO_DATA_NOTIFYHOSTRECOVERY,
-      &Host::notify_on_recovery),
-    KeyField<Host>(NDO_DATA_NOTIFYHOSTUNREACHABLE,
-      &Host::notify_on_unreachable),
-    KeyField<Host>(NDO_DATA_OBSESSOVERHOST,
-      &Host::obsess_over),
-    KeyField<Host>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      &Host::passive_checks_enabled),
-    KeyField<Host>(NDO_DATA_PROCESSHOSTPERFORMANCEDATA,
-      &Host::process_performance_data),
-    KeyField<Host>(NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
-      &Host::retain_nonstatus_information),
-    KeyField<Host>(NDO_DATA_RETAINHOSTSTATUSINFORMATION,
-      &Host::retain_status_information),
-    KeyField<Host>(NDO_DATA_STALKHOSTONDOWN,
-      &Host::stalk_on_down),
-    KeyField<Host>(NDO_DATA_STALKHOSTONUNREACHABLE,
-      &Host::stalk_on_unreachable),
-    KeyField<Host>(NDO_DATA_STALKHOSTONUP,
-      &Host::stalk_on_up),
-    KeyField<Host>(NDO_DATA_STATUSMAPIMAGE,
-      &Host::statusmap_image),
-    KeyField<Host>(NDO_DATA_VRMLIMAGE,
-      &Host::vrml_image),
-    KeyField<Host>(NDO_DATA_X2D,
-      &Host::x_2d),
-    //{ NDO_DATA_X3D },
-    KeyField<Host>(NDO_DATA_Y2D,
-      &Host::y_2d),
-    //{ NDO_DATA_Y3D },
-    //{ NDO_DATA_Z3D },
-    KeyField<Host>()
-  };
+/**
+ *  Get a short from an object.
+ */
+template <typename T>
+static void get_short(const T& t,
+                      const DataMember<T>& member,
+                      std::stringstream& buffer)
+{
+  buffer << t.*(member.s);
+  return ;
+}
 
-// HostCheck fields.
-const KeyField<HostCheck> Interface::NDO::host_check_fields[] =
-  {
-    KeyField<HostCheck>(NDO_DATA_COMMANDLINE,
-      &HostCheck::command_line),
-    KeyField<HostCheck>(NDO_DATA_HOSTID,
-      &HostCheck::id),
-    KeyField<HostCheck>()
-  };
+/**
+ *  Get a string from an object.
+ */
+template <typename T>
+static void get_string(const T& t,
+                       const DataMember<T>& member,
+                       std::stringstream& buffer)
+{
+  buffer << t.*(member.S);
+  return ;
+}
 
-// HostDependency fields.
-const KeyField<HostDependency> Interface::NDO::host_dependency_fields[] =
-  {
-    KeyField<HostDependency>(NDO_DATA_DEPENDENCYPERIOD,
-      &HostDependency::dependency_period),
-    KeyField<HostDependency>(NDO_DATA_DEPENDENTHOSTNAME,
-      &HostDependency::dependent_object),
-    KeyField<HostDependency>(NDO_DATA_INHERITSPARENT,
-      &HostDependency::inherits_parent),
-    KeyField<HostDependency>(NDO_DATA_HOSTNAME,
-      &HostDependency::object),
-    KeyField<HostDependency>()
-  };
+/**
+ *  Get a time_t from an object.
+ */
+template <typename T>
+static void get_timet(const T& t,
+                      const DataMember<T>& member,
+                      std::stringstream& buffer)
+{
+  buffer << t.*(member.t);
+  return ;
+}
 
-// HostGroup fields.
-const KeyField<HostGroup> Interface::NDO::host_group_fields[] =
-  {
-    KeyField<HostGroup>(NDO_DATA_HOSTGROUPALIAS,
-      &HostGroup::alias),
-    KeyField<HostGroup>(NDO_DATA_HOSTGROUPNAME,
-      &HostGroup::name),
-    KeyField<HostGroup>(NDO_DATA_INSTANCE,
-      &HostGroup::instance),
-    KeyField<HostGroup>()
-  };
+/**
+ *  Set a boolean within an object.
+ */
+template <typename T>
+static void set_boolean(T& t,
+                        const DataMember<T>& member,
+                        const char* str)
+{
+  t.*(member.b) = strtol(str, NULL, 0);
+  return ;
+}
 
-// HostGroupMember fields.
-const KeyField<HostGroupMember> Interface::NDO::host_group_member_fields[] =
-  {
-    KeyField<HostGroupMember>(NDO_DATA_HOSTGROUPMEMBER,
-      &HostGroupMember::member),
-    KeyField<HostGroupMember>(NDO_DATA_HOSTGROUPNAME,
-      &HostGroupMember::group),
-    KeyField<HostGroupMember>(NDO_DATA_INSTANCE,
-      &HostGroupMember::instance),
-    KeyField<HostGroupMember>()
-  };
+/**
+ *  Set a double within an object.
+ */
+template <typename T>
+static void set_double(T& t,
+                       const DataMember<T>& member,
+                       const char* str)
+{
+  t.*(member.d) = strtod(str, NULL);
+  return ;
+}
 
-// HostParent fields.
-const KeyField<HostParent> Interface::NDO::host_parent_fields[] =
-  {
-    KeyField<HostParent>(NDO_DATA_HOSTNAME,
-      &HostParent::host),
-    KeyField<HostParent>(NDO_DATA_PARENTHOST,
-      &HostParent::parent),
-    KeyField<HostParent>()
-  };
+/**
+ *  Set an integer within an object.
+ */
+template <typename T>
+static void set_integer(T& t,
+                        const DataMember<T>& member,
+                        const char* str)
+{
+  t.*(member.i) = strtol(str, NULL, 0);
+  return ;
+}
 
-// HostStatus fields.
-const KeyField<HostStatus> Interface::NDO::host_status_fields[] =
-  {
-    KeyField<HostStatus>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
-      &HostStatus::acknowledgement_type),
-    KeyField<HostStatus>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      &HostStatus::active_checks_enabled),
-    KeyField<HostStatus>(NDO_DATA_CHECKCOMMAND,
-     &HostStatus::check_command),
-    KeyField<HostStatus>(NDO_DATA_CHECKTYPE,
-      &HostStatus::check_type),
-    KeyField<HostStatus>(NDO_DATA_CURRENTCHECKATTEMPT,
-      &HostStatus::current_check_attempt),
-    KeyField<HostStatus>(NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      &HostStatus::current_notification_number),
-    KeyField<HostStatus>(NDO_DATA_CURRENTSTATE,
-      &HostStatus::current_state),
-    KeyField<HostStatus>(NDO_DATA_EVENTHANDLER,
-      &HostStatus::event_handler),
-    KeyField<HostStatus>(NDO_DATA_EVENTHANDLERENABLED,
-      &HostStatus::event_handler_enabled),
-    KeyField<HostStatus>(NDO_DATA_EXECUTIONTIME,
-      &HostStatus::execution_time),
-    KeyField<HostStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
-      &HostStatus::failure_prediction_enabled),
-    KeyField<HostStatus>(NDO_DATA_FLAPDETECTIONENABLED,
-      &HostStatus::flap_detection_enabled),
-    KeyField<HostStatus>(NDO_DATA_HASBEENCHECKED,
-      &HostStatus::has_been_checked),
-    KeyField<HostStatus>(NDO_DATA_HOST,
-      &HostStatus::host),
-    KeyField<HostStatus>(NDO_DATA_HOSTCHECKPERIOD,
-      &HostStatus::check_period),
-    KeyField<HostStatus>(NDO_DATA_HOSTID,
-      &HostStatus::host_id),
-    KeyField<HostStatus>(NDO_DATA_INSTANCE,
-      &HostStatus::instance),
-    KeyField<HostStatus>(NDO_DATA_ISFLAPPING,
-      &HostStatus::is_flapping),
-    KeyField<HostStatus>(NDO_DATA_LASTHARDSTATE,
-      &HostStatus::last_hard_state),
-    KeyField<HostStatus>(NDO_DATA_LASTHARDSTATECHANGE,
-      &HostStatus::last_hard_state_change),
-    KeyField<HostStatus>(NDO_DATA_LASTHOSTCHECK,
-      &HostStatus::last_check),
-    KeyField<HostStatus>(NDO_DATA_LASTHOSTNOTIFICATION,
-      &HostStatus::last_notification),
-    KeyField<HostStatus>(NDO_DATA_LASTSTATECHANGE,
-      &HostStatus::last_state_change),
-    KeyField<HostStatus>(NDO_DATA_LASTTIMEDOWN,
-      &HostStatus::last_time_down),
-    KeyField<HostStatus>(NDO_DATA_LASTTIMEUNREACHABLE,
-      &HostStatus::last_time_unreachable),
-    KeyField<HostStatus>(NDO_DATA_LATENCY,
-      &HostStatus::latency),
-    KeyField<HostStatus>(NDO_DATA_LONGOUTPUT,
-      &HostStatus::long_output),
-    KeyField<HostStatus>(NDO_DATA_MAXCHECKATTEMPTS,
-      &HostStatus::max_check_attempts),
-    KeyField<HostStatus>(NDO_DATA_MODIFIEDHOSTATTRIBUTES,
-      &HostStatus::modified_attributes),
-    KeyField<HostStatus>(NDO_DATA_NEXTHOSTCHECK,
-      &HostStatus::next_check),
-    KeyField<HostStatus>(NDO_DATA_NEXTHOSTNOTIFICATION,
-      &HostStatus::next_notification),
-    KeyField<HostStatus>(NDO_DATA_NOMORENOTIFICATIONS,
-      &HostStatus::no_more_notifications),
-    KeyField<HostStatus>(NDO_DATA_NORMALCHECKINTERVAL,
-      &HostStatus::check_interval),
-    KeyField<HostStatus>(NDO_DATA_NOTIFICATIONSENABLED,
-      &HostStatus::notifications_enabled),
-    KeyField<HostStatus>(NDO_DATA_OBSESSOVERHOST,
-      &HostStatus::obsess_over),
-    KeyField<HostStatus>(NDO_DATA_OUTPUT,
-      &HostStatus::output),
-    KeyField<HostStatus>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      &HostStatus::passive_checks_enabled),
-    KeyField<HostStatus>(NDO_DATA_PERCENTSTATECHANGE,
-      &HostStatus::percent_state_change),
-    KeyField<HostStatus>(NDO_DATA_PERFDATA,
-      &HostStatus::perf_data),
-    KeyField<HostStatus>(NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      &HostStatus::problem_has_been_acknowledged),
-    KeyField<HostStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
-      &HostStatus::process_performance_data),
-    KeyField<HostStatus>(NDO_DATA_RETRYCHECKINTERVAL,
-      &HostStatus::retry_interval),
-    KeyField<HostStatus>(NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
-      &HostStatus::scheduled_downtime_depth),
-    KeyField<HostStatus>(NDO_DATA_SHOULDBESCHEDULED,
-      &HostStatus::should_be_scheduled),
-    KeyField<HostStatus>(NDO_DATA_STATETYPE,
-      &HostStatus::state_type),
-    KeyField<HostStatus>()
-  };
+/**
+ *  Set a short within an object.
+ */
+template <typename T>
+static void set_short(T& t,
+                      const DataMember<T>& member,
+                      const char* str)
+{
+  t.*(member.s) = strtol(str, NULL, 0);
+  return ;
+}
 
-// Log fields.
-const KeyField<Log> Interface::NDO::log_fields[] =
-  {
-    KeyField<Log>(NDO_DATA_CONTACT,
-      &Log::notification_contact),
-    KeyField<Log>(NDO_DATA_HOST,
-      &Log::host),
-    KeyField<Log>(NDO_DATA_HOSTNOTIFICATIONCOMMAND, // not necessarily host
-      &Log::notification_cmd),
-    KeyField<Log>(NDO_DATA_INSTANCE,
-      &Log::instance),
-    KeyField<Log>(NDO_DATA_LOGENTRYTIME,
-      &Log::c_time),
-    KeyField<Log>(NDO_DATA_LOGENTRYTYPE,
-      &Log::type),
-    // XXX : msg_type
-    KeyField<Log>(NDO_DATA_OUTPUT,
-      &Log::output),
-    // XXX : retry
-    KeyField<Log>(NDO_DATA_SERVICE,
-      &Log::service),
-    // XXX : status
-    KeyField<Log>()
-  };
+/**
+ *  Set a string within an object.
+ */
+template <typename T>
+static void set_string(T& t,
+                       const DataMember<T>& member,
+                       const char* str)
+{
+  t.*(member.S) = str;
+  return ;
+}
 
-// ProgramStatus fields.
-const KeyField<ProgramStatus> Interface::NDO::program_status_fields[] =
-  {
-    KeyField<ProgramStatus>(NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      &ProgramStatus::active_host_checks_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      &ProgramStatus::active_service_checks_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_DAEMONMODE,
-      &ProgramStatus::daemon_mode),
-    KeyField<ProgramStatus>(NDO_DATA_EVENTHANDLERENABLED,
-      &ProgramStatus::event_handler_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
-      &ProgramStatus::failure_prediction_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_FLAPDETECTIONENABLED,
-      &ProgramStatus::flap_detection_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_GLOBALHOSTEVENTHANDLER,
-      &ProgramStatus::global_host_event_handler),
-    KeyField<ProgramStatus>(NDO_DATA_GLOBALSERVICEEVENTHANDLER,
-      &ProgramStatus::global_service_event_handler),
-    KeyField<ProgramStatus>(NDO_DATA_INSTANCE,
-      &ProgramStatus::instance),
-    KeyField<ProgramStatus>(NDO_DATA_LASTCOMMANDCHECK,
-      &ProgramStatus::last_command_check),
-    KeyField<ProgramStatus>(NDO_DATA_LASTLOGROTATION,
-      &ProgramStatus::last_log_rotation),
-    KeyField<ProgramStatus>(NDO_DATA_MODIFIEDHOSTATTRIBUTES,
-      &ProgramStatus::modified_host_attributes),
-    KeyField<ProgramStatus>(NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
-      &ProgramStatus::modified_service_attributes),
-    KeyField<ProgramStatus>(NDO_DATA_NOTIFICATIONSENABLED,
-      &ProgramStatus::notifications_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_OBSESSOVERHOST,
-      &ProgramStatus::obsess_over_hosts),
-    KeyField<ProgramStatus>(NDO_DATA_OBSESSOVERSERVICE,
-      &ProgramStatus::obsess_over_services),
-    KeyField<ProgramStatus>(NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      &ProgramStatus::passive_host_checks_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      &ProgramStatus::passive_service_checks_enabled),
-    KeyField<ProgramStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
-      &ProgramStatus::process_performance_data),
-    KeyField<ProgramStatus>(NDO_DATA_PROCESSID,
-      &ProgramStatus::pid),
-    KeyField<ProgramStatus>(NDO_DATA_PROGRAMSTARTTIME,
-      &ProgramStatus::program_start),
-    KeyField<ProgramStatus>()
-  };
+/**
+ *  Set a time_t within an object.
+ */
+template <typename T>
+static void set_timet(T& t,
+                      const DataMember<T>& member,
+                      const char* str)
+{
+  t.*(member.t) = strtol(str, NULL, 0);
+  return ;
+}
 
-// Service fields.
-const KeyField<Service> Interface::NDO::service_fields[] =
-  {
-    KeyField<Service>(NDO_DATA_ACTIONURL,
-      &Service::action_url),
-    KeyField<Service>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      &Service::active_checks_enabled),
-    KeyField<Service>(NDO_DATA_DISPLAYNAME,
-      &Service::display_name),
-    KeyField<Service>(NDO_DATA_FIRSTNOTIFICATIONDELAY,
-      &Service::first_notification_delay),
-    KeyField<Service>(NDO_DATA_FLAPDETECTIONONCRITICAL,
-      &Service::flap_detection_on_critical),
-    KeyField<Service>(NDO_DATA_FLAPDETECTIONONOK,
-      &Service::flap_detection_on_ok),
-    KeyField<Service>(NDO_DATA_FLAPDETECTIONONUNKNOWN,
-      &Service::flap_detection_on_unknown),
-    KeyField<Service>(NDO_DATA_FLAPDETECTIONONWARNING,
-      &Service::flap_detection_on_warning),
-    KeyField<Service>(NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
-      &Service::high_flap_threshold),
-    KeyField<Service>(NDO_DATA_HOSTID,
-      &Service::host_id),
-    KeyField<Service>(NDO_DATA_HOSTNAME,
-      &Service::host),
-    KeyField<Service>(NDO_DATA_ICONIMAGE,
-      &Service::icon_image),
-    KeyField<Service>(NDO_DATA_ICONIMAGEALT,
-      &Service::icon_image_alt),
-    KeyField<Service>(NDO_DATA_INSTANCE,
-      &Service::instance),
-    KeyField<Service>(NDO_DATA_LOWSERVICEFLAPTHRESHOLD,
-      &Service::low_flap_threshold),
-    KeyField<Service>(NDO_DATA_MAXSERVICECHECKATTEMPTS,
-      &Service::max_check_attempts),
-    KeyField<Service>(NDO_DATA_NOTES,
-      &Service::notes),
-    KeyField<Service>(NDO_DATA_NOTESURL,
-      &Service::notes_url),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICECRITICAL,
-      &Service::notified_on_critical),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICEDOWNTIME,
-      &Service::notify_on_downtime),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICEFLAPPING,
-      &Service::notify_on_flapping),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICERECOVERY,
-      &Service::notify_on_recovery),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICEUNKNOWN,
-      &Service::notified_on_unknown),
-    KeyField<Service>(NDO_DATA_NOTIFYSERVICEWARNING,
-      &Service::notified_on_warning),
-    KeyField<Service>(NDO_DATA_OBSESSOVERSERVICE,
-      &Service::obsess_over),
-    KeyField<Service>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      &Service::passive_checks_enabled),
-    KeyField<Service>(NDO_DATA_PROCESSSERVICEPERFORMANCEDATA,
-      &Service::process_performance_data),
-    KeyField<Service>(NDO_DATA_RETAINSERVICENONSTATUSINFORMATION,
-      &Service::retain_nonstatus_information),
-    KeyField<Service>(NDO_DATA_RETAINSERVICESTATUSINFORMATION,
-      &Service::retain_status_information),
-    KeyField<Service>(NDO_DATA_SERVICECHECKCOMMAND,
-      &Service::check_command),
-    KeyField<Service>(NDO_DATA_SERVICECHECKINTERVAL,
-      &Service::check_interval),
-    KeyField<Service>(NDO_DATA_SERVICECHECKPERIOD,
-      &Service::check_period),
-    KeyField<Service>(NDO_DATA_SERVICEDESCRIPTION,
-      &Service::service),
-    KeyField<Service>(NDO_DATA_SERVICEEVENTHANDLER,
-      &Service::event_handler),
-    KeyField<Service>(NDO_DATA_SERVICEEVENTHANDLERENABLED,
-      &Service::event_handler_enabled),
-    KeyField<Service>(NDO_DATA_SERVICEFAILUREPREDICTIONENABLED,
-      &Service::failure_prediction_enabled),
-    KeyField<Service>(NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
-      &Service::failure_prediction_options),
-    KeyField<Service>(NDO_DATA_SERVICEFLAPDETECTIONENABLED,
-      &Service::flap_detection_enabled),
-    KeyField<Service>(NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
-      &Service::check_freshness),
-    KeyField<Service>(NDO_DATA_SERVICEFRESHNESSTHRESHOLD,
-      &Service::freshness_threshold),
-    KeyField<Service>(NDO_DATA_SERVICEID,
-      &Service::service_id),
-    KeyField<Service>(NDO_DATA_SERVICEISVOLATILE,
-      &Service::is_volatile),
-    KeyField<Service>(NDO_DATA_SERVICENOTIFICATIONINTERVAL,
-      &Service::notification_interval),
-    KeyField<Service>(NDO_DATA_SERVICENOTIFICATIONPERIOD,
-      &Service::notification_period),
-    KeyField<Service>(NDO_DATA_SERVICENOTIFICATIONSENABLED,
-      &Service::notifications_enabled),
-    KeyField<Service>(NDO_DATA_SERVICERETRYINTERVAL,
-      &Service::retry_interval),
-    KeyField<Service>(NDO_DATA_STALKSERVICEONCRITICAL,
-      &Service::stalk_on_critical),
-    KeyField<Service>(NDO_DATA_STALKSERVICEONOK,
-      &Service::stalk_on_ok),
-    KeyField<Service>(NDO_DATA_STALKSERVICEONUNKNOWN,
-      &Service::stalk_on_unknown),
-    KeyField<Service>(NDO_DATA_STALKSERVICEONWARNING,
-      &Service::stalk_on_warning),
-    KeyField<Service>()
-  };
+/**
+ *  Static initialization template used by Initialize().
+ */
+template <typename T>
+static void static_init(const MappedData<T> members[],
+                        std::map<int, GetterSetter<T> >& map)
+{
+  for (unsigned int i = 0; members[i].type; ++i)
+    {
+      GetterSetter<T>& gs(map[members[i].id]);
 
-// ServiceCheck fields.
-const KeyField<ServiceCheck> Interface::NDO::service_check_fields[] =
-  {
-    KeyField<ServiceCheck>(NDO_DATA_COMMANDLINE,
-      &ServiceCheck::command_line),
-    KeyField<ServiceCheck>(NDO_DATA_SERVICEID,
-      &ServiceCheck::id),
-    KeyField<ServiceCheck>()
-  };
+      gs.member = &members[i].member;
+      switch (members[i].type)
+        {
+         case MappedData<T>::BOOL:
+          gs.getter = &get_boolean<T>;
+          gs.setter = &set_boolean<T>;
+          break ;
+         case MappedData<T>::DOUBLE:
+          gs.getter = &get_double<T>;
+          gs.setter = &set_double<T>;
+          break ;
+         case MappedData<T>::INT:
+          gs.getter = &get_integer<T>;
+          gs.setter = &set_integer<T>;
+          break ;
+         case MappedData<T>::SHORT:
+          gs.getter = &get_short<T>;
+          gs.setter = &set_short<T>;
+          break ;
+         case MappedData<T>::STRING:
+          gs.getter = &get_string<T>;
+          gs.setter = &set_string<T>;
+          break ;
+         case MappedData<T>::TIME_T:
+          gs.getter = &get_timet<T>;
+          gs.setter = &set_timet<T>;
+          break ;
+         default: // Error in one of the mappings.
+          assert(false);
+          abort();
+        }
+    }
+  return ;
+}
 
-// ServiceDependency fields.
-const KeyField<ServiceDependency> Interface::NDO::service_dependency_fields[] =
-  {
-    KeyField<ServiceDependency>(NDO_DATA_DEPENDENCYPERIOD,
-      &ServiceDependency::dependency_period),
-    KeyField<ServiceDependency>(NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
-      &ServiceDependency::dependent_object),
-    KeyField<ServiceDependency>(NDO_DATA_INHERITSPARENT,
-      &ServiceDependency::inherits_parent),
-    KeyField<ServiceDependency>(NDO_DATA_SERVICEDESCRIPTION,
-      &ServiceDependency::object),
-    KeyField<ServiceDependency>()
-  };
+/**************************************
+*                                     *
+*           Global Objects            *
+*                                     *
+**************************************/
 
-// ServiceGroup fields.
-const KeyField<ServiceGroup> Interface::NDO::service_group_fields[] =
-  {
-    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPALIAS,
-      &ServiceGroup::alias),
-    KeyField<ServiceGroup>(NDO_DATA_SERVICEGROUPNAME,
-      &ServiceGroup::name),
-    KeyField<ServiceGroup>(NDO_DATA_INSTANCE,
-      &ServiceGroup::instance),
-    KeyField<ServiceGroup>()
-  };
+std::map<int, GetterSetter<Events::Acknowledgement> >
+  Interface::NDO::acknowledgement_map;
+std::map<int, GetterSetter<Events::Comment> >
+  Interface::NDO::comment_map;
+std::map<int, GetterSetter<Events::Downtime> >
+  Interface::NDO::downtime_map;
+std::map<int, GetterSetter<Events::Host> >
+  Interface::NDO::host_map;
+std::map<int, GetterSetter<Events::HostCheck> >
+  Interface::NDO::host_check_map;
+std::map<int, GetterSetter<Events::HostDependency> >
+  Interface::NDO::host_dependency_map;
+std::map<int, GetterSetter<Events::HostGroup> >
+  Interface::NDO::host_group_map;
+std::map<int, GetterSetter<Events::HostGroupMember> >
+  Interface::NDO::host_group_member_map;
+std::map<int, GetterSetter<Events::HostParent> >
+  Interface::NDO::host_parent_map;
+std::map<int, GetterSetter<Events::HostStatus> >
+  Interface::NDO::host_status_map;
+std::map<int, GetterSetter<Events::Log> >
+  Interface::NDO::log_map;
+std::map<int, GetterSetter<Events::ProgramStatus> >
+  Interface::NDO::program_status_map;
+std::map<int, GetterSetter<Events::Service> >
+  Interface::NDO::service_map;
+std::map<int, GetterSetter<Events::ServiceCheck> >
+  Interface::NDO::service_check_map;
+std::map<int, GetterSetter<Events::ServiceDependency> >
+  Interface::NDO::service_dependency_map;
+std::map<int, GetterSetter<Events::ServiceGroup> >
+  Interface::NDO::service_group_map;
+std::map<int, GetterSetter<Events::ServiceGroupMember> >
+  Interface::NDO::service_group_member_map;
+std::map<int, GetterSetter<Events::ServiceStatus> >
+  Interface::NDO::service_status_map;
 
-// ServiceGroupMember fields.
-const KeyField<ServiceGroupMember>
-  Interface::NDO::service_group_member_fields[] =
-  {
-    KeyField<ServiceGroupMember>(NDO_DATA_INSTANCE,
-      &ServiceGroupMember::instance),
-    KeyField<ServiceGroupMember>(NDO_DATA_SERVICEGROUPMEMBER,
-      &ServiceGroupMember::member),
-    KeyField<ServiceGroupMember>(NDO_DATA_SERVICEGROUPNAME,
-      &ServiceGroupMember::group),
-    KeyField<ServiceGroupMember>()
-  };
+/**************************************
+*                                     *
+*          Global Functions           *
+*                                     *
+**************************************/
 
-// ServiceStatus fields.
-const KeyField<ServiceStatus> Interface::NDO::service_status_fields[] =
-  {
-    KeyField<ServiceStatus>(NDO_DATA_ACKNOWLEDGEMENTTYPE,
-      &ServiceStatus::acknowledgement_type),
-    KeyField<ServiceStatus>(NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      &ServiceStatus::active_checks_enabled),
-    KeyField<ServiceStatus>(NDO_DATA_CHECKCOMMAND,
-      &ServiceStatus::check_command),
-    KeyField<ServiceStatus>(NDO_DATA_CHECKTYPE,
-      &ServiceStatus::check_type),
-    KeyField<ServiceStatus>(NDO_DATA_CURRENTCHECKATTEMPT,
-      &ServiceStatus::current_check_attempt),
-    KeyField<ServiceStatus>(NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      &ServiceStatus::current_notification_number),
-    KeyField<ServiceStatus>(NDO_DATA_CURRENTSTATE,
-      &ServiceStatus::current_state),
-    KeyField<ServiceStatus>(NDO_DATA_EVENTHANDLER,
-      &ServiceStatus::event_handler),
-    KeyField<ServiceStatus>(NDO_DATA_EVENTHANDLERENABLED,
-      &ServiceStatus::event_handler_enabled),
-    KeyField<ServiceStatus>(NDO_DATA_EXECUTIONTIME,
-      &ServiceStatus::execution_time),
-    KeyField<ServiceStatus>(NDO_DATA_FAILUREPREDICTIONENABLED,
-      &ServiceStatus::failure_prediction_enabled),
-    KeyField<ServiceStatus>(NDO_DATA_FLAPDETECTIONENABLED,
-      &ServiceStatus::flap_detection_enabled),
-    KeyField<ServiceStatus>(NDO_DATA_HASBEENCHECKED,
-      &ServiceStatus::has_been_checked),
-    KeyField<ServiceStatus>(NDO_DATA_HOST,
-      &ServiceStatus::host),
-    KeyField<ServiceStatus>(NDO_DATA_HOSTID,
-      &ServiceStatus::host_id),
-    KeyField<ServiceStatus>(NDO_DATA_INSTANCE,
-      &ServiceStatus::instance),
-    KeyField<ServiceStatus>(NDO_DATA_ISFLAPPING,
-      &ServiceStatus::is_flapping),
-    KeyField<ServiceStatus>(NDO_DATA_LASTSERVICECHECK,
-      &ServiceStatus::last_check),
-    KeyField<ServiceStatus>(NDO_DATA_LASTHARDSTATE,
-      &ServiceStatus::last_hard_state),
-    KeyField<ServiceStatus>(NDO_DATA_LASTHARDSTATECHANGE,
-      &ServiceStatus::last_hard_state_change),
-    KeyField<ServiceStatus>(NDO_DATA_LASTSERVICENOTIFICATION,
-      &ServiceStatus::last_notification),
-    KeyField<ServiceStatus>(NDO_DATA_LASTSTATECHANGE,
-      &ServiceStatus::last_state_change),
-    KeyField<ServiceStatus>(NDO_DATA_LASTTIMECRITICAL,
-      &ServiceStatus::last_time_critical),
-    KeyField<ServiceStatus>(NDO_DATA_LASTTIMEOK,
-      &ServiceStatus::last_time_ok),
-    KeyField<ServiceStatus>(NDO_DATA_LASTTIMEUNKNOWN,
-      &ServiceStatus::last_time_unknown),
-    KeyField<ServiceStatus>(NDO_DATA_LASTTIMEWARNING,
-      &ServiceStatus::last_time_warning),
-    KeyField<ServiceStatus>(NDO_DATA_LATENCY,
-      &ServiceStatus::latency),
-    KeyField<ServiceStatus>(NDO_DATA_LONGOUTPUT,
-      &ServiceStatus::long_output),
-    KeyField<ServiceStatus>(NDO_DATA_MAXCHECKATTEMPTS,
-      &ServiceStatus::max_check_attempts),
-    KeyField<ServiceStatus>(NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
-      &ServiceStatus::modified_attributes),
-    KeyField<ServiceStatus>(NDO_DATA_NEXTSERVICECHECK,
-      &ServiceStatus::next_check),
-    KeyField<ServiceStatus>(NDO_DATA_NEXTSERVICENOTIFICATION,
-      &ServiceStatus::next_notification),
-    KeyField<ServiceStatus>(NDO_DATA_NOMORENOTIFICATIONS,
-      &ServiceStatus::no_more_notifications),
-    KeyField<ServiceStatus>(NDO_DATA_NORMALCHECKINTERVAL,
-      &ServiceStatus::check_interval),
-    KeyField<ServiceStatus>(NDO_DATA_OBSESSOVERSERVICE,
-      &ServiceStatus::obsess_over),
-    KeyField<ServiceStatus>(NDO_DATA_OUTPUT,
-      &ServiceStatus::output),
-    KeyField<ServiceStatus>(NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      &ServiceStatus::passive_checks_enabled),
-    KeyField<ServiceStatus>(NDO_DATA_PERCENTSTATECHANGE,
-      &ServiceStatus::percent_state_change),
-    KeyField<ServiceStatus>(NDO_DATA_PERFDATA,
-      &ServiceStatus::perf_data),
-    KeyField<ServiceStatus>(NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      &ServiceStatus::problem_has_been_acknowledged),
-    KeyField<ServiceStatus>(NDO_DATA_PROCESSPERFORMANCEDATA,
-      &ServiceStatus::process_performance_data),
-    KeyField<ServiceStatus>(NDO_DATA_RETRYCHECKINTERVAL,
-      &ServiceStatus::retry_interval),
-    KeyField<ServiceStatus>(NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
-      &ServiceStatus::scheduled_downtime_depth),
-    KeyField<ServiceStatus>(NDO_DATA_SERVICE,
-      &ServiceStatus::service),
-    KeyField<ServiceStatus>(NDO_DATA_SERVICECHECKPERIOD,
-      &ServiceStatus::check_period),
-    KeyField<ServiceStatus>(NDO_DATA_SERVICEID,
-      &ServiceStatus::service_id),
-    KeyField<ServiceStatus>(NDO_DATA_SHOULDBESCHEDULED,
-      &ServiceStatus::should_be_scheduled),
-    KeyField<ServiceStatus>(NDO_DATA_STATETYPE,
-      &ServiceStatus::state_type),
-    KeyField<ServiceStatus>()
-  };
+/**
+ *  \brief Initialization routine.
+ *
+ *  Initialize NDO mappings.
+ */
+void Interface::NDO::Initialize()
+{
+  static_init(acknowledgement_mapping, acknowledgement_map);
+  static_init(comment_mapping, comment_map);
+  static_init(downtime_mapping, downtime_map);
+  static_init(host_mapping, host_map);
+  static_init(host_check_mapping, host_check_map);
+  static_init(host_dependency_mapping, host_dependency_map);
+  static_init(host_group_mapping, host_group_map);
+  static_init(host_group_member_mapping, host_group_member_map);
+  static_init(host_parent_mapping, host_parent_map);
+  static_init(host_status_mapping, host_status_map);
+  static_init(log_mapping, log_map);
+  static_init(program_status_mapping, program_status_map);
+  static_init(service_mapping, service_map);
+  static_init(service_check_mapping, service_check_map);
+  static_init(service_dependency_mapping, service_dependency_map);
+  static_init(service_group_mapping, service_group_map);
+  static_init(service_group_member_mapping, service_group_member_map);
+  static_init(service_status_mapping, service_status_map);
+  return ;
+}

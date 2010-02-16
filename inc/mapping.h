@@ -24,6 +24,20 @@
 # include "events/events.h"
 
 /**
+ *  Holds a pointer to member.
+ */
+template        <typename T>
+union           DataMember
+{
+  bool          T::*b;
+  double        T::*d;
+  int           T::*i;
+  short         T::*s;
+  std::string   T::*S;
+  time_t        T::*t;
+};
+
+/**
  *  \class MappedData mapping.h "mapping.h"
  *  \brief Mapping of a data member.
  *
@@ -46,15 +60,7 @@ class           MappedData
     TIME_T = 't'
   };
   unsigned int  id;
-  union
-  {
-    bool        T::*b;
-    double      T::*d;
-    int         T::*i;
-    short       T::*s;
-    std::string T::*S;
-    time_t      T::*t;
-  }             member;
+  DataMember<T> member;
   const char*   name;
   char          type;
 
