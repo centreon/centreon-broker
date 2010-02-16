@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <memory>
 #include <signal.h>
+#include <sstream>
 #include <stdlib.h>                   // for strtoul
 #include <unistd.h>                   // for sleep
 #include "concurrency/lock.h"
@@ -183,6 +184,16 @@ void Configuration::Manager::Close()
       this->mutex_.Unlock();
       sleep(1);
       this->mutex_.Lock();
+
+#ifndef NDEBUG
+      std::stringstream ss;
+
+      ss << (this->inputs_.size()
+             + this->outputs_.size()
+             + this->spontaneous_.size())
+	 << " threads remaining.";
+      LOGDEBUG(ss.str().c_str());
+#endif /* !NDEBUG */
     }
   this->mutex_.Unlock();
 
