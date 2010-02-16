@@ -120,6 +120,7 @@ void Subscriber::Close()
   Concurrency::Lock lock(gl_subscribersm);
 
   std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
+  this->cv_.WakeAll();
   return ;
 }
 
