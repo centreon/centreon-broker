@@ -28,15 +28,13 @@
 #include "concurrency/lock.h"
 #include "logging.h"
 
-using namespace CentreonBroker;
-
 /**************************************
 *                                     *
 *           Global Variables          *
 *                                     *
 **************************************/
 
-Logging CentreonBroker::logging;
+Logging logging;
 
 
 /******************************************************************************

@@ -183,11 +183,11 @@ static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
           do
             {
               if (val.GetText() == "DEBUG")
-                flags |= CentreonBroker::Logging::DEBUG;
+                flags |= Logging::DEBUG;
               else if (val.GetText() == "ERROR")
-                flags |= CentreonBroker::Logging::ERROR;
+                flags |= Logging::ERROR;
               else if (val.GetText() == "INFO")
-                flags |= CentreonBroker::Logging::INFO;
+                flags |= Logging::INFO;
               lexer.ContextSave();
               if (lexer.GetToken(val)
                   || (val.GetType() != Configuration::Token::PIPE)

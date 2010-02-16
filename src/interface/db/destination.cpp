@@ -18,28 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include <memory>
-#include "db/connection.h"
-#include "db/db_exception.h"
-#include "db/delete.h"
-#include "db/insert.h"
-#ifdef USE_MYSQL
-# include "db/mysql/connection.h"
-#endif /* USE_MYSQL */
-#ifdef USE_POSTGRESQL
-# include "db/postgresql/connection.h"
-#endif /* USE_POSTGRESQL */
-#include "db/predicate.h"
-#include "db/select.h"
-#include "db/update.h"
+#include <assert.h>
+#include <stdlib.h>                   // for abort
 #include "interface/db/destination.h"
-#include "exception.h"
-#include "events/comment.h"
-#include "events/event.h"
-#include "events/host.h"
-#include "events/host_group.h"
-#include "events/host_status.h"
-#include "events/service_group.h"
 #include "logging.h"
 #include "nagios/broker.h"
 
@@ -97,26 +78,25 @@ Destination& Destination::operator=(const Destination& destination)
  */
 void Destination::Connect()
 {
-  // Fetch already existing instances from the database and store them in a
-  // cache.
+  std::vector<int> ids;
+  std::vector<std::string> names;
+
+  // Fetch already existing instances from the database.
+  (*this->conn_) << "SELECT instance_id, instance_name FROM program_status",
+    soci::into(ids), soci::into(names);
+
+  // Insert instances in the cache.
   {
-    std::auto_ptr<CentreonBroker::DB::Select> query(this->conn_->GetSelect());
+    std::vector<int>::const_iterator end_id, it_id;
+    std::vector<std::string>::const_iterator end_name, it_name;
 
-    query->SetTable("program_status");
-    query->AddField("instance_name");
-    query->AddField("instance_id");
-    query->Execute();
-    while (query->Next())
-      {
-        std::string name;
-
-        query->GetString(name);
-        this->instances_[name] = query->GetInt();
-      }
+    end_id = ids.end();
+    end_name = names.end();
+    for (it_id = ids.begin(), it_name = names.begin();
+	 (it_id != end_id) && (it_name != end_name);
+	 ++it_id, ++it_name)
+      this->instances_[*it_name] = *it_id;
   }
-
-  // Deactivate autocommit.
-  this->conn_->AutoCommit(true);
 
   return ;
 }
@@ -131,12 +111,7 @@ void Destination::Connect()
  */
 void Destination::Disconnect()
 {
-  this->host_stmt_.reset();
-  this->host_status_stmt_.reset();
-  this->program_status_stmt_.reset();
-  this->service_stmt_.reset();
-  this->service_status_stmt_.reset();
-  this->conn_.reset();
+  // XXX
   this->instances_.clear();
   return ;
 }
@@ -151,7 +126,7 @@ void Destination::Disconnect()
  *
  *  \return The database ID of the Nagios instance.
  */
-int Destination::GetInstanceId(const std::string& instance)
+int Destination::GetInstanceID(const std::string& instance)
 {
   int id;
   std::map<std::string, int>::iterator it;
@@ -159,17 +134,6 @@ int Destination::GetInstanceId(const std::string& instance)
   it = this->instances_.find(instance);
   if (it == this->instances_.end())
     {
-      Events::ProgramStatus ps;
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ProgramStatus> >
-        query(this->conn_->GetMappedInsert<Events::ProgramStatus>(
-           program_status_get_mapping));
-
-      ps.instance = instance;
-      query->SetTable("program_status");
-      query->SetArg(ps);
-      query->Execute();
-      id = query->InsertId();
-      this->instances_[instance] = id;
     }
   else
     id = it->second;
@@ -177,87 +141,12 @@ int Destination::GetInstanceId(const std::string& instance)
 }
 
 /**
- *  Prepare most often used statements.
- */
-void Destination::PrepareStatements()
-{
-  // Host insert statement.
-  this->host_stmt_.reset(this->conn_->GetMappedInsert<Events::Host>(host_get_mapping));
-  this->host_stmt_->SetTable("host");
-  this->host_stmt_->AddField("instance_id");
-  this->host_stmt_->Prepare();
-
-  // HostStatus update statement.
-  this->host_status_stmt_.reset(this->conn_->GetMappedUpdate<Events::HostStatus>(
-                                  host_status_get_mapping));
-  this->host_status_stmt_->SetTable("host");
-  this->host_status_stmt_->SetPredicate(
-                                        CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                                                                          CentreonBroker::DB::Placeholder()),
-                                                                CentreonBroker::DB::Equal(CentreonBroker::DB::Field("host_name"),
-                                                                                          CentreonBroker::DB::Placeholder())
-            ));
-  this->host_status_stmt_->Prepare();
-
-  // ProgramStatus update statement.
-  this->program_status_stmt_.reset(this->conn_->GetMappedUpdate<Events::ProgramStatus>(
-                                     program_status_get_mapping));
-  this->program_status_stmt_->SetTable("program_status");
-  this->program_status_stmt_->SetPredicate(
-                                           CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                                                     CentreonBroker::DB::Placeholder()));
-  this->program_status_stmt_->Prepare();
-
-  // Service insert statement.
-  this->service_stmt_.reset(this->conn_->GetMappedInsert<Events::Service>(
-                              service_get_mapping));
-  this->service_stmt_->SetTable("service");
-  this->service_stmt_->AddField("instance_id");
-  this->service_stmt_->Prepare();
-
-  // ServiceStatus update statement.
-  this->service_status_stmt_.reset(this->conn_->GetMappedUpdate<Events::ServiceStatus>(
-                                     service_status_get_mapping));
-  this->service_status_stmt_->SetTable("service");
-  this->service_status_stmt_->SetPredicate(
-                                           CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                                                                             CentreonBroker::DB::Placeholder()),
-                                                                   CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("host_name"),
-                                                                                                                     CentreonBroker::DB::Placeholder()),
-                                                                                           CentreonBroker::DB::Equal(CentreonBroker::DB::Field("service_description"),
-                                                                                                                     CentreonBroker::DB::Placeholder()))
-            ));
-  this->service_status_stmt_->Prepare();
-
-  return ;
-}
-
-/**
  *  Process an Acknowledgement event.
  */
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Acknowledgement event...");
-#endif /* !NDEBUG */
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Acknowledgement> >
-    query(this->conn_->GetMappedInsert<Events::Acknowledgement>(
-            acknowledgement_get_mapping));
+  LOGDEBUG("Processing Acknowledgement event ...");
 
-  query->SetTable("acknowledgement");
-  query->AddField("instance_id");
-  query->SetArg(ack);
-  ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(ack.instance));
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe) // acknowledgement redefinition
-    {
-      // XXX : shouldn't we try to update the comment ?
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -266,39 +155,14 @@ void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
  */
 void Destination::ProcessComment(const Events::Comment& comment)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Comment event...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Processing Comment event ...");
+
   if ((comment.type == NEBTYPE_COMMENT_ADD)
       || comment.type == NEBTYPE_COMMENT_LOAD)
     {
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Comment> >
-        query(this->conn_->GetMappedInsert<Events::Comment>(comment_get_mapping));
-
-      query->SetTable("comment");
-      query->AddField("instance_id");
-      query->SetArg(comment);
-      ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(
-        this->GetInstanceId(comment.instance));
-      try
-        {
-          query->Execute();
-        }
-      catch (const CentreonBroker::DB::DBException& dbe) // comment redefinition
-        {
-          // XXX : shouldn't we try to update the comment ?
-          if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-            throw ;
-        }
     }
   else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
-      std::auto_ptr<CentreonBroker::DB::Delete> query(this->conn_->GetDelete());
-
-      query->SetTable("comment");
-      query->SetPredicate(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("internal_comment_id"),
-                                                    CentreonBroker::DB::Terminal(comment.internal_id)));
-      query->Execute();
     }
   return ;
 }
@@ -308,68 +172,18 @@ void Destination::ProcessComment(const Events::Comment& comment)
  */
 void Destination::ProcessDowntime(const Events::Downtime& downtime)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Downtime event...");
-#endif /* !NDEBUG */
+  LOGDEBUG("Processing Downtime event ...");
+
   if ((downtime.type == NEBTYPE_DOWNTIME_ADD)
       || (downtime.type == NEBTYPE_DOWNTIME_LOAD))
     {
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Downtime> >
-        query(this->conn_->GetMappedInsert<Events::Downtime>(downtime_get_mapping));
-
-      query->SetTable("scheduled_downtime");
-      query->AddField("instance_id");
-      query->SetArg(downtime);
-      ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(
-        this->GetInstanceId(downtime.instance));
-      try
-        {
-          query->Execute();
-        }
-      catch (const CentreonBroker::DB::DBException& dbe) // downtime redefinition
-        {
-          // XXX : shouldn't we try to update the downtime ?
-          if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-            throw ;
-        }
     }
   else if (downtime.type == NEBTYPE_DOWNTIME_START)
     {
-      std::auto_ptr<CentreonBroker::DB::Update> query(this->conn_->GetUpdate());
-
-      query->SetTable("scheduled_downtime");
-      query->AddField("start_time");
-      query->AddField("was_started");
-      query->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                                                            CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                           downtime.instance))
-                                            ),
-                                                  CentreonBroker::DB::Equal(CentreonBroker::DB::Field("downtime_id"),
-                                                            CentreonBroker::DB::Terminal(downtime.id))));
-      query->SetArg(time(NULL));
-      query->SetArg(true);
-      query->Execute();
-      if (query->GetUpdateCount() == 0)
-        {
-          Events::Downtime dt(downtime);
-
-          dt.type = NEBTYPE_DOWNTIME_ADD;
-          this->ProcessDowntime(dt);
-        }
     }
   else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
            || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
     {
-      std::auto_ptr<CentreonBroker::DB::Delete> query(this->conn_->GetDelete());
-
-      query->SetTable("scheduled_downtime");
-      query->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                                            CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                           downtime.instance))
-                                            ),
-                                                  CentreonBroker::DB::Equal(CentreonBroker::DB::Field("downtime_id"),
-                                                                            CentreonBroker::DB::Terminal(downtime.id))));
-      query->Execute();
     }
   return ;
 }
@@ -379,21 +193,8 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
  */
 void Destination::ProcessHost(const Events::Host& host)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Host event...");
-#endif /* !NDEBUG */
-  this->host_stmt_->SetArg(host);
-  ((CentreonBroker::DB::HaveArgs*)this->host_stmt_.get())->SetArg(
-    this->GetInstanceId(host.instance));
-  try
-    {
-      this->host_stmt_->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe) // usually because of a host redefinition
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
+  LOGDEBUG("Processing Host event ...");
+
   return ;
 }
 
@@ -403,24 +204,7 @@ void Destination::ProcessHost(const Events::Host& host)
 void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 {
   LOGDEBUG("Processing HostCheck event ...");
-  std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::HostCheck> >
-    query(this->conn_->GetMappedUpdate<Events::HostCheck>(
-      host_check_get_mapping));
 
-  query->SetTable("host");
-  query->SetArg(host_check);
-  query->SetPredicate(CentreonBroker::DB::Equal(
-                        CentreonBroker::DB::Field("host_id"),
-                        CentreonBroker::DB::Terminal(host_check.id)));
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-	throw ;
-    }
   return ;
 }
 
@@ -430,21 +214,7 @@ void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 {
   LOGDEBUG("Processing HostDependency event ...");
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostDependency> >
-    query(this->conn_->GetMappedInsert<Events::HostDependency>(
-      host_dependency_get_mapping));
 
-  query->SetTable("hostdependency");
-  query->SetArg(hd);
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -454,24 +224,7 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 {
   LOGDEBUG("Processing HostGroup event...");
-  int id;
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostGroup> >
-    query(this->conn_->GetMappedInsert<Events::HostGroup>(host_group_get_mapping));
 
-  query->SetTable("hostgroup");
-  query->AddField("instance_id");
-  query->SetArg(hg);
-  ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(hg.instance));
-  try
-    {
-      query->Execute();
-      id = query->InsertId();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -481,58 +234,7 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 {
   LOGDEBUG("Processing HostGroupMember event ...");
-  int host_group_id;
-  int host_id;
 
-  // Get ID of host group.
-  std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
-
-  select->SetTable("hostgroup");
-  select->AddField("id");
-  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("hostgroup_name"),
-                                                 CentreonBroker::DB::Terminal(hgm.group.c_str())),
-                                               CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("instance_id"),
-                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                   hgm.instance)))));
-  select->Execute();
-  if (!select->Next()) // can't find host group
-    return ;
-  host_group_id = select->GetInt();
-
-  // Get ID of host.
-  select.reset(this->conn_->GetSelect());
-  select->SetTable("host");
-  select->AddField("id");
-  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("host_name"),
-                                                 CentreonBroker::DB::Terminal(hgm.member.c_str())),
-                                               CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("instance_id"),
-                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                   hgm.instance)))));
-  select->Execute();
-  if (!select->Next()) // can't find host
-    return ;
-  host_id = select->GetInt();
-
-  // Insert member relationship.
-  std::auto_ptr<CentreonBroker::DB::Insert> insert(this->conn_->GetInsert());
-  insert->SetTable("host_hostgroup");
-  insert->AddField("host");
-  insert->AddField("hostgroup");
-  insert->SetArg(host_id);
-  insert->SetArg(host_group_id);
-  try
-    {
-      insert->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -542,21 +244,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 void Destination::ProcessHostParent(const Events::HostParent& hp)
 {
   LOGDEBUG("Processing HostParent event ...");
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::HostParent> >
-    query(this->conn_->GetMappedInsert<Events::HostParent>(
-      host_parent_get_mapping));
 
-  query->SetTable("host_parents");
-  query->SetArg(hp);
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -565,24 +253,8 @@ void Destination::ProcessHostParent(const Events::HostParent& hp)
  */
 void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing HostStatus event...");
-#endif /* !NDEBUG */
-  try
-    {
-      this->host_status_stmt_->SetArg(hs);
-      ((CentreonBroker::DB::HaveArgs*)this->host_status_stmt_.get())->SetArg(
-        this->GetInstanceId(hs.instance));
-      ((CentreonBroker::DB::HaveArgs*)this->host_status_stmt_.get())->SetArg(hs.host);
-      this->host_status_stmt_->Execute();
-    }
-  catch (CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
-  if (this->host_status_stmt_->GetUpdateCount() == 0)
-    this->ProcessHost(Events::Host(hs));
+  LOGDEBUG("Processing HostStatus event ...");
+
   return ;
 }
 
@@ -591,15 +263,8 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
  */
 void Destination::ProcessLog(const Events::Log& log)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Log event...");
-#endif /* !NDEBUG */
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Log> >
-    query(this->conn_->GetMappedInsert<Events::Log>(log_get_mapping));
+  LOGDEBUG("Processing Log event ...");
 
-  query->SetTable("log");
-  query->SetArg(log);
-  query->Execute();
   return ;
 }
 
@@ -608,31 +273,8 @@ void Destination::ProcessLog(const Events::Log& log)
  */
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing ProgramStatus event...");
-#endif /* !NDEBUG */
-  try
-    {
-      this->program_status_stmt_->SetArg(ps);
-      ((CentreonBroker::DB::HaveArgs*)(this->program_status_stmt_.get()))->SetArg(
-        this->GetInstanceId(ps.instance));
-      this->program_status_stmt_->Execute();
-    }
-  catch (CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
-  if (this->program_status_stmt_->GetUpdateCount() == 0)
-    {
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ProgramStatus> >
-        query(this->conn_->GetMappedInsert<Events::ProgramStatus>(
-          program_status_get_mapping));
+  LOGDEBUG("Processing ProgramStatus event ...");
 
-      query->SetTable("program_status");
-      query->SetArg(ps);
-      query->Execute();
-    }
   return ;
 }
 
@@ -641,39 +283,8 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
  */
 void Destination::ProcessService(const Events::Service& service)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing Service event...");
-#endif /* !NDEBUG */
-  // When processing the service definition, we have to fetch the corresponding
-  // host_id before inserting it.
-  std::auto_ptr<CentreonBroker::DB::Select> query(this->conn_->GetSelect());
-  Events::Service myservice(service);
+  LOGDEBUG("Processing Service event ...");
 
-  query->SetTable("host");
-  query->AddField("host_id");
-  query->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(CentreonBroker::DB::Field("instance_id"),
-                                        CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                       myservice.instance))),
-                              CentreonBroker::DB::Equal(CentreonBroker::DB::Field("host_name"),
-                                        CentreonBroker::DB::Terminal(myservice.host.c_str()))));
-  query->Execute();
-  if (query->Next())
-    myservice.host_id = query->GetInt();
-  query.reset();
-
-  try
-    {
-      this->service_stmt_->SetArg(myservice);
-      ((CentreonBroker::DB::HaveArgs*)this->service_stmt_.get())->SetArg(
-        this->GetInstanceId(myservice.instance));
-      this->service_stmt_->Execute();
-    }
-  // usually because of a service redefinition
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -683,24 +294,7 @@ void Destination::ProcessService(const Events::Service& service)
 void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 {
   LOGDEBUG("Processing ServiceCheck event ...");
-  std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::ServiceCheck> >
-    query(this->conn_->GetMappedUpdate<Events::ServiceCheck>(
-      service_check_get_mapping));
 
-  query->SetTable("service");
-  query->SetArg(service_check);
-  query->SetPredicate(CentreonBroker::DB::Equal(
-                        CentreonBroker::DB::Field("service_id"),
-                        CentreonBroker::DB::Terminal(service_check.id)));
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-	throw ;
-    }
   return ;
 }
 
@@ -710,21 +304,7 @@ void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 {
   LOGDEBUG("Processing ServiceDependency event ...");
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ServiceDependency> >
-    query(this->conn_->GetMappedInsert<Events::ServiceDependency>(
-      service_dependency_get_mapping));
 
-  query->SetTable("servicedependency");
-  query->SetArg(sd);
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -733,26 +313,8 @@ void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
  */
 void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing ServiceGroup event ...");
-#endif /* !NDEBUG */
-  std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::ServiceGroup> >
-    query(this->conn_->GetMappedInsert<Events::ServiceGroup>(
-      service_group_get_mapping));
+  LOGDEBUG("Processing ServiceGroup event ...");
 
-  query->SetTable("servicegroup");
-  query->AddField("instance_id");
-  query->SetArg(sg);
-  ((CentreonBroker::DB::HaveArgs*)query.get())->SetArg(this->GetInstanceId(sg.instance));
-  try
-    {
-      query->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -762,62 +324,7 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm)
 {
   LOGDEBUG("Processing ServiceGroupMember event ...");
-  int service_group_id;
-  int service_id;
 
-  // Get ID of service group.
-  std::auto_ptr<CentreonBroker::DB::Select> select(this->conn_->GetSelect());
-
-  select->SetTable("servicegroup");
-  select->AddField("id");
-  select->SetPredicate(CentreonBroker::DB::And(CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("servicegroup_name"),
-                                                 CentreonBroker::DB::Terminal(sgm.group.c_str())),
-                                               CentreonBroker::DB::Equal(
-                                                 CentreonBroker::DB::Field("instance_id"),
-                                                 CentreonBroker::DB::Terminal(this->GetInstanceId(
-                                                   sgm.instance)))));
-  select->Execute();
-  if (!select->Next()) // can't find service group
-    return ;
-  service_group_id = select->GetInt();
-
-  // Get ID of service.
-  select.reset(this->conn_->GetSelect());
-  select->SetTable("service");
-  select->AddField("id");
-  select->SetPredicate(CentreonBroker::DB::And(
-                         CentreonBroker::DB::And(
-                           CentreonBroker::DB::Equal(
-                             CentreonBroker::DB::Field("host_name"),
-                             CentreonBroker::DB::Terminal(sgm.host.c_str())),
-                           CentreonBroker::DB::Equal(
-                             CentreonBroker::DB::Field("service_description"),
-                             CentreonBroker::DB::Terminal(sgm.member.c_str()))),
-                         CentreonBroker::DB::Equal(
-                           CentreonBroker::DB::Field("instance_id"),
-                           CentreonBroker::DB::Terminal(this->GetInstanceId(sgm.instance)))));
-  select->Execute();
-  if (!select->Next()) // can't find service
-    return ;
-  service_id = select->GetInt();
-
-  // Insert member relationship.
-  std::auto_ptr<CentreonBroker::DB::Insert> insert(this->conn_->GetInsert());
-  insert->SetTable("service_servicegroup");
-  insert->AddField("service");
-  insert->AddField("servicegroup");
-  insert->SetArg(service_id);
-  insert->SetArg(service_group_id);
-  try
-    {
-      insert->Execute();
-    }
-  catch (const CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
   return ;
 }
 
@@ -826,25 +333,8 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
  */
 void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
 {
-#ifndef NDEBUG
-  CentreonBroker::logging.LogDebug("Processing ServiceStatus event...");
-#endif /* !NDEBUG */
-  try
-    {
-      this->service_status_stmt_->SetArg(ss);
-      ((CentreonBroker::DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(
-        this->GetInstanceId(ss.instance));
-      ((CentreonBroker::DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(ss.host);
-      ((CentreonBroker::DB::HaveArgs*)this->service_status_stmt_.get())->SetArg(ss.service);
-      this->service_status_stmt_->Execute();
-    }
-  catch (CentreonBroker::DB::DBException& dbe)
-    {
-      if (dbe.GetReason() != CentreonBroker::DB::DBException::QUERY_EXECUTION)
-        throw ;
-    }
-  if (this->service_status_stmt_->GetUpdateCount() == 0)
-    this->ProcessService(Events::Service(ss));
+  LOGDEBUG("Processing ServiceStatus event ...");
+
   return ;
 }
 
@@ -861,12 +351,7 @@ void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
  *
  *  \param[in] dbms Type of the database to use.
  */
-Destination::Destination()
-  : host_status_stmt_(NULL),
-    program_status_stmt_(NULL),
-    service_status_stmt_(NULL)
-{
-}
+Destination::Destination() {}
 
 /**
  *  \brief Destination destructor.
@@ -883,7 +368,7 @@ Destination::~Destination()
  */
 void Destination::Close()
 {
-  // XXX
+  return ;
 }
 
 /**
@@ -954,9 +439,8 @@ void Destination::Event(Events::Event* event)
          case Events::Event::SERVICESTATUS:
           ProcessServiceStatus(*static_cast<Events::ServiceStatus*>(event));
           break ;
-         default:
-          assert(false);
-          throw (Exception(event->GetType(), "Invalid event type encountered"));
+         default: // Discard event.
+          LOGINFO("Invalid event type encountered.");
         }
     }
   catch (...)
@@ -981,10 +465,8 @@ void Destination::Event(Events::Event* event)
  *
  *  \param[in] conn Already opened DB connection.
  */
-void Destination::Init(CentreonBroker::DB::Connection* conn)
+void Destination::Init()
 {
-  this->conn_.reset(conn);
   this->Connect();
-  this->PrepareStatements();
   return ;
 }

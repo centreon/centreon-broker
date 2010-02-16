@@ -337,16 +337,16 @@ void Configuration::Manager::Update()
           switch (it->type)
             {
              case Configuration::Log::FILE:
-              CentreonBroker::logging.LogInFile(it->file.c_str(), 0);
+              logging.LogInFile(it->file.c_str(), 0);
               break ;
              case Configuration::Log::STDERR:
-              CentreonBroker::logging.LogToStderr(0);
+              logging.LogToStderr(0);
               break ;
              case Configuration::Log::STDOUT:
-              CentreonBroker::logging.LogToStdout(0);
+              logging.LogToStdout(0);
               break ;
              case Configuration::Log::SYSLOG:
-              CentreonBroker::logging.LogInSyslog(0);
+              logging.LogInSyslog(0);
               break ;
              default:
               ;
@@ -366,18 +366,18 @@ void Configuration::Manager::Update()
       LOGDEBUG("Adding new logging object...");
       switch (logs_it->type)
         {
-        case Configuration::Log::FILE:
-          CentreonBroker::logging.LogInFile(logs_it->file.c_str(),
+         case Configuration::Log::FILE:
+          logging.LogInFile(logs_it->file.c_str(),
                                             logs_it->flags);
           break ;
-        case Configuration::Log::STDERR:
-          CentreonBroker::logging.LogToStderr(logs_it->flags);
+         case Configuration::Log::STDERR:
+          logging.LogToStderr(logs_it->flags);
           break ;
-        case Configuration::Log::STDOUT:
-          CentreonBroker::logging.LogToStdout(logs_it->flags);
+         case Configuration::Log::STDOUT:
+          logging.LogToStdout(logs_it->flags);
           break ;
-        case Configuration::Log::SYSLOG:
-          CentreonBroker::logging.LogInSyslog(logs_it->flags);
+         case Configuration::Log::SYSLOG:
+          logging.LogInSyslog(logs_it->flags);
           break ;
          default:
           ;

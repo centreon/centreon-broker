@@ -21,38 +21,11 @@
 #ifndef INTERFACE_DB_DESTINATION_H_
 # define INTERFACE_DB_DESTINATION_H_
 
-# include <memory>
+# include <map>
 # include <string>
-# include <vector>
-# include "db/connection.h"
-# include "db/mapping.hpp"
-# include "db/update.h"
+# include <soci.h>
+# include "events/events.h"
 # include "interface/destination.h"
-# include "mapping.h"
-
-// Forward declaration.
-namespace                         Events
-{
-  class                           Acknowledgement;
-  class                           Comment;
-  class                           Downtime;
-  class                           Event;
-  class                           Host;
-  class                           HostCheck;
-  class                           HostDependency;
-  class                           HostGroup;
-  class                           HostGroupMember;
-  class                           HostParent;
-  class                           HostStatus;
-  class                           ProgramStatus;
-  class                           Query;
-  class                           Service;
-  class                           ServiceCheck;
-  class                           ServiceDependency;
-  class                           ServiceGroup;
-  class                           ServiceGroupMember;
-  class                           ServiceStatus;
-}
 
 namespace                         Interface
 {
@@ -67,26 +40,13 @@ namespace                         Interface
     class                         Destination : public Interface::Destination
     {
      private:
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Host> >
-                                  host_stmt_;
-      std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::HostStatus> >
-                                  host_status_stmt_;
-      std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::ProgramStatus> >
-                                  program_status_stmt_;
-      std::auto_ptr<CentreonBroker::DB::MappedInsert<Events::Service> >
-                                  service_stmt_;
-      std::auto_ptr<CentreonBroker::DB::MappedUpdate<Events::ServiceStatus> >
-                                  service_status_stmt_;
-      std::auto_ptr<CentreonBroker::DB::Connection>
-                                  conn_; // Connection object is necessary after statements.
+      std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
       std::map<std::string, int>  instances_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
       void                        Connect();
       void                        Disconnect();
-      int                         GetInstanceId(const std::string& instance);
-      void                        PrepareMappings();
-      void                        PrepareStatements();
+      int                         GetInstanceID(const std::string& instance);
       void                        ProcessAcknowledgement(
                                     const Events::Acknowledgement& ack);
       void                        ProcessComment(const Events::Comment& comment);
@@ -115,7 +75,7 @@ namespace                         Interface
                                   ~Destination();
       void                        Close();
       void                        Event(Events::Event* event);
-      void                        Init(CentreonBroker::DB::Connection* conn);
+      void                        Init(); // XXX
     };
   }
 }

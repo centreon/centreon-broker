@@ -33,28 +33,6 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/configuration/log.cpp				\
 		../../src/configuration/manager.cpp			\
 		../../src/configuration/parser.cpp			\
-		../../src/db/connection.cpp				\
-		../../src/db/db_exception.cpp				\
-		../../src/db/delete.cpp					\
-		../../src/db/have_args.cpp				\
-		../../src/db/have_fields.cpp				\
-		../../src/db/have_predicate.cpp				\
-		../../src/db/have_table.cpp				\
-		../../src/db/insert.cpp					\
-		../../src/db/mysql/connection.cpp			\
-		../../src/db/mysql/delete.cpp				\
-		../../src/db/mysql/have_args.cpp			\
-		../../src/db/mysql/have_predicate.cpp			\
-		../../src/db/mysql/insert.cpp				\
-		../../src/db/mysql/query.cpp				\
-		../../src/db/mysql/select.cpp				\
-		../../src/db/mysql/truncate.cpp				\
-		../../src/db/mysql/update.cpp				\
-		../../src/db/predicate.cpp				\
-		../../src/db/query.cpp					\
-		../../src/db/select.cpp					\
-		../../src/db/truncate.cpp				\
-		../../src/db/update.cpp					\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/check.cpp				\
 		../../src/events/comment.cpp				\
@@ -139,7 +117,7 @@ OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
 
 # Parameters
-INCLUDE		=	-I../../inc/module -I../../inc
+INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 #CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
@@ -147,7 +125,7 @@ CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
-LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls #-lefence
+LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls -lsoci_core-gcc-3_0 #-lefence
 
 # Rules
 all		:	$(NAME1) $(NAME2)
