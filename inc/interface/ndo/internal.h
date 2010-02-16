@@ -24,21 +24,20 @@
 # include <map>
 # include <sstream>
 # include "events/events.h"
-# include "interface/field.h"
 # include "mapping.h"
 
-namespace    Interface
+namespace                  Interface
 {
-  namespace  NDO
+  namespace                NDO
   {
-    template <typename T>
-    struct   GetterSetter
+    template               <typename T>
+    struct                 GetterSetter
     {
       const DataMember<T>* member;
-      void (* getter)(const T&,
-                      const DataMember<T>&,
-                      std::stringstream& buffer);
-      void (* setter)(T&, const DataMember<T>&, const char*);
+      void                 (* getter)(const T&,
+                                      const DataMember<T>&,
+                                      std::stringstream& buffer);
+      void                 (* setter)(T&, const DataMember<T>&, const char*);
     };
 
     // NDO mappings.

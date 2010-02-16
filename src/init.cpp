@@ -25,7 +25,7 @@
 #include "exception.h"
 #include "init.h"
 #include "interface/ndo/internal.h"
-#include "interface/xml/destination.h"
+#include "interface/xml/internal.h"
 #ifdef USE_TLS
 # include "io/tls/internal.h"
 #endif /* !USE_TLS */
@@ -90,7 +90,7 @@ void Init()
   LOGDEBUG("Initializing NDO engine ...");
   Interface::NDO::Initialize();
   LOGDEBUG("Initializing XML engine ...");
-  Interface::XML::Destination::Initialize();
+  Interface::XML::Initialize();
 
   return ;
 }
