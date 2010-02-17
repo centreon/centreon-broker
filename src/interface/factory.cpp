@@ -313,19 +313,18 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       }
       break ;
 #ifdef USE_MYSQL
-      /*case Configuration::Interface::MYSQL:
+      case Configuration::Interface::MYSQL:
       {
-        std::auto_ptr<CentreonBroker::DB::MySQLConnection> myconn(
-          new CentreonBroker::DB::MySQLConnection);
-        std::auto_ptr<Interface::DB::Destination> mydest;
+        std::auto_ptr<Interface::DB::Destination> db(new Interface::DB::Destination);
 
-        myconn->Connect(i.host, i.user, i.password, i.db);
-        mydest.reset(new Interface::DB::Destination);
-        mydest->Init(myconn.get());
-        myconn.release();
-        dest = mydest.release();
+        db->Connect(Interface::DB::Destination::MYSQL,
+                    i.db,
+                    i.host,
+                    i.user,
+                    i.password);
+        dest = db.release();
       }
-      break ;*/
+      break ;
 #endif /* USE_MYSQL */
      case Configuration::Interface::UNIX_CLIENT:
       {

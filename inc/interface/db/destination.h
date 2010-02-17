@@ -39,13 +39,20 @@ namespace                         Interface
      */
     class                         Destination : public Interface::Destination
     {
+     public:
+      enum                        DB
+      {
+        UNKNOWN = 0,
+        MYSQL,
+        ORACLE,
+        POSTGRESQL
+      };
+
      private:
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
       std::map<std::string, int>  instances_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
-      void                        Connect();
-      void                        Disconnect();
       int                         GetInstanceID(const std::string& instance);
       template                    <typename T, bool b>
       void                        Insert(const T& t);
@@ -77,7 +84,11 @@ namespace                         Interface
                                   ~Destination();
       void                        Close();
       void                        Event(Events::Event* event);
-      void                        Init(); // XXX
+      void                        Connect(DB db_type,
+                                          const std::string& db,
+                                          const std::string& host,
+                                          const std::string& user,
+                                          const std::string& pass);
     };
   }
 }

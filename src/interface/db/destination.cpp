@@ -19,12 +19,25 @@
 */
 
 #include <assert.h>
+#include <soci.h>
+#ifdef USE_MYSQL
+# include <soci-mysql.h>
+#endif /* USE_MYSQL */
+#ifdef USE_ORACLE
+# include <soci-oracle.h>
+#endif /* USE_ORACLE */
+#ifdef USE_POSTGRESQL
+# include <soci-postgresql.h>
+#endif /* USE_POSTGRESQL */
+#include <sstream>
 #include <stdlib.h>                   // for abort
+#include "events/events.h"
+#include "exception.h"
 #include "interface/db/destination.h"
+#include "interface/db/internal.h"
 #include "logging.h"
 #include "mapping.h"
 #include "nagios/broker.h"
-#include "soci.h"
 
 using namespace Interface::DB;
 
@@ -66,56 +79,6 @@ Destination& Destination::operator=(const Destination& destination)
   assert(false);
   abort();
   return (*this);
-}
-
-/**
- *  \brief Connect to the preconfigured database.
- *
- *  Using parameters provided by Init(), connect to the database server. Upon
- *  successful return, the connection can later be dropped by calling
- *  Disconnect().
- *
- *  \see Disconnect
- *  \see Init
- */
-void Destination::Connect()
-{
-  std::vector<int> ids;
-  std::vector<std::string> names;
-
-  // Fetch already existing instances from the database.
-  (*this->conn_) << "SELECT instance_id, instance_name FROM program_status",
-    soci::into(ids), soci::into(names);
-
-  // Insert instances in the cache.
-  {
-    std::vector<int>::const_iterator end_id, it_id;
-    std::vector<std::string>::const_iterator end_name, it_name;
-
-    end_id = ids.end();
-    end_name = names.end();
-    for (it_id = ids.begin(), it_name = names.begin();
-	 (it_id != end_id) && (it_name != end_name);
-	 ++it_id, ++it_name)
-      this->instances_[*it_name] = *it_id;
-  }
-
-  return ;
-}
-
-/**
- *  \brief Disconnect from the database server.
- *
- *  Upon a successful call to Connect(), one can disconnect from the server by
- *  calling this method. All previously allocated ressources are freed.
- *
- *  \see Connect
- */
-void Destination::Disconnect()
-{
-  // XXX
-  this->instances_.clear();
-  return ;
 }
 
 /**
@@ -162,7 +125,8 @@ void Destination::Insert(const T& t)
   {
     soci::details::once_temp_type ott(*this->conn_ << query);
 
-    // XXX : browse mapping and set bind variables
+    // Bind object.
+    ott, soci::use(t);
 
     // Query will be executed on ott destruction.
   }
@@ -186,19 +150,21 @@ void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 void Destination::ProcessComment(const Events::Comment& comment)
 {
   LOGDEBUG("Processing Comment event ...");
-
   if ((comment.type == NEBTYPE_COMMENT_ADD)
       || comment.type == NEBTYPE_COMMENT_LOAD)
     {
       try
-	{
-	}
+        {
+          this->Insert<Events::Comment, true>(comment);
+        }
       catch (const soci::soci_error& se)
-	{
-	}
+        {
+          // XXX : try to update
+        }
     }
   else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
+      // XXX : delete
     }
   return ;
 }
@@ -230,7 +196,7 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
 void Destination::ProcessHost(const Events::Host& host)
 {
   LOGDEBUG("Processing Host event ...");
-  //this->Insert<Events::Host, true>(host);
+  this->Insert<Events::Host, true>(host);
   return ;
 }
 
@@ -240,7 +206,7 @@ void Destination::ProcessHost(const Events::Host& host)
 void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 {
   LOGDEBUG("Processing HostCheck event ...");
-
+  // XXX : update host
   return ;
 }
 
@@ -260,7 +226,7 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 {
   LOGDEBUG("Processing HostGroup event...");
-
+  this->Insert<Events::HostGroup, true>(hg);
   return ;
 }
 
@@ -290,16 +256,16 @@ void Destination::ProcessHostParent(const Events::HostParent& hp)
 void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 {
   LOGDEBUG("Processing HostStatus event ...");
-  /*try
+  try
     {
-      this->PreparedUpdate<Events::HostStatus, true>(hs,
-						     this->host_status_stmt_,
-						     this->host_status_);
+      /* XXX this->PreparedUpdate<Events::HostStatus, true>(hs,
+                                                     this->host_status_stmt_,
+                                                     this->host_status_);*/
     }
   catch (const soci::soci_error& se)
     {
       this->ProcessHost(hs);
-      }*/
+    }
   return ;
 }
 
@@ -309,7 +275,7 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 void Destination::ProcessLog(const Events::Log& log)
 {
   LOGDEBUG("Processing Log event ...");
-  //this->Insert<Events::Log>(log);
+  this->Insert<Events::Log, true>(log);
   return ;
 }
 
@@ -319,16 +285,18 @@ void Destination::ProcessLog(const Events::Log& log)
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
   LOGDEBUG("Processing ProgramStatus event ...");
-  /*try
+  try
     {
+      /*
       this->PreparedUpdate<Events::ProgramStatus, true>(ps,
         this->program_status_stmt_,
         this->program_status_);
+      */
     }
   catch (const soci::soci_error& se)
     {
       this->Insert<Events::ProgramStatus, true>(ps);
-      }*/
+    }
   return ;
 }
 
@@ -338,7 +306,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 void Destination::ProcessService(const Events::Service& service)
 {
   LOGDEBUG("Processing Service event ...");
-  //this->Insert<Events::Service, true>(service);
+  this->Insert<Events::Service, true>(service);
   return ;
 }
 
@@ -348,7 +316,7 @@ void Destination::ProcessService(const Events::Service& service)
 void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 {
   LOGDEBUG("Processing ServiceCheck event ...");
-
+  // XXX : update service
   return ;
 }
 
@@ -358,7 +326,7 @@ void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 {
   LOGDEBUG("Processing ServiceDependency event ...");
-
+  // XXX : insert
   return ;
 }
 
@@ -368,7 +336,7 @@ void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 {
   LOGDEBUG("Processing ServiceGroup event ...");
-
+  this->Insert<Events::ServiceGroup, true>(sg);
   return ;
 }
 
@@ -378,7 +346,7 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm)
 {
   LOGDEBUG("Processing ServiceGroupMember event ...");
-
+  // XXX : insert
   return ;
 }
 
@@ -388,16 +356,18 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
 void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
 {
   LOGDEBUG("Processing ServiceStatus event ...");
-  /*try
+  try
     {
+      /*
       this->PreparedUpdate<Events::ServiceStatus, true>(ss,
         this->service_status_stmt_,
-	this->service_status_);
+        this->service_status_);
+      */
     }
   catch (const soci::soci_error& se)
     {
       this->ProcessService(ss);
-      }*/
+    }
   return ;
 }
 
@@ -423,7 +393,7 @@ Destination::Destination() {}
  */
 Destination::~Destination()
 {
-  this->Disconnect();
+  this->Close();
 }
 
 /**
@@ -431,6 +401,7 @@ Destination::~Destination()
  */
 void Destination::Close()
 {
+  // XXX
   return ;
 }
 
@@ -522,14 +493,70 @@ void Destination::Event(Events::Event* event)
 }
 
 /**
- *  \brief Initialize the object.
+ *  \brief Connect the database destination.
  *
- *  Set connection parameters and launch the processing thread.
+ *  Connect to the specified database using the specified credentials.
  *
- *  \param[in] conn Already opened DB connection.
+ *  \param[in] db_type Database type.
+ *  \param[in] host    DB server.
+ *  \param[in] db      Database
+ *  \param[in] user    User name to use for authentication.
+ *  \param[in] pass    Password to use for authentication.
  */
-void Destination::Init()
+void Destination::Connect(Destination::DB db_type,
+                          const std::string& db,
+                          const std::string& host,
+                          const std::string& user,
+                          const std::string& pass)
 {
-  this->Connect();
+  // Connect to DB.
+  {
+    std::stringstream ss;
+
+    switch (db_type)
+      {
+#ifdef USE_MYSQL
+       case MYSQL:
+	ss << "dbname=" << db << " user=" << user << " password=" << pass;
+	this->conn_.reset(new soci::session(soci::mysql, ss.str()));
+	break ;
+#endif /* USE_MYSQL */
+
+#ifdef USE_ORACLE
+      case ORACLE:
+	break ;
+#endif /* USE_ORACLE */
+
+#ifdef USE_POSTGRESQL
+      case POSTGRESQL:
+	break ;
+#endif /* USE_POSTGRESQL */
+
+      default:
+	throw Exception(0, "Unsupported DBMS requested.");
+      }
+  }
+
+  std::vector<int> ids;
+  std::vector<std::string> names;
+  // XXX : seems like vectors should be sized before being usable in queries ...
+  /*
+  // Fetch already existing instances from the database.
+  (*this->conn_) << "SELECT instance_id, instance_name FROM program_status",
+    soci::into(ids), soci::into(names);
+
+  // Insert instances in the cache.
+  {
+    std::vector<int>::const_iterator end_id, it_id;
+    std::vector<std::string>::const_iterator end_name, it_name;
+
+    end_id = ids.end();
+    end_name = names.end();
+    for (it_id = ids.begin(), it_name = names.begin();
+         (it_id != end_id) && (it_name != end_name);
+         ++it_id, ++it_name)
+      this->instances_[*it_name] = *it_id;
+      }*/
+
   return ;
 }

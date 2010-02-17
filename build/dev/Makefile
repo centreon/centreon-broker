@@ -62,6 +62,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/exception.cpp					\
 		../../src/init.cpp					\
 		../../src/interface/db/destination.cpp			\
+		../../src/interface/db/internal.cpp			\
 		../../src/interface/destination.cpp			\
 		../../src/interface/factory.cpp				\
 		../../src/interface/ndo/base.cpp			\
@@ -117,15 +118,16 @@ OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
 
 # Parameters
-INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci
+INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soci/mysql
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
-CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
-#CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
+#CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
+CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
-LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls -lsoci_core-gcc-3_0 #-lefence
+LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls -lsoci_core-gcc-3_0	\
+			-lsoci_mysql-gcc-3_0 #-lefence
 
 # Rules
 all		:	$(NAME1) $(NAME2)

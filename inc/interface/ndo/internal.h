@@ -23,7 +23,6 @@
 
 # include <map>
 # include <sstream>
-# include "events/events.h"
 # include "mapping.h"
 
 namespace                  Interface

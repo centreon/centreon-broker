@@ -39,19 +39,6 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/configuration/log.cpp				\
 		../../src/configuration/manager.cpp			\
 		../../src/configuration/parser.cpp			\
-		../../src/db/connection.cpp				\
-		../../src/db/db_exception.cpp				\
-		../../src/db/delete.cpp					\
-		../../src/db/have_args.cpp				\
-		../../src/db/have_fields.cpp				\
-		../../src/db/have_predicate.cpp				\
-		../../src/db/have_table.cpp				\
-		../../src/db/insert.cpp					\
-		../../src/db/predicate.cpp				\
-		../../src/db/query.cpp					\
-		../../src/db/select.cpp					\
-		../../src/db/truncate.cpp				\
-		../../src/db/update.cpp					\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/check.cpp				\
 		../../src/events/comment.cpp				\
@@ -81,6 +68,7 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/exception.cpp					\
 		../../src/init.cpp					\
 		../../src/interface/db/destination.cpp			\
+		../../src/interface/db/internal.cpp			\
 		../../src/interface/destination.cpp			\
 		../../src/interface/factory.cpp				\
 		../../src/interface/ndo/base.cpp			\

@@ -24,13 +24,13 @@
 #include "configuration/manager.h"
 #include "exception.h"
 #include "init.h"
+#include "interface/db/internal.h"
 #include "interface/ndo/internal.h"
 #include "interface/xml/internal.h"
 #ifdef USE_TLS
 # include "io/tls/internal.h"
 #endif /* !USE_TLS */
 #include "logging.h"
-#include "mapping.h"
 
 /**************************************
 *                                     *
@@ -46,10 +46,6 @@ void Deinit()
   // Unload configuration.
   LOGDEBUG("Unloading configuration ...");
   Configuration::Manager::Instance().Close();
-
-  // Destroy O/R mapping.
-  LOGDEBUG("Unloading DB engine ...");
-  // XXX : MappingsDestroy();
 
 #ifdef USE_TLS
   // Unload GNU TLS library.
@@ -86,7 +82,7 @@ void Init()
 
   // Initialize all interface objects.
   LOGDEBUG("Initializing DB engine ...");
-  //MappingsInit();
+  Interface::DB::Initialize();
   LOGDEBUG("Initializing NDO engine ...");
   Interface::NDO::Initialize();
   LOGDEBUG("Initializing XML engine ...");

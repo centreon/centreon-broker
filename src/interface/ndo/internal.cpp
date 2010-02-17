@@ -182,41 +182,42 @@ template <typename T>
 static void static_init()
 {
   for (unsigned int i = 0; MappedType<T>::members[i].type; ++i)
-    {
-      GetterSetter<T>& gs(NDOMappedType<T>::map[MappedType<T>::members[i].id]);
+    if (MappedType<T>::members[i].id)
+      {
+        GetterSetter<T>& gs(NDOMappedType<T>::map[MappedType<T>::members[i].id]);
 
-      gs.member = &MappedType<T>::members[i].member;
-      switch (MappedType<T>::members[i].type)
-        {
-         case MappedData<T>::BOOL:
-          gs.getter = &get_boolean<T>;
-          gs.setter = &set_boolean<T>;
-          break ;
-         case MappedData<T>::DOUBLE:
-          gs.getter = &get_double<T>;
-          gs.setter = &set_double<T>;
-          break ;
-         case MappedData<T>::INT:
-          gs.getter = &get_integer<T>;
-          gs.setter = &set_integer<T>;
-          break ;
-         case MappedData<T>::SHORT:
-          gs.getter = &get_short<T>;
-          gs.setter = &set_short<T>;
-          break ;
-         case MappedData<T>::STRING:
-          gs.getter = &get_string<T>;
-          gs.setter = &set_string<T>;
-          break ;
-         case MappedData<T>::TIME_T:
-          gs.getter = &get_timet<T>;
-          gs.setter = &set_timet<T>;
-          break ;
-         default: // Error in one of the mappings.
-          assert(false);
-          abort();
-        }
-    }
+        gs.member = &MappedType<T>::members[i].member;
+        switch (MappedType<T>::members[i].type)
+          {
+           case MappedData<T>::BOOL:
+            gs.getter = &get_boolean<T>;
+            gs.setter = &set_boolean<T>;
+            break ;
+           case MappedData<T>::DOUBLE:
+            gs.getter = &get_double<T>;
+            gs.setter = &set_double<T>;
+            break ;
+           case MappedData<T>::INT:
+            gs.getter = &get_integer<T>;
+            gs.setter = &set_integer<T>;
+            break ;
+           case MappedData<T>::SHORT:
+            gs.getter = &get_short<T>;
+            gs.setter = &set_short<T>;
+            break ;
+           case MappedData<T>::STRING:
+            gs.getter = &get_string<T>;
+            gs.setter = &set_string<T>;
+            break ;
+           case MappedData<T>::TIME_T:
+            gs.getter = &get_timet<T>;
+            gs.setter = &set_timet<T>;
+            break ;
+           default: // Error in one of the mappings.
+            assert(false);
+            abort();
+          }
+      }
   return ;
 }
 

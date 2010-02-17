@@ -23,7 +23,6 @@
 
 # include <map>
 # include <string>
-# include "events/events.h"
 # include "mapping.h"
 # include "interface/xml/tinyxml.h"
 

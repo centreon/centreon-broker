@@ -115,37 +115,38 @@ template <typename T>
 static void static_init()
 {
   for (unsigned int i = 0; MappedType<T>::members[i].type; ++i)
-    {
-      GetterSetter<T>&
-        gs(XMLMappedType<T>::map[MappedType<T>::members[i].name]);
+    if (MappedType<T>::members[i].name)
+      {
+        GetterSetter<T>&
+          gs(XMLMappedType<T>::map[MappedType<T>::members[i].name]);
 
-      gs.member = &MappedType<T>::members[i].member;
-      // XXX : setters are not set.
-      switch (MappedType<T>::members[i].type)
-        {
-         case MappedData<T>::BOOL:
-          gs.getter = &get_boolean<T>;
-          break ;
-         case MappedData<T>::DOUBLE:
-          gs.getter = &get_double<T>;
-          break ;
-         case MappedData<T>::INT:
-          gs.getter = &get_integer<T>;
-          break ;
-         case MappedData<T>::SHORT:
-          gs.getter = &get_short<T>;
-          break ;
-         case MappedData<T>::STRING:
-          gs.getter = &get_string<T>;
-          break ;
-         case MappedData<T>::TIME_T:
-          gs.getter = &get_timet<T>;
-          break ;
-         default: // Error in one of the mappings.
-          assert(false);
-          abort();
-        }
-    }
+        gs.member = &MappedType<T>::members[i].member;
+        // XXX : setters are not set.
+        switch (MappedType<T>::members[i].type)
+          {
+           case MappedData<T>::BOOL:
+            gs.getter = &get_boolean<T>;
+            break ;
+           case MappedData<T>::DOUBLE:
+            gs.getter = &get_double<T>;
+            break ;
+           case MappedData<T>::INT:
+            gs.getter = &get_integer<T>;
+            break ;
+           case MappedData<T>::SHORT:
+            gs.getter = &get_short<T>;
+            break ;
+           case MappedData<T>::STRING:
+            gs.getter = &get_string<T>;
+            break ;
+           case MappedData<T>::TIME_T:
+            gs.getter = &get_timet<T>;
+            break ;
+           default: // Error in one of the mappings.
+            assert(false);
+            abort();
+          }
+      }
   return ;
 }
 
