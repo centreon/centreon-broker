@@ -22,7 +22,9 @@
 #include <stdlib.h>                   // for abort
 #include "interface/db/destination.h"
 #include "logging.h"
+#include "mapping.h"
 #include "nagios/broker.h"
+#include "soci.h"
 
 using namespace Interface::DB;
 
@@ -141,12 +143,40 @@ int Destination::GetInstanceID(const std::string& instance)
 }
 
 /**
+ *  Insert an object in the DB using its mapping.
+ */
+template <typename T, bool set_instance_id>
+void Destination::Insert(const T& t)
+{
+  std::string query;
+
+  // Build query string.
+  query = "INSERT INTO ";
+  query.append(MappedType<T>::table);
+  query.append("(");
+  // XXX : browse mapping
+  query.append(") VALUES(");
+  // XXX : browse mapping again
+  query.append(")");
+
+  {
+    soci::details::once_temp_type ott(*this->conn_ << query);
+
+    // XXX : browse mapping and set bind variables
+
+    // Query will be executed on ott destruction.
+  }
+
+  return ;
+}
+
+/**
  *  Process an Acknowledgement event.
  */
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 {
   LOGDEBUG("Processing Acknowledgement event ...");
-
+  this->Insert<Events::Acknowledgement, true>(ack);
   return ;
 }
 
@@ -160,6 +190,12 @@ void Destination::ProcessComment(const Events::Comment& comment)
   if ((comment.type == NEBTYPE_COMMENT_ADD)
       || comment.type == NEBTYPE_COMMENT_LOAD)
     {
+      try
+	{
+	}
+      catch (const soci::soci_error& se)
+	{
+	}
     }
   else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
@@ -194,7 +230,7 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
 void Destination::ProcessHost(const Events::Host& host)
 {
   LOGDEBUG("Processing Host event ...");
-
+  //this->Insert<Events::Host, true>(host);
   return ;
 }
 
@@ -254,7 +290,16 @@ void Destination::ProcessHostParent(const Events::HostParent& hp)
 void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 {
   LOGDEBUG("Processing HostStatus event ...");
-
+  /*try
+    {
+      this->PreparedUpdate<Events::HostStatus, true>(hs,
+						     this->host_status_stmt_,
+						     this->host_status_);
+    }
+  catch (const soci::soci_error& se)
+    {
+      this->ProcessHost(hs);
+      }*/
   return ;
 }
 
@@ -264,7 +309,7 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 void Destination::ProcessLog(const Events::Log& log)
 {
   LOGDEBUG("Processing Log event ...");
-
+  //this->Insert<Events::Log>(log);
   return ;
 }
 
@@ -274,7 +319,16 @@ void Destination::ProcessLog(const Events::Log& log)
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
   LOGDEBUG("Processing ProgramStatus event ...");
-
+  /*try
+    {
+      this->PreparedUpdate<Events::ProgramStatus, true>(ps,
+        this->program_status_stmt_,
+        this->program_status_);
+    }
+  catch (const soci::soci_error& se)
+    {
+      this->Insert<Events::ProgramStatus, true>(ps);
+      }*/
   return ;
 }
 
@@ -284,7 +338,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 void Destination::ProcessService(const Events::Service& service)
 {
   LOGDEBUG("Processing Service event ...");
-
+  //this->Insert<Events::Service, true>(service);
   return ;
 }
 
@@ -334,7 +388,16 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
 void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
 {
   LOGDEBUG("Processing ServiceStatus event ...");
-
+  /*try
+    {
+      this->PreparedUpdate<Events::ServiceStatus, true>(ss,
+        this->service_status_stmt_,
+	this->service_status_);
+    }
+  catch (const soci::soci_error& se)
+    {
+      this->ProcessService(ss);
+      }*/
   return ;
 }
 

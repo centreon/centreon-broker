@@ -112,16 +112,16 @@ static void get_timet(const T& t,
  *  Static initialization template used by Initialize().
  */
 template <typename T>
-static void static_init(const MappedData<T> members[],
-                        std::map<std::string, GetterSetter<T> >& map)
+static void static_init()
 {
-  for (unsigned int i = 0; members[i].type; ++i)
+  for (unsigned int i = 0; MappedType<T>::members[i].type; ++i)
     {
-      GetterSetter<T>& gs(map[members[i].name]);
+      GetterSetter<T>&
+        gs(XMLMappedType<T>::map[MappedType<T>::members[i].name]);
 
-      gs.member = &members[i].member;
+      gs.member = &MappedType<T>::members[i].member;
       // XXX : setters are not set.
-      switch (members[i].type)
+      switch (MappedType<T>::members[i].type)
         {
          case MappedData<T>::BOOL:
           gs.getter = &get_boolean<T>;
@@ -155,42 +155,60 @@ static void static_init(const MappedData<T> members[],
 *                                     *
 **************************************/
 
-std::map<std::string, GetterSetter<Events::Acknowledgement> >
-  Interface::XML::acknowledgement_map;
-std::map<std::string, GetterSetter<Events::Comment> >
-  Interface::XML::comment_map;
-std::map<std::string, GetterSetter<Events::Downtime> >
-  Interface::XML::downtime_map;
-std::map<std::string, GetterSetter<Events::Host> >
-  Interface::XML::host_map;
-std::map<std::string, GetterSetter<Events::HostCheck> >
-  Interface::XML::host_check_map;
-std::map<std::string, GetterSetter<Events::HostDependency> >
-  Interface::XML::host_dependency_map;
-std::map<std::string, GetterSetter<Events::HostGroup> >
-  Interface::XML::host_group_map;
-std::map<std::string, GetterSetter<Events::HostGroupMember> >
-  Interface::XML::host_group_member_map;
-std::map<std::string, GetterSetter<Events::HostParent> >
-  Interface::XML::host_parent_map;
-std::map<std::string, GetterSetter<Events::HostStatus> >
-  Interface::XML::host_status_map;
-std::map<std::string, GetterSetter<Events::Log> >
-  Interface::XML::log_map;
-std::map<std::string, GetterSetter<Events::ProgramStatus> >
-  Interface::XML::program_status_map;
-std::map<std::string, GetterSetter<Events::Service> >
-  Interface::XML::service_map;
-std::map<std::string, GetterSetter<Events::ServiceCheck> >
-  Interface::XML::service_check_map;
-std::map<std::string, GetterSetter<Events::ServiceDependency> >
-  Interface::XML::service_dependency_map;
-std::map<std::string, GetterSetter<Events::ServiceGroup> >
-  Interface::XML::service_group_map;
-std::map<std::string, GetterSetter<Events::ServiceGroupMember> >
-  Interface::XML::service_group_member_map;
-std::map<std::string, GetterSetter<Events::ServiceStatus> >
-  Interface::XML::service_status_map;
+template <> std::map<std::string, GetterSetter<Events::Acknowledgement> >
+  Interface::XML::XMLMappedType<Events::Acknowledgement>::map =
+    std::map<std::string, GetterSetter<Events::Acknowledgement> >();
+template <> std::map<std::string, GetterSetter<Events::Comment> >
+  Interface::XML::XMLMappedType<Events::Comment>::map =
+    std::map<std::string, GetterSetter<Events::Comment> >();
+template <> std::map<std::string, GetterSetter<Events::Downtime> >
+  Interface::XML::XMLMappedType<Events::Downtime>::map =
+    std::map<std::string, GetterSetter<Events::Downtime> >();
+template <> std::map<std::string, GetterSetter<Events::Host> >
+  Interface::XML::XMLMappedType<Events::Host>::map =
+    std::map<std::string, GetterSetter<Events::Host> >();
+template <> std::map<std::string, GetterSetter<Events::HostCheck> >
+  Interface::XML::XMLMappedType<Events::HostCheck>::map =
+    std::map<std::string, GetterSetter<Events::HostCheck> >();
+template <> std::map<std::string, GetterSetter<Events::HostDependency> >
+  Interface::XML::XMLMappedType<Events::HostDependency>::map =
+    std::map<std::string, GetterSetter<Events::HostDependency> >();
+template <> std::map<std::string, GetterSetter<Events::HostGroup> >
+  Interface::XML::XMLMappedType<Events::HostGroup>::map =
+    std::map<std::string, GetterSetter<Events::HostGroup> >();
+template <> std::map<std::string, GetterSetter<Events::HostGroupMember> >
+  Interface::XML::XMLMappedType<Events::HostGroupMember>::map =
+    std::map<std::string, GetterSetter<Events::HostGroupMember> >();
+template <> std::map<std::string, GetterSetter<Events::HostParent> >
+  Interface::XML::XMLMappedType<Events::HostParent>::map =
+    std::map<std::string, GetterSetter<Events::HostParent> >();
+template <> std::map<std::string, GetterSetter<Events::HostStatus> >
+  Interface::XML::XMLMappedType<Events::HostStatus>::map =
+    std::map<std::string, GetterSetter<Events::HostStatus> >();
+template <> std::map<std::string, GetterSetter<Events::Log> >
+  Interface::XML::XMLMappedType<Events::Log>::map =
+    std::map<std::string, GetterSetter<Events::Log> >();
+template <> std::map<std::string, GetterSetter<Events::ProgramStatus> >
+  Interface::XML::XMLMappedType<Events::ProgramStatus>::map =
+    std::map<std::string, GetterSetter<Events::ProgramStatus> >();
+template <> std::map<std::string, GetterSetter<Events::Service> >
+  Interface::XML::XMLMappedType<Events::Service>::map =
+    std::map<std::string, GetterSetter<Events::Service> >();
+template <> std::map<std::string, GetterSetter<Events::ServiceCheck> >
+  Interface::XML::XMLMappedType<Events::ServiceCheck>::map =
+    std::map<std::string, GetterSetter<Events::ServiceCheck> >();
+template <> std::map<std::string, GetterSetter<Events::ServiceDependency> >
+  Interface::XML::XMLMappedType<Events::ServiceDependency>::map =
+    std::map<std::string, GetterSetter<Events::ServiceDependency> >();
+template <> std::map<std::string, GetterSetter<Events::ServiceGroup> >
+  Interface::XML::XMLMappedType<Events::ServiceGroup>::map =
+    std::map<std::string, GetterSetter<Events::ServiceGroup> >();
+template <> std::map<std::string, GetterSetter<Events::ServiceGroupMember> >
+  Interface::XML::XMLMappedType<Events::ServiceGroupMember>::map =
+    std::map<std::string, GetterSetter<Events::ServiceGroupMember> >();
+template <> std::map<std::string, GetterSetter<Events::ServiceStatus> >
+  Interface::XML::XMLMappedType<Events::ServiceStatus>::map =
+    std::map<std::string, GetterSetter<Events::ServiceStatus> >();
 
 /**************************************
 *                                     *
@@ -205,23 +223,23 @@ std::map<std::string, GetterSetter<Events::ServiceStatus> >
  */
 void Interface::XML::Initialize()
 {
-  static_init(acknowledgement_mapping, acknowledgement_map);
-  static_init(comment_mapping, comment_map);
-  static_init(downtime_mapping, downtime_map);
-  static_init(host_mapping, host_map);
-  static_init(host_check_mapping, host_check_map);
-  static_init(host_dependency_mapping, host_dependency_map);
-  static_init(host_group_mapping, host_group_map);
-  static_init(host_group_member_mapping, host_group_member_map);
-  static_init(host_parent_mapping, host_parent_map);
-  static_init(host_status_mapping, host_status_map);
-  static_init(log_mapping, log_map);
-  static_init(program_status_mapping, program_status_map);
-  static_init(service_mapping, service_map);
-  static_init(service_check_mapping, service_check_map);
-  static_init(service_dependency_mapping, service_dependency_map);
-  static_init(service_group_mapping, service_group_map);
-  static_init(service_group_member_mapping, service_group_member_map);
-  static_init(service_status_mapping, service_status_map);
+  static_init<Events::Acknowledgement>();
+  static_init<Events::Comment>();
+  static_init<Events::Downtime>();
+  static_init<Events::Host>();
+  static_init<Events::HostCheck>();
+  static_init<Events::HostDependency>();
+  static_init<Events::HostGroup>();
+  static_init<Events::HostGroupMember>();
+  static_init<Events::HostParent>();
+  static_init<Events::HostStatus>();
+  static_init<Events::Log>();
+  static_init<Events::ProgramStatus>();
+  static_init<Events::Service>();
+  static_init<Events::ServiceCheck>();
+  static_init<Events::ServiceDependency>();
+  static_init<Events::ServiceGroup>();
+  static_init<Events::ServiceGroupMember>();
+  static_init<Events::ServiceStatus>();
   return ;
 }

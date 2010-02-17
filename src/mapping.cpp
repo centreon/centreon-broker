@@ -24,8 +24,8 @@
 
 using namespace Events;
 
-// Acknowledgement mapping.
-const MappedData<Acknowledgement> acknowledgement_mapping[] =
+// Acknowledgement members mapping.
+static const MappedData<Acknowledgement> acknowledgement_mapping[] =
   {
     MappedData<Acknowledgement>(
       &Acknowledgement::acknowledgement_type,
@@ -78,8 +78,8 @@ const MappedData<Acknowledgement> acknowledgement_mapping[] =
     MappedData<Acknowledgement>()
   };
 
-// Comment mapping.
-const MappedData<Comment> comment_mapping[] =
+// Comment members mapping.
+static const MappedData<Comment> comment_mapping[] =
   {
     MappedData<Comment>(
       &Comment::author,
@@ -148,8 +148,8 @@ const MappedData<Comment> comment_mapping[] =
     MappedData<Comment>()
   };
 
-// Downtime mapping.
-const MappedData<Downtime> downtime_mapping[] =
+// Downtime members mapping.
+static const MappedData<Downtime> downtime_mapping[] =
   {
     MappedData<Downtime>(
       &Downtime::author,
@@ -218,8 +218,8 @@ const MappedData<Downtime> downtime_mapping[] =
     MappedData<Downtime>()
   };
 
-// Host mapping.
-const MappedData<Host> host_mapping[] =
+// Host members mapping.
+static const MappedData<Host> host_mapping[] =
   {
     MappedData<Host>(
       &Host::acknowledgement_type,
@@ -544,8 +544,8 @@ const MappedData<Host> host_mapping[] =
     MappedData<Host>()
   };
 
-// HostCheck mapping.
-const MappedData<HostCheck> host_check_mapping[] =
+// HostCheck members mapping.
+static const MappedData<HostCheck> host_check_mapping[] =
   {
     MappedData<HostCheck>(
       &HostCheck::command_line,
@@ -562,8 +562,8 @@ const MappedData<HostCheck> host_check_mapping[] =
     MappedData<HostCheck>()
   };
 
-// HostDependency mapping.
-const MappedData<HostDependency> host_dependency_mapping[] =
+// HostDependency members mapping.
+static const MappedData<HostDependency> host_dependency_mapping[] =
   {
     MappedData<HostDependency>(
       &HostDependency::dependency_period,
@@ -590,8 +590,8 @@ const MappedData<HostDependency> host_dependency_mapping[] =
     MappedData<HostDependency>()
   };
 
-// HostGroup mapping.
-const MappedData<HostGroup> host_group_mapping[] =
+// HostGroup members mapping.
+static const MappedData<HostGroup> host_group_mapping[] =
   {
     MappedData<HostGroup>(
       &HostGroup::action_url,
@@ -620,8 +620,8 @@ const MappedData<HostGroup> host_group_mapping[] =
     MappedData<HostGroup>()
   };
 
-// HostGroupMember mapping.
-const MappedData<HostGroupMember> host_group_member_mapping[] =
+// HostGroupMember members mapping.
+static const MappedData<HostGroupMember> host_group_member_mapping[] =
   {
     MappedData<HostGroupMember>(
       &HostGroupMember::group, // XXX : should be replaced by hostgroup_id
@@ -638,8 +638,8 @@ const MappedData<HostGroupMember> host_group_member_mapping[] =
     MappedData<HostGroupMember>()
   };
 
-// HostParent mapping.
-const MappedData<HostParent> host_parent_mapping[] =
+// HostParent members mapping.
+static const MappedData<HostParent> host_parent_mapping[] =
   {
     MappedData<HostParent>(
       &HostParent::host,
@@ -656,8 +656,8 @@ const MappedData<HostParent> host_parent_mapping[] =
     MappedData<HostParent>()
   };
 
-// HostStatus mapping.
-const MappedData<HostStatus> host_status_mapping[] =
+// HostStatus members mapping.
+static const MappedData<HostStatus> host_status_mapping[] =
   {
     MappedData<HostStatus>(
       &HostStatus::acknowledgement_type,
@@ -850,8 +850,8 @@ const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>()
   };
 
-// Log mapping.
-const MappedData<Log> log_mapping[] =
+// Log members mapping.
+static const MappedData<Log> log_mapping[] =
   {
     MappedData<Log>(
       &Log::c_time,
@@ -900,8 +900,8 @@ const MappedData<Log> log_mapping[] =
     MappedData<Log>()
   };
 
-// ProgramStatus mapping.
-const MappedData<ProgramStatus> program_status_mapping[] =
+// ProgramStatus members mapping.
+static const MappedData<ProgramStatus> program_status_mapping[] =
   {
     MappedData<ProgramStatus>(
       &ProgramStatus::active_host_checks_enabled,
@@ -1004,8 +1004,8 @@ const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>()
   };
 
-// Service mapping.
-const MappedData<Service> service_mapping[] =
+// Service members mapping.
+static const MappedData<Service> service_mapping[] =
   {
     MappedData<Service>(
       &Service::acknowledgement_type,
@@ -1334,8 +1334,8 @@ const MappedData<Service> service_mapping[] =
     MappedData<Service>()
   };
 
-// ServiceCheck mapping.
-const MappedData<ServiceCheck> service_check_mapping[] =
+// ServiceCheck members mapping.
+static const MappedData<ServiceCheck> service_check_mapping[] =
   {
     MappedData<ServiceCheck>(
       &ServiceCheck::command_line,
@@ -1352,8 +1352,8 @@ const MappedData<ServiceCheck> service_check_mapping[] =
     MappedData<ServiceCheck>()
   };
 
-// ServiceDependency mapping.
-const MappedData<ServiceDependency> service_dependency_mapping[] =
+// ServiceDependency members mapping.
+static const MappedData<ServiceDependency> service_dependency_mapping[] =
   {
     MappedData<ServiceDependency>(
       &ServiceDependency::dependency_period,
@@ -1380,8 +1380,8 @@ const MappedData<ServiceDependency> service_dependency_mapping[] =
     MappedData<ServiceDependency>()
   };
 
-// ServiceGroup mapping.
-const MappedData<ServiceGroup> service_group_mapping[] =
+// ServiceGroup members mapping.
+static const MappedData<ServiceGroup> service_group_mapping[] =
   {
     MappedData<ServiceGroup>(
       &ServiceGroup::action_url,
@@ -1410,8 +1410,8 @@ const MappedData<ServiceGroup> service_group_mapping[] =
     MappedData<ServiceGroup>()
   };
 
-// ServiceGroupMember mapping.
-const MappedData<ServiceGroupMember> service_group_member_mapping[] =
+// ServiceGroupMember members mapping.
+static const MappedData<ServiceGroupMember> service_group_member_mapping[] =
   {
     MappedData<ServiceGroupMember>(
       &ServiceGroupMember::group, // XXX : should be replaced by servicegroup_id
@@ -1428,8 +1428,8 @@ const MappedData<ServiceGroupMember> service_group_member_mapping[] =
     MappedData<ServiceGroupMember>()
   };
 
-// ServiceStatus mapping.
-const MappedData<ServiceStatus> service_status_mapping[] =
+// ServiceStatus members mapping.
+static const MappedData<ServiceStatus> service_status_mapping[] =
   {
     MappedData<ServiceStatus>(
       &ServiceStatus::acknowledgement_type,
@@ -1633,3 +1633,111 @@ const MappedData<ServiceStatus> service_status_mapping[] =
       "state_type"),
     MappedData<ServiceStatus>()
   };
+
+// Acknowledgement mapping.
+template <> const MappedData<Events::Acknowledgement>*
+  MappedType<Events::Acknowledgement>::members(acknowledgement_mapping);
+template <> const char*
+  MappedType<Events::Acknowledgement>::table("acknowledgements");
+
+// Comment mapping.
+template <> const MappedData<Events::Comment>*
+  MappedType<Events::Comment>::members(comment_mapping);
+template <> const char*
+  MappedType<Events::Comment>::table("comment");
+
+// Downtime mapping.
+template <> const MappedData<Events::Downtime>*
+  MappedType<Events::Downtime>::members(downtime_mapping);
+template <> const char*
+  MappedType<Events::Downtime>::table("downtime");
+
+// Host mapping.
+template <> const MappedData<Events::Host>*
+  MappedType<Events::Host>::members(host_mapping);
+template <> const char*
+  MappedType<Events::Host>::table("host");
+
+// HostCheck mapping.
+template <> const MappedData<Events::HostCheck>*
+  MappedType<Events::HostCheck>::members(host_check_mapping);
+template <> const char*
+  MappedType<Events::HostCheck>::table("host");
+
+// HostDependency mapping.
+template <> const MappedData<Events::HostDependency>*
+  MappedType<Events::HostDependency>::members(host_dependency_mapping);
+template <> const char*
+  MappedType<Events::HostDependency>::table("host_dependency");
+
+// HostGroup mapping.
+template <> const MappedData<Events::HostGroup>*
+  MappedType<Events::HostGroup>::members(host_group_mapping);
+template <> const char*
+  MappedType<Events::HostGroup>::table("hostgroup");
+
+// HostGroupMember mapping.
+template <> const MappedData<Events::HostGroupMember>*
+  MappedType<Events::HostGroupMember>::members(host_group_member_mapping);
+template <> const char*
+  MappedType<Events::HostGroupMember>::table("host_hostgroup");
+
+// HostParent mapping.
+template <> const MappedData<Events::HostParent>*
+  MappedType<Events::HostParent>::members(host_parent_mapping);
+template <> const char*
+  MappedType<Events::HostParent>::table("host_parent");
+
+// HostStatus mapping.
+template <> const MappedData<Events::HostStatus>*
+  MappedType<Events::HostStatus>::members(host_status_mapping);
+template <> const char*
+  MappedType<Events::HostStatus>::table("host");
+
+// Log mapping.
+template <> const MappedData<Events::Log>*
+  MappedType<Events::Log>::members(log_mapping);
+template <> const char*
+  MappedType<Events::Log>::table("log");
+
+// ProgramStatus mapping.
+template <> const MappedData<Events::ProgramStatus>*
+  MappedType<Events::ProgramStatus>::members(program_status_mapping);
+template <> const char*
+  MappedType<Events::ProgramStatus>::table("program_status");
+
+// Service mapping.
+template <> const MappedData<Events::Service>*
+  MappedType<Events::Service>::members(service_mapping);
+template <> const char*
+  MappedType<Events::Service>::table("service");
+
+// ServiceCheck mapping.
+template <> const MappedData<Events::ServiceCheck>*
+  MappedType<Events::ServiceCheck>::members(service_check_mapping);
+template <> const char*
+  MappedType<Events::ServiceCheck>::table("service");
+
+// ServiceDependency mapping.
+template <> const MappedData<Events::ServiceDependency>*
+  MappedType<Events::ServiceDependency>::members(service_dependency_mapping);
+template <> const char*
+  MappedType<Events::ServiceDependency>::table("service_dependency");
+
+// ServiceGroup mapping.
+template <> const MappedData<Events::ServiceGroup>*
+  MappedType<Events::ServiceGroup>::members(service_group_mapping);
+template <> const char*
+  MappedType<Events::ServiceGroup>::table("servicegroup");
+
+// ServiceGroupMember mapping.
+template <> const MappedData<Events::ServiceGroupMember>*
+  MappedType<Events::ServiceGroupMember>::members(service_group_member_mapping);
+template <> const char*
+  MappedType<Events::ServiceGroupMember>::table("service_servicegroup");
+
+// ServiceStatus mapping.
+template <> const MappedData<Events::ServiceStatus>*
+  MappedType<Events::ServiceStatus>::members(service_status_mapping);
+template <> const char*
+  MappedType<Events::ServiceStatus>::table("service");

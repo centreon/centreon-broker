@@ -40,14 +40,13 @@ using namespace Interface::NDO;
  */
 template <typename T>
 static void HandleEvent(const T& event,
-                        const std::map<int, GetterSetter<T> >& member_map,
                         std::stringstream& buffer)
 {
   typename std::map<int, GetterSetter<T> >::const_iterator end;
 
-  end = member_map.end();
+  end = NDOMappedType<T>::map.end();
   for (typename std::map<int, GetterSetter<T> >::const_iterator
-         it = member_map.begin();
+         it = NDOMappedType<T>::map.begin();
        it != end;
        ++it)
     {
@@ -150,7 +149,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
           HandleEvent<Events::Acknowledgement>(
             *static_cast<Events::Acknowledgement*>(event),
-            acknowledgement_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -158,7 +156,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_COMMENTDATA << ":\n";
           HandleEvent<Events::Comment>(
             *static_cast<Events::Comment*>(event),
-            comment_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -166,7 +163,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_DOWNTIMEDATA << ":\n";
           HandleEvent<Events::Downtime>(
             *static_cast<Events::Downtime*>(event),
-            downtime_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -174,7 +170,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTDEFINITION << ":\n";
           HandleEvent<Events::Host>(
             *static_cast<Events::Host*>(event),
-            host_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -182,7 +177,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTDEPENDENCYDEFINITION << ":\n";
           HandleEvent<Events::HostDependency>(
             *static_cast<Events::HostDependency*>(event),
-            host_dependency_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -190,7 +184,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
           HandleEvent<Events::HostGroup>(
             *static_cast<Events::HostGroup*>(event),
-            host_group_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -198,7 +191,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTGROUPMEMBERDEFINITION << ":\n";
           HandleEvent<Events::HostGroupMember>(
             *static_cast<Events::HostGroupMember*>(event),
-            host_group_member_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -206,7 +198,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTPARENT << ":\n";
           HandleEvent<Events::HostParent>(
             *static_cast<Events::HostParent*>(event),
-            host_parent_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -214,7 +205,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_HOSTSTATUSDATA << ":\n";
           HandleEvent<Events::HostStatus>(
             *static_cast<Events::HostStatus*>(event),
-            host_status_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -222,7 +212,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_LOGDATA << ":\n";
           HandleEvent<Events::Log>(
             *static_cast<Events::Log*>(event),
-            log_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -230,7 +219,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
           HandleEvent<Events::ProgramStatus>(
             *static_cast<Events::ProgramStatus*>(event),
-            program_status_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -238,7 +226,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_SERVICEDEFINITION << ":\n";
           HandleEvent<Events::Service>(
             *static_cast<Events::Service*>(event),
-            service_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -246,14 +233,12 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";
           HandleEvent<Events::ServiceDependency>(
             *static_cast<Events::ServiceDependency*>(event),
-            service_dependency_map,
             buffer);
           buffer << NDO_API_ENDDATA << ":\n";
          case Events::Event::SERVICEGROUP:
           buffer << NDO_API_SERVICEGROUPDEFINITION << ":\n";
           HandleEvent<Events::ServiceGroup>(
             *static_cast<Events::ServiceGroup*>(event),
-            service_group_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -261,7 +246,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_SERVICEGROUPMEMBERDEFINITION << ":\n";
           HandleEvent<Events::ServiceGroupMember>(
             *static_cast<Events::ServiceGroupMember*>(event),
-            service_group_member_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
@@ -269,7 +253,6 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_SERVICESTATUSDATA << ":\n";
           HandleEvent<Events::ServiceStatus>(
             *static_cast<Events::ServiceStatus*>(event),
-            service_status_map,
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;

@@ -179,15 +179,14 @@ static void set_timet(T& t,
  *  Static initialization template used by Initialize().
  */
 template <typename T>
-static void static_init(const MappedData<T> members[],
-                        std::map<int, GetterSetter<T> >& map)
+static void static_init()
 {
-  for (unsigned int i = 0; members[i].type; ++i)
+  for (unsigned int i = 0; MappedType<T>::members[i].type; ++i)
     {
-      GetterSetter<T>& gs(map[members[i].id]);
+      GetterSetter<T>& gs(NDOMappedType<T>::map[MappedType<T>::members[i].id]);
 
-      gs.member = &members[i].member;
-      switch (members[i].type)
+      gs.member = &MappedType<T>::members[i].member;
+      switch (MappedType<T>::members[i].type)
         {
          case MappedData<T>::BOOL:
           gs.getter = &get_boolean<T>;
@@ -227,42 +226,60 @@ static void static_init(const MappedData<T> members[],
 *                                     *
 **************************************/
 
-std::map<int, GetterSetter<Events::Acknowledgement> >
-  Interface::NDO::acknowledgement_map;
-std::map<int, GetterSetter<Events::Comment> >
-  Interface::NDO::comment_map;
-std::map<int, GetterSetter<Events::Downtime> >
-  Interface::NDO::downtime_map;
-std::map<int, GetterSetter<Events::Host> >
-  Interface::NDO::host_map;
-std::map<int, GetterSetter<Events::HostCheck> >
-  Interface::NDO::host_check_map;
-std::map<int, GetterSetter<Events::HostDependency> >
-  Interface::NDO::host_dependency_map;
-std::map<int, GetterSetter<Events::HostGroup> >
-  Interface::NDO::host_group_map;
-std::map<int, GetterSetter<Events::HostGroupMember> >
-  Interface::NDO::host_group_member_map;
-std::map<int, GetterSetter<Events::HostParent> >
-  Interface::NDO::host_parent_map;
-std::map<int, GetterSetter<Events::HostStatus> >
-  Interface::NDO::host_status_map;
-std::map<int, GetterSetter<Events::Log> >
-  Interface::NDO::log_map;
-std::map<int, GetterSetter<Events::ProgramStatus> >
-  Interface::NDO::program_status_map;
-std::map<int, GetterSetter<Events::Service> >
-  Interface::NDO::service_map;
-std::map<int, GetterSetter<Events::ServiceCheck> >
-  Interface::NDO::service_check_map;
-std::map<int, GetterSetter<Events::ServiceDependency> >
-  Interface::NDO::service_dependency_map;
-std::map<int, GetterSetter<Events::ServiceGroup> >
-  Interface::NDO::service_group_map;
-std::map<int, GetterSetter<Events::ServiceGroupMember> >
-  Interface::NDO::service_group_member_map;
-std::map<int, GetterSetter<Events::ServiceStatus> >
-  Interface::NDO::service_status_map;
+template <> std::map<int, GetterSetter<Events::Acknowledgement> >
+  Interface::NDO::NDOMappedType<Events::Acknowledgement>::map =
+    std::map<int, GetterSetter<Events::Acknowledgement> >();
+template <> std::map<int, GetterSetter<Events::Comment> >
+  Interface::NDO::NDOMappedType<Events::Comment>::map =
+    std::map<int, GetterSetter<Events::Comment> >();
+template <> std::map<int, GetterSetter<Events::Downtime> >
+  Interface::NDO::NDOMappedType<Events::Downtime>::map =
+    std::map<int, GetterSetter<Events::Downtime> >();
+template <> std::map<int, GetterSetter<Events::Host> >
+  Interface::NDO::NDOMappedType<Events::Host>::map =
+    std::map<int, GetterSetter<Events::Host> >();
+template <> std::map<int, GetterSetter<Events::HostCheck> >
+  Interface::NDO::NDOMappedType<Events::HostCheck>::map =
+    std::map<int, GetterSetter<Events::HostCheck> >();
+template <> std::map<int, GetterSetter<Events::HostDependency> >
+  Interface::NDO::NDOMappedType<Events::HostDependency>::map =
+    std::map<int, GetterSetter<Events::HostDependency> >();
+template <> std::map<int, GetterSetter<Events::HostGroup> >
+  Interface::NDO::NDOMappedType<Events::HostGroup>::map =
+    std::map<int, GetterSetter<Events::HostGroup> >();
+template <> std::map<int, GetterSetter<Events::HostGroupMember> >
+  Interface::NDO::NDOMappedType<Events::HostGroupMember>::map =
+    std::map<int, GetterSetter<Events::HostGroupMember> >();
+template <> std::map<int, GetterSetter<Events::HostParent> >
+  Interface::NDO::NDOMappedType<Events::HostParent>::map =
+    std::map<int, GetterSetter<Events::HostParent> >();
+template <> std::map<int, GetterSetter<Events::HostStatus> >
+  Interface::NDO::NDOMappedType<Events::HostStatus>::map =
+    std::map<int, GetterSetter<Events::HostStatus> >();
+template <> std::map<int, GetterSetter<Events::Log> >
+  Interface::NDO::NDOMappedType<Events::Log>::map =
+    std::map<int, GetterSetter<Events::Log> >();
+template <> std::map<int, GetterSetter<Events::ProgramStatus> >
+  Interface::NDO::NDOMappedType<Events::ProgramStatus>::map =
+    std::map<int, GetterSetter<Events::ProgramStatus> >();
+template <> std::map<int, GetterSetter<Events::Service> >
+  Interface::NDO::NDOMappedType<Events::Service>::map =
+    std::map<int, GetterSetter<Events::Service> >();
+template <> std::map<int, GetterSetter<Events::ServiceCheck> >
+  Interface::NDO::NDOMappedType<Events::ServiceCheck>::map =
+    std::map<int, GetterSetter<Events::ServiceCheck> >();
+template <> std::map<int, GetterSetter<Events::ServiceDependency> >
+  Interface::NDO::NDOMappedType<Events::ServiceDependency>::map =
+    std::map<int, GetterSetter<Events::ServiceDependency> >();
+template <> std::map<int, GetterSetter<Events::ServiceGroup> >
+  Interface::NDO::NDOMappedType<Events::ServiceGroup>::map =
+    std::map<int, GetterSetter<Events::ServiceGroup> >();
+template <> std::map<int, GetterSetter<Events::ServiceGroupMember> >
+  Interface::NDO::NDOMappedType<Events::ServiceGroupMember>::map =
+    std::map<int, GetterSetter<Events::ServiceGroupMember> >();
+template <> std::map<int, GetterSetter<Events::ServiceStatus> >
+  Interface::NDO::NDOMappedType<Events::ServiceStatus>::map =
+    std::map<int, GetterSetter<Events::ServiceStatus> >();
 
 /**************************************
 *                                     *
@@ -277,23 +294,23 @@ std::map<int, GetterSetter<Events::ServiceStatus> >
  */
 void Interface::NDO::Initialize()
 {
-  static_init(acknowledgement_mapping, acknowledgement_map);
-  static_init(comment_mapping, comment_map);
-  static_init(downtime_mapping, downtime_map);
-  static_init(host_mapping, host_map);
-  static_init(host_check_mapping, host_check_map);
-  static_init(host_dependency_mapping, host_dependency_map);
-  static_init(host_group_mapping, host_group_map);
-  static_init(host_group_member_mapping, host_group_member_map);
-  static_init(host_parent_mapping, host_parent_map);
-  static_init(host_status_mapping, host_status_map);
-  static_init(log_mapping, log_map);
-  static_init(program_status_mapping, program_status_map);
-  static_init(service_mapping, service_map);
-  static_init(service_check_mapping, service_check_map);
-  static_init(service_dependency_mapping, service_dependency_map);
-  static_init(service_group_mapping, service_group_map);
-  static_init(service_group_member_mapping, service_group_member_map);
-  static_init(service_status_mapping, service_status_map);
+  static_init<Events::Acknowledgement>();
+  static_init<Events::Comment>();
+  static_init<Events::Downtime>();
+  static_init<Events::Host>();
+  static_init<Events::HostCheck>();
+  static_init<Events::HostDependency>();
+  static_init<Events::HostGroup>();
+  static_init<Events::HostGroupMember>();
+  static_init<Events::HostParent>();
+  static_init<Events::HostStatus>();
+  static_init<Events::Log>();
+  static_init<Events::ProgramStatus>();
+  static_init<Events::Service>();
+  static_init<Events::ServiceCheck>();
+  static_init<Events::ServiceDependency>();
+  static_init<Events::ServiceGroup>();
+  static_init<Events::ServiceGroupMember>();
+  static_init<Events::ServiceStatus>();
   return ;
 }

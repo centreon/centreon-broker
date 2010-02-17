@@ -91,42 +91,11 @@ class           MappedData
   { this->member.t = t; }
 };
 
-// Mappings.
-extern const MappedData<Events::Acknowledgement>
-  acknowledgement_mapping[];
-extern const MappedData<Events::Comment>
-  comment_mapping[];
-extern const MappedData<Events::Downtime>
-  downtime_mapping[];
-extern const MappedData<Events::Host>
-  host_mapping[];
-extern const MappedData<Events::HostCheck>
-  host_check_mapping[];
-extern const MappedData<Events::HostDependency>
-  host_dependency_mapping[];
-extern const MappedData<Events::HostGroup>
-  host_group_mapping[];
-extern const MappedData<Events::HostGroupMember>
-  host_group_member_mapping[];
-extern const MappedData<Events::HostParent>
-  host_parent_mapping[];
-extern const MappedData<Events::HostStatus>
-  host_status_mapping[];
-extern const MappedData<Events::Log>
-  log_mapping[];
-extern const MappedData<Events::ProgramStatus>
-  program_status_mapping[];
-extern const MappedData<Events::Service>
-  service_mapping[];
-extern const MappedData<Events::ServiceCheck>
-  service_check_mapping[];
-extern const MappedData<Events::ServiceDependency>
-  service_dependency_mapping[];
-extern const MappedData<Events::ServiceGroup>
-  service_group_mapping[];
-extern const MappedData<Events::ServiceGroupMember>
-  service_group_member_mapping[];
-extern const MappedData<Events::ServiceStatus>
-  service_status_mapping[];
+template                      <typename T>
+struct                        MappedType
+{
+  static const MappedData<T>* members;
+  static const char*          table;
+};
 
 #endif /* !MAPPING_H_ */

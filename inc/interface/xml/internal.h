@@ -39,46 +39,14 @@ namespace                  Interface
                                       const std::string& name,
                                       const DataMember<T>&,
                                       TiXmlElement& elem);
-      void *               setter;
     };
 
     // XML mappings.
-    extern std::map<std::string, GetterSetter<Events::Acknowledgement> >
-      acknowledgement_map;
-    extern std::map<std::string, GetterSetter<Events::Comment> >
-      comment_map;
-    extern std::map<std::string, GetterSetter<Events::Downtime> >
-      downtime_map;
-    extern std::map<std::string, GetterSetter<Events::Host> >
-      host_map;
-    extern std::map<std::string, GetterSetter<Events::HostCheck> >
-      host_check_map;
-    extern std::map<std::string, GetterSetter<Events::HostDependency> >
-      host_dependency_map;
-    extern std::map<std::string, GetterSetter<Events::HostGroup> >
-      host_group_map;
-    extern std::map<std::string, GetterSetter<Events::HostGroupMember> >
-      host_group_member_map;
-    extern std::map<std::string, GetterSetter<Events::HostParent> >
-      host_parent_map;
-    extern std::map<std::string, GetterSetter<Events::HostStatus> >
-      host_status_map;
-    extern std::map<std::string, GetterSetter<Events::Log> >
-      log_map;
-    extern std::map<std::string, GetterSetter<Events::ProgramStatus> >
-      program_status_map;
-    extern std::map<std::string, GetterSetter<Events::Service> >
-      service_map;
-    extern std::map<std::string, GetterSetter<Events::ServiceCheck> >
-      service_check_map;
-    extern std::map<std::string, GetterSetter<Events::ServiceDependency> >
-      service_dependency_map;
-    extern std::map<std::string, GetterSetter<Events::ServiceGroup> >
-      service_group_map;
-    extern std::map<std::string, GetterSetter<Events::ServiceGroupMember> >
-      service_group_member_map;
-    extern std::map<std::string, GetterSetter<Events::ServiceStatus> >
-      service_status_map;
+    template               <typename T>
+    struct                 XMLMappedType
+    {
+      static std::map<std::string, GetterSetter<T> > map;
+    };
 
     // Mapping initialization routine.
     void Initialize();

@@ -41,42 +41,11 @@ namespace                  Interface
     };
 
     // NDO mappings.
-    extern std::map<int, GetterSetter<Events::Acknowledgement> >
-      acknowledgement_map;
-    extern std::map<int, GetterSetter<Events::Comment> >
-      comment_map;
-    extern std::map<int, GetterSetter<Events::Downtime> >
-      downtime_map;
-    extern std::map<int, GetterSetter<Events::Host> >
-      host_map;
-    extern std::map<int, GetterSetter<Events::HostCheck> >
-      host_check_map;
-    extern std::map<int, GetterSetter<Events::HostDependency> >
-      host_dependency_map;
-    extern std::map<int, GetterSetter<Events::HostGroup> >
-      host_group_map;
-    extern std::map<int, GetterSetter<Events::HostGroupMember> >
-      host_group_member_map;
-    extern std::map<int, GetterSetter<Events::HostParent> >
-      host_parent_map;
-    extern std::map<int, GetterSetter<Events::HostStatus> >
-      host_status_map;
-    extern std::map<int, GetterSetter<Events::Log> >
-      log_map;
-    extern std::map<int, GetterSetter<Events::ProgramStatus> >
-      program_status_map;
-    extern std::map<int, GetterSetter<Events::Service> >
-      service_map;
-    extern std::map<int, GetterSetter<Events::ServiceCheck> >
-      service_check_map;
-    extern std::map<int, GetterSetter<Events::ServiceDependency> >
-      service_dependency_map;
-    extern std::map<int, GetterSetter<Events::ServiceGroup> >
-      service_group_map;
-    extern std::map<int, GetterSetter<Events::ServiceGroupMember> >
-      service_group_member_map;
-    extern std::map<int, GetterSetter<Events::ServiceStatus> >
-      service_status_map;
+    template               <typename T>
+    struct                 NDOMappedType
+    {
+      static std::map<int, GetterSetter<T> > map;
+    };
 
     // Mapping initialization routine.
     void Initialize();

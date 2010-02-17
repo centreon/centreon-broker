@@ -47,6 +47,8 @@ namespace                         Interface
       void                        Connect();
       void                        Disconnect();
       int                         GetInstanceID(const std::string& instance);
+      template                    <typename T, bool b>
+      void                        Insert(const T& t);
       void                        ProcessAcknowledgement(
                                     const Events::Acknowledgement& ack);
       void                        ProcessComment(const Events::Comment& comment);
