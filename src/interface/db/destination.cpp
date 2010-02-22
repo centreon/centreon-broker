@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include <algorithm>                  // for find
 #include <assert.h>
 #include <soci.h>
 #ifdef USE_MYSQL
@@ -108,7 +109,7 @@ int Destination::GetInstanceID(const std::string& instance)
 /**
  *  Insert an object in the DB using its mapping.
  */
-template <typename T, bool set_instance_id>
+template <typename T>
 void Destination::Insert(const T& t)
 {
   std::string query;
@@ -117,19 +118,94 @@ void Destination::Insert(const T& t)
   query = "INSERT INTO ";
   query.append(MappedType<T>::table);
   query.append("(");
-  // XXX : browse mapping
+  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
+         it = DBMappedType<T>::map.begin(),
+         end = DBMappedType<T>::map.end();
+       it != end;
+       ++it)
+    {
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.resize(query.size() - 2);
   query.append(") VALUES(");
-  // XXX : browse mapping again
+  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
+         it = DBMappedType<T>::map.begin(),
+         end = DBMappedType<T>::map.end();
+       it != end;
+       ++it)
+    {
+      query.append(":");
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.resize(query.size() - 2);
   query.append(")");
+  LOGDEBUG(query.c_str());
 
-  {
-    soci::details::once_temp_type ott(*this->conn_ << query);
+  // Execute query.
+  *this->conn_ << query, soci::use(t);
 
-    // Bind object.
-    ott, soci::use(t);
+  return ;
+}
 
-    // Query will be executed on ott destruction.
-  }
+/**
+ *  Update an object in the DB using its prepared statement.
+ */
+template <typename T>
+void Destination::PreparedUpdate(const T& t,
+                                 soci::statement& st,
+                                 T& tmp)
+{
+  tmp = t;
+  st.execute(true);
+  return ;
+}
+
+/**
+ *  Prepare an update statement for later execution.
+ */
+template <typename T>
+void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
+                                T& t,
+                                const std::vector<std::string>& id)
+{
+  std::string query;
+
+  // Build query string.
+  query = "UPDATE ";
+  query.append(MappedType<T>::table);
+  query.append(" SET ");
+  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
+         it = DBMappedType<T>::map.begin(),
+         end = DBMappedType<T>::map.end();
+       it != end;
+       ++it)
+    if (std::find(id.begin(), id.end(), it->first) != id.end())
+      {
+        query.append(it->first);
+        query.append("=:");
+        query.append(it->first);
+        query.append(", ");
+      }
+  query.resize(query.size() - 2);
+  query.append(" WHERE ");
+  for (std::vector<std::string>::const_iterator
+         it = id.begin(),
+         end = id.end();
+       it != end;
+       ++it)
+    {
+      query.append(*it);
+      query.append("=:");
+      query.append(*it);
+      query.append(" AND ");
+    }
+  query.resize(query.size() - 5);
+  LOGDEBUG(query.c_str());
+
+  // Prepare statement.
+  st.reset(new soci::statement((this->conn_->prepare << query, soci::use(t))));
 
   return ;
 }
@@ -140,7 +216,7 @@ void Destination::Insert(const T& t)
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 {
   LOGDEBUG("Processing Acknowledgement event ...");
-  this->Insert<Events::Acknowledgement, true>(ack);
+  this->Insert<Events::Acknowledgement>(ack);
   return ;
 }
 
@@ -155,7 +231,7 @@ void Destination::ProcessComment(const Events::Comment& comment)
     {
       try
         {
-          this->Insert<Events::Comment, true>(comment);
+          this->Insert<Events::Comment>(comment);
         }
       catch (const soci::soci_error& se)
         {
@@ -196,7 +272,7 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
 void Destination::ProcessHost(const Events::Host& host)
 {
   LOGDEBUG("Processing Host event ...");
-  this->Insert<Events::Host, true>(host);
+  this->Insert<Events::Host>(host);
   return ;
 }
 
@@ -206,7 +282,9 @@ void Destination::ProcessHost(const Events::Host& host)
 void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 {
   LOGDEBUG("Processing HostCheck event ...");
-  // XXX : update host
+  this->PreparedUpdate(host_check,
+                       *this->host_check_stmt_,
+                       this->host_check_);
   return ;
 }
 
@@ -216,7 +294,7 @@ void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 {
   LOGDEBUG("Processing HostDependency event ...");
-
+  this->Insert(hd);
   return ;
 }
 
@@ -226,7 +304,7 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 {
   LOGDEBUG("Processing HostGroup event...");
-  this->Insert<Events::HostGroup, true>(hg);
+  this->Insert<Events::HostGroup>(hg);
   return ;
 }
 
@@ -236,7 +314,7 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 {
   LOGDEBUG("Processing HostGroupMember event ...");
-
+  // XXX : host group member
   return ;
 }
 
@@ -256,16 +334,9 @@ void Destination::ProcessHostParent(const Events::HostParent& hp)
 void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 {
   LOGDEBUG("Processing HostStatus event ...");
-  try
-    {
-      /* XXX this->PreparedUpdate<Events::HostStatus, true>(hs,
-                                                     this->host_status_stmt_,
-                                                     this->host_status_);*/
-    }
-  catch (const soci::soci_error& se)
-    {
-      this->ProcessHost(hs);
-    }
+  this->PreparedUpdate<Events::HostStatus>(hs,
+                                           *this->host_status_stmt_,
+                                           this->host_status_);
   return ;
 }
 
@@ -275,7 +346,7 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 void Destination::ProcessLog(const Events::Log& log)
 {
   LOGDEBUG("Processing Log event ...");
-  this->Insert<Events::Log, true>(log);
+  this->Insert<Events::Log>(log);
   return ;
 }
 
@@ -287,15 +358,13 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
   LOGDEBUG("Processing ProgramStatus event ...");
   try
     {
-      /*
-      this->PreparedUpdate<Events::ProgramStatus, true>(ps,
-        this->program_status_stmt_,
-        this->program_status_);
-      */
+      this->PreparedUpdate<Events::ProgramStatus>(ps,
+                                                  *this->program_status_stmt_,
+                                                  this->program_status_);
     }
   catch (const soci::soci_error& se)
     {
-      this->Insert<Events::ProgramStatus, true>(ps);
+      this->Insert<Events::ProgramStatus>(ps);
     }
   return ;
 }
@@ -306,7 +375,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 void Destination::ProcessService(const Events::Service& service)
 {
   LOGDEBUG("Processing Service event ...");
-  this->Insert<Events::Service, true>(service);
+  this->Insert<Events::Service>(service);
   return ;
 }
 
@@ -316,7 +385,9 @@ void Destination::ProcessService(const Events::Service& service)
 void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 {
   LOGDEBUG("Processing ServiceCheck event ...");
-  // XXX : update service
+  this->PreparedUpdate(service_check,
+                       *this->service_check_stmt_,
+                       this->service_check_);
   return ;
 }
 
@@ -326,7 +397,7 @@ void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 {
   LOGDEBUG("Processing ServiceDependency event ...");
-  // XXX : insert
+  this->Insert(sd);
   return ;
 }
 
@@ -336,7 +407,7 @@ void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 {
   LOGDEBUG("Processing ServiceGroup event ...");
-  this->Insert<Events::ServiceGroup, true>(sg);
+  this->Insert<Events::ServiceGroup>(sg);
   return ;
 }
 
@@ -356,18 +427,9 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
 void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
 {
   LOGDEBUG("Processing ServiceStatus event ...");
-  try
-    {
-      /*
-      this->PreparedUpdate<Events::ServiceStatus, true>(ss,
-        this->service_status_stmt_,
-        this->service_status_);
-      */
-    }
-  catch (const soci::soci_error& se)
-    {
-      this->ProcessService(ss);
-    }
+  this->PreparedUpdate<Events::ServiceStatus>(ss,
+                                              *this->service_status_stmt_,
+                                              this->service_status_);
   return ;
 }
 
@@ -401,7 +463,7 @@ Destination::~Destination()
  */
 void Destination::Close()
 {
-  // XXX
+  // XXX : kill statements and conn
   return ;
 }
 
@@ -517,23 +579,23 @@ void Destination::Connect(Destination::DB db_type,
       {
 #ifdef USE_MYSQL
        case MYSQL:
-	ss << "dbname=" << db << " user=" << user << " password=" << pass;
-	this->conn_.reset(new soci::session(soci::mysql, ss.str()));
-	break ;
+        ss << "dbname=" << db << " user=" << user << " password=" << pass;
+        this->conn_.reset(new soci::session(soci::mysql, ss.str()));
+        break ;
 #endif /* USE_MYSQL */
 
 #ifdef USE_ORACLE
       case ORACLE:
-	break ;
+        break ;
 #endif /* USE_ORACLE */
 
 #ifdef USE_POSTGRESQL
       case POSTGRESQL:
-	break ;
+        break ;
 #endif /* USE_POSTGRESQL */
 
       default:
-	throw Exception(0, "Unsupported DBMS requested.");
+        throw Exception(0, "Unsupported DBMS requested.");
       }
   }
 
@@ -557,6 +619,38 @@ void Destination::Connect(Destination::DB db_type,
          ++it_id, ++it_name)
       this->instances_[*it_name] = *it_id;
       }*/
+
+  std::vector<std::string> id;
+
+  id.clear();
+  id.push_back("host_id");
+  this->PrepareUpdate(this->host_check_stmt_,
+                      this->host_check_,
+                      id);
+
+  id.clear();
+  id.push_back("host_id");
+  this->PrepareUpdate(this->host_status_stmt_,
+                      this->host_status_,
+                      id);
+
+  id.clear();
+  id.push_back("instance_name");
+  this->PrepareUpdate(this->program_status_stmt_,
+                      this->program_status_,
+                      id);
+
+  id.clear();
+  id.push_back("service_id");
+  this->PrepareUpdate(this->service_check_stmt_,
+                      this->service_check_,
+                      id);
+
+  id.clear();
+  id.push_back("service_id");
+  this->PrepareUpdate(this->service_status_stmt_,
+                      this->service_status_,
+                      id);
 
   return ;
 }

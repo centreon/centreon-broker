@@ -112,7 +112,13 @@ static void SendHostGroupList()
             host_group_member->group = hg->group_name;
           host_group_member->instance = gl_instance;
           if (hgm->host_name)
-            host_group_member->member = hgm->host_name;
+            {
+              std::map<std::string, int>::const_iterator it;
+
+              it = gl_hosts.find(hgm->host_name);
+              if (it != gl_hosts.end())
+                host_group_member->member = it->second;
+            }
 
           host_group_member->AddReader();
           gl_publisher.Event(host_group_member.get());
@@ -358,11 +364,17 @@ static void SendServiceGroupList()
 
           if (sg->group_name)
             service_group_member->group = sg->group_name;
-          if (sgm->host_name)
-            service_group_member->host = sgm->host_name;
           service_group_member->instance = gl_instance;
-          if (sgm->service_description)
-            service_group_member->member = sgm->service_description;
+          if (sgm->host_name && sgm->service_description)
+            {
+              std::map<std::pair<std::string, std::string>, int>::const_iterator
+                it;
+
+              it = gl_services.find(std::make_pair(sgm->host_name,
+                                                   sgm->service_description));
+              if (it != gl_services.end())
+                service_group_member->member = it->second;
+            }
 
           service_group_member->AddReader();
           gl_publisher.Event(service_group_member.get());

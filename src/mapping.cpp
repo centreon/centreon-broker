@@ -634,7 +634,7 @@ static const MappedData<HostGroupMember> host_group_member_mapping[] =
     MappedData<HostGroupMember>(
       &HostGroupMember::member, // XXX : should be replaced by host_id
       NDO_DATA_HOSTGROUPMEMBER,
-      NULL),
+      "host"),
     MappedData<HostGroupMember>()
   };
 
@@ -1042,7 +1042,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_check_attempt"),
+      "current_attempt"),
     MappedData<Service>(
       &Service::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,
@@ -1098,7 +1098,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::flap_detection_on_warning,
       NDO_DATA_FLAPDETECTIONONWARNING,
-      "flap_detection_on_waning"),
+      "flap_detection_on_warning"),
     MappedData<Service>(
       &Service::freshness_threshold,
       NDO_DATA_SERVICEFRESHNESSTHRESHOLD,
@@ -1424,7 +1424,7 @@ static const MappedData<ServiceGroupMember> service_group_member_mapping[] =
     MappedData<ServiceGroupMember>(
       &ServiceGroupMember::member, // XXX : should be replaced by service_id
       NDO_DATA_SERVICEGROUPMEMBER,
-      NULL),
+      "service"),
     MappedData<ServiceGroupMember>()
   };
 
@@ -1458,7 +1458,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_check_attempt"),
+      "current_attempt"),
     MappedData<ServiceStatus>(
       &ServiceStatus::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,

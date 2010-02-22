@@ -38,7 +38,6 @@ namespace               Events
   class                 ServiceGroupMember : public GroupMember
   {
    public:
-    std::string         host;
                         ServiceGroupMember();
                         ServiceGroupMember(const ServiceGroupMember& sgm);
     virtual             ~ServiceGroupMember();

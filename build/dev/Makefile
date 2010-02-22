@@ -121,8 +121,8 @@ NAME2	=	cbmod.so
 INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soci/mysql
 MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
-#CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
-CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
+CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
+#CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`

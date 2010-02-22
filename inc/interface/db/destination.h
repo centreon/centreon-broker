@@ -49,13 +49,29 @@ namespace                         Interface
       };
 
      private:
+      std::auto_ptr<soci::statement> host_check_stmt_;
+      std::auto_ptr<soci::statement> host_status_stmt_;
+      std::auto_ptr<soci::statement> program_status_stmt_;
+      std::auto_ptr<soci::statement> service_check_stmt_;
+      std::auto_ptr<soci::statement> service_status_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
       std::map<std::string, int>  instances_;
+      Events::HostCheck           host_check_;
+      Events::HostStatus          host_status_;
+      Events::ProgramStatus       program_status_;
+      Events::ServiceCheck        service_check_;
+      Events::ServiceStatus       service_status_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
       int                         GetInstanceID(const std::string& instance);
-      template                    <typename T, bool b>
+      template                    <typename T>
       void                        Insert(const T& t);
+      template                    <typename T>
+      void                        PreparedUpdate(const T&t, soci::statement& st, T& tmp);
+      template                    <typename T>
+      void                        PrepareUpdate(std::auto_ptr<soci::statement>& st,
+                                                T& t,
+                                                const std::vector<std::string>& id);
       void                        ProcessAcknowledgement(
                                     const Events::Acknowledgement& ack);
       void                        ProcessComment(const Events::Comment& comment);

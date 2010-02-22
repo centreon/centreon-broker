@@ -42,7 +42,7 @@ namespace        Events
 
    public:
     std::string  group;
-    std::string  member;
+    int          member;
                  GroupMember();
                  GroupMember(const GroupMember& gm);
     virtual      ~GroupMember();
