@@ -631,7 +631,12 @@ void Destination::Connect(Destination::DB db_type,
 #endif /* USE_ORACLE */
 
 #ifdef USE_POSTGRESQL
-      case POSTGRESQL:
+       case POSTGRESQL:
+        ss << "dbname=" << db
+           << " host=" << host
+           << " user=" << user
+           << " password=" << pass;
+        this->conn_.reset(new soci::session(soci::postgresql, ss.str()));
         break ;
 #endif /* USE_POSTGRESQL */
 

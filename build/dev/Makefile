@@ -118,8 +118,9 @@ OBJ2	=	$(SRC2:.cpp=.o)
 NAME2	=	cbmod.so
 
 # Parameters
-INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soci/mysql
-MACROS		=	-DUSE_MYSQL -DUSE_TLS -DTIXML_USE_STL
+INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soci/mysql \
+			-I/usr/include/soci/postgresql -I`pg_config --includedir`
+MACROS		=	-DUSE_MYSQL -DUSE_POSTGRESQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
 #CXXFLAGS	=	-g3 -O0 -pedantic -Wall -Wextra
@@ -127,7 +128,7 @@ CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
 LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls -lsoci_core-gcc-3_0	\
-			-lsoci_mysql-gcc-3_0 #-lefence
+			-lsoci_mysql-gcc-3_0 -lsoci_postgresql-gcc-3_0 #-lefence
 
 # Rules
 all		:	$(NAME1) $(NAME2)
