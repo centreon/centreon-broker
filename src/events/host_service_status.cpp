@@ -50,7 +50,6 @@ void HostServiceStatus::InternalCopy(const HostServiceStatus& hss)
   this->event_handler                 = hss.event_handler;
   this->execution_time                = hss.execution_time;
   this->has_been_checked              = hss.has_been_checked;
-  this->host                          = hss.host;
   this->host_id                       = hss.host_id;
   this->is_flapping                   = hss.is_flapping;
   this->last_check                    = hss.last_check;

@@ -720,10 +720,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<HostStatus>(
-      &HostStatus::host,
-      NDO_DATA_HOSTNAME,
-      "host_name"),
-    MappedData<HostStatus>(
       &HostStatus::host_id,
       NDO_DATA_HOST,
       "host_id"),
@@ -1492,10 +1488,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::host,
-      NDO_DATA_HOSTNAME,
-      "host_name"),
-    MappedData<ServiceStatus>(
       &ServiceStatus::host_id,
       NDO_DATA_HOST,
       "host_id"),
@@ -1615,10 +1607,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::scheduled_downtime_depth,
       NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
       "scheduled_downtime_depth"),
-    MappedData<ServiceStatus>(
-      &ServiceStatus::service,
-      NDO_DATA_SERVICEDESCRIPTION,
-      "service_description"),
     MappedData<ServiceStatus>(
       &ServiceStatus::service_id,
       NDO_DATA_SERVICE,

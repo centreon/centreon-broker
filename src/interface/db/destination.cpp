@@ -302,7 +302,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 
   // Execute query.
   *this->conn_ << "INSERT INTO "
-               << MappedType<Events::ServiceGroupMember>::table
+               << MappedType<Events::HostGroupMember>::table
                << "(host, hostgroup) VALUES("
                << hgm.member << ", "
                << hostgroup_id << ")";
