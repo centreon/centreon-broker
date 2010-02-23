@@ -20,7 +20,7 @@
 
 #include <assert.h>
 #include <memory>
-#include <stdlib.h>                  // for abort
+#include <stdlib.h>                  // for abort, strtol
 #include <string>
 #include "configuration/interface.h"
 #include "configuration/log.h"
@@ -36,7 +36,7 @@
 using namespace Configuration;
 
 // XXX : dirty hack to support module instance
-std::string gl_instance;
+int gl_instance;
 
 /**************************************
 *                                     *
@@ -318,7 +318,7 @@ void Parser::Parse(const std::string& filename,
           if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
             throw (Exception(0, INVALID_TOKEN_MSG));
           if (var.GetText() == "instance")
-            gl_instance = val.GetText();
+            gl_instance = strtol(val.GetText().c_str(), NULL, 0);
           // XXX : set global variable
           break ;
           // Block name.

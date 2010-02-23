@@ -55,7 +55,6 @@ namespace                         Interface
       std::auto_ptr<soci::statement> service_check_stmt_;
       std::auto_ptr<soci::statement> service_status_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
-      std::map<std::string, int>  instances_;
       Events::HostCheck           host_check_;
       Events::HostStatus          host_status_;
       Events::ProgramStatus       program_status_;
@@ -63,7 +62,6 @@ namespace                         Interface
       Events::ServiceStatus       service_status_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
-      int                         GetInstanceID(const std::string& instance);
       template                    <typename T>
       void                        Insert(const T& t);
       template                    <typename T>

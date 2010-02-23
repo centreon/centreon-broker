@@ -279,7 +279,7 @@ Events::Event* Source::Event()
     }
   if (event.get())
     {
-      event->instance = this->instance_;
+      // XXX : event->instance = this->instance_;
       event->AddReader();
     }
   return (event.release());

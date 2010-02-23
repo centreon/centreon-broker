@@ -83,30 +83,6 @@ Destination& Destination::operator=(const Destination& destination)
 }
 
 /**
- *  \brief Get the ID of an instance by its name.
- *
- *  The Destination class caches instance IDs as those are used within almost
- *  every table of the schema. This avoids expensive SELECT queries.
- *
- *  \param[in] instance The name of the Nagios instance.
- *
- *  \return The database ID of the Nagios instance.
- */
-int Destination::GetInstanceID(const std::string& instance)
-{
-  int id;
-  std::map<std::string, int>::iterator it;
-
-  it = this->instances_.find(instance);
-  if (it == this->instances_.end())
-    {
-    }
-  else
-    id = it->second;
-  return (id);
-}
-
-/**
  *  Insert an object in the DB using its mapping.
  */
 template <typename T>
@@ -181,7 +157,7 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
          end = DBMappedType<T>::map.end();
        it != end;
        ++it)
-    if (std::find(id.begin(), id.end(), it->first) != id.end())
+    if (std::find(id.begin(), id.end(), it->first) == id.end())
       {
         query.append(it->first);
         query.append("=:");
@@ -216,7 +192,7 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 {
   LOGDEBUG("Processing Acknowledgement event ...");
-  this->Insert<Events::Acknowledgement>(ack);
+  this->Insert(ack);
   return ;
 }
 
@@ -231,7 +207,7 @@ void Destination::ProcessComment(const Events::Comment& comment)
     {
       try
         {
-          this->Insert<Events::Comment>(comment);
+          this->Insert(comment);
         }
       catch (const soci::soci_error& se)
         {
@@ -272,7 +248,7 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
 void Destination::ProcessHost(const Events::Host& host)
 {
   LOGDEBUG("Processing Host event ...");
-  this->Insert<Events::Host>(host);
+  this->Insert(host);
   return ;
 }
 
@@ -304,7 +280,7 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 {
   LOGDEBUG("Processing HostGroup event...");
-  this->Insert<Events::HostGroup>(hg);
+  this->Insert(hg);
   return ;
 }
 
@@ -313,8 +289,24 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
  */
 void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 {
+  int hostgroup_id;
+
   LOGDEBUG("Processing HostGroupMember event ...");
-  // XXX : host group member
+
+  // Fetch host group ID.
+  *this->conn_ << "SELECT id FROM "
+               << MappedType<Events::HostGroup>::table
+               << " WHERE instance_id=" << hgm.instance
+               << " AND hostgroup_name=\"" << hgm.group << "\"",
+    soci::into(hostgroup_id);
+
+  // Execute query.
+  *this->conn_ << "INSERT INTO "
+               << MappedType<Events::ServiceGroupMember>::table
+               << "(host, hostgroup) VALUES("
+               << hgm.member << ", "
+               << hostgroup_id << ")";
+
   return ;
 }
 
@@ -324,7 +316,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 void Destination::ProcessHostParent(const Events::HostParent& hp)
 {
   LOGDEBUG("Processing HostParent event ...");
-
+  this->Insert(hp);
   return ;
 }
 
@@ -346,7 +338,7 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 void Destination::ProcessLog(const Events::Log& log)
 {
   LOGDEBUG("Processing Log event ...");
-  this->Insert<Events::Log>(log);
+  this->Insert(log);
   return ;
 }
 
@@ -364,7 +356,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
     }
   catch (const soci::soci_error& se)
     {
-      this->Insert<Events::ProgramStatus>(ps);
+      this->Insert(ps);
     }
   return ;
 }
@@ -375,7 +367,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 void Destination::ProcessService(const Events::Service& service)
 {
   LOGDEBUG("Processing Service event ...");
-  this->Insert<Events::Service>(service);
+  this->Insert(service);
   return ;
 }
 
@@ -407,7 +399,7 @@ void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 {
   LOGDEBUG("Processing ServiceGroup event ...");
-  this->Insert<Events::ServiceGroup>(sg);
+  this->Insert(sg);
   return ;
 }
 
@@ -416,8 +408,24 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
  */
 void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm)
 {
+  int servicegroup_id;
+
   LOGDEBUG("Processing ServiceGroupMember event ...");
-  // XXX : insert
+
+  // Fetch service group ID.
+  *this->conn_ << "SELECT id FROM "
+               << MappedType<Events::ServiceGroup>::table
+               << " WHERE instance_id=" << sgm.instance
+               << " AND servicegroup_name=\"" << sgm.group << "\"",
+    soci::into(servicegroup_id);
+
+  // Execute query.
+  *this->conn_ << "INSERT INTO "
+               << MappedType<Events::ServiceGroupMember>::table
+               << "(service, servicegroup) VALUES("
+               << sgm.member << ", "
+               << servicegroup_id << ")";
+
   return ;
 }
 
@@ -598,27 +606,6 @@ void Destination::Connect(Destination::DB db_type,
         throw Exception(0, "Unsupported DBMS requested.");
       }
   }
-
-  std::vector<int> ids;
-  std::vector<std::string> names;
-  // XXX : seems like vectors should be sized before being usable in queries ...
-  /*
-  // Fetch already existing instances from the database.
-  (*this->conn_) << "SELECT instance_id, instance_name FROM program_status",
-    soci::into(ids), soci::into(names);
-
-  // Insert instances in the cache.
-  {
-    std::vector<int>::const_iterator end_id, it_id;
-    std::vector<std::string>::const_iterator end_name, it_name;
-
-    end_id = ids.end();
-    end_name = names.end();
-    for (it_id = ids.begin(), it_name = names.begin();
-         (it_id != end_id) && (it_name != end_name);
-         ++it_id, ++it_name)
-      this->instances_[*it_name] = *it_id;
-      }*/
 
   std::vector<std::string> id;
 

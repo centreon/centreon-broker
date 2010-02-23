@@ -25,7 +25,7 @@
 # include <string>
 
 // XXX : dirty hack to support module instance
-extern std::string gl_instance;
+extern int gl_instance;
 
 namespace   Configuration
 {
