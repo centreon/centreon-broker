@@ -192,7 +192,16 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
 void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 {
   LOGDEBUG("Processing Acknowledgement event ...");
-  this->Insert(ack);
+  try
+    {
+      this->Insert(ack);
+    }
+  catch (const soci::soci_error& se)
+    {
+      this->PreparedUpdate(ack,
+                           *this->acknowledgement_stmt_,
+                           this->acknowledgement_);
+    }
   return ;
 }
 
@@ -211,12 +220,15 @@ void Destination::ProcessComment(const Events::Comment& comment)
         }
       catch (const soci::soci_error& se)
         {
-          // XXX : try to update
+          this->PreparedUpdate(comment,
+                               *this->comment_stmt_,
+                               this->comment_);
         }
     }
   else if (comment.type == NEBTYPE_COMMENT_DELETE)
     {
-      // XXX : delete
+      *this->conn_ << "DELETE FROM " << MappedType<Events::Comment>::table
+                   << " WHERE internal_id=" << comment.internal_id;
     }
   return ;
 }
@@ -229,15 +241,25 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
   LOGDEBUG("Processing Downtime event ...");
 
   if ((downtime.type == NEBTYPE_DOWNTIME_ADD)
-      || (downtime.type == NEBTYPE_DOWNTIME_LOAD))
+      || (downtime.type == NEBTYPE_DOWNTIME_LOAD)
+      || (downtime.type == NEBTYPE_DOWNTIME_START))
     {
-    }
-  else if (downtime.type == NEBTYPE_DOWNTIME_START)
-    {
+      try
+        {
+          this->Insert(downtime);
+        }
+      catch (const soci::soci_error& se)
+        {
+          this->PreparedUpdate(downtime,
+                               *this->downtime_stmt_,
+                               this->downtime_);
+        }
     }
   else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
            || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
     {
+      *this->conn_ << "DELETE FROM " << MappedType<Events::Downtime>::table
+                   << " WHERE downtime_id=" << downtime.id;
     }
   return ;
 }
@@ -471,7 +493,15 @@ Destination::~Destination()
  */
 void Destination::Close()
 {
-  // XXX : kill statements and conn
+  this->acknowledgement_stmt_.reset();
+  this->comment_stmt_.reset();
+  this->downtime_stmt_.reset();
+  this->host_check_stmt_.reset();
+  this->host_status_stmt_.reset();
+  this->program_status_stmt_.reset();
+  this->service_check_stmt_.reset();
+  this->service_status_stmt_.reset();
+  this->conn_.reset();
   return ;
 }
 
@@ -587,7 +617,10 @@ void Destination::Connect(Destination::DB db_type,
       {
 #ifdef USE_MYSQL
        case MYSQL:
-        ss << "dbname=" << db << " user=" << user << " password=" << pass;
+        ss << "dbname=" << db
+           << "host=" << host
+           << " user=" << user
+           << " password=" << pass;
         this->conn_.reset(new soci::session(soci::mysql, ss.str()));
         break ;
 #endif /* USE_MYSQL */
@@ -608,6 +641,27 @@ void Destination::Connect(Destination::DB db_type,
   }
 
   std::vector<std::string> id;
+
+  id.clear();
+  id.push_back("author_name");
+  id.push_back("entry_time");
+  id.push_back("host_id");
+  id.push_back("service_id");
+  this->PrepareUpdate(this->acknowledgement_stmt_,
+                      this->acknowledgement_,
+                      id);
+
+  id.clear();
+  id.push_back("internal_id");
+  this->PrepareUpdate(this->comment_stmt_,
+                      this->comment_,
+                      id);
+
+  id.clear();
+  id.push_back("downtime_id");
+  this->PrepareUpdate(this->downtime_stmt_,
+                      this->downtime_,
+                      id);
 
   id.clear();
   id.push_back("host_id");

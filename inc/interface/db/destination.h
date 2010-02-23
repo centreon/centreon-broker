@@ -49,12 +49,18 @@ namespace                         Interface
       };
 
      private:
+      std::auto_ptr<soci::statement> acknowledgement_stmt_;
+      std::auto_ptr<soci::statement> comment_stmt_;
+      std::auto_ptr<soci::statement> downtime_stmt_;
       std::auto_ptr<soci::statement> host_check_stmt_;
       std::auto_ptr<soci::statement> host_status_stmt_;
       std::auto_ptr<soci::statement> program_status_stmt_;
       std::auto_ptr<soci::statement> service_check_stmt_;
       std::auto_ptr<soci::statement> service_status_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
+      Events::Acknowledgement     acknowledgement_;
+      Events::Comment             comment_;
+      Events::Downtime            downtime_;
       Events::HostCheck           host_check_;
       Events::HostStatus          host_status_;
       Events::ProgramStatus       program_status_;
