@@ -618,7 +618,7 @@ void Destination::Connect(Destination::DB db_type,
 #ifdef USE_MYSQL
        case MYSQL:
         ss << "dbname=" << db
-           << "host=" << host
+           << " host=" << host
            << " user=" << user
            << " password=" << pass;
         this->conn_.reset(new soci::session(soci::mysql, ss.str()));
