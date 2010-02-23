@@ -275,7 +275,7 @@ int CallbackHostStatus(int callback_type, void* data)
 
           it = gl_hosts.find(h->name);
           if (it != gl_hosts.end())
-            host_status->host_id = it->second;
+            host_status->id = it->second;
         }
       host_status->is_flapping = h->is_flapping;
       host_status->last_check = h->last_check;
@@ -559,25 +559,6 @@ int CallbackServiceStatus(int callback_type, void* data)
         = s->failure_prediction_enabled;
       service_status->flap_detection_enabled = s->flap_detection_enabled;
       service_status->has_been_checked = s->has_been_checked;
-      if (s->host_name)
-        {
-          std::map<std::string, int>::const_iterator it;
-
-          it = gl_hosts.find(s->host_name);
-          if (it != gl_hosts.end())
-            service_status->host_id = it->second;
-
-          if (s->description)
-            {
-              std::map<std::pair<std::string,
-                                 std::string>, int>::const_iterator it;
-
-              it = gl_services.find(std::make_pair(s->host_name,
-                                                   s->description));
-              if (it != gl_services.end())
-                service_status->service_id = it->second;
-            }
-        }
       service_status->is_flapping = s->is_flapping;
       service_status->last_check = s->last_check;
       service_status->last_hard_state = s->last_hard_state;
@@ -611,6 +592,16 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->process_performance_data = s->process_performance_data;
       service_status->retry_interval = s->retry_interval;
       service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
+      if (s->host_name && s->description)
+        {
+          std::map<std::pair<std::string,
+                             std::string>, int>::const_iterator it;
+
+          it = gl_services.find(std::make_pair(s->host_name,
+                                               s->description));
+          if (it != gl_services.end())
+            service_status->id = it->second;
+        }
       service_status->should_be_scheduled = s->should_be_scheduled;
       service_status->state_type = s->state_type;
 

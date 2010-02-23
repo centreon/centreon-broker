@@ -334,10 +334,6 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Host>(
-      &Host::host_id,
-      NDO_DATA_HOST,
-      "host_id"),
-    MappedData<Host>(
       &Host::icon_image,
       NDO_DATA_ICONIMAGE,
       "icon_image"),
@@ -345,6 +341,10 @@ static const MappedData<Host> host_mapping[] =
       &Host::icon_image_alt,
       NDO_DATA_ICONIMAGEALT,
       "icon_image_alt"),
+    MappedData<Host>(
+      &Host::id,
+      NDO_DATA_HOST,
+      "host_id"),
     MappedData<Host>(
       &Host::instance, // XXX : should be replaced by instance_id
       NDO_DATA_INSTANCE,
@@ -720,7 +720,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<HostStatus>(
-      &HostStatus::host_id,
+      &HostStatus::id,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<HostStatus>(
@@ -1124,6 +1124,10 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_ICONIMAGEALT,
       "icon_image_alt"),
     MappedData<Service>(
+      &Service::id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<Service>(
       &Service::instance, // XXX : should be replaced by instance_id
       NDO_DATA_INSTANCE,
       NULL),
@@ -1299,10 +1303,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::service,
       NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
-    MappedData<Service>(
-      &Service::service_id,
-      NDO_DATA_SERVICE,
-      "service_id"),
     MappedData<Service>(
       &Service::should_be_scheduled,
       NDO_DATA_SHOULDBESCHEDULED,
@@ -1488,10 +1488,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::host_id,
-      NDO_DATA_HOST,
-      "host_id"),
-    MappedData<ServiceStatus>(
       &ServiceStatus::instance, // XXX : should be replaced by instance_id
       NDO_DATA_INSTANCE,
       NULL),
@@ -1608,7 +1604,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
       "scheduled_downtime_depth"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::service_id,
+      &ServiceStatus::id,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<ServiceStatus>(

@@ -240,8 +240,8 @@ static void SendHostList()
             && cv->variable_value
             && !strcmp(cv->variable_name, "HOST_ID"))
           {
-            my_host->host_id = strtol(cv->variable_value, NULL, 0);
-            gl_hosts[my_host->host] = my_host->host_id;
+            my_host->id = strtol(cv->variable_value, NULL, 0);
+            gl_hosts[my_host->host] = my_host->id;
           }
 
       my_host->AddReader();
@@ -425,8 +425,15 @@ static void SendServiceList()
       my_service->freshness_threshold = s->freshness_threshold;
       // my_service->has_been_checked = XXX;
       my_service->high_flap_threshold = s->high_flap_threshold;
-      if (s->host_name)
-        my_service->host = s->host_name;
+      if (s->host_name) // XXX : redonduncy with custom var browsing
+        {
+          std::map<std::string, int>::const_iterator it;
+
+          it = gl_hosts.find(s->host_name);
+          if (it != gl_hosts.end())
+            my_service->host_id = it->second;
+          my_service->host = s->host_name;
+        }
       if (s->icon_image)
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
@@ -495,10 +502,10 @@ static void SendServiceList()
               my_service->host_id = strtol(cv->variable_value, NULL, 0);
             else if (!strcmp(cv->variable_name, "SERVICE_ID"))
               {
-                my_service->service_id = strtol(cv->variable_value, NULL, 0);
+                my_service->id = strtol(cv->variable_value, NULL, 0);
                 gl_services[std::make_pair(my_service->host,
                                            my_service->service)]
-                  = my_service->service_id;
+                  = my_service->id;
               }
           }
 
