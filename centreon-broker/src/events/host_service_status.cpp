@@ -50,8 +50,7 @@ void HostServiceStatus::InternalCopy(const HostServiceStatus& hss)
   this->event_handler                 = hss.event_handler;
   this->execution_time                = hss.execution_time;
   this->has_been_checked              = hss.has_been_checked;
-  this->host                          = hss.host;
-  this->host_id                       = hss.host_id;
+  this->id                            = hss.id;
   this->is_flapping                   = hss.is_flapping;
   this->last_check                    = hss.last_check;
   this->last_hard_state               = hss.last_hard_state;
@@ -100,7 +99,7 @@ HostServiceStatus::HostServiceStatus()
     current_state(4), // Pending
     execution_time(0.0),
     has_been_checked(false),
-    host_id(0),
+    id(0),
     is_flapping(false),
     last_check(0),
     last_hard_state(0),

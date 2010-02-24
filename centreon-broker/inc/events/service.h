@@ -49,10 +49,12 @@ namespace              Events
     short              flap_detection_on_ok;
     short              flap_detection_on_unknown;
     short              flap_detection_on_warning;
+    int                host_id;
     bool               is_volatile;
     bool               notified_on_critical;
     bool               notified_on_unknown;
     bool               notified_on_warning;
+    std::string        service;
     short              stalk_on_critical;
     short              stalk_on_ok;
     short              stalk_on_unknown;

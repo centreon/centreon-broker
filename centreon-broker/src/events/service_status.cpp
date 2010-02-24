@@ -43,8 +43,6 @@ void ServiceStatus::InternalCopy(const ServiceStatus& ss)
   this->last_time_ok       = ss.last_time_ok;
   this->last_time_unknown  = ss.last_time_unknown;
   this->last_time_warning  = ss.last_time_warning;
-  this->service            = ss.service;
-  this->service_id         = ss.service_id;
   return ;
 }
 
@@ -63,8 +61,7 @@ ServiceStatus::ServiceStatus()
   : last_time_critical(0),
     last_time_ok(0),
     last_time_unknown(0),
-    last_time_warning(0),
-    service_id(0) {}
+    last_time_warning(0) {}
 
 /**
  *  \brief ServiceStatus copy constructor.

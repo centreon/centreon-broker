@@ -21,121 +21,81 @@
 #ifndef MAPPING_H_
 # define MAPPING_H_
 
-# include "db/data_member.hpp"
-# include "db/mapping.hpp"
 # include "events/events.h"
 
-// Acknowledgement
-extern const CentreonBroker::DB::DataMember<Events::Acknowledgement> acknowledgement_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Acknowledgement>   acknowledgement_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Acknowledgement>   acknowledgement_set_mapping;
-// Comment
-extern const CentreonBroker::DB::DataMember<Events::Comment>
-comment_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Comment>
-comment_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Comment>
-comment_set_mapping;
-// Downtime
-extern const CentreonBroker::DB::DataMember<Events::Downtime>
-downtime_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Downtime>
-downtime_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Downtime>
-downtime_set_mapping;
-// Host
-extern const CentreonBroker::DB::DataMember<Events::Host>
-host_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Host>
-host_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Host>
-host_set_mapping;
-// HostCheck
-extern const CentreonBroker::DB::DataMember<Events::HostCheck>
-host_check_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::HostCheck>
-host_check_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::HostCheck>
-host_check_set_mapping;
-// HostDependency
-extern const CentreonBroker::DB::DataMember<Events::HostDependency>
-host_dependency_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::HostDependency>
-host_dependency_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::HostDependency>
-host_dependency_set_mapping;
-// HostGroup
-extern const CentreonBroker::DB::DataMember<Events::HostGroup>
-host_group_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::HostGroup>
-host_group_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::HostGroup>
-host_group_set_mapping;
-// HostParent
-extern const CentreonBroker::DB::DataMember<Events::HostParent>
-host_parent_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::HostParent>
-host_parent_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::HostParent>
-host_parent_set_mapping;
-// HostStatus
-extern const CentreonBroker::DB::DataMember<Events::HostStatus>
-host_status_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::HostStatus>
-host_status_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::HostStatus>
-host_status_set_mapping;
-// Log
-extern const CentreonBroker::DB::DataMember<Events::Log>
-log_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Log>
-log_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Log>
-log_set_mapping;
-// ProgramStatus
-extern const CentreonBroker::DB::DataMember<Events::ProgramStatus>
-program_status_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::ProgramStatus>
-program_status_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::ProgramStatus>
-program_status_set_mapping;
-// Service
-extern const CentreonBroker::DB::DataMember<Events::Service>
-service_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::Service>
-service_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::Service>
-service_set_mapping;
-// ServiceCheck
-extern const CentreonBroker::DB::DataMember<Events::ServiceCheck>
-service_check_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::ServiceCheck>
-service_check_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::ServiceCheck>
-service_check_set_mapping;
-// ServiceDependency
-extern const CentreonBroker::DB::DataMember<Events::ServiceDependency>
-service_dependency_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::ServiceDependency>
-service_dependency_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::ServiceDependency>
-service_dependency_set_mapping;
-// ServiceGroup
-extern const CentreonBroker::DB::DataMember<Events::ServiceGroup>
-service_group_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::ServiceGroup>
-service_group_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::ServiceGroup>
-service_group_set_mapping;
-// ServiceStatus
-extern const CentreonBroker::DB::DataMember<Events::ServiceStatus>
-service_status_dm[];
-extern CentreonBroker::DB::MappingGetters<Events::ServiceStatus>
-service_status_get_mapping;
-extern CentreonBroker::DB::MappingSetters<Events::ServiceStatus>
-service_status_set_mapping;
+/**
+ *  Holds a pointer to member.
+ */
+template        <typename T>
+union           DataMember
+{
+  bool          T::*b;
+  double        T::*d;
+  int           T::*i;
+  short         T::*s;
+  std::string   T::*S;
+  time_t        T::*t;
+};
 
-void     MappingsDestroy();
-void     MappingsInit();
+/**
+ *  \class MappedData mapping.h "mapping.h"
+ *  \brief Mapping of a data member.
+ *
+ *  This template represents the overall mapping of a specific data member of a
+ *  class T. This data member is associated with a name (used by DB and XML)
+ *  and an ID (used by NDO).
+ */
+template        <typename T>
+class           MappedData
+{
+ public:
+  enum          Type
+  {
+    UNKNOWN = '\0',
+    BOOL = 'b',
+    DOUBLE = 'd',
+    INT = 'i',
+    SHORT = 's',
+    STRING = 'S',
+    TIME_T = 't'
+  };
+  unsigned int  id;
+  DataMember<T> member;
+  const char*   name;
+  char          type;
+
+                MappedData() : id(0), name(NULL), type(UNKNOWN) {}
+
+                MappedData(bool T::* b, unsigned int i, const char* n)
+    : id(i), name(n), type(BOOL)
+  { this->member.b = b; }
+
+                MappedData(double T::* d, unsigned int i, const char* n)
+    : id(i), name(n), type(DOUBLE)
+  { this->member.d = d; }
+
+                MappedData(int T::* I, unsigned int i, const char* n)
+    : id(i), name(n), type(INT)
+  { this->member.i = I; }
+
+                MappedData(short T::* s, unsigned int i, const char* n)
+    : id(i), name(n), type(SHORT)
+  { this->member.s = s; }
+
+                MappedData(std::string T::* S, unsigned int i, const char* n)
+    : id(i), name(n), type(STRING)
+  { this->member.S = S; }
+
+                MappedData(time_t T::* t, unsigned int i, const char* n)
+    : id(i), name(n), type(TIME_T)
+  { this->member.t = t; }
+};
+
+template                      <typename T>
+struct                        MappedType
+{
+  static const MappedData<T>* members;
+  static const char*          table;
+};
 
 #endif /* !MAPPING_H_ */

@@ -39,7 +39,7 @@ ServiceGroupMember::ServiceGroupMember() {}
  *  \param[in] sgm Object to copy from.
  */
 ServiceGroupMember::ServiceGroupMember(const ServiceGroupMember& sgm)
-  : GroupMember(sgm), host(sgm.host) {}
+  : GroupMember(sgm) {}
 
 /**
  *  Destructor.
@@ -55,7 +55,6 @@ ServiceGroupMember::~ServiceGroupMember() {}
  */
 ServiceGroupMember& ServiceGroupMember::operator=(const ServiceGroupMember& sgm)
 {
-  this->host = sgm.host;
   this->GroupMember::operator=(sgm);
   return (*this);
 }

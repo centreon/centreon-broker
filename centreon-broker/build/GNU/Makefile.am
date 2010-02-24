@@ -39,19 +39,6 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/configuration/log.cpp				\
 		../../src/configuration/manager.cpp			\
 		../../src/configuration/parser.cpp			\
-		../../src/db/connection.cpp				\
-		../../src/db/db_exception.cpp				\
-		../../src/db/delete.cpp					\
-		../../src/db/have_args.cpp				\
-		../../src/db/have_fields.cpp				\
-		../../src/db/have_predicate.cpp				\
-		../../src/db/have_table.cpp				\
-		../../src/db/insert.cpp					\
-		../../src/db/predicate.cpp				\
-		../../src/db/query.cpp					\
-		../../src/db/select.cpp					\
-		../../src/db/truncate.cpp				\
-		../../src/db/update.cpp					\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/check.cpp				\
 		../../src/events/comment.cpp				\
@@ -81,6 +68,7 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/exception.cpp					\
 		../../src/init.cpp					\
 		../../src/interface/db/destination.cpp			\
+		../../src/interface/db/internal.cpp			\
 		../../src/interface/destination.cpp			\
 		../../src/interface/factory.cpp				\
 		../../src/interface/ndo/base.cpp			\
@@ -111,48 +99,10 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/multiplexing/internal.cpp			\
 		../../src/multiplexing/publisher.cpp			\
 		../../src/multiplexing/subscriber.cpp			\
+		../../src/processing/failover_in.cpp			\
 		../../src/processing/failover_out.cpp			\
 		../../src/processing/feeder.cpp				\
 		../../src/processing/listener.cpp
-
-# Add MySQL files if MySQL is enabled
-if MYSQL
-common_src +=		../../src/db/mysql/connection.cpp		\
-			../../src/db/mysql/delete.cpp			\
-			../../src/db/mysql/have_args.cpp		\
-			../../src/db/mysql/have_predicate.cpp		\
-			../../src/db/mysql/insert.cpp			\
-			../../src/db/mysql/query.cpp			\
-			../../src/db/mysql/select.cpp			\
-			../../src/db/mysql/truncate.cpp			\
-			../../src/db/mysql/update.cpp
-endif
-
-# Add Oracle files if Oracle is enabled
-if ORACLE
-common_src +=		../../src/db/oracle/connection.cpp		\
-			../../src/db/oracle/delete.cpp			\
-			../../src/db/oracle/have_args.cpp		\
-			../../src/db/oracle/have_predicate.cpp		\
-			../../src/db/oracle/insert.cpp			\
-			../../src/db/oracle/query.cpp			\
-			../../src/db/oracle/select.cpp			\
-			../../src/db/oracle/truncate.cpp		\
-			../../src/db/oracle/update.cpp
-endif
-
-# Add PostgreSQL files if PostgreSQL is enabled
-if POSTGRESQL
-common_src +=		../../src/db/postgresql/connection.cpp		\
-			../../src/db/postgresql/delete.cpp		\
-			../../src/db/postgresql/have_args.cpp		\
-			../../src/db/postgresql/have_predicate.cpp	\
-			../../src/db/postgresql/insert.cpp		\
-			../../src/db/postgresql/query.cpp		\
-			../../src/db/postgresql/select.cpp		\
-			../../src/db/postgresql/truncate.cpp		\
-			../../src/db/postgresql/update.cpp
-endif
 
 # Add TLS files is TLS is enabled
 if TLS
@@ -168,15 +118,14 @@ cb2db_SOURCES =	$(common_src)						\
 
 # Configure compilation flags properly
 cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/daemon	\
-			$(BOOST_CPPFLAGS) $(GNUTLS_CPPFLAGS)		\
-			$(MYSQL_CPPFLAGS)
-cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS)		\
-			$(ORACLE_OCI_CFLAGS) $(POSTGRESQL_CFLAGS)	\
+			$(GNUTLS_CPPFLAGS) $(MYSQL_CPPFLAGS)		\
+			$(ORACLE_CPPFLAGS) $(POSTGRESQL_CPPFLAGS)	\
+			$(SOCI_CPPFLAGS)
+cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(GNUTLS_CFLAGS)			\
 			$(PTHREAD_CFLAGS)
-cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
-			$(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)		\
-			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
-			$(PTHREAD_LIBS)
+cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)\
+			$(ORACLE_LDFLAGS) $(POSTGRESQL_LDFLAGS)		\
+			$(PTHREAD_LIBS) $(SOCI_LDFLAGS)
 
 
 #######################################
@@ -193,12 +142,11 @@ cbmod_so_SOURCES=	$(common_src)					\
 
 # Configure compilation flags properly
 cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
-			$(BOOST_CPPFLAGS) $(LIBGNUTLS_CPPFLAGS)		\
-			$(MYSQL_CPPFLAGS)
-cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(LIBGNUTLS_CFLAGS)		\
-			$(ORACLE_OCI_CFLAGS) $(POSTGRESQL_CFLAGS)	\
-			$(PTHREAD_CFLAGS) -shared -fPIC
-cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(BOOST_LDFLAGS)			\
-			$(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)		\
-			$(ORACLE_OCI_LDFLAGS) $(POSTGRESQL_LDFLAGS)	\
-			$(PTHREAD_LIBS) -shared -fPIC
+			$(GNUTLS_CPPFLAGS) $(MYSQL_CPPFLAGS)		\
+			$(ORACLE_CPPFLAGS) $(POSTGRESQL_CPPFLAGS)	\
+			$(SOCI_CPPFLAGS)
+cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(GNUTLS_CFLAGS)			\
+			$(PTHREAD_CFLAGS) -fPIC
+cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)\
+			$(ORACLE_LDFLAGS) $(POSTGRESQL_LDFLAGS)		\
+			$(PTHREAD_LIBS) $(SOCI_LDFLAGS) -shared
