@@ -90,7 +90,7 @@ namespace              Events
       SERVICEGROUPMEMBER,
       SERVICESTATUS
     };
-    std::string        instance;
+    int                instance;
                        Event();
     virtual            ~Event();
     void               AddReader();

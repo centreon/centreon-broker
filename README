@@ -7,13 +7,3 @@
 
 If you're searching how to build the software, please refer to the INSTALL
 file.
-
-CentreonBroker aims to be an alternative to NDOUtils or any other solution
-whose role is to transfer Nagios data from Nagios itself to a database. For
-now, CentreonBroker only have a daemon which stores data within a MySQL
-database. Its input comes from the traditional NDOUtils' ndomod.
-
-CentreonBroker is designed to provide in the near future support for more
-databases (PostgreSQL and Oracle being the first). CentreonBroker use modern
-software technologies (like threads and prepared statements) to provide the
-best software performances right out of the box.

@@ -25,7 +25,7 @@
 # include <string>
 # include "events/status.h"
 
-namespace                   Events
+namespace              Events
 {
   /**
    *  \class HostServiceStatus host_service_status.h "events/host_service_status.h"
@@ -55,8 +55,7 @@ namespace                   Events
     std::string        event_handler;
     double             execution_time;
     bool               has_been_checked;
-    std::string        host;
-    int                host_id;
+    int                id;
     bool               is_flapping;
     time_t             last_check;
     short              last_hard_state;

@@ -21,10 +21,6 @@
 #
 # Include macro files
 #
-m4_include(macros/ax_boost_base.m4)
-m4_include(macros/ax_lib_mysql.m4)
-m4_include(macros/ax_lib_oracle_oci.m4)
-m4_include(macros/ax_lib_postgresql.m4)
 m4_include(macros/ax_pthread.m4)
 m4_include(macros/libgnutls.m4)
 
@@ -34,10 +30,11 @@ m4_include(macros/libgnutls.m4)
 #                                     #
 #######################################
 
-AC_INIT([CentreonBroker], 0.1.0, mkermagoret@merethis.com, centreonbroker)
+AC_INIT([CentreonBroker], 0.9.0, mkermagoret@merethis.com, centreonbroker)
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
+AC_LANG(C++)
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 ##
 ##  DEBUG
@@ -60,9 +57,51 @@ then
 fi
 
 ##
-##  BOOST
+##  SOCI
 ##
-AX_BOOST_BASE
+SOCI_INCLUDEDIR=/usr/include/soci
+SOCI_CPPFLAGS=-I/usr/include/soci
+SOCI_LDFLAGS=-lsoci_core-gcc-3_0
+AC_SUBST([SOCI_CPPFLAGS])
+AC_SUBST([SOCI_LDFLAGS])
+
+##
+##  MYSQL
+##
+AC_MSG_CHECKING([for MySQL support])
+AC_ARG_WITH([mysql],
+	AC_HELP_STRING([--with-mysql=@<:@ARG@:>@],
+		[use MySQL client library @<:@default=yes@:>@, optionally specify path to mysql_config]),
+	[if test x"$withval" = "xno"; then
+		want_mysql="no"
+	elif test x"$withval" = "xyes" ; then
+		want_mysql="yes"
+	else
+		want_mysql="yes"
+		MYSQL_CONFIG="$withval"
+	fi],
+	[want_mysql="yes"])
+AC_MSG_RESULT($want_mysql)
+if test "$want_mysql" = "yes"; then
+	if test -z "$MYSQL_CONFIG" -o test; then
+		AC_PATH_PROG([MYSQL_CONFIG], [mysql_config], [no])
+	fi
+	if test ! -x "$MYSQL_CONFIG"; then
+		AC_MSG_ERROR([$MYSQL_CONFIG does not exist or it is not an executable file])
+		MYSQL_CONFIG="no"
+	fi
+	if test "$MYSQL_CONFIG" != "no"; then
+		AC_MSG_CHECKING([for MySQL development files])
+		MYSQL_CPPFLAGS="`$MYSQL_CONFIG --include` -I$SOCI_INCLUDEDIR/mysql"
+		MYSQL_LDFLAGS=-lsoci_mysql-gcc-3_0
+		AC_DEFINE([USE_MYSQL],
+			[1],
+			[Define to 1 if MySQL support is required and available])
+		AC_MSG_RESULT([yes])
+	fi
+fi
+AC_SUBST([MYSQL_CPPFLAGS])
+AC_SUBST([MYSQL_LDFLAGS])
 
 ##
 ##  PTHREAD
@@ -70,28 +109,6 @@ AX_BOOST_BASE
 AX_PTHREAD(
 	[],
 	[AC_MSG_ERROR([pthread library is mandatory])])
-
-##
-##  MYSQL
-##
-AX_LIB_MYSQL
-AM_CONDITIONAL([MYSQL], [test x"$want_mysql" = "xyes"])
-
-##
-##  ORACLE
-##
-AX_LIB_ORACLE_OCI
-if test x"$HAVE_ORACLE_OCI" = "xyes"
-then
-	AC_DEFINE([USE_ORACLE])
-fi
-AM_CONDITIONAL([ORACLE], [test x"$HAVE_ORACLE_OCI" = "xyes"])
-
-##
-##  POSTGRESQL
-##
-AX_LIB_POSTGRESQL
-AM_CONDITIONAL([POSTGRESQL], [test x"$want_postgresql" = "xyes"])
 
 ##
 ##  TINYXML

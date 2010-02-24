@@ -21,75 +21,34 @@
 #ifndef INTERFACE_XML_INTERNAL_H_
 # define INTERFACE_XML_INTERNAL_H_
 
-# include <stddef.h>          // for NULL
-# include "interface/field.h"
+# include <map>
+# include <string>
+# include "mapping.h"
+# include "interface/xml/tinyxml.h"
 
-// Forward declarations.
-namespace         Events
+namespace                  Interface
 {
-  class           Acknowledgement;
-  class           Comment;
-  class           Downtime;
-  class           Host;
-  class           HostDependency;
-  class           HostGroup;
-  class           HostGroupMember;
-  class           HostParent;
-  class           HostStatus;
-  class           ProgramStatus;
-  class           Service;
-  class           ServiceDependency;
-  class           ServiceGroup;
-  class           ServiceGroupMember;
-  class           ServiceStatus;
-}
-
-namespace         Interface
-{
-  namespace       XML
+  namespace                XML
   {
-    /**
-     *  This template associates a field name with a pointer to member.
-     */
-    template      <typename T>
-    struct        NameField : public Interface::Field<T>
+    template               <typename T>
+    struct                 GetterSetter
     {
-      const char* name;
-
-      NameField() : name(NULL) {}
-      NameField(const char* n, bool (T::* b))
-        : Interface::Field<T>(b), name(n) {}
-      NameField(const char* n, double (T::* d))
-        : Interface::Field<T>(d), name(n) {}
-      NameField(const char* n, int (T::* i))
-        : Interface::Field<T>(i), name(n) {}
-      NameField(const char* n, short (T::* s))
-        : Interface::Field<T>(s), name(n) {}
-      NameField(const char* n, std::string (T::* s))
-        : Interface::Field<T>(s), name(n) {}
-      NameField(const char* n, time_t (T::* t))
-        : Interface::Field<T>(t), name(n) {}
+      const DataMember<T>* member;
+      void                 (* getter)(const T&,
+                                      const std::string& name,
+                                      const DataMember<T>&,
+                                      TiXmlElement& elem);
     };
 
-    // External arrays of pointer-to-members.
-    extern const NameField<Events::Acknowledgement> acknowledgement_fields[];
-    extern const NameField<Events::Comment>         comment_fields[];
-    extern const NameField<Events::Downtime>        downtime_fields[];
-    extern const NameField<Events::Host>            host_fields[];
-    extern const NameField<Events::HostDependency>  host_dependency_fields[];
-    extern const NameField<Events::HostGroup>       host_group_fields[];
-    extern const NameField<Events::HostGroupMember> host_group_member_fields[];
-    extern const NameField<Events::HostParent>      host_parent_fields[];
-    extern const NameField<Events::HostStatus>      host_status_fields[];
-    extern const NameField<Events::Log>             log_fields[];
-    extern const NameField<Events::ProgramStatus>   program_status_fields[];
-    extern const NameField<Events::Service>         service_fields[];
-    extern const NameField<Events::ServiceDependency>
-      service_dependency_fields[];
-    extern const NameField<Events::ServiceGroup>    service_group_fields[];
-    extern const NameField<Events::ServiceGroupMember>
-      service_group_member_fields[];
-    extern const NameField<Events::ServiceStatus>   service_status_fields[];
+    // XML mappings.
+    template               <typename T>
+    struct                 XMLMappedType
+    {
+      static std::map<std::string, GetterSetter<T> > map;
+    };
+
+    // Mapping initialization routine.
+    void Initialize();
   }
 }
 

@@ -19,9 +19,8 @@
 */
 
 #include <assert.h>
-#include <map>
 #include <memory>                   // for auto_ptr
-#include <stdlib.h>                 // for abort, strtod, strtol
+#include <stdlib.h>                 // for abort, strtol
 #include <string.h>                 // for strcmp, strncmp
 #include "events/events.h"
 #include "interface/ndo/internal.h"
@@ -33,166 +32,6 @@ using namespace Interface::NDO;
 
 /**************************************
 *                                     *
-*          Static Functions           *
-*                                     *
-**************************************/
-
-/**
- *  Set a boolean within an object.
- */
-template <typename T>
-static void set_boolean(T& t,
-                        const typename KeyField<T>::FieldPointer& field,
-                        const char* str)
-{
-  t.*(field.field_bool) = strtol(str, NULL, 0);
-  return ;
-}
-
-/**
- *  Set a double within an object.
- */
-template <typename T>
-static void set_double(T& t,
-                       const typename KeyField<T>::FieldPointer& field,
-                       const char* str)
-{
-  t.*(field.field_double) = strtod(str, NULL);
-  return ;
-}
-
-/**
- *  Set an integer within an object.
- */
-template <typename T>
-static void set_integer(T& t,
-                        const typename KeyField<T>::FieldPointer& field,
-                        const char* str)
-{
-  t.*(field.field_int) = strtol(str, NULL, 0);
-  return ;
-}
-
-/**
- *  Set a short within an object.
- */
-template <typename T>
-static void set_short(T& t,
-                      const typename KeyField<T>::FieldPointer& field,
-                      const char* str)
-{
-  t.*(field.field_short) = strtol(str, NULL, 0);
-  return ;
-}
-
-/**
- *  Set a string within an object.
- */
-template <typename T>
-static void set_string(T& t,
-                       const typename KeyField<T>::FieldPointer& field,
-                       const char* str)
-{
-  t.*(field.field_string) = str;
-  return ;
-}
-
-/**
- *  Set a time_t within an object.
- */
-template <typename T>
-static void set_timet(T& t,
-                      const typename KeyField<T>::FieldPointer& field,
-                      const char* str)
-{
-  t.*(field.field_timet) = strtol(str, NULL, 0);
-  return ;
-}
-
-/**************************************
-*                                     *
-*             Field Maps              *
-*                                     *
-**************************************/
-
-/**
- *  Associate a static function to a field that should be set.
- */
-template <typename T>
-struct   Field
-{
-  const typename KeyField<T>::FieldPointer* param;
-  void (* ptr)(T&, const typename KeyField<T>::FieldPointer&, const char*);
-};
-
-/**
- *  Static protocol maps.
- */
-static std::map<int, Field<Events::Acknowledgement> >   acknowledgement_map;
-static std::map<int, Field<Events::Comment> >           comment_map;
-static std::map<int, Field<Events::Downtime> >          downtime_map;
-static std::map<int, Field<Events::Host> >              host_map;
-static std::map<int, Field<Events::HostCheck> >         host_check_map;
-static std::map<int, Field<Events::HostDependency> >    host_dependency_map;
-static std::map<int, Field<Events::HostGroup> >         host_group_map;
-static std::map<int, Field<Events::HostGroupMember> >   host_group_member_map;
-static std::map<int, Field<Events::HostParent> >        host_parent_map;
-static std::map<int, Field<Events::HostStatus> >        host_status_map;
-static std::map<int, Field<Events::Log> >               log_map;
-static std::map<int, Field<Events::ProgramStatus> >     program_status_map;
-static std::map<int, Field<Events::Service> >           service_map;
-static std::map<int, Field<Events::ServiceCheck> >      service_check_map;
-static std::map<int, Field<Events::ServiceDependency> > service_dependency_map;
-static std::map<int, Field<Events::ServiceGroup> >      service_group_map;
-static std::map<int, Field<Events::ServiceGroupMember> >
-  service_group_member_map;
-static std::map<int, Field<Events::ServiceStatus> >     service_status_map;
-
-/**************************************
-*                                     *
-*          Maps Initializer           *
-*                                     *
-**************************************/
-
-template <typename T>
-static void StaticInit(const KeyField<T> fields[],
-                       std::map<int, Field<T> >& map)
-{
-  for (unsigned int i = 0; fields[i].type; ++i)
-    {
-      Field<T>& field(map[fields[i].key]);
-
-      field.param = &fields[i].field;
-      switch (fields[i].type)
-        {
-         case 'b':
-          field.ptr = &set_boolean<T>;
-          break ;
-         case 'd':
-          field.ptr = &set_double<T>;
-          break ;
-         case 'i':
-          field.ptr = &set_integer<T>;
-          break ;
-         case 's':
-          field.ptr = &set_short<T>;
-          break ;
-         case 'S':
-          field.ptr = &set_string<T>;
-          break ;
-         case 't':
-          field.ptr = &set_timet<T>;
-          break ;
-         default:
-          assert(false);
-          abort();
-        }
-    }
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Static Methods            *
 *                                     *
 **************************************/
@@ -201,7 +40,7 @@ static void StaticInit(const KeyField<T> fields[],
  *  Extract event parameters from the data stream.
  */
 template <typename T>
-T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
+static T* HandleEvent(IO::Text& stream)
 {
   std::auto_ptr<T> event(new T);
   int key;
@@ -213,16 +52,16 @@ T* HandleEvent(IO::Text& stream, const std::map<int, Field<T> >& field_map)
       key_str = stream.Line();
       if (key_str)
         {
-          typename std::map<int, Field<T> >::const_iterator it;
+          typename std::map<int, GetterSetter<T> >::const_iterator it;
 
           key = strtol(key_str, NULL, 10);
           if (NDO_API_ENDDATA == key)
             break ;
           value_str = strchr(key_str, '=');
           value_str = (value_str ? value_str + 1 : "");
-          it = field_map.find(key);
-          if (it != field_map.end())
-            (*it->second.ptr)(*event.get(), *it->second.param, value_str);
+          it = NDOMappedType<T>::map.find(key);
+          if (it != NDOMappedType<T>::map.end())
+            (*it->second.setter)(*event.get(), *it->second.member, value_str);
         }
       else
         {
@@ -370,74 +209,58 @@ Events::Event* Source::Event()
           switch (id)
             {
              case NDO_API_ACKNOWLEDGEMENTDATA:
-              event.reset(HandleEvent<Events::Acknowledgement>(this->stream_,
-                            acknowledgement_map));
+              event.reset(HandleEvent<Events::Acknowledgement>(this->stream_));
               break ;
              case NDO_API_COMMENTDATA:
-              event.reset(HandleEvent<Events::Comment>(this->stream_, comment_map));
+              event.reset(HandleEvent<Events::Comment>(this->stream_));
               break ;
              case NDO_API_DOWNTIMEDATA:
-              event.reset(HandleEvent<Events::Downtime>(this->stream_,
-                            downtime_map));
+              event.reset(HandleEvent<Events::Downtime>(this->stream_));
               break ;
              case NDO_API_HOSTCHECKDATA:
-              event.reset(HandleEvent<Events::HostCheck>(this->stream_,
-                            host_check_map));
+              event.reset(HandleEvent<Events::HostCheck>(this->stream_));
               break ;
              case NDO_API_HOSTDEFINITION:
-              event.reset(HandleEvent<Events::Host>(this->stream_, host_map));
+              event.reset(HandleEvent<Events::Host>(this->stream_));
               break ;
              case NDO_API_HOSTDEPENDENCYDEFINITION:
-              event.reset(HandleEvent<Events::HostDependency>(this->stream_,
-                            host_dependency_map));
+              event.reset(HandleEvent<Events::HostDependency>(this->stream_));
               break ;
              case NDO_API_HOSTGROUPDEFINITION:
-              event.reset(HandleEvent<Events::HostGroup>(this->stream_,
-                            host_group_map));
+              event.reset(HandleEvent<Events::HostGroup>(this->stream_));
               break ;
              case NDO_API_HOSTGROUPMEMBERDEFINITION:
-              event.reset(HandleEvent<Events::HostGroupMember>(this->stream_,
-                            host_group_member_map));
+              event.reset(HandleEvent<Events::HostGroupMember>(this->stream_));
               break ;
              case NDO_API_HOSTPARENT:
-              event.reset(HandleEvent<Events::HostParent>(this->stream_,
-                            host_parent_map));
+              event.reset(HandleEvent<Events::HostParent>(this->stream_));
               break ;
              case NDO_API_HOSTSTATUSDATA:
-              event.reset(HandleEvent<Events::HostStatus>(this->stream_,
-                            host_status_map));
+              event.reset(HandleEvent<Events::HostStatus>(this->stream_));
               break ;
              case NDO_API_LOGDATA:
-              event.reset(HandleEvent<Events::Log>(this->stream_,
-                                                   log_map));
+              event.reset(HandleEvent<Events::Log>(this->stream_));
               break ;
              case NDO_API_PROGRAMSTATUSDATA:
-              event.reset(HandleEvent<Events::ProgramStatus>(this->stream_,
-                            program_status_map));
+              event.reset(HandleEvent<Events::ProgramStatus>(this->stream_));
               break ;
              case NDO_API_SERVICECHECKDATA:
-              event.reset(HandleEvent<Events::ServiceCheck>(this->stream_,
-                            service_check_map));
+              event.reset(HandleEvent<Events::ServiceCheck>(this->stream_));
               break ;
              case NDO_API_SERVICEDEFINITION:
-              event.reset(HandleEvent<Events::Service>(this->stream_,
-                            service_map));
+              event.reset(HandleEvent<Events::Service>(this->stream_));
               break ;
              case NDO_API_SERVICEDEPENDENCYDEFINITION:
-              event.reset(HandleEvent<Events::ServiceDependency>(this->stream_,
-                            service_dependency_map));
+              event.reset(HandleEvent<Events::ServiceDependency>(this->stream_));
               break ;
              case NDO_API_SERVICEGROUPDEFINITION:
-              event.reset(HandleEvent<Events::ServiceGroup>(this->stream_,
-                            service_group_map));
+              event.reset(HandleEvent<Events::ServiceGroup>(this->stream_));
               break ;
              case NDO_API_SERVICEGROUPMEMBERDEFINITION:
-              event.reset(HandleEvent<Events::ServiceGroupMember>(this->stream_,
-                            service_group_member_map));
+              event.reset(HandleEvent<Events::ServiceGroupMember>(this->stream_));
               break ;
              case NDO_API_SERVICESTATUSDATA:
-              event.reset(HandleEvent<Events::ServiceStatus>(this->stream_,
-                            service_status_map));
+              event.reset(HandleEvent<Events::ServiceStatus>(this->stream_));
               break ;
              default:
               // Skip this event.
@@ -456,39 +279,8 @@ Events::Event* Source::Event()
     }
   if (event.get())
     {
-      event->instance = this->instance_;
+      // XXX : event->instance = this->instance_;
       event->AddReader();
     }
   return (event.release());
-}
-
-/**
- *  Initialize internal data structures that NDO::Source uses.
- */
-void Source::Initialize()
-{
-  StaticInit<Events::Acknowledgement>(acknowledgement_fields,
-                                      acknowledgement_map);
-  StaticInit<Events::Comment>(comment_fields, comment_map);
-  StaticInit<Events::Downtime>(downtime_fields, downtime_map);
-  StaticInit<Events::Host>(host_fields, host_map);
-  StaticInit<Events::HostCheck>(host_check_fields, host_check_map);
-  StaticInit<Events::HostDependency>(host_dependency_fields,
-                                     host_dependency_map);
-  StaticInit<Events::HostGroup>(host_group_fields, host_group_map);
-  StaticInit<Events::HostGroupMember>(host_group_member_fields,
-                                      host_group_member_map);
-  StaticInit<Events::HostParent>(host_parent_fields, host_parent_map);
-  StaticInit<Events::HostStatus>(host_status_fields, host_status_map);
-  StaticInit<Events::Log>(log_fields, log_map);
-  StaticInit<Events::ProgramStatus>(program_status_fields, program_status_map);
-  StaticInit<Events::Service>(service_fields, service_map);
-  StaticInit<Events::ServiceCheck>(service_check_fields, service_check_map);
-  StaticInit<Events::ServiceDependency>(service_dependency_fields,
-                                        service_dependency_map);
-  StaticInit<Events::ServiceGroup>(service_group_fields, service_group_map);
-  StaticInit<Events::ServiceGroupMember>(service_group_member_fields,
-                                         service_group_member_map);
-  StaticInit<Events::ServiceStatus>(service_status_fields, service_status_map);
-  return ;
 }

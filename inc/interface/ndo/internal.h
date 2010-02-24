@@ -21,73 +21,33 @@
 #ifndef INTERFACE_NDO_INTERNAL_H_
 # define INTERFACE_NDO_INTERNAL_H_
 
-# include <string>
-# include "interface/field.h"
+# include <map>
+# include <sstream>
+# include "mapping.h"
 
-// Forward declarations.
-namespace    Events
+namespace                  Interface
 {
-  class      Acknowledgement;
-  class      Comment;
-  class      Downtime;
-  class      Host;
-  class      HostCheck;
-  class      HostDependency;
-  class      HostGroup;
-  class      HostGroupMember;
-  class      HostParent;
-  class      HostStatus;
-  class      ProgramStatus;
-  class      Service;
-  class      ServiceCheck;
-  class      ServiceDependency;
-  class      ServiceGroup;
-  class      ServiceGroupMember;
-  class      ServiceStatus;
-}
-
-namespace    Interface
-{
-  namespace  NDO
+  namespace                NDO
   {
-    /**
-     *  This template is used to associate a pointer to member with a NDO key.
-     */
-    template <typename T>
-    struct   KeyField : public Interface::Field<T>
+    template               <typename T>
+    struct                 GetterSetter
     {
-      int    key;
-
-      KeyField() : key(0) {}
-      KeyField(int k, bool (T::* b)) : Interface::Field<T>(b), key(k) {}
-      KeyField(int k, double (T::* d)) : Interface::Field<T>(d), key(k) {}
-      KeyField(int k, int (T::* i)) : Interface::Field<T>(i), key(k) {}
-      KeyField(int k, short (T::* s)) : Interface::Field<T>(s), key(k) {}
-      KeyField(int k, std::string (T::* s)) : Interface::Field<T>(s), key(k) {}
-      KeyField(int k, time_t (T::* t)) : Interface::Field<T>(t), key(k) {}
+      const DataMember<T>* member;
+      void                 (* getter)(const T&,
+                                      const DataMember<T>&,
+                                      std::stringstream& buffer);
+      void                 (* setter)(T&, const DataMember<T>&, const char*);
     };
 
-    // External arrays of pointer-to-members.
-    extern const KeyField<Events::Acknowledgement> acknowledgement_fields[];
-    extern const KeyField<Events::Comment>         comment_fields[];
-    extern const KeyField<Events::Downtime>        downtime_fields[];
-    extern const KeyField<Events::Host>            host_fields[];
-    extern const KeyField<Events::HostCheck>       host_check_fields[];
-    extern const KeyField<Events::HostDependency>  host_dependency_fields[];
-    extern const KeyField<Events::HostGroup>       host_group_fields[];
-    extern const KeyField<Events::HostGroupMember> host_group_member_fields[];
-    extern const KeyField<Events::HostParent>      host_parent_fields[];
-    extern const KeyField<Events::HostStatus>      host_status_fields[];
-    extern const KeyField<Events::Log>             log_fields[];
-    extern const KeyField<Events::ProgramStatus>   program_status_fields[];
-    extern const KeyField<Events::Service>         service_fields[];
-    extern const KeyField<Events::ServiceCheck>    service_check_fields[];
-    extern const KeyField<Events::ServiceDependency>
-      service_dependency_fields[];
-    extern const KeyField<Events::ServiceGroup>    service_group_fields[];
-    extern const KeyField<Events::ServiceGroupMember>
-      service_group_member_fields[];
-    extern const KeyField<Events::ServiceStatus>   service_status_fields[];
+    // NDO mappings.
+    template               <typename T>
+    struct                 NDOMappedType
+    {
+      static std::map<int, GetterSetter<T> > map;
+    };
+
+    // Mapping initialization routine.
+    void Initialize();
   }
 }
 

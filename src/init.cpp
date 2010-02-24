@@ -24,14 +24,13 @@
 #include "configuration/manager.h"
 #include "exception.h"
 #include "init.h"
-#include "interface/ndo/destination.h"
-#include "interface/ndo/source.h"
-#include "interface/xml/destination.h"
+#include "interface/db/internal.h"
+#include "interface/ndo/internal.h"
+#include "interface/xml/internal.h"
 #ifdef USE_TLS
 # include "io/tls/internal.h"
 #endif /* !USE_TLS */
 #include "logging.h"
-#include "mapping.h"
 
 /**************************************
 *                                     *
@@ -47,10 +46,6 @@ void Deinit()
   // Unload configuration.
   LOGDEBUG("Unloading configuration ...");
   Configuration::Manager::Instance().Close();
-
-  // Destroy O/R mapping.
-  LOGDEBUG("Unloading DB engine ...");
-  MappingsDestroy();
 
 #ifdef USE_TLS
   // Unload GNU TLS library.
@@ -86,13 +81,12 @@ void Init()
 #endif /* USE_TLS */
 
   // Initialize all interface objects.
-  LOGDEBUG("Initializing DB engine (destination) ...");
-  MappingsInit();
-  LOGDEBUG("Initializing NDO engine (source) ...");
-  Interface::NDO::Destination::Initialize();
-  Interface::NDO::Source::Initialize();
-  LOGDEBUG("Initializing XML engine (destination) ...");
-  Interface::XML::Destination::Initialize();
+  LOGDEBUG("Initializing DB engine ...");
+  Interface::DB::Initialize();
+  LOGDEBUG("Initializing NDO engine ...");
+  Interface::NDO::Initialize();
+  LOGDEBUG("Initializing XML engine ...");
+  Interface::XML::Initialize();
 
   return ;
 }

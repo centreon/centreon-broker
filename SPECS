@@ -1,7 +1,7 @@
 
           ------------------------------------------------------------
 
-                                Centreon-Broker
+                                Centreon Broker
 
           ------------------------------------------------------------
 
@@ -9,27 +9,17 @@
 1 Introduction
 --------------
 
-The goal of Centreon-Broker is to store configuration and event data from
-Nagios instances in one or more databases, as NDOUTILS do, but in a more
-optimized way. Currently Centreon-Broker only provides a ndo2db replacement
-called cb2db which has many features the original daemon lacks, like :
-
-  - support of multiple DBMS (like MySQL, PostgreSQL and Oracle) (only MySQL
-    support is fully implemented yet)
-  - simultaneous output in multiple database server
-
-Also cb2db is more optimized. According to our first benchmarks, cb2db have a
-smaller network footprint and is roughly 60 times faster than ndo2db (which
-seems a lot, I doubt that this is really the case).
+The goal of Centreon Broker is to store configuration and event data from
+Nagios instances in one or more databases, as NDOUtils do, but in a more
+optimized way. Currently Centreon Broker is provided in two forms : either a
+standalone daemon or a Nagios plugin.
 
 
 2 Overall
 ---------
 
-For now, Centreon-Broker still uses ndomod as event broker and globally works
-like ndo2db. So basically, cb2db listens on a socket, waiting for new ndomod
-clients to connect, generates events which are later processed and pushed in
-one or more databases.
+Basically, cb2db listens on a socket, waiting for new clients to connect,
+generates events which are later processed and pushed in one or more databases.
 
 
                        ______________
@@ -44,7 +34,7 @@ one or more databases.
           |                  |
                              V
        ___V___         ______________
-      |Network|       /              \    Each NetworkInput object represents
+      |Network|       /              \    Each Network Input object represents
       | Input |       |   Network    |    a client connection. Every connection
        -------        |    Input     |    is separatly handled in its own
           |           \______________/    thread.
@@ -75,17 +65,17 @@ one or more databases.
 3 Network
 ---------
 
-As you can see in the schema above, cb2db can accept multiple Nagios instances
-connections. These can be of different kinds : IPv4, IPv6 or Unix, all of them
-with or without TLS.
+As you can see in the schema above, Centreon Broker can accept multiple Nagios
+instances connections. These can be of different kinds : IPv4, IPv6 or Unix,
+all of them with or without TLS.
 
   3.1 TLS
   -------
 
-cb2db support TLSv1 sockets, to ensure proper client authentication, as well as
-encrypted event flow (for more information on TLS, please refer to
+Centreon Broker support TLSv1 sockets, to ensure proper client authentication,
+as well as encrypted event flow (for more information on TLS, please refer to
 http://en.wikipedia.org/wiki/Transport_Layer_Security). To make TLS work in
-CentreonBroker, you need at least two files :
+Centreon Broker, you need at least two files :
 
   - one containing your public key (`cert` config file parameter)
   - one containing your private key (`key` config file parameter)
@@ -117,28 +107,34 @@ generated server certificate like this :
 4 Events
 --------
 
-cb2db does not fully support the integral list of Nagios events, but the main
-ones are :
+Centreon Broker does not fully support the integral list of Nagios events, but
+most of them are :
 
-  - NDO_API_ACKNOWLEDGEMENTDATA
-  - NDO_API_COMMENTDATA
-  - NDO_API_DOWNTIMEDATA
-  - NDO_API_HOSTDEFINITION
-  - NDO_API_HOSTGROUPDEFINITION
-  - NDO_API_HOSTSTATUSDATA
-  - NDO_API_LOGDATA
-  - NDO_API_PROGRAMSTATUSDATA
-  - NDO_API_SERVICEDEFINITION
-  - NDO_API_SERVICESTATUSDATA
-
-More will come.
+  - acknowledgements
+  - comments
+  - downtimes
+  - hosts
+  - host checks
+  - host dependencies
+  - host groups
+  - host group members
+  - host parents
+  - host status
+  - logs
+  - program status
+  - services
+  - service dependencies
+  - service groups
+  - service group members
+  - service status
 
 
 5 Configuration file
 --------------------
 
-To start, a cb2db instance needs a configuration file supplied as its first
-argument. It supports both input and output definition on the following form :
+To start, a Centreon Broker instance needs a configuration file supplied as its
+first argument. It supports both input and output definition on the following
+form :
 
 input
 {
@@ -152,8 +148,8 @@ output
 	parameter2=value2
 }
 
-You can also specify how to log cb2db output (file, syslog, ...) using the same
-syntax.
+You can also specify how to log Centreon Broker's logs (file, syslog, ...)
+using the same syntax.
 
  5.1 Input parameters
  --------------------
