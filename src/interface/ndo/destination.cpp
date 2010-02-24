@@ -173,6 +173,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::HOSTCHECK:
+          buffer << NDO_API_HOSTCHECKDATA << ":\n";
+          HandleEvent<Events::HostCheck>(
+            *static_cast<Events::HostCheck*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::HOSTDEPENDENCY:
           buffer << NDO_API_HOSTDEPENDENCYDEFINITION << ":\n";
           HandleEvent<Events::HostDependency>(
@@ -228,6 +235,13 @@ void Destination::Event(Events::Event* event)
             *static_cast<Events::Service*>(event),
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::SERVICECHECK:
+          buffer << NDO_API_SERVICECHECKDATA << ":\n";
+          HandleEvent<Events::ServiceCheck>(
+            *static_cast<Events::ServiceCheck*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << ":\n";
           break ;
          case Events::Event::SERVICEDEPENDENCY:
           buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";

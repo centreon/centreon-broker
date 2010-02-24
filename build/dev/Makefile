@@ -127,7 +127,7 @@ CXXFLAGS	=	-O3 -pedantic -Wall -Wextra -DNDEBUG
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck
 CXXFLAGS	+=	$(INCLUDE) $(MACROS) `mysql_config --include`
-LDFLAGS		=	-lpthread `mysql_config --libs_r` -lgnutls -lsoci_core-gcc-3_0	\
+LDFLAGS		=	-lpthread -lgnutls -lsoci_core-gcc-3_0	\
 			-lsoci_mysql-gcc-3_0 -lsoci_postgresql-gcc-3_0 #-lefence
 
 # Rules

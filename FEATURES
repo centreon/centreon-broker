@@ -1,23 +1,14 @@
-Features
---------
-
-The cb2db is a ndo2db replacement. It has the following features :
+CentreonBroker is a Nagios Event Broker Module that can export monitoring
+events to a database. It has the following features :
 
  - configurable log output
  - multi instance input
  - multi socket input
  - multi output
- - TLS on input possible
+ - TLS on connections possible
  - lower network footprint
  - smaller DB load
  - optimized DB schema
  - written in C++ for more stability
  - fully configurable
  - multi-threaded (make use of modern processors)
-
-
-cb2db uses some external projects to provide those features :
-
- - GNU TLS to provide TLS connection between the broker and cb2db
- - MySQL C Connector to handle MySQL databases
- - libpq to handle PostgreSQL databases
