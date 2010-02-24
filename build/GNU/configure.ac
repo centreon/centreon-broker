@@ -59,11 +59,39 @@ fi
 ##
 ##  SOCI
 ##
-SOCI_INCLUDEDIR=/usr/include/soci
-SOCI_CPPFLAGS=-I/usr/include/soci
-SOCI_LDFLAGS=-lsoci_core-gcc-3_0
-AC_SUBST([SOCI_CPPFLAGS])
-AC_SUBST([SOCI_LDFLAGS])
+AC_ARG_WITH([soci],
+	AC_HELP_STRING([--with-soci=@<:@ARG@:>@], [specify SOCI directory if not in standard path]),
+	[SOCI_DIR="$withval"],
+	[SOCI_DIR=/usr])
+# Search for soci.h
+found_soci="no"
+for includedir in "$SOCI_DIR"/include "$SOCI_DIR"/include/soci "$SOCI_DIR"/src/core ; do
+	if test "$found_soci" = "no" ; then
+		AC_CHECK_FILE([$includedir/soci.h],
+			[SOCI_CPPFLAGS="-I$includedir"
+			AC_SUBST([SOCI_CPPFLAGS])
+			found_soci="yes"],
+			[])
+	fi
+done
+if test "$found_soci" = "no" ; then
+	AC_MSG_ERROR([could not find soci.h in $SOCI_DIR])
+fi
+# Search for libsoci_core.a
+found_soci="no"
+for libdir in "$SOCI_DIR/lib" "$SOCI_DIR/src/core" ; do
+	for lib in "$libdir"/libsoci_core.a "$libdir"/libsoci_core-gcc-3_0.a ; do
+		if test "$found_soci" = "no" ; then
+			AC_CHECK_FILE([$lib],
+				[SOCI_LDFLAGS="-ldl -L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
+				AC_SUBST([SOCI_LDFLAGS])
+				found_soci="yes"])
+		fi
+	done
+done
+if test "$found_soci" = "no" ; then
+	AC_MSG_ERROR([could not find libsoci_core*.a in $SOCI_DIR])
+fi
 
 ##
 ##  MYSQL
@@ -81,6 +109,7 @@ AC_ARG_WITH([mysql],
 		MYSQL_CONFIG="$withval"
 	fi],
 	[want_mysql="yes"])
+# Search for mysql_config
 AC_MSG_RESULT($want_mysql)
 if test "$want_mysql" = "yes"; then
 	if test -z "$MYSQL_CONFIG" -o test; then
@@ -88,17 +117,38 @@ if test "$want_mysql" = "yes"; then
 	fi
 	if test ! -x "$MYSQL_CONFIG"; then
 		AC_MSG_ERROR([$MYSQL_CONFIG does not exist or it is not an executable file])
-		MYSQL_CONFIG="no"
 	fi
-	if test "$MYSQL_CONFIG" != "no"; then
-		AC_MSG_CHECKING([for MySQL development files])
-		MYSQL_CPPFLAGS="`$MYSQL_CONFIG --include` -I$SOCI_INCLUDEDIR/mysql"
-		MYSQL_LDFLAGS=-lsoci_mysql-gcc-3_0
-		AC_DEFINE([USE_MYSQL],
-			[1],
-			[Define to 1 if MySQL support is required and available])
-		AC_MSG_RESULT([yes])
+	MYSQL_CPPFLAGS="`$MYSQL_CONFIG --include`"
+# Search for soci-mysql.h
+	found_soci_mysql="no"
+	for includedir in "$SOCI_DIR"/include "$SOCI_DIR"/include/soci "$SOCI_DIR"/include/soci/mysql "$SOCI_DIR"/src/backends/mysql ; do
+		if test "$found_soci_mysql" = "no" ; then
+			AC_CHECK_FILE([$includedir/soci-mysql.h],
+				[MYSQL_CPPFLAGS+=" -I$includedir"
+				found_soci_mysql="yes"])
+		fi
+	done
+	if test "$found_soci_mysql" = "no" ; then
+		AC_MSG_ERROR([could not find soci-mysql.h in $SOCI_DIR])
 	fi
+# Search for libsoci_mysql.a
+	found_soci_mysql="no"
+	for libdir in "$SOCI_DIR/lib" "$SOCI_DIR/src/backends/mysql" ; do
+		for lib in "$libdir"/libsoci_mysql.a "$libdir"/libsoci_mysql-gcc-3_0.a ; do
+			if test "$found_soci_mysql" = "no" ; then
+				AC_CHECK_FILE([$lib],
+					[MYSQL_LDFLAGS="-L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
+					AC_SUBST([MYSQL_LDFLAGS])
+					found_soci_mysql="yes"])
+			fi
+		done
+	done
+	if test "$found_soci_mysql" = "no" ; then
+		AC_MSG_ERROR([could not find libsoci_mysql*.a in $SOCI_DIR])
+	fi
+	AC_DEFINE([USE_MYSQL],
+		[1],
+		[Define to 1 if MySQL support is required and available])
 fi
 AC_SUBST([MYSQL_CPPFLAGS])
 AC_SUBST([MYSQL_LDFLAGS])
