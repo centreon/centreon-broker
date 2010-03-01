@@ -48,7 +48,6 @@ namespace          Interface
       virtual      ~Destination();
       virtual void Close();
       virtual void Event(Events::Event* event);
-      static void  Initialize();
     };
   }
 }
