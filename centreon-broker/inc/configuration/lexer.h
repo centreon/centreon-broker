@@ -83,6 +83,7 @@ namespace              Configuration
   {
    private:
     char               buffer_[1024];
+    bool               closed_;
     std::list<Token>   context_;
     unsigned int       current_;
     std::list<std::list<Token> >
