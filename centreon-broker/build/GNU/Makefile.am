@@ -42,6 +42,7 @@ common_src=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/check.cpp				\
 		../../src/events/comment.cpp				\
+		../../src/events/correlation.cpp			\
 		../../src/events/dependency.cpp				\
 		../../src/events/downtime.cpp				\
 		../../src/events/event.cpp				\
