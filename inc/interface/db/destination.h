@@ -43,9 +43,7 @@ namespace                         Interface
       enum                        DB
       {
         UNKNOWN = 0,
-        MYSQL,
-        ORACLE,
-        POSTGRESQL
+        MYSQL
       };
 
      private:

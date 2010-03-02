@@ -194,16 +194,16 @@ dumpfile            Base path of the file to use to dump events. A number will
                     be appended to this base.
 host                DB server host.
 password            DB password used to authenticate.
-type                Can be 'mysql', 'oracle' or 'postgresql'.
+type                Can be 'mysql' only.
 user                DB user name used to authenticate.
 
 
 6 Output
 --------
 
-MySQL is currently the only DBMS supported and implemented (but PostgreSQL
-support has been started). The current implementation makes use of a nice
-features supported by modern DBMS : prepared statements. I won't go in details
-of all advantages that prepared statements have (for this you have Google) but
-note that prepared statements will help us reduce network footprint as well as
-DB server load.
+MySQL is currently the only DBMS supported and implemented (but support has
+been started). The current implementation makes use of a nice features
+supported by modern DBMS : prepared statements. I won't go in details of all
+advantages that prepared statements have (for this you have Google) but note
+that prepared statements will help us reduce network footprint as well as DB
+server load.

@@ -161,11 +161,6 @@ AX_PTHREAD(
 	[AC_MSG_ERROR([pthread library is mandatory])])
 
 ##
-##  TINYXML
-##
-AC_DEFINE([TIXML_USE_STL])
-
-##
 ##  TLS
 ##
 AM_LIB_GNUTLS

@@ -25,7 +25,6 @@
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
 #include "interface/ndo/sourcedestination.h"
-#include "interface/xml/destination.h"
 #include "io/net/ipv4.h"
 #include "io/net/ipv6.h"
 #include "io/net/unix.h"
@@ -283,10 +282,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
 
         // XXX : set file num + file size
         split->BaseFile(i.filename);
-        if (Configuration::Interface::XML == i.protocol)
-          dest = new Interface::XML::Destination(split.get());
-        else
-          dest = new Interface::NDO::Destination(split.get());
+        dest = new Interface::NDO::Destination(split.get());
         split.release();
       }
       break ;
@@ -294,10 +290,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Stream> ipv4c(this->IPv4Connector(i));
 
-        if (Configuration::Interface::XML == i.protocol)
-          dest = new Interface::XML::Destination(ipv4c.get());
-        else
-          dest = new Interface::NDO::Destination(ipv4c.get());
+        dest = new Interface::NDO::Destination(ipv4c.get());
         ipv4c.release();
       }
       break ;
@@ -305,10 +298,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Stream> ipv6c(this->IPv6Connector(i));
 
-        if (Configuration::Interface::XML == i.protocol)
-          dest = new Interface::XML::Destination(ipv6c.get());
-        else
-          dest = new Interface::NDO::Destination(ipv6c.get());
+        dest = new Interface::NDO::Destination(ipv6c.get());
         ipv6c.release();
       }
       break ;
@@ -330,10 +320,7 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       {
         std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));
 
-        if (Configuration::Interface::XML == i.protocol)
-          dest = new Interface::XML::Destination(uc.get());
-        else
-          dest = new Interface::NDO::Destination(uc.get());
+        dest = new Interface::NDO::Destination(uc.get());
         uc.release();
       }
       break ;

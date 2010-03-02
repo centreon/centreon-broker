@@ -48,8 +48,7 @@ namespace                       Processing
     enum                        Protocol
     {
       UNKNOWNPROTO = 0,
-      NDO,
-      XML
+      NDO
     };
 
    private:
@@ -61,8 +60,6 @@ namespace                       Processing
     Listener&                   operator=(const Listener& listener);
     void                        RunNDOIn(IO::Stream* stream);
     void                        RunNDOOut(IO::Stream* stream);
-    //    void                        RunXMLIn(IO::Stream* stream);
-    void                        RunXMLOut(IO::Stream* stream);
 
    public:
                                 Listener();

@@ -49,7 +49,6 @@ void Interface::InternalCopy(const Interface& interface)
   this->name          = interface.name;
   this->password      = interface.password;
   this->port          = interface.port;
-  this->protocol      = interface.protocol;
   this->socket        = interface.socket;
   this->type          = interface.type;
   this->user          = interface.user;
@@ -75,7 +74,6 @@ void Interface::InternalCopy(const Interface& interface)
 Interface::Interface()
 {
   this->port     = 5668;
-  this->protocol = NDO;
   this->type     = UNKNOWN_TYPE;
 #ifdef USE_TLS
   this->compress = false;
@@ -129,7 +127,6 @@ bool Interface::operator==(const Interface& interface) const
       {
        case FILE:
         ret = ((this->filename == interface.filename)
-               && (this->protocol == interface.protocol)
                && ((!this->failover.get() && !(interface.failover.get()))
                    || (this->failover.get() && interface.failover.get()
                        && (*this->failover == *interface.failover))
@@ -142,7 +139,6 @@ bool Interface::operator==(const Interface& interface) const
         ret = ((this->host == interface.host)
                && (this->interface == interface.interface)
                && (this->port == interface.port)
-               && (this->protocol == interface.protocol)
 #ifdef USE_TLS
                && (this->tls == interface.tls)
                && (!this->tls || ((this->ca == interface.ca)
@@ -155,8 +151,6 @@ bool Interface::operator==(const Interface& interface) const
                        && (*this->failover == *interface.failover))));
         break ;
        case MYSQL:
-       case ORACLE:
-       case POSTGRESQL:
         ret = ((this->db == interface.db)
                && (this->host == interface.host)
                && (this->password == interface.password)
@@ -231,8 +225,6 @@ bool Interface::operator<(const Interface& interface) const
           ret = (this->interface < interface.interface);
         else if (this->port != interface.port)
           ret = (this->port < interface.port);
-        else if (this->protocol != interface.protocol)
-          ret = (this->protocol < interface.protocol);
 #ifdef USE_TLS
         else if (this->tls != interface.tls)
           ret = (this->tls < interface.tls);
@@ -251,8 +243,6 @@ bool Interface::operator<(const Interface& interface) const
           ret = false;
         break ;
        case MYSQL:
-       case ORACLE:
-       case POSTGRESQL:
         if (this->db != interface.db)
           ret = (this->db < interface.db);
         else if (this->host != interface.host)

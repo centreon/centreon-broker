@@ -24,12 +24,6 @@
 #ifdef USE_MYSQL
 # include <soci-mysql.h>
 #endif /* USE_MYSQL */
-#ifdef USE_ORACLE
-# include <soci-oracle.h>
-#endif /* USE_ORACLE */
-#ifdef USE_POSTGRESQL
-# include <soci-postgresql.h>
-#endif /* USE_POSTGRESQL */
 #include <sstream>
 #include <stdlib.h>                   // for abort
 #include "events/events.h"
@@ -624,21 +618,6 @@ void Destination::Connect(Destination::DB db_type,
         this->conn_.reset(new soci::session(soci::mysql, ss.str()));
         break ;
 #endif /* USE_MYSQL */
-
-#ifdef USE_ORACLE
-      case ORACLE:
-        break ;
-#endif /* USE_ORACLE */
-
-#ifdef USE_POSTGRESQL
-       case POSTGRESQL:
-        ss << "dbname=" << db
-           << " host=" << host
-           << " user=" << user
-           << " password=" << pass;
-        this->conn_.reset(new soci::session(soci::postgresql, ss.str()));
-        break ;
-#endif /* USE_POSTGRESQL */
 
       default:
         throw Exception(0, "Unsupported DBMS requested.");

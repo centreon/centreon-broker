@@ -26,7 +26,6 @@
 #include "init.h"
 #include "interface/db/internal.h"
 #include "interface/ndo/internal.h"
-#include "interface/xml/internal.h"
 #ifdef USE_TLS
 # include "io/tls/internal.h"
 #endif /* !USE_TLS */
@@ -85,8 +84,6 @@ void Init()
   Interface::DB::Initialize();
   LOGDEBUG("Initializing NDO engine ...");
   Interface::NDO::Initialize();
-  LOGDEBUG("Initializing XML engine ...");
-  Interface::XML::Initialize();
 
   return ;
 }

@@ -38,7 +38,6 @@ namespace          Interface
    *  \see DB::DB
    *  \see File::File
    *  \see NDO::NDO
-   *  \see XML::XML
    */
   class          Destination
   {

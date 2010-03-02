@@ -40,12 +40,6 @@ namespace                    Configuration
     void                     InternalCopy(const Interface& interface);
 
    public:
-    enum                     Protocol
-    {
-      UNKNOWN_PROTO = 0,
-      NDO,
-      XML
-    };
     enum                     Type
     {
       UNKNOWN_TYPE = 0,
@@ -55,8 +49,6 @@ namespace                    Configuration
       IPV6_CLIENT,
       IPV6_SERVER,
       MYSQL,
-      ORACLE,
-      POSTGRESQL,
       UNIX_CLIENT,
       UNIX_SERVER
     };
@@ -69,7 +61,6 @@ namespace                    Configuration
     std::string              name;
     std::string              password;
     short                    port;
-    Protocol                 protocol;
     std::string              socket;
     Type                     type;
     std::string              user;

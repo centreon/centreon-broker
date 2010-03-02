@@ -429,10 +429,7 @@ void Configuration::Manager::Update()
             new Processing::Listener);
 
           listener->Init(acceptor.get(),
-                         ((outputs_it->protocol
-                           == Configuration::Interface::NDO)
-                          ? Processing::Listener::NDO
-                          : Processing::Listener::XML),
+                         Processing::Listener::NDO,
                          Processing::Listener::OUT,
                          this);
           acceptor.release();
@@ -489,10 +486,7 @@ void Configuration::Manager::Update()
             new Processing::Listener);
 
           listener->Init(acceptor.get(),
-                         ((inputs_it->protocol
-                           == Configuration::Interface::NDO)
-                          ? Processing::Listener::NDO
-                          : Processing::Listener::XML),
+                         Processing::Listener::NDO,
                          Processing::Listener::IN,
                          this);
           acceptor.release();

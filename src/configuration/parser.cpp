@@ -97,9 +97,6 @@ static void HandleInterface(Configuration::Lexer& lexer,
         i.password = val_str;
       else if (var_str == "port")
         i.port = strtoul(val_str.c_str(), NULL, 0);
-      else if (var_str == "protocol")
-        i.protocol = ((val_str == "xml") ? Configuration::Interface::XML
-                                         : Configuration::Interface::NDO);
       else if (var_str == "socket")
         i.socket = val_str;
       else if (var_str == "user")
@@ -116,10 +113,6 @@ static void HandleInterface(Configuration::Lexer& lexer,
                                      : Configuration::Interface::IPV6_CLIENT);
           else if (val_str == "mysql")
             i.type = Configuration::Interface::MYSQL;
-          else if (val_str == "oracle")
-            i.type = Configuration::Interface::ORACLE;
-          else if (val_str == "postgresql")
-            i.type = Configuration::Interface::POSTGRESQL;
           else if (val_str == "unix")
             i.type = (i.host.empty() ? Configuration::Interface::UNIX_SERVER
                                      : Configuration::Interface::UNIX_CLIENT);
