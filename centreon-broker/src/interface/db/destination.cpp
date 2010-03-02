@@ -382,21 +382,18 @@ void Destination::ProcessLog(const Events::Log& log)
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
   LOGDEBUG("Processing ProgramStatus event ...");
+  std::map<int, time_t>::iterator it;
+
   if (ps.program_end)
     {
-      std::vector<int>::iterator it;
-
       this->CleanTables(ps.instance);
-      it = std::find(this->instances_.begin(),
-                     this->instances_.end(),
-                     ps.instance);
+      it = this->instances_.find(ps.instance);
       if (it != this->instances_.end())
         this->instances_.erase(it);
     }
-  else if (std::find(this->instances_.begin(),
-                     this->instances_.end(),
-                     ps.instance)
-           != this->instances_.end())
+  else if (((it = this->instances_.find(ps.instance))
+	    != this->instances_.end())
+	   && (it->second == ps.program_start))
     {
       this->PreparedUpdate<Events::ProgramStatus>(ps,
         *this->program_status_stmt_,
@@ -406,7 +403,7 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
     {
       this->CleanTables(ps.instance);
       this->Insert(ps);
-      this->instances_.push_back(ps.instance);
+      this->instances_[ps.instance] = ps.program_start;
     }
   return ;
 }
