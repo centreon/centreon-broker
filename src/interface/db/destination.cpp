@@ -83,6 +83,18 @@ Destination& Destination::operator=(const Destination& destination)
 }
 
 /**
+ *  Clean tables with data associated to the instance.
+ */
+void Destination::CleanTables(int instance_id)
+{
+  // ProgramStatus
+  *this->conn_ << "DELETE FROM " << MappedType<Events::ProgramStatus>::table
+               << " WHERE instance_id=" << instance_id;
+
+  return ;
+}
+
+/**
  *  Insert an object in the DB using its mapping.
  */
 template <typename T>
@@ -370,15 +382,31 @@ void Destination::ProcessLog(const Events::Log& log)
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
   LOGDEBUG("Processing ProgramStatus event ...");
-  try
+  if (ps.program_end)
+    {
+      std::vector<int>::iterator it;
+
+      this->CleanTables(ps.instance);
+      it = std::find(this->instances_.begin(),
+                     this->instances_.end(),
+                     ps.instance);
+      if (it != this->instances_.end())
+        this->instances_.erase(it);
+    }
+  else if (std::find(this->instances_.begin(),
+                     this->instances_.end(),
+                     ps.instance)
+           != this->instances_.end())
     {
       this->PreparedUpdate<Events::ProgramStatus>(ps,
-                                                  *this->program_status_stmt_,
-                                                  this->program_status_);
+        *this->program_status_stmt_,
+        this->program_status_);
     }
-  catch (const soci::soci_error& se)
+  else
     {
+      this->CleanTables(ps.instance);
       this->Insert(ps);
+      this->instances_.push_back(ps.instance);
     }
   return ;
 }
