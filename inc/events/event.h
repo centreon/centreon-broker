@@ -73,6 +73,7 @@ namespace              Events
       UNKNOWN = 0,
       ACKNOWLEDGEMENT,
       COMMENT,
+      CORRELATION,
       DOWNTIME,
       HOST,
       HOSTCHECK,

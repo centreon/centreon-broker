@@ -183,7 +183,7 @@ void Source::Close()
  *  Extract the next available event on the input stream, NULL if the stream is
  *  closed.
  *
- *  \return Next available event, NULL is stream is closed.
+ *  \return Next available event, NULL if stream is closed.
  */
 Events::Event* Source::Event()
 {
