@@ -60,9 +60,64 @@
 
 --
 --
---    Tables compatible with Merlin
+--    Tables under development.
 --
 --
+
+CREATE TABLE IF NOT EXISTS `program_status` (
+  `instance_id` int NOT NULL auto_increment,                 -- OK
+  `instance_name` varchar(255) NOT NULL default 'localhost', -- OK
+  `active_host_checks_enabled` boolean default NULL,         -- OK
+  `active_service_checks_enabled` boolean default NULL,      -- OK
+  `daemon_mode` boolean default NULL,                        -- OK
+  `event_handlers_enabled` boolean default NULL,             -- OK
+  `failure_prediction_enabled` boolean default NULL,         -- OK
+  `flap_detection_enabled` boolean default NULL,             -- OK
+  `global_host_event_handler` text default NULL,             -- OK
+  `global_service_event_handler` text default NULL,          -- OK
+  `is_running` boolean default NULL,                         -- OK
+  `last_alive` int default NULL,                             -- OK
+  `last_command_check` int default NULL,                     -- OK
+  `last_log_rotation` int default NULL,                      -- OK
+  `modified_host_attributes` int default NULL,               -- OK
+  `modified_service_attributes` int default NULL,            -- OK
+  `notifications_enabled` boolean default NULL,              -- OK
+  `obsess_over_hosts` boolean default NULL,                  -- OK
+  `obsess_over_services` boolean default NULL,               -- OK
+  `passive_host_checks_enabled` boolean default NULL,        -- OK
+  `passive_service_checks_enabled` boolean default NULL,     -- OK
+  `pid` int default NULL,                                    -- OK
+  `process_performance_data` boolean default NULL,           -- OK
+  `program_start` int default NULL,                          -- OK
+
+  -- check_host_freshness tinyint(2)
+  -- check_service_freshness tinyint(2)
+  `instance_address` varchar(120) default NULL,              -- not in Merlin
+  `instance_description` varchar(128) default NULL,          -- not in Merlin
+  `program_end` int default NULL,                            -- not in Merlin
+
+  PRIMARY KEY (`instance_id`),
+  UNIQUE KEY (`instance_name`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `acknowledgements` (
+  `id` int NOT NULL auto_increment,
+  `instance_id` int NOT NULL,
+  `host_id` int default NULL,
+  `service_id` int default NULL,
+
+  `acknowledgement_type` smallint default NULL,
+  `author_name` varchar(64) default NULL,
+  `comment_data` varchar(255) default NULL,
+  `entry_time` int default NULL,
+  `is_sticky` boolean default NULL,
+  `notify_contacts` boolean default NULL,
+  `persistent_comment` boolean default NULL,
+  `state` smallint default NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
+
 
 CREATE TABLE IF NOT EXISTS `comment` (
   `id` int NOT NULL auto_increment,                -- OK
@@ -86,92 +141,6 @@ CREATE TABLE IF NOT EXISTS `comment` (
   UNIQUE KEY (`internal_id`)
 ) ENGINE=InnoDB;
 
-
-CREATE TABLE IF NOT EXISTS `host_hostgroup` (
-  `host` int NOT NULL,             -- OK
-  `hostgroup` int NOT NULL,        -- OK
-  UNIQUE KEY (`host`, `hostgroup`)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `host_parents` (
-  `host` int NOT NULL,           -- OK
-  `parents` int NOT NULL,        -- OK
-  UNIQUE KEY (`host`, `parents`)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `hostgroup` (
-  `id` int NOT NULL auto_increment,             -- OK
-  `instance_id` int NOT NULL,                   -- OK
-  `action_url` varchar(160) default NULL,       -- OK
-  `alias` varchar(255) default NULL,            -- OK (varchar(160) in Merlin)
-  `hostgroup_name` varchar(255) default NULL,   -- OK (varchar(160) in Merlin)
-  `notes` varchar(160) default NULL,            -- OK
-  `notes_url` varchar(160) default NULL,        -- OK
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`instance_id`, `hostgroup_name`)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
-  `id` int NOT NULL auto_increment,                -- OK
-  `author_name` varchar(255) default NULL,         -- OK
-  `comment_data` text default NULL,                -- OK
-  `downtime_id` int default NULL,                  -- OK
-  `downtime_type` smallint default NULL,           -- OK (int in Merlin)
-  `duration` int default NULL,                     -- OK
-  `end_time` int default NULL,                     -- OK
-  `entry_time` int default NULL,                   -- OK
-  `fixed` boolean default NULL,                    -- OK
-  `host_name` varchar(255) NOT NULL,               -- OK
-  `instance_id` int NOT NULL,                      -- OK
-  `service_description` varchar(255) default NULL, -- OK
-  `start_time` int default NULL,                   -- OK
-  `triggered_by` int default NULL,                 -- OK
-
-  `was_cancelled` boolean default NULL,            -- not in Merlin
-  `was_started` boolean default NULL,              -- not in Merlin
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`downtime_id`, `instance_id`)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `service_servicegroup` (
-  `service` int NOT NULL,     -- OK
-  `servicegroup` int NOT NULL -- OK
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `servicedependency` (
-  `id` int NOT NULL auto_increment,                        -- OK
-  `service` int NOT NULL,                                  -- OK
-  `dependent_service` int NOT NULL,                        -- OK
-  `dependency_period` varchar(75) default NULL,            -- OK
-  `inherits_parent` boolean default NULL,                  -- OK
-  `execution_failure_options` varchar(15) default NULL,    -- OK
-  `notification_failure_options` varchar(15) default NULL, -- OK
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `servicegroup` (
-  `id` int NOT NULL auto_increment,              -- OK
-  `instance_id` int NOT NULL,                    -- OK
-  `action_url` varchar(160) default NULL,        -- OK
-  `alias` varchar(255) default NULL,             -- OK (varchar(160) in Merlin)
-  `notes` varchar(160) default NULL,             -- OK
-  `notes_url` varchar(160) default NULL,         -- OK
-  `servicegroup_name` varchar(255) default NULL, -- OK (varchar(75) in Merlin)
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
-
-
---
---
---    Tables with Merlin compatibility under progress
---
---
 
 CREATE TABLE IF NOT EXISTS `host` (
   `id` int NOT NULL auto_increment,                     -- OK
@@ -287,7 +256,44 @@ CREATE TABLE IF NOT EXISTS `host` (
 
   PRIMARY KEY (`id`),
   INDEX (`instance_id`, `host_name`),
-  UNIQUE (`instance_id`, `host_name`)
+  UNIQUE (`instance_id`, `host_name`),
+  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `hostgroup` (
+  `id` int NOT NULL auto_increment,             -- OK
+  `instance_id` int NOT NULL,                   -- OK
+  `action_url` varchar(160) default NULL,       -- OK
+  `alias` varchar(255) default NULL,            -- OK (varchar(160) in Merlin)
+  `hostgroup_name` varchar(255) default NULL,   -- OK (varchar(160) in Merlin)
+  `notes` varchar(160) default NULL,            -- OK
+  `notes_url` varchar(160) default NULL,        -- OK
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`instance_id`, `hostgroup_name`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `host_hostgroup` (
+  `host` int NOT NULL,                           -- OK
+  `hostgroup` int NOT NULL,                      -- OK
+  UNIQUE KEY (`host`, `hostgroup`),
+  FOREIGN KEY (host) REFERENCES host(id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (hostgroup) REFERENCES hostgroup(id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `host_parents` (
+  `host` int NOT NULL,                    -- OK
+  `parents` int NOT NULL,                 -- OK
+  UNIQUE KEY (`host`, `parents`),
+  FOREIGN KEY (host) REFERENCES host(id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (parents) REFERENCES host(id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
@@ -299,46 +305,59 @@ CREATE TABLE IF NOT EXISTS `hostdependency` (
   `inherits_parent` boolean default NULL,                  -- OK
   `execution_failure_options` varchar(15) default NULL,    -- OK
   `notification_failure_options` varchar(15) default NULL, -- OK
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (host) REFERENCES host(id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (dependent_host) REFERENCES host(id)
+    ON DELETE CASCADE
 
   -- instance_id int
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE IF NOT EXISTS `program_status` (
-  `instance_id` int NOT NULL auto_increment,                 -- OK
-  `instance_name` varchar(255) NOT NULL default 'localhost', -- OK
-  `active_host_checks_enabled` boolean default NULL,         -- OK
-  `active_service_checks_enabled` boolean default NULL,      -- OK
-  `daemon_mode` boolean default NULL,                        -- OK
-  `event_handlers_enabled` boolean default NULL,             -- OK
-  `failure_prediction_enabled` boolean default NULL,         -- OK
-  `flap_detection_enabled` boolean default NULL,             -- OK
-  `global_host_event_handler` text default NULL,             -- OK
-  `global_service_event_handler` text default NULL,          -- OK
-  `is_running` boolean default NULL,                         -- OK
-  `last_alive` int default NULL,                             -- OK
-  `last_command_check` int default NULL,                     -- OK
-  `last_log_rotation` int default NULL,                      -- OK
-  `modified_host_attributes` int default NULL,               -- OK
-  `modified_service_attributes` int default NULL,            -- OK
-  `notifications_enabled` boolean default NULL,              -- OK
-  `obsess_over_hosts` boolean default NULL,                  -- OK
-  `obsess_over_services` boolean default NULL,               -- OK
-  `passive_host_checks_enabled` boolean default NULL,        -- OK
-  `passive_service_checks_enabled` boolean default NULL,     -- OK
-  `pid` int default NULL,                                    -- OK
-  `process_performance_data` boolean default NULL,           -- OK
-  `program_start` int default NULL,                          -- OK
+CREATE TABLE IF NOT EXISTS `log` (
+  `log_id` int NOT NULL auto_increment,
+  `ctime` int default NULL,
+  `host_name` varchar(64) default NULL,
+  `service_description` varchar(64) default NULL,
+  `instance` int NOT NULL default '1',
+  `msg_type` enum('0','1','2','3','4','5','6','7','8','9','10','11') NOT NULL,
+  `notification_cmd` varchar(255) default NULL,
+  `notification_contact` varchar(255) default NULL,
+  `output` text,
+  `retry` int NOT NULL,
+  `status` enum('0', '1', '2', '3', '4') default NULL,
+  `type` smallint default NULL,
 
-  -- check_host_freshness tinyint(2)
-  -- check_service_freshness tinyint(2)
-  `instance_address` varchar(120) default NULL,              -- not in Merlin
-  `instance_description` varchar(128) default NULL,          -- not in Merlin
-  `program_end` int default NULL,                            -- not in Merlin
+  PRIMARY KEY  (`log_id`),
+  KEY `host_name` (`host_name`(64)),
+  KEY `service_description` (`service_description`(64)),
+  KEY `status` (`status`),
+  KEY `instance` (`instance`),
+  KEY `ctime` (`ctime`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
 
-  PRIMARY KEY (`instance_id`),
-  UNIQUE KEY (`instance_name`)
+
+CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
+  `id` int NOT NULL auto_increment,                -- OK
+  `author_name` varchar(255) default NULL,         -- OK
+  `comment_data` text default NULL,                -- OK
+  `downtime_id` int default NULL,                  -- OK
+  `downtime_type` smallint default NULL,           -- OK (int in Merlin)
+  `duration` int default NULL,                     -- OK
+  `end_time` int default NULL,                     -- OK
+  `entry_time` int default NULL,                   -- OK
+  `fixed` boolean default NULL,                    -- OK
+  `host_name` varchar(255) NOT NULL,               -- OK
+  `instance_id` int NOT NULL,                      -- OK
+  `service_description` varchar(255) default NULL, -- OK
+  `start_time` int default NULL,                   -- OK
+  `triggered_by` int default NULL,                 -- OK
+
+  `was_cancelled` boolean default NULL,            -- not in Merlin
+  `was_started` boolean default NULL,              -- not in Merlin
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`downtime_id`, `instance_id`)
 ) ENGINE=InnoDB;
 
 
@@ -465,33 +484,55 @@ CREATE TABLE IF NOT EXISTS `service` (
 
   PRIMARY KEY (`id`),
   INDEX (`instance_id`, `host_name`, `service_description`),
-  UNIQUE (`instance_id`, `host_name`, `service_description`)
+  UNIQUE (`instance_id`, `host_name`, `service_description`),
+  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `servicegroup` (
+  `id` int NOT NULL auto_increment,              -- OK
+  `instance_id` int NOT NULL,                    -- OK
+  `action_url` varchar(160) default NULL,        -- OK
+  `alias` varchar(255) default NULL,             -- OK (varchar(160) in Merlin)
+  `notes` varchar(160) default NULL,             -- OK
+  `notes_url` varchar(160) default NULL,         -- OK
+  `servicegroup_name` varchar(255) default NULL, -- OK (varchar(75) in Merlin)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `service_servicegroup` (
+  `service` int NOT NULL,                              -- OK
+  `servicegroup` int NOT NULL,                         -- OK
+  UNIQUE KEY (service, servicegroup),
+  FOREIGN KEY (service) REFERENCES service(id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (servicegroup) REFERENCES servicegroup(id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `servicedependency` (
+  `id` int NOT NULL auto_increment,                        -- OK
+  `service` int NOT NULL,                                  -- OK
+  `dependent_service` int NOT NULL,                        -- OK
+  `dependency_period` varchar(75) default NULL,            -- OK
+  `inherits_parent` boolean default NULL,                  -- OK
+  `execution_failure_options` varchar(15) default NULL,    -- OK
+  `notification_failure_options` varchar(15) default NULL, -- OK
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (service) REFERENCES service(id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
 --
 --
---    Tables incompatible with Merlin yet
+--    Junk tables (for future use).
 --
 --
-
-CREATE TABLE IF NOT EXISTS `acknowledgements` (
-  `id` int NOT NULL auto_increment,
-  `instance_id` int NOT NULL,
-  `host_id` int default NULL,
-  `service_id` int default NULL,
-
-  `acknowledgement_type` smallint default NULL,
-  `author_name` varchar(64) default NULL,
-  `comment_data` varchar(255) default NULL,
-  `entry_time` int default NULL,
-  `is_sticky` boolean default NULL,
-  `notify_contacts` boolean default NULL,
-  `persistent_comment` boolean default NULL,
-  `state` smallint default NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
-
 
 CREATE TABLE IF NOT EXISTS `customvariables` (
   `id` int NOT NULL auto_increment,
@@ -568,29 +609,6 @@ CREATE TABLE IF NOT EXISTS `hosts_commands` (
   `event_handler_command` text,
   PRIMARY KEY (`host_id`)
 ) ENGINE=InnoDB DEFAULT  CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-CREATE TABLE IF NOT EXISTS `log` (
-  `log_id` int NOT NULL auto_increment,
-  `ctime` int default NULL,
-  `host_name` varchar(64) default NULL,
-  `service_description` varchar(64) default NULL,
-  `instance` int NOT NULL default '1',
-  `msg_type` enum('0','1','2','3','4','5','6','7','8','9','10','11') NOT NULL,
-  `notification_cmd` varchar(255) default NULL,
-  `notification_contact` varchar(255) default NULL,
-  `output` text,
-  `retry` int NOT NULL,
-  `status` enum('0', '1', '2', '3', '4') default NULL,
-  `type` smallint default NULL,
-
-  PRIMARY KEY  (`log_id`),
-  KEY `host_name` (`host_name`(64)),
-  KEY `service_description` (`service_description`(64)),
-  KEY `status` (`status`),
-  KEY `instance` (`instance`),
-  KEY `ctime` (`ctime`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
 
 
 CREATE TABLE IF NOT EXISTS `processevents` (
