@@ -176,21 +176,23 @@ char Lexer::NextChar()
 {
   char ret;
 
+  // If stream is closed, return the end of string character.
+  if (this->closed_)
+    ret = '\0';
   // If buffer is empty, read more data.
-  if (this->current_ >= this->size_)
+  else if (this->current_ >= this->size_)
     {
       this->current_ = 0;
       // Read data from the byte stream.
       this->size_ = this->stream_->Receive(this->buffer_,
                                            sizeof(this->buffer_) - 1);
-      // Read failed, stream is probably closed.
+      // Read failed, stream is closed.
       if (!this->size_)
-        ret = '\0';
+        this->closed_ = true;
+      // Read succeeded, we now have some data in the buffer.
       else
-        {
-          this->buffer_[this->size_] = '\0';
-          ret = this->NextChar();
-        }
+        this->buffer_[this->size_] = '\0';
+      ret = this->NextChar();
     }
   // If buffer is not empty, extract the next available character.
   else
@@ -222,7 +224,8 @@ void Lexer::UngetChar(char c)
  *
  *  \param[in] stream Byte stream from which tokens will be generated.
  */
-Lexer::Lexer(IO::Stream* stream) : current_(0), size_(0), stream_(stream) {}
+Lexer::Lexer(IO::Stream* stream)
+  : closed_(false), current_(0), size_(0), stream_(stream) {}
 
 /**
  *  Lexer destructor.
@@ -362,7 +365,8 @@ bool Lexer::GetToken(Token& token)
                                  || ('-' == c)
                                  || ('_' == c)
                                  || ('/' == c)));
-                this->UngetChar(c);
+                if (c)
+                  this->UngetChar(c);
                 token.SetText(str);
                 token.SetType(Token::STRING);
               }
