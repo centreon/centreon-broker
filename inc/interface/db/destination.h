@@ -24,7 +24,7 @@
 # include <map>
 # include <string>
 # include <soci.h>
-# include <vector>
+# include <time.h>                  // for time_t
 # include "events/events.h"
 # include "interface/destination.h"
 
@@ -67,7 +67,7 @@ namespace                         Interface
       Events::ProgramStatus       program_status_;
       Events::ServiceCheck        service_check_;
       Events::ServiceStatus       service_status_;
-      std::vector<int>            instances_;
+      std::map<int, time_t>       instances_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
       void                        CleanTables(int instance_id);
