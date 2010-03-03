@@ -381,7 +381,14 @@ int CallbackProcess(int callback_type, void *data)
       process_data = static_cast<nebstruct_process_data*>(data);
       if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type)
         {
+          std::auto_ptr<Events::ProgramStatus> ps(new Events::ProgramStatus);
+
           Configuration::Manager::Instance().Open(gl_configuration_file);
+          ps->instance = gl_instance;
+          ps->program_start = process_data->timestamp.tv_sec;
+          ps->AddReader();
+          gl_publisher.Event(ps.get());
+          ps.release();
           SendInitialConfiguration();
         }
     }
@@ -432,7 +439,7 @@ int CallbackProgramStatus(int callback_type, void* data)
         program_status->global_service_event_handler
           = program_status_data->global_service_event_handler;
       program_status->instance = gl_instance;
-      // program_status->is_running = XXX;
+      program_status->is_running = true; // XXX : is it useful ?
       // program_status->last_alive = XXX;
       program_status->last_command_check
         = program_status_data->last_command_check;

@@ -706,7 +706,7 @@ void Destination::Connect(Destination::DB db_type,
                       id);
 
   id.clear();
-  id.push_back("instance_name");
+  id.push_back("instance_id");
   this->PrepareUpdate(this->program_status_stmt_,
                       this->program_status_,
                       id);

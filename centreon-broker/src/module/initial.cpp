@@ -349,6 +349,7 @@ static void SendServiceGroupList()
 
       if (sg->alias)
         service_group->alias = sg->alias;
+      service_group->instance = gl_instance;
       if (sg->group_name)
         service_group->name = sg->group_name;
 
