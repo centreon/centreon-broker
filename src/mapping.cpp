@@ -1638,7 +1638,7 @@ template <> const char*
 template <> const MappedData<Events::Downtime>*
   MappedType<Events::Downtime>::members(downtime_mapping);
 template <> const char*
-  MappedType<Events::Downtime>::table("downtime");
+  MappedType<Events::Downtime>::table("scheduled_downtime");
 
 // Host mapping.
 template <> const MappedData<Events::Host>*
