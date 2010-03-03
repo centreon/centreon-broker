@@ -313,9 +313,10 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       }
       break ;
 #ifdef USE_MYSQL
-      case Configuration::Interface::MYSQL:
+     case Configuration::Interface::MYSQL:
       {
-        std::auto_ptr<Interface::DB::Destination> db(new Interface::DB::Destination);
+        std::auto_ptr<Interface::DB::Destination> db(
+          new Interface::DB::Destination);
 
         db->Connect(Interface::DB::Destination::MYSQL,
                     i.db,
@@ -326,6 +327,21 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       }
       break ;
 #endif /* USE_MYSQL */
+#ifdef USE_POSTGRESQL
+     case Configuration::Interface::POSTGRESQL:
+      {
+        std::auto_ptr<Interface::DB::Destination> db(
+          new Interface::DB::Destination);
+
+        db->Connect(Interface::DB::Destination::POSTGRESQL,
+                    i.db,
+                    i.host,
+                    i.user,
+                    i.password);
+        dest = db.release();
+      }
+      break ;
+#endif /* USE_POSTGRESQL */
      case Configuration::Interface::UNIX_CLIENT:
       {
         std::auto_ptr<IO::Stream> uc(this->UnixConnector(i));

@@ -120,12 +120,12 @@ cb2db_SOURCES =	$(common_src)						\
 # Configure compilation flags properly
 cb2db_CPPFLAGS	=	$(AM_CPPFLAGS) -I../../inc -I../../inc/daemon	\
 			$(GNUTLS_CPPFLAGS) $(MYSQL_CPPFLAGS)		\
-			$(ORACLE_CPPFLAGS) $(POSTGRESQL_CPPFLAGS)	\
+			$(ORACLE_CPPFLAGS) $(PGSQL_CPPFLAGS)	\
 			$(SOCI_CPPFLAGS)
 cb2db_CXXFLAGS	=	$(AM_CXXFLAGS) $(GNUTLS_CFLAGS)			\
 			$(PTHREAD_CFLAGS)
 cb2db_LDFLAGS	=	$(AM_LDFLAGS) $(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)\
-			$(ORACLE_LDFLAGS) $(POSTGRESQL_LDFLAGS)		\
+			$(ORACLE_LDFLAGS) $(PGSQL_LDFLAGS)		\
 			$(PTHREAD_LIBS) $(SOCI_LDFLAGS)
 
 
@@ -144,10 +144,10 @@ cbmod_so_SOURCES=	$(common_src)					\
 # Configure compilation flags properly
 cbmod_so_CPPFLAGS=	$(AM_CPPFLAGS) -I../../inc -I../../inc/module	\
 			$(GNUTLS_CPPFLAGS) $(MYSQL_CPPFLAGS)		\
-			$(ORACLE_CPPFLAGS) $(POSTGRESQL_CPPFLAGS)	\
+			$(ORACLE_CPPFLAGS) $(PGSQL_CPPFLAGS)	\
 			$(SOCI_CPPFLAGS)
 cbmod_so_CXXFLAGS=	$(AM_CXXFLAGS) $(GNUTLS_CFLAGS)			\
 			$(PTHREAD_CFLAGS) -fPIC
 cbmod_so_LDFLAGS=	$(AM_LDFLAGS) $(GNUTLS_LDFLAGS) $(MYSQL_LDFLAGS)\
-			$(ORACLE_LDFLAGS) $(POSTGRESQL_LDFLAGS)		\
+			$(ORACLE_LDFLAGS) $(PGSQL_LDFLAGS)		\
 			$(PTHREAD_LIBS) $(SOCI_LDFLAGS) -shared

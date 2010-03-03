@@ -138,7 +138,6 @@ if test "$want_mysql" = "yes"; then
 			if test "$found_soci_mysql" = "no" ; then
 				AC_CHECK_FILE([$lib],
 					[MYSQL_LDFLAGS="-L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
-					AC_SUBST([MYSQL_LDFLAGS])
 					found_soci_mysql="yes"])
 			fi
 		done
@@ -152,6 +151,65 @@ if test "$want_mysql" = "yes"; then
 fi
 AC_SUBST([MYSQL_CPPFLAGS])
 AC_SUBST([MYSQL_LDFLAGS])
+
+##
+##  POSTGRESQL
+##
+AC_MSG_CHECKING([for PostgreSQL support])
+AC_ARG_WITH([postgresql],
+	AC_HELP_STRING([--with-postgresql=@<:@ARG@:>@],
+		[use PostgreSQL client library @<:@default=yes@:>@, optionally specify path to pg_config]),
+	[if test x"$withval" = "xno" ; then
+		want_pgsql="no"
+	elif test x"$withval" = "xyes" ; then
+		want_pgsql="yes"
+	else
+		want_pgsql="yes"
+		PG_CONFIG="$withval"
+	fi],
+	[want_pgsql="yes"])
+# Search for pg_config
+AC_MSG_RESULT($want_pgsql)
+if test "$want_pgsql" = "yes" ; then
+	if test -z "$PG_CONFIG" -o test ; then
+		AC_PATH_PROG([PG_CONFIG], [pg_config], [no])
+	fi
+	if test ! -x "$PG_CONFIG" ; then
+		AC_MSG_ERROR([$PG_CONFIG does not exist or it is not an executable file])
+	fi
+	PGSQL_CPPFLAGS=-I"`$PG_CONFIG --includedir`"
+# Seach for soci-postgresql.h
+	found_soci_postgresql="no"
+	for includedir in "$SOCI_DIR"/include "$SOCI_DIR"/include/soci "$SOCI_DIR"/include/soci/postgresql "$SOCI_DIR"/src/backends/postgresql ; do
+		if test "$found_soci_postgresql" = "no" ; then
+			AC_CHECK_FILE([$includedir/soci-postgresql.h],
+				[PGSQL_CPPFLAGS+=" -I$includedir"
+				found_soci_postgresql="yes"])
+		fi
+	done
+	if test "$found_soci_postgresql" = "no" ; then
+		AC_MSG_ERROR([could not find soci-postgresql.h in $SOCI_DIR])
+	fi
+# Search for libsoci_postgresql.a
+	found_soci_postgresql="no"
+	for libdir in "$SOCI_DIR/lib" "$SOCI_DIR/src/backends/postgresql" ; do
+		for lib in "$libdir/libsoci_postgresql.a" "$libdir/libsoci_postgresql-gcc-3_0.a" ; do
+			if test "$found_soci_postgresql" = "no" ; then
+				AC_CHECK_FILE([$lib],
+					[PGSQL_LDFLAGS="-L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
+					found_soci_postgresql="yes"])
+			fi
+		done
+	done
+	if test "$found_soci_postgresql" = "no" ; then
+		AC_MSG_ERROR([could not find libsoci_postgresql*.a in $SOCI_DIR])
+	fi
+	AC_DEFINE([USE_POSTGRESQL],
+		[1],
+		[Define to 1 if PostgreSQL support is required and available])
+fi
+AC_SUBST([PGSQL_CPPFLAGS])
+AC_SUBST([PGSQL_LDFLAGS])
 
 ##
 ##  PTHREAD
