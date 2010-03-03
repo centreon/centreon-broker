@@ -45,6 +45,7 @@ namespace              Events
     bool               daemon_mode;
     std::string        global_host_event_handler;
     std::string        global_service_event_handler;
+    std::string        instance_name;
     bool               is_running;
     time_t             last_alive;
     time_t             last_command_check;
