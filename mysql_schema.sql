@@ -65,7 +65,7 @@
 --
 
 CREATE TABLE IF NOT EXISTS `program_status` (
-  `instance_id` int NOT NULL auto_increment,                 -- OK
+  `instance_id` int NOT NULL,                                -- OK
   `instance_name` varchar(255) NOT NULL default 'localhost', -- OK
   `active_host_checks_enabled` boolean default NULL,         -- OK
   `active_service_checks_enabled` boolean default NULL,      -- OK
@@ -256,7 +256,9 @@ CREATE TABLE IF NOT EXISTS `host` (
 
   PRIMARY KEY (`id`),
   INDEX (`instance_id`, `host_name`),
+  INDEX (host_id),
   UNIQUE (`instance_id`, `host_name`),
+  UNIQUE (host_id),
   FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -279,7 +281,7 @@ CREATE TABLE IF NOT EXISTS `host_hostgroup` (
   `host` int NOT NULL,                           -- OK
   `hostgroup` int NOT NULL,                      -- OK
   UNIQUE KEY (`host`, `hostgroup`),
-  FOREIGN KEY (host) REFERENCES host(id)
+  FOREIGN KEY (host) REFERENCES host(host_id)
     ON DELETE CASCADE,
   FOREIGN KEY (hostgroup) REFERENCES hostgroup(id)
     ON DELETE CASCADE
@@ -306,9 +308,9 @@ CREATE TABLE IF NOT EXISTS `hostdependency` (
   `execution_failure_options` varchar(15) default NULL,    -- OK
   `notification_failure_options` varchar(15) default NULL, -- OK
   PRIMARY KEY (`id`),
-  FOREIGN KEY (host) REFERENCES host(id)
+  FOREIGN KEY (host) REFERENCES host(host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (dependent_host) REFERENCES host(id)
+  FOREIGN KEY (dependent_host) REFERENCES host(host_id)
     ON DELETE CASCADE
 
   -- instance_id int
@@ -484,8 +486,11 @@ CREATE TABLE IF NOT EXISTS `service` (
 
   PRIMARY KEY (`id`),
   INDEX (`instance_id`, `host_name`, `service_description`),
+  INDEX (service_id),
   UNIQUE (`instance_id`, `host_name`, `service_description`),
+  UNIQUE (service_id),
   FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
@@ -507,7 +512,7 @@ CREATE TABLE IF NOT EXISTS `service_servicegroup` (
   `service` int NOT NULL,                              -- OK
   `servicegroup` int NOT NULL,                         -- OK
   UNIQUE KEY (service, servicegroup),
-  FOREIGN KEY (service) REFERENCES service(id)
+  FOREIGN KEY (service) REFERENCES service(service_id)
     ON DELETE CASCADE,
   FOREIGN KEY (servicegroup) REFERENCES servicegroup(id)
     ON DELETE CASCADE
@@ -523,7 +528,7 @@ CREATE TABLE IF NOT EXISTS `servicedependency` (
   `execution_failure_options` varchar(15) default NULL,    -- OK
   `notification_failure_options` varchar(15) default NULL, -- OK
   PRIMARY KEY (`id`),
-  FOREIGN KEY (service) REFERENCES service(id)
+  FOREIGN KEY (service) REFERENCES service(service_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

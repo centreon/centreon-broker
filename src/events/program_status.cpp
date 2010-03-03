@@ -44,6 +44,7 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
   this->daemon_mode                    = ps.daemon_mode;
   this->global_host_event_handler      = ps.global_host_event_handler;
   this->global_service_event_handler   = ps.global_service_event_handler;
+  this->instance_name                  = ps.instance_name;
   this->is_running                     = ps.is_running;
   this->last_alive                     = ps.last_alive;
   this->last_command_check             = ps.last_command_check;

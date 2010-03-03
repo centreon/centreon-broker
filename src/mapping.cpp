@@ -48,9 +48,9 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::instance, // XXX : should be replaced with instance_id or removed
+      &Acknowledgement::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<Acknowledgement>(
       &Acknowledgement::is_sticky,
       NDO_DATA_STICKY,
@@ -122,9 +122,9 @@ static const MappedData<Comment> comment_mapping[] =
       NDO_DATA_HOST,
       "host_name"),
     MappedData<Comment>(
-      &Comment::instance, // XXX : should be replaced by instance_id or removed
+      &Comment::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<Comment>(
       &Comment::internal_id,
       NDO_DATA_COMMENTID,
@@ -188,9 +188,9 @@ static const MappedData<Downtime> downtime_mapping[] =
       NDO_DATA_DOWNTIMEID,
       "downtime_id"),
     MappedData<Downtime>(
-      &Downtime::instance, // XXX : should be replaced by instance_id
+      &Downtime::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<Downtime>(
       &Downtime::service, // XXX : should be replaced by service_id
       NDO_DATA_SERVICE,
@@ -346,9 +346,9 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Host>(
-      &Host::instance, // XXX : should be replaced by instance_id
+      &Host::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<Host>(
       &Host::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -601,10 +601,10 @@ static const MappedData<HostGroup> host_group_mapping[] =
       &HostGroup::alias,
       NDO_DATA_HOSTGROUPALIAS,
       "alias"),
-    MappedData<HostGroup>( // XXX : should be replaced by instance_id
+    MappedData<HostGroup>(
       &HostGroup::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<HostGroup>(
       &HostGroup::name,
       NDO_DATA_HOSTGROUPNAME,
@@ -632,7 +632,7 @@ static const MappedData<HostGroupMember> host_group_member_mapping[] =
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<HostGroupMember>(
-      &HostGroupMember::member, // XXX : should be replaced by host_id
+      &HostGroupMember::member,
       NDO_DATA_HOSTGROUPMEMBER,
       "host"),
     MappedData<HostGroupMember>()
@@ -858,9 +858,9 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_HOST,
       "host_name"),
     MappedData<Log>(
-      &Log::instance, // XXX : should be replaced by instance_id
+      &Log::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance"),
     MappedData<Log>(
       &Log::msg_type,
       0, // XXX : should find macro
@@ -934,6 +934,10 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::instance,
       NDO_DATA_INSTANCE,
+      "instance_id"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::instance_name,
+      NDO_DATA_PROGRAMNAME,
       "instance_name"),
     MappedData<ProgramStatus>(
       &ProgramStatus::is_running,
@@ -1128,9 +1132,9 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<Service>(
-      &Service::instance, // XXX : should be replaced by instance_id
+      &Service::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<Service>(
       &Service::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -1387,10 +1391,10 @@ static const MappedData<ServiceGroup> service_group_mapping[] =
       &ServiceGroup::alias,
       NDO_DATA_SERVICEGROUPALIAS,
       "alias"),
-    MappedData<ServiceGroup>( // XXX : should be replaced by instance_id
+    MappedData<ServiceGroup>(
       &ServiceGroup::instance,
       NDO_DATA_INSTANCE,
-      NULL),
+      "instance_id"),
     MappedData<ServiceGroup>(
       &ServiceGroup::name,
       NDO_DATA_SERVICEGROUPNAME,
@@ -1418,7 +1422,7 @@ static const MappedData<ServiceGroupMember> service_group_member_mapping[] =
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<ServiceGroupMember>(
-      &ServiceGroupMember::member, // XXX : should be replaced by service_id
+      &ServiceGroupMember::member,
       NDO_DATA_SERVICEGROUPMEMBER,
       "service"),
     MappedData<ServiceGroupMember>()
