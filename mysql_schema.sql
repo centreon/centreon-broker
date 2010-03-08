@@ -270,7 +270,9 @@ CREATE TABLE IF NOT EXISTS `hostgroup` (
   `notes` varchar(160) default NULL,            -- OK
   `notes_url` varchar(160) default NULL,        -- OK
   PRIMARY KEY (`id`),
-  UNIQUE KEY (`instance_id`, `hostgroup_name`)
+  UNIQUE KEY (`instance_id`, `hostgroup_name`),
+  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
@@ -334,7 +336,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   KEY `status` (`status`),
   KEY `instance` (`instance`),
   KEY `ctime` (`ctime`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
+) ENGINE=MyISAM;
 
 
 CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
