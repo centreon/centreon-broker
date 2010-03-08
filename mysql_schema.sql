@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `persistent_comment` boolean default NULL,
   `state` smallint default NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT='Current and historical host and service acknowledgements' ;
+) ENGINE=InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS `comment` (
@@ -254,10 +254,8 @@ CREATE TABLE IF NOT EXISTS `host` (
   `y_2d` smallint NOT NULL default '0',
 
   PRIMARY KEY (`id`),
-  INDEX (`instance_id`, `host_name`),
-  INDEX (host_id),
-  UNIQUE (`instance_id`, `host_name`),
-  UNIQUE (host_id),
+  UNIQUE KEY (`instance_id`, `host_name`),
+  UNIQUE KEY (host_id),
   FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -484,10 +482,8 @@ CREATE TABLE IF NOT EXISTS `service` (
   `stalk_on_warning` smallint NOT NULL default '0',
 
   PRIMARY KEY (`id`),
-  INDEX (`instance_id`, `host_name`, `service_description`),
-  INDEX (service_id),
-  UNIQUE (`instance_id`, `host_name`, `service_description`),
-  UNIQUE (service_id),
+  UNIQUE KEY (`instance_id`, `host_name`, `service_description`),
+  UNIQUE KEY (service_id),
   FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
