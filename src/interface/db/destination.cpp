@@ -105,7 +105,7 @@ void Destination::Insert(const T& t)
   // Build query string.
   query = "INSERT INTO ";
   query.append(MappedType<T>::table);
-  query.append("(");
+  query.append(" (");
   for (typename std::map<std::string, GetterSetter<T> >::const_iterator
          it = DBMappedType<T>::map.begin(),
          end = DBMappedType<T>::map.end();
@@ -337,7 +337,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::HostGroupMember>::table
-               << "(host, hostgroup) VALUES("
+               << " (host, hostgroup) VALUES("
                << hgm.member << ", "
                << hostgroup_id << ")";
 
@@ -469,7 +469,7 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::ServiceGroupMember>::table
-               << "(service, servicegroup) VALUES("
+               << " (service, servicegroup) VALUES("
                << sgm.member << ", "
                << servicegroup_id << ")";
 

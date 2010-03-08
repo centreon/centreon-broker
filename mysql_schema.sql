@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS `host` (
   PRIMARY KEY (`id`),
   UNIQUE KEY (`instance_id`, `host_name`),
   UNIQUE KEY (host_id),
-  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+  FOREIGN KEY (instance_id) REFERENCES program_status (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -271,7 +271,7 @@ CREATE TABLE IF NOT EXISTS `hostgroup` (
   `notes_url` varchar(160) default NULL,        -- OK
   PRIMARY KEY (`id`),
   UNIQUE KEY (`instance_id`, `hostgroup_name`),
-  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+  FOREIGN KEY (instance_id) REFERENCES program_status (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -280,9 +280,9 @@ CREATE TABLE IF NOT EXISTS `host_hostgroup` (
   `host` int NOT NULL,                           -- OK
   `hostgroup` int NOT NULL,                      -- OK
   UNIQUE KEY (`host`, `hostgroup`),
-  FOREIGN KEY (host) REFERENCES host(host_id)
+  FOREIGN KEY (host) REFERENCES host (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup) REFERENCES hostgroup(id)
+  FOREIGN KEY (hostgroup) REFERENCES hostgroup (id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -291,9 +291,9 @@ CREATE TABLE IF NOT EXISTS `host_parents` (
   `host` int NOT NULL,                    -- OK
   `parents` int NOT NULL,                 -- OK
   UNIQUE KEY (`host`, `parents`),
-  FOREIGN KEY (host) REFERENCES host(id)
+  FOREIGN KEY (host) REFERENCES host (id)
     ON DELETE CASCADE,
-  FOREIGN KEY (parents) REFERENCES host(id)
+  FOREIGN KEY (parents) REFERENCES host (id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -307,9 +307,9 @@ CREATE TABLE IF NOT EXISTS `hostdependency` (
   `execution_failure_options` varchar(15) default NULL,    -- OK
   `notification_failure_options` varchar(15) default NULL, -- OK
   PRIMARY KEY (`id`),
-  FOREIGN KEY (host) REFERENCES host(host_id)
+  FOREIGN KEY (host) REFERENCES host (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (dependent_host) REFERENCES host(host_id)
+  FOREIGN KEY (dependent_host) REFERENCES host (host_id)
     ON DELETE CASCADE
 
   -- instance_id int
@@ -486,7 +486,7 @@ CREATE TABLE IF NOT EXISTS `service` (
   PRIMARY KEY (`id`),
   UNIQUE KEY (`instance_id`, `host_name`, `service_description`),
   UNIQUE KEY (service_id),
-  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+  FOREIGN KEY (instance_id) REFERENCES program_status (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -500,7 +500,7 @@ CREATE TABLE IF NOT EXISTS `servicegroup` (
   `notes_url` varchar(160) default NULL,         -- OK
   `servicegroup_name` varchar(255) default NULL, -- OK (varchar(75) in Merlin)
   PRIMARY KEY (`id`),
-  FOREIGN KEY (instance_id) REFERENCES program_status(instance_id)
+  FOREIGN KEY (instance_id) REFERENCES program_status (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -509,9 +509,9 @@ CREATE TABLE IF NOT EXISTS `service_servicegroup` (
   `service` int NOT NULL,                              -- OK
   `servicegroup` int NOT NULL,                         -- OK
   UNIQUE KEY (service, servicegroup),
-  FOREIGN KEY (service) REFERENCES service(service_id)
+  FOREIGN KEY (service) REFERENCES service (service_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup) REFERENCES servicegroup(id)
+  FOREIGN KEY (servicegroup) REFERENCES servicegroup (id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -525,7 +525,7 @@ CREATE TABLE IF NOT EXISTS `servicedependency` (
   `execution_failure_options` varchar(15) default NULL,    -- OK
   `notification_failure_options` varchar(15) default NULL, -- OK
   PRIMARY KEY (`id`),
-  FOREIGN KEY (service) REFERENCES service(service_id)
+  FOREIGN KEY (service) REFERENCES service (service_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
