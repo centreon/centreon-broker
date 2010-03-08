@@ -96,8 +96,7 @@ CREATE TABLE IF NOT EXISTS `program_status` (
   `instance_description` varchar(128) default NULL,          -- not in Merlin
   `program_end` int default NULL,                            -- not in Merlin
 
-  PRIMARY KEY (`instance_id`),
-  UNIQUE KEY (`instance_name`)
+  PRIMARY KEY (`instance_id`)
 ) ENGINE=InnoDB;
 
 
