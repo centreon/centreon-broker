@@ -322,7 +322,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   `host_name` varchar(64) default NULL,
   `service_description` varchar(64) default NULL,
   `instance` int NOT NULL default '1',
-  `msg_type` enum('0','1','2','3','4','5','6','7','8','9','10','11') NOT NULL,
+  `msg_type` tinyint default NULL,
   `notification_cmd` varchar(255) default NULL,
   `notification_contact` varchar(255) default NULL,
   `output` text,
