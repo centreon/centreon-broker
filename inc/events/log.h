@@ -43,7 +43,7 @@ namespace              Events
    public:
     time_t             c_time;
     std::string        host;
-    int                msg_type;
+    short              msg_type;
     std::string        notification_cmd;
     std::string        notification_contact;
     std::string        output;
