@@ -1674,7 +1674,7 @@ template <> const char*
 template <> const MappedData<Events::HostParent>*
   MappedType<Events::HostParent>::members(host_parent_mapping);
 template <> const char*
-  MappedType<Events::HostParent>::table("host_parent");
+  MappedType<Events::HostParent>::table("host_parents");
 
 // HostStatus mapping.
 template <> const MappedData<Events::HostStatus>*
