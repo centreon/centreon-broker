@@ -859,11 +859,11 @@ static const MappedData<Log> log_mapping[] =
       "instance"),
     MappedData<Log>(
       &Log::msg_type,
-      0, // XXX : should find macro
+      NDO_DATA_ENTRYTYPE,
       "msg_type"),
     MappedData<Log>(
       &Log::notification_cmd,
-      0, // XXX : should find macro
+      NDO_DATA_HOSTNOTIFICATIONCOMMAND,
       "notification_cmd"),
     MappedData<Log>(
       &Log::notification_contact,
@@ -875,7 +875,7 @@ static const MappedData<Log> log_mapping[] =
       "output"),
     MappedData<Log>(
       &Log::retry,
-      0, // XXX : should find macro
+      NDO_DATA_HOSTRETRYINTERVAL,
       "retry"),
     MappedData<Log>(
       &Log::service, // XXX : should be replaced by service_id
@@ -883,7 +883,7 @@ static const MappedData<Log> log_mapping[] =
       "service_description"),
     MappedData<Log>(
       &Log::status,
-      0, // XXX : should find macro
+      NDO_DATA_CURRENTSTATE,
       "status"),
     MappedData<Log>(
       &Log::type,
