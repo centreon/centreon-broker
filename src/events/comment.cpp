@@ -57,7 +57,6 @@ void Comment::InternalCopy(const Comment& comment)
   this->persistent    = comment.persistent;
   this->service       = comment.service;
   this->source        = comment.source;
-  this->type          = comment.type;
   return ;
 }
 
@@ -82,8 +81,7 @@ Comment::Comment()
      expires(false),
      internal_id(0),
      persistent(false),
-     source(0),
-     type(0) {}
+     source(0) {}
 
 /**
  *  \brief Comment copy constructor.

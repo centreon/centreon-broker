@@ -223,8 +223,8 @@ void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 void Destination::ProcessComment(const Events::Comment& comment)
 {
   LOGDEBUG("Processing Comment event ...");
-  if ((comment.type == NEBTYPE_COMMENT_ADD)
-      || comment.type == NEBTYPE_COMMENT_LOAD)
+  if ((comment.comment_type == NEBTYPE_COMMENT_ADD)
+      || comment.comment_type == NEBTYPE_COMMENT_LOAD)
     {
       try
         {
@@ -237,7 +237,7 @@ void Destination::ProcessComment(const Events::Comment& comment)
                                this->comment_);
         }
     }
-  else if (comment.type == NEBTYPE_COMMENT_DELETE)
+  else if (comment.comment_type == NEBTYPE_COMMENT_DELETE)
     {
       *this->conn_ << "DELETE FROM " << MappedType<Events::Comment>::table
                    << " WHERE internal_id=" << comment.internal_id;

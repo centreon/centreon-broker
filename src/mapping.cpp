@@ -141,10 +141,6 @@ static const MappedData<Comment> comment_mapping[] =
       &Comment::source,
       NDO_DATA_SOURCE,
       "source"),
-    MappedData<Comment>( // XXX : wtf is it here for ?
-      &Comment::type,
-      NDO_DATA_TYPE,
-      NULL),
     MappedData<Comment>()
   };
 

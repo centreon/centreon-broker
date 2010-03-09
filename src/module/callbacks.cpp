@@ -127,14 +127,26 @@ int CallbackComment(int callback_type, void* data)
       comment->expire_time = comment_data->expire_time;
       comment->expires = comment_data->expires;
       if (comment_data->host_name)
-        comment->host = comment_data->host_name;
+        {
+          std::map<std::string, int>::const_iterator it;
+
+          it = gl_hosts.find(comment_data->host_name);
+          if (it != gl_hosts.end())
+            comment->host = it->second;
+          if (comment_data->service_description)
+            {
+              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+
+              it = gl_services.find(std::make_pair(comment_data->host_name,
+                                      comment_data->service_description));
+              if (it != gl_services.end())
+                comment->service = it->second;
+            }
+        }
       comment->instance = gl_instance;
       comment->internal_id = comment_data->comment_id;
       comment->persistent = comment_data->persistent;
-      if (comment_data->service_description)
-        comment->service = comment_data->service_description;
       comment->source = comment_data->source;
-      // comment->type = XXX;
 
       comment->AddReader();
       gl_publisher.Event(comment.get());
