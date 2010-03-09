@@ -48,12 +48,11 @@ namespace              Events
     short              entry_type;
     time_t             expire_time;
     bool               expires;
-    std::string        host;
+    int                host;
     int                internal_id;
     bool               persistent;
-    std::string        service;
+    int                service;
     short              source;
-    short              type;
                        Comment();
                        Comment(const Comment& comment);
                        ~Comment();
