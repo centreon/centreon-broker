@@ -280,6 +280,7 @@ static void SendHostParentsList()
         {
           std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
 
+          hp->host = host_id;
           if (parent->host_name)
             {
               it = gl_hosts.find(parent->host_name);

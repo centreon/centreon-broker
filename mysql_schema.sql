@@ -288,12 +288,12 @@ CREATE TABLE IF NOT EXISTS `host_hostgroup` (
 
 
 CREATE TABLE IF NOT EXISTS `host_parents` (
-  `host` int NOT NULL,                    -- OK
-  `parents` int NOT NULL,                 -- OK
+  `host` int NOT NULL,                            -- OK
+  `parents` int NOT NULL,                         -- OK
   UNIQUE KEY (`host`, `parents`),
-  FOREIGN KEY (host) REFERENCES host (id)
+  FOREIGN KEY (host) REFERENCES host (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (parents) REFERENCES host (id)
+  FOREIGN KEY (parents) REFERENCES host (host_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
