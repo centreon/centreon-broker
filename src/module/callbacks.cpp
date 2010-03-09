@@ -62,13 +62,26 @@ int CallbackAcknowledgement(int callback_type, void* data)
         ack->comment = ack_data->comment_data;
       //ack->entry_time = XXX;
       if (ack_data->host_name)
-        ack->host = ack_data->host_name;
+        {
+          std::map<std::string, int>::const_iterator it;
+
+          it = gl_hosts.find(ack_data->host_name);
+          if (it != gl_hosts.end())
+            ack->host = it->second;
+          if (ack_data->service_description)
+            {
+              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+
+              it = gl_services.find(std::make_pair(ack_data->host_name,
+                                      ack_data->service_description));
+              if (it != gl_services.end())
+                ack->service = it->second;
+            }
+        }
       ack->instance = gl_instance;
       ack->is_sticky = ack_data->is_sticky;
       ack->notify_contacts = ack_data->notify_contacts;
       ack->persistent_comment = ack_data->persistent_comment;
-      if (ack_data->service_description)
-        ack->service = ack_data->service_description;
       ack->state = ack_data->state;
       ack->type = ack_data->type; // XXX : duplicate with acknowledgement_type
 

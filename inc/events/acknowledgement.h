@@ -45,11 +45,11 @@ namespace              Events
     std::string        author;
     std::string        comment;
     time_t             entry_time;
-    std::string        host;
+    int                host;
     bool               is_sticky;
     short              notify_contacts;
     short              persistent_comment;
-    std::string        service;
+    int                service;
     short              state;
     int                type;
                        Acknowledgement();
