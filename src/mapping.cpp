@@ -44,7 +44,7 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_TIMESTAMP,
       "entry_time"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::host, // XXX : should be replaced by host_id
+      &Acknowledgement::host,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Acknowledgement>(
@@ -64,7 +64,7 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_PERSISTENT,
       "persistent_comment"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::service, // XXX : should be replaced by service_id
+      &Acknowledgement::service,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<Acknowledgement>(
