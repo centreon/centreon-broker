@@ -64,26 +64,13 @@ int CallbackAcknowledgement(int callback_type, void* data)
         ack->comment = ack_data->comment_data;
       //ack->entry_time = XXX;
       if (ack_data->host_name)
-        {
-          std::map<std::string, int>::const_iterator it;
-
-          it = gl_hosts.find(ack_data->host_name);
-          if (it != gl_hosts.end())
-            ack->host = it->second;
-          if (ack_data->service_description)
-            {
-              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
-
-              it = gl_services.find(std::make_pair(ack_data->host_name,
-                                      ack_data->service_description));
-              if (it != gl_services.end())
-                ack->service = it->second;
-            }
-        }
-      ack->instance = gl_instance;
+        ack->host_name = ack_data->host_name;
+      ack->instance_name = gl_instance_name;
       ack->is_sticky = ack_data->is_sticky;
       ack->notify_contacts = ack_data->notify_contacts;
       ack->persistent_comment = ack_data->persistent_comment;
+      if (ack_data->service_description)
+        ack->service_description = ack_data->service_description;
       ack->state = ack_data->state;
       ack->type = ack_data->type; // XXX : duplicate with acknowledgement_type
 
@@ -129,25 +116,12 @@ int CallbackComment(int callback_type, void* data)
       comment->expire_time = comment_data->expire_time;
       comment->expires = comment_data->expires;
       if (comment_data->host_name)
-        {
-          std::map<std::string, int>::const_iterator it;
-
-          it = gl_hosts.find(comment_data->host_name);
-          if (it != gl_hosts.end())
-            comment->host = it->second;
-          if (comment_data->service_description)
-            {
-              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
-
-              it = gl_services.find(std::make_pair(comment_data->host_name,
-                                      comment_data->service_description));
-              if (it != gl_services.end())
-                comment->service = it->second;
-            }
-        }
-      comment->instance = gl_instance;
+        comment->host_name = comment_data->host_name;
+      comment->instance_name = gl_instance_name;
       comment->internal_id = comment_data->comment_id;
       comment->persistent = comment_data->persistent;
+      if (comment_data->service_description)
+        comment->service_description = comment_data->service_description;
       comment->source = comment_data->source;
 
       comment->AddReader();
@@ -190,11 +164,11 @@ int CallbackDowntime(int callback_type, void* data)
       //downtime->entry_time = XXX;
       downtime->fixed = downtime_data->fixed;
       if (downtime_data->host_name)
-        downtime->host = downtime_data->host_name;
+        downtime->host_name = downtime_data->host_name;
       downtime->id = downtime_data->downtime_id;
-      downtime->instance = gl_instance;
+      downtime->instance_name = gl_instance_name;
       if (downtime_data->service_description)
-        downtime->service = downtime_data->service_description;
+        downtime->service_description = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
       downtime->triggered_by = downtime_data->triggered_by;
       downtime->type = downtime_data->type; // XXX : duplicate with downtime_type
