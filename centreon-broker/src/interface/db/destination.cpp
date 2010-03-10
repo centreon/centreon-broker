@@ -655,18 +655,23 @@ void Destination::Connect(Destination::DB db_type,
   id.clear();
   id.push_back("author_name");
   id.push_back("entry_time");
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back("host_name");
+  id.push_back("instance_name");
+  id.push_back("service_description");
   this->PrepareUpdate<Events::Acknowledgement>(
     this->acknowledgement_stmt_, id);
 
   id.clear();
+  id.push_back("entry_time");
+  id.push_back("instance_name");
   id.push_back("internal_id");
   this->PrepareUpdate<Events::Comment>(
     this->comment_stmt_, id);
 
   id.clear();
   id.push_back("downtime_id");
+  id.push_back("entry_time");
+  id.push_back("instance_name");
   this->PrepareUpdate<Events::Downtime>(
     this->downtime_stmt_, id);
 

@@ -44,13 +44,17 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_TIMESTAMP,
       "entry_time"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::host,
-      NDO_DATA_HOST,
-      "host_id"),
+      &Acknowledgement::host_name,
+      NDO_DATA_HOSTNAME,
+      "host_name"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::instance,
+      &Acknowledgement::instance, // wtf is it here for ?
       NDO_DATA_INSTANCE,
-      "instance_id"),
+      NULL),
+    MappedData<Acknowledgement>(
+      &Acknowledgement::instance_name,
+      NDO_DATA_PROGRAMNAME,
+      "instance_name"),
     MappedData<Acknowledgement>(
       &Acknowledgement::is_sticky,
       NDO_DATA_STICKY,
@@ -64,9 +68,9 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_PERSISTENT,
       "persistent_comment"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::service,
-      NDO_DATA_SERVICE,
-      "service_id"),
+      &Acknowledgement::service_description,
+      NDO_DATA_SERVICEDESCRIPTION,
+      "service_description"),
     MappedData<Acknowledgement>(
       &Acknowledgement::state,
       NDO_DATA_STATE,
@@ -118,13 +122,17 @@ static const MappedData<Comment> comment_mapping[] =
       NDO_DATA_EXPIRES,
       "expires"),
     MappedData<Comment>(
-      &Comment::host, // XXX : should be replaced by host_id
-      NDO_DATA_HOST,
+      &Comment::host_name,
+      NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Comment>(
-      &Comment::instance,
+      &Comment::instance, // wtf is it here for ?
       NDO_DATA_INSTANCE,
-      "instance_id"),
+      NULL),
+    MappedData<Comment>(
+      &Comment::instance_name,
+      NDO_DATA_PROGRAMNAME,
+      "instance_name"),
     MappedData<Comment>(
       &Comment::internal_id,
       NDO_DATA_COMMENTID,
@@ -134,8 +142,8 @@ static const MappedData<Comment> comment_mapping[] =
       NDO_DATA_PERSISTENT,
       "persistent"),
     MappedData<Comment>(
-      &Comment::service, // XXX : should be replaced by service_id
-      NDO_DATA_SERVICE,
+      &Comment::service_description,
+      NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
     MappedData<Comment>(
       &Comment::source,
@@ -176,20 +184,24 @@ static const MappedData<Downtime> downtime_mapping[] =
       NDO_DATA_FIXED,
       "fixed"),
     MappedData<Downtime>(
-      &Downtime::host, // XXX : should be replaced by host_id
-      NDO_DATA_HOST,
+      &Downtime::host_name,
+      NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Downtime>(
       &Downtime::id,
       NDO_DATA_DOWNTIMEID,
       "downtime_id"),
     MappedData<Downtime>(
-      &Downtime::instance,
+      &Downtime::instance, // wtf is it here for ?
       NDO_DATA_INSTANCE,
-      "instance_id"),
+      NULL),
     MappedData<Downtime>(
-      &Downtime::service, // XXX : should be replaced by service_id
-      NDO_DATA_SERVICE,
+      &Downtime::instance_name,
+      NDO_DATA_PROGRAMNAME,
+      "instance_name"),
+    MappedData<Downtime>(
+      &Downtime::service_description,
+      NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
     MappedData<Downtime>(
       &Downtime::start_time,

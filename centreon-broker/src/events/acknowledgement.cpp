@@ -47,11 +47,12 @@ void Acknowledgement::InternalCopy(const Acknowledgement& ack)
   this->author               = ack.author;
   this->comment              = ack.comment;
   this->entry_time           = ack.entry_time;
-  this->host                 = ack.host;
+  this->host_name            = ack.host_name;
+  this->instance_name        = ack.instance_name;
   this->is_sticky            = ack.is_sticky;
   this->notify_contacts      = ack.notify_contacts;
   this->persistent_comment   = ack.persistent_comment;
-  this->service              = ack.service;
+  this->service_description  = ack.service_description;
   this->state                = ack.state;
   this->type                 = ack.type;
   return ;
