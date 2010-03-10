@@ -204,6 +204,9 @@ template <> std::map<std::string, GetterSetter<Events::HostStatus> >
 template <> std::map<std::string, GetterSetter<Events::Log> >
   Interface::DB::DBMappedType<Events::Log>::map =
     std::map<std::string, GetterSetter<Events::Log> >();
+template <> std::map<std::string, GetterSetter<Events::Program> >
+  Interface::DB::DBMappedType<Events::Program>::map =
+    std::map<std::string, GetterSetter<Events::Program> >();
 template <> std::map<std::string, GetterSetter<Events::ProgramStatus> >
   Interface::DB::DBMappedType<Events::ProgramStatus>::map =
     std::map<std::string, GetterSetter<Events::ProgramStatus> >();
@@ -250,6 +253,7 @@ void Interface::DB::Initialize()
   static_init<Events::HostParent>();
   static_init<Events::HostStatus>();
   static_init<Events::Log>();
+  static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
   static_init<Events::Service>();
   static_init<Events::ServiceCheck>();
@@ -554,6 +558,33 @@ void soci::type_conversion<Events::Log>::to_base(
 {
   (void)ind;
   ToBase(l, v);
+  return ;
+}
+
+/**
+ *  Extract Program data from DB row.
+ */
+void soci::type_conversion<Events::Program>::from_base(
+  const soci::values& v,
+  soci::indicator ind,
+  Events::Program& program)
+{
+  (void)v;
+  (void)ind;
+  (void)program;
+  return ;
+}
+
+/**
+ *  Extract Program data to DB row.
+ */
+void soci::type_conversion<Events::Program>::to_base(
+  const Events::Program& program,
+  soci::values& v,
+  indicator& ind)
+{
+  (void)ind;
+  ToBase(program, v);
   return ;
 }
 

@@ -18,42 +18,40 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CONFIGURATION_PARSER_H_
-# define CONFIGURATION_PARSER_H_
+#ifndef EVENTS_PROGRAM_H_
+# define EVENTS_PROGRAM_H_
 
-# include <list>
+# include <time.h>          // for time_t
 # include <string>
+# include "events/event.h"
 
-// XXX : dirty hack to support module instance
-extern int gl_instance;
-extern std::string gl_instance_name;
-
-namespace   Configuration
+namespace       Events
 {
-  // Forward declaration.
-  class     Interface;
-  class     Log;
-
   /**
-   *  \class Parser parser.h "configuration/parser.h"
-   *  \brief Parse a configuration file.
+   *  \class Program program.h "events/program.h"
+   *  \brief Information about Nagios process.
    *
-   *  Parse a configuration file and generate proper configuration objects.
+   *  Program holds information about a Nagios process, like whether it is
+   *  running or not, in daemon mode or not, ...
    */
-  class     Parser
+  class         Program : public Event
   {
    private:
-            Parser(const Parser& parser);
-    Parser& operator=(const Parser& parser);
+    void        InternalCopy(const Program& program);
 
    public:
-            Parser();
-            ~Parser();
-    void    Parse(const std::string& filename,
-                  std::list<Interface>& inputs,
-                  std::list<Log>& logs,
-                  std::list<Interface>& outputs);
+    bool        daemon_mode;
+    std::string instance_name;
+    bool        is_running;
+    int         pid;
+    time_t      program_end;
+    time_t      program_start;
+                Program();
+                Program(const Program& program);
+                ~Program();
+    Program&    operator=(const Program& program);
+    int         GetType() const;
   };
 }
 
-#endif /* !CONFIGURATION_PARSER_H_ */
+#endif /* !EVENTS_PROGRAM_H_ */

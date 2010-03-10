@@ -19,6 +19,8 @@
 */
 
 #include <memory>
+#include <time.h>                  // for time
+#include <unistd.h>                // for getpid
 #include "callbacks.h"
 #include "configuration/manager.h"
 // XXX : dirty hack
@@ -402,19 +404,41 @@ int CallbackProcess(int callback_type, void *data)
   try
     {
       nebstruct_process_data* process_data;
+      static time_t start_time;
 
       process_data = static_cast<nebstruct_process_data*>(data);
       if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type)
         {
-          std::auto_ptr<Events::ProgramStatus> ps(new Events::ProgramStatus);
+          std::auto_ptr<Events::Program> program(new Events::Program);
 
           Configuration::Manager::Instance().Open(gl_configuration_file);
-          ps->instance = gl_instance;
-          ps->program_start = process_data->timestamp.tv_sec;
-          ps->AddReader();
-          gl_publisher.Event(ps.get());
-          ps.release();
+          // program->daemon_mode = XXX;
+          program->instance = gl_instance;
+          program->instance_name = gl_instance_name;
+          program->is_running = true;
+          program->pid = getpid();
+          program->program_start = time(NULL);
+          start_time = program->program_start;
+
+          program->AddReader();
+          gl_publisher.Event(program.get());
+          program.release();
           SendInitialConfiguration();
+        }
+      else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type)
+        {
+          std::auto_ptr<Events::Program> program(new Events::Program);
+
+          program->instance = gl_instance;
+          program->instance_name = gl_instance_name;
+          program->is_running = false;
+          program->pid = getpid();
+          program->program_end = time(NULL);
+          program->program_start = start_time;
+
+          program->AddReader();
+          gl_publisher.Event(program.get());
+          program.release();
         }
     }
   // Avoid exception propagation in C code.
@@ -450,7 +474,6 @@ int CallbackProgramStatus(int callback_type, void* data)
         = program_status_data->active_host_checks_enabled;
       program_status->active_service_checks_enabled
         = program_status_data->active_service_checks_enabled;
-      program_status->daemon_mode = program_status_data->daemon_mode;
       program_status->event_handler_enabled
         = program_status_data->event_handlers_enabled;
       program_status->failure_prediction_enabled
@@ -464,7 +487,6 @@ int CallbackProgramStatus(int callback_type, void* data)
         program_status->global_service_event_handler
           = program_status_data->global_service_event_handler;
       program_status->instance = gl_instance;
-      program_status->is_running = true; // XXX : is it useful ?
       // program_status->last_alive = XXX;
       program_status->last_command_check
         = program_status_data->last_command_check;
@@ -484,11 +506,8 @@ int CallbackProgramStatus(int callback_type, void* data)
         = program_status_data->passive_host_checks_enabled;
       program_status->passive_service_checks_enabled
         = program_status_data->passive_service_checks_enabled;
-      program_status->pid = program_status_data->pid;
       program_status->process_performance_data
         = program_status_data->process_performance_data;
-      // program_status->program_end = XXX;
-      program_status->program_start = program_status_data->program_start;
 
       program_status->AddReader();
       gl_publisher.Event(program_status.get());

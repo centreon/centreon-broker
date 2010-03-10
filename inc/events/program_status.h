@@ -42,11 +42,8 @@ namespace              Events
    public:
     bool               active_host_checks_enabled;
     bool               active_service_checks_enabled;
-    bool               daemon_mode;
     std::string        global_host_event_handler;
     std::string        global_service_event_handler;
-    std::string        instance_name;
-    bool               is_running;
     time_t             last_alive;
     time_t             last_command_check;
     time_t             last_log_rotation;
@@ -56,9 +53,6 @@ namespace              Events
     bool               obsess_over_services;
     bool               passive_host_checks_enabled;
     bool               passive_service_checks_enabled;
-    int                pid;
-    time_t             program_end;
-    time_t             program_start;
                        ProgramStatus();
                        ProgramStatus(const ProgramStatus& ps);
                        ~ProgramStatus();
