@@ -231,7 +231,9 @@ void Destination::ProcessComment(const Events::Comment& comment)
   else if (comment.comment_type == NEBTYPE_COMMENT_DELETE)
     {
       *this->conn_ << "DELETE FROM " << MappedType<Events::Comment>::table
-                   << " WHERE internal_id=" << comment.internal_id;
+                   << " WHERE entry_time=" << comment.entry_time
+		   << " AND instance_name=" << comment.instance_name
+		   << " AND internal_id=" << comment.internal_id;
     }
   return ;
 }
@@ -260,7 +262,9 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
            || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
     {
       *this->conn_ << "DELETE FROM " << MappedType<Events::Downtime>::table
-                   << " WHERE downtime_id=" << downtime.id;
+                   << " WHERE downtime_id=" << downtime.id
+		   << " AND entry_time=" << downtime.entry_time
+		   << " AND instance_name=" << downtime.instance_name;
     }
   return ;
 }
