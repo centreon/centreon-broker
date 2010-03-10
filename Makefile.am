@@ -57,6 +57,7 @@ common_src=	./src/concurrency/condition_variable.cpp		\
 		./src/events/host_service_status.cpp			\
 		./src/events/host_status.cpp				\
 		./src/events/log.cpp					\
+		./src/events/program.cpp				\
 		./src/events/program_status.cpp				\
 		./src/events/service.cpp				\
 		./src/events/service_check.cpp				\
