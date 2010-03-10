@@ -37,6 +37,7 @@ using namespace Configuration;
 
 // XXX : dirty hack to support module instance
 int gl_instance;
+std::string gl_instance_name;
 
 /**************************************
 *                                     *
@@ -319,6 +320,8 @@ void Parser::Parse(const std::string& filename,
             throw (Exception(0, INVALID_TOKEN_MSG));
           if (var.GetText() == "instance")
             gl_instance = strtol(val.GetText().c_str(), NULL, 0);
+          else if (var.GetText() == "instance_name")
+            gl_instance_name = val.GetText();
           // XXX : set global variable
           break ;
           // Block name.

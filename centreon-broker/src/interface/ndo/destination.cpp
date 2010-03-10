@@ -222,6 +222,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::PROGRAM:
+          buffer << NDO_API_PROCESSDATA << ":\n";
+          HandleEvent<Events::Program>(
+            *static_cast<Events::Program*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::PROGRAMSTATUS:
           buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
           HandleEvent<Events::ProgramStatus>(

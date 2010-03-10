@@ -32,6 +32,7 @@
 # include "events/host_parent.h"
 # include "events/host_status.h"
 # include "events/log.h"
+# include "events/program.h"
 # include "events/program_status.h"
 # include "events/service.h"
 # include "events/service_check.h"

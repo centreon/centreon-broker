@@ -41,11 +41,8 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 {
   this->active_host_checks_enabled     = ps.active_host_checks_enabled;
   this->active_service_checks_enabled  = ps.active_service_checks_enabled;
-  this->daemon_mode                    = ps.daemon_mode;
   this->global_host_event_handler      = ps.global_host_event_handler;
   this->global_service_event_handler   = ps.global_service_event_handler;
-  this->instance_name                  = ps.instance_name;
-  this->is_running                     = ps.is_running;
   this->last_alive                     = ps.last_alive;
   this->last_command_check             = ps.last_command_check;
   this->last_log_rotation              = ps.last_log_rotation;
@@ -54,9 +51,6 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
   this->obsess_over_services           = ps.obsess_over_services;
   this->passive_host_checks_enabled    = ps.passive_host_checks_enabled;
   this->passive_service_checks_enabled = ps.passive_service_checks_enabled;
-  this->pid                            = ps.pid;
-  this->program_end                    = ps.program_end;
-  this->program_start                  = ps.program_start;
   return ;
 }
 
@@ -74,8 +68,6 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 ProgramStatus::ProgramStatus()
   : active_host_checks_enabled(false),
     active_service_checks_enabled(false),
-    daemon_mode(false),
-    is_running(false),
     last_alive(0),
     last_command_check(0),
     last_log_rotation(0),
@@ -84,10 +76,7 @@ ProgramStatus::ProgramStatus()
     obsess_over_hosts(false),
     obsess_over_services(false),
     passive_host_checks_enabled(false),
-    passive_service_checks_enabled(false),
-    pid(0),
-    program_end(0),
-    program_start(0) {}
+    passive_service_checks_enabled(false) {}
 
 /**
  *  \brief ProgramStatus copy constructor.

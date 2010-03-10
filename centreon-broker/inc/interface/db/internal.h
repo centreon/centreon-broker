@@ -198,6 +198,19 @@ namespace                  soci
                                    indicator& ind);
   };
 
+  // Program O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::Program>
+  {
+    typedef values         base_type;
+    static void            from_base(const values& v,
+                                     indicator ind,
+                                     Events::Program& program);
+    static void            to_base(const Events::Program& program,
+                                   values& v,
+                                   indicator& ind);
+  };
+
   // ProgramStatus O/R mapping.
   template                 <>
   struct                   type_conversion<Events::ProgramStatus>

@@ -184,6 +184,11 @@ void Destination::Event(Events::Event* event)
           HandleEvent(*static_cast<Events::Log*>(event),
             *xml_event);
           break ;
+         case Events::Event::PROGRAM:
+          xml_event.reset(new TiXmlElement("program"));
+          HandleEvent(*static_cast<Events::Program*>(event),
+            *xml_event);
+          break ;
          case Events::Event::PROGRAMSTATUS:
           xml_event.reset(new TiXmlElement("program_status"));
           HandleEvent(*static_cast<Events::ProgramStatus*>(event),
