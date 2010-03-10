@@ -82,7 +82,7 @@ Destination& Destination::operator=(const Destination& destination)
 void Destination::CleanTables(int instance_id)
 {
   // ProgramStatus
-  *this->conn_ << "DELETE FROM " << MappedType<Events::ProgramStatus>::table
+  *this->conn_ << "DELETE FROM " << MappedType<Events::Program>::table
                << " WHERE instance_id=" << instance_id;
 
   return ;
@@ -371,34 +371,26 @@ void Destination::ProcessLog(const Events::Log& log)
 }
 
 /**
+ *  Process a Program event.
+ */
+void Destination::ProcessProgram(const Events::Program& program)
+{
+  LOGDEBUG("Processing Program event ...");
+  this->CleanTables(program.instance);
+  if (!program.program_end)
+    this->Insert(program);
+  return ;
+}
+
+/**
  *  Process a ProgramStatus event.
  */
 void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 {
   LOGDEBUG("Processing ProgramStatus event ...");
-  std::map<int, time_t>::iterator it;
-
-  if (ps.program_end)
-    {
-      this->CleanTables(ps.instance);
-      it = this->instances_.find(ps.instance);
-      if (it != this->instances_.end())
-        this->instances_.erase(it);
-    }
-  else if (((it = this->instances_.find(ps.instance))
-	    != this->instances_.end())
-	   && (it->second == ps.program_start))
-    {
-      this->PreparedUpdate<Events::ProgramStatus>(ps,
-        *this->program_status_stmt_,
-        this->program_status_);
-    }
-  else
-    {
-      this->CleanTables(ps.instance);
-      this->Insert(ps);
-      this->instances_[ps.instance] = ps.program_start;
-    }
+  this->PreparedUpdate<Events::ProgramStatus>(ps,
+    *this->program_status_stmt_,
+    this->program_status_);
   return ;
 }
 

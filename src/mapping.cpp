@@ -892,6 +892,40 @@ static const MappedData<Log> log_mapping[] =
     MappedData<Log>()
   };
 
+// Program members mapping.
+static const MappedData<Program> program_mapping[] =
+  {
+    MappedData<Program>(
+      &Program::daemon_mode,
+      NDO_DATA_DAEMONMODE,
+      "daemon_mode"),
+    MappedData<Program>(
+      &Program::instance,
+      NDO_DATA_INSTANCE,
+      "instance_id"),
+    MappedData<Program>(
+      &Program::instance_name,
+      NDO_DATA_PROGRAMNAME,
+      "instance_name"),
+    MappedData<Program>(
+      &Program::is_running,
+      NDO_DATA_RUNTIME,
+      "is_running"),
+    MappedData<Program>(
+      &Program::pid,
+      NDO_DATA_PROCESSID,
+      "pid"),
+    MappedData<Program>(
+      &Program::program_end,
+      NDO_DATA_ENDTIME,
+      "program_end"),
+    MappedData<Program>(
+      &Program::program_start,
+      NDO_DATA_PROGRAMSTARTTIME,
+      "program_start"),
+    MappedData<Program>()
+  };
+
 // ProgramStatus members mapping.
 static const MappedData<ProgramStatus> program_status_mapping[] =
   {
@@ -903,10 +937,6 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       &ProgramStatus::active_service_checks_enabled,
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
       "active_service_checks_enabled"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::daemon_mode,
-      NDO_DATA_DAEMONMODE,
-      "daemon_mode"),
     MappedData<ProgramStatus>(
       &ProgramStatus::event_handler_enabled,
       NDO_DATA_EVENTHANDLERENABLED,
@@ -931,14 +961,6 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       &ProgramStatus::instance,
       NDO_DATA_INSTANCE,
       "instance_id"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::instance_name,
-      NDO_DATA_PROGRAMNAME,
-      "instance_name"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::is_running,
-      0, // XXX : should find macro
-      "is_running"),
     MappedData<ProgramStatus>(
       &ProgramStatus::last_alive,
       0, // XXX : should find macro
@@ -980,21 +1002,9 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
       "passive_service_checks_enabled"),
     MappedData<ProgramStatus>(
-      &ProgramStatus::pid,
-      NDO_DATA_PROCESSID,
-      "pid"),
-    MappedData<ProgramStatus>(
       &ProgramStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
       "process_performance_data"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::program_end,
-      0, // XXX : should find macro
-      "program_end"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::program_start,
-      NDO_DATA_PROGRAMSTARTTIME,
-      "program_start"),
     // XXX : no instance_address
     // XXX : no instance_description
     MappedData<ProgramStatus>()
@@ -1683,6 +1693,12 @@ template <> const MappedData<Events::Log>*
   MappedType<Events::Log>::members(log_mapping);
 template <> const char*
   MappedType<Events::Log>::table("log");
+
+// Program mapping.
+template <> const MappedData<Events::Program>*
+  MappedType<Events::Program>::members(program_mapping);
+template <> const char*
+  MappedType<Events::Program>::table("program_status");
 
 // ProgramStatus mapping.
 template <> const MappedData<Events::ProgramStatus>*

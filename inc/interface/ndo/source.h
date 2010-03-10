@@ -40,10 +40,8 @@ namespace                    Interface
                                       virtual public Interface::Source
     {
      private:
-      std::string            instance_;
                              Source(const Source& source);
       Source&                operator=(const Source& source);
-      Events::Event*         Header();
 
      public:
                              Source(IO::Stream* stream);

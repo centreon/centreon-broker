@@ -82,6 +82,7 @@ namespace              Events
       HOSTPARENT,
       HOSTSTATUS,
       LOG,
+      PROGRAM,
       PROGRAMSTATUS,
       SERVICE,
       SERVICECHECK,

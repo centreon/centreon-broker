@@ -112,40 +112,6 @@ Source& Source::operator=(const Source& source)
   return (*this);
 }
 
-/**
- *  Parse the NDO header.
- *
- *  \return The initial event.
- */
-Events::Event* Source::Header()
-{
-  const char* line;
-  std::auto_ptr<Events::ProgramStatus> pstatus(new Events::ProgramStatus);
-
-  while ((line = this->stream_.Line()) && strcmp(line, NDO_API_STARTDATADUMP))
-    {
-      const char* value;
-
-      value = strchr(line, ' ');
-      if (value)
-        {
-          ++value;
-          if (!strncmp(line,
-                       NDO_API_INSTANCENAME,
-                       sizeof(NDO_API_INSTANCENAME) - 1))
-            {
-              pstatus->is_running = true;
-              this->instance_ = value;
-            }
-          else if (!strncmp(line,
-                            NDO_API_STARTTIME,
-                            sizeof(NDO_API_STARTTIME) - 1))
-            pstatus->program_start = strtol(value, NULL, 0);
-        }
-    }
-  return (pstatus.release());
-}
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -198,89 +164,83 @@ Events::Event* Source::Event()
 
   if (line)
     {
-      // Parse initial header.
-      if (!strcmp(line, NDO_API_HELLO))
-        event.reset(this->Header());
-      else
-        {
-          int id;
+      int id;
 
-          id = strtol(line, NULL, 10);
-          switch (id)
+      id = strtol(line, NULL, 10);
+      switch (id)
+        {
+         case NDO_API_ACKNOWLEDGEMENTDATA:
+          event.reset(HandleEvent<Events::Acknowledgement>(this->stream_));
+          break ;
+         case NDO_API_COMMENTDATA:
+          event.reset(HandleEvent<Events::Comment>(this->stream_));
+          break ;
+         case NDO_API_DOWNTIMEDATA:
+          event.reset(HandleEvent<Events::Downtime>(this->stream_));
+          break ;
+         case NDO_API_HOSTCHECKDATA:
+          event.reset(HandleEvent<Events::HostCheck>(this->stream_));
+          break ;
+         case NDO_API_HOSTDEFINITION:
+          event.reset(HandleEvent<Events::Host>(this->stream_));
+          break ;
+         case NDO_API_HOSTDEPENDENCYDEFINITION:
+          event.reset(HandleEvent<Events::HostDependency>(this->stream_));
+          break ;
+         case NDO_API_HOSTGROUPDEFINITION:
+          event.reset(HandleEvent<Events::HostGroup>(this->stream_));
+          break ;
+         case NDO_API_HOSTGROUPMEMBERDEFINITION:
+          event.reset(HandleEvent<Events::HostGroupMember>(this->stream_));
+          break ;
+         case NDO_API_HOSTPARENT:
+          event.reset(HandleEvent<Events::HostParent>(this->stream_));
+          break ;
+         case NDO_API_HOSTSTATUSDATA:
+          event.reset(HandleEvent<Events::HostStatus>(this->stream_));
+          break ;
+         case NDO_API_LOGDATA:
+          event.reset(HandleEvent<Events::Log>(this->stream_));
+          break ;
+         case NDO_API_PROCESSDATA:
+          event.reset(HandleEvent<Events::Program>(this->stream_));
+          break ;
+         case NDO_API_PROGRAMSTATUSDATA:
+          event.reset(HandleEvent<Events::ProgramStatus>(this->stream_));
+          break ;
+         case NDO_API_SERVICECHECKDATA:
+          event.reset(HandleEvent<Events::ServiceCheck>(this->stream_));
+          break ;
+         case NDO_API_SERVICEDEFINITION:
+          event.reset(HandleEvent<Events::Service>(this->stream_));
+          break ;
+         case NDO_API_SERVICEDEPENDENCYDEFINITION:
+          event.reset(HandleEvent<Events::ServiceDependency>(this->stream_));
+          break ;
+         case NDO_API_SERVICEGROUPDEFINITION:
+          event.reset(HandleEvent<Events::ServiceGroup>(this->stream_));
+          break ;
+         case NDO_API_SERVICEGROUPMEMBERDEFINITION:
+          event.reset(HandleEvent<Events::ServiceGroupMember>(this->stream_));
+          break ;
+         case NDO_API_SERVICESTATUSDATA:
+          event.reset(HandleEvent<Events::ServiceStatus>(this->stream_));
+          break ;
+         default:
+          // Skip this event.
+          while (id != NDO_API_ENDDATA)
             {
-             case NDO_API_ACKNOWLEDGEMENTDATA:
-              event.reset(HandleEvent<Events::Acknowledgement>(this->stream_));
-              break ;
-             case NDO_API_COMMENTDATA:
-              event.reset(HandleEvent<Events::Comment>(this->stream_));
-              break ;
-             case NDO_API_DOWNTIMEDATA:
-              event.reset(HandleEvent<Events::Downtime>(this->stream_));
-              break ;
-             case NDO_API_HOSTCHECKDATA:
-              event.reset(HandleEvent<Events::HostCheck>(this->stream_));
-              break ;
-             case NDO_API_HOSTDEFINITION:
-              event.reset(HandleEvent<Events::Host>(this->stream_));
-              break ;
-             case NDO_API_HOSTDEPENDENCYDEFINITION:
-              event.reset(HandleEvent<Events::HostDependency>(this->stream_));
-              break ;
-             case NDO_API_HOSTGROUPDEFINITION:
-              event.reset(HandleEvent<Events::HostGroup>(this->stream_));
-              break ;
-             case NDO_API_HOSTGROUPMEMBERDEFINITION:
-              event.reset(HandleEvent<Events::HostGroupMember>(this->stream_));
-              break ;
-             case NDO_API_HOSTPARENT:
-              event.reset(HandleEvent<Events::HostParent>(this->stream_));
-              break ;
-             case NDO_API_HOSTSTATUSDATA:
-              event.reset(HandleEvent<Events::HostStatus>(this->stream_));
-              break ;
-             case NDO_API_LOGDATA:
-              event.reset(HandleEvent<Events::Log>(this->stream_));
-              break ;
-             case NDO_API_PROGRAMSTATUSDATA:
-              event.reset(HandleEvent<Events::ProgramStatus>(this->stream_));
-              break ;
-             case NDO_API_SERVICECHECKDATA:
-              event.reset(HandleEvent<Events::ServiceCheck>(this->stream_));
-              break ;
-             case NDO_API_SERVICEDEFINITION:
-              event.reset(HandleEvent<Events::Service>(this->stream_));
-              break ;
-             case NDO_API_SERVICEDEPENDENCYDEFINITION:
-              event.reset(HandleEvent<Events::ServiceDependency>(this->stream_));
-              break ;
-             case NDO_API_SERVICEGROUPDEFINITION:
-              event.reset(HandleEvent<Events::ServiceGroup>(this->stream_));
-              break ;
-             case NDO_API_SERVICEGROUPMEMBERDEFINITION:
-              event.reset(HandleEvent<Events::ServiceGroupMember>(this->stream_));
-              break ;
-             case NDO_API_SERVICESTATUSDATA:
-              event.reset(HandleEvent<Events::ServiceStatus>(this->stream_));
-              break ;
-             default:
-              // Skip this event.
-              while (id != NDO_API_ENDDATA)
-                {
-                  line = this->stream_.Line();
-                  if (line)
-                    id = strtol(line, NULL, 10);
-                  else
-                    break ;
-                }
+              line = this->stream_.Line();
               if (line)
-                return (this->Event());
+                id = strtol(line, NULL, 10);
+              else
+                break ;
             }
+          if (line)
+            return (this->Event());
         }
     }
   if (event.get())
-    {
-      // XXX : event->instance = this->instance_;
-      event->AddReader();
-    }
+    event->AddReader();
   return (event.release());
 }
