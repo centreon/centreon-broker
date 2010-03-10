@@ -110,7 +110,8 @@ int CallbackComment(int callback_type, void* data)
         comment->comment = comment_data->comment_data;
       // comment->comment_time = XXX;
       comment->comment_type = comment_data->type;
-      // comment->deletion_time = XXX;
+      if (NEBTYPE_COMMENT_DELETE == comment_data->type)
+        comment->deletion_time = time(NULL);
       // comment->entry_time = XXX;
       comment->entry_type = comment_data->entry_type;
       comment->expire_time = comment_data->expire_time;
@@ -172,7 +173,9 @@ int CallbackDowntime(int callback_type, void* data)
       downtime->start_time = downtime_data->start_time;
       downtime->triggered_by = downtime_data->triggered_by;
       downtime->type = downtime_data->type; // XXX : duplicate with downtime_type
-      // downtime->was_cancelled = XXX;
+      if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
+          || (NEBTYPE_DOWNTIME_STOP == downtime_data->type))
+        downtime->was_cancelled = true;
       // downtime->was_started = XXX;
 
       downtime->AddReader();
