@@ -102,9 +102,9 @@ CREATE TABLE IF NOT EXISTS `program_status` (
 
 CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `id` int NOT NULL auto_increment,
-  `instance_id` int NOT NULL,
-  `host_id` int default NULL,
-  `service_id` int default NULL,
+  `instance_name` varchar(255) NOT NULL,
+  `host_name` varchar(255) default NULL,
+  `service_description` varchar(255) default NULL,
 
   `acknowledgement_type` smallint default NULL,
   `author_name` varchar(64) default NULL,
@@ -120,7 +120,6 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
 
 CREATE TABLE IF NOT EXISTS `comment` (
   `id` int NOT NULL auto_increment,                -- OK
-  `instance_id` int NOT NULL default '0',          -- OK
   `author_name` varchar(255) default NULL,         -- OK
   `comment_data` text default NULL,                -- OK
   `comment_type` smallint default NULL,            -- OK (is int in Merlin)
@@ -128,13 +127,16 @@ CREATE TABLE IF NOT EXISTS `comment` (
   `entry_type` smallint default NULL,              -- OK (is int in Merlin)
   `expire_time` int default NULL,                  -- OK
   `expires` boolean default NULL,                  -- OK (is int in Merlin)
-  `host_name` varchar(255) NOT NULL,               -- OK but why don't we have host_id instead ?
+  `host_name` varchar(255) NOT NULL,               -- OK
   `persistent` boolean default NULL,               -- OK
-  `service_description` varchar(160) default NULL, -- OK but why don't we have service_id instead ?
+  `service_description` varchar(160) default NULL, -- OK
   `source` smallint default NULL,                  -- OK (is int in Merlin)
+
+  -- instance_id int
 
   `comment_time` int default NULL,                 -- not in Merlin
   `deletion_time` int default NULL,                -- not in Merlin
+  `instance_name` varchar(255) NOT NULL,           -- not in Merlin
   `internal_id` int default NULL,                  -- not in Merlin
   PRIMARY KEY (`id`),
   UNIQUE KEY (`internal_id`)
@@ -321,7 +323,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   `ctime` int default NULL,
   `host_name` varchar(64) default NULL,
   `service_description` varchar(64) default NULL,
-  `instance` int NOT NULL default '1',
+  `instance_name` varchar(255) NOT NULL,
   `msg_type` tinyint default NULL,
   `notification_cmd` varchar(255) default NULL,
   `notification_contact` varchar(255) default NULL,
@@ -350,15 +352,14 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
   `entry_time` int default NULL,                   -- OK
   `fixed` boolean default NULL,                    -- OK
   `host_name` varchar(255) NOT NULL,               -- OK
-  `instance_id` int NOT NULL,                      -- OK
+  `instance_name` varchar(255) NOT NULL,           -- OK
   `service_description` varchar(255) default NULL, -- OK
   `start_time` int default NULL,                   -- OK
   `triggered_by` int default NULL,                 -- OK
 
   `was_cancelled` boolean default NULL,            -- not in Merlin
   `was_started` boolean default NULL,              -- not in Merlin
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`downtime_id`, `instance_id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
 

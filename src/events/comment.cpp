@@ -43,20 +43,21 @@ using namespace Events;
  */
 void Comment::InternalCopy(const Comment& comment)
 {
-  this->author        = comment.author;
-  this->comment       = comment.comment;
-  this->comment_time  = comment.comment_time;
-  this->comment_type  = comment.comment_type;
-  this->deletion_time = comment.deletion_time;
-  this->entry_time    = comment.entry_time;
-  this->entry_type    = comment.entry_type;
-  this->expire_time   = comment.expire_time;
-  this->expires       = comment.expires;
-  this->host          = comment.host;
-  this->internal_id   = comment.internal_id;
-  this->persistent    = comment.persistent;
-  this->service       = comment.service;
-  this->source        = comment.source;
+  this->author              = comment.author;
+  this->comment             = comment.comment;
+  this->comment_time        = comment.comment_time;
+  this->comment_type        = comment.comment_type;
+  this->deletion_time       = comment.deletion_time;
+  this->entry_time          = comment.entry_time;
+  this->entry_type          = comment.entry_type;
+  this->expire_time         = comment.expire_time;
+  this->expires             = comment.expires;
+  this->host_name           = comment.host_name;
+  this->instance_name       = comment.instance_name;
+  this->internal_id         = comment.internal_id;
+  this->persistent          = comment.persistent;
+  this->service_description = comment.service_description;
+  this->source              = comment.source;
   return ;
 }
 

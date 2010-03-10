@@ -43,21 +43,22 @@ using namespace Events;
  */
 void Downtime::InternalCopy(const Downtime& downtime)
 {
-  this->author        = downtime.author;
-  this->comment       = downtime.comment;
-  this->downtime_type = downtime.downtime_type;
-  this->duration      = downtime.duration;
-  this->end_time      = downtime.end_time;
-  this->entry_time    = downtime.entry_time;
-  this->fixed         = downtime.fixed;
-  this->host          = downtime.host;
-  this->id            = downtime.id;
-  this->service       = downtime.service;
-  this->start_time    = downtime.start_time;
-  this->triggered_by  = downtime.triggered_by;
-  this->type          = downtime.type;
-  this->was_cancelled = downtime.was_cancelled;
-  this->was_started   = downtime.was_started;
+  this->author              = downtime.author;
+  this->comment             = downtime.comment;
+  this->downtime_type       = downtime.downtime_type;
+  this->duration            = downtime.duration;
+  this->end_time            = downtime.end_time;
+  this->entry_time          = downtime.entry_time;
+  this->fixed               = downtime.fixed;
+  this->host_name           = downtime.host_name;
+  this->id                  = downtime.id;
+  this->instance_name       = downtime.instance_name;
+  this->service_description = downtime.service_description;
+  this->start_time          = downtime.start_time;
+  this->triggered_by        = downtime.triggered_by;
+  this->type                = downtime.type;
+  this->was_cancelled       = downtime.was_cancelled;
+  this->was_started         = downtime.was_started;
   return ;
 }
 
