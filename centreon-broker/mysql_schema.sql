@@ -114,7 +114,8 @@ CREATE TABLE IF NOT EXISTS `acknowledgements` (
   `notify_contacts` boolean default NULL,
   `persistent_comment` boolean default NULL,
   `state` smallint default NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (entry_time, host_name, instance_name, service_description)
 ) ENGINE=InnoDB;
 
 
@@ -139,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
   `instance_name` varchar(255) NOT NULL,           -- not in Merlin
   `internal_id` int default NULL,                  -- not in Merlin
   PRIMARY KEY (`id`),
-  UNIQUE KEY (`internal_id`)
+  UNIQUE KEY (entry_time, instance_name, internal_id)
 ) ENGINE=InnoDB;
 
 
@@ -336,7 +337,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   KEY `host_name` (`host_name`(64)),
   KEY `service_description` (`service_description`(64)),
   KEY `status` (`status`),
-  KEY `instance` (`instance`),
+  KEY (instance_name),
   KEY `ctime` (`ctime`)
 ) ENGINE=MyISAM;
 
@@ -359,7 +360,8 @@ CREATE TABLE IF NOT EXISTS `scheduled_downtime` (
 
   `was_cancelled` boolean default NULL,            -- not in Merlin
   `was_started` boolean default NULL,              -- not in Merlin
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (downtime_id, entry_time, instance_name)
 ) ENGINE=InnoDB;
 
 
