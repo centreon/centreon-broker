@@ -563,6 +563,9 @@ void Destination::Event(Events::Event* event)
          case Events::Event::LOG:
           ProcessLog(*static_cast<Events::Log*>(event));
           break ;
+         case Events::Event::PROGRAM:
+          ProcessProgram(*static_cast<Events::Program*>(event));
+          break ;
          case Events::Event::PROGRAMSTATUS:
           ProcessProgramStatus(*static_cast<Events::ProgramStatus*>(event));
           break ;
