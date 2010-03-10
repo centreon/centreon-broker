@@ -57,24 +57,15 @@ namespace                         Interface
       std::auto_ptr<soci::statement> service_check_stmt_;
       std::auto_ptr<soci::statement> service_status_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
-      Events::Acknowledgement     acknowledgement_;
-      Events::Comment             comment_;
-      Events::Downtime            downtime_;
-      Events::HostCheck           host_check_;
-      Events::HostStatus          host_status_;
-      Events::ProgramStatus       program_status_;
-      Events::ServiceCheck        service_check_;
-      Events::ServiceStatus       service_status_;
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);
       void                        CleanTables(int instance_id);
       template                    <typename T>
       void                        Insert(const T& t);
       template                    <typename T>
-      void                        PreparedUpdate(const T&t, soci::statement& st, T& tmp);
+      void                        PreparedUpdate(const T&t, soci::statement& st);
       template                    <typename T>
       void                        PrepareUpdate(std::auto_ptr<soci::statement>& st,
-                                                T& t,
                                                 const std::vector<std::string>& id);
       void                        ProcessAcknowledgement(
                                     const Events::Acknowledgement& ack);
