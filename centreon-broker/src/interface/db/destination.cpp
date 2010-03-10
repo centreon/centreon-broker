@@ -222,24 +222,13 @@ void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 void Destination::ProcessComment(const Events::Comment& comment)
 {
   LOGDEBUG("Processing Comment event ...");
-  if ((comment.comment_type == NEBTYPE_COMMENT_ADD)
-      || comment.comment_type == NEBTYPE_COMMENT_LOAD)
+  try
     {
-      try
-        {
-          this->Insert(comment);
-        }
-      catch (const soci::soci_error& se)
-        {
-          this->PreparedUpdate(comment, *this->comment_stmt_);
-        }
+      this->Insert(comment);
     }
-  else if (comment.comment_type == NEBTYPE_COMMENT_DELETE)
+  catch (const soci::soci_error& se)
     {
-      *this->conn_ << "DELETE FROM " << MappedType<Events::Comment>::table
-                   << " WHERE entry_time=" << comment.entry_time
-		   << " AND instance_name=" << comment.instance_name
-		   << " AND internal_id=" << comment.internal_id;
+      this->PreparedUpdate(comment, *this->comment_stmt_);
     }
   return ;
 }
@@ -250,27 +239,13 @@ void Destination::ProcessComment(const Events::Comment& comment)
 void Destination::ProcessDowntime(const Events::Downtime& downtime)
 {
   LOGDEBUG("Processing Downtime event ...");
-
-  if ((downtime.type == NEBTYPE_DOWNTIME_ADD)
-      || (downtime.type == NEBTYPE_DOWNTIME_LOAD)
-      || (downtime.type == NEBTYPE_DOWNTIME_START))
+  try
     {
-      try
-        {
-          this->Insert(downtime);
-        }
-      catch (const soci::soci_error& se)
-        {
-          this->PreparedUpdate(downtime, *this->downtime_stmt_);
-        }
+      this->Insert(downtime);
     }
-  else if ((downtime.type == NEBTYPE_DOWNTIME_STOP)
-           || (downtime.type == NEBTYPE_DOWNTIME_DELETE))
+  catch (const soci::soci_error& se)
     {
-      *this->conn_ << "DELETE FROM " << MappedType<Events::Downtime>::table
-                   << " WHERE downtime_id=" << downtime.id
-		   << " AND entry_time=" << downtime.entry_time
-		   << " AND instance_name=" << downtime.instance_name;
+      this->PreparedUpdate(downtime, *this->downtime_stmt_);
     }
   return ;
 }
