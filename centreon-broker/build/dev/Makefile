@@ -33,6 +33,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/configuration/log.cpp				\
 		../../src/configuration/manager.cpp			\
 		../../src/configuration/parser.cpp			\
+		../../src/correlation/correlator.cpp			\
 		../../src/correlation/node.cpp				\
 		../../src/events/acknowledgement.cpp			\
 		../../src/events/check.cpp				\
