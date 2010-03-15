@@ -166,6 +166,7 @@ set(COMMON_SOURCES
 	../../src/configuration/log.cpp
 	../../src/configuration/manager.cpp
 	../../src/configuration/parser.cpp
+	../../src/correlation/node.cpp
 	../../src/init.cpp
 	../../src/multiplexing/internal.cpp
 	../../src/multiplexing/publisher.cpp
