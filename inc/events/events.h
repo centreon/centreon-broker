@@ -23,6 +23,7 @@
 
 # include "events/acknowledgement.h"
 # include "events/comment.h"
+# include "events/correlation.h"
 # include "events/downtime.h"
 # include "events/host.h"
 # include "events/host_check.h"
