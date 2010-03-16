@@ -18,36 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include "correlation/node.h"
 #include "events/issue.h"
 
-using namespace Correlation;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  \brief Copy internal members.
- *
- *  This method is used by the copy constructor and the assignment operator.
- *
- *  \param[in] node Object to copy.
- */
-void Node::InternalCopy(const Node& node)
-{
-  this->children    = node.children;
-  this->depended_by = node.depended_by;
-  this->depends_on  = node.depends_on;
-  this->host_id     = node.host_id;
-  if (node.issue.get())
-    this->issue.reset(new Events::Issue(*(node.issue.get())));
-  this->parents     = node.parents;
-  this->service_id  = node.service_id;
-  return ;
-}
+using namespace Events;
 
 /**************************************
 *                                     *
@@ -56,34 +29,45 @@ void Node::InternalCopy(const Node& node)
 **************************************/
 
 /**
- *  Constructor.
+ *  Default constructor.
  */
-Node::Node() {}
+Issue::Issue() : end_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] node Object to copy.
+ *  \param[in] issue Object to build from.
  */
-Node::Node(const Node& node)
+Issue::Issue(const Issue& issue) : IssueStatus(issue)
 {
-  this->InternalCopy(node);
+  this->end_time = issue.end_time;
 }
 
 /**
  *  Destructor.
  */
-Node::~Node() {}
+Issue::~Issue() {}
 
 /**
- *  Assignment operator.
+ *  Assignment operator overload.
  *
- *  \param[in] node Object to copy.
+ *  \param[in] issue Object to copy from.
  *
- *  \return *this
+ *  \return *this.
  */
-Node& Node::operator=(const Node& node)
+Issue& Issue::operator=(const Issue& issue)
 {
-  this->InternalCopy(node);
+  this->IssueStatus::operator=(issue);
+  this->end_time = issue.end_time;
   return (*this);
+}
+
+/**
+ *  Get the type of this event (Event::ISSUE).
+ *
+ *  \return Event::ISSUE.
+ */
+int Issue::GetType() const
+{
+  return (Event::ISSUE);
 }

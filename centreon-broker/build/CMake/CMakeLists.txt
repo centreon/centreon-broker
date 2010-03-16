@@ -87,7 +87,6 @@ set(LIBROKER_SOURCES
 	../../src/events/acknowledgement.cpp
 	../../src/events/check.cpp
 	../../src/events/comment.cpp
-	../../src/events/correlation.cpp
 	../../src/events/dependency.cpp
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp
@@ -102,6 +101,8 @@ set(LIBROKER_SOURCES
 	../../src/events/host_service.cpp
 	../../src/events/host_service_status.cpp
 	../../src/events/host_status.cpp
+	../../src/events/issue.cpp
+	../../src/events/issue_status.cpp
 	../../src/events/log.cpp
 	../../src/events/program.cpp
 	../../src/events/program_status.cpp

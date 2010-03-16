@@ -23,7 +23,7 @@
 
 # include <list>
 # include <memory> // for auto_ptr
-# include "events/correlation.h"
+# include "events/issue.h"
 
 namespace            Correlation
 {
@@ -44,10 +44,11 @@ namespace            Correlation
     std::list<Node*> depended_by;
     std::list<Node*> depends_on;
     int              host_id;
-    std::auto_ptr<Events::Correlation>
+    std::auto_ptr<Events::Issue>
                      issue;
     std::list<Node*> parents;
     int              service_id;
+    short            state;
                      Node();
                      Node(const Node& node);
                      ~Node();

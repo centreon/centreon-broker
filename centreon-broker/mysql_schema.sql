@@ -39,6 +39,7 @@
 --   +hostescalation_contactgroup
 --    hostgroup
 --   -hosts_commands
+--   -issues
 --   -log
 --   +notification
 --   -processevents
@@ -316,6 +317,20 @@ CREATE TABLE IF NOT EXISTS `hostdependency` (
     ON DELETE CASCADE
 
   -- instance_id int
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS issues (
+  id int NOT NULL auto_increment,
+  ack_time int default NULL,
+  end_time int default NULL,
+  host_id int default NULL,
+  output text default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+  state int default NULL,
+  status int default NULL,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
 
