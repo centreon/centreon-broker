@@ -18,29 +18,31 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_H_
-# define EVENTS_EVENTS_H_
+#ifndef EVENTS_ISSUE_H_
+# define EVENTS_ISSUE_H_
 
-# include "events/acknowledgement.h"
-# include "events/comment.h"
-# include "events/downtime.h"
-# include "events/host.h"
-# include "events/host_check.h"
-# include "events/host_dependency.h"
-# include "events/host_group.h"
-# include "events/host_group_member.h"
-# include "events/host_parent.h"
-# include "events/host_status.h"
-# include "events/issue.h"
+# include <time.h>                // for time_t
 # include "events/issue_status.h"
-# include "events/log.h"
-# include "events/program.h"
-# include "events/program_status.h"
-# include "events/service.h"
-# include "events/service_check.h"
-# include "events/service_dependency.h"
-# include "events/service_group.h"
-# include "events/service_group_member.h"
-# include "events/service_status.h"
 
-#endif /* EVENTS_EVENTS_H_ */
+namespace       Events
+{
+  /**
+   *  \class Issue issue.h "events/issue.h"
+   *  \brief Correlate events that Nagios generated.
+   *
+   *  Nagios can generate multiple events and log messages that are related
+   *  to the same issue on the network. This class represents such issues.
+   */
+  class         Issue : public IssueStatus
+  {
+   public:
+    time_t      end_time;
+                Issue();
+                Issue(const Issue& issue);
+                ~Issue();
+    Issue&      operator=(const Issue& issue);
+    int         GetType() const;
+  };
+}
+
+#endif /* !EVENTS_ISSUE_H_ */

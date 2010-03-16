@@ -19,6 +19,7 @@
 */
 
 #include "correlation/correlator.h"
+#include "events/host.h"
 
 using namespace Correlation;
 
@@ -40,6 +41,56 @@ void Correlator::InternalCopy(const Correlator& correlator)
   this->hosts_    = correlator.hosts_;
   this->issues_   = correlator.issues_;
   this->services_ = correlator.services_;
+  return ;
+}
+
+void Correlator::CorrelateHost(Events::Host& host)
+{
+  if (host.current_state)
+    {
+      std::map<int, Node>::iterator host_it;
+
+      host_it = this->hosts_.find(host.id);
+      if (host_it != this->hosts_.end())
+	{
+	  // Issue is self-assigned. Updated it.
+	  if (host_it->second.issue.get())
+	    ;
+	  else
+	    {
+	      bool all_parents_down;
+	      std::list<Node*>::const_iterator parent_it;
+
+	      all_parents_down = true;
+	      for (parent_it = host_it->second.parents.begin();
+		   parent_it != host_it->second.parents.end();
+		   ++parent_it)
+		all_parents_down = (all_parents_down
+                                    && (*parent_it)->state);
+	      // Issue comes from our parents. Our status is UNKNOWN.
+	      if (all_parents_down)
+		host.current_state = 3;
+	      else
+		{
+		  bool dependency_down;
+		  std::list<Node*>::const_iterator dependency_it;
+
+		  dependency_down = false;
+		  for (dependency_it = host_it->second.depends_on.begin();
+		       dependency_it != host_it->second.depends_on.end();
+		       ++dependency_it)
+		    dependency_down = (dependency_down || (*dependency_it)->state);
+		  // Issue comes from a dependency. Our status is UNKNOWN.
+		  if (dependency_down)
+		    host.current_state = 3;
+		}
+	    }
+	}
+      // Check children.
+    }
+  else
+    {
+    }
   return ;
 }
 

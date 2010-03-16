@@ -18,42 +18,42 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_CORRELATION_H_
-# define EVENTS_CORRELATION_H_
+#ifndef EVENTS_ISSUE_STATUS_H_
+# define EVENTS_ISSUE_STATUS_H_
 
 # include <string>
-# include <time.h>         // for time_t
+# include <time.h>
 # include "events/event.h"
 
 namespace        Events
 {
   /**
-   *  \class Correlation correlation.h "events/correlation.h"
-   *  \brief Correlate events that Nagios generated.
+   *  \class IssueStatus issue_status.h "events/issue_status.h"
+   *  \brief Update an already existing issue.
    *
-   *  Nagios can generate multiple events and log messages that are related
-   *  to the same issue on the network. This class represents such issues.
+   *  Update status of an issue, which is itself a group of Nagios events.
+   *
+   *  \see Issue
    */
-  class          Correlation : public Event
+  class          IssueStatus : public Event
   {
    private:
-    void         InternalCopy(const Correlation& correlation);
+    void         InternalCopy(const IssueStatus& issue_status);
 
    public:
     time_t       ack_time;
-    time_t       end_time;
     int          host_id;
     std::string  output;
     int          service_id;
     time_t       start_time;
     short        state;
     short        status;
-                 Correlation();
-                 Correlation(const Correlation& correlation);
-                 ~Correlation();
-    Correlation& operator=(const Correlation& correlation);
-    int          GetType() const;
+                 IssueStatus();
+                 IssueStatus(const IssueStatus& issue_status);
+    virtual      ~IssueStatus();
+    IssueStatus& operator=(const IssueStatus& issue_status);
+    virtual int  GetType() const;
   };
 }
 
-#endif /* !EVENTS_CORRELATION_H_ */
+#endif /* !EVENTS_ISSUE_STATUS_H_ */

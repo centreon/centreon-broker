@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/correlation.h"
+#include "events/issue_status.h"
 
 using namespace Events;
 
@@ -29,77 +29,77 @@ using namespace Events;
 **************************************/
 
 /**
- *  \brief Copy data members to the current instance.
+ *  \brief Copy internal members.
  *
  *  This method is used by the copy constructor and the assignment operator.
  *
- *  \param[in] correlation Object to copy from.
+ *  \param[in] issue_status Object to copy.
  */
-void Correlation::InternalCopy(const Correlation& correlation)
+void IssueStatus::InternalCopy(const IssueStatus& issue_status)
 {
-  this->ack_time   = correlation.ack_time;
-  this->end_time   = correlation.end_time;
-  this->host_id    = correlation.host_id;
-  this->output     = correlation.output;
-  this->service_id = correlation.service_id;
-  this->start_time = correlation.start_time;
-  this->state      = correlation.state;
-  this->status     = correlation.status;
+  this->ack_time   = issue_status.ack_time;
+  this->host_id    = issue_status.host_id;
+  this->output     = issue_status.output;
+  this->service_id = issue_status.service_id;
+  this->start_time = issue_status.start_time;
+  this->state      = issue_status.state;
+  this->status     = issue_status.status;
   return ;
 }
 
 /**************************************
 *                                     *
-*           Public Methods            *
+*           Private Methods           *
 *                                     *
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-Correlation::Correlation()
+IssueStatus::IssueStatus()
   : ack_time(0),
-    end_time(0),
     host_id(0),
     service_id(0),
+    start_time(0),
     state(0),
     status(0) {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] correlation Object to build from.
+ *  \param[in] issue_status Object to copy.
  */
-Correlation::Correlation(const Correlation& correlation) : Event(correlation)
+IssueStatus::IssueStatus(const IssueStatus& issue_status)
+  : Events::Event(issue_status)
 {
-  this->InternalCopy(correlation);
+  this->InternalCopy(issue_status);
 }
 
 /**
  *  Destructor.
  */
-Correlation::~Correlation() {}
+IssueStatus::~IssueStatus() {}
 
 /**
  *  Assignment operator overload.
  *
- *  \param[in] correlation Object to copy from.
+ *  \param[in] issue_status Object to copy.
  *
- *  \return *this.
+ *  \return *this
  */
-Correlation& Correlation::operator=(const Correlation& correlation)
+IssueStatus& IssueStatus::operator=(const IssueStatus& issue_status)
 {
-  this->Event::operator=(correlation);
-  this->InternalCopy(correlation);
+  this->Event::operator=(issue_status);
+  this->InternalCopy(issue_status);
   return (*this);
 }
 
 /**
- *  Get the type of this event (Event::CORRELATION).
+ *  Get the type of this event (Event::ISSUESTATUS).
  *
- *  \return Event::CORRELATION.
+ *  \return Event::ISSUESTATUS.
  */
-int Correlation::GetType() const
+int IssueStatus::GetType() const
 {
-  return (Event::CORRELATION);
+  return (Event::ISSUESTATUS);
 }
