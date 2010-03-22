@@ -83,7 +83,7 @@ for libdir in "$SOCI_DIR/lib" "$SOCI_DIR/src/core" ; do
 	for lib in "$libdir"/libsoci_core.a "$libdir"/libsoci_core-gcc-3_0.a ; do
 		if test "$found_soci" = "no" ; then
 			AC_CHECK_FILE([$lib],
-				[SOCI_LDFLAGS="-ldl -L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
+				[SOCI_LDFLAGS="-ldl -L$libdir -l`basename $lib | cut -c 4- | rev | cut -c 3- | rev`"
 				AC_SUBST([SOCI_LDFLAGS])
 				found_soci="yes"])
 		fi
@@ -137,7 +137,7 @@ if test "$want_mysql" = "yes"; then
 		for lib in "$libdir"/libsoci_mysql.a "$libdir"/libsoci_mysql-gcc-3_0.a ; do
 			if test "$found_soci_mysql" = "no" ; then
 				AC_CHECK_FILE([$lib],
-					[MYSQL_LDFLAGS="-L$libdir -l`basename $lib | cut -d '' -c 4- | rev | cut -d '' -c 3- | rev`"
+					[MYSQL_LDFLAGS="-L$libdir -l`basename $lib | cut -c 4- | rev | cut -c 3- | rev`"
 					AC_SUBST([MYSQL_LDFLAGS])
 					found_soci_mysql="yes"])
 			fi
