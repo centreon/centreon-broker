@@ -22,6 +22,7 @@
 #include <memory>
 #include <stdlib.h>                  // for abort, strtol
 #include <string>
+#include "configuration/globals.h"
 #include "configuration/interface.h"
 #include "configuration/log.h"
 #include "configuration/lexer.h"
@@ -34,10 +35,6 @@
                           "configuration file ..."
 
 using namespace Configuration;
-
-// XXX : dirty hack to support module instance
-int gl_instance;
-std::string gl_instance_name;
 
 /**************************************
 *                                     *
@@ -318,11 +315,14 @@ void Parser::Parse(const std::string& filename,
          case Configuration::Token::ASSIGNMENT:
           if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
             throw (Exception(0, INVALID_TOKEN_MSG));
-          if (var.GetText() == "instance")
-            gl_instance = strtol(val.GetText().c_str(), NULL, 0);
+          if (var.GetText() == "correlation")
+	    Configuration::Globals::correlation
+              = strtol(val.GetText().c_str(), NULL, 0);
+          else if (var.GetText() == "instance")
+            Configuration::Globals::instance
+              = strtol(val.GetText().c_str(), NULL, 0);
           else if (var.GetText() == "instance_name")
-            gl_instance_name = val.GetText();
-          // XXX : set global variable
+            Configuration::Globals::instance_name = val.GetText();
           break ;
           // Block name.
          case Configuration::Token::STRING:

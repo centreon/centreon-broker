@@ -28,6 +28,7 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/concurrency/mutex.cpp				\
 		../../src/concurrency/thread.cpp			\
 		../../src/concurrency/thread_listener.cpp		\
+		../../src/configuration/globals.cpp			\
 		../../src/configuration/interface.cpp			\
 		../../src/configuration/lexer.cpp			\
 		../../src/configuration/log.cpp				\

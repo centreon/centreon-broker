@@ -163,6 +163,7 @@ target_link_libraries(roker ${GNUTLS_LIBRARIES})
 
 # Common sources files.
 set(COMMON_SOURCES
+	../../src/configuration/globals.cpp
 	../../src/configuration/interface.cpp
 	../../src/configuration/lexer.cpp
 	../../src/configuration/log.cpp
