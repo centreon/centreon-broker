@@ -854,6 +854,86 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>()
   };
 
+// Issue members mapping.
+static const MappedData<Issue> issue_mapping[] = // XXX : find NDO IDs
+  {
+    MappedData<Issue>(
+      &Issue::ack_time,
+      0,
+      "ack_time"),
+    MappedData<Issue>(
+      &Issue::end_time,
+      0,
+      "end_time"),
+    MappedData<Issue>(
+      &Issue::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<Issue>(
+      &Issue::instance, // wtf is it here for ?
+      0,
+      NULL),
+    MappedData<Issue>(
+      &Issue::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Issue>(
+      &Issue::service_id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<Issue>(
+      &Issue::start_time,
+      0,
+      "start_time"),
+    MappedData<Issue>(
+      &Issue::state,
+      NDO_DATA_STATE,
+      "state"),
+    MappedData<Issue>(
+      &Issue::status,
+      0,
+      "status"),
+    MappedData<Issue>()
+  };
+
+// IssueStatus members mapping.
+static const MappedData<IssueStatus> issue_status_mapping[] =
+  {
+    MappedData<IssueStatus>(
+      &IssueStatus::ack_time,
+      0,
+      "ack_time"),
+    MappedData<IssueStatus>(
+      &IssueStatus::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<IssueStatus>(
+      &IssueStatus::instance, // wtf is it here for ?
+      0,
+      NULL),
+    MappedData<IssueStatus>(
+      &IssueStatus::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<IssueStatus>(
+      &IssueStatus::service_id,
+      NDO_DATA_SERVICE,
+      "service_id"),
+    MappedData<IssueStatus>(
+      &IssueStatus::start_time,
+      0,
+      "start_time"),
+    MappedData<IssueStatus>(
+      &IssueStatus::state,
+      NDO_DATA_STATE,
+      "state"),
+    MappedData<IssueStatus>(
+      &IssueStatus::status,
+      0,
+      "status"),
+    MappedData<IssueStatus>()
+  };
+
 // Log members mapping.
 static const MappedData<Log> log_mapping[] =
   {
@@ -1699,6 +1779,18 @@ template <> const MappedData<Events::HostStatus>*
   MappedType<Events::HostStatus>::members(host_status_mapping);
 template <> const char*
   MappedType<Events::HostStatus>::table("host");
+
+// Issue mapping.
+template <> const MappedData<Events::Issue>*
+  MappedType<Events::Issue>::members(issue_mapping);
+template <> const char*
+  MappedType<Events::Issue>::table("issues");
+
+// IssueStatus mapping.
+template <> const MappedData<Events::IssueStatus>*
+  MappedType<Events::IssueStatus>::members(issue_status_mapping);
+template <> const char*
+  MappedType<Events::IssueStatus>::table("issues");
 
 // Log mapping.
 template <> const MappedData<Events::Log>*

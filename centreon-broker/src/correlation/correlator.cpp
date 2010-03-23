@@ -18,8 +18,13 @@
 **  For more information : contact@centreon.com
 */
 
+#include <assert.h>
+#include <time.h>
 #include "correlation/correlator.h"
 #include "events/host.h"
+#include "events/issue.h"
+#include "exception.h"
+#include "multiplexing/publisher.h"
 
 using namespace Correlation;
 
@@ -28,6 +33,96 @@ using namespace Correlation;
 *           Private Methods           *
 *                                     *
 **************************************/
+
+void Correlator::CorrelateHost(Events::HostStatus& hs)
+{
+  // Find host in host list.
+  std::map<int, Node>::iterator host_it;
+
+  if ((host_it = this->hosts_.find(hs.id)) == this->hosts_.end())
+    throw (Exception(0, "Invalid host status provided."));
+
+  Node& host(host_it->second);
+
+  if (host.state != hs.current_state)
+    {
+      if (hs.current_state)
+	{
+	  bool all_parents_down;
+	  Events::Issue* issue;
+	  std::list<Node*>::iterator it;
+	  bool one_dependency_down;
+
+	  all_parents_down = true;
+	  one_dependency_down = false;
+	  for (it = host.parents.begin(); it != host.parents.end(); ++it)
+	    all_parents_down = (all_parents_down && (*it)->state);
+	  if (!all_parents_down)
+	    {
+	      for (it = host.depends_on.begin();
+		   it != host.depends_on.end();
+		   ++it)
+		one_dependency_down = (one_dependency_down || (*it)->state);
+	    }
+	  if (all_parents_down || one_dependency_down)
+	    {
+	      host.state = 3; // UNKNOWN
+	      issue = this->FindRelatedIssue(host);
+	    }
+	  else
+	    {
+	      std::auto_ptr<Events::Issue> publish_issue;
+	      Multiplexing::Publisher publisher;
+
+	      // Set issue.
+	      host.issue.reset(new Events::Issue);
+	      (*host.issue) << hs;
+	      host.issue->start_time = time(NULL);
+
+	      // Publish issue.
+	      publish_issue.reset(new Events::Issue(*(host.issue.get())));
+	      publisher.Event(publish_issue.get());
+	      publish_issue.release();
+
+	      // Get current issue.
+	      issue = host.issue.get();
+	    }
+	  // XXX : loop depended_by
+	  // XXX : loop childs
+	}
+      else
+	{
+	  // issue is over
+	  // recursively set childs
+	}
+    }
+  else
+    {
+      // update status
+    }
+  return ;
+}
+
+Events::Issue* Correlator::FindRelatedIssue(Node& node)
+{
+  Node* related;
+
+  related = NULL;
+  for (std::list<Node*>::iterator it = node.depends_on.begin(),
+	 end = node.depends_on.end();
+       it != end;
+       ++it)
+    if ((*it)->state)
+      {
+	related = *it;
+	break ;
+      }
+  if (!related)
+    related = *(node.parents.begin());
+  assert(related->state);
+  return (related->issue.get() ? related->issue.get()
+                               : this->FindRelatedIssue(*related));
+}
 
 /**
  *  \brief Copy internal members.
@@ -39,58 +134,7 @@ using namespace Correlation;
 void Correlator::InternalCopy(const Correlator& correlator)
 {
   this->hosts_    = correlator.hosts_;
-  this->issues_   = correlator.issues_;
   this->services_ = correlator.services_;
-  return ;
-}
-
-void Correlator::CorrelateHost(Events::Host& host)
-{
-  if (host.current_state)
-    {
-      std::map<int, Node>::iterator host_it;
-
-      host_it = this->hosts_.find(host.id);
-      if (host_it != this->hosts_.end())
-	{
-	  // Issue is self-assigned. Updated it.
-	  if (host_it->second.issue.get())
-	    ;
-	  else
-	    {
-	      bool all_parents_down;
-	      std::list<Node*>::const_iterator parent_it;
-
-	      all_parents_down = true;
-	      for (parent_it = host_it->second.parents.begin();
-		   parent_it != host_it->second.parents.end();
-		   ++parent_it)
-		all_parents_down = (all_parents_down
-                                    && (*parent_it)->state);
-	      // Issue comes from our parents. Our status is UNKNOWN.
-	      if (all_parents_down)
-		host.current_state = 3;
-	      else
-		{
-		  bool dependency_down;
-		  std::list<Node*>::const_iterator dependency_it;
-
-		  dependency_down = false;
-		  for (dependency_it = host_it->second.depends_on.begin();
-		       dependency_it != host_it->second.depends_on.end();
-		       ++dependency_it)
-		    dependency_down = (dependency_down || (*dependency_it)->state);
-		  // Issue comes from a dependency. Our status is UNKNOWN.
-		  if (dependency_down)
-		    host.current_state = 3;
-		}
-	    }
-	}
-      // Check children.
-    }
-  else
-    {
-    }
   return ;
 }
 

@@ -87,3 +87,18 @@ Node& Node::operator=(const Node& node)
   this->InternalCopy(node);
   return (*this);
 }
+
+/**
+ *  Extract useful status fields from an host status.
+ *
+ *  \param[in] hs HostStatus to extract from.
+ *
+ *  \return *this
+ */
+Node& Node::operator<<(const Events::HostStatus& hs)
+{
+  this->host_id    = hs.id;
+  this->service_id = 0;
+  this->state      = hs.current_state;
+  return (*this);
+}
