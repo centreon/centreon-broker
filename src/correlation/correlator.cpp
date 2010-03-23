@@ -30,6 +30,42 @@ using namespace Correlation;
 
 /**************************************
 *                                     *
+*           Static Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Determine whether or not a node should have the unknown state.
+ *
+ *  \param[in] node Node to check.
+ *
+ *  \return true if the node should be unknown.
+ */
+static bool ShouldBeUnknown(const Node& node)
+{
+  bool all_parents_down;
+  bool one_dependency_down;
+
+  all_parents_down = true;
+  one_dependency_down = false;
+  for (std::list<Node*>::const_iterator it = node.parents.begin(),
+         end = node.parents.end();
+       it != end;
+       ++it)
+    all_parents_down = (all_parents_down && (*it)->state);
+  if (!all_parents_down)
+    {
+      for (std::list<Node*>::const_iterator it = node.depends_on.begin(),
+             end = node.depends_on.end();
+           it != end;
+           ++it)
+        one_dependency_down = (one_dependency_down || (*it)->state);
+    }
+  return (all_parents_down || one_dependency_down);
+}
+
+/**************************************
+*                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
@@ -47,75 +83,93 @@ void Correlator::CorrelateHost(Events::HostStatus& hs)
   if (host.state != hs.current_state)
     {
       if (hs.current_state)
-	{
-	  bool all_parents_down;
-	  Events::Issue* issue;
-	  std::list<Node*>::iterator it;
-	  bool one_dependency_down;
+        {
+          Events::Issue* issue;
 
-	  all_parents_down = true;
-	  one_dependency_down = false;
-	  for (it = host.parents.begin(); it != host.parents.end(); ++it)
-	    all_parents_down = (all_parents_down && (*it)->state);
-	  if (!all_parents_down)
-	    {
-	      for (it = host.depends_on.begin();
-		   it != host.depends_on.end();
-		   ++it)
-		one_dependency_down = (one_dependency_down || (*it)->state);
-	    }
-	  if (all_parents_down || one_dependency_down)
-	    {
-	      host.state = 3; // UNKNOWN
-	      issue = this->FindRelatedIssue(host);
-	    }
-	  else
-	    {
-	      std::auto_ptr<Events::Issue> publish_issue;
-	      Multiplexing::Publisher publisher;
+          // Check if unknown flag should be set.
+          if (ShouldBeUnknown(host))
+            {
+              hs.current_state = 3; // UNKNOWN
+              issue = this->FindRelatedIssue(host);
+            }
+          else
+            {
+              std::auto_ptr<Events::Issue> publish_issue;
+              Multiplexing::Publisher publisher;
 
-	      // Set issue.
-	      host.issue.reset(new Events::Issue);
-	      (*host.issue) << hs;
-	      host.issue->start_time = time(NULL);
+              // Set issue.
+              host.issue.reset(new Events::Issue);
+              (*host.issue) << hs;
+              host.issue->start_time = time(NULL);
 
-	      // Publish issue.
-	      publish_issue.reset(new Events::Issue(*(host.issue.get())));
-	      publisher.Event(publish_issue.get());
-	      publish_issue.release();
+              // Publish issue.
+              publish_issue.reset(new Events::Issue(*(host.issue.get())));
+              publish_issue->AddReader();
+              publisher.Event(publish_issue.get());
+              publish_issue.release();
 
-	      // Get current issue.
-	      issue = host.issue.get();
-	    }
-	  // XXX : loop depended_by
-	  // XXX : loop childs
-	}
+              // Get current issue.
+              issue = host.issue.get();
+            }
+          // XXX : loop depended_by to fetch their issues
+          // XXX : loop childs to fetch their issues
+        }
       else
-	{
-	  // issue is over
-	  // recursively set childs
-	}
+        {
+          // Issue is over.
+          if (host.issue.get())
+            {
+              Multiplexing::Publisher publisher;
+
+              (*host.issue) << hs;
+              host.issue->end_time = time(NULL);
+              host.issue->AddReader();
+              publisher.Event(host.issue.get());
+              host.issue.release();
+            }
+
+          // Restore possible childs. If another failure occurs, this will be
+          // another issue.
+          host.state = hs.current_state;
+          for (std::list<Node*>::iterator it = host.children.begin(),
+                 end = host.children.end();
+               it != end;
+               ++it)
+            if (!ShouldBeUnknown(**it))
+              (*it)->state = 0;
+          for (std::list<Node*>::iterator it = host.depended_by.begin(),
+                 end = host.depended_by.end();
+               it != end;
+               ++it)
+            if (!ShouldBeUnknown(**it))
+              (*it)->state = 0;
+        }
     }
-  else
-    {
-      // update status
-    }
+  host.state = hs.current_state;
   return ;
 }
 
+/**
+ *  Browse the parenting tree of the given node and find its ancestor's issue
+ *  which causes it to be in undetermined state.
+ *
+ *  \param[in] node Base node.
+ *
+ *  \return The issue associated with node.
+ */
 Events::Issue* Correlator::FindRelatedIssue(Node& node)
 {
   Node* related;
 
   related = NULL;
   for (std::list<Node*>::iterator it = node.depends_on.begin(),
-	 end = node.depends_on.end();
+         end = node.depends_on.end();
        it != end;
        ++it)
     if ((*it)->state)
       {
-	related = *it;
-	break ;
+        related = *it;
+        break ;
       }
   if (!related)
     related = *(node.parents.begin());
@@ -184,4 +238,7 @@ Correlator& Correlator::operator=(const Correlator& correlator)
  */
 void Correlator::Event(Events::Event& event)
 {
+  if (event.GetType() == Events::Event::HOSTSTATUS)
+    this->CorrelateHost(*static_cast<Events::HostStatus*>(&event));
+  return ;
 }

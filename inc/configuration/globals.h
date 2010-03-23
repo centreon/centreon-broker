@@ -18,38 +18,19 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef CONFIGURATION_PARSER_H_
-# define CONFIGURATION_PARSER_H_
+#ifndef CONFIGURATION_GLOBALS_H_
+# define CONFIGURATION_GLOBAL_H_
 
-# include <list>
 # include <string>
 
-namespace   Configuration
+namespace              Configuration
 {
-  // Forward declaration.
-  class     Interface;
-  class     Log;
-
-  /**
-   *  \class Parser parser.h "configuration/parser.h"
-   *  \brief Parse a configuration file.
-   *
-   *  Parse a configuration file and generate proper configuration objects.
-   */
-  class     Parser
+  namespace            Globals
   {
-   private:
-            Parser(const Parser& parser);
-    Parser& operator=(const Parser& parser);
-
-   public:
-            Parser();
-            ~Parser();
-    void    Parse(const std::string& filename,
-                  std::list<Interface>& inputs,
-                  std::list<Log>& logs,
-                  std::list<Interface>& outputs);
-  };
+    extern bool        correlation;
+    extern int         instance;
+    extern std::string instance_name;
+  }
 }
 
-#endif /* !CONFIGURATION_PARSER_H_ */
+#endif /* !CONFIGURATION_GLOBALS_H_ */
