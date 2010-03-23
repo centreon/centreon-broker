@@ -23,6 +23,7 @@
 
 # include <list>
 # include <memory> // for auto_ptr
+# include "events/host_status.h"
 # include "events/issue.h"
 
 namespace            Correlation
@@ -53,6 +54,7 @@ namespace            Correlation
                      Node(const Node& node);
                      ~Node();
     Node&            operator=(const Node& node);
+    Node&            operator<<(const Events::HostStatus& hs);
   };
 }
 

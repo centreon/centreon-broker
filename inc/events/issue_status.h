@@ -24,6 +24,7 @@
 # include <string>
 # include <time.h>
 # include "events/event.h"
+# include "events/host_status.h"
 
 namespace        Events
 {
@@ -52,6 +53,7 @@ namespace        Events
                  IssueStatus(const IssueStatus& issue_status);
     virtual      ~IssueStatus();
     IssueStatus& operator=(const IssueStatus& issue_status);
+    IssueStatus& operator<<(const HostStatus& host_status);
     virtual int  GetType() const;
   };
 }

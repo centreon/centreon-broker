@@ -95,6 +95,23 @@ IssueStatus& IssueStatus::operator=(const IssueStatus& issue_status)
 }
 
 /**
+ *  Extract useful status information.
+ *
+ *  \param[in] host_status Object to extract from.
+ *
+ *  \return *this
+ */
+IssueStatus& IssueStatus::operator<<(const HostStatus& host_status)
+{
+  this->host_id     = host_status.id;
+  this->output      = host_status.output;
+  this->service_id  = 0;
+  this->state       = host_status.current_state;
+  // XXX this->status      = ;
+  return (*this);
+}
+
+/**
  *  Get the type of this event (Event::ISSUESTATUS).
  *
  *  \return Event::ISSUESTATUS.

@@ -127,6 +127,7 @@ set(LIBROKER_SOURCES
 	../../src/interface/sourcedestination.cpp
 	../../src/interface/xml/destination.cpp
 	../../src/interface/xml/internal.cpp
+	../../src/interface/xml/source.cpp
 	../../src/interface/xml/tinystr.cpp
 	../../src/interface/xml/tinyxml.cpp
 	../../src/interface/xml/tinyxmlerror.cpp

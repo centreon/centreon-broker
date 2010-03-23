@@ -25,7 +25,7 @@
 # include <map>
 # include "correlation/node.h"
 # include "events/event.h"
-# include "events/host.h"
+# include "events/host_status.h"
 
 namespace                    Correlation
 {
@@ -40,9 +40,9 @@ namespace                    Correlation
   {
    private:
     std::map<int, Node>      hosts_;
-    std::list<Events::Issue> issues_;
     std::map<int, Node>      services_;
-    void                     CorrelateHost(Events::Host& host);
+    void                     CorrelateHost(Events::HostStatus& hs);
+    Events::Issue*           FindRelatedIssue(Node& node);
     void                     InternalCopy(const Correlator& correlator);
 
    public:
