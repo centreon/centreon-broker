@@ -48,10 +48,6 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Acknowledgement>(
-      &Acknowledgement::instance, // wtf is it here for ?
-      NDO_DATA_INSTANCE,
-      NULL),
-    MappedData<Acknowledgement>(
       &Acknowledgement::instance_name,
       NDO_DATA_PROGRAMNAME,
       "instance_name"),
@@ -75,10 +71,6 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
       &Acknowledgement::state,
       NDO_DATA_STATE,
       "state"),
-    MappedData<Acknowledgement>( // XXX : wtf is it here for ?
-      &Acknowledgement::type,
-      NDO_DATA_TYPE,
-      NULL),
     MappedData<Acknowledgement>()
   };
 
@@ -1744,25 +1736,25 @@ template <> const char*
 template <> const MappedData<Events::Comment>*
   MappedType<Events::Comment>::members(comment_mapping);
 template <> const char*
-  MappedType<Events::Comment>::table("comment");
+  MappedType<Events::Comment>::table("comments");
 
 // Downtime mapping.
 template <> const MappedData<Events::Downtime>*
   MappedType<Events::Downtime>::members(downtime_mapping);
 template <> const char*
-  MappedType<Events::Downtime>::table("scheduled_downtime");
+  MappedType<Events::Downtime>::table("downtimes");
 
 // Host mapping.
 template <> const MappedData<Events::Host>*
   MappedType<Events::Host>::members(host_mapping);
 template <> const char*
-  MappedType<Events::Host>::table("host");
+  MappedType<Events::Host>::table("hosts");
 
 // HostCheck mapping.
 template <> const MappedData<Events::HostCheck>*
   MappedType<Events::HostCheck>::members(host_check_mapping);
 template <> const char*
-  MappedType<Events::HostCheck>::table("host");
+  MappedType<Events::HostCheck>::table("hosts");
 
 // HostDependency mapping.
 template <> const MappedData<Events::HostDependency>*
@@ -1774,7 +1766,7 @@ template <> const char*
 template <> const MappedData<Events::HostGroup>*
   MappedType<Events::HostGroup>::members(host_group_mapping);
 template <> const char*
-  MappedType<Events::HostGroup>::table("hostgroup");
+  MappedType<Events::HostGroup>::table("hostgroups");
 
 // HostGroupMember mapping.
 template <> const MappedData<Events::HostGroupMember>*
@@ -1786,13 +1778,13 @@ template <> const char*
 template <> const MappedData<Events::HostParent>*
   MappedType<Events::HostParent>::members(host_parent_mapping);
 template <> const char*
-  MappedType<Events::HostParent>::table("host_parents");
+  MappedType<Events::HostParent>::table("host_parent");
 
 // HostStatus mapping.
 template <> const MappedData<Events::HostStatus>*
   MappedType<Events::HostStatus>::members(host_status_mapping);
 template <> const char*
-  MappedType<Events::HostStatus>::table("host");
+  MappedType<Events::HostStatus>::table("hosts");
 
 // Issue mapping.
 template <> const MappedData<Events::Issue>*
@@ -1810,31 +1802,31 @@ template <> const char*
 template <> const MappedData<Events::Log>*
   MappedType<Events::Log>::members(log_mapping);
 template <> const char*
-  MappedType<Events::Log>::table("log");
+  MappedType<Events::Log>::table("logs");
 
 // Program mapping.
 template <> const MappedData<Events::Program>*
   MappedType<Events::Program>::members(program_mapping);
 template <> const char*
-  MappedType<Events::Program>::table("program_status");
+  MappedType<Events::Program>::table("programs");
 
 // ProgramStatus mapping.
 template <> const MappedData<Events::ProgramStatus>*
   MappedType<Events::ProgramStatus>::members(program_status_mapping);
 template <> const char*
-  MappedType<Events::ProgramStatus>::table("program_status");
+  MappedType<Events::ProgramStatus>::table("programs");
 
 // Service mapping.
 template <> const MappedData<Events::Service>*
   MappedType<Events::Service>::members(service_mapping);
 template <> const char*
-  MappedType<Events::Service>::table("service");
+  MappedType<Events::Service>::table("services");
 
 // ServiceCheck mapping.
 template <> const MappedData<Events::ServiceCheck>*
   MappedType<Events::ServiceCheck>::members(service_check_mapping);
 template <> const char*
-  MappedType<Events::ServiceCheck>::table("service");
+  MappedType<Events::ServiceCheck>::table("services");
 
 // ServiceDependency mapping.
 template <> const MappedData<Events::ServiceDependency>*
@@ -1846,7 +1838,7 @@ template <> const char*
 template <> const MappedData<Events::ServiceGroup>*
   MappedType<Events::ServiceGroup>::members(service_group_mapping);
 template <> const char*
-  MappedType<Events::ServiceGroup>::table("servicegroup");
+  MappedType<Events::ServiceGroup>::table("servicegroups");
 
 // ServiceGroupMember mapping.
 template <> const MappedData<Events::ServiceGroupMember>*
@@ -1858,4 +1850,4 @@ template <> const char*
 template <> const MappedData<Events::ServiceStatus>*
   MappedType<Events::ServiceStatus>::members(service_status_mapping);
 template <> const char*
-  MappedType<Events::ServiceStatus>::table("service");
+  MappedType<Events::ServiceStatus>::table("services");

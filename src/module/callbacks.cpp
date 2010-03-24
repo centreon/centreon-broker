@@ -56,7 +56,7 @@ int CallbackAcknowledgement(int callback_type, void* data)
       std::auto_ptr<Events::Acknowledgement> ack(new Events::Acknowledgement);
 
       ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
-      ack->acknowledgement_type = ack_data->type; // XXX : duplicate with type
+      ack->acknowledgement_type = ack_data->type;
       if (ack_data->author_name)
         ack->author = ack_data->author_name;
       if (ack_data->comment_data)
@@ -71,7 +71,6 @@ int CallbackAcknowledgement(int callback_type, void* data)
       if (ack_data->service_description)
         ack->service_description = ack_data->service_description;
       ack->state = ack_data->state;
-      ack->type = ack_data->type; // XXX : duplicate with acknowledgement_type
 
       ack->AddReader();
       gl_publisher.Event(ack.get());
@@ -389,7 +388,7 @@ int CallbackProcess(int callback_type, void *data)
 
           Configuration::Manager::Instance().Open(gl_configuration_file);
           // program->daemon_mode = XXX;
-          program->instance = Configuration::Globals::instance;
+          program->instance_id = Configuration::Globals::instance;
           program->instance_name = Configuration::Globals::instance_name;
           program->is_running = true;
           program->pid = getpid();
@@ -405,7 +404,7 @@ int CallbackProcess(int callback_type, void *data)
         {
           std::auto_ptr<Events::Program> program(new Events::Program);
 
-          program->instance = Configuration::Globals::instance;
+          program->instance_id = Configuration::Globals::instance;
           program->instance_name = Configuration::Globals::instance_name;
           program->is_running = false;
           program->pid = getpid();

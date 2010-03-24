@@ -41,18 +41,17 @@ namespace              Events
     void               InternalCopy(const Acknowledgement& ack);
 
    public:
-    int                acknowledgement_type;
+    short              acknowledgement_type;
     std::string        author;
     std::string        comment;
     time_t             entry_time;
     std::string        host_name;
     std::string        instance_name;
     bool               is_sticky;
-    short              notify_contacts;
-    short              persistent_comment;
+    bool               notify_contacts;
+    bool               persistent_comment;
     std::string        service_description;
     short              state;
-    int                type;
                        Acknowledgement();
                        Acknowledgement(const Acknowledgement& ack);
                        ~Acknowledgement();
