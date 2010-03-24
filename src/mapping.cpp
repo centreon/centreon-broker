@@ -86,16 +86,16 @@ static const MappedData<Comment> comment_mapping[] =
       NDO_DATA_COMMENT,
       "comment_data"),
     MappedData<Comment>(
-      &Comment::comment_time, // XXX : wtf is it here for ?
-      0,
+      &Comment::comment_time,
+      NDO_DATA_COMMENTTIME,
       "comment_time"),
     MappedData<Comment>(
       &Comment::comment_type,
       NDO_DATA_COMMENTTYPE,
       "comment_type"),
     MappedData<Comment>(
-      &Comment::deletion_time, // XXX : wtf is it here for ?
-      0,
+      &Comment::deletion_time,
+      NDO_DATA_ENDTIME,
       "deletion_time"),
     MappedData<Comment>(
       &Comment::entry_time,
@@ -117,10 +117,6 @@ static const MappedData<Comment> comment_mapping[] =
       &Comment::host_name,
       NDO_DATA_HOSTNAME,
       "host_name"),
-    MappedData<Comment>(
-      &Comment::instance, // wtf is it here for ?
-      NDO_DATA_INSTANCE,
-      NULL),
     MappedData<Comment>(
       &Comment::instance_name,
       NDO_DATA_PROGRAMNAME,
@@ -602,7 +598,7 @@ static const MappedData<HostGroup> host_group_mapping[] =
       NDO_DATA_HOSTGROUPALIAS,
       "alias"),
     MappedData<HostGroup>(
-      &HostGroup::instance,
+      &HostGroup::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<HostGroup>(
@@ -1496,7 +1492,7 @@ static const MappedData<ServiceGroup> service_group_mapping[] =
       NDO_DATA_SERVICEGROUPALIAS,
       "alias"),
     MappedData<ServiceGroup>(
-      &ServiceGroup::instance,
+      &ServiceGroup::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<ServiceGroup>(

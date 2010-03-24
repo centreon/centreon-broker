@@ -93,7 +93,7 @@ static void SendHostGroupList()
 
       if (hg->alias)
         host_group->alias = hg->alias;
-      host_group->instance = Configuration::Globals::instance;
+      host_group->instance_id = Configuration::Globals::instance;
       if (hg->group_name)
         host_group->name = hg->group_name;
 
@@ -349,7 +349,7 @@ static void SendServiceGroupList()
 
       if (sg->alias)
         service_group->alias = sg->alias;
-      service_group->instance = Configuration::Globals::instance;
+      service_group->instance_id = Configuration::Globals::instance;
       if (sg->group_name)
         service_group->name = sg->group_name;
 

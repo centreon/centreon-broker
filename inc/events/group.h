@@ -45,6 +45,7 @@ namespace                  Events
    public:
     std::string            action_url;
     std::string            alias;
+    int                    instance_id;
     std::string            name;
     std::string            notes;
     std::string            notes_url;

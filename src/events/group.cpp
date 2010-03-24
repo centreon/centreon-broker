@@ -43,11 +43,12 @@ using namespace Events;
  */
 void Group::InternalCopy(const Group& group)
 {
-  this->action_url = group.action_url;
-  this->alias      = group.alias;
-  this->name       = group.name;
-  this->notes      = group.notes;
-  this->notes_url  = group.notes_url;
+  this->action_url  = group.action_url;
+  this->alias       = group.alias;
+  this->instance_id = group.instance_id;
+  this->name        = group.name;
+  this->notes       = group.notes;
+  this->notes_url   = group.notes_url;
   return ;
 }
 
@@ -62,7 +63,7 @@ void Group::InternalCopy(const Group& group)
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-Group::Group() {}
+Group::Group() : instance_id(0) {}
 
 /**
  *  \brief Group copy constructor.
