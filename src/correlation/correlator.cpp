@@ -30,9 +30,36 @@ using namespace Correlation;
 
 /**************************************
 *                                     *
-*           Static Methods            *
+*           Static Objects            *
 *                                     *
 **************************************/
+
+// Dispatch table.
+void (Correlator::* Correlator::dispatch_table[])(Events::Event&) =
+  {
+    &Correlator::CorrelateNothing,    // UNKNOWN
+    &Correlator::CorrelateNothing,    // ACKNOWLEDGEMENT
+    &Correlator::CorrelateNothing,    // COMMENT
+    &Correlator::CorrelateNothing,    // DOWNTIME
+    &Correlator::CorrelateNothing,    // HOST
+    &Correlator::CorrelateNothing,    // HOSTCHECK
+    &Correlator::CorrelateNothing,    // HOSTDEPENDENCY
+    &Correlator::CorrelateNothing,    // HOSTGROUP
+    &Correlator::CorrelateNothing,    // HOSTGROUPMEMBER
+    &Correlator::CorrelateNothing,    // HOSTPARENT
+    &Correlator::CorrelateHostStatus, // HOSTSTATUS
+    &Correlator::CorrelateNothing,    // ISSUE
+    &Correlator::CorrelateNothing,    // ISSUESTATUS
+    &Correlator::CorrelateNothing,    // LOG
+    &Correlator::CorrelateNothing,    // PROGRAM
+    &Correlator::CorrelateNothing,    // PROGRAMSTATUS
+    &Correlator::CorrelateNothing,    // SERVICE
+    &Correlator::CorrelateNothing,    // SERVICECHECK
+    &Correlator::CorrelateNothing,    // SERVICEDEPENDENCY
+    &Correlator::CorrelateNothing,    // SERVICEGROUP
+    &Correlator::CorrelateNothing,    // SERVICEGROUPMEMBER
+    &Correlator::CorrelateNothing,    // SERVICESTATUS
+  };
 
 /**
  *  Determine whether or not a node should have the unknown state.
@@ -70,11 +97,12 @@ static bool ShouldBeUnknown(const Node& node)
 *                                     *
 **************************************/
 
-void Correlator::CorrelateHost(Events::HostStatus& hs)
+void Correlator::CorrelateHostStatus(Events::Event& event)
 {
-  // Find host in host list.
+  Events::HostStatus& hs(*static_cast<Events::HostStatus*>(&event));
   std::map<int, Node>::iterator host_it;
 
+  // Find host in host list.
   if ((host_it = this->hosts_.find(hs.id)) == this->hosts_.end())
     throw (Exception(0, "Invalid host status provided."));
 
@@ -150,6 +178,17 @@ void Correlator::CorrelateHost(Events::HostStatus& hs)
 }
 
 /**
+ *  Do nothing (callback called on untreated event types).
+ *
+ *  \param[in] event Unused.
+ */
+void Correlator::CorrelateNothing(Events::Event& event)
+{
+  (void)event;
+  return ;
+}
+
+/**
  *  Browse the parenting tree of the given node and find its ancestor's issue
  *  which causes it to be in undetermined state.
  *
@@ -201,7 +240,11 @@ void Correlator::InternalCopy(const Correlator& correlator)
 /**
  *  Constructor.
  */
-Correlator::Correlator() {}
+Correlator::Correlator()
+{
+  assert((sizeof(dispatch_table) / sizeof(*dispatch_table))
+         == Events::Event::EVENT_TYPES_NB);
+}
 
 /**
  *  Copy constructor.
@@ -238,7 +281,6 @@ Correlator& Correlator::operator=(const Correlator& correlator)
  */
 void Correlator::Event(Events::Event& event)
 {
-  if (event.GetType() == Events::Event::HOSTSTATUS)
-    this->CorrelateHost(*static_cast<Events::HostStatus*>(&event));
+  (this->*dispatch_table[event.GetType()])(event);
   return ;
 }
