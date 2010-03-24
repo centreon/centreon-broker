@@ -38,7 +38,6 @@ using namespace Events;
  */
 Event::Event(const Event& event)
 {
-  this->instance = event.instance;
   this->readers_ = 0;
 }
 
@@ -53,7 +52,6 @@ Event::Event(const Event& event)
  */
 Event& Event::operator=(const Event& event)
 {
-  this->instance = event.instance;
   return (*this);
 }
 

@@ -41,6 +41,7 @@ namespace       Events
 
    public:
     bool        daemon_mode;
+    int         instance_id;
     std::string instance_name;
     bool        is_running;
     int         pid;

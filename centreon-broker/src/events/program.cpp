@@ -39,6 +39,7 @@ using namespace Events;
 void Program::InternalCopy(const Program& program)
 {
   this->daemon_mode   = program.daemon_mode;
+  this->instance_id   = program.instance_id;
   this->instance_name = program.instance_name;
   this->is_running    = program.is_running;
   this->pid           = program.pid;
@@ -60,6 +61,7 @@ void Program::InternalCopy(const Program& program)
  */
 Program::Program()
   : daemon_mode(false),
+    instance_id(0),
     is_running(false),
     pid(0),
     program_end(0),
