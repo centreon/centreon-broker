@@ -21,6 +21,8 @@
 #ifndef MULTIPLEXING_PUBLISHER_H_
 # define MULTIPLEXING_PUBLISHER_H_
 
+# include <memory>
+# include "correlation/correlator.h"
 # include "interface/destination.h"
 
 namespace                  Multiplexing
@@ -35,6 +37,10 @@ namespace                  Multiplexing
    */
   class                    Publisher : public Interface::Destination
   {
+   private:
+    std::auto_ptr<Correlation::Correlator>
+                           correlator_;
+
    public:
                            Publisher();
                            Publisher(const Publisher& publisher);

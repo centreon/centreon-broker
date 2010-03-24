@@ -27,7 +27,7 @@
 # include "events/event.h"
 # include "events/host_status.h"
 
-namespace                    Correlation
+namespace                      Correlation
 {
   /**
    *  \class Correlator correlator.h "correlation/correlator.h"
@@ -36,21 +36,23 @@ namespace                    Correlation
    *  This class aggregate data from multiple Nagios events and generates
    *  according issues which are used to group those events.
    */
-  class                      Correlator
+  class                        Correlator
   {
    private:
-    std::map<int, Node>      hosts_;
-    std::map<int, Node>      services_;
-    void                     CorrelateHost(Events::HostStatus& hs);
-    Events::Issue*           FindRelatedIssue(Node& node);
-    void                     InternalCopy(const Correlator& correlator);
+    static void (Correlator::* dispatch_table[])(Events::Event&);
+    std::map<int, Node>        hosts_;
+    std::map<int, Node>        services_;
+    void                       CorrelateHostStatus(Events::Event& event);
+    void                       CorrelateNothing(Events::Event& event);
+    Events::Issue*             FindRelatedIssue(Node& node);
+    void                       InternalCopy(const Correlator& correlator);
 
    public:
-                             Correlator();
-                             Correlator(const Correlator& correlator);
-                             ~Correlator();
-    Correlator&              operator=(const Correlator& correlator);
-    void                     Event(Events::Event& event);
+                               Correlator();
+                               Correlator(const Correlator& correlator);
+                               ~Correlator();
+    Correlator&                operator=(const Correlator& correlator);
+    void                       Event(Events::Event& event);
   };
 }
 

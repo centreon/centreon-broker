@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <utility>
 #include "concurrency/lock.h"
+#include "configuration/globals.h"
 #include "events/events.h"
 #include "multiplexing/internal.h"
 #include "multiplexing/publisher.h"
@@ -37,7 +38,11 @@ using namespace Multiplexing;
 /**
  *  Publisher default constructor.
  */
-Publisher::Publisher() {}
+Publisher::Publisher()
+{
+  if (Configuration::Globals::correlation)
+    this->correlator_.reset(new Correlation::Correlator);
+}
 
 /**
  *  \brief Publisher copy constructor.
@@ -48,7 +53,11 @@ Publisher::Publisher() {}
  *  \param[in] publisher Unused.
  */
 Publisher::Publisher(const Publisher& publisher)
-  : Interface::Destination(publisher) {}
+  : Interface::Destination(publisher)
+{
+  if (Configuration::Globals::correlation)
+    this->correlator_.reset(new Correlation::Correlator);
+}
 
 /**
  *  Publisher destructor.
@@ -100,6 +109,9 @@ void Publisher::Event(Events::Event* event)
   std::list<Subscriber*>::iterator end;
   Concurrency::Lock lock(gl_subscribersm);
 
+  // Pass object to correlation.
+  if (this->correlator_.get())
+    this->correlator_->Event(*event);
   // Send object to every subscriber.
   end = gl_subscribers.end();
   for (std::list<Subscriber*>::iterator it = gl_subscribers.begin();

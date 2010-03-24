@@ -66,6 +66,11 @@ namespace              Events
      *  Every Event subclass has a corresponding Type associated so one can
      *  know its true type through the virtual method GetType().
      *
+     *  Beware when modifying this enum. Changes should be replicated on
+     *  multiple files. Here's the list :
+     *
+     *    - src/correlation/correlator.cpp : dispatch table
+     *
      *  \see GetType
      */
     enum               Type
@@ -91,7 +96,8 @@ namespace              Events
       SERVICEDEPENDENCY,
       SERVICEGROUP,
       SERVICEGROUPMEMBER,
-      SERVICESTATUS
+      SERVICESTATUS,
+      EVENT_TYPES_NB
     };
     int                instance;
                        Event();
