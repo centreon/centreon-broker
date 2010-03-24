@@ -69,7 +69,12 @@ namespace              Events
      *  Beware when modifying this enum. Changes should be replicated on
      *  multiple files. Here's the list :
      *
-     *    - src/correlation/correlator.cpp : dispatch table
+     *    - src/correlation/correlator.cpp         : dispatch table
+     *    - src/interface/db/                      : handle event
+     *    - src/interface/ndo/                     : handle event
+     *    - src/interface/xml/                     : handle event
+     *    - src/mapping.cpp                        : members and type mappings
+     *    - src/module/{callbacks.cpp|initial.cpp} : generate event
      *
      *  \see GetType
      */
@@ -99,7 +104,6 @@ namespace              Events
       SERVICESTATUS,
       EVENT_TYPES_NB
     };
-    int                instance;
                        Event();
     virtual            ~Event();
     void               AddReader();

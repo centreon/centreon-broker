@@ -992,7 +992,7 @@ static const MappedData<Program> program_mapping[] =
       NDO_DATA_DAEMONMODE,
       "daemon_mode"),
     MappedData<Program>(
-      &Program::instance,
+      &Program::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<Program>(
@@ -1030,6 +1030,14 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
       "active_service_checks_enabled"),
     MappedData<ProgramStatus>(
+      &ProgramStatus::check_hosts_freshness,
+      NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
+      "check_hosts_freshness"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::check_services_freshness,
+      NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
+      "check_services_freshmess"),
+    MappedData<ProgramStatus>(
       &ProgramStatus::event_handler_enabled,
       NDO_DATA_EVENTHANDLERENABLED,
       "event_handlers_enabled"),
@@ -1050,12 +1058,20 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       NDO_DATA_GLOBALSERVICEEVENTHANDLER,
       "global_service_event_handler"),
     MappedData<ProgramStatus>(
-      &ProgramStatus::instance,
+      &ProgramStatus::instance_address,
+      NDO_DATA_HOSTADDRESS,
+      "instance_address"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::instance_description,
+      NDO_DATA_SERVICEDESCRIPTION,
+      "instance_description"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<ProgramStatus>(
       &ProgramStatus::last_alive,
-      0, // XXX : should find macro
+      NDO_DATA_LASTSTATE,
       "last_alive"),
     MappedData<ProgramStatus>(
       &ProgramStatus::last_command_check,
@@ -1097,8 +1113,6 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       &ProgramStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
       "process_performance_data"),
-    // XXX : no instance_address
-    // XXX : no instance_description
     MappedData<ProgramStatus>()
   };
 

@@ -42,8 +42,13 @@ namespace              Events
    public:
     bool               active_host_checks_enabled;
     bool               active_service_checks_enabled;
+    bool               check_hosts_freshness;
+    bool               check_services_freshness;
     std::string        global_host_event_handler;
     std::string        global_service_event_handler;
+    std::string        instance_address;
+    std::string        instance_description;
+    int                instance_id;
     time_t             last_alive;
     time_t             last_command_check;
     time_t             last_log_rotation;

@@ -41,12 +41,18 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 {
   this->active_host_checks_enabled     = ps.active_host_checks_enabled;
   this->active_service_checks_enabled  = ps.active_service_checks_enabled;
+  this->check_hosts_freshness          = ps.check_hosts_freshness;
+  this->check_services_freshness       = ps.check_services_freshness;
   this->global_host_event_handler      = ps.global_host_event_handler;
   this->global_service_event_handler   = ps.global_service_event_handler;
+  this->instance_address               = ps.instance_address;
+  this->instance_description           = ps.instance_description;
+  this->instance_id                    = ps.instance_id;
   this->last_alive                     = ps.last_alive;
   this->last_command_check             = ps.last_command_check;
   this->last_log_rotation              = ps.last_log_rotation;
   this->modified_host_attributes       = ps.modified_host_attributes;
+  this->modified_service_attributes    = ps.modified_service_attributes;
   this->obsess_over_hosts              = ps.obsess_over_hosts;
   this->obsess_over_services           = ps.obsess_over_services;
   this->passive_host_checks_enabled    = ps.passive_host_checks_enabled;
@@ -68,6 +74,9 @@ void ProgramStatus::InternalCopy(const ProgramStatus& ps)
 ProgramStatus::ProgramStatus()
   : active_host_checks_enabled(false),
     active_service_checks_enabled(false),
+    check_hosts_freshness(false),
+    check_services_freshness(false),
+    instance_id(0),
     last_alive(0),
     last_command_check(0),
     last_log_rotation(0),
