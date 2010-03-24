@@ -54,7 +54,6 @@ void Acknowledgement::InternalCopy(const Acknowledgement& ack)
   this->persistent_comment   = ack.persistent_comment;
   this->service_description  = ack.service_description;
   this->state                = ack.state;
-  this->type                 = ack.type;
   return ;
 }
 
@@ -74,10 +73,9 @@ Acknowledgement::Acknowledgement()
   : acknowledgement_type(0),
     entry_time(0),
     is_sticky(false),
-    notify_contacts(0),
-    persistent_comment(0),
-    state(0),
-    type(0) {}
+    notify_contacts(false),
+    persistent_comment(false),
+    state(0) {}
 
 /**
  *  \brief Acknowledgement copy constructor.
