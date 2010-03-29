@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <time.h>
 #include "correlation/correlator.h"
+#include "correlation/parser.h"
 #include "events/host.h"
 #include "events/issue.h"
 #include "exception.h"
@@ -240,10 +241,13 @@ void Correlator::InternalCopy(const Correlator& correlator)
 /**
  *  Constructor.
  */
-Correlator::Correlator()
+Correlator::Correlator(const char* correlation_file)
 {
+  Parser parser;
+
   assert((sizeof(dispatch_table) / sizeof(*dispatch_table))
          == Events::Event::EVENT_TYPES_NB);
+  parser.Parse(correlation_file, this->hosts_, this->services_);
 }
 
 /**

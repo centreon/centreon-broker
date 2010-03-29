@@ -29,5 +29,6 @@ using namespace Configuration::Globals;
 **************************************/
 
 bool        Configuration::Globals::correlation = false;
+std::string Configuration::Globals::correlation_file;
 int         Configuration::Globals::instance = 0;
 std::string Configuration::Globals::instance_name;

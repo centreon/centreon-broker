@@ -316,8 +316,11 @@ void Parser::Parse(const std::string& filename,
           if (lexer.GetToken(val) || (val.GetType() != Configuration::Token::STRING))
             throw (Exception(0, INVALID_TOKEN_MSG));
           if (var.GetText() == "correlation")
-	    Configuration::Globals::correlation
+            Configuration::Globals::correlation
               = strtol(val.GetText().c_str(), NULL, 0);
+          else if (var.GetText() == "correlation_file")
+            Configuration::Globals::correlation_file
+              = val.GetText();
           else if (var.GetText() == "instance")
             Configuration::Globals::instance
               = strtol(val.GetText().c_str(), NULL, 0);
