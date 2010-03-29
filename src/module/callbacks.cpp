@@ -164,13 +164,12 @@ int CallbackDowntime(int callback_type, void* data)
       downtime->fixed = downtime_data->fixed;
       if (downtime_data->host_name)
         downtime->host_name = downtime_data->host_name;
-      downtime->id = downtime_data->downtime_id;
+      downtime->internal_id = downtime_data->downtime_id;
       downtime->instance_name = Configuration::Globals::instance_name;
       if (downtime_data->service_description)
         downtime->service_description = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
       downtime->triggered_by = downtime_data->triggered_by;
-      downtime->type = downtime_data->type; // XXX : duplicate with downtime_type
       if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
           || (NEBTYPE_DOWNTIME_STOP == downtime_data->type))
         downtime->was_cancelled = true;
@@ -344,7 +343,7 @@ int CallbackLog(int callback_type, void* data)
 
       log_data = static_cast<nebstruct_log_data*>(data);
       log->c_time = log_data->entry_time;
-      log->instance = Configuration::Globals::instance;
+      log->instance_name = Configuration::Globals::instance_name;
       if (log_data->data)
         {
           log->output = log_data->data;
@@ -461,7 +460,7 @@ int CallbackProgramStatus(int callback_type, void* data)
       if (program_status_data->global_service_event_handler)
         program_status->global_service_event_handler
           = program_status_data->global_service_event_handler;
-      program_status->instance = Configuration::Globals::instance;
+      program_status->instance_id = Configuration::Globals::instance;
       // program_status->last_alive = XXX;
       program_status->last_command_check
         = program_status_data->last_command_check;

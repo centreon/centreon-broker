@@ -49,6 +49,7 @@ namespace              Events
     std::string        host;
     std::string        icon_image;
     std::string        icon_image_alt;
+    int                instance_id;
     double             low_flap_threshold;
     std::string        notes;
     std::string        notes_url;

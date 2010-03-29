@@ -18,37 +18,32 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_GROUP_MEMBER_H_
-# define EVENTS_GROUP_MEMBER_H_
+#ifndef CORRELATION_PARSER_H_
+# define CORRELATION_PARSER_H_
 
-# include <string>
-# include "events/event.h"
+# include <map>
+# include "correlation/node.h"
 
-namespace        Events
+namespace   Correlation
 {
   /**
-   *  \class GroupMember group_member.h "events/group_member.h"
-   *  \brief Member of a group.
+   *  \class Parser parser.h "correlation/parser.h"
+   *  \brief Parse the correlation file.
    *
-   *  Base class defining that a member is part of a group.
-   *
-   *  \see HostGroupMember
-   *  \see ServiceGroupMember
+   *  Parse the correlation file which contains all host and services
+   *  relationships.
    */
-  class          GroupMember : public Event
+  class     Parser
   {
-   private:
-    void         InternalCopy(const GroupMember& gm);
-
    public:
-    std::string  group;
-    int          instance_id;
-    int          member;
-                 GroupMember();
-                 GroupMember(const GroupMember& gm);
-    virtual      ~GroupMember();
-    GroupMember& operator=(const GroupMember& gm);
+            Parser();
+            Parser(const Parser& parser);
+            ~Parser();
+    Parser& operator=(const Parser& parser);
+    void    Parse(const char* filename,
+                  std::map<int, Node>& hosts,
+                  std::map<int, Node>& services);
   };
 }
 
-#endif /* !EVENTS_GROUP_MEMBER_H_ */
+#endif /* !CORRELATION_PARSER_H_ */

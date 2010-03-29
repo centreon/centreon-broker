@@ -110,8 +110,8 @@ void SetLogData(Events::Log& log, const char* log_data)
       if (!strcmp(datadup, "SERVICE ALERT"))
         {
           log.msg_type = 0;
-          log.host = log_extract_first(lasts, &lasts);
-          log.service = log_extract(&lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
+          log.service_description = log_extract(&lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
           log.retry = strtol(log_extract(&lasts), NULL, 0);
@@ -120,7 +120,7 @@ void SetLogData(Events::Log& log, const char* log_data)
       else if (!strcmp(datadup, "HOST ALERT"))
         {
           log.msg_type = 1;
-          log.host = log_extract_first(lasts, &lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
           log.retry = strtol(log_extract(&lasts), NULL, 0);
@@ -130,8 +130,8 @@ void SetLogData(Events::Log& log, const char* log_data)
         {
           log.msg_type = 2;
           log.notification_contact = log_extract_first(lasts, &lasts);
-          log.host = log_extract(&lasts);
-          log.service = log_extract(&lasts);
+          log.host_name = log_extract(&lasts);
+          log.service_description = log_extract(&lasts);
           log.status = status_id(log_extract(&lasts));
           log.notification_cmd = log_extract(&lasts);
           log.output = log_extract(&lasts);
@@ -140,7 +140,7 @@ void SetLogData(Events::Log& log, const char* log_data)
         {
           log.msg_type = 3;
           log.notification_contact = log_extract_first(lasts, &lasts);
-          log.host = log_extract(&lasts);
+          log.host_name = log_extract(&lasts);
           log.status = status_id(log_extract(&lasts));
           log.notification_cmd = log_extract(&lasts);
           log.output = log_extract(&lasts);
@@ -148,30 +148,30 @@ void SetLogData(Events::Log& log, const char* log_data)
       else if (!strcmp(datadup, "CURRENT SERVICE STATE"))
         {
           log.msg_type = 6;
-          log.host = log_extract_first(lasts, &lasts);
-          log.service = log_extract(&lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
+          log.service_description = log_extract(&lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
         }
       else if (!strcmp(datadup, "CURRENT HOST STATE"))
         {
           log.msg_type = 7;
-          log.host = log_extract_first(lasts, &lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
         }
       else if (!strcmp(datadup, "INITIAL HOST STATE"))
         {
           log.msg_type = 9;
-          log.host = log_extract_first(lasts, &lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
         }
       else if (!strcmp(datadup, "INITIAL SERVICE STATE"))
         {
           log.msg_type = 8;
-          log.host = log_extract_first(lasts, &lasts);
-          log.service = log_extract(&lasts);
+          log.host_name = log_extract_first(lasts, &lasts);
+          log.service_description = log_extract(&lasts);
           log.status = status_id(log_extract(&lasts));
           log.type = type_id(log_extract(&lasts));
         }
@@ -183,15 +183,15 @@ void SetLogData(Events::Log& log, const char* log_data)
           if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM"))
             {
               log.msg_type = 10;
-              log.host = log_extract(&lasts);
-              log.service = log_extract(&lasts);
+              log.host_name = log_extract(&lasts);
+              log.service_description = log_extract(&lasts);
               log.notification_contact = log_extract(&lasts);
               log.output = log_extract(&lasts);
             }
           else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM"))
             {
               log.msg_type = 11;
-              log.host = log_extract(&lasts);
+              log.host_name = log_extract(&lasts);
               log.notification_contact = log_extract(&lasts);
               log.output = log_extract(&lasts);
             }

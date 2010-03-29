@@ -42,13 +42,14 @@ namespace              Events
 
    public:
     time_t             c_time;
-    std::string        host;
+    std::string        host_name;
+    std::string        instance_name;
     short              msg_type;
     std::string        notification_cmd;
     std::string        notification_contact;
     std::string        output;
     int                retry;
-    std::string        service;
+    std::string        service_description;
     short              status;
     short              type;
                        Log();

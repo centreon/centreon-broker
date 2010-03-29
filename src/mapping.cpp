@@ -176,13 +176,9 @@ static const MappedData<Downtime> downtime_mapping[] =
       NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Downtime>(
-      &Downtime::id,
+      &Downtime::internal_id,
       NDO_DATA_DOWNTIMEID,
-      "downtime_id"),
-    MappedData<Downtime>(
-      &Downtime::instance, // wtf is it here for ?
-      NDO_DATA_INSTANCE,
-      NULL),
+      "internal_id"),
     MappedData<Downtime>(
       &Downtime::instance_name,
       NDO_DATA_PROGRAMNAME,
@@ -199,17 +195,13 @@ static const MappedData<Downtime> downtime_mapping[] =
       &Downtime::triggered_by,
       NDO_DATA_TRIGGEREDBY,
       "triggered_by"),
-    MappedData<Downtime>( // XXX : wtf is it here for ?
-      &Downtime::type,
-      NDO_DATA_TYPE,
-      NULL),
     MappedData<Downtime>(
-      &Downtime::was_cancelled, // XXX : wtf is it here for ?
-      0,
+      &Downtime::was_cancelled,
+      NDO_DATA_X3D,
       "was_cancelled"),
     MappedData<Downtime>(
-      &Downtime::was_started, // XXX : wtf is it here for ?
-      0,
+      &Downtime::was_started,
+      NDO_DATA_Y3D,
       "was_started"),
     MappedData<Downtime>()
   };
@@ -342,7 +334,7 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Host>(
-      &Host::instance,
+      &Host::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<Host>(
@@ -551,10 +543,6 @@ static const MappedData<HostCheck> host_check_mapping[] =
       &HostCheck::id,
       NDO_DATA_HOST,
       "host_id"),
-    MappedData<HostCheck>( // XXX : wtf is it here for ?
-      &HostCheck::instance,
-      NDO_DATA_INSTANCE,
-      NULL),
     MappedData<HostCheck>()
   };
 
@@ -567,22 +555,24 @@ static const MappedData<HostDependency> host_dependency_mapping[] =
       "dependency_period"),
     MappedData<HostDependency>(
       &HostDependency::dependent_object,
-      NDO_DATA_DEPENDENTHOSTNAME, // XXX : bad macro name
-      "dependent_host"),
+      NDO_DATA_DEPENDENTHOSTNAME,
+      "dependent_host_id"),
+    MappedData<HostDependency>(
+      &HostDependency::execution_failure_options,
+      NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS,
+      "execution_failure_options"),
     MappedData<HostDependency>(
       &HostDependency::inherits_parent,
       NDO_DATA_INHERITSPARENT,
       "inherits_parent"),
-    MappedData<HostDependency>( // XXX : wtf is it here for ?
-      &HostDependency::instance,
-      NDO_DATA_INSTANCE,
-      NULL),
+    MappedData<HostDependency>(
+      &HostDependency::notification_failure_options,
+      NDO_DATA_HOSTNOTIFICATIONCOMMAND,
+      "notification_failure_options"),
     MappedData<HostDependency>(
       &HostDependency::object,
       NDO_DATA_HOST,
-      "host"),
-    // XXX : where is execution_failure_options ?
-    // XXX : where is notification_failure_options ?
+      "host_id"),
     MappedData<HostDependency>()
   };
 
@@ -623,14 +613,14 @@ static const MappedData<HostGroupMember> host_group_member_mapping[] =
       &HostGroupMember::group, // XXX : should be replaced by hostgroup_id
       NDO_DATA_HOSTGROUPNAME,
       NULL),
-    MappedData<HostGroupMember>( // XXX : wtf is it here for ?
-      &HostGroupMember::instance,
+    MappedData<HostGroupMember>(
+      &HostGroupMember::instance_id,
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<HostGroupMember>(
       &HostGroupMember::member,
       NDO_DATA_HOSTGROUPMEMBER,
-      "host"),
+      "host_id"),
     MappedData<HostGroupMember>()
   };
 
@@ -638,17 +628,13 @@ static const MappedData<HostGroupMember> host_group_member_mapping[] =
 static const MappedData<HostParent> host_parent_mapping[] =
   {
     MappedData<HostParent>(
-      &HostParent::host,
+      &HostParent::host_id,
       NDO_DATA_HOST,
-      "host"),
-    MappedData<HostParent>( // XXX : wtf is it here for ?
-      &HostParent::instance,
-      NDO_DATA_INSTANCE,
-      NULL),
+      "host_id"),
     MappedData<HostParent>(
-      &HostParent::parent,
+      &HostParent::parent_id,
       NDO_DATA_PARENTHOST,
-      "parents"),
+      "parent_id"),
     MappedData<HostParent>()
   };
 
@@ -719,10 +705,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       &HostStatus::id,
       NDO_DATA_HOST,
       "host_id"),
-    MappedData<HostStatus>(
-      &HostStatus::instance, // XXX : should be replaced by instance_id
-      NDO_DATA_INSTANCE,
-      NULL),
     MappedData<HostStatus>(
       &HostStatus::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -843,24 +825,20 @@ static const MappedData<HostStatus> host_status_mapping[] =
   };
 
 // Issue members mapping.
-static const MappedData<Issue> issue_mapping[] = // XXX : find NDO IDs
+static const MappedData<Issue> issue_mapping[] =
   {
     MappedData<Issue>(
       &Issue::ack_time,
-      0,
+      NDO_DATA_ACKDATA,
       "ack_time"),
     MappedData<Issue>(
       &Issue::end_time,
-      0,
+      NDO_DATA_ENDTIME,
       "end_time"),
     MappedData<Issue>(
       &Issue::host_id,
       NDO_DATA_HOST,
       "host_id"),
-    MappedData<Issue>(
-      &Issue::instance, // wtf is it here for ?
-      0,
-      NULL),
     MappedData<Issue>(
       &Issue::output,
       NDO_DATA_OUTPUT,
@@ -871,7 +849,7 @@ static const MappedData<Issue> issue_mapping[] = // XXX : find NDO IDs
       "service_id"),
     MappedData<Issue>(
       &Issue::start_time,
-      0,
+      NDO_DATA_STARTTIME,
       "start_time"),
     MappedData<Issue>(
       &Issue::state,
@@ -879,7 +857,7 @@ static const MappedData<Issue> issue_mapping[] = // XXX : find NDO IDs
       "state"),
     MappedData<Issue>(
       &Issue::status,
-      0,
+      NDO_DATA_STATETYPE,
       "status"),
     MappedData<Issue>()
   };
@@ -889,16 +867,12 @@ static const MappedData<IssueStatus> issue_status_mapping[] =
   {
     MappedData<IssueStatus>(
       &IssueStatus::ack_time,
-      0,
+      NDO_DATA_ACKDATA,
       "ack_time"),
     MappedData<IssueStatus>(
       &IssueStatus::host_id,
       NDO_DATA_HOST,
       "host_id"),
-    MappedData<IssueStatus>(
-      &IssueStatus::instance, // wtf is it here for ?
-      0,
-      NULL),
     MappedData<IssueStatus>(
       &IssueStatus::output,
       NDO_DATA_OUTPUT,
@@ -909,7 +883,7 @@ static const MappedData<IssueStatus> issue_status_mapping[] =
       "service_id"),
     MappedData<IssueStatus>(
       &IssueStatus::start_time,
-      0,
+      NDO_DATA_STARTTIME,
       "start_time"),
     MappedData<IssueStatus>(
       &IssueStatus::state,
@@ -917,7 +891,7 @@ static const MappedData<IssueStatus> issue_status_mapping[] =
       "state"),
     MappedData<IssueStatus>(
       &IssueStatus::status,
-      0,
+      NDO_DATA_STATETYPE,
       "status"),
     MappedData<IssueStatus>()
   };
@@ -930,13 +904,13 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_LOGENTRYTIME,
       "ctime"),
     MappedData<Log>(
-      &Log::host, // XXX : should be replaced by host_id
+      &Log::host_name,
       NDO_DATA_HOST,
       "host_name"),
     MappedData<Log>(
-      &Log::instance,
-      NDO_DATA_INSTANCE,
-      "instance"),
+      &Log::instance_name,
+      NDO_DATA_PROGRAMNAME,
+      "instance_name"),
     MappedData<Log>(
       &Log::msg_type,
       NDO_DATA_ENTRYTYPE,
@@ -958,8 +932,8 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_HOSTRETRYINTERVAL,
       "retry"),
     MappedData<Log>(
-      &Log::service, // XXX : should be replaced by service_id
-      NDO_DATA_SERVICE,
+      &Log::service_description,
+      NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
     MappedData<Log>(
       &Log::status,
@@ -1232,7 +1206,7 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<Service>(
-      &Service::instance,
+      &Service::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
     MappedData<Service>(
@@ -1445,10 +1419,6 @@ static const MappedData<ServiceCheck> service_check_mapping[] =
       &ServiceCheck::id,
       NDO_DATA_SERVICE,
       "service_id"),
-    MappedData<ServiceCheck>( // XXX : wtf is it here for ?
-      &ServiceCheck::instance,
-      NDO_DATA_INSTANCE,
-      NULL),
     MappedData<ServiceCheck>()
   };
 
@@ -1461,22 +1431,24 @@ static const MappedData<ServiceDependency> service_dependency_mapping[] =
       "dependency_period"),
     MappedData<ServiceDependency>(
       &ServiceDependency::dependent_object,
-      NDO_DATA_DEPENDENTSERVICEDESCRIPTION, // XXX : bad macro name
-      "dependent_service"),
+      NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
+      "dependent_service_id"),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::execution_failure_options,
+      NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
+      "execution_failure_options"),
     MappedData<ServiceDependency>(
       &ServiceDependency::inherits_parent,
       NDO_DATA_INHERITSPARENT,
       "inherits_parent"),
-    MappedData<ServiceDependency>( // XXX : wtf is it here for ?
-      &ServiceDependency::instance,
-      NDO_DATA_INSTANCE,
-      NULL),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::notification_failure_options,
+      NDO_DATA_SERVICENOTIFICATIONCOMMAND,
+      "notification_failure_options"),
     MappedData<ServiceDependency>(
       &ServiceDependency::object,
       NDO_DATA_SERVICE,
-      "service"),
-    // XXX : where is execution_failure_options ?
-    // XXX : where is notification_failure_options ?
+      "service_id"),
     MappedData<ServiceDependency>()
   };
 
@@ -1517,14 +1489,14 @@ static const MappedData<ServiceGroupMember> service_group_member_mapping[] =
       &ServiceGroupMember::group, // XXX : should be replaced by servicegroup_id
       NDO_DATA_SERVICEGROUPNAME,
       NULL),
-    MappedData<ServiceGroupMember>( // XXX : wtf is it here for ?
-      &ServiceGroupMember::instance,
+    MappedData<ServiceGroupMember>(
+      &ServiceGroupMember::instance_id,
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<ServiceGroupMember>(
       &ServiceGroupMember::member,
       NDO_DATA_SERVICEGROUPMEMBER,
-      "service"),
+      "service_id"),
     MappedData<ServiceGroupMember>()
   };
 
@@ -1591,10 +1563,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
-    MappedData<ServiceStatus>(
-      &ServiceStatus::instance, // XXX : should be replaced by instance_id
-      NDO_DATA_INSTANCE,
-      NULL),
     MappedData<ServiceStatus>(
       &ServiceStatus::is_flapping,
       NDO_DATA_ISFLAPPING,

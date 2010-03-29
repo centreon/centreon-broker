@@ -109,7 +109,7 @@ static void SendHostGroupList()
 
           if (hg->group_name)
             host_group_member->group = hg->group_name;
-          host_group_member->instance = Configuration::Globals::instance;
+          host_group_member->instance_id = Configuration::Globals::instance;
           if (hgm->host_name)
             {
               std::map<std::string, int>::const_iterator it;
@@ -179,7 +179,7 @@ static void SendHostList()
       if (h->icon_image_alt)
         my_host->icon_image_alt = h->icon_image_alt;
       // my_host->is_flapping = XXX;
-      my_host->instance = Configuration::Globals::instance;
+      my_host->instance_id = Configuration::Globals::instance;
       // my_host->last_check = XXX;
       // my_host->last_hard_state = XXX;
       // my_host->last_hard_state_change = XXX;
@@ -279,12 +279,12 @@ static void SendHostParentsList()
         {
           std::auto_ptr<Events::HostParent> hp(new Events::HostParent);
 
-          hp->host = host_id;
+          hp->host_id = host_id;
           if (parent->host_name)
             {
               it = gl_hosts.find(parent->host_name);
               if (it != gl_hosts.end())
-                hp->parent = it->second;
+                hp->parent_id = it->second;
             }
 
           hp->AddReader();
@@ -365,7 +365,7 @@ static void SendServiceGroupList()
 
           if (sg->group_name)
             service_group_member->group = sg->group_name;
-          service_group_member->instance = Configuration::Globals::instance;
+          service_group_member->instance_id = Configuration::Globals::instance;
           if (sgm->host_name && sgm->service_description)
             {
               std::map<std::pair<std::string, std::string>, int>::const_iterator
@@ -439,7 +439,7 @@ static void SendServiceList()
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
         my_service->icon_image_alt = s->icon_image_alt;
-      my_service->instance = Configuration::Globals::instance;
+      my_service->instance_id = Configuration::Globals::instance;
       // my_service->is_flapping = XXX;
       my_service->is_volatile = s->is_volatile;
       // my_service->last_check = XXX;

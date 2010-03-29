@@ -31,7 +31,7 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-HostParent::HostParent() : host(0), parent(0) {}
+HostParent::HostParent() : host_id(0), parent_id(0) {}
 
 /**
  *  Copy constructor.
@@ -39,7 +39,7 @@ HostParent::HostParent() : host(0), parent(0) {}
  *  \param[in] hp Object to copy from.
  */
 HostParent::HostParent(const HostParent& hp)
-  : Event(hp), host(hp.host), parent(hp.parent) {}
+  : Event(hp), host_id(hp.host_id), parent_id(hp.parent_id) {}
 
 /**
  *  Destructor.
@@ -56,8 +56,8 @@ HostParent::~HostParent() {}
 HostParent& HostParent::operator=(const HostParent& hp)
 {
   this->Event::operator=(hp);
-  this->host = hp.host;
-  this->parent = hp.parent;
+  this->host_id = hp.host_id;
+  this->parent_id = hp.parent_id;
   return (*this);
 }
 

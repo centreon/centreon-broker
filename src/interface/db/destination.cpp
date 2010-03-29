@@ -302,7 +302,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
   // Fetch host group ID.
   *this->conn_ << "SELECT id FROM "
                << MappedType<Events::HostGroup>::table
-               << " WHERE instance_id=" << hgm.instance
+               << " WHERE instance_id=" << hgm.instance_id
                << " AND hostgroup_name=\"" << hgm.group << "\"",
     soci::into(hostgroup_id);
 
@@ -352,7 +352,7 @@ void Destination::ProcessLog(const Events::Log& log)
 void Destination::ProcessProgram(const Events::Program& program)
 {
   LOGDEBUG("Processing Program event ...");
-  this->CleanTables(program.instance);
+  this->CleanTables(program.instance_id);
   if (!program.program_end)
     this->Insert(program);
   return ;
@@ -420,7 +420,7 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
   // Fetch service group ID.
   *this->conn_ << "SELECT id FROM "
                << MappedType<Events::ServiceGroup>::table
-               << " WHERE instance_id=" << sgm.instance
+               << " WHERE instance_id=" << sgm.instance_id
                << " AND servicegroup_name=\"" << sgm.group << "\"",
     soci::into(servicegroup_id);
 
