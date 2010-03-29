@@ -112,10 +112,10 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/processing/listener.cpp
 COMOBJ	=	$(COMSRC:.cpp=.o)
 
-# cb2db
+# cbd
 SRC1	=	../../src/daemon/main.cpp
 OBJ1	=	$(SRC1:.cpp=.o)
-NAME1	=	cb2db
+NAME1	=	cbd
 
 # cbmod
 SRC2	=	../../src/module/callbacks.cpp				\
@@ -130,8 +130,8 @@ INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soc
 			-I/usr/include/soci/postgresql -I`pg_config --includedir`
 MACROS		=	-DUSE_MYSQL -DUSE_POSTGRESQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
-CXXFLAGS	=	-O3 -DNDEBUG
-#CXXFLAGS	=	-g3 -O0
+#CXXFLAGS	=	-O3 -DNDEBUG
+CXXFLAGS	=	-g3 -O0
 CXXFLAGS	+=	-Wextra -Wall -pedantic -Wno-long-long -fPIC
 # ICC CXXFLAGS
 #CXXFLAGS	=	-w1 -Wall -Wcheck

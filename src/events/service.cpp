@@ -44,9 +44,9 @@ void Service::InternalCopy(const Service& s)
   this->flap_detection_on_unknown  = s.flap_detection_on_unknown;
   this->host_id                    = s.host_id;
   this->is_volatile                = s.is_volatile;
-  this->notified_on_critical       = s.notified_on_critical;
-  this->notified_on_unknown        = s.notified_on_unknown;
-  this->notified_on_warning        = s.notified_on_warning;
+  this->notify_on_critical          = s.notify_on_critical;
+  this->notify_on_unknown           = s.notify_on_unknown;
+  this->notify_on_warning           = s.notify_on_warning;
   this->service                    = s.service;
   this->stalk_on_critical          = s.stalk_on_critical;
   this->stalk_on_unknown           = s.stalk_on_unknown;
@@ -62,19 +62,19 @@ void Service::InternalCopy(const Service& s)
  */
 void Service::ZeroInitialize()
 {
-  this->flap_detection_on_critical = 0;
-  this->flap_detection_on_ok = 0;
-  this->flap_detection_on_unknown = 0;
-  this->flap_detection_on_warning = 0;
+  this->flap_detection_on_critical = false;
+  this->flap_detection_on_ok = false;
+  this->flap_detection_on_unknown = false;
+  this->flap_detection_on_warning = false;
   this->host_id = 0;
   this->is_volatile = false;
-  this->notified_on_critical = false;
-  this->notified_on_unknown = false;
-  this->notified_on_warning = false;
-  this->stalk_on_critical = 0;
-  this->stalk_on_ok = 0;
-  this->stalk_on_unknown = 0;
-  this->stalk_on_warning = 0;
+  this->notify_on_critical = false;
+  this->notify_on_unknown = false;
+  this->notify_on_warning = false;
+  this->stalk_on_critical = false;
+  this->stalk_on_ok = false;
+  this->stalk_on_unknown = false;
+  this->stalk_on_warning = false;
   return ;
 }
 

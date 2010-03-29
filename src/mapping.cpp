@@ -209,7 +209,7 @@ static const MappedData<Downtime> downtime_mapping[] =
 // Host members mapping.
 static const MappedData<Host> host_mapping[] =
   {
-    MappedData<Host>(
+    /*MappedData<Host>(
       &Host::acknowledgement_type,
       NDO_DATA_ACKNOWLEDGEMENTTYPE,
       "acknowledgement_type"),
@@ -262,6 +262,34 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_CURRENTSTATE,
       "current_state"),
     MappedData<Host>(
+      &Host::default_active_checks_enabled,
+      0,
+      "default_active_checks_enabled"),
+    MappedData<Host>(
+      &Host::default_event_handler_enabled,
+      0,
+      "default_event_handler_enabled"),
+    MappedData<Host>(
+      &Host::default_failure_prediction_enabled,
+      0,
+      "default_failure_prediction_enabled"),
+    MappedData<Host>(
+      &Host::default_flap_detection_enabled,
+      0,
+      "default_flap_detection_enabled"),
+    MappedData<Host>(
+      &Host::default_notifications_enabled,
+      0,
+      "default_notifications_enabled"),
+    MappedData<Host>(
+      &Host::default_passive_checks_enabled,
+      0,
+      "default_passive_checks_enabled"),
+    MappedData<Host>(
+      &Host::default_process_performance_data,
+      0,
+      "default_process_performance_data"),
+    MappedData<Host>(
       &Host::display_name,
       NDO_DATA_DISPLAYNAME,
       "display_name"),
@@ -310,13 +338,9 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<Host>(
-      &Host::have_2d_coords,
-      NDO_DATA_HAVE2DCOORDS,
-      "have_2d_coords"),
-    MappedData<Host>(
       &Host::high_flap_threshold,
       NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
-      "high_flap_threshold"),
+      "high_flap_threshold"),*/
     MappedData<Host>(
       &Host::host,
       NDO_DATA_HOSTNAME,
@@ -334,10 +358,14 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Host>(
+      &Host::initial_state,
+      0,
+      NULL),
+    MappedData<Host>(
       &Host::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
-    MappedData<Host>(
+    /*MappedData<Host>(
       &Host::is_flapping,
       NDO_DATA_ISFLAPPING,
       "is_flapping"),
@@ -516,19 +544,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::statusmap_image,
       NDO_DATA_STATUSMAPIMAGE,
-      "statusmap_image"),
-    MappedData<Host>(
-      &Host::vrml_image,
-      NDO_DATA_VRMLIMAGE,
-      "vrml_image"),
-    MappedData<Host>(
-      &Host::x_2d,
-      NDO_DATA_X2D,
-      "x_2d"),
-    MappedData<Host>(
-      &Host::y_2d,
-      NDO_DATA_Y2D,
-      "y_2d"),
+      "statusmap_image"),*/
     MappedData<Host>()
   };
 
@@ -1310,17 +1326,9 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_NOTIFICATIONSENABLED,
       "notifications_enabled"),
     MappedData<Service>(
-      &Service::notified_on_critical,
+      &Service::notify_on_critical,
       NDO_DATA_NOTIFYSERVICECRITICAL,
-      "notified_on_critical"),
-    MappedData<Service>(
-      &Service::notified_on_unknown,
-      NDO_DATA_NOTIFYSERVICEUNKNOWN,
-      "notified_on_unknown"),
-    MappedData<Service>(
-      &Service::notified_on_warning,
-      NDO_DATA_NOTIFYSERVICEWARNING,
-      "notified_on_warning"),
+      "notify_on_critical"),
     MappedData<Service>(
       &Service::notify_on_downtime,
       NDO_DATA_NOTIFYSERVICEDOWNTIME,
@@ -1333,6 +1341,14 @@ static const MappedData<Service> service_mapping[] =
       &Service::notify_on_recovery,
       NDO_DATA_NOTIFYSERVICERECOVERY,
       "notify_on_recovery"),
+    MappedData<Service>(
+      &Service::notify_on_unknown,
+      NDO_DATA_NOTIFYSERVICEUNKNOWN,
+      "notify_on_unknown"),
+    MappedData<Service>(
+      &Service::notify_on_warning,
+      NDO_DATA_NOTIFYSERVICEWARNING,
+      "notify_on_warning"),
     MappedData<Service>(
       &Service::obsess_over,
       NDO_DATA_OBSESSOVERSERVICE,

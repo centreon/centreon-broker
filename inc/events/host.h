@@ -43,19 +43,15 @@ namespace              Events
    public:
     std::string        address;
     std::string        alias;
-    short              flap_detection_on_down;
-    short              flap_detection_on_unreachable;
-    short              flap_detection_on_up;
-    short              have_2d_coords;
-    short              notify_on_down;
-    short              notify_on_unreachable;
-    short              stalk_on_down;
-    short              stalk_on_unreachable;
-    short              stalk_on_up;
+    bool               flap_detection_on_down;
+    bool               flap_detection_on_unreachable;
+    bool               flap_detection_on_up;
+    bool               notify_on_down;
+    bool               notify_on_unreachable;
+    bool               stalk_on_down;
+    bool               stalk_on_unreachable;
+    bool               stalk_on_up;
     std::string        statusmap_image;
-    std::string        vrml_image;
-    short              x_2d;
-    short              y_2d;
                        Host();
                        Host(const HostStatus& hs);
                        Host(const Host& h);

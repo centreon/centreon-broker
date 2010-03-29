@@ -43,16 +43,12 @@ void Host::InternalCopy(const Host& h)
   this->flap_detection_on_down        = h.flap_detection_on_down;
   this->flap_detection_on_unreachable = h.flap_detection_on_unreachable;
   this->flap_detection_on_up          = h.flap_detection_on_up;
-  this->have_2d_coords                = h.have_2d_coords;
   this->notify_on_down                = h.notify_on_down;
   this->notify_on_unreachable         = h.notify_on_unreachable;
   this->stalk_on_down                 = h.stalk_on_down;
   this->stalk_on_unreachable          = h.stalk_on_unreachable;
   this->stalk_on_up                   = h.stalk_on_up;
   this->statusmap_image               = h.statusmap_image;
-  this->vrml_image                    = h.vrml_image;
-  this->x_2d                          = h.x_2d;
-  this->y_2d                          = h.y_2d;
   return ;
 }
 
@@ -66,14 +62,11 @@ void Host::ZeroInitialize()
   this->flap_detection_on_down        = 0;
   this->flap_detection_on_unreachable = 0;
   this->flap_detection_on_up          = 0;
-  this->have_2d_coords                = 0;
   this->notify_on_down                = 0;
   this->notify_on_unreachable         = 0;
   this->stalk_on_down                 = 0;
   this->stalk_on_unreachable          = 0;
   this->stalk_on_up                   = 0;
-  this->x_2d                          = 0;
-  this->y_2d                          = 0;
   return ;
 }
 
