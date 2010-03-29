@@ -41,7 +41,8 @@ using namespace Multiplexing;
 Publisher::Publisher()
 {
   if (Configuration::Globals::correlation)
-    this->correlator_.reset(new Correlation::Correlator);
+    this->correlator_.reset(new Correlation::Correlator(
+      Configuration::Globals::correlation_file.c_str()));
 }
 
 /**
@@ -56,7 +57,8 @@ Publisher::Publisher(const Publisher& publisher)
   : Interface::Destination(publisher)
 {
   if (Configuration::Globals::correlation)
-    this->correlator_.reset(new Correlation::Correlator);
+    this->correlator_.reset(new Correlation::Correlator(
+      Configuration::Globals::correlation_file.c_str()));
 }
 
 /**

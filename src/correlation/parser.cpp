@@ -19,8 +19,60 @@
 */
 
 #include "correlation/parser.h"
+#include "exception.h"
 
 using namespace Correlation;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+bool Parser::VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* attr)
+{
+  const char* value;
+
+  value = elem.Value();
+  if (!strcmp(value, "host"))
+    {
+      const char* id;
+
+      id = elem.Attribute("id");
+      if (id)
+        {
+          Node node;
+
+          node.host_id = strtol(id, NULL, 0);
+          (*this->hosts_)[node.host_id] = node;
+        }
+    }
+  else if (!strcmp(value, "parent"))
+    {
+      const char* id;
+      const char* parent;
+
+      id = elem.Attribute("id");
+      parent = elem.Attribute("parent");
+      if (id && parent)
+	{
+	}
+    }
+  else if (!strcmp(value, "service"))
+    {
+      const char* id;
+
+      id = elem.Attribute("id");
+      if (id)
+        {
+          Node node;
+
+          node.service_id = strtol(id, NULL, 0);
+          (*this->services_)[node.service_id] = node;
+        }
+    }
+  return (true);
+}
 
 /**************************************
 *                                     *
@@ -72,4 +124,12 @@ void Parser::Parse(const char* filename,
                    std::map<int, Node>& hosts,
                    std::map<int, Node>& services)
 {
+  TiXmlDocument root;
+
+  if (!root.LoadFile(filename))
+    throw (Exception(0, "Could not load correlation file."));
+  this->hosts_ = &hosts;
+  this->services_ = &services;
+  root.Accept(this);
+  return ;
 }

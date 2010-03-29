@@ -23,6 +23,7 @@
 
 # include <map>
 # include "correlation/node.h"
+# include "interface/xml/tinyxml.h"
 
 namespace   Correlation
 {
@@ -33,8 +34,14 @@ namespace   Correlation
    *  Parse the correlation file which contains all host and services
    *  relationships.
    */
-  class     Parser
+  class     Parser : public TiXmlVisitor
   {
+   private:
+    std::map<int, Node>* hosts_;
+    std::map<int, Node>* services_;
+    bool                 VisitEnter(const TiXmlElement& elem,
+				    const TiXmlAttribute* attr);
+
    public:
             Parser();
             Parser(const Parser& parser);

@@ -48,7 +48,7 @@ namespace                      Correlation
     void                       InternalCopy(const Correlator& correlator);
 
    public:
-                               Correlator();
+                               Correlator(const char* correlation_file);
                                Correlator(const Correlator& correlator);
                                ~Correlator();
     Correlator&                operator=(const Correlator& correlator);
