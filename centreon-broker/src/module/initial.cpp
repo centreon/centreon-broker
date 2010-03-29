@@ -155,6 +155,14 @@ static void SendHostList()
       // my_host->current_check_attempt = XXX;
       // my_host->current_notification_number = XXX;
       // my_host->current_state = XXX;
+      my_host->default_active_checks_enabled = h->checks_enabled;
+      my_host->default_event_handler_enabled = h->event_handler_enabled;
+      my_host->default_failure_prediction_enabled
+        = h->failure_prediction_enabled;
+      my_host->default_flap_detection_enabled = h->flap_detection_enabled;
+      my_host->default_notifications_enabled = h->notifications_enabled;
+      my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
+      my_host->default_process_performance_data = h->process_performance_data;
       if (h->display_name)
         my_host->display_name = h->display_name;
       if (h->event_handler)
@@ -170,7 +178,6 @@ static void SendHostList()
       my_host->flap_detection_on_up = h->flap_detection_on_up;
       my_host->freshness_threshold = h->freshness_threshold;
       // my_host->has_been_checked = XXX;
-      my_host->have_2d_coords = h->have_2d_coords;
       my_host->high_flap_threshold = h->high_flap_threshold;
       if (h->name)
         my_host->host = h->name;
@@ -178,8 +185,9 @@ static void SendHostList()
         my_host->icon_image = h->icon_image;
       if (h->icon_image_alt)
         my_host->icon_image_alt = h->icon_image_alt;
-      // my_host->is_flapping = XXX;
+      // my_host->initial_state = XXX;
       my_host->instance_id = Configuration::Globals::instance;
+      // my_host->is_flapping = XXX;
       // my_host->last_check = XXX;
       // my_host->last_hard_state = XXX;
       // my_host->last_hard_state_change = XXX;
@@ -228,10 +236,6 @@ static void SendHostList()
       // my_host->state_type = XXX;
       if (h->statusmap_image)
         my_host->statusmap_image = h->statusmap_image;
-      if (h->vrml_image)
-        my_host->vrml_image = h->vrml_image;
-      my_host->x_2d = h->x_2d;
-      my_host->y_2d = h->y_2d;
 
       // Search host_id through customvars.
       for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
@@ -408,6 +412,16 @@ static void SendServiceList()
       // my_service->current_check_attempt = XXX;
       // my_service->current_notification_number = XXX;
       // my_service->current_state = XXX;
+      my_service->default_active_checks_enabled = s->checks_enabled;
+      my_service->default_event_handler_enabled = s->event_handler_enabled;
+      my_service->default_failure_prediction_enabled
+        = s->failure_prediction_enabled;
+      my_service->default_flap_detection_enabled = s->flap_detection_enabled;
+      my_service->default_notifications_enabled = s->notifications_enabled;
+      my_service->default_passive_checks_enabled
+        = s->accept_passive_service_checks;
+      my_service->default_process_performance_data
+        = s->process_performance_data;
       if (s->display_name)
         my_service->display_name = s->display_name;
       if (s->event_handler)
@@ -439,6 +453,7 @@ static void SendServiceList()
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
         my_service->icon_image_alt = s->icon_image_alt;
+      // my_service->initial_state = XXX;
       my_service->instance_id = Configuration::Globals::instance;
       // my_service->is_flapping = XXX;
       my_service->is_volatile = s->is_volatile;
@@ -468,12 +483,12 @@ static void SendServiceList()
       if (s->notification_period)
         my_service->notification_period = s->notification_period;
       my_service->notifications_enabled = s->notifications_enabled;
-      my_service->notified_on_critical = s->notify_on_critical;
-      my_service->notified_on_unknown = s->notify_on_unknown;
-      my_service->notified_on_warning = s->notify_on_warning;
+      my_service->notify_on_critical = s->notify_on_critical;
       my_service->notify_on_downtime = s->notify_on_downtime;
       my_service->notify_on_flapping = s->notify_on_flapping;
       my_service->notify_on_recovery = s->notify_on_recovery;
+      my_service->notify_on_unknown = s->notify_on_unknown;
+      my_service->notify_on_warning = s->notify_on_warning;
       my_service->obsess_over = s->obsess_over_service;
       // my_service->output = XXX;
       my_service->passive_checks_enabled = s->accept_passive_service_checks;

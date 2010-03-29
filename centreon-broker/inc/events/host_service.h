@@ -42,6 +42,13 @@ namespace              Events
    public:
     std::string        action_url;
     bool               check_freshness;
+    bool               default_active_checks_enabled;
+    bool               default_event_handler_enabled;
+    bool               default_failure_prediction_enabled;
+    bool               default_flap_detection_enabled;
+    bool               default_notifications_enabled;
+    bool               default_passive_checks_enabled;
+    bool               default_process_performance_data;
     std::string        display_name;
     double             first_notification_delay;
     double             freshness_threshold;
@@ -49,6 +56,7 @@ namespace              Events
     std::string        host;
     std::string        icon_image;
     std::string        icon_image_alt;
+    std::string        initial_state;
     int                instance_id;
     double             low_flap_threshold;
     std::string        notes;

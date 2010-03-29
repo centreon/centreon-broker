@@ -45,20 +45,20 @@ namespace              Events
 
    public:
     std::string        failure_prediction_options;
-    short              flap_detection_on_critical;
-    short              flap_detection_on_ok;
-    short              flap_detection_on_unknown;
-    short              flap_detection_on_warning;
+    bool               flap_detection_on_critical;
+    bool               flap_detection_on_ok;
+    bool               flap_detection_on_unknown;
+    bool               flap_detection_on_warning;
     int                host_id;
     bool               is_volatile;
-    bool               notified_on_critical;
-    bool               notified_on_unknown;
-    bool               notified_on_warning;
+    bool               notify_on_critical;
+    bool               notify_on_unknown;
+    bool               notify_on_warning;
     std::string        service;
-    short              stalk_on_critical;
-    short              stalk_on_ok;
-    short              stalk_on_unknown;
-    short              stalk_on_warning;
+    bool               stalk_on_critical;
+    bool               stalk_on_ok;
+    bool               stalk_on_unknown;
+    bool               stalk_on_warning;
                        Service();
                        Service(const ServiceStatus& ss);
                        Service(const Service& s);
