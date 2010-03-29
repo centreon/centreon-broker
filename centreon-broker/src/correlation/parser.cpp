@@ -18,30 +18,9 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/group_member.h"
+#include "correlation/parser.h"
 
-using namespace Events;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  \brief Copy data members.
- *
- *  This method is used by the copy constructor and the assignment operator.
- *
- *  \param[in] gm Object to copy from.
- */
-void GroupMember::InternalCopy(const GroupMember& gm)
-{
-  this->group       = gm.group;
-  this->instance_id = gm.instance_id;
-  this->member      = gm.member;
-  return ;
-}
+using namespace Correlation;
 
 /**************************************
 *                                     *
@@ -52,33 +31,45 @@ void GroupMember::InternalCopy(const GroupMember& gm)
 /**
  *  Default constructor.
  */
-GroupMember::GroupMember() {}
+Parser::Parser() {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] gm Object to copy from.
+ *  \param[in] parser Unused.
  */
-GroupMember::GroupMember(const GroupMember& gm) : Event(gm)
+Parser::Parser(const Parser& parser)
 {
-  this->InternalCopy(gm);
+  (void)parser;
 }
 
 /**
  *  Destructor.
  */
-GroupMember::~GroupMember() {}
+Parser::~Parser() {}
 
 /**
- *  Assignement operator overload.
+ *  Assignment operator.
  *
- *  \param[in] gm Object to copy from.
+ *  \param[in] parser Unused.
  *
  *  \return *this
  */
-GroupMember& GroupMember::operator=(const GroupMember& gm)
+Parser& Parser::operator=(const Parser& parser)
 {
-  this->Event::operator=(gm);
-  this->InternalCopy(gm);
+  (void)parser;
   return (*this);
+}
+
+/**
+ *  Parse a configuration file.
+ *
+ *  \param[in]  filename Path to the correlation file.
+ *  \param[out] hosts    List of hosts.
+ *  \param[out] services List of services.
+ */
+void Parser::Parse(const char* filename,
+                   std::map<int, Node>& hosts,
+                   std::map<int, Node>& services)
+{
 }

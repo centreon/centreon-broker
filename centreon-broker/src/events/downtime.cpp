@@ -51,12 +51,11 @@ void Downtime::InternalCopy(const Downtime& downtime)
   this->entry_time          = downtime.entry_time;
   this->fixed               = downtime.fixed;
   this->host_name           = downtime.host_name;
-  this->id                  = downtime.id;
+  this->internal_id         = downtime.internal_id;
   this->instance_name       = downtime.instance_name;
   this->service_description = downtime.service_description;
   this->start_time          = downtime.start_time;
   this->triggered_by        = downtime.triggered_by;
-  this->type                = downtime.type;
   this->was_cancelled       = downtime.was_cancelled;
   this->was_started         = downtime.was_started;
   return ;
@@ -79,10 +78,9 @@ Downtime::Downtime()
     end_time(0),
     entry_time(0),
     fixed(false),
-    id(0),
+    internal_id(0),
     start_time(0),
     triggered_by(0),
-    type(0),
     was_cancelled(false),
     was_started(false) {}
 

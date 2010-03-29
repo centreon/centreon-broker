@@ -50,12 +50,11 @@ namespace              Events
     time_t             entry_time;
     bool               fixed;
     std::string        host_name;
-    int                id;
+    int                internal_id;
     std::string        instance_name;
     std::string        service_description;
     time_t             start_time;
     int                triggered_by;
-    short              type;
     bool               was_cancelled;
     bool               was_started;
                        Downtime();

@@ -35,8 +35,8 @@ namespace       Events
   class         HostParent : public Event
   {
    public:
-    int         host;
-    int         parent;
+    int         host_id;
+    int         parent_id;
                 HostParent();
                 HostParent(const HostParent& hp);
                 ~HostParent();
