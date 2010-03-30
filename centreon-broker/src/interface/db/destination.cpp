@@ -309,7 +309,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::HostGroupMember>::table
-               << " (host, hostgroup) VALUES("
+               << " (host_id, hostgroup_id) VALUES("
                << hgm.member << ", "
                << hostgroup_id << ")";
 
@@ -427,7 +427,7 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::ServiceGroupMember>::table
-               << " (service, servicegroup) VALUES("
+               << " (service_id, servicegroup_id) VALUES("
                << sgm.member << ", "
                << servicegroup_id << ")";
 
