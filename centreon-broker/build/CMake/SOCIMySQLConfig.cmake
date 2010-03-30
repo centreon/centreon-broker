@@ -24,50 +24,60 @@
 #  SOCIMYSQL_LIBRARIES   - list of libraries when using SOCI MySQL.
 
 # Check for MySQL main header.
+set(CHECK_HEADERS mysql.h)
+set(CHECK_SUFFIXES "" mysql)
 if (MYSQL_INCLUDE_DIR)
-  set(SOCI_CHECK ${MYSQL_INCLUDE_DIR})
+  find_path(MYSQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${MYSQL_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK /usr/include /usr/local/include)
+  find_path(MYSQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATH_SUFFIXES ${CHECK_SUFFIXES})
 endif ()
-find_path(MYSQL_INCLUDE_DIR mysql.h
-  PATHS ${SOCI_CHECK}
-  PATH_SUFFIXES "" mysql
-)
 if (MYSQL_INCLUDE_DIR)
   message(STATUS "Found MySQL headers in ${MYSQL_INCLUDE_DIR}")
 else ()
-  message(FATAL_ERROR "Could not find MySQL headers in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find MySQL headers")
 endif ()
 
 # Check for SOCI MySQL main header.
+set(CHECK_HEADERS soci-mysql.h)
+set(CHECK_SUFFIXES "" mysql)
 if (SOCIMYSQL_INCLUDE_DIR)
-  set(SOCI_CHECK ${SOCIMYSQL_INCLUDE_DIR})
+  find_path(SOCIMYSQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${SOCI_MYSQL_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK ${SOCI_INCLUDE_DIR})
+  find_path(SOCIMYSQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${SOCI_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES})
 endif ()
-find_path(SOCIMYSQL_INCLUDE_DIR soci-mysql.h
-  PATHS ${SOCI_CHECK}
-  PATH_SUFFIXES "" mysql
-)
 if (SOCIMYSQL_INCLUDE_DIR)
   message(STATUS "Found SOCI MySQL headers in ${SOCIMYSQL_INCLUDE_DIR}")
 else ()
-  message(FATAL_ERROR "Could not find SOCI MySQL headers in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find SOCI MySQL headers")
 endif ()
 set(SOCIMYSQL_INCLUDE_DIR ${MYSQL_INCLUDE_DIR} ${SOCIMYSQL_INCLUDE_DIR})
 
 # Check for SOCI MySQL library.
+set(CHECK_LIBRARIES soci_mysql soci_mysql-gcc-3_0)
 if (SOCIMYSQL_LIBRARY_DIR)
-  set(SOCI_CHECK ${SOCIMYSQL_LIBRARY_DIR})
+  find_library(SOCIMYSQL_LIBRARIES
+    NAMES ${CHECK_LIBRARIES}
+    PATHS ${SOCIMYSQL_LIBRARY_DIR}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK /usr/lib /usr/local/lib)
+  find_library(SOCIMYSQL_LIBRARIES
+    NAMES ${CHECK_LIBRARIES})
 endif ()
-find_library(SOCIMYSQL_LIBRARIES
-  NAMES soci_mysql soci_mysql-gcc-3_0
-  PATHS ${SOCI_CHECK}
-)
 if (SOCIMYSQL_LIBRARIES)
   message(STATUS "Found SOCI MySQL library ${SOCIMYSQL_LIBRARIES}")
 else ()
-  message(FATAL_ERROR "Could not find SOCI library in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find SOCI library")
 endif ()

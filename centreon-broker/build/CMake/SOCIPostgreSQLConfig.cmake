@@ -24,50 +24,60 @@
 #  SOCIPOSTGRESQL_LIBRARIES   - list of libraries when using SOCI PostgreSQL.
 
 # Check for PostgreSQL main header.
+set(CHECK_HEADERS libpq-fe.h)
+set(CHECK_SUFFIXES "" postgresql)
 if (POSTGRESQL_INCLUDE_DIR)
-  set(SOCI_CHECK ${POSTGRESQL_INCLUDE_DIR})
+  find_path(POSTGRESQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${POSTGRESQL_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK /usr/include /usr/local/include)
+  find_path(POSTGRESQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATH_SUFFIXES ${CHECK_SUFFIXES})
 endif ()
-find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
-  PATHS ${SOCI_CHECK}
-  PATH_SUFFIXES "" postgresql
-)
 if (POSTGRESQL_INCLUDE_DIR)
   message(STATUS "Found PostgreSQL headers in ${POSTGRESQL_INCLUDE_DIR}")
 else ()
-  message(FATAL_ERROR "Could not find PostgreSQL headers in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find PostgreSQL headers")
 endif ()
 
 # Check for SOCI PostgreSQL main header.
+set(CHECK_HEADERS soci-postgresql.h)
+set(CHECK_SUFFIXES "" postgresql)
 if (SOCIPOSTGRESQL_INCLUDE_DIR)
-  set(SOCI_CHECK ${SOCIPOSTGRESQL_INCLUDE_DIR})
+  find_path(SOCIPOSTGRESQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${SOCIPOSTGRESQL_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK ${SOCI_INCLUDE_DIR})
+  find_path(SOCI_POSTGRESQL_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${SOCI_INCLUDE_DIR}
+    PATH_SUFFIXES ${CHECK_SUFFIXES})
 endif ()
-find_path(SOCIPOSTGRESQL_INCLUDE_DIR soci-postgresql.h
-  PATHS ${SOCI_CHECK}
-  PATH_SUFFIXES "" postgresql
-)
 if (SOCIPOSTGRESQL_INCLUDE_DIR)
   message(STATUS "Found SOCI PostgreSQL headers in ${SOCIPOSTGRESQL_INCLUDE_DIR}")
 else ()
-  message(FATAL_ERROR "Could not find SOCI PostgreSQL headers in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find SOCI PostgreSQL headers")
 endif ()
 set(SOCIPOSTGRESQL_INCLUDE_DIR ${POSTGRESQL_INCLUDE_DIR} ${SOCIPOSTGRESQL_INCLUDE_DIR})
 
 # Check for SOCI PostgreSQL library.
+set(CHECK_LIBRARIES soci_postgresql soci_postgresql-gcc-3_0)
 if (SOCIPOSTGRESQL_LIBRARY_DIR)
-  set(SOCI_CHECK ${SOCIPOSTGRESQL_LIBRARY_DIR})
+  find_library(SOCIPOSTGRESQL_LIBRARIES
+    NAMES ${CHECK_LIBRARIES}
+    PATHS ${SOCIPOSTGRESQL_LIBRARIES}
+    NO_DEFAULT_PATH)
 else ()
-  set(SOCI_CHECK /usr/lib /usr/local/lib)
+  find_library(SOCIPOSTGRESQL_LIBRARIES
+    NAMES ${CHECK_LIBRARIES})
 endif ()
-find_library(SOCIPOSTGRESQL_LIBRARIES
-  NAMES soci_postgresql soci_postgresql-gcc-3_0
-  PATHS ${SOCI_CHECK}
-)
 if (SOCIPOSTGRESQL_LIBRARIES)
   message(STATUS "Found SOCI PostgreSQL library ${SOCIPOSTGRESQL_LIBRARIES}")
 else ()
-  message(FATAL_ERROR "Could not find SOCI library in ${SOCI_CHECK}")
+  message(FATAL_ERROR "Could not find SOCI library")
 endif ()

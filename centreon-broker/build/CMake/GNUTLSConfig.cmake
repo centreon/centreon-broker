@@ -24,32 +24,35 @@
 #  GNUTLS_LIBRARIES   - list of libraries when using GNU TLS.
 
 # Check for GNU TLS main header.
+set(CHECK_HEADERS gnutls/gnutls.h)
 if (GNUTLS_INCLUDE_DIR)
-  set(GNUTLS_CHECK ${GNUTLS_INCLUDE_DIR})
+  find_path(GNUTLS_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS}
+    PATHS ${GNUTLS_INCLUDE_DIR}
+    NO_DEFAULT_PATH)
 else ()
-  set(GNUTLS_CHECK /usr/include /usr/local/include)
+  find_path(GNUTLS_INCLUDE_DIR
+    NAMES ${CHECK_HEADERS})
 endif ()
-find_path(GNUTLS_INCLUDE_DIR gnutls/gnutls.h
-  PATHS ${GNUTLS_CHECK}
-)
 if (GNUTLS_INCLUDE_DIR)
   message(STATUS "Found GNU TLS headers in ${GNUTLS_INCLUDE_DIR}")
 else ()
-  message(FATAL_ERROR "Could not find GNU TLS headers in ${GNUTLS_CHECK}")
+  message(FATAL_ERROR "Could not find GNU TLS headers")
 endif ()
 
 # Check for GNU TLS library.
+set(CHECK_LIBRARIES gnutls)
 if (GNUTLS_LIBRARY_DIR)
-  set(GNUTLS_CHECK ${GNUTLS_LIBRARY_DIR})
+  find_library(GNUTLS_LIBRARIES
+    NAMES ${CHECK_LIBRARIES}
+    PATHS ${GNUTLS_LIBRARY_DIR}
+    NO_DEFAULT_PATH)
 else ()
-  set(GNUTLS_CHECK /usr/lib /usr/local/lib)
+  find_library(GNUTLS_LIBRARIES
+    NAMES ${CHECK_LIBRARIES})
 endif ()
-find_library(GNUTLS_LIBRARIES
-  NAMES gnutls
-  PATHS ${GNUTLS_CHECK}
-)
 if (GNUTLS_LIBRARIES)
   message(STATUS "Found GNU TLS library ${GNUTLS_LIBRARIES}")
 else ()
-  message(FATAL_ERROR "Could not find GNU TLS library in ${GNUTLS_CHECK}")
+  message(FATAL_ERROR "Could not find GNU TLS library")
 endif ()
