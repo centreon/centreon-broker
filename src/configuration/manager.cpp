@@ -26,6 +26,7 @@
 #include <unistd.h>                   // for sleep
 #include "concurrency/lock.h"
 #include "concurrency/thread.h"
+#include "configuration/globals.h"
 #include "configuration/interface.h"
 #include "configuration/manager.h"
 #include "configuration/parser.h"
@@ -395,6 +396,10 @@ void Configuration::Manager::Update()
         }
       this->logs_.push_back(*logs_it);
     }
+
+  // Process variables.
+  if (Configuration::Globals::correlation)
+    Multiplexing::Publisher::Correlate();
 
   // Remove outputs that are not present in conf anymore or which don't have
   // the same configuration.

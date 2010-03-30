@@ -48,11 +48,12 @@ namespace                      Correlation
     void                       InternalCopy(const Correlator& correlator);
 
    public:
-                               Correlator(const char* correlation_file);
+                               Correlator();
                                Correlator(const Correlator& correlator);
                                ~Correlator();
     Correlator&                operator=(const Correlator& correlator);
     void                       Event(Events::Event& event);
+    void                       Load(const char* correlation_file);
   };
 }
 
