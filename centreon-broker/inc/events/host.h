@@ -46,6 +46,8 @@ namespace              Events
     bool               flap_detection_on_down;
     bool               flap_detection_on_unreachable;
     bool               flap_detection_on_up;
+    std::string        host_name;
+    int                instance_id;
     bool               notify_on_down;
     bool               notify_on_unreachable;
     bool               stalk_on_down;

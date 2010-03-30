@@ -407,7 +407,6 @@ CREATE TABLE services (
   flap_detection_on_unknown boolean default NULL,
   flap_detection_on_warning boolean default NULL,
   freshness_threshold double default NULL,
-  graph_id int default NULL,
   has_been_checked boolean default NULL,
   high_flap_threshold double default NULL,
   icon_image varchar(255) default NULL,
