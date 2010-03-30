@@ -21,13 +21,26 @@
 #include <algorithm>
 #include <utility>
 #include "concurrency/lock.h"
+#include "concurrency/mutex.h"
 #include "configuration/globals.h"
+#include "correlation/correlator.h"
 #include "events/events.h"
+#include "logging.h"
 #include "multiplexing/internal.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
 
 using namespace Multiplexing;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Correlation engine.
+static Correlation::Correlator gl_correlator;
+static Concurrency::Mutex      gl_correlatorm;
 
 /**************************************
 *                                     *
@@ -38,12 +51,7 @@ using namespace Multiplexing;
 /**
  *  Publisher default constructor.
  */
-Publisher::Publisher()
-{
-  if (Configuration::Globals::correlation)
-    this->correlator_.reset(new Correlation::Correlator(
-      Configuration::Globals::correlation_file.c_str()));
-}
+Publisher::Publisher() {}
 
 /**
  *  \brief Publisher copy constructor.
@@ -54,12 +62,7 @@ Publisher::Publisher()
  *  \param[in] publisher Unused.
  */
 Publisher::Publisher(const Publisher& publisher)
-  : Interface::Destination(publisher)
-{
-  if (Configuration::Globals::correlation)
-    this->correlator_.reset(new Correlation::Correlator(
-      Configuration::Globals::correlation_file.c_str()));
-}
+  : Interface::Destination(publisher) {}
 
 /**
  *  Publisher destructor.
@@ -98,6 +101,17 @@ void Publisher::Close()
 }
 
 /**
+ *  Launch the correlation engine.
+ */
+void Publisher::Correlate()
+{
+  Concurrency::Lock lock(gl_correlatorm);
+
+  gl_correlator.Load(Configuration::Globals::correlation_file.c_str());
+  return ;
+}
+
+/**
  *  \brief Send an event to all subscribers.
  *
  *  As soon as the method returns, the Event object is owned by the Publisher,
@@ -109,12 +123,18 @@ void Publisher::Close()
 void Publisher::Event(Events::Event* event)
 {
   std::list<Subscriber*>::iterator end;
-  Concurrency::Lock lock(gl_subscribersm);
 
   // Pass object to correlation.
-  if (this->correlator_.get())
-    this->correlator_->Event(*event);
+  if (Configuration::Globals::correlation)
+    {
+      Concurrency::Lock lock(gl_correlatorm);
+
+      gl_correlator.Event(*event);
+    }
+
   // Send object to every subscriber.
+  Concurrency::Lock lock(gl_subscribersm);
+
   end = gl_subscribers.end();
   for (std::list<Subscriber*>::iterator it = gl_subscribers.begin();
        it != end;

@@ -241,13 +241,10 @@ void Correlator::InternalCopy(const Correlator& correlator)
 /**
  *  Constructor.
  */
-Correlator::Correlator(const char* correlation_file)
+Correlator::Correlator()
 {
-  Parser parser;
-
   assert((sizeof(dispatch_table) / sizeof(*dispatch_table))
          == Events::Event::EVENT_TYPES_NB);
-  parser.Parse(correlation_file, this->hosts_, this->services_);
 }
 
 /**
@@ -286,5 +283,19 @@ Correlator& Correlator::operator=(const Correlator& correlator)
 void Correlator::Event(Events::Event& event)
 {
   (this->*dispatch_table[event.GetType()])(event);
+  return ;
+}
+
+/**
+ *  Load a correlation file.
+ *
+ *  \param[in] correlation_file Path to a file containing host and service
+ *                              relationships.
+ */
+void Correlator::Load(const char* correlation_file)
+{
+  Parser parser;
+
+  parser.Parse(correlation_file, this->hosts_, this->services_);
   return ;
 }
