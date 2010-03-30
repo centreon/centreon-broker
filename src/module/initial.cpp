@@ -180,7 +180,7 @@ static void SendHostList()
       // my_host->has_been_checked = XXX;
       my_host->high_flap_threshold = h->high_flap_threshold;
       if (h->name)
-        my_host->host = h->name;
+        my_host->host_name = h->name;
       if (h->icon_image)
         my_host->icon_image = h->icon_image;
       if (h->icon_image_alt)
@@ -244,7 +244,7 @@ static void SendHostList()
             && !strcmp(cv->variable_name, "HOST_ID"))
           {
             my_host->id = strtol(cv->variable_value, NULL, 0);
-            gl_hosts[my_host->host] = my_host->id;
+            gl_hosts[my_host->host_name] = my_host->id;
           }
 
       my_host->AddReader();
@@ -447,14 +447,12 @@ static void SendServiceList()
           it = gl_hosts.find(s->host_name);
           if (it != gl_hosts.end())
             my_service->host_id = it->second;
-          my_service->host = s->host_name;
         }
       if (s->icon_image)
         my_service->icon_image = s->icon_image;
       if (s->icon_image_alt)
         my_service->icon_image_alt = s->icon_image_alt;
       // my_service->initial_state = XXX;
-      my_service->instance_id = Configuration::Globals::instance;
       // my_service->is_flapping = XXX;
       my_service->is_volatile = s->is_volatile;
       // my_service->last_check = XXX;
@@ -502,7 +500,7 @@ static void SendServiceList()
       my_service->retry_interval = s->retry_interval;
       // my_service->scheduled_downtime_depth = XXX;
       if (s->description)
-        my_service->service = s->description;
+        my_service->service_description = s->description;
       // my_service->should_be_scheduled = XXX;
       my_service->stalk_on_critical = s->stalk_on_critical;
       my_service->stalk_on_ok = s->stalk_on_ok;
@@ -519,8 +517,8 @@ static void SendServiceList()
             else if (!strcmp(cv->variable_name, "SERVICE_ID"))
               {
                 my_service->id = strtol(cv->variable_value, NULL, 0);
-                gl_services[std::make_pair(my_service->host,
-                                           my_service->service)]
+                gl_services[std::make_pair((s->host_name ? s->host_name : ""),
+                                           my_service->service_description)]
                   = my_service->id;
               }
           }

@@ -342,7 +342,7 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
       "high_flap_threshold"),
     MappedData<Host>(
-      &Host::host,
+      &Host::host_name,
       NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Host>(
@@ -1142,6 +1142,34 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_CURRENTSTATE,
       "current_state"),
     MappedData<Service>(
+      &Service::default_active_checks_enabled,
+      0,
+      "default_active_checks_enabled"),
+    MappedData<Service>(
+      &Service::default_event_handler_enabled,
+      0,
+      "default_event_handler_enabled"),
+    MappedData<Service>(
+      &Service::default_failure_prediction_enabled,
+      0,
+      "default_failure_prediction_enabled"),
+    MappedData<Service>(
+      &Service::default_flap_detection_enabled,
+      0,
+      "default_flap_detection_enabled"),
+    MappedData<Service>(
+      &Service::default_notifications_enabled,
+      0,
+      "default_notifications_enabled"),
+    MappedData<Service>(
+      &Service::default_passive_checks_enabled,
+      0,
+      "default_passive_checks_enabled"),
+    MappedData<Service>(
+      &Service::default_process_performance_data,
+      0,
+      "default_process_performance_data"),
+    MappedData<Service>(
       &Service::display_name,
       NDO_DATA_DISPLAYNAME,
       "display_name"),
@@ -1202,10 +1230,6 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
       "high_flap_threshold"),
     MappedData<Service>(
-      &Service::host,
-      NDO_DATA_HOSTNAME,
-      "host_name"),
-    MappedData<Service>(
       &Service::host_id,
       NDO_DATA_HOST,
       "host_id"),
@@ -1221,10 +1245,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::id,
       NDO_DATA_SERVICE,
       "service_id"),
-    MappedData<Service>(
-      &Service::instance_id,
-      NDO_DATA_INSTANCE,
-      "instance_id"),
     MappedData<Service>(
       &Service::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -1394,7 +1414,7 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
       "scheduled_downtime_depth"),
     MappedData<Service>(
-      &Service::service,
+      &Service::service_description,
       NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
     MappedData<Service>(
