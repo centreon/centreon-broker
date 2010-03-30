@@ -209,7 +209,7 @@ static const MappedData<Downtime> downtime_mapping[] =
 // Host members mapping.
 static const MappedData<Host> host_mapping[] =
   {
-    /*MappedData<Host>(
+    MappedData<Host>(
       &Host::acknowledgement_type,
       NDO_DATA_ACKNOWLEDGEMENTTYPE,
       "acknowledgement_type"),
@@ -340,7 +340,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::high_flap_threshold,
       NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
-      "high_flap_threshold"),*/
+      "high_flap_threshold"),
     MappedData<Host>(
       &Host::host,
       NDO_DATA_HOSTNAME,
@@ -365,7 +365,7 @@ static const MappedData<Host> host_mapping[] =
       &Host::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
-    /*MappedData<Host>(
+    MappedData<Host>(
       &Host::is_flapping,
       NDO_DATA_ISFLAPPING,
       "is_flapping"),
@@ -544,7 +544,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::statusmap_image,
       NDO_DATA_STATUSMAPIMAGE,
-      "statusmap_image"),*/
+      "statusmap_image"),
     MappedData<Host>()
   };
 
