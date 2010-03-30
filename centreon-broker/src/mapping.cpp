@@ -1014,7 +1014,7 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::check_services_freshness,
       NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
-      "check_services_freshmess"),
+      "check_services_freshness"),
     MappedData<ProgramStatus>(
       &ProgramStatus::event_handler_enabled,
       NDO_DATA_EVENTHANDLERENABLED,

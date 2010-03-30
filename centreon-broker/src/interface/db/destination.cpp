@@ -648,9 +648,9 @@ void Destination::Connect(Destination::DB db_type,
     this->comment_stmt_, id);
 
   id.clear();
-  id.push_back("downtime_id");
   id.push_back("entry_time");
   id.push_back("instance_name");
+  id.push_back("internal_id");
   this->PrepareUpdate<Events::Downtime>(
     this->downtime_stmt_, id);
 
