@@ -530,6 +530,10 @@ void Destination::Event(Events::Event* event)
          case Events::Event::HOSTSTATUS:
           ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
           break ;
+         case Events::Event::ISSUE:
+          break ;
+         case Events::Event::ISSUESTATUS:
+          break ;
          case Events::Event::LOG:
           ProcessLog(*static_cast<Events::Log*>(event));
           break ;

@@ -123,19 +123,13 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
             }
           else
             {
-              std::auto_ptr<Events::Issue> publish_issue;
-              Multiplexing::Publisher publisher;
-
               // Set issue.
               host.issue.reset(new Events::Issue);
               (*host.issue) << hs;
               host.issue->start_time = time(NULL);
 
-              // Publish issue.
-              publish_issue.reset(new Events::Issue(*(host.issue.get())));
-              publish_issue->AddReader();
-              publisher.Event(publish_issue.get());
-              publish_issue.release();
+              // Store issue. (XXX : not safe)
+              this->events_.push_back(new Events::Issue(*(host.issue.get())));
 
               // Get current issue.
               issue = host.issue.get();
@@ -148,12 +142,9 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
           // Issue is over.
           if (host.issue.get())
             {
-              Multiplexing::Publisher publisher;
-
               (*host.issue) << hs;
               host.issue->end_time = time(NULL);
-              host.issue->AddReader();
-              publisher.Event(host.issue.get());
+              this->events_.push_back(host.issue.get());
               host.issue.release();
             }
 
@@ -284,6 +275,25 @@ void Correlator::Event(Events::Event& event)
 {
   (this->*dispatch_table[event.GetType()])(event);
   return ;
+}
+
+/**
+ *  Get the next available correlated event.
+ *
+ *  \return The next available correlated event.
+ */
+Events::Event* Correlator::Event()
+{
+  Events::Event* event;
+
+  if (this->events_.empty())
+    event = NULL;
+  else
+    {
+      event = this->events_.front();
+      this->events_.pop_front();
+    }
+  return (event);
 }
 
 /**

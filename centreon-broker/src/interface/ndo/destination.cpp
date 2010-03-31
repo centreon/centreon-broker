@@ -248,14 +248,14 @@ void Destination::Event(Events::Event* event)
           HandleEvent<Events::ServiceCheck>(
             *static_cast<Events::ServiceCheck*>(event),
             buffer);
-          buffer << NDO_API_ENDDATA << ":\n";
+          buffer << NDO_API_ENDDATA << "\n";
           break ;
          case Events::Event::SERVICEDEPENDENCY:
           buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";
           HandleEvent<Events::ServiceDependency>(
             *static_cast<Events::ServiceDependency*>(event),
             buffer);
-          buffer << NDO_API_ENDDATA << ":\n";
+          buffer << NDO_API_ENDDATA << "\n";
          case Events::Event::SERVICEGROUP:
           buffer << NDO_API_SERVICEGROUPDEFINITION << ":\n";
           HandleEvent<Events::ServiceGroup>(

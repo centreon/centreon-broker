@@ -18,6 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
+#include <stdlib.h>
+#include <string.h>
 #include "correlation/parser.h"
 #include "exception.h"
 
@@ -49,14 +51,24 @@ bool Parser::VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* attr)
     }
   else if (!strcmp(value, "parent"))
     {
-      const char* id;
+      const char* host;
       const char* parent;
 
-      id = elem.Attribute("id");
+      host = elem.Attribute("host");
       parent = elem.Attribute("parent");
-      if (id && parent)
-	{
-	}
+      if (host && parent)
+        {
+          std::map<int, Node>::iterator it1;
+          std::map<int, Node>::iterator it2;
+
+          it1 = (*this->hosts_).find(strtol(host, NULL, 0));
+          it2 = (*this->hosts_).find(strtol(parent, NULL, 0));
+          if ((it1 != (*this->hosts_).end()) && (it2 != (*this->hosts_).end()))
+            {
+              it1->second.parents.push_back(&it2->second);
+              it2->second.children.push_back(&it1->second);
+            }
+        }
     }
   else if (!strcmp(value, "service"))
     {

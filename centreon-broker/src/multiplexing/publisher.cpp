@@ -132,6 +132,38 @@ void Publisher::Event(Events::Event* event)
       gl_correlator.Event(*event);
     }
 
+  // Get correlated events.
+  std::auto_ptr<Events::Event> correlated;
+
+  gl_correlatorm.Lock();
+  try
+    {
+      correlated.reset(gl_correlator.Event());
+    }
+  catch (...)
+    {
+      gl_correlatorm.Unlock();
+      throw ;
+    }
+  gl_correlatorm.Unlock();
+  while (correlated.get())
+    {
+      correlated->AddReader();
+      this->Event(correlated.get());
+      correlated.release();
+      gl_correlatorm.Lock();
+      try
+        {
+          correlated.reset(gl_correlator.Event());
+        }
+      catch (...)
+        {
+          gl_correlatorm.Unlock();
+          throw ;
+        }
+      gl_correlatorm.Unlock();
+    }
+
   // Send object to every subscriber.
   Concurrency::Lock lock(gl_subscribersm);
 

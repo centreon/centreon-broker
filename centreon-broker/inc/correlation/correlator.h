@@ -40,6 +40,7 @@ namespace                      Correlation
   {
    private:
     static void (Correlator::* dispatch_table[])(Events::Event&);
+    std::list<Events::Event*>  events_;
     std::map<int, Node>        hosts_;
     std::map<int, Node>        services_;
     void                       CorrelateHostStatus(Events::Event& event);
@@ -53,6 +54,8 @@ namespace                      Correlation
                                ~Correlator();
     Correlator&                operator=(const Correlator& correlator);
     void                       Event(Events::Event& event);
+    Events::Event*             Event();
+    bool                       HasEvents();
     void                       Load(const char* correlation_file);
   };
 }
