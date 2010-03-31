@@ -337,6 +337,18 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 }
 
 /**
+ *  Process an Issue event.
+ */
+void Destination::ProcessIssue(const Events::Event& event)
+{
+  const Events::Issue issue(*static_cast<const Events::Issue*>(&event));
+
+  LOGDEBUG("Processing Issue event ...");
+  this->Insert(issue);
+  return ;
+}
+
+/**
  *  Process a Log event.
  */
 void Destination::ProcessLog(const Events::Log& log)
@@ -531,6 +543,7 @@ void Destination::Event(Events::Event* event)
           ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
           break ;
          case Events::Event::ISSUE:
+          ProcessIssue(*event);
           break ;
          case Events::Event::ISSUESTATUS:
           break ;
