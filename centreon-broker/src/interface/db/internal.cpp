@@ -201,6 +201,12 @@ template <> std::map<std::string, GetterSetter<Events::HostParent> >
 template <> std::map<std::string, GetterSetter<Events::HostStatus> >
   Interface::DB::DBMappedType<Events::HostStatus>::map =
     std::map<std::string, GetterSetter<Events::HostStatus> >();
+template <> std::map<std::string, GetterSetter<Events::Issue> >
+  Interface::DB::DBMappedType<Events::Issue>::map =
+    std::map<std::string, GetterSetter<Events::Issue> >();
+template <> std::map<std::string, GetterSetter<Events::IssueStatus> >
+  Interface::DB::DBMappedType<Events::IssueStatus>::map =
+    std::map<std::string, GetterSetter<Events::IssueStatus> >();
 template <> std::map<std::string, GetterSetter<Events::Log> >
   Interface::DB::DBMappedType<Events::Log>::map =
     std::map<std::string, GetterSetter<Events::Log> >();
@@ -252,6 +258,8 @@ void Interface::DB::Initialize()
   static_init<Events::HostGroupMember>();
   static_init<Events::HostParent>();
   static_init<Events::HostStatus>();
+  static_init<Events::Issue>();
+  static_init<Events::IssueStatus>();
   static_init<Events::Log>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
@@ -284,7 +292,7 @@ void soci::type_conversion<Events::Acknowledgement>::from_base(
 void soci::type_conversion<Events::Acknowledgement>::to_base(
   const Events::Acknowledgement& a,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(a, v);
@@ -311,7 +319,7 @@ void soci::type_conversion<Events::Comment>::from_base(
 void soci::type_conversion<Events::Comment>::to_base(
   const Events::Comment& c,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(c, v);
@@ -338,7 +346,7 @@ void soci::type_conversion<Events::Downtime>::from_base(
 void soci::type_conversion<Events::Downtime>::to_base(
   const Events::Downtime& d,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(d, v);
@@ -365,7 +373,7 @@ void soci::type_conversion<Events::Host>::from_base(
 void soci::type_conversion<Events::Host>::to_base(
   const Events::Host& h,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(h, v);
@@ -392,7 +400,7 @@ void soci::type_conversion<Events::HostCheck>::from_base(
 void soci::type_conversion<Events::HostCheck>::to_base(
   const Events::HostCheck& hc,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hc, v);
@@ -419,7 +427,7 @@ void soci::type_conversion<Events::HostDependency>::from_base(
 void soci::type_conversion<Events::HostDependency>::to_base(
   const Events::HostDependency& hd,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hd, v);
@@ -446,7 +454,7 @@ void soci::type_conversion<Events::HostGroup>::from_base(
 void soci::type_conversion<Events::HostGroup>::to_base(
   const Events::HostGroup& hg,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hg, v);
@@ -473,7 +481,7 @@ void soci::type_conversion<Events::HostGroupMember>::from_base(
 void soci::type_conversion<Events::HostGroupMember>::to_base(
   const Events::HostGroupMember& hgm,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hgm, v);
@@ -500,7 +508,7 @@ void soci::type_conversion<Events::HostParent>::from_base(
 void soci::type_conversion<Events::HostParent>::to_base(
   const Events::HostParent& hp,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hp, v);
@@ -527,10 +535,64 @@ void soci::type_conversion<Events::HostStatus>::from_base(
 void soci::type_conversion<Events::HostStatus>::to_base(
   const Events::HostStatus& hs,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(hs, v);
+  return ;
+}
+
+/**
+ *  Extract Issue data from DB row.
+ */
+void soci::type_conversion<Events::Issue>::from_base(
+  const soci::values& v,
+  soci::indicator ind,
+  Events::Issue& i)
+{
+  (void)v;
+  (void)ind;
+  (void)i;
+  return ;
+}
+
+/**
+ *  Extract Issue data to DB row.
+ */
+void soci::type_conversion<Events::Issue>::to_base(
+  const Events::Issue& i,
+  soci::values& v,
+  soci::indicator& ind)
+{
+  (void)ind;
+  ToBase(i, v);
+  return ;
+}
+
+/**
+ *  Extract IssueStatus data from DB row.
+ */
+void soci::type_conversion<Events::IssueStatus>::from_base(
+  const soci::values& v,
+  soci::indicator ind,
+  Events::IssueStatus& is)
+{
+  (void)v;
+  (void)ind;
+  (void)is;
+  return ;
+}
+
+/**
+ *  Extract IssueStatus data to DB row.
+ */
+void soci::type_conversion<Events::IssueStatus>::to_base(
+  const Events::IssueStatus& is,
+  soci::values& v,
+  soci::indicator& ind)
+{
+  (void)ind;
+  ToBase(is, v);
   return ;
 }
 
@@ -554,7 +616,7 @@ void soci::type_conversion<Events::Log>::from_base(
 void soci::type_conversion<Events::Log>::to_base(
   const Events::Log& l,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(l, v);
@@ -581,7 +643,7 @@ void soci::type_conversion<Events::Program>::from_base(
 void soci::type_conversion<Events::Program>::to_base(
   const Events::Program& program,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(program, v);
@@ -608,7 +670,7 @@ void soci::type_conversion<Events::ProgramStatus>::from_base(
 void soci::type_conversion<Events::ProgramStatus>::to_base(
   const Events::ProgramStatus& ps,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(ps, v);
@@ -635,7 +697,7 @@ void soci::type_conversion<Events::Service>::from_base(
 void soci::type_conversion<Events::Service>::to_base(
   const Events::Service& s,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(s, v);
@@ -662,7 +724,7 @@ void soci::type_conversion<Events::ServiceCheck>::from_base(
 void soci::type_conversion<Events::ServiceCheck>::to_base(
   const Events::ServiceCheck& sc,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(sc, v);
@@ -689,7 +751,7 @@ void soci::type_conversion<Events::ServiceDependency>::from_base(
 void soci::type_conversion<Events::ServiceDependency>::to_base(
   const Events::ServiceDependency& sd,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(sd, v);
@@ -716,7 +778,7 @@ void soci::type_conversion<Events::ServiceGroup>::from_base(
 void soci::type_conversion<Events::ServiceGroup>::to_base(
   const Events::ServiceGroup& sg,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(sg, v);
@@ -743,7 +805,7 @@ void soci::type_conversion<Events::ServiceGroupMember>::from_base(
 void soci::type_conversion<Events::ServiceGroupMember>::to_base(
   const Events::ServiceGroupMember& sgm,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(sgm, v);
@@ -770,7 +832,7 @@ void soci::type_conversion<Events::ServiceStatus>::from_base(
 void soci::type_conversion<Events::ServiceStatus>::to_base(
   const Events::ServiceStatus& ss,
   soci::values& v,
-  indicator& ind)
+  soci::indicator& ind)
 {
   (void)ind;
   ToBase(ss, v);
