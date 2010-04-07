@@ -912,6 +912,40 @@ static const MappedData<IssueStatus> issue_status_mapping[] =
     MappedData<IssueStatus>()
   };
 
+// IssueUpdate members mapping.
+static const MappedData<IssueUpdate> issue_update_mapping[] =
+  {
+    MappedData<IssueUpdate>(
+      &IssueUpdate::host_id1,
+      1,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::host_id2,
+      2,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::service_id1,
+      3,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::service_id2,
+      4,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::start_time1,
+      5,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::start_time2,
+      6,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::update,
+      7,
+      NULL),
+    MappedData<IssueUpdate>()
+  };
+
 // Log members mapping.
 static const MappedData<Log> log_mapping[] =
   {
@@ -1797,6 +1831,12 @@ template <> const MappedData<Events::IssueStatus>*
   MappedType<Events::IssueStatus>::members(issue_status_mapping);
 template <> const char*
   MappedType<Events::IssueStatus>::table("issues");
+
+// IssueUpdate mapping.
+template <> const MappedData<Events::IssueUpdate>*
+  MappedType<Events::IssueUpdate>::members(issue_update_mapping);
+template <> const char*
+  MappedType<Events::IssueUpdate>::table("issue_update");
 
 // Log mapping.
 template <> const MappedData<Events::Log>*
