@@ -72,14 +72,14 @@ CREATE TABLE programs (
   program_start int default NULL,
 
   PRIMARY KEY (instance_id)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Holds acknowledgedments information.
 --
 CREATE TABLE acknowledgements (
-  id int NOT NULL auto_increment,
+  id serial,
   entry_time int NOT NULL,
   host_name varchar(255) NOT NULL,
   instance_name varchar(255) NOT NULL,
@@ -95,14 +95,14 @@ CREATE TABLE acknowledgements (
 
   PRIMARY KEY (id),
   UNIQUE (entry_time, host_name, instance_name, service_description)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Holds comments information.
 --
 CREATE TABLE comments (
-  id int NOT NULL auto_increment,
+  id serial,
   entry_time int NOT NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int NOT NULL,
@@ -122,14 +122,14 @@ CREATE TABLE comments (
 
   PRIMARY KEY (id),
   UNIQUE (entry_time, instance_name, internal_id)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Monitored hosts.
 --
 CREATE TABLE hosts (
-  id int NOT NULL auto_increment,
+  id serial,
   host_id int NOT NULL,
   host_name varchar(255) NOT NULL,
   instance_id int NOT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE hosts (
   alias varchar(100) default NULL,
   check_command text default NULL,
   check_freshness boolean default NULL,
-  check_interval double default NULL,
+  check_interval double precision default NULL,
   check_period varchar(75) default NULL,
   check_type smallint default NULL,
   command_line text default NULL,
@@ -158,16 +158,16 @@ CREATE TABLE hosts (
   display_name varchar(100) default NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled boolean default NULL,
-  execution_time double default NULL,
+  execution_time double precision default NULL,
   failure_prediction_enabled boolean default NULL,
-  first_notification_delay double default NULL,
+  first_notification_delay double precision default NULL,
   flap_detection_enabled boolean default NULL,
   flap_detection_on_down boolean default NULL,
   flap_detection_on_unreachable boolean default NULL,
   flap_detection_on_up boolean default NULL,
-  freshness_threshold double default NULL,
+  freshness_threshold double precision default NULL,
   has_been_checked boolean default NULL,
-  high_flap_threshold double default NULL,
+  high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
   initial_state varchar(18) default NULL,
@@ -181,9 +181,9 @@ CREATE TABLE hosts (
   last_time_unreachable int default NULL,
   last_time_up int default NULL,
   last_update int default NULL,
-  latency double default NULL,
+  latency double precision default NULL,
   long_output text default NULL,
-  low_flap_threshold double default NULL,
+  low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
   modified_attributes int default NULL,
   next_check int default NULL,
@@ -191,7 +191,7 @@ CREATE TABLE hosts (
   no_more_notifications boolean default NULL,
   notes varchar(255) default NULL,
   notes_url varchar(255) default NULL,
-  notification_interval double default NULL,
+  notification_interval double precision default NULL,
   notification_period varchar(75) default NULL,
   notifications_enabled boolean default NULL,
   notify_on_down boolean default NULL,
@@ -202,13 +202,13 @@ CREATE TABLE hosts (
   obsess_over_host boolean default NULL,
   output text default NULL,
   passive_checks_enabled boolean default NULL,
-  percent_state_change double default NULL,
+  percent_state_change double precision default NULL,
   perf_data text default NULL,
   problem_has_been_acknowledged boolean default NULL,
   process_performance_data boolean default NULL,
   retain_nonstatus_information boolean default NULL,
   retain_status_information boolean default NULL,
-  retry_interval double default NULL,
+  retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled boolean default NULL,
   stalk_on_down boolean default NULL,
@@ -222,14 +222,14 @@ CREATE TABLE hosts (
   UNIQUE (host_name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Host groups.
 --
 CREATE TABLE hostgroups (
-  id int NOT NULL auto_increment,
+  id serial,
   hostgroup_name varchar(255) NOT NULL,
   instance_id int NOT NULL,
 
@@ -242,7 +242,7 @@ CREATE TABLE hostgroups (
   UNIQUE (hostgroup_name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
@@ -257,7 +257,7 @@ CREATE TABLE host_hostgroup (
     ON DELETE CASCADE,
   FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
@@ -272,14 +272,14 @@ CREATE TABLE host_parent (
     ON DELETE CASCADE,
   FOREIGN KEY (parent_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Hosts dependencies.
 --
 CREATE TABLE host_dependency (
-  id int NOT NULL auto_increment,
+  id serial,
   dependent_host_id int NOT NULL,
   host_id int NOT NULL,
 
@@ -294,14 +294,14 @@ CREATE TABLE host_dependency (
     ON DELETE CASCADE,
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Correlated issues.
 --
 CREATE TABLE issues (
-  id int NOT NULL auto_increment,
+  id serial,
   host_id int default NULL,
   service_id int default NULL,
   start_time int NOT NULL,
@@ -314,36 +314,36 @@ CREATE TABLE issues (
 
   PRIMARY KEY (id),
   UNIQUE (host_id, service_id, start_time)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Nagios logs.
 --
 CREATE TABLE logs (
-  id int NOT NULL auto_increment,
+  id serial,
 
   ctime int default NULL,
   host_name varchar(255) default NULL,
   instance_name varchar(255) NOT NULL,
-  msg_type tinyint default NULL,
+  msg_type smallint default NULL,
   notification_cmd varchar(255) default NULL,
   notification_contact varchar(255) default NULL,
   output text default NULL,
   retry int default NULL,
   service_description varchar(255) default NULL,
-  status enum('0', '1', '2', '3', '4') default NULL,
+  status smallint default NULL,
   type smallint default NULL,
 
   PRIMARY KEY (id)
-) ENGINE=MyISAM;
+);
 
 
 --
 -- Downtimes.
 --
 CREATE TABLE downtimes (
-  id int NOT NULL auto_increment,
+  id serial,
   entry_time int default NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int default NULL,
@@ -363,14 +363,14 @@ CREATE TABLE downtimes (
 
   PRIMARY KEY (id),
   UNIQUE (entry_time, instance_name, internal_id)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Monitored services.
 --
 CREATE TABLE services (
-  id int NOT NULL auto_increment,
+  id serial,
   host_id int NOT NULL,
   service_description varchar(255) NOT NULL,
   service_id int default NULL,
@@ -380,7 +380,7 @@ CREATE TABLE services (
   active_checks_enabled boolean default NULL,
   check_command text default NULL,
   check_freshness boolean default NULL,
-  check_interval double default NULL,
+  check_interval double precision default NULL,
   check_period varchar(75) default NULL,
   check_type smallint default NULL,
   command_line text default NULL,
@@ -397,18 +397,18 @@ CREATE TABLE services (
   display_name varchar(160) default NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled boolean default NULL,
-  execution_time double default NULL,
+  execution_time double precision default NULL,
   failure_prediction_enabled boolean default NULL,
   failure_prediction_options varchar(64) default NULL,
-  first_notification_delay double default NULL,
+  first_notification_delay double precision default NULL,
   flap_detection_enabled boolean default NULL,
   flap_detection_on_critical boolean default NULL,
   flap_detection_on_ok boolean default NULL,
   flap_detection_on_unknown boolean default NULL,
   flap_detection_on_warning boolean default NULL,
-  freshness_threshold double default NULL,
+  freshness_threshold double precision default NULL,
   has_been_checked boolean default NULL,
-  high_flap_threshold double default NULL,
+  high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
   initial_state varchar(1) default NULL,
@@ -424,9 +424,9 @@ CREATE TABLE services (
   last_time_unknown int default NULL,
   last_time_warning int default NULL,
   last_update int default NULL,
-  latency double default NULL,
+  latency double precision default NULL,
   long_output text default NULL,
-  low_flap_threshold double default NULL,
+  low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
   modified_attributes int default NULL,
   next_check int default NULL,
@@ -434,7 +434,7 @@ CREATE TABLE services (
   no_more_notifications boolean default NULL,
   notes varchar(255) default NULL,
   notes_url varchar(255) default NULL,
-  notification_interval double default NULL,
+  notification_interval double precision default NULL,
   notification_period varchar(75) default NULL,
   notifications_enabled boolean default NULL,
   notify_on_critical boolean default NULL,
@@ -446,13 +446,13 @@ CREATE TABLE services (
   obsess_over_service boolean default NULL,
   output text default NULL,
   passive_checks_enabled boolean default NULL,
-  percent_state_change double default NULL,
+  percent_state_change double precision default NULL,
   perf_data text default NULL,
   problem_has_been_acknowledged boolean default NULL,
   process_performance_data boolean default NULL,
   retain_nonstatus_information boolean default NULL,
   retain_status_information boolean default NULL,
-  retry_interval double default NULL,
+  retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled boolean default NULL,
   stalk_on_critical boolean default NULL,
@@ -466,14 +466,14 @@ CREATE TABLE services (
   UNIQUE (service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Groups of services.
 --
 CREATE TABLE servicegroups (
-  id int NOT NULL auto_increment,
+  id serial,
   instance_id int NOT NULL,
   servicegroup_name varchar(255) NOT NULL,
 
@@ -485,7 +485,7 @@ CREATE TABLE servicegroups (
   PRIMARY KEY (id),
   FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
@@ -500,14 +500,14 @@ CREATE TABLE service_servicegroup (
     ON DELETE CASCADE,
   FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Services dependencies.
 --
 CREATE TABLE service_dependency (
-  id int NOT NULL auto_increment,
+  id serial,
   dependent_service_id int NOT NULL,
   service_id int NOT NULL,
 
@@ -521,14 +521,14 @@ CREATE TABLE service_dependency (
     ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Custom variables.
 --
 CREATE TABLE customvariables (
-  id int NOT NULL auto_increment,
+  id serial,
 
   config_type smallint default NULL,
   has_been_modified boolean default NULL,
@@ -539,21 +539,21 @@ CREATE TABLE customvariables (
   varvalue varchar(255) default NULL,
 
   PRIMARY KEY (id)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Event handlers.
 --
 CREATE TABLE eventhandlers (
-  id int NOT NULL auto_increment,
+  id serial,
 
   command_args varchar(255) default NULL,
   command_line varchar(255) default NULL,
   early_timeout smallint default NULL,
   end_time int default NULL,
   eventhandler_type smallint default NULL,
-  execution_time double default NULL,
+  execution_time double precision default NULL,
   host_id int default NULL,
   output varchar(255) default NULL,
   return_code smallint default NULL,
@@ -564,14 +564,14 @@ CREATE TABLE eventhandlers (
   timeout smallint default NULL,
 
   PRIMARY KEY (id)
-) ENGINE=InnoDB;
+);
 
 
 --
 --  Notifications.
 --
 CREATE TABLE notifications (
-  id int NOT NULL auto_increment,
+  id serial,
 
   ack_author varchar(255) default NULL,
   ack_data text default NULL,
@@ -589,30 +589,30 @@ CREATE TABLE notifications (
   state int default NULL,
 
   PRIMARY KEY (id)
-) ENGINE=InnoDB;
+);
 
 
 --
 -- Historization of flapping status.
 --
 CREATE TABLE flappinghistory (
-  id int NOT NULL auto_increment,
+  id serial,
 
   comment_time int default NULL,
   event_time int default NULL,
   event_type smallint default NULL,
   flapping_type smallint default NULL,
-  high_threshold double default NULL,
+  high_threshold double precision default NULL,
   host_id int default NULL,
   instance_id int default NULL,
   internal_comment_id int default NULL,
-  low_threshold double default NULL,
-  percent_state_change double default NULL,
+  low_threshold double precision default NULL,
+  percent_state_change double precision default NULL,
   reason_type smallint default NULL,
   service_id int default NULL,
 
   PRIMARY KEY (id)
-) ENGINE=InnoDB;
+);
 
 
 --
@@ -626,7 +626,7 @@ CREATE TABLE hostcommands (
 
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 
 --
@@ -640,4 +640,4 @@ CREATE TABLE services_commands (
 
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
