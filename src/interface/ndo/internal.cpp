@@ -263,6 +263,9 @@ template <> std::map<int, GetterSetter<Events::Issue> >
 template <> std::map<int, GetterSetter<Events::IssueStatus> >
   Interface::NDO::NDOMappedType<Events::IssueStatus>::map =
     std::map<int, GetterSetter<Events::IssueStatus> >();
+template <> std::map<int, GetterSetter<Events::IssueUpdate> >
+  Interface::NDO::NDOMappedType<Events::IssueUpdate>::map =
+    std::map<int, GetterSetter<Events::IssueUpdate> >();
 template <> std::map<int, GetterSetter<Events::Log> >
   Interface::NDO::NDOMappedType<Events::Log>::map =
     std::map<int, GetterSetter<Events::Log> >();
@@ -316,6 +319,7 @@ void Interface::NDO::Initialize()
   static_init<Events::HostStatus>();
   static_init<Events::Issue>();
   static_init<Events::IssueStatus>();
+  static_init<Events::IssueUpdate>();
   static_init<Events::Log>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();

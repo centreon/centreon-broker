@@ -24,6 +24,7 @@
 #include "correlation/parser.h"
 #include "events/host.h"
 #include "events/issue.h"
+#include "events/issue_update.h"
 #include "exception.h"
 #include "multiplexing/publisher.h"
 
@@ -51,6 +52,7 @@ void (Correlator::* Correlator::dispatch_table[])(Events::Event&) =
     &Correlator::CorrelateHostStatus, // HOSTSTATUS
     &Correlator::CorrelateNothing,    // ISSUE
     &Correlator::CorrelateNothing,    // ISSUESTATUS
+    &Correlator::CorrelateNothing,    // ISSUEUPDATE
     &Correlator::CorrelateNothing,    // LOG
     &Correlator::CorrelateNothing,    // PROGRAM
     &Correlator::CorrelateNothing,    // PROGRAMSTATUS
@@ -134,8 +136,50 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
               // Get current issue.
               issue = host.issue.get();
             }
-          // XXX : loop depended_by to fetch their issues
-          // XXX : loop childs to fetch their issues
+
+          // Loop children.
+          for (std::list<Node*>::iterator it = host.children.begin(),
+                 end = host.children.end();
+               it != end;
+               ++it)
+            if ((*it)->issue.get() && ShouldBeUnknown(**it))
+              {
+                std::auto_ptr<Events::IssueUpdate> update;
+
+                update.reset(new Events::IssueUpdate);
+                update->host_id1 = (*it)->host_id;
+                update->service_id1 = 0;
+                update->start_time1 = (*it)->issue.get()->start_time;
+                update->host_id2 = host.host_id;
+                update->service_id2 = 0;
+                update->start_time2 = issue->start_time;
+                update->update = Events::IssueUpdate::MERGE;
+                this->events_.push_back(update.get());
+                update.release();
+                (*it)->issue.reset();
+              }
+
+          // Loop dependant nodes.
+          for (std::list<Node*>::iterator it = host.depended_by.begin(),
+                 end = host.depended_by.end();
+               it != end;
+               ++it)
+            if ((*it)->issue.get() && ShouldBeUnknown(**it))
+              {
+                std::auto_ptr<Events::IssueUpdate> update;
+
+                update.reset(new Events::IssueUpdate);
+                update->host_id1 = (*it)->host_id;
+                update->service_id1 = 0;
+                update->start_time1 = (*it)->issue.get()->start_time;
+                update->host_id2 = host.host_id;
+                update->service_id2 = 0;
+                update->start_time2 = issue->start_time;
+                update->update = Events::IssueUpdate::MERGE;
+                this->events_.push_back(update.get());
+                update.release();
+                (*it)->issue.reset();
+              }
         }
       else
         {
