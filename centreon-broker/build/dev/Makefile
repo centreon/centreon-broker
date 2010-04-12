@@ -129,7 +129,7 @@ NAME2	=	cbmod.so
 # Parameters
 INCLUDE		=	-I../../inc/module -I../../inc -I/usr/include/soci -I/usr/include/soci/mysql \
 			-I/usr/include/soci/postgresql -I`pg_config --includedir`
-MACROS		=	-DUSE_MYSQL -DUSE_POSTGRESQL -DUSE_TLS -DTIXML_USE_STL
+MACROS		=	-DUSE_MYSQL -DUSE_ORACLE -DUSE_POSTGRESQL -DUSE_TLS -DTIXML_USE_STL
 # GCC CXXFLAGS
 #CXXFLAGS	=	-O3 -DNDEBUG
 CXXFLAGS	=	-g3 -O0

@@ -327,6 +327,21 @@ Destination* Factory::Destination(const Configuration::Interface& i)
       }
       break ;
 #endif /* USE_MYSQL */
+#ifdef USE_ORACLE
+     case Configuration::Interface::ORACLE:
+      {
+        std::auto_ptr<Interface::DB::Destination> db(
+          new Interface::DB::Destination);
+
+        db->Connect(Interface::DB::Destination::ORACLE,
+                    i.db,
+                    i.host,
+                    i.user,
+                    i.password);
+        dest = db.release();
+      }
+      break ;
+#endif /* USE_ORACLE */
 #ifdef USE_POSTGRESQL
      case Configuration::Interface::POSTGRESQL:
       {
