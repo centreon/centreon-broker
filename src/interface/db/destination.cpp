@@ -642,7 +642,12 @@ void Destination::Connect(Destination::DB db_type,
 #endif /* USE_MYSQL */
 
 #ifdef USE_ORACLE
-      case ORACLE:
+       case ORACLE:
+        ss << "service=" << db
+           << " host=" << host
+           << " user=" << user
+           << " password=" << pass;
+        this->conn_.reset(new soci::session(soci::oracle, ss.str()));
         break ;
 #endif /* USE_ORACLE */
 
