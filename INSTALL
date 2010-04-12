@@ -1,32 +1,81 @@
-CentreonBroker can easily be built using GNU's autoconf and automake. In the
-./build/GNU directory of the repository you will find the configure.ac and
-Makefile.am files which can be used to generate necessary scripts using the
-command :
+Overview
+--------
 
-  $> autoreconf --install
+To build Centreon Broker, you will need the following external dependencies :
 
-Then, configure you're software build using the configure script.
-CentreonBroker has some external dependencies which can be either mandatory or
-optional. If these dependencies are not in default paths, call configure with
-the appropriate flags (see ./configure --help). CentreonBroker's dependencies
-are :
+    * a C++ compiler (like gcc)
+    * the SOCI library and its dependencies (libmysqlclient for MySQL support,
+libpq for PostgreSQL support, OCI for Oracle support, ...)
+    * the GNU TLS library if you want TLS support
 
-  Required:
-    - pthread
-    - SOCI
-  Optional:
-    - SOCI::MySQL
-    - GNU TLS
+Centreon Broker can easy be built on Unix platforms using CMake.
 
-By default the command :
 
-  $> ./configure
+Installing dependencies
+-----------------------
 
-will configure CentreonBroker with MySQL and TLS.
+In binary form
 
-Once the software is configure'd, simply run make.
+Some OS provides binary versions of some dependencies required by Centreon
+Broker. To install them, use the standard package installation tool of your
+plateform (apt-get on Debian and Ubuntu, yum on Fedora, CentOS, RedHat) and
+install the following packages :
 
-  $> make
+Software         OS Version         Package Name
 
-On successful completion, the binary files cb2db and cbmod.so are created and
-usable as a standalone daemon (cb2db) or a Nagios plugin (cbmod.so).
+GCC              Debian             build-essential
+                 Ubuntu
+make             Debian
+                 Ubuntu
+SOCI 3           Ubuntu Karmic 9.10 libsoci-core-gcc-dev
+GNU TLS          Debian             libgnutls-dev
+                 Ubuntu
+
+From sources
+
+If your OS does not provide the required packages in a binary form, here's a
+list of where to find informations on the packages build process.
+
+Software   How to build
+
+SOCI 3     http://soci.sourceforge.net/doc/structure.html#compilation (use this patch if you can't compile SOCI 3.0.0 out of the box).
+GNU TLS    http://www.gnu.org/software/gnutls/devel.html
+
+
+Configuration
+-------------
+
+At the root of the project directory you'll find a build/CMake directory which
+holds build scripts.Generate the Makefile by running the following command :
+
+cmake .
+
+CMake will check for all necessary dependencies and indicates if they could not
+be found.
+
+// XXX : available flags
+
+
+Compilation
+-----------
+
+Once properly configured, the compilation process is really simple. Just run :
+
+make
+
+And wait until compilation completes.
+
+
+Installation
+------------
+
+Installation process is also simple. Just run as root :
+
+make install
+
+And you're done ! This command will install the following files :
+
+File            Description
+libroker.so     Common library with most utilities used by the two following binaries.
+libcbmod.so     Nagios-loadable module (aka NEB module).
+cbd             Standalone daemon binary.
