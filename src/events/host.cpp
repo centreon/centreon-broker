@@ -43,6 +43,8 @@ void Host::InternalCopy(const Host& h)
   this->flap_detection_on_down        = h.flap_detection_on_down;
   this->flap_detection_on_unreachable = h.flap_detection_on_unreachable;
   this->flap_detection_on_up          = h.flap_detection_on_up;
+  this->host_name                     = h.host_name;
+  this->instance_id                   = h.instance_id;
   this->notify_on_down                = h.notify_on_down;
   this->notify_on_unreachable         = h.notify_on_unreachable;
   this->stalk_on_down                 = h.stalk_on_down;
@@ -62,6 +64,7 @@ void Host::ZeroInitialize()
   this->flap_detection_on_down        = 0;
   this->flap_detection_on_unreachable = 0;
   this->flap_detection_on_up          = 0;
+  this->instance_id                   = 0;
   this->notify_on_down                = 0;
   this->notify_on_unreachable         = 0;
   this->stalk_on_down                 = 0;

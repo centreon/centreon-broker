@@ -103,6 +103,7 @@ set(LIBROKER_SOURCES
 	../../src/events/host_status.cpp
 	../../src/events/issue.cpp
 	../../src/events/issue_status.cpp
+	../../src/events/issue_update.cpp
 	../../src/events/log.cpp
 	../../src/events/program.cpp
 	../../src/events/program_status.cpp
@@ -125,13 +126,6 @@ set(LIBROKER_SOURCES
 	../../src/interface/ndo/sourcedestination.cpp
 	../../src/interface/source.cpp
 	../../src/interface/sourcedestination.cpp
-	../../src/interface/xml/destination.cpp
-	../../src/interface/xml/internal.cpp
-	../../src/interface/xml/source.cpp
-	../../src/interface/xml/tinystr.cpp
-	../../src/interface/xml/tinyxml.cpp
-	../../src/interface/xml/tinyxmlerror.cpp
-	../../src/interface/xml/tinyxmlparser.cpp
 	../../src/io/acceptor.cpp
 	../../src/io/fd.cpp
 	../../src/io/file.cpp
@@ -169,9 +163,6 @@ set(COMMON_SOURCES
 	../../src/configuration/log.cpp
 	../../src/configuration/manager.cpp
 	../../src/configuration/parser.cpp
-	../../src/correlation/correlator.cpp
-	../../src/correlation/node.cpp
-	../../src/correlation/parser.cpp
 	../../src/init.cpp
 	../../src/multiplexing/internal.cpp
 	../../src/multiplexing/publisher.cpp

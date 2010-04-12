@@ -44,10 +44,10 @@ void Service::InternalCopy(const Service& s)
   this->flap_detection_on_unknown  = s.flap_detection_on_unknown;
   this->host_id                    = s.host_id;
   this->is_volatile                = s.is_volatile;
-  this->notify_on_critical          = s.notify_on_critical;
-  this->notify_on_unknown           = s.notify_on_unknown;
-  this->notify_on_warning           = s.notify_on_warning;
-  this->service                    = s.service;
+  this->notify_on_critical         = s.notify_on_critical;
+  this->notify_on_unknown          = s.notify_on_unknown;
+  this->notify_on_warning          = s.notify_on_warning;
+  this->service_description        = s.service_description;
   this->stalk_on_critical          = s.stalk_on_critical;
   this->stalk_on_unknown           = s.stalk_on_unknown;
   this->stalk_on_warning           = s.stalk_on_warning;

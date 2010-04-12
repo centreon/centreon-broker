@@ -185,6 +185,32 @@ namespace                  soci
                                    indicator& ind);
   };
 
+  // Issue O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::Issue>
+  {
+    typedef values         base_type;
+    static void            from_base(const values& v,
+                                     indicator ind,
+                                     Events::Issue& i);
+    static void            to_base(const Events::Issue& i,
+                                   values& v,
+                                   indicator& ind);
+  };
+
+  // IssueStatus O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::IssueStatus>
+  {
+    typedef values         base_type;
+    static void            from_base(const values& v,
+                                     indicator ind,
+                                     Events::IssueStatus& is);
+    static void            to_base(const Events::IssueStatus& is,
+                                   values& v,
+                                   indicator& ind);
+  };
+
   // Log O/R mapping.
   template                 <>
   struct                   type_conversion<Events::Log>

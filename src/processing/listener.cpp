@@ -24,7 +24,6 @@
 #include "concurrency/lock.h"
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
-#include "interface/xml/destination.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
 #include "processing/feeder.h"
@@ -103,49 +102,6 @@ void Listener::RunNDOOut(IO::Stream* stream)
     new Multiplexing::Subscriber);
   std::auto_ptr<Interface::NDO::Destination>
     destination(new Interface::NDO::Destination(s.get()));
-
-  s.release();
-  feeder->Run(subscribr.get(),
-              destination.get(),
-              this->listener);
-  subscribr.release();
-  destination.release();
-  feeder.release();
-  return ;
-}
-
-/**
- *  Run a thread on an input stream with XML protocol.
- *
-void Listener::RunXMLIn(IO::Stream* stream)
-{
-  std::auto_ptr<IO::Stream> s(stream);
-  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
-  std::auto_ptr<Multiplexing::Publisher> publishr(new Multiplexing::Publisher);
-  std::auto_ptr<Interface::XML::Source>
-    source(new Interface::XML::Source(s.get()));
-
-  s.release();
-  feeder->Run(source.get(),
-              publishr.get(),
-              this->listener);
-  source.release();
-  publishr.release();
-  feeder.release();
-  return ;
-  }*/
-
-/**
- *  Run a thread on an output stream with XML protocol.
- */
-void Listener::RunXMLOut(IO::Stream* stream)
-{
-  std::auto_ptr<IO::Stream> s(stream);
-  std::auto_ptr<FeederOnce> feeder(new FeederOnce);
-  std::auto_ptr<Multiplexing::Subscriber> subscribr(
-    new Multiplexing::Subscriber);
-  std::auto_ptr<Interface::XML::Destination>
-    destination(new Interface::XML::Destination(s.get()));
 
   s.release();
   feeder->Run(subscribr.get(),
@@ -267,21 +223,10 @@ void Listener::Init(IO::Acceptor* acceptor,
     {
       this->acceptor_.reset(acceptor);
       this->init_ = true;
-      if ((NDO == proto))
-        {
-          if (OUT == io)
-            this->run_thread_ = &Processing::Listener::RunNDOOut;
-          else
-            this->run_thread_ = &Processing::Listener::RunNDOIn;
-        }
+      if (OUT == io)
+        this->run_thread_ = &Processing::Listener::RunNDOOut;
       else
-        {
-          if (OUT == io)
-            this->run_thread_ = &Processing::Listener::RunXMLOut;
-          /*
-            else
-            this->run_thread_ = &Processing::Listener::RunXMLIn;*/
-        }
+        this->run_thread_ = &Processing::Listener::RunNDOIn;
       this->Run(tl);
     }
   catch (...)

@@ -309,7 +309,7 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::HostGroupMember>::table
-               << " (host, hostgroup) VALUES("
+               << " (host_id, hostgroup_id) VALUES("
                << hgm.member << ", "
                << hostgroup_id << ")";
 
@@ -333,6 +333,30 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
 {
   LOGDEBUG("Processing HostStatus event ...");
   this->PreparedUpdate<Events::HostStatus>(hs, *this->host_status_stmt_);
+  return ;
+}
+
+/**
+ *  Process an Issue event.
+ */
+void Destination::ProcessIssue(const Events::Event& event)
+{
+  const Events::Issue* issue(static_cast<const Events::Issue*>(&event));
+
+  LOGDEBUG("Processing Issue event ...");
+  this->Insert(*issue);
+  return ;
+}
+
+/**
+ *  Process an IssueUpdate event.
+ */
+void Destination::ProcessIssueUpdate(const Events::Event& event)
+{
+  const Events::IssueUpdate* update(
+    static_cast<const Events::IssueUpdate*>(&event));
+
+  // XXX
   return ;
 }
 
@@ -427,7 +451,7 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::ServiceGroupMember>::table
-               << " (service, servicegroup) VALUES("
+               << " (service_id, servicegroup_id) VALUES("
                << sgm.member << ", "
                << servicegroup_id << ")";
 
@@ -529,6 +553,14 @@ void Destination::Event(Events::Event* event)
           break ;
          case Events::Event::HOSTSTATUS:
           ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
+          break ;
+         case Events::Event::ISSUE:
+          ProcessIssue(*event);
+          break ;
+         case Events::Event::ISSUESTATUS:
+          break ;
+         case Events::Event::ISSUEUPDATE:
+          ProcessIssueUpdate(*event);
           break ;
          case Events::Event::LOG:
           ProcessLog(*static_cast<Events::Log*>(event));
@@ -648,9 +680,9 @@ void Destination::Connect(Destination::DB db_type,
     this->comment_stmt_, id);
 
   id.clear();
-  id.push_back("downtime_id");
   id.push_back("entry_time");
   id.push_back("instance_name");
+  id.push_back("internal_id");
   this->PrepareUpdate<Events::Downtime>(
     this->downtime_stmt_, id);
 

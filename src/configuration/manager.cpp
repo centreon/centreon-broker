@@ -26,6 +26,7 @@
 #include <unistd.h>                   // for sleep
 #include "concurrency/lock.h"
 #include "concurrency/thread.h"
+#include "configuration/globals.h"
 #include "configuration/interface.h"
 #include "configuration/manager.h"
 #include "configuration/parser.h"

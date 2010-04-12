@@ -209,7 +209,7 @@ static const MappedData<Downtime> downtime_mapping[] =
 // Host members mapping.
 static const MappedData<Host> host_mapping[] =
   {
-    /*MappedData<Host>(
+    MappedData<Host>(
       &Host::acknowledgement_type,
       NDO_DATA_ACKNOWLEDGEMENTTYPE,
       "acknowledgement_type"),
@@ -340,9 +340,9 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::high_flap_threshold,
       NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
-      "high_flap_threshold"),*/
+      "high_flap_threshold"),
     MappedData<Host>(
-      &Host::host,
+      &Host::host_name,
       NDO_DATA_HOSTNAME,
       "host_name"),
     MappedData<Host>(
@@ -365,7 +365,7 @@ static const MappedData<Host> host_mapping[] =
       &Host::instance_id,
       NDO_DATA_INSTANCE,
       "instance_id"),
-    /*MappedData<Host>(
+    MappedData<Host>(
       &Host::is_flapping,
       NDO_DATA_ISFLAPPING,
       "is_flapping"),
@@ -544,7 +544,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::statusmap_image,
       NDO_DATA_STATUSMAPIMAGE,
-      "statusmap_image"),*/
+      "statusmap_image"),
     MappedData<Host>()
   };
 
@@ -912,6 +912,40 @@ static const MappedData<IssueStatus> issue_status_mapping[] =
     MappedData<IssueStatus>()
   };
 
+// IssueUpdate members mapping.
+static const MappedData<IssueUpdate> issue_update_mapping[] =
+  {
+    MappedData<IssueUpdate>(
+      &IssueUpdate::host_id1,
+      1,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::host_id2,
+      2,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::service_id1,
+      3,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::service_id2,
+      4,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::start_time1,
+      5,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::start_time2,
+      6,
+      NULL),
+    MappedData<IssueUpdate>(
+      &IssueUpdate::update,
+      7,
+      NULL),
+    MappedData<IssueUpdate>()
+  };
+
 // Log members mapping.
 static const MappedData<Log> log_mapping[] =
   {
@@ -1014,7 +1048,7 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::check_services_freshness,
       NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
-      "check_services_freshmess"),
+      "check_services_freshness"),
     MappedData<ProgramStatus>(
       &ProgramStatus::event_handler_enabled,
       NDO_DATA_EVENTHANDLERENABLED,
@@ -1142,6 +1176,34 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_CURRENTSTATE,
       "current_state"),
     MappedData<Service>(
+      &Service::default_active_checks_enabled,
+      0,
+      "default_active_checks_enabled"),
+    MappedData<Service>(
+      &Service::default_event_handler_enabled,
+      0,
+      "default_event_handler_enabled"),
+    MappedData<Service>(
+      &Service::default_failure_prediction_enabled,
+      0,
+      "default_failure_prediction_enabled"),
+    MappedData<Service>(
+      &Service::default_flap_detection_enabled,
+      0,
+      "default_flap_detection_enabled"),
+    MappedData<Service>(
+      &Service::default_notifications_enabled,
+      0,
+      "default_notifications_enabled"),
+    MappedData<Service>(
+      &Service::default_passive_checks_enabled,
+      0,
+      "default_passive_checks_enabled"),
+    MappedData<Service>(
+      &Service::default_process_performance_data,
+      0,
+      "default_process_performance_data"),
+    MappedData<Service>(
       &Service::display_name,
       NDO_DATA_DISPLAYNAME,
       "display_name"),
@@ -1202,10 +1264,6 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
       "high_flap_threshold"),
     MappedData<Service>(
-      &Service::host,
-      NDO_DATA_HOSTNAME,
-      "host_name"),
-    MappedData<Service>(
       &Service::host_id,
       NDO_DATA_HOST,
       "host_id"),
@@ -1221,10 +1279,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::id,
       NDO_DATA_SERVICE,
       "service_id"),
-    MappedData<Service>(
-      &Service::instance_id,
-      NDO_DATA_INSTANCE,
-      "instance_id"),
     MappedData<Service>(
       &Service::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -1394,7 +1448,7 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
       "scheduled_downtime_depth"),
     MappedData<Service>(
-      &Service::service,
+      &Service::service_description,
       NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
     MappedData<Service>(
@@ -1777,6 +1831,12 @@ template <> const MappedData<Events::IssueStatus>*
   MappedType<Events::IssueStatus>::members(issue_status_mapping);
 template <> const char*
   MappedType<Events::IssueStatus>::table("issues");
+
+// IssueUpdate mapping.
+template <> const MappedData<Events::IssueUpdate>*
+  MappedType<Events::IssueUpdate>::members(issue_update_mapping);
+template <> const char*
+  MappedType<Events::IssueUpdate>::table("issue_update");
 
 // Log mapping.
 template <> const MappedData<Events::Log>*

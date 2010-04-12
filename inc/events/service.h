@@ -54,7 +54,7 @@ namespace              Events
     bool               notify_on_critical;
     bool               notify_on_unknown;
     bool               notify_on_warning;
-    std::string        service;
+    std::string        service_description;
     bool               stalk_on_critical;
     bool               stalk_on_ok;
     bool               stalk_on_unknown;
