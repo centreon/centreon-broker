@@ -51,7 +51,6 @@ void (Correlator::* Correlator::dispatch_table[])(Events::Event&) =
     &Correlator::CorrelateNothing,    // HOSTPARENT
     &Correlator::CorrelateHostStatus, // HOSTSTATUS
     &Correlator::CorrelateNothing,    // ISSUE
-    &Correlator::CorrelateNothing,    // ISSUESTATUS
     &Correlator::CorrelateNothing,    // ISSUEUPDATE
     &Correlator::CorrelateNothing,    // LOG
     &Correlator::CorrelateNothing,    // PROGRAM
