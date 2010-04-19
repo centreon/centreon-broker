@@ -46,6 +46,7 @@ void Node::InternalCopy(const Node& node)
     this->issue.reset(new Events::Issue(*(node.issue.get())));
   this->parents     = node.parents;
   this->service_id  = node.service_id;
+  this->state       = node.state;
   return ;
 }
 
@@ -58,7 +59,7 @@ void Node::InternalCopy(const Node& node)
 /**
  *  Constructor.
  */
-Node::Node() {}
+Node::Node() : host_id(0), service_id(0), state(0) {}
 
 /**
  *  Copy constructor.
@@ -99,6 +100,6 @@ Node& Node::operator<<(const Events::HostStatus& hs)
 {
   this->host_id    = hs.id;
   this->service_id = 0;
-  this->state      = hs.current_state;
+  this->state      = 0;
   return (*this);
 }

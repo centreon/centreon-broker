@@ -878,40 +878,6 @@ static const MappedData<Issue> issue_mapping[] =
     MappedData<Issue>()
   };
 
-// IssueStatus members mapping.
-static const MappedData<IssueStatus> issue_status_mapping[] =
-  {
-    MappedData<IssueStatus>(
-      &IssueStatus::ack_time,
-      NDO_DATA_ACKDATA,
-      "ack_time"),
-    MappedData<IssueStatus>(
-      &IssueStatus::host_id,
-      NDO_DATA_HOST,
-      "host_id"),
-    MappedData<IssueStatus>(
-      &IssueStatus::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<IssueStatus>(
-      &IssueStatus::service_id,
-      NDO_DATA_SERVICE,
-      "service_id"),
-    MappedData<IssueStatus>(
-      &IssueStatus::start_time,
-      NDO_DATA_STARTTIME,
-      "start_time"),
-    MappedData<IssueStatus>(
-      &IssueStatus::state,
-      NDO_DATA_STATE,
-      "state"),
-    MappedData<IssueStatus>(
-      &IssueStatus::status,
-      NDO_DATA_STATETYPE,
-      "status"),
-    MappedData<IssueStatus>()
-  };
-
 // IssueUpdate members mapping.
 static const MappedData<IssueUpdate> issue_update_mapping[] =
   {
@@ -1825,12 +1791,6 @@ template <> const MappedData<Events::Issue>*
   MappedType<Events::Issue>::members(issue_mapping);
 template <> const char*
   MappedType<Events::Issue>::table("issues");
-
-// IssueStatus mapping.
-template <> const MappedData<Events::IssueStatus>*
-  MappedType<Events::IssueStatus>::members(issue_status_mapping);
-template <> const char*
-  MappedType<Events::IssueStatus>::table("issues");
 
 // IssueUpdate mapping.
 template <> const MappedData<Events::IssueUpdate>*

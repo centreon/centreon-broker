@@ -91,7 +91,7 @@ static bool ShouldBeUnknown(const Node& node)
            ++it)
         one_dependency_down = (one_dependency_down || (*it)->state);
     }
-  return (all_parents_down || one_dependency_down);
+  return ((node.parents.size() && all_parents_down) || one_dependency_down);
 }
 
 /**************************************
@@ -121,6 +121,11 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
           if (ShouldBeUnknown(host))
             {
               hs.current_state = 3; // UNKNOWN
+              issue = this->FindRelatedIssue(host);
+            }
+          // Warning -> Critical or Critical -> Warning.
+          else if (host.state && hs.current_state)
+            {
               issue = this->FindRelatedIssue(host);
             }
           else
@@ -234,23 +239,36 @@ void Correlator::CorrelateNothing(Events::Event& event)
  */
 Events::Issue* Correlator::FindRelatedIssue(Node& node)
 {
-  Node* related;
+  Events::Issue* issue;
 
-  related = NULL;
-  for (std::list<Node*>::iterator it = node.depends_on.begin(),
-         end = node.depends_on.end();
-       it != end;
-       ++it)
-    if ((*it)->state)
-      {
-        related = *it;
-        break ;
-      }
-  if (!related)
-    related = *(node.parents.begin());
-  assert(related->state);
-  return (related->issue.get() ? related->issue.get()
-                               : this->FindRelatedIssue(*related));
+  if (node.state && node.issue.get())
+    issue = node.issue.get();
+  else
+    {
+      issue = NULL;
+      for (std::list<Node*>::iterator it = node.depends_on.begin(),
+             end = node.depends_on.end();
+           it != end;
+           ++it)
+        if ((*it)->state)
+          {
+            issue = this->FindRelatedIssue(**it);
+            break ;
+          }
+      if (!issue)
+        {
+          for (std::list<Node*>::iterator it = node.parents.begin(),
+                 end = node.parents.end();
+               it != end;
+               ++it)
+            if ((*it)->state)
+              {
+                issue = this->FindRelatedIssue(**it);
+                break ;
+              }
+        }
+    }
+  return (issue);
 }
 
 /**

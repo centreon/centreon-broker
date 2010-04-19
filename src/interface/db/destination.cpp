@@ -344,7 +344,14 @@ void Destination::ProcessIssue(const Events::Event& event)
   const Events::Issue* issue(static_cast<const Events::Issue*>(&event));
 
   LOGDEBUG("Processing Issue event ...");
-  this->Insert(*issue);
+  try
+    {
+      this->Insert(*issue);
+    }
+  catch (const soci::soci_error& se)
+    {
+      this->PreparedUpdate(*issue, *this->issue_stmt_);
+    }
   return ;
 }
 
@@ -356,6 +363,7 @@ void Destination::ProcessIssueUpdate(const Events::Event& event)
   const Events::IssueUpdate* update(
     static_cast<const Events::IssueUpdate*>(&event));
 
+  LOGDEBUG("Processing IssueUpdate event ...");
   // XXX
   return ;
 }
@@ -503,6 +511,7 @@ void Destination::Close()
   this->downtime_stmt_.reset();
   this->host_check_stmt_.reset();
   this->host_status_stmt_.reset();
+  this->issue_stmt_.reset();
   this->program_status_stmt_.reset();
   this->service_check_stmt_.reset();
   this->service_status_stmt_.reset();
@@ -556,8 +565,6 @@ void Destination::Event(Events::Event* event)
           break ;
          case Events::Event::ISSUE:
           ProcessIssue(*event);
-          break ;
-         case Events::Event::ISSUESTATUS:
           break ;
          case Events::Event::ISSUEUPDATE:
           ProcessIssueUpdate(*event);
@@ -700,6 +707,13 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("host_id");
   this->PrepareUpdate<Events::HostStatus>(
     this->host_status_stmt_, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  this->PrepareUpdate<Events::Issue>(
+    this->issue_stmt_, id);
 
   id.clear();
   id.push_back("instance_id");

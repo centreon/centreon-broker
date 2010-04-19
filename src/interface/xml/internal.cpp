@@ -189,9 +189,6 @@ template <> std::map<std::string, GetterSetter<Events::HostStatus> >
 template <> std::map<std::string, GetterSetter<Events::Issue> >
   Interface::XML::XMLMappedType<Events::Issue>::map =
     std::map<std::string, GetterSetter<Events::Issue> >();
-template <> std::map<std::string, GetterSetter<Events::IssueStatus> >
-  Interface::XML::XMLMappedType<Events::IssueStatus>::map =
-    std::map<std::string, GetterSetter<Events::IssueStatus> >();
 template <> std::map<std::string, GetterSetter<Events::IssueUpdate> >
   Interface::XML::XMLMappedType<Events::IssueUpdate>::map =
     std::map<std::string, GetterSetter<Events::IssueUpdate> >();
@@ -247,7 +244,6 @@ void Interface::XML::Initialize()
   static_init<Events::HostParent>();
   static_init<Events::HostStatus>();
   static_init<Events::Issue>();
-  static_init<Events::IssueStatus>();
   static_init<Events::IssueUpdate>();
   static_init<Events::Log>();
   static_init<Events::Program>();

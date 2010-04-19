@@ -53,6 +53,7 @@ namespace                         Interface
       std::auto_ptr<soci::statement> downtime_stmt_;
       std::auto_ptr<soci::statement> host_check_stmt_;
       std::auto_ptr<soci::statement> host_status_stmt_;
+      std::auto_ptr<soci::statement> issue_stmt_;
       std::auto_ptr<soci::statement> program_status_stmt_;
       std::auto_ptr<soci::statement> service_check_stmt_;
       std::auto_ptr<soci::statement> service_status_stmt_;

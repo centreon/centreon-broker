@@ -21,27 +21,39 @@
 #ifndef EVENTS_ISSUE_H_
 # define EVENTS_ISSUE_H_
 
-# include <time.h>                // for time_t
-# include "events/issue_status.h"
+# include <string>
+# include <time.h>
+# include "events/event.h"
+# include "events/host_status.h"
 
-namespace       Events
+namespace        Events
 {
   /**
    *  \class Issue issue.h "events/issue.h"
-   *  \brief Correlate events that Nagios generated.
+   *  \brief Issue event.
    *
-   *  Nagios can generate multiple events and log messages that are related
-   *  to the same issue on the network. This class represents such issues.
+   *  Update or create an issue, which is itself a group of Nagios events.
    */
-  class         Issue : public IssueStatus
+  class          Issue : public Event
   {
+   private:
+    void         InternalCopy(const Issue& issue);
+
    public:
-    time_t      end_time;
-                Issue();
-                Issue(const Issue& issue);
-                ~Issue();
-    Issue&      operator=(const Issue& issue);
-    int         GetType() const;
+    time_t       ack_time;
+    time_t       end_time;
+    int          host_id;
+    std::string  output;
+    int          service_id;
+    time_t       start_time;
+    short        state;
+    short        status;
+                 Issue();
+                 Issue(const Issue& issue);
+    virtual      ~Issue();
+    Issue&       operator=(const Issue& issue);
+    Issue&       operator<<(const HostStatus& host_status);
+    virtual int  GetType() const;
   };
 }
 
