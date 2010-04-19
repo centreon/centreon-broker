@@ -32,7 +32,6 @@
 # include "events/host_parent.h"
 # include "events/host_status.h"
 # include "events/issue.h"
-# include "events/issue_status.h"
 # include "events/issue_update.h"
 # include "events/log.h"
 # include "events/program.h"

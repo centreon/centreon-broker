@@ -204,9 +204,6 @@ template <> std::map<std::string, GetterSetter<Events::HostStatus> >
 template <> std::map<std::string, GetterSetter<Events::Issue> >
   Interface::DB::DBMappedType<Events::Issue>::map =
     std::map<std::string, GetterSetter<Events::Issue> >();
-template <> std::map<std::string, GetterSetter<Events::IssueStatus> >
-  Interface::DB::DBMappedType<Events::IssueStatus>::map =
-    std::map<std::string, GetterSetter<Events::IssueStatus> >();
 template <> std::map<std::string, GetterSetter<Events::Log> >
   Interface::DB::DBMappedType<Events::Log>::map =
     std::map<std::string, GetterSetter<Events::Log> >();
@@ -259,7 +256,6 @@ void Interface::DB::Initialize()
   static_init<Events::HostParent>();
   static_init<Events::HostStatus>();
   static_init<Events::Issue>();
-  static_init<Events::IssueStatus>();
   static_init<Events::Log>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
@@ -566,33 +562,6 @@ void soci::type_conversion<Events::Issue>::to_base(
 {
   (void)ind;
   ToBase(i, v);
-  return ;
-}
-
-/**
- *  Extract IssueStatus data from DB row.
- */
-void soci::type_conversion<Events::IssueStatus>::from_base(
-  const soci::values& v,
-  soci::indicator ind,
-  Events::IssueStatus& is)
-{
-  (void)v;
-  (void)ind;
-  (void)is;
-  return ;
-}
-
-/**
- *  Extract IssueStatus data to DB row.
- */
-void soci::type_conversion<Events::IssueStatus>::to_base(
-  const Events::IssueStatus& is,
-  soci::values& v,
-  soci::indicator& ind)
-{
-  (void)ind;
-  ToBase(is, v);
   return ;
 }
 

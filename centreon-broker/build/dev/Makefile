@@ -55,7 +55,6 @@ COMSRC	=	../../src/concurrency/condition_variable.cpp		\
 		../../src/events/host_service_status.cpp		\
 		../../src/events/host_status.cpp			\
 		../../src/events/issue.cpp				\
-		../../src/events/issue_status.cpp			\
 		../../src/events/issue_update.cpp			\
 		../../src/events/log.cpp				\
 		../../src/events/program.cpp				\

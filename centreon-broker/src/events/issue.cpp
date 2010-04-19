@@ -24,23 +24,56 @@ using namespace Events;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  \brief Copy internal members.
+ *
+ *  This method is used by the copy constructor and the assignment operator.
+ *
+ *  \param[in] issue Object to copy.
+ */
+void Issue::InternalCopy(const Issue& issue)
+{
+  this->ack_time   = issue.ack_time;
+  this->end_time   = issue.end_time;
+  this->host_id    = issue.host_id;
+  this->output     = issue.output;
+  this->service_id = issue.service_id;
+  this->start_time = issue.start_time;
+  this->state      = issue.state;
+  this->status     = issue.status;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-Issue::Issue() : end_time(0) {}
+Issue::Issue()
+  : ack_time(0),
+    end_time(0),
+    host_id(0),
+    service_id(0),
+    start_time(0),
+    state(0),
+    status(0) {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] issue Object to build from.
+ *  \param[in] issue Object to copy.
  */
-Issue::Issue(const Issue& issue) : IssueStatus(issue)
+Issue::Issue(const Issue& issue) : Events::Event(issue)
 {
-  this->end_time = issue.end_time;
+  this->InternalCopy(issue);
 }
 
 /**
@@ -51,14 +84,31 @@ Issue::~Issue() {}
 /**
  *  Assignment operator overload.
  *
- *  \param[in] issue Object to copy from.
+ *  \param[in] issue Object to copy.
  *
- *  \return *this.
+ *  \return *this
  */
 Issue& Issue::operator=(const Issue& issue)
 {
-  this->IssueStatus::operator=(issue);
-  this->end_time = issue.end_time;
+  this->Event::operator=(issue);
+  this->InternalCopy(issue);
+  return (*this);
+}
+
+/**
+ *  Extract useful status information.
+ *
+ *  \param[in] host_status Object to extract from.
+ *
+ *  \return *this
+ */
+Issue& Issue::operator<<(const HostStatus& host_status)
+{
+  this->host_id     = host_status.id;
+  this->output      = host_status.output;
+  this->service_id  = 0;
+  this->state       = host_status.current_state;
+  // XXX this->status      = ;
   return (*this);
 }
 
