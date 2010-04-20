@@ -141,6 +141,9 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
               issue = host.issue.get();
             }
 
+          // Update state.
+          host.state = hs.current_state;
+
           // Loop children.
           for (std::list<Node*>::iterator it = host.children.begin(),
                  end = host.children.end();
@@ -150,6 +153,7 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
               {
                 std::auto_ptr<Events::IssueUpdate> update;
 
+                (*it)->state = 3;
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
                 update->service_id1 = 0;
@@ -172,6 +176,7 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
               {
                 std::auto_ptr<Events::IssueUpdate> update;
 
+                (*it)->state = 3;
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
                 update->service_id1 = 0;
