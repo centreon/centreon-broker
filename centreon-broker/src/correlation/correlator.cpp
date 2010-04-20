@@ -75,22 +75,28 @@ static bool ShouldBeUnknown(const Node& node)
   bool all_parents_down;
   bool one_dependency_down;
 
-  all_parents_down = true;
-  one_dependency_down = false;
-  for (std::list<Node*>::const_iterator it = node.parents.begin(),
-         end = node.parents.end();
-       it != end;
-       ++it)
-    all_parents_down = (all_parents_down && (*it)->state);
-  if (!all_parents_down)
+  // If node has no parents, then all_parents_down will be false.
+  if (node.parents.size())
     {
-      for (std::list<Node*>::const_iterator it = node.depends_on.begin(),
-             end = node.depends_on.end();
+      all_parents_down = true;
+      for (std::list<Node*>::const_iterator it = node.parents.begin(),
+             end = node.parents.end();
            it != end;
            ++it)
-        one_dependency_down = (one_dependency_down || (*it)->state);
+        all_parents_down = (all_parents_down && (*it)->state);
     }
-  return ((node.parents.size() && all_parents_down) || one_dependency_down);
+  else
+    all_parents_down = false;
+
+  // Check dependencies.
+  one_dependency_down = false;
+  for (std::list<Node*>::const_iterator it = node.depends_on.begin(),
+         end = node.depends_on.end();
+       it != end;
+       ++it)
+    one_dependency_down = (one_dependency_down || (*it)->state);
+
+  return (all_parents_down || one_dependency_down);
 }
 
 /**************************************
