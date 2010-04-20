@@ -928,6 +928,10 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_PROGRAMNAME,
       "instance_name"),
     MappedData<Log>(
+      &Log::issue_id,
+      NDO_DATA_HOSTID,
+      "issue_id"),
+    MappedData<Log>(
       &Log::msg_type,
       NDO_DATA_ENTRYTYPE,
       "msg_type"),
