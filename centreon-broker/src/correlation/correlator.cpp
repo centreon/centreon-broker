@@ -39,28 +39,28 @@ using namespace Correlation;
 // Dispatch table.
 void (Correlator::* Correlator::dispatch_table[])(Events::Event&) =
   {
-    &Correlator::CorrelateNothing,    // UNKNOWN
-    &Correlator::CorrelateNothing,    // ACKNOWLEDGEMENT
-    &Correlator::CorrelateNothing,    // COMMENT
-    &Correlator::CorrelateNothing,    // DOWNTIME
-    &Correlator::CorrelateNothing,    // HOST
-    &Correlator::CorrelateNothing,    // HOSTCHECK
-    &Correlator::CorrelateNothing,    // HOSTDEPENDENCY
-    &Correlator::CorrelateNothing,    // HOSTGROUP
-    &Correlator::CorrelateNothing,    // HOSTGROUPMEMBER
-    &Correlator::CorrelateNothing,    // HOSTPARENT
-    &Correlator::CorrelateHostStatus, // HOSTSTATUS
-    &Correlator::CorrelateNothing,    // ISSUE
-    &Correlator::CorrelateNothing,    // ISSUEUPDATE
-    &Correlator::CorrelateNothing,    // LOG
-    &Correlator::CorrelateNothing,    // PROGRAM
-    &Correlator::CorrelateNothing,    // PROGRAMSTATUS
-    &Correlator::CorrelateNothing,    // SERVICE
-    &Correlator::CorrelateNothing,    // SERVICECHECK
-    &Correlator::CorrelateNothing,    // SERVICEDEPENDENCY
-    &Correlator::CorrelateNothing,    // SERVICEGROUP
-    &Correlator::CorrelateNothing,    // SERVICEGROUPMEMBER
-    &Correlator::CorrelateNothing,    // SERVICESTATUS
+    &Correlator::CorrelateNothing,      // UNKNOWN
+    &Correlator::CorrelateNothing,      // ACKNOWLEDGEMENT
+    &Correlator::CorrelateNothing,      // COMMENT
+    &Correlator::CorrelateNothing,      // DOWNTIME
+    &Correlator::CorrelateNothing,      // HOST
+    &Correlator::CorrelateNothing,      // HOSTCHECK
+    &Correlator::CorrelateNothing,      // HOSTDEPENDENCY
+    &Correlator::CorrelateNothing,      // HOSTGROUP
+    &Correlator::CorrelateNothing,      // HOSTGROUPMEMBER
+    &Correlator::CorrelateNothing,      // HOSTPARENT
+    &Correlator::CorrelateHostStatus,   // HOSTSTATUS
+    &Correlator::CorrelateNothing,      // ISSUE
+    &Correlator::CorrelateNothing,      // ISSUEUPDATE
+    &Correlator::CorrelateNothing,      // LOG
+    &Correlator::CorrelateNothing,      // PROGRAM
+    &Correlator::CorrelateNothing,      // PROGRAMSTATUS
+    &Correlator::CorrelateNothing,      // SERVICE
+    &Correlator::CorrelateNothing,      // SERVICECHECK
+    &Correlator::CorrelateNothing,      // SERVICEDEPENDENCY
+    &Correlator::CorrelateNothing,      // SERVICEGROUP
+    &Correlator::CorrelateNothing,      // SERVICEGROUPMEMBER
+    &Correlator::CorrelateServiceStatus // SERVICESTATUS
   };
 
 /**
@@ -105,54 +105,70 @@ static bool ShouldBeUnknown(const Node& node)
 *                                     *
 **************************************/
 
-void Correlator::CorrelateHostStatus(Events::Event& event)
+/**
+ *  Process a HostStatus or ServiceStatus event.
+ *
+ *  \param[in] event   Event to process.
+ *  \param[in] is_host true if the event is a HostStatus.
+ */
+void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
 {
-  Events::HostStatus& hs(*static_cast<Events::HostStatus*>(&event));
-  std::map<int, Node>::iterator host_it;
+  Events::HostServiceStatus& hss(
+    *static_cast<Events::HostServiceStatus*>(&event));
+  std::map<int, Node>::iterator hss_it;
 
-  // Find host in host list.
-  if ((host_it = this->hosts_.find(hs.id)) == this->hosts_.end())
-    throw (Exception(0, "Invalid host status provided."));
-
-  Node& host(host_it->second);
-
-  if (host.state != hs.current_state)
+  // Find node in appropriate list.
+  if (is_host)
     {
-      if (hs.current_state)
+      if ((hss_it = this->hosts_.find(hss.id)) == this->hosts_.end())
+        throw (Exception(0, "Invalid host status provided."));
+    }
+  else
+    if ((hss_it = this->services_.find(hss.id)) == this->services_.end())
+      throw (Exception(0, "Invalid service status provided."));
+
+  Node& node(hss_it->second);
+
+  if (node.state != hss.current_state)
+    {
+      if (hss.current_state)
         {
           Events::Issue* issue;
 
           // Check if unknown flag should be set.
-          if (ShouldBeUnknown(host))
+          if (ShouldBeUnknown(node))
             {
-              hs.current_state = 3; // UNKNOWN
-              issue = this->FindRelatedIssue(host);
+              hss.current_state = 3; // UNKNOWN
+              issue = this->FindRelatedIssue(node);
             }
           // Warning -> Critical or Critical -> Warning.
-          else if (host.state && hs.current_state)
+          else if (node.state && hss.current_state)
             {
-              issue = this->FindRelatedIssue(host);
+              issue = this->FindRelatedIssue(node);
             }
           else
             {
               // Set issue.
-              host.issue.reset(new Events::Issue);
-              (*host.issue) << hs;
-              host.issue->start_time = time(NULL);
+              node.issue.reset(new Events::Issue);
+              node.issue->host_id = node.host_id;
+              node.issue->output = hss.output;
+              node.issue->service_id = node.service_id;
+              node.issue->state = hss.current_state;
+              node.issue->start_time = time(NULL);
 
               // Store issue. (XXX : not safe)
-              this->events_.push_back(new Events::Issue(*(host.issue.get())));
+              this->events_.push_back(new Events::Issue(*(node.issue.get())));
 
               // Get current issue.
-              issue = host.issue.get();
+              issue = node.issue.get();
             }
 
           // Update state.
-          host.state = hs.current_state;
+          node.state = hss.current_state;
 
           // Loop children.
-          for (std::list<Node*>::iterator it = host.children.begin(),
-                 end = host.children.end();
+          for (std::list<Node*>::iterator it = node.children.begin(),
+                 end = node.children.end();
                it != end;
                ++it)
             if ((*it)->issue.get() && ShouldBeUnknown(**it))
@@ -162,10 +178,10 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
                 (*it)->state = 3;
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
-                update->service_id1 = 0;
+                update->service_id1 = (*it)->service_id;
                 update->start_time1 = (*it)->issue.get()->start_time;
-                update->host_id2 = host.host_id;
-                update->service_id2 = 0;
+                update->host_id2 = node.host_id;
+                update->service_id2 = node.service_id;
                 update->start_time2 = issue->start_time;
                 update->update = Events::IssueUpdate::MERGE;
                 this->events_.push_back(update.get());
@@ -174,8 +190,8 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
               }
 
           // Loop dependant nodes.
-          for (std::list<Node*>::iterator it = host.depended_by.begin(),
-                 end = host.depended_by.end();
+          for (std::list<Node*>::iterator it = node.depended_by.begin(),
+                 end = node.depended_by.end();
                it != end;
                ++it)
             if ((*it)->issue.get() && ShouldBeUnknown(**it))
@@ -185,10 +201,10 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
                 (*it)->state = 3;
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
-                update->service_id1 = 0;
+                update->service_id1 = (*it)->service_id;
                 update->start_time1 = (*it)->issue.get()->start_time;
-                update->host_id2 = host.host_id;
-                update->service_id2 = 0;
+                update->host_id2 = node.host_id;
+                update->service_id2 = node.service_id;
                 update->start_time2 = issue->start_time;
                 update->update = Events::IssueUpdate::MERGE;
                 this->events_.push_back(update.get());
@@ -199,32 +215,44 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
       else
         {
           // Issue is over.
-          if (host.issue.get())
+          if (node.issue.get())
             {
-              (*host.issue) << hs;
-              host.issue->end_time = time(NULL);
-              this->events_.push_back(host.issue.get());
-              host.issue.release();
+              node.issue->end_time = time(NULL);
+              node.issue->output = hss.output;
+              node.issue->state = hss.current_state;
+              this->events_.push_back(node.issue.get());
+              node.issue.release();
             }
 
           // Restore possible childs. If another failure occurs, this will be
           // another issue.
-          host.state = hs.current_state;
-          for (std::list<Node*>::iterator it = host.children.begin(),
-                 end = host.children.end();
+          node.state = hss.current_state;
+          for (std::list<Node*>::iterator it = node.children.begin(),
+                 end = node.children.end();
                it != end;
                ++it)
             if (!ShouldBeUnknown(**it))
               (*it)->state = 0;
-          for (std::list<Node*>::iterator it = host.depended_by.begin(),
-                 end = host.depended_by.end();
+          for (std::list<Node*>::iterator it = node.depended_by.begin(),
+                 end = node.depended_by.end();
                it != end;
                ++it)
             if (!ShouldBeUnknown(**it))
               (*it)->state = 0;
         }
     }
-  host.state = hs.current_state;
+  node.state = hss.current_state;
+  return ;
+}
+
+/**
+ *  Process a HostStatus event.
+ *
+ *  \param[in] event Event to process.
+ */
+void Correlator::CorrelateHostStatus(Events::Event& event)
+{
+  this->CorrelateHostServiceStatus(event, true);
   return ;
 }
 
@@ -236,6 +264,17 @@ void Correlator::CorrelateHostStatus(Events::Event& event)
 void Correlator::CorrelateNothing(Events::Event& event)
 {
   (void)event;
+  return ;
+}
+
+/**
+ *  Process a ServiceStatus event.
+ *
+ *  \param[in] event Event to process.
+ */
+void Correlator::CorrelateServiceStatus(Events::Event& event)
+{
+  this->CorrelateHostServiceStatus(event, false);
   return ;
 }
 

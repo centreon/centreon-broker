@@ -43,8 +43,11 @@ namespace                      Correlation
     std::list<Events::Event*>  events_;
     std::map<int, Node>        hosts_;
     std::map<int, Node>        services_;
+    void                       CorrelateHostServiceStatus(Events::Event& event,
+                                                          bool is_host);
     void                       CorrelateHostStatus(Events::Event& event);
     void                       CorrelateNothing(Events::Event& event);
+    void                       CorrelateServiceStatus(Events::Event& event);
     Events::Issue*             FindRelatedIssue(Node& node);
     void                       InternalCopy(const Correlator& correlator);
 
