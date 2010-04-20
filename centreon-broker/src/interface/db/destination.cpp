@@ -360,11 +360,36 @@ void Destination::ProcessIssue(const Events::Event& event)
  */
 void Destination::ProcessIssueUpdate(const Events::Event& event)
 {
+  int issue_id1;
+  int issue_id2;
   const Events::IssueUpdate* update(
     static_cast<const Events::IssueUpdate*>(&event));
 
   LOGDEBUG("Processing IssueUpdate event ...");
-  // XXX
+
+  // Fetch issue IDs.
+  *this->conn_ << "SELECT id from "
+               << MappedType<Events::Issue>::table
+               << " WHERE host_id=" << update->host_id1
+               << " AND service_id=" << update->service_id1
+               << " AND start_time=" << update->start_time1,
+    soci::into(issue_id1);
+  *this->conn_ << "SELECT id from "
+               << MappedType<Events::Issue>::table
+               << " WHERE host_id=" << update->host_id2
+               << " AND service_id=" << update->service_id2
+               << " AND start_time=" << update->start_time2,
+    soci::into(issue_id2);
+
+  // Update log entries.
+  *this->conn_ << "UPDATE " << MappedType<Events::Log>::table
+               << " SET issue_id=" << issue_id2
+               << " WHERE issue_id=" << issue_id1;
+
+  // Remove old issue.
+  *this->conn_ << "DELETE FROM " << MappedType<Events::Issue>::table
+               << " WHERE id=" << issue_id1;
+
   return ;
 }
 

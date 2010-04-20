@@ -41,6 +41,7 @@ void Log::InternalCopy(const Log& log)
   this->c_time               = log.c_time;
   this->host_name            = log.host_name;
   this->instance_name        = log.instance_name;
+  this->issue_id             = log.issue_id;
   this->msg_type             = log.msg_type;
   this->notification_cmd     = log.notification_cmd;
   this->notification_contact = log.notification_contact;
@@ -63,7 +64,8 @@ void Log::InternalCopy(const Log& log)
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-Log::Log() : c_time(0), msg_type(0), retry(0), status(0), type(0) {}
+Log::Log()
+  : c_time(0), issue_id(0), msg_type(0), retry(0), status(0), type(0) {}
 
 /**
  *  \brief Log copy constructor.

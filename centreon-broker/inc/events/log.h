@@ -44,6 +44,7 @@ namespace              Events
     time_t             c_time;
     std::string        host_name;
     std::string        instance_name;
+    int                issue_id;
     short              msg_type;
     std::string        notification_cmd;
     std::string        notification_contact;
