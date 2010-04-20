@@ -36,7 +36,44 @@ bool Parser::VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* attr)
   const char* value;
 
   value = elem.Value();
-  if (!strcmp(value, "host"))
+  if (!strcmp(value, "dependency"))
+    {
+      const char* id1_str;
+      const char* id2_str;
+      const char* type1;
+      const char* type2;
+
+      id1_str = elem.Attribute("dependent_id");
+      id2_str = elem.Attribute("id");
+      type1 = elem.Attribute("dependent_type");
+      type2 = elem.Attribute("type");
+      if (id1_str && id2_str && type1 && type2)
+        {
+          std::map<int, Node>::iterator end1;
+          std::map<int, Node>::iterator end2;
+          std::map<int, Node>::iterator it1;
+          std::map<int, Node>::iterator it2;
+
+          end1 = this->hosts_->end();
+          end2 = this->services_->end();
+          it1 = end1;
+          it2 = end1;
+          if (!strcmp(type1, "host"))
+            it1 = this->hosts_->find(strtol(id1_str, NULL, 0));
+          else if (!strcmp(type1, "service"))
+            it1 = this->services_->find(strtol(id1_str, NULL, 0));
+          if (!strcmp(type2, "host"))
+            it2 = this->hosts_->find(strtol(id2_str, NULL, 0));
+          else if (!strcmp(type2, "service"))
+            it2 = this->hosts_->find(strtol(id2_str, NULL, 0));
+          if ((it1 != end1) && (it1 != end2) && (it2 != end1) && (it2 != end2))
+            {
+              it1->second.depends_on.push_back(&it2->second);
+              it2->second.depended_by.push_back(&it1->second);
+            }
+        }
+    }
+  else if (!strcmp(value, "host"))
     {
       const char* id;
 
