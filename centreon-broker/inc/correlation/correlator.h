@@ -26,6 +26,7 @@
 # include "correlation/node.h"
 # include "events/event.h"
 # include "events/host_status.h"
+# include "events/log.h"
 
 namespace                      Correlation
 {
@@ -46,6 +47,7 @@ namespace                      Correlation
     void                       CorrelateHostServiceStatus(Events::Event& event,
                                                           bool is_host);
     void                       CorrelateHostStatus(Events::Event& event);
+    void                       CorrelateLog(Events::Event& event);
     void                       CorrelateNothing(Events::Event& event);
     void                       CorrelateServiceStatus(Events::Event& event);
     Events::Issue*             FindRelatedIssue(Node& node);

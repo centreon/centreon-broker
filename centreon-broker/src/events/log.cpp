@@ -39,15 +39,17 @@ using namespace Events;
 void Log::InternalCopy(const Log& log)
 {
   this->c_time               = log.c_time;
+  this->host_id              = log.host_id;
   this->host_name            = log.host_name;
   this->instance_name        = log.instance_name;
-  this->issue_id             = log.issue_id;
+  this->issue_start_time     = log.issue_start_time;
   this->msg_type             = log.msg_type;
   this->notification_cmd     = log.notification_cmd;
   this->notification_contact = log.notification_contact;
   this->output               = log.output;
   this->retry                = log.retry;
   this->service_description  = log.service_description;
+  this->service_id           = log.service_id;
   this->status               = log.status;
   this->type                 = log.type;
   return ;
@@ -65,7 +67,14 @@ void Log::InternalCopy(const Log& log)
  *  Initialize members to 0, NULL or equivalent.
  */
 Log::Log()
-  : c_time(0), issue_id(0), msg_type(0), retry(0), status(0), type(0) {}
+  : c_time(0),
+    host_id(0),
+    issue_start_time(0),
+    msg_type(0),
+    retry(0),
+    service_id(0),
+    status(0),
+    type(0) {}
 
 /**
  *  \brief Log copy constructor.

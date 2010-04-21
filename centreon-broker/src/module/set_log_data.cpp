@@ -22,6 +22,7 @@
 #include <string.h>
 #include "events/log.h"
 #include "exception.h"
+#include "module/internal.h"
 #include "module/set_log_data.h"
 
 /**
@@ -212,5 +213,18 @@ void SetLogData(Events::Log& log, const char* log_data)
     }
   catch (...) {}
   free(datadup);
+
+  // Set host and service IDs.
+  std::map<std::string, int>::const_iterator host_it;
+  std::map<std::pair<std::string, std::string>, int>::const_iterator service_it;
+
+  host_it = gl_hosts.find(log.host_name);
+  if (host_it != gl_hosts.end())
+    log.host_id = host_it->second;
+  service_it = gl_services.find(std::make_pair(log.host_name,
+                                               log.service_description));
+  if (service_it != gl_services.end())
+    log.service_id = service_it->second;
+
   return ;
 }

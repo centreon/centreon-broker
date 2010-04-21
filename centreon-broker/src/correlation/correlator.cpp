@@ -218,7 +218,6 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
           if (node.issue.get())
             {
               node.issue->end_time = time(NULL);
-              node.issue->output = hss.output;
               node.issue->state = hss.current_state;
               this->events_.push_back(node.issue.get());
               node.issue.release();
@@ -253,6 +252,31 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
 void Correlator::CorrelateHostStatus(Events::Event& event)
 {
   this->CorrelateHostServiceStatus(event, true);
+  return ;
+}
+
+/**
+ *  Process a Log event.
+ */
+void Correlator::CorrelateLog(Events::Event& event)
+{
+  Events::Log* log(static_cast<Events::Log*>(&event));
+  std::map<int, Node>::iterator it;
+
+  if (log->service_id)
+    it = this->services_.find(log->service_id);
+  else
+    it = this->hosts_.find(log->host_id);
+  if ((it != this->hosts_.end())
+      && (it == this->services_.end())
+      && it->second.state)
+    {
+      Events::Issue* issue;
+
+      issue = this->FindRelatedIssue(it->second);
+      if (issue)
+        log->issue_start_time = issue->start_time;
+    }
   return ;
 }
 
