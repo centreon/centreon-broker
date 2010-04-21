@@ -346,7 +346,8 @@ int CallbackLog(int callback_type, void* data)
       log->instance_name = Configuration::Globals::instance_name;
       if (log_data->data)
         {
-          log->output = log_data->data;
+          if (log_data->data)
+            log->output = log_data->data;
           SetLogData(*log, log_data->data);
         }
       log->type = log_data->data_type;
