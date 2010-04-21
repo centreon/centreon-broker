@@ -42,8 +42,13 @@ void Node::InternalCopy(const Node& node)
   this->depended_by = node.depended_by;
   this->depends_on  = node.depends_on;
   this->host_id     = node.host_id;
-  if (node.issue.get())
-    this->issue.reset(new Events::Issue(*(node.issue.get())));
+  if (node.issue)
+    {
+      this->issue = new Events::Issue(*(node.issue));
+      this->issue->Link();
+    }
+  else
+    this->issue = NULL;
   this->parents     = node.parents;
   this->service_id  = node.service_id;
   this->state       = node.state;
@@ -59,7 +64,7 @@ void Node::InternalCopy(const Node& node)
 /**
  *  Constructor.
  */
-Node::Node() : host_id(0), service_id(0), state(0) {}
+Node::Node() : host_id(0), issue(NULL), service_id(0), state(0) {}
 
 /**
  *  Copy constructor.
@@ -74,7 +79,11 @@ Node::Node(const Node& node)
 /**
  *  Destructor.
  */
-Node::~Node() {}
+Node::~Node()
+{
+  if (this->issue && this->issue->Unlink())
+    delete (this->issue);
+}
 
 /**
  *  Assignment operator.

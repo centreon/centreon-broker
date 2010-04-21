@@ -149,7 +149,8 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
           else
             {
               // Set issue.
-              node.issue.reset(new Events::Issue);
+              node.issue = new Events::Issue;
+              node.issue->Link();
               node.issue->host_id = node.host_id;
               node.issue->output = hss.output;
               node.issue->service_id = node.service_id;
@@ -157,10 +158,10 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
               node.issue->start_time = time(NULL);
 
               // Store issue. (XXX : not safe)
-              this->events_.push_back(new Events::Issue(*(node.issue.get())));
+              this->events_.push_back(new Events::Issue(*(node.issue)));
 
               // Get current issue.
-              issue = node.issue.get();
+              issue = node.issue;
             }
 
           // Update state.
@@ -171,7 +172,7 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
                  end = node.children.end();
                it != end;
                ++it)
-            if ((*it)->issue.get() && ShouldBeUnknown(**it))
+            if ((*it)->issue && ShouldBeUnknown(**it))
               {
                 std::auto_ptr<Events::IssueUpdate> update;
 
@@ -179,14 +180,15 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
                 update->service_id1 = (*it)->service_id;
-                update->start_time1 = (*it)->issue.get()->start_time;
+                update->start_time1 = (*it)->issue->start_time;
                 update->host_id2 = node.host_id;
                 update->service_id2 = node.service_id;
                 update->start_time2 = issue->start_time;
                 update->update = Events::IssueUpdate::MERGE;
                 this->events_.push_back(update.get());
                 update.release();
-                (*it)->issue.reset();
+                delete ((*it)->issue);
+                (*it)->issue = NULL;
               }
 
           // Loop dependant nodes.
@@ -194,7 +196,7 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
                  end = node.depended_by.end();
                it != end;
                ++it)
-            if ((*it)->issue.get() && ShouldBeUnknown(**it))
+            if ((*it)->issue && ShouldBeUnknown(**it))
               {
                 std::auto_ptr<Events::IssueUpdate> update;
 
@@ -202,42 +204,48 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
                 update.reset(new Events::IssueUpdate);
                 update->host_id1 = (*it)->host_id;
                 update->service_id1 = (*it)->service_id;
-                update->start_time1 = (*it)->issue.get()->start_time;
+                update->start_time1 = (*it)->issue->start_time;
                 update->host_id2 = node.host_id;
                 update->service_id2 = node.service_id;
                 update->start_time2 = issue->start_time;
                 update->update = Events::IssueUpdate::MERGE;
                 this->events_.push_back(update.get());
                 update.release();
-                (*it)->issue.reset();
+                delete ((*it)->issue);
+                (*it)->issue = NULL;
               }
         }
       else
         {
           // Issue is over.
-          if (node.issue.get())
-            {
-              node.issue->end_time = time(NULL);
-              node.issue->state = hss.current_state;
-              this->events_.push_back(node.issue.get());
-              node.issue.release();
-            }
-
-          // Restore possible childs. If another failure occurs, this will be
-          // another issue.
           node.state = hss.current_state;
-          for (std::list<Node*>::iterator it = node.children.begin(),
-                 end = node.children.end();
-               it != end;
-               ++it)
-            if (!ShouldBeUnknown(**it))
-              (*it)->state = 0;
-          for (std::list<Node*>::iterator it = node.depended_by.begin(),
-                 end = node.depended_by.end();
-               it != end;
-               ++it)
-            if (!ShouldBeUnknown(**it))
-              (*it)->state = 0;
+	  if (node.issue)
+	    {
+	      for (std::list<Node*>::iterator it = node.children.begin(),
+		     end = node.children.end();
+		   it != end;
+		   ++it)
+		if ((*it)->state && !(*it)->issue)
+		  {
+		    node.issue->Link();
+		    (*it)->issue = node.issue;
+		  }
+	      for (std::list<Node*>::iterator it = node.depended_by.begin(),
+		     end = node.depended_by.end();
+		   it != end;
+		   ++it)
+		if ((*it)->state && !(*it)->issue)
+		  {
+		    node.issue->Link();
+		    (*it)->issue = node.issue;
+		  }
+	      if (node.issue->Unlink())
+		{
+		  node.issue->end_time = time(NULL);
+		  this->events_.push_back(node.issue);
+		}
+	      node.issue = NULL;
+	    }
         }
     }
   node.state = hss.current_state;
@@ -314,8 +322,8 @@ Events::Issue* Correlator::FindRelatedIssue(Node& node)
 {
   Events::Issue* issue;
 
-  if (node.state && node.issue.get())
-    issue = node.issue.get();
+  if (node.state && node.issue)
+    issue = node.issue;
   else
     {
       issue = NULL;

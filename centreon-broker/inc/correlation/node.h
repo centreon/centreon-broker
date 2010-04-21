@@ -22,7 +22,6 @@
 # define CORRELATION_NODE_H_
 
 # include <list>
-# include <memory> // for auto_ptr
 # include "events/host_status.h"
 # include "events/issue.h"
 
@@ -45,8 +44,7 @@ namespace            Correlation
     std::list<Node*> depended_by;
     std::list<Node*> depends_on;
     int              host_id;
-    std::auto_ptr<Events::Issue>
-                     issue;
+    Events::Issue*   issue;
     std::list<Node*> parents;
     int              service_id;
     short            state;
