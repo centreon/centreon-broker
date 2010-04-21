@@ -920,6 +920,10 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_LOGENTRYTIME,
       "ctime"),
     MappedData<Log>(
+      &Log::host_id,
+      NDO_DATA_HOSTID,
+      NULL),
+    MappedData<Log>(
       &Log::host_name,
       NDO_DATA_HOST,
       "host_name"),
@@ -928,9 +932,9 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_PROGRAMNAME,
       "instance_name"),
     MappedData<Log>(
-      &Log::issue_id,
-      NDO_DATA_HOSTID,
-      "issue_id"),
+      &Log::issue_start_time,
+      NDO_DATA_DURATION,
+      NULL),
     MappedData<Log>(
       &Log::msg_type,
       NDO_DATA_ENTRYTYPE,
@@ -955,6 +959,10 @@ static const MappedData<Log> log_mapping[] =
       &Log::service_description,
       NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
+    MappedData<Log>(
+      &Log::service_id,
+      NDO_DATA_SERVICEID,
+      NULL),
     MappedData<Log>(
       &Log::status,
       NDO_DATA_CURRENTSTATE,

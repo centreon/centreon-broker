@@ -398,8 +398,55 @@ void Destination::ProcessIssueUpdate(const Events::Event& event)
  */
 void Destination::ProcessLog(const Events::Log& log)
 {
+  const char* field;
+  int issue;
+  std::string query;
+
   LOGDEBUG("Processing Log event ...");
-  this->Insert(log);
+  field = "issue_id";
+  query = "INSERT INTO ";
+  query.append(MappedType<Events::Log>::table);
+  query.append("(");
+  for (std::map<std::string, GetterSetter<Events::Log> >::const_iterator
+         it = DBMappedType<Events::Log>::map.begin(),
+         end = DBMappedType<Events::Log>::map.end();
+       it != end;
+       ++it)
+    {
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.append(field);
+  query.append(") VALUES(");
+  for (std::map<std::string, GetterSetter<Events::Log> >::const_iterator
+         it = DBMappedType<Events::Log>::map.begin(),
+	 end = DBMappedType<Events::Log>::map.end();
+       it != end;
+       ++it)
+    {
+      query.append(":");
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.append(":");
+  query.append(field);
+  query.append(")");
+  LOGDEBUG(query.c_str());
+
+  // Fetch issue ID (if any).
+  if (log.issue_start_time)
+    *this->conn_ << "SELECT id FROM "
+		 << MappedType<Events::Issue>::table
+		 << " WHERE host_id=" << log.host_id
+		 << " AND service_id=" << log.service_id
+		 << " AND start_time=" << log.issue_start_time,
+      soci::into(issue);
+  else
+    issue = 0;
+
+  // Execute query.
+  *this->conn_ << query, soci::use(log), soci::use(issue, field);
+
   return ;
 }
 
