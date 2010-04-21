@@ -18,6 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
+#include "concurrency/lock.h"
 #include "events/issue.h"
 
 using namespace Events;
@@ -61,6 +62,7 @@ Issue::Issue()
   : ack_time(0),
     end_time(0),
     host_id(0),
+    links(0),
     service_id(0),
     start_time(0),
     state(0),
@@ -71,7 +73,7 @@ Issue::Issue()
  *
  *  \param[in] issue Object to copy.
  */
-Issue::Issue(const Issue& issue) : Events::Event(issue)
+Issue::Issue(const Issue& issue) : Events::Event(issue), links(0)
 {
   this->InternalCopy(issue);
 }
@@ -103,4 +105,29 @@ Issue& Issue::operator=(const Issue& issue)
 int Issue::GetType() const
 {
   return (Event::ISSUE);
+}
+
+/**
+ *  Add a link on this issue.
+ */
+void Issue::Link()
+{
+  Concurrency::Lock lock(this->linksm);
+
+  ++this->links;
+  return ;
+}
+
+/**
+ *  Remove a link to this issue.
+ *
+ *  \return true if no link remains to this node.
+ */
+bool Issue::Unlink()
+{
+  Concurrency::Lock lock(this->linksm);
+
+  if (this->links)
+    --this->links;
+  return (!this->links);
 }

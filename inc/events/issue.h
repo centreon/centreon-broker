@@ -23,6 +23,7 @@
 
 # include <string>
 # include <time.h>
+# include "concurrency/mutex.h"
 # include "events/event.h"
 
 namespace        Events
@@ -36,22 +37,26 @@ namespace        Events
   class          Issue : public Event
   {
    private:
-    void         InternalCopy(const Issue& issue);
+    void               InternalCopy(const Issue& issue);
 
    public:
-    time_t       ack_time;
-    time_t       end_time;
-    int          host_id;
-    std::string  output;
-    int          service_id;
-    time_t       start_time;
-    short        state;
-    short        status;
-                 Issue();
-                 Issue(const Issue& issue);
-    virtual      ~Issue();
-    Issue&       operator=(const Issue& issue);
-    virtual int  GetType() const;
+    time_t             ack_time;
+    time_t             end_time;
+    int                host_id;
+    unsigned int       links;
+    Concurrency::Mutex linksm;
+    std::string        output;
+    int                service_id;
+    time_t             start_time;
+    short              state;
+    short              status;
+                       Issue();
+                       Issue(const Issue& issue);
+    virtual            ~Issue();
+    Issue&             operator=(const Issue& issue);
+    virtual int        GetType() const;
+    void               Link();
+    bool               Unlink();
   };
 }
 
