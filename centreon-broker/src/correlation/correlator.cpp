@@ -276,7 +276,7 @@ void Correlator::CorrelateLog(Events::Event& event)
   else
     it = this->hosts_.find(log->host_id);
   if ((it != this->hosts_.end())
-      && (it == this->services_.end())
+      && (it != this->services_.end())
       && it->second.state)
     {
       Events::Issue* issue;
