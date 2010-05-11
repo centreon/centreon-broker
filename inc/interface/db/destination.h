@@ -48,6 +48,7 @@ namespace                         Interface
       };
 
      private:
+      static void                    (Destination::* processing_table[])(const Events::Event&);
       std::auto_ptr<soci::statement> acknowledgement_stmt_;
       std::auto_ptr<soci::statement> comment_stmt_;
       std::auto_ptr<soci::statement> downtime_stmt_;
@@ -68,31 +69,27 @@ namespace                         Interface
       template                    <typename T>
       void                        PrepareUpdate(std::auto_ptr<soci::statement>& st,
                                                 const std::vector<std::string>& id);
-      void                        ProcessAcknowledgement(
-                                    const Events::Acknowledgement& ack);
-      void                        ProcessComment(const Events::Comment& comment);
-      void                        ProcessDowntime(const Events::Downtime& downtime);
-      void                        ProcessHost(const Events::Host& host);
-      void                        ProcessHostCheck(const Events::HostCheck& host_check);
-      void                        ProcessHostDependency(const Events::HostDependency& hd);
-      void                        ProcessHostGroup(const Events::HostGroup& hg);
-      void                        ProcessHostGroupMember(const Events::HostGroupMember& hgm);
-      void                        ProcessHostParent(const Events::HostParent& hp);
-      void                        ProcessHostStatus(const Events::HostStatus& hs);
+      void                        ProcessAcknowledgement(const Events::Event& event);
+      void                        ProcessComment(const Events::Event& event);
+      void                        ProcessDowntime(const Events::Event& event);
+      void                        ProcessHost(const Events::Event& event);
+      void                        ProcessHostCheck(const Events::Event& event);
+      void                        ProcessHostDependency(const Events::Event& event);
+      void                        ProcessHostGroup(const Events::Event& event);
+      void                        ProcessHostGroupMember(const Events::Event& event);
+      void                        ProcessHostParent(const Events::Event& event);
+      void                        ProcessHostStatus(const Events::Event& event);
       void                        ProcessIssue(const Events::Event& event);
       void                        ProcessIssueUpdate(const Events::Event& event);
-      void                        ProcessLog(const Events::Log& log);
-      void                        ProcessProgram(const Events::Program& program);
-      void                        ProcessProgramStatus(
-                                    const Events::ProgramStatus& ps);
-      void                        ProcessService(const Events::Service& service);
-      void                        ProcessServiceCheck(const Events::ServiceCheck& service_check);
-      void                        ProcessServiceDependency(const Events::ServiceDependency& sd);
-      void                        ProcessServiceGroup(
-                                    const Events::ServiceGroup& sg);
-      void                        ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm);
-      void                        ProcessServiceStatus(
-                                    const Events::ServiceStatus& ss);
+      void                        ProcessLog(const Events::Event& event);
+      void                        ProcessProgram(const Events::Event& event);
+      void                        ProcessProgramStatus(const Events::Event& event);
+      void                        ProcessService(const Events::Event& event);
+      void                        ProcessServiceCheck(const Events::Event& event);
+      void                        ProcessServiceDependency(const Events::Event& event);
+      void                        ProcessServiceGroup(const Events::Event& event);
+      void                        ProcessServiceGroupMember(const Events::Event& event);
+      void                        ProcessServiceStatus(const Events::Event& event);
 
      public:
                                   Destination();

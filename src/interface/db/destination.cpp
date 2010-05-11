@@ -44,6 +44,39 @@ using namespace Interface::DB;
 
 /**************************************
 *                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Processing table.
+void (Destination::* Destination::processing_table[])(const Events::Event&) =
+{
+  NULL,                                    // UNKNOWN
+  &Destination::ProcessAcknowledgement,    // ACKNOWLEDGEMENT
+  &Destination::ProcessComment,            // COMMENT
+  &Destination::ProcessDowntime,           // DOWNTIME
+  &Destination::ProcessHost,               // HOST
+  &Destination::ProcessHostCheck,          // HOSTCHECK
+  &Destination::ProcessHostDependency,     // HOSTDEPENDENCY
+  &Destination::ProcessHostGroup,          // HOSTGROUP
+  &Destination::ProcessHostGroupMember,    // HOSTGROUPMEMBER
+  &Destination::ProcessHostParent,         // HOSTPARENT
+  &Destination::ProcessHostStatus,         // HOSTSTATUS
+  &Destination::ProcessIssue,              // ISSUE
+  &Destination::ProcessIssueUpdate,        // ISSUEUPDATE
+  &Destination::ProcessLog,                // LOG
+  &Destination::ProcessProgram,            // PROGRAM
+  &Destination::ProcessProgramStatus,      // PROGRAMSTATUS
+  &Destination::ProcessService,            // SERVICE
+  &Destination::ProcessServiceCheck,       // SERVICECHECK
+  &Destination::ProcessServiceDependency,  // SERVICEDEPENDENCY
+  &Destination::ProcessServiceGroup,       // SERVICEGROUP
+  &Destination::ProcessServiceGroupMember, // SERVICEGROUPMEMBER
+  &Destination::ProcessServiceStatus       // SERVICESTATUS
+};
+
+/**************************************
+*                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
@@ -202,8 +235,11 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
 /**
  *  Process an Acknowledgement event.
  */
-void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
+void Destination::ProcessAcknowledgement(const Events::Event& event)
 {
+  const Events::Acknowledgement& ack(
+    *static_cast<const Events::Acknowledgement*>(&event));
+
   LOGDEBUG("Processing Acknowledgement event ...");
   try
     {
@@ -219,8 +255,10 @@ void Destination::ProcessAcknowledgement(const Events::Acknowledgement& ack)
 /**
  *  Process a Comment event.
  */
-void Destination::ProcessComment(const Events::Comment& comment)
+void Destination::ProcessComment(const Events::Event& event)
 {
+  const Events::Comment& comment(*static_cast<const Events::Comment*>(&event));
+
   LOGDEBUG("Processing Comment event ...");
   try
     {
@@ -236,8 +274,11 @@ void Destination::ProcessComment(const Events::Comment& comment)
 /**
  *  Process a Downtime event.
  */
-void Destination::ProcessDowntime(const Events::Downtime& downtime)
+void Destination::ProcessDowntime(const Events::Event& event)
 {
+  const Events::Downtime& downtime(
+    *static_cast<const Events::Downtime*>(&event));
+
   LOGDEBUG("Processing Downtime event ...");
   try
     {
@@ -253,8 +294,10 @@ void Destination::ProcessDowntime(const Events::Downtime& downtime)
 /**
  *  Process an Host event.
  */
-void Destination::ProcessHost(const Events::Host& host)
+void Destination::ProcessHost(const Events::Event& event)
 {
+  const Events::Host& host(*static_cast<const Events::Host*>(&event));
+
   LOGDEBUG("Processing Host event ...");
   this->Insert(host);
   return ;
@@ -263,8 +306,11 @@ void Destination::ProcessHost(const Events::Host& host)
 /**
  *  Process an HostCheck event.
  */
-void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
+void Destination::ProcessHostCheck(const Events::Event& event)
 {
+  const Events::HostCheck& host_check(
+    *static_cast<const Events::HostCheck*>(&event));
+
   LOGDEBUG("Processing HostCheck event ...");
   this->PreparedUpdate(host_check, *this->host_check_stmt_);
   return ;
@@ -273,8 +319,11 @@ void Destination::ProcessHostCheck(const Events::HostCheck& host_check)
 /**
  *  Process a HostDependency event.
  */
-void Destination::ProcessHostDependency(const Events::HostDependency& hd)
+void Destination::ProcessHostDependency(const Events::Event& event)
 {
+  const Events::HostDependency& hd(
+    *static_cast<const Events::HostDependency*>(&event));
+
   LOGDEBUG("Processing HostDependency event ...");
   this->Insert(hd);
   return ;
@@ -283,8 +332,10 @@ void Destination::ProcessHostDependency(const Events::HostDependency& hd)
 /**
  *  Process a HostGroup event.
  */
-void Destination::ProcessHostGroup(const Events::HostGroup& hg)
+void Destination::ProcessHostGroup(const Events::Event& event)
 {
+  const Events::HostGroup& hg(*static_cast<const Events::HostGroup*>(&event));
+
   LOGDEBUG("Processing HostGroup event...");
   this->Insert(hg);
   return ;
@@ -293,8 +344,10 @@ void Destination::ProcessHostGroup(const Events::HostGroup& hg)
 /**
  *  Process a HostGroupMember event.
  */
-void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
+void Destination::ProcessHostGroupMember(const Events::Event& event)
 {
+  const Events::HostGroupMember& hgm(
+    *static_cast<const Events::HostGroupMember*>(&event));
   int hostgroup_id;
 
   LOGDEBUG("Processing HostGroupMember event ...");
@@ -319,8 +372,11 @@ void Destination::ProcessHostGroupMember(const Events::HostGroupMember& hgm)
 /**
  *  Process a HostParent event.
  */
-void Destination::ProcessHostParent(const Events::HostParent& hp)
+void Destination::ProcessHostParent(const Events::Event& event)
 {
+  const Events::HostParent& hp(
+    *static_cast<const Events::HostParent*>(&event));
+
   LOGDEBUG("Processing HostParent event ...");
   this->Insert(hp);
   return ;
@@ -329,8 +385,11 @@ void Destination::ProcessHostParent(const Events::HostParent& hp)
 /**
  *  Process a HostStatus event.
  */
-void Destination::ProcessHostStatus(const Events::HostStatus& hs)
+void Destination::ProcessHostStatus(const Events::Event& event)
 {
+  const Events::HostStatus& hs(
+    *static_cast<const Events::HostStatus*>(&event));
+
   LOGDEBUG("Processing HostStatus event ...");
   this->PreparedUpdate<Events::HostStatus>(hs, *this->host_status_stmt_);
   return ;
@@ -341,16 +400,16 @@ void Destination::ProcessHostStatus(const Events::HostStatus& hs)
  */
 void Destination::ProcessIssue(const Events::Event& event)
 {
-  const Events::Issue* issue(static_cast<const Events::Issue*>(&event));
+  const Events::Issue& issue(*static_cast<const Events::Issue*>(&event));
 
   LOGDEBUG("Processing Issue event ...");
   try
     {
-      this->Insert(*issue);
+      this->Insert(issue);
     }
   catch (const soci::soci_error& se)
     {
-      this->PreparedUpdate(*issue, *this->issue_stmt_);
+      this->PreparedUpdate(issue, *this->issue_stmt_);
     }
   return ;
 }
@@ -362,23 +421,23 @@ void Destination::ProcessIssueUpdate(const Events::Event& event)
 {
   int issue_id1;
   int issue_id2;
-  const Events::IssueUpdate* update(
-    static_cast<const Events::IssueUpdate*>(&event));
+  const Events::IssueUpdate& update(
+    *static_cast<const Events::IssueUpdate*>(&event));
 
   LOGDEBUG("Processing IssueUpdate event ...");
 
   // Fetch issue IDs.
   *this->conn_ << "SELECT id from "
                << MappedType<Events::Issue>::table
-               << " WHERE host_id=" << update->host_id1
-               << " AND service_id=" << update->service_id1
-               << " AND start_time=" << update->start_time1,
+               << " WHERE host_id=" << update.host_id1
+               << " AND service_id=" << update.service_id1
+               << " AND start_time=" << update.start_time1,
     soci::into(issue_id1);
   *this->conn_ << "SELECT id from "
                << MappedType<Events::Issue>::table
-               << " WHERE host_id=" << update->host_id2
-               << " AND service_id=" << update->service_id2
-               << " AND start_time=" << update->start_time2,
+               << " WHERE host_id=" << update.host_id2
+               << " AND service_id=" << update.service_id2
+               << " AND start_time=" << update.start_time2,
     soci::into(issue_id2);
 
   // Update log entries.
@@ -396,10 +455,11 @@ void Destination::ProcessIssueUpdate(const Events::Event& event)
 /**
  *  Process a Log event.
  */
-void Destination::ProcessLog(const Events::Log& log)
+void Destination::ProcessLog(const Events::Event& event)
 {
   const char* field;
   int issue;
+  const Events::Log& log(*static_cast<const Events::Log*>(&event));
   std::string query;
 
   LOGDEBUG("Processing Log event ...");
@@ -453,8 +513,10 @@ void Destination::ProcessLog(const Events::Log& log)
 /**
  *  Process a Program event.
  */
-void Destination::ProcessProgram(const Events::Program& program)
+void Destination::ProcessProgram(const Events::Event& event)
 {
+  const Events::Program& program(*static_cast<const Events::Program*>(&event));
+
   LOGDEBUG("Processing Program event ...");
   this->CleanTables(program.instance_id);
   if (!program.program_end)
@@ -465,8 +527,11 @@ void Destination::ProcessProgram(const Events::Program& program)
 /**
  *  Process a ProgramStatus event.
  */
-void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
+void Destination::ProcessProgramStatus(const Events::Event& event)
 {
+  const Events::ProgramStatus& ps(
+    *static_cast<const Events::ProgramStatus*>(&event));
+
   LOGDEBUG("Processing ProgramStatus event ...");
   this->PreparedUpdate<Events::ProgramStatus>(ps, *this->program_status_stmt_);
   return ;
@@ -475,8 +540,10 @@ void Destination::ProcessProgramStatus(const Events::ProgramStatus& ps)
 /**
  *  Process a Service event.
  */
-void Destination::ProcessService(const Events::Service& service)
+void Destination::ProcessService(const Events::Event& event)
 {
+  const Events::Service& service(*static_cast<const Events::Service*>(&event));
+
   LOGDEBUG("Processing Service event ...");
   this->Insert(service);
   return ;
@@ -485,8 +552,11 @@ void Destination::ProcessService(const Events::Service& service)
 /**
  *  Process a ServiceCheck event.
  */
-void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
+void Destination::ProcessServiceCheck(const Events::Event& event)
 {
+  const Events::ServiceCheck& service_check(
+    *static_cast<const Events::ServiceCheck*>(&event));
+
   LOGDEBUG("Processing ServiceCheck event ...");
   this->PreparedUpdate(service_check, *this->service_check_stmt_);
   return ;
@@ -495,8 +565,11 @@ void Destination::ProcessServiceCheck(const Events::ServiceCheck& service_check)
 /**
  *  Process a ServiceDependency event.
  */
-void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
+void Destination::ProcessServiceDependency(const Events::Event& event)
 {
+  const Events::ServiceDependency& sd(
+    *static_cast<const Events::ServiceDependency*>(&event));
+
   LOGDEBUG("Processing ServiceDependency event ...");
   this->Insert(sd);
   return ;
@@ -505,8 +578,11 @@ void Destination::ProcessServiceDependency(const Events::ServiceDependency& sd)
 /**
  *  Process a ServiceGroup event.
  */
-void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
+void Destination::ProcessServiceGroup(const Events::Event& event)
 {
+  const Events::ServiceGroup& sg(
+    *static_cast<const Events::ServiceGroup*>(&event));
+
   LOGDEBUG("Processing ServiceGroup event ...");
   this->Insert(sg);
   return ;
@@ -515,9 +591,11 @@ void Destination::ProcessServiceGroup(const Events::ServiceGroup& sg)
 /**
  *  Process a ServiceGroupMember event.
  */
-void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sgm)
+void Destination::ProcessServiceGroupMember(const Events::Event& event)
 {
   int servicegroup_id;
+  const Events::ServiceGroupMember& sgm(
+    *static_cast<const Events::ServiceGroupMember*>(&event));
 
   LOGDEBUG("Processing ServiceGroupMember event ...");
 
@@ -541,8 +619,11 @@ void Destination::ProcessServiceGroupMember(const Events::ServiceGroupMember& sg
 /**
  *  Process a ServiceStatus event.
  */
-void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
+void Destination::ProcessServiceStatus(const Events::Event& event)
 {
+  const Events::ServiceStatus& ss(
+    *static_cast<const Events::ServiceStatus*>(&event));
+
   LOGDEBUG("Processing ServiceStatus event ...");
   this->PreparedUpdate<Events::ServiceStatus>(ss, *this->service_status_stmt_);
   return ;
@@ -561,7 +642,11 @@ void Destination::ProcessServiceStatus(const Events::ServiceStatus& ss)
  *
  *  \param[in] dbms Type of the database to use.
  */
-Destination::Destination() {}
+Destination::Destination()
+{
+  assert((sizeof(processing_table) / sizeof(*processing_table))
+         == Events::Event::EVENT_TYPES_NB);
+}
 
 /**
  *  \brief Destination destructor.
@@ -603,74 +688,7 @@ void Destination::Event(Events::Event* event)
 {
   try
     {
-      switch (event->GetType())
-        {
-         case Events::Event::ACKNOWLEDGEMENT:
-          ProcessAcknowledgement(*static_cast<Events::Acknowledgement*>(event));
-          break ;
-         case Events::Event::COMMENT:
-          ProcessComment(*static_cast<Events::Comment*>(event));
-          break ;
-         case Events::Event::DOWNTIME:
-          ProcessDowntime(*static_cast<Events::Downtime*>(event));
-          break ;
-         case Events::Event::HOST:
-          ProcessHost(*static_cast<Events::Host*>(event));
-          break ;
-         case Events::Event::HOSTCHECK:
-          ProcessHostCheck(*static_cast<Events::HostCheck*>(event));
-          break ;
-         case Events::Event::HOSTDEPENDENCY:
-          ProcessHostDependency(*static_cast<Events::HostDependency*>(event));
-          break ;
-         case Events::Event::HOSTGROUP:
-          ProcessHostGroup(*static_cast<Events::HostGroup*>(event));
-          break ;
-         case Events::Event::HOSTGROUPMEMBER:
-          ProcessHostGroupMember(*static_cast<Events::HostGroupMember*>(event));
-          break ;
-         case Events::Event::HOSTPARENT:
-          ProcessHostParent(*static_cast<Events::HostParent*>(event));
-          break ;
-         case Events::Event::HOSTSTATUS:
-          ProcessHostStatus(*static_cast<Events::HostStatus*>(event));
-          break ;
-         case Events::Event::ISSUE:
-          ProcessIssue(*event);
-          break ;
-         case Events::Event::ISSUEUPDATE:
-          ProcessIssueUpdate(*event);
-          break ;
-         case Events::Event::LOG:
-          ProcessLog(*static_cast<Events::Log*>(event));
-          break ;
-         case Events::Event::PROGRAM:
-          ProcessProgram(*static_cast<Events::Program*>(event));
-          break ;
-         case Events::Event::PROGRAMSTATUS:
-          ProcessProgramStatus(*static_cast<Events::ProgramStatus*>(event));
-          break ;
-         case Events::Event::SERVICE:
-          ProcessService(*static_cast<Events::Service*>(event));
-          break ;
-         case Events::Event::SERVICECHECK:
-          ProcessServiceCheck(*static_cast<Events::ServiceCheck*>(event));
-          break ;
-         case Events::Event::SERVICEDEPENDENCY:
-          ProcessServiceDependency(*static_cast<Events::ServiceDependency*>(event));
-          break ;
-         case Events::Event::SERVICEGROUP:
-          ProcessServiceGroup(*static_cast<Events::ServiceGroup*>(event));
-          break ;
-         case Events::Event::SERVICEGROUPMEMBER:
-          ProcessServiceGroupMember(*static_cast<Events::ServiceGroupMember*>(event));
-          break ;
-         case Events::Event::SERVICESTATUS:
-          ProcessServiceStatus(*static_cast<Events::ServiceStatus*>(event));
-          break ;
-         default: // Discard event.
-          LOGINFO("Invalid event type encountered.");
-        }
+      (this->*this->processing_table[event->GetType()])(*event);
     }
   catch (...)
     {
