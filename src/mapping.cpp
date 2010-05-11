@@ -270,9 +270,9 @@ static const MappedData<Host> host_mapping[] =
       0,
       "default_event_handler_enabled"),
     MappedData<Host>(
-      &Host::default_failure_prediction_enabled,
+      &Host::default_failure_prediction,
       0,
-      "default_failure_prediction_enabled"),
+      "default_failure_prediction"),
     MappedData<Host>(
       &Host::default_flap_detection_enabled,
       0,
@@ -286,9 +286,9 @@ static const MappedData<Host> host_mapping[] =
       0,
       "default_passive_checks_enabled"),
     MappedData<Host>(
-      &Host::default_process_performance_data,
+      &Host::default_process_perf_data,
       0,
-      "default_process_performance_data"),
+      "default_process_perf_data"),
     MappedData<Host>(
       &Host::display_name,
       NDO_DATA_DISPLAYNAME,
@@ -1162,9 +1162,9 @@ static const MappedData<Service> service_mapping[] =
       0,
       "default_event_handler_enabled"),
     MappedData<Service>(
-      &Service::default_failure_prediction_enabled,
+      &Service::default_failure_prediction,
       0,
-      "default_failure_prediction_enabled"),
+      "default_failure_prediction"),
     MappedData<Service>(
       &Service::default_flap_detection_enabled,
       0,
@@ -1178,9 +1178,9 @@ static const MappedData<Service> service_mapping[] =
       0,
       "default_passive_checks_enabled"),
     MappedData<Service>(
-      &Service::default_process_performance_data,
+      &Service::default_process_perf_data,
       0,
-      "default_process_performance_data"),
+      "default_process_perf_data"),
     MappedData<Service>(
       &Service::display_name,
       NDO_DATA_DISPLAYNAME,

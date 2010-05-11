@@ -39,33 +39,32 @@ using namespace Events;
  */
 void HostService::InternalCopy(const HostService& hs)
 {
-  this->action_url                       = hs.action_url;
-  this->check_freshness                  = hs.check_freshness;
-  this->default_active_checks_enabled    = hs.default_active_checks_enabled;
-  this->default_event_handler_enabled    = hs.default_event_handler_enabled;
-  this->default_failure_prediction_enabled
-    = hs.default_failure_prediction_enabled;
-  this->default_flap_detection_enabled   = hs.default_flap_detection_enabled;
-  this->default_notifications_enabled    = hs.default_notifications_enabled;
-  this->default_passive_checks_enabled   = hs.default_passive_checks_enabled;
-  this->default_process_performance_data = hs.default_process_performance_data;
-  this->display_name                     = hs.display_name;
-  this->first_notification_delay         = hs.first_notification_delay;
-  this->freshness_threshold              = hs.freshness_threshold;
-  this->high_flap_threshold              = hs.high_flap_threshold;
-  this->icon_image                       = hs.icon_image;
-  this->icon_image_alt                   = hs.icon_image_alt;
-  this->initial_state                    = hs.initial_state;
-  this->low_flap_threshold               = hs.low_flap_threshold;
-  this->notes                            = hs.notes;
-  this->notes_url                        = hs.notes_url;
-  this->notification_interval            = hs.notification_interval;
-  this->notification_period              = hs.notification_period;
-  this->notify_on_downtime               = hs.notify_on_downtime;
-  this->notify_on_flapping               = hs.notify_on_flapping;
-  this->notify_on_recovery               = hs.notify_on_recovery;
-  this->retain_nonstatus_information     = hs.retain_nonstatus_information;
-  this->retain_status_information        = hs.retain_status_information;
+  this->action_url                     = hs.action_url;
+  this->check_freshness                = hs.check_freshness;
+  this->default_active_checks_enabled  = hs.default_active_checks_enabled;
+  this->default_event_handler_enabled  = hs.default_event_handler_enabled;
+  this->default_failure_prediction     = hs.default_failure_prediction;
+  this->default_flap_detection_enabled = hs.default_flap_detection_enabled;
+  this->default_notifications_enabled  = hs.default_notifications_enabled;
+  this->default_passive_checks_enabled = hs.default_passive_checks_enabled;
+  this->default_process_perf_data      = hs.default_process_perf_data;
+  this->display_name                   = hs.display_name;
+  this->first_notification_delay       = hs.first_notification_delay;
+  this->freshness_threshold            = hs.freshness_threshold;
+  this->high_flap_threshold            = hs.high_flap_threshold;
+  this->icon_image                     = hs.icon_image;
+  this->icon_image_alt                 = hs.icon_image_alt;
+  this->initial_state                  = hs.initial_state;
+  this->low_flap_threshold             = hs.low_flap_threshold;
+  this->notes                          = hs.notes;
+  this->notes_url                      = hs.notes_url;
+  this->notification_interval          = hs.notification_interval;
+  this->notification_period            = hs.notification_period;
+  this->notify_on_downtime             = hs.notify_on_downtime;
+  this->notify_on_flapping             = hs.notify_on_flapping;
+  this->notify_on_recovery             = hs.notify_on_recovery;
+  this->retain_nonstatus_information   = hs.retain_nonstatus_information;
+  this->retain_status_information      = hs.retain_status_information;
   return ;
 }
 
@@ -84,11 +83,11 @@ HostService::HostService()
   : check_freshness(false),
     default_active_checks_enabled(false),
     default_event_handler_enabled(false),
-    default_failure_prediction_enabled(false),
+    default_failure_prediction(false),
     default_flap_detection_enabled(false),
     default_notifications_enabled(false),
     default_passive_checks_enabled(false),
-    default_process_performance_data(false),
+    default_process_perf_data(false),
     first_notification_delay(0.0),
     freshness_threshold(0.0),
     high_flap_threshold(0.0),

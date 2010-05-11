@@ -157,12 +157,11 @@ static void SendHostList()
       // my_host->current_state = XXX;
       my_host->default_active_checks_enabled = h->checks_enabled;
       my_host->default_event_handler_enabled = h->event_handler_enabled;
-      my_host->default_failure_prediction_enabled
-        = h->failure_prediction_enabled;
+      my_host->default_failure_prediction = h->failure_prediction_enabled;
       my_host->default_flap_detection_enabled = h->flap_detection_enabled;
       my_host->default_notifications_enabled = h->notifications_enabled;
       my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
-      my_host->default_process_performance_data = h->process_performance_data;
+      my_host->default_process_perf_data = h->process_performance_data;
       if (h->display_name)
         my_host->display_name = h->display_name;
       if (h->event_handler)
@@ -414,13 +413,12 @@ static void SendServiceList()
       // my_service->current_state = XXX;
       my_service->default_active_checks_enabled = s->checks_enabled;
       my_service->default_event_handler_enabled = s->event_handler_enabled;
-      my_service->default_failure_prediction_enabled
-        = s->failure_prediction_enabled;
+      my_service->default_failure_prediction = s->failure_prediction_enabled;
       my_service->default_flap_detection_enabled = s->flap_detection_enabled;
       my_service->default_notifications_enabled = s->notifications_enabled;
       my_service->default_passive_checks_enabled
         = s->accept_passive_service_checks;
-      my_service->default_process_performance_data
+      my_service->default_process_perf_data
         = s->process_performance_data;
       if (s->display_name)
         my_service->display_name = s->display_name;
