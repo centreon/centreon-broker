@@ -82,10 +82,6 @@ static const MappedData<Comment> comment_mapping[] =
       NDO_DATA_AUTHORNAME,
       "author_name"),
     MappedData<Comment>(
-      &Comment::comment,
-      NDO_DATA_COMMENT,
-      "comment_data"),
-    MappedData<Comment>(
       &Comment::comment_time,
       NDO_DATA_COMMENTTIME,
       "comment_time"),
@@ -137,6 +133,10 @@ static const MappedData<Comment> comment_mapping[] =
       &Comment::source,
       NDO_DATA_SOURCE,
       "source"),
+    MappedData<Comment>(
+      &Comment::comment,
+      NDO_DATA_COMMENT,
+      "comment_data"),
     MappedData<Comment>()
   };
 
@@ -147,10 +147,6 @@ static const MappedData<Downtime> downtime_mapping[] =
       &Downtime::author,
       NDO_DATA_AUTHORNAME,
       "author_name"),
-    MappedData<Downtime>(
-      &Downtime::comment,
-      NDO_DATA_COMMENT,
-      "comment_data"),
     MappedData<Downtime>(
       &Downtime::downtime_type,
       NDO_DATA_DOWNTIMETYPE,
@@ -203,6 +199,10 @@ static const MappedData<Downtime> downtime_mapping[] =
       &Downtime::was_started,
       NDO_DATA_Y3D,
       "was_started"),
+    MappedData<Downtime>(
+      &Downtime::comment,
+      NDO_DATA_COMMENT,
+      "comment_data"),
     MappedData<Downtime>()
   };
 
@@ -229,10 +229,6 @@ static const MappedData<Host> host_mapping[] =
       &Host::alias,
       NDO_DATA_HOSTALIAS,
       "alias"),
-    MappedData<Host>(
-      &Host::check_command,
-      NDO_DATA_CHECKCOMMAND,
-      "check_command"),
     MappedData<Host>(
       &Host::check_freshness,
       NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
@@ -410,10 +406,6 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_LATENCY,
       "latency"),
     MappedData<Host>(
-      &Host::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<Host>(
       &Host::low_flap_threshold,
       NDO_DATA_LOWHOSTFLAPTHRESHOLD,
       "low_flap_threshold"),
@@ -482,10 +474,6 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_OBSESSOVERHOST,
       "obsess_over_host"),
     MappedData<Host>(
-      &Host::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<Host>(
       &Host::passive_checks_enabled,
       NDO_DATA_PASSIVEHOSTCHECKSENABLED,
       "passive_checks_enabled"),
@@ -493,10 +481,6 @@ static const MappedData<Host> host_mapping[] =
       &Host::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
       "percent_state_change"),
-    MappedData<Host>(
-      &Host::perf_data,
-      NDO_DATA_PERFDATA,
-      "perf_data"),
     MappedData<Host>(
       &Host::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
@@ -545,6 +529,22 @@ static const MappedData<Host> host_mapping[] =
       &Host::statusmap_image,
       NDO_DATA_STATUSMAPIMAGE,
       "statusmap_image"),
+    MappedData<Host>(
+      &Host::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<Host>(
+      &Host::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<Host>(
+      &Host::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Host>(
+      &Host::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
     MappedData<Host>()
   };
 
@@ -552,13 +552,13 @@ static const MappedData<Host> host_mapping[] =
 static const MappedData<HostCheck> host_check_mapping[] =
   {
     MappedData<HostCheck>(
-      &HostCheck::command_line,
-      NDO_DATA_COMMANDLINE,
-      "command_line"),
-    MappedData<HostCheck>(
       &HostCheck::id,
       NDO_DATA_HOST,
       "host_id"),
+    MappedData<HostCheck>(
+      &HostCheck::command_line,
+      NDO_DATA_COMMANDLINE,
+      "command_line"),
     MappedData<HostCheck>()
   };
 
@@ -666,10 +666,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_ACTIVEHOSTCHECKSENABLED,
       "active_checks_enabled"),
     MappedData<HostStatus>(
-      &HostStatus::check_command,
-      NDO_DATA_CHECKCOMMAND,
-      "check_command"),
-    MappedData<HostStatus>(
       &HostStatus::check_interval,
       NDO_DATA_NORMALCHECKINTERVAL,
       "check_interval"),
@@ -766,10 +762,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_LATENCY,
       "latency"),
     MappedData<HostStatus>(
-      &HostStatus::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<HostStatus>(
       &HostStatus::max_check_attempts,
       NDO_DATA_MAXCHECKATTEMPTS,
       "max_check_attempts"),
@@ -798,10 +790,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_OBSESSOVERHOST,
       "obsess_over_host"),
     MappedData<HostStatus>(
-      &HostStatus::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<HostStatus>(
       &HostStatus::passive_checks_enabled,
       NDO_DATA_PASSIVEHOSTCHECKSENABLED,
       "passive_checks_enabled"),
@@ -809,10 +797,6 @@ static const MappedData<HostStatus> host_status_mapping[] =
       &HostStatus::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
       "percent_state_change"),
-    MappedData<HostStatus>(
-      &HostStatus::perf_data,
-      NDO_DATA_PERFDATA,
-      "perf_data"),
     MappedData<HostStatus>(
       &HostStatus::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
@@ -837,6 +821,22 @@ static const MappedData<HostStatus> host_status_mapping[] =
       &HostStatus::state_type,
       NDO_DATA_STATETYPE,
       "state_type"),
+    MappedData<HostStatus>(
+      &HostStatus::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<HostStatus>(
+      &HostStatus::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<HostStatus>(
+      &HostStatus::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<HostStatus>(
+      &HostStatus::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
     MappedData<HostStatus>()
   };
 
@@ -856,10 +856,6 @@ static const MappedData<Issue> issue_mapping[] =
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Issue>(
-      &Issue::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<Issue>(
       &Issue::service_id,
       NDO_DATA_SERVICE,
       "service_id"),
@@ -875,6 +871,10 @@ static const MappedData<Issue> issue_mapping[] =
       &Issue::status,
       NDO_DATA_STATETYPE,
       "status"),
+    MappedData<Issue>(
+      &Issue::output,
+      NDO_DATA_OUTPUT,
+      "output"),
     MappedData<Issue>()
   };
 
@@ -948,10 +948,6 @@ static const MappedData<Log> log_mapping[] =
       NDO_DATA_CONTACT,
       "notification_contact"),
     MappedData<Log>(
-      &Log::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<Log>(
       &Log::retry,
       NDO_DATA_HOSTRETRYINTERVAL,
       "retry"),
@@ -971,6 +967,10 @@ static const MappedData<Log> log_mapping[] =
       &Log::type,
       NDO_DATA_TYPE,
       "type"),
+    MappedData<Log>(
+      &Log::output,
+      NDO_DATA_OUTPUT,
+      "output"),
     MappedData<Log>()
   };
 
@@ -1040,14 +1040,6 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       NDO_DATA_FLAPDETECTIONENABLED,
       "flap_detection_enabled"),
     MappedData<ProgramStatus>(
-      &ProgramStatus::global_host_event_handler,
-      NDO_DATA_GLOBALHOSTEVENTHANDLER,
-      "global_host_event_handler"),
-    MappedData<ProgramStatus>(
-      &ProgramStatus::global_service_event_handler,
-      NDO_DATA_GLOBALSERVICEEVENTHANDLER,
-      "global_service_event_handler"),
-    MappedData<ProgramStatus>(
       &ProgramStatus::instance_address,
       NDO_DATA_HOSTADDRESS,
       "instance_address"),
@@ -1103,6 +1095,14 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
       &ProgramStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
       "process_performance_data"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::global_host_event_handler,
+      NDO_DATA_GLOBALHOSTEVENTHANDLER,
+      "global_host_event_handler"),
+    MappedData<ProgramStatus>(
+      &ProgramStatus::global_service_event_handler,
+      NDO_DATA_GLOBALSERVICEEVENTHANDLER,
+      "global_service_event_handler"),
     MappedData<ProgramStatus>()
   };
 
@@ -1121,10 +1121,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::active_checks_enabled,
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
       "active_checks_enabled"),
-    MappedData<Service>(
-      &Service::check_command,
-      NDO_DATA_CHECKCOMMAND,
-      "check_command"),
     MappedData<Service>(
       &Service::check_freshness,
       NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
@@ -1310,10 +1306,6 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_LATENCY,
       "latency"),
     MappedData<Service>(
-      &Service::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<Service>(
       &Service::low_flap_threshold,
       NDO_DATA_LOWSERVICEFLAPTHRESHOLD,
       "low_flap_threshold"),
@@ -1386,10 +1378,6 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_OBSESSOVERSERVICE,
       "obsess_over_service"),
     MappedData<Service>(
-      &Service::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<Service>(
       &Service::passive_checks_enabled,
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
       "passive_checks_enabled"),
@@ -1397,10 +1385,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
       "percent_state_change"),
-    MappedData<Service>(
-      &Service::perf_data,
-      NDO_DATA_PERFDATA,
-      "perf_data"),
     MappedData<Service>(
       &Service::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
@@ -1453,6 +1437,22 @@ static const MappedData<Service> service_mapping[] =
       &Service::state_type,
       NDO_DATA_STATETYPE,
       "state_type"),
+    MappedData<Service>(
+      &Service::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<Service>(
+      &Service::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<Service>(
+      &Service::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<Service>(
+      &Service::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
     MappedData<Service>()
   };
 
@@ -1560,10 +1560,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
       "active_checks_enabled"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::check_command,
-      NDO_DATA_CHECKCOMMAND,
-      "check_command"),
-    MappedData<ServiceStatus>(
       &ServiceStatus::check_interval,
       NDO_DATA_NORMALCHECKINTERVAL,
       "check_interval"),
@@ -1660,10 +1656,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_LATENCY,
       "latency"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<ServiceStatus>(
       &ServiceStatus::max_check_attempts,
       NDO_DATA_MAXCHECKATTEMPTS,
       "max_check_attempts"),
@@ -1692,10 +1684,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_OBSESSOVERSERVICE,
       "obsess_over_service"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::output,
-      NDO_DATA_OUTPUT,
-      "output"),
-    MappedData<ServiceStatus>(
       &ServiceStatus::passive_checks_enabled,
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
       "passive_checks_enabled"),
@@ -1703,10 +1691,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
       "percent_state_change"),
-    MappedData<ServiceStatus>(
-      &ServiceStatus::perf_data,
-      NDO_DATA_PERFDATA,
-      "perf_data"),
     MappedData<ServiceStatus>(
       &ServiceStatus::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
@@ -1735,6 +1719,22 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::state_type,
       NDO_DATA_STATETYPE,
       "state_type"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::check_command,
+      NDO_DATA_CHECKCOMMAND,
+      "check_command"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::long_output,
+      NDO_DATA_LONGOUTPUT,
+      "long_output"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::output,
+      NDO_DATA_OUTPUT,
+      "output"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::perf_data,
+      NDO_DATA_PERFDATA,
+      "perf_data"),
     MappedData<ServiceStatus>()
   };
 
