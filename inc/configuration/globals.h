@@ -27,8 +27,6 @@ namespace              Configuration
 {
   namespace            Globals
   {
-    extern bool        correlation;
-    extern std::string correlation_file;
     extern int         instance;
     extern std::string instance_name;
   }

@@ -23,7 +23,6 @@
 #include "concurrency/lock.h"
 #include "concurrency/mutex.h"
 #include "configuration/globals.h"
-#include "correlation/correlator.h"
 #include "events/events.h"
 #include "logging.h"
 #include "multiplexing/internal.h"
@@ -31,16 +30,6 @@
 #include "multiplexing/subscriber.h"
 
 using namespace Multiplexing;
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-// Correlation engine.
-static Correlation::Correlator gl_correlator;
-static Concurrency::Mutex      gl_correlatorm;
 
 /**************************************
 *                                     *
@@ -101,17 +90,6 @@ void Publisher::Close()
 }
 
 /**
- *  Launch the correlation engine.
- */
-void Publisher::Correlate()
-{
-  Concurrency::Lock lock(gl_correlatorm);
-
-  gl_correlator.Load(Configuration::Globals::correlation_file.c_str());
-  return ;
-}
-
-/**
  *  \brief Send an event to all subscribers.
  *
  *  As soon as the method returns, the Event object is owned by the Publisher,
@@ -123,29 +101,6 @@ void Publisher::Correlate()
 void Publisher::Event(Events::Event* event)
 {
   std::list<Subscriber*>::iterator end;
-
-  // Pass object to correlation.
-  if (Configuration::Globals::correlation)
-    {
-      Concurrency::Lock lock(gl_correlatorm);
-
-      gl_correlator.Event(*event);
-    }
-
-  // Get correlated events.
-  std::auto_ptr<Events::Event> correlated;
-  {
-    Concurrency::Lock lock(gl_correlatorm);
-
-    correlated.reset(gl_correlator.Event());
-  }
-  // Dispatch event recursively.
-  if (correlated.get())
-    {
-      correlated->AddReader();
-      this->Event(correlated.get());
-      correlated.release();
-    }
 
   // Send object to every subscriber.
   Concurrency::Lock lock(gl_subscribersm);

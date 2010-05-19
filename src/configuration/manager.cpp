@@ -192,7 +192,7 @@ void Configuration::Manager::Close()
       ss << (this->inputs_.size()
              + this->outputs_.size()
              + this->spontaneous_.size())
-	 << " threads remaining.";
+         << " threads remaining.";
       LOGDEBUG(ss.str().c_str());
 #endif /* !NDEBUG */
     }
@@ -397,10 +397,6 @@ void Configuration::Manager::Update()
       this->logs_.push_back(*logs_it);
     }
 
-  // Process variables.
-  if (Configuration::Globals::correlation)
-    Multiplexing::Publisher::Correlate();
-
   // Remove outputs that are not present in conf anymore or which don't have
   // the same configuration.
   for (std::map<Configuration::Interface, Concurrency::Thread*>::iterator it = this->outputs_.begin();
@@ -434,10 +430,7 @@ void Configuration::Manager::Update()
             new Processing::Listener);
 
           listener->Init(acceptor.get(),
-                         ((outputs_it->protocol
-                           == Configuration::Interface::NDO)
-                          ? Processing::Listener::NDO
-                          : Processing::Listener::XML),
+                         Processing::Listener::NDO,
                          Processing::Listener::OUT,
                          this);
           acceptor.release();
@@ -494,10 +487,7 @@ void Configuration::Manager::Update()
             new Processing::Listener);
 
           listener->Init(acceptor.get(),
-                         ((inputs_it->protocol
-                           == Configuration::Interface::NDO)
-                          ? Processing::Listener::NDO
-                          : Processing::Listener::XML),
+                         Processing::Listener::NDO,
                          Processing::Listener::IN,
                          this);
           acceptor.release();

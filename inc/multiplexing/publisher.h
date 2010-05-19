@@ -42,7 +42,6 @@ namespace                  Multiplexing
                            ~Publisher();
     Publisher&             operator=(const Publisher& publisher);
     void                   Close();
-    static void            Correlate();
     void                   Event(Events::Event* event);
   };
 }
