@@ -1,6 +1,7 @@
 XX/XX/2010
-v1.0.0
+v1.1.0
   * update of DB schema
+  * Oracle support
   * PostgreSQL support
 
 02/24/2010
