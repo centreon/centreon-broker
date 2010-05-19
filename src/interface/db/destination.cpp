@@ -139,9 +139,10 @@ void Destination::Insert(const T& t)
   query = "INSERT INTO ";
   query.append(MappedType<T>::table);
   query.append(" (");
-  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
-         it = DBMappedType<T>::map.begin(),
-         end = DBMappedType<T>::map.end();
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
        it != end;
        ++it)
     {
@@ -150,9 +151,10 @@ void Destination::Insert(const T& t)
     }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
-         it = DBMappedType<T>::map.begin(),
-         end = DBMappedType<T>::map.end();
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
        it != end;
        ++it)
     {
@@ -198,9 +200,10 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
   query = "UPDATE ";
   query.append(MappedType<T>::table);
   query.append(" SET ");
-  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
-         it = DBMappedType<T>::map.begin(),
-         end = DBMappedType<T>::map.end();
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
        it != end;
        ++it)
     if (std::find(id.begin(), id.end(), it->first) == id.end())
@@ -467,9 +470,10 @@ void Destination::ProcessLog(const Events::Event& event)
   query = "INSERT INTO ";
   query.append(MappedType<Events::Log>::table);
   query.append("(");
-  for (std::map<std::string, GetterSetter<Events::Log> >::const_iterator
-         it = DBMappedType<Events::Log>::map.begin(),
-         end = DBMappedType<Events::Log>::map.end();
+  for (std::list<std::pair<std::string,
+                           GetterSetter<Events::Log> > >::const_iterator
+         it = DBMappedType<Events::Log>::list.begin(),
+         end = DBMappedType<Events::Log>::list.end();
        it != end;
        ++it)
     {
@@ -478,9 +482,10 @@ void Destination::ProcessLog(const Events::Event& event)
     }
   query.append(field);
   query.append(") VALUES(");
-  for (std::map<std::string, GetterSetter<Events::Log> >::const_iterator
-         it = DBMappedType<Events::Log>::map.begin(),
-	 end = DBMappedType<Events::Log>::map.end();
+  for (std::list<std::pair<std::string,
+                           GetterSetter<Events::Log> > >::const_iterator
+         it = DBMappedType<Events::Log>::list.begin(),
+	 end = DBMappedType<Events::Log>::list.end();
        it != end;
        ++it)
     {
@@ -740,8 +745,7 @@ void Destination::Connect(Destination::DB db_type,
 
 #ifdef USE_ORACLE
        case ORACLE:
-        ss << "service=" << db
-           << " host=" << host
+        ss << "service=" << host
            << " user=" << user
            << " password=" << pass;
         this->conn_.reset(new soci::session(soci::oracle, ss.str()));

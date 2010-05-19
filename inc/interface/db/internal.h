@@ -21,9 +21,10 @@
 #ifndef INTERFACE_DB_INTERNAL_H_
 # define INTERFACE_DB_INTERNAL_H_
 
-# include <map>
+# include <list>
 # include <soci.h>
 # include <string>
+# include <utility>
 # include "events/events.h"
 # include "mapping.h"
 
@@ -45,7 +46,7 @@ namespace                  Interface
     template               <typename T>
     struct                 DBMappedType
     {
-      static std::map<std::string, GetterSetter<T> > map;
+      static std::list<std::pair<std::string, GetterSetter<T> > > list;
     };
 
     // Mapping initialization routine.

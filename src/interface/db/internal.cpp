@@ -117,8 +117,11 @@ static void static_init()
   for (unsigned int i = 0; MappedType<T>::members[i].type; ++i)
     if (MappedType<T>::members[i].name)
       {
-        GetterSetter<T>&
-          gs(DBMappedType<T>::map[MappedType<T>::members[i].name]);
+        DBMappedType<T>::list.push_back(
+          std::make_pair(MappedType<T>::members[i].name,
+                         GetterSetter<T>()));
+
+        GetterSetter<T>& gs(DBMappedType<T>::list.back().second);
 
         gs.member = &MappedType<T>::members[i].member;
         // XXX : setters are not set.
@@ -156,9 +159,10 @@ static void static_init()
 template <typename T>
 static void ToBase(const T& t, soci::values& v)
 {
-  for (typename std::map<std::string, GetterSetter<T> >::const_iterator
-         it = DBMappedType<T>::map.begin(),
-         end = DBMappedType<T>::map.end();
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
        it != end;
        ++it)
     (it->second.getter)(t, it->first, *it->second.member, v);
@@ -171,66 +175,66 @@ static void ToBase(const T& t, soci::values& v)
 *                                     *
 **************************************/
 
-template <> std::map<std::string, GetterSetter<Events::Acknowledgement> >
-  Interface::DB::DBMappedType<Events::Acknowledgement>::map =
-    std::map<std::string, GetterSetter<Events::Acknowledgement> >();
-template <> std::map<std::string, GetterSetter<Events::Comment> >
-  Interface::DB::DBMappedType<Events::Comment>::map =
-    std::map<std::string, GetterSetter<Events::Comment> >();
-template <> std::map<std::string, GetterSetter<Events::Downtime> >
-  Interface::DB::DBMappedType<Events::Downtime>::map =
-    std::map<std::string, GetterSetter<Events::Downtime> >();
-template <> std::map<std::string, GetterSetter<Events::Host> >
-  Interface::DB::DBMappedType<Events::Host>::map =
-    std::map<std::string, GetterSetter<Events::Host> >();
-template <> std::map<std::string, GetterSetter<Events::HostCheck> >
-  Interface::DB::DBMappedType<Events::HostCheck>::map =
-    std::map<std::string, GetterSetter<Events::HostCheck> >();
-template <> std::map<std::string, GetterSetter<Events::HostDependency> >
-  Interface::DB::DBMappedType<Events::HostDependency>::map =
-    std::map<std::string, GetterSetter<Events::HostDependency> >();
-template <> std::map<std::string, GetterSetter<Events::HostGroup> >
-  Interface::DB::DBMappedType<Events::HostGroup>::map =
-    std::map<std::string, GetterSetter<Events::HostGroup> >();
-template <> std::map<std::string, GetterSetter<Events::HostGroupMember> >
-  Interface::DB::DBMappedType<Events::HostGroupMember>::map =
-    std::map<std::string, GetterSetter<Events::HostGroupMember> >();
-template <> std::map<std::string, GetterSetter<Events::HostParent> >
-  Interface::DB::DBMappedType<Events::HostParent>::map =
-    std::map<std::string, GetterSetter<Events::HostParent> >();
-template <> std::map<std::string, GetterSetter<Events::HostStatus> >
-  Interface::DB::DBMappedType<Events::HostStatus>::map =
-    std::map<std::string, GetterSetter<Events::HostStatus> >();
-template <> std::map<std::string, GetterSetter<Events::Issue> >
-  Interface::DB::DBMappedType<Events::Issue>::map =
-    std::map<std::string, GetterSetter<Events::Issue> >();
-template <> std::map<std::string, GetterSetter<Events::Log> >
-  Interface::DB::DBMappedType<Events::Log>::map =
-    std::map<std::string, GetterSetter<Events::Log> >();
-template <> std::map<std::string, GetterSetter<Events::Program> >
-  Interface::DB::DBMappedType<Events::Program>::map =
-    std::map<std::string, GetterSetter<Events::Program> >();
-template <> std::map<std::string, GetterSetter<Events::ProgramStatus> >
-  Interface::DB::DBMappedType<Events::ProgramStatus>::map =
-    std::map<std::string, GetterSetter<Events::ProgramStatus> >();
-template <> std::map<std::string, GetterSetter<Events::Service> >
-  Interface::DB::DBMappedType<Events::Service>::map =
-    std::map<std::string, GetterSetter<Events::Service> >();
-template <> std::map<std::string, GetterSetter<Events::ServiceCheck> >
-  Interface::DB::DBMappedType<Events::ServiceCheck>::map =
-    std::map<std::string, GetterSetter<Events::ServiceCheck> >();
-template <> std::map<std::string, GetterSetter<Events::ServiceDependency> >
-  Interface::DB::DBMappedType<Events::ServiceDependency>::map =
-    std::map<std::string, GetterSetter<Events::ServiceDependency> >();
-template <> std::map<std::string, GetterSetter<Events::ServiceGroup> >
-  Interface::DB::DBMappedType<Events::ServiceGroup>::map =
-    std::map<std::string, GetterSetter<Events::ServiceGroup> >();
-template <> std::map<std::string, GetterSetter<Events::ServiceGroupMember> >
-  Interface::DB::DBMappedType<Events::ServiceGroupMember>::map =
-    std::map<std::string, GetterSetter<Events::ServiceGroupMember> >();
-template <> std::map<std::string, GetterSetter<Events::ServiceStatus> >
-  Interface::DB::DBMappedType<Events::ServiceStatus>::map =
-    std::map<std::string, GetterSetter<Events::ServiceStatus> >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Acknowledgement> > >
+  Interface::DB::DBMappedType<Events::Acknowledgement>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Acknowledgement> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Comment> > >
+  Interface::DB::DBMappedType<Events::Comment>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Comment> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >
+  Interface::DB::DBMappedType<Events::Downtime>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Host> > >
+  Interface::DB::DBMappedType<Events::Host>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Host> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostCheck> > >
+  Interface::DB::DBMappedType<Events::HostCheck>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostCheck> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostDependency> > >
+  Interface::DB::DBMappedType<Events::HostDependency>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostDependency> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostGroup> > >
+  Interface::DB::DBMappedType<Events::HostGroup>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostGroup> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostGroupMember> > >
+  Interface::DB::DBMappedType<Events::HostGroupMember>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostGroupMember> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostParent> > >
+  Interface::DB::DBMappedType<Events::HostParent>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostParent> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::HostStatus> > >
+  Interface::DB::DBMappedType<Events::HostStatus>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::HostStatus> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Issue> > >
+  Interface::DB::DBMappedType<Events::Issue>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Issue> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Log> > >
+  Interface::DB::DBMappedType<Events::Log>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Log> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Program> > >
+  Interface::DB::DBMappedType<Events::Program>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Program> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ProgramStatus> > >
+  Interface::DB::DBMappedType<Events::ProgramStatus>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ProgramStatus> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::Service> > >
+  Interface::DB::DBMappedType<Events::Service>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::Service> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceCheck> > >
+  Interface::DB::DBMappedType<Events::ServiceCheck>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ServiceCheck> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceDependency> > >
+  Interface::DB::DBMappedType<Events::ServiceDependency>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ServiceDependency> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceGroup> > >
+  Interface::DB::DBMappedType<Events::ServiceGroup>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ServiceGroup> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceGroupMember> > >
+  Interface::DB::DBMappedType<Events::ServiceGroupMember>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ServiceGroupMember> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceStatus> > >
+  Interface::DB::DBMappedType<Events::ServiceStatus>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::ServiceStatus> > >();
 
 /**************************************
 *                                     *
