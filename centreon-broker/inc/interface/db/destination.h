@@ -49,14 +49,23 @@ namespace                         Interface
 
      private:
       static void                    (Destination::* processing_table[])(const Events::Event&);
+      Events::Acknowledgement        acknowledgement_;
       std::auto_ptr<soci::statement> acknowledgement_stmt_;
+      Events::Comment                comment_;
       std::auto_ptr<soci::statement> comment_stmt_;
+      Events::Downtime               downtime_;
       std::auto_ptr<soci::statement> downtime_stmt_;
+      Events::HostCheck              host_check_;
       std::auto_ptr<soci::statement> host_check_stmt_;
+      Events::HostStatus             host_status_;
       std::auto_ptr<soci::statement> host_status_stmt_;
+      Events::Issue                  issue_;
       std::auto_ptr<soci::statement> issue_stmt_;
+      Events::ProgramStatus          program_status_;
       std::auto_ptr<soci::statement> program_status_stmt_;
+      Events::ServiceCheck           service_check_;
       std::auto_ptr<soci::statement> service_check_stmt_;
+      Events::ServiceStatus          service_status_;
       std::auto_ptr<soci::statement> service_status_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
                                   Destination(const Destination& destination);
@@ -65,9 +74,8 @@ namespace                         Interface
       template                    <typename T>
       void                        Insert(const T& t);
       template                    <typename T>
-      void                        PreparedUpdate(const T&t, soci::statement& st);
-      template                    <typename T>
       void                        PrepareUpdate(std::auto_ptr<soci::statement>& st,
+                                                T& t,
                                                 const std::vector<std::string>& id);
       void                        ProcessAcknowledgement(const Events::Event& event);
       void                        ProcessComment(const Events::Event& event);

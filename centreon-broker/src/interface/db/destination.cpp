@@ -173,25 +173,11 @@ void Destination::Insert(const T& t)
 }
 
 /**
- *  Update an object in the DB using its prepared statement.
- */
-template <typename T>
-void Destination::PreparedUpdate(const T& t, soci::statement& st)
-{
-  soci::indicator ind;
-  soci::values v;
-
-  soci::type_conversion<T>::to_base(t, v, ind);
-  st.bind(v);
-  st.execute(true);
-  return ;
-}
-
-/**
  *  Prepare an update statement for later execution.
  */
 template <typename T>
 void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
+				T& t,
                                 const std::vector<std::string>& id)
 {
   std::string query;
@@ -230,7 +216,7 @@ void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
   LOGDEBUG(query.c_str());
 
   // Prepare statement.
-  st.reset(new soci::statement(this->conn_->prepare << query));
+  st.reset(new soci::statement((this->conn_->prepare << query, soci::use(t))));
 
   return ;
 }
@@ -250,7 +236,8 @@ void Destination::ProcessAcknowledgement(const Events::Event& event)
     }
   catch (const soci::soci_error& se)
     {
-      this->PreparedUpdate(ack, *this->acknowledgement_stmt_);
+      this->acknowledgement_ = ack;
+      this->acknowledgement_stmt_->execute(true);
     }
   return ;
 }
@@ -269,7 +256,8 @@ void Destination::ProcessComment(const Events::Event& event)
     }
   catch (const soci::soci_error& se)
     {
-      this->PreparedUpdate(comment, *this->comment_stmt_);
+      this->comment_ = comment;
+      this->comment_stmt_->execute(true);
     }
   return ;
 }
@@ -289,7 +277,8 @@ void Destination::ProcessDowntime(const Events::Event& event)
     }
   catch (const soci::soci_error& se)
     {
-      this->PreparedUpdate(downtime, *this->downtime_stmt_);
+      this->downtime_ = downtime;
+      this->downtime_stmt_->execute(true);
     }
   return ;
 }
@@ -315,7 +304,8 @@ void Destination::ProcessHostCheck(const Events::Event& event)
     *static_cast<const Events::HostCheck*>(&event));
 
   LOGDEBUG("Processing HostCheck event ...");
-  this->PreparedUpdate(host_check, *this->host_check_stmt_);
+  this->host_check_ = host_check;
+  this->host_check_stmt_->execute(true);
   return ;
 }
 
@@ -394,7 +384,8 @@ void Destination::ProcessHostStatus(const Events::Event& event)
     *static_cast<const Events::HostStatus*>(&event));
 
   LOGDEBUG("Processing HostStatus event ...");
-  this->PreparedUpdate<Events::HostStatus>(hs, *this->host_status_stmt_);
+  this->host_status_ = hs;
+  this->host_status_stmt_->execute(true);
   return ;
 }
 
@@ -412,7 +403,8 @@ void Destination::ProcessIssue(const Events::Event& event)
     }
   catch (const soci::soci_error& se)
     {
-      this->PreparedUpdate(issue, *this->issue_stmt_);
+      this->issue_ = issue;
+      this->issue_stmt_->execute(true);
     }
   return ;
 }
@@ -538,7 +530,8 @@ void Destination::ProcessProgramStatus(const Events::Event& event)
     *static_cast<const Events::ProgramStatus*>(&event));
 
   LOGDEBUG("Processing ProgramStatus event ...");
-  this->PreparedUpdate<Events::ProgramStatus>(ps, *this->program_status_stmt_);
+  this->program_status_ = ps;
+  this->program_status_stmt_->execute(true);
   return ;
 }
 
@@ -563,7 +556,8 @@ void Destination::ProcessServiceCheck(const Events::Event& event)
     *static_cast<const Events::ServiceCheck*>(&event));
 
   LOGDEBUG("Processing ServiceCheck event ...");
-  this->PreparedUpdate(service_check, *this->service_check_stmt_);
+  this->service_check_ = service_check;
+  this->service_check_stmt_->execute(true);
   return ;
 }
 
@@ -630,7 +624,8 @@ void Destination::ProcessServiceStatus(const Events::Event& event)
     *static_cast<const Events::ServiceStatus*>(&event));
 
   LOGDEBUG("Processing ServiceStatus event ...");
-  this->PreparedUpdate<Events::ServiceStatus>(ss, *this->service_status_stmt_);
+  this->service_status_ = ss;
+  this->service_status_stmt_->execute(true);
   return ;
 }
 
@@ -776,53 +771,53 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("instance_name");
   id.push_back("service_description");
   this->PrepareUpdate<Events::Acknowledgement>(
-    this->acknowledgement_stmt_, id);
+    this->acknowledgement_stmt_, this->acknowledgement_, id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
   this->PrepareUpdate<Events::Comment>(
-    this->comment_stmt_, id);
+    this->comment_stmt_, this->comment_, id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
   this->PrepareUpdate<Events::Downtime>(
-    this->downtime_stmt_, id);
+    this->downtime_stmt_, this->downtime_, id);
 
   id.clear();
   id.push_back("host_id");
   this->PrepareUpdate<Events::HostCheck>(
-    this->host_check_stmt_, id);
+    this->host_check_stmt_, this->host_check_, id);
 
   id.clear();
   id.push_back("host_id");
   this->PrepareUpdate<Events::HostStatus>(
-    this->host_status_stmt_, id);
+    this->host_status_stmt_, this->host_status_, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
   this->PrepareUpdate<Events::Issue>(
-    this->issue_stmt_, id);
+    this->issue_stmt_, this->issue_, id);
 
   id.clear();
   id.push_back("instance_id");
   this->PrepareUpdate<Events::ProgramStatus>(
-    this->program_status_stmt_, id);
+    this->program_status_stmt_, this->program_status_, id);
 
   id.clear();
   id.push_back("service_id");
   this->PrepareUpdate<Events::ServiceCheck>(
-    this->service_check_stmt_, id);
+    this->service_check_stmt_, this->service_check_, id);
 
   id.clear();
   id.push_back("service_id");
   this->PrepareUpdate<Events::ServiceStatus>(
-    this->service_status_stmt_, id);
+    this->service_status_stmt_, this->service_status_, id);
 
   return ;
 }
