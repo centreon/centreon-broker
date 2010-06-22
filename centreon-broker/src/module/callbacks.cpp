@@ -350,7 +350,6 @@ int CallbackLog(int callback_type, void* data)
             log->output = log_data->data;
           SetLogData(*log, log_data->data);
         }
-      log->type = log_data->data_type;
 
       log->AddReader();
       gl_publisher.Event(log.get());
