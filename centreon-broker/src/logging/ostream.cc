@@ -116,6 +116,7 @@ void ostream::log_msg(char const* msg,
           prefix = "UNDEFINED: ";
         }
       *_os << prefix << msg;
+      _os->flush();
     }
   return ;
 }
