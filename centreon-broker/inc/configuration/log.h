@@ -55,6 +55,7 @@ namespace              Configuration
     Log&               operator=(const Log& l);
     bool               operator==(const Log& l) const;
     bool               operator!=(const Log& l) const;
+    bool               operator<(const Log& l) const;
   };
 }
 

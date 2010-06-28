@@ -101,3 +101,27 @@ bool Log::operator!=(const Log& l) const
 {
   return (!(*this == l));
 }
+
+/**
+ *  Overload of the inferior operator.
+ *
+ *  \param[in] l Object to compare to.
+ *
+ *  \return true if this object is stricly less than l.
+ */
+bool Log::operator<(const Log& l) const
+{
+  bool retval;
+
+  if (this->type != l.type)
+    retval = (this->type < l.type);
+  else if (this->facility != l.facility)
+    retval = (this->facility < l.facility);
+  else if (this->flags != l.flags)
+    retval = (this->flags < l.flags);
+  else if (this->file != l.file)
+    retval = (this->file < l.file);
+  else
+    retval = (this->name < l.name);
+  return (retval);
+}

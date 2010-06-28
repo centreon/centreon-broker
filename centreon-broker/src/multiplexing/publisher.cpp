@@ -25,7 +25,7 @@
 #include "configuration/globals.h"
 #include "correlation/correlator.h"
 #include "events/events.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "multiplexing/internal.h"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"

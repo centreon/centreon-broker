@@ -30,7 +30,7 @@
 #ifdef USE_TLS
 # include "io/tls/internal.h"
 #endif /* !USE_TLS */
-#include "logging.h"
+#include "logging/logging.hh"
 
 /**************************************
 *                                     *
@@ -58,6 +58,8 @@ void Deinit()
   LOGDEBUG("Unloading MySQL library ...");
   mysql_library_end();
 #endif /* USE_MYSQL */
+
+  logging::clear();
 
   return ;
 }

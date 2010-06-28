@@ -26,7 +26,7 @@
 #include "configuration/manager.h"
 #include "events/events.h"
 #include "initial.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "module/internal.h"
 #include "module/set_log_data.h"
 #include "nagios/broker.h"

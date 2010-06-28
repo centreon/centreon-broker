@@ -28,6 +28,7 @@
 # include "concurrency/thread_listener.h"
 # include "configuration/interface.h"
 # include "configuration/log.h"
+# include "logging/logging.hh"
 
 // Forward declarations
 namespace              Concurrency
@@ -49,7 +50,8 @@ namespace              Configuration
     std::string        filename_;
     std::map<Interface, Concurrency::Thread*>
                        inputs_;
-    std::list<Log>     logs_;
+    std::map<Log, logging::backend*>
+                       logs_;
     Concurrency::Mutex mutex_;
     std::map<Interface, Concurrency::Thread*>
                        outputs_;

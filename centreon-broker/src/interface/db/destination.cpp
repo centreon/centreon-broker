@@ -36,7 +36,7 @@
 #include "exception.h"
 #include "interface/db/destination.h"
 #include "interface/db/internal.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "mapping.h"
 #include "nagios/broker.h"
 

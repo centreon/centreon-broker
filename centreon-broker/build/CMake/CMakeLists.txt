@@ -114,6 +114,7 @@ set(LIBROKER_SOURCES
 	../../src/events/service_status.cpp
 	../../src/events/status.cpp
 	../../src/exception.cpp
+	../../src/exceptions/basic.cc
 	../../src/interface/db/destination.cpp
 	../../src/interface/db/internal.cpp
 	../../src/interface/destination.cpp
@@ -142,8 +143,16 @@ set(LIBROKER_SOURCES
 	../../src/io/split.cpp
 	../../src/io/stream.cpp
 	../../src/io/text.cpp
-	../../src/logging.cpp
+	../../src/logging/backend.cc
+	../../src/logging/file.cc
+	../../src/logging/logger.cc
+	../../src/logging/logging.cc
+	../../src/logging/ostream.cc
+	../../src/logging/syslogger.cc
+	../../src/logging/temp_logger.cc
+	../../src/logging/void_logger.cc
 	../../src/mapping.cpp
+	../../src/misc/stringifier.cc
 )
 if (TLS)
   set(LIBROKER_SOURCES ${LIBROKER_SOURCES}

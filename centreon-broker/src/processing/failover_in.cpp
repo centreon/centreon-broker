@@ -23,7 +23,7 @@
 #include "concurrency/lock.h"
 #include "configuration/interface.h"
 #include "interface/factory.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "processing/failover_in.h"
 
 using namespace Processing;

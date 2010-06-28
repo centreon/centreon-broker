@@ -26,7 +26,7 @@
 #include "concurrency/mutex.h"
 #include "configuration/manager.h"
 #include "init.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "mapping.h"
 
 /**************************************

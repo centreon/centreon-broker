@@ -19,6 +19,7 @@
 */
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <signal.h>
 #include <sstream>
@@ -34,7 +35,10 @@
 #include "interface/db/destination.h"
 #include "interface/factory.h"
 #include "io/acceptor.h"
-#include "logging.h"
+#include "logging/file.hh"
+#include "logging/logging.hh"
+#include "logging/ostream.hh"
+#include "logging/syslogger.hh"
 #include "multiplexing/publisher.h"
 #include "multiplexing/subscriber.h"
 #include "processing/failover_in.h"
@@ -192,7 +196,7 @@ void Configuration::Manager::Close()
       ss << (this->inputs_.size()
              + this->outputs_.size()
              + this->spontaneous_.size())
-	 << " threads remaining.";
+         << " threads remaining.";
       LOGDEBUG(ss.str().c_str());
 #endif /* !NDEBUG */
     }
@@ -339,30 +343,14 @@ void Configuration::Manager::Update()
 
   // Remove logs that are not present in conf anymore or which don't have the
   // same configuration.
-  for (std::list<Configuration::Log>::iterator it = this->logs_.begin();
-       it != this->logs_.end();)
+  for (std::map<Configuration::Log, logging::backend*>::iterator
+         it = this->logs_.begin(); it != this->logs_.end();)
     {
-      logs_it = std::find(logs.begin(), logs.end(), *it);
+      logs_it = std::find(logs.begin(), logs.end(), it->first);
       if (logs.end() == logs_it)
         {
           LOGDEBUG("Removing unwanted log object...");
-          switch (it->type)
-            {
-             case Configuration::Log::FILE:
-              logging.LogInFile(it->file.c_str(), 0);
-              break ;
-             case Configuration::Log::STDERR:
-              logging.LogToStderr(0);
-              break ;
-             case Configuration::Log::STDOUT:
-              logging.LogToStdout(0);
-              break ;
-             case Configuration::Log::SYSLOG:
-              logging.LogInSyslog(0);
-              break ;
-             default:
-              ;
-            }
+          logging::log_on(it->second, 0, logging::NONE);
           this->logs_.erase(it++);
         }
       else
@@ -379,22 +367,21 @@ void Configuration::Manager::Update()
       switch (logs_it->type)
         {
          case Configuration::Log::FILE:
-          logging.LogInFile(logs_it->file.c_str(),
-                                            logs_it->flags);
+          this->logs_[*logs_it] = new logging::file(logs_it->file.c_str());
           break ;
          case Configuration::Log::STDERR:
-          logging.LogToStderr(logs_it->flags);
+          this->logs_[*logs_it] = new logging::ostream(std::cerr);
           break ;
          case Configuration::Log::STDOUT:
-          logging.LogToStdout(logs_it->flags);
+          this->logs_[*logs_it] = new logging::ostream(std::cout);
           break ;
          case Configuration::Log::SYSLOG:
-          logging.LogInSyslog(logs_it->flags);
+          this->logs_[*logs_it] = new logging::syslogger();
           break ;
          default:
           ;
         }
-      this->logs_.push_back(*logs_it);
+      logging::log_on(this->logs_[*logs_it], logs_it->flags, logging::LOW);
     }
 
   // Process variables.

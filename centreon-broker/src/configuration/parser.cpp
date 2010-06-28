@@ -29,7 +29,7 @@
 #include "configuration/parser.h"
 #include "exception.h"
 #include "io/file.h"
-#include "logging.h"
+#include "logging/logging.hh"
 
 #define INVALID_TOKEN_MSG "Invalid token encountered while parsing " \
                           "configuration file ..."
@@ -180,12 +180,14 @@ static void HandleLog(Configuration::Lexer& lexer, Configuration::Log& log)
           // We will break when there's no more pipes.
           do
             {
-              if (val.GetText() == "DEBUG")
-                flags |= Logging::DEBUG;
+              if (val.GetText() == "CONFIG")
+                flags |= logging::CONFIG;
+              else if (val.GetText() == "DEBUG")
+                flags |= logging::DEBUG;
               else if (val.GetText() == "ERROR")
-                flags |= Logging::ERROR;
+                flags |= logging::ERROR;
               else if (val.GetText() == "INFO")
-                flags |= Logging::INFO;
+                flags |= logging::INFO;
               lexer.ContextSave();
               if (lexer.GetToken(val)
                   || (val.GetType() != Configuration::Token::PIPE)

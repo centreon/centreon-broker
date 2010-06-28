@@ -25,7 +25,7 @@
 #include "interface/destination.h"
 #include "interface/factory.h"
 #include "interface/sourcedestination.h"
-#include "logging.h"
+#include "logging/logging.hh"
 #include "processing/failover_out.h"
 
 using namespace Processing;
@@ -142,40 +142,47 @@ FailoverOutBase::~FailoverOutBase() {}
  */
 void FailoverOutBase::operator()()
 {
-  while (!this->should_exit)
+  try
     {
-      try
+      while (!this->should_exit)
         {
-	  LOGDEBUG("Connecting output ...");
-          this->Connect();
-	  LOGDEBUG("Connection successful !");
-          if (this->failover_.get())
+          try
             {
-	      LOGDEBUG("Fetching events from the failover object ...");
-              if (this->failover_->source_dest_.get())
-                this->Feed(this->failover_->source_dest_.get(), this);
-	      LOGDEBUG("Killing failover thread ...");
-              this->failover_->Exit();
-              this->failover_->Join();
-	      LOGDEBUG("Destroying failover object ...");
-	      this->failover_.reset();
+              LOGDEBUG("Connecting output ...");
+              this->Connect();
+              LOGDEBUG("Connection successful !");
+              if (this->failover_.get())
+                {
+                  LOGDEBUG("Fetching events from the failover object ...");
+                  if (this->failover_->source_dest_.get())
+                    this->Feed(this->failover_->source_dest_.get(), this);
+                  LOGDEBUG("Killing failover thread ...");
+                  this->failover_->Exit();
+                  this->failover_->Join();
+                  LOGDEBUG("Destroying failover object ...");
+                  this->failover_.reset();
+                }
+              LOGDEBUG("Launching feeding loop ...");
+              this->Feed(this, this);
             }
-	  LOGDEBUG("Launching feeding loop ...");
-          this->Feed(this, this);
-        }
-      catch (...)
-        {
-          LOGERROR("Output event feeding failed.");
-          if (!this->failover_.get() && this->dest_conf_->failover.get())
+          catch (std::exception const& e)
             {
-	      LOGDEBUG("Launching output failover ...");
-              this->failover_.reset(new FailoverOutAsIn);
-              this->failover_->Run(this,
-                                   *this->dest_conf_->failover);
+              logging::error << "Output event feeding failed: " << e.what();
+              if (!this->failover_.get() && this->dest_conf_->failover.get())
+                {
+                  LOGDEBUG("Launching output failover ...");
+                  this->failover_.reset(new FailoverOutAsIn);
+                  this->failover_->Run(this,
+                                       *this->dest_conf_->failover);
+                }
+              // XXX : configure
+              sleep(5);
             }
-          // XXX : configure
-          sleep(5);
         }
+    }
+  catch (...)
+    {
+      LOGERROR("Caught unknown error.");
     }
   return ;
 }
