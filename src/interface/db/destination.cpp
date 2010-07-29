@@ -177,7 +177,7 @@ void Destination::Insert(const T& t)
  */
 template <typename T>
 void Destination::PrepareUpdate(std::auto_ptr<soci::statement>& st,
-				T& t,
+                                T& t,
                                 const std::vector<std::string>& id)
 {
   std::string query;
@@ -356,7 +356,7 @@ void Destination::ProcessHostGroupMember(const Events::Event& event)
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::HostGroupMember>::table
                << " (host_id, hostgroup_id) VALUES("
-               << hgm.member << ", "
+               << hgm.host_id << ", "
                << hostgroup_id << ")";
 
   return ;
@@ -477,7 +477,7 @@ void Destination::ProcessLog(const Events::Event& event)
   for (std::list<std::pair<std::string,
                            GetterSetter<Events::Log> > >::const_iterator
          it = DBMappedType<Events::Log>::list.begin(),
-	 end = DBMappedType<Events::Log>::list.end();
+         end = DBMappedType<Events::Log>::list.end();
        it != end;
        ++it)
     {
@@ -493,10 +493,10 @@ void Destination::ProcessLog(const Events::Event& event)
   // Fetch issue ID (if any).
   if (log.issue_start_time)
     *this->conn_ << "SELECT id FROM "
-		 << MappedType<Events::Issue>::table
-		 << " WHERE host_id=" << log.host_id
-		 << " AND service_id=" << log.service_id
-		 << " AND start_time=" << log.issue_start_time,
+                 << MappedType<Events::Issue>::table
+                 << " WHERE host_id=" << log.host_id
+                 << " AND service_id=" << log.service_id
+                 << " AND start_time=" << log.issue_start_time,
       soci::into(issue);
   else
     issue = 0;
@@ -608,8 +608,9 @@ void Destination::ProcessServiceGroupMember(const Events::Event& event)
   // Execute query.
   *this->conn_ << "INSERT INTO "
                << MappedType<Events::ServiceGroupMember>::table
-               << " (service_id, servicegroup_id) VALUES("
-               << sgm.member << ", "
+               << " (host_id, service_id, servicegroup_id) VALUES("
+               << sgm.host_id << ", "
+               << sgm.service_id << ", "
                << servicegroup_id << ")";
 
   return ;

@@ -63,14 +63,14 @@ static void SendHostDependenciesList()
         {
           it = gl_hosts.find(hd->dependent_host_name);
           if (it != gl_hosts.end())
-            host_dependency->dependent_object = it->second;
+            host_dependency->dependent_host_id = it->second;
         }
       host_dependency->inherits_parent = hd->inherits_parent;
       if (hd->host_name)
         {
           it = gl_hosts.find(hd->host_name);
           if (it != gl_hosts.end())
-            host_dependency->object = it->second;
+            host_dependency->host_id = it->second;
         }
 
       host_dependency->AddReader();
@@ -116,7 +116,7 @@ static void SendHostGroupList()
 
               it = gl_hosts.find(hgm->host_name);
               if (it != gl_hosts.end())
-                host_group_member->member = it->second;
+                host_group_member->host_id = it->second;
             }
 
           host_group_member->AddReader();
@@ -242,8 +242,8 @@ static void SendHostList()
             && cv->variable_value
             && !strcmp(cv->variable_name, "HOST_ID"))
           {
-            my_host->id = strtol(cv->variable_value, NULL, 0);
-            gl_hosts[my_host->host_name] = my_host->id;
+            my_host->host_id = strtol(cv->variable_value, NULL, 0);
+            gl_hosts[my_host->host_name] = my_host->host_id;
           }
 
       my_host->AddReader();
@@ -305,7 +305,7 @@ static void SendHostParentsList()
  */
 static void SendServiceDependenciesList()
 {
-  std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+  std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
 
   // Dump service dependencies.
   for (servicedependency* sd = servicedependency_list; sd; sd = sd->next)
@@ -318,7 +318,10 @@ static void SendServiceDependenciesList()
           it = gl_services.find(std::make_pair<std::string, std::string>(
                  sd->dependent_host_name, sd->dependent_service_description));
           if (it != gl_services.end())
-            service_dependency->dependent_object = it->second;
+            {
+              service_dependency->dependent_host_id = it->second.first;
+              service_dependency->dependent_service_id = it->second.second;
+            }
         }
       if (sd->dependency_period)
         service_dependency->dependency_period = sd->dependency_period;
@@ -328,7 +331,10 @@ static void SendServiceDependenciesList()
           it = gl_services.find(std::make_pair<std::string, std::string>(
                  sd->host_name, sd->service_description));
           if (it != gl_services.end())
-            service_dependency->object = it->second;
+            {
+              service_dependency->host_id = it->second.first;
+              service_dependency->service_id = it->second.second;
+            }
         }
 
       service_dependency->AddReader();
@@ -371,13 +377,16 @@ static void SendServiceGroupList()
           service_group_member->instance_id = Configuration::Globals::instance;
           if (sgm->host_name && sgm->service_description)
             {
-              std::map<std::pair<std::string, std::string>, int>::const_iterator
+              std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator
                 it;
 
               it = gl_services.find(std::make_pair(sgm->host_name,
                                                    sgm->service_description));
               if (it != gl_services.end())
-                service_group_member->member = it->second;
+		{
+		  service_group_member->host_id = it->second.first;
+		  service_group_member->service_id = it->second.second;
+		}
             }
 
           service_group_member->AddReader();
@@ -514,10 +523,10 @@ static void SendServiceList()
               my_service->host_id = strtol(cv->variable_value, NULL, 0);
             else if (!strcmp(cv->variable_name, "SERVICE_ID"))
               {
-                my_service->id = strtol(cv->variable_value, NULL, 0);
+                my_service->service_id = strtol(cv->variable_value, NULL, 0);
                 gl_services[std::make_pair((s->host_name ? s->host_name : ""),
                                            my_service->service_description)]
-                  = my_service->id;
+                  = std::make_pair(my_service->host_id, my_service->service_id);
               }
           }
 

@@ -49,7 +49,6 @@ namespace              Events
     bool               flap_detection_on_ok;
     bool               flap_detection_on_unknown;
     bool               flap_detection_on_warning;
-    int                host_id;
     bool               is_volatile;
     bool               notify_on_critical;
     bool               notify_on_unknown;

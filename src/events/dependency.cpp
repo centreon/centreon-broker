@@ -38,11 +38,11 @@ using namespace Events;
 void Dependency::InternalCopy(const Dependency& dependency)
 {
   this->dependency_period            = dependency.dependency_period;
-  this->dependent_object             = dependency.dependent_object;
+  this->dependent_host_id            = dependency.dependent_host_id;
   this->execution_failure_options    = dependency.execution_failure_options;
+  this->host_id                      = dependency.host_id;
   this->inherits_parent              = dependency.inherits_parent;
   this->notification_failure_options = dependency.notification_failure_options;
-  this->object                       = dependency.object;
   return ;
 }
 
@@ -56,7 +56,7 @@ void Dependency::InternalCopy(const Dependency& dependency)
  *  Default constructor.
  */
 Dependency::Dependency()
-  : dependent_object(0), inherits_parent(false), object(0) {}
+  : dependent_host_id(0), host_id(0), inherits_parent(false) {}
 
 /**
  *  Copy constructor.

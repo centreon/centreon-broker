@@ -42,8 +42,8 @@ namespace        Events
 
    public:
     std::string  group;
+    int          host_id;
     int          instance_id;
-    int          member;
                  GroupMember();
                  GroupMember(const GroupMember& gm);
     virtual      ~GroupMember();

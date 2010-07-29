@@ -24,6 +24,24 @@ using namespace Events;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal members from the given object.
+ *
+ *  @param[in] sd Object to copy from.
+ */
+void ServiceDependency::InternalCopy(const ServiceDependency& sd)
+{
+  this->dependent_service_id = sd.dependent_service_id;
+  this->service_id           = sd.service_id;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -31,7 +49,8 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-ServiceDependency::ServiceDependency() {}
+ServiceDependency::ServiceDependency()
+  : dependent_service_id(0), service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -40,7 +59,10 @@ ServiceDependency::ServiceDependency() {}
  */
 ServiceDependency::ServiceDependency(
   const ServiceDependency& service_dependency)
-  : Dependency(service_dependency) {}
+  : Dependency(service_dependency)
+{
+  this->InternalCopy(service_dependency);
+}
 
 /**
  *  Destructor.
@@ -58,6 +80,7 @@ ServiceDependency& ServiceDependency::operator=(
   const ServiceDependency& service_dependency)
 {
   this->ServiceDependency::operator=(service_dependency);
+  this->InternalCopy(service_dependency);
   return (*this);
 }
 

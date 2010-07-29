@@ -215,7 +215,7 @@ int CallbackHostCheck(int callback_type, void* data)
 
               it = gl_hosts.find(hcdata->host_name);
               if (it != gl_hosts.end())
-                host_check->id = it->second;
+                host_check->host_id = it->second;
             }
 
           host_check->AddReader();
@@ -276,7 +276,7 @@ int CallbackHostStatus(int callback_type, void* data)
 
           it = gl_hosts.find(h->name);
           if (it != gl_hosts.end())
-            host_status->id = it->second;
+            host_status->host_id = it->second;
         }
       host_status->is_flapping = h->is_flapping;
       host_status->last_check = h->last_check;
@@ -521,12 +521,15 @@ int CallbackServiceCheck(int callback_type, void* data)
           service_check->command_line = scdata->command_line;
           if (scdata->host_name && scdata->service_description)
             {
-              std::map<std::pair<std::string, std::string>, int>::const_iterator it;
+              std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
 
               it = gl_services.find(std::make_pair(scdata->host_name,
                                                    scdata->service_description));
               if (it != gl_services.end())
-                service_check->id = it->second;
+                {
+                  service_check->host_id = it->second.first;
+                  service_check->service_id = it->second.second;
+                }
             }
 
           service_check->AddReader();
@@ -620,12 +623,16 @@ int CallbackServiceStatus(int callback_type, void* data)
       if (s->host_name && s->description)
         {
           std::map<std::pair<std::string,
-                             std::string>, int>::const_iterator it;
+                             std::string>,
+                   std::pair<int, int> >::const_iterator it;
 
           it = gl_services.find(std::make_pair(s->host_name,
                                                s->description));
           if (it != gl_services.end())
-            service_status->id = it->second;
+            {
+              service_status->host_id = it->second.first;
+              service_status->service_id = it->second.second;
+            }
         }
       service_status->should_be_scheduled = s->should_be_scheduled;
       service_status->state_type = s->state_type;

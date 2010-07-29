@@ -38,7 +38,8 @@ namespace   Correlation
   {
    private:
     std::map<int, Node>* hosts_;
-    std::map<int, Node>* services_;
+    std::map<std::pair<int, int>, Node>*
+                         services_;
     bool                 VisitEnter(const TiXmlElement& elem,
 				    const TiXmlAttribute* attr);
 
@@ -49,7 +50,7 @@ namespace   Correlation
     Parser& operator=(const Parser& parser);
     void    Parse(const char* filename,
                   std::map<int, Node>& hosts,
-                  std::map<int, Node>& services);
+                  std::map<std::pair<int, int>, Node>& services);
   };
 }
 

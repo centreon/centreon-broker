@@ -216,7 +216,7 @@ void SetLogData(Events::Log& log, const char* log_data)
 
   // Set host and service IDs.
   std::map<std::string, int>::const_iterator host_it;
-  std::map<std::pair<std::string, std::string>, int>::const_iterator service_it;
+  std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator service_it;
 
   host_it = gl_hosts.find(log.host_name);
   if (host_it != gl_hosts.end())
@@ -224,7 +224,10 @@ void SetLogData(Events::Log& log, const char* log_data)
   service_it = gl_services.find(std::make_pair(log.host_name,
                                                log.service_description));
   if (service_it != gl_services.end())
-    log.service_id = service_it->second;
+    {
+      log.host_id    = service_it->second.first;
+      log.service_id = service_it->second.second;
+    }
 
   return ;
 }

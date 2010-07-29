@@ -33,7 +33,7 @@ extern std::string gl_configuration_file;
 extern std::map<std::string, int> gl_hosts;
 
 // List of service IDs.
-extern std::map<std::pair<std::string, std::string>, int> gl_services;
+extern std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
 
 // Sender object.
 extern Multiplexing::Publisher gl_publisher;

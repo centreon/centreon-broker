@@ -107,7 +107,7 @@ Node& Node::operator=(const Node& node)
  */
 Node& Node::operator<<(const Events::HostStatus& hs)
 {
-  this->host_id    = hs.id;
+  this->host_id    = hs.host_id;
   this->service_id = 0;
   this->state      = 0;
   return (*this);

@@ -31,7 +31,7 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-ServiceGroupMember::ServiceGroupMember() {}
+ServiceGroupMember::ServiceGroupMember() : service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -39,7 +39,7 @@ ServiceGroupMember::ServiceGroupMember() {}
  *  \param[in] sgm Object to copy from.
  */
 ServiceGroupMember::ServiceGroupMember(const ServiceGroupMember& sgm)
-  : GroupMember(sgm) {}
+  : GroupMember(sgm), service_id(sgm.service_id) {}
 
 /**
  *  Destructor.
@@ -56,6 +56,7 @@ ServiceGroupMember::~ServiceGroupMember() {}
 ServiceGroupMember& ServiceGroupMember::operator=(const ServiceGroupMember& sgm)
 {
   this->GroupMember::operator=(sgm);
+  this->service_id = sgm.service_id;
   return (*this);
 }
 

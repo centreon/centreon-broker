@@ -55,7 +55,7 @@ namespace              Events
     std::string        event_handler;
     double             execution_time;
     bool               has_been_checked;
-    int                id;
+    int                host_id;
     bool               is_flapping;
     time_t             last_check;
     short              last_hard_state;

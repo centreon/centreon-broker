@@ -33,7 +33,12 @@ namespace              Events
    */
   class                ServiceDependency : public Dependency
   {
+   private:
+    void               InternalCopy(const ServiceDependency& service_dependency);
+
    public:
+    int                dependent_service_id;
+    int                service_id;
                        ServiceDependency();
                        ServiceDependency(
                          const ServiceDependency& service_dependency);

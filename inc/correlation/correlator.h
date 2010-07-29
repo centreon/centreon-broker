@@ -43,7 +43,8 @@ namespace                      Correlation
     static void (Correlator::* dispatch_table[])(Events::Event&);
     std::list<Events::Event*>  events_;
     std::map<int, Node>        hosts_;
-    std::map<int, Node>        services_;
+    std::map<std::pair<int, int>, Node>
+                               services_;
     void                       CorrelateHostServiceStatus(Events::Event& event,
                                                           bool is_host);
     void                       CorrelateHostStatus(Events::Event& event);

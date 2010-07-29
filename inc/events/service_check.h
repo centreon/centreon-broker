@@ -36,6 +36,7 @@ namespace         Events
   class           ServiceCheck : public Check
   {
    public:
+    int           service_id;
                   ServiceCheck();
                   ServiceCheck(const ServiceCheck& service_check);
     virtual       ~ServiceCheck();

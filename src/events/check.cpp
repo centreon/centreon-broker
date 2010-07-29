@@ -36,7 +36,7 @@ using namespace Events;
 void Check::InternalCopy(const Check& check)
 {
   this->command_line = check.command_line;
-  this->id           = check.id;
+  this->host_id      = check.host_id;
   return ;
 }
 
@@ -49,7 +49,7 @@ void Check::InternalCopy(const Check& check)
 /**
  *  Default constructor.
  */
-Check::Check() : id(0) {}
+Check::Check() : host_id(0) {}
 
 /**
  *  Copy constructor.

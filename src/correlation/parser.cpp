@@ -36,6 +36,7 @@ bool Parser::VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* attr)
   const char* value;
 
   value = elem.Value();
+#if 0
   if (!strcmp(value, "dependency"))
     {
       const char* id1_str;
@@ -120,6 +121,7 @@ bool Parser::VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* attr)
           (*this->services_)[node.service_id] = node;
         }
     }
+#endif
   return (true);
 }
 
@@ -171,7 +173,7 @@ Parser& Parser::operator=(const Parser& parser)
  */
 void Parser::Parse(const char* filename,
                    std::map<int, Node>& hosts,
-                   std::map<int, Node>& services)
+                   std::map<std::pair<int, int>, Node>& services)
 {
   TiXmlDocument root;
 

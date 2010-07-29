@@ -38,6 +38,7 @@ namespace               Events
   class                 ServiceGroupMember : public GroupMember
   {
    public:
+    int                 service_id;
                         ServiceGroupMember();
                         ServiceGroupMember(const ServiceGroupMember& sgm);
     virtual             ~ServiceGroupMember();

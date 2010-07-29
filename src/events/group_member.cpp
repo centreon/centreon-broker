@@ -38,8 +38,8 @@ using namespace Events;
 void GroupMember::InternalCopy(const GroupMember& gm)
 {
   this->group       = gm.group;
+  this->host_id     = gm.host_id;
   this->instance_id = gm.instance_id;
-  this->member      = gm.member;
   return ;
 }
 
@@ -52,7 +52,7 @@ void GroupMember::InternalCopy(const GroupMember& gm)
 /**
  *  Default constructor.
  */
-GroupMember::GroupMember() {}
+GroupMember::GroupMember() : host_id(0), instance_id(0) {}
 
 /**
  *  Copy constructor.

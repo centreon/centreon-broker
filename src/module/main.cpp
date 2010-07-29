@@ -42,7 +42,7 @@ std::string gl_configuration_file;
 std::map<std::string, int> gl_hosts;
 
 // List of service IDs.
-std::map<std::pair<std::string, std::string>, int> gl_services;
+std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
 
 // Sender object.
 Multiplexing::Publisher gl_publisher;

@@ -43,7 +43,7 @@ namespace       Events
 
    public:
     std::string command_line;
-    int         id;
+    int         host_id;
                 Check();
                 Check(const Check& check);
     virtual     ~Check();

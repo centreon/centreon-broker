@@ -350,7 +350,7 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_ICONIMAGEALT,
       "icon_image_alt"),
     MappedData<Host>(
-      &Host::id,
+      &Host::host_id,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<Host>(
@@ -552,7 +552,7 @@ static const MappedData<Host> host_mapping[] =
 static const MappedData<HostCheck> host_check_mapping[] =
   {
     MappedData<HostCheck>(
-      &HostCheck::id,
+      &HostCheck::host_id,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<HostCheck>(
@@ -570,7 +570,7 @@ static const MappedData<HostDependency> host_dependency_mapping[] =
       NDO_DATA_DEPENDENCYPERIOD,
       "dependency_period"),
     MappedData<HostDependency>(
-      &HostDependency::dependent_object,
+      &HostDependency::dependent_host_id,
       NDO_DATA_DEPENDENTHOSTNAME,
       "dependent_host_id"),
     MappedData<HostDependency>(
@@ -586,7 +586,7 @@ static const MappedData<HostDependency> host_dependency_mapping[] =
       NDO_DATA_HOSTNOTIFICATIONCOMMAND,
       "notification_failure_options"),
     MappedData<HostDependency>(
-      &HostDependency::object,
+      &HostDependency::host_id,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<HostDependency>()
@@ -634,7 +634,7 @@ static const MappedData<HostGroupMember> host_group_member_mapping[] =
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<HostGroupMember>(
-      &HostGroupMember::member,
+      &HostGroupMember::host_id,
       NDO_DATA_HOSTGROUPMEMBER,
       "host_id"),
     MappedData<HostGroupMember>()
@@ -714,7 +714,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
     MappedData<HostStatus>(
-      &HostStatus::id,
+      &HostStatus::host_id,
       NDO_DATA_HOST,
       "host_id"),
     MappedData<HostStatus>(
@@ -1250,7 +1250,7 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_ICONIMAGEALT,
       "icon_image_alt"),
     MappedData<Service>(
-      &Service::id,
+      &Service::service_id,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<Service>(
@@ -1464,7 +1464,11 @@ static const MappedData<ServiceCheck> service_check_mapping[] =
       NDO_DATA_COMMANDLINE,
       "command_line"),
     MappedData<ServiceCheck>(
-      &ServiceCheck::id,
+      &ServiceCheck::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<ServiceCheck>(
+      &ServiceCheck::service_id,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<ServiceCheck>()
@@ -1478,13 +1482,21 @@ static const MappedData<ServiceDependency> service_dependency_mapping[] =
       NDO_DATA_DEPENDENCYPERIOD,
       "dependency_period"),
     MappedData<ServiceDependency>(
-      &ServiceDependency::dependent_object,
+      &ServiceDependency::dependent_host_id,
+      NDO_DATA_DEPENDENTHOSTNAME,
+      "dependent_host_id"),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::dependent_service_id,
       NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
       "dependent_service_id"),
     MappedData<ServiceDependency>(
       &ServiceDependency::execution_failure_options,
       NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
       "execution_failure_options"),
+    MappedData<ServiceDependency>(
+      &ServiceDependency::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
     MappedData<ServiceDependency>(
       &ServiceDependency::inherits_parent,
       NDO_DATA_INHERITSPARENT,
@@ -1494,7 +1506,7 @@ static const MappedData<ServiceDependency> service_dependency_mapping[] =
       NDO_DATA_SERVICENOTIFICATIONCOMMAND,
       "notification_failure_options"),
     MappedData<ServiceDependency>(
-      &ServiceDependency::object,
+      &ServiceDependency::service_id,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<ServiceDependency>()
@@ -1538,11 +1550,15 @@ static const MappedData<ServiceGroupMember> service_group_member_mapping[] =
       NDO_DATA_SERVICEGROUPNAME,
       NULL),
     MappedData<ServiceGroupMember>(
+      &ServiceGroupMember::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
+    MappedData<ServiceGroupMember>(
       &ServiceGroupMember::instance_id,
       NDO_DATA_INSTANCE,
       NULL),
     MappedData<ServiceGroupMember>(
-      &ServiceGroupMember::member,
+      &ServiceGroupMember::service_id,
       NDO_DATA_SERVICEGROUPMEMBER,
       "service_id"),
     MappedData<ServiceGroupMember>()
@@ -1607,6 +1623,10 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
       "has_been_checked"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::host_id,
+      NDO_DATA_HOST,
+      "host_id"),
     MappedData<ServiceStatus>(
       &ServiceStatus::is_flapping,
       NDO_DATA_ISFLAPPING,
@@ -1708,7 +1728,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
       "scheduled_downtime_depth"),
     MappedData<ServiceStatus>(
-      &ServiceStatus::id,
+      &ServiceStatus::service_id,
       NDO_DATA_SERVICE,
       "service_id"),
     MappedData<ServiceStatus>(

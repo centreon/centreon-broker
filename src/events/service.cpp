@@ -42,7 +42,6 @@ void Service::InternalCopy(const Service& s)
   this->flap_detection_on_critical = s.flap_detection_on_critical;
   this->flap_detection_on_ok       = s.flap_detection_on_ok;
   this->flap_detection_on_unknown  = s.flap_detection_on_unknown;
-  this->host_id                    = s.host_id;
   this->is_volatile                = s.is_volatile;
   this->notify_on_critical         = s.notify_on_critical;
   this->notify_on_unknown          = s.notify_on_unknown;
@@ -66,7 +65,6 @@ void Service::ZeroInitialize()
   this->flap_detection_on_ok = false;
   this->flap_detection_on_unknown = false;
   this->flap_detection_on_warning = false;
-  this->host_id = 0;
   this->is_volatile = false;
   this->notify_on_critical = false;
   this->notify_on_unknown = false;

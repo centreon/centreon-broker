@@ -31,7 +31,7 @@ using namespace Events;
 /**
  *  Default constructor.
  */
-ServiceCheck::ServiceCheck() {}
+ServiceCheck::ServiceCheck() : service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -39,7 +39,7 @@ ServiceCheck::ServiceCheck() {}
  *  \param[in] service_check Object to copy from.
  */
 ServiceCheck::ServiceCheck(const ServiceCheck& service_check)
-  : Check(service_check) {}
+  : Check(service_check), service_id(service_check.service_id) {}
 
 /**
  *  Destructor.
@@ -56,6 +56,7 @@ ServiceCheck::~ServiceCheck() {}
 ServiceCheck& ServiceCheck::operator=(const ServiceCheck& service_check)
 {
   this->Check::operator=(service_check);
+  this->service_id = service_check.service_id;
   return (*this);
 }
 
