@@ -40,6 +40,7 @@ namespace   Correlation
     std::map<int, Node>* hosts_;
     std::map<std::pair<int, int>, Node>*
                          services_;
+    Node*                FindNode(const char* host_id, const char* service_id);
     bool                 VisitEnter(const TiXmlElement& elem,
 				    const TiXmlAttribute* attr);
 
