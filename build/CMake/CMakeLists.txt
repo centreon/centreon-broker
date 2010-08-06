@@ -179,6 +179,7 @@ target_link_libraries(roker ${GNUTLS_LIBRARIES})
 set(COMMON_SOURCES
         ../../src/config/factory.cc
 	../../src/config/handle.cc
+	../../src/config/interface.cc
 	../../src/config/logger.cc
 	../../src/config/parser.cc
 	../../src/configuration/globals.cpp
