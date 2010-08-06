@@ -21,7 +21,7 @@
 #include <memory>
 #include <stdlib.h>                 // for strtol
 #include <string.h>                 // for strcmp
-#include "configuration/globals.h"
+#include "config/globals.hh"
 #include "events/events.h"
 #include "initial.h"
 #include "module/internal.h"
@@ -93,7 +93,7 @@ static void SendHostGroupList()
 
       if (hg->alias)
         host_group->alias = hg->alias;
-      host_group->instance_id = Configuration::Globals::instance;
+      host_group->instance_id = config::globals::instance;
       if (hg->group_name)
         host_group->name = hg->group_name;
 
@@ -109,7 +109,7 @@ static void SendHostGroupList()
 
           if (hg->group_name)
             host_group_member->group = hg->group_name;
-          host_group_member->instance_id = Configuration::Globals::instance;
+          host_group_member->instance_id = config::globals::instance;
           if (hgm->host_name)
             {
               std::map<std::string, int>::const_iterator it;
@@ -185,7 +185,7 @@ static void SendHostList()
       if (h->icon_image_alt)
         my_host->icon_image_alt = h->icon_image_alt;
       // my_host->initial_state = XXX;
-      my_host->instance_id = Configuration::Globals::instance;
+      my_host->instance_id = config::globals::instance;
       // my_host->is_flapping = XXX;
       // my_host->last_check = XXX;
       // my_host->last_hard_state = XXX;
@@ -358,7 +358,7 @@ static void SendServiceGroupList()
 
       if (sg->alias)
         service_group->alias = sg->alias;
-      service_group->instance_id = Configuration::Globals::instance;
+      service_group->instance_id = config::globals::instance;
       if (sg->group_name)
         service_group->name = sg->group_name;
 
@@ -374,7 +374,7 @@ static void SendServiceGroupList()
 
           if (sg->group_name)
             service_group_member->group = sg->group_name;
-          service_group_member->instance_id = Configuration::Globals::instance;
+          service_group_member->instance_id = config::globals::instance;
           if (sgm->host_name && sgm->service_description)
             {
               std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator

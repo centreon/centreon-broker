@@ -27,8 +27,8 @@
 # include "processing/feeder.h"
 
 // Forward declaration.
-namespace              Configuration
-{ class                Interface; }
+namespace              config
+{ class                interface; }
 
 namespace              Processing
 {
@@ -42,7 +42,7 @@ namespace              Processing
     std::auto_ptr<Interface::Source>
                        source_;
     Concurrency::Mutex sourcem_;
-    std::auto_ptr<Configuration::Interface>
+    std::auto_ptr<config::interface>
                        source_conf_;
                        FailoverIn(const FailoverIn& fi);
     FailoverIn&        operator=(const FailoverIn& fi);
@@ -56,7 +56,7 @@ namespace              Processing
     Events::Event*     Event();
     void               Event(Events::Event* event);
     void               Exit();
-    void               Run(const Configuration::Interface& source_conf,
+    void               Run(const config::interface& source_conf,
                            Interface::Destination* destination,
                            Concurrency::ThreadListener* tl = NULL);
   };

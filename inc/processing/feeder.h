@@ -21,6 +21,7 @@
 #ifndef PROCESSING_FEEDER_H_
 # define PROCESSING_FEEDER_H_
 
+# include <memory>
 # include "concurrency/mutex.h"
 # include "concurrency/thread.h"
 # include "interface/sourcedestination.h"

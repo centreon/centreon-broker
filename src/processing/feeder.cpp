@@ -21,7 +21,6 @@
 #include <assert.h>
 #include <stdlib.h>                  // for abort
 #include "concurrency/lock.h"
-#include "configuration/interface.h"
 #include "events/event.h"
 #include "interface/destination.h"
 #include "interface/source.h"

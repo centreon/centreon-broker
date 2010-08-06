@@ -24,6 +24,12 @@
 #include "config/factory.hh"
 #include "config/parser.hh"
 #include "logging/logging.hh"
+#include "multiplexing/publisher.h"
+#include "multiplexing/subscriber.h"
+#include "processing/failover_in.h"
+#include "processing/failover_out.h"
+#include "processing/feeder.h"
+#include "processing/listener.h"
 
 using namespace config;
 
@@ -84,7 +90,38 @@ void config::handle()
        it != end;
        ++ it)
     {
-      // XXX
+      logging::debug << logging::MEDIUM << "Adding new output object.";
+      if ((config::interface::ipv4_server == it->type)
+	  || (config::interface::ipv6_server == it->type)
+	  || (config::interface::unix_server == it->type))
+        {
+          std::auto_ptr<IO::Acceptor> acceptor(
+            config::factory::build_acceptor(*it));
+          std::auto_ptr<Processing::Listener> listener(
+            new Processing::Listener);
+
+          listener->Init(acceptor.get(),
+                         ((it->protocol == config::interface::ndo)
+                          ? Processing::Listener::NDO
+                          : Processing::Listener::XML),
+                         Processing::Listener::OUT,
+                         NULL);
+          acceptor.release();
+          listener.release();
+        }
+      else
+        {
+          std::auto_ptr<Processing::FailoverOut> feeder;
+          std::auto_ptr<Multiplexing::Subscriber> subscriber;
+
+          subscriber.reset(new Multiplexing::Subscriber);
+          feeder.reset(new Processing::FailoverOut);
+          feeder->Run(subscriber.get(),
+                      *it,
+                      NULL);
+          subscriber.release();
+          feeder.release();
+        }
     }
 
   // Create input objects.
@@ -93,7 +130,38 @@ void config::handle()
        it != end;
        ++it)
     {
-      // XXX
+      logging::debug << logging::MEDIUM << "Adding new input object.";
+      if ((config::interface::ipv4_server == it->type)
+          || (config::interface::ipv6_server == it->type)
+          || (config::interface::unix_server == it->type))
+        {
+          std::auto_ptr<IO::Acceptor> acceptor(
+            config::factory::build_acceptor(*it));
+          std::auto_ptr<Processing::Listener> listener(
+            new Processing::Listener);
+
+          listener->Init(acceptor.get(),
+                         ((it->protocol == config::interface::ndo)
+                          ? Processing::Listener::NDO
+                          : Processing::Listener::XML),
+                         Processing::Listener::IN,
+                         NULL);
+          acceptor.release();
+          listener.release();
+        }
+      else
+        {
+          std::auto_ptr<Processing::FailoverIn> feeder;
+          std::auto_ptr<Multiplexing::Publisher> publisher;
+
+          publisher.reset(new Multiplexing::Publisher);
+          feeder.reset(new Processing::FailoverIn);
+          feeder->Run(*it,
+                      publisher.get(),
+                      NULL);
+          publisher.release();
+          feeder.release();
+        }
     }
 
   // Register callback for runtime configuration update.

@@ -20,7 +20,6 @@
 
 #include <stddef.h>                 // for NULL
 #include "callbacks.h"
-#include "configuration/manager.h"
 #include "init.h"
 #include "module/internal.h"
 #include "nagios/common.h"

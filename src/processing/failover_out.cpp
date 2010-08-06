@@ -21,9 +21,8 @@
 #include <assert.h>
 #include <stdlib.h>                      // for abort()
 #include "concurrency/lock.h"
-#include "configuration/interface.h"
+#include "config/factory.hh"
 #include "interface/destination.h"
-#include "interface/factory.h"
 #include "interface/sourcedestination.h"
 #include "logging/logging.hh"
 #include "processing/failover_out.h"
@@ -48,7 +47,7 @@ namespace              Processing
     std::auto_ptr<Interface::SourceDestination>
                        source_dest_;
     Concurrency::Mutex source_destm_;
-    std::auto_ptr<Configuration::Interface>
+    std::auto_ptr<config::interface>
                        source_dest_conf_;
                        FailoverOutAsIn(const FailoverOutAsIn& foai);
     FailoverOutAsIn&   operator=(const FailoverOutAsIn& foai);
@@ -62,7 +61,7 @@ namespace              Processing
     void               Exit();
     void               Event(Events::Event* event);
     void               Run(Interface::Source* source,
-                           const Configuration::Interface& dest_conf,
+                           const config::interface& dest_conf,
                            Concurrency::ThreadListener* tl = NULL);
   };
 }
@@ -287,8 +286,7 @@ void FailoverOut::Connect()
 
   // Delete destination first before opening another.
   this->dest_.reset();
-  this->dest_.reset(
-    Interface::Factory::Instance().Destination(*this->dest_conf_));
+  this->dest_.reset(config::factory::build_destination(*this->dest_conf_));
   return ;
 }
 
@@ -338,13 +336,13 @@ void FailoverOut::Exit()
  *  \param[in] tl        Listener of the thread.
  */
 void FailoverOut::Run(Interface::Source* source,
-                      const Configuration::Interface& dest_conf,
+                      const config::interface& dest_conf,
                       Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->destm_);
 
-    this->dest_conf_.reset(new Configuration::Interface(dest_conf));
+    this->dest_conf_.reset(new config::interface(dest_conf));
   }
   {
     Concurrency::Lock lock(this->sourcem_);
@@ -450,7 +448,7 @@ void FailoverOutAsIn::Connect()
 
   // Close before reopening.
   this->source_dest_.reset();
-  this->source_dest_.reset(Interface::Factory::Instance().SourceDestination(
+  this->source_dest_.reset(config::factory::build_sourcedestination(
     *this->source_dest_conf_));
   return ;
 }
@@ -490,13 +488,13 @@ void FailoverOutAsIn::Exit()
  *  Launch failover thread.
  */
 void FailoverOutAsIn::Run(Interface::Source* source,
-                          const Configuration::Interface& dest_conf,
+                          const config::interface& dest_conf,
                           Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->source_destm_);
 
-    this->source_dest_conf_.reset(new Configuration::Interface(dest_conf));
+    this->source_dest_conf_.reset(new config::interface(dest_conf));
   }
   {
     Concurrency::Lock lock(this->sourcem_);

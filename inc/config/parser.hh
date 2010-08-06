@@ -42,6 +42,7 @@ namespace                     config
     enum                      _current_type
     {
       _unknown = 0,
+      _conf,
       _input,
       _interface_db,
       _interface_failover,

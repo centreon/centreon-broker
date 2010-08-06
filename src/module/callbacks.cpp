@@ -22,8 +22,8 @@
 #include <time.h>                  // for time
 #include <unistd.h>                // for getpid
 #include "callbacks.h"
-#include "configuration/globals.h"
-#include "configuration/manager.h"
+#include "config/globals.hh"
+#include "config/handle.hh"
 #include "events/events.h"
 #include "initial.h"
 #include "logging/logging.hh"
@@ -64,7 +64,7 @@ int CallbackAcknowledgement(int callback_type, void* data)
       //ack->entry_time = XXX;
       if (ack_data->host_name)
         ack->host_name = ack_data->host_name;
-      ack->instance_name = Configuration::Globals::instance_name;
+      ack->instance_name = config::globals::instance_name;
       ack->is_sticky = ack_data->is_sticky;
       ack->notify_contacts = ack_data->notify_contacts;
       ack->persistent_comment = ack_data->persistent_comment;
@@ -116,7 +116,7 @@ int CallbackComment(int callback_type, void* data)
       comment->expires = comment_data->expires;
       if (comment_data->host_name)
         comment->host_name = comment_data->host_name;
-      comment->instance_name = Configuration::Globals::instance_name;
+      comment->instance_name = config::globals::instance_name;
       comment->internal_id = comment_data->comment_id;
       comment->persistent = comment_data->persistent;
       if (comment_data->service_description)
@@ -165,7 +165,7 @@ int CallbackDowntime(int callback_type, void* data)
       if (downtime_data->host_name)
         downtime->host_name = downtime_data->host_name;
       downtime->internal_id = downtime_data->downtime_id;
-      downtime->instance_name = Configuration::Globals::instance_name;
+      downtime->instance_name = config::globals::instance_name;
       if (downtime_data->service_description)
         downtime->service_description = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
@@ -343,7 +343,7 @@ int CallbackLog(int callback_type, void* data)
 
       log_data = static_cast<nebstruct_log_data*>(data);
       log->c_time = log_data->entry_time;
-      log->instance_name = Configuration::Globals::instance_name;
+      log->instance_name = config::globals::instance_name;
       if (log_data->data)
         {
           if (log_data->data)
@@ -385,10 +385,10 @@ int CallbackProcess(int callback_type, void *data)
         {
           std::auto_ptr<Events::Program> program(new Events::Program);
 
-          Configuration::Manager::Instance().Open(gl_configuration_file);
+	  config::handle(gl_configuration_file);
           // program->daemon_mode = XXX;
-          program->instance_id = Configuration::Globals::instance;
-          program->instance_name = Configuration::Globals::instance_name;
+          program->instance_id = config::globals::instance;
+          program->instance_name = config::globals::instance_name;
           program->is_running = true;
           program->pid = getpid();
           program->program_start = time(NULL);
@@ -403,8 +403,8 @@ int CallbackProcess(int callback_type, void *data)
         {
           std::auto_ptr<Events::Program> program(new Events::Program);
 
-          program->instance_id = Configuration::Globals::instance;
-          program->instance_name = Configuration::Globals::instance_name;
+          program->instance_id = config::globals::instance;
+          program->instance_name = config::globals::instance_name;
           program->is_running = false;
           program->pid = getpid();
           program->program_end = time(NULL);
@@ -460,7 +460,7 @@ int CallbackProgramStatus(int callback_type, void* data)
       if (program_status_data->global_service_event_handler)
         program_status->global_service_event_handler
           = program_status_data->global_service_event_handler;
-      program_status->instance_id = Configuration::Globals::instance;
+      program_status->instance_id = config::globals::instance;
       // program_status->last_alive = XXX;
       program_status->last_command_check
         = program_status_data->last_command_check;

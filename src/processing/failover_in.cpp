@@ -21,8 +21,7 @@
 #include <assert.h>
 #include <stdlib.h>                  // for abort
 #include "concurrency/lock.h"
-#include "configuration/interface.h"
-#include "interface/factory.h"
+#include "config/factory.hh"
 #include "logging/logging.hh"
 #include "processing/failover_in.h"
 
@@ -141,8 +140,7 @@ void FailoverIn::Connect()
 
   // Close before reopening.
   this->source_.reset();
-  this->source_.reset(Interface::Factory::Instance().Source(
-    *this->source_conf_));
+  this->source_.reset(config::factory::build_source(*this->source_conf_));
   return ;
 }
 
@@ -184,14 +182,14 @@ void FailoverIn::Exit()
 /**
  *  Run failover thread.
  */
-void FailoverIn::Run(const Configuration::Interface& source_conf,
+void FailoverIn::Run(const config::interface& source_conf,
 		     Interface::Destination* destination,
 		     Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->sourcem_);
 
-    this->source_conf_.reset(new Configuration::Interface(source_conf));
+    this->source_conf_.reset(new config::interface(source_conf));
   }
   {
     Concurrency::Lock lock(this->destm_);

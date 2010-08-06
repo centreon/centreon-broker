@@ -180,6 +180,7 @@ void parser::endElement(XMLCh const* const uri,
   _current.pop();
   switch (prev)
     {
+     case _conf:
      case _input:
      case _output:
      case _logger:
@@ -203,10 +204,19 @@ void parser::endElement(XMLCh const* const uri,
         _outputs.back().filename = _data;
       break ;
      case _interface_host:
-      if (_current.top() == _input)
-        _inputs.back().host = _data;
-      else
-        _outputs.back().host = _data;
+      {
+        interface* i;
+
+        if (_current.top() == _input)
+          i = &_inputs.back();
+        else
+          i = &_outputs.back();
+        i->host = _data;
+        if (i->type == interface::ipv4_server)
+          i->type = interface::ipv4_client;
+        else if (i->type == interface::ipv6_server)
+          i->type = interface::ipv6_client;
+      }
       break ;
      case _interface_name:
       if (_current.top() == _input)
@@ -248,8 +258,44 @@ void parser::endElement(XMLCh const* const uri,
       }
       break ;
      case _interface_socket:
-    case _interface_type:
-      // XXX
+     case _interface_type:
+      {
+        interface* i;
+        char const* t;
+
+        if (_current.top() == _input)
+          i = &_inputs.back();
+        else
+          i = &_outputs.back();
+        t = _data.c_str();
+        if (!strcasecmp(t, "file"))
+          i->type = interface::file;
+        else if (!strcasecmp(t, "ipv4"))
+          i->type = (i->host.empty() ? interface::ipv4_server
+                                     : interface::ipv4_client);
+        else if (!strcasecmp(t, "ipv6"))
+          i->type = (i->host.empty() ? interface::ipv6_server
+                                     : interface::ipv6_client);
+#ifdef USE_MYSQL
+        else if (!strcasecmp(t, "mysql"))
+          i->type = interface::mysql;
+#endif /* USE_MYSQL */
+#ifdef USE_ORACLE
+        else if (!strcasecmp(t, "oracle"))
+          i->type = interface::oracle;
+#endif /* USE_ORACLE */
+#ifdef USE_POSTGRESQL
+        else if (!strcasecmp(t, "postgresql"))
+          i->type = interface::postgresql;
+#endif /* USE_POSTGRESQL */
+        else if (!strcasecmp(t, "unix_client"))
+          i->type = interface::unix_client;
+        else if (!strcasecmp(t, "unix_server"))
+          i->type = interface::unix_server;
+        else
+          throw (exceptions::basic() << "Unknown interface type \""
+                                     << t << "\"");
+      }
       break ;
      case _interface_user:
       if (_current.top() == _input)
@@ -315,6 +361,7 @@ void parser::endElement(XMLCh const* const uri,
           lvl = logging::MEDIUM;
         else
           lvl = logging::LOW;
+        _loggers.back().level(lvl);
       }
       break ;
      case _logger_name:
@@ -363,7 +410,7 @@ void parser::startElement(XMLCh const* const uri,
   _data.clear();
   switch (_current.top())
     {
-     case _unknown:
+     case _conf:
       {
         char* name;
 
@@ -402,6 +449,9 @@ void parser::startElement(XMLCh const* const uri,
       break ;
      case _logger:
       _parse_properties(localname, _logger_tag_to_id);
+      break ;
+     case _unknown:
+      _current.push(_conf);
       break ;
      default:
       {

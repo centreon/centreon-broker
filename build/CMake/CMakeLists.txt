@@ -123,7 +123,6 @@ set(LIBROKER_SOURCES
 	../../src/interface/db/destination.cpp
 	../../src/interface/db/internal.cpp
 	../../src/interface/destination.cpp
-	../../src/interface/factory.cpp
 	../../src/interface/ndo/base.cpp
 	../../src/interface/ndo/destination.cpp
 	../../src/interface/ndo/internal.cpp
@@ -179,16 +178,11 @@ target_link_libraries(roker ${GNUTLS_LIBRARIES})
 set(COMMON_SOURCES
         ../../src/config/factory/interface.cc
 	../../src/config/factory/logger.cc
+	../../src/config/globals.cc
 	../../src/config/handle.cc
 	../../src/config/interface.cc
 	../../src/config/logger.cc
 	../../src/config/parser.cc
-	../../src/configuration/globals.cpp
-	../../src/configuration/interface.cpp
-	../../src/configuration/lexer.cpp
-	../../src/configuration/log.cpp
-	../../src/configuration/manager.cpp
-	../../src/configuration/parser.cpp
 	../../src/correlation/correlator.cpp
 	../../src/correlation/node.cpp
 	../../src/correlation/parser.cpp

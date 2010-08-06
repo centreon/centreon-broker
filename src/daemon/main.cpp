@@ -24,9 +24,10 @@
 #include "concurrency/condition_variable.h"
 #include "concurrency/lock.h"
 #include "concurrency/mutex.h"
-#include "configuration/manager.h"
+#include "config/handle.hh"
 #include "init.h"
 #include "logging/logging.hh"
+#include "logging/ostream.hh"
 #include "mapping.h"
 
 /**************************************
@@ -115,8 +116,15 @@ int main(int argc, char* argv[])
           // Global initialization.
           Init();
 
+          // Initial logging object.
+          logging::backend* b(new logging::ostream(std::cerr));
+          logging::log_on(b, logging::CONFIG | logging::ERROR, logging::HIGH);
+
           // Load configuration file.
-          Configuration::Manager::Instance().Open(argv[1]);
+          config::handle(argv[1]);
+
+          // Remove initial logging object.
+          logging::log_on(b, 0, logging::NONE);
 
           // Register handler for SIGTERM.
           gl_sigterm_handler = signal(SIGTERM, term_handler);
@@ -129,7 +137,7 @@ int main(int argc, char* argv[])
           while (!gl_exit)
             {
               gl_cv.Sleep(gl_mutex, time(NULL) + 60);
-              Configuration::Manager::Instance().Reap();
+              // XXX Configuration::Manager::Instance().Reap();
             }
 
           // Global unloading.

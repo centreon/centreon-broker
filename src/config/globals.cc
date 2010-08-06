@@ -18,9 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "configuration/globals.h"
-
-using namespace Configuration::Globals;
+#include "config/globals.hh"
 
 /**************************************
 *                                     *
@@ -28,7 +26,7 @@ using namespace Configuration::Globals;
 *                                     *
 **************************************/
 
-bool        Configuration::Globals::correlation = false;
-std::string Configuration::Globals::correlation_file;
-int         Configuration::Globals::instance = 0;
-std::string Configuration::Globals::instance_name;
+bool        config::globals::correlation = false;
+std::string config::globals::correlation_file;
+int         config::globals::instance = 0;
+std::string config::globals::instance_name;

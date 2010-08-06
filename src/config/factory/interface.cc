@@ -21,7 +21,6 @@
 #include <memory>
 #include "config/factory.hh"
 #include "interface/db/destination.h"
-#include "interface/factory.h"
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
 #include "interface/ndo/sourcedestination.h"

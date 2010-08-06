@@ -22,7 +22,7 @@
 #include <utility>
 #include "concurrency/lock.h"
 #include "concurrency/mutex.h"
-#include "configuration/globals.h"
+#include "config/globals.hh"
 #include "correlation/correlator.h"
 #include "events/events.h"
 #include "logging/logging.hh"
@@ -107,7 +107,7 @@ void Publisher::Correlate()
 {
   Concurrency::Lock lock(gl_correlatorm);
 
-  gl_correlator.Load(Configuration::Globals::correlation_file.c_str());
+  gl_correlator.Load(config::globals::correlation_file.c_str());
   return ;
 }
 
@@ -125,7 +125,7 @@ void Publisher::Event(Events::Event* event)
   std::list<Subscriber*>::iterator end;
 
   // Pass object to correlation.
-  if (Configuration::Globals::correlation)
+  if (config::globals::correlation)
     {
       Concurrency::Lock lock(gl_correlatorm);
 

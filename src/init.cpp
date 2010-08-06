@@ -21,7 +21,7 @@
 #ifdef USE_MYSQL
 # include <mysql.h>                // for mysql_library_init
 #endif /* !USE_MYSQL */
-#include "configuration/manager.h"
+#include <xercesc/util/PlatformUtils.hpp>
 #include "exception.h"
 #include "init.h"
 #include "interface/db/internal.h"
@@ -45,7 +45,7 @@ void Deinit()
 {
   // Unload configuration.
   LOGDEBUG("Unloading configuration ...");
-  Configuration::Manager::Instance().Close();
+  // XXX
 
 #ifdef USE_TLS
   // Unload GNU TLS library.
@@ -59,6 +59,9 @@ void Deinit()
   mysql_library_end();
 #endif /* USE_MYSQL */
 
+  // Unload Xerces-C++ engine.
+  xercesc::XMLPlatformUtils::Terminate();
+
   logging::clear();
 
   return ;
@@ -69,6 +72,9 @@ void Deinit()
  */
 void Init()
 {
+  // Initialize Xerces-C++ engine.
+  xercesc::XMLPlatformUtils::Initialize();
+
 #ifdef USE_MYSQL
   // Initialize MySQL library.
   LOGDEBUG("Initializing MySQL library ...");
