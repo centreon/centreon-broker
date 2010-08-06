@@ -24,6 +24,7 @@
 # include <list>
 # include <stack>
 # include <xercesc/sax2/DefaultHandler.hpp>
+# include <xercesc/util/XercesVersion.hpp>
 # include "config/interface.hh"
 # include "config/logger.hh"
 
@@ -94,7 +95,11 @@ namespace                     config
     void                      _parse_properties(XMLCh const* localname,
                                                 _tag_id const tag_to_id[]);
     void                      characters(XMLCh const* const chars,
+# if XERCES_VERSION_MAJOR >= 3
                                          XMLSize_t const length);
+# else
+                                         unsigned int const length);
+#endif /* XERCES_VERSION_MAJOR */
     void                      endElement(XMLCh const* const uri,
                                          XMLCh const* const localname,
                                          XMLCh const* const qname);

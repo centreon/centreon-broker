@@ -146,7 +146,11 @@ void parser::_parse_properties(XMLCh const* localname,
  *  @param[in] length Length of chars.
  */
 void parser::characters(XMLCh const* const chars,
+#if XERCES_VERSION_MAJOR >= 3
                         XMLSize_t const length)
+#else
+                        unsigned int const length)
+#endif /* XERCES_VERSION_MAJOR */
 {
   char* data;
 
