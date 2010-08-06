@@ -73,7 +73,7 @@ void config::handle()
     {
       logging::backend* obj;
 
-      obj = factory::build(*it);
+      obj = factory::build_logger(*it);
       if (obj)
 	logging::log_on(obj, it->types(), it->level());
     }

@@ -41,7 +41,7 @@ using namespace config;
  *
  *  @return Backend object.
  */
-logging::backend* factory::build(logger const& conf)
+logging::backend* factory::build_logger(logger const& conf)
 {
   logging::backend* obj;
 

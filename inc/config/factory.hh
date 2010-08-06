@@ -21,14 +21,28 @@
 #ifndef CONFIG_FACTORY_HH_
 # define CONFIG_FACTORY_HH_
 
+# include "config/interface.hh"
 # include "config/logger.hh"
+# include "interface/destination.h"
+# include "interface/source.h"
+# include "interface/sourcedestination.h"
+# include "io/acceptor.h"
 # include "logging/backend.hh"
 
-namespace             config
+namespace                         config
 {
-  namespace           factory
+  namespace                       factory
   {
-    logging::backend* build(config::logger const& conf);
+    IO::Acceptor*                 build_acceptor(
+                                    config::interface const& conf);
+    Interface::Destination*       build_destination(
+                                    config::interface const& conf);
+    logging::backend*             build_logger(
+                                    config::logger const& conf);
+    Interface::Source*            build_source(
+                                    config::interface const& conf);
+    Interface::SourceDestination* build_sourcedestination(
+                                    config::interface const& conf);
   }
 }
 

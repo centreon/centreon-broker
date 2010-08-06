@@ -177,7 +177,8 @@ target_link_libraries(roker ${GNUTLS_LIBRARIES})
 
 # Common sources files.
 set(COMMON_SOURCES
-        ../../src/config/factory.cc
+        ../../src/config/factory/interface.cc
+	../../src/config/factory/logger.cc
 	../../src/config/handle.cc
 	../../src/config/interface.cc
 	../../src/config/logger.cc
