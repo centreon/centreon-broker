@@ -43,7 +43,11 @@ namespace                     config
     {
       _unknown = 0,
       _conf,
+      _correlation,
+      _correlation_file,
       _input,
+      _instance,
+      _instance_name,
       _interface_db,
       _interface_failover,
       _interface_filename,

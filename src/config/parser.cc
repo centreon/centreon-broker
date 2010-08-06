@@ -25,6 +25,7 @@
 #include <xercesc/sax2/SAX2XMLReader.hpp>
 #include <xercesc/sax2/XMLReaderFactory.hpp>
 #include <xercesc/util/XMLString.hpp>
+#include "config/globals.hh"
 #include "config/parser.hh"
 #include "exceptions/basic.hh"
 #include "logging/logging.hh"
@@ -184,6 +185,18 @@ void parser::endElement(XMLCh const* const uri,
      case _input:
      case _output:
      case _logger:
+      break ;
+     case _correlation:
+      globals::correlation = strtol(_data.c_str(), NULL, 0);
+      break ;
+     case _correlation_file:
+      globals::correlation_file = _data;
+      break ;
+     case _instance:
+      globals::instance = strtol(_data.c_str(), NULL, 0);
+      break ;
+     case _instance_name:
+      globals::instance_name = _data;
       break ;
      case _interface_db:
       if (_current.top() == _input)
@@ -417,11 +430,19 @@ void parser::startElement(XMLCh const* const uri,
         name = xercesc::XMLString::transcode(localname);
         if (!name)
           throw (exceptions::basic() << "Empty token.");
-        if (!strcmp(name, "input"))
+        if (!strcmp(name, "correlation"))
+          _current.push(_correlation);
+        else if (!strcmp(name, "correlation_file"))
+          _current.push(_correlation_file);
+        else if (!strcmp(name, "input"))
           {
             _current.push(_input);
             _inputs.push_back(interface());
           }
+        else if (!strcmp(name, "instance"))
+          _current.push(_instance);
+        else if (!strcmp(name, "instance_name"))
+          _current.push(_instance_name);
         else if (!strcmp(name, "logger"))
           {
             _current.push(_logger);
