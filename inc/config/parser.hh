@@ -22,10 +22,12 @@
 # define CONFIG_PARSER_HH_
 
 # include <list>
+# include <stack>
 # include <xercesc/sax2/DefaultHandler.hpp>
+# include "config/interface.hh"
 # include "config/logger.hh"
 
-namespace                config
+namespace                     config
 {
   /**
    *  @class parser parser.hh "config/parser.hh"
@@ -34,12 +36,32 @@ namespace                config
    *  Parse a configuration file and generate appropriate objects for further
    *  handling.
    */
-  class                  parser : private xercesc::DefaultHandler
+  class                       parser : private xercesc::DefaultHandler
   {
    private:
-    enum                 _current_type
+    enum                      _current_type
     {
       _unknown = 0,
+      _input,
+      _interface_db,
+      _interface_failover,
+      _interface_filename,
+      _interface_host,
+      _interface_name,
+      _interface_net_iface,
+      _interface_password,
+      _interface_port,
+      _interface_protocol,
+      _interface_socket,
+      _interface_type,
+      _interface_user,
+# ifdef USE_TLS
+      _interface_ca,
+      _interface_cert,
+      _interface_compress,
+      _interface_key,
+      _interface_tls,
+# endif /* !USE_TLS */
       _logger,
       _logger_config,
       _logger_debug,
@@ -47,36 +69,44 @@ namespace                config
       _logger_info,
       _logger_level,
       _logger_name,
-      _logger_type
+      _logger_type,
+      _output
     };
-    struct               _tag_id
+    struct                    _tag_id
     {
-      char const*        tag;
-      _current_type      id;
+      char const*             tag;
+      _current_type           id;
     };
-    _current_type        _current;
-    std::string          _data;
-    std::list<logger>    _loggers;
-    static _tag_id const _tag_to_id[];
-    void                 _clear();
-    void                 _internal_copy(parser const& p);
-    void                 characters(XMLCh const* const chars,
-                                    XMLSize_t const length);
-    void                 endElement(XMLCh const* const uri,
-                                    XMLCh const* const localname,
-                                    XMLCh const* const qname);
-    void                 startElement(XMLCh const* const uri,
-                                      XMLCh const* const localname,
-                                      XMLCh const* const qname,
-                                      xercesc::Attributes const& attrs);
+    std::stack<_current_type> _current;
+    std::string               _data;
+    std::list<interface>      _inputs;
+    std::list<logger>         _loggers;
+    std::list<interface>      _outputs;
+    static _tag_id const      _interface_tag_to_id[];
+    static _tag_id const      _logger_tag_to_id[];
+    void                      _clear();
+    void                      _internal_copy(parser const& p);
+    void                      _parse_properties(XMLCh const* localname,
+                                                _tag_id const tag_to_id[]);
+    void                      characters(XMLCh const* const chars,
+                                         XMLSize_t const length);
+    void                      endElement(XMLCh const* const uri,
+                                         XMLCh const* const localname,
+                                         XMLCh const* const qname);
+    void                      startElement(XMLCh const* const uri,
+                                           XMLCh const* const localname,
+                                           XMLCh const* const qname,
+                                           xercesc::Attributes const& attrs);
 
    public:
-                         parser();
-                         parser(parser const& p);
-                         ~parser();
-    parser&              operator=(parser const& p);
-    std::list<logger>&   loggers();
-    void                 parse(std::string const& file);
+                              parser();
+                              parser(parser const& p);
+                              ~parser();
+    parser&                   operator=(parser const& p);
+    std::list<interface>&     inputs();
+    std::list<logger>&        loggers();
+    std::list<interface>&     outputs();
+    void                      parse(std::string const& file);
   };
 }
 

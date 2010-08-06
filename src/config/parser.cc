@@ -38,9 +38,32 @@ using namespace config;
 **************************************/
 
 /**
- *  Association between tag name and its id.
+ *  Associations between tag name and its id.
  */
-parser::_tag_id const parser::_tag_to_id[] =
+parser::_tag_id const parser::_interface_tag_to_id[] =
+{
+  {"db", _interface_db},
+  {"failover", _interface_failover},
+  {"filename", _interface_filename},
+  {"host", _interface_host},
+  {"name", _interface_name},
+  {"net_iface", _interface_net_iface},
+  {"password", _interface_password},
+  {"port", _interface_port},
+  {"protocol", _interface_protocol},
+  {"socket", _interface_socket},
+  {"type", _interface_type},
+  {"user", _interface_user},
+#ifdef USE_TLS
+  {"ca", _interface_ca},
+  {"cert", _interface_cert},
+  {"compress", _interface_compress},
+  {"key", _interface_key},
+  {"tls", _interface_tls},
+#endif /* !USE_TLS */
+  {NULL, _unknown}
+};
+parser::_tag_id const parser::_logger_tag_to_id[] =
 {
   {"config", _logger_config},
   {"debug", _logger_debug},
@@ -48,7 +71,8 @@ parser::_tag_id const parser::_tag_to_id[] =
   {"info", _logger_info},
   {"level", _logger_level},
   {"name", _logger_name},
-  {"type", _logger_type}
+  {"type", _logger_type},
+  {NULL, _unknown}
 };
 
 /**************************************
@@ -62,8 +86,12 @@ parser::_tag_id const parser::_tag_to_id[] =
  */
 void parser::_clear()
 {
-  _current = _unknown;
+  while (!_current.empty())
+    _current.pop();
+  _current.push(_unknown);
+  _inputs.clear();
   _loggers.clear();
+  _outputs.clear();
   return ;
 }
 
@@ -76,6 +104,37 @@ void parser::_internal_copy(parser const& p)
 {
   _current = p._current;
   _loggers = p._loggers;
+  return ;
+}
+
+/**
+ *  Parse properties of main tags.
+ */
+void parser::_parse_properties(XMLCh const* localname,
+                               parser::_tag_id const tag_to_id[])
+{
+  _current_type prev;
+  char* tag;
+
+  tag = xercesc::XMLString::transcode(localname);
+  if (!tag)
+    throw (exceptions::basic() << "Empty token.");
+  prev = _current.top();
+  for (unsigned int i = 0; tag_to_id[i].tag; ++i)
+    if (!strcmp(tag, tag_to_id[i].tag))
+      {
+        _current.push(tag_to_id[i].id);
+        break ;
+      }
+  if (_current.top() == prev)
+    {
+      exceptions::basic e;
+
+      e << "Invalid token \"" << tag << "\"";
+      xercesc::XMLString::release(&tag);
+      throw (e);
+    }
+  xercesc::XMLString::release(&tag);
   return ;
 }
 
@@ -112,29 +171,135 @@ void parser::endElement(XMLCh const* const uri,
                         XMLCh const* const localname,
                         XMLCh const* const qname)
 {
+  _current_type prev;
+
   (void)uri;
   (void)localname;
   (void)qname;
-  switch (_current)
+  prev = _current.top();
+  _current.pop();
+  switch (prev)
     {
+     case _input:
+     case _output:
      case _logger:
-      _current = _unknown;
       break ;
+     case _interface_db:
+      if (_current.top() == _input)
+        _inputs.back().db = _data;
+      else
+        _outputs.back().db = _data;
+      break ;
+     case _interface_failover:
+      if (_current.top() == _input)
+        _inputs.back().failover_name = _data;
+      else
+        _outputs.back().failover_name = _data;
+      break ;
+     case _interface_filename:
+      if (_current.top() == _input)
+        _inputs.back().filename = _data;
+      else
+        _outputs.back().filename = _data;
+      break ;
+     case _interface_host:
+      if (_current.top() == _input)
+        _inputs.back().host = _data;
+      else
+        _outputs.back().host = _data;
+      break ;
+     case _interface_name:
+      if (_current.top() == _input)
+        _inputs.back().name = _data;
+      else
+        _outputs.back().name = _data;
+      break ;
+     case _interface_net_iface:
+      if (_current.top() == _input)
+        _inputs.back().net_iface = _data;
+      else
+        _outputs.back().net_iface = _data;
+      break ;
+     case _interface_password:
+      if (_current.top() == _input)
+        _inputs.back().password = _data;
+      else
+        _outputs.back().password = _data;
+      break ;
+     case _interface_port:
+      if (_current.top() == _input)
+        _inputs.back().port = strtol(_data.c_str(), NULL, 0);
+      else
+        _outputs.back().port = strtol(_data.c_str(), NULL, 0);
+      break ;
+     case _interface_protocol:
+      {
+        interface::protocol_type p;
+        if (!strcasecmp(_data.c_str(), "ndo"))
+          p = interface::ndo;
+        else if (!strcasecmp(_data.c_str(), "xml"))
+          p = interface::xml;
+        else
+          p = interface::unknown_proto;
+        if (_current.top() == _input)
+          _inputs.back().protocol = p;
+        else
+          _outputs.back().protocol = p;
+      }
+      break ;
+     case _interface_socket:
+    case _interface_type:
+      // XXX
+      break ;
+     case _interface_user:
+      if (_current.top() == _input)
+        _inputs.back().user = _data;
+      else
+        _outputs.back().user = _data;
+      break ;
+#ifdef USE_TLS
+     case _interface_ca:
+      if (_current.top() == _input)
+        _inputs.back().ca = _data;
+      else
+        _outputs.back().ca = _data;
+      break ;
+     case _interface_cert:
+      if (_current.top() == _input)
+        _inputs.back().cert = _data;
+      else
+        _outputs.back().cert = _data;
+      break ;
+     case _interface_compress:
+      if (_current.top() == _input)
+        _inputs.back().compress = strtol(_data.c_str(), NULL, 0);
+      else
+        _outputs.back().compress = strtol(_data.c_str(), NULL, 0);
+      break ;
+     case _interface_key:
+      if (_current.top() == _input)
+        _inputs.back().key = _data;
+      else
+        _outputs.back().key = _data;
+      break ;
+     case _interface_tls:
+      if (_current.top() == _input)
+        _inputs.back().tls = strtol(_data.c_str(), NULL, 0);
+      else
+        _outputs.back().tls = strtol(_data.c_str(), NULL, 0);
+      break ;
+#endif /* USE_TLS */
      case _logger_config:
       _loggers.back().config(strtol(_data.c_str(), NULL, 0));
-      _current = _logger;
       break ;
      case _logger_debug:
       _loggers.back().debug(strtol(_data.c_str(), NULL, 0));
-      _current = _logger;
       break ;
      case _logger_error:
       _loggers.back().error(strtol(_data.c_str(), NULL, 0));
-      _current = _logger;
       break ;
      case _logger_info:
       _loggers.back().info(strtol(_data.c_str(), NULL, 0));
-      _current = _logger;
       break ;
      case _logger_level:
       {
@@ -151,11 +316,9 @@ void parser::endElement(XMLCh const* const uri,
         else
           lvl = logging::LOW;
       }
-      _current = _logger;
       break ;
      case _logger_name:
       _loggers.back().name(_data);
-      _current = _logger;
       break ;
      case _logger_type:
       {
@@ -172,7 +335,6 @@ void parser::endElement(XMLCh const* const uri,
                                      << _data.c_str() << "\"");
         _loggers.back().type(t);
       }
-      _current = _logger;
       break ;
      default:
       throw (exceptions::basic() << "Bug in the config parsing engine.");
@@ -199,7 +361,7 @@ void parser::startElement(XMLCh const* const uri,
   (void)qname;
   (void)attrs;
   _data.clear();
-  switch (_current)
+  switch (_current.top())
     {
      case _unknown:
       {
@@ -208,10 +370,20 @@ void parser::startElement(XMLCh const* const uri,
         name = xercesc::XMLString::transcode(localname);
         if (!name)
           throw (exceptions::basic() << "Empty token.");
-        if (!strcmp(name, "logger"))
+        if (!strcmp(name, "input"))
           {
-            _current = _logger;
+            _current.push(_input);
+            _inputs.push_back(interface());
+          }
+        else if (!strcmp(name, "logger"))
+          {
+            _current.push(_logger);
             _loggers.push_back(logger());
+          }
+        else if (!strcmp(name, "output"))
+          {
+            _current.push(_output);
+            _outputs.push_back(interface());
           }
         else
           {
@@ -224,31 +396,12 @@ void parser::startElement(XMLCh const* const uri,
         xercesc::XMLString::release(&name);
       }
       break ;
+     case _input:
+     case _output:
+      _parse_properties(localname, _interface_tag_to_id);
+      break ;
      case _logger:
-      {
-        char* tag;
-
-        tag = xercesc::XMLString::transcode(localname);
-        if (!tag)
-          throw (exceptions::basic() << "Empty token.");
-        for (unsigned int i = 0;
-             i < sizeof(_tag_to_id) / sizeof(*_tag_to_id);
-             ++i)
-          if (!strcmp(tag, _tag_to_id[i].tag))
-            {
-              _current = _tag_to_id[i].id;
-              break ;
-            }
-        if (_current == _logger)
-          {
-            exceptions::basic e;
-
-            e << "Invalid token \"" << tag << "\"";
-            xercesc::XMLString::release(&tag);
-            throw (e);
-          }
-        xercesc::XMLString::release(&tag);
-      }
+      _parse_properties(localname, _logger_tag_to_id);
       break ;
      default:
       {
@@ -273,7 +426,10 @@ void parser::startElement(XMLCh const* const uri,
 /**
  *  Default constructor.
  */
-parser::parser() : _current(parser::_unknown) {}
+parser::parser()
+{
+  _current.push(_unknown);
+}
 
 /**
  *  Copy constructor.
@@ -304,6 +460,16 @@ parser& parser::operator=(parser const& p)
 }
 
 /**
+ *  Return the list of parsed input objects.
+ *
+ *  @return List of parsed input objects.
+ */
+std::list<interface>& parser::inputs()
+{
+  return (_inputs);
+}
+
+/**
  *  Return the list of parsed logger objects.
  *
  *  @return List of parsed logger objects.
@@ -311,6 +477,16 @@ parser& parser::operator=(parser const& p)
 std::list<logger>& parser::loggers()
 {
   return (_loggers);
+}
+
+/**
+ *  Return the list of parsed output objects.
+ *
+ *  @return List of parsed output objects.
+ */
+std::list<interface>& parser::outputs()
+{
+  return (_outputs);
 }
 
 /**

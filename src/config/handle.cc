@@ -78,6 +78,24 @@ void config::handle()
 	logging::log_on(obj, it->types(), it->level());
     }
 
+  // Create output objects.
+  for (std::list<interface>::iterator it = p.outputs().begin(),
+         end = p.outputs().end();
+       it != end;
+       ++ it)
+    {
+      // XXX
+    }
+
+  // Create input objects.
+  for (std::list<interface>::iterator it = p.inputs().begin(),
+	 end = p.inputs().end();
+       it != end;
+       ++it)
+    {
+      // XXX
+    }
+
   // Register callback for runtime configuration update.
   logging::debug << logging::LOW << "Registering callback for runtime "
                                     "configuration update.";
