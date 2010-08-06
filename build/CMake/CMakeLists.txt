@@ -36,6 +36,11 @@ else ()
   message(STATUS "Debug messages enabled.")
 endif ()
 
+# Find Xerces-C++.
+set(XercesC_DIR .)
+find_package(XercesC REQUIRED)
+include_directories(${XERCESC_INCLUDE_DIR})
+
 # Find SOCI.
 set(SOCI_DIR .)
 find_package(SOCI REQUIRED)
@@ -194,6 +199,7 @@ set(COMMON_SOURCES
 # Standalone binary.
 add_executable(cbd ${COMMON_SOURCES} ../../src/daemon/main.cpp)
 target_link_libraries(cbd roker)
+target_link_libraries(cbd ${XERCESC_LIBRARIES})
 
 # Module.
 add_library(cbmod SHARED
@@ -204,6 +210,7 @@ add_library(cbmod SHARED
 	../../src/module/main.cpp
 )
 target_link_libraries(cbmod roker)
+target_link_libraries(cbmod ${XERCESC_LIBRARIES})
 
 # Install rules.
 install(TARGETS roker cbd
