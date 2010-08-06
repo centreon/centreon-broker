@@ -185,7 +185,7 @@ set(COMMON_SOURCES
 	../../src/config/parser.cc
 	../../src/correlation/correlator.cpp
 	../../src/correlation/node.cpp
-	../../src/correlation/parser.cpp
+	../../src/correlation/parser.cc
 	../../src/init.cpp
 	../../src/multiplexing/internal.cpp
 	../../src/multiplexing/publisher.cpp

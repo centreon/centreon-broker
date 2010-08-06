@@ -21,7 +21,7 @@
 #include <assert.h>
 #include <time.h>
 #include "correlation/correlator.h"
-#include "correlation/parser.h"
+#include "correlation/parser.hh"
 #include "events/host.h"
 #include "events/issue.h"
 #include "events/issue_update.h"
@@ -470,8 +470,8 @@ Events::Event* Correlator::Event()
  */
 void Correlator::Load(const char* correlation_file)
 {
-  Parser parser;
+  parser p;
 
-  parser.Parse(correlation_file, this->hosts_, this->services_);
+  p.parse(correlation_file, this->hosts_, this->services_);
   return ;
 }
