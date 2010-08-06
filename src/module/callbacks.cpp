@@ -385,6 +385,7 @@ int CallbackProcess(int callback_type, void *data)
         {
           std::auto_ptr<Events::Program> program(new Events::Program);
 
+	  logging::log_on(gl_initial_logger, 0, logging::NONE);
 	  config::handle(gl_configuration_file);
           // program->daemon_mode = XXX;
           program->instance_id = config::globals::instance;

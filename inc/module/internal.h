@@ -24,10 +24,14 @@
 # include <map>
 # include <string>
 # include <utility>
+# include "logging/backend.hh"
 # include "multiplexing/publisher.h"
 
 // Configuration file name.
 extern std::string gl_configuration_file;
+
+// Initial logging object.
+extern logging::backend* gl_initial_logger;
 
 // List of host IDs.
 extern std::map<std::string, int> gl_hosts;

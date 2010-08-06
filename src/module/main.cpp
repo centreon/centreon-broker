@@ -21,6 +21,8 @@
 #include <stddef.h>                 // for NULL
 #include "callbacks.h"
 #include "init.h"
+#include "logging/logging.hh"
+#include "logging/syslogger.hh"
 #include "module/internal.h"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
@@ -36,6 +38,9 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 // Configuration file name.
 std::string gl_configuration_file;
+
+// Initial logging object.
+logging::backend* gl_initial_logger = NULL;
 
 // List of host IDs.
 std::map<std::string, int> gl_hosts;
@@ -185,6 +190,12 @@ extern "C"
         // Set configuration file.
         if (args)
           gl_configuration_file = args;
+
+        // Initial logging object.
+        gl_initial_logger = new logging::syslogger;
+        logging::log_on(gl_initial_logger,
+                        logging::CONFIG | logging::ERROR,
+                        logging::HIGH);
       }
     catch (...)
       {
