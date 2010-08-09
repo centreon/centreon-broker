@@ -56,6 +56,9 @@ namespace              config
                        logger(logger const& l);
                        ~logger();
     logger&            operator=(logger const& l);
+    bool               operator==(logger const& l) const;
+    bool               operator!=(logger const& l) const;
+    bool               operator<(logger const& l) const;
     void               config(bool c);
     bool               config() const;
     void               debug(bool d);

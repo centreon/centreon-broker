@@ -85,6 +85,62 @@ logger& logger::operator=(logger const& l)
 }
 
 /**
+ *  Equality operator overload.
+ *
+ *  @param[in] l Logger to compare to.
+ *
+ *  @return true if objects are equivalent, false otherwise.
+ */
+bool logger::operator==(logger const& l) const
+{
+  bool ret;
+
+  ret = ((_level == l._level)
+	 && (_type == l._type)
+	 && (_types == l._types));
+  if (ret && ((file == _type) || (standard == _type)))
+    ret = (ret && (_name == l._name));
+  return (ret);
+}
+
+/**
+ *  Non-equality operator overload.
+ *
+ *  @param[in] l Logger to compare to.
+ *
+ *  @return true if objects are different, false otherwise.
+ */
+bool logger::operator!=(logger const& l) const
+{
+  return (!(*this == l));
+}
+
+/**
+ *  Stricly inferior operator overload.
+ *
+ *  @param[in] l Logger to compare to.
+ *
+ *  @return true if current logger is stricly inferior to the argument.
+ */
+bool logger::operator<(logger const& l) const
+{
+  bool ret;
+
+  if (_level != l._level)
+    ret = (_level < l._level);
+  else if (_type != l._type)
+    ret = (_type < l._type);
+  else if (_types != l._types)
+    ret = (_types < l._types);
+  else if (((file == _type) || (standard == _type))
+	   && (_name != l._name))
+    ret = (_name < l._name);
+  else
+    ret = false;
+  return (ret);
+}
+
+/**
  *  Set the config parameter.
  *
  *  @param[in] c New value.
