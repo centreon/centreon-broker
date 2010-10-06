@@ -20,7 +20,7 @@
 
 # Global options.
 cmake_minimum_required(VERSION 2.6)
-project(CENTREONBROKER CXX)
+project(CENTREONBROKER C CXX)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 include_directories(../../inc/ ../../inc/daemon ../../inc/module/)
 
@@ -34,6 +34,12 @@ if (NOT debug)
   message(STATUS "Debug messages disabled.")
 else ()
   message(STATUS "Debug messages enabled.")
+endif ()
+
+# Find pthread library.
+include("FindThreads")
+if (NOT CMAKE_USE_PTHREADS_INIT)
+  message(FATAL_ERROR "Could not find pthread library.")
 endif ()
 
 # Find Xerces-C++.
@@ -173,6 +179,7 @@ target_link_libraries(roker ${SOCIMYSQL_LIBRARIES})
 target_link_libraries(roker ${SOCIORACLE_LIBRARIES})
 target_link_libraries(roker ${SOCIPOSTGRESQL_LIBRARIES})
 target_link_libraries(roker ${GNUTLS_LIBRARIES})
+target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
 set(COMMON_SOURCES
