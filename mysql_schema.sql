@@ -320,10 +320,10 @@ CREATE TABLE issues (
 -- Issues parenting.
 --
 CREATE TABLE issue_parent (
-  child_issue_id int,
-  end_time int,
-  start_time int,
-  parent_issue_id int,
+  child_issue_id int NOT NULL,
+  end_time int default NULL,
+  start_time int NOT NULL,
+  parent_issue_id int NOT NULL,
 
   FOREIGN KEY (child_issue_id) REFERENCES issues (issue_id)
     ON DELETE CASCADE,

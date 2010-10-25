@@ -415,9 +415,59 @@ void Destination::ProcessIssue(const Events::Event& event)
  */
 void Destination::ProcessIssueParent(const Events::Event& event)
 {
-  // SELECT IDs
-  // INSERT (id1, id2)
-  // XXX
+  Events::IssueParent const& ip(
+    *static_cast<Events::IssueParent const*>(&event));
+  int child_id;
+  int parent_id;
+
+  LOGDEBUG("Processing IssueParent event ...");
+
+  // Get child ID.
+  {
+    std::ostringstream query;
+    query << "SELECT issue_id FROM issues WHERE host_id="
+          << ip.child_host_id << " AND service_id="
+          << ip.child_service_id << " AND start_time="
+          << ip.child_start_time;
+    logging::debug << logging::LOW << query.str().c_str();
+    *this->conn_ << query.str(), soci::into(child_id);
+    logging::debug << logging::LOW << "Child issue ID: " << child_id;
+  }
+
+  // Get parent ID.
+  {
+    std::ostringstream query;
+    query << "SELECT issue_id FROM issues WHERE host_id="
+          << ip.parent_host_id << " AND service_id="
+          << ip.parent_service_id << " AND start_time="
+          << ip.parent_start_time;
+    logging::debug << logging::LOW << query.str().c_str();
+    *this->conn_ << query.str(), soci::into(parent_id);
+    logging::debug << logging::LOW << "Parent issue ID: " << parent_id;
+  }
+
+  if (ip.end_time)
+    {
+      std::ostringstream query;
+      query << "UPDATE issue_parent SET end_time="
+            << ip.end_time << " WHERE child_issue_id="
+            << child_id << " AND parent_issue_id="
+            << parent_id << " AND start_time="
+            << ip.start_time;
+      logging::debug << logging::LOW << query.str().c_str();
+      *this->conn_ << query.str();
+    }
+  else
+    {
+      std::ostringstream query;
+      query << "INSERT INTO issue_parent (child_issue_id, parent_issue_id, start_time) VALUES("
+            << child_id << ", "
+            << parent_id << ", "
+            << ip.start_time << ")";
+      logging::debug << logging::LOW << query.str().c_str();
+      *this->conn_ << query.str();
+    }
+
   return ;
 }
 

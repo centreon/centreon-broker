@@ -132,6 +132,19 @@ void Publisher::Event(Events::Event* event)
       gl_correlator.Event(*event);
     }
 
+  // Send object to every subscriber.
+  {
+    Concurrency::Lock lock(gl_subscribersm);
+    end = gl_subscribers.end();
+    for (std::list<Subscriber*>::iterator it = gl_subscribers.begin();
+         it != end;
+         ++it)
+      {
+        event->AddReader();
+        (*it)->Event(event);
+      }
+  }
+
   // Get correlated events.
   std::auto_ptr<Events::Event> correlated;
   {
@@ -139,6 +152,7 @@ void Publisher::Event(Events::Event* event)
 
     correlated.reset(gl_correlator.Event());
   }
+
   // Dispatch event recursively.
   if (correlated.get())
     {
@@ -147,17 +161,6 @@ void Publisher::Event(Events::Event* event)
       correlated.release();
     }
 
-  // Send object to every subscriber.
-  Concurrency::Lock lock(gl_subscribersm);
-
-  end = gl_subscribers.end();
-  for (std::list<Subscriber*>::iterator it = gl_subscribers.begin();
-       it != end;
-       ++it)
-    {
-      event->AddReader();
-      (*it)->Event(event);
-    }
   // Self deregistration.
   event->RemoveReader();
 
