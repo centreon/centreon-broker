@@ -1750,6 +1750,32 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>()
   };
 
+// state members mapping.
+static MappedData<state> const state_mapping[] =
+  {
+    MappedData<state>(
+      &state::current_state,
+      1,
+      "state"),
+    MappedData<state>(
+      &state::end_time,
+      2,
+      "end_time"),
+    MappedData<state>(
+      &state::host_id,
+      3,
+      "host_id"),
+    MappedData<state>(
+      &state::service_id,
+      4,
+      "service_id"),
+    MappedData<state>(
+      &state::start_time,
+      5,
+      "start_time"),
+    MappedData<state>()
+  };
+
 // Acknowledgement mapping.
 template <> const MappedData<Events::Acknowledgement>*
   MappedType<Events::Acknowledgement>::members(acknowledgement_mapping);
@@ -1875,3 +1901,9 @@ template <> const MappedData<Events::ServiceStatus>*
   MappedType<Events::ServiceStatus>::members(service_status_mapping);
 template <> const char*
   MappedType<Events::ServiceStatus>::table("services");
+
+// state mapping.
+template <> const MappedData<Events::state>*
+  MappedType<Events::state>::members(state_mapping);
+template <> const char*
+  MappedType<Events::state>::table("states");

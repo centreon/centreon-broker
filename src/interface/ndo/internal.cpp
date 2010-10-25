@@ -290,6 +290,9 @@ template <> std::map<int, GetterSetter<Events::ServiceGroupMember> >
 template <> std::map<int, GetterSetter<Events::ServiceStatus> >
   Interface::NDO::NDOMappedType<Events::ServiceStatus>::map =
     std::map<int, GetterSetter<Events::ServiceStatus> >();
+template <> std::map<int, GetterSetter<Events::state> >
+  Interface::NDO::NDOMappedType<Events::state>::map =
+    std::map<int, GetterSetter<Events::state> >();
 
 /**************************************
 *                                     *
@@ -325,5 +328,6 @@ void Interface::NDO::Initialize()
   static_init<Events::ServiceGroup>();
   static_init<Events::ServiceGroupMember>();
   static_init<Events::ServiceStatus>();
+  static_init<Events::state>();
   return ;
 }

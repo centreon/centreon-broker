@@ -226,6 +226,9 @@ Events::Event* Source::Event()
          case NDO_API_SERVICESTATUSDATA:
           event.reset(HandleEvent<Events::ServiceStatus>(this->stream_));
           break ;
+         case NDO_API_STATECHANGEDATA:
+          event.reset(HandleEvent<Events::state>(this->stream_));
+          break ;
          default:
           // Skip this event.
           while (id != NDO_API_ENDDATA)

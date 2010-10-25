@@ -42,5 +42,6 @@
 # include "events/service_group.h"
 # include "events/service_group_member.h"
 # include "events/service_status.h"
+# include "events/state.hh"
 
 #endif /* EVENTS_EVENTS_H_ */

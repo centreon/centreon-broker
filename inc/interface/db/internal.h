@@ -315,6 +315,18 @@ namespace                  soci
                                    values& v,
                                    indicator& ind);
   };
+
+  // State O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::state> {
+    typedef values         base_type;
+    static void            from_base(values const& v,
+                             indicator ind,
+                             Events::state& s);
+    static void            to_base(Events::state const& s,
+                             values& v,
+                             indicator& ind);
+  };
 }
 
 #endif /* !INTERFACE_DB_INTERNAL_H_ */

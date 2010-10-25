@@ -219,6 +219,9 @@ template <> std::map<std::string, GetterSetter<Events::ServiceGroupMember> >
 template <> std::map<std::string, GetterSetter<Events::ServiceStatus> >
   Interface::XML::XMLMappedType<Events::ServiceStatus>::map =
     std::map<std::string, GetterSetter<Events::ServiceStatus> >();
+template <> std::map<std::string, GetterSetter<Events::state> >
+  Interface::XML::XMLMappedType<Events::state>::map =
+    std::map<std::string, GetterSetter<Events::state> >();
 
 /**************************************
 *                                     *
@@ -254,5 +257,6 @@ void Interface::XML::Initialize()
   static_init<Events::ServiceGroup>();
   static_init<Events::ServiceGroupMember>();
   static_init<Events::ServiceStatus>();
+  static_init<Events::state>();
   return ;
 }

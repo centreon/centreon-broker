@@ -72,7 +72,8 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessServiceDependency,  // SERVICEDEPENDENCY
   &Destination::ProcessServiceGroup,       // SERVICEGROUP
   &Destination::ProcessServiceGroupMember, // SERVICEGROUPMEMBER
-  &Destination::ProcessServiceStatus       // SERVICESTATUS
+  &Destination::ProcessServiceStatus,      // SERVICESTATUS
+  &Destination::ProcessState
 };
 
 /**************************************
@@ -600,6 +601,18 @@ void Destination::ProcessServiceStatus(const Events::Event& event)
   LOGDEBUG("Processing ServiceStatus event ...");
   this->service_status_ = ss;
   this->service_status_stmt_->execute(true);
+  return ;
+}
+
+/**
+ *  Process a state event.
+ */
+void Destination::ProcessState(Events::Event const& event) {
+  Events::state const& s(
+    *static_cast<Events::state const*>(&event));
+
+  LOGDEBUG("Processing state event ...");
+  // XXX
   return ;
 }
 

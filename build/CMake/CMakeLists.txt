@@ -123,6 +123,7 @@ set(LIBROKER_SOURCES
 	../../src/events/service_group.cpp
 	../../src/events/service_group_member.cpp
 	../../src/events/service_status.cpp
+	../../src/events/state.cc
 	../../src/events/status.cpp
 	../../src/exception.cpp
 	../../src/exceptions/basic.cc

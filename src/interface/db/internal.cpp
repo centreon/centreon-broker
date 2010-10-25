@@ -235,6 +235,9 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceGroupMe
 template <> std::list<std::pair<std::string, GetterSetter<Events::ServiceStatus> > >
   Interface::DB::DBMappedType<Events::ServiceStatus>::list =
     std::list<std::pair<std::string, GetterSetter<Events::ServiceStatus> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::state> > >
+  Interface::DB::DBMappedType<Events::state>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::state> > >();
 
 /**************************************
 *                                     *
@@ -269,6 +272,7 @@ void Interface::DB::Initialize()
   static_init<Events::ServiceGroup>();
   static_init<Events::ServiceGroupMember>();
   static_init<Events::ServiceStatus>();
+  static_init<Events::state>();
   return ;
 }
 
@@ -809,5 +813,30 @@ void soci::type_conversion<Events::ServiceStatus>::to_base(
 {
   (void)ind;
   ToBase(ss, v);
+  return ;
+}
+
+/**
+ *  Extract state data from DB row.
+ */
+void soci::type_conversion<Events::state>::from_base(
+  soci::values const& v,
+  soci::indicator ind,
+  Events::state& s) {
+  (void)v;
+  (void)ind;
+  (void)s;
+  return ;
+}
+
+/**
+ *  Extract state data to DB row.
+ */
+void soci::type_conversion<Events::state>::to_base(
+  Events::state const& s,
+  soci::values& v,
+  soci::indicator& ind) {
+  (void)ind;
+  ToBase(s, v);
   return ;
 }

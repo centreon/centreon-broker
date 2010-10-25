@@ -277,6 +277,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::STATE:
+          buffer << NDO_API_STATECHANGEDATA << ":\n";
+          HandleEvent<Events::state>(
+            *static_cast<Events::state*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
         }
       buffer << "\n";
 

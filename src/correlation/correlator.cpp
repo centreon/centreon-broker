@@ -40,28 +40,29 @@ using namespace Correlation;
 // Dispatch table.
 void (Correlator::* Correlator::dispatch_table[])(Events::Event&) =
   {
-    &Correlator::CorrelateNothing,      // UNKNOWN
-    &Correlator::CorrelateNothing,      // ACKNOWLEDGEMENT
-    &Correlator::CorrelateNothing,      // COMMENT
-    &Correlator::CorrelateNothing,      // DOWNTIME
-    &Correlator::CorrelateNothing,      // HOST
-    &Correlator::CorrelateNothing,      // HOSTCHECK
-    &Correlator::CorrelateNothing,      // HOSTDEPENDENCY
-    &Correlator::CorrelateNothing,      // HOSTGROUP
-    &Correlator::CorrelateNothing,      // HOSTGROUPMEMBER
-    &Correlator::CorrelateNothing,      // HOSTPARENT
-    &Correlator::CorrelateHostStatus,   // HOSTSTATUS
-    &Correlator::CorrelateNothing,      // ISSUE
-    &Correlator::CorrelateNothing,      // ISSUEUPDATE
-    &Correlator::CorrelateLog,          // LOG
-    &Correlator::CorrelateNothing,      // PROGRAM
-    &Correlator::CorrelateNothing,      // PROGRAMSTATUS
-    &Correlator::CorrelateNothing,      // SERVICE
-    &Correlator::CorrelateNothing,      // SERVICECHECK
-    &Correlator::CorrelateNothing,      // SERVICEDEPENDENCY
-    &Correlator::CorrelateNothing,      // SERVICEGROUP
-    &Correlator::CorrelateNothing,      // SERVICEGROUPMEMBER
-    &Correlator::CorrelateServiceStatus // SERVICESTATUS
+    &Correlator::CorrelateNothing,       // UNKNOWN
+    &Correlator::CorrelateNothing,       // ACKNOWLEDGEMENT
+    &Correlator::CorrelateNothing,       // COMMENT
+    &Correlator::CorrelateNothing,       // DOWNTIME
+    &Correlator::CorrelateNothing,       // HOST
+    &Correlator::CorrelateNothing,       // HOSTCHECK
+    &Correlator::CorrelateNothing,       // HOSTDEPENDENCY
+    &Correlator::CorrelateNothing,       // HOSTGROUP
+    &Correlator::CorrelateNothing,       // HOSTGROUPMEMBER
+    &Correlator::CorrelateNothing,       // HOSTPARENT
+    &Correlator::CorrelateHostStatus,    // HOSTSTATUS
+    &Correlator::CorrelateNothing,       // ISSUE
+    &Correlator::CorrelateNothing,       // ISSUEUPDATE
+    &Correlator::CorrelateLog,           // LOG
+    &Correlator::CorrelateNothing,       // PROGRAM
+    &Correlator::CorrelateNothing,       // PROGRAMSTATUS
+    &Correlator::CorrelateNothing,       // SERVICE
+    &Correlator::CorrelateNothing,       // SERVICECHECK
+    &Correlator::CorrelateNothing,       // SERVICEDEPENDENCY
+    &Correlator::CorrelateNothing,       // SERVICEGROUP
+    &Correlator::CorrelateNothing,       // SERVICEGROUPMEMBER
+    &Correlator::CorrelateServiceStatus, // SERVICESTATUS
+    &Correlator::CorrelateNothing        // STATE
   };
 
 /**

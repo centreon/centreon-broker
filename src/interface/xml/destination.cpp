@@ -219,6 +219,11 @@ void Destination::Event(Events::Event* event)
           HandleEvent(*static_cast<Events::ServiceStatus*>(event),
             *xml_event);
           break ;
+         case Events::Event::STATE:
+          xml_event.reset(new TiXmlElement("state"));
+          HandleEvent(*static_cast<Events::state*>(event),
+            *xml_event);
+          break ;
          default:
           return ;
         }

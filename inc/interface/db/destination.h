@@ -98,6 +98,7 @@ namespace                         Interface
       void                        ProcessServiceGroup(const Events::Event& event);
       void                        ProcessServiceGroupMember(const Events::Event& event);
       void                        ProcessServiceStatus(const Events::Event& event);
+      void                        ProcessState(Events::Event const& event);
 
      public:
                                   Destination();

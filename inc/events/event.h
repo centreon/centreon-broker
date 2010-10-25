@@ -102,6 +102,7 @@ namespace              Events
       SERVICEGROUP,
       SERVICEGROUPMEMBER,
       SERVICESTATUS,
+      STATE,
       EVENT_TYPES_NB
     };
                        Event();
