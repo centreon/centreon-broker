@@ -18,6 +18,7 @@
 -- hostcommands
 -- hostgroups
 -- issues
+-- issue_parent
 -- logs
 -- notifications
 -- programs
@@ -337,16 +338,13 @@ END;
 -- Correlated issues.
 --
 CREATE TABLE issues (
-  id int NOT NULL,
+  issue_id int NOT NULL,
   host_id int default NULL,
   service_id int default NULL,
   start_time int NOT NULL,
   ack_time int default NULL,
   end_time int default NULL,
-  output clob default NULL,
-  state int default NULL,
-  status int default NULL,
-  PRIMARY KEY (id),
+  PRIMARY KEY (issue_id),
   UNIQUE (host_id, service_id, start_time)
 );
 CREATE SEQUENCE issues_seq
@@ -356,9 +354,23 @@ CREATE TRIGGER issues_trigger
 BEFORE INSERT ON issues
 FOR EACH ROW
 BEGIN
-  SELECT issues_seq.nextval INTO :NEW.id FROM dual;
+  SELECT issues_seq.nextval INTO :NEW.issue_id FROM dual;
 END;
 /
+
+
+--
+-- Issues parenting.
+--
+CREATE TABLE issue_parent (
+  child_issue_id int,
+  parent_issue_id int,
+
+  FOREIGN KEY (child_issue_id) REFERENCES issues (issue_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (parent_issue_id) REFERENCES issues (issue_id)
+    ON DELETE CASCADE
+);
 
 
 --
