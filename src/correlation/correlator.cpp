@@ -24,7 +24,7 @@
 #include "correlation/parser.hh"
 #include "events/host.h"
 #include "events/issue.h"
-#include "events/issue_update.h"
+#include "events/issue_parent.h"
 #include "events/service_status.h"
 #include "exception.h"
 #include "multiplexing/publisher.h"
@@ -139,126 +139,148 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
       node = &ss_it->second;
     }
 
+  if (hss.current_state && (hss.current_state != 3) && ShouldBeUnknown(*node))
+    hss.current_state = 3;
+
   if (node->state != hss.current_state)
     {
-      if (hss.current_state)
+      if (node->issue)
         {
-          Events::Issue* issue;
-
-          // Check if unknown flag should be set.
-          if (ShouldBeUnknown(*node))
+          // Issue is over.
+          if (!hss.current_state)
             {
-              hss.current_state = 3; // UNKNOWN
-              issue = this->FindRelatedIssue(*node);
+              node->issue->end_time = time(NULL);
+              this->events_.push_back(node->issue);
+              node->issue = NULL;
             }
-          // Warning -> Critical or Critical -> Warning.
-          else if (node->state && hss.current_state)
-            {
-              issue = this->FindRelatedIssue(*node);
-            }
-          else
-            {
-              // Set issue.
-              node->issue = new Events::Issue;
-              node->issue->Link();
-              node->issue->host_id = node->host_id;
-              node->issue->output = hss.output;
-              node->issue->service_id = node->service_id;
-              node->issue->state = hss.current_state;
-              node->issue->start_time = time(NULL);
+        }
+      else
+        {
+          // Set issue.
+          node->issue = new Events::Issue;
+          node->issue->host_id = node->host_id;
+          node->issue->service_id = node->service_id;
+          node->issue->start_time = time(NULL);
 
-              // Store issue. (XXX : not safe)
-              this->events_.push_back(new Events::Issue(*(node->issue)));
-
-              // Get current issue.
-              issue = node->issue;
-            }
+          // Store issue. (XXX : not safe)
+          this->events_.push_back(new Events::Issue(*(node->issue)));
 
           // Update state.
           node->state = hss.current_state;
 
-          // Loop children.
-          for (std::list<Node*>::iterator it = node->children.begin(),
-                 end = node->children.end();
-               it != end;
-               ++it)
-            if ((*it)->issue && ShouldBeUnknown(**it))
-              {
-                std::auto_ptr<Events::IssueUpdate> update;
+          // Declare parenting.
+          if (3 == node->state)
+            {
+              // Loop dependencies.
+              for (std::list<Node*>::iterator it = node->depends_on.begin(),
+                     end = node->depends_on.end();
+                   it != end;
+                   ++it)
+                if ((*it)->issue)
+                  {
+                    std::auto_ptr<Events::IssueParent> parenting;
 
-                (*it)->state = 3;
-                update.reset(new Events::IssueUpdate);
-                update->host_id1 = (*it)->host_id;
-                update->service_id1 = (*it)->service_id;
-                update->start_time1 = (*it)->issue->start_time;
-                update->host_id2 = node->host_id;
-                update->service_id2 = node->service_id;
-                update->start_time2 = issue->start_time;
-                update->update = Events::IssueUpdate::MERGE;
-                this->events_.push_back(update.get());
-                update.release();
-                delete ((*it)->issue);
-                (*it)->issue = NULL;
-              }
+                    parenting.reset(new Events::IssueParent);
+                    parenting->child_host_id = node->host_id;
+                    parenting->child_service_id = node->service_id;
+                    parenting->child_start_time = node->issue->start_time;
+                    parenting->parent_host_id = (*it)->host_id;
+                    parenting->parent_service_id = (*it)->service_id;
+                    parenting->parent_start_time = (*it)->issue->start_time;
+                    parenting->start_time = node->issue->start_time;
+                    this->events_.push_back(parenting.get());
+                    parenting.release();
+                  }
+
+              // Loop parents.
+              bool all_parent_issue = true;
+              for (std::list<Node*>::iterator it = node->parents.begin(),
+                     end = node->parents.end();
+                   it != end;
+                   ++it)
+                all_parent_issue = (all_parent_issue && (*it)->issue);
+              if (all_parent_issue)
+                {
+                  for (std::list<Node*>::iterator it = node->parents.begin(),
+                         end = node->parents.end();
+                       it != end;
+                       ++it)
+                    {
+                      std::auto_ptr<Events::IssueParent> parenting;
+
+                      parenting.reset(new Events::IssueParent);
+                      parenting->child_host_id = node->host_id;
+                      parenting->child_service_id = node->service_id;
+                      parenting->child_start_time = node->issue->start_time;
+                      parenting->parent_host_id = (*it)->host_id;
+                      parenting->parent_service_id = (*it)->service_id;
+                      parenting->parent_start_time = (*it)->issue->start_time;
+                      parenting->start_time = node->issue->start_time;
+                      this->events_.push_back(parenting.get());
+                      parenting.release();
+                    }
+                }
+            }
 
           // Loop dependant nodes.
           for (std::list<Node*>::iterator it = node->depended_by.begin(),
                  end = node->depended_by.end();
                it != end;
                ++it)
-            if ((*it)->issue && ShouldBeUnknown(**it))
+            if ((*it)->issue)
               {
-                std::auto_ptr<Events::IssueUpdate> update;
+                std::auto_ptr<Events::IssueParent> parenting;
 
-                (*it)->state = 3;
-                update.reset(new Events::IssueUpdate);
-                update->host_id1 = (*it)->host_id;
-                update->service_id1 = (*it)->service_id;
-                update->start_time1 = (*it)->issue->start_time;
-                update->host_id2 = node->host_id;
-                update->service_id2 = node->service_id;
-                update->start_time2 = issue->start_time;
-                update->update = Events::IssueUpdate::MERGE;
-                this->events_.push_back(update.get());
-                update.release();
-                delete ((*it)->issue);
-                (*it)->issue = NULL;
+                parenting.reset(new Events::IssueParent);
+                parenting->child_host_id = (*it)->host_id;
+                parenting->child_service_id = (*it)->service_id;
+                parenting->child_start_time = (*it)->issue->start_time;
+                parenting->parent_host_id = node->host_id;
+                parenting->parent_service_id = node->service_id;
+                parenting->parent_start_time = node->issue->start_time;
+                parenting->start_time = node->issue->start_time;
+                this->events_.push_back(parenting.get());
+                parenting.release();
+              }
+                
+          // Loop children.
+          for (std::list<Node*>::iterator it = node->children.begin(),
+                 end = node->children.end();
+               it != end;
+               ++it)
+            if ((*it)->issue)
+              {
+                // Check that all parents of the node have an issue.
+                bool all_parent_issue = true;
+                for (std::list<Node*>::iterator it2 = (*it)->parents.begin(),
+                       end2 = (*it)->parents.end();
+                     it2 != end2;
+                     ++it2)
+                  all_parent_issue = (all_parent_issue && (*it2)->issue);
+
+                if (all_parent_issue)
+                  for (std::list<Node*>::iterator it2 = (*it)->parents.begin(),
+                         end2 = (*it)->parents.end();
+                       it2 != end2;
+                       ++it2)
+                    {
+                      std::auto_ptr<Events::IssueParent> parenting;
+
+                      parenting.reset(new Events::IssueParent);
+                      parenting->child_host_id = (*it2)->host_id;
+                      parenting->child_service_id = (*it2)->service_id;
+                      parenting->child_start_time = (*it2)->issue->start_time;
+                      parenting->parent_host_id = node->host_id;
+                      parenting->parent_service_id = node->service_id;
+                      parenting->parent_start_time = node->issue->start_time;
+                      parenting->start_time = node->issue->start_time;
+                    }
               }
         }
-      else
-        {
-          // Issue is over.
-          node->state = hss.current_state;
-          if (node->issue)
-            {
-              for (std::list<Node*>::iterator it = node->children.begin(),
-                     end = node->children.end();
-                   it != end;
-                   ++it)
-                if ((*it)->state && !(*it)->issue)
-                  {
-                    node->issue->Link();
-                    (*it)->issue = node->issue;
-                  }
-              for (std::list<Node*>::iterator it = node->depended_by.begin(),
-                     end = node->depended_by.end();
-                   it != end;
-                   ++it)
-                if ((*it)->state && !(*it)->issue)
-                  {
-                    node->issue->Link();
-                    (*it)->issue = node->issue;
-                  }
-              if (node->issue->Unlink())
-                {
-                  node->issue->end_time = time(NULL);
-                  this->events_.push_back(node->issue);
-                }
-              node->issue = NULL;
-            }
-        }
+
+      // Create new state.
+      // XXX
     }
-  node->state = hss.current_state;
   return ;
 }
 

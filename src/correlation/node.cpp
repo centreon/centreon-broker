@@ -43,10 +43,7 @@ void Node::InternalCopy(const Node& node)
   this->depends_on  = node.depends_on;
   this->host_id     = node.host_id;
   if (node.issue)
-    {
-      this->issue = new Events::Issue(*(node.issue));
-      this->issue->Link();
-    }
+    this->issue = new Events::Issue(*(node.issue));
   else
     this->issue = NULL;
   this->parents     = node.parents;
@@ -81,7 +78,7 @@ Node::Node(const Node& node)
  */
 Node::~Node()
 {
-  if (this->issue && this->issue->Unlink())
+  if (this->issue)
     delete (this->issue);
 }
 
