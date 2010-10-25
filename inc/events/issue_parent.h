@@ -41,9 +41,11 @@ namespace        Events
     int          child_host_id;
     int          child_service_id;
     time_t       child_start_time;
+    time_t       end_time;
     int          parent_host_id;
     int          parent_service_id;
     time_t       parent_start_time;
+    time_t       start_time;
                  IssueParent();
                  IssueParent(const IssueParent& issue_parent);
                  ~IssueParent();

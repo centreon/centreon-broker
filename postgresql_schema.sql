@@ -320,6 +320,8 @@ CREATE TABLE issues (
 --
 CREATE TABLE issue_parent (
   child_issue_id int,
+  end_time int,
+  start_time int,
   parent_issue_id int,
 
   FOREIGN KEY (child_issue_id) REFERENCES issues (issue_id)

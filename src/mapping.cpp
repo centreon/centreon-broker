@@ -882,17 +882,25 @@ static const MappedData<IssueParent> issue_parent_mapping[] =
       3,
       "child_start_time"),
     MappedData<IssueParent>(
-      &IssueParent::parent_host_id,
+      &IssueParent::end_time,
       4,
+      "end_time"),
+    MappedData<IssueParent>(
+      &IssueParent::parent_host_id,
+      5,
       "parent_host_id"),
     MappedData<IssueParent>(
       &IssueParent::parent_service_id,
-      5,
+      6,
       "parent_service_id"),
     MappedData<IssueParent>(
       &IssueParent::parent_start_time,
-      6,
+      7,
       "parent_start_time"),
+    MappedData<IssueParent>(
+      &IssueParent::start_time,
+      8,
+      "start_time"),
     MappedData<IssueParent>()
   };
 

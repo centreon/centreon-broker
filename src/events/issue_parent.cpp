@@ -38,9 +38,11 @@ void IssueParent::InternalCopy(const IssueParent& issue_parent)
   this->child_host_id     = issue_parent.child_host_id;
   this->child_service_id  = issue_parent.child_service_id;
   this->child_start_time  = issue_parent.child_start_time;
+  this->end_time          = issue_parent.end_time;
   this->parent_host_id    = issue_parent.parent_host_id;
   this->parent_service_id = issue_parent.parent_service_id;
   this->parent_start_time = issue_parent.parent_start_time;
+  this->start_time        = issue_parent.start_time;
   return ;
 }
 
@@ -57,9 +59,11 @@ IssueParent::IssueParent()
   : child_host_id(0),
     child_service_id(0),
     child_start_time(0),
+    end_time(0),
     parent_host_id(0),
     parent_service_id(0),
-    parent_start_time(0) {}
+    parent_start_time(0),
+    start_time(0) {}
 
 /**
  *  Copy constructor.
