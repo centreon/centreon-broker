@@ -67,6 +67,8 @@ namespace                         Interface
       std::auto_ptr<soci::statement> service_check_stmt_;
       Events::ServiceStatus          service_status_;
       std::auto_ptr<soci::statement> service_status_stmt_;
+      Events::state                  state_;
+      std::auto_ptr<soci::statement> state_stmt_;
       std::auto_ptr<soci::session> conn_; // Connection object is necessary after statements.
                                   Destination(const Destination& destination);
       Destination&                operator=(const Destination& destination);

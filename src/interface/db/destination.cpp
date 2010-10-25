@@ -73,7 +73,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessServiceGroup,       // SERVICEGROUP
   &Destination::ProcessServiceGroupMember, // SERVICEGROUPMEMBER
   &Destination::ProcessServiceStatus,      // SERVICESTATUS
-  &Destination::ProcessState
+  &Destination::ProcessState               // STATE
 };
 
 /**************************************
@@ -612,7 +612,13 @@ void Destination::ProcessState(Events::Event const& event) {
     *static_cast<Events::state const*>(&event));
 
   LOGDEBUG("Processing state event ...");
-  // XXX
+  if (s.end_time)
+    {
+      this->state_ = s;
+      this->state_stmt_->execute(true);
+    }
+  else
+    this->Insert(s);
   return ;
 }
 
@@ -659,6 +665,7 @@ void Destination::Close()
   this->program_status_stmt_.reset();
   this->service_check_stmt_.reset();
   this->service_status_stmt_.reset();
+  this->state_stmt_.reset();
   this->conn_.reset();
   return ;
 }
@@ -790,6 +797,13 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("start_time");
   this->PrepareUpdate<Events::Issue>(
     this->issue_stmt_, this->issue_, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  this->PrepareUpdate<Events::state>(
+    this->state_stmt_, this->state_, id);
 
   id.clear();
   id.push_back("instance_id");
