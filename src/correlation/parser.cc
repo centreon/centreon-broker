@@ -349,9 +349,9 @@ void parser::startElement(XMLCh const* const uri,
          service_error_end:
           ;
         }
+      xercesc::XMLString::release(&value);
     }
-  xercesc::XMLString::release(&value);
-  return       ;
+  return ;
 }
 
 /**************************************

@@ -22,8 +22,9 @@
 #include <map>
 #include <signal.h>
 #include <string>
-#include "config/handle.hh"
 #include "config/factory.hh"
+#include "config/globals.hh"
+#include "config/handle.hh"
 #include "config/parser.hh"
 #include "logging/logging.hh"
 #include "multiplexing/publisher.h"
@@ -284,5 +285,7 @@ void config::handle(std::string const& config_file)
                   << config_file.c_str() << "\"";
   gl_config_file = config_file;
   handle();
+  if (globals::correlation)
+    Multiplexing::Publisher::Correlate();
   return ;
 }

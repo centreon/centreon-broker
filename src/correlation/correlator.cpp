@@ -152,6 +152,7 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
               node->issue->end_time = time(NULL);
               this->events_.push_back(node->issue);
               node->issue = NULL;
+              node->state = 0;
             }
         }
       else

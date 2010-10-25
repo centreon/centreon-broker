@@ -465,7 +465,7 @@ void Destination::ProcessLog(const Events::Event& event)
 
   // Fetch issue ID (if any).
   if (log.issue_start_time)
-    *this->conn_ << "SELECT id FROM "
+    *this->conn_ << "SELECT issue_id FROM "
                  << MappedType<Events::Issue>::table
                  << " WHERE host_id=" << log.host_id
                  << " AND service_id=" << log.service_id
