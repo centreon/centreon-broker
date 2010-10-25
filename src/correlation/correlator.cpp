@@ -180,6 +180,107 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
           // Issue is over.
           if (!node->state)
             {
+              // Issue parenting deletion.
+              for (std::list<Node*>::iterator it = node->depends_on.begin(),
+                     end = node->depends_on.end();
+                   it != end;
+                   ++it)
+                if ((*it)->issue)
+                  {
+                    std::auto_ptr<Events::IssueParent> p(
+                      new Events::IssueParent);
+                    p->child_host_id = node->host_id;
+                    p->child_service_id = node->service_id;
+                    p->child_start_time = node->issue->start_time;
+                    p->parent_host_id = (*it)->host_id;
+                    p->parent_service_id = (*it)->service_id;
+                    p->parent_start_time = (*it)->issue->start_time;
+                    p->start_time = (p->child_start_time > p->parent_start_time
+                                     ? p->child_start_time
+                                     : p->parent_start_time);
+                    p->end_time = now;
+                    this->events_.push_back(p.get());
+                    p.release();
+                  }
+              for (std::list<Node*>::iterator it = node->depended_by.begin(),
+                     end = node->depended_by.end();
+                   it != end;
+                   ++it)
+                if ((*it)->issue)
+                  {
+                    std::auto_ptr<Events::IssueParent> p(
+                      new Events::IssueParent);
+                    p->child_host_id = (*it)->host_id;
+                    p->child_service_id = (*it)->service_id;
+                    p->child_start_time = (*it)->issue->start_time;
+                    p->parent_host_id = node->host_id;
+                    p->parent_service_id = node->service_id;
+                    p->parent_start_time = node->issue->start_time;
+                    p->start_time = (p->child_start_time > p->parent_start_time
+                                     ? p->child_start_time
+                                     : p->parent_start_time);
+                    p->end_time = now;
+                    this->events_.push_back(p.get());
+                    p.release();
+                  }
+              bool all_parents = true;
+              for (std::list<Node*>::iterator it = node->parents.begin(),
+                     end = node->parents.end();
+                   it != end;
+                   ++it)
+                if (!(*it)->issue)
+                  all_parents = false;
+              if (all_parents)
+                for (std::list<Node*>::iterator it = node->parents.begin(),
+                       end = node->parents.end();
+                     it != end;
+                     ++it)
+                  {
+                    std::auto_ptr<Events::IssueParent> p(
+                      new Events::IssueParent);
+                    p->child_host_id = node->host_id;
+                    p->child_service_id = node->service_id;
+                    p->child_start_time = node->issue->start_time;
+                    p->parent_host_id = (*it)->host_id;
+                    p->parent_service_id = (*it)->service_id;
+                    p->parent_start_time = (*it)->issue->start_time;
+                    p->start_time = (p->child_start_time > p->parent_start_time
+                                     ? p->child_start_time
+                                     : p->parent_start_time);
+                    p->end_time = now;
+                    this->events_.push_back(p.get());
+                    p.release();
+                  }
+              all_parents = true;
+              for (std::list<Node*>::iterator it = node->children.begin(),
+                     end = node->children.end();
+                   it != end;
+                   ++it)
+                if (!(*it)->issue)
+                  all_parents = false;
+              if (all_parents)
+                for (std::list<Node*>::iterator it = node->children.begin(),
+                       end = node->children.end();
+                     it != end;
+                     ++it)
+                  {
+                    std::auto_ptr<Events::IssueParent> p(
+                      new Events::IssueParent);
+                    p->child_host_id = (*it)->host_id;
+                    p->child_service_id = (*it)->service_id;
+                    p->child_start_time = (*it)->issue->start_time;
+                    p->parent_host_id = node->host_id;
+                    p->parent_service_id = node->service_id;
+                    p->parent_start_time = node->issue->start_time;
+                    p->start_time = (p->child_start_time > p->parent_start_time
+                                     ? p->child_start_time
+                                     : p->parent_start_time);
+                    p->end_time = now;
+                    this->events_.push_back(p.get());
+                    p.release();
+                  }
+
+              // Terminate issue.
               node->issue->end_time = now;
               this->events_.push_back(node->issue);
               node->issue = NULL;
