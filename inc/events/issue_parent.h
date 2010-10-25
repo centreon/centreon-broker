@@ -18,43 +18,38 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_ISSUE_UPDATE_H_
-# define EVENTS_ISSUE_UPDATE_H_
+#ifndef EVENTS_ISSUE_PARENT_H_
+# define EVENTS_ISSUE_PARENT_H_
 
+# include <time.h>
 # include "events/event.h"
 
 namespace        Events
 {
   /**
-   *  \class IssueUpdate issue_update.h "events/issue_update.h"
-   *  \brief Update the presentation of a particular issue.
+   *  @class IssueParent issue_parent.h "events/issue_parent.h"
+   *  @brief Issue parenting.
    *
-   *  This class is currently used when merging two issues.
+   *  Declare an issue parent of another issue.
    */
-  class          IssueUpdate : public Event
+  class          IssueParent : public Event
   {
    private:
-    void         InternalCopy(const IssueUpdate& issue_update);
+    void         InternalCopy(const IssueParent& issue_parent);
 
    public:
-    enum         Reason
-    {
-      UNKNOWN = 0,
-      MERGE
-    };
-    int          host_id1;
-    int          host_id2;
-    int          service_id1;
-    int          service_id2;
-    time_t       start_time1;
-    time_t       start_time2;
-    int          update;
-                 IssueUpdate();
-                 IssueUpdate(const IssueUpdate& issue_update);
-                 ~IssueUpdate();
-    IssueUpdate& operator=(const IssueUpdate& issue_update);
+    int          child_host_id;
+    int          child_service_id;
+    time_t       child_start_time;
+    int          parent_host_id;
+    int          parent_service_id;
+    time_t       parent_start_time;
+                 IssueParent();
+                 IssueParent(const IssueParent& issue_parent);
+                 ~IssueParent();
+    IssueParent& operator=(const IssueParent& issue_parent);
     int          GetType() const;
   };
 }
 
-#endif /* !EVENTS_ISSUE_UPDATE_H_ */
+#endif /* !EVENTS_ISSUE_PARENT_H_ */

@@ -92,7 +92,7 @@ namespace              Events
       HOSTPARENT,
       HOSTSTATUS,
       ISSUE,
-      ISSUEUPDATE,
+      ISSUEPARENT,
       LOG,
       PROGRAM,
       PROGRAMSTATUS,

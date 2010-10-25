@@ -863,53 +863,37 @@ static const MappedData<Issue> issue_mapping[] =
       &Issue::start_time,
       NDO_DATA_STARTTIME,
       "start_time"),
-    MappedData<Issue>(
-      &Issue::state,
-      NDO_DATA_STATE,
-      "state"),
-    MappedData<Issue>(
-      &Issue::status,
-      NDO_DATA_STATETYPE,
-      "status"),
-    MappedData<Issue>(
-      &Issue::output,
-      NDO_DATA_OUTPUT,
-      "output"),
     MappedData<Issue>()
   };
 
-// IssueUpdate members mapping.
-static const MappedData<IssueUpdate> issue_update_mapping[] =
+// IssueParent members mapping.
+static const MappedData<IssueParent> issue_parent_mapping[] =
   {
-    MappedData<IssueUpdate>(
-      &IssueUpdate::host_id1,
+    MappedData<IssueParent>(
+      &IssueParent::child_host_id,
       1,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::host_id2,
+      "child_host_id"),
+    MappedData<IssueParent>(
+      &IssueParent::child_service_id,
       2,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::service_id1,
+      "child_start_time"),
+    MappedData<IssueParent>(
+      &IssueParent::child_start_time,
       3,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::service_id2,
+      "child_start_time"),
+    MappedData<IssueParent>(
+      &IssueParent::parent_host_id,
       4,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::start_time1,
+      "parent_host_id"),
+    MappedData<IssueParent>(
+      &IssueParent::parent_service_id,
       5,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::start_time2,
+      "parent_service_id"),
+    MappedData<IssueParent>(
+      &IssueParent::parent_start_time,
       6,
-      NULL),
-    MappedData<IssueUpdate>(
-      &IssueUpdate::update,
-      7,
-      NULL),
-    MappedData<IssueUpdate>()
+      "parent_start_time"),
+    MappedData<IssueParent>()
   };
 
 // Log members mapping.
@@ -1824,11 +1808,11 @@ template <> const MappedData<Events::Issue>*
 template <> const char*
   MappedType<Events::Issue>::table("issues");
 
-// IssueUpdate mapping.
-template <> const MappedData<Events::IssueUpdate>*
-  MappedType<Events::IssueUpdate>::members(issue_update_mapping);
+// IssueParent mapping.
+template <> const MappedData<Events::IssueParent>*
+  MappedType<Events::IssueParent>::members(issue_parent_mapping);
 template <> const char*
-  MappedType<Events::IssueUpdate>::table("issue_update");
+  MappedType<Events::IssueParent>::table("issue_parent");
 
 // Log mapping.
 template <> const MappedData<Events::Log>*

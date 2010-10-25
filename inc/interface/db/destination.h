@@ -88,7 +88,7 @@ namespace                         Interface
       void                        ProcessHostParent(const Events::Event& event);
       void                        ProcessHostStatus(const Events::Event& event);
       void                        ProcessIssue(const Events::Event& event);
-      void                        ProcessIssueUpdate(const Events::Event& event);
+      void                        ProcessIssueParent(const Events::Event& event);
       void                        ProcessLog(const Events::Event& event);
       void                        ProcessProgram(const Events::Event& event);
       void                        ProcessProgramStatus(const Events::Event& event);

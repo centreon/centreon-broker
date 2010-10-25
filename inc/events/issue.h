@@ -21,42 +21,33 @@
 #ifndef EVENTS_ISSUE_H_
 # define EVENTS_ISSUE_H_
 
-# include <string>
 # include <time.h>
-# include "concurrency/mutex.h"
 # include "events/event.h"
 
-namespace        Events
+namespace  Events
 {
   /**
    *  \class Issue issue.h "events/issue.h"
    *  \brief Issue event.
    *
-   *  Update or create an issue, which is itself a group of Nagios events.
+   *  Update or create an issue.
    */
-  class          Issue : public Event
+  class    Issue : public Event
   {
    private:
-    void               InternalCopy(const Issue& issue);
+    void   InternalCopy(const Issue& issue);
 
    public:
-    time_t             ack_time;
-    time_t             end_time;
-    int                host_id;
-    unsigned int       links;
-    Concurrency::Mutex linksm;
-    std::string        output;
-    int                service_id;
-    time_t             start_time;
-    short              state;
-    short              status;
-                       Issue();
-                       Issue(const Issue& issue);
-    virtual            ~Issue();
-    Issue&             operator=(const Issue& issue);
-    virtual int        GetType() const;
-    void               Link();
-    bool               Unlink();
+    time_t ack_time;
+    time_t end_time;
+    int    host_id;
+    int    service_id;
+    time_t start_time;
+           Issue();
+           Issue(const Issue& issue);
+           ~Issue();
+    Issue& operator=(const Issue& issue);
+    int    GetType() const;
   };
 }
 

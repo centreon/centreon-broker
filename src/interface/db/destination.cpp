@@ -63,7 +63,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessHostParent,         // HOSTPARENT
   &Destination::ProcessHostStatus,         // HOSTSTATUS
   &Destination::ProcessIssue,              // ISSUE
-  &Destination::ProcessIssueUpdate,        // ISSUEUPDATE
+  &Destination::ProcessIssueParent,        // ISSUEPARENT
   &Destination::ProcessLog,                // LOG
   &Destination::ProcessProgram,            // PROGRAM
   &Destination::ProcessProgramStatus,      // PROGRAMSTATUS
@@ -410,40 +410,13 @@ void Destination::ProcessIssue(const Events::Event& event)
 }
 
 /**
- *  Process an IssueUpdate event.
+ *  Process an IssueParent event.
  */
-void Destination::ProcessIssueUpdate(const Events::Event& event)
+void Destination::ProcessIssueParent(const Events::Event& event)
 {
-  int issue_id1;
-  int issue_id2;
-  const Events::IssueUpdate& update(
-    *static_cast<const Events::IssueUpdate*>(&event));
-
-  LOGDEBUG("Processing IssueUpdate event ...");
-
-  // Fetch issue IDs.
-  *this->conn_ << "SELECT id from "
-               << MappedType<Events::Issue>::table
-               << " WHERE host_id=" << update.host_id1
-               << " AND service_id=" << update.service_id1
-               << " AND start_time=" << update.start_time1,
-    soci::into(issue_id1);
-  *this->conn_ << "SELECT id from "
-               << MappedType<Events::Issue>::table
-               << " WHERE host_id=" << update.host_id2
-               << " AND service_id=" << update.service_id2
-               << " AND start_time=" << update.start_time2,
-    soci::into(issue_id2);
-
-  // Update log entries.
-  *this->conn_ << "UPDATE " << MappedType<Events::Log>::table
-               << " SET issue_id=" << issue_id2
-               << " WHERE issue_id=" << issue_id1;
-
-  // Remove old issue.
-  *this->conn_ << "DELETE FROM " << MappedType<Events::Issue>::table
-               << " WHERE id=" << issue_id1;
-
+  // SELECT IDs
+  // INSERT (id1, id2)
+  // XXX
   return ;
 }
 

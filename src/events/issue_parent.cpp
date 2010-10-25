@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/issue.h"
+#include "events/issue_parent.h"
 
 using namespace Events;
 
@@ -29,19 +29,18 @@ using namespace Events;
 **************************************/
 
 /**
- *  \brief Copy internal members.
+ *  Copy internal data members to this object.
  *
- *  This method is used by the copy constructor and the assignment operator.
- *
- *  \param[in] issue Object to copy.
+ *  @param[in] issue_parent Object to copy.
  */
-void Issue::InternalCopy(const Issue& issue)
+void IssueParent::InternalCopy(const IssueParent& issue_parent)
 {
-  this->ack_time   = issue.ack_time;
-  this->end_time   = issue.end_time;
-  this->host_id    = issue.host_id;
-  this->service_id = issue.service_id;
-  this->start_time = issue.start_time;
+  this->child_host_id     = issue_parent.child_host_id;
+  this->child_service_id  = issue_parent.child_service_id;
+  this->child_start_time  = issue_parent.child_start_time;
+  this->parent_host_id    = issue_parent.parent_host_id;
+  this->parent_service_id = issue_parent.parent_service_id;
+  this->parent_start_time = issue_parent.parent_start_time;
   return ;
 }
 
@@ -54,48 +53,50 @@ void Issue::InternalCopy(const Issue& issue)
 /**
  *  Constructor.
  */
-Issue::Issue()
-  : ack_time(0),
-    end_time(0),
-    host_id(0),
-    service_id(0),
-    start_time(0) {}
+IssueParent::IssueParent()
+  : child_host_id(0),
+    child_service_id(0),
+    child_start_time(0),
+    parent_host_id(0),
+    parent_service_id(0),
+    parent_start_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  \param[in] issue Object to copy.
+ *  @param[in] issue_parent Object to copy.
  */
-Issue::Issue(const Issue& issue) : Events::Event(issue)
+IssueParent::IssueParent(const IssueParent& issue_parent)
+  : Event(issue_parent)
 {
-  this->InternalCopy(issue);
+  this->InternalCopy(issue_parent);
 }
 
 /**
  *  Destructor.
  */
-Issue::~Issue() {}
+IssueParent::~IssueParent() {}
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
- *  \param[in] issue Object to copy.
+ *  @param[in] issue_parent Object to copy.
  *
- *  \return *this
+ *  @return This object.
  */
-Issue& Issue::operator=(const Issue& issue)
+IssueParent& IssueParent::operator=(const IssueParent& issue_parent)
 {
-  this->Event::operator=(issue);
-  this->InternalCopy(issue);
+  Event::operator=(issue_parent);
+  this->InternalCopy(issue_parent);
   return (*this);
 }
 
 /**
- *  Get the type of this event (Event::ISSUE).
+ *  Get the type of this event.
  *
- *  \return Event::ISSUE.
+ *  @return ISSUEPARENT.
  */
-int Issue::GetType() const
+int IssueParent::GetType() const
 {
-  return (Event::ISSUE);
+  return (ISSUEPARENT);
 }
