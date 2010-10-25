@@ -27,6 +27,7 @@
 -- service_servicegroup
 -- servicecommands
 -- servicegroup
+-- states
 
 
 --
@@ -768,3 +769,29 @@ CREATE TABLE services_commands (
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
 );
+
+
+--
+-- States of checkpoints.
+--
+CREATE TABLE states (
+  state_id int NOT NULL,
+
+  end_time int default NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
+  start_time int NOT NULL,
+  state int NOT NULL,
+  
+  PRIMARY KEY (state_id)
+);
+CREATE SEQUENCE states_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER states_trigger
+BEFORE INSERT ON states
+FOR EACH ROW
+BEGIN
+  SELECT states_seq.nextval INTO :NEW.state_id FROM dual;
+END;
+/
