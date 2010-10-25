@@ -48,6 +48,7 @@ void Node::InternalCopy(const Node& node)
     this->issue = NULL;
   this->parents     = node.parents;
   this->service_id  = node.service_id;
+  this->since       = node.since;
   this->state       = node.state;
   return ;
 }
@@ -61,7 +62,7 @@ void Node::InternalCopy(const Node& node)
 /**
  *  Constructor.
  */
-Node::Node() : host_id(0), issue(NULL), service_id(0), state(0) {}
+Node::Node() : host_id(0), issue(NULL), service_id(0), since(0), state(0) {}
 
 /**
  *  Copy constructor.

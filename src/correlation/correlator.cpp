@@ -26,6 +26,7 @@
 #include "events/issue.h"
 #include "events/issue_parent.h"
 #include "events/service_status.h"
+#include "events/state.hh"
 #include "exception.h"
 #include "multiplexing/publisher.h"
 
@@ -145,15 +146,43 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
 
   if (node->state != hss.current_state)
     {
+      time_t now(time(NULL));
+
+      // Update states.
+      {
+        // Old state.
+        std::auto_ptr<Events::state> state_update(new Events::state);
+        state_update->current_state = node->state;
+        state_update->end_time = now;
+        state_update->host_id = node->host_id;
+        state_update->service_id = node->service_id;
+        state_update->start_time = node->since;
+        this->events_.push_back(state_update.get());
+        state_update.release();
+
+        // Update node.
+        node->since = now;
+        node->state = hss.current_state;
+
+        // New state.
+        state_update.reset(new Events::state);
+        state_update->current_state = node->state;
+        state_update->end_time = 0;
+        state_update->host_id = node->host_id;
+        state_update->service_id = node->service_id;
+        state_update->start_time = node->since;
+        this->events_.push_back(state_update.get());
+        state_update.release();
+      }
+
       if (node->issue)
         {
           // Issue is over.
-          if (!hss.current_state)
+          if (!node->state)
             {
-              node->issue->end_time = time(NULL);
+              node->issue->end_time = now;
               this->events_.push_back(node->issue);
               node->issue = NULL;
-              node->state = 0;
             }
         }
       else
@@ -162,13 +191,14 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
           node->issue = new Events::Issue;
           node->issue->host_id = node->host_id;
           node->issue->service_id = node->service_id;
-          node->issue->start_time = time(NULL);
+          node->issue->start_time = now;
 
-          // Store issue. (XXX : not safe)
-          this->events_.push_back(new Events::Issue(*(node->issue)));
-
-          // Update state.
-          node->state = hss.current_state;
+          // Store issue.
+          {
+            std::auto_ptr<Events::Issue> i(new Events::Issue(*(node->issue)));
+            this->events_.push_back(i.get());
+            i.release();
+          }
 
           // Declare parenting.
           if (3 == node->state)
@@ -279,9 +309,6 @@ void Correlator::CorrelateHostServiceStatus(Events::Event& event, bool is_host)
                     }
               }
         }
-
-      // Create new state.
-      // XXX
     }
   return ;
 }

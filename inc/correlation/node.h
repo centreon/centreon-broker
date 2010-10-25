@@ -47,6 +47,7 @@ namespace            Correlation
     Events::Issue*   issue;
     std::list<Node*> parents;
     int              service_id;
+    time_t           since;
     short            state;
                      Node();
                      Node(const Node& node);
