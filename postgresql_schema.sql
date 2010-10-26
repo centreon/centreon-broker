@@ -384,7 +384,6 @@ CREATE TABLE downtimes (
 -- Monitored services.
 --
 CREATE TABLE services (
-  id serial,
   host_id int NOT NULL,
   service_description varchar(255) NOT NULL,
   service_id int default NULL,
@@ -439,7 +438,6 @@ CREATE TABLE services (
   last_time_warning int default NULL,
   last_update int default NULL,
   latency double precision default NULL,
-  long_output text default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
   modified_attributes int default NULL,
@@ -475,7 +473,6 @@ CREATE TABLE services (
   stalk_on_warning boolean default NULL,
   state_type smallint default NULL,
 
-  PRIMARY KEY (id),
   UNIQUE (host_id, service_description),
   UNIQUE (service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)

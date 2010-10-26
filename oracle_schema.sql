@@ -443,10 +443,10 @@ END;
 -- Monitored services.
 --
 CREATE TABLE services (
-  id int NOT NULL,
   host_id int NOT NULL,
   service_description varchar(255) NOT NULL,
   service_id int default NULL,
+
   acknowledgement_type smallint default NULL,
   action_url varchar(255) default NULL,
   active_checks_enabled char(1) default NULL,
@@ -497,7 +497,6 @@ CREATE TABLE services (
   last_time_warning int default NULL,
   last_update int default NULL,
   latency double precision default NULL,
-  long_output clob default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
   modified_attributes int default NULL,
@@ -532,7 +531,7 @@ CREATE TABLE services (
   stalk_on_unknown char(1) default NULL,
   stalk_on_warning char(1) default NULL,
   state_type smallint default NULL,
-  PRIMARY KEY (id),
+
   UNIQUE (host_id, service_description),
   UNIQUE (service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
