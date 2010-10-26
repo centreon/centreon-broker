@@ -1802,7 +1802,7 @@ template <> const char*
 template <> const MappedData<Events::HostGroupMember>*
   MappedType<Events::HostGroupMember>::members(host_group_member_mapping);
 template <> const char*
-  MappedType<Events::HostGroupMember>::table("host_hostgroup");
+  MappedType<Events::HostGroupMember>::table("hosts_hostgroups");
 
 // HostParent mapping.
 template <> const MappedData<Events::HostParent>*

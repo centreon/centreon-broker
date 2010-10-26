@@ -12,10 +12,10 @@
 -- flappinghistory
 -- hosts
 -- host_dependency
--- host_hostgroup
 -- host_parent
 -- hostcommands
 -- hostgroups
+-- hosts_hostgroups
 -- instances
 -- issues
 -- issue_parent
@@ -278,9 +278,10 @@ END;
 --
 -- Relationships between hosts and host groups.
 --
-CREATE TABLE host_hostgroup (
+CREATE TABLE hosts_hostgroups (
   host_id int NOT NULL,
   hostgroup_id int NOT NULL,
+
   UNIQUE (host_id, hostgroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
