@@ -30,15 +30,15 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
     MappedData<Acknowledgement>(
       &Acknowledgement::acknowledgement_type,
       NDO_DATA_ACKNOWLEDGEMENTTYPE,
-      "acknowledgement_type"),
+      "type"),
     MappedData<Acknowledgement>(
       &Acknowledgement::author,
       NDO_DATA_AUTHORNAME,
-      "author_name"),
+      "author"),
     MappedData<Acknowledgement>(
       &Acknowledgement::comment,
       NDO_DATA_COMMENT,
-      "comment_data"),
+      "comment"),
     MappedData<Acknowledgement>(
       &Acknowledgement::entry_time,
       NDO_DATA_TIMESTAMP,
@@ -54,7 +54,7 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
     MappedData<Acknowledgement>(
       &Acknowledgement::is_sticky,
       NDO_DATA_STICKY,
-      "is_sticky"),
+      "sticky"),
     MappedData<Acknowledgement>(
       &Acknowledgement::notify_contacts,
       NDO_DATA_NOTIFYCONTACTS,

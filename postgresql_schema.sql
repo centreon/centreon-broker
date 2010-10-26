@@ -83,21 +83,21 @@ CREATE TABLE instances (
 -- Holds acknowledgedments information.
 --
 CREATE TABLE acknowledgements (
-  id serial,
+  acknowledgement_id serial,
   entry_time int NOT NULL,
   host_name varchar(255) NOT NULL,
   instance_name varchar(255) NOT NULL,
   service_description varchar(255) default NULL,
 
-  acknowledgement_type smallint default NULL,
-  author_name varchar(64) default NULL,
-  comment_data varchar(255) default NULL,
-  is_sticky boolean default NULL,
+  author varchar(64) default NULL,
+  comment varchar(255) default NULL,
   notify_contacts boolean default NULL,
   persistent_comment boolean default NULL,
   state smallint default NULL,
+  sticky boolean default NULL,
+  type smallint default NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (acknowledgement_id),
   UNIQUE (entry_time, host_name, instance_name, service_description)
 );
 

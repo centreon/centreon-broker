@@ -61,7 +61,7 @@ int CallbackAcknowledgement(int callback_type, void* data)
         ack->author = ack_data->author_name;
       if (ack_data->comment_data)
         ack->comment = ack_data->comment_data;
-      //ack->entry_time = XXX;
+      ack->entry_time = time(NULL);
       if (ack_data->host_name)
         ack->host_name = ack_data->host_name;
       ack->instance_name = config::globals::instance_name;

@@ -83,19 +83,21 @@ CREATE TABLE instances (
 -- Holds acknowledgedments information.
 --
 CREATE TABLE acknowledgements (
-  id int NOT NULL,
+  acknowledgement_id int NOT NULL,
   entry_time int NOT NULL,
   host_name varchar(255) NOT NULL,
   instance_name varchar(255) NOT NULL,
   service_description varchar(255) default NULL,
-  acknowledgement_type smallint default NULL,
-  author_name varchar(64) default NULL,
-  comment_data varchar(255) default NULL,
-  is_sticky char(1) default NULL,
+
+  author varchar(64) default NULL,
+  comment varchar(255) default NULL,
   notify_contacts char(1) default NULL,
   persistent_comment char(1) default NULL,
   state smallint default NULL,
-  PRIMARY KEY (id),
+  sticky char(1) default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (acknowledgement_id),
   UNIQUE (entry_time, host_name, instance_name, service_description)
 );
 CREATE SEQUENCE acknowledgements_seq
@@ -105,7 +107,7 @@ CREATE TRIGGER acknowledgements_trigger
 BEFORE INSERT ON acknowledgements
 FOR EACH ROW
 BEGIN
-  SELECT acknowledgements_seq.nextval INTO :NEW.id FROM dual;
+  SELECT acknowledgements_seq.nextval INTO :NEW.acknowledgement_id FROM dual;
 END;
 /
 
