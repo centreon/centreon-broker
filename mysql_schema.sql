@@ -334,7 +334,7 @@ CREATE TABLE issues_issues_parents (
 -- Nagios logs.
 --
 CREATE TABLE logs (
-  id int NOT NULL auto_increment,
+  log_id int NOT NULL auto_increment,
 
   ctime int default NULL,
   host_name varchar(255) default NULL,
@@ -349,7 +349,7 @@ CREATE TABLE logs (
   status enum('0', '1', '2', '3', '4') default NULL,
   type smallint default NULL,
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (log_id)
 ) ENGINE=MyISAM;
 
 

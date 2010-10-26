@@ -374,7 +374,8 @@ CREATE TABLE issues_issues_parents (
 -- Nagios logs.
 --
 CREATE TABLE logs (
-  id int NOT NULL,
+  log_id int NOT NULL,
+
   ctime int default NULL,
   host_name varchar(255) default NULL,
   instance_name varchar(255) NOT NULL,
@@ -387,7 +388,8 @@ CREATE TABLE logs (
   service_description varchar(255) default NULL,
   status char(1) default NULL,
   type smallint default NULL,
-  PRIMARY KEY (id),
+
+  PRIMARY KEY (log_id),
   CONSTRAINT status_cons CHECK (status IN ('0', '1', '2', '3', '4'))
 );
 CREATE SEQUENCE logs_seq
@@ -397,7 +399,7 @@ CREATE TRIGGER logs_trigger
 BEFORE INSERT ON logs
 FOR EACH ROW
 BEGIN
-  SELECT logs_seq.nextval INTO :NEW.id FROM dual;
+  SELECT logs_seq.nextval INTO :NEW.log_id FROM dual;
 END;
 /
 

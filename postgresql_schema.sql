@@ -334,7 +334,7 @@ CREATE TABLE issues_issues_parents (
 -- Nagios logs.
 --
 CREATE TABLE logs (
-  id serial,
+  log_id serial,
 
   ctime int default NULL,
   host_name varchar(255) default NULL,
@@ -349,7 +349,7 @@ CREATE TABLE logs (
   status smallint default NULL,
   type smallint default NULL,
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (log_id)
 );
 
 
