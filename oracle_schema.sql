@@ -7,7 +7,6 @@
 -- acknowledgements
 -- comments
 -- customvariables
--- db_version
 -- downtimes
 -- eventhandlers
 -- flappinghistory
@@ -22,6 +21,7 @@
 -- issue_parent
 -- logs
 -- notifications
+-- schemaversion
 -- services
 -- service_dependency
 -- service_servicegroup
@@ -33,10 +33,12 @@
 --
 -- Holds the current version of the database schema.
 --
-CREATE TABLE db_version (
+CREATE TABLE schemaversion (
+  software varchar(128) NOT NULL,
   version int NOT NULL
 );
-INSERT INTO db_version (version) VALUES (1);
+INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 1);
+
 
 --
 -- Store information about Nagios instances.
