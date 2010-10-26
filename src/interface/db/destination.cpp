@@ -345,10 +345,10 @@ void Destination::ProcessHostGroupMember(const Events::Event& event)
   LOGDEBUG("Processing HostGroupMember event ...");
 
   // Fetch host group ID.
-  *this->conn_ << "SELECT id FROM "
+  *this->conn_ << "SELECT hostgroup_id FROM "
                << MappedType<Events::HostGroup>::table
                << " WHERE instance_id=" << hgm.instance_id
-               << " AND hostgroup_name=\"" << hgm.group << "\"",
+               << " AND name=\"" << hgm.group << "\"",
     soci::into(hostgroup_id);
 
   // Execute query.
@@ -423,7 +423,8 @@ void Destination::ProcessIssueParent(const Events::Event& event)
   // Get child ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM issues WHERE host_id="
+    query << "SELECT issue_id FROM "
+          << MappedType<Events::Issue>::table << " WHERE host_id="
           << ip.child_host_id << " AND service_id="
           << ip.child_service_id << " AND start_time="
           << ip.child_start_time;
@@ -435,7 +436,8 @@ void Destination::ProcessIssueParent(const Events::Event& event)
   // Get parent ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM issues WHERE host_id="
+    query << "SELECT issue_id FROM "
+          << MappedType<Events::Issue>::table << " WHERE host_id="
           << ip.parent_host_id << " AND service_id="
           << ip.parent_service_id << " AND start_time="
           << ip.parent_start_time;
@@ -447,7 +449,9 @@ void Destination::ProcessIssueParent(const Events::Event& event)
   if (ip.end_time)
     {
       std::ostringstream query;
-      query << "UPDATE issue_parent SET end_time="
+      query << "UPDATE "
+            << MappedType<Events::IssueParent>::table
+            << " SET end_time="
             << ip.end_time << " WHERE child_issue_id="
             << child_id << " AND parent_issue_id="
             << parent_id << " AND start_time="
@@ -458,7 +462,9 @@ void Destination::ProcessIssueParent(const Events::Event& event)
   else
     {
       std::ostringstream query;
-      query << "INSERT INTO issue_parent (child_issue_id, parent_issue_id, start_time) VALUES("
+      query << "INSERT INTO "
+            << MappedType<Events::IssueParent>::table
+            << " (child_issue_id, parent_issue_id, start_time) VALUES("
             << child_id << ", "
             << parent_id << ", "
             << ip.start_time << ")";
@@ -621,10 +627,10 @@ void Destination::ProcessServiceGroupMember(const Events::Event& event)
   LOGDEBUG("Processing ServiceGroupMember event ...");
 
   // Fetch service group ID.
-  *this->conn_ << "SELECT id FROM "
+  *this->conn_ << "SELECT servicegroup_id FROM "
                << MappedType<Events::ServiceGroup>::table
                << " WHERE instance_id=" << sgm.instance_id
-               << " AND servicegroup_name=\"" << sgm.group << "\"",
+               << " AND name=\"" << sgm.group << "\"",
     soci::into(servicegroup_id);
 
   // Execute query.
