@@ -638,7 +638,7 @@ static const MappedData<HostParent> host_parent_mapping[] =
     MappedData<HostParent>(
       &HostParent::host_id,
       NDO_DATA_HOST,
-      "host_id"),
+      "child_id"),
     MappedData<HostParent>(
       &HostParent::parent_id,
       NDO_DATA_PARENTHOST,
@@ -1808,7 +1808,7 @@ template <> const char*
 template <> const MappedData<Events::HostParent>*
   MappedType<Events::HostParent>::members(host_parent_mapping);
 template <> const char*
-  MappedType<Events::HostParent>::table("host_parent");
+  MappedType<Events::HostParent>::table("hosts_hosts_parents");
 
 // HostStatus mapping.
 template <> const MappedData<Events::HostStatus>*
