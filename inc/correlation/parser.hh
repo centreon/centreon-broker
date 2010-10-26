@@ -42,6 +42,7 @@ namespace                Correlation
     bool                 _in_root;
     std::map<std::pair<int, int>, Node>*
                          _services;
+    void                 _auto_services_dependencies();
     Node*                _find_node(char const* host_id, char const* service_id);
     void                 startElement(XMLCh const* const uri,
                                       XMLCh const* const localname,

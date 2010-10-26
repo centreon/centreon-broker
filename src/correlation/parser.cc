@@ -35,6 +35,29 @@ using namespace Correlation;
 **************************************/
 
 /**
+ *  Generate automatic services dependencies.
+ */
+void parser::_auto_services_dependencies() {
+  for (std::map<std::pair<int, int>, Node>::iterator it = _services->begin(),
+         end = _services->end();
+       it != end;
+       ++it)
+    {
+      std::map<int, Node>::iterator it2 = _hosts->find(it->first.first);
+      if (it2 == _hosts->end())
+        {
+          exceptions::basic e;
+          e << "could not find host " << it->first.first
+            << " for service " << it->first.second;
+          throw (e);
+        }
+      it->second.depends_on.push_back(&(it2->second));
+      it2->second.depended_by.push_back(&(it->second));
+    }
+  return ;
+}
+
+/**
  *  Find a node with its host_id and optionally its service_id.
  *
  *  @param[in] host_id    String of the host_id.
@@ -414,6 +437,7 @@ void parser::parse(char const* filename,
       reader->setContentHandler(this);
       reader->setErrorHandler(this);
       reader->parse(filename);
+      _auto_services_dependencies();
     }
   catch (xercesc::XMLException const& e)
     {
