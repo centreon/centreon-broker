@@ -64,7 +64,6 @@ namespace              Events
     time_t             last_state_change;
     time_t             last_update;
     double             latency;
-    std::string        long_output;
     short              max_check_attempts;
     int                modified_attributes;
     time_t             next_check;

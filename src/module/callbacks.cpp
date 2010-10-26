@@ -288,8 +288,6 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->last_time_up = h->last_time_up;
       // host_status->last_update = XXX;
       host_status->latency = h->latency;
-      if (h->long_plugin_output)
-        host_status->long_output = h->long_plugin_output;
       host_status->max_check_attempts = h->max_attempts;
       host_status->modified_attributes = h->modified_attributes;
       host_status->next_check = h->next_check;
@@ -299,6 +297,8 @@ int CallbackHostStatus(int callback_type, void* data)
       host_status->obsess_over = h->obsess_over_host;
       if (h->plugin_output)
         host_status->output = h->plugin_output;
+      if (h->long_plugin_output)
+        host_status->output.append(h->long_plugin_output);
       host_status->passive_checks_enabled = h->accept_passive_host_checks;
       host_status->percent_state_change = h->percent_state_change;
       if (h->perf_data)
@@ -599,8 +599,6 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->last_time_warning = s->last_time_warning;
       // service_status->last_update = XXX;
       service_status->latency = s->latency;
-      if (s->long_plugin_output)
-        service_status->long_output = s->long_plugin_output;
       service_status->max_check_attempts = s->max_attempts;
       service_status->modified_attributes = s->modified_attributes;
       service_status->next_check = s->next_check;
@@ -610,6 +608,8 @@ int CallbackServiceStatus(int callback_type, void* data)
       service_status->obsess_over = s->obsess_over_service;
       if (s->plugin_output)
         service_status->output = s->plugin_output;
+      if (s->long_plugin_output)
+        service_status->output.append(s->long_plugin_output);
       service_status->passive_checks_enabled
         = s->accept_passive_service_checks;
       service_status->percent_state_change = s->percent_state_change;

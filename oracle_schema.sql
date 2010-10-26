@@ -71,7 +71,7 @@ CREATE TABLE instances (
   passive_host_checks char(1) default NULL,
   passive_service_checks char(1) default NULL,
   pid int default NULL,
-  process_performance_data char(1) default NULL,
+  process_perfdata char(1) default NULL,
   running char(1) default NULL,
   start_time int default NULL,
 
@@ -152,48 +152,47 @@ END;
 -- Monitored hosts.
 --
 CREATE TABLE hosts (
-  id int NOT NULL,
   host_id int NOT NULL,
   host_name varchar(255) NOT NULL,
   instance_id int NOT NULL,
+
+  acknowledged char(1) default NULL,
   acknowledgement_type smallint default NULL,
   action_url varchar(255) default NULL,
-  active_checks_enabled char(1) default NULL,
+  active_checks char(1) default NULL,
   address varchar(75) default NULL,
   alias varchar(100) default NULL,
+  check_attempt smallint default NULL,
   check_command clob default NULL,
   check_freshness char(1) default NULL,
   check_interval double precision default NULL,
   check_period varchar(75) default NULL,
   check_type smallint default NULL,
+  checked char(1) default NULL,
   command_line clob default NULL,
-  current_check_attempt smallint default NULL,
-  current_notification_number smallint default NULL,
-  current_state smallint default NULL,
-  default_active_checks_enabled char(1) default NULL,
+  default_active_checks char(1) default NULL,
   default_event_handler_enabled char(1) default NULL,
   default_failure_prediction char(1) default NULL,
-  default_flap_detection_enabled char(1) default NULL,
-  default_notifications_enabled char(1) default NULL,
-  default_passive_checks_enabled char(1) default NULL,
-  default_process_perf_data char(1) default NULL,
+  default_flap_detection char(1) default NULL,
+  default_notify char(1) default NULL,
+  default_passive_checks char(1) default NULL,
+  default_process_perfdata char(1) default NULL,
   display_name varchar(100) default NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
   execution_time double precision default NULL,
-  failure_prediction_enabled char(1) default NULL,
+  failure_prediction char(1) default NULL,
   first_notification_delay double precision default NULL,
-  flap_detection_enabled char(1) default NULL,
+  flap_detection char(1) default NULL,
   flap_detection_on_down char(1) default NULL,
   flap_detection_on_unreachable char(1) default NULL,
   flap_detection_on_up char(1) default NULL,
+  flapping char(1) default NULL,
   freshness_threshold double precision default NULL,
-  has_been_checked char(1) default NULL,
   high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
   initial_state varchar(18) default NULL,
-  is_flapping char(1) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -204,7 +203,6 @@ CREATE TABLE hosts (
   last_time_up int default NULL,
   last_update int default NULL,
   latency double precision default NULL,
-  long_output clob default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
   modified_attributes int default NULL,
@@ -214,8 +212,9 @@ CREATE TABLE hosts (
   notes varchar(255) default NULL,
   notes_url varchar(255) default NULL,
   notification_interval double precision default NULL,
+  notification_number smallint default NULL,
   notification_period varchar(75) default NULL,
-  notifications_enabled char(1) default NULL,
+  notify char(1) default NULL,
   notify_on_down char(1) default NULL,
   notify_on_downtime char(1) default NULL,
   notify_on_flapping char(1) default NULL,
@@ -223,11 +222,10 @@ CREATE TABLE hosts (
   notify_on_unreachable char(1) default NULL,
   obsess_over_host char(1) default NULL,
   output clob default NULL,
-  passive_checks_enabled char(1) default NULL,
+  passive_checks char(1) default NULL,
   percent_state_change double precision default NULL,
-  perf_data clob default NULL,
-  problem_has_been_acknowledged char(1) default NULL,
-  process_performance_data char(1) default NULL,
+  perfdata clob default NULL,
+  process_perfdata char(1) default NULL,
   retain_nonstatus_information char(1) default NULL,
   retain_status_information char(1) default NULL,
   retry_interval double precision default NULL,
@@ -236,24 +234,15 @@ CREATE TABLE hosts (
   stalk_on_down char(1) default NULL,
   stalk_on_unreachable char(1) default NULL,
   stalk_on_up char(1) default NULL,
+  state smallint default NULL,
   state_type smallint default NULL,
   statusmap_image varchar(255) default NULL,
-  PRIMARY KEY (id),
+
   UNIQUE (host_id),
   UNIQUE (host_name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE hosts_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER hosts_trigger
-BEFORE INSERT ON hosts
-FOR EACH ROW
-BEGIN
-  SELECT hosts_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
 
 
 --
@@ -476,7 +465,7 @@ CREATE TABLE services (
   default_flap_detection_enabled char(1) default NULL,
   default_notifications_enabled char(1) default NULL,
   default_passive_checks_enabled char(1) default NULL,
-  default_process_perf_data char(1) default NULL,
+  default_process_perfdata char(1) default NULL,
   display_name varchar(160) default NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
@@ -532,7 +521,7 @@ CREATE TABLE services (
   percent_state_change double precision default NULL,
   perf_data clob default NULL,
   problem_has_been_acknowledged char(1) default NULL,
-  process_performance_data char(1) default NULL,
+  process_perfdata char(1) default NULL,
   retain_nonstatus_information char(1) default NULL,
   retain_status_information char(1) default NULL,
   retry_interval double precision default NULL,

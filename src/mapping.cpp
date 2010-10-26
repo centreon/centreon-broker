@@ -203,7 +203,7 @@ static const MappedData<Downtime> downtime_mapping[] =
   };
 
 // Host members mapping.
-static const MappedData<Host> host_mapping[] =
+static MappedData<Host> const host_mapping[] =
   {
     MappedData<Host>(
       &Host::acknowledgement_type,
@@ -216,7 +216,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::active_checks_enabled,
       NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      "active_checks_enabled"),
+      "active_checks"),
     MappedData<Host>(
       &Host::address,
       NDO_DATA_HOSTADDRESS,
@@ -244,19 +244,19 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_check_attempt"),
+      "check_attempt"),
     MappedData<Host>(
       &Host::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      "current_notification_number"),
+      "notification_number"),
     MappedData<Host>(
       &Host::current_state,
       NDO_DATA_CURRENTSTATE,
-      "current_state"),
+      "state"),
     MappedData<Host>(
       &Host::default_active_checks_enabled,
       0,
-      "default_active_checks_enabled"),
+      "default_active_checks"),
     MappedData<Host>(
       &Host::default_event_handler_enabled,
       0,
@@ -268,19 +268,19 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::default_flap_detection_enabled,
       0,
-      "default_flap_detection_enabled"),
+      "default_flap_detection"),
     MappedData<Host>(
       &Host::default_notifications_enabled,
       0,
-      "default_notifications_enabled"),
+      "default_notify"),
     MappedData<Host>(
       &Host::default_passive_checks_enabled,
       0,
-      "default_passive_checks_enabled"),
+      "default_passive_checks"),
     MappedData<Host>(
       &Host::default_process_perf_data,
       0,
-      "default_process_perf_data"),
+      "default_process_perfdata"),
     MappedData<Host>(
       &Host::display_name,
       NDO_DATA_DISPLAYNAME,
@@ -300,7 +300,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::failure_prediction_enabled,
       NDO_DATA_FAILUREPREDICTIONENABLED,
-      "failure_prediction_enabled"),
+      "failure_prediction"),
     MappedData<Host>(
       &Host::first_notification_delay,
       NDO_DATA_FIRSTNOTIFICATIONDELAY,
@@ -308,7 +308,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::flap_detection_enabled,
       NDO_DATA_FLAPDETECTIONENABLED,
-      "flap_detection_enabled"),
+      "flap_detection"),
     MappedData<Host>(
       &Host::flap_detection_on_down,
       NDO_DATA_FLAPDETECTIONONDOWN,
@@ -328,7 +328,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
-      "has_been_checked"),
+      "checked"),
     MappedData<Host>(
       &Host::high_flap_threshold,
       NDO_DATA_HIGHHOSTFLAPTHRESHOLD,
@@ -360,7 +360,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::is_flapping,
       NDO_DATA_ISFLAPPING,
-      "is_flapping"),
+      "flapping"),
     MappedData<Host>(
       &Host::last_check,
       NDO_DATA_LASTHOSTCHECK,
@@ -444,7 +444,7 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::notifications_enabled,
       NDO_DATA_NOTIFICATIONSENABLED,
-      "notifications_enabled"),
+      "notify"),
     MappedData<Host>(
       &Host::notify_on_down,
       NDO_DATA_NOTIFYHOSTDOWN,
@@ -480,11 +480,11 @@ static const MappedData<Host> host_mapping[] =
     MappedData<Host>(
       &Host::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      "problem_has_been_acknowledged"),
+      "acknowledged"),
     MappedData<Host>(
       &Host::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
-      "process_performance_data"),
+      "process_perfdata"),
     MappedData<Host>(
       &Host::retain_nonstatus_information,
       NDO_DATA_RETAINHOSTNONSTATUSINFORMATION,
@@ -530,17 +530,13 @@ static const MappedData<Host> host_mapping[] =
       NDO_DATA_CHECKCOMMAND,
       "check_command"),
     MappedData<Host>(
-      &Host::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<Host>(
       &Host::output,
       NDO_DATA_OUTPUT,
       "output"),
     MappedData<Host>(
       &Host::perf_data,
       NDO_DATA_PERFDATA,
-      "perf_data"),
+      "perfdata"),
     MappedData<Host>()
   };
 
@@ -660,7 +656,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::active_checks_enabled,
       NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      "active_checks_enabled"),
+      "active_checks"),
     MappedData<HostStatus>(
       &HostStatus::check_interval,
       NDO_DATA_NORMALCHECKINTERVAL,
@@ -676,15 +672,15 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_check_attempt"),
+      "check_attempt"),
     MappedData<HostStatus>(
       &HostStatus::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      "current_notification_number"),
+      "notification_number"),
     MappedData<HostStatus>(
       &HostStatus::current_state,
       NDO_DATA_CURRENTSTATE,
-      "current_state"),
+      "state"),
     MappedData<HostStatus>(
       &HostStatus::event_handler,
       NDO_DATA_EVENTHANDLER,
@@ -700,15 +696,15 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::failure_prediction_enabled,
       NDO_DATA_FAILUREPREDICTIONENABLED,
-      "failure_prediction_enabled"),
+      "failure_prediction"),
     MappedData<HostStatus>(
       &HostStatus::flap_detection_enabled,
       NDO_DATA_FLAPDETECTIONENABLED,
-      "flap_detection_enabled"),
+      "flap_detection"),
     MappedData<HostStatus>(
       &HostStatus::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
-      "has_been_checked"),
+      "checked"),
     MappedData<HostStatus>(
       &HostStatus::host_id,
       NDO_DATA_HOST,
@@ -716,7 +712,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::is_flapping,
       NDO_DATA_ISFLAPPING,
-      "is_flapping"),
+      "flapping"),
     MappedData<HostStatus>(
       &HostStatus::last_check,
       NDO_DATA_LASTHOSTCHECK,
@@ -788,7 +784,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::passive_checks_enabled,
       NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      "passive_checks_enabled"),
+      "passive_checks"),
     MappedData<HostStatus>(
       &HostStatus::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
@@ -796,11 +792,11 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      "problem_has_been_acknowledged"),
+      "acknowledged"),
     MappedData<HostStatus>(
       &HostStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
-      "process_performance_data"),
+      "process_perfdata"),
     MappedData<HostStatus>(
       &HostStatus::retry_interval,
       NDO_DATA_RETRYCHECKINTERVAL,
@@ -822,17 +818,13 @@ static const MappedData<HostStatus> host_status_mapping[] =
       NDO_DATA_CHECKCOMMAND,
       "check_command"),
     MappedData<HostStatus>(
-      &HostStatus::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
-    MappedData<HostStatus>(
       &HostStatus::output,
       NDO_DATA_OUTPUT,
       "output"),
     MappedData<HostStatus>(
       &HostStatus::perf_data,
       NDO_DATA_PERFDATA,
-      "perf_data"),
+      "perfdata"),
     MappedData<HostStatus>()
   };
 
@@ -1082,7 +1074,7 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
-      "process_performance_data"),
+      "process_perfdata"),
     MappedData<ProgramStatus>(
       &ProgramStatus::global_host_event_handler,
       NDO_DATA_GLOBALHOSTEVENTHANDLER,
@@ -1164,7 +1156,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::default_process_perf_data,
       0,
-      "default_process_perf_data"),
+      "default_process_perfdata"),
     MappedData<Service>(
       &Service::display_name,
       NDO_DATA_DISPLAYNAME,
@@ -1380,7 +1372,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
-      "process_performance_data"),
+      "process_perfdata"),
     MappedData<Service>(
       &Service::retain_nonstatus_information,
       NDO_DATA_RETAINSERVICENONSTATUSINFORMATION,
@@ -1429,10 +1421,6 @@ static const MappedData<Service> service_mapping[] =
       &Service::check_command,
       NDO_DATA_CHECKCOMMAND,
       "check_command"),
-    MappedData<Service>(
-      &Service::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
     MappedData<Service>(
       &Service::output,
       NDO_DATA_OUTPUT,
@@ -1706,7 +1694,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
-      "process_performance_data"),
+      "process_perfdata"),
     MappedData<ServiceStatus>(
       &ServiceStatus::retry_interval,
       NDO_DATA_RETRYCHECKINTERVAL,
@@ -1731,10 +1719,6 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::check_command,
       NDO_DATA_CHECKCOMMAND,
       "check_command"),
-    MappedData<ServiceStatus>(
-      &ServiceStatus::long_output,
-      NDO_DATA_LONGOUTPUT,
-      "long_output"),
     MappedData<ServiceStatus>(
       &ServiceStatus::output,
       NDO_DATA_OUTPUT,

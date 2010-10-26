@@ -59,7 +59,6 @@ void HostServiceStatus::InternalCopy(const HostServiceStatus& hss)
   this->last_state_change             = hss.last_state_change;
   this->last_update                   = hss.last_update;
   this->latency                       = hss.latency;
-  this->long_output                   = hss.long_output;
   this->max_check_attempts            = hss.max_check_attempts;
   this->modified_attributes           = hss.modified_attributes;
   this->next_check                    = hss.next_check;
