@@ -26,7 +26,7 @@
 -- service_dependency
 -- service_servicegroup
 -- servicecommands
--- servicegroup
+-- servicegroups
 -- states
 
 
@@ -250,8 +250,8 @@ CREATE TABLE hosts (
 --
 CREATE TABLE hostgroups (
   hostgroup_id int NOT NULL,
-  name varchar(255) NOT NULL,
   instance_id int NOT NULL,
+  name varchar(255) NOT NULL,
 
   action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
@@ -555,14 +555,16 @@ END;
 -- Groups of services.
 --
 CREATE TABLE servicegroups (
-  id int NOT NULL,
+  servicegroup_id int NOT NULL,
   instance_id int NOT NULL,
-  servicegroup_name varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
+
   action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
-  PRIMARY KEY (id),
+
+  PRIMARY KEY (servicegroup_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
@@ -573,7 +575,7 @@ CREATE TRIGGER servicegroups_trigger
 BEFORE INSERT ON servicegroups
 FOR EACH ROW
 BEGIN
-  SELECT servicegroups_seq.nextval INTO :NEW.id FROM dual;
+  SELECT servicegroups_seq.nextval INTO :NEW.servicegroup_id FROM dual;
 END;
 /
 

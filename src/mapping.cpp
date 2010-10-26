@@ -1506,7 +1506,7 @@ static const MappedData<ServiceGroup> service_group_mapping[] =
     MappedData<ServiceGroup>(
       &ServiceGroup::name,
       NDO_DATA_SERVICEGROUPNAME,
-      "servicegroup_name"),
+      "name"),
     MappedData<ServiceGroup>(
       &ServiceGroup::notes,
       NDO_DATA_NOTES,
