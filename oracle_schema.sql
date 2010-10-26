@@ -18,7 +18,7 @@
 -- hosts_hosts_parents
 -- instances
 -- issues
--- issue_parent
+-- issues_issues_parents
 -- logs
 -- notifications
 -- schemaversion
@@ -333,10 +333,14 @@ CREATE TABLE issues (
   host_id int default NULL,
   service_id int default NULL,
   start_time int NOT NULL,
+
   ack_time int default NULL,
   end_time int default NULL,
+
   PRIMARY KEY (issue_id),
-  UNIQUE (host_id, service_id, start_time)
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
 CREATE SEQUENCE issues_seq
 START WITH 1
@@ -353,15 +357,15 @@ END;
 --
 -- Issues parenting.
 --
-CREATE TABLE issue_parent (
-  child_issue_id int NOT NULL,
+CREATE TABLE issues_issues_parents (
+  child_id int NOT NULL,
   end_time int default NULL,
   start_time int NOT NULL,
-  parent_issue_id int NOT NULL,
+  parent_id int NOT NULL,
 
-  FOREIGN KEY (child_issue_id) REFERENCES issues (issue_id)
+  FOREIGN KEY (child_id) REFERENCES issues (issue_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (parent_issue_id) REFERENCES issues (issue_id)
+  FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
     ON DELETE CASCADE
 );
 

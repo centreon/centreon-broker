@@ -1826,7 +1826,7 @@ template <> const char*
 template <> const MappedData<Events::IssueParent>*
   MappedType<Events::IssueParent>::members(issue_parent_mapping);
 template <> const char*
-  MappedType<Events::IssueParent>::table("issue_parent");
+  MappedType<Events::IssueParent>::table("issues_issues_parents");
 
 // Log mapping.
 template <> const MappedData<Events::Log>*
