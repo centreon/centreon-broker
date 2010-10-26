@@ -980,7 +980,7 @@ static const MappedData<Program> program_mapping[] =
     MappedData<Program>(
       &Program::instance_name,
       NDO_DATA_PROGRAMNAME,
-      "instance_name"),
+      "name"),
     MappedData<Program>(
       &Program::is_running,
       NDO_DATA_RUNTIME,
@@ -992,11 +992,11 @@ static const MappedData<Program> program_mapping[] =
     MappedData<Program>(
       &Program::program_end,
       NDO_DATA_ENDTIME,
-      "program_end"),
+      "end_time"),
     MappedData<Program>(
       &Program::program_start,
       NDO_DATA_PROGRAMSTARTTIME,
-      "program_start"),
+      "start_time"),
     MappedData<Program>()
   };
 
@@ -1006,11 +1006,11 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::active_host_checks_enabled,
       NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-      "active_host_checks_enabled"),
+      "active_host_checks"),
     MappedData<ProgramStatus>(
       &ProgramStatus::active_service_checks_enabled,
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      "active_service_checks_enabled"),
+      "active_service_checks"),
     MappedData<ProgramStatus>(
       &ProgramStatus::check_hosts_freshness,
       NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
@@ -1022,23 +1022,23 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::event_handler_enabled,
       NDO_DATA_EVENTHANDLERENABLED,
-      "event_handlers_enabled"),
+      "event_handlers"),
     MappedData<ProgramStatus>(
       &ProgramStatus::failure_prediction_enabled,
       NDO_DATA_FAILUREPREDICTIONENABLED,
-      "failure_prediction_enabled"),
+      "failure_prediction"),
     MappedData<ProgramStatus>(
       &ProgramStatus::flap_detection_enabled,
       NDO_DATA_FLAPDETECTIONENABLED,
-      "flap_detection_enabled"),
+      "flap_detection"),
     MappedData<ProgramStatus>(
       &ProgramStatus::instance_address,
       NDO_DATA_HOSTADDRESS,
-      "instance_address"),
+      "address"),
     MappedData<ProgramStatus>(
       &ProgramStatus::instance_description,
       NDO_DATA_SERVICEDESCRIPTION,
-      "instance_description"),
+      "description"),
     MappedData<ProgramStatus>(
       &ProgramStatus::instance_id,
       NDO_DATA_INSTANCE,
@@ -1066,7 +1066,7 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::notifications_enabled,
       NDO_DATA_NOTIFICATIONSENABLED,
-      "notifications_enabled"),
+      "notifications"),
     MappedData<ProgramStatus>(
       &ProgramStatus::obsess_over_hosts,
       NDO_DATA_OBSESSOVERHOST,
@@ -1078,11 +1078,11 @@ static const MappedData<ProgramStatus> program_status_mapping[] =
     MappedData<ProgramStatus>(
       &ProgramStatus::passive_host_checks_enabled,
       NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      "passive_host_checks_enabled"),
+      "passive_host_checks"),
     MappedData<ProgramStatus>(
       &ProgramStatus::passive_service_checks_enabled,
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      "passive_service_checks_enabled"),
+      "passive_service_checks"),
     MappedData<ProgramStatus>(
       &ProgramStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
@@ -1858,13 +1858,13 @@ template <> const char*
 template <> const MappedData<Events::Program>*
   MappedType<Events::Program>::members(program_mapping);
 template <> const char*
-  MappedType<Events::Program>::table("programs");
+  MappedType<Events::Program>::table("instances");
 
 // ProgramStatus mapping.
 template <> const MappedData<Events::ProgramStatus>*
   MappedType<Events::ProgramStatus>::members(program_status_mapping);
 template <> const char*
-  MappedType<Events::ProgramStatus>::table("programs");
+  MappedType<Events::ProgramStatus>::table("instances");
 
 // Service mapping.
 template <> const MappedData<Events::Service>*

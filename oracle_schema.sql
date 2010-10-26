@@ -17,11 +17,11 @@
 -- host_parent
 -- hostcommands
 -- hostgroups
+-- instances
 -- issues
 -- issue_parent
 -- logs
 -- notifications
--- programs
 -- services
 -- service_dependency
 -- service_servicegroup
@@ -41,36 +41,38 @@ INSERT INTO db_version (version) VALUES (1);
 --
 -- Store information about Nagios instances.
 --
-CREATE TABLE programs (
+CREATE TABLE instances (
   instance_id int NOT NULL,
-  instance_name varchar(255) default 'localhost' NOT NULL,
-  active_host_checks_enabled char(1) default NULL,
-  active_service_checks_enabled char(1) default NULL,
+  name varchar(255) NOT NULL default 'localhost',
+
+  active_host_checks char(1) default NULL,
+  active_service_checks char(1) default NULL,
+  address varchar(128) default NULL,
   check_hosts_freshness char(1) default NULL,
   check_services_freshness char(1) default NULL,
   daemon_mode char(1) default NULL,
-  event_handlers_enabled char(1) default NULL,
-  failure_prediction_enabled char(1) default NULL,
-  flap_detection_enabled char(1) default NULL,
+  description varchar(128) default NULL,
+  end_time int default NULL,
+  event_handlers char(1) default NULL,
+  failure_prediction char(1) default NULL,
+  flap_detection char(1) default NULL,
   global_host_event_handler clob default NULL,
   global_service_event_handler clob default NULL,
-  instance_address varchar(128) default NULL,
-  instance_description varchar(128) default NULL,
-  is_running char(1) default NULL,
   last_alive int default NULL,
   last_command_check int default NULL,
   last_log_rotation int default NULL,
   modified_host_attributes int default NULL,
   modified_service_attributes int default NULL,
-  notifications_enabled char(1) default NULL,
+  notifications char(1) default NULL,
   obsess_over_hosts char(1) default NULL,
   obsess_over_services char(1) default NULL,
-  passive_host_checks_enabled char(1) default NULL,
-  passive_service_checks_enabled char(1) default NULL,
+  passive_host_checks char(1) default NULL,
+  passive_service_checks char(1) default NULL,
   pid int default NULL,
   process_performance_data char(1) default NULL,
-  program_end int default NULL,
-  program_start int default NULL,
+  running char(1) default NULL,
+  start_time int default NULL,
+
   PRIMARY KEY (instance_id)
 );
 
@@ -234,7 +236,7 @@ CREATE TABLE hosts (
   PRIMARY KEY (id),
   UNIQUE (host_id),
   UNIQUE (host_name, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE hosts_seq
@@ -262,7 +264,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
   PRIMARY KEY (id),
   UNIQUE (hostgroup_name, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE hostgroups_seq
@@ -566,7 +568,7 @@ CREATE TABLE servicegroups (
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (instance_id) REFERENCES programs (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE servicegroups_seq
