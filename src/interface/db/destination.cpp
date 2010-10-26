@@ -452,8 +452,8 @@ void Destination::ProcessIssueParent(const Events::Event& event)
       query << "UPDATE "
             << MappedType<Events::IssueParent>::table
             << " SET end_time="
-            << ip.end_time << " WHERE child_issue_id="
-            << child_id << " AND parent_issue_id="
+            << ip.end_time << " WHERE child_id="
+            << child_id << " AND parent_id="
             << parent_id << " AND start_time="
             << ip.start_time;
       logging::debug << logging::LOW << query.str().c_str();
@@ -464,7 +464,7 @@ void Destination::ProcessIssueParent(const Events::Event& event)
       std::ostringstream query;
       query << "INSERT INTO "
             << MappedType<Events::IssueParent>::table
-            << " (child_issue_id, parent_issue_id, start_time) VALUES("
+            << " (child_id, parent_id, start_time) VALUES("
             << child_id << ", "
             << parent_id << ", "
             << ip.start_time << ")";

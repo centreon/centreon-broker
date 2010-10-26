@@ -472,7 +472,7 @@ static MappedData<Host> const host_mapping[] =
     MappedData<Host>(
       &Host::passive_checks_enabled,
       NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-      "passive_checks_enabled"),
+      "passive_checks"),
     MappedData<Host>(
       &Host::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
@@ -776,7 +776,7 @@ static const MappedData<HostStatus> host_status_mapping[] =
     MappedData<HostStatus>(
       &HostStatus::notifications_enabled,
       NDO_DATA_NOTIFICATIONSENABLED,
-      "notifications_enabled"),
+      "notify"),
     MappedData<HostStatus>(
       &HostStatus::obsess_over,
       NDO_DATA_OBSESSOVERHOST,
@@ -1148,7 +1148,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::default_notifications_enabled,
       0,
-      "default_notifications"),
+      "default_notify"),
     MappedData<Service>(
       &Service::default_passive_checks_enabled,
       0,
@@ -1886,4 +1886,4 @@ template <> const char*
 template <> const MappedData<Events::state>*
   MappedType<Events::state>::members(state_mapping);
 template <> const char*
-  MappedType<Events::state>::table("states");
+  MappedType<Events::state>::table("stateevents");
