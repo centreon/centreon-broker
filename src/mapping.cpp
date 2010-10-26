@@ -602,7 +602,7 @@ static const MappedData<HostGroup> host_group_mapping[] =
     MappedData<HostGroup>(
       &HostGroup::name,
       NDO_DATA_HOSTGROUPNAME,
-      "hostgroup_name"),
+      "name"),
     MappedData<HostGroup>(
       &HostGroup::notes,
       NDO_DATA_NOTES,

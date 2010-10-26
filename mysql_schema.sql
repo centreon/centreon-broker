@@ -229,8 +229,8 @@ CREATE TABLE hosts (
 -- Host groups.
 --
 CREATE TABLE hostgroups (
-  id int NOT NULL auto_increment,
-  hostgroup_name varchar(255) NOT NULL,
+  hostgroup_id int NOT NULL auto_increment,
+  name varchar(255) NOT NULL,
   instance_id int NOT NULL,
 
   action_url varchar(160) default NULL,
@@ -238,8 +238,8 @@ CREATE TABLE hostgroups (
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
 
-  PRIMARY KEY (id),
-  UNIQUE (hostgroup_name, instance_id),
+  PRIMARY KEY (hostgroup_id),
+  UNIQUE (name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
