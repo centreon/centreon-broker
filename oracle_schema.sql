@@ -27,7 +27,7 @@
 -- servicegroups
 -- services_servicegroups
 -- services_services_dependencies
--- states
+-- stateevents
 
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE comments (
   source smallint default NULL,
   type smallint default NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (comment_id),
   UNIQUE (entry_time, instance_name, internal_id)
 );
 CREATE SEQUENCE comments_seq
@@ -285,7 +285,7 @@ CREATE TABLE hosts_hostgroups (
   UNIQUE (host_id, hostgroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (id)
+  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
     ON DELETE CASCADE
 );
 
@@ -764,8 +764,8 @@ CREATE TABLE services_commands (
 --
 -- States of checkpoints.
 --
-CREATE TABLE states (
-  state_id int NOT NULL,
+CREATE TABLE stateevents (
+  stateevent_id int NOT NULL,
 
   end_time int default NULL,
   host_id int NOT NULL,
@@ -773,7 +773,9 @@ CREATE TABLE states (
   start_time int NOT NULL,
   state int NOT NULL,
   
-  PRIMARY KEY (state_id)
+  PRIMARY KEY (stateevent_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
 CREATE SEQUENCE states_seq
 START WITH 1
@@ -782,6 +784,6 @@ CREATE TRIGGER states_trigger
 BEFORE INSERT ON states
 FOR EACH ROW
 BEGIN
-  SELECT states_seq.nextval INTO :NEW.state_id FROM dual;
+  SELECT states_seq.nextval INTO :NEW.stateevent_id FROM dual;
 END;
 /

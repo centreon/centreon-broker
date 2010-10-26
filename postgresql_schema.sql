@@ -123,7 +123,7 @@ CREATE TABLE comments (
   source smallint default NULL,
   type smallint default NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (comment_id),
   UNIQUE (entry_time, instance_name, internal_id)
 );
 
@@ -255,7 +255,7 @@ CREATE TABLE hosts_hostgroups (
   UNIQUE (host_id, hostgroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (id)
+  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
     ON DELETE CASCADE
 );
 
@@ -534,6 +534,9 @@ CREATE TABLE services_services_dependencies (
 );
 
 
+-- Not validated.
+
+
 --
 -- Custom variables.
 --
@@ -656,8 +659,8 @@ CREATE TABLE services_commands (
 --
 -- States of checkpoints.
 --
-CREATE TABLE states (
-  state_id int NOT NULL auto_increment,
+CREATE TABLE stateevents (
+  stateevent_id int NOT NULL auto_increment,
 
   end_time int default NULL,
   host_id int NOT NULL,
@@ -665,5 +668,7 @@ CREATE TABLE states (
   start_time int NOT NULL,
   state int NOT NULL,
   
-  PRIMARY KEY (state_id)
+  PRIMARY KEY (stateevent_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
