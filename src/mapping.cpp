@@ -1100,7 +1100,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::active_checks_enabled,
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      "active_checks_enabled"),
+      "active_checks"),
     MappedData<Service>(
       &Service::check_freshness,
       NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
@@ -1120,19 +1120,19 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_attempt"),
+      "check_attempt"),
     MappedData<Service>(
       &Service::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      "current_notification_number"),
+      "notification_number"),
     MappedData<Service>(
       &Service::current_state,
       NDO_DATA_CURRENTSTATE,
-      "current_state"),
+      "state"),
     MappedData<Service>(
       &Service::default_active_checks_enabled,
       0,
-      "default_active_checks_enabled"),
+      "default_active_checks"),
     MappedData<Service>(
       &Service::default_event_handler_enabled,
       0,
@@ -1144,15 +1144,15 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::default_flap_detection_enabled,
       0,
-      "default_flap_detection_enabled"),
+      "default_flap_detection"),
     MappedData<Service>(
       &Service::default_notifications_enabled,
       0,
-      "default_notifications_enabled"),
+      "default_notifications"),
     MappedData<Service>(
       &Service::default_passive_checks_enabled,
       0,
-      "default_passive_checks_enabled"),
+      "default_passive_checks"),
     MappedData<Service>(
       &Service::default_process_perf_data,
       0,
@@ -1176,7 +1176,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::failure_prediction_enabled,
       NDO_DATA_FAILUREPREDICTIONENABLED,
-      "failure_prediction_enabled"),
+      "failure_prediction"),
     MappedData<Service>(
       &Service::failure_prediction_options,
       NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
@@ -1188,7 +1188,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::flap_detection_enabled,
       NDO_DATA_FLAPDETECTIONENABLED,
-      "flap_detection_enabled"),
+      "flap_detection"),
     MappedData<Service>(
       &Service::flap_detection_on_critical,
       NDO_DATA_FLAPDETECTIONONCRITICAL,
@@ -1212,7 +1212,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
-      "has_been_checked"),
+      "checked"),
     MappedData<Service>(
       &Service::high_flap_threshold,
       NDO_DATA_HIGHSERVICEFLAPTHRESHOLD,
@@ -1236,11 +1236,11 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::is_flapping,
       NDO_DATA_ISFLAPPING,
-      "is_flapping"),
+      "flapping"),
     MappedData<Service>(
       &Service::is_volatile,
       NDO_DATA_SERVICEISVOLATILE,
-      "is_volatile"),
+      "volatile"),
     MappedData<Service>(
       &Service::last_check,
       NDO_DATA_LASTSERVICECHECK,
@@ -1328,7 +1328,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::notifications_enabled,
       NDO_DATA_NOTIFICATIONSENABLED,
-      "notifications_enabled"),
+      "notify"),
     MappedData<Service>(
       &Service::notify_on_critical,
       NDO_DATA_NOTIFYSERVICECRITICAL,
@@ -1360,7 +1360,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::passive_checks_enabled,
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      "passive_checks_enabled"),
+      "passive_checks"),
     MappedData<Service>(
       &Service::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
@@ -1368,7 +1368,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      "problem_has_been_acknowledged"),
+      "acknowledged"),
     MappedData<Service>(
       &Service::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
@@ -1428,7 +1428,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::perf_data,
       NDO_DATA_PERFDATA,
-      "perf_data"),
+      "perfdata"),
     MappedData<Service>()
   };
 
@@ -1550,7 +1550,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::active_checks_enabled,
       NDO_DATA_ACTIVESERVICECHECKSENABLED,
-      "active_checks_enabled"),
+      "active_checks"),
     MappedData<ServiceStatus>(
       &ServiceStatus::check_interval,
       NDO_DATA_NORMALCHECKINTERVAL,
@@ -1566,15 +1566,15 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::current_check_attempt,
       NDO_DATA_CURRENTCHECKATTEMPT,
-      "current_attempt"),
+      "check_attempt"),
     MappedData<ServiceStatus>(
       &ServiceStatus::current_notification_number,
       NDO_DATA_CURRENTNOTIFICATIONNUMBER,
-      "current_notification_number"),
+      "notification_number"),
     MappedData<ServiceStatus>(
       &ServiceStatus::current_state,
       NDO_DATA_CURRENTSTATE,
-      "current_state"),
+      "state"),
     MappedData<ServiceStatus>(
       &ServiceStatus::event_handler,
       NDO_DATA_EVENTHANDLER,
@@ -1590,15 +1590,15 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::failure_prediction_enabled,
       NDO_DATA_FAILUREPREDICTIONENABLED,
-      "failure_prediction_enabled"),
+      "failure_prediction"),
     MappedData<ServiceStatus>(
       &ServiceStatus::flap_detection_enabled,
       NDO_DATA_FLAPDETECTIONENABLED,
-      "flap_detection_enabled"),
+      "flap_detection"),
     MappedData<ServiceStatus>(
       &ServiceStatus::has_been_checked,
       NDO_DATA_HASBEENCHECKED,
-      "has_been_checked"),
+      "checked"),
     MappedData<ServiceStatus>(
       &ServiceStatus::host_id,
       NDO_DATA_HOST,
@@ -1606,7 +1606,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::is_flapping,
       NDO_DATA_ISFLAPPING,
-      "is_flapping"),
+      "flapping"),
     MappedData<ServiceStatus>(
       &ServiceStatus::last_check,
       NDO_DATA_LASTSERVICECHECK,
@@ -1674,7 +1674,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::notifications_enabled,
       NDO_DATA_NOTIFICATIONSENABLED,
-      "notifications_enabled"),
+      "notify"),
     MappedData<ServiceStatus>(
       &ServiceStatus::obsess_over,
       NDO_DATA_OBSESSOVERSERVICE,
@@ -1682,7 +1682,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::passive_checks_enabled,
       NDO_DATA_PASSIVESERVICECHECKSENABLED,
-      "passive_checks_enabled"),
+      "passive_checks"),
     MappedData<ServiceStatus>(
       &ServiceStatus::percent_state_change,
       NDO_DATA_PERCENTSTATECHANGE,
@@ -1690,7 +1690,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::problem_has_been_acknowledged,
       NDO_DATA_PROBLEMHASBEENACKNOWLEDGED,
-      "problem_has_been_acknowledged"),
+      "acknowledged"),
     MappedData<ServiceStatus>(
       &ServiceStatus::process_performance_data,
       NDO_DATA_PROCESSPERFORMANCEDATA,
@@ -1726,7 +1726,7 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
     MappedData<ServiceStatus>(
       &ServiceStatus::perf_data,
       NDO_DATA_PERFDATA,
-      "perf_data"),
+      "perfdata"),
     MappedData<ServiceStatus>()
   };
 
