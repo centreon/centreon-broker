@@ -11,10 +11,10 @@
 -- eventhandlers
 -- flappinghistory
 -- hosts
--- host_dependency
 -- hostcommands
 -- hostgroups
 -- hosts_hostgroups
+-- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- instances
 -- issues
@@ -261,6 +261,26 @@ CREATE TABLE hosts_hostgroups (
 
 
 --
+-- Hosts dependencies.
+--
+CREATE TABLE hosts_hosts_dependencies (
+  dependent_host_id int NOT NULL,
+  host_id int NOT NULL,
+
+  dependency_period varchar(75) default NULL,
+  execution_failure_options varchar(15) default NULL,
+  inherits_parent boolean default NULL,
+  notification_failure_options varchar(15) default NULL,
+
+  UNIQUE (dependent_host_id, host_id),
+  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
 -- Hosts parenting relationships.
 --
 CREATE TABLE hosts_hosts_parents (
@@ -271,28 +291,6 @@ CREATE TABLE hosts_hosts_parents (
   FOREIGN KEY (child_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
   FOREIGN KEY (parent_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Hosts dependencies.
---
-CREATE TABLE host_dependency (
-  id serial,
-  dependent_host_id int NOT NULL,
-  host_id int NOT NULL,
-
-  dependency_period varchar(75) default NULL,
-  execution_failure_options varchar(15) default NULL,
-  inherits_parent boolean default NULL,
-  notification_failure_options varchar(15) default NULL,
-
-  PRIMARY KEY (id),
-  UNIQUE (dependent_host_id, host_id),
-  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );
 

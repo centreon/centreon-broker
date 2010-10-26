@@ -11,10 +11,10 @@
 -- eventhandlers
 -- flappinghistory
 -- hosts
--- host_dependency
 -- hostcommands
 -- hostgroups
 -- hosts_hostgroups
+-- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- instances
 -- issues
@@ -291,6 +291,26 @@ CREATE TABLE hosts_hostgroups (
 
 
 --
+-- Hosts dependencies.
+--
+CREATE TABLE host_dependency (
+  dependent_host_id int NOT NULL,
+  host_id int NOT NULL,
+
+  dependency_period varchar(75) default NULL,
+  execution_failure_options varchar(15) default NULL,
+  inherits_parent char(1) default NULL,
+  notification_failure_options varchar(15) default NULL,
+
+  UNIQUE (dependent_host_id, host_id),
+  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
 -- Hosts parenting relationships.
 --
 CREATE TABLE hosts_hosts_parents (
@@ -303,36 +323,6 @@ CREATE TABLE hosts_hosts_parents (
   FOREIGN KEY (parent_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );
-
-
---
--- Hosts dependencies.
---
-CREATE TABLE host_dependency (
-  id int NOT NULL,
-  dependent_host_id int NOT NULL,
-  host_id int NOT NULL,
-  dependency_period varchar(75) default NULL,
-  execution_failure_options varchar(15) default NULL,
-  inherits_parent char(1) default NULL,
-  notification_failure_options varchar(15) default NULL,
-  PRIMARY KEY (id),
-  UNIQUE (dependent_host_id, host_id),
-  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-CREATE SEQUENCE host_dependency_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER host_dependency_trigger
-BEFORE INSERT ON host_dependency
-FOR EACH ROW
-BEGIN
-  SELECT host_dependency_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
 
 
 --

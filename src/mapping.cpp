@@ -1790,7 +1790,7 @@ template <> const char*
 template <> const MappedData<Events::HostDependency>*
   MappedType<Events::HostDependency>::members(host_dependency_mapping);
 template <> const char*
-  MappedType<Events::HostDependency>::table("host_dependency");
+  MappedType<Events::HostDependency>::table("hosts_hosts_dependencies");
 
 // HostGroup mapping.
 template <> const MappedData<Events::HostGroup>*
