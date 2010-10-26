@@ -133,7 +133,7 @@ CREATE TABLE comments (
 --
 CREATE TABLE hosts (
   host_id int NOT NULL,
-  host_name varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
   instance_id int NOT NULL,
 
   acknowledged boolean default NULL,
@@ -219,7 +219,7 @@ CREATE TABLE hosts (
   statusmap_image varchar(255) default NULL,
 
   UNIQUE (host_id),
-  UNIQUE (host_name, instance_id),
+  UNIQUE (name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -385,7 +385,7 @@ CREATE TABLE downtimes (
 --
 CREATE TABLE services (
   host_id int NOT NULL,
-  service_description varchar(255) NOT NULL,
+  description varchar(255) NOT NULL,
   service_id int default NULL,
 
   acknowledged boolean default NULL,
@@ -473,7 +473,7 @@ CREATE TABLE services (
   state_type smallint default NULL,
   volatile boolean default NULL,
 
-  UNIQUE (host_id, service_description),
+  UNIQUE (host_id, description),
   UNIQUE (service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE

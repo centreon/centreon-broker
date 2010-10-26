@@ -336,7 +336,7 @@ static MappedData<Host> const host_mapping[] =
     MappedData<Host>(
       &Host::host_name,
       NDO_DATA_HOSTNAME,
-      "host_name"),
+      "name"),
     MappedData<Host>(
       &Host::icon_image,
       NDO_DATA_ICONIMAGE,
@@ -972,7 +972,7 @@ static const MappedData<Program> program_mapping[] =
     MappedData<Program>(
       &Program::is_running,
       NDO_DATA_RUNTIME,
-      "is_running"),
+      "running"),
     MappedData<Program>(
       &Program::pid,
       NDO_DATA_PROCESSID,
@@ -1392,7 +1392,7 @@ static const MappedData<Service> service_mapping[] =
     MappedData<Service>(
       &Service::service_description,
       NDO_DATA_SERVICEDESCRIPTION,
-      "service_description"),
+      "description"),
     MappedData<Service>(
       &Service::should_be_scheduled,
       NDO_DATA_SHOULDBESCHEDULED,
