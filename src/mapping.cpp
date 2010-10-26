@@ -1874,7 +1874,7 @@ template <> const char*
 template <> const MappedData<Events::ServiceGroupMember>*
   MappedType<Events::ServiceGroupMember>::members(service_group_member_mapping);
 template <> const char*
-  MappedType<Events::ServiceGroupMember>::table("service_servicegroup");
+  MappedType<Events::ServiceGroupMember>::table("services_servicegroups");
 
 // ServiceStatus mapping.
 template <> const MappedData<Events::ServiceStatus>*

@@ -24,9 +24,9 @@
 -- schemaversion
 -- services
 -- service_dependency
--- service_servicegroup
 -- servicecommands
 -- servicegroups
+-- services_servicegroups
 -- states
 
 
@@ -502,14 +502,14 @@ CREATE TABLE servicegroups (
 --
 -- Relationships between services and service groups.
 --
-CREATE TABLE service_servicegroup (
+CREATE TABLE services_servicegroups (
   service_id int NOT NULL,
   servicegroup_id int NOT NULL,
 
   UNIQUE (service_id, servicegroup_id),
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (id)
+  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
