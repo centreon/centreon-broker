@@ -178,9 +178,9 @@ static void ToBase(const T& t, soci::values& v)
 template <> std::list<std::pair<std::string, GetterSetter<Events::Acknowledgement> > >
   Interface::DB::DBMappedType<Events::Acknowledgement>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Acknowledgement> > >();
-template <> std::list<std::pair<std::string, GetterSetter<Events::Comment> > >
-  Interface::DB::DBMappedType<Events::Comment>::list =
-    std::list<std::pair<std::string, GetterSetter<Events::Comment> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::comment> > >
+  Interface::DB::DBMappedType<Events::comment>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::comment> > >();
 template <> std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >
   Interface::DB::DBMappedType<Events::Downtime>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >();
@@ -253,7 +253,7 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::state> > >
 void Interface::DB::Initialize()
 {
   static_init<Events::Acknowledgement>();
-  static_init<Events::Comment>();
+  static_init<Events::comment>();
   static_init<Events::Downtime>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
@@ -304,12 +304,12 @@ void soci::type_conversion<Events::Acknowledgement>::to_base(
 }
 
 /**
- *  Extract Comment data from DB row.
+ *  Extract comment data from DB row.
  */
-void soci::type_conversion<Events::Comment>::from_base(
-  const soci::values& v,
+void soci::type_conversion<Events::comment>::from_base(
+  soci::values const& v,
   soci::indicator ind,
-  Events::Comment& c)
+  Events::comment& c)
 {
   (void)v;
   (void)ind;
@@ -318,10 +318,10 @@ void soci::type_conversion<Events::Comment>::from_base(
 }
 
 /**
- *  Extract Comment data to DB row.
+ *  Extract comment data to DB row.
  */
-void soci::type_conversion<Events::Comment>::to_base(
-  const Events::Comment& c,
+void soci::type_conversion<Events::comment>::to_base(
+  Events::comment const& c,
   soci::values& v,
   soci::indicator& ind)
 {

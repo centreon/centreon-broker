@@ -75,69 +75,65 @@ static const MappedData<Acknowledgement> acknowledgement_mapping[] =
   };
 
 // Comment members mapping.
-static const MappedData<Comment> comment_mapping[] =
+static const MappedData<comment> comment_mapping[] =
   {
-    MappedData<Comment>(
-      &Comment::author,
+    MappedData<comment>(
+      &comment::author,
       NDO_DATA_AUTHORNAME,
-      "author_name"),
-    MappedData<Comment>(
-      &Comment::comment_time,
-      NDO_DATA_COMMENTTIME,
-      "comment_time"),
-    MappedData<Comment>(
-      &Comment::comment_type,
-      NDO_DATA_COMMENTTYPE,
-      "comment_type"),
-    MappedData<Comment>(
-      &Comment::deletion_time,
+      "author"),
+    MappedData<comment>(
+      &comment::deletion_time,
       NDO_DATA_ENDTIME,
       "deletion_time"),
-    MappedData<Comment>(
-      &Comment::entry_time,
+    MappedData<comment>(
+      &comment::entry_time,
       NDO_DATA_ENTRYTIME,
       "entry_time"),
-    MappedData<Comment>(
-      &Comment::entry_type,
+    MappedData<comment>(
+      &comment::entry_type,
       NDO_DATA_ENTRYTYPE,
       "entry_type"),
-    MappedData<Comment>(
-      &Comment::expire_time,
+    MappedData<comment>(
+      &comment::expire_time,
       NDO_DATA_EXPIRATIONTIME,
       "expire_time"),
-    MappedData<Comment>(
-      &Comment::expires,
+    MappedData<comment>(
+      &comment::expires,
       NDO_DATA_EXPIRES,
       "expires"),
-    MappedData<Comment>(
-      &Comment::host_name,
+    MappedData<comment>(
+      &comment::host_name,
       NDO_DATA_HOSTNAME,
       "host_name"),
-    MappedData<Comment>(
-      &Comment::instance_name,
+    MappedData<comment>(
+      &comment::instance_name,
       NDO_DATA_PROGRAMNAME,
       "instance_name"),
-    MappedData<Comment>(
-      &Comment::internal_id,
+    MappedData<comment>(
+      &comment::internal_id,
       NDO_DATA_COMMENTID,
       "internal_id"),
-    MappedData<Comment>(
-      &Comment::persistent,
+    MappedData<comment>(
+      &comment::persistent,
       NDO_DATA_PERSISTENT,
       "persistent"),
-    MappedData<Comment>(
-      &Comment::service_description,
+    MappedData<comment>(
+      &comment::service_description,
       NDO_DATA_SERVICEDESCRIPTION,
       "service_description"),
-    MappedData<Comment>(
-      &Comment::source,
+    MappedData<comment>(
+      &comment::source,
       NDO_DATA_SOURCE,
       "source"),
-    MappedData<Comment>(
-      &Comment::comment,
+    MappedData<comment>(
+      &comment::type,
+      NDO_DATA_COMMENTTYPE,
+      "type"),
+    MappedData<comment>(
+      &comment::data,
       NDO_DATA_COMMENT,
-      "comment_data"),
-    MappedData<Comment>()
+      "data"),
+    MappedData<comment>()
   };
 
 // Downtime members mapping.
@@ -1783,10 +1779,10 @@ template <> const char*
   MappedType<Events::Acknowledgement>::table("acknowledgements");
 
 // Comment mapping.
-template <> const MappedData<Events::Comment>*
-  MappedType<Events::Comment>::members(comment_mapping);
+template <> const MappedData<Events::comment>*
+  MappedType<Events::comment>::members(comment_mapping);
 template <> const char*
-  MappedType<Events::Comment>::table("comments");
+  MappedType<Events::comment>::table("comments");
 
 // Downtime mapping.
 template <> const MappedData<Events::Downtime>*

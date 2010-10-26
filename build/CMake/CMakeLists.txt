@@ -97,7 +97,7 @@ set(LIBROKER_SOURCES
 	../../src/concurrency/thread_listener.cpp
 	../../src/events/acknowledgement.cpp
 	../../src/events/check.cpp
-	../../src/events/comment.cpp
+	../../src/events/comment.cc
 	../../src/events/dependency.cpp
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp

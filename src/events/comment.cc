@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/comment.h"
+#include "events/comment.hh"
 
 using namespace Events;
 
@@ -29,35 +29,33 @@ using namespace Events;
 **************************************/
 
 /**
- *  \brief Copy internal data of the given object to the current instance.
+ *  @brief Copy internal data of the given object to the current instance.
  *
  *  This internal method is used to copy data defined inside the Comment class
  *  from an object to the current instance. This means that no superclass data
  *  are copied. This method is used in Comment copy constructor and in the =
  *  operator overload.
  *
- *  \param[in] comment Object to copy from.
+ *  @param[in] comment Object to copy from.
  *
- *  \see Comment(const Comment&)
- *  \see operator=(const Comment&)
+ *  @see Comment(comment const&)
+ *  @see operator=(comment const&)
  */
-void Comment::InternalCopy(const Comment& comment)
-{
-  this->author              = comment.author;
-  this->comment             = comment.comment;
-  this->comment_time        = comment.comment_time;
-  this->comment_type        = comment.comment_type;
-  this->deletion_time       = comment.deletion_time;
-  this->entry_time          = comment.entry_time;
-  this->entry_type          = comment.entry_type;
-  this->expire_time         = comment.expire_time;
-  this->expires             = comment.expires;
-  this->host_name           = comment.host_name;
-  this->instance_name       = comment.instance_name;
-  this->internal_id         = comment.internal_id;
-  this->persistent          = comment.persistent;
-  this->service_description = comment.service_description;
-  this->source              = comment.source;
+void comment::_internal_copy(comment const& c) {
+  this->author              = c.author;
+  this->data                = c.data;
+  this->deletion_time       = c.deletion_time;
+  this->entry_time          = c.entry_time;
+  this->entry_type          = c.entry_type;
+  this->expire_time         = c.expire_time;
+  this->expires             = c.expires;
+  this->host_name           = c.host_name;
+  this->instance_name       = c.instance_name;
+  this->internal_id         = c.internal_id;
+  this->persistent          = c.persistent;
+  this->service_description = c.service_description;
+  this->source              = c.source;
+  this->type                = c.type;
   return ;
 }
 
@@ -68,66 +66,62 @@ void Comment::InternalCopy(const Comment& comment)
 **************************************/
 
 /**
- *  \brief Comment default constructor.
+ *  @brief Comment default constructor.
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-Comment::Comment()
-  :  comment_time(0),
-     comment_type(0),
-     deletion_time(0),
+comment::comment()
+  :  deletion_time(0),
      entry_time(0),
      entry_type(0),
      expire_time(0),
      expires(false),
      internal_id(0),
      persistent(false),
-     source(0) {}
+     source(0),
+     type(0) {}
 
 /**
- *  \brief Comment copy constructor.
+ *  @brief Comment copy constructor.
  *
  *  Copy data from the given comment to the current instance.
  *
- *  \param[in] comment Object to copy from.
+ *  @param[in] comment Object to copy from.
  */
-Comment::Comment(const Comment& comment) : Event(comment)
-{
-  this->InternalCopy(comment);
+comment::comment(comment const& c) : Event(c) {
+  _internal_copy(c);
 }
 
 /**
  *  Comment destructor.
  */
-Comment::~Comment() {}
+comment::~comment() {}
 
 /**
- *  \brief Overload of the assignment operator.
+ *  @brief Overload of the assignment operator.
  *
  *  Copy data from the given comment to the current instance.
  *
- *  \param[in] comment Object to copy from.
+ *  @param[in] comment Object to copy from.
  *
- *  \return *this
+ *  @return *this
  */
-Comment& Comment::operator=(const Comment& comment)
-{
-  this->Event::operator=(comment);
-  this->InternalCopy(comment);
+comment& comment::operator=(comment const& c) {
+  Event::operator=(c);
+  _internal_copy(c);
   return (*this);
 }
 
 /**
- *  \brief Returns the type of this event (Event::COMMENT).
+ *  @brief Returns the type of this event (Event::COMMENT).
  *
  *  The type of this event can be useful for runtime determination of the type
  *  of an event.
  *
- *  \see Event
+ *  @see Event
  *
- *  \return Event::COMMENT
+ *  @return Event::COMMENT
  */
-int Comment::GetType() const
-{
+int comment::GetType() const {
   return (Event::COMMENT);
 }

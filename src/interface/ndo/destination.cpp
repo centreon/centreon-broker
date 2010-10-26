@@ -154,8 +154,8 @@ void Destination::Event(Events::Event* event)
           break ;
          case Events::Event::COMMENT:
           buffer << NDO_API_COMMENTDATA << ":\n";
-          HandleEvent<Events::Comment>(
-            *static_cast<Events::Comment*>(event),
+          HandleEvent<Events::comment>(
+            *static_cast<Events::comment*>(event),
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;

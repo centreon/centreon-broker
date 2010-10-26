@@ -99,18 +99,17 @@ int CallbackComment(int callback_type, void* data)
   try
     {
       nebstruct_comment_data* comment_data;
-      std::auto_ptr<Events::Comment> comment(new Events::Comment);
+      std::auto_ptr<Events::comment> comment(new Events::comment);
 
       comment_data = static_cast<nebstruct_comment_data*>(data);
       if (comment_data->author_name)
         comment->author = comment_data->author_name;
       if (comment_data->comment_data)
-        comment->comment = comment_data->comment_data;
-      // comment->comment_time = XXX;
-      comment->comment_type = comment_data->type;
+        comment->data = comment_data->comment_data;
+      comment->type = comment_data->type;
       if (NEBTYPE_COMMENT_DELETE == comment_data->type)
         comment->deletion_time = time(NULL);
-      // comment->entry_time = XXX;
+      comment->entry_time = time(NULL);
       comment->entry_type = comment_data->entry_type;
       comment->expire_time = comment_data->expire_time;
       comment->expires = comment_data->expires;

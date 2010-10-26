@@ -246,20 +246,18 @@ void Destination::ProcessAcknowledgement(const Events::Event& event)
 /**
  *  Process a Comment event.
  */
-void Destination::ProcessComment(const Events::Event& event)
-{
-  const Events::Comment& comment(*static_cast<const Events::Comment*>(&event));
+void Destination::ProcessComment(Events::Event const& event) {
+  Events::comment const& c(*static_cast<const Events::comment*>(&event));
 
-  LOGDEBUG("Processing Comment event ...");
-  try
-    {
-      this->Insert(comment);
+  LOGDEBUG("Processing comment event ...");
+  try {
+      this->Insert(c);
     }
-  catch (const soci::soci_error& se)
-    {
-      this->comment_ = comment;
-      this->comment_stmt_->execute(true);
+  catch (soci::soci_error const& se) {
+      _comment = c;
+      _comment_stmt->execute(true);
     }
+
   return ;
 }
 
@@ -707,7 +705,7 @@ Destination::~Destination()
 void Destination::Close()
 {
   this->acknowledgement_stmt_.reset();
-  this->comment_stmt_.reset();
+  this->_comment_stmt.reset();
   this->downtime_stmt_.reset();
   this->host_check_stmt_.reset();
   this->host_status_stmt_.reset();
@@ -821,8 +819,8 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
-  this->PrepareUpdate<Events::Comment>(
-    this->comment_stmt_, this->comment_, id);
+  this->PrepareUpdate<Events::comment>(
+    _comment_stmt, _comment, id);
 
   id.clear();
   id.push_back("entry_time");

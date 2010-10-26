@@ -22,7 +22,7 @@
 # define EVENTS_EVENTS_H_
 
 # include "events/acknowledgement.h"
-# include "events/comment.h"
+# include "events/comment.hh"
 # include "events/downtime.h"
 # include "events/host.h"
 # include "events/host_check.h"

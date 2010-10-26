@@ -18,8 +18,8 @@
 **  For more information : contact@centreon.com
 */
 
-#ifndef EVENTS_COMMENT_H_
-# define EVENTS_COMMENT_H_
+#ifndef EVENTS_COMMENT_HH_
+# define EVENTS_COMMENT_HH_
 
 # include <time.h>         // for time_t
 # include <string>
@@ -28,21 +28,19 @@
 namespace              Events
 {
   /**
-   *  \class Comment comment.h "events/comment.h"
-   *  \brief Represents a comment inside Nagios.
+   *  @class comment comment.hh "events/comment.hh"
+   *  @brief Represents a comment inside Nagios.
    *
    *  Some user can make a comment on whatever objects he wants.
    */
-  class                Comment : public Event
+  class                comment : public Event
   {
    private:
-    void               InternalCopy(const Comment& comment);
+    void               _internal_copy(comment const& c);
 
    public:
     std::string        author;
-    std::string        comment;
-    time_t             comment_time;
-    short              comment_type;
+    std::string        data;
     time_t             deletion_time;
     time_t             entry_time;
     short              entry_type;
@@ -54,12 +52,13 @@ namespace              Events
     bool               persistent;
     std::string        service_description;
     short              source;
-                       Comment();
-                       Comment(const Comment& comment);
-                       ~Comment();
-    Comment&           operator=(const Comment& comment);
+    short              type;
+                       comment();
+                       comment(comment const& c);
+                       ~comment();
+    comment&           operator=(comment const& c);
     int                GetType() const;
   };
 }
 
-#endif /* !EVENTS_COMMENT_H_ */
+#endif /* !EVENTS_COMMENT_HH_ */

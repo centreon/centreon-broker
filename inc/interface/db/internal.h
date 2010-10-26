@@ -71,13 +71,13 @@ namespace                  soci
 
   // Comment O/R mapping.
   template                 <>
-  struct                   type_conversion<Events::Comment>
+  struct                   type_conversion<Events::comment>
   {
     typedef values         base_type;
-    static void            from_base(const values& v,
+    static void            from_base(values const& v,
                                      indicator ind,
-                                     Events::Comment& c);
-    static void            to_base(const Events::Comment& c,
+                                     Events::comment& c);
+    static void            to_base(Events::comment const& c,
                                    values& v,
                                    indicator& ind);
   };

@@ -159,9 +159,9 @@ static void static_init()
 template <> std::map<std::string, GetterSetter<Events::Acknowledgement> >
   Interface::XML::XMLMappedType<Events::Acknowledgement>::map =
     std::map<std::string, GetterSetter<Events::Acknowledgement> >();
-template <> std::map<std::string, GetterSetter<Events::Comment> >
-  Interface::XML::XMLMappedType<Events::Comment>::map =
-    std::map<std::string, GetterSetter<Events::Comment> >();
+template <> std::map<std::string, GetterSetter<Events::comment> >
+  Interface::XML::XMLMappedType<Events::comment>::map =
+    std::map<std::string, GetterSetter<Events::comment> >();
 template <> std::map<std::string, GetterSetter<Events::Downtime> >
   Interface::XML::XMLMappedType<Events::Downtime>::map =
     std::map<std::string, GetterSetter<Events::Downtime> >();
@@ -237,7 +237,7 @@ template <> std::map<std::string, GetterSetter<Events::state> >
 void Interface::XML::Initialize()
 {
   static_init<Events::Acknowledgement>();
-  static_init<Events::Comment>();
+  static_init<Events::comment>();
   static_init<Events::Downtime>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();

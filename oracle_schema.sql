@@ -116,22 +116,23 @@ END;
 -- Holds comments information.
 --
 CREATE TABLE comments (
-  id int NOT NULL,
+  comment_id int NOT NULL,
   entry_time int NOT NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int NOT NULL,
-  author_name varchar(64) default NULL,
-  comment_data clob default NULL,
-  comment_time int default NULL,
-  comment_type smallint default NULL,
+
+  author varchar(64) default NULL,
+  data clob default NULL,
   deletion_time int default NULL,
   entry_type smallint default NULL,
   expire_time int default NULL,
   expires char(1) default NULL,
   host_name varchar(255) NOT NULL,
   persistent char(1) default NULL,
-  service_description varchar(160) default NULL,
+  service_description varchar(255) default NULL,
   source smallint default NULL,
+  type smallint default NULL,
+
   PRIMARY KEY (id),
   UNIQUE (entry_time, instance_name, internal_id)
 );
@@ -142,7 +143,7 @@ CREATE TRIGGER comments_trigger
 BEFORE INSERT ON comments
 FOR EACH ROW
 BEGIN
-  SELECT comments_seq.nextval INTO :NEW.id FROM dual;
+  SELECT comments_seq.nextval INTO :NEW.comment_id FROM dual;
 END;
 /
 

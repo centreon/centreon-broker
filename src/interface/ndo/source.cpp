@@ -173,7 +173,7 @@ Events::Event* Source::Event()
           event.reset(HandleEvent<Events::Acknowledgement>(this->stream_));
           break ;
          case NDO_API_COMMENTDATA:
-          event.reset(HandleEvent<Events::Comment>(this->stream_));
+          event.reset(HandleEvent<Events::comment>(this->stream_));
           break ;
          case NDO_API_DOWNTIMEDATA:
           event.reset(HandleEvent<Events::Downtime>(this->stream_));

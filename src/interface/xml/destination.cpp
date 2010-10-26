@@ -141,7 +141,7 @@ void Destination::Event(Events::Event* event)
           break ;
          case Events::Event::COMMENT:
           xml_event.reset(new TiXmlElement("comment"));
-          HandleEvent(*static_cast<Events::Comment*>(event),
+          HandleEvent(*static_cast<Events::comment*>(event),
             *xml_event);
           break ;
          case Events::Event::DOWNTIME:

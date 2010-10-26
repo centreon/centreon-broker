@@ -106,23 +106,22 @@ CREATE TABLE acknowledgements (
 -- Holds comments information.
 --
 CREATE TABLE comments (
-  id serial,
+  comment_id serial,
   entry_time int NOT NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int NOT NULL,
 
-  author_name varchar(64) default NULL,
-  comment_data text default NULL,
-  comment_time int default NULL,
-  comment_type smallint default NULL,
+  author varchar(64) default NULL,
+  data text default NULL,
   deletion_time int default NULL,
   entry_type smallint default NULL,
   expire_time int default NULL,
   expires boolean default NULL,
   host_name varchar(255) NOT NULL,
   persistent boolean default NULL,
-  service_description varchar(160) default NULL,
+  service_description varchar(255) default NULL,
   source smallint default NULL,
+  type smallint default NULL,
 
   PRIMARY KEY (id),
   UNIQUE (entry_time, instance_name, internal_id)

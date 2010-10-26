@@ -51,8 +51,8 @@ namespace                         Interface
       static void                    (Destination::* processing_table[])(const Events::Event&);
       Events::Acknowledgement        acknowledgement_;
       std::auto_ptr<soci::statement> acknowledgement_stmt_;
-      Events::Comment                comment_;
-      std::auto_ptr<soci::statement> comment_stmt_;
+      Events::comment                _comment;
+      std::auto_ptr<soci::statement> _comment_stmt;
       Events::Downtime               downtime_;
       std::auto_ptr<soci::statement> downtime_stmt_;
       Events::HostCheck              host_check_;
