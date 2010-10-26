@@ -408,23 +408,25 @@ END;
 -- Downtimes.
 --
 CREATE TABLE downtimes (
-  id int NOT NULL,
+  downtime_id int NOT NULL,
   entry_time int default NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int default NULL,
-  author_name varchar(64) default NULL,
-  comment_data clob default NULL,
-  downtime_type smallint default NULL,
+
+  author varchar(64) default NULL,
+  cancelled char(1) default NULL,
+  comment clob default NULL,
   duration int default NULL,
   end_time int default NULL,
   fixed char(1) default NULL,
   host_name varchar(255) NOT NULL,
   service_description varchar(255) default NULL,
   start_time int default NULL,
+  started char(1) default NULL,
   triggered_by int default NULL,
-  was_cancelled char(1) default NULL,
-  was_started char(1) default NULL,
-  PRIMARY KEY (id),
+  type smallint default NULL,
+
+  PRIMARY KEY (downtime_id),
   UNIQUE (entry_time, instance_name, internal_id)
 );
 CREATE SEQUENCE downtimes_seq
@@ -434,7 +436,7 @@ CREATE TRIGGER downtimes_trigger
 BEFORE INSERT ON downtimes
 FOR EACH ROW
 BEGIN
-  SELECT downtimes_seq.nextval INTO :NEW.id FROM dual;
+  SELECT downtimes_seq.nextval INTO :NEW.downtime_id FROM dual;
 END;
 /
 

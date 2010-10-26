@@ -142,11 +142,11 @@ static const MappedData<Downtime> downtime_mapping[] =
     MappedData<Downtime>(
       &Downtime::author,
       NDO_DATA_AUTHORNAME,
-      "author_name"),
+      "author"),
     MappedData<Downtime>(
       &Downtime::downtime_type,
       NDO_DATA_DOWNTIMETYPE,
-      "downtime_type"),
+      "type"),
     MappedData<Downtime>(
       &Downtime::duration,
       NDO_DATA_DURATION,
@@ -190,15 +190,15 @@ static const MappedData<Downtime> downtime_mapping[] =
     MappedData<Downtime>(
       &Downtime::was_cancelled,
       NDO_DATA_X3D,
-      "was_cancelled"),
+      "cancelled"),
     MappedData<Downtime>(
       &Downtime::was_started,
       NDO_DATA_Y3D,
-      "was_started"),
+      "started"),
     MappedData<Downtime>(
       &Downtime::comment,
       NDO_DATA_COMMENT,
-      "comment_data"),
+      "comment"),
     MappedData<Downtime>()
   };
 

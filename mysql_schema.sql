@@ -357,25 +357,25 @@ CREATE TABLE logs (
 -- Downtimes.
 --
 CREATE TABLE downtimes (
-  id int NOT NULL auto_increment,
+  downtime_id int NOT NULL auto_increment,
   entry_time int default NULL,
   instance_name varchar(255) NOT NULL,
   internal_id int default NULL,
 
-  author_name varchar(64) default NULL,
-  comment_data text default NULL,
-  downtime_type smallint default NULL,
+  author varchar(64) default NULL,
+  cancelled boolean default NULL,
+  comment text default NULL,
   duration int default NULL,
   end_time int default NULL,
   fixed boolean default NULL,
   host_name varchar(255) NOT NULL,
   service_description varchar(255) default NULL,
   start_time int default NULL,
+  started boolean default NULL,
   triggered_by int default NULL,
-  was_cancelled boolean default NULL,
-  was_started boolean default NULL,
+  type smallint default NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (downtime_id),
   UNIQUE (entry_time, instance_name, internal_id)
 ) ENGINE=InnoDB;
 
