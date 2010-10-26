@@ -23,10 +23,10 @@
 -- notifications
 -- schemaversion
 -- services
--- service_dependency
 -- servicecommands
 -- servicegroups
 -- services_servicegroups
+-- services_services_dependencies
 -- states
 
 
@@ -597,30 +597,21 @@ CREATE TABLE services_servicegroups (
 --
 -- Services dependencies.
 --
-CREATE TABLE service_dependency (
-  id int NOT NULL,
+CREATE TABLE services_services_dependencies (
   dependent_service_id int NOT NULL,
   service_id int NOT NULL,
+
   dependency_period varchar(75) default NULL,
   execution_failure_options varchar(15) default NULL,
   inherits_parent char(1) default NULL,
   notification_failure_options varchar(15) default NULL,
-  PRIMARY KEY (id),
+
+  UNIQUE (dependent_service_id, service_id),
   FOREIGN KEY (dependent_service_id) REFERENCES services (service_id)
     ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE service_dependency_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER service_dependency_trigger
-BEFORE INSERT ON service_dependency
-FOR EACH ROW
-BEGIN
-  SELECT service_dependency_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
 
 
 --

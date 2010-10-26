@@ -23,10 +23,10 @@
 -- notifications
 -- schemaversion
 -- services
--- service_dependency
 -- servicecommands
 -- servicegroups
 -- services_servicegroups
+-- services_services_dependencies
 -- states
 
 
@@ -517,8 +517,7 @@ CREATE TABLE services_servicegroups (
 --
 -- Services dependencies.
 --
-CREATE TABLE service_dependency (
-  id serial,
+CREATE TABLE services_services_dependencies (
   dependent_service_id int NOT NULL,
   service_id int NOT NULL,
 
@@ -527,7 +526,7 @@ CREATE TABLE service_dependency (
   inherits_parent boolean default NULL,
   notification_failure_options varchar(15) default NULL,
 
-  PRIMARY KEY (id),
+  UNIQUE (dependent_service_id, service_id),
   FOREIGN KEY (dependent_service_id) REFERENCES services (service_id)
     ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)

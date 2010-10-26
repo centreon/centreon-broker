@@ -1862,7 +1862,7 @@ template <> const char*
 template <> const MappedData<Events::ServiceDependency>*
   MappedType<Events::ServiceDependency>::members(service_dependency_mapping);
 template <> const char*
-  MappedType<Events::ServiceDependency>::table("service_dependency");
+  MappedType<Events::ServiceDependency>::table("services_services_dependencies");
 
 // ServiceGroup mapping.
 template <> const MappedData<Events::ServiceGroup>*
