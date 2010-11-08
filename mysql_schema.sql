@@ -36,7 +36,7 @@
 CREATE TABLE schemaversion (
   software varchar(128) NOT NULL,
   version int NOT NULL
-);
+) ENGINE=InnoDB;
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 1);
 
 
