@@ -11,7 +11,6 @@
 -- eventhandlers
 -- flappinghistory
 -- hosts
--- hostcommands
 -- hostgroups
 -- hosts_hostgroups
 -- hosts_hosts_dependencies
@@ -23,7 +22,6 @@
 -- notifications
 -- schemaversion
 -- services
--- servicecommands
 -- servicegroups
 -- services_servicegroups
 -- services_services_dependencies
@@ -192,7 +190,6 @@ CREATE TABLE hosts (
   high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
-  initial_state varchar(18) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -326,6 +323,44 @@ CREATE TABLE hosts_hosts_parents (
 
 
 --
+-- Event handlers.
+--
+CREATE TABLE eventhandlers (
+  eventhandler_id int NOT NULL,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+
+  command_args varchar(255) default NULL,
+  command_line varchar(255) default NULL,
+  early_timeout smallint default NULL,
+  end_time int default NULL,
+  eventhandler_type smallint default NULL,
+  execution_time double precision default NULL,
+  output varchar(255) default NULL,
+  return_code smallint default NULL,
+  state smallint default NULL,
+  state_type smallint default NULL,
+  timeout smallint default NULL,
+
+  PRIMARY KEY (eventhandler_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+CREATE SEQUENCE eventhandlers_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER eventhandlers_trigger
+BEFORE INSERT ON eventhandlers
+FOR EACH ROW
+BEGIN
+  SELECT eventhandlers_seq.nextval INTO :NEW.eventhandler_id FROM dual;
+END;
+/
+
+
+--
 -- Correlated issues.
 --
 CREATE TABLE issues (
@@ -442,6 +477,44 @@ END;
 
 
 --
+--  Notifications.
+--
+CREATE TABLE notifications (
+  notification_id int NOT NULL,
+  host_id int default NULL,
+  start_time int default NULL,
+  service_id int default NULL,
+
+  ack_author varchar(255) default NULL,
+  ack_data clob default NULL,
+  command_name varchar(255) default NULL,
+  contact_name varchar(255) default NULL,
+  contacts_notified char(1) default NULL,
+  end_time int default NULL,
+  escalated char(1) default NULL,
+  output clob default NULL,
+  reason_type int default NULL,
+  state int default NULL,
+  type int default NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+CREATE SEQUENCE notifications_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER notifications_trigger
+BEFORE INSERT ON notifications
+FOR EACH ROW
+BEGIN
+  SELECT notifications_seq.nextval INTO :NEW.notification_id FROM dual;
+END;
+/
+
+
+--
 -- Monitored services.
 --
 CREATE TABLE services (
@@ -485,7 +558,6 @@ CREATE TABLE services (
   high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
-  initial_state varchar(1) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -584,9 +656,13 @@ END;
 -- Relationships between services and service groups.
 --
 CREATE TABLE services_servicegroups (
+  host_id int NOT NULL,
   service_id int NOT NULL,
   servicegroup_id int NOT NULL,
-  UNIQUE (service_id, servicegroup_id),
+
+  UNIQUE (host_id, service_id, servicegroup_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE,
   FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
@@ -598,7 +674,9 @@ CREATE TABLE services_servicegroups (
 -- Services dependencies.
 --
 CREATE TABLE services_services_dependencies (
+  dependent_host_id int NOT NULL,
   dependent_service_id int NOT NULL,
+  host_id int NOT NULL,
   service_id int NOT NULL,
 
   dependency_period varchar(75) default NULL,
@@ -606,8 +684,12 @@ CREATE TABLE services_services_dependencies (
   inherits_parent char(1) default NULL,
   notification_failure_options varchar(15) default NULL,
 
-  UNIQUE (dependent_service_id, service_id),
+  UNIQUE (dependent_host_id, dependent_service_id, host_id, service_id),
+  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
   FOREIGN KEY (dependent_service_id) REFERENCES services (service_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
@@ -641,72 +723,6 @@ END;
 
 
 --
--- Event handlers.
---
-CREATE TABLE eventhandlers (
-  id int NOT NULL,
-  command_args varchar(255) default NULL,
-  command_line varchar(255) default NULL,
-  early_timeout smallint default NULL,
-  end_time int default NULL,
-  eventhandler_type smallint default NULL,
-  execution_time double precision default NULL,
-  host_id int default NULL,
-  output varchar(255) default NULL,
-  return_code smallint default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-  state smallint default NULL,
-  state_type smallint default NULL,
-  timeout smallint default NULL,
-  PRIMARY KEY (id)
-);
-CREATE SEQUENCE eventhandlers_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER eventhandlers_trigger
-BEFORE INSERT ON eventhandlers
-FOR EACH ROW
-BEGIN
-  SELECT eventhandlers_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
-
-
---
---  Notifications.
---
-CREATE TABLE notifications (
-  id int NOT NULL,
-  ack_author varchar(255) default NULL,
-  ack_data clob default NULL,
-  command_name varchar(255) default NULL,
-  contact_name varchar(255) default NULL,
-  contacts_notified char(1) default NULL,
-  end_time int default NULL,
-  escalated char(1) default NULL,
-  host_id int default NULL,
-  notification_type int default NULL,
-  output clob default NULL,
-  reason_type int default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-  state int default NULL,
-  PRIMARY KEY (id)
-);
-CREATE SEQUENCE notifications_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER notifications_trigger
-BEFORE INSERT ON notifications
-FOR EACH ROW
-BEGIN
-  SELECT notifications_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
-
-
---
 -- Historization of flapping status.
 --
 CREATE TABLE flappinghistory (
@@ -735,30 +751,6 @@ BEGIN
   SELECT flappinghistory_seq.nextval INTO :NEW.id FROM dual;
 END;
 /
-
-
---
--- Executed commands related to hosts.
---
-CREATE TABLE hostcommands (
-  host_id int default NULL,
-  check_command clob default NULL,
-  event_handler_command clob default NULL,
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Executed commands related to services.
---
-CREATE TABLE services_commands (
-  service_id int default NULL,
-  check_command clob,
-  event_handler_command clob,
-  FOREIGN KEY (service_id) REFERENCES services (service_id)
-    ON DELETE CASCADE
-);
 
 
 --

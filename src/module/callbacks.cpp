@@ -184,6 +184,65 @@ int CallbackDowntime(int callback_type, void* data)
 }
 
 /**
+ *  @brief Function that process event handler data.
+ *
+ *  This function is called by Nagios when some event handler data are
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_EVENT_HANDLER_DATA).
+ *  @param[in] data          A pointer to a nebstruct_event_handler_data
+ *                           containing the event handler data.
+ *
+ *  @return 0 on success.
+ */
+int CallbackEventHandler(int callback_type, void* data) {
+  LOGDEBUG("Processing event handler ...");
+  (void)callback_type;
+  try {
+    nebstruct_event_handler_data* event_handler_data;
+    std::auto_ptr<Events::event_handler> event_handler(new Events::event_handler);
+
+    event_handler_data = static_cast<nebstruct_event_handler_data*>(data);
+    if (event_handler_data->command_args)
+      event_handler->command_args = event_handler_data->command_args;
+    if (event_handler_data->command_line)
+      event_handler->command_line = event_handler_data->command_line;
+    event_handler->early_timeout = event_handler_data->early_timeout;
+    event_handler->end_time = event_handler_data->end_time.tv_sec;
+    event_handler->execution_time = event_handler_data->execution_time;
+    if (event_handler_data->host_name) {
+      std::map<std::string, int>::const_iterator it1;
+
+      it1 = gl_hosts.find(event_handler_data->host_name);
+      if (it1 != gl_hosts.end()) {
+        event_handler->host_id = it1->second;
+        if (event_handler_data->service_description) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator it2;
+
+          it2 = gl_services.find(std::make_pair(event_handler_data->host_name,
+                                                event_handler_data->service_description));
+          if (it2 != gl_services.end())
+            event_handler->service_id = it2->second.second;
+        }
+      }
+    }
+    if (event_handler_data->output)
+      event_handler->output = event_handler_data->output;
+    event_handler->return_code = event_handler_data->return_code;
+    event_handler->start_time = event_handler_data->start_time.tv_sec;
+    event_handler->state = event_handler_data->state;
+    event_handler->state_type = event_handler_data->state_type;
+    event_handler->timeout = event_handler_data->timeout;
+    event_handler->type = event_handler_data->eventhandler_type;
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
  *  \brief Function that process host check data.
  *
  *  This function is called by Nagios when some host check data are available.
@@ -384,8 +443,8 @@ int CallbackProcess(int callback_type, void *data)
         {
           std::auto_ptr<Events::Program> program(new Events::Program);
 
-	  config::handle(gl_configuration_file);
-	  logging::log_on(gl_initial_logger, 0, logging::NONE);
+          config::handle(gl_configuration_file);
+          logging::log_on(gl_initial_logger, 0, logging::NONE);
           // program->daemon_mode = XXX;
           program->instance_id = config::globals::instance;
           program->instance_name = config::globals::instance_name;

@@ -149,6 +149,11 @@ void Destination::Event(Events::Event* event)
           HandleEvent(*static_cast<Events::Downtime*>(event),
             *xml_event);
           break ;
+         case Events::Event::EVENTHANDLER:
+          xml_event.reset(new TiXmlElement("event_handler"));
+          HandleEvent(*static_cast<Events::event_handler*>(event),
+            *xml_event);
+          break ;
          case Events::Event::HOST:
           xml_event.reset(new TiXmlElement("host"));
           HandleEvent(*static_cast<Events::Host*>(event),
@@ -182,6 +187,11 @@ void Destination::Event(Events::Event* event)
          case Events::Event::LOG:
           xml_event.reset(new TiXmlElement("log"));
           HandleEvent(*static_cast<Events::Log*>(event),
+            *xml_event);
+          break ;
+         case Events::Event::NOTIFICATION:
+          xml_event.reset(new TiXmlElement("notification"));
+          HandleEvent(*static_cast<Events::notification*>(event),
             *xml_event);
           break ;
          case Events::Event::PROGRAM:

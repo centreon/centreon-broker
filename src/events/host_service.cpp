@@ -54,7 +54,6 @@ void HostService::InternalCopy(const HostService& hs)
   this->high_flap_threshold            = hs.high_flap_threshold;
   this->icon_image                     = hs.icon_image;
   this->icon_image_alt                 = hs.icon_image_alt;
-  this->initial_state                  = hs.initial_state;
   this->low_flap_threshold             = hs.low_flap_threshold;
   this->notes                          = hs.notes;
   this->notes_url                      = hs.notes_url;

@@ -95,6 +95,18 @@ namespace                  soci
                                    indicator& ind);
   };
 
+  // event_handler O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::event_handler> {
+    typedef values         base_type;
+    static void            from_base(values const& v,
+                                     indicator ind,
+                                     Events::event_handler& eh);
+    static void            to_base(Events::event_handler const& eh,
+                                   values& v,
+                                   indicator& ind);
+  };
+
   // Host O/R mapping.
   template                 <>
   struct                   type_conversion<Events::Host>
@@ -208,6 +220,18 @@ namespace                  soci
                                      indicator ind,
                                      Events::Log& l);
     static void            to_base(const Events::Log& l,
+                                   values& v,
+                                   indicator& ind);
+  };
+
+  // Notification O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::notification> {
+    typedef values         base_type;
+    static void            from_base(values const& v,
+                                     indicator ind,
+                                     Events::notification& n);
+    static void            to_base(Events::notification const& n,
                                    values& v,
                                    indicator& ind);
   };

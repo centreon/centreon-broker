@@ -68,6 +68,7 @@ static struct
     { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, CallbackAcknowledgement, false },
     { NEBCALLBACK_COMMENT_DATA, CallbackComment, false },
     { NEBCALLBACK_DOWNTIME_DATA, CallbackDowntime, false },
+    { NEBCALLBACK_EVENT_HANDLER_DATA, CallbackEventHandler, false },
     { NEBCALLBACK_HOST_CHECK_DATA, CallbackHostCheck, false },
     { NEBCALLBACK_HOST_STATUS_DATA, CallbackHostStatus, false },
     { NEBCALLBACK_LOG_DATA, CallbackLog, false },

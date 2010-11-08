@@ -101,6 +101,7 @@ set(LIBROKER_SOURCES
 	../../src/events/dependency.cpp
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp
+	../../src/events/event_handler.cc
 	../../src/events/group.cpp
 	../../src/events/group_member.cpp
 	../../src/events/host.cpp
@@ -115,6 +116,7 @@ set(LIBROKER_SOURCES
 	../../src/events/issue.cpp
 	../../src/events/issue_parent.cpp
 	../../src/events/log.cpp
+	../../src/events/notification.cc
 	../../src/events/program.cpp
 	../../src/events/program_status.cpp
 	../../src/events/service.cpp

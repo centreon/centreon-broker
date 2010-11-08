@@ -55,6 +55,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessAcknowledgement,    // ACKNOWLEDGEMENT
   &Destination::ProcessComment,            // COMMENT
   &Destination::ProcessDowntime,           // DOWNTIME
+  &Destination::ProcessEventHandler,       // EVENTHANDLER
   &Destination::ProcessHost,               // HOST
   &Destination::ProcessHostCheck,          // HOSTCHECK
   &Destination::ProcessHostDependency,     // HOSTDEPENDENCY
@@ -65,6 +66,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessIssue,              // ISSUE
   &Destination::ProcessIssueParent,        // ISSUEPARENT
   &Destination::ProcessLog,                // LOG
+  &Destination::ProcessNotification,       // NOTIFICATION
   &Destination::ProcessProgram,            // PROGRAM
   &Destination::ProcessProgramStatus,      // PROGRAMSTATUS
   &Destination::ProcessService,            // SERVICE
@@ -169,6 +171,51 @@ void Destination::Insert(const T& t)
 
   // Execute query.
   *this->conn_ << query, soci::use(t);
+
+  return ;
+}
+
+/**
+ *  Prepare an insert statement for later execution.
+ */
+template <typename T>
+void Destination::_prepare_insert(std::auto_ptr<soci::statement>& st, T& t)
+{
+  std::string query;
+
+  // Build query string.
+  query = "INSERT INTO ";
+  query.append(MappedType<T>::table);
+  query.append(" (");
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
+       it != end;
+       ++it)
+    {
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.resize(query.size() - 2);
+  query.append(") VALUES(");
+  for (typename std::list<std::pair<std::string,
+                                    GetterSetter<T> > >::const_iterator
+         it = DBMappedType<T>::list.begin(),
+         end = DBMappedType<T>::list.end();
+       it != end;
+       ++it)
+    {
+      query.append(":");
+      query.append(it->first);
+      query.append(", ");
+    }
+  query.resize(query.size() - 2);
+  query.append(")");
+  LOGDEBUG(query.c_str());
+
+  // Prepare statement.
+  st.reset(new soci::statement((this->conn_->prepare << query, soci::use(t))));
 
   return ;
 }
@@ -279,6 +326,24 @@ void Destination::ProcessDowntime(const Events::Event& event)
       this->downtime_ = downtime;
       this->downtime_stmt_->execute(true);
     }
+  return ;
+}
+
+/**
+ *  Process an event handler event.
+ */
+void Destination::ProcessEventHandler(Events::Event const& event) {
+  Events::event_handler const& event_handler(
+    *static_cast<Events::event_handler const*>(&event));
+
+  LOGDEBUG("Processing event_handler event ...");
+  try {
+    Insert(event_handler);
+  }
+  catch (soci::soci_error const& se) {
+    _event_handler = event_handler;
+    _event_handler_stmt->execute(true);
+  }
   return ;
 }
 
@@ -536,6 +601,23 @@ void Destination::ProcessLog(const Events::Event& event)
 }
 
 /**
+ *  Process a notification event.
+ */
+void Destination::ProcessNotification(Events::Event const& event) {
+  Events::notification const& notification(*static_cast<Events::notification const*>(&event));
+
+  LOGDEBUG("Processing notification event ...");
+  try {
+    Insert(notification);
+  }
+  catch (soci::soci_error const& se) {
+    _notification = notification;
+    _notification_stmt->execute(true);
+  }
+  return ;
+}
+
+/**
  *  Process a Program event.
  */
 void Destination::ProcessProgram(const Events::Event& event)
@@ -571,7 +653,8 @@ void Destination::ProcessService(const Events::Event& event)
   const Events::Service& service(*static_cast<const Events::Service*>(&event));
 
   LOGDEBUG("Processing Service event ...");
-  this->Insert(service);
+  _service = service;
+  _service_stmt->execute(true);
   return ;
 }
 
@@ -713,10 +796,13 @@ void Destination::Close()
   this->acknowledgement_stmt_.reset();
   this->_comment_stmt.reset();
   this->downtime_stmt_.reset();
+  this->_event_handler_stmt.reset();
   this->host_check_stmt_.reset();
   this->host_status_stmt_.reset();
   this->issue_stmt_.reset();
+  this->_notification_stmt.reset();
   this->program_status_stmt_.reset();
+  this->_service_stmt.reset();
   this->service_check_stmt_.reset();
   this->service_status_stmt_.reset();
   this->state_stmt_.reset();
@@ -810,6 +896,8 @@ void Destination::Connect(Destination::DB db_type,
       }
   }
 
+  _prepare_insert<Events::Service>(_service_stmt, _service);
+
   std::vector<std::string> id;
 
   id.clear();
@@ -837,6 +925,13 @@ void Destination::Connect(Destination::DB db_type,
 
   id.clear();
   id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  this->PrepareUpdate<Events::event_handler>(
+    _event_handler_stmt, _event_handler, id);
+
+  id.clear();
+  id.push_back("host_id");
   this->PrepareUpdate<Events::HostCheck>(
     this->host_check_stmt_, this->host_check_, id);
 
@@ -851,6 +946,13 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("start_time");
   this->PrepareUpdate<Events::Issue>(
     this->issue_stmt_, this->issue_, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  this->PrepareUpdate<Events::notification>(
+    _notification_stmt, _notification, id);
 
   id.clear();
   id.push_back("host_id");

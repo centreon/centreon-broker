@@ -55,7 +55,6 @@ namespace              Events
     double             high_flap_threshold;
     std::string        icon_image;
     std::string        icon_image_alt;
-    std::string        initial_state;
     double             low_flap_threshold;
     std::string        notes;
     std::string        notes_url;

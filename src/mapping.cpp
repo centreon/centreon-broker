@@ -202,6 +202,67 @@ static const MappedData<Downtime> downtime_mapping[] =
     MappedData<Downtime>()
   };
 
+// event_handler members mapping.
+static MappedData<event_handler> const event_handler_mapping[] = {
+  MappedData<event_handler>(
+    &event_handler::early_timeout,
+    NDO_DATA_EARLYTIMEOUT,
+    "early_timeout"),
+  MappedData<event_handler>(
+    &event_handler::end_time,
+    NDO_DATA_ENDTIME,
+    "end_time"),
+  MappedData<event_handler>(
+    &event_handler::execution_time,
+    NDO_DATA_EXECUTIONTIME,
+    "execution_time"),
+  MappedData<event_handler>(
+    &event_handler::host_id,
+    NDO_DATA_HOST,
+    "host_id"),
+  MappedData<event_handler>(
+    &event_handler::return_code,
+    NDO_DATA_RETURNCODE,
+    "return_code"),
+  MappedData<event_handler>(
+    &event_handler::service_id,
+    NDO_DATA_SERVICE,
+    "service_id"),
+  MappedData<event_handler>(
+    &event_handler::start_time,
+    NDO_DATA_STARTTIME,
+    "start_time"),
+  MappedData<event_handler>(
+    &event_handler::state,
+    NDO_DATA_STATE,
+    "state"),
+  MappedData<event_handler>(
+    &event_handler::state_type,
+    NDO_DATA_STATETYPE,
+    "state_type"),
+  MappedData<event_handler>(
+    &event_handler::timeout,
+    NDO_DATA_TIMEOUT,
+    "timeout"),
+  MappedData<event_handler>(
+    &event_handler::type,
+    NDO_DATA_TYPE,
+    "type"),
+  MappedData<event_handler>(
+    &event_handler::command_args,
+    NDO_DATA_COMMANDARGS,
+    "command_args"),
+  MappedData<event_handler>(
+    &event_handler::command_line,
+    NDO_DATA_COMMANDLINE,
+    "command_line"),
+  MappedData<event_handler>(
+    &event_handler::output,
+    NDO_DATA_OUTPUT,
+    "output"),
+  MappedData<event_handler>()
+};
+
 // Host members mapping.
 static MappedData<Host> const host_mapping[] =
   {
@@ -349,10 +410,6 @@ static MappedData<Host> const host_mapping[] =
       &Host::host_id,
       NDO_DATA_HOST,
       "host_id"),
-    MappedData<Host>(
-      &Host::initial_state,
-      0,
-      NULL),
     MappedData<Host>(
       &Host::instance_id,
       NDO_DATA_INSTANCE,
@@ -953,6 +1010,67 @@ static const MappedData<Log> log_mapping[] =
       "output"),
     MappedData<Log>()
   };
+
+// Notification members mapping.
+static MappedData<notification> notification_mapping[] = {
+  MappedData<notification>(
+    &notification::contacts_notified,
+    NDO_DATA_CONTACTSNOTIFIED,
+    "contacts_notified"),
+  MappedData<notification>(
+    &notification::end_time,
+    NDO_DATA_ENDTIME,
+    "end_time"),
+  MappedData<notification>(
+    &notification::escalated,
+    NDO_DATA_ESCALATED,
+    "escalated"),
+  MappedData<notification>(
+    &notification::host_id,
+    NDO_DATA_HOST,
+    "host_id"),
+  MappedData<notification>(
+    &notification::reason_type,
+    NDO_DATA_NOTIFICATIONREASON,
+    "reason_type"),
+  MappedData<notification>(
+    &notification::service_id,
+    NDO_DATA_SERVICE,
+    "service_id"),
+  MappedData<notification>(
+    &notification::start_time,
+    NDO_DATA_STARTTIME,
+    "start_time"),
+  MappedData<notification>(
+    &notification::state,
+    NDO_DATA_STATE,
+    "state"),
+  MappedData<notification>(
+    &notification::type,
+    NDO_DATA_NOTIFICATIONTYPE,
+    "type"),
+  MappedData<notification>(
+    &notification::ack_author,
+    NDO_DATA_ACKAUTHOR,
+    "ack_author"),
+  MappedData<notification>(
+    &notification::ack_data,
+    NDO_DATA_ACKDATA,
+    "ack_data"),
+  MappedData<notification>(
+    &notification::command_name,
+    NDO_DATA_COMMANDNAME,
+    "command_name"),
+  MappedData<notification>(
+    &notification::contact_name,
+    NDO_DATA_CONTACTNAME,
+    "contact_name"),
+  MappedData<notification>(
+    &notification::output,
+    NDO_DATA_OUTPUT,
+    "output"),
+  MappedData<notification>()
+};
 
 // Program members mapping.
 static const MappedData<Program> program_mapping[] =
@@ -1774,6 +1892,12 @@ template <> const MappedData<Events::Downtime>*
 template <> const char*
   MappedType<Events::Downtime>::table("downtimes");
 
+// event_handler mapping.
+template <> const MappedData<Events::event_handler>*
+  MappedType<Events::event_handler>::members(event_handler_mapping);
+template <> const char*
+  MappedType<Events::event_handler>::table("eventhandlers");
+
 // Host mapping.
 template <> const MappedData<Events::Host>*
   MappedType<Events::Host>::members(host_mapping);
@@ -1833,6 +1957,12 @@ template <> const MappedData<Events::Log>*
   MappedType<Events::Log>::members(log_mapping);
 template <> const char*
   MappedType<Events::Log>::table("logs");
+
+// Notification mapping.
+template <> MappedData<Events::notification> const*
+  MappedType<Events::notification>::members(notification_mapping);
+template <> char const*
+  MappedType<Events::notification>::table("notifications");
 
 // Program mapping.
 template <> const MappedData<Events::Program>*

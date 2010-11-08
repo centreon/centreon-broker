@@ -55,14 +55,20 @@ namespace                         Interface
       std::auto_ptr<soci::statement> _comment_stmt;
       Events::Downtime               downtime_;
       std::auto_ptr<soci::statement> downtime_stmt_;
+      Events::event_handler          _event_handler;
+      std::auto_ptr<soci::statement> _event_handler_stmt;
       Events::HostCheck              host_check_;
       std::auto_ptr<soci::statement> host_check_stmt_;
       Events::HostStatus             host_status_;
       std::auto_ptr<soci::statement> host_status_stmt_;
       Events::Issue                  issue_;
       std::auto_ptr<soci::statement> issue_stmt_;
+      Events::notification           _notification;
+      std::auto_ptr<soci::statement> _notification_stmt;
       Events::ProgramStatus          program_status_;
       std::auto_ptr<soci::statement> program_status_stmt_;
+      Events::Service                _service;
+      std::auto_ptr<soci::statement> _service_stmt;
       Events::ServiceCheck           service_check_;
       std::auto_ptr<soci::statement> service_check_stmt_;
       Events::ServiceStatus          service_status_;
@@ -76,12 +82,16 @@ namespace                         Interface
       template                    <typename T>
       void                        Insert(const T& t);
       template                    <typename T>
+      void                        _prepare_insert(std::auto_ptr<soci::statement>& st,
+                                    T& t);
+      template                    <typename T>
       void                        PrepareUpdate(std::auto_ptr<soci::statement>& st,
                                                 T& t,
                                                 const std::vector<std::string>& id);
       void                        ProcessAcknowledgement(const Events::Event& event);
       void                        ProcessComment(const Events::Event& event);
       void                        ProcessDowntime(const Events::Event& event);
+      void                        ProcessEventHandler(Events::Event const& event);
       void                        ProcessHost(const Events::Event& event);
       void                        ProcessHostCheck(const Events::Event& event);
       void                        ProcessHostDependency(const Events::Event& event);
@@ -92,6 +102,7 @@ namespace                         Interface
       void                        ProcessIssue(const Events::Event& event);
       void                        ProcessIssueParent(const Events::Event& event);
       void                        ProcessLog(const Events::Event& event);
+      void                        ProcessNotification(Events::Event const& event);
       void                        ProcessProgram(const Events::Event& event);
       void                        ProcessProgramStatus(const Events::Event& event);
       void                        ProcessService(const Events::Event& event);

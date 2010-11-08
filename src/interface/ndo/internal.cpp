@@ -236,6 +236,9 @@ template <> std::map<int, GetterSetter<Events::comment> >
 template <> std::map<int, GetterSetter<Events::Downtime> >
   Interface::NDO::NDOMappedType<Events::Downtime>::map =
     std::map<int, GetterSetter<Events::Downtime> >();
+template <> std::map<int, GetterSetter<Events::event_handler> >
+  Interface::NDO::NDOMappedType<Events::event_handler>::map =
+    std::map<int, GetterSetter<Events::event_handler> >();
 template <> std::map<int, GetterSetter<Events::Host> >
   Interface::NDO::NDOMappedType<Events::Host>::map =
     std::map<int, GetterSetter<Events::Host> >();
@@ -266,6 +269,9 @@ template <> std::map<int, GetterSetter<Events::IssueParent> >
 template <> std::map<int, GetterSetter<Events::Log> >
   Interface::NDO::NDOMappedType<Events::Log>::map =
     std::map<int, GetterSetter<Events::Log> >();
+template <> std::map<int, GetterSetter<Events::notification> >
+  Interface::NDO::NDOMappedType<Events::notification>::map =
+    std::map<int, GetterSetter<Events::notification> >();
 template <> std::map<int, GetterSetter<Events::Program> >
   Interface::NDO::NDOMappedType<Events::Program>::map =
     std::map<int, GetterSetter<Events::Program> >();
@@ -310,6 +316,7 @@ void Interface::NDO::Initialize()
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
   static_init<Events::Downtime>();
+  static_init<Events::event_handler>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();
@@ -320,6 +327,7 @@ void Interface::NDO::Initialize()
   static_init<Events::Issue>();
   static_init<Events::IssueParent>();
   static_init<Events::Log>();
+  static_init<Events::notification>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
   static_init<Events::Service>();

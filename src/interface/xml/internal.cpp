@@ -165,6 +165,9 @@ template <> std::map<std::string, GetterSetter<Events::comment> >
 template <> std::map<std::string, GetterSetter<Events::Downtime> >
   Interface::XML::XMLMappedType<Events::Downtime>::map =
     std::map<std::string, GetterSetter<Events::Downtime> >();
+template <> std::map<std::string, GetterSetter<Events::event_handler> >
+  Interface::XML::XMLMappedType<Events::event_handler>::map =
+    std::map<std::string, GetterSetter<Events::event_handler> >();
 template <> std::map<std::string, GetterSetter<Events::Host> >
   Interface::XML::XMLMappedType<Events::Host>::map =
     std::map<std::string, GetterSetter<Events::Host> >();
@@ -195,6 +198,9 @@ template <> std::map<std::string, GetterSetter<Events::IssueParent> >
 template <> std::map<std::string, GetterSetter<Events::Log> >
   Interface::XML::XMLMappedType<Events::Log>::map =
     std::map<std::string, GetterSetter<Events::Log> >();
+template <> std::map<std::string, GetterSetter<Events::notification> >
+  Interface::XML::XMLMappedType<Events::notification>::map =
+    std::map<std::string, GetterSetter<Events::notification> >();
 template <> std::map<std::string, GetterSetter<Events::Program> >
   Interface::XML::XMLMappedType<Events::Program>::map =
     std::map<std::string, GetterSetter<Events::Program> >();
@@ -239,6 +245,7 @@ void Interface::XML::Initialize()
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
   static_init<Events::Downtime>();
+  static_init<Events::event_handler>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();
@@ -249,6 +256,7 @@ void Interface::XML::Initialize()
   static_init<Events::Issue>();
   static_init<Events::IssueParent>();
   static_init<Events::Log>();
+  static_init<Events::notification>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
   static_init<Events::Service>();

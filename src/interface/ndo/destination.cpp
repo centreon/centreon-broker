@@ -166,6 +166,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::EVENTHANDLER:
+          buffer << NDO_API_EVENTHANDLERDATA << ":\n";
+          HandleEvent<Events::event_handler>(
+            *static_cast<Events::event_handler*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::HOST:
           buffer << NDO_API_HOSTDEFINITION << ":\n";
           HandleEvent<Events::Host>(
@@ -219,6 +226,13 @@ void Destination::Event(Events::Event* event)
           buffer << NDO_API_LOGDATA << ":\n";
           HandleEvent<Events::Log>(
             *static_cast<Events::Log*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::NOTIFICATION:
+          buffer << NDO_API_NOTIFICATIONDATA << ":\n";
+          HandleEvent<Events::notification>(
+            *static_cast<Events::notification*>(event),
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;

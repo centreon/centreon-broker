@@ -178,6 +178,9 @@ Events::Event* Source::Event()
          case NDO_API_DOWNTIMEDATA:
           event.reset(HandleEvent<Events::Downtime>(this->stream_));
           break ;
+         case NDO_API_EVENTHANDLERDATA:
+          event.reset(HandleEvent<Events::event_handler>(this->stream_));
+          break ;
          case NDO_API_HOSTCHECKDATA:
           event.reset(HandleEvent<Events::HostCheck>(this->stream_));
           break ;
@@ -201,6 +204,9 @@ Events::Event* Source::Event()
           break ;
          case NDO_API_LOGDATA:
           event.reset(HandleEvent<Events::Log>(this->stream_));
+          break ;
+         case NDO_API_NOTIFICATIONDATA:
+          event.reset(HandleEvent<Events::notification>(this->stream_));
           break ;
          case NDO_API_PROCESSDATA:
           event.reset(HandleEvent<Events::Program>(this->stream_));

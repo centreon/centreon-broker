@@ -184,6 +184,9 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::comment> > >
 template <> std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >
   Interface::DB::DBMappedType<Events::Downtime>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::event_handler> > >
+  Interface::DB::DBMappedType<Events::event_handler>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::event_handler> > >();
 template <> std::list<std::pair<std::string, GetterSetter<Events::Host> > >
   Interface::DB::DBMappedType<Events::Host>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Host> > >();
@@ -211,6 +214,9 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::Issue> > >
 template <> std::list<std::pair<std::string, GetterSetter<Events::Log> > >
   Interface::DB::DBMappedType<Events::Log>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Log> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::notification> > >
+  Interface::DB::DBMappedType<Events::notification>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::notification> > >();
 template <> std::list<std::pair<std::string, GetterSetter<Events::Program> > >
   Interface::DB::DBMappedType<Events::Program>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Program> > >();
@@ -255,6 +261,7 @@ void Interface::DB::Initialize()
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
   static_init<Events::Downtime>();
+  static_init<Events::event_handler>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();
@@ -264,6 +271,7 @@ void Interface::DB::Initialize()
   static_init<Events::HostStatus>();
   static_init<Events::Issue>();
   static_init<Events::Log>();
+  static_init<Events::notification>();
   static_init<Events::Program>();
   static_init<Events::ProgramStatus>();
   static_init<Events::Service>();
@@ -354,6 +362,31 @@ void soci::type_conversion<Events::Downtime>::to_base(
 {
   (void)ind;
   ToBase(d, v);
+  return ;
+}
+
+/**
+ *  Extract event handler data from DB row.
+ */
+void soci::type_conversion<Events::event_handler>::from_base(
+  soci::values const& v,
+  soci::indicator ind,
+  Events::event_handler& eh) {
+  (void)v;
+  (void)ind;
+  (void)eh;
+  return ;
+}
+
+/**
+ *  Extract event handler data to DB row.
+ */
+void soci::type_conversion<Events::event_handler>::to_base(
+  Events::event_handler const& eh,
+  soci::values& v,
+  soci::indicator& ind) {
+  (void)ind;
+  ToBase(eh, v);
   return ;
 }
 
@@ -597,6 +630,31 @@ void soci::type_conversion<Events::Log>::to_base(
 {
   (void)ind;
   ToBase(l, v);
+  return ;
+}
+
+/**
+ *  Extract notification data from DB row.
+ */
+void soci::type_conversion<Events::notification>::from_base(
+  soci::values const& v,
+  soci::indicator ind,
+  Events::notification& n) {
+  (void)v;
+  (void)ind;
+  (void)n;
+  return ;
+}
+
+/**
+ *  Extract notification data to DB row.
+ */
+void soci::type_conversion<Events::notification>::to_base(
+  Events::notification const& n,
+  soci::values& v,
+  soci::indicator& ind) {
+  (void)ind;
+  ToBase(n, v);
   return ;
 }
 

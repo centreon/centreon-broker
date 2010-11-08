@@ -11,7 +11,6 @@
 -- eventhandlers
 -- flappinghistory
 -- hosts
--- hostcommands
 -- hostgroups
 -- hosts_hostgroups
 -- hosts_hosts_dependencies
@@ -23,7 +22,6 @@
 -- notifications
 -- schemaversion
 -- services
--- servicecommands
 -- servicegroups
 -- services_servicegroups
 -- services_services_dependencies
@@ -172,7 +170,6 @@ CREATE TABLE hosts (
   high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
-  initial_state varchar(18) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -296,6 +293,34 @@ CREATE TABLE hosts_hosts_parents (
 
 
 --
+-- Event handlers.
+--
+CREATE TABLE eventhandlers (
+  eventhandler_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+
+  command_args varchar(255) default NULL,
+  command_line varchar(255) default NULL,
+  early_timeout smallint default NULL,
+  end_time int default NULL,
+  execution_time double precision default NULL,
+  output varchar(255) default NULL,
+  return_code smallint default NULL,
+  state smallint default NULL,
+  state_type smallint default NULL,
+  timeout smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (eventhandler_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
 -- Correlated issues.
 --
 CREATE TABLE issues (
@@ -381,6 +406,34 @@ CREATE TABLE downtimes (
 
 
 --
+--  Notifications.
+--
+CREATE TABLE notifications (
+  notification_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+
+  ack_author varchar(255) default NULL,
+  ack_data text default NULL,
+  command_name varchar(255) default NULL,
+  contact_name varchar(255) default NULL,
+  contacts_notified boolean default NULL,
+  end_time int default NULL,
+  escalated boolean default NULL,
+  output text default NULL,
+  reason_type int default NULL,
+  state int default NULL,
+  type int default NULL,
+
+  PRIMARY KEY (notification_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
 -- Monitored services.
 --
 CREATE TABLE services (
@@ -424,7 +477,6 @@ CREATE TABLE services (
   high_flap_threshold double precision default NULL,
   icon_image varchar(255) default NULL,
   icon_image_alt varchar(255) default NULL,
-  initial_state varchar(1) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -503,10 +555,13 @@ CREATE TABLE servicegroups (
 -- Relationships between services and service groups.
 --
 CREATE TABLE services_servicegroups (
+  host_id int NOT NULL,
   service_id int NOT NULL,
   servicegroup_id int NOT NULL,
 
-  UNIQUE (service_id, servicegroup_id),
+  UNIQUE (host_id, service_id, servicegroup_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE,
   FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
@@ -518,7 +573,9 @@ CREATE TABLE services_servicegroups (
 -- Services dependencies.
 --
 CREATE TABLE services_services_dependencies (
+  dependent_host_id int NOT NULL,
   dependent_service_id int NOT NULL,
+  host_id int NOT NULL,
   service_id int NOT NULL,
 
   dependency_period varchar(75) default NULL,
@@ -526,8 +583,12 @@ CREATE TABLE services_services_dependencies (
   inherits_parent boolean default NULL,
   notification_failure_options varchar(15) default NULL,
 
-  UNIQUE (dependent_service_id, service_id),
+  UNIQUE (dependent_host_id, dependent_service_id, host_id, service_id),
+  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
   FOREIGN KEY (dependent_service_id) REFERENCES services (service_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
   FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
@@ -556,56 +617,6 @@ CREATE TABLE customvariables (
 
 
 --
--- Event handlers.
---
-CREATE TABLE eventhandlers (
-  id serial,
-
-  command_args varchar(255) default NULL,
-  command_line varchar(255) default NULL,
-  early_timeout smallint default NULL,
-  end_time int default NULL,
-  eventhandler_type smallint default NULL,
-  execution_time double precision default NULL,
-  host_id int default NULL,
-  output varchar(255) default NULL,
-  return_code smallint default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-  state smallint default NULL,
-  state_type smallint default NULL,
-  timeout smallint default NULL,
-
-  PRIMARY KEY (id)
-);
-
-
---
---  Notifications.
---
-CREATE TABLE notifications (
-  id serial,
-
-  ack_author varchar(255) default NULL,
-  ack_data text default NULL,
-  command_name varchar(255) default NULL,
-  contact_name varchar(255) default NULL,
-  contacts_notified boolean default NULL,
-  end_time int default NULL,
-  escalated boolean default NULL,
-  host_id int default NULL,
-  notification_type int default NULL,
-  output text default NULL,
-  reason_type int default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-  state int default NULL,
-
-  PRIMARY KEY (id)
-);
-
-
---
 -- Historization of flapping status.
 --
 CREATE TABLE flappinghistory (
@@ -625,34 +636,6 @@ CREATE TABLE flappinghistory (
   service_id int default NULL,
 
   PRIMARY KEY (id)
-);
-
-
---
--- Executed commands related to hosts.
---
-CREATE TABLE hostcommands (
-  host_id int default NULL,
-
-  check_command text default NULL,
-  event_handler_command text default NULL,
-
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Executed commands related to services.
---
-CREATE TABLE services_commands (
-  service_id int default NULL,
-
-  check_command text,
-  event_handler_command text,
-
-  FOREIGN KEY (service_id) REFERENCES services (service_id)
-    ON DELETE CASCADE
 );
 
 
