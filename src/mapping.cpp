@@ -396,6 +396,10 @@ static MappedData<Host> const host_mapping[] =
       NDO_DATA_DISPLAYNAME,
       "display_name"),
     MappedData<Host>(
+      &Host::enabled,
+      NDO_DATA_X3D,
+      "enabled"),
+    MappedData<Host>(
       &Host::event_handler,
       NDO_DATA_EVENTHANDLER,
       "event_handler"),
@@ -787,6 +791,10 @@ static const MappedData<HostStatus> host_status_mapping[] =
       &HostStatus::current_state,
       NDO_DATA_CURRENTSTATE,
       "state"),
+    MappedData<HostStatus>(
+      &HostStatus::enabled,
+      NDO_DATA_X3D,
+      "enabled"),
     MappedData<HostStatus>(
       &HostStatus::event_handler,
       NDO_DATA_EVENTHANDLER,
@@ -1329,6 +1337,10 @@ static const MappedData<Service> service_mapping[] =
       NDO_DATA_DISPLAYNAME,
       "display_name"),
     MappedData<Service>(
+      &Service::enabled,
+      NDO_DATA_X3D,
+      "enabled"),
+    MappedData<Service>(
       &Service::event_handler,
       NDO_DATA_EVENTHANDLER,
       "event_handler"),
@@ -1742,6 +1754,10 @@ static const MappedData<ServiceStatus> service_status_mapping[] =
       &ServiceStatus::current_state,
       NDO_DATA_CURRENTSTATE,
       "state"),
+    MappedData<ServiceStatus>(
+      &ServiceStatus::enabled,
+      NDO_DATA_X3D,
+      "enabled"),
     MappedData<ServiceStatus>(
       &ServiceStatus::event_handler,
       NDO_DATA_EVENTHANDLER,

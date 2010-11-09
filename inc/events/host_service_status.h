@@ -52,6 +52,7 @@ namespace              Events
     short              current_check_attempt;
     short              current_notification_number;
     short              current_state;
+    bool               enabled;
     std::string        event_handler;
     double             execution_time;
     bool               has_been_checked;

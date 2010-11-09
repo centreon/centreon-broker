@@ -47,6 +47,7 @@ void HostServiceStatus::InternalCopy(const HostServiceStatus& hss)
   this->current_check_attempt         = hss.current_check_attempt;
   this->current_notification_number   = hss.current_notification_number;
   this->current_state                 = hss.current_state;
+  this->enabled                       = hss.enabled;
   this->event_handler                 = hss.event_handler;
   this->execution_time                = hss.execution_time;
   this->has_been_checked              = hss.has_been_checked;
@@ -96,6 +97,7 @@ HostServiceStatus::HostServiceStatus()
     current_check_attempt(0),
     current_notification_number(0),
     current_state(4), // Pending
+    enabled(true),
     execution_time(0.0),
     has_been_checked(false),
     host_id(0),
