@@ -157,10 +157,10 @@ int CallbackDowntime(int callback_type, void* data)
         downtime->author = downtime_data->author_name;
       if (downtime_data->comment_data)
         downtime->comment = downtime_data->comment_data;
-      downtime->downtime_type = downtime_data->type; // XXX : duplicate with type
+      downtime->downtime_type = downtime_data->downtime_type;
       downtime->duration = downtime_data->duration;
       downtime->end_time = downtime_data->end_time;
-      //downtime->entry_time = XXX;
+      downtime->entry_time = downtime_data->entry_time;
       downtime->fixed = downtime_data->fixed;
       if (downtime_data->host_name)
         downtime->host_name = downtime_data->host_name;
@@ -170,10 +170,11 @@ int CallbackDowntime(int callback_type, void* data)
         downtime->service_description = downtime_data->service_description;
       downtime->start_time = downtime_data->start_time;
       downtime->triggered_by = downtime_data->triggered_by;
-      if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
-          || (NEBTYPE_DOWNTIME_STOP == downtime_data->type))
+      if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->downtime_type)
+          || (NEBTYPE_DOWNTIME_STOP == downtime_data->downtime_type))
         downtime->was_cancelled = true;
-      // downtime->was_started = XXX;
+      if (NEBTYPE_DOWNTIME_START == downtime_data->downtime_type)
+        downtime->was_started = true;
 
       downtime->AddReader();
       gl_publisher.Event(downtime.get());
@@ -291,7 +292,7 @@ int CallbackFlappingStatus(int callback_type, void* data) {
           comment* com = find_host_comment(flapping_data->comment_id);
           if (com)
             flapping_status->comment_time = com->entry_time;
-	}
+        }
       }
     }
     flapping_status->internal_comment_id = flapping_data->comment_id;
