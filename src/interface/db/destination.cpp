@@ -122,10 +122,15 @@ Destination& Destination::operator=(const Destination& destination)
 /**
  *  Clean tables with data associated to the instance.
  */
-void Destination::CleanTables(int instance_id)
-{
-  // ProgramStatus
-  *this->conn_ << "DELETE FROM " << MappedType<Events::Program>::table
+void Destination::CleanTables(int instance_id) {
+  // Disable hosts.
+  *this->conn_ << "UPDATE " << MappedType<Events::Host>::table
+               << " SET enabled=0 "
+               << " WHERE instance_id=" << instance_id;
+
+  // Disable services.
+  *this->conn_ << "UPDATE " << MappedType<Events::Service>::table
+               << " SET enabled=0 "
                << " WHERE instance_id=" << instance_id;
 
   return ;
@@ -369,12 +374,17 @@ void Destination::ProcessFlappingStatus(Events::Event const& event) {
 /**
  *  Process an Host event.
  */
-void Destination::ProcessHost(const Events::Event& event)
-{
-  const Events::Host& host(*static_cast<const Events::Host*>(&event));
+void Destination::ProcessHost(Events::Event const& event) {
+  Events::Host const& host(*static_cast<Events::Host const*>(&event));
 
-  LOGDEBUG("Processing Host event ...");
-  this->Insert(host);
+  LOGDEBUG("Processing host event ...");
+  try {
+    this->Insert(host);
+  }
+  catch (soci::soci_error const& se) {
+    _host = host;
+    _host_stmt->execute(true);
+  }
   return ;
 }
 
@@ -667,13 +677,19 @@ void Destination::ProcessProgramStatus(const Events::Event& event)
 /**
  *  Process a Service event.
  */
-void Destination::ProcessService(const Events::Event& event)
-{
-  const Events::Service& service(*static_cast<const Events::Service*>(&event));
+void Destination::ProcessService(Events::Event const& event) {
+  Events::Service const& service(
+    *static_cast<Events::Service const*>(&event));
 
   LOGDEBUG("Processing Service event ...");
-  _service = service;
-  _service_stmt->execute(true);
+  try {
+    _service = service;
+    _service_insert_stmt->execute(true);
+  }
+  catch (soci::soci_error const& se) {
+    _service = service;
+    _service_stmt->execute(true);
+  }
   return ;
 }
 
@@ -817,12 +833,14 @@ void Destination::Close()
   this->downtime_stmt_.reset();
   this->_event_handler_stmt.reset();
   this->_flapping_status_stmt.reset();
+  this->_host_stmt.reset();
   this->host_check_stmt_.reset();
   this->host_status_stmt_.reset();
   this->issue_stmt_.reset();
   this->_notification_stmt.reset();
   this->program_status_stmt_.reset();
   this->_service_stmt.reset();
+  this->_service_insert_stmt.reset();
   this->service_check_stmt_.reset();
   this->service_status_stmt_.reset();
   this->state_stmt_.reset();
@@ -916,7 +934,7 @@ void Destination::Connect(Destination::DB db_type,
       }
   }
 
-  _prepare_insert<Events::Service>(_service_stmt, _service);
+  _prepare_insert<Events::Service>(_service_insert_stmt, _service);
 
   std::vector<std::string> id;
 
@@ -959,6 +977,11 @@ void Destination::Connect(Destination::DB db_type,
 
   id.clear();
   id.push_back("host_id");
+  this->PrepareUpdate<Events::Host>(
+    _host_stmt, _host, id);
+
+  id.clear();
+  id.push_back("host_id");
   this->PrepareUpdate<Events::HostCheck>(
     this->host_check_stmt_, this->host_check_, id);
 
@@ -992,6 +1015,12 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("instance_id");
   this->PrepareUpdate<Events::ProgramStatus>(
     this->program_status_stmt_, this->program_status_, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  this->PrepareUpdate<Events::Service>(
+    _service_stmt, _service, id);
 
   id.clear();
   id.push_back("service_id");

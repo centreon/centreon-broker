@@ -59,6 +59,8 @@ namespace                         Interface
       std::auto_ptr<soci::statement> _event_handler_stmt;
       Events::flapping_status        _flapping_status;
       std::auto_ptr<soci::statement> _flapping_status_stmt;
+      Events::Host                   _host;
+      std::auto_ptr<soci::statement> _host_stmt;
       Events::HostCheck              host_check_;
       std::auto_ptr<soci::statement> host_check_stmt_;
       Events::HostStatus             host_status_;
@@ -70,6 +72,7 @@ namespace                         Interface
       Events::ProgramStatus          program_status_;
       std::auto_ptr<soci::statement> program_status_stmt_;
       Events::Service                _service;
+      std::auto_ptr<soci::statement> _service_insert_stmt;
       std::auto_ptr<soci::statement> _service_stmt;
       Events::ServiceCheck           service_check_;
       std::auto_ptr<soci::statement> service_check_stmt_;
@@ -95,7 +98,7 @@ namespace                         Interface
       void                        ProcessDowntime(const Events::Event& event);
       void                        ProcessEventHandler(Events::Event const& event);
       void                        ProcessFlappingStatus(Events::Event const& event);
-      void                        ProcessHost(const Events::Event& event);
+      void                        ProcessHost(Events::Event const& event);
       void                        ProcessHostCheck(const Events::Event& event);
       void                        ProcessHostDependency(const Events::Event& event);
       void                        ProcessHostGroup(const Events::Event& event);
@@ -108,7 +111,7 @@ namespace                         Interface
       void                        ProcessNotification(Events::Event const& event);
       void                        ProcessProgram(const Events::Event& event);
       void                        ProcessProgramStatus(const Events::Event& event);
-      void                        ProcessService(const Events::Event& event);
+      void                        ProcessService(Events::Event const& event);
       void                        ProcessServiceCheck(const Events::Event& event);
       void                        ProcessServiceDependency(const Events::Event& event);
       void                        ProcessServiceGroup(const Events::Event& event);
