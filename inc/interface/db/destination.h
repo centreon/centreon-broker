@@ -97,6 +97,7 @@ namespace                         Interface
                                                 const std::vector<std::string>& id);
       void                        ProcessAcknowledgement(const Events::Event& event);
       void                        ProcessComment(const Events::Event& event);
+      void                        ProcessCustomVariable(Events::Event const& event);
       void                        ProcessDowntime(const Events::Event& event);
       void                        ProcessEventHandler(Events::Event const& event);
       void                        ProcessFlappingStatus(Events::Event const& event);

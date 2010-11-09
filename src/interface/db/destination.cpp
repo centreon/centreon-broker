@@ -54,6 +54,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   NULL,                                    // UNKNOWN
   &Destination::ProcessAcknowledgement,    // ACKNOWLEDGEMENT
   &Destination::ProcessComment,            // COMMENT
+  &Destination::ProcessCustomVariable,     // CUSTOMVARIABLE
   &Destination::ProcessDowntime,           // DOWNTIME
   &Destination::ProcessEventHandler,       // EVENTHANDLER
   &Destination::ProcessFlappingStatus,     // FLAPPINGSTATUS
@@ -311,6 +312,18 @@ void Destination::ProcessComment(Events::Event const& event) {
       _comment_stmt->execute(true);
     }
 
+  return ;
+}
+
+/**
+ *  Process a custom variable event.
+ */
+void Destination::ProcessCustomVariable(Events::Event const& event) {
+  Events::custom_variable const& cv(
+    *static_cast<Events::custom_variable const*>(&event));
+
+  LOGDEBUG("Processing custom variable event ...");
+  this->Insert(cv);
   return ;
 }
 
