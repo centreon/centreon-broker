@@ -144,6 +144,11 @@ void Destination::Event(Events::Event* event)
           HandleEvent(*static_cast<Events::comment*>(event),
             *xml_event);
           break ;
+         case Events::Event::CUSTOMVARIABLE:
+          xml_event.reset(new TiXmlElement("custom_variable"));
+          HandleEvent(*static_cast<Events::custom_variable*>(event),
+            *xml_event);
+          break ;
          case Events::Event::DOWNTIME:
           xml_event.reset(new TiXmlElement("downtime"));
           HandleEvent(*static_cast<Events::Downtime*>(event),

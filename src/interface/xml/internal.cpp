@@ -162,6 +162,9 @@ template <> std::map<std::string, GetterSetter<Events::Acknowledgement> >
 template <> std::map<std::string, GetterSetter<Events::comment> >
   Interface::XML::XMLMappedType<Events::comment>::map =
     std::map<std::string, GetterSetter<Events::comment> >();
+template <> std::map<std::string, GetterSetter<Events::custom_variable> >
+  Interface::XML::XMLMappedType<Events::custom_variable>::map =
+    std::map<std::string, GetterSetter<Events::custom_variable> >();
 template <> std::map<std::string, GetterSetter<Events::Downtime> >
   Interface::XML::XMLMappedType<Events::Downtime>::map =
     std::map<std::string, GetterSetter<Events::Downtime> >();
@@ -247,6 +250,7 @@ void Interface::XML::Initialize()
 {
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
+  static_init<Events::custom_variable>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
   static_init<Events::flapping_status>();

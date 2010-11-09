@@ -233,6 +233,9 @@ template <> std::map<int, GetterSetter<Events::Acknowledgement> >
 template <> std::map<int, GetterSetter<Events::comment> >
   Interface::NDO::NDOMappedType<Events::comment>::map =
     std::map<int, GetterSetter<Events::comment> >();
+template <> std::map<int, GetterSetter<Events::custom_variable> >
+  Interface::NDO::NDOMappedType<Events::custom_variable>::map =
+    std::map<int, GetterSetter<Events::custom_variable> >();
 template <> std::map<int, GetterSetter<Events::Downtime> >
   Interface::NDO::NDOMappedType<Events::Downtime>::map =
     std::map<int, GetterSetter<Events::Downtime> >();
@@ -318,6 +321,7 @@ void Interface::NDO::Initialize()
 {
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
+  static_init<Events::custom_variable>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
   static_init<Events::flapping_status>();

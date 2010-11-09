@@ -50,7 +50,7 @@ namespace            Events {
                      custom_variable(custom_variable const& cv);
                      ~custom_variable();
     custom_variable& operator=(custom_variable const& cv);
-    int              GetType();
+    int              GetType() const;
   };
 }
 

@@ -136,6 +136,43 @@ static const MappedData<comment> comment_mapping[] =
     MappedData<comment>()
   };
 
+// Custom variables members mapping.
+static MappedData<custom_variable> const custom_variable_mapping[] = {
+  MappedData<custom_variable>(
+    &custom_variable::host_id,
+    NDO_DATA_HOST,
+    "host_id"),
+  MappedData<custom_variable>(
+    &custom_variable::modified,
+    NDO_DATA_HASBEENMODIFIED,
+    "modified"),
+  MappedData<custom_variable>(
+    &custom_variable::service_id,
+    NDO_DATA_SERVICE,
+    "service_id"),
+  MappedData<custom_variable>(
+    &custom_variable::type,
+    NDO_DATA_TYPE,
+    "type"),
+  MappedData<custom_variable>(
+    &custom_variable::update_time,
+    NDO_DATA_ENTRYTIME,
+    "update_time"),
+  MappedData<custom_variable>(
+    &custom_variable::default_value,
+    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+    "default_value"),
+  MappedData<custom_variable>(
+    &custom_variable::name,
+    NDO_DATA_CONFIGFILENAME,
+    "name"),
+  MappedData<custom_variable>(
+    &custom_variable::value,
+    NDO_DATA_ACTIVESERVICECHECKSENABLED,
+    "value"),
+  MappedData<custom_variable>()
+};
+
 // Downtime members mapping.
 static const MappedData<Downtime> downtime_mapping[] =
   {
@@ -1950,6 +1987,12 @@ template <> const MappedData<Events::comment>*
   MappedType<Events::comment>::members(comment_mapping);
 template <> const char*
   MappedType<Events::comment>::table("comments");
+
+// Custom variable mapping.
+template <> const MappedData<Events::custom_variable>*
+  MappedType<Events::custom_variable>::members(custom_variable_mapping);
+template <> char const*
+  MappedType<Events::custom_variable>::table("customvariables");
 
 // Downtime mapping.
 template <> const MappedData<Events::Downtime>*

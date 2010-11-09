@@ -94,6 +94,6 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
  *
  *  @return CUSTOMVARIABLE.
  */
-int custom_variable::GetType() {
+int custom_variable::GetType() const {
   return (CUSTOMVARIABLE);
 }
