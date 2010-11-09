@@ -57,6 +57,8 @@ namespace                         Interface
       std::auto_ptr<soci::statement> downtime_stmt_;
       Events::event_handler          _event_handler;
       std::auto_ptr<soci::statement> _event_handler_stmt;
+      Events::flapping_status        _flapping_status;
+      std::auto_ptr<soci::statement> _flapping_status_stmt;
       Events::HostCheck              host_check_;
       std::auto_ptr<soci::statement> host_check_stmt_;
       Events::HostStatus             host_status_;
@@ -92,6 +94,7 @@ namespace                         Interface
       void                        ProcessComment(const Events::Event& event);
       void                        ProcessDowntime(const Events::Event& event);
       void                        ProcessEventHandler(Events::Event const& event);
+      void                        ProcessFlappingStatus(Events::Event const& event);
       void                        ProcessHost(const Events::Event& event);
       void                        ProcessHostCheck(const Events::Event& event);
       void                        ProcessHostDependency(const Events::Event& event);

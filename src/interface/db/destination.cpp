@@ -56,6 +56,7 @@ void (Destination::* Destination::processing_table[])(const Events::Event&) =
   &Destination::ProcessComment,            // COMMENT
   &Destination::ProcessDowntime,           // DOWNTIME
   &Destination::ProcessEventHandler,       // EVENTHANDLER
+  &Destination::ProcessFlappingStatus,     // FLAPPINGSTATUS
   &Destination::ProcessHost,               // HOST
   &Destination::ProcessHostCheck,          // HOSTCHECK
   &Destination::ProcessHostDependency,     // HOSTDEPENDENCY
@@ -343,6 +344,24 @@ void Destination::ProcessEventHandler(Events::Event const& event) {
   catch (soci::soci_error const& se) {
     _event_handler = event_handler;
     _event_handler_stmt->execute(true);
+  }
+  return ;
+}
+
+/**
+ *  Process a flapping status event.
+ */
+void Destination::ProcessFlappingStatus(Events::Event const& event) {
+  Events::flapping_status const& flapping_status(
+    *static_cast<Events::flapping_status const*>(&event));
+
+  LOGDEBUG("Processing flapping status event ...");
+  try {
+    Insert(flapping_status);
+  }
+  catch (soci::soci_error const& se) {
+    _flapping_status = flapping_status;
+    _flapping_status_stmt->execute(true);
   }
   return ;
 }
@@ -797,6 +816,7 @@ void Destination::Close()
   this->_comment_stmt.reset();
   this->downtime_stmt_.reset();
   this->_event_handler_stmt.reset();
+  this->_flapping_status_stmt.reset();
   this->host_check_stmt_.reset();
   this->host_status_stmt_.reset();
   this->issue_stmt_.reset();
@@ -929,6 +949,13 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("start_time");
   this->PrepareUpdate<Events::event_handler>(
     _event_handler_stmt, _event_handler, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("event_time");
+  this->PrepareUpdate<Events::flapping_status>(
+    _flapping_status_stmt, _flapping_status, id);
 
   id.clear();
   id.push_back("host_id");
