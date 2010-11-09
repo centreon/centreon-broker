@@ -1023,11 +1023,13 @@ void Destination::Connect(Destination::DB db_type,
     _service_stmt, _service, id);
 
   id.clear();
+  id.push_back("host_id");
   id.push_back("service_id");
   this->PrepareUpdate<Events::ServiceCheck>(
     this->service_check_stmt_, this->service_check_, id);
 
   id.clear();
+  id.push_back("host_id");
   id.push_back("service_id");
   this->PrepareUpdate<Events::ServiceStatus>(
     this->service_status_stmt_, this->service_status_, id);

@@ -465,7 +465,7 @@ CREATE TABLE notifications (
 CREATE TABLE services (
   host_id int NOT NULL,
   description varchar(255) NOT NULL,
-  service_id int default NULL,
+  service_id int NOT NULL,
 
   acknowledged boolean default NULL,
   acknowledgement_type smallint default NULL,
@@ -552,8 +552,7 @@ CREATE TABLE services (
   state_type smallint default NULL,
   volatile boolean default NULL,
 
-  UNIQUE (host_id, description),
-  UNIQUE (service_id),
+  UNIQUE (host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );

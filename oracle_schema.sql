@@ -557,7 +557,7 @@ END;
 CREATE TABLE services (
   host_id int NOT NULL,
   description varchar(255) NOT NULL,
-  service_id int default NULL,
+  service_id int NOT NULL,
 
   acknowledged char(1) default NULL,
   acknowledgement_type smallint default NULL,
@@ -644,21 +644,10 @@ CREATE TABLE services (
   state_type smallint default NULL,
   volatile char(1) default NULL,
 
-  UNIQUE (host_id, description),
-  UNIQUE (service_id),
+  UNIQUE (host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE services_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER services_trigger
-BEFORE INSERT ON services
-FOR EACH ROW
-BEGIN
-  SELECT services_seq.nextval INTO :NEW.id FROM dual;
-END;
-/
 
 
 --
