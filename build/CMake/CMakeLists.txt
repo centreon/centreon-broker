@@ -102,6 +102,7 @@ set(LIBROKER_SOURCES
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp
 	../../src/events/event_handler.cc
+	../../src/events/flapping_status.cc
 	../../src/events/group.cpp
 	../../src/events/group_member.cpp
 	../../src/events/host.cpp

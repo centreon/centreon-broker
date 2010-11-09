@@ -85,6 +85,7 @@ namespace              Events
       COMMENT,
       DOWNTIME,
       EVENTHANDLER,
+      FLAPPINGSTATUS,
       HOST,
       HOSTCHECK,
       HOSTDEPENDENCY,

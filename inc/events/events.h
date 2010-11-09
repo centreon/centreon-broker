@@ -25,6 +25,7 @@
 # include "events/comment.hh"
 # include "events/downtime.h"
 # include "events/event_handler.hh"
+# include "events/flapping_status.hh"
 # include "events/host.h"
 # include "events/host_check.h"
 # include "events/host_dependency.h"
