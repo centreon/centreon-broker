@@ -592,8 +592,6 @@ CREATE TABLE services_servicegroups (
   UNIQUE (host_id, service_id, servicegroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (service_id) REFERENCES services (service_id)
-    ON DELETE CASCADE,
   FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -616,11 +614,7 @@ CREATE TABLE services_services_dependencies (
   UNIQUE (dependent_host_id, dependent_service_id, host_id, service_id),
   FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (dependent_service_id) REFERENCES services (service_id)
-    ON DELETE CASCADE,
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (service_id) REFERENCES services (service_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
