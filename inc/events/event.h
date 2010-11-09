@@ -83,6 +83,7 @@ namespace              Events
       UNKNOWN = 0,
       ACKNOWLEDGEMENT,
       COMMENT,
+      CUSTOMVARIABLE,
       DOWNTIME,
       EVENTHANDLER,
       FLAPPINGSTATUS,

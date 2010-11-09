@@ -98,6 +98,7 @@ set(LIBROKER_SOURCES
 	../../src/events/acknowledgement.cpp
 	../../src/events/check.cpp
 	../../src/events/comment.cc
+	../../src/events/custom_variable.cc
 	../../src/events/dependency.cpp
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp
