@@ -173,6 +173,13 @@ void Destination::Event(Events::Event* event)
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
           break ;
+         case Events::Event::FLAPPINGSTATUS:
+          buffer << NDO_API_FLAPPINGDATA << ":\n";
+          HandleEvent<Events::flapping_status>(
+            *static_cast<Events::flapping_status*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::HOST:
           buffer << NDO_API_HOSTDEFINITION << ":\n";
           HandleEvent<Events::Host>(

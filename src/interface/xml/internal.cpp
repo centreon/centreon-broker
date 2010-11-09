@@ -168,6 +168,9 @@ template <> std::map<std::string, GetterSetter<Events::Downtime> >
 template <> std::map<std::string, GetterSetter<Events::event_handler> >
   Interface::XML::XMLMappedType<Events::event_handler>::map =
     std::map<std::string, GetterSetter<Events::event_handler> >();
+template <> std::map<std::string, GetterSetter<Events::flapping_status> >
+  Interface::XML::XMLMappedType<Events::flapping_status>::map =
+    std::map<std::string, GetterSetter<Events::flapping_status> >();
 template <> std::map<std::string, GetterSetter<Events::Host> >
   Interface::XML::XMLMappedType<Events::Host>::map =
     std::map<std::string, GetterSetter<Events::Host> >();
@@ -246,6 +249,7 @@ void Interface::XML::Initialize()
   static_init<Events::comment>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
+  static_init<Events::flapping_status>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();

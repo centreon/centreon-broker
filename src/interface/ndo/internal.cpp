@@ -239,6 +239,9 @@ template <> std::map<int, GetterSetter<Events::Downtime> >
 template <> std::map<int, GetterSetter<Events::event_handler> >
   Interface::NDO::NDOMappedType<Events::event_handler>::map =
     std::map<int, GetterSetter<Events::event_handler> >();
+template <> std::map<int, GetterSetter<Events::flapping_status> >
+  Interface::NDO::NDOMappedType<Events::flapping_status>::map =
+    std::map<int, GetterSetter<Events::flapping_status> >();
 template <> std::map<int, GetterSetter<Events::Host> >
   Interface::NDO::NDOMappedType<Events::Host>::map =
     std::map<int, GetterSetter<Events::Host> >();
@@ -317,6 +320,7 @@ void Interface::NDO::Initialize()
   static_init<Events::comment>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
+  static_init<Events::flapping_status>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();

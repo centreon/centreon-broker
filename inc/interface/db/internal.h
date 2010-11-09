@@ -107,6 +107,18 @@ namespace                  soci
                                    indicator& ind);
   };
 
+  // flapping_status O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::flapping_status> {
+    typedef values         base_type;
+    static void            from_base(values const& v,
+                                     indicator ind,
+                                     Events::flapping_status& fs);
+    static void            to_base(Events::flapping_status const& fs,
+                                   values& v,
+                                   indicator& ind);
+  };
+
   // Host O/R mapping.
   template                 <>
   struct                   type_conversion<Events::Host>

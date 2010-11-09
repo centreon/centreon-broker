@@ -187,6 +187,9 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >
 template <> std::list<std::pair<std::string, GetterSetter<Events::event_handler> > >
   Interface::DB::DBMappedType<Events::event_handler>::list =
     std::list<std::pair<std::string, GetterSetter<Events::event_handler> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::flapping_status> > >
+  Interface::DB::DBMappedType<Events::flapping_status>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::flapping_status> > >();
 template <> std::list<std::pair<std::string, GetterSetter<Events::Host> > >
   Interface::DB::DBMappedType<Events::Host>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Host> > >();
@@ -262,6 +265,7 @@ void Interface::DB::Initialize()
   static_init<Events::comment>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
+  static_init<Events::flapping_status>();
   static_init<Events::Host>();
   static_init<Events::HostCheck>();
   static_init<Events::HostDependency>();
@@ -387,6 +391,31 @@ void soci::type_conversion<Events::event_handler>::to_base(
   soci::indicator& ind) {
   (void)ind;
   ToBase(eh, v);
+  return ;
+}
+
+/**
+ *  Extract flapping status data from DB row.
+ */
+void soci::type_conversion<Events::flapping_status>::from_base(
+  soci::values const& v,
+  soci::indicator ind,
+  Events::flapping_status& fs) {
+  (void)v;
+  (void)ind;
+  (void)fs;
+  return ;
+}
+
+/**
+ *  Extract flapping status data to DB row.
+ */
+void soci::type_conversion<Events::flapping_status>::to_base(
+  Events::flapping_status const& fs,
+  soci::values& v,
+  soci::indicator& ind) {
+  (void)ind;
+  ToBase(fs, v);
   return ;
 }
 

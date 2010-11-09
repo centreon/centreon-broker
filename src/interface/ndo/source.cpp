@@ -181,6 +181,9 @@ Events::Event* Source::Event()
          case NDO_API_EVENTHANDLERDATA:
           event.reset(HandleEvent<Events::event_handler>(this->stream_));
           break ;
+         case NDO_API_FLAPPINGDATA:
+          event.reset(HandleEvent<Events::flapping_status>(this->stream_));
+          break ;
          case NDO_API_HOSTCHECKDATA:
           event.reset(HandleEvent<Events::HostCheck>(this->stream_));
           break ;

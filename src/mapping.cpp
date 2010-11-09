@@ -263,6 +263,55 @@ static MappedData<event_handler> const event_handler_mapping[] = {
   MappedData<event_handler>()
 };
 
+// Flapping status mapping.
+static MappedData<flapping_status> const flapping_status_mapping[] = {
+  MappedData<flapping_status>(
+    &flapping_status::comment_time,
+    NDO_DATA_COMMENTTIME,
+    "comment_time"),
+  MappedData<flapping_status>(
+    &flapping_status::event_time,
+    NDO_DATA_ENTRYTIME,
+    "event_time"),
+  MappedData<flapping_status>(
+    &flapping_status::event_type,
+    NDO_DATA_ENTRYTYPE,
+    "event_type"),
+  MappedData<flapping_status>(
+    &flapping_status::high_threshold,
+    NDO_DATA_HIGHTHRESHOLD,
+    "high_threshold"),
+  MappedData<flapping_status>(
+    &flapping_status::host_id,
+    NDO_DATA_HOST,
+    "host_id"),
+  MappedData<flapping_status>(
+    &flapping_status::internal_comment_id,
+    NDO_DATA_COMMENTID,
+    "internal_comment_id"),
+  MappedData<flapping_status>(
+    &flapping_status::low_threshold,
+    NDO_DATA_LOWTHRESHOLD,
+    "low_threshold"),
+  MappedData<flapping_status>(
+    &flapping_status::percent_state_change,
+    NDO_DATA_PERCENTSTATECHANGE,
+    "percent_state_change"),
+  MappedData<flapping_status>(
+    &flapping_status::reason_type,
+    NDO_DATA_NOTIFICATIONREASON,
+    "reason_type"),
+  MappedData<flapping_status>(
+    &flapping_status::service_id,
+    NDO_DATA_SERVICE,
+    "service_id"),
+  MappedData<flapping_status>(
+    &flapping_status::type,
+    NDO_DATA_TYPE,
+    "type"),
+  MappedData<flapping_status>()
+};
+
 // Host members mapping.
 static MappedData<Host> const host_mapping[] =
   {
@@ -1892,11 +1941,17 @@ template <> const MappedData<Events::Downtime>*
 template <> const char*
   MappedType<Events::Downtime>::table("downtimes");
 
-// event_handler mapping.
+// Event handler mapping.
 template <> const MappedData<Events::event_handler>*
   MappedType<Events::event_handler>::members(event_handler_mapping);
 template <> const char*
   MappedType<Events::event_handler>::table("eventhandlers");
+
+// Flapping status mapping.
+template <> const MappedData<Events::flapping_status>*
+  MappedType<Events::flapping_status>::members(flapping_status_mapping);
+template <> char const*
+  MappedType<Events::flapping_status>::table("flappingstatuses");
 
 // Host mapping.
 template <> const MappedData<Events::Host>*
