@@ -69,6 +69,8 @@ namespace                         Interface
       std::auto_ptr<soci::statement> issue_stmt_;
       Events::notification           _notification;
       std::auto_ptr<soci::statement> _notification_stmt;
+      Events::Program                _program;
+      std::auto_ptr<soci::statement> _program_stmt;
       Events::ProgramStatus          program_status_;
       std::auto_ptr<soci::statement> program_status_stmt_;
       Events::Service                _service;
@@ -109,7 +111,7 @@ namespace                         Interface
       void                        ProcessIssueParent(const Events::Event& event);
       void                        ProcessLog(const Events::Event& event);
       void                        ProcessNotification(Events::Event const& event);
-      void                        ProcessProgram(const Events::Event& event);
+      void                        ProcessProgram(Events::Event const& event);
       void                        ProcessProgramStatus(const Events::Event& event);
       void                        ProcessService(Events::Event const& event);
       void                        ProcessServiceCheck(const Events::Event& event);

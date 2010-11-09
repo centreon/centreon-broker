@@ -649,14 +649,24 @@ void Destination::ProcessNotification(Events::Event const& event) {
 /**
  *  Process a Program event.
  */
-void Destination::ProcessProgram(const Events::Event& event)
-{
-  const Events::Program& program(*static_cast<const Events::Program*>(&event));
+void Destination::ProcessProgram(Events::Event const& event) {
+  Events::Program const& program(*static_cast<Events::Program const*>(&event));
 
-  LOGDEBUG("Processing Program event ...");
+  LOGDEBUG("Processing program event ...");
   this->CleanTables(program.instance_id);
-  if (!program.program_end)
-    this->Insert(program);
+  if (!program.program_end) {
+    try {
+      this->Insert(program);
+    }
+    catch (soci::soci_error const& se) {
+      _program = program;
+      _program_stmt->execute(true);
+    }
+  }
+  else {
+    _program = program;
+    _program_stmt->execute(true);
+  }
   return ;
 }
 
@@ -838,6 +848,7 @@ void Destination::Close()
   this->host_status_stmt_.reset();
   this->issue_stmt_.reset();
   this->_notification_stmt.reset();
+  this->_program_stmt.reset();
   this->program_status_stmt_.reset();
   this->_service_stmt.reset();
   this->_service_insert_stmt.reset();
@@ -1010,6 +1021,11 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("start_time");
   this->PrepareUpdate<Events::state>(
     this->state_stmt_, this->state_, id);
+
+  id.clear();
+  id.push_back("instance_id");
+  PrepareUpdate<Events::Program>(
+    _program_stmt, _program, id);
 
   id.clear();
   id.push_back("instance_id");
