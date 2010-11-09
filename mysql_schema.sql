@@ -619,25 +619,26 @@ CREATE TABLE services_services_dependencies (
 ) ENGINE=InnoDB;
 
 
--- Not validated
-
 --
 -- Custom variables.
 --
 CREATE TABLE customvariables (
-  id int NOT NULL auto_increment,
+  customvariable_id int NOT NULL auto_increment,
 
-  config_type smallint default NULL,
-  has_been_modified boolean default NULL,
+  default_value varchar(255) default NULL,
   host_id int default NULL,
+  modified boolean default NULL,
+  name varchar(255) default NULL,
   service_id int default NULL,
-  status_update_time int NOT NULL,
-  varname varchar(255) default NULL,
-  varvalue varchar(255) default NULL,
+  type smallint default NULL,
+  update_time int default NULL,
+  value varchar(255) default NULL,
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (customvariable_id)
 ) ENGINE=InnoDB;
 
+
+-- Not validated
 
 --
 -- States of checkpoints.

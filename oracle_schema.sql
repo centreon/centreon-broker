@@ -725,15 +725,18 @@ CREATE TABLE services_services_dependencies (
 -- Custom variables.
 --
 CREATE TABLE customvariables (
-  id int NOT NULL,
-  config_type smallint default NULL,
-  has_been_modified char(1) default NULL,
+  customvariable_id int NOT NULL,
+
+  default_value varchar(255) default NULL,
   host_id int default NULL,
+  modified char(1) default NULL,
+  name varchar(255) default NULL,
   service_id int default NULL,
-  status_update_time int NOT NULL,
-  varname varchar(255) default NULL,
-  varvalue varchar(255) default NULL,
-  PRIMARY KEY (id)
+  type smallint default NULL,
+  update_time int default NULL,
+  value varchar(255) default NULL,
+
+  PRIMARY KEY (customvariable_id)
 );
 CREATE SEQUENCE customvariables_seq
 START WITH 1
@@ -742,7 +745,7 @@ CREATE TRIGGER customvariables_trigger
 BEFORE INSERT ON customvariables
 FOR EACH ROW
 BEGIN
-  SELECT customvariables_seq.nextval INTO :NEW.id FROM dual;
+  SELECT customvariables_seq.nextval INTO :NEW.customvariable_id FROM dual;
 END;
 /
 
