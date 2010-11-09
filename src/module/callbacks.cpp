@@ -30,6 +30,7 @@
 #include "module/internal.h"
 #include "module/set_log_data.h"
 #include "nagios/broker.h"
+#include "nagios/comments.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
 
@@ -238,6 +239,68 @@ int CallbackEventHandler(int callback_type, void* data) {
     event_handler->type = event_handler_data->eventhandler_type;
   }
   // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process flapping status data.
+ *
+ *  This function is called by Nagios when some flapping status data is
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_FLAPPING_DATA).
+ *  @param[in] data          A pointer to a nebstruct_flapping_data
+ *                           containing the flapping status data.
+ *
+ *  @return 0 on success.
+ */
+int CallbackFlappingStatus(int callback_type, void* data) {
+  LOGDEBUG("Processing flapping data ...");
+  (void)callback_type;
+  try {
+    nebstruct_flapping_data* flapping_data;
+    std::auto_ptr<Events::flapping_status> flapping_status(new Events::flapping_status);
+
+    flapping_data = static_cast<nebstruct_flapping_data*>(data);
+    flapping_status->event_time = flapping_data->timestamp.tv_sec;
+    flapping_status->event_type = flapping_data->type;
+    flapping_status->high_threshold = flapping_data->high_threshold;
+    if (flapping_data->host_name) {
+      std::map<std::string, int>::const_iterator it1;
+
+      it1 = gl_hosts.find(flapping_data->host_name);
+      if (it1 != gl_hosts.end()) {
+        flapping_status->host_id = it1->second;
+        if (flapping_data->service_description) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator it2;
+
+          it2 = gl_services.find(std::make_pair(flapping_data->host_name,
+                                                flapping_data->service_description));
+          if (it2 != gl_services.end())
+            flapping_status->service_id = it2->second.second;
+
+          // Set comment time.
+          comment* com = find_service_comment(flapping_data->comment_id);
+          if (com)
+            flapping_status->comment_time = com->entry_time;
+        }
+        else {
+          comment* com = find_host_comment(flapping_data->comment_id);
+          if (com)
+            flapping_status->comment_time = com->entry_time;
+	}
+      }
+    }
+    flapping_status->internal_comment_id = flapping_data->comment_id;
+    flapping_status->low_threshold = flapping_data->low_threshold;
+    flapping_status->percent_state_change = flapping_data->percent_change;
+    // flapping_status->reason_type = XXX;
+    flapping_status->type = flapping_data->flapping_type;
+  }
+  // Avoid exception propagation to C code.
   catch (...) {}
   return (0);
 }

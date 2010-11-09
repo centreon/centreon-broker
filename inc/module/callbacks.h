@@ -25,6 +25,7 @@ int CallbackAcknowledgement(int callback_type, void* data);
 int CallbackComment(int callback_type, void* data);
 int CallbackDowntime(int callback_type, void* data);
 int CallbackEventHandler(int callback_type, void* data);
+int CallbackFlappingStatus(int callback_type, void* data);
 int CallbackHostCheck(int callback_type, void* data);
 int CallbackHostStatus(int callback_type, void* data);
 int CallbackLog(int callback_type, void* data);
