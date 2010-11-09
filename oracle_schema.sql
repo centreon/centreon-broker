@@ -413,6 +413,7 @@ CREATE TABLE logs (
   log_id int NOT NULL,
 
   ctime int default NULL,
+  host_id default NULL,
   host_name varchar(255) default NULL,
   instance_name varchar(255) NOT NULL,
   issue_id int default NULL,
@@ -422,10 +423,13 @@ CREATE TABLE logs (
   output clob default NULL,
   retry int default NULL,
   service_description varchar(255) default NULL,
+  service_id int default NULL,
   status char(1) default NULL,
   type smallint default NULL,
 
   PRIMARY KEY (log_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE SET NULL,
   CONSTRAINT status_cons CHECK (status IN ('0', '1', '2', '3', '4'))
 );
 CREATE SEQUENCE logs_seq

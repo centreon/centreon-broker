@@ -1016,7 +1016,7 @@ static const MappedData<Log> log_mapping[] =
     MappedData<Log>(
       &Log::host_id,
       NDO_DATA_HOSTID,
-      NULL),
+      "host_id"),
     MappedData<Log>(
       &Log::host_name,
       NDO_DATA_HOST,
@@ -1052,7 +1052,7 @@ static const MappedData<Log> log_mapping[] =
     MappedData<Log>(
       &Log::service_id,
       NDO_DATA_SERVICEID,
-      NULL),
+      "service_id"),
     MappedData<Log>(
       &Log::status,
       NDO_DATA_CURRENTSTATE,
