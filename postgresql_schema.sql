@@ -9,7 +9,7 @@
 -- customvariables
 -- downtimes
 -- eventhandlers
--- flappinghistory
+-- flappingstatuses
 -- hosts
 -- hostgroups
 -- hosts_hostgroups
@@ -406,6 +406,31 @@ CREATE TABLE downtimes (
 
 
 --
+-- Historization of flapping statuses.
+--
+CREATE TABLE flappingstatuses (
+  flappingstatus_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  event_time int default NULL,
+
+  comment_time int default NULL,
+  event_type smallint default NULL,
+  high_threshold double precision default NULL,
+  internal_comment_id int default NULL,
+  low_threshold double precision default NULL,
+  percent_state_change double precision default NULL,
+  reason_type smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (flappingstatus_id),
+  UNIQUE (host_id, service_id, event_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
 --  Notifications.
 --
 CREATE TABLE notifications (
@@ -611,29 +636,6 @@ CREATE TABLE customvariables (
   status_update_time int NOT NULL,
   varname varchar(255) default NULL,
   varvalue varchar(255) default NULL,
-
-  PRIMARY KEY (id)
-);
-
-
---
--- Historization of flapping status.
---
-CREATE TABLE flappinghistory (
-  id serial,
-
-  comment_time int default NULL,
-  event_time int default NULL,
-  event_type smallint default NULL,
-  flapping_type smallint default NULL,
-  high_threshold double precision default NULL,
-  host_id int default NULL,
-  instance_id int default NULL,
-  internal_comment_id int default NULL,
-  low_threshold double precision default NULL,
-  percent_state_change double precision default NULL,
-  reason_type smallint default NULL,
-  service_id int default NULL,
 
   PRIMARY KEY (id)
 );
