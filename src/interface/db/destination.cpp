@@ -129,11 +129,6 @@ void Destination::CleanTables(int instance_id) {
                << " SET enabled=0 "
                << " WHERE instance_id=" << instance_id;
 
-  // Disable services.
-  *this->conn_ << "UPDATE " << MappedType<Events::Service>::table
-               << " SET enabled=0 "
-               << " WHERE instance_id=" << instance_id;
-
   return ;
 }
 
