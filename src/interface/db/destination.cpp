@@ -51,33 +51,34 @@ using namespace Interface::DB;
 // Processing table.
 void (Destination::* Destination::processing_table[])(const Events::Event&) =
 {
-  NULL,                                    // UNKNOWN
-  &Destination::ProcessAcknowledgement,    // ACKNOWLEDGEMENT
-  &Destination::ProcessComment,            // COMMENT
-  &Destination::ProcessCustomVariable,     // CUSTOMVARIABLE
-  &Destination::ProcessDowntime,           // DOWNTIME
-  &Destination::ProcessEventHandler,       // EVENTHANDLER
-  &Destination::ProcessFlappingStatus,     // FLAPPINGSTATUS
-  &Destination::ProcessHost,               // HOST
-  &Destination::ProcessHostCheck,          // HOSTCHECK
-  &Destination::ProcessHostDependency,     // HOSTDEPENDENCY
-  &Destination::ProcessHostGroup,          // HOSTGROUP
-  &Destination::ProcessHostGroupMember,    // HOSTGROUPMEMBER
-  &Destination::ProcessHostParent,         // HOSTPARENT
-  &Destination::ProcessHostStatus,         // HOSTSTATUS
-  &Destination::ProcessIssue,              // ISSUE
-  &Destination::ProcessIssueParent,        // ISSUEPARENT
-  &Destination::ProcessLog,                // LOG
-  &Destination::ProcessNotification,       // NOTIFICATION
-  &Destination::ProcessProgram,            // PROGRAM
-  &Destination::ProcessProgramStatus,      // PROGRAMSTATUS
-  &Destination::ProcessService,            // SERVICE
-  &Destination::ProcessServiceCheck,       // SERVICECHECK
-  &Destination::ProcessServiceDependency,  // SERVICEDEPENDENCY
-  &Destination::ProcessServiceGroup,       // SERVICEGROUP
-  &Destination::ProcessServiceGroupMember, // SERVICEGROUPMEMBER
-  &Destination::ProcessServiceStatus,      // SERVICESTATUS
-  &Destination::ProcessState               // STATE
+  NULL,                                      // UNKNOWN
+  &Destination::ProcessAcknowledgement,      // ACKNOWLEDGEMENT
+  &Destination::ProcessComment,              // COMMENT
+  &Destination::ProcessCustomVariable,       // CUSTOMVARIABLE
+  &Destination::ProcessCustomVariableStatus, // CUSTOMVARIABLESTATUS
+  &Destination::ProcessDowntime,             // DOWNTIME
+  &Destination::ProcessEventHandler,         // EVENTHANDLER
+  &Destination::ProcessFlappingStatus,       // FLAPPINGSTATUS
+  &Destination::ProcessHost,                 // HOST
+  &Destination::ProcessHostCheck,            // HOSTCHECK
+  &Destination::ProcessHostDependency,       // HOSTDEPENDENCY
+  &Destination::ProcessHostGroup,            // HOSTGROUP
+  &Destination::ProcessHostGroupMember,      // HOSTGROUPMEMBER
+  &Destination::ProcessHostParent,           // HOSTPARENT
+  &Destination::ProcessHostStatus,           // HOSTSTATUS
+  &Destination::ProcessIssue,                // ISSUE
+  &Destination::ProcessIssueParent,          // ISSUEPARENT
+  &Destination::ProcessLog,                  // LOG
+  &Destination::ProcessNotification,         // NOTIFICATION
+  &Destination::ProcessProgram,              // PROGRAM
+  &Destination::ProcessProgramStatus,        // PROGRAMSTATUS
+  &Destination::ProcessService,              // SERVICE
+  &Destination::ProcessServiceCheck,         // SERVICECHECK
+  &Destination::ProcessServiceDependency,    // SERVICEDEPENDENCY
+  &Destination::ProcessServiceGroup,         // SERVICEGROUP
+  &Destination::ProcessServiceGroupMember,   // SERVICEGROUPMEMBER
+  &Destination::ProcessServiceStatus,        // SERVICESTATUS
+  &Destination::ProcessState                 // STATE
 };
 
 /**************************************
@@ -319,6 +320,19 @@ void Destination::ProcessCustomVariable(Events::Event const& event) {
 
   LOGDEBUG("Processing custom variable event ...");
   this->Insert(cv);
+  return ;
+}
+
+/**
+ *  Process a custom variable status event.
+ */
+void Destination::ProcessCustomVariableStatus(Events::Event const& event) {
+  Events::custom_variable_status const& cvs(
+    *static_cast<Events::custom_variable_status const*>(&event));
+
+  LOGDEBUG("Processing custom variable status event ...");
+  _custom_variable_status = cvs;
+  _custom_variable_status_stmt->execute(true);
   return ;
 }
 
@@ -848,6 +862,7 @@ void Destination::Close()
 {
   this->acknowledgement_stmt_.reset();
   this->_comment_stmt.reset();
+  this->_custom_variable_status_stmt.reset();
   this->downtime_stmt_.reset();
   this->_event_handler_stmt.reset();
   this->_flapping_status_stmt.reset();
@@ -972,6 +987,13 @@ void Destination::Connect(Destination::DB db_type,
   id.push_back("internal_id");
   this->PrepareUpdate<Events::comment>(
     _comment_stmt, _comment, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("name");
+  id.push_back("service_id");
+  this->PrepareUpdate<Events::custom_variable_status>(
+    _custom_variable_status_stmt, _custom_variable_status, id);
 
   id.clear();
   id.push_back("entry_time");

@@ -53,6 +53,8 @@ namespace                         Interface
       std::auto_ptr<soci::statement> acknowledgement_stmt_;
       Events::comment                _comment;
       std::auto_ptr<soci::statement> _comment_stmt;
+      Events::custom_variable_status _custom_variable_status;
+      std::auto_ptr<soci::statement> _custom_variable_status_stmt;
       Events::Downtime               downtime_;
       std::auto_ptr<soci::statement> downtime_stmt_;
       Events::event_handler          _event_handler;
@@ -98,6 +100,7 @@ namespace                         Interface
       void                        ProcessAcknowledgement(const Events::Event& event);
       void                        ProcessComment(const Events::Event& event);
       void                        ProcessCustomVariable(Events::Event const& event);
+      void                        ProcessCustomVariableStatus(Events::Event const& event);
       void                        ProcessDowntime(const Events::Event& event);
       void                        ProcessEventHandler(Events::Event const& event);
       void                        ProcessFlappingStatus(Events::Event const& event);

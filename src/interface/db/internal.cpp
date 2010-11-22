@@ -184,6 +184,9 @@ template <> std::list<std::pair<std::string, GetterSetter<Events::comment> > >
 template <> std::list<std::pair<std::string, GetterSetter<Events::custom_variable> > >
   Interface::DB::DBMappedType<Events::custom_variable>::list =
     std::list<std::pair<std::string, GetterSetter<Events::custom_variable> > >();
+template <> std::list<std::pair<std::string, GetterSetter<Events::custom_variable_status> > >
+  Interface::DB::DBMappedType<Events::custom_variable_status>::list =
+    std::list<std::pair<std::string, GetterSetter<Events::custom_variable_status> > >();
 template <> std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >
   Interface::DB::DBMappedType<Events::Downtime>::list =
     std::list<std::pair<std::string, GetterSetter<Events::Downtime> > >();
@@ -267,6 +270,7 @@ void Interface::DB::Initialize()
   static_init<Events::Acknowledgement>();
   static_init<Events::comment>();
   static_init<Events::custom_variable>();
+  static_init<Events::custom_variable_status>();
   static_init<Events::Downtime>();
   static_init<Events::event_handler>();
   static_init<Events::flapping_status>();
@@ -368,6 +372,31 @@ void soci::type_conversion<Events::custom_variable>::to_base(
   soci::indicator& ind) {
   (void)ind;
   ToBase(cv, v);
+  return ;
+}
+
+/**
+ *  Extract custom variable status data from DB row.
+ */
+void soci::type_conversion<Events::custom_variable_status>::from_base(
+  soci::values const& v,
+  soci::indicator ind,
+  Events::custom_variable_status& cvs) {
+  (void)v;
+  (void)ind;
+  (void)cvs;
+  return ;
+}
+
+/**
+ *  Extract custom variable status data to DB row.
+ */
+void soci::type_conversion<Events::custom_variable_status>::to_base(
+  Events::custom_variable_status const& cvs,
+  soci::values& v,
+  soci::indicator& ind) {
+  (void)ind;
+  ToBase(cvs, v);
   return ;
 }
 

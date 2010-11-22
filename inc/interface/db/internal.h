@@ -94,6 +94,18 @@ namespace                  soci
                                    indicator& ind);
   };
 
+  // Custom variable status O/R mapping.
+  template                 <>
+  struct                   type_conversion<Events::custom_variable_status> {
+    typedef values         base_type;
+    static void            from_base(values const& v,
+                                     indicator ind,
+                                     Events::custom_variable_status& cvs);
+    static void            to_base(Events::custom_variable_status const& cvs,
+                                   values& v,
+                                   indicator& ind);
+  };
+
   // Downtime O/R mapping.
   template                 <>
   struct                   type_conversion<Events::Downtime>
