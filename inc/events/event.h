@@ -84,6 +84,7 @@ namespace              Events
       ACKNOWLEDGEMENT,
       COMMENT,
       CUSTOMVARIABLE,
+      CUSTOMVARIABLESTATUS,
       DOWNTIME,
       EVENTHANDLER,
       FLAPPINGSTATUS,

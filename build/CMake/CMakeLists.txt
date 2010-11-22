@@ -99,6 +99,7 @@ set(LIBROKER_SOURCES
 	../../src/events/check.cpp
 	../../src/events/comment.cc
 	../../src/events/custom_variable.cc
+	../../src/events/custom_variable_status.cc
 	../../src/events/dependency.cpp
 	../../src/events/downtime.cpp
 	../../src/events/event.cpp

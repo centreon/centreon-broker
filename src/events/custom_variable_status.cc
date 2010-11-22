@@ -18,7 +18,7 @@
 **  For more information : contact@centreon.com
 */
 
-#include "events/custom_variable.hh"
+#include "events/custom_variable_status.hh"
 
 using namespace Events;
 
@@ -31,10 +31,15 @@ using namespace Events;
 /**
  *  Copy internal data members.
  *
- *  @param[in] cv Object to copy.
+ *  @param[in] cvs Object to copy.
  */
-void custom_variable::_internal_copy(custom_variable const& cv) {
-  type = cv.type;
+void custom_variable_status::_internal_copy(custom_variable_status const& cvs) {
+  host_id = cvs.host_id;
+  modified = cvs.modified;
+  name = cvs.name;
+  service_id = cvs.service_id;
+  update_time = cvs.update_time;
+  value = cvs.value;
   return ;
 }
 
@@ -47,43 +52,45 @@ void custom_variable::_internal_copy(custom_variable const& cv) {
 /**
  *  Default constructor.
  */
-custom_variable::custom_variable() : type(0) {
-  modified = false;
-}
+custom_variable_status::custom_variable_status()
+  : host_id(0),
+    modified(true),
+    service_id(0),
+    update_time(time(NULL)) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] cv Object to copy.
+ *  @param[in] cvs Object to copy.
  */
-custom_variable::custom_variable(custom_variable const& cv)
-  : custom_variable_status(cv) {
-  _internal_copy(cv);
+custom_variable_status::custom_variable_status(custom_variable_status const& cvs)
+  : Event(cvs) {
+  _internal_copy(cvs);
 }
 
 /**
  *  Destructor.
  */
-custom_variable::~custom_variable() {}
+custom_variable_status::~custom_variable_status() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] cv Object to copy.
+ *  @param[in] cvs Object to copy.
  *
  *  @return This object.
  */
-custom_variable& custom_variable::operator=(custom_variable const& cv) {
-  Event::operator=(cv);
-  _internal_copy(cv);
+custom_variable_status& custom_variable_status::operator=(custom_variable_status const& cvs) {
+  Event::operator=(cvs);
+  _internal_copy(cvs);
   return (*this);
 }
 
 /**
  *  Get the type of this event.
  *
- *  @return CUSTOMVARIABLE.
+ *  @return CUSTOMVARIABLESTATUS.
  */
-int custom_variable::GetType() const {
-  return (CUSTOMVARIABLE);
+int custom_variable_status::GetType() const {
+  return (CUSTOMVARIABLESTATUS);
 }

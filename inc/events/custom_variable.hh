@@ -21,9 +21,7 @@
 #ifndef EVENTS_CUSTOM_VARIABLE_HH_
 # define EVENTS_CUSTOM_VARIABLE_HH_
 
-# include <string>
-# include <sys/time.h>
-# include "events/event.h"
+# include "events/custom_variable_status.hh"
 
 namespace            Events {
   /**
@@ -33,19 +31,12 @@ namespace            Events {
    *  Nagios allows users to declare variables attached to a specific
    *  host or service.
    */
-  class              custom_variable : public Event {
+  class              custom_variable : public custom_variable_status {
    private:
     void             _internal_copy(custom_variable const& cv);
 
    public:
-    std::string      default_value;
-    int              host_id;
-    bool             modified;
-    std::string      name;
-    int              service_id;
     short            type;
-    time_t           update_time;
-    std::string      value;
                      custom_variable();
                      custom_variable(custom_variable const& cv);
                      ~custom_variable();

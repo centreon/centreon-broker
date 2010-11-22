@@ -178,6 +178,9 @@ Events::Event* Source::Event()
          case NDO_API_RUNTIMEVARIABLES:
           event.reset(HandleEvent<Events::custom_variable>(this->stream_));
           break ;
+         case NDO_API_CONFIGVARIABLES:
+          event.reset(HandleEvent<Events::custom_variable_status>(this->stream_));
+          break ;
          case NDO_API_DOWNTIMEDATA:
           event.reset(HandleEvent<Events::Downtime>(this->stream_));
           break ;

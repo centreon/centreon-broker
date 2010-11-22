@@ -147,6 +147,10 @@ static MappedData<custom_variable> const custom_variable_mapping[] = {
     NDO_DATA_HASBEENMODIFIED,
     "modified"),
   MappedData<custom_variable>(
+    &custom_variable::name,
+    NDO_DATA_CONFIGFILENAME,
+    "name"),
+  MappedData<custom_variable>(
     &custom_variable::service_id,
     NDO_DATA_SERVICE,
     "service_id"),
@@ -159,18 +163,43 @@ static MappedData<custom_variable> const custom_variable_mapping[] = {
     NDO_DATA_ENTRYTIME,
     "update_time"),
   MappedData<custom_variable>(
-    &custom_variable::default_value,
-    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-    "default_value"),
-  MappedData<custom_variable>(
-    &custom_variable::name,
-    NDO_DATA_CONFIGFILENAME,
-    "name"),
-  MappedData<custom_variable>(
     &custom_variable::value,
     NDO_DATA_ACTIVESERVICECHECKSENABLED,
     "value"),
+  MappedData<custom_variable>(
+    &custom_variable::value,
+    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+    "default_value"),
   MappedData<custom_variable>()
+};
+
+// Custom variable status members mapping.
+static MappedData<custom_variable_status> const custom_variable_status_mapping[] = {
+  MappedData<custom_variable_status>(
+    &custom_variable_status::host_id,
+    NDO_DATA_HOST,
+    "host_id"),
+  MappedData<custom_variable_status>(
+    &custom_variable_status::modified,
+    NDO_DATA_HASBEENMODIFIED,
+    "modified"),
+  MappedData<custom_variable_status>(
+    &custom_variable_status::name,
+    NDO_DATA_CONFIGFILENAME,
+    "name"),
+  MappedData<custom_variable_status>(
+    &custom_variable_status::service_id,
+    NDO_DATA_SERVICE,
+    "service_id"),
+  MappedData<custom_variable_status>(
+    &custom_variable_status::update_time,
+    NDO_DATA_ENTRYTIME,
+    "update_time"),
+  MappedData<custom_variable_status>(
+    &custom_variable_status::value,
+    NDO_DATA_ACTIVESERVICECHECKSENABLED,
+    "value"),
+  MappedData<custom_variable_status>()
 };
 
 // Downtime members mapping.
@@ -1993,6 +2022,12 @@ template <> const MappedData<Events::custom_variable>*
   MappedType<Events::custom_variable>::members(custom_variable_mapping);
 template <> char const*
   MappedType<Events::custom_variable>::table("customvariables");
+
+// Custom variable status mapping.
+template <> const MappedData<Events::custom_variable_status>*
+  MappedType<Events::custom_variable_status>::members(custom_variable_status_mapping);
+template <> char const*
+  MappedType<Events::custom_variable_status>::table("customvariables");
 
 // Downtime mapping.
 template <> const MappedData<Events::Downtime>*

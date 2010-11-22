@@ -165,6 +165,14 @@ void Destination::Event(Events::Event* event)
             *static_cast<Events::custom_variable*>(event),
             buffer);
           buffer << NDO_API_ENDDATA << "\n";
+          break ;
+         case Events::Event::CUSTOMVARIABLESTATUS:
+          buffer << NDO_API_CONFIGVARIABLES << ":\n";
+          HandleEvent<Events::custom_variable_status>(
+            *static_cast<Events::custom_variable_status*>(event),
+            buffer);
+          buffer << NDO_API_ENDDATA << "\n";
+          break ;
          case Events::Event::DOWNTIME:
           buffer << NDO_API_DOWNTIMEDATA << ":\n";
           HandleEvent<Events::Downtime>(

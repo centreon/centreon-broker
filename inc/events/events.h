@@ -24,6 +24,7 @@
 # include "events/acknowledgement.h"
 # include "events/comment.hh"
 # include "events/custom_variable.hh"
+# include "events/custom_variable_status.hh"
 # include "events/downtime.h"
 # include "events/event_handler.hh"
 # include "events/flapping_status.hh"
