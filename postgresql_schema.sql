@@ -634,7 +634,8 @@ CREATE TABLE customvariables (
   update_time int default NULL,
   value varchar(255) default NULL,
 
-  PRIMARY KEY (customvariable_id)
+  PRIMARY KEY (customvariable_id),
+  UNIQUE (host_id, name, service_id)
 );
 
 
