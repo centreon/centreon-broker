@@ -44,6 +44,7 @@ void (Correlator::* Correlator::dispatch_table[])(Events::Event&) = {
   &Correlator::CorrelateNothing,       // ACKNOWLEDGEMENT
   &Correlator::CorrelateNothing,       // COMMENT
   &Correlator::CorrelateNothing,       // CUSTOMVARIABLE
+  &Correlator::CorrelateNothing,       // CUSTOMVARIABLESTATUS
   &Correlator::CorrelateNothing,       // DOWNTIME
   &Correlator::CorrelateNothing,       // EVENTHANDLER
   &Correlator::CorrelateNothing,       // FLAPPINGSTATUS
