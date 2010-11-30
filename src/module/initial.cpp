@@ -72,6 +72,8 @@ static void SendCustomVariablesList() {
           c->value = cv->variable_value;
 
         // Send custom variable event.
+        logging::debug << logging::LOW << "  new custom variable '"
+                       << c->name.c_str() << "'";
         c->AddReader();
         gl_publisher.Event(c.get());
         c.release();
@@ -102,6 +104,8 @@ static void SendCustomVariablesList() {
           c->value = cv->variable_value;
 
         // Send custom variable event.
+        logging::debug << logging::LOW << "  new custom variable '"
+                       << c->name.c_str() << "'";
         c->AddReader();
         gl_publisher.Event(c.get());
         c.release();

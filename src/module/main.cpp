@@ -58,26 +58,24 @@ Multiplexing::Publisher gl_publisher;
 **************************************/
 
 // List of callbacks
-static struct
-{
+static struct {
   unsigned int macro;
   int (* callback)(int, void*);
   bool registered;
-} gl_callbacks[] =
-  {
-    { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, CallbackAcknowledgement, false },
-    { NEBCALLBACK_COMMENT_DATA, CallbackComment, false },
-    { NEBCALLBACK_DOWNTIME_DATA, CallbackDowntime, false },
-    { NEBCALLBACK_EVENT_HANDLER_DATA, CallbackEventHandler, false },
-    { NEBCALLBACK_FLAPPING_DATA, CallbackFlappingStatus, false },
-    { NEBCALLBACK_HOST_CHECK_DATA, CallbackHostCheck, false },
-    { NEBCALLBACK_HOST_STATUS_DATA, CallbackHostStatus, false },
-    { NEBCALLBACK_LOG_DATA, CallbackLog, false },
-    { NEBCALLBACK_PROCESS_DATA, CallbackProcess, false },
-    { NEBCALLBACK_PROGRAM_STATUS_DATA, CallbackProgramStatus, false },
-    { NEBCALLBACK_SERVICE_CHECK_DATA, CallbackServiceCheck, false },
-    { NEBCALLBACK_SERVICE_STATUS_DATA, CallbackServiceStatus, false }
-  };
+} gl_callbacks[] = {
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, callback_acknowledgement, false },
+  { NEBCALLBACK_COMMENT_DATA, callback_comment, false },
+  { NEBCALLBACK_DOWNTIME_DATA, callback_downtime, false },
+  { NEBCALLBACK_EVENT_HANDLER_DATA, callback_event_handler, false },
+  { NEBCALLBACK_FLAPPING_DATA, callback_flapping_status, false },
+  { NEBCALLBACK_HOST_CHECK_DATA, callback_host_check, false },
+  { NEBCALLBACK_HOST_STATUS_DATA, callback_host_status, false },
+  { NEBCALLBACK_LOG_DATA, callback_log, false },
+  { NEBCALLBACK_PROCESS_DATA, callback_process, false },
+  { NEBCALLBACK_PROGRAM_STATUS_DATA, callback_program_status, false },
+  { NEBCALLBACK_SERVICE_CHECK_DATA, callback_service_check, false },
+  { NEBCALLBACK_SERVICE_STATUS_DATA, callback_service_status, false }
+};
 
 // Module handle
 static void*   gl_mod_handle = NULL;

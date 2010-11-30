@@ -21,17 +21,17 @@
 #ifndef CALLBACKS_H_
 # define CALLBACKS_H_
 
-int CallbackAcknowledgement(int callback_type, void* data);
-int CallbackComment(int callback_type, void* data);
-int CallbackDowntime(int callback_type, void* data);
-int CallbackEventHandler(int callback_type, void* data);
-int CallbackFlappingStatus(int callback_type, void* data);
-int CallbackHostCheck(int callback_type, void* data);
-int CallbackHostStatus(int callback_type, void* data);
-int CallbackLog(int callback_type, void* data);
-int CallbackProcess(int callback_type, void* data);
-int CallbackProgramStatus(int callback_type, void* data);
-int CallbackServiceCheck(int callback_type, void* data);
-int CallbackServiceStatus(int callback_type, void* data);
+int callback_acknowledgement(int callback_type, void* data);
+int callback_comment(int callback_type, void* data);
+int callback_downtime(int callback_type, void* data);
+int callback_event_handler(int callback_type, void* data);
+int callback_flapping_status(int callback_type, void* data);
+int callback_host_check(int callback_type, void* data);
+int callback_host_status(int callback_type, void* data);
+int callback_log(int callback_type, void* data);
+int callback_process(int callback_type, void* data);
+int callback_program_status(int callback_type, void* data);
+int callback_service_check(int callback_type, void* data);
+int callback_service_status(int callback_type, void* data);
 
 #endif /* !CALLBACKS_H_ */
