@@ -45,6 +45,78 @@ extern "C" {
 **************************************/
 
 /**
+ *  Send to the global publisher the list of custom variables.
+ */
+static void SendCustomVariablesList() {
+  // Start log message.
+  logging::info << logging::MEDIUM
+                << "beginning custom variables dump";
+  time_t now(time(NULL));
+
+  // Iterate through all hosts.
+  for (host* h = host_list; h; h = h->next) {
+    if (h->name) {
+      // Find host ID first.
+      unsigned int host_id(gl_hosts[h->name]);
+
+      // Send all custom variables.
+      for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next) {
+        std::auto_ptr<Events::custom_variable> c(new Events::custom_variable);
+        c->host_id = host_id;
+        c->modified = false;
+        // c->type = XXX;
+        if (cv->variable_name)
+          c->name = cv->variable_name;
+        c->update_time = now;
+        if (cv->variable_value)
+          c->value = cv->variable_value;
+
+        // Send custom variable event.
+        c->AddReader();
+        gl_publisher.Event(c.get());
+        c.release();
+      }
+    }
+  }
+
+  // Iterate through all services.
+  for (service* s = service_list; s; s = s->next) {
+    if (s->host_name && s->description) {
+      // Find host ID and service ID first.
+      std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator it
+        = gl_services.find(std::make_pair(s->host_name, s->description));
+      unsigned int host_id(it->second.first);
+      unsigned int service_id(it->second.second);
+
+      // Send all custom variables.
+      for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next) {
+        std::auto_ptr<Events::custom_variable> c(new Events::custom_variable);
+        c->host_id = host_id;
+        c->modified = false;
+        c->service_id = service_id;
+        // c->type = XXX;
+        if (cv->variable_name)
+          c->name = cv->variable_name;
+        c->update_time = now;
+        if (cv->variable_value)
+          c->value = cv->variable_value;
+
+        // Send custom variable event.
+        c->AddReader();
+        gl_publisher.Event(c.get());
+        c.release();
+      }
+    }
+  }
+
+  // End log message.
+  logging::info << logging::MEDIUM
+                << "end of custom variables dump";
+
+  return ;
+}
+
+/**
  *  Send to the global publisher the list of host dependencies within Nagios.
  */
 static void SendHostDependenciesList() {
@@ -599,5 +671,6 @@ void SendInitialConfiguration() {
   SendServiceGroupList();
   SendHostDependenciesList();
   SendServiceDependenciesList();
+  SendCustomVariablesList();
   return ;
 }
