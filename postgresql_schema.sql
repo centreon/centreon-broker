@@ -237,7 +237,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
 
   PRIMARY KEY (hostgroup_id),
-  UNIQUE (name, instance_id),
+  UNIQUE (instance_id, name),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
