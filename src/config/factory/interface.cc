@@ -20,7 +20,7 @@
 
 #include <memory>
 #include "config/factory.hh"
-#include "interface/db/destination.h"
+#include "interface/db/destination.hh"
 #include "interface/ndo/destination.h"
 #include "interface/ndo/source.h"
 #include "interface/ndo/sourcedestination.h"
@@ -279,10 +279,10 @@ Interface::Destination* factory::build_destination(config::interface const& i)
 #ifdef USE_MYSQL
      case config::interface::mysql:
       {
-        std::auto_ptr<Interface::DB::Destination> db(
-          new Interface::DB::Destination);
+        std::auto_ptr<Interface::DB::destination> db(
+          new Interface::DB::destination);
 
-        db->Connect(Interface::DB::Destination::MYSQL,
+        db->connect(Interface::DB::destination::MYSQL,
                     i.db,
                     i.host,
                     i.user,

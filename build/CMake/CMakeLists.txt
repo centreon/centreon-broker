@@ -132,7 +132,7 @@ set(LIBROKER_SOURCES
 	../../src/events/status.cpp
 	../../src/exception.cpp
 	../../src/exceptions/basic.cc
-	../../src/interface/db/destination.cpp
+	../../src/interface/db/destination.cc
 	../../src/interface/db/internal.cpp
 	../../src/interface/destination.cpp
 	../../src/interface/ndo/base.cpp
