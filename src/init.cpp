@@ -44,22 +44,23 @@
 void Deinit()
 {
   // Unload configuration.
-  LOGDEBUG("Unloading configuration ...");
+  logging::debug << logging::MEDIUM << "unloading configuration";
   // XXX
 
 #ifdef USE_TLS
   // Unload GNU TLS library.
-  LOGDEBUG("Unloading GNU TLS library ...");
+  logging::debug << logging::MEDIUM << "unloading GNU TLS library";
   IO::TLS::Destroy();
 #endif /* USE_TLS */
 
 #ifdef USE_MYSQL
   // Unload MySQL library.
-  LOGDEBUG("Unloading MySQL library ...");
+  logging::debug << logging::MEDIUM << "unloading MySQL library";
   mysql_library_end();
 #endif /* USE_MYSQL */
 
   // Unload Xerces-C++ engine.
+  logging::debug << logging::MEDIUM << "unloading Xerces-C++ library";
   xercesc::XMLPlatformUtils::Terminate();
 
   logging::clear();
@@ -77,23 +78,23 @@ void Init()
 
 #ifdef USE_MYSQL
   // Initialize MySQL library.
-  LOGDEBUG("Initializing MySQL library ...");
+  logging::debug << logging::MEDIUM << "initializing MySQL library";
   if (mysql_library_init(0, NULL, NULL))
     throw (Exception(0, "MySQL library initialization failed."));
 #endif /* USE_MYSQL */
 
 #ifdef USE_TLS
   // Initialize GNU TLS.
-  LOGDEBUG("Initializing GNU TLS library ...");
+  logging::debug << logging::MEDIUM << "initializing GNU TLS library";
   IO::TLS::Initialize();
 #endif /* USE_TLS */
 
   // Initialize all interface objects.
-  LOGDEBUG("Initializing DB engine ...");
+  logging::debug << logging::MEDIUM << "initializing DB engine";
   Interface::DB::Initialize();
-  LOGDEBUG("Initializing NDO engine ...");
+  logging::debug << logging::MEDIUM << "initializing NDO engine";
   Interface::NDO::Initialize();
-  LOGDEBUG("Initializing XML engine ...");
+  logging::debug << logging::MEDIUM << "initializing XML engine";
   Interface::XML::Initialize();
 
   return ;

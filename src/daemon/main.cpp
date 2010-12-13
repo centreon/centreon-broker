@@ -53,7 +53,7 @@ static void (*                        gl_sigterm_handler)(int) = NULL;
  */
 static void term_handler(int signum)
 {
-  LOGINFO("Termination signal caught. Cleaning up ...");
+  logging::info << logging::HIGH << "caught termination signal";
   try
     {
       Concurrency::Lock lock(gl_mutex);
@@ -69,12 +69,13 @@ static void term_handler(int signum)
     }
   catch (const std::exception& e)
     {
-      LOGERROR(e.what());
+      logging::error << logging::HIGH
+                     << "termination handler error: " << e.what();
     }
   catch (...)
     {
-      LOGERROR("Unknown exception occured while " \
-               "executing termination handler.");
+      logging::error << logging::HIGH
+                     << "termination handler unknown error";
     }
   return ;
 }
@@ -129,8 +130,8 @@ int main(int argc, char* argv[])
           // Register handler for SIGTERM.
           gl_sigterm_handler = signal(SIGTERM, term_handler);
           if (SIG_ERR == gl_sigterm_handler)
-            LOGINFO("Unable to register termination handler. Unpredictable " \
-                    "behavior will occur when exiting.");
+            logging::info << logging::MEDIUM
+                          << "unable to register termination handler";
 
           // Everything's loaded, sleep for 60 seconds, then perform some
           // potential cleanup and sleep again.

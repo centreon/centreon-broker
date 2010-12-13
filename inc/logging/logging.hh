@@ -44,12 +44,4 @@ namespace            logging
                        level min_priority = HIGH);
 }
 
-# ifndef NDEBUG
-#  define LOGDEBUG(msg) (logging::debug << msg)
-# else
-#  define LOGDEBUG(msg) ((void)msg)
-# endif /* !NDEBUG */
-# define LOGERROR(msg) (logging::error << msg)
-# define LOGINFO(msg) (logging::error << msg)
-
 #endif /* !LOGGING_LOGGING_HH_ */

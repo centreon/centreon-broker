@@ -139,50 +139,45 @@ FailoverOutBase::~FailoverOutBase() {}
 /**
  *  Failover thread entry point.
  */
-void FailoverOutBase::operator()()
-{
-  try
-    {
-      while (!this->should_exit)
-        {
-          try
-            {
-              LOGDEBUG("Connecting output ...");
-              this->Connect();
-              LOGDEBUG("Connection successful !");
-              if (this->failover_.get())
-                {
-                  LOGDEBUG("Fetching events from the failover object ...");
-                  if (this->failover_->source_dest_.get())
-                    this->Feed(this->failover_->source_dest_.get(), this);
-                  LOGDEBUG("Killing failover thread ...");
-                  this->failover_->Exit();
-                  this->failover_->Join();
-                  LOGDEBUG("Destroying failover object ...");
-                  this->failover_.reset();
-                }
-              LOGDEBUG("Launching feeding loop ...");
-              this->Feed(this, this);
-            }
-          catch (std::exception const& e)
-            {
-              logging::error << "Output event feeding failed: " << e.what();
-              if (!this->failover_.get() && this->dest_conf_->failover.get())
-                {
-                  LOGDEBUG("Launching output failover ...");
-                  this->failover_.reset(new FailoverOutAsIn);
-                  this->failover_->Run(this,
-                                       *this->dest_conf_->failover);
-                }
-              // XXX : configure
-              sleep(5);
-            }
-        }
+void FailoverOutBase::operator()() {
+  while (!this->should_exit) {
+    try {
+      logging::debug << logging::HIGH << "connecting output";
+      this->Connect();
+      logging::debug << logging::HIGH << "output connection successful";
+      if (this->failover_.get()) {
+        logging::debug << logging:: HIGH << "fetching events from the failover object";
+        if (this->failover_->source_dest_.get())
+          this->Feed(this->failover_->source_dest_.get(), this);
+        logging::debug << logging::HIGH << "killing failover thread";
+        this->failover_->Exit();
+        this->failover_->Join();
+        logging::debug << logging::HIGH << "destroying failover object";
+        this->failover_.reset();
+      }
+      logging::debug << logging::HIGH << "launching feeding loop";
+      this->Feed(this, this);
     }
-  catch (...)
-    {
-      LOGERROR("Caught unknown error.");
+    catch (std::exception const& e) {
+      logging::error << logging::HIGH
+                     << "error while processing output: " << e.what();
+      if (!this->failover_.get() && this->dest_conf_->failover.get()) {
+        logging::info << logging::HIGH << "launching output failover";
+        this->failover_.reset(new FailoverOutAsIn);
+        this->failover_->Run(this,
+                             *this->dest_conf_->failover);
+      }
+      // XXX : configure
+      sleep(5);
     }
+    catch (...) {
+      logging::error << logging::HIGH
+                     << "output processing thread caught an unknown exception";
+      logging::info << logging::INFO
+                    << "output processing thread will now exit";
+      break ;
+    }
+  }
   return ;
 }
 

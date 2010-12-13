@@ -99,23 +99,28 @@ FailoverIn::~FailoverIn()
 /**
  *  FailoverIn thread entry point.
  */
-void FailoverIn::operator()()
-{
-  while (!this->should_exit)
-    {
-      try
-	{
-	  LOGDEBUG("Connecting input ...");
-	  this->Connect();
-	  this->Feed(this, this);
-	}
-      catch (...)
-	{
-	  LOGDEBUG("Input event feeding failed.");
-	  // XXX : configure
-	  sleep(5);
-	}
+void FailoverIn::operator()() {
+  while (!this->should_exit) {
+    try {
+      logging::info << logging::MEDIUM << "connecting input";
+      this->Connect();
+      logging::info << logging::MEDIUM << "input connection successful";
+      this->Feed(this, this);
     }
+    catch (std::exception const& e) {
+      logging::error << logging::HIGH
+                     << "error while processing input: " << e.what();
+      // XXX : configure
+      sleep(5);
+    }
+    catch (...) {
+      logging::error << logging::HIGH
+                     << "input processing thread caught an unknown exception";
+      logging::info << logging::HIGH
+                    << "input processing thread will now exit";
+      break ;
+    }
+  }
   return ;
 }
 
@@ -183,8 +188,8 @@ void FailoverIn::Exit()
  *  Run failover thread.
  */
 void FailoverIn::Run(const config::interface& source_conf,
-		     Interface::Destination* destination,
-		     Concurrency::ThreadListener* tl)
+                     Interface::Destination* destination,
+                     Concurrency::ThreadListener* tl)
 {
   {
     Concurrency::Lock lock(this->sourcem_);
