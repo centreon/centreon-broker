@@ -48,7 +48,7 @@
  *  @return 0 on success.
  */
 int callback_acknowledgement(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating acknowledgement event";
+  logging::info << logging::MEDIUM << "generating acknowledgement event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -95,7 +95,7 @@ int callback_acknowledgement(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_comment(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating comment event";
+  logging::info << logging::MEDIUM << "generating comment event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -146,7 +146,7 @@ int callback_comment(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_downtime(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating downtime event";
+  logging::info << logging::MEDIUM << "generating downtime event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -202,7 +202,7 @@ int callback_downtime(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_event_handler(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating event handler event";
+  logging::info << logging::MEDIUM << "generating event handler event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -266,7 +266,7 @@ int callback_event_handler(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_flapping_status(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating flapping event";
+  logging::info << logging::MEDIUM << "generating flapping event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -332,7 +332,7 @@ int callback_flapping_status(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_host_check(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating host check event";
+  logging::info << logging::MEDIUM << "generating host check event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -374,7 +374,7 @@ int callback_host_check(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_host_status(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating host status event";
+  logging::info << logging::MEDIUM << "generating host status event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -465,7 +465,7 @@ int callback_host_status(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_log(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating log event";
+  logging::info << logging::MEDIUM << "generating log event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -514,7 +514,7 @@ int callback_process(int callback_type, void *data) {
     // Check process event type.
     process_data = static_cast<nebstruct_process_data*>(data);
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
-      logging::debug << logging::MEDIUM << "generating process start event";
+      logging::info << logging::MEDIUM << "generating process start event";
       // Output variable.
       std::auto_ptr<Events::Program> program(new Events::Program);
 
@@ -536,7 +536,7 @@ int callback_process(int callback_type, void *data) {
       SendInitialConfiguration();
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
-      logging::debug << logging::MEDIUM << "generating process end event";
+      logging::info << logging::MEDIUM << "generating process end event";
       // Output variable.
       std::auto_ptr<Events::Program> program(new Events::Program);
 
@@ -573,7 +573,7 @@ int callback_process(int callback_type, void *data) {
  *  @return 0 on success.
  */
 int callback_program_status(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating program status event";
+  logging::info << logging::MEDIUM << "generating program status event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -646,7 +646,7 @@ int callback_program_status(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_service_check(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating service check event";
+  logging::info << logging::MEDIUM << "generating service check event";
   (void)callback_type;
   try {
     // In/Out variables.
@@ -693,7 +693,7 @@ int callback_service_check(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_service_status(int callback_type, void* data) {
-  logging::debug << logging::MEDIUM << "generating service status event";
+  logging::info << logging::MEDIUM << "generating service status event";
   (void)callback_type;
   try {
     // In/Out variables.
