@@ -130,6 +130,49 @@ void Destination::CleanTables(int instance_id) {
                << " SET enabled=0 "
                << " WHERE instance_id=" << instance_id;
 
+  // Remove groups.
+  *this->conn_ << "DELETE FROM " << MappedType<Events::HostGroup>::table
+               << " WHERE instance_id=" << instance_id;
+  *this->conn_ << "DELETE FROM " << MappedType<Events::ServiceGroup>::table
+               << " WHERE instance_id=" << instance_id;
+
+  // Remove host dependencies.
+  *this->conn_ << "DELETE FROM " << MappedType<Events::HostDependency>::table
+               << " WHERE host_id IN ("
+                    "SELECT host_id"
+                    " FROM " << MappedType<Events::Host>::table
+               <<   " WHERE instance_id=" << instance_id << ")"
+                  " OR dependent_host_id IN ("
+                    "SELECT host_id"
+                    " FROM " << MappedType<Events::Host>::table
+               <<   " WHERE instance_id=" << instance_id << ")";
+
+  // Remove host parents.
+  *this->conn_ << "DELETE FROM " << MappedType<Events::HostParent>::table
+               << " WHERE child_id IN ("
+                    "SELECT host_id"
+                    " FROM " << MappedType<Events::Host>::table
+               <<   " WHERE instance_id=" << instance_id << ")"
+                  " OR parent_id IN ("
+                    "SELECT host_id"
+                    " FROM " << MappedType<Events::Host>::table
+	       <<   " WHERE instance_id=" << instance_id << ")";
+
+  // Remove service dependencies.
+  *this->conn_ << "DELETE FROM " << MappedType<Events::ServiceDependency>::table
+               << " WHERE service_id IN ("
+                    "SELECT services.service_id"
+                    " FROM " << MappedType<Events::Service>::table << " AS services"
+               <<   " JOIN " << MappedType<Events::Host>::table << " AS hosts"
+               <<   " ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+               <<   instance_id
+               << ") OR dependent_service_id IN ("
+                    "SELECT services.service_id "
+                    " FROM " << MappedType<Events::Service>::table << " AS services"
+                    " JOIN " << MappedType<Events::Host>::table << " AS hosts"
+                    " ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+               <<   instance_id << ")";
+
   return ;
 }
 
@@ -400,13 +443,11 @@ void Destination::ProcessHost(Events::Event const& event) {
   Events::Host const& host(*static_cast<Events::Host const*>(&event));
 
   LOGDEBUG("Processing host event ...");
-  try {
+  _host = host;
+  _host_stmt->execute(true);
+  unsigned long matched = _host_stmt->get_affected_rows();
+  if (!matched || (-1 == matched))
     this->Insert(host);
-  }
-  catch (soci::soci_error const& se) {
-    _host = host;
-    _host_stmt->execute(true);
-  }
   return ;
 }
 
@@ -714,13 +755,12 @@ void Destination::ProcessService(Events::Event const& event) {
     *static_cast<Events::Service const*>(&event));
 
   LOGDEBUG("Processing Service event ...");
-  try {
+  _service = service;
+  _service_stmt->execute(true);
+  unsigned long matched = _service_stmt->get_affected_rows();
+  if (!matched || (-1 == matched)) {
     _service = service;
     _service_insert_stmt->execute(true);
-  }
-  catch (soci::soci_error const& se) {
-    _service = service;
-    _service_stmt->execute(true);
   }
   return ;
 }
