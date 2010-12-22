@@ -33,7 +33,7 @@
 #include <sstream>
 #include <stdlib.h>                   // for abort
 #include "events/events.h"
-#include "exception.h"
+#include "exceptions/basic.hh"
 #include "interface/db/destination.hh"
 #include "interface/db/internal.h"
 #include "logging/logging.hh"
@@ -1050,7 +1050,7 @@ void destination::connect(destination::DB db_type,
 #endif /* USE_POSTGRESQL */
 
      default:
-      throw Exception(0, "Unsupported DBMS requested.");
+       throw exceptions::basic() << "unsupported DBMS requested.";
     }
   }
 
