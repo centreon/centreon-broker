@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef EXCEPTIONS_BASIC_HH_
@@ -24,8 +24,7 @@
 # include <exception>
 # include "misc/stringifier.hh"
 
-namespace                     exceptions
-{
+namespace                     exceptions {
   /**
    *  @class basic basic.hh "exceptions/basic.hh"
    *  @brief Base class of exceptions thrown in Centreon Broker.
@@ -35,8 +34,7 @@ namespace                     exceptions
    *  accepts until basic::max_msg_len characters of exception message.
    */
   class                       basic : private misc::stringifier,
-                                      public std::exception
-  {
+                                      public std::exception {
    public:
     static unsigned int const max_msg_len = misc::stringifier::max_len;
                               basic() throw ();

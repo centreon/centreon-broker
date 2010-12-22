@@ -1,26 +1,26 @@
 /*
-**  Copyright 2009 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "events/comment.hh"
 
-using namespace Events;
+using namespace events;
 
 /**************************************
 *                                     *
@@ -29,33 +29,34 @@ using namespace Events;
 **************************************/
 
 /**
- *  @brief Copy internal data of the given object to the current instance.
+ *  @brief Copy internal data of the given object to the current
+ *         instance.
  *
- *  This internal method is used to copy data defined inside the Comment class
- *  from an object to the current instance. This means that no superclass data
- *  are copied. This method is used in Comment copy constructor and in the =
- *  operator overload.
+ *  This internal method is used to copy data defined inside the comment
+ *  class from an object to the current instance. This means that no
+ *  superclass data are copied. This method is used in comment copy
+ *  constructor and in the assignment operator.
  *
- *  @param[in] comment Object to copy from.
+ *  @param[in] c Object to copy.
  *
- *  @see Comment(comment const&)
+ *  @see comment(comment const&)
  *  @see operator=(comment const&)
  */
 void comment::_internal_copy(comment const& c) {
-  this->author              = c.author;
-  this->data                = c.data;
-  this->deletion_time       = c.deletion_time;
-  this->entry_time          = c.entry_time;
-  this->entry_type          = c.entry_type;
-  this->expire_time         = c.expire_time;
-  this->expires             = c.expires;
-  this->host_name           = c.host_name;
-  this->instance_name       = c.instance_name;
-  this->internal_id         = c.internal_id;
-  this->persistent          = c.persistent;
-  this->service_description = c.service_description;
-  this->source              = c.source;
-  this->type                = c.type;
+  author              = c.author;
+  data                = c.data;
+  deletion_time       = c.deletion_time;
+  entry_time          = c.entry_time;
+  entry_type          = c.entry_type;
+  expire_time         = c.expire_time;
+  expires             = c.expires;
+  host_name           = c.host_name;
+  instance_name       = c.instance_name;
+  internal_id         = c.internal_id;
+  persistent          = c.persistent;
+  service_description = c.service_description;
+  source              = c.source;
+  type                = c.type;
   return ;
 }
 
@@ -66,7 +67,7 @@ void comment::_internal_copy(comment const& c) {
 **************************************/
 
 /**
- *  @brief Comment default constructor.
+ *  @brief Default constructor.
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
@@ -82,46 +83,46 @@ comment::comment()
      type(0) {}
 
 /**
- *  @brief Comment copy constructor.
+ *  @brief Copy constructor.
  *
  *  Copy data from the given comment to the current instance.
  *
- *  @param[in] comment Object to copy from.
+ *  @param[in] c Object to copy.
  */
-comment::comment(comment const& c) : Event(c) {
+comment::comment(comment const& c) : event(c) {
   _internal_copy(c);
 }
 
 /**
- *  Comment destructor.
+ *  Destructor.
  */
 comment::~comment() {}
 
 /**
- *  @brief Overload of the assignment operator.
+ *  @brief Assignment operator.
  *
  *  Copy data from the given comment to the current instance.
  *
- *  @param[in] comment Object to copy from.
+ *  @param[in] c Object to copy.
  *
- *  @return *this
+ *  @return This object.
  */
 comment& comment::operator=(comment const& c) {
-  Event::operator=(c);
+  event::operator=(c);
   _internal_copy(c);
   return (*this);
 }
 
 /**
- *  @brief Returns the type of this event (Event::COMMENT).
+ *  @brief Returns the type of this event (event::COMMENT).
  *
- *  The type of this event can be useful for runtime determination of the type
- *  of an event.
+ *  The type of this event can be useful for runtime determination of
+ *  the type of an event.
  *
- *  @see Event
+ *  @see event
  *
- *  @return Event::COMMENT
+ *  @return event::COMMENT
  */
-int comment::GetType() const {
-  return (Event::COMMENT);
+int comment::get_type() const {
+  return (event::COMMENT);
 }

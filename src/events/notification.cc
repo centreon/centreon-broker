@@ -1,26 +1,26 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "events/notification.hh"
 
-using namespace Events;
+using namespace events;
 
 /**************************************
 *                                     *
@@ -34,20 +34,20 @@ using namespace Events;
  *  @param[in] n Object to copy.
  */
 void notification::_internal_copy(notification const& n) {
-  ack_author        = n.ack_author;
-  ack_data          = n.ack_data;
-  command_name      = n.command_name;
-  contact_name      = n.contact_name;
+  ack_author = n.ack_author;
+  ack_data = n.ack_data;
+  command_name = n.command_name;
+  contact_name = n.contact_name;
   contacts_notified = n.contacts_notified;
-  end_time          = n.end_time;
-  escalated         = n.escalated;
-  host_id           = n.host_id;
-  output            = n.output;
-  reason_type       = n.reason_type;
-  service_id        = n.service_id;
-  start_time        = n.start_time;
-  state             = n.state;
-  type              = n.type;
+  end_time = n.end_time;
+  escalated = n.escalated;
+  host_id = n.host_id;
+  output = n.output;
+  reason_type = n.reason_type;
+  service_id = n.service_id;
+  start_time = n.start_time;
+  state = n.state;
+  type = n.type;
   return ;
 }
 
@@ -76,7 +76,7 @@ notification::notification()
  *
  *  @param[in] n Object to copy.
  */
-notification::notification(notification const& n) : Event(n) {
+notification::notification(notification const& n) : event(n) {
   _internal_copy(n);
 }
 
@@ -93,7 +93,7 @@ notification::~notification() {}
  *  @return This object.
  */
 notification& notification::operator=(notification const& n) {
-  Event::operator=(n);
+  event::operator=(n);
   _internal_copy(n);
   return (*this);
 }
@@ -103,6 +103,6 @@ notification& notification::operator=(notification const& n) {
  *
  *  @return NOTIFICATION.
  */
-int notification::GetType() const {
+int notification::get_type() const {
   return (NOTIFICATION);
 }

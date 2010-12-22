@@ -1,26 +1,26 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "events/custom_variable.hh"
 
-using namespace Events;
+using namespace events;
 
 /**************************************
 *                                     *
@@ -74,7 +74,7 @@ custom_variable::~custom_variable() {}
  *  @return This object.
  */
 custom_variable& custom_variable::operator=(custom_variable const& cv) {
-  Event::operator=(cv);
+  event::operator=(cv);
   _internal_copy(cv);
   return (*this);
 }
@@ -84,6 +84,6 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
  *
  *  @return CUSTOMVARIABLE.
  */
-int custom_variable::GetType() const {
+int custom_variable::get_type() const {
   return (CUSTOMVARIABLE);
 }

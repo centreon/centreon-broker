@@ -1,26 +1,26 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "events/event_handler.hh"
 
-using namespace Events;
+using namespace events;
 
 /**************************************
 *                                     *
@@ -34,20 +34,20 @@ using namespace Events;
  *  @param[in] eh Object to copy.
  */
 void event_handler::_internal_copy(event_handler const& eh) {
-  command_args   = eh.command_args;
-  command_line   = eh.command_line;
-  early_timeout  = eh.early_timeout;
-  end_time       = eh.end_time;
+  command_args = eh.command_args;
+  command_line = eh.command_line;
+  early_timeout = eh.early_timeout;
+  end_time = eh.end_time;
   execution_time = eh.execution_time;
-  host_id        = eh.host_id;
-  output         = eh.output;
-  return_code    = eh.return_code;
-  service_id     = eh.service_id;
-  start_time     = eh.start_time;
-  state          = eh.state;
-  state_type     = eh.state_type;
-  timeout        = eh.timeout;
-  type           = eh.type;
+  host_id = eh.host_id;
+  output = eh.output;
+  return_code = eh.return_code;
+  service_id = eh.service_id;
+  start_time = eh.start_time;
+  state = eh.state;
+  state_type = eh.state_type;
+  timeout = eh.timeout;
+  type = eh.type;
   return ;
 }
 
@@ -78,7 +78,7 @@ event_handler::event_handler()
  *
  *  @param[in] eh Object to copy.
  */
-event_handler::event_handler(event_handler const& eh) : Event(eh) {
+event_handler::event_handler(event_handler const& eh) : event(eh) {
   _internal_copy(eh);
 }
 
@@ -95,7 +95,7 @@ event_handler::~event_handler() {}
  *  @return This object.
  */
 event_handler& event_handler::operator=(event_handler const& eh) {
-  Event::operator=(eh);
+  event::operator=(eh);
   _internal_copy(eh);
   return (*this);
 }
@@ -105,6 +105,6 @@ event_handler& event_handler::operator=(event_handler const& eh) {
  *
  *  @return EVENTHANDLER.
  */
-int event_handler::GetType() const {
+int event_handler::get_type() const {
   return (EVENTHANDLER);
 }

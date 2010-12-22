@@ -1,31 +1,31 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef EVENTS_EVENT_HANDLER_HH_
 # define EVENTS_EVENT_HANDLER_HH_
 
 # include <string>
-# include <time.h>
-# include "events/event.h"
+# include <sys/types.h>
+# include "events/event.hh"
 
-namespace          Events {
+namespace          events {
   /**
    *  @class event_handler event_handler.hh "events/event_handler.hh"
    *  @brief Represents an event handler inside Nagios.
@@ -33,7 +33,7 @@ namespace          Events {
    *  Event handlers, as their name suggests, are executed upon the
    *  detection of some events by Nagios.
    */
-  class            event_handler : public Event {
+  class            event_handler : public event {
    private:
     void           _internal_copy(event_handler const& eh);
 
@@ -56,7 +56,7 @@ namespace          Events {
                    event_handler(event_handler const& eh);
                    ~event_handler();
     event_handler& operator=(event_handler const& eh);
-    int            GetType() const;
+    int            get_type() const;
   };
 }
 

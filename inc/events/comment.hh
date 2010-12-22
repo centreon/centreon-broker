@@ -1,40 +1,38 @@
 /*
-**  Copyright 2009 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef EVENTS_COMMENT_HH_
 # define EVENTS_COMMENT_HH_
 
-# include <time.h>         // for time_t
 # include <string>
-# include "events/event.h"
+# include <sys/time.h>
+# include "events/event.hh"
 
-namespace              Events
-{
+namespace              events {
   /**
    *  @class comment comment.hh "events/comment.hh"
    *  @brief Represents a comment inside Nagios.
    *
    *  Some user can make a comment on whatever objects he wants.
    */
-  class                comment : public Event
-  {
+  class                comment : public event {
    private:
     void               _internal_copy(comment const& c);
 
@@ -57,7 +55,7 @@ namespace              Events
                        comment(comment const& c);
                        ~comment();
     comment&           operator=(comment const& c);
-    int                GetType() const;
+    int                get_type() const;
   };
 }
 

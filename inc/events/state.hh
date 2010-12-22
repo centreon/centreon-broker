@@ -1,37 +1,38 @@
 /*
-**  Copyright 2009 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef EVENTS_STATE_HH_
 # define EVENTS_STATE_HH_
 
 # include <sys/types.h>
-# include "events/event.h"
+# include "events/event.hh"
 
-namespace  Events {
+namespace  events {
   /**
-   *  @class state state.h "events/state.h"
+   *  @class state state.hh "events/state.hh"
    *  @brief State of a checkpoint.
    *
-   *  This class represent the state of a specific checkpoint for a given time.
+   *  This class represent the state of a specific checkpoint for a
+   *  given time.
    */
-  class    state : public Event {
+  class    state : public event {
    private:
     void   _internal_copy(state const& s);
 
@@ -45,7 +46,7 @@ namespace  Events {
            state(state const& s);
            ~state();
     state& operator=(state const& s);
-    int    GetType() const;
+    int    get_type() const;
   };
 }
 

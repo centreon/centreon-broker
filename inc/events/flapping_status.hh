@@ -1,37 +1,37 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef EVENTS_FLAPPING_STATUS_HH_
 # define EVENTS_FLAPPING_STATUS_HH_
 
 # include <sys/time.h>
-# include "events/event.h"
+# include "events/event.hh"
 
-namespace            Events {
+namespace            events {
   /**
    *  @class flapping_status flapping_status.hh "events/flapping_status.hh"
    *  @brief Store a flapping status.
    *
    *  Store flapping statuses.
    */
-  class              flapping_status : public Event {
+  class              flapping_status : public event {
    private:
     void             _internal_copy(flapping_status const& fs);
 
@@ -51,7 +51,7 @@ namespace            Events {
                      flapping_status(flapping_status const& fs);
                      ~flapping_status();
     flapping_status& operator=(flapping_status const& fs);
-    int              GetType() const;
+    int              get_type() const;
   };
 }
 

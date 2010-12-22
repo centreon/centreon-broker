@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2010 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "exceptions/basic.hh"
@@ -51,10 +51,9 @@ basic::~basic() throw () {}
  *
  *  @param[in] b Object to copy from.
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator=(basic const& b) throw ()
-{
+basic& basic::operator=(basic const& b) throw () {
   misc::stringifier::operator=(b);
   std::exception::operator=(b);
   return (*this);
@@ -65,10 +64,9 @@ basic& basic::operator=(basic const& b) throw ()
  *
  *  @param[in] b Boolean to append (expended to "true" or "false").
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator<<(bool b) throw ()
-{
+basic& basic::operator<<(bool b) throw () {
   stringifier::operator<<(b);
   return (*this);
 }
@@ -78,10 +76,9 @@ basic& basic::operator<<(bool b) throw ()
  *
  *  @param[in] d Double to append.
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator<<(double d) throw ()
-{
+basic& basic::operator<<(double d) throw () {
   stringifier::operator<<(d);
   return (*this);
 }
@@ -91,10 +88,9 @@ basic& basic::operator<<(double d) throw ()
  *
  *  @param[in] i Integer to append.
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator<<(int i) throw ()
-{
+basic& basic::operator<<(int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -104,10 +100,9 @@ basic& basic::operator<<(int i) throw ()
  *
  *  @param[in] i Unsigned integer to append.
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator<<(unsigned int i) throw ()
-{
+basic& basic::operator<<(unsigned int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -117,10 +112,9 @@ basic& basic::operator<<(unsigned int i) throw ()
  *
  *  @param[in] str String to append.
  *
- *  @return Current instance.
+ *  @return This instance.
  */
-basic& basic::operator<<(char const* str) throw ()
-{
+basic& basic::operator<<(char const* str) throw () {
   stringifier::operator<<(str);
   return (*this);
 }
@@ -130,7 +124,6 @@ basic& basic::operator<<(char const* str) throw ()
  *
  *  @return Nul-terminated message.
  */
-char const* basic::what() const throw ()
-{
+char const* basic::what() const throw () {
   return (_buffer);
 }
