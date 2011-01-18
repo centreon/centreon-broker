@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -116,6 +116,18 @@ basic& basic::operator<<(unsigned int i) throw () {
  */
 basic& basic::operator<<(char const* str) throw () {
   stringifier::operator<<(str);
+  return (*this);
+}
+
+/**
+ *  Append a timestamp to the exception message.
+ *
+ *  @param[in] t Timestamp to append.
+ *
+ *  @return This instance.
+ */
+basic& basic::operator<<(time_t t) throw () {
+  stringifier::operator<<(t);
   return (*this);
 }
 

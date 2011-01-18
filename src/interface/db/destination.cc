@@ -1,46 +1,39 @@
 /*
-**  Copyright 2009-2011 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
-#include <algorithm>                  // for find
+#include <algorithm>
 #include <assert.h>
-#include <soci.h>
-#ifdef USE_MYSQL
-# include <soci-mysql.h>
-#endif /* USE_MYSQL */
-#ifdef USE_ORACLE
-# include <soci-oracle.h>
-#endif /* USE_ORACLE */
-#ifdef USE_POSTGRESQL
-# include <soci-postgresql.h>
-#endif /* USE_POSTGRESQL */
+#include <memory>
+#include <QtCore>
+#include <QtSql>
 #include <sstream>
-#include <stdlib.h>                   // for abort
-#include "events/events.h"
+#include <stdlib.h>
+#include "events/events.hh"
 #include "exceptions/basic.hh"
 #include "interface/db/destination.hh"
-#include "interface/db/internal.h"
+#include "interface/db/internal.hh"
 #include "logging/logging.hh"
-#include "mapping.h"
+#include "mapping.hh"
 #include "nagios/broker.h"
 
-using namespace Interface::DB;
+using namespace interface::db;
 
 /**************************************
 *                                     *
@@ -49,7 +42,7 @@ using namespace Interface::DB;
 **************************************/
 
 // Processing table.
-void (destination::* destination::processing_table[])(Events::Event const&) = {
+void (destination::* destination::processing_table[])(events::event const&) = {
   NULL,                                          // UNKNOWN
   &destination::_process_acknowledgement,        // ACKNOWLEDGEMENT
   &destination::_process_comment,                // COMMENT
@@ -87,7 +80,7 @@ void (destination::* destination::processing_table[])(Events::Event const&) = {
 **************************************/
 
 /**
- *  @brief Destination copy constructor.
+ *  @brief Copy constructor.
  *
  *  As destination is not copiable, the copy constructor is declared
  *  private. Any attempt to use it will result in a call to abort().
@@ -95,21 +88,21 @@ void (destination::* destination::processing_table[])(Events::Event const&) = {
  *  @param[in] dest Unused.
  */
 destination::destination(destination const& dest)
-  : Interface::Destination() {
+  : interface::destination() {
   (void)dest;
   assert(false);
   abort();
 }
 
 /**
- *  @brief Overload of the assignment operator.
+ *  @brief Assignment operator.
  *
  *  As destination is not copiable, the assignment operator is declared
  *  private. Any attempt to use it will result in a call to abort().
  *
  *  @param[in] dest Unused.
  *
- *  @return *this
+ *  @return This object.
  */
 destination& destination::operator=(destination const& dest) {
   (void)dest;
@@ -119,58 +112,87 @@ destination& destination::operator=(destination const& dest) {
 }
 
 /**
- *  Clean tables with data associated to the instance.
+ *  @brief Clean tables with data associated to the instance.
+ *
+ *  Rather than delete appropriate entries in tables, they are instead
+ *  deactivated using a specific flag.
  *
  *  @param[in] instance_id Instance ID to remove.
  */
 void destination::_clean_tables(int instance_id) {
   // Disable hosts.
-  *_conn << "UPDATE " << MappedType<Events::Host>::table
-         << " SET enabled=0 "
-         << " WHERE instance_id=" << instance_id;
+  {
+    std::ostringstream ss;
+    ss << "UPDATE " << mapped_type<events::host>::table
+       << " SET enabled=0 "
+       << " WHERE instance_id=" << instance_id;
+    _conn->exec(ss.str().c_str());
+  }
 
-  // Remove groups.
-  *_conn << "DELETE FROM " << MappedType<Events::HostGroup>::table
-         << " WHERE instance_id=" << instance_id;
-  *_conn << "DELETE FROM " << MappedType<Events::ServiceGroup>::table
-         << " WHERE instance_id=" << instance_id;
+  // Remove host groups.
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::host_group>::table
+       << " WHERE instance_id=" << instance_id;
+    _conn->exec(ss.str().c_str());
+  }
+
+  // Remove service groups.
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::service_group>::table
+       << " WHERE instance_id=" << instance_id;
+    _conn->exec(ss.str().c_str());
+  }
 
   // Remove host dependencies.
-  *_conn << "DELETE FROM " << MappedType<Events::HostDependency>::table
-         << " WHERE host_id IN ("
-            "  SELECT host_id"
-            "   FROM " << MappedType<Events::Host>::table
-         << "   WHERE instance_id=" << instance_id << ")"
-            " OR dependent_host_id IN ("
-            "  SELECT host_id"
-            "   FROM " << MappedType<Events::Host>::table
-         << "   WHERE instance_id=" << instance_id << ")";
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::host_dependency>::table
+       << " WHERE host_id IN ("
+          "  SELECT host_id"
+          "   FROM " << mapped_type<events::host>::table
+       << "   WHERE instance_id=" << instance_id << ")"
+          " OR dependent_host_id IN ("
+          "  SELECT host_id"
+          "   FROM " << mapped_type<events::host>::table
+       << "   WHERE instance_id=" << instance_id << ")";
+    _conn->exec(ss.str().c_str());
+  }
 
   // Remove host parents.
-  *_conn << "DELETE FROM " << MappedType<Events::HostParent>::table
-         << " WHERE child_id IN ("
-            "  SELECT host_id"
-            "   FROM " << MappedType<Events::Host>::table
-         << "   WHERE instance_id=" << instance_id << ")"
-            " OR parent_id IN ("
-            "  SELECT host_id"
-            "   FROM " << MappedType<Events::Host>::table
-         << "   WHERE instance_id=" << instance_id << ")";
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::host_parent>::table
+       << " WHERE child_id IN ("
+          "  SELECT host_id"
+          "   FROM " << mapped_type<events::host>::table
+       << "   WHERE instance_id=" << instance_id << ")"
+          " OR parent_id IN ("
+          "  SELECT host_id"
+          "   FROM " << mapped_type<events::host>::table
+       << "   WHERE instance_id=" << instance_id << ")";
+    _conn->exec(ss.str().c_str());
+  }
 
   // Remove service dependencies.
-  *_conn << "DELETE FROM " << MappedType<Events::ServiceDependency>::table
-         << " WHERE service_id IN ("
-            "  SELECT services.service_id"
-            "   FROM " << MappedType<Events::Service>::table << " AS services"
-         << "   JOIN " << MappedType<Events::Host>::table << " AS hosts"
-         << "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
-         << instance_id << ")"
-            " OR dependent_service_id IN ("
-            "  SELECT services.service_id "
-            "   FROM " << MappedType<Events::Service>::table << " AS services"
-            "   JOIN " << MappedType<Events::Host>::table << " AS hosts"
-            "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
-         << instance_id << ")";
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::service_dependency>::table
+       << " WHERE service_id IN ("
+          "  SELECT services.service_id"
+          "   FROM " << mapped_type<events::service>::table << " AS services"
+       << "   JOIN " << mapped_type<events::host>::table << " AS hosts"
+       << "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+       << instance_id << ")"
+          " OR dependent_service_id IN ("
+          "  SELECT services.service_id "
+          "   FROM " << mapped_type<events::service>::table << " AS services"
+          "   JOIN " << mapped_type<events::host>::table << " AS hosts"
+          "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+       << instance_id << ")";
+    _conn->exec(ss.str().c_str());
+  }
 
   return ;
 }
@@ -181,17 +203,15 @@ void destination::_clean_tables(int instance_id) {
  *  @param[in] t Object to insert.
  */
 template <typename T>
-void destination::_insert(T const& t)
-{
+bool destination::_insert(T const& t) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
-  query.append(MappedType<T>::table);
+  query.append(mapped_type<T>::table);
   query.append(" (");
-  for (typename std::list<std::pair<std::string,
-                                    GetterSetter<T> > >::const_iterator
-         it = DBMappedType<T>::list.begin(),
-         end = DBMappedType<T>::list.end();
+  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+         it = db_mapped_type<T>::list.begin(),
+         end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
     query.append(it->first);
@@ -199,10 +219,9 @@ void destination::_insert(T const& t)
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::list<std::pair<std::string,
-                                    GetterSetter<T> > >::const_iterator
-         it = DBMappedType<T>::list.begin(),
-         end = DBMappedType<T>::list.end();
+  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+         it = db_mapped_type<T>::list.begin(),
+         end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
     query.append(":");
@@ -214,9 +233,14 @@ void destination::_insert(T const& t)
   logging::info << logging::LOW << "executing query: " << query.c_str();
 
   // Execute query.
-  *_conn << query, soci::use(t);
+  QSqlQuery q(*_conn);
+  bool ret(q.prepare(query.c_str()));
+  if (ret) {
+    q << t;
+    ret = q.exec();
+  }
 
-  return ;
+  return (ret);
 }
 
 /**
@@ -226,17 +250,16 @@ void destination::_insert(T const& t)
  *  @param[in]  t  Object that will be bound to the statement.
  */
 template <typename T>
-void destination::_prepare_insert(std::auto_ptr<soci::statement>& st,
+bool destination::_prepare_insert(std::auto_ptr<QSqlQuery>& st,
                                   T& t) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
-  query.append(MappedType<T>::table);
+  query.append(mapped_type<T>::table);
   query.append(" (");
-  for (typename std::list<std::pair<std::string,
-                                    GetterSetter<T> > >::const_iterator
-         it = DBMappedType<T>::list.begin(),
-         end = DBMappedType<T>::list.end();
+  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+         it = db_mapped_type<T>::list.begin(),
+         end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
     query.append(it->first);
@@ -244,10 +267,9 @@ void destination::_prepare_insert(std::auto_ptr<soci::statement>& st,
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::list<std::pair<std::string,
-                                    GetterSetter<T> > >::const_iterator
-         it = DBMappedType<T>::list.begin(),
-         end = DBMappedType<T>::list.end();
+  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+         it = db_mapped_type<T>::list.begin(),
+         end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
     query.append(":");
@@ -260,10 +282,8 @@ void destination::_prepare_insert(std::auto_ptr<soci::statement>& st,
                 << query.c_str();
 
   // Prepare statement.
-  st.reset(new soci::statement((_conn->prepare << query,
-                                soci::use(t))));
-
-  return ;
+  st.reset(new QSqlQuery(*_conn));
+  return (st->prepare(query.c_str()));
 }
 
 /**
@@ -274,18 +294,17 @@ void destination::_prepare_insert(std::auto_ptr<soci::statement>& st,
  *  @param[in]  id List of fields that form an UNIQUE.
  */
 template <typename T>
-void destination::_prepare_update(std::auto_ptr<soci::statement>& st,
+bool destination::_prepare_update(std::auto_ptr<QSqlQuery>& st,
                                   T& t,
                                   std::vector<std::string> const& id) {
   // Build query string.
   std::string query;
   query = "UPDATE ";
-  query.append(MappedType<T>::table);
+  query.append(mapped_type<T>::table);
   query.append(" SET ");
-  for (typename std::list<std::pair<std::string,
-                                    GetterSetter<T> > >::const_iterator
-         it = DBMappedType<T>::list.begin(),
-         end = DBMappedType<T>::list.end();
+  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+         it = db_mapped_type<T>::list.begin(),
+         end = db_mapped_type<T>::list.end();
        it != end;
        ++it)
     if (std::find(id.begin(), id.end(), it->first) == id.end()) {
@@ -311,227 +330,261 @@ void destination::_prepare_update(std::auto_ptr<soci::statement>& st,
                 << query.c_str();
 
   // Prepare statement.
-  st.reset(new soci::statement((_conn->prepare << query,
-                                soci::use(t))));
-
-  return ;
+  st.reset(new QSqlQuery(*_conn));
+  return (st->prepare(query.c_str()));
 }
 
 /**
  *  Process an acknowledgement event.
  *
- *  @param[in] event Uncasted acknowledgement.
+ *  @param[in] e Uncasted acknowledgement.
  */
-void destination::_process_acknowledgement(Events::Event const& event) {
-  Events::Acknowledgement const& ack(
-    *static_cast<Events::Acknowledgement const*>(&event));
-
+void destination::_process_acknowledgement(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM
                 << "processing acknowledgement event";
-  try {
-    _insert(ack);
+
+  // Processing.
+  events::acknowledgement const& ack(
+    *static_cast<events::acknowledgement const*>(&e));
+  if (!_insert(ack)) {
+    *_acknowledgement_stmt << ack;
+    _acknowledgement_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _acknowledgement = ack;
-    _acknowledgement_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process a comment event.
  *
- *  @param[in] event Uncasted comment.
+ *  @param[in] e Uncasted comment.
  */
-void destination::_process_comment(Events::Event const& event) {
-  Events::comment const& c(
-    *static_cast<Events::comment const*>(&event));
-
+void destination::_process_comment(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing comment event";
-  try {
-    _insert(c);
+
+  // Processing.
+  events::comment const& c(*static_cast<events::comment const*>(&e));
+  if (!_insert(c)) {
+    *_comment_stmt << c;
+    _comment_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _comment = c;
-    _comment_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process a custom variable event.
  *
- *  @param[in] event Uncasted custom variable.
+ *  @param[in] e Uncasted custom variable.
  */
-void destination::_process_custom_variable(Events::Event const& event) {
-  Events::custom_variable const& cv(
-    *static_cast<Events::custom_variable const*>(&event));
-
+void destination::_process_custom_variable(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing custom variable event";
+
+  // Processing.
+  events::custom_variable const& cv(
+    *static_cast<events::custom_variable const*>(&e));
   _insert(cv);
+
   return ;
 }
 
 /**
  *  Process a custom variable status event.
  *
- *  @param[in] event Uncasted custom variable status.
+ *  @param[in] e Uncasted custom variable status.
  */
-void destination::_process_custom_variable_status(Events::Event const& event) {
-  Events::custom_variable_status const& cvs(
-    *static_cast<Events::custom_variable_status const*>(&event));
-
+void destination::_process_custom_variable_status(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing custom variable status event";
-  _custom_variable_status = cvs;
-  _custom_variable_status_stmt->execute(true);
+
+  // Processing.
+  events::custom_variable_status const& cvs(
+    *static_cast<events::custom_variable_status const*>(&e));
+  *_custom_variable_status_stmt << cvs;
+  _custom_variable_status_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process a downtime event.
  *
- *  @param[in] event Uncasted downtime.
+ *  @param[in] e Uncasted downtime.
  */
-void destination::_process_downtime(Events::Event const& event) {
-  Events::Downtime const& downtime(
-    *static_cast<Events::Downtime const*>(&event));
-
+void destination::_process_downtime(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing downtime event";
-  try {
-    _insert(downtime);
+
+  // Processing.
+  events::downtime const& d(*static_cast<events::downtime const*>(&e));
+  if (!_insert(d)) {
+    *_downtime_stmt << d;
+    _downtime_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _downtime = downtime;
-    _downtime_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process an event handler event.
  *
- *  @param[in] event Uncasted event handler.
+ *  @param[in] e Uncasted event handler.
  */
-void destination::_process_event_handler(Events::Event const& event) {
-  Events::event_handler const& event_handler(
-    *static_cast<Events::event_handler const*>(&event));
-
+void destination::_process_event_handler(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing event handler event";
-  try {
-    _insert(event_handler);
+
+  // Processing.
+  events::event_handler const& eh(
+    *static_cast<events::event_handler const*>(&e));
+  if (!_insert(eh)) {
+    *_event_handler_stmt << eh;
+    _event_handler_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _event_handler = event_handler;
-    _event_handler_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process a flapping status event.
  *
- *  @param[in] event Uncasted flapping status.
+ *  @param[in] e Uncasted flapping status.
  */
-void destination::_process_flapping_status(Events::Event const& event) {
-  Events::flapping_status const& flapping_status(
-    *static_cast<Events::flapping_status const*>(&event));
-
+void destination::_process_flapping_status(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing flapping status event";
-  try {
-    _insert(flapping_status);
+
+  // Processing.
+  events::flapping_status const& fs(
+    *static_cast<events::flapping_status const*>(&e));
+  if (!_insert(fs)) {
+    *_flapping_status_stmt << fs;
+    _flapping_status_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _flapping_status = flapping_status;
-    _flapping_status_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process an host event.
  *
- *  @param[in] event Uncasted host.
+ *  @param[in] e Uncasted host.
  */
-void destination::_process_host(Events::Event const& event) {
-  Events::Host const& host(*static_cast<Events::Host const*>(&event));
-
+void destination::_process_host(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host event";
-  _host = host;
-  _host_stmt->execute(true);
-  long long matched = _host_stmt->get_affected_rows();
+
+  // Processing.
+  events::host const& h(*static_cast<events::host const*>(&e));
+  *_host_stmt << h;
+  _host_stmt->exec();
+  int matched = _host_stmt->numRowsAffected();
   if (!matched || (-1 == matched))
-    _insert(host);
+    _insert(h);
+
   return ;
 }
 
 /**
  *  Process an host check event.
  *
- *  @param[in] event Uncasted host check.
+ *  @param[in] e Uncasted host check.
  */
-void destination::_process_host_check(Events::Event const& event) {
-  Events::HostCheck const& host_check(
-    *static_cast<Events::HostCheck const*>(&event));
-
+void destination::_process_host_check(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host check event";
-  _host_check = host_check;
-  _host_check_stmt->execute(true);
+
+  // Processing.
+  events::host_check const& hc(
+    *static_cast<events::host_check const*>(&e));
+  *_host_check_stmt << hc;
+  _host_check_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process a host dependency event.
  *
- *  @param[in] event Uncasted host dependency.
+ *  @param[in] e Uncasted host dependency.
  */
-void destination::_process_host_dependency(Events::Event const& event) {
-  Events::HostDependency const& hd(
-    *static_cast<Events::HostDependency const*>(&event));
-
+void destination::_process_host_dependency(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host dependency event";
+
+  // Processing.
+  events::host_dependency const& hd(
+    *static_cast<events::host_dependency const*>(&e));
   _insert(hd);
+
   return ;
 }
 
 /**
  *  Process a host group event.
  *
- *  @param[in] event Uncasted host group.
+ *  @param[in] e Uncasted host group.
  */
-void destination::_process_host_group(Events::Event const& event) {
-  Events::HostGroup const& hg(
-    *static_cast<Events::HostGroup const*>(&event));
-
+void destination::_process_host_group(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host group event";
+
+  // Processing.
+  events::host_group const& hg(
+    *static_cast<events::host_group const*>(&e));
   _insert(hg);
+
   return ;
 }
 
 /**
  *  Process a host group member event.
  *
- *  @param[in] event Uncasted host group member.
+ *  @param[in] e Uncasted host group member.
  */
-void destination::_process_host_group_member(Events::Event const& event) {
-  Events::HostGroupMember const& hgm(
-    *static_cast<Events::HostGroupMember const*>(&event));
-  int hostgroup_id;
-
+void destination::_process_host_group_member(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host group member event";
 
-  // Fetch host group ID.
-  *_conn << "SELECT hostgroup_id FROM "
-         << MappedType<Events::HostGroup>::table
-         << " WHERE instance_id=" << hgm.instance_id
-         << " AND name=\"" << hgm.group << "\"",
-         soci::into(hostgroup_id);
+  // Fetch proper structure.
+  events::host_group_member const& hgm(
+    *static_cast<events::host_group_member const*>(&e));
 
-  // Execute query.
-  *_conn << "INSERT INTO "
-         << MappedType<Events::HostGroupMember>::table
-         << " (host_id, hostgroup_id) VALUES("
-         << hgm.host_id << ", "
-         << hostgroup_id << ")";
+  // Fetch host group ID.
+  std::ostringstream ss;
+  ss << "SELECT hostgroup_id FROM "
+     << mapped_type<events::host_group>::table
+     << " WHERE instance_id=" << hgm.instance_id
+     << " AND name=\"" << hgm.group << "\"";
+  QSqlQuery q(*_conn);
+  logging::info << logging::LOW << "executing query: "
+                << ss.str().c_str();
+  if (q.exec(ss.str().c_str()) && q.next()) {
+    // Fetch hostgroup ID.
+    int hostgroup_id(q.value(0).toInt());
+    logging::debug << logging::MEDIUM
+                   << "fetch hostgroup of id " << hostgroup_id;
+
+    // Insert hostgroup membership.
+    std::ostringstream oss;
+    oss << "INSERT INTO "
+        << mapped_type<events::host_group_member>::table
+        << " (host_id, hostgroup_id) VALUES("
+        << hgm.host_id << ", "
+        << hostgroup_id << ")";
+    logging::info << logging::LOW << "executing query: "
+                  << ss.str().c_str();
+    _conn->exec(ss.str().c_str());
+  }
+  else
+    logging::info << logging::HIGH
+                  << "discarding membership between host "
+                  << hgm.host_id << " and hostgroup ("
+                  << hgm.instance_id << ", " << hgm.group.c_str()
+                  << ")";
 
   return ;
 }
@@ -539,97 +592,124 @@ void destination::_process_host_group_member(Events::Event const& event) {
 /**
  *  Process a host parent event.
  *
- *  @param[in] event Uncasted host parent.
+ *  @param[in] e Uncasted host parent.
  */
-void destination::_process_host_parent(Events::Event const& event) {
-  Events::HostParent const& hp(
-    *static_cast<Events::HostParent const*>(&event));
-
+void destination::_process_host_parent(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host parent event";
+
+  // Processing.
+  events::host_parent const& hp(
+    *static_cast<events::host_parent const*>(&e));
   _insert(hp);
+
   return ;
 }
 
 /**
  *  Process a host status event.
  *
- *  @param[in] event Uncasted host status.
+ *  @param[in] e Uncasted host status.
  */
-void destination::_process_host_status(Events::Event const& event) {
-  Events::HostStatus const& hs(
-    *static_cast<Events::HostStatus const*>(&event));
-
+void destination::_process_host_status(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing host status event";
-  _host_status = hs;
-  _host_status_stmt->execute(true);
+
+  // Processing.
+  events::host_status const& hs(
+    *static_cast<events::host_status const*>(&e));
+  *_host_status_stmt << hs;
+  _host_status_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process an issue event.
  *
- *  @param[in] event Uncasted issue.
+ *  @param[in] e Uncasted issue.
  */
-void destination::_process_issue(Events::Event const& event) {
-  Events::Issue const& issue(
-    *static_cast<Events::Issue const*>(&event));
-
+void destination::_process_issue(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing issue event";
-  try {
-    _insert(issue);
+
+  // Processing.
+  events::issue const& i(*static_cast<events::issue const*>(&e));
+  if (!_insert(i)) {
+    *_issue_stmt << i;
+    _issue_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _issue = issue;
-    _issue_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process an issue parent event.
  *
- *  @param[in] event Uncasted issue parent.
+ *  @param[in] e Uncasted issue parent.
  */
-void destination::_process_issue_parent(Events::Event const& event) {
-  Events::IssueParent const& ip(
-    *static_cast<Events::IssueParent const*>(&event));
+void destination::_process_issue_parent(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing issue parent event";
+
+  // Fetch proper structure.
+  events::issue_parent const& ip(
+    *static_cast<events::issue_parent const*>(&e));
   int child_id;
   int parent_id;
-
-  logging::info << logging::MEDIUM << "processing issue parent event";
 
   // Get child ID.
   {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
-          << MappedType<Events::Issue>::table << " WHERE host_id="
+          << mapped_type<events::issue>::table << " WHERE host_id="
           << ip.child_host_id << " AND service_id="
           << ip.child_service_id << " AND start_time="
           << ip.child_start_time;
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    *_conn << query.str(), soci::into(child_id);
-    logging::debug << logging::LOW << "child issue ID: " << child_id;
+    QSqlQuery q(*_conn);
+    if (q.exec(query.str().c_str()) && q.next()) {
+      child_id = q.value(0).toInt();
+      logging::debug << logging::LOW << "child issue ID: " << child_id;
+    }
+    else
+      throw (exceptions::basic() << "could not fetch child issue ID ("
+                                 << "host=" << ip.child_host_id
+                                 << ", service=" << ip.child_service_id
+                                 << ", start=" << ip.child_start_time
+                                 << ")");
   }
 
   // Get parent ID.
   {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
-          << MappedType<Events::Issue>::table << " WHERE host_id="
+          << mapped_type<events::issue>::table << " WHERE host_id="
           << ip.parent_host_id << " AND service_id="
           << ip.parent_service_id << " AND start_time="
           << ip.parent_start_time;
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    *_conn << query.str(), soci::into(parent_id);
     logging::debug << logging::LOW << "parent issue ID: " << parent_id;
+    QSqlQuery q(*_conn);
+    if (q.exec(query.str().c_str()) && q.next()) {
+      parent_id = q.value(0).toInt();
+      logging::debug << logging::LOW << "parent issue ID: " << parent_id;
+    }
+    else
+      throw (exceptions::basic() << "could not fetch parent issue ID ("
+                                 << "host=" << ip.parent_host_id
+                                 << ", service=" << ip.parent_service_id
+                                 << ", start=" << ip.parent_start_time
+                                 << ")");
   }
 
+  // End of parenting.
   if (ip.end_time) {
     std::ostringstream query;
     query << "UPDATE "
-          << MappedType<Events::IssueParent>::table
+          << mapped_type<events::issue_parent>::table
           << " SET end_time="
           << ip.end_time << " WHERE child_id="
           << child_id << " AND parent_id="
@@ -637,19 +717,20 @@ void destination::_process_issue_parent(Events::Event const& event) {
           << ip.start_time;
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    *_conn << query.str();
+    _conn->exec(query.str().c_str());
   }
+  // New parenting.
   else {
     std::ostringstream query;
     query << "INSERT INTO "
-          << MappedType<Events::IssueParent>::table
+          << mapped_type<events::issue_parent>::table
           << " (child_id, parent_id, start_time) VALUES("
           << child_id << ", "
           << parent_id << ", "
           << ip.start_time << ")";
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    *_conn << query.str();
+    _conn->exec(query.str().c_str());
   }
 
   return ;
@@ -658,24 +739,45 @@ void destination::_process_issue_parent(Events::Event const& event) {
 /**
  *  Process a log event.
  *
- *  @param[in] event Uncasted log.
+ *  @param[in] e Uncasted log.
  */
-void destination::_process_log(Events::Event const& event)
-{
-  char const* field;
-  int issue;
-  Events::Log const& log(*static_cast<Events::Log const*>(&event));
-  std::string query;
-
+void destination::_process_log(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing log event";
-  field = "issue_id";
+
+  // Fetch proper structure.
+  events::log_entry const& le(
+    *static_cast<events::log_entry const*>(&e));
+
+  // Fetch issue ID (if any).
+  int issue;
+  if (le.issue_start_time) {
+    std::ostringstream ss;
+    ss << "SELECT issue_id FROM "
+       << mapped_type<events::issue>::table
+       << " WHERE host_id=" << le.host_id
+       << " AND service_id=" << le.service_id
+       << " AND start_time=" << le.issue_start_time;
+    logging::info << logging::LOW << "executing query: "
+                  << ss.str().c_str();
+    QSqlQuery q(*_conn);
+    if (q.exec(ss.str().c_str()) && q.next())
+      issue = q.value(0).toInt();
+    else
+      issue = 0;
+  }
+  else
+    issue = 0;
+
+  // Build insertion query.
+  char const* field("issue_id");
+  std::string query;
   query = "INSERT INTO ";
-  query.append(MappedType<Events::Log>::table);
+  query.append(mapped_type<events::log_entry>::table);
   query.append("(");
-  for (std::list<std::pair<std::string,
-                           GetterSetter<Events::Log> > >::const_iterator
-         it = DBMappedType<Events::Log>::list.begin(),
-         end = DBMappedType<Events::Log>::list.end();
+  for (std::list<std::pair<std::string, getter_setter<events::log_entry> > >::const_iterator
+         it = db_mapped_type<events::log_entry>::list.begin(),
+         end = db_mapped_type<events::log_entry>::list.end();
        it != end;
        ++it) {
     query.append(it->first);
@@ -683,10 +785,9 @@ void destination::_process_log(Events::Event const& event)
   }
   query.append(field);
   query.append(") VALUES(");
-  for (std::list<std::pair<std::string,
-                           GetterSetter<Events::Log> > >::const_iterator
-         it = DBMappedType<Events::Log>::list.begin(),
-         end = DBMappedType<Events::Log>::list.end();
+  for (std::list<std::pair<std::string, getter_setter<events::log_entry> > >::const_iterator
+         it = db_mapped_type<events::log_entry>::list.begin(),
+         end = db_mapped_type<events::log_entry>::list.end();
        it != end;
        ++it) {
     query.append(":");
@@ -696,26 +797,14 @@ void destination::_process_log(Events::Event const& event)
   query.append(":");
   query.append(field);
   query.append(")");
-  logging::info << logging::LOW << "executing query: " << query.c_str();
-
-  // Fetch issue ID (if any).
-  if (log.issue_start_time) {
-    std::ostringstream ss;
-    ss << "SELECT issue_id FROM "
-       << MappedType<Events::Issue>::table
-       << " WHERE host_id=" << log.host_id
-       << " AND service_id=" << log.service_id
-       << " AND start_time=" << log.issue_start_time;
-    logging::info << logging::LOW << "executing query: "
-                  << ss.str().c_str();
-    *_conn << ss.str(), soci::into(issue);
-  }
-  else
-    issue = 0;
 
   // Execute query.
   logging::info << logging::LOW << "executing query: " << query.c_str();
-  *_conn << query, soci::use(log), soci::use(issue, field);
+  QSqlQuery q(*_conn);
+  q.prepare(query.c_str());
+  q << le;
+  q.bindValue(field, issue);
+  q.exec();
 
   return ;
 }
@@ -723,165 +812,190 @@ void destination::_process_log(Events::Event const& event)
 /**
  *  Process a notification event.
  *
- *  @param[in] event Uncasted notification.
+ *  @param[in] e Uncasted notification.
  */
-void destination::_process_notification(Events::Event const& event) {
-  Events::notification const& notification(
-    *static_cast<Events::notification const*>(&event));
-
+void destination::_process_notification(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing notification event";
-  try {
-    _insert(notification);
+
+  // Processing.
+  events::notification const& n(
+    *static_cast<events::notification const*>(&e));
+  if (!_insert(n)) {
+    *_notification_stmt << n;
+    _notification_stmt->exec();
   }
-  catch (soci::soci_error const& se) {
-    _notification = notification;
-    _notification_stmt->execute(true);
-  }
+
   return ;
 }
 
 /**
  *  Process a program event.
  *
- *  @param[in] event Uncasted program.
+ *  @param[in] e Uncasted program.
  */
-void destination::_process_program(Events::Event const& event) {
-  Events::Program const& program(
-    *static_cast<Events::Program const*>(&event));
-
+void destination::_process_program(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing program event";
-  _clean_tables(program.instance_id);
-  if (!program.program_end) {
-    try {
-      _insert(program);
-    }
-    catch (soci::soci_error const& se) {
-      _program = program;
-      _program_stmt->execute(true);
+
+  // Clean tables.
+  events::program const& p(*static_cast<events::program const*>(&e));
+  _clean_tables(p.instance_id);
+
+  // Program start.
+  if (!p.program_end) {
+    if (!_insert(p)) {
+      *_program_stmt << p;
+      _program_stmt->exec();
     }
   }
+  // Program end.
   else {
-    _program = program;
-    _program_stmt->execute(true);
+    *_program_stmt << p;
+    _program_stmt->exec();
   }
+
   return ;
 }
 
 /**
  *  Process a program status event.
  *
- *  @param[in] event Uncasted program status.
+ *  @param[in] e Uncasted program status.
  */
-void destination::_process_program_status(Events::Event const& event) {
-  Events::ProgramStatus const& ps(
-    *static_cast<Events::ProgramStatus const*>(&event));
-
+void destination::_process_program_status(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing program status event";
-  _program_status = ps;
-  _program_status_stmt->execute(true);
+
+  // Processing.
+  events::program_status const& ps(
+    *static_cast<events::program_status const*>(&e));
+  *_program_status_stmt << ps;
+  _program_status_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process a service event.
  *
- *  @param[in] event Uncasted service.
+ *  @param[in] e Uncasted service.
  */
-void destination::_process_service(Events::Event const& event) {
-  Events::Service const& service(
-    *static_cast<Events::Service const*>(&event));
-
+void destination::_process_service(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing service event";
-  _service = service;
-  _service_stmt->execute(true);
-  long long matched = _service_stmt->get_affected_rows();
+
+  // Processing.
+  events::service const& s(*static_cast<events::service const*>(&e));
+  *_service_stmt << s;
+  _service_stmt->exec();
+  int matched = _service_stmt->numRowsAffected();
   if (!matched || (-1 == matched)) {
-    _service = service;
-    _service_insert_stmt->execute(true);
+    *_service_insert_stmt << s;
+    _service_insert_stmt->exec();
   }
+
   return ;
 }
 
 /**
  *  Process a service check event.
  *
- *  @param[in] event Uncasted service check.
+ *  @param[in] e Uncasted service check.
  */
-void destination::_process_service_check(Events::Event const& event) {
-  Events::ServiceCheck const& service_check(
-    *static_cast<Events::ServiceCheck const*>(&event));
-
+void destination::_process_service_check(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing service check event";
-  _service_check = service_check;
-  _service_check_stmt->execute(true);
+
+  // Processing.
+  events::service_check const& sc(
+    *static_cast<events::service_check const*>(&e));
+  *_service_check_stmt << sc;
+  _service_check_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process a service dependency event.
  *
- *  @param[in] event Uncasted service dependency.
+ *  @param[in] e Uncasted service dependency.
  */
-void destination::_process_service_dependency(Events::Event const& event) {
-  Events::ServiceDependency const& sd(
-    *static_cast<Events::ServiceDependency const*>(&event));
-
+void destination::_process_service_dependency(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing ServiceDependency event";
+
+  // Processing.
+  events::service_dependency const& sd(
+    *static_cast<events::service_dependency const*>(&e));
   _insert(sd);
+
   return ;
 }
 
 /**
  *  Process a service group event.
  *
- *  @param[in] event Uncasted service group.
+ *  @param[in] e Uncasted service group.
  */
-void destination::_process_service_group(Events::Event const& event) {
-  Events::ServiceGroup const& sg(
-    *static_cast<Events::ServiceGroup const*>(&event));
-
+void destination::_process_service_group(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing service group event";
+
+  // Processing.
+  events::service_group const& sg(
+    *static_cast<events::service_group const*>(&e));
   _insert(sg);
+
   return ;
 }
 
 /**
  *  Process a service group member event.
  *
- *  @param[in] event Uncasted service group member.
+ *  @param[in] e Uncasted service group member.
  */
-void destination::_process_service_group_member(Events::Event const& event) {
-  int servicegroup_id;
-  Events::ServiceGroupMember const& sgm(
-    *static_cast<Events::ServiceGroupMember const*>(&event));
-
+void destination::_process_service_group_member(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing service group member event";
 
-  // Fetch service group ID.
-  {
-    std::ostringstream ss;
-    ss << "SELECT servicegroup_id FROM "
-       << MappedType<Events::ServiceGroup>::table
-       << " WHERE instance_id=" << sgm.instance_id
-       << " AND name=\"" << sgm.group << "\"";
-    logging::info << logging::LOW << "executing query: "
-                  << ss.str().c_str();
-    *_conn << ss.str(), soci::into(servicegroup_id);
-  }
+  // Fetch proper structure.
+  events::service_group_member const& sgm(
+    *static_cast<events::service_group_member const*>(&e));
 
-  // Execute query.
-  {
-    std::ostringstream ss;
+  // Fetch service group ID.
+  std::ostringstream ss;
+  ss << "SELECT servicegroup_id FROM "
+     << mapped_type<events::service_group>::table
+     << " WHERE instance_id=" << sgm.instance_id
+     << " AND name=\"" << sgm.group << "\"";
+  QSqlQuery q(*_conn);
+  logging::info << logging::LOW << "executing query: "
+                << ss.str().c_str();
+  if (q.exec(ss.str().c_str()) && q.next()) {
+    // Fetch servicegroup ID.
+    int servicegroup_id(q.value(0).toInt());
+    logging::debug << logging::MEDIUM
+                   << "fetch servicegroup of id " << servicegroup_id;
+
+    // Insert servicegroup membership.
+    std::ostringstream oss;
     ss << "INSERT INTO "
-       << MappedType<Events::ServiceGroupMember>::table
+       << mapped_type<events::service_group_member>::table
        << " (host_id, service_id, servicegroup_id) VALUES("
        << sgm.host_id << ", "
        << sgm.service_id << ", "
        << servicegroup_id << ")";
     logging::info << logging::LOW << "executing query: "
                   << ss.str().c_str();
-    *_conn << ss.str();
+    _conn->exec(ss.str().c_str());
   }
+  else
+    logging::info << logging::HIGH
+                  << "discarding membership between service ("
+                  << sgm.host_id << ", " << sgm.service_id
+                  << ") and servicegroup (" << sgm.instance_id
+                  << ", " << sgm.group.c_str() << ")";
 
   return ;
 }
@@ -889,34 +1003,39 @@ void destination::_process_service_group_member(Events::Event const& event) {
 /**
  *  Process a service status event.
  *
- *  @param[in] event Uncasted service status.
+ *  @param[in] e Uncasted service status.
  */
-void destination::_process_service_status(Events::Event const& event) {
-  Events::ServiceStatus const& ss(
-    *static_cast<Events::ServiceStatus const*>(&event));
-
+void destination::_process_service_status(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing service status event";
-  _service_status = ss;
-  _service_status_stmt->execute(true);
+
+  // Processing.
+  events::service_status const& ss(
+    *static_cast<events::service_status const*>(&e));
+  *_service_status_stmt << ss;
+  _service_status_stmt->exec();
+
   return ;
 }
 
 /**
  *  Process a state event.
  *
- *  @param[in] event Uncasted state.
+ *  @param[in] e Uncasted state.
  */
-void destination::_process_state(Events::Event const& event) {
-  Events::state const& s(
-    *static_cast<Events::state const*>(&event));
-
+void destination::_process_state(events::event const& e) {
+  // Log message.
   logging::info << logging::MEDIUM << "processing state event";
+
+  // Processing.
+  events::state const& s(*static_cast<events::state const*>(&e));
   if (s.end_time) {
-    _state = s;
-    _state_stmt->execute(true);
+    *_state_stmt << s;
+    _state_stmt->exec();
   }
   else
     _insert(s);
+
   return ;
 }
 
@@ -942,14 +1061,13 @@ destination::destination() {
  *  Release all previously allocated ressources.
  */
 destination::~destination() {
-  Close();
+  this->close();
 }
 
 /**
  *  Close the event destination.
  */
-void destination::Close()
-{
+void destination::close() {
   _acknowledgement_stmt.reset();
   _comment_stmt.reset();
   _custom_variable_status_stmt.reset();
@@ -979,22 +1097,22 @@ void destination::Close()
  *  method. We will determine the true event type and process it
  *  accordingly.
  *
- *  @param[in] event Event that should be stored in the database.
+ *  @param[in] e Event that should be stored in the database.
  */
-void destination::Event(Events::Event* event) {
+void destination::event(events::event* e) {
   try {
-    (this->*this->processing_table[event->GetType()])(*event);
+    (this->*processing_table[e->get_type()])(*e);
   }
   catch (...) {
     // Event self deregistration.
-    event->RemoveReader();
+    e->remove_reader();
 
     // Rethrow the exception
     throw ;
   }
 
   // Event self deregistration.
-  event->RemoveReader();
+  e->remove_reader();
 
   return ;
 }
@@ -1015,47 +1133,41 @@ void destination::connect(destination::DB db_type,
                           std::string const& host,
                           std::string const& user,
                           std::string const& pass) {
-  // Connect to DB.
-  {
-    std::stringstream ss;
-
-    switch (db_type) {
+  // Set DB type.
+  switch (db_type) {
 #ifdef USE_MYSQL
-     case MYSQL:
-      ss << "dbname=" << db
-         << " host=" << host
-         << " user=" << user
-         << " password=" << pass;
-      _conn.reset(new soci::session(soci::mysql, ss.str()));
-      break ;
+   case MYSQL:
+    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QMYSQL")));
+    _conn->setConnectOptions("CLIENT_FOUND_ROWS");
+    break ;
 #endif /* USE_MYSQL */
 
 #ifdef USE_ORACLE
-     case ORACLE:
-      ss << "service=" << host
-         << " user=" << user
-         << " password=" << pass;
-      _conn.reset(new soci::session(soci::oracle, ss.str()));
-      break ;
+   case ORACLE:
+    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QOCI")));
+    break ;
 #endif /* USE_ORACLE */
 
 #ifdef USE_POSTGRESQL
-     case POSTGRESQL:
-      ss << "dbname=" << db
-         << " host=" << host
-         << " user=" << user
-         << " password=" << pass;
-      _conn.reset(new soci::session(soci::postgresql, ss.str()));
-      break ;
+   case POSTGRESQL:
+    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QPSQL")));
+    break ;
 #endif /* USE_POSTGRESQL */
 
-     default:
-       throw exceptions::basic() << "unsupported DBMS requested.";
-    }
+   default:
+    throw exceptions::basic() << "unsupported DBMS requested";
   }
 
-  _prepare_insert<Events::Service>(_service_insert_stmt, _service);
+  // Set common parameters.
+  _conn->setDatabaseName(db.c_str());
+  _conn->setHostName(host.c_str());
+  _conn->setUserName(user.c_str());
+  _conn->setPassword(pass.c_str());
 
+  // Prepare service query.
+  _prepare_insert<events::service>(_service_insert_stmt, _service);
+
+  // Prepare update queries.
   std::vector<std::string> id;
 
   id.clear();
@@ -1064,106 +1176,106 @@ void destination::connect(destination::DB db_type,
   id.push_back("host_name");
   id.push_back("instance_name");
   id.push_back("service_description");
-  _prepare_update<Events::Acknowledgement>(
+  _prepare_update<events::acknowledgement>(
     _acknowledgement_stmt, _acknowledgement, id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
-  _prepare_update<Events::comment>(
+  _prepare_update<events::comment>(
     _comment_stmt, _comment, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("name");
   id.push_back("service_id");
-  _prepare_update<Events::custom_variable_status>(
+  _prepare_update<events::custom_variable_status>(
     _custom_variable_status_stmt, _custom_variable_status, id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
-  _prepare_update<Events::Downtime>(
+  _prepare_update<events::downtime>(
     _downtime_stmt, _downtime, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<Events::event_handler>(
+  _prepare_update<events::event_handler>(
     _event_handler_stmt, _event_handler, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("event_time");
-  _prepare_update<Events::flapping_status>(
+  _prepare_update<events::flapping_status>(
     _flapping_status_stmt, _flapping_status, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<Events::Host>(
+  _prepare_update<events::host>(
     _host_stmt, _host, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<Events::HostCheck>(
+  _prepare_update<events::host_check>(
     _host_check_stmt, _host_check, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<Events::HostStatus>(
+  _prepare_update<events::host_status>(
     _host_status_stmt, _host_status, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<Events::Issue>(
+  _prepare_update<events::issue>(
     _issue_stmt, _issue, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<Events::notification>(
+  _prepare_update<events::notification>(
     _notification_stmt, _notification, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<Events::state>(
+  _prepare_update<events::state>(
     _state_stmt, _state, id);
 
   id.clear();
   id.push_back("instance_id");
-  _prepare_update<Events::Program>(
+  _prepare_update<events::program>(
     _program_stmt, _program, id);
 
   id.clear();
   id.push_back("instance_id");
-  _prepare_update<Events::ProgramStatus>(
+  _prepare_update<events::program_status>(
     _program_status_stmt, _program_status, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<Events::Service>(
+  _prepare_update<events::service>(
     _service_stmt, _service, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<Events::ServiceCheck>(
+  _prepare_update<events::service_check>(
     _service_check_stmt, _service_check, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<Events::ServiceStatus>(
+  _prepare_update<events::service_status>(
     _service_status_stmt, _service_status, id);
 
   return ;

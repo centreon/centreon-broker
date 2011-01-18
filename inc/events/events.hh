@@ -37,7 +37,7 @@
 # include "events/host_status.hh"
 # include "events/issue.hh"
 # include "events/issue_parent.hh"
-# include "events/log.hh"
+# include "events/log_entry.hh"
 # include "events/notification.hh"
 # include "events/program.hh"
 # include "events/program_status.hh"

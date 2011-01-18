@@ -1,21 +1,21 @@
 ##
-##  Copyright 2009-2010 MERETHIS
-##  This file is part of CentreonBroker.
+## Copyright 2009-2011 MERETHIS
+## This file is part of Centreon Broker.
 ##
-##  CentreonBroker is free software: you can redistribute it and/or modify it
-##  under the terms of the GNU General Public License as published by the Free
-##  Software Foundation, either version 2 of the License, or (at your option)
-##  any later version.
+## Centreon Broker is free software: you can redistribute it and/or
+## modify it under the terms of the GNU General Public License version 2
+## as published by the Free Software Foundation.
 ##
-##  CentreonBroker is distributed in the hope that it will be useful, but
-##  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-##  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-##  for more details.
+## Centreon Broker is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## General Public License for more details.
 ##
-##  You should have received a copy of the GNU General Public License along
-##  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+## You should have received a copy of the GNU General Public License
+## along with Centreon Broker. If not, see
+## <http://www.gnu.org/licenses/>.
 ##
-##  For more information : contact@centreon.com
+## For more information: contact@centreon.com
 ##
 
 # Global options.
@@ -47,39 +47,11 @@ set(XercesC_DIR .)
 find_package(XercesC REQUIRED)
 include_directories(${XERCESC_INCLUDE_DIR})
 
-# Find SOCI.
-set(SOCI_DIR .)
-find_package(SOCI REQUIRED)
-include_directories(${SOCI_INCLUDE_DIR})
+# Find QtSql module.
+find_package(Qt4 COMPONENTS QtCore QtSql REQUIRED)
+include(${QT_USE_FILE})
 
-# Check for MySQL.
-option(MySQL "MySQL support." ON)
-if (MySQL)
-  set(SOCIMySQL_DIR .)
-  find_package(SOCIMySQL REQUIRED)
-  include_directories(${SOCIMYSQL_INCLUDE_DIR})
-  add_definitions(-DUSE_MYSQL)
-endif ()
-
-# Check for Oracle
-option(Oracle "Oracle support." OFF)
-if (Oracle)
-  set(SOCIOracle_DIR .)
-  find_package(SOCIOracle REQUIRED)
-  include_directories(${SOCIORACLE_INCLUDE_DIR})
-  add_definitions(-DUSE_ORACLE)
-endif ()
-
-# Check for PostgreSQL
-option(PostgreSQL "PostgreSQL support." OFF)
-if (PostgreSQL)
-  set(SOCIPostgreSQL_DIR .)
-  find_package(SOCIPostgreSQL REQUIRED)
-  include_directories(${SOCIPOSTGRESQL_INCLUDE_DIR})
-  add_definitions(-DUSE_POSTGRESQL)
-endif ()
-
-# Check for GNU TLS
+# Check for GNU TLS.
 option(TLS "TLS support." ON)
 if (TLS)
   set(GNUTLS_DIR .)
@@ -90,75 +62,71 @@ endif ()
 
 # libroker library.
 set(LIBROKER_SOURCES
-	../src/concurrency/condition_variable.cpp
-	../src/concurrency/lock.cpp
-	../src/concurrency/mutex.cpp
-	../src/concurrency/thread.cpp
-	../src/concurrency/thread_listener.cpp
-	../src/events/acknowledgement.cpp
-	../src/events/check.cpp
+	../src/concurrency/condition_variable.cc
+	../src/concurrency/lock.cc
+	../src/concurrency/mutex.cc
+	../src/concurrency/thread.cc
+	../src/concurrency/thread_listener.cc
+	../src/events/acknowledgement.cc
+	../src/events/check.cc
 	../src/events/comment.cc
 	../src/events/custom_variable.cc
 	../src/events/custom_variable_status.cc
-	../src/events/dependency.cpp
-	../src/events/downtime.cpp
-	../src/events/event.cpp
+	../src/events/dependency.cc
+	../src/events/downtime.cc
+	../src/events/event.cc
 	../src/events/event_handler.cc
 	../src/events/flapping_status.cc
-	../src/events/group.cpp
-	../src/events/group_member.cpp
-	../src/events/host.cpp
-	../src/events/host_check.cpp
-	../src/events/host_dependency.cpp
-	../src/events/host_group.cpp
-	../src/events/host_group_member.cpp
-	../src/events/host_parent.cpp
-	../src/events/host_service.cpp
-	../src/events/host_service_status.cpp
-	../src/events/host_status.cpp
-	../src/events/issue.cpp
-	../src/events/issue_parent.cpp
-	../src/events/log.cpp
+	../src/events/group.cc
+	../src/events/group_member.cc
+	../src/events/host.cc
+	../src/events/host_check.cc
+	../src/events/host_dependency.cc
+	../src/events/host_group.cc
+	../src/events/host_group_member.cc
+	../src/events/host_parent.cc
+	../src/events/host_service.cc
+	../src/events/host_service_status.cc
+	../src/events/host_status.cc
+	../src/events/issue.cc
+	../src/events/issue_parent.cc
+	../src/events/log_entry.cc
 	../src/events/notification.cc
-	../src/events/program.cpp
-	../src/events/program_status.cpp
-	../src/events/service.cpp
-	../src/events/service_check.cpp
-	../src/events/service_dependency.cpp
-	../src/events/service_group.cpp
-	../src/events/service_group_member.cpp
-	../src/events/service_status.cpp
+	../src/events/program.cc
+	../src/events/program_status.cc
+	../src/events/service.cc
+	../src/events/service_check.cc
+	../src/events/service_dependency.cc
+	../src/events/service_group.cc
+	../src/events/service_group_member.cc
+	../src/events/service_status.cc
 	../src/events/state.cc
-	../src/events/status.cpp
-	../src/exception.cpp
+	../src/events/status.cc
 	../src/exceptions/basic.cc
+	../src/exceptions/retval.cc
 	../src/interface/db/destination.cc
-	../src/interface/db/internal.cpp
-	../src/interface/destination.cpp
-	../src/interface/ndo/base.cpp
-	../src/interface/ndo/destination.cpp
-	../src/interface/ndo/internal.cpp
-	../src/interface/ndo/source.cpp
-	../src/interface/ndo/sourcedestination.cpp
-	../src/interface/source.cpp
-	../src/interface/sourcedestination.cpp
-	../src/interface/xml/destination.cpp
-	../src/interface/xml/internal.cpp
-	../src/interface/xml/source.cpp
-	../src/interface/xml/tinystr.cpp
-	../src/interface/xml/tinyxml.cpp
-	../src/interface/xml/tinyxmlerror.cpp
-	../src/interface/xml/tinyxmlparser.cpp
-	../src/io/acceptor.cpp
-	../src/io/fd.cpp
-	../src/io/file.cpp
-	../src/io/net/ipv4.cpp
-	../src/io/net/ipv6.cpp
-	../src/io/net/socket.cpp
-	../src/io/net/unix.cpp
-	../src/io/split.cpp
-	../src/io/stream.cpp
-	../src/io/text.cpp
+	../src/interface/db/internal.cc
+	../src/interface/destination.cc
+	../src/interface/ndo/base.cc
+	../src/interface/ndo/destination.cc
+	../src/interface/ndo/internal.cc
+	../src/interface/ndo/source.cc
+	../src/interface/ndo/source_destination.cc
+	../src/interface/source.cc
+	../src/interface/source_destination.cc
+	../src/interface/xml/destination.cc
+	../src/interface/xml/internal.cc
+	../src/interface/xml/source.cc
+	../src/io/acceptor.cc
+	../src/io/fd.cc
+	../src/io/file.cc
+	../src/io/net/ipv4.cc
+	../src/io/net/ipv6.cc
+	../src/io/net/socket.cc
+	../src/io/net/unix.cc
+	../src/io/split.cc
+	../src/io/stream.cc
+	../src/io/text.cc
 	../src/logging/backend.cc
 	../src/logging/file.cc
 	../src/logging/logger.cc
@@ -167,60 +135,57 @@ set(LIBROKER_SOURCES
 	../src/logging/syslogger.cc
 	../src/logging/temp_logger.cc
 	../src/logging/void_logger.cc
-	../src/mapping.cpp
+	../src/mapping.cc
 	../src/misc/stringifier.cc
 )
 if (TLS)
   set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
-	../src/io/tls/acceptor.cpp
-	../src/io/tls/connector.cpp
-	../src/io/tls/internal.cpp
-	../src/io/tls/params.cpp
-	../src/io/tls/stream.cpp
+	../src/io/tls/acceptor.cc
+	../src/io/tls/connector.cc
+	../src/io/tls/internal.cc
+	../src/io/tls/params.cc
+	../src/io/tls/stream.cc
   )
 endif ()
 add_library(roker SHARED ${LIBROKER_SOURCES})
-target_link_libraries(roker ${SOCI_LIBRARIES})
-target_link_libraries(roker ${SOCIMYSQL_LIBRARIES})
-target_link_libraries(roker ${SOCIORACLE_LIBRARIES})
-target_link_libraries(roker ${SOCIPOSTGRESQL_LIBRARIES})
 target_link_libraries(roker ${GNUTLS_LIBRARIES})
+target_link_libraries(roker ${QT_LIBRARIES})
 target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
 set(COMMON_SOURCES
-        ../src/config/factory/interface.cc
+	../src/config/factory/interface.cc
 	../src/config/factory/logger.cc
 	../src/config/globals.cc
 	../src/config/handle.cc
 	../src/config/interface.cc
 	../src/config/logger.cc
 	../src/config/parser.cc
-	../src/correlation/correlator.cpp
-	../src/correlation/node.cpp
+	../src/correlation/correlator.cc
+	../src/correlation/node.cc
 	../src/correlation/parser.cc
-	../src/init.cpp
-	../src/multiplexing/internal.cpp
-	../src/multiplexing/publisher.cpp
-	../src/multiplexing/subscriber.cpp
-	../src/processing/failover_in.cpp
-	../src/processing/failover_out.cpp
-	../src/processing/feeder.cpp
-	../src/processing/listener.cpp
+	../src/init.cc
+	../src/multiplexing/internal.cc
+	../src/multiplexing/publisher.cc
+	../src/multiplexing/subscriber.cc
+	../src/processing/failover_in.cc
+	../src/processing/failover_out.cc
+	../src/processing/feeder.cc
+	../src/processing/listener.cc
 )
 
 # Standalone binary.
-add_executable(cbd ${COMMON_SOURCES} ../src/daemon/main.cpp)
+add_executable(cbd ${COMMON_SOURCES} ../src/daemon/main.cc)
 target_link_libraries(cbd roker)
 target_link_libraries(cbd ${XERCESC_LIBRARIES})
 
 # Module.
 add_library(cbmod SHARED
 	${COMMON_SOURCES}
-	../src/module/callbacks.cpp
-	../src/module/initial.cpp
-	../src/module/set_log_data.cpp
-	../src/module/main.cpp
+	../src/module/callbacks.cc
+	../src/module/initial.cc
+	../src/module/set_log_data.cc
+	../src/module/main.cc
 )
 target_link_libraries(cbmod roker)
 target_link_libraries(cbmod ${XERCESC_LIBRARIES})

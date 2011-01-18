@@ -1,48 +1,51 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef CONFIG_FACTORY_HH_
 # define CONFIG_FACTORY_HH_
 
-# include "config/interface.hh"
-# include "config/logger.hh"
-# include "interface/destination.h"
-# include "interface/source.h"
-# include "interface/sourcedestination.h"
-# include "io/acceptor.h"
-# include "logging/backend.hh"
+// Forward declarations.
+namespace                            config {
+  class                              interface;
+  class                              logger; }
+namespace                            interface {
+  class                              destination;
+  class                              source;
+  class                              source_destination; }
+namespace                            io {
+  class                              acceptor; }
+namespace                            logging {
+  class                              backend; }
 
-namespace                         config
-{
-  namespace                       factory
-  {
-    IO::Acceptor*                 build_acceptor(
-                                    config::interface const& conf);
-    Interface::Destination*       build_destination(
-                                    config::interface const& conf);
-    logging::backend*             build_logger(
-                                    config::logger const& conf);
-    Interface::Source*            build_source(
-                                    config::interface const& conf);
-    Interface::SourceDestination* build_sourcedestination(
-                                    config::interface const& conf);
+namespace                            config {
+  namespace                          factory {
+    io::acceptor*                    build_acceptor(
+                                       config::interface const& conf);
+    ::interface::destination*        build_destination(
+                                       config::interface const& conf);
+    logging::backend*                build_logger(
+                                       config::logger const& conf);
+    ::interface::source*             build_source(
+                                       config::interface const& conf);
+    ::interface::source_destination* build_sourcedestination(
+                                       config::interface const& conf);
   }
 }
 

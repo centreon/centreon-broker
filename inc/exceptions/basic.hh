@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,6 +22,7 @@
 # define EXCEPTIONS_BASIC_HH_
 
 # include <exception>
+# include <time.h>
 # include "misc/stringifier.hh"
 
 namespace                     exceptions {
@@ -46,6 +47,7 @@ namespace                     exceptions {
     basic&                    operator<<(int i) throw ();
     basic&                    operator<<(unsigned int i) throw ();
     basic&                    operator<<(char const* str) throw ();
+    basic&                    operator<<(time_t t) throw ();
     char const*               what() const throw ();
   };
 }

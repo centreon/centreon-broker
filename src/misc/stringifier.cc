@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include <stdio.h>
@@ -38,13 +38,9 @@ using namespace misc;
  *  @return Current instance.
  */
 template <typename T>
-stringifier& stringifier::_numeric_conversion(char const* format, T t)
-{
-  int length;
-  int retval;
-
-  length = max_len - _current;
-  retval = snprintf(_buffer + _current, length, format, t);
+stringifier& stringifier::_numeric_conversion(char const* format, T t) {
+  int length(max_len - _current);
+  int retval(snprintf(_buffer + _current, length, format, t));
   if (retval > 0)
     _current += ((retval > length) ? length : retval);
   _buffer[_current] = '\0';
@@ -60,8 +56,7 @@ stringifier& stringifier::_numeric_conversion(char const* format, T t)
 /**
  *  Default constructor.
  */
-stringifier::stringifier() throw ()
-{
+stringifier::stringifier() throw () {
   reset();
 }
 
@@ -70,8 +65,7 @@ stringifier::stringifier() throw ()
  *
  *  @param[in] s Object to build from.
  */
-stringifier::stringifier(stringifier const& s) throw ()
-{
+stringifier::stringifier(stringifier const& s) throw () {
   operator=(s);
 }
 
@@ -87,13 +81,11 @@ stringifier::~stringifier() {}
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator=(stringifier const& s)
-{
-  if (this != &s)
-    {
-      memcpy(_buffer, s._buffer, (s._current + 1) * sizeof(*_buffer));
-      _current = s._current;
-    }
+stringifier& stringifier::operator=(stringifier const& s) {
+  if (this != &s) {
+    memcpy(_buffer, s._buffer, (s._current + 1) * sizeof(*_buffer));
+    _current = s._current;
+  }
   return (*this);
 }
 
@@ -104,8 +96,7 @@ stringifier& stringifier::operator=(stringifier const& s)
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator<<(bool b) throw ()
-{
+stringifier& stringifier::operator<<(bool b) throw () {
   operator<<(b ? "true" : "false");
   return (*this);
 }
@@ -117,8 +108,7 @@ stringifier& stringifier::operator<<(bool b) throw ()
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator<<(double d) throw ()
-{
+stringifier& stringifier::operator<<(double d) throw () {
   return (_numeric_conversion("%lf", d));
 }
 
@@ -129,8 +119,7 @@ stringifier& stringifier::operator<<(double d) throw ()
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator<<(int i) throw ()
-{
+stringifier& stringifier::operator<<(int i) throw () {
   return (_numeric_conversion("%d", i));
 }
 
@@ -141,9 +130,20 @@ stringifier& stringifier::operator<<(int i) throw ()
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator<<(unsigned int i) throw ()
-{
+stringifier& stringifier::operator<<(unsigned int i) throw () {
   return (_numeric_conversion("%u", i));
+}
+
+/**
+ *  Append a timestamp to the internal buffer.
+ *
+ *  @param[in] t Timestamp to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(time_t t) throw () {
+  long l(t);
+  return (_numeric_conversion("%ld", l));
 }
 
 /**
@@ -153,8 +153,7 @@ stringifier& stringifier::operator<<(unsigned int i) throw ()
  *
  *  @return Current instance.
  */
-stringifier& stringifier::operator<<(char const* str) throw ()
-{
+stringifier& stringifier::operator<<(char const* str) throw () {
   size_t len;
   unsigned int remaining;
 
@@ -179,8 +178,7 @@ stringifier& stringifier::operator<<(char const* str) throw ()
 /**
  *  Reset internal buffer to the empty string.
  */
-void stringifier::reset() throw ()
-{
+void stringifier::reset() throw () {
   _current = 0;
   _buffer[_current] = '\0';
   return ;
