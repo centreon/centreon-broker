@@ -36,7 +36,6 @@
 # include "io/tls/connector.hh"
 #endif /* USE_TLS */
 
-using namespace config;
 using namespace interface;
 
 /**************************************
@@ -168,7 +167,7 @@ static io::stream* build_stream(config::interface const& i) {
  *
  *  @return An acceptor matching the configuration.
  */
-io::acceptor* factory::build_acceptor(config::interface const& i) {
+io::acceptor* config::factory::build_acceptor(config::interface const& i) {
   std::auto_ptr<io::acceptor> acceptor;
   switch (i.type) {
    case config::interface::ipv4_server:
@@ -219,7 +218,7 @@ io::acceptor* factory::build_acceptor(config::interface const& i) {
  *
  *  @return A destination matching the configuration.
  */
-::interface::destination* factory::build_destination(config::interface const& i) {
+interface::destination* config::factory::build_destination(config::interface const& i) {
   ::interface::destination* dest;
   switch (i.type) {
    case config::interface::file:
@@ -321,7 +320,7 @@ io::acceptor* factory::build_acceptor(config::interface const& i) {
  *
  *  @return A source matching the configuration.
  */
-::interface::source* factory::build_source(config::interface const& i) {
+interface::source* config::factory::build_source(config::interface const& i) {
   std::auto_ptr< ::interface::ndo::source> source;
   std::auto_ptr<io::stream> stream;
   stream.reset(build_stream(i));
@@ -337,7 +336,7 @@ io::acceptor* factory::build_acceptor(config::interface const& i) {
  *
  *  @return A source-destination matching the configuration.
  */
-::interface::source_destination* factory::build_sourcedestination(config::interface const& i) {
+interface::source_destination* config::factory::build_sourcedestination(config::interface const& i) {
   std::auto_ptr< ::interface::source_destination> sd;
   std::auto_ptr<io::stream> stream(build_stream(i));
   if (stream.get()) {
