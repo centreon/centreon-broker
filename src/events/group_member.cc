@@ -36,7 +36,7 @@ using namespace events;
  *
  *  @param[in] gm Object to copy.
  */
-void group_member::_internal_copy(group_member const& gm) {
+void events::group_member::_internal_copy(events::group_member const& gm) {
   group = gm.group;
   host_id = gm.host_id;
   instance_id = gm.instance_id;
@@ -52,21 +52,22 @@ void group_member::_internal_copy(group_member const& gm) {
 /**
  *  Default constructor.
  */
-group_member::group_member() : host_id(0), instance_id(0) {}
+events::group_member::group_member() : host_id(0), instance_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] gm Object to copy.
  */
-group_member::group_member(group_member const& gm) : event(gm) {
+events::group_member::group_member(events::group_member const& gm)
+  : event(gm) {
   _internal_copy(gm);
 }
 
 /**
  *  Destructor.
  */
-group_member::~group_member() {}
+events::group_member::~group_member() {}
 
 /**
  *  Assignement operator.
@@ -75,7 +76,7 @@ group_member::~group_member() {}
  *
  *  @return This object.
  */
-events::group_member& group_member::operator=(events::group_member const& gm) {
+events::group_member& events::group_member::operator=(events::group_member const& gm) {
   event::operator=(gm);
   _internal_copy(gm);
   return (*this);
