@@ -24,8 +24,7 @@
 # include "io/fd.hh"
 
 namespace     io {
-  namespace   net
-  {
+  namespace   net {
     /**
      *  @class socket socket.hh "io/net/socket.hh"
      *  @brief Socket file descriptor wrapper.

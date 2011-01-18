@@ -40,7 +40,7 @@ using namespace io::net;
  *
  *  @param[in] sockfd Open socket.
  */
-socket::socket(int sockfd) : fd(sockfd) {}
+io::net::socket::socket(int sockfd) : fd(sockfd) {}
 
 /**
  *  @brief Copy constructor.
@@ -52,7 +52,7 @@ socket::socket(int sockfd) : fd(sockfd) {}
  *
  *  @see io::fd::fd(io::fd const&)
  */
-socket::socket(socket const& sock) : fd(sock) {}
+io::net::socket::socket(io::net::socket const& sock) : fd(sock) {}
 
 /**
  *  @brief Destructor.
@@ -60,7 +60,7 @@ socket::socket(socket const& sock) : fd(sock) {}
  *  The destructor will shutdown the connection and close the socket
  *  file descriptor if it has not already been closed.
  */
-socket::~socket() {
+io::net::socket::~socket() {
   close();
 }
 
@@ -77,7 +77,7 @@ socket::~socket() {
  *
  *  @see io::fd::operator=(io::fd const&)
  */
-io::net::socket& socket::operator=(io::net::socket const& sock) {
+io::net::socket& io::net::socket::operator=(io::net::socket const& sock) {
   close();
   io::fd::operator=(sock);
   return (*this);
@@ -86,7 +86,7 @@ io::net::socket& socket::operator=(io::net::socket const& sock) {
 /**
  *  Shutdown the connection and close the file descriptor.
  */
-void socket::close() {
+void io::net::socket::close() {
   if (_fd >= 0) {
     shutdown(_fd, SHUT_RDWR);
     io::fd::close();
