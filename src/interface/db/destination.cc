@@ -1052,7 +1052,7 @@ void destination::_process_state(events::event const& e) {
  */
 destination::destination() {
   assert((sizeof(processing_table) / sizeof(*processing_table))
-         == Events::Event::EVENT_TYPES_NB);
+         == events::event::EVENT_TYPES_NB);
 }
 
 /**
