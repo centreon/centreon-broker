@@ -691,7 +691,6 @@ void destination::_process_issue_parent(events::event const& e) {
           << ip.parent_start_time;
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    logging::debug << logging::LOW << "parent issue ID: " << parent_id;
     QSqlQuery q(*_conn);
     if (q.exec(query.str().c_str()) && q.next()) {
       parent_id = q.value(0).toInt();

@@ -40,7 +40,9 @@ static void get_boolean(T const& t,
                         std::string const& name,
                         data_member<T> const& member,
                         QSqlQuery& q) {
-  q.bindValue(name.c_str(), QVariant(t.*(member.b)));
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*(member.b)));
   return ;
 }
 
