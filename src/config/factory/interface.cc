@@ -256,13 +256,13 @@ interface::destination* config::factory::build_destination(config::interface con
 #ifdef USE_MYSQL
    case config::interface::mysql:
     {
-      std::auto_ptr<::interface::db::destination> db(
+      std::auto_ptr< ::interface::db::destination> db(
         new ::interface::db::destination);
       db->connect(::interface::db::destination::MYSQL,
-                  i.db,
-                  i.host,
-                  i.user,
-                  i.password);
+        i.db,
+        i.host,
+        i.user,
+        i.password);
       dest = db.release();
     }
     break ;
@@ -270,13 +270,13 @@ interface::destination* config::factory::build_destination(config::interface con
 #ifdef USE_ORACLE
    case config::interface::oracle:
     {
-      std::auto_ptr<::interface::db::destination> db(
+      std::auto_ptr< ::interface::db::destination> db(
         new ::interface::db::destination);
-    db->connect(::interface::db::destination::ORACLE,
-                  i.db,
-                  i.host,
-                  i.user,
-                  i.password);
+      db->connect(::interface::db::destination::ORACLE,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
       dest = db.release();
     }
     break ;
@@ -284,13 +284,13 @@ interface::destination* config::factory::build_destination(config::interface con
 #ifdef USE_POSTGRESQL
    case config::interface::postgresql:
     {
-      std::auto_ptr<::interface::db::destination> db(
+      std::auto_ptr< ::interface::db::destination> db(
         new ::interface::db::destination);
       db->connect(::interface::db::destination::POSTGRESQL,
-                  i.db,
-                  i.host,
-                  i.user,
-                  i.password);
+        i.db,
+        i.host,
+        i.user,
+        i.password);
       dest = db.release();
     }
     break ;

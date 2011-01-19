@@ -18,9 +18,6 @@
 ** For more information: contact@centreon.com
 */
 
-#ifdef USE_MYSQL
-# include <mysql.h>
-#endif /* !USE_MYSQL */
 #include <xercesc/util/PlatformUtils.hpp>
 #include "exceptions/retval.hh"
 #include "init.hh"
@@ -52,12 +49,6 @@ void deinit() {
   io::tls::destroy();
 #endif /* USE_TLS */
 
-#ifdef USE_MYSQL
-  // Unload MySQL library.
-  logging::debug << logging::MEDIUM << "unloading MySQL library";
-  mysql_library_end();
-#endif /* USE_MYSQL */
-
   // Unload Xerces-C++ engine.
   logging::debug << logging::MEDIUM << "unloading Xerces-C++ library";
   xercesc::XMLPlatformUtils::Terminate();
@@ -73,13 +64,6 @@ void deinit() {
 void init() {
   // Initialize Xerces-C++ engine.
   xercesc::XMLPlatformUtils::Initialize();
-
-#ifdef USE_MYSQL
-  // Initialize MySQL library.
-  logging::debug << logging::MEDIUM << "initializing MySQL library";
-  if (mysql_library_init(0, NULL, NULL))
-    throw (exceptions::basic() << "MySQL library initialization failed");
-#endif /* USE_MYSQL */
 
 #ifdef USE_TLS
   // Initialize GNU TLS.

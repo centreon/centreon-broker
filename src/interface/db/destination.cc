@@ -1164,6 +1164,11 @@ void destination::connect(destination::DB db_type,
   _conn->setUserName(user.c_str());
   _conn->setPassword(pass.c_str());
 
+  // Open database.
+  if (!_conn->open())
+    throw (exceptions::basic() << "could not open db: "
+                               << _conn->lastError().text().toStdString().c_str());
+
   // Prepare service query.
   _prepare_insert<events::service>(_service_insert_stmt, _service);
 
