@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+<output>
+  <type>mysql</type>
+  <host>localhost</host>
+  <user>root</user>
+  <password>123456789</password>
+  <db>cb</db>
+</output>
+
+<logger>
+  <type>file</type>
+  <name>/tmp/my.log</name>
+  <level>42</level>
+</logger>
+<logger>
+  <type>file</type>
+  <name>/tmp/my2.log</name>
+  <level>42</level>
+</logger>
+</root>

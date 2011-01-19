@@ -1,0 +1,105 @@
+/**
+ *  @page build Building Centreon Broker
+ *
+ *  @section overview Overview
+ *
+ *  To build Centreon Broker, you will need the following external
+ *  dependencies :
+ *
+ *    - a C++ compiler (like @b gcc)
+ *    - @b QtSql for database support
+ *    - the <b>GNU TLS</b> library if you want TLS support
+ *
+ *  Centreon Broker is compatible only with Unix-like platforms (Linux,
+ *  FreeBSD, Solaris, ...). It can easily be built using @b CMake.
+ *
+ *
+ *  @section dependencies Dependencies
+ *
+ *  @subsection binary In binary form
+ *
+ *  Some OS provides binary versions of some dependencies required by
+ *  Centreon Broker. To install them, use the standard package
+ *  installation tool of your plateform (apt on Debian and Ubuntu, yum
+ *  on Fedora, CentOS, RedHat) and install the following packages :
+ *
+ *  <table>
+ *  <tr>
+ *    <td><b>Software</b></td><td><b>OS Version</b></td><td><b>Package Name</b></td>
+ *  </tr>
+ *  <tr>
+ *    <td rowspan="3">g++</td><td>Debian</td><td rowspan="2">g++</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Ubuntu</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Red Hat</td><td>gcc-c++</td>
+ *  </tr>
+ *  <tr>
+ *    <td rowspan="3">make</td><td>Debian</td><td rowspan="3">make</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Ubuntu</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Red Hat</td>
+ *  </tr>
+ *  <tr>
+ *    <td rowspan="2">QtSql</td><td>Debian</td><td rowspan="2">libqt4-sql</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Ubuntu</td>
+ *  </tr>
+ *  <tr>
+ *    <td rowspan="3">GNU TLS</td><td>Debian</td><td rowspan="2">libgnutls-dev</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Ubuntu</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Red Hat</td><td>gnutls-devel</td>
+ *  </tr>
+ *  </table>
+ *
+ *  @subsection source From sources
+ *
+ *  If your OS does not provide the required packages in a binary form,
+ *  here's a list of where to find informations on the packages build
+ *  process.
+ *
+ *  <table>
+ *  <tr>
+ *    <td><b>Software</b></td><td><b>How to build</b></td>
+ *  </tr>
+ *  <tr>
+ *    <td>GNU TLS</td><td>http://www.gnu.org/software/gnutls/devel.html</td>
+ *  </tr>
+ *  </table>
+ *
+ *
+ *  @section configuration Compilation configuration
+ *
+ *  At the root of the project directory you'll find a @p build
+ *  directory which holds build scripts.Generate the @p Makefile by
+ *  running the following command :
+ *
+ *  <code>cmake .</code>
+ *
+ *  CMake will check for all necessary dependencies and indicates if
+ *  they could not be found.
+ *
+ *  // XXX : available flags
+ *
+ *
+ *  @section compilation Compilation
+ *
+ *  Once properly configured, the compilation process is really simple.
+ *  Just run :
+ *
+ *  <code>make</code>
+ *
+ *  And wait until compilation completes. This process should build
+ *  three files <tt>libroker.so</tt>, <tt>libcbmod.so</tt> and
+ *  <tt>cbd</tt>.
+ */
