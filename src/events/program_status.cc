@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -42,6 +42,7 @@ void program_status::_internal_copy(program_status const& ps) {
   active_service_checks_enabled = ps.active_service_checks_enabled;
   check_hosts_freshness = ps.check_hosts_freshness;
   check_services_freshness = ps.check_services_freshness;
+  daemon_mode = ps.daemon_mode;
   global_host_event_handler = ps.global_host_event_handler;
   global_service_event_handler = ps.global_service_event_handler;
   instance_address = ps.instance_address;
@@ -75,6 +76,7 @@ program_status::program_status()
     active_service_checks_enabled(false),
     check_hosts_freshness(false),
     check_services_freshness(false),
+    daemon_mode(false),
     instance_id(0),
     last_alive(0),
     last_command_check(0),

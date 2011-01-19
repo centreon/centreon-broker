@@ -539,7 +539,6 @@ int callback_process(int callback_type, void *data) {
       // Fill output var.
       config::handle(gl_configuration_file);
       logging::log_on(gl_initial_logger, 0, logging::NONE);
-      // program->daemon_mode = XXX;
       program->instance_id = config::globals::instance;
       program->instance_name = config::globals::instance_name;
       program->is_running = true;
@@ -607,6 +606,7 @@ int callback_program_status(int callback_type, void* data) {
       = program_status_data->active_host_checks_enabled;
     program_status->active_service_checks_enabled
       = program_status_data->active_service_checks_enabled;
+    program_status->daemon_mode = program_status_data->daemon_mode;
     program_status->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     program_status->failure_prediction_enabled

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -42,6 +42,7 @@ namespace              events {
     bool               active_service_checks_enabled;
     bool               check_hosts_freshness;
     bool               check_services_freshness;
+    bool               daemon_mode;
     std::string        global_host_event_handler;
     std::string        global_service_event_handler;
     std::string        instance_address;

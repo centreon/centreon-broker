@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -38,7 +38,6 @@ using namespace events;
  *  @param[in] program Object to copy.
  */
 void program::_internal_copy(program const& p) {
-  daemon_mode = p.daemon_mode;
   instance_id = p.instance_id;
   instance_name = p.instance_name;
   is_running = p.is_running;
@@ -60,8 +59,7 @@ void program::_internal_copy(program const& p) {
  *  Initialize members to 0, NULL or equivalent.
  */
 program::program()
-  : daemon_mode(false),
-    instance_id(0),
+  : instance_id(0),
     is_running(false),
     pid(0),
     program_end(0),

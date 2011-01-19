@@ -1185,10 +1185,6 @@ static mapped_data<notification> const notification_mapping[] = {
 // program members mapping.
 static mapped_data<program> const program_mapping[] = {
   mapped_data<program>(
-    &program::daemon_mode,
-    NDO_DATA_DAEMONMODE,
-    "daemon_mode"),
-  mapped_data<program>(
     &program::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id"),
@@ -1233,6 +1229,10 @@ static mapped_data<program_status> const program_status_mapping[] = {
     &program_status::check_services_freshness,
     NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
     "check_services_freshness"),
+  mapped_data<program_status>(
+    &program_status::daemon_mode,
+    NDO_DATA_DAEMONMODE,
+    "daemon_mode"),
   mapped_data<program_status>(
     &program_status::event_handler_enabled,
     NDO_DATA_EVENTHANDLERENABLED,

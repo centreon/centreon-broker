@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -39,7 +39,6 @@ namespace       events
     void        _internal_copy(program const& p);
 
    public:
-    bool        daemon_mode;
     int         instance_id;
     std::string instance_name;
     bool        is_running;
