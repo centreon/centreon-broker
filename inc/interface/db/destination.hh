@@ -46,40 +46,23 @@ namespace          interface {
 
      private:
       static void                    (destination::* processing_table[])(events::event const&);
-      events::acknowledgement        _acknowledgement;
       std::auto_ptr<QSqlQuery>       _acknowledgement_stmt;
-      events::comment                _comment;
       std::auto_ptr<QSqlQuery>       _comment_stmt;
-      events::custom_variable_status _custom_variable_status;
       std::auto_ptr<QSqlQuery>       _custom_variable_status_stmt;
-      events::downtime               _downtime;
       std::auto_ptr<QSqlQuery>       _downtime_stmt;
-      events::event_handler          _event_handler;
       std::auto_ptr<QSqlQuery>       _event_handler_stmt;
-      events::flapping_status        _flapping_status;
       std::auto_ptr<QSqlQuery>       _flapping_status_stmt;
-      events::host                   _host;
       std::auto_ptr<QSqlQuery>       _host_stmt;
-      events::host_check             _host_check;
       std::auto_ptr<QSqlQuery>       _host_check_stmt;
-      events::host_status            _host_status;
       std::auto_ptr<QSqlQuery>       _host_status_stmt;
-      events::issue                  _issue;
       std::auto_ptr<QSqlQuery>       _issue_stmt;
-      events::notification           _notification;
       std::auto_ptr<QSqlQuery>       _notification_stmt;
-      events::program                _program;
       std::auto_ptr<QSqlQuery>       _program_stmt;
-      events::program_status         _program_status;
       std::auto_ptr<QSqlQuery>       _program_status_stmt;
-      events::service                _service;
       std::auto_ptr<QSqlQuery>       _service_insert_stmt;
       std::auto_ptr<QSqlQuery>       _service_stmt;
-      events::service_check          _service_check;
       std::auto_ptr<QSqlQuery>       _service_check_stmt;
-      events::service_status         _service_status;
       std::auto_ptr<QSqlQuery>       _service_status_stmt;
-      events::state                  _state;
       std::auto_ptr<QSqlQuery>       _state_stmt;
       std::auto_ptr<QSqlDatabase>    _conn; // Connection object is necessary after statements.
                    destination(destination const& dest);
@@ -88,11 +71,9 @@ namespace          interface {
       template     <typename T>
       bool         _insert(T const& t);
       template     <typename T>
-      bool         _prepare_insert(std::auto_ptr<QSqlQuery>& st,
-                     T& t);
+      bool         _prepare_insert(std::auto_ptr<QSqlQuery>& st);
       template     <typename T>
       bool         _prepare_update(std::auto_ptr<QSqlQuery>& st,
-                     T& t,
                      std::vector<std::string> const& id);
       void         _process_acknowledgement(events::event const& e);
       void         _process_comment(events::event const& e);

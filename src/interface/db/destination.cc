@@ -250,8 +250,7 @@ bool destination::_insert(T const& t) {
  *  @param[in]  t  Object that will be bound to the statement.
  */
 template <typename T>
-bool destination::_prepare_insert(std::auto_ptr<QSqlQuery>& st,
-                                  T& t) {
+bool destination::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
@@ -295,7 +294,6 @@ bool destination::_prepare_insert(std::auto_ptr<QSqlQuery>& st,
  */
 template <typename T>
 bool destination::_prepare_update(std::auto_ptr<QSqlQuery>& st,
-                                  T& t,
                                   std::vector<std::string> const& id) {
   // Build query string.
   std::string query;
@@ -1169,7 +1167,7 @@ void destination::connect(destination::DB db_type,
                                << _conn->lastError().text().toStdString().c_str());
 
   // Prepare service query.
-  _prepare_insert<events::service>(_service_insert_stmt, _service);
+  _prepare_insert<events::service>(_service_insert_stmt);
 
   // Prepare update queries.
   std::vector<std::string> id;
@@ -1180,107 +1178,91 @@ void destination::connect(destination::DB db_type,
   id.push_back("host_name");
   id.push_back("instance_name");
   id.push_back("service_description");
-  _prepare_update<events::acknowledgement>(
-    _acknowledgement_stmt, _acknowledgement, id);
+  _prepare_update<events::acknowledgement>(_acknowledgement_stmt, id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
-  _prepare_update<events::comment>(
-    _comment_stmt, _comment, id);
+  _prepare_update<events::comment>(_comment_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("name");
   id.push_back("service_id");
-  _prepare_update<events::custom_variable_status>(
-    _custom_variable_status_stmt, _custom_variable_status, id);
+  _prepare_update<events::custom_variable_status>(_custom_variable_status_stmt,
+    id);
 
   id.clear();
   id.push_back("entry_time");
   id.push_back("instance_name");
   id.push_back("internal_id");
-  _prepare_update<events::downtime>(
-    _downtime_stmt, _downtime, id);
+  _prepare_update<events::downtime>(_downtime_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<events::event_handler>(
-    _event_handler_stmt, _event_handler, id);
+  _prepare_update<events::event_handler>(_event_handler_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("event_time");
-  _prepare_update<events::flapping_status>(
-    _flapping_status_stmt, _flapping_status, id);
+  _prepare_update<events::flapping_status>(_flapping_status_stmt, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<events::host>(
-    _host_stmt, _host, id);
+  _prepare_update<events::host>(_host_stmt, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<events::host_check>(
-    _host_check_stmt, _host_check, id);
+  _prepare_update<events::host_check>(_host_check_stmt, id);
 
   id.clear();
   id.push_back("host_id");
-  _prepare_update<events::host_status>(
-    _host_status_stmt, _host_status, id);
+  _prepare_update<events::host_status>(_host_status_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<events::issue>(
-    _issue_stmt, _issue, id);
+  _prepare_update<events::issue>(_issue_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<events::notification>(
-    _notification_stmt, _notification, id);
+  _prepare_update<events::notification>(_notification_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
-  _prepare_update<events::state>(
-    _state_stmt, _state, id);
+  _prepare_update<events::state>(_state_stmt, id);
 
   id.clear();
   id.push_back("instance_id");
-  _prepare_update<events::program>(
-    _program_stmt, _program, id);
+  _prepare_update<events::program>(_program_stmt, id);
 
   id.clear();
   id.push_back("instance_id");
-  _prepare_update<events::program_status>(
-    _program_status_stmt, _program_status, id);
+  _prepare_update<events::program_status>(_program_status_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<events::service>(
-    _service_stmt, _service, id);
+  _prepare_update<events::service>(_service_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<events::service_check>(
-    _service_check_stmt, _service_check, id);
+  _prepare_update<events::service_check>(_service_check_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  _prepare_update<events::service_status>(
-    _service_status_stmt, _service_status, id);
+  _prepare_update<events::service_status>(_service_status_stmt, id);
 
   return ;
 }
