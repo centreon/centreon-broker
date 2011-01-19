@@ -54,7 +54,9 @@ static void get_double(T const& t,
                        std::string const& name,
                        data_member<T> const& member,
                        QSqlQuery& q) {
-  q.bindValue(name.c_str(), QVariant(t.*(member.d)));
+  std::string field (":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*(member.d)));
   return ;
 }
 
@@ -66,7 +68,9 @@ static void get_integer(T const& t,
                         std::string const& name,
                         data_member<T> const& member,
                         QSqlQuery& q) {
-  q.bindValue(name.c_str(), QVariant(t.*(member.i)));
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*(member.i)));
   return ;
 }
 
@@ -78,7 +82,9 @@ static void get_short(T const& t,
                       std::string const& name,
                       data_member<T> const& member,
                       QSqlQuery& q) {
-  q.bindValue(name.c_str(), QVariant(t.*(member.s)));
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*(member.s)));
   return ;
 }
 
@@ -90,7 +96,9 @@ static void get_string(T const& t,
                        std::string const& name,
                        data_member<T> const& member,
                        QSqlQuery& q) {
-  q.bindValue(name.c_str(), QVariant((t.*(member.S)).c_str()));
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant((t.*(member.S)).c_str()));
   return ;
 }
 
@@ -102,12 +110,12 @@ static void get_timet(T const& t,
                       std::string const& name,
                       data_member<T> const& member,
                       QSqlQuery& q) {
-  q.bindValue(name.c_str(), (int)(t.*(member.t)));
+  get_integer(t, name, member, q);
   return ;
 }
 
 /**
- *  Static initialization template used by Initialize().
+ *  Static initialization template used by initialize().
  */
 template <typename T>
 static void static_init() {
