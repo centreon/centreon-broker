@@ -245,176 +245,6 @@ CREATE TABLE hosts_hosts_parents (
 
 
 --
--- Event handlers.
---
-CREATE TABLE eventhandlers (
-  eventhandler_id serial,
-  host_id int default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-
-  command_args varchar(255) default NULL,
-  command_line varchar(255) default NULL,
-  early_timeout smallint default NULL,
-  end_time int default NULL,
-  execution_time double precision default NULL,
-  output varchar(255) default NULL,
-  return_code smallint default NULL,
-  state smallint default NULL,
-  state_type smallint default NULL,
-  timeout smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (eventhandler_id),
-  UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Correlated issues.
---
-CREATE TABLE issues (
-  issue_id serial,
-  host_id int default NULL,
-  service_id int default NULL,
-  start_time int NOT NULL,
-
-  ack_time int default NULL,
-  end_time int default NULL,
-
-  PRIMARY KEY (issue_id),
-  UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Issues parenting.
---
-CREATE TABLE issues_issues_parents (
-  child_id int NOT NULL,
-  end_time int default NULL,
-  start_time int NOT NULL,
-  parent_id int NOT NULL,
-
-  FOREIGN KEY (child_id) REFERENCES issues (issue_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Nagios logs.
---
-CREATE TABLE logs (
-  log_id serial,
-
-  ctime int default NULL,
-  host_id int default NULL,
-  host_name varchar(255) default NULL,
-  instance_name varchar(255) NOT NULL,
-  issue_id default NULL,
-  msg_type smallint default NULL,
-  notification_cmd varchar(255) default NULL,
-  notification_contact varchar(255) default NULL,
-  output text default NULL,
-  retry int default NULL,
-  service_description varchar(255) default NULL,
-  service_id int default NULL,
-  status smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (log_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE SET NULL
-);
-
-
---
--- Downtimes.
---
-CREATE TABLE downtimes (
-  downtime_id serial,
-  entry_time int default NULL,
-  instance_name varchar(255) NOT NULL,
-  internal_id int default NULL,
-
-  author varchar(64) default NULL,
-  cancelled boolean default NULL,
-  comment text default NULL,
-  duration int default NULL,
-  end_time int default NULL,
-  fixed boolean default NULL,
-  host_name varchar(255) NOT NULL,
-  service_description varchar(255) default NULL,
-  start_time int default NULL,
-  started boolean default NULL,
-  triggered_by int default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (downtime_id),
-  UNIQUE (entry_time, instance_name, internal_id)
-);
-
-
---
--- Historization of flapping statuses.
---
-CREATE TABLE flappingstatuses (
-  flappingstatus_id serial,
-  host_id int default NULL,
-  service_id int default NULL,
-  event_time int default NULL,
-
-  comment_time int default NULL,
-  event_type smallint default NULL,
-  high_threshold double precision default NULL,
-  internal_comment_id int default NULL,
-  low_threshold double precision default NULL,
-  percent_state_change double precision default NULL,
-  reason_type smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (flappingstatus_id),
-  UNIQUE (host_id, service_id, event_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-
---
---  Notifications.
---
-CREATE TABLE notifications (
-  notification_id serial,
-  host_id int default NULL,
-  service_id int default NULL,
-  start_time int default NULL,
-
-  ack_author varchar(255) default NULL,
-  ack_data text default NULL,
-  command_name varchar(255) default NULL,
-  contact_name varchar(255) default NULL,
-  contacts_notified boolean default NULL,
-  end_time int default NULL,
-  escalated boolean default NULL,
-  output text default NULL,
-  reason_type int default NULL,
-  state int default NULL,
-  type int default NULL,
-
-  PRIMARY KEY (notification_id),
-  UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
-
-
---
 -- Monitored services.
 --
 CREATE TABLE services (
@@ -638,6 +468,176 @@ CREATE TABLE customvariables (
 
   PRIMARY KEY (customvariable_id),
   UNIQUE (host_id, name, service_id)
+);
+
+
+--
+-- Downtimes.
+--
+CREATE TABLE downtimes (
+  downtime_id serial,
+  entry_time int default NULL,
+  instance_name varchar(255) NOT NULL,
+  internal_id int default NULL,
+
+  author varchar(64) default NULL,
+  cancelled boolean default NULL,
+  comment text default NULL,
+  duration int default NULL,
+  end_time int default NULL,
+  fixed boolean default NULL,
+  host_name varchar(255) NOT NULL,
+  service_description varchar(255) default NULL,
+  start_time int default NULL,
+  started boolean default NULL,
+  triggered_by int default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (downtime_id),
+  UNIQUE (entry_time, instance_name, internal_id)
+);
+
+
+--
+-- Event handlers.
+--
+CREATE TABLE eventhandlers (
+  eventhandler_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+
+  command_args varchar(255) default NULL,
+  command_line varchar(255) default NULL,
+  early_timeout smallint default NULL,
+  end_time int default NULL,
+  execution_time double precision default NULL,
+  output varchar(255) default NULL,
+  return_code smallint default NULL,
+  state smallint default NULL,
+  state_type smallint default NULL,
+  timeout smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (eventhandler_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
+-- Historization of flapping statuses.
+--
+CREATE TABLE flappingstatuses (
+  flappingstatus_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  event_time int default NULL,
+
+  comment_time int default NULL,
+  event_type smallint default NULL,
+  high_threshold double precision default NULL,
+  internal_comment_id int default NULL,
+  low_threshold double precision default NULL,
+  percent_state_change double precision default NULL,
+  reason_type smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (flappingstatus_id),
+  UNIQUE (host_id, service_id, event_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
+-- Correlated issues.
+--
+CREATE TABLE issues (
+  issue_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int NOT NULL,
+
+  ack_time int default NULL,
+  end_time int default NULL,
+
+  PRIMARY KEY (issue_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
+-- Issues parenting.
+--
+CREATE TABLE issues_issues_parents (
+  child_id int NOT NULL,
+  end_time int default NULL,
+  start_time int NOT NULL,
+  parent_id int NOT NULL,
+
+  FOREIGN KEY (child_id) REFERENCES issues (issue_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
+    ON DELETE CASCADE
+);
+
+
+--
+-- Nagios logs.
+--
+CREATE TABLE logs (
+  log_id serial,
+
+  ctime int default NULL,
+  host_id int default NULL,
+  host_name varchar(255) default NULL,
+  instance_name varchar(255) NOT NULL,
+  issue_id default NULL,
+  msg_type smallint default NULL,
+  notification_cmd varchar(255) default NULL,
+  notification_contact varchar(255) default NULL,
+  output text default NULL,
+  retry int default NULL,
+  service_description varchar(255) default NULL,
+  service_id int default NULL,
+  status smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (log_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE SET NULL
+);
+
+
+--
+--  Notifications.
+--
+CREATE TABLE notifications (
+  notification_id serial,
+  host_id int default NULL,
+  service_id int default NULL,
+  start_time int default NULL,
+
+  ack_author varchar(255) default NULL,
+  ack_data text default NULL,
+  command_name varchar(255) default NULL,
+  contact_name varchar(255) default NULL,
+  contacts_notified boolean default NULL,
+  end_time int default NULL,
+  escalated boolean default NULL,
+  output text default NULL,
+  reason_type int default NULL,
+  state int default NULL,
+  type int default NULL,
+
+  PRIMARY KEY (notification_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
 
 
