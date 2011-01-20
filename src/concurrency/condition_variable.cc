@@ -27,7 +27,7 @@
 #include <time.h>
 #include "concurrency/condition_variable.hh"
 #include "concurrency/mutex.hh"
-#include "exceptions/retval.hh"
+#include "exceptions/concurrency.hh"
 
 using namespace concurrency;
 
@@ -80,7 +80,8 @@ condition_variable& condition_variable::operator=(condition_variable const& cv) 
 condition_variable::condition_variable() {
   int ret(pthread_cond_init(&_cv, NULL));
   if (ret)
-    throw (exceptions::retval(ret) << "cvar ctor: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "cvar ctor: "
+                                        << strerror(ret));
 }
 
 /**
@@ -104,7 +105,8 @@ condition_variable::~condition_variable() {
 void condition_variable::sleep(mutex& m) {
   int ret(pthread_cond_wait(&_cv, &m._mutex));
   if (ret)
-    throw (exceptions::retval(ret) << "cvar::sleep: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "cvar::sleep: "
+                                        << strerror(ret));
   return ;
 }
 
@@ -133,7 +135,8 @@ bool condition_variable::sleep(mutex& m, time_t deadline) {
   // Call pthread function.
   int ret(pthread_cond_timedwait(&_cv, &m._mutex, &ts));
   if (ret && (ret != ETIMEDOUT))
-    throw (exceptions::retval(ret) << "cvar::sleep: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "cvar::sleep: "
+                                        << strerror(ret));
   return (ETIMEDOUT == ret);
 }
 
@@ -143,7 +146,8 @@ bool condition_variable::sleep(mutex& m, time_t deadline) {
 void condition_variable::wake() {
   int ret(pthread_cond_signal(&_cv));
   if (ret)
-    throw (exceptions::retval(ret) << "cvar::wake: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "cvar::wake: "
+                                        << strerror(ret));
   return ;
 }
 
@@ -153,7 +157,7 @@ void condition_variable::wake() {
 void condition_variable::wake_all() {
   int ret(pthread_cond_broadcast(&_cv));
   if (ret)
-    throw (exceptions::retval(ret) << "cvar::wake_all: "
-                                   << strerror(ret));
+    throw (exceptions::concurrency(ret) << "cvar::wake_all: "
+                                        << strerror(ret));
   return ;
 }

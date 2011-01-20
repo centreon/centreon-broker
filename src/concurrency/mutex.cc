@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "concurrency/mutex.hh"
-#include "exceptions/retval.hh"
+#include "exceptions/concurrency.hh"
 
 using namespace concurrency;
 
@@ -78,7 +78,8 @@ mutex& mutex::operator=(mutex const& m) {
 mutex::mutex() {
   int ret(pthread_mutex_init(&_mutex, NULL));
   if (ret)
-    throw (exceptions::retval(ret) << "mutex ctor: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "mutex ctor: "
+                                        << strerror(ret));
   return ;
 }
 
@@ -102,7 +103,8 @@ mutex::~mutex() {
 void mutex::lock() {
   int ret(pthread_mutex_lock(&_mutex));
   if (ret)
-    throw (exceptions::retval(ret) << "mutex::lock: " << strerror(ret));
+    throw (exceptions::concurrency(ret) << "mutex::lock: "
+                                        << strerror(ret));
   return ;
 }
 
@@ -118,8 +120,8 @@ void mutex::lock() {
 bool mutex::try_lock() {
   int ret(pthread_mutex_trylock(&_mutex));
   if (ret && ret != EBUSY) // EBUSY if mutex is already locked.
-    throw (exceptions::retval(ret) << "mutex::try_lock: "
-                                   << strerror(ret));
+    throw (exceptions::concurrency(ret) << "mutex::try_lock: "
+                                        << strerror(ret));
   return (ret != EBUSY);
 }
 
@@ -133,7 +135,7 @@ bool mutex::try_lock() {
 void mutex::unlock() {
   int ret(pthread_mutex_unlock(&_mutex));
   if (ret)
-    throw (exceptions::retval(ret) << "mutex::unlock: "
-                                   << strerror(ret));
+    throw (exceptions::concurrency(ret) << "mutex::unlock: "
+                                        << strerror(ret));
   return ;
 }

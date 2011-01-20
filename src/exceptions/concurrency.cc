@@ -18,7 +18,9 @@
 ** For more information: contact@centreon.com
 */
 
-#include "exceptions/retval.hh"
+#include <pthread.h>
+#include <stdio.h>
+#include "exceptions/concurrency.hh"
 
 using namespace exceptions;
 
@@ -31,30 +33,37 @@ using namespace exceptions;
 /**
  *  Default constructor.
  */
-retval::retval(int r) throw () : _retval(r) {}
+concurrency::concurrency(int r, pthread_t id)
+  : retval(r), _thread_id(id) {
+  char buff[64];
+  if (snprintf(buff, sizeof(buff), "[%lx] ", (unsigned long)_thread_id)
+      > 0)
+    operator<<(buff);
+}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] r Object to copy.
+ *  @param[in] c Object to copy.
  */
-retval::retval(retval const& r) throw () : basic(r) {}
+concurrency::concurrency(concurrency const& c) throw ()
+  : retval(c), _thread_id(c._thread_id) {}
 
 /**
  *  Destructor.
  */
-retval::~retval() throw () {}
+concurrency::~concurrency() throw () {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] r Object to copy from.
+ *  @param[in] c Object to copy.
  *
- *  @return This instance.
+ *  @return This object.
  */
-retval& retval::operator=(retval const& r) throw () {
-  basic::operator=(r);
-  _retval = r._retval;
+concurrency& concurrency::operator=(concurrency const& c) throw () {
+  retval::operator=(c);
+  _thread_id = c._thread_id;
   return (*this);
 }
 
@@ -65,8 +74,8 @@ retval& retval::operator=(retval const& r) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(bool b) throw () {
-  basic::operator<<(b);
+concurrency& concurrency::operator<<(bool b) throw () {
+  retval::operator<<(b);
   return (*this);
 }
 
@@ -77,8 +86,8 @@ retval& retval::operator<<(bool b) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(double d) throw () {
-  basic::operator<<(d);
+concurrency& concurrency::operator<<(double d) throw () {
+  retval::operator<<(d);
   return (*this);
 }
 
@@ -89,8 +98,8 @@ retval& retval::operator<<(double d) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(int i) throw () {
-  basic::operator<<(i);
+concurrency& concurrency::operator<<(int i) throw () {
+  retval::operator<<(i);
   return (*this);
 }
 
@@ -101,8 +110,8 @@ retval& retval::operator<<(int i) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(unsigned int i) throw () {
-  basic::operator<<(i);
+concurrency& concurrency::operator<<(unsigned int i) throw () {
+  retval::operator<<(i);
   return (*this);
 }
 
@@ -113,8 +122,8 @@ retval& retval::operator<<(unsigned int i) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(char const* str) throw () {
-  basic::operator<<(str);
+concurrency& concurrency::operator<<(char const* str) throw () {
+  retval::operator<<(str);
   return (*this);
 }
 
@@ -125,26 +134,16 @@ retval& retval::operator<<(char const* str) throw () {
  *
  *  @return This instance.
  */
-retval& retval::operator<<(time_t t) throw () {
-  basic::operator<<(t);
+concurrency& concurrency::operator<<(time_t t) throw () {
+  retval::operator<<(t);
   return (*this);
 }
 
 /**
- *  Get the return value.
+ *  Get the thread ID associated with this exception.
  *
- *  @return Return value.
+ *  @return Thread ID.
  */
-int retval::get_retval() const throw () {
-  return (_retval);
-}
-
-/**
- *  Set the return value.
- *
- *  @param[in] r New return value.
- */
-void retval::set_retval(int r) throw () {
-  _retval = r;
-  return ;
+pthread_t concurrency::get_thread_id() const throw () {
+  return (_thread_id);
 }

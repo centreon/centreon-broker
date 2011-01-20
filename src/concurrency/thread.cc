@@ -25,7 +25,7 @@
 #include <string.h>
 #include "concurrency/thread.hh"
 #include "concurrency/thread_listener.hh"
-#include "exceptions/retval.hh"
+#include "exceptions/concurrency.hh"
 
 using namespace concurrency;
 
@@ -173,12 +173,13 @@ void thread::detach() {
   if (_joinable) {
     int ret(pthread_detach(_thread));
     if (ret)
-      throw (exceptions::retval(ret) << "could not detach thread: "
-                                     << strerror(ret));
+      throw (exceptions::concurrency(ret) << "could not detach thread: "
+                                          << strerror(ret));
     _joinable = false;
   }
   else
-    throw (exceptions::basic() << "thread has already been detached");
+    throw (exceptions::concurrency()
+           << "thread has already been detached");
   return ;
 }
 
@@ -201,12 +202,13 @@ void thread::join() {
     void* ptr;
     int ret(pthread_join(_thread, &ptr));
     if (ret)
-      throw (exceptions::retval(ret) << "could not join thread: "
-                                     << strerror(ret));
+      throw (exceptions::concurrency(ret) << "could not join thread: "
+                                          << strerror(ret));
     _joinable = false;
   }
   else
-    throw (exceptions::basic() << "tried to join invalid or detached thread");
+    throw (exceptions::concurrency()
+           << "tried to join invalid or detached thread");
   return ;
 }
 
@@ -235,15 +237,15 @@ void thread::run(thread_listener* tl) {
     if (ret) {
       _joinable = false;
       _should_exit = true;
-      throw (exceptions::retval(ret) << "could not create thread: "
-                                     << strerror(ret));
+      throw (exceptions::concurrency(ret) << "could not create thread: "
+                                          << strerror(ret));
     }
     else
       arg.release();
   }
   else
-    throw (exceptions::basic() << "thread is already running " \
-                                  "and has not been detached");
+    throw (exceptions::concurrency() << "thread is already running " \
+                                        "and has not been detached");
 
   return ;
 }

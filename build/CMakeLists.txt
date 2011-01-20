@@ -117,6 +117,7 @@ set(LIBROKER_SOURCES
 	../src/events/state.cc
 	../src/events/status.cc
 	../src/exceptions/basic.cc
+	../src/exceptions/concurrency.cc
 	../src/exceptions/retval.cc
 	../src/interface/db/destination.cc
 	../src/interface/db/internal.cc

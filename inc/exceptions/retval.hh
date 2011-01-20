@@ -45,6 +45,7 @@ namespace   exceptions {
     retval& operator<<(int i) throw ();
     retval& operator<<(unsigned int i) throw ();
     retval& operator<<(char const* str) throw ();
+    retval& operator<<(time_t t) throw ();
     int     get_retval() const throw ();
     void    set_retval(int r) throw ();
   };
