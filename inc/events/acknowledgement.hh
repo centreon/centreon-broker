@@ -43,12 +43,11 @@ namespace              events {
     std::string        author;
     std::string        comment;
     time_t             entry_time;
-    std::string        host_name;
-    std::string        instance_name;
+    int                host_id;
     bool               is_sticky;
     bool               notify_contacts;
     bool               persistent_comment;
-    std::string        service_description;
+    int                service_id;
     short              state;
                        acknowledgement();
                        acknowledgement(acknowledgement const& ack);

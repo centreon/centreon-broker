@@ -47,12 +47,11 @@ void acknowledgement::_internal_copy(acknowledgement const& ack) {
   author = ack.author;
   comment = ack.comment;
   entry_time = ack.entry_time;
-  host_name = ack.host_name;
-  instance_name = ack.instance_name;
+  host_id = ack.host_id;
   is_sticky = ack.is_sticky;
   notify_contacts = ack.notify_contacts;
   persistent_comment = ack.persistent_comment;
-  service_description = ack.service_description;
+  service_id = ack.service_id;
   state = ack.state;
   return ;
 }
@@ -72,9 +71,11 @@ void acknowledgement::_internal_copy(acknowledgement const& ack) {
 acknowledgement::acknowledgement()
   : acknowledgement_type(0),
     entry_time(0),
+    host_id(0),
     is_sticky(false),
     notify_contacts(false),
     persistent_comment(false),
+    service_id(0),
     state(0) {}
 
 /**

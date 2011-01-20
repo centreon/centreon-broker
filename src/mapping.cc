@@ -43,13 +43,9 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     NDO_DATA_TIMESTAMP,
     "entry_time"),
   mapped_data<acknowledgement>(
-    &acknowledgement::host_name,
+    &acknowledgement::host_id,
     NDO_DATA_HOSTNAME,
-    "host_name"),
-  mapped_data<acknowledgement>(
-    &acknowledgement::instance_name,
-    NDO_DATA_PROGRAMNAME,
-    "instance_name"),
+    "host_id"),
   mapped_data<acknowledgement>(
     &acknowledgement::is_sticky,
     NDO_DATA_STICKY,
@@ -63,9 +59,9 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     NDO_DATA_PERSISTENT,
     "persistent_comment"),
   mapped_data<acknowledgement>(
-    &acknowledgement::service_description,
+    &acknowledgement::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_description"),
+    "service_id"),
   mapped_data<acknowledgement>(
     &acknowledgement::state,
     NDO_DATA_STATE,

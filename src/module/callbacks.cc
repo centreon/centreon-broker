@@ -65,14 +65,24 @@ int callback_acknowledgement(int callback_type, void* data) {
     if (ack_data->comment_data)
       ack->comment = ack_data->comment_data;
     ack->entry_time = time(NULL);
-    if (ack_data->host_name)
-      ack->host_name = ack_data->host_name;
-    ack->instance_name = config::globals::instance_name;
+    if (ack_data->host_name) {
+      std::map<std::string, int>::const_iterator it1;
+      it1 = gl_hosts.find(ack_data->host_name);
+      if (it1 != gl_hosts.end()) {
+        ack->host_id = it1->second;
+        if (ack_data->service_description) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator it2;
+          it2 = gl_services.find(std::make_pair(ack_data->host_name,
+            ack_data->service_description));
+          if (it2 != gl_services.end())
+            ack->service_id = it2->second.second;
+        }
+      }
+    }
     ack->is_sticky = ack_data->is_sticky;
     ack->notify_contacts = ack_data->notify_contacts;
     ack->persistent_comment = ack_data->persistent_comment;
-    if (ack_data->service_description)
-      ack->service_description = ack_data->service_description;
     ack->state = ack_data->state;
 
     // Send event.

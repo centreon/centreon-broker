@@ -78,55 +78,6 @@ CREATE TABLE instances (
 
 
 --
--- Holds acknowledgedments information.
---
-CREATE TABLE acknowledgements (
-  acknowledgement_id serial,
-  entry_time int NOT NULL,
-  host_name varchar(255) NOT NULL,
-  instance_name varchar(255) NOT NULL,
-  service_description varchar(255) default NULL,
-
-  author varchar(64) default NULL,
-  comment varchar(255) default NULL,
-  notify_contacts boolean default NULL,
-  persistent_comment boolean default NULL,
-  state smallint default NULL,
-  sticky boolean default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (acknowledgement_id),
-  UNIQUE (entry_time, host_name, instance_name, service_description)
-);
-
-
---
--- Holds comments information.
---
-CREATE TABLE comments (
-  comment_id serial,
-  entry_time int NOT NULL,
-  instance_name varchar(255) NOT NULL,
-  internal_id int NOT NULL,
-
-  author varchar(64) default NULL,
-  data text default NULL,
-  deletion_time int default NULL,
-  entry_type smallint default NULL,
-  expire_time int default NULL,
-  expires boolean default NULL,
-  host_name varchar(255) NOT NULL,
-  persistent boolean default NULL,
-  service_description varchar(255) default NULL,
-  source smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (comment_id),
-  UNIQUE (entry_time, instance_name, internal_id)
-);
-
-
---
 -- Monitored hosts.
 --
 CREATE TABLE hosts (
@@ -616,6 +567,56 @@ CREATE TABLE services_services_dependencies (
     ON DELETE CASCADE,
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
+);
+
+
+--
+-- Holds acknowledgedments information.
+--
+CREATE TABLE acknowledgements (
+  acknowledgement_id serial,
+  entry_time int NOT NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
+
+  author varchar(64) default NULL,
+  comment varchar(255) default NULL,
+  notify_contacts boolean default NULL,
+  persistent_comment boolean default NULL,
+  state smallint default NULL,
+  sticky boolean default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (acknowledgement_id),
+  UNIQUE (entry_time, host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
+-- Holds comments information.
+--
+CREATE TABLE comments (
+  comment_id serial,
+  entry_time int NOT NULL,
+  instance_name varchar(255) NOT NULL,
+  internal_id int NOT NULL,
+
+  author varchar(64) default NULL,
+  data text default NULL,
+  deletion_time int default NULL,
+  entry_type smallint default NULL,
+  expire_time int default NULL,
+  expires boolean default NULL,
+  host_name varchar(255) NOT NULL,
+  persistent boolean default NULL,
+  service_description varchar(255) default NULL,
+  source smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (comment_id),
+  UNIQUE (entry_time, instance_name, internal_id)
 );
 
 

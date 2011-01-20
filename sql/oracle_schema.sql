@@ -78,75 +78,6 @@ CREATE TABLE instances (
 
 
 --
--- Holds acknowledgedments information.
---
-CREATE TABLE acknowledgements (
-  acknowledgement_id int NOT NULL,
-  entry_time int NOT NULL,
-  host_name varchar(255) NOT NULL,
-  instance_name varchar(255) NOT NULL,
-  service_description varchar(255) default NULL,
-
-  author varchar(64) default NULL,
-  comment varchar(255) default NULL,
-  notify_contacts char(1) default NULL,
-  persistent_comment char(1) default NULL,
-  state smallint default NULL,
-  sticky char(1) default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (acknowledgement_id),
-  UNIQUE (entry_time, host_name, instance_name, service_description)
-);
-CREATE SEQUENCE acknowledgements_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER acknowledgements_trigger
-BEFORE INSERT ON acknowledgements
-FOR EACH ROW
-BEGIN
-  SELECT acknowledgements_seq.nextval INTO :NEW.acknowledgement_id FROM dual;
-END;
-/
-
-
---
--- Holds comments information.
---
-CREATE TABLE comments (
-  comment_id int NOT NULL,
-  entry_time int NOT NULL,
-  instance_name varchar(255) NOT NULL,
-  internal_id int NOT NULL,
-
-  author varchar(64) default NULL,
-  data clob default NULL,
-  deletion_time int default NULL,
-  entry_type smallint default NULL,
-  expire_time int default NULL,
-  expires char(1) default NULL,
-  host_name varchar(255) NOT NULL,
-  persistent char(1) default NULL,
-  service_description varchar(255) default NULL,
-  source smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (comment_id),
-  UNIQUE (entry_time, instance_name, internal_id)
-);
-CREATE SEQUENCE comments_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER comments_trigger
-BEFORE INSERT ON comments
-FOR EACH ROW
-BEGIN
-  SELECT comments_seq.nextval INTO :NEW.comment_id FROM dual;
-END;
-/
-
-
---
 -- Monitored hosts.
 --
 CREATE TABLE hosts (
@@ -719,6 +650,76 @@ CREATE TABLE services_services_dependencies (
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );
+
+
+--
+-- Holds acknowledgedments information.
+--
+CREATE TABLE acknowledgements (
+  acknowledgement_id int NOT NULL,
+  entry_time int NOT NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
+
+  author varchar(64) default NULL,
+  comment varchar(255) default NULL,
+  notify_contacts char(1) default NULL,
+  persistent_comment char(1) default NULL,
+  state smallint default NULL,
+  sticky char(1) default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (acknowledgement_id),
+  UNIQUE (entry_time, host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+CREATE SEQUENCE acknowledgements_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER acknowledgements_trigger
+BEFORE INSERT ON acknowledgements
+FOR EACH ROW
+BEGIN
+  SELECT acknowledgements_seq.nextval INTO :NEW.acknowledgement_id FROM dual;
+END;
+/
+
+
+--
+-- Holds comments information.
+--
+CREATE TABLE comments (
+  comment_id int NOT NULL,
+  entry_time int NOT NULL,
+  instance_name varchar(255) NOT NULL,
+  internal_id int NOT NULL,
+
+  author varchar(64) default NULL,
+  data clob default NULL,
+  deletion_time int default NULL,
+  entry_type smallint default NULL,
+  expire_time int default NULL,
+  expires char(1) default NULL,
+  host_name varchar(255) NOT NULL,
+  persistent char(1) default NULL,
+  service_description varchar(255) default NULL,
+  source smallint default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (comment_id),
+  UNIQUE (entry_time, instance_name, internal_id)
+);
+CREATE SEQUENCE comments_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER comments_trigger
+BEFORE INSERT ON comments
+FOR EACH ROW
+BEGIN
+  SELECT comments_seq.nextval INTO :NEW.comment_id FROM dual;
+END;
+/
 
 
 --
