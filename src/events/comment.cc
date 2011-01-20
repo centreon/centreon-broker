@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -43,20 +43,20 @@ using namespace events;
  *  @see operator=(comment const&)
  */
 void comment::_internal_copy(comment const& c) {
-  author              = c.author;
-  data                = c.data;
-  deletion_time       = c.deletion_time;
-  entry_time          = c.entry_time;
-  entry_type          = c.entry_type;
-  expire_time         = c.expire_time;
-  expires             = c.expires;
-  host_name           = c.host_name;
-  instance_name       = c.instance_name;
-  internal_id         = c.internal_id;
-  persistent          = c.persistent;
+  author = c.author;
+  data = c.data;
+  deletion_time = c.deletion_time;
+  entry_time = c.entry_time;
+  entry_type = c.entry_type;
+  expire_time = c.expire_time;
+  expires = c.expires;
+  host_name = c.host_name;
+  instance_name = c.instance_name;
+  internal_id = c.internal_id;
+  persistent = c.persistent;
   service_description = c.service_description;
-  source              = c.source;
-  type                = c.type;
+  source = c.source;
+  type = c.type;
   return ;
 }
 

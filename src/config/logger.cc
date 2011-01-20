@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "config/logger.hh"
@@ -33,12 +33,11 @@ using namespace config;
  *
  *  @param[in] l Object to copy from.
  */
-void logger::_internal_copy(logger const& l)
-{
-  _level  = l._level;
-  _name   = l._name;
-  _type   = l._type;
-  _types  = l._types;
+void logger::_internal_copy(logger const& l) {
+  _level = l._level;
+  _name = l._name;
+  _type = l._type;
+  _types = l._types;
   return ;
 }
 
@@ -59,10 +58,9 @@ logger::logger()
 /**
  *  Copy constructor.
  *
- *  @param[in] l Object to copy from.
+ *  @param[in] l Object to copy.
  */
-logger::logger(logger const& l)
-{
+logger::logger(logger const& l) {
   _internal_copy(l);
 }
 
@@ -72,29 +70,26 @@ logger::logger(logger const& l)
 logger::~logger() {}
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
- *  @param[in] l Object to copy from.
+ *  @param[in] l Object to copy.
  *
  *  @return This object.
  */
-logger& logger::operator=(logger const& l)
-{
+logger& logger::operator=(logger const& l) {
   _internal_copy(l);
   return (*this);
 }
 
 /**
- *  Equality operator overload.
+ *  Equality operator.
  *
  *  @param[in] l Logger to compare to.
  *
  *  @return true if objects are equivalent, false otherwise.
  */
-bool logger::operator==(logger const& l) const
-{
+bool logger::operator==(logger const& l) const {
   bool ret;
-
   ret = ((_level == l._level)
 	 && (_type == l._type)
 	 && (_types == l._types));
@@ -104,28 +99,25 @@ bool logger::operator==(logger const& l) const
 }
 
 /**
- *  Non-equality operator overload.
+ *  Non-equality operator.
  *
  *  @param[in] l Logger to compare to.
  *
  *  @return true if objects are different, false otherwise.
  */
-bool logger::operator!=(logger const& l) const
-{
+bool logger::operator!=(logger const& l) const {
   return (!(*this == l));
 }
 
 /**
- *  Stricly inferior operator overload.
+ *  Stricly inferior operator.
  *
  *  @param[in] l Logger to compare to.
  *
  *  @return true if current logger is stricly inferior to the argument.
  */
-bool logger::operator<(logger const& l) const
-{
+bool logger::operator<(logger const& l) const {
   bool ret;
-
   if (_level != l._level)
     ret = (_level < l._level);
   else if (_type != l._type)
@@ -145,8 +137,7 @@ bool logger::operator<(logger const& l) const
  *
  *  @param[in] c New value.
  */
-void logger::config(bool c)
-{
+void logger::config(bool c) {
   if (c)
     _types = (_types | logging::CONFIG);
   else
@@ -159,8 +150,7 @@ void logger::config(bool c)
  *
  *  @return Current value.
  */
-bool logger::config() const
-{
+bool logger::config() const {
   return (_types & logging::CONFIG);
 }
 
@@ -169,8 +159,7 @@ bool logger::config() const
  *
  *  @param[in] d New value.
  */
-void logger::debug(bool d)
-{
+void logger::debug(bool d) {
   if (d)
     _types = (_types | logging::DEBUG);
   else
@@ -183,8 +172,7 @@ void logger::debug(bool d)
  *
  *  @return Current value.
  */
-bool logger::debug() const
-{
+bool logger::debug() const {
   return (_types & logging::DEBUG);
 }
 
@@ -193,8 +181,7 @@ bool logger::debug() const
  *
  *  @param[in] e New value.
  */
-void logger::error(bool e)
-{
+void logger::error(bool e) {
   if (e)
     _types = (_types | logging::ERROR);
   else
@@ -207,8 +194,7 @@ void logger::error(bool e)
  *
  *  @return Current value.
  */
-bool logger::error() const
-{
+bool logger::error() const {
   return (_types & logging::ERROR);
 }
 
@@ -217,8 +203,7 @@ bool logger::error() const
  *
  *  @param[in] i New value.
  */
-void logger::info(bool i)
-{
+void logger::info(bool i) {
   if (i)
     _types = (_types | logging::INFO);
   else
@@ -231,8 +216,7 @@ void logger::info(bool i)
  *
  *  @return Current value.
  */
-bool logger::info() const
-{
+bool logger::info() const {
   return (_types & logging::INFO);
 }
 
@@ -241,8 +225,7 @@ bool logger::info() const
  *
  *  @param[in] l New value.
  */
-void logger::level(logging::level l)
-{
+void logger::level(logging::level l) {
   _level = l;
   return ;
 }
@@ -252,8 +235,7 @@ void logger::level(logging::level l)
  *
  *  @return Current value.
  */
-logging::level logger::level() const
-{
+logging::level logger::level() const {
   return (_level);
 }
 
@@ -262,8 +244,7 @@ logging::level logger::level() const
  *
  *  @param[in] n New value.
  */
-void logger::name(std::string const& n)
-{
+void logger::name(std::string const& n) {
   _name = n;
   return ;
 }
@@ -273,8 +254,7 @@ void logger::name(std::string const& n)
  *
  *  @return Current value.
  */
-std::string const& logger::name() const
-{
+std::string const& logger::name() const {
   return (_name);
 }
 
@@ -283,8 +263,7 @@ std::string const& logger::name() const
  *
  *  @param[in] lt New value.
  */
-void logger::type(logger::logger_type lt)
-{
+void logger::type(logger::logger_type lt) {
   _type = lt;
   return ;
 }
@@ -294,8 +273,7 @@ void logger::type(logger::logger_type lt)
  *
  *  @return Current value.
  */
-logger::logger_type logger::type() const
-{
+logger::logger_type logger::type() const {
   return (_type);
 }
 
@@ -304,8 +282,7 @@ logger::logger_type logger::type() const
  *
  *  @param[in] t New value.
  */
-void logger::types(unsigned int t)
-{
+void logger::types(unsigned int t) {
   _types = t;
   return ;
 }
@@ -315,7 +292,6 @@ void logger::types(unsigned int t)
  *
  *  @return Current value.
  */
-unsigned int logger::types() const
-{
+unsigned int logger::types() const {
   return (_types);
 }

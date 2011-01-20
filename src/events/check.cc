@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2010 MERETHIS
+** Copyright 2009-2011 MERETHIS
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -35,7 +35,7 @@ using namespace events;
  */
 void check::_internal_copy(check const& c) {
   command_line = c.command_line;
-  host_id      = c.host_id;
+  host_id = c.host_id;
   return ;
 }
 

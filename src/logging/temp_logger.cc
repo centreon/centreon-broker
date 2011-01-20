@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "logging/internal.hh"
@@ -34,8 +34,7 @@ using namespace logging;
  *
  *  @param[in] t Object to copy from.
  */
-void temp_logger::_internal_copy(temp_logger const& t)
-{
+void temp_logger::_internal_copy(temp_logger const& t) {
   _level = t._level;
   _type = t._type;
   _copied = false;
@@ -58,39 +57,35 @@ temp_logger::temp_logger(type log_type)
 /**
  *  Copy constructor.
  *
- *  @param[in] t Object to copy from.
+ *  @param[in] t Object to copy.
  */
-temp_logger::temp_logger(temp_logger const& t) : misc::stringifier(t)
-{
+temp_logger::temp_logger(temp_logger const& t) : misc::stringifier(t) {
   _internal_copy(t);
 }
 
 /**
  *  Destructor.
  */
-temp_logger::~temp_logger()
-{
-  if (!_copied)
-    {
-      operator<<("\n");
-      for (std::map<backend*, std::pair<unsigned int, level> >::iterator
-             it = backends.begin(), end = backends.end();
-           it != end;
-           ++it)
-        if ((it->second.first & _type) && (it->second.second >= _level))
-          it->first->log_msg(_buffer, _current, _type, _level);
-    }
+temp_logger::~temp_logger() {
+  if (!_copied) {
+    operator<<("\n");
+    for (std::map<backend*, std::pair<unsigned int, level> >::iterator
+           it = backends.begin(), end = backends.end();
+         it != end;
+         ++it)
+      if ((it->second.first & _type) && (it->second.second >= _level))
+        it->first->log_msg(_buffer, _current, _type, _level);
+  }
 }
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
- *  @param[in] t Object to copy from.
+ *  @param[in] t Object to copy.
  *
- *  @return Current instance.
+ *  @return This object.
  */
-temp_logger& temp_logger::operator=(temp_logger const& t)
-{
+temp_logger& temp_logger::operator=(temp_logger const& t) {
   misc::stringifier::operator=(t);
   _internal_copy(t);
   return (*this);
@@ -103,8 +98,7 @@ temp_logger& temp_logger::operator=(temp_logger const& t)
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(bool b) throw ()
-{
+temp_logger& temp_logger::operator<<(bool b) throw () {
   stringifier::operator<<(b);
   return (*this);
 }
@@ -116,8 +110,7 @@ temp_logger& temp_logger::operator<<(bool b) throw ()
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(double d) throw ()
-{
+temp_logger& temp_logger::operator<<(double d) throw () {
   stringifier::operator<<(d);
   return (*this);
 }
@@ -129,8 +122,7 @@ temp_logger& temp_logger::operator<<(double d) throw ()
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(int i) throw ()
-{
+temp_logger& temp_logger::operator<<(int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -142,8 +134,7 @@ temp_logger& temp_logger::operator<<(int i) throw ()
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(unsigned int i) throw ()
-{
+temp_logger& temp_logger::operator<<(unsigned int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -155,8 +146,7 @@ temp_logger& temp_logger::operator<<(unsigned int i) throw ()
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(char const* str) throw ()
-{
+temp_logger& temp_logger::operator<<(char const* str) throw () {
   stringifier::operator<<(str);
   return (*this);
 }
@@ -168,8 +158,7 @@ temp_logger& temp_logger::operator<<(char const* str) throw ()
  *
  *  @return Current instance.
  */
-temp_logger& temp_logger::operator<<(level l) throw ()
-{
+temp_logger& temp_logger::operator<<(level l) throw () {
   _level = l;
   return (*this);
 }

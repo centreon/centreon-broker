@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef CONFIG_PARSER_HH_
@@ -28,8 +28,7 @@
 # include "config/interface.hh"
 # include "config/logger.hh"
 
-namespace                     config
-{
+namespace                     config {
   /**
    *  @class parser parser.hh "config/parser.hh"
    *  @brief Parse configuration file.
@@ -37,11 +36,9 @@ namespace                     config
    *  Parse a configuration file and generate appropriate objects for further
    *  handling.
    */
-  class                       parser : private xercesc::DefaultHandler
-  {
+  class                       parser : private xercesc::DefaultHandler {
    private:
-    enum                      _current_type
-    {
+    enum                      _current_type {
       _unknown = 0,
       _conf,
       _correlation,
@@ -78,8 +75,7 @@ namespace                     config
       _logger_type,
       _output
     };
-    struct                    _tag_id
-    {
+    struct                    _tag_id {
       char const*             tag;
       _current_type           id;
     };
@@ -93,20 +89,20 @@ namespace                     config
     void                      _clear();
     void                      _internal_copy(parser const& p);
     void                      _parse_properties(XMLCh const* localname,
-                                                _tag_id const tag_to_id[]);
+                                _tag_id const tag_to_id[]);
     void                      characters(XMLCh const* const chars,
 # if XERCES_VERSION_MAJOR >= 3
-                                         XMLSize_t const length);
+                                XMLSize_t const length);
 # else
-                                         unsigned int const length);
+                                unsigned int const length);
 #endif /* XERCES_VERSION_MAJOR */
     void                      endElement(XMLCh const* const uri,
-                                         XMLCh const* const localname,
-                                         XMLCh const* const qname);
+                                XMLCh const* const localname,
+                                XMLCh const* const qname);
     void                      startElement(XMLCh const* const uri,
-                                           XMLCh const* const localname,
-                                           XMLCh const* const qname,
-                                           xercesc::Attributes const& attrs);
+                                XMLCh const* const localname,
+                                XMLCh const* const qname,
+                                xercesc::Attributes const& attrs);
 
    public:
                               parser();

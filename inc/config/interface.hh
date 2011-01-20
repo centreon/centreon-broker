@@ -1,21 +1,21 @@
 /*
-**  Copyright 2009 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #ifndef CONFIG_INTERFACE_HH_
@@ -24,8 +24,7 @@
 # include <memory>
 # include <string>
 
-namespace                    config
-{
+namespace                    config {
   /**
    *  @class interface interface.hh "config/interface.hh"
    *  @brief Hold configuration of an interface.
@@ -34,20 +33,17 @@ namespace                    config
    *  either be an XML stream, a database, a file, ... This class holds the
    *  configuration of an interface.
    */
-  class                      interface
-  {
+  class                      interface {
    private:
     void                     _internal_copy(interface const& i);
 
    public:
-    enum                     protocol_type
-    {
+    enum                     protocol_type {
       unknown_proto = 0,
       ndo,
       xml
     };
-    enum                     type_t
-    {
+    enum                     type_t {
       unknown = 0,
       file,
       ipv4_client,

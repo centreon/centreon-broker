@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include "logging/ostream.hh"
@@ -36,10 +36,9 @@ ostream::ostream() : _os(NULL) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy from.
+ *  @param[in] s Object to copy.
  */
-ostream::ostream(ostream const& o) : backend(o)
-{
+ostream::ostream(ostream const& o) : backend(o) {
   _os = static_cast<std::ostream*>(o._os);
 }
 
@@ -56,28 +55,26 @@ ostream::ostream(std::ostream& os) : _os(&os) {}
 ostream::~ostream() {}
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
- *  @param[in] s Object to copy from.
+ *  @param[in] s Object to copy.
  *
- *  @return Current instance.
+ *  @return This object.
  */
-ostream& ostream::operator=(ostream const& o)
-{
+ostream& ostream::operator=(ostream const& o) {
   backend::operator=(o);
   _os = const_cast<std::ostream*>(o._os);
   return (*this);
 }
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
  *  @param[in] os Stream to write on.
  *
- *  @return Current instance.
+ *  @return This object.
  */
-ostream& ostream::operator=(std::ostream& os)
-{
+ostream& ostream::operator=(std::ostream& os) {
   _os = &os;
   return (*this);
 }
@@ -93,33 +90,29 @@ ostream& ostream::operator=(std::ostream& os)
 void ostream::log_msg(char const* msg,
                       unsigned int len,
                       type log_type,
-                      level l) throw ()
-{
+                      level l) throw () {
   (void)len;
   (void)l;
-  if (_os && msg)
-    {
-      char const* prefix;
-
-      switch (log_type)
-        {
-         case CONFIG:
-          prefix = "CONFIG: ";
-          break ;
-         case DEBUG:
-          prefix = "DEBUG: ";
-          break ;
-         case ERROR:
-          prefix = "ERROR: ";
-          break ;
-         case INFO:
-          prefix = "INFO: ";
-          break ;
-         default:
-          prefix = "UNDEFINED: ";
-        }
-      *_os << prefix << msg;
-      _os->flush();
+  if (_os && msg) {
+    char const* prefix;
+    switch (log_type) {
+     case CONFIG:
+      prefix = "CONFIG: ";
+      break ;
+     case DEBUG:
+      prefix = "DEBUG: ";
+      break ;
+     case ERROR:
+      prefix = "ERROR: ";
+      break ;
+     case INFO:
+      prefix = "INFO: ";
+      break ;
+     default:
+      prefix = "UNDEFINED: ";
     }
+    *_os << prefix << msg;
+    _os->flush();
+  }
   return ;
 }

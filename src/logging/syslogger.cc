@@ -1,21 +1,21 @@
 /*
-**  Copyright 2010 MERETHIS
-**  This file is part of CentreonBroker.
+** Copyright 2009-2011 MERETHIS
+** This file is part of Centreon Broker.
 **
-**  CentreonBroker is free software: you can redistribute it and/or modify it
-**  under the terms of the GNU General Public License as published by the Free
-**  Software Foundation, either version 2 of the License, or (at your option)
-**  any later version.
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
 **
-**  CentreonBroker is distributed in the hope that it will be useful, but
-**  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-**  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-**  for more details.
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
 **
-**  You should have received a copy of the GNU General Public License along
-**  with CentreonBroker.  If not, see <http://www.gnu.org/licenses/>.
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
 **
-**  For more information : contact@centreon.com
+** For more information: contact@centreon.com
 */
 
 #include <syslog.h>
@@ -34,8 +34,7 @@ using namespace logging;
  *
  *  Open syslog facility USER.
  */
-syslogger::syslogger()
-{
+syslogger::syslogger() {
   openlog("centreonbroker", 0, LOG_USER);
 }
 
@@ -44,8 +43,7 @@ syslogger::syslogger()
  *
  *  @param[in] s Unused.
  */
-syslogger::syslogger(syslogger const& s) : backend(s)
-{
+syslogger::syslogger(syslogger const& s) : backend(s) {
   (void)s;
 }
 
@@ -54,28 +52,25 @@ syslogger::syslogger(syslogger const& s) : backend(s)
  *
  *  @param[in] facility Facility syslogger should write on.
  */
-syslogger::syslogger(int facility)
-{
+syslogger::syslogger(int facility) {
   openlog("centreonbroker", 0, facility);
 }
 
 /**
  *  Destructor.
  */
-syslogger::~syslogger()
-{
+syslogger::~syslogger() {
   closelog();
 }
 
 /**
- *  Assignment operator overload.
+ *  Assignment operator.
  *
  *  @param[in] s Unused.
  *
- *  @return Current instance.
+ *  @return This object..
  */
-syslogger& syslogger::operator=(syslogger const& s)
-{
+syslogger& syslogger::operator=(syslogger const& s) {
   backend::operator=(s);
   return (*this);
 }
@@ -91,29 +86,26 @@ syslogger& syslogger::operator=(syslogger const& s)
 void syslogger::log_msg(char const* msg,
                         unsigned int len,
                         type log_type,
-                        level l) throw ()
-{
-  int priority;
-
+                        level l) throw () {
   (void)len;
   (void)l;
-  switch (log_type)
-    {
-     case CONFIG:
-      priority = LOG_INFO;
-      break ;
-     case DEBUG:
-      priority = LOG_DEBUG;
-      break ;
-     case ERROR:
-      priority = LOG_ERR;
-      break ;
-     case INFO:
-      priority = LOG_NOTICE;
-      break ;
-     default:
-      priority = LOG_WARNING;
-    }
+  int priority;
+  switch (log_type) {
+   case CONFIG:
+    priority = LOG_INFO;
+    break ;
+   case DEBUG:
+    priority = LOG_DEBUG;
+    break ;
+   case ERROR:
+    priority = LOG_ERR;
+    break ;
+   case INFO:
+    priority = LOG_NOTICE;
+    break ;
+   default:
+    priority = LOG_WARNING;
+  }
   syslog(priority, "%s", msg);
   return ;
 }
