@@ -195,17 +195,17 @@ events::event* source::event() {
      case NDO_API_HOSTSTATUSDATA:
       e.reset(handle_event<events::host_status>(_stream));
       break ;
+     case NDO_API_PROCESSDATA:
+      e.reset(handle_event<events::instance>(_stream));
+      break ;
+     case NDO_API_PROGRAMSTATUSDATA:
+      e.reset(handle_event<events::instance_status>(_stream));
+      break ;
      case NDO_API_LOGDATA:
       e.reset(handle_event<events::log_entry>(_stream));
       break ;
      case NDO_API_NOTIFICATIONDATA:
       e.reset(handle_event<events::notification>(_stream));
-      break ;
-     case NDO_API_PROCESSDATA:
-      e.reset(handle_event<events::program>(_stream));
-      break ;
-     case NDO_API_PROGRAMSTATUSDATA:
-      e.reset(handle_event<events::program_status>(_stream));
       break ;
      case NDO_API_SERVICECHECKDATA:
       e.reset(handle_event<events::service_check>(_stream));

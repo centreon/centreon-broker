@@ -998,6 +998,136 @@ static mapped_data<host_status> const host_status_mapping[] = {
   mapped_data<host_status>()
 };
 
+// instance members mapping.
+static mapped_data<instance> const instance_mapping[] = {
+  mapped_data<instance>(
+    &instance::id,
+    NDO_DATA_INSTANCE,
+    "instance_id"),
+  mapped_data<instance>(
+    &instance::name,
+    NDO_DATA_PROGRAMNAME,
+    "name"),
+  mapped_data<instance>(
+    &instance::is_running,
+    NDO_DATA_RUNTIME,
+    "running"),
+  mapped_data<instance>(
+    &instance::pid,
+    NDO_DATA_PROCESSID,
+    "pid"),
+  mapped_data<instance>(
+    &instance::program_end,
+    NDO_DATA_ENDTIME,
+    "end_time"),
+  mapped_data<instance>(
+    &instance::program_start,
+    NDO_DATA_PROGRAMSTARTTIME,
+    "start_time"),
+  mapped_data<instance>()
+};
+
+// instance_status members mapping.
+static mapped_data<instance_status> const instance_status_mapping[] = {
+  mapped_data<instance_status>(
+    &instance_status::active_host_checks_enabled,
+    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+    "active_host_checks"),
+  mapped_data<instance_status>(
+    &instance_status::active_service_checks_enabled,
+    NDO_DATA_ACTIVESERVICECHECKSENABLED,
+    "active_service_checks"),
+  mapped_data<instance_status>(
+    &instance_status::address,
+    NDO_DATA_HOSTADDRESS,
+    "address"),
+  mapped_data<instance_status>(
+    &instance_status::check_hosts_freshness,
+    NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
+    "check_hosts_freshness"),
+  mapped_data<instance_status>(
+    &instance_status::check_services_freshness,
+    NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
+    "check_services_freshness"),
+  mapped_data<instance_status>(
+    &instance_status::daemon_mode,
+    NDO_DATA_DAEMONMODE,
+    "daemon_mode"),
+  mapped_data<instance_status>(
+    &instance_status::description,
+    NDO_DATA_SERVICEDESCRIPTION,
+    "description"),
+  mapped_data<instance_status>(
+    &instance_status::event_handler_enabled,
+    NDO_DATA_EVENTHANDLERENABLED,
+    "event_handlers"),
+  mapped_data<instance_status>(
+    &instance_status::failure_prediction_enabled,
+    NDO_DATA_FAILUREPREDICTIONENABLED,
+    "failure_prediction"),
+  mapped_data<instance_status>(
+    &instance_status::flap_detection_enabled,
+    NDO_DATA_FLAPDETECTIONENABLED,
+    "flap_detection"),
+  mapped_data<instance_status>(
+    &instance_status::id,
+    NDO_DATA_INSTANCE,
+    "instance_id"),
+  mapped_data<instance_status>(
+    &instance_status::last_alive,
+    NDO_DATA_LASTSTATE,
+    "last_alive"),
+  mapped_data<instance_status>(
+    &instance_status::last_command_check,
+    NDO_DATA_LASTCOMMANDCHECK,
+    "last_command_check"),
+  mapped_data<instance_status>(
+    &instance_status::last_log_rotation,
+    NDO_DATA_LASTLOGROTATION,
+    "last_log_rotation"),
+  mapped_data<instance_status>(
+    &instance_status::modified_host_attributes,
+    NDO_DATA_MODIFIEDHOSTATTRIBUTES,
+    "modified_host_attributes"),
+  mapped_data<instance_status>(
+    &instance_status::modified_service_attributes,
+    NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
+    "modified_service_attributes"),
+  mapped_data<instance_status>(
+    &instance_status::notifications_enabled,
+    NDO_DATA_NOTIFICATIONSENABLED,
+    "notifications"),
+  mapped_data<instance_status>(
+    &instance_status::obsess_over_hosts,
+    NDO_DATA_OBSESSOVERHOST,
+    "obsess_over_hosts"),
+  mapped_data<instance_status>(
+    &instance_status::obsess_over_services,
+    NDO_DATA_OBSESSOVERSERVICE,
+    "obsess_over_services"),
+  mapped_data<instance_status>(
+    &instance_status::passive_host_checks_enabled,
+    NDO_DATA_PASSIVEHOSTCHECKSENABLED,
+    "passive_host_checks"),
+  mapped_data<instance_status>(
+    &instance_status::passive_service_checks_enabled,
+    NDO_DATA_PASSIVESERVICECHECKSENABLED,
+    "passive_service_checks"),
+  mapped_data<instance_status>(
+    &instance_status::process_performance_data,
+    NDO_DATA_PROCESSPERFORMANCEDATA,
+    "process_perfdata"),
+  mapped_data<instance_status>(
+    &instance_status::global_host_event_handler,
+    NDO_DATA_GLOBALHOSTEVENTHANDLER,
+    "global_host_event_handler"),
+  mapped_data<instance_status>(
+    &instance_status::global_service_event_handler,
+    NDO_DATA_GLOBALSERVICEEVENTHANDLER,
+    "global_service_event_handler"),
+  mapped_data<instance_status>()
+};
+
 // issue members mapping.
 static mapped_data<issue> const issue_mapping[] = {
   mapped_data<issue>(
@@ -1180,136 +1310,6 @@ static mapped_data<notification> const notification_mapping[] = {
     NDO_DATA_OUTPUT,
     "output"),
   mapped_data<notification>()
-};
-
-// program members mapping.
-static mapped_data<program> const program_mapping[] = {
-  mapped_data<program>(
-    &program::instance_id,
-    NDO_DATA_INSTANCE,
-    "instance_id"),
-  mapped_data<program>(
-    &program::instance_name,
-    NDO_DATA_PROGRAMNAME,
-    "name"),
-  mapped_data<program>(
-    &program::is_running,
-    NDO_DATA_RUNTIME,
-    "running"),
-  mapped_data<program>(
-    &program::pid,
-    NDO_DATA_PROCESSID,
-    "pid"),
-  mapped_data<program>(
-    &program::program_end,
-    NDO_DATA_ENDTIME,
-    "end_time"),
-  mapped_data<program>(
-    &program::program_start,
-    NDO_DATA_PROGRAMSTARTTIME,
-    "start_time"),
-  mapped_data<program>()
-};
-
-// program_status members mapping.
-static mapped_data<program_status> const program_status_mapping[] = {
-  mapped_data<program_status>(
-    &program_status::active_host_checks_enabled,
-    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
-    "active_host_checks"),
-  mapped_data<program_status>(
-    &program_status::active_service_checks_enabled,
-    NDO_DATA_ACTIVESERVICECHECKSENABLED,
-    "active_service_checks"),
-  mapped_data<program_status>(
-    &program_status::check_hosts_freshness,
-    NDO_DATA_HOSTFRESHNESSCHECKSENABLED,
-    "check_hosts_freshness"),
-  mapped_data<program_status>(
-    &program_status::check_services_freshness,
-    NDO_DATA_SERVICEFRESHNESSCHECKSENABLED,
-    "check_services_freshness"),
-  mapped_data<program_status>(
-    &program_status::daemon_mode,
-    NDO_DATA_DAEMONMODE,
-    "daemon_mode"),
-  mapped_data<program_status>(
-    &program_status::event_handler_enabled,
-    NDO_DATA_EVENTHANDLERENABLED,
-    "event_handlers"),
-  mapped_data<program_status>(
-    &program_status::failure_prediction_enabled,
-    NDO_DATA_FAILUREPREDICTIONENABLED,
-    "failure_prediction"),
-  mapped_data<program_status>(
-    &program_status::flap_detection_enabled,
-    NDO_DATA_FLAPDETECTIONENABLED,
-    "flap_detection"),
-  mapped_data<program_status>(
-    &program_status::instance_address,
-    NDO_DATA_HOSTADDRESS,
-    "address"),
-  mapped_data<program_status>(
-    &program_status::instance_description,
-    NDO_DATA_SERVICEDESCRIPTION,
-    "description"),
-  mapped_data<program_status>(
-    &program_status::instance_id,
-    NDO_DATA_INSTANCE,
-    "instance_id"),
-  mapped_data<program_status>(
-    &program_status::last_alive,
-    NDO_DATA_LASTSTATE,
-    "last_alive"),
-  mapped_data<program_status>(
-    &program_status::last_command_check,
-    NDO_DATA_LASTCOMMANDCHECK,
-    "last_command_check"),
-  mapped_data<program_status>(
-    &program_status::last_log_rotation,
-    NDO_DATA_LASTLOGROTATION,
-    "last_log_rotation"),
-  mapped_data<program_status>(
-    &program_status::modified_host_attributes,
-    NDO_DATA_MODIFIEDHOSTATTRIBUTES,
-    "modified_host_attributes"),
-  mapped_data<program_status>(
-    &program_status::modified_service_attributes,
-    NDO_DATA_MODIFIEDSERVICEATTRIBUTES,
-    "modified_service_attributes"),
-  mapped_data<program_status>(
-    &program_status::notifications_enabled,
-    NDO_DATA_NOTIFICATIONSENABLED,
-    "notifications"),
-  mapped_data<program_status>(
-    &program_status::obsess_over_hosts,
-    NDO_DATA_OBSESSOVERHOST,
-    "obsess_over_hosts"),
-  mapped_data<program_status>(
-    &program_status::obsess_over_services,
-    NDO_DATA_OBSESSOVERSERVICE,
-    "obsess_over_services"),
-  mapped_data<program_status>(
-    &program_status::passive_host_checks_enabled,
-    NDO_DATA_PASSIVEHOSTCHECKSENABLED,
-    "passive_host_checks"),
-  mapped_data<program_status>(
-    &program_status::passive_service_checks_enabled,
-    NDO_DATA_PASSIVESERVICECHECKSENABLED,
-    "passive_service_checks"),
-  mapped_data<program_status>(
-    &program_status::process_performance_data,
-    NDO_DATA_PROCESSPERFORMANCEDATA,
-    "process_perfdata"),
-  mapped_data<program_status>(
-    &program_status::global_host_event_handler,
-    NDO_DATA_GLOBALHOSTEVENTHANDLER,
-    "global_host_event_handler"),
-  mapped_data<program_status>(
-    &program_status::global_service_event_handler,
-    NDO_DATA_GLOBALSERVICEEVENTHANDLER,
-    "global_service_event_handler"),
-  mapped_data<program_status>()
 };
 
 // service members mapping.
@@ -2067,6 +2067,18 @@ template <> const mapped_data<events::host_status>*
 template <> const char*
   mapped_type<events::host_status>::table("hosts");
 
+// instance mapping.
+template <> const mapped_data<events::instance>*
+  mapped_type<events::instance>::members(instance_mapping);
+template <> const char*
+  mapped_type<events::instance>::table("instances");
+
+// instance_status mapping.
+template <> const mapped_data<events::instance_status>*
+  mapped_type<events::instance_status>::members(instance_status_mapping);
+template <> const char*
+  mapped_type<events::instance_status>::table("instances");
+
 // issue mapping.
 template <> const mapped_data<events::issue>*
   mapped_type<events::issue>::members(issue_mapping);
@@ -2085,23 +2097,11 @@ template <> const mapped_data<events::log_entry>*
 template <> const char*
   mapped_type<events::log_entry>::table("logs");
 
-// Notification mapping.
+// notification mapping.
 template <> mapped_data<events::notification> const*
   mapped_type<events::notification>::members(notification_mapping);
 template <> char const*
   mapped_type<events::notification>::table("notifications");
-
-// program mapping.
-template <> const mapped_data<events::program>*
-  mapped_type<events::program>::members(program_mapping);
-template <> const char*
-  mapped_type<events::program>::table("instances");
-
-// program_status mapping.
-template <> const mapped_data<events::program_status>*
-  mapped_type<events::program_status>::members(program_status_mapping);
-template <> const char*
-  mapped_type<events::program_status>::table("instances");
 
 // service mapping.
 template <> const mapped_data<events::service>*

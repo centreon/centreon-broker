@@ -18,7 +18,7 @@
 ** For more information: contact@centreon.com
 */
 
-#include "events/program_status.hh"
+#include "events/instance_status.hh"
 
 using namespace events;
 
@@ -29,34 +29,34 @@ using namespace events;
 **************************************/
 
 /**
- *  @brief Copy internal data of the program_status object to the
+ *  @brief Copy internal data of the instance_status object to the
  *         current instance.
  *
- *  Copy data defined within the program_status class. This method is
+ *  Copy data defined within the instance_status class. This method is
  *  used by the copy constructor and the assignment operator.
  *
- *  @param[in] ps Object to copy.
+ *  @param[in] is Object to copy.
  */
-void program_status::_internal_copy(program_status const& ps) {
-  active_host_checks_enabled = ps.active_host_checks_enabled;
-  active_service_checks_enabled = ps.active_service_checks_enabled;
-  check_hosts_freshness = ps.check_hosts_freshness;
-  check_services_freshness = ps.check_services_freshness;
-  daemon_mode = ps.daemon_mode;
-  global_host_event_handler = ps.global_host_event_handler;
-  global_service_event_handler = ps.global_service_event_handler;
-  instance_address = ps.instance_address;
-  instance_description = ps.instance_description;
-  instance_id = ps.instance_id;
-  last_alive = ps.last_alive;
-  last_command_check = ps.last_command_check;
-  last_log_rotation = ps.last_log_rotation;
-  modified_host_attributes = ps.modified_host_attributes;
-  modified_service_attributes = ps.modified_service_attributes;
-  obsess_over_hosts = ps.obsess_over_hosts;
-  obsess_over_services = ps.obsess_over_services;
-  passive_host_checks_enabled = ps.passive_host_checks_enabled;
-  passive_service_checks_enabled = ps.passive_service_checks_enabled;
+void instance_status::_internal_copy(instance_status const& is) {
+  active_host_checks_enabled = is.active_host_checks_enabled;
+  active_service_checks_enabled = is.active_service_checks_enabled;
+  address = is.address;
+  check_hosts_freshness = is.check_hosts_freshness;
+  check_services_freshness = is.check_services_freshness;
+  daemon_mode = is.daemon_mode;
+  description = is.description;
+  global_host_event_handler = is.global_host_event_handler;
+  global_service_event_handler = is.global_service_event_handler;
+  id = is.id;
+  last_alive = is.last_alive;
+  last_command_check = is.last_command_check;
+  last_log_rotation = is.last_log_rotation;
+  modified_host_attributes = is.modified_host_attributes;
+  modified_service_attributes = is.modified_service_attributes;
+  obsess_over_hosts = is.obsess_over_hosts;
+  obsess_over_services = is.obsess_over_services;
+  passive_host_checks_enabled = is.passive_host_checks_enabled;
+  passive_service_checks_enabled = is.passive_service_checks_enabled;
   return ;
 }
 
@@ -71,13 +71,13 @@ void program_status::_internal_copy(program_status const& ps) {
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-program_status::program_status()
+instance_status::instance_status()
   : active_host_checks_enabled(false),
     active_service_checks_enabled(false),
     check_hosts_freshness(false),
     check_services_freshness(false),
     daemon_mode(false),
-    instance_id(0),
+    id(0),
     last_alive(0),
     last_command_check(0),
     last_log_rotation(0),
@@ -93,37 +93,37 @@ program_status::program_status()
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] ps Object to copy data from.
+ *  @param[in] is Object to copy data from.
  */
-program_status::program_status(program_status const& ps) : status(ps) {
-  _internal_copy(ps);
+instance_status::instance_status(instance_status const& is) : status(is) {
+  _internal_copy(is);
 }
 
 /**
  *  Destructor.
  */
-program_status::~program_status() {}
+instance_status::~instance_status() {}
 
 /**
  *  @brief Assignment operator.
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] ps Object to copy.
+ *  @param[in] is Object to copy.
  */
-program_status& program_status::operator=(program_status const& ps) {
-  status::operator=(ps);
-  _internal_copy(ps);
+instance_status& instance_status::operator=(instance_status const& is) {
+  status::operator=(is);
+  _internal_copy(is);
   return (*this);
 }
 
 /**
- *  @brief Get the type of the event (event::PROGRAMSTATUS).
+ *  @brief Get the type of the event (event::INSTANCESTATUS).
  *
  *  This method is used to determine the type of the event at runtime.
  *
- *  @return event::PROGRAMSTATUS
+ *  @return event::INSTANCESTATUS
  */
-int program_status::get_type() const {
-  return (PROGRAMSTATUS);
+int instance_status::get_type() const {
+  return (INSTANCESTATUS);
 }

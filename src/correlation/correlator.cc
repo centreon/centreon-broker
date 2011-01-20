@@ -55,12 +55,12 @@ void (correlator::* correlator::_dispatch_table[])(events::event&) = {
   &correlator::_correlate_nothing,        // HOSTGROUPMEMBER
   &correlator::_correlate_nothing,        // HOSTPARENT
   &correlator::_correlate_host_status,    // HOSTSTATUS
+  &correlator::_correlate_nothing,        // INSTANCE
+  &correlator::_correlate_nothing,        // INSTANCESTATUS
   &correlator::_correlate_nothing,        // ISSUE
   &correlator::_correlate_nothing,        // ISSUEPARENT
   &correlator::_correlate_log,            // LOG
   &correlator::_correlate_nothing,        // NOTIFICATION
-  &correlator::_correlate_nothing,        // PROGRAM
-  &correlator::_correlate_nothing,        // PROGRAMSTATUS
   &correlator::_correlate_nothing,        // SERVICE
   &correlator::_correlate_nothing,        // SERVICECHECK
   &correlator::_correlate_nothing,        // SERVICEDEPENDENCY

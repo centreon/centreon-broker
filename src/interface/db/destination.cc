@@ -58,12 +58,12 @@ void (destination::* destination::processing_table[])(events::event const&) = {
   &destination::_process_host_group_member,      // HOSTGROUPMEMBER
   &destination::_process_host_parent,            // HOSTPARENT
   &destination::_process_host_status,            // HOSTSTATUS
+  &destination::_process_instance,               // INSTANCE
+  &destination::_process_instance_status,        // INSTANCESTATUS
   &destination::_process_issue,                  // ISSUE
   &destination::_process_issue_parent,           // ISSUEPARENT
   &destination::_process_log,                    // LOG
   &destination::_process_notification,           // NOTIFICATION
-  &destination::_process_program,                // PROGRAM
-  &destination::_process_program_status,         // PROGRAMSTATUS
   &destination::_process_service,                // SERVICE
   &destination::_process_service_check,          // SERVICECHECK
   &destination::_process_service_dependency,     // SERVICEDEPENDENCY
@@ -623,6 +623,53 @@ void destination::_process_host_status(events::event const& e) {
 }
 
 /**
+ *  Process an instance event.
+ *
+ *  @param[in] e Uncasted instance.
+ */
+void destination::_process_instance(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing instance event";
+
+  // Clean tables.
+  events::instance const& i(*static_cast<events::instance const*>(&e));
+  _clean_tables(i.id);
+
+  // Program start.
+  if (!i.program_end) {
+    if (!_insert(i)) {
+      *_instance_stmt << i;
+      _instance_stmt->exec();
+    }
+  }
+  // Program end.
+  else {
+    *_instance_stmt << i;
+    _instance_stmt->exec();
+  }
+
+  return ;
+}
+
+/**
+ *  Process an instance status event.
+ *
+ *  @param[in] e Uncasted instance status.
+ */
+void destination::_process_instance_status(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing instance status event";
+
+  // Processing.
+  events::instance_status const& is(
+    *static_cast<events::instance_status const*>(&e));
+  *_instance_status_stmt << is;
+  _instance_status_stmt->exec();
+
+  return ;
+}
+
+/**
  *  Process an issue event.
  *
  *  @param[in] e Uncasted issue.
@@ -822,53 +869,6 @@ void destination::_process_notification(events::event const& e) {
     *_notification_stmt << n;
     _notification_stmt->exec();
   }
-
-  return ;
-}
-
-/**
- *  Process a program event.
- *
- *  @param[in] e Uncasted program.
- */
-void destination::_process_program(events::event const& e) {
-  // Log message.
-  logging::info << logging::MEDIUM << "processing program event";
-
-  // Clean tables.
-  events::program const& p(*static_cast<events::program const*>(&e));
-  _clean_tables(p.instance_id);
-
-  // Program start.
-  if (!p.program_end) {
-    if (!_insert(p)) {
-      *_program_stmt << p;
-      _program_stmt->exec();
-    }
-  }
-  // Program end.
-  else {
-    *_program_stmt << p;
-    _program_stmt->exec();
-  }
-
-  return ;
-}
-
-/**
- *  Process a program status event.
- *
- *  @param[in] e Uncasted program status.
- */
-void destination::_process_program_status(events::event const& e) {
-  // Log message.
-  logging::info << logging::MEDIUM << "processing program status event";
-
-  // Processing.
-  events::program_status const& ps(
-    *static_cast<events::program_status const*>(&e));
-  *_program_status_stmt << ps;
-  _program_status_stmt->exec();
 
   return ;
 }
@@ -1074,10 +1074,10 @@ void destination::close() {
   _host_stmt.reset();
   _host_check_stmt.reset();
   _host_status_stmt.reset();
+  _instance_stmt.reset();
+  _instance_status_stmt.reset();
   _issue_stmt.reset();
   _notification_stmt.reset();
-  _program_stmt.reset();
-  _program_status_stmt.reset();
   _service_stmt.reset();
   _service_insert_stmt.reset();
   _service_check_stmt.reset();
@@ -1224,6 +1224,14 @@ void destination::connect(destination::DB db_type,
   _prepare_update<events::host_status>(_host_status_stmt, id);
 
   id.clear();
+  id.push_back("instance_id");
+  _prepare_update<events::instance>(_instance_stmt, id);
+
+  id.clear();
+  id.push_back("instance_id");
+  _prepare_update<events::instance_status>(_instance_status_stmt, id);
+
+  id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   id.push_back("start_time");
@@ -1240,14 +1248,6 @@ void destination::connect(destination::DB db_type,
   id.push_back("service_id");
   id.push_back("start_time");
   _prepare_update<events::state>(_state_stmt, id);
-
-  id.clear();
-  id.push_back("instance_id");
-  _prepare_update<events::program>(_program_stmt, id);
-
-  id.clear();
-  id.push_back("instance_id");
-  _prepare_update<events::program_status>(_program_status_stmt, id);
 
   id.clear();
   id.push_back("host_id");

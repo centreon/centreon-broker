@@ -253,6 +253,12 @@ template <> std::map<int, getter_setter<events::host_parent> >
 template <> std::map<int, getter_setter<events::host_status> >
   interface::ndo::ndo_mapped_type<events::host_status>::map =
     std::map<int, getter_setter<events::host_status> >();
+template <> std::map<int, getter_setter<events::instance> >
+  interface::ndo::ndo_mapped_type<events::instance>::map =
+    std::map<int, getter_setter<events::instance> >();
+template <> std::map<int, getter_setter<events::instance_status> >
+  interface::ndo::ndo_mapped_type<events::instance_status>::map =
+    std::map<int, getter_setter<events::instance_status> >();
 template <> std::map<int, getter_setter<events::issue> >
   interface::ndo::ndo_mapped_type<events::issue>::map =
     std::map<int, getter_setter<events::issue> >();
@@ -265,12 +271,6 @@ template <> std::map<int, getter_setter<events::log_entry> >
 template <> std::map<int, getter_setter<events::notification> >
   interface::ndo::ndo_mapped_type<events::notification>::map =
     std::map<int, getter_setter<events::notification> >();
-template <> std::map<int, getter_setter<events::program> >
-  interface::ndo::ndo_mapped_type<events::program>::map =
-    std::map<int, getter_setter<events::program> >();
-template <> std::map<int, getter_setter<events::program_status> >
-  interface::ndo::ndo_mapped_type<events::program_status>::map =
-    std::map<int, getter_setter<events::program_status> >();
 template <> std::map<int, getter_setter<events::service> >
   interface::ndo::ndo_mapped_type<events::service>::map =
     std::map<int, getter_setter<events::service> >();
@@ -319,12 +319,12 @@ void interface::ndo::initialize() {
   static_init<events::host_group_member>();
   static_init<events::host_parent>();
   static_init<events::host_status>();
+  static_init<events::instance>();
+  static_init<events::instance_status>();
   static_init<events::issue>();
   static_init<events::issue_parent>();
   static_init<events::log_entry>();
   static_init<events::notification>();
-  static_init<events::program>();
-  static_init<events::program_status>();
   static_init<events::service>();
   static_init<events::service_check>();
   static_init<events::service_dependency>();

@@ -534,41 +534,41 @@ int callback_process(int callback_type, void *data) {
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       logging::info << logging::MEDIUM << "generating process start event";
       // Output variable.
-      std::auto_ptr<events::program> program(new events::program);
+      std::auto_ptr<events::instance> instance(new events::instance);
 
       // Fill output var.
       config::handle(gl_configuration_file);
       logging::log_on(gl_initial_logger, 0, logging::NONE);
-      program->instance_id = config::globals::instance;
-      program->instance_name = config::globals::instance_name;
-      program->is_running = true;
-      program->pid = getpid();
-      program->program_start = time(NULL);
-      start_time = program->program_start;
+      instance->id = config::globals::instance;
+      instance->is_running = true;
+      instance->name = config::globals::instance_name;
+      instance->pid = getpid();
+      instance->program_start = time(NULL);
+      start_time = instance->program_start;
 
       // Send initial event and then configuration.
-      program->add_reader();
-      gl_publisher.event(program.get());
-      program.release();
+      instance->add_reader();
+      gl_publisher.event(instance.get());
+      instance.release();
       send_initial_configuration();
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info << logging::MEDIUM << "generating process end event";
       // Output variable.
-      std::auto_ptr<events::program> program(new events::program);
+      std::auto_ptr<events::instance> instance(new events::instance);
 
       // Fill output var.
-      program->instance_id = config::globals::instance;
-      program->instance_name = config::globals::instance_name;
-      program->is_running = false;
-      program->pid = getpid();
-      program->program_end = time(NULL);
-      program->program_start = start_time;
+      instance->id = config::globals::instance;
+      instance->is_running = false;
+      instance->name = config::globals::instance_name;
+      instance->pid = getpid();
+      instance->program_end = time(NULL);
+      instance->program_start = start_time;
 
       // Send event.
-      program->add_reader();
-      gl_publisher.event(program.get());
-      program.release();
+      instance->add_reader();
+      gl_publisher.event(instance.get());
+      instance.release();
     }
   }
   // Avoid exception propagation in C code.
@@ -577,9 +577,9 @@ int callback_process(int callback_type, void *data) {
 }
 
 /**
- *  @brief Function that process program status data.
+ *  @brief Function that process instance status data.
  *
- *  This function is called by Nagios when some program status data are
+ *  This function is called by Nagios when some instance status data are
  *  available.
  *
  *  @param[in] callback_type Type of the callback
@@ -591,61 +591,60 @@ int callback_process(int callback_type, void *data) {
  */
 int callback_program_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating program status event";
+  logging::info << logging::MEDIUM << "generating instance status event";
   (void)callback_type;
 
   try {
     // In/Out variables.
     nebstruct_program_status_data const* program_status_data;
-    std::auto_ptr<events::program_status> program_status(
-      new events::program_status);
+    std::auto_ptr<events::instance_status> is(
+      new events::instance_status);
 
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
-    program_status->active_host_checks_enabled
+    is->active_host_checks_enabled
       = program_status_data->active_host_checks_enabled;
-    program_status->active_service_checks_enabled
+    is->active_service_checks_enabled
       = program_status_data->active_service_checks_enabled;
-    program_status->daemon_mode = program_status_data->daemon_mode;
-    program_status->event_handler_enabled
+    is->daemon_mode = program_status_data->daemon_mode;
+    is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
-    program_status->failure_prediction_enabled
+    is->failure_prediction_enabled
       = program_status_data->failure_prediction_enabled;
-    program_status->flap_detection_enabled
+    is->flap_detection_enabled
       = program_status_data->flap_detection_enabled;
     if (program_status_data->global_host_event_handler)
-      program_status->global_host_event_handler
+      is->global_host_event_handler
         = program_status_data->global_host_event_handler;
     if (program_status_data->global_service_event_handler)
-      program_status->global_service_event_handler
+      is->global_service_event_handler
         = program_status_data->global_service_event_handler;
-    program_status->instance_id = config::globals::instance;
-    program_status->last_alive = time(NULL);
-    program_status->last_command_check
-      = program_status_data->last_command_check;
-    program_status->last_log_rotation
+    is->id = config::globals::instance;
+    is->last_alive = time(NULL);
+    is->last_command_check = program_status_data->last_command_check;
+    is->last_log_rotation
       = program_status_data->last_log_rotation;
-    program_status->modified_host_attributes
+    is->modified_host_attributes
       = program_status_data->modified_host_attributes;
-    program_status->modified_service_attributes
+    is->modified_service_attributes
       = program_status_data->modified_service_attributes;
-    program_status->notifications_enabled
+    is->notifications_enabled
       = program_status_data->notifications_enabled;
-    program_status->obsess_over_hosts
+    is->obsess_over_hosts
       = program_status_data->obsess_over_hosts;
-    program_status->obsess_over_services
+    is->obsess_over_services
       = program_status_data->obsess_over_services;
-    program_status->passive_host_checks_enabled
+    is->passive_host_checks_enabled
       = program_status_data->passive_host_checks_enabled;
-    program_status->passive_service_checks_enabled
+    is->passive_service_checks_enabled
       = program_status_data->passive_service_checks_enabled;
-    program_status->process_performance_data
+    is->process_performance_data
       = program_status_data->process_performance_data;
 
     // Send event.
-    program_status->add_reader();
-    gl_publisher.event(program_status.get());
-    program_status.release();
+    is->add_reader();
+    gl_publisher.event(is.get());
+    is.release();
   }
   // Avoid exception propagation in C code.
   catch (...) {}

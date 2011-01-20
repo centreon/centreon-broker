@@ -18,8 +18,8 @@
 ** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_PROGRAM_STATUS_HH_
-# define EVENTS_PROGRAM_STATUS_HH_
+#ifndef EVENTS_INSTANCE_STATUS_HH_
+# define EVENTS_INSTANCE_STATUS_HH_
 
 # include <string>
 # include <sys/types.h>
@@ -27,27 +27,27 @@
 
 namespace              events {
   /**
-   *  @class program_status program_status.hh "events/program_status.hh"
+   *  @class instance_status instance_status.hh "events/instance_status.hh"
    *  @brief Information about Nagios process.
    *
-   *  program_status holds information about a Nagios process, like
+   *  instance_status holds information about a Nagios process, like
    *  whether it is running or not, in daemon mode or not, ...
    */
-  class                program_status : public status {
+  class                instance_status : public status {
    private:
-    void               _internal_copy(program_status const& ps);
+    void               _internal_copy(instance_status const& is);
 
    public:
     bool               active_host_checks_enabled;
     bool               active_service_checks_enabled;
+    std::string        address;
     bool               check_hosts_freshness;
     bool               check_services_freshness;
     bool               daemon_mode;
+    std::string        description;
     std::string        global_host_event_handler;
     std::string        global_service_event_handler;
-    std::string        instance_address;
-    std::string        instance_description;
-    int                instance_id;
+    int                id;
     time_t             last_alive;
     time_t             last_command_check;
     time_t             last_log_rotation;
@@ -57,12 +57,12 @@ namespace              events {
     bool               obsess_over_services;
     bool               passive_host_checks_enabled;
     bool               passive_service_checks_enabled;
-                       program_status();
-                       program_status(program_status const& ps);
-                       ~program_status();
-    program_status&    operator=(program_status const& ps);
+                       instance_status();
+                       instance_status(instance_status const& is);
+                       ~instance_status();
+    instance_status&   operator=(instance_status const& is);
     int                get_type() const;
   };
 }
 
-#endif /* !EVENTS_PROGRAM_STATUS_HH_ */
+#endif /* !EVENTS_INSTANCE_STATUS_HH_ */

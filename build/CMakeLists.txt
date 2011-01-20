@@ -102,12 +102,12 @@ set(LIBROKER_SOURCES
 	../src/events/host_service.cc
 	../src/events/host_service_status.cc
 	../src/events/host_status.cc
+	../src/events/instance.cc
+	../src/events/instance_status.cc
 	../src/events/issue.cc
 	../src/events/issue_parent.cc
 	../src/events/log_entry.cc
 	../src/events/notification.cc
-	../src/events/program.cc
-	../src/events/program_status.cc
 	../src/events/service.cc
 	../src/events/service_check.cc
 	../src/events/service_dependency.cc

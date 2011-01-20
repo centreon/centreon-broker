@@ -18,7 +18,7 @@
 ** For more information: contact@centreon.com
 */
 
-#include "events/program.hh"
+#include "events/instance.hh"
 
 using namespace events;
 
@@ -29,21 +29,21 @@ using namespace events;
 **************************************/
 
 /**
- *  @brief Copy internal data of the program object to the current
+ *  @brief Copy internal data of the instance object to the current
  *         instance.
  *
- *  Copy data defined within the program class. This method is used by
+ *  Copy data defined within the instance class. This method is used by
  *  the copy constructor and the assignment operator.
  *
- *  @param[in] program Object to copy.
+ *  @param[in] i Object to copy.
  */
-void program::_internal_copy(program const& p) {
-  instance_id = p.instance_id;
-  instance_name = p.instance_name;
-  is_running = p.is_running;
-  pid = p.pid;
-  program_end = p.program_end;
-  program_start = p.program_start;
+void instance::_internal_copy(instance const& i) {
+  id = i.id;
+  is_running = i.is_running;
+  name = i.name;
+  pid = i.pid;
+  program_end = i.program_end;
+  program_start = i.program_start;
   return ;
 }
 
@@ -58,8 +58,8 @@ void program::_internal_copy(program const& p) {
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-program::program()
-  : instance_id(0),
+instance::instance()
+  : id(0),
     is_running(false),
     pid(0),
     program_end(0),
@@ -70,37 +70,37 @@ program::program()
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] i Object to copy.
  */
-program::program(program const& p) : event(p) {
-  _internal_copy(p);
+instance::instance(instance const& i) : event(i) {
+  _internal_copy(i);
 }
 
 /**
  *  Destructor.
  */
-program::~program() {}
+instance::~instance() {}
 
 /**
  *  @brief Assignment operator.
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] i Object to copy.
  */
-program& program::operator=(program const& p) {
-  event::operator=(p);
-  _internal_copy(p);
+instance& instance::operator=(instance const& i) {
+  event::operator=(i);
+  _internal_copy(i);
   return (*this);
 }
 
 /**
- *  @brief Get the type of the event (event::PROGRAM).
+ *  @brief Get the type of the event (event::INSTANCE).
  *
  *  This method is used to determine the type of the event at runtime.
  *
- *  @return event::PROGRAM
+ *  @return event::INSTANCE
  */
-int program::get_type() const {
-  return (PROGRAM);
+int instance::get_type() const {
+  return (INSTANCE);
 }

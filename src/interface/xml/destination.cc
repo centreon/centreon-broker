@@ -175,6 +175,14 @@ void destination::event(events::event* e) {
       name = "host_status";
       handle_event(*static_cast<events::host_status*>(e), attr);
       break ;
+     case events::event::INSTANCE:
+      name = "instance";
+      handle_event(*static_cast<events::instance*>(e), attr);
+      break ;
+     case events::event::INSTANCESTATUS:
+      name = "instance_status";
+      handle_event(*static_cast<events::instance_status*>(e), attr);
+      break ;
      case events::event::LOG:
       name = "log_entry";
       handle_event(*static_cast<events::log_entry*>(e), attr);
@@ -182,14 +190,6 @@ void destination::event(events::event* e) {
      case events::event::NOTIFICATION:
       name = "notification";
       handle_event(*static_cast<events::notification*>(e), attr);
-      break ;
-     case events::event::PROGRAM:
-      name = "program";
-      handle_event(*static_cast<events::program*>(e), attr);
-      break ;
-     case events::event::PROGRAMSTATUS:
-      name = "program_status";
-      handle_event(*static_cast<events::program_status*>(e), attr);
       break ;
      case events::event::SERVICE:
       name = "service";

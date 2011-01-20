@@ -216,6 +216,12 @@ template <> std::list<std::pair<std::string, getter_setter<events::host_parent> 
 template <> std::list<std::pair<std::string, getter_setter<events::host_status> > >
   interface::db::db_mapped_type<events::host_status>::list =
     std::list<std::pair<std::string, getter_setter<events::host_status> > >();
+template <> std::list<std::pair<std::string, getter_setter<events::instance> > >
+  interface::db::db_mapped_type<events::instance>::list =
+    std::list<std::pair<std::string, getter_setter<events::instance> > >();
+template <> std::list<std::pair<std::string, getter_setter<events::instance_status> > >
+  interface::db::db_mapped_type<events::instance_status>::list =
+    std::list<std::pair<std::string, getter_setter<events::instance_status> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::issue> > >
   interface::db::db_mapped_type<events::issue>::list =
     std::list<std::pair<std::string, getter_setter<events::issue> > >();
@@ -225,12 +231,6 @@ template <> std::list<std::pair<std::string, getter_setter<events::log_entry> > 
 template <> std::list<std::pair<std::string, getter_setter<events::notification> > >
   interface::db::db_mapped_type<events::notification>::list =
     std::list<std::pair<std::string, getter_setter<events::notification> > >();
-template <> std::list<std::pair<std::string, getter_setter<events::program> > >
-  interface::db::db_mapped_type<events::program>::list =
-    std::list<std::pair<std::string, getter_setter<events::program> > >();
-template <> std::list<std::pair<std::string, getter_setter<events::program_status> > >
-  interface::db::db_mapped_type<events::program_status>::list =
-    std::list<std::pair<std::string, getter_setter<events::program_status> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service> > >
   interface::db::db_mapped_type<events::service>::list =
     std::list<std::pair<std::string, getter_setter<events::service> > >();
@@ -279,11 +279,11 @@ void interface::db::initialize() {
   static_init<events::host_group_member>();
   static_init<events::host_parent>();
   static_init<events::host_status>();
+  static_init<events::instance>();
+  static_init<events::instance_status>();
   static_init<events::issue>();
   static_init<events::log_entry>();
   static_init<events::notification>();
-  static_init<events::program>();
-  static_init<events::program_status>();
   static_init<events::service>();
   static_init<events::service_check>();
   static_init<events::service_dependency>();
@@ -407,6 +407,22 @@ QSqlQuery& operator<<(QSqlQuery& q, events::host_status const& hs) {
 }
 
 /**
+ *  ORM operator for instance.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, events::instance const& p) {
+  to_base(q, p);
+  return (q);
+}
+
+/**
+ *  ORM operator for instance_status.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, events::instance_status const& ps) {
+  to_base(q, ps);
+  return (q);
+}
+
+/**
  *  ORM operator for issue.
  */
 QSqlQuery& operator<<(QSqlQuery& q, events::issue const& i) {
@@ -427,22 +443,6 @@ QSqlQuery& operator<<(QSqlQuery& q, events::log_entry const& le) {
  */
 QSqlQuery& operator<<(QSqlQuery& q, events::notification const& n) {
   to_base(q, n);
-  return (q);
-}
-
-/**
- *  ORM operator for program.
- */
-QSqlQuery& operator<<(QSqlQuery& q, events::program const& p) {
-  to_base(q, p);
-  return (q);
-}
-
-/**
- *  ORM operator for program_status.
- */
-QSqlQuery& operator<<(QSqlQuery& q, events::program_status const& ps) {
-  to_base(q, ps);
   return (q);
 }
 

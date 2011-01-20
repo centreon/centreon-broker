@@ -18,39 +18,38 @@
 ** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_PROGRAM_HH_
-# define EVENTS_PROGRAM_HH_
+#ifndef EVENTS_INSTANCE_HH_
+# define EVENTS_INSTANCE_HH_
 
 # include <string>
 # include <sys/types.h>
 # include "events/event.hh"
 
-namespace       events
-{
+namespace       events {
   /**
-   *  @class program program.hh "events/program.hh"
+   *  @class instance instance.hh "events/instance.hh"
    *  @brief Information about Nagios process.
    *
-   *  Program holds information about a Nagios process, like whether it
-   *  is running or not, in daemon mode or not, ...
+   *  This class holds information about a Nagios process, like whether
+   *  it is running or not, in daemon mode or not, ...
    */
-  class         program : public event {
+  class         instance : public event {
    private:
-    void        _internal_copy(program const& p);
+    void        _internal_copy(instance const& i);
 
    public:
-    int         instance_id;
-    std::string instance_name;
+    int         id;
     bool        is_running;
+    std::string name;
     int         pid;
     time_t      program_end;
     time_t      program_start;
-                program();
-                program(program const& p);
-                ~program();
-    program&    operator=(program const& p);
+                instance();
+                instance(instance const& i);
+                ~instance();
+    instance&   operator=(instance const& i);
     int         get_type() const;
   };
 }
 
-#endif /* !EVENTS_PROGRAM_HH_ */
+#endif /* !EVENTS_INSTANCE_HH_ */

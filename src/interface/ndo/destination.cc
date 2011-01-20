@@ -230,6 +230,20 @@ void destination::event(events::event* e) {
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;
+     case events::event::INSTANCE:
+      buffer << NDO_API_PROCESSDATA << ":\n";
+      handle_event<events::instance>(
+        *static_cast<events::instance*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
+     case events::event::INSTANCESTATUS:
+      buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
+      handle_event<events::instance_status>(
+        *static_cast<events::instance_status*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
      case events::event::LOG:
       buffer << NDO_API_LOGDATA << ":\n";
       handle_event<events::log_entry>(
@@ -241,20 +255,6 @@ void destination::event(events::event* e) {
       buffer << NDO_API_NOTIFICATIONDATA << ":\n";
       handle_event<events::notification>(
         *static_cast<events::notification*>(e),
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case events::event::PROGRAM:
-      buffer << NDO_API_PROCESSDATA << ":\n";
-      handle_event<events::program>(
-        *static_cast<events::program*>(e),
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case events::event::PROGRAMSTATUS:
-      buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
-      handle_event<events::program_status>(
-        *static_cast<events::program_status*>(e),
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;

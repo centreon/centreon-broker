@@ -55,10 +55,10 @@ namespace          interface {
       std::auto_ptr<QSqlQuery>       _host_stmt;
       std::auto_ptr<QSqlQuery>       _host_check_stmt;
       std::auto_ptr<QSqlQuery>       _host_status_stmt;
+      std::auto_ptr<QSqlQuery>       _instance_stmt;
+      std::auto_ptr<QSqlQuery>       _instance_status_stmt;
       std::auto_ptr<QSqlQuery>       _issue_stmt;
       std::auto_ptr<QSqlQuery>       _notification_stmt;
-      std::auto_ptr<QSqlQuery>       _program_stmt;
-      std::auto_ptr<QSqlQuery>       _program_status_stmt;
       std::auto_ptr<QSqlQuery>       _service_insert_stmt;
       std::auto_ptr<QSqlQuery>       _service_stmt;
       std::auto_ptr<QSqlQuery>       _service_check_stmt;
@@ -89,12 +89,12 @@ namespace          interface {
       void         _process_host_group_member(events::event const& e);
       void         _process_host_parent(events::event const& e);
       void         _process_host_status(events::event const& e);
+      void         _process_instance(events::event const& e);
+      void         _process_instance_status(events::event const& e);
       void         _process_issue(events::event const& e);
       void         _process_issue_parent(events::event const& e);
       void         _process_log(events::event const& e);
       void         _process_notification(events::event const& e);
-      void         _process_program(events::event const& e);
-      void         _process_program_status(events::event const& e);
       void         _process_service(events::event const& e);
       void         _process_service_check(events::event const& e);
       void         _process_service_dependency(events::event const& e);
