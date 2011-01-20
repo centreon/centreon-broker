@@ -219,21 +219,17 @@ static mapped_data<downtime> const downtime_mapping[] = {
     NDO_DATA_FIXED,
     "fixed"),
   mapped_data<downtime>(
-    &downtime::host_name,
+    &downtime::host_id,
     NDO_DATA_HOSTNAME,
-    "host_name"),
+    "host_id"),
   mapped_data<downtime>(
     &downtime::internal_id,
     NDO_DATA_DOWNTIMEID,
     "internal_id"),
   mapped_data<downtime>(
-    &downtime::instance_name,
-    NDO_DATA_PROGRAMNAME,
-    "instance_name"),
-  mapped_data<downtime>(
-    &downtime::service_description,
+    &downtime::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_description"),
+    "service_id"),
   mapped_data<downtime>(
     &downtime::start_time,
     NDO_DATA_STARTTIME,

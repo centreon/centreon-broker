@@ -190,12 +190,22 @@ int callback_downtime(int callback_type, void* data) {
     downtime->end_time = downtime_data->end_time;
     downtime->entry_time = downtime_data->entry_time;
     downtime->fixed = downtime_data->fixed;
-    if (downtime_data->host_name)
-      downtime->host_name = downtime_data->host_name;
+    if (downtime_data->host_name) {
+      std::map<std::string, int>::const_iterator it1;
+      it1 = gl_hosts.find(downtime_data->host_name);
+      if (it1 != gl_hosts.end()) {
+        downtime->host_id = it1->second;
+        if (downtime_data->service_description) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator it2;
+          it2 = gl_services.find(std::make_pair(downtime_data->host_name,
+            downtime_data->service_description));
+          if (it2 != gl_services.end())
+            downtime->service_id = it2->second.second;
+        }
+      }
+    }
     downtime->internal_id = downtime_data->downtime_id;
-    downtime->instance_name = config::globals::instance_name;
-    if (downtime_data->service_description)
-      downtime->service_description = downtime_data->service_description;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
     if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->downtime_type)

@@ -49,10 +49,9 @@ void downtime::_internal_copy(downtime const& d) {
   end_time = d.end_time;
   entry_time = d.entry_time;
   fixed = d.fixed;
-  host_name = d.host_name;
+  host_id = d.host_id;
   internal_id = d.internal_id;
-  instance_name = d.instance_name;
-  service_description = d.service_description;
+  service_id = d.service_id;
   start_time = d.start_time;
   triggered_by = d.triggered_by;
   was_cancelled = d.was_cancelled;
@@ -77,7 +76,9 @@ downtime::downtime()
     end_time(0),
     entry_time(0),
     fixed(false),
+    host_id(0),
     internal_id(0),
+    service_id(0),
     start_time(0),
     triggered_by(0),
     was_cancelled(false),

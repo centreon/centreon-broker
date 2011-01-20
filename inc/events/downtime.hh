@@ -47,10 +47,9 @@ namespace              events {
     time_t             end_time;
     time_t             entry_time;
     bool               fixed;
-    std::string        host_name;
+    int                host_id;
     int                internal_id;
-    std::string        instance_name;
-    std::string        service_description;
+    int                service_id;
     time_t             start_time;
     int                triggered_by;
     bool               was_cancelled;

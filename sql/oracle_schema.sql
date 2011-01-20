@@ -496,12 +496,12 @@ END;
 --
 CREATE TABLE customvariables (
   customvariable_id int NOT NULL,
-
-  default_value varchar(255) default NULL,
   host_id int default NULL,
-  modified char(1) default NULL,
   name varchar(255) default NULL,
   service_id int default NULL,
+
+  default_value varchar(255) default NULL,
+  modified char(1) default NULL,
   type smallint default NULL,
   update_time int default NULL,
   value varchar(255) default NULL,
@@ -527,8 +527,8 @@ END;
 CREATE TABLE downtimes (
   downtime_id int NOT NULL,
   entry_time int default NULL,
-  instance_name varchar(255) NOT NULL,
-  internal_id int default NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
 
   author varchar(64) default NULL,
   cancelled char(1) default NULL,
@@ -536,15 +536,16 @@ CREATE TABLE downtimes (
   duration int default NULL,
   end_time int default NULL,
   fixed char(1) default NULL,
-  host_name varchar(255) NOT NULL,
-  service_description varchar(255) default NULL,
+  internal_id int default NULL,
   start_time int default NULL,
   started char(1) default NULL,
   triggered_by int default NULL,
   type smallint default NULL,
 
   PRIMARY KEY (downtime_id),
-  UNIQUE (entry_time, instance_name, internal_id)
+  UNIQUE (entry_time, host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
 CREATE SEQUENCE downtimes_seq
 START WITH 1
