@@ -1173,17 +1173,15 @@ void destination::connect(destination::DB db_type,
   std::vector<std::string> id;
 
   id.clear();
-  id.push_back("author_name");
   id.push_back("entry_time");
-  id.push_back("host_name");
-  id.push_back("instance_name");
-  id.push_back("service_description");
+  id.push_back("host_id");
+  id.push_back("service_id");
   _prepare_update<events::acknowledgement>(_acknowledgement_stmt, id);
 
   id.clear();
   id.push_back("entry_time");
-  id.push_back("instance_name");
-  id.push_back("internal_id");
+  id.push_back("host_id");
+  id.push_back("service_id");
   _prepare_update<events::comment>(_comment_stmt, id);
 
   id.clear();

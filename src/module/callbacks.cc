@@ -129,13 +129,23 @@ int callback_comment(int callback_type, void* data) {
     comment->entry_type = comment_data->entry_type;
     comment->expire_time = comment_data->expire_time;
     comment->expires = comment_data->expires;
-    if (comment_data->host_name)
-      comment->host_name = comment_data->host_name;
-    comment->instance_name = config::globals::instance_name;
+    if (comment_data->host_name) {
+      std::map<std::string, int>::const_iterator it1;
+      it1 = gl_hosts.find(comment_data->host_name);
+      if (it1 != gl_hosts.end()) {
+        comment->host_id = it1->second;
+        if (comment_data->service_description) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator it2;
+          it2 = gl_services.find(std::make_pair(comment_data->host_name,
+            comment_data->service_description));
+          if (it2 != gl_services.end())
+            comment->service_id = it2->second.second;
+        }
+      }
+    }
     comment->internal_id = comment_data->comment_id;
     comment->persistent = comment_data->persistent;
-    if (comment_data->service_description)
-      comment->service_description = comment_data->service_description;
     comment->source = comment_data->source;
 
     // Send event.

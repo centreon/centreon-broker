@@ -96,13 +96,9 @@ static mapped_data<comment> const comment_mapping[] = {
     NDO_DATA_EXPIRES,
     "expires"),
   mapped_data<comment>(
-    &comment::host_name,
+    &comment::host_id,
     NDO_DATA_HOSTNAME,
-    "host_name"),
-  mapped_data<comment>(
-    &comment::instance_name,
-    NDO_DATA_PROGRAMNAME,
-    "instance_name"),
+    "host_id"),
   mapped_data<comment>(
     &comment::internal_id,
     NDO_DATA_COMMENTID,
@@ -112,9 +108,9 @@ static mapped_data<comment> const comment_mapping[] = {
     NDO_DATA_PERSISTENT,
     "persistent"),
   mapped_data<comment>(
-    &comment::service_description,
+    &comment::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_description"),
+    "service_id"),
   mapped_data<comment>(
     &comment::source,
     NDO_DATA_SOURCE,

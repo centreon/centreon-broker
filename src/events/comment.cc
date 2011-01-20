@@ -50,11 +50,10 @@ void comment::_internal_copy(comment const& c) {
   entry_type = c.entry_type;
   expire_time = c.expire_time;
   expires = c.expires;
-  host_name = c.host_name;
-  instance_name = c.instance_name;
+  host_id = c.host_id;
   internal_id = c.internal_id;
   persistent = c.persistent;
-  service_description = c.service_description;
+  service_id = c.service_id;
   source = c.source;
   type = c.type;
   return ;
@@ -77,8 +76,10 @@ comment::comment()
      entry_type(0),
      expire_time(0),
      expires(false),
+     host_id(0),
      internal_id(0),
      persistent(false),
+     service_id(0),
      source(0),
      type(0) {}
 

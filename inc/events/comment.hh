@@ -44,11 +44,10 @@ namespace              events {
     short              entry_type;
     time_t             expire_time;
     bool               expires;
-    std::string        host_name;
-    std::string        instance_name;
+    int                host_id;
     int                internal_id;
     bool               persistent;
-    std::string        service_description;
+    int                service_id;
     short              source;
     short              type;
                        comment();

@@ -692,8 +692,8 @@ END;
 CREATE TABLE comments (
   comment_id int NOT NULL,
   entry_time int NOT NULL,
-  instance_name varchar(255) NOT NULL,
-  internal_id int NOT NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
 
   author varchar(64) default NULL,
   data clob default NULL,
@@ -701,14 +701,15 @@ CREATE TABLE comments (
   entry_type smallint default NULL,
   expire_time int default NULL,
   expires char(1) default NULL,
-  host_name varchar(255) NOT NULL,
+  internal_id int NOT NULL,
   persistent char(1) default NULL,
-  service_description varchar(255) default NULL,
   source smallint default NULL,
   type smallint default NULL,
 
   PRIMARY KEY (comment_id),
-  UNIQUE (entry_time, instance_name, internal_id)
+  UNIQUE (entry_time, host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
 );
 CREATE SEQUENCE comments_seq
 START WITH 1
