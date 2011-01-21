@@ -45,6 +45,7 @@ namespace              events {
     time_t             expire_time;
     bool               expires;
     int                host_id;
+    int                instance_id;
     int                internal_id;
     bool               persistent;
     int                service_id;

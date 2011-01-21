@@ -412,6 +412,7 @@ CREATE TABLE acknowledgements (
 
   author varchar(64) default NULL,
   comment varchar(255) default NULL,
+  instance_id int default NULL,
   notify_contacts boolean default NULL,
   persistent_comment boolean default NULL,
   state smallint default NULL,
@@ -421,7 +422,9 @@ CREATE TABLE acknowledgements (
   PRIMARY KEY (acknowledgement_id),
   UNIQUE (entry_time, host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 
@@ -440,6 +443,7 @@ CREATE TABLE comments (
   entry_type smallint default NULL,
   expire_time int default NULL,
   expires boolean default NULL,
+  instance_id int default NULL,
   internal_id int NOT NULL,
   persistent boolean default NULL,
   source smallint default NULL,
@@ -448,7 +452,9 @@ CREATE TABLE comments (
   PRIMARY KEY (comment_id),
   UNIQUE (entry_time, host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 
@@ -487,6 +493,7 @@ CREATE TABLE downtimes (
   duration int default NULL,
   end_time int default NULL,
   fixed boolean default NULL,
+  instance_id int default NULL,
   internal_id int default NULL,
   start_time int default NULL,
   started boolean default NULL,
@@ -496,7 +503,9 @@ CREATE TABLE downtimes (
   PRIMARY KEY (downtime_id),
   UNIQUE (entry_time, host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 

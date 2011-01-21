@@ -48,6 +48,11 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     "host_id",
     true),
   mapped_data<acknowledgement>(
+    &acknowledgement::instance_id,
+    NDO_DATA_INSTANCE,
+    "instance_id",
+    true),
+  mapped_data<acknowledgement>(
     &acknowledgement::is_sticky,
     NDO_DATA_STICKY,
     "sticky"),
@@ -101,6 +106,11 @@ static mapped_data<comment> const comment_mapping[] = {
     &comment::host_id,
     NDO_DATA_HOSTNAME,
     "host_id",
+    true),
+  mapped_data<comment>(
+    &comment::instance_id,
+    NDO_DATA_INSTANCE,
+    "instance_id",
     true),
   mapped_data<comment>(
     &comment::internal_id,
@@ -230,6 +240,11 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::host_id,
     NDO_DATA_HOSTNAME,
     "host_id",
+    true),
+  mapped_data<downtime>(
+    &downtime::instance_id,
+    NDO_DATA_INSTANCE,
+    "instance_id",
     true),
   mapped_data<downtime>(
     &downtime::internal_id,

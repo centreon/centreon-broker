@@ -44,6 +44,7 @@ namespace              events {
     std::string        comment;
     time_t             entry_time;
     int                host_id;
+    int                instance_id;
     bool               is_sticky;
     bool               notify_contacts;
     bool               persistent_comment;

@@ -84,6 +84,7 @@ int callback_acknowledgement(int callback_type, void* data) {
         }
       }
     }
+    ack->instance_id = config::globals::instance;
     ack->is_sticky = ack_data->is_sticky;
     ack->notify_contacts = ack_data->notify_contacts;
     ack->persistent_comment = ack_data->persistent_comment;
@@ -148,6 +149,7 @@ int callback_comment(int callback_type, void* data) {
         }
       }
     }
+    comment->instance_id = config::globals::instance;
     comment->internal_id = comment_data->comment_id;
     comment->persistent = comment_data->persistent;
     comment->source = comment_data->source;
@@ -209,6 +211,7 @@ int callback_downtime(int callback_type, void* data) {
         }
       }
     }
+    downtime->instance_id = config::globals::instance;
     downtime->internal_id = downtime_data->downtime_id;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;

@@ -48,6 +48,7 @@ namespace              events {
     time_t             entry_time;
     bool               fixed;
     int                host_id;
+    int                instance_id;
     int                internal_id;
     int                service_id;
     time_t             start_time;
