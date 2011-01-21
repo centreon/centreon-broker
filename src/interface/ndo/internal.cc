@@ -181,6 +181,7 @@ static void static_init() {
         gs.getter = &get_double<T>;
         gs.setter = &set_double<T>;
         break ;
+       case mapped_data<T>::ID:
        case mapped_data<T>::INT:
         gs.getter = &get_integer<T>;
         gs.setter = &set_integer<T>;

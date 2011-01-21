@@ -51,6 +51,7 @@ class            mapped_data {
     UNKNOWN = '\0',
     BOOL = 'b',
     DOUBLE = 'd',
+    ID = 'I',
     INT = 'i',
     SHORT = 's',
     STRING = 'S',
@@ -68,30 +69,33 @@ class            mapped_data {
   { member.b = b; }
 
                  mapped_data(double T::* d,
-                             unsigned int i,
-                             char const* n)
+                   unsigned int i,
+                   char const* n)
     : id(i), name(n), type(DOUBLE)
   { member.d = d; }
 
-                 mapped_data(int T::* I, unsigned int i, char const* n)
-    : id(i), name(n), type(INT)
+                 mapped_data(int T::* I,
+                   unsigned int i,
+                   char const* n,
+                   bool is_id = false)
+    : id(i), name(n), type(is_id ? ID : INT)
   { member.i = I; }
 
                  mapped_data(short T::* s,
-                             unsigned int i,
-                             char const* n)
+                   unsigned int i,
+                   char const* n)
     : id(i), name(n), type(SHORT)
   { member.s = s; }
 
                  mapped_data(std::string T::* S,
-                             unsigned int i,
-                             char const* n)
+                   unsigned int i,
+                   char const* n)
     : id(i), name(n), type(STRING)
   { member.S = S; }
 
                  mapped_data(time_t T::* t,
-                             unsigned int i,
-                             char const* n)
+                   unsigned int i,
+                   char const* n)
     : id(i), name(n), type(TIME_T)
   { member.t = t; }
 };

@@ -45,7 +45,8 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
   mapped_data<acknowledgement>(
     &acknowledgement::host_id,
     NDO_DATA_HOSTNAME,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<acknowledgement>(
     &acknowledgement::is_sticky,
     NDO_DATA_STICKY,
@@ -61,7 +62,8 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
   mapped_data<acknowledgement>(
     &acknowledgement::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<acknowledgement>(
     &acknowledgement::state,
     NDO_DATA_STATE,
@@ -98,7 +100,8 @@ static mapped_data<comment> const comment_mapping[] = {
   mapped_data<comment>(
     &comment::host_id,
     NDO_DATA_HOSTNAME,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<comment>(
     &comment::internal_id,
     NDO_DATA_COMMENTID,
@@ -110,7 +113,8 @@ static mapped_data<comment> const comment_mapping[] = {
   mapped_data<comment>(
     &comment::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<comment>(
     &comment::source,
     NDO_DATA_SOURCE,
@@ -131,7 +135,8 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
   mapped_data<custom_variable>(
     &custom_variable::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<custom_variable>(
     &custom_variable::modified,
     NDO_DATA_HASBEENMODIFIED,
@@ -143,7 +148,8 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
   mapped_data<custom_variable>(
     &custom_variable::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<custom_variable>(
     &custom_variable::type,
     NDO_DATA_TYPE,
@@ -168,7 +174,8 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
   mapped_data<custom_variable_status>(
     &custom_variable_status::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<custom_variable_status>(
     &custom_variable_status::modified,
     NDO_DATA_HASBEENMODIFIED,
@@ -180,7 +187,8 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
   mapped_data<custom_variable_status>(
     &custom_variable_status::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<custom_variable_status>(
     &custom_variable_status::update_time,
     NDO_DATA_ENTRYTIME,
@@ -221,7 +229,8 @@ static mapped_data<downtime> const downtime_mapping[] = {
   mapped_data<downtime>(
     &downtime::host_id,
     NDO_DATA_HOSTNAME,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<downtime>(
     &downtime::internal_id,
     NDO_DATA_DOWNTIMEID,
@@ -229,7 +238,8 @@ static mapped_data<downtime> const downtime_mapping[] = {
   mapped_data<downtime>(
     &downtime::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<downtime>(
     &downtime::start_time,
     NDO_DATA_STARTTIME,
@@ -270,7 +280,8 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
   mapped_data<event_handler>(
     &event_handler::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<event_handler>(
     &event_handler::return_code,
     NDO_DATA_RETURNCODE,
@@ -278,7 +289,8 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
   mapped_data<event_handler>(
     &event_handler::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<event_handler>(
     &event_handler::start_time,
     NDO_DATA_STARTTIME,
@@ -335,7 +347,8 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
   mapped_data<flapping_status>(
     &flapping_status::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<flapping_status>(
     &flapping_status::internal_comment_id,
     NDO_DATA_COMMENTID,
@@ -355,7 +368,8 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
   mapped_data<flapping_status>(
     &flapping_status::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<flapping_status>(
     &flapping_status::type,
     NDO_DATA_TYPE,
@@ -512,11 +526,13 @@ static mapped_data<host> const host_mapping[] = {
   mapped_data<host>(
     &host::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<host>(
     &host::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    "instance_id",
+    true),
   mapped_data<host>(
     &host::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -705,7 +721,8 @@ static mapped_data<host_check> const host_check_mapping[] = {
   mapped_data<host_check>(
     &host_check::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<host_check>(
     &host_check::command_line,
     NDO_DATA_COMMANDLINE,
@@ -722,7 +739,8 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
   mapped_data<host_dependency>(
     &host_dependency::dependent_host_id,
     NDO_DATA_DEPENDENTHOSTNAME,
-    "dependent_host_id"),
+    "dependent_host_id",
+    true),
   mapped_data<host_dependency>(
     &host_dependency::execution_failure_options,
     NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS,
@@ -738,7 +756,8 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
   mapped_data<host_dependency>(
     &host_dependency::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<host_dependency>()
 };
 
@@ -755,7 +774,8 @@ static mapped_data<host_group> const host_group_mapping[] = {
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    "instance_id",
+    true),
   mapped_data<host_group>(
     &host_group::name,
     NDO_DATA_HOSTGROUPNAME,
@@ -784,7 +804,8 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
   mapped_data<host_group_member>(
     &host_group_member::host_id,
     NDO_DATA_HOSTGROUPMEMBER,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<host_group_member>()
 };
 
@@ -793,11 +814,13 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
   mapped_data<host_parent>(
     &host_parent::host_id,
     NDO_DATA_HOST,
-    "child_id"),
+    "child_id",
+    true),
   mapped_data<host_parent>(
     &host_parent::parent_id,
     NDO_DATA_PARENTHOST,
-    "parent_id"),
+    "parent_id",
+    true),
   mapped_data<host_parent>()
 };
 
@@ -866,7 +889,8 @@ static mapped_data<host_status> const host_status_mapping[] = {
   mapped_data<host_status>(
     &host_status::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<host_status>(
     &host_status::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -991,7 +1015,8 @@ static mapped_data<instance> const instance_mapping[] = {
   mapped_data<instance>(
     &instance::id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    "instance_id",
+    true),
   mapped_data<instance>(
     &instance::name,
     NDO_DATA_PROGRAMNAME,
@@ -1060,7 +1085,8 @@ static mapped_data<instance_status> const instance_status_mapping[] = {
   mapped_data<instance_status>(
     &instance_status::id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    "instance_id",
+    true),
   mapped_data<instance_status>(
     &instance_status::last_alive,
     NDO_DATA_LASTSTATE,
@@ -1129,11 +1155,13 @@ static mapped_data<issue> const issue_mapping[] = {
   mapped_data<issue>(
     &issue::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<issue>(
     &issue::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<issue>(
     &issue::start_time,
     NDO_DATA_STARTTIME,
@@ -1146,11 +1174,13 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
   mapped_data<issue_parent>(
     &issue_parent::child_host_id,
     1,
-    "child_host_id"),
+    "child_host_id",
+    true),
   mapped_data<issue_parent>(
     &issue_parent::child_service_id,
     2,
-    "child_start_time"),
+    "child_service_id",
+    true),
   mapped_data<issue_parent>(
     &issue_parent::child_start_time,
     3,
@@ -1162,11 +1192,13 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
   mapped_data<issue_parent>(
     &issue_parent::parent_host_id,
     5,
-    "parent_host_id"),
+    "parent_host_id",
+    true),
   mapped_data<issue_parent>(
     &issue_parent::parent_service_id,
     6,
-    "parent_service_id"),
+    "parent_service_id",
+    true),
   mapped_data<issue_parent>(
     &issue_parent::parent_start_time,
     7,
@@ -1187,7 +1219,8 @@ static mapped_data<log_entry> log_mapping[] = {
   mapped_data<log_entry>(
     &log_entry::host_id,
     NDO_DATA_HOSTID,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<log_entry>(
     &log_entry::host_name,
     NDO_DATA_HOST,
@@ -1223,7 +1256,8 @@ static mapped_data<log_entry> log_mapping[] = {
   mapped_data<log_entry>(
     &log_entry::service_id,
     NDO_DATA_SERVICEID,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<log_entry>(
     &log_entry::status,
     NDO_DATA_CURRENTSTATE,
@@ -1256,7 +1290,8 @@ static mapped_data<notification> const notification_mapping[] = {
   mapped_data<notification>(
     &notification::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<notification>(
     &notification::reason_type,
     NDO_DATA_NOTIFICATIONREASON,
@@ -1264,7 +1299,8 @@ static mapped_data<notification> const notification_mapping[] = {
   mapped_data<notification>(
     &notification::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<notification>(
     &notification::start_time,
     NDO_DATA_STARTTIME,
@@ -1437,7 +1473,8 @@ static mapped_data<service> const service_mapping[] = {
   mapped_data<service>(
     &service::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<service>(
     &service::icon_image,
     NDO_DATA_ICONIMAGE,
@@ -1449,7 +1486,8 @@ static mapped_data<service> const service_mapping[] = {
   mapped_data<service>(
     &service::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<service>(
     &service::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -1658,11 +1696,13 @@ static mapped_data<service_check> const service_check_mapping[] = {
   mapped_data<service_check>(
     &service_check::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<service_check>(
     &service_check::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<service_check>()
 };
 
@@ -1675,11 +1715,13 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
   mapped_data<service_dependency>(
     &service_dependency::dependent_host_id,
     NDO_DATA_DEPENDENTHOSTNAME,
-    "dependent_host_id"),
+    "dependent_host_id",
+    true),
   mapped_data<service_dependency>(
     &service_dependency::dependent_service_id,
     NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
-    "dependent_service_id"),
+    "dependent_service_id",
+    true),
   mapped_data<service_dependency>(
     &service_dependency::execution_failure_options,
     NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,
@@ -1687,7 +1729,8 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
   mapped_data<service_dependency>(
     &service_dependency::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<service_dependency>(
     &service_dependency::inherits_parent,
     NDO_DATA_INHERITSPARENT,
@@ -1699,7 +1742,8 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
   mapped_data<service_dependency>(
     &service_dependency::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<service_dependency>()
 };
 
@@ -1716,7 +1760,8 @@ static mapped_data<service_group> const service_group_mapping[] = {
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    "instance_id",
+    true),
   mapped_data<service_group>(
     &service_group::name,
     NDO_DATA_SERVICEGROUPNAME,
@@ -1741,7 +1786,8 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<service_group_member>(
     &service_group_member::instance_id,
     NDO_DATA_INSTANCE,
@@ -1749,7 +1795,8 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::service_id,
     NDO_DATA_SERVICEGROUPMEMBER,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<service_group_member>()
 };
 
@@ -1818,7 +1865,8 @@ static mapped_data<service_status> const service_status_mapping[] = {
   mapped_data<service_status>(
     &service_status::host_id,
     NDO_DATA_HOST,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<service_status>(
     &service_status::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -1922,7 +1970,8 @@ static mapped_data<service_status> const service_status_mapping[] = {
   mapped_data<service_status>(
     &service_status::service_id,
     NDO_DATA_SERVICE,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<service_status>(
     &service_status::should_be_scheduled,
     NDO_DATA_SHOULDBESCHEDULED,
@@ -1959,11 +2008,13 @@ static mapped_data<state> const state_mapping[] = {
   mapped_data<state>(
     &state::host_id,
     3,
-    "host_id"),
+    "host_id",
+    true),
   mapped_data<state>(
     &state::service_id,
     4,
-    "service_id"),
+    "service_id",
+    true),
   mapped_data<state>(
     &state::start_time,
     5,
