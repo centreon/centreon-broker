@@ -69,6 +69,7 @@ QSqlQuery& operator<<(QSqlQuery& q, events::instance const& p);
 QSqlQuery& operator<<(QSqlQuery& q, events::instance_status const& ps);
 QSqlQuery& operator<<(QSqlQuery& q, events::issue const& i);
 QSqlQuery& operator<<(QSqlQuery& q, events::log_entry const& le);
+QSqlQuery& operator<<(QSqlQuery& q, events::module const& m);
 QSqlQuery& operator<<(QSqlQuery& q, events::notification const& n);
 QSqlQuery& operator<<(QSqlQuery& q, events::service const& s);
 QSqlQuery& operator<<(QSqlQuery& q, events::service_check const& sc);

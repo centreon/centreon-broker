@@ -19,6 +19,7 @@
 -- issues
 -- issues_issues_parents
 -- logs
+-- modules
 -- notifications
 -- schemaversion
 -- services
@@ -612,6 +613,24 @@ CREATE TABLE logs (
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE SET NULL
 ) ENGINE=MyISAM;
+
+
+--
+-- Nagios modules.
+--
+CREATE TABLE modules (
+  module_id int NOT NULL auto_increment,
+  instance_id int NOT NULL,
+
+  args varchar(255) default NULL,
+  filename varchar(255) default NULL,
+  loaded boolean default NULL,
+  should_be_loaded boolean default NULL,
+
+  PRIMARY KEY (module_id),
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
 
 
 --

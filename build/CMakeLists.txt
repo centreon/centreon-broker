@@ -107,6 +107,7 @@ set(LIBROKER_SOURCES
 	../src/events/issue.cc
 	../src/events/issue_parent.cc
 	../src/events/log_entry.cc
+	../src/events/module.cc
 	../src/events/notification.cc
 	../src/events/service.cc
 	../src/events/service_check.cc

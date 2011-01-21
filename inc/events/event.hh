@@ -70,6 +70,7 @@ namespace              events {
      *  Beware when modifying this enum. Changes should be replicated on
      *  multiple files. Here's the list :
      *
+     *    - inc/events/events.hh                 : include all event objects
      *    - src/correlation/correlator.cc        : dispatch table
      *    - src/interface/db/                    : handle event
      *    - src/interface/ndo/                   : handle event
@@ -100,6 +101,7 @@ namespace              events {
       ISSUE,
       ISSUEPARENT,
       LOG,
+      MODULE,
       NOTIFICATION,
       SERVICE,
       SERVICECHECK,

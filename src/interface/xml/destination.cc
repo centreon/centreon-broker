@@ -187,6 +187,10 @@ void destination::event(events::event* e) {
       name = "log_entry";
       handle_event(*static_cast<events::log_entry*>(e), attr);
       break ;
+     case events::event::MODULE:
+      name = "module";
+      handle_event(*static_cast<events::module*>(e), attr);
+      break ;
      case events::event::NOTIFICATION:
       name = "notification";
       handle_event(*static_cast<events::notification*>(e), attr);

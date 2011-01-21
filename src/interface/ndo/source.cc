@@ -204,6 +204,9 @@ events::event* source::event() {
      case NDO_API_LOGDATA:
       e.reset(handle_event<events::log_entry>(_stream));
       break ;
+     case NDO_API_COMMANDDEFINITION:
+      e.reset(handle_event<events::module>(_stream));
+      break ;
      case NDO_API_NOTIFICATIONDATA:
       e.reset(handle_event<events::notification>(_stream));
       break ;

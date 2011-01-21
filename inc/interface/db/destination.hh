@@ -94,6 +94,7 @@ namespace          interface {
       void         _process_issue(events::event const& e);
       void         _process_issue_parent(events::event const& e);
       void         _process_log(events::event const& e);
+      void         _process_module(events::event const& e);
       void         _process_notification(events::event const& e);
       void         _process_service(events::event const& e);
       void         _process_service_check(events::event const& e);

@@ -251,6 +251,13 @@ void destination::event(events::event* e) {
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;
+     case events::event::MODULE:
+      buffer << NDO_API_COMMANDDEFINITION << ":\n";
+      handle_event<events::module>(
+        *static_cast<events::module*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
      case events::event::NOTIFICATION:
       buffer << NDO_API_NOTIFICATIONDATA << ":\n";
       handle_event<events::notification>(

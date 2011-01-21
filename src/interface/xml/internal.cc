@@ -283,6 +283,9 @@ template <> std::map<std::string, getter_setter<events::issue_parent> >
 template <> std::map<std::string, getter_setter<events::log_entry> >
   interface::xml::xml_mapped_type<events::log_entry>::map =
     std::map<std::string, getter_setter<events::log_entry> >();
+template <> std::map<std::string, getter_setter<events::module> >
+  interface::xml::xml_mapped_type<events::module>::map =
+    std::map<std::string, getter_setter<events::module> >();
 template <> std::map<std::string, getter_setter<events::notification> >
   interface::xml::xml_mapped_type<events::notification>::map =
     std::map<std::string, getter_setter<events::notification> >();
@@ -339,6 +342,7 @@ void interface::xml::initialize() {
   static_init<events::issue>();
   static_init<events::issue_parent>();
   static_init<events::log_entry>();
+  static_init<events::module>();
   static_init<events::notification>();
   static_init<events::service>();
   static_init<events::service_check>();

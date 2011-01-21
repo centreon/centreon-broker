@@ -40,6 +40,7 @@
 # include "events/issue.hh"
 # include "events/issue_parent.hh"
 # include "events/log_entry.hh"
+# include "events/module.hh"
 # include "events/notification.hh"
 # include "events/service.hh"
 # include "events/service_check.hh"

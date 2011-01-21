@@ -1273,6 +1273,32 @@ static mapped_data<log_entry> log_mapping[] = {
   mapped_data<log_entry>()
 };
 
+// Module members mapping.
+static mapped_data<module> const module_mapping[] = {
+  mapped_data<module>(
+    &module::args,
+    1,
+    "args"),
+  mapped_data<module>(
+    &module::filename,
+    2,
+    "filename"),
+  mapped_data<module>(
+    &module::instance_id,
+    3,
+    "instance_id",
+    true),
+  mapped_data<module>(
+    &module::loaded,
+    4,
+    "loaded"),
+  mapped_data<module>(
+    &module::should_be_loaded,
+    5,
+    "should_be_loaded"),
+  mapped_data<module>()
+};
+
 // Notification members mapping.
 static mapped_data<notification> const notification_mapping[] = {
   mapped_data<notification>(
@@ -2135,6 +2161,12 @@ template <> const mapped_data<events::log_entry>*
   mapped_type<events::log_entry>::members(log_mapping);
 template <> const char*
   mapped_type<events::log_entry>::table("logs");
+
+// module mapping.
+template <> mapped_data<events::module> const*
+  mapped_type<events::module>::members(module_mapping);
+template <> char const*
+  mapped_type<events::module>::table("modules");
 
 // notification mapping.
 template <> mapped_data<events::notification> const*

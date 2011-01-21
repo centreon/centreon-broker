@@ -251,6 +251,9 @@ template <> std::list<std::pair<std::string, getter_setter<events::issue> > >
 template <> std::list<std::pair<std::string, getter_setter<events::log_entry> > >
   interface::db::db_mapped_type<events::log_entry>::list =
     std::list<std::pair<std::string, getter_setter<events::log_entry> > >();
+template <> std::list<std::pair<std::string, getter_setter<events::module> > >
+  interface::db::db_mapped_type<events::module>::list =
+    std::list<std::pair<std::string, getter_setter<events::module> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::notification> > >
   interface::db::db_mapped_type<events::notification>::list =
     std::list<std::pair<std::string, getter_setter<events::notification> > >();
@@ -306,6 +309,7 @@ void interface::db::initialize() {
   static_init<events::instance_status>();
   static_init<events::issue>();
   static_init<events::log_entry>();
+  static_init<events::module>();
   static_init<events::notification>();
   static_init<events::service>();
   static_init<events::service_check>();
@@ -458,6 +462,14 @@ QSqlQuery& operator<<(QSqlQuery& q, events::issue const& i) {
  */
 QSqlQuery& operator<<(QSqlQuery& q, events::log_entry const& le) {
   to_base(q, le);
+  return (q);
+}
+
+/**
+ *  ORM operator for module.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, events::module const& m) {
+  to_base(q, m);
   return (q);
 }
 

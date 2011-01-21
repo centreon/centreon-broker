@@ -63,6 +63,7 @@ void (destination::* destination::processing_table[])(events::event const&) = {
   &destination::_process_issue,                  // ISSUE
   &destination::_process_issue_parent,           // ISSUEPARENT
   &destination::_process_log,                    // LOG
+  &destination::_process_module,                 // MODULE
   &destination::_process_notification,           // NOTIFICATION
   &destination::_process_service,                // SERVICE
   &destination::_process_service_check,          // SERVICECHECK
@@ -191,6 +192,14 @@ void destination::_clean_tables(int instance_id) {
           "   JOIN " << mapped_type<events::host>::table << " AS hosts"
           "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
        << instance_id << ")";
+    _conn->exec(ss.str().c_str());
+  }
+
+  // Remove list of modules.
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<events::module>::table
+       << " WHERE instance_id=" << instance_id;
     _conn->exec(ss.str().c_str());
   }
 
@@ -849,6 +858,22 @@ void destination::_process_log(events::event const& e) {
   q << le;
   q.bindValue(field, issue);
   q.exec();
+
+  return ;
+}
+
+/**
+ *  Process a module event.
+ *
+ *  @param[in] e Uncasted module.
+ */
+void destination::_process_module(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing module event";
+
+  // Processing.
+  events::module const& m(*static_cast<events::module const*>(&e));
+  _insert(m);
 
   return ;
 }

@@ -269,6 +269,9 @@ template <> std::map<int, getter_setter<events::issue_parent> >
 template <> std::map<int, getter_setter<events::log_entry> >
   interface::ndo::ndo_mapped_type<events::log_entry>::map =
     std::map<int, getter_setter<events::log_entry> >();
+template <> std::map<int, getter_setter<events::module> >
+  interface::ndo::ndo_mapped_type<events::module>::map =
+    std::map<int, getter_setter<events::module> >();
 template <> std::map<int, getter_setter<events::notification> >
   interface::ndo::ndo_mapped_type<events::notification>::map =
     std::map<int, getter_setter<events::notification> >();
@@ -325,6 +328,7 @@ void interface::ndo::initialize() {
   static_init<events::issue>();
   static_init<events::issue_parent>();
   static_init<events::log_entry>();
+  static_init<events::module>();
   static_init<events::notification>();
   static_init<events::service>();
   static_init<events::service_check>();

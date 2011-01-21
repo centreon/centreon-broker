@@ -31,8 +31,12 @@
 #include "module/set_log_data.hh"
 #include "nagios/broker.h"
 #include "nagios/comments.h"
+#include "nagios/nebmodules.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
+
+// List of Nagios modules.
+extern nebmodule* nebmodule_list;
 
 /**
  *  @brief Function that process acknowledgement data.
@@ -581,6 +585,26 @@ int callback_process(int callback_type, void *data) {
       gl_publisher.event(instance.get());
       instance.release();
       send_initial_configuration();
+
+      // Generate module list.
+      for (nebmodule* nm = nebmodule_list; nm; nm = nm->next)
+        if (nm->filename) {
+          // Output variable.
+          std::auto_ptr<events::module> module(new events::module);
+
+          // Fill output var.
+          if (nm->args)
+            module->args = nm->args;
+          module->filename = nm->filename;
+          module->instance_id = config::globals::instance;
+          module->loaded = nm->is_currently_loaded;
+          module->should_be_loaded = nm->should_be_loaded;
+
+          // Send events.
+          module->add_reader();
+          gl_publisher.event(module.get());
+          module.release();
+        }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info << logging::MEDIUM << "generating process end event";

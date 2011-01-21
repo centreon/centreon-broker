@@ -60,6 +60,7 @@ void (correlator::* correlator::_dispatch_table[])(events::event&) = {
   &correlator::_correlate_nothing,        // ISSUE
   &correlator::_correlate_nothing,        // ISSUEPARENT
   &correlator::_correlate_log,            // LOG
+  &correlator::_correlate_nothing,        // MODULE
   &correlator::_correlate_nothing,        // NOTIFICATION
   &correlator::_correlate_nothing,        // SERVICE
   &correlator::_correlate_nothing,        // SERVICECHECK
