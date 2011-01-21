@@ -36,7 +36,7 @@
 #include "nagios/objects.h"
 
 // List of Nagios modules.
-extern nebmodule* nebmodule_list;
+extern nebmodule* neb_module_list;
 
 /**
  *  @brief Function that process acknowledgement data.
@@ -587,7 +587,7 @@ int callback_process(int callback_type, void *data) {
       send_initial_configuration();
 
       // Generate module list.
-      for (nebmodule* nm = nebmodule_list; nm; nm = nm->next)
+      for (nebmodule* nm = neb_module_list; nm; nm = nm->next)
         if (nm->filename) {
           // Output variable.
           std::auto_ptr<events::module> module(new events::module);
