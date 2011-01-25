@@ -393,7 +393,8 @@ void destination::_process_custom_variable(events::event const& e) {
   // Processing.
   events::custom_variable const& cv(
     *static_cast<events::custom_variable const*>(&e));
-  _insert(cv);
+  *_custom_variable_insert_stmt << cv;
+  _custom_variable_insert_stmt->exec();
 
   return ;
 }
@@ -1092,6 +1093,7 @@ destination::~destination() {
 void destination::close() {
   _acknowledgement_stmt.reset();
   _comment_stmt.reset();
+  _custom_variable_insert_stmt.reset();
   _custom_variable_status_stmt.reset();
   _downtime_stmt.reset();
   _event_handler_stmt.reset();
@@ -1191,7 +1193,8 @@ void destination::connect(destination::DB db_type,
     throw (exceptions::basic() << "could not open db: "
                                << _conn->lastError().text().toStdString().c_str());
 
-  // Prepare service query.
+  // Prepare insert queries.
+  _prepare_insert<events::custom_variable>(_custom_variable_insert_stmt);
   _prepare_insert<events::service>(_service_insert_stmt);
 
   // Prepare update queries.

@@ -48,6 +48,7 @@ namespace          interface {
       static void                    (destination::* processing_table[])(events::event const&);
       std::auto_ptr<QSqlQuery>       _acknowledgement_stmt;
       std::auto_ptr<QSqlQuery>       _comment_stmt;
+      std::auto_ptr<QSqlQuery>       _custom_variable_insert_stmt;
       std::auto_ptr<QSqlQuery>       _custom_variable_status_stmt;
       std::auto_ptr<QSqlQuery>       _downtime_stmt;
       std::auto_ptr<QSqlQuery>       _event_handler_stmt;
