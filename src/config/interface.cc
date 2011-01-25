@@ -147,9 +147,14 @@ bool interface::operator==(interface const& i) const {
                      && i.failover.get()
                      && (*failover == *i.failover))));
       break ;
+     case db2:
+     case ibase:
      case mysql:
+     case odbc:
      case oracle:
      case postgresql:
+     case sqlite:
+     case tds:
       ret = ((db == i.db)
              && (host == i.host)
              && (password == i.password)
@@ -241,9 +246,14 @@ bool interface::operator<(interface const& i) const {
       else
         ret = false;
       break ;
+     case db2:
+     case ibase:
      case mysql:
+     case odbc:
      case oracle:
      case postgresql:
+     case sqlite:
+     case tds:
       if (db != i.db)
         ret = (db < i.db);
       else if (host != i.host)

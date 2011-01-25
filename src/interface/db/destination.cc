@@ -1158,29 +1158,38 @@ void destination::connect(destination::DB db_type,
                           std::string const& user,
                           std::string const& pass) {
   // Set DB type.
+  char const* db_driver;
   switch (db_type) {
-#ifdef USE_MYSQL
+   case DB2:
+    db_driver = "DB2";
+    break ;
+   case IBASE:
+    db_driver = "IBASE";
+    break ;
    case MYSQL:
-    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QMYSQL")));
-    _conn->setConnectOptions("CLIENT_FOUND_ROWS");
+    db_driver = "QMYSQL";
     break ;
-#endif /* USE_MYSQL */
-
-#ifdef USE_ORACLE
+   case ODBC:
+    db_driver = "QODBC";
+    break ;
    case ORACLE:
-    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QOCI")));
+    db_driver = "QOCI";
     break ;
-#endif /* USE_ORACLE */
-
-#ifdef USE_POSTGRESQL
    case POSTGRESQL:
-    _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase("QPSQL")));
+    db_driver = "QPSQL";
     break ;
-#endif /* USE_POSTGRESQL */
-
+   case SQLITE:
+    db_driver = "QSQLITE";
+    break ;
+   case TDS:
+    db_driver = "QTDS";
+    break ;
    default:
     throw exceptions::basic() << "unsupported DBMS requested";
   }
+  _conn.reset(new QSqlDatabase(QSqlDatabase::addDatabase(db_driver)));
+  if (!strcmp(db_driver, "QMYSQL"))
+    _conn->setConnectOptions("CLIENT_FOUND_ROWS");
 
   // Set common parameters.
   _conn->setDatabaseName(db.c_str());

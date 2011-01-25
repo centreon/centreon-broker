@@ -46,20 +46,6 @@ endif ()
 find_package(Qt4 COMPONENTS QtCore QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 
-# Activate proper DBMS.
-option(WITH_MYSQL "Activate MySQL support." ON)
-if (WITH_MYSQL)
-  add_definitions(-DUSE_MYSQL)
-endif ()
-option(WITH_ORACLE "Activate Oracle support." OFF)
-if (WITH_ORACLE)
-  add_definitions(-DUSE_ORACLE)
-endif ()
-option(WITH_POSTGRESQL "Activate PostgreSQL." OFF)
-if (WITH_POSTGRESQL)
-  add_definitions(-DUSE_POSTGRESQL)
-endif ()
-
 # Check for GNU TLS.
 option(TLS "TLS support." ON)
 if (TLS)

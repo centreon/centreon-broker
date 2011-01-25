@@ -39,9 +39,14 @@ namespace          interface {
      public:
       enum         DB {
         UNKNOWN = 0,
+        DB2,
+        IBASE,
         MYSQL,
+        ODBC,
         ORACLE,
-        POSTGRESQL
+        POSTGRESQL,
+        SQLITE,
+        TDS
       };
 
      private:

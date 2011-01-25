@@ -45,14 +45,19 @@ namespace                    config {
     };
     enum                     type_t {
       unknown = 0,
+      db2,
       file,
+      ibase,
       ipv4_client,
       ipv4_server,
       ipv6_client,
       ipv6_server,
       mysql,
+      odbc,
       oracle,
       postgresql,
+      sqlite,
+      tds,
       unix_client,
       unix_server
     };

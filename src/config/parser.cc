@@ -254,26 +254,30 @@ bool parser::endElement(QString const& uri,
       else
         i = &_outputs.back();
       t = _data.c_str();
-      if (!strcasecmp(t, "file"))
+      if (!strcasecmp(t, "db2"))
+	i->type = interface::db2;
+      else if (!strcasecmp(t, "file"))
         i->type = interface::file;
+      else if (!strcasecmp(t, "ibase"))
+	i->type = interface::ibase;
       else if (!strcasecmp(t, "ipv4"))
         i->type = (i->host.empty() ? interface::ipv4_server
                                    : interface::ipv4_client);
       else if (!strcasecmp(t, "ipv6"))
         i->type = (i->host.empty() ? interface::ipv6_server
                                    : interface::ipv6_client);
-#ifdef USE_MYSQL
       else if (!strcasecmp(t, "mysql"))
         i->type = interface::mysql;
-#endif /* USE_MYSQL */
-#ifdef USE_ORACLE
+      else if (!strcasecmp(t, "odbc"))
+	i->type = interface::odbc;
       else if (!strcasecmp(t, "oracle"))
         i->type = interface::oracle;
-#endif /* USE_ORACLE */
-#ifdef USE_POSTGRESQL
       else if (!strcasecmp(t, "postgresql"))
         i->type = interface::postgresql;
-#endif /* USE_POSTGRESQL */
+      else if (!strcasecmp(t, "sqlite"))
+	i->type = interface::sqlite;
+      else if (!strcasecmp(t, "tds"))
+	i->type = interface::tds;
       else if (!strcasecmp(t, "unix_client"))
         i->type = interface::unix_client;
       else if (!strcasecmp(t, "unix_server"))

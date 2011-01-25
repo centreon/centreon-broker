@@ -253,7 +253,30 @@ interface::destination* config::factory::build_destination(config::interface con
       ipv6c.release();
     }
     break ;
-#ifdef USE_MYSQL
+   case config::interface::db2:
+    {
+      std::auto_ptr< ::interface::db::destination> db(
+        new ::interface::db::destination);
+      db->connect(::interface::db::destination::DB2,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
+      dest = db.release();
+    }
+    break ;
+   case config::interface::ibase:
+    {
+      std::auto_ptr< ::interface::db::destination> db(
+        new ::interface::db::destination);
+      db->connect(::interface::db::destination::IBASE,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
+      dest = db.release();
+    }
+    break ;
    case config::interface::mysql:
     {
       std::auto_ptr< ::interface::db::destination> db(
@@ -266,8 +289,18 @@ interface::destination* config::factory::build_destination(config::interface con
       dest = db.release();
     }
     break ;
-#endif /* USE_MYSQL */
-#ifdef USE_ORACLE
+   case config::interface::odbc:
+    {
+      std::auto_ptr< ::interface::db::destination> db(
+        new ::interface::db::destination);
+      db->connect(::interface::db::destination::ODBC,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
+      dest = db.release();
+    }
+    break ;
    case config::interface::oracle:
     {
       std::auto_ptr< ::interface::db::destination> db(
@@ -280,8 +313,6 @@ interface::destination* config::factory::build_destination(config::interface con
       dest = db.release();
     }
     break ;
-#endif /* USE_ORACLE */
-#ifdef USE_POSTGRESQL
    case config::interface::postgresql:
     {
       std::auto_ptr< ::interface::db::destination> db(
@@ -294,7 +325,30 @@ interface::destination* config::factory::build_destination(config::interface con
       dest = db.release();
     }
     break ;
-#endif /* USE_POSTGRESQL */
+   case config::interface::sqlite:
+    {
+      std::auto_ptr< ::interface::db::destination> db(
+        new ::interface::db::destination);
+      db->connect(::interface::db::destination::SQLITE,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
+      dest = db.release();
+    }
+    break ;
+   case config::interface::tds:
+    {
+      std::auto_ptr< ::interface::db::destination> db(
+        new ::interface::db::destination);
+      db->connect(::interface::db::destination::TDS,
+        i.db,
+        i.host,
+        i.user,
+        i.password);
+      dest = db.release();
+    }
+    break ;
    case config::interface::unix_client:
     {
       std::auto_ptr<io::stream> uc(build_unix_connector(i));
