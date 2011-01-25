@@ -583,8 +583,8 @@ void destination::_process_host_group_member(events::event const& e) {
         << hgm.host_id << ", "
         << hostgroup_id << ")";
     logging::info << logging::LOW << "executing query: "
-                  << ss.str().c_str();
-    _conn->exec(ss.str().c_str());
+                  << oss.str().c_str();
+    _conn->exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
