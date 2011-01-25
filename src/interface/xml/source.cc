@@ -20,22 +20,12 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include "events/events.hh"
+#include "exceptions/basic.hh"
+#include "interface/xml/internal.hh"
 #include "interface/xml/source.hh"
 
 using namespace interface::xml;
-
-/**************************************
-*                                     *
-*           Static Methods            *
-*                                     *
-**************************************/
-
-/**
- *  Extract event parameters from the data stream.
- */
-template <typename T>
-static T* handle_event() {
-}
 
 /**************************************
 *                                     *
@@ -51,7 +41,8 @@ static T* handle_event() {
  *
  *  @param[in] s Unused.
  */
-source::source(source const& s) : interface::source(s) {
+source::source(source const& s)
+  : interface::source(s), QXmlDefaultHandler(), QXmlInputSource(s) {
   (void)s;
   assert(false);
   abort();
@@ -74,6 +65,107 @@ source& source::operator=(source const& s) {
   return (*this);
 }
 
+/**
+ *  Fetch data from the stream and give it to the XML parser.
+ */
+void source::fetchData() {
+  QByteArray data;
+  data.resize(2048);
+  unsigned int rb(_stream->receive(data.data(), data.size()));
+  data.resize(rb);
+  setData(data);
+  return ;
+}
+
+/**
+ *  Extract data from the XML attributes.
+ *
+ *  @param[in] attrs Attributes of the node.
+ */
+template <typename T>
+void source::handle_event(QXmlAttributes const& attrs) {
+  std::auto_ptr<T> t(new T);
+  for (typename std::map<std::string, getter_setter<T> >::iterator
+         it = xml_mapped_type<T>::map.begin(),
+         end = xml_mapped_type<T>::map.end();
+       it != end;
+       ++it) {
+    (*(it->second.setter))(*t,
+      *(it->second.member),
+      attrs.value(it->first.c_str()).toStdString().c_str());
+  }
+  return ;
+}
+
+/**
+ *  Beginning of XML node.
+ *
+ *  @param[in] nspace    Namespace.
+ *  @param[in] localname Local name.
+ *  @param[in] qname     QName.
+ *  @param[in] attrs     XML attributes of the node.
+ *
+ *  @return true on success.
+ */
+bool source::startElement(QString const& nspace,
+                          QString const& localname,
+                          QString const& qname,
+                          QXmlAttributes const& attrs) {
+  (void)nspace;
+  (void)qname;
+  if (localname.toStdString() == "acknowledgement")
+    handle_event<events::acknowledgement>(attrs);
+  else if (localname.toStdString() == "comment")
+    handle_event<events::comment>(attrs);
+  else if (localname.toStdString() == "custom_variable")
+    handle_event<events::custom_variable>(attrs);
+  else if (localname.toStdString() == "custom_variable_status")
+    handle_event<events::custom_variable_status>(attrs);
+  else if (localname.toStdString() == "downtime")
+    handle_event<events::downtime>(attrs);
+  else if (localname.toStdString() == "event_handler")
+    handle_event<events::event_handler>(attrs);
+  else if (localname.toStdString() == "host")
+    handle_event<events::host>(attrs);
+  else if (localname.toStdString() == "host_dependency")
+    handle_event<events::host_dependency>(attrs);
+  else if (localname.toStdString() == "host_group")
+    handle_event<events::host_group>(attrs);
+  else if (localname.toStdString() == "host_group_member")
+    handle_event<events::host_group_member>(attrs);
+  else if (localname.toStdString() == "host_parent")
+    handle_event<events::host_parent>(attrs);
+  else if (localname.toStdString() == "host_status")
+    handle_event<events::host_status>(attrs);
+  else if (localname.toStdString() == "instance")
+    handle_event<events::instance>(attrs);
+  else if (localname.toStdString() == "instance_status")
+    handle_event<events::instance_status>(attrs);
+  else if (localname.toStdString() == "log_entry")
+    handle_event<events::log_entry>(attrs);
+  else if (localname.toStdString() == "module")
+    handle_event<events::module>(attrs);
+  else if (localname.toStdString() == "notification")
+    handle_event<events::notification>(attrs);
+  else if (localname.toStdString() == "service")
+    handle_event<events::service>(attrs);
+  else if (localname.toStdString() == "service_dependency")
+    handle_event<events::service_dependency>(attrs);
+  else if (localname.toStdString() == "service_group")
+    handle_event<events::service_group>(attrs);
+  else if (localname.toStdString() == "service_group_member")
+    handle_event<events::service_group_member>(attrs);
+  else if (localname.toStdString() == "service_status")
+    handle_event<events::service_status>(attrs);
+  else if (localname.toStdString() == "state")
+    handle_event<events::state>(attrs);
+  else
+    throw (exceptions::basic() << "unknown XML node: "
+                               << localname.toStdString().c_str());
+
+  return (true);
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -85,7 +177,10 @@ source& source::operator=(source const& s) {
  *
  *  @param[in] s Stream on which data will be sent.
  */
-source::source(io::stream* s) : _stream(s) {}
+source::source(io::stream* s) : _stream(s) {
+  _parser.setContentHandler(this);
+  _parser.parse(this, true);
+}
 
 /**
  *  Destructor.
@@ -109,4 +204,17 @@ void source::close() {
  *  @return Next available event, NULL if stream is closed.
  */
 events::event* source::event() {
+  // Parse data as long as no event is fully parsed and the source
+  // stream is open.
+  while (_events.empty() && _parser.parseContinue())
+    ;
+
+  // Send resulting event.
+  std::auto_ptr<events::event> e;
+  if (!_events.empty()) {
+    e.reset(_events.front());
+    _events.pop();
+  }
+
+  return (e.release());
 }

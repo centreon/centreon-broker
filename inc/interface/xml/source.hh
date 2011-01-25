@@ -22,6 +22,8 @@
 # define EVENTS_XML_SOURCE_HH_
 
 # include <memory>
+# include <QtXml>
+# include <queue>
 # include "interface/source.hh"
 # include "io/stream.hh"
 
@@ -34,17 +36,28 @@ namespace                       interface {
      *  The interface::xml::source class converts an input stream into
      *  events using the XML protocol.
      */
-    class                       source : public interface::source {
+    class                        source : public interface::source,
+                                          public QXmlDefaultHandler,
+                                          public QXmlInputSource {
      private:
-      std::auto_ptr<io::stream> _stream;
-                                source(source const& s);
-      source&                   operator=(source const& s);
+      std::queue<events::event*> _events;
+      QXmlSimpleReader           _parser;
+      std::auto_ptr<io::stream>  _stream;
+                                 source(source const& s);
+      source&                    operator=(source const& s);
+      void                       fetchData();
+      template                   <typename T>
+      void                       handle_event(QXmlAttributes const& attrs);
+      bool                       startElement(QString const& nspace,
+                                   QString const& localname,
+                                   QString const& qname,
+                                   QXmlAttributes const& attrs);
 
      public:
-                                source(io::stream* s);
-      virtual                   ~source();
-      virtual void              close();
-      virtual events::event*    event();
+                                 source(io::stream* s);
+      virtual                    ~source();
+      virtual void               close();
+      virtual events::event*     event();
     };
   }
 }

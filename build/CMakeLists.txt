@@ -48,7 +48,7 @@ find_package(XercesC REQUIRED)
 include_directories(${XERCESC_INCLUDE_DIR})
 
 # Find QtSql module.
-find_package(Qt4 COMPONENTS QtCore QtSql REQUIRED)
+find_package(Qt4 COMPONENTS QtCore QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 
 # Activate proper DBMS.
