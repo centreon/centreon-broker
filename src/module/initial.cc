@@ -60,24 +60,25 @@ static void send_custom_variables_list() {
       unsigned int host_id(gl_hosts[h->name]);
 
       // Send all custom variables.
-      for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next) {
-        std::auto_ptr<events::custom_variable> c(new events::custom_variable);
-        c->host_id = host_id;
-        c->modified = false;
-        // c->type = XXX;
-        if (cv->variable_name)
-          c->name = cv->variable_name;
-        c->update_time = now;
-        if (cv->variable_value)
-          c->value = cv->variable_value;
+      for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
+        if (cv->variable_name && strcmp(cv->variable_name, "HOST_ID")) {
+          std::auto_ptr<events::custom_variable> c(new events::custom_variable);
+          c->host_id = host_id;
+          c->modified = false;
+          // c->type = XXX;
+          if (cv->variable_name)
+            c->name = cv->variable_name;
+          c->update_time = now;
+          if (cv->variable_value)
+            c->value = cv->variable_value;
 
-        // Send custom variable event.
-        logging::debug << logging::LOW << "  new custom variable '"
-                       << c->name.c_str() << "'";
-        c->add_reader();
-        gl_publisher.event(c.get());
-        c.release();
-      }
+          // Send custom variable event.
+          logging::debug << logging::LOW << "  new custom variable '"
+                         << c->name.c_str() << "'";
+          c->add_reader();
+          gl_publisher.event(c.get());
+          c.release();
+        }
     }
   }
 
@@ -91,25 +92,28 @@ static void send_custom_variables_list() {
       unsigned int service_id(it->second.second);
 
       // Send all custom variables.
-      for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next) {
-        std::auto_ptr<events::custom_variable> c(new events::custom_variable);
-        c->host_id = host_id;
-        c->modified = false;
-        c->service_id = service_id;
-        // c->type = XXX;
-        if (cv->variable_name)
-          c->name = cv->variable_name;
-        c->update_time = now;
-        if (cv->variable_value)
-          c->value = cv->variable_value;
+      for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next)
+        if (cv->variable_name
+            && strcmp(cv->variable_name, "HOST_ID")
+            && strcmp(cv->variable_name, "SERVICE_ID")) {
+          std::auto_ptr<events::custom_variable> c(new events::custom_variable);
+          c->host_id = host_id;
+          c->modified = false;
+          c->service_id = service_id;
+          // c->type = XXX;
+          if (cv->variable_name)
+            c->name = cv->variable_name;
+          c->update_time = now;
+          if (cv->variable_value)
+            c->value = cv->variable_value;
 
-        // Send custom variable event.
-        logging::debug << logging::LOW << "  new custom variable '"
-                       << c->name.c_str() << "'";
-        c->add_reader();
-        gl_publisher.event(c.get());
-        c.release();
-      }
+          // Send custom variable event.
+          logging::debug << logging::LOW << "  new custom variable '"
+                         << c->name.c_str() << "'";
+          c->add_reader();
+          gl_publisher.event(c.get());
+          c.release();
+        }
     }
   }
 
