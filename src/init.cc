@@ -18,7 +18,6 @@
 ** For more information: contact@centreon.com
 */
 
-#include <xercesc/util/PlatformUtils.hpp>
 #include "exceptions/retval.hh"
 #include "init.hh"
 #include "interface/db/internal.hh"
@@ -49,10 +48,6 @@ void deinit() {
   io::tls::destroy();
 #endif /* USE_TLS */
 
-  // Unload Xerces-C++ engine.
-  logging::debug << logging::MEDIUM << "unloading Xerces-C++ library";
-  xercesc::XMLPlatformUtils::Terminate();
-
   logging::clear();
 
   return ;
@@ -62,9 +57,6 @@ void deinit() {
  *  Load everything necessary for the program to work.
  */
 void init() {
-  // Initialize Xerces-C++ engine.
-  xercesc::XMLPlatformUtils::Initialize();
-
 #ifdef USE_TLS
   // Initialize GNU TLS.
   logging::debug << logging::MEDIUM << "initializing GNU TLS library";

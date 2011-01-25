@@ -19,12 +19,10 @@
 */
 
 #include <memory>
+#include <QtXml>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <xercesc/sax2/SAX2XMLReader.hpp>
-#include <xercesc/sax2/XMLReaderFactory.hpp>
-#include <xercesc/util/XMLString.hpp>
 #include "config/globals.hh"
 #include "config/parser.hh"
 #include "exceptions/basic.hh"
@@ -107,24 +105,21 @@ void parser::_internal_copy(parser const& p) {
 /**
  *  Parse properties of main tags.
  */
-void parser::_parse_properties(XMLCh const* localname,
-                               parser::_tag_id const tag_to_id[]) {
-  char* tag(xercesc::XMLString::transcode(localname));
-  if (!tag)
-    throw (exceptions::basic() << "Empty token.");
+void parser::_parse_properties(char const* localname, 
+                              parser::_tag_id const tag_to_id[]) {
+  if (!localname)
+    throw (exceptions::basic() << "could not get name of XML properties");
   _current_type prev(_current.top());
   for (unsigned int i = 0; tag_to_id[i].tag; ++i)
-    if (!strcmp(tag, tag_to_id[i].tag)) {
+    if (!strcmp(localname, tag_to_id[i].tag)) {
       _current.push(tag_to_id[i].id);
       break ;
     }
   if (_current.top() == prev) {
     exceptions::basic e;
-    e << "Invalid token \"" << tag << "\"";
-    xercesc::XMLString::release(&tag);
+    e << "invalid token \"" << localname << "\"";
     throw (e);
   }
-  xercesc::XMLString::release(&tag);
   return ;
 }
 
@@ -133,20 +128,12 @@ void parser::_parse_properties(XMLCh const* localname,
  *
  *  @param[in] chars  Characters.
  *  @param[in] length Length of chars.
+ *
+ *  @return true on success.
  */
-void parser::characters(XMLCh const* const chars,
-#if XERCES_VERSION_MAJOR >= 3
-                        XMLSize_t const length)
-#else
-                        unsigned int const length)
-#endif /* XERCES_VERSION_MAJOR */
-{
-  char* data(xercesc::XMLString::transcode(chars));
-  if (data) {
-    _data.append(data, length);
-    xercesc::XMLString::release(&data);
-  }
-  return ;
+bool parser::characters(QString const& ch) {
+  _data.append(ch.toStdString());
+  return (true);
 }
 
 /**
@@ -157,10 +144,12 @@ void parser::characters(XMLCh const* const chars,
  *  @param[in] uri       Unused.
  *  @param[in] localname Unused.
  *  @param[in] qname     Unused.
+ *
+ *  @return true on success.
  */
-void parser::endElement(XMLCh const* const uri,
-                        XMLCh const* const localname,
-                        XMLCh const* const qname) {
+bool parser::endElement(QString const& uri,
+                        QString const& localname,
+                        QString const& qname) {
   (void)uri;
   (void)localname;
   (void)qname;
@@ -290,7 +279,7 @@ void parser::endElement(XMLCh const* const uri,
       else if (!strcasecmp(t, "unix_server"))
         i->type = interface::unix_server;
       else
-        throw (exceptions::basic() << "Unknown interface type \""
+        throw (exceptions::basic() << "unknown interface type \""
                                    << t << "\"");
     }
     break ;
@@ -380,7 +369,7 @@ void parser::endElement(XMLCh const* const uri,
    default:
     throw (exceptions::basic() << "bug in the config parsing engine");
   }
-  return ;
+  return (true);
 }
 
 /**
@@ -392,11 +381,13 @@ void parser::endElement(XMLCh const* const uri,
  *  @param[in] localname Name of the attribute.
  *  @param[in] qname     
  *  @param[in] attrs     
+ *
+ *  @return true on success.
  */
-void parser::startElement(XMLCh const* const uri,
-                          XMLCh const* const localname,
-                          XMLCh const* const qname,
-                          xercesc::Attributes const& attrs) {
+bool parser::startElement(QString const& uri,
+                          QString const& localname,
+                          QString const& qname,
+                          QXmlAttributes const& attrs) {
   (void)uri;
   (void)qname;
   (void)attrs;
@@ -404,9 +395,7 @@ void parser::startElement(XMLCh const* const uri,
   switch (_current.top()) {
    case _conf:
     {
-      char* name(xercesc::XMLString::transcode(localname));
-      if (!name)
-        throw (exceptions::basic() << "Empty token.");
+      char const* name(localname.toStdString().c_str());
       if (!strcmp(name, "correlation"))
         _current.push(_correlation);
       else if (!strcmp(name, "correlation_file"))
@@ -430,18 +419,18 @@ void parser::startElement(XMLCh const* const uri,
       else {
         exceptions::basic e;
         e << "invalid token \"" << name << "\"";
-        xercesc::XMLString::release(&name);
         throw (e);
       }
-      xercesc::XMLString::release(&name);
     }
     break ;
    case _input:
    case _output:
-    _parse_properties(localname, _interface_tag_to_id);
+    _parse_properties(localname.toStdString().c_str(),
+      _interface_tag_to_id);
     break ;
    case _logger:
-    _parse_properties(localname, _logger_tag_to_id);
+    _parse_properties(localname.toStdString().c_str(),
+      _logger_tag_to_id);
     break ;
    case _unknown:
     _current.push(_conf);
@@ -449,13 +438,11 @@ void parser::startElement(XMLCh const* const uri,
    default:
     {
       exceptions::basic e;
-      char* tag(xercesc::XMLString::transcode(localname));
-      e << "invalid tag \"" << (tag ? tag : "unknown tag") << "\"";
-      xercesc::XMLString::release(&tag);
+      e << "invalid tag \"" << localname.toStdString().c_str() << "\"";
       throw (e);
     }
   }
-  return ;
+  return (true);
 }
 
 /**************************************
@@ -476,7 +463,7 @@ parser::parser() {
  *
  *  @param[in] p Object to copy.
  */
-parser::parser(parser const& p) : xercesc::DefaultHandler() {
+parser::parser(parser const& p) : QXmlDefaultHandler() {
   _internal_copy(p);
 }
 
@@ -531,28 +518,21 @@ std::list<interface>& parser::outputs() {
  */
 void parser::parse(std::string const& file) {
   _clear();
-  std::auto_ptr<xercesc::SAX2XMLReader> parser;
-  parser.reset(xercesc::XMLReaderFactory::createXMLReader());
-  parser->setContentHandler(this);
-  parser->setErrorHandler(this);
+  QXmlSimpleReader parser;
+  QFile qf(file.c_str());
+  std::auto_ptr<QXmlInputSource> source(new QXmlInputSource(&qf));
+  parser.setContentHandler(this);
+  parser.setErrorHandler(this);
   try {
-    parser->parse(file.c_str());
+    bool ok(parser.parse(source.get()));
+    if (!ok)
+      throw (exceptions::basic() << "parsing failed");
   }
-  catch (xercesc::XMLException const& e) {
-    char* msg(xercesc::XMLString::transcode(e.getMessage()));
+  catch (QXmlParseException const& e) {
     logging::config << logging::HIGH << "configuration parsing error on \""
                     << file.c_str() << "\" (line "
-                    << (unsigned int)e.getSrcLine() << "): " << msg;
-    xercesc::XMLString::release(&msg);
-    _clear();
-  }
-  catch (xercesc::SAXParseException const& e) {
-    char* msg(xercesc::XMLString::transcode(e.getMessage()));
-    logging::config << logging::HIGH << "configuration parsing error on \""
-                    << file.c_str() << "\" (line "
-                    << (unsigned int)e.getLineNumber() << ", character "
-                    << (unsigned int)e.getColumnNumber() << "): " << msg;
-    xercesc::XMLString::release(&msg);
+                    << (unsigned int)e.lineNumber() << "): "
+                    << e.message().toStdString().c_str();
     _clear();
   }
   catch (exceptions::basic const& e) {

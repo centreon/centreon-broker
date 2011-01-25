@@ -22,9 +22,8 @@
 # define CONFIG_PARSER_HH_
 
 # include <list>
+# include <QtXml>
 # include <stack>
-# include <xercesc/sax2/DefaultHandler.hpp>
-# include <xercesc/util/XercesVersion.hpp>
 # include "config/interface.hh"
 # include "config/logger.hh"
 
@@ -36,7 +35,7 @@ namespace                     config {
    *  Parse a configuration file and generate appropriate objects for further
    *  handling.
    */
-  class                       parser : private xercesc::DefaultHandler {
+  class                       parser : private QXmlDefaultHandler {
    private:
     enum                      _current_type {
       _unknown = 0,
@@ -88,21 +87,16 @@ namespace                     config {
     static _tag_id const      _logger_tag_to_id[];
     void                      _clear();
     void                      _internal_copy(parser const& p);
-    void                      _parse_properties(XMLCh const* localname,
+    void                      _parse_properties(char const* localname,
                                 _tag_id const tag_to_id[]);
-    void                      characters(XMLCh const* const chars,
-# if XERCES_VERSION_MAJOR >= 3
-                                XMLSize_t const length);
-# else
-                                unsigned int const length);
-#endif /* XERCES_VERSION_MAJOR */
-    void                      endElement(XMLCh const* const uri,
-                                XMLCh const* const localname,
-                                XMLCh const* const qname);
-    void                      startElement(XMLCh const* const uri,
-                                XMLCh const* const localname,
-                                XMLCh const* const qname,
-                                xercesc::Attributes const& attrs);
+    bool                      characters(QString const& ch);
+    bool                      endElement(QString const& uri,
+                                QString const& localname,
+                                QString const& qname);
+    bool                      startElement(QString const& uri,
+                                QString const& localname,
+                                QString const& qname,
+                                QXmlAttributes const& attrs);
 
    public:
                               parser();

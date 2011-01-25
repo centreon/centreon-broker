@@ -22,11 +22,10 @@
 # define CORRELATION_PARSER_HH_
 
 # include <map>
-# include <xercesc/sax2/DefaultHandler.hpp>
+# include <QtXml>
 # include "correlation/node.hh"
 
-namespace                correlation
-{
+namespace                correlation {
   /**
    *  @class parser parser.hh "correlation/parser.hh"
    *  @brief Parse the correlation file.
@@ -34,7 +33,7 @@ namespace                correlation
    *  Parse the correlation file which contains all host and services
    *  relationships.
    */
-  class                  parser : private xercesc::DefaultHandler {
+  class                  parser : private QXmlDefaultHandler {
    private:
     std::map<int, node>* _hosts;
     bool                 _in_root;
@@ -43,17 +42,17 @@ namespace                correlation
     void                 _auto_services_dependencies();
     node*                _find_node(char const* host_id,
                            char const* service_id);
-    void                 startElement(XMLCh const* const uri,
-                           XMLCh const* const localname,
-                           XMLCh const* const qname,
-                           xercesc::Attributes const& attrs);
+    bool                 startElement(QString const& uri,
+                           QString const& localname,
+                           QString const& qname,
+                           QXmlAttributes const& attrs);
 
    public:
                          parser();
                          parser(parser const& p);
                          ~parser();
     parser&              operator=(parser const& p);
-    void                 parse(const char* filename,
+    void                 parse(char const* filename,
                            std::map<int, node>& hosts,
                            std::map<std::pair<int, int>, node>& services);
   };
