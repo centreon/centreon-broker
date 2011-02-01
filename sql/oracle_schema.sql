@@ -197,7 +197,7 @@ CREATE SEQUENCE hostgroups_seq
 START WITH 1
 INCREMENT BY 1;
 CREATE TRIGGER hostgroups_trigger
-BEFORE INSERT ON hosts
+BEFORE INSERT ON hostgroups
 FOR EACH ROW
 BEGIN
   SELECT hostgroups_seq.nextval INTO :NEW.hostgroup_id FROM dual;
@@ -848,6 +848,6 @@ CREATE TRIGGER servicestateevents_trigger
 BEFORE INSERT ON servicestateevents
 FOR EACH ROW
 BEGIN
-  SELECT servicestateevents_seq.nextval INTO :NEW.servicestateevents_id FROM dual;
+  SELECT servicestateevents_seq.nextval INTO :NEW.servicestateevent_id FROM dual;
 END;
 /
