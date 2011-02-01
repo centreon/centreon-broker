@@ -37,7 +37,7 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
   mapped_data<acknowledgement>(
     &acknowledgement::comment,
     NDO_DATA_COMMENT,
-    "comment"),
+    "comment_data"),
   mapped_data<acknowledgement>(
     &acknowledgement::entry_time,
     NDO_DATA_TIMESTAMP,
@@ -274,7 +274,7 @@ static mapped_data<downtime> const downtime_mapping[] = {
   mapped_data<downtime>(
     &downtime::comment,
     NDO_DATA_COMMENT,
-    "comment"),
+    "comment_data"),
   mapped_data<downtime>()
 };
 

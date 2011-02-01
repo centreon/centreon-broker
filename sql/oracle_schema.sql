@@ -44,7 +44,7 @@ INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 1);
 --
 CREATE TABLE instances (
   instance_id int NOT NULL,
-  name varchar(255) NOT NULL default 'localhost',
+  name varchar(255) default 'localhost' NOT NULL,
 
   active_host_checks char(1) default NULL,
   active_service_checks char(1) default NULL,
@@ -108,7 +108,7 @@ CREATE TABLE hosts (
   default_passive_checks char(1) default NULL,
   default_process_perfdata char(1) default NULL,
   display_name varchar(100) default NULL,
-  enabled char(1) NOT NULL default 1,
+  enabled char(1) default 1 NOT NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
   execution_time double precision default NULL,
@@ -283,7 +283,7 @@ CREATE TABLE services (
   default_passive_checks char(1) default NULL,
   default_process_perfdata char(1) default NULL,
   display_name varchar(160) default NULL,
-  enabled char(1) NOT NULL default 1,
+  enabled char(1) default 1 NOT NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
   execution_time double precision default NULL,
@@ -431,7 +431,7 @@ CREATE TABLE acknowledgements (
   service_id int default NULL,
 
   author varchar(64) default NULL,
-  comment varchar(255) default NULL,
+  comment_data varchar(255) default NULL,
   instance_id int default NULL,
   notify_contacts char(1) default NULL,
   persistent_comment char(1) default NULL,
@@ -539,7 +539,7 @@ CREATE TABLE downtimes (
 
   author varchar(64) default NULL,
   cancelled char(1) default NULL,
-  comment clob default NULL,
+  comment_data clob default NULL,
   duration int default NULL,
   end_time int default NULL,
   fixed char(1) default NULL,
