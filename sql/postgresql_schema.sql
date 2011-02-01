@@ -15,6 +15,7 @@
 -- hosts_hostgroups
 -- hosts_hosts_dependencies
 -- hosts_hosts_parents
+-- hoststateevents
 -- instances
 -- issues
 -- issues_issues_parents
@@ -25,7 +26,7 @@
 -- servicegroups
 -- services_servicegroups
 -- services_services_dependencies
--- states
+-- servicestateevents
 
 
 --
@@ -669,22 +670,42 @@ CREATE TABLE notifications (
 );
 
 
--- Not validated.
-
-
 --
--- States of checkpoints.
+--  Host states.
 --
-CREATE TABLE stateevents (
-  stateevent_id int NOT NULL auto_increment,
+CREATE TABLE hoststateevents (
+  hoststateevent_id serial,
+  host_id int NOT NULL,
+  start_time int NOT NULL,
 
   end_time int default NULL,
-  host_id int NOT NULL,
-  service_id int default NULL,
-  start_time int NOT NULL,
-  state int NOT NULL,
-  
-  PRIMARY KEY (stateevent_id),
+  in_downtime boolean default NULL,
+  last_update int default NULL,
+  state int default NULL,
+
+  PRIMARY KEY (hoststateevent_id),
+  UNIQUE (host_id, start_time),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE
+);
+
+
+--
+--  Service states.
+--
+CREATE TABLE servicestateevents (
+  servicestateevent_id serial,
+  host_id int NOT NULL,
+  service_id int NOT NULL,
+  start_time int NOT NULL,
+
+  end_time int default NULL,
+  in_downtime boolean default NULL,
+  last_update int default NULL,
+  state int default NULL,
+
+  PRIMARY KEY (servicestateevent_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
     ON DELETE CASCADE
 );

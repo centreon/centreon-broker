@@ -15,6 +15,7 @@
 -- hosts_hostgroups
 -- hosts_hosts_dependencies
 -- hosts_hosts_parents
+-- hoststateevents
 -- instances
 -- issues
 -- issues_issues_parents
@@ -25,7 +26,7 @@
 -- servicegroups
 -- services_servicegroups
 -- services_services_dependencies
--- stateevents
+-- servicestateevents
 
 
 --
@@ -774,7 +775,7 @@ CREATE TABLE notifications (
   state int default NULL,
   type int default NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (notification_id),
   UNIQUE (host_id, service_id, start_time),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
@@ -792,28 +793,61 @@ END;
 
 
 --
--- States of checkpoints.
+--  Host states.
 --
-CREATE TABLE stateevents (
-  stateevent_id int NOT NULL,
+CREATE TABLE hoststateevents (
+  hoststateevent_id int NOT NULL,
+  host_id int NOT NULL,
+  start_time int NOT NULL,
 
   end_time int default NULL,
-  host_id int NOT NULL,
-  service_id int default NULL,
-  start_time int NOT NULL,
-  state int NOT NULL,
-  
-  PRIMARY KEY (stateevent_id),
+  in_downtime char(1) default NULL,
+  last_update int default NULL,
+  state int default NULL,
+
+  PRIMARY KEY (hoststateevent_id),
+  UNIQUE (host_id, start_time),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE states_seq
+CREATE SEQUENCE hoststateevents_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER states_trigger
-BEFORE INSERT ON states
+CREATE TRIGGER hoststateevents_trigger
+BEFORE INSERT ON hoststateevents
 FOR EACH ROW
 BEGIN
-  SELECT states_seq.nextval INTO :NEW.stateevent_id FROM dual;
+  SELECT hoststateevents_seq.nextval INTO :NEW.hoststateevent_id FROM dual;
+END;
+/
+
+
+--
+--  Service states.
+--
+CREATE TABLE servicestateevents (
+  servicestateevent_id int NOT NULL,
+  host_id int NOT NULL,
+  service_id int NOT NULL,
+  start_time int NOT NULL,
+
+  end_time int default NULL,
+  in_downtime char(1) default NULL,
+  last_update int default NULL,
+  state int default NULL,
+
+  PRIMARY KEY (servicestateevent_id),
+  UNIQUE (host_id, service_id, start_time),
+  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
+    ON DELETE CASCADE
+);
+CREATE SEQUENCE servicestateevents_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER servicestateevents_trigger
+BEFORE INSERT ON servicestateevents
+FOR EACH ROW
+BEGIN
+  SELECT servicestateevents_seq.nextval INTO :NEW.servicestateevents_id FROM dual;
 END;
 /
