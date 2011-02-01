@@ -82,6 +82,7 @@ set(LIBROKER_SOURCES
 	../src/events/host_parent.cc
 	../src/events/host_service.cc
 	../src/events/host_service_status.cc
+	../src/events/host_state.cc
 	../src/events/host_status.cc
 	../src/events/instance.cc
 	../src/events/instance_status.cc
@@ -95,6 +96,7 @@ set(LIBROKER_SOURCES
 	../src/events/service_dependency.cc
 	../src/events/service_group.cc
 	../src/events/service_group_member.cc
+	../src/events/service_state.cc
 	../src/events/service_status.cc
 	../src/events/state.cc
 	../src/events/status.cc

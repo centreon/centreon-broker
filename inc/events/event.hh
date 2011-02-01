@@ -95,6 +95,7 @@ namespace              events {
       HOSTGROUP,
       HOSTGROUPMEMBER,
       HOSTPARENT,
+      HOSTSTATE,
       HOSTSTATUS,
       INSTANCE,
       INSTANCESTATUS,
@@ -108,8 +109,8 @@ namespace              events {
       SERVICEDEPENDENCY,
       SERVICEGROUP,
       SERVICEGROUPMEMBER,
+      SERVICESTATE,
       SERVICESTATUS,
-      STATE,
       EVENT_TYPES_NB
     };
                        event();

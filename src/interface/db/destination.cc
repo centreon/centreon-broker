@@ -57,6 +57,7 @@ void (destination::* destination::processing_table[])(events::event const&) = {
   &destination::_process_host_group,             // HOSTGROUP
   &destination::_process_host_group_member,      // HOSTGROUPMEMBER
   &destination::_process_host_parent,            // HOSTPARENT
+  &destination::_process_host_state,             // HOSTSTATE
   &destination::_process_host_status,            // HOSTSTATUS
   &destination::_process_instance,               // INSTANCE
   &destination::_process_instance_status,        // INSTANCESTATUS
@@ -70,8 +71,8 @@ void (destination::* destination::processing_table[])(events::event const&) = {
   &destination::_process_service_dependency,     // SERVICEDEPENDENCY
   &destination::_process_service_group,          // SERVICEGROUP
   &destination::_process_service_group_member,   // SERVICEGROUPMEMBER
+  &destination::_process_service_state,          // SERVICESTATE
   &destination::_process_service_status,         // SERVICESTATUS
-  &destination::_process_state                   // STATE
 };
 
 /**************************************
@@ -615,6 +616,28 @@ void destination::_process_host_parent(events::event const& e) {
 }
 
 /**
+ *  Process a host state event.
+ *
+ *  @param[in] e Uncasted host state.
+ */
+void destination::_process_host_state(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing host state event";
+
+  // Processing.
+  events::host_state const& hs(
+    *static_cast<events::host_state const*>(&e));
+  if (hs.end_time) {
+    *_host_state_stmt << hs;
+    _host_state_stmt->exec();
+  }
+  else
+    _insert(hs);
+
+  return ;
+}
+
+/**
  *  Process a host status event.
  *
  *  @param[in] e Uncasted host status.
@@ -1024,6 +1047,28 @@ void destination::_process_service_group_member(events::event const& e) {
 }
 
 /**
+ *  Process a service state event.
+ *
+ *  @param[in] e Uncasted service state.
+ */
+void destination::_process_service_state(events::event const& e) {
+  // Log message.
+  logging::info << logging::MEDIUM << "processing service state event";
+
+  // Processing.
+  events::service_state const& ss(
+    *static_cast<events::service_state const*>(&e));
+  if (ss.end_time) {
+    *_service_state_stmt << ss;
+    _service_state_stmt->exec();
+  }
+  else
+    _insert(ss);
+
+  return ;
+}
+
+/**
  *  Process a service status event.
  *
  *  @param[in] e Uncasted service status.
@@ -1037,27 +1082,6 @@ void destination::_process_service_status(events::event const& e) {
     *static_cast<events::service_status const*>(&e));
   *_service_status_stmt << ss;
   _service_status_stmt->exec();
-
-  return ;
-}
-
-/**
- *  Process a state event.
- *
- *  @param[in] e Uncasted state.
- */
-void destination::_process_state(events::event const& e) {
-  // Log message.
-  logging::info << logging::MEDIUM << "processing state event";
-
-  // Processing.
-  events::state const& s(*static_cast<events::state const*>(&e));
-  if (s.end_time) {
-    *_state_stmt << s;
-    _state_stmt->exec();
-  }
-  else
-    _insert(s);
 
   return ;
 }
@@ -1100,6 +1124,7 @@ void destination::close() {
   _flapping_status_stmt.reset();
   _host_stmt.reset();
   _host_check_stmt.reset();
+  _host_state_stmt.reset();
   _host_status_stmt.reset();
   _instance_stmt.reset();
   _instance_status_stmt.reset();
@@ -1108,8 +1133,8 @@ void destination::close() {
   _service_stmt.reset();
   _service_insert_stmt.reset();
   _service_check_stmt.reset();
+  _service_state_stmt.reset();
   _service_status_stmt.reset();
-  _state_stmt.reset();
   _conn.reset();
   return ;
 }
@@ -1256,6 +1281,11 @@ void destination::connect(destination::DB db_type,
 
   id.clear();
   id.push_back("host_id");
+  id.push_back("start_time");
+  _prepare_update<events::host_state>(_host_state_stmt, id);
+
+  id.clear();
+  id.push_back("host_id");
   _prepare_update<events::host_status>(_host_status_stmt, id);
 
   id.clear();
@@ -1281,18 +1311,18 @@ void destination::connect(destination::DB db_type,
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
-  id.push_back("start_time");
-  _prepare_update<events::state>(_state_stmt, id);
-
-  id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
   _prepare_update<events::service>(_service_stmt, id);
 
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   _prepare_update<events::service_check>(_service_check_stmt, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  _prepare_update<events::service_state>(_service_state_stmt, id);
 
   id.clear();
   id.push_back("host_id");

@@ -34,6 +34,7 @@
 # include "events/host_group.hh"
 # include "events/host_group_member.hh"
 # include "events/host_parent.hh"
+# include "events/host_state.hh"
 # include "events/host_status.hh"
 # include "events/instance.hh"
 # include "events/instance_status.hh"
@@ -47,7 +48,7 @@
 # include "events/service_dependency.hh"
 # include "events/service_group.hh"
 # include "events/service_group_member.hh"
+# include "events/service_state.hh"
 # include "events/service_status.hh"
-# include "events/state.hh"
 
 #endif /* EVENTS_EVENTS_HH_ */

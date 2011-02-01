@@ -64,6 +64,7 @@ QSqlQuery& operator<<(QSqlQuery& q, events::host_dependency const& hd);
 QSqlQuery& operator<<(QSqlQuery& q, events::host_group const& hg);
 QSqlQuery& operator<<(QSqlQuery& q, events::host_group_member const& hgm);
 QSqlQuery& operator<<(QSqlQuery& q, events::host_parent const& hp);
+QSqlQuery& operator<<(QSqlQuery& q, events::host_state const& hs);
 QSqlQuery& operator<<(QSqlQuery& q, events::host_status const& hs);
 QSqlQuery& operator<<(QSqlQuery& q, events::instance const& p);
 QSqlQuery& operator<<(QSqlQuery& q, events::instance_status const& ps);
@@ -76,7 +77,7 @@ QSqlQuery& operator<<(QSqlQuery& q, events::service_check const& sc);
 QSqlQuery& operator<<(QSqlQuery& q, events::service_dependency const& sd);
 QSqlQuery& operator<<(QSqlQuery& q, events::service_group const& sg);
 QSqlQuery& operator<<(QSqlQuery& q, events::service_group_member const& sgm);
+QSqlQuery& operator<<(QSqlQuery& q, events::service_state const& ss);
 QSqlQuery& operator<<(QSqlQuery& q, events::service_status const& ss);
-QSqlQuery& operator<<(QSqlQuery& q, events::state const& s);
 
 #endif /* !INTERFACE_DB_INTERNAL_HH_ */

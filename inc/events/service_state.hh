@@ -18,36 +18,26 @@
 ** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_STATE_HH_
-# define EVENTS_STATE_HH_
+#ifndef EVENTS_SERVICE_STATE_HH_
+# define EVENTS_SERVICE_STATE_HH_
 
-# include <sys/types.h>
-# include "events/event.hh"
+# include "events/state.hh"
 
-namespace   events {
+namespace          events {
   /**
-   *  @class state state.hh "events/state.hh"
-   *  @brief State of a checkpoint.
+   *  @class service_state service_state.hh "events/service_state.hh"
+   *  @brief Service state.
    *
-   *  This class represent the state of a specific checkpoint for a
-   *  given time.
+   *  State of a service at a given time.
    */
-  class     state : public event {
-   private:
-    void    _internal_copy(state const& s);
-
+  class            service_state : public state {
    public:
-    int     current_state;
-    time_t  end_time;
-    int     host_id;
-    bool    in_downtime;
-    int     service_id;
-    time_t  start_time;
-            state();
-            state(state const& s);
-    virtual ~state();
-    state&  operator=(state const& s);
+                   service_state();
+                   service_state(service_state const& ss);
+                   ~service_state();
+    service_state& operator=(service_state const& ss);
+    int            get_type() const;
   };
 }
 
-#endif /* !EVENTS_STATE_HH_ */
+#endif /* !EVENTS_SERVICE_STATE_HH_ */

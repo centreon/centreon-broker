@@ -60,6 +60,7 @@ namespace          interface {
       std::auto_ptr<QSqlQuery>       _flapping_status_stmt;
       std::auto_ptr<QSqlQuery>       _host_stmt;
       std::auto_ptr<QSqlQuery>       _host_check_stmt;
+      std::auto_ptr<QSqlQuery>       _host_state_stmt;
       std::auto_ptr<QSqlQuery>       _host_status_stmt;
       std::auto_ptr<QSqlQuery>       _instance_stmt;
       std::auto_ptr<QSqlQuery>       _instance_status_stmt;
@@ -68,8 +69,8 @@ namespace          interface {
       std::auto_ptr<QSqlQuery>       _service_insert_stmt;
       std::auto_ptr<QSqlQuery>       _service_stmt;
       std::auto_ptr<QSqlQuery>       _service_check_stmt;
+      std::auto_ptr<QSqlQuery>       _service_state_stmt;
       std::auto_ptr<QSqlQuery>       _service_status_stmt;
-      std::auto_ptr<QSqlQuery>       _state_stmt;
       std::auto_ptr<QSqlDatabase>    _conn; // Connection object is necessary after statements.
                    destination(destination const& dest);
       destination& operator=(destination const& dest);
@@ -94,6 +95,7 @@ namespace          interface {
       void         _process_host_group(events::event const& e);
       void         _process_host_group_member(events::event const& e);
       void         _process_host_parent(events::event const& e);
+      void         _process_host_state(events::event const& e);
       void         _process_host_status(events::event const& e);
       void         _process_instance(events::event const& e);
       void         _process_instance_status(events::event const& e);
@@ -107,8 +109,8 @@ namespace          interface {
       void         _process_service_dependency(events::event const& e);
       void         _process_service_group(events::event const& e);
       void         _process_service_group_member(events::event const& e);
+      void         _process_service_state(events::event const& e);
       void         _process_service_status(events::event const& e);
-      void         _process_state(events::event const& e);
 
      public:
                    destination();

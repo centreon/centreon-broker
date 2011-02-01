@@ -265,6 +265,9 @@ template <> std::map<std::string, getter_setter<events::host_group_member> >
 template <> std::map<std::string, getter_setter<events::host_parent> >
   interface::xml::xml_mapped_type<events::host_parent>::map =
     std::map<std::string, getter_setter<events::host_parent> >();
+template <> std::map<std::string, getter_setter<events::host_state> >
+  interface::xml::xml_mapped_type<events::host_state>::map =
+    std::map<std::string, getter_setter<events::host_state> >();
 template <> std::map<std::string, getter_setter<events::host_status> >
   interface::xml::xml_mapped_type<events::host_status>::map =
     std::map<std::string, getter_setter<events::host_status> >();
@@ -304,12 +307,12 @@ template <> std::map<std::string, getter_setter<events::service_group> >
 template <> std::map<std::string, getter_setter<events::service_group_member> >
   interface::xml::xml_mapped_type<events::service_group_member>::map =
     std::map<std::string, getter_setter<events::service_group_member> >();
+template <> std::map<std::string, getter_setter<events::service_state> >
+  interface::xml::xml_mapped_type<events::service_state>::map =
+    std::map<std::string, getter_setter<events::service_state> >();
 template <> std::map<std::string, getter_setter<events::service_status> >
   interface::xml::xml_mapped_type<events::service_status>::map =
     std::map<std::string, getter_setter<events::service_status> >();
-template <> std::map<std::string, getter_setter<events::state> >
-  interface::xml::xml_mapped_type<events::state>::map =
-    std::map<std::string, getter_setter<events::state> >();
 
 /**************************************
 *                                     *
@@ -336,6 +339,7 @@ void interface::xml::initialize() {
   static_init<events::host_group>();
   static_init<events::host_group_member>();
   static_init<events::host_parent>();
+  static_init<events::host_state>();
   static_init<events::host_status>();
   static_init<events::instance>();
   static_init<events::instance_status>();
@@ -349,7 +353,7 @@ void interface::xml::initialize() {
   static_init<events::service_dependency>();
   static_init<events::service_group>();
   static_init<events::service_group_member>();
+  static_init<events::service_state>();
   static_init<events::service_status>();
-  static_init<events::state>();
   return ;
 }

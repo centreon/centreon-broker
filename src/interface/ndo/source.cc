@@ -192,6 +192,9 @@ events::event* source::event() {
      case NDO_API_HOSTPARENT:
       e.reset(handle_event<events::host_parent>(_stream));
       break ;
+     case NDO_API_STATECHANGEDATA:
+      e.reset(handle_event<events::host_state>(_stream));
+      break ;
      case NDO_API_HOSTSTATUSDATA:
       e.reset(handle_event<events::host_status>(_stream));
       break ;
@@ -225,11 +228,11 @@ events::event* source::event() {
      case NDO_API_SERVICEGROUPMEMBERDEFINITION:
       e.reset(handle_event<events::service_group_member>(_stream));
       break ;
+     case NDO_API_ADAPTIVESERVICEDATA:
+      e.reset(handle_event<events::service_state>(_stream));
+      break ;
      case NDO_API_SERVICESTATUSDATA:
       e.reset(handle_event<events::service_status>(_stream));
-      break ;
-     case NDO_API_STATECHANGEDATA:
-      e.reset(handle_event<events::state>(_stream));
       break ;
      default:
       // Skip this event.

@@ -18,29 +18,9 @@
 ** For more information: contact@centreon.com
 */
 
-#include "events/state.hh"
+#include "events/service_state.hh"
 
 using namespace events;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members from the given object.
- *
- *  @param[in] s Object to copy.
- */
-void state::_internal_copy(state const& s) {
-  current_state = s.current_state;
-  end_time = s.end_time;
-  host_id = s.host_id;
-  service_id = s.service_id;
-  start_time = s.start_time;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -49,38 +29,39 @@ void state::_internal_copy(state const& s) {
 **************************************/
 
 /**
- *  Constructor.
+ *  Default constructor.
  */
-state::state()
-  : current_state(-1),
-    end_time(0),
-    host_id(0),
-    service_id(0),
-    start_time(0) {}
+service_state::service_state() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] ss Object to copy.
  */
-state::state(state const& s) : event(s) {
-  _internal_copy(s);
-}
+service_state::service_state(service_state const& ss) : state(ss) {}
 
 /**
  *  Destructor.
  */
-state::~state() {}
+service_state::~service_state() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] ss Object to copy.
  *
  *  @return This object.
  */
-state& state::operator=(state const& s) {
-  event::operator=(s);
-  _internal_copy(s);
+service_state& service_state::operator=(service_state const& ss) {
+  state::operator=(ss);
   return (*this);
+}
+
+/**
+ *  Get the type of this object (SERVICESTATE).
+ *
+ *  @return event::SERVICESTATE.
+ */
+int service_state::get_type() const {
+  return (SERVICESTATE);
 }

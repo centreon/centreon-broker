@@ -223,6 +223,13 @@ void destination::event(events::event* e) {
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;
+     case events::event::HOSTSTATE:
+      buffer << NDO_API_STATECHANGEDATA << ":\n";
+      handle_event<events::host_state>(
+        *static_cast<events::host_state*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
      case events::event::HOSTSTATUS:
       buffer << NDO_API_HOSTSTATUSDATA << ":\n";
       handle_event<events::host_status>(
@@ -299,17 +306,17 @@ void destination::event(events::event* e) {
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;
+     case events::event::SERVICESTATE:
+      buffer << NDO_API_ADAPTIVESERVICEDATA << ":\n";
+      handle_event<events::service_state>(
+        *static_cast<events::service_state*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
      case events::event::SERVICESTATUS:
       buffer << NDO_API_SERVICESTATUSDATA << ":\n";
       handle_event<events::service_status>(
         *static_cast<events::service_status*>(e),
-        buffer);
-      buffer << NDO_API_ENDDATA << "\n";
-      break ;
-     case events::event::STATE:
-      buffer << NDO_API_STATECHANGEDATA << ":\n";
-      handle_event<events::state>(
-        *static_cast<events::state*>(e),
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;

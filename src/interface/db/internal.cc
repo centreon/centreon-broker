@@ -236,6 +236,9 @@ template <> std::list<std::pair<std::string, getter_setter<events::host_group_me
 template <> std::list<std::pair<std::string, getter_setter<events::host_parent> > >
   interface::db::db_mapped_type<events::host_parent>::list =
     std::list<std::pair<std::string, getter_setter<events::host_parent> > >();
+template <> std::list<std::pair<std::string, getter_setter<events::host_state> > >
+  interface::db::db_mapped_type<events::host_state>::list =
+    std::list<std::pair<std::string, getter_setter<events::host_state> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_status> > >
   interface::db::db_mapped_type<events::host_status>::list =
     std::list<std::pair<std::string, getter_setter<events::host_status> > >();
@@ -272,12 +275,12 @@ template <> std::list<std::pair<std::string, getter_setter<events::service_group
 template <> std::list<std::pair<std::string, getter_setter<events::service_group_member> > >
   interface::db::db_mapped_type<events::service_group_member>::list =
     std::list<std::pair<std::string, getter_setter<events::service_group_member> > >();
+template <> std::list<std::pair<std::string, getter_setter<events::service_state> > >
+  interface::db::db_mapped_type<events::service_state>::list =
+    std::list<std::pair<std::string, getter_setter<events::service_state> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_status> > >
   interface::db::db_mapped_type<events::service_status>::list =
     std::list<std::pair<std::string, getter_setter<events::service_status> > >();
-template <> std::list<std::pair<std::string, getter_setter<events::state> > >
-  interface::db::db_mapped_type<events::state>::list =
-    std::list<std::pair<std::string, getter_setter<events::state> > >();
 
 /**************************************
 *                                     *
@@ -304,6 +307,7 @@ void interface::db::initialize() {
   static_init<events::host_group>();
   static_init<events::host_group_member>();
   static_init<events::host_parent>();
+  static_init<events::host_state>();
   static_init<events::host_status>();
   static_init<events::instance>();
   static_init<events::instance_status>();
@@ -316,8 +320,8 @@ void interface::db::initialize() {
   static_init<events::service_dependency>();
   static_init<events::service_group>();
   static_init<events::service_group_member>();
+  static_init<events::service_state>();
   static_init<events::service_status>();
-  static_init<events::state>();
   return ;
 }
 
@@ -426,6 +430,14 @@ QSqlQuery& operator<<(QSqlQuery& q, events::host_parent const& hp) {
 }
 
 /**
+ *  ORM operator for host_state.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, events::host_state const& hs) {
+  to_base(q, hs);
+  return (q);
+}
+
+/**
  *  ORM operator for host_status.
  */
 QSqlQuery& operator<<(QSqlQuery& q, events::host_status const& hs) {
@@ -522,17 +534,17 @@ QSqlQuery& operator<<(QSqlQuery& q, events::service_group_member const& sgm) {
 }
 
 /**
- *  ORM operator for service_status.
+ *  ORM operator for service_state.
  */
-QSqlQuery& operator<<(QSqlQuery& q, events::service_status const& ss) {
+QSqlQuery& operator<<(QSqlQuery& q, events::service_state const& ss) {
   to_base(q, ss);
   return (q);
 }
 
 /**
- *  ORM operator for state.
+ *  ORM operator for service_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, events::state const& s) {
-  to_base(q, s);
+QSqlQuery& operator<<(QSqlQuery& q, events::service_status const& ss) {
+  to_base(q, ss);
   return (q);
 }

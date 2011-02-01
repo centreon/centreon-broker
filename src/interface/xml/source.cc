@@ -135,6 +135,8 @@ bool source::startElement(QString const& nspace,
     handle_event<events::host_group_member>(attrs);
   else if (localname.toStdString() == "host_parent")
     handle_event<events::host_parent>(attrs);
+  else if (localname.toStdString() == "host_state")
+    handle_event<events::host_state>(attrs);
   else if (localname.toStdString() == "host_status")
     handle_event<events::host_status>(attrs);
   else if (localname.toStdString() == "instance")
@@ -155,10 +157,10 @@ bool source::startElement(QString const& nspace,
     handle_event<events::service_group>(attrs);
   else if (localname.toStdString() == "service_group_member")
     handle_event<events::service_group_member>(attrs);
+  else if (localname.toStdString() == "service_state")
+    handle_event<events::service_state>(attrs);
   else if (localname.toStdString() == "service_status")
     handle_event<events::service_status>(attrs);
-  else if (localname.toStdString() == "state")
-    handle_event<events::state>(attrs);
   else
     throw (exceptions::basic() << "unknown XML node: "
                                << localname.toStdString().c_str());

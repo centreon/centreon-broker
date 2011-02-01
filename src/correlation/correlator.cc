@@ -23,10 +23,11 @@
 #include "correlation/correlator.hh"
 #include "correlation/parser.hh"
 #include "events/host.hh"
+#include "events/host_state.hh"
 #include "events/issue.hh"
 #include "events/issue_parent.hh"
+#include "events/service_state.hh"
 #include "events/service_status.hh"
-#include "events/state.hh"
 #include "exceptions/basic.hh"
 #include "multiplexing/publisher.hh"
 
@@ -54,6 +55,7 @@ void (correlator::* correlator::_dispatch_table[])(events::event&) = {
   &correlator::_correlate_nothing,        // HOSTGROUP
   &correlator::_correlate_nothing,        // HOSTGROUPMEMBER
   &correlator::_correlate_nothing,        // HOSTPARENT
+  &correlator::_correlate_nothing,        // HOSTSTATE
   &correlator::_correlate_host_status,    // HOSTSTATUS
   &correlator::_correlate_nothing,        // INSTANCE
   &correlator::_correlate_nothing,        // INSTANCESTATUS
@@ -67,8 +69,8 @@ void (correlator::* correlator::_dispatch_table[])(events::event&) = {
   &correlator::_correlate_nothing,        // SERVICEDEPENDENCY
   &correlator::_correlate_nothing,        // SERVICEGROUP
   &correlator::_correlate_nothing,        // SERVICEGROUPMEMBER
+  &correlator::_correlate_nothing,        // SERVICESTATE
   &correlator::_correlate_service_status, // SERVICESTATUS
-  &correlator::_correlate_nothing         // STATE
 };
 
 /**
@@ -151,7 +153,9 @@ void correlator::_correlate_host_service_status(events::event& e,
     // Update states.
     {
       // Old state.
-      std::auto_ptr<events::state> state_update(new events::state);
+      std::auto_ptr<events::state> state_update(
+        is_host ? static_cast<events::state*>(new events::host_state)
+                : static_cast<events::state*>(new events::service_state));
       state_update->current_state = n->state;
       state_update->end_time = now;
       state_update->host_id = n->host_id;
@@ -165,7 +169,9 @@ void correlator::_correlate_host_service_status(events::event& e,
       n->state = hss.current_state;
 
       // New state.
-      state_update.reset(new events::state);
+      state_update.reset(
+        is_host ? static_cast<events::state*>(new events::host_state)
+                : static_cast<events::state*>(new events::service_state));
       state_update->current_state = n->state;
       state_update->end_time = 0;
       state_update->host_id = n->host_id;

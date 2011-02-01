@@ -171,6 +171,10 @@ void destination::event(events::event* e) {
       name = "host_parent";
       handle_event(*static_cast<events::host_parent*>(e), attr);
       break ;
+     case events::event::HOSTSTATE:
+      name = "host_state";
+      handle_event(*static_cast<events::host_state*>(e), attr);
+      break ;
      case events::event::HOSTSTATUS:
       name = "host_status";
       handle_event(*static_cast<events::host_status*>(e), attr);
@@ -212,13 +216,13 @@ void destination::event(events::event* e) {
       handle_event(*static_cast<events::service_group_member*>(e),
         attr);
       break ;
+     case events::event::SERVICESTATE:
+      name = "service_state";
+      handle_event(*static_cast<events::service_state*>(e), attr);
+      break ;
      case events::event::SERVICESTATUS:
       name = "service_status";
       handle_event(*static_cast<events::service_status*>(e), attr);
-      break ;
-     case events::event::STATE:
-      name = "state";
-      handle_event(*static_cast<events::state*>(e), attr);
       break ;
      default:
       return ;
