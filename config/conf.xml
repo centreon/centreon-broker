@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root>
+
+<instance>42</instance>
+<instance_name>MyBrokerServer</instance_name>
+<correlation>1</correlation>
+<correlation_file>/tmp/cbcorrelator.conf</correlation_file>
+
 <output>
   <type>mysql</type>
   <host>localhost</host>
@@ -18,4 +24,5 @@
   <name>/tmp/my2.log</name>
   <level>42</level>
 </logger>
+
 </root>
