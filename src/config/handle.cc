@@ -21,11 +21,13 @@
 #include <algorithm>
 #include <map>
 #include <signal.h>
+#include <stdlib.h>
 #include <string>
 #include "config/factory.hh"
 #include "config/globals.hh"
 #include "config/handle.hh"
 #include "config/parser.hh"
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "multiplexing/publisher.hh"
 #include "multiplexing/subscriber.hh"
@@ -252,8 +254,93 @@ void config::handle(std::string const& config_file) {
   logging::config << logging::MEDIUM << "setting new configuration file \""
                   << config_file.c_str() << "\"";
   gl_config_file = config_file;
+  atexit(&config::unload);
   handle();
   if (globals::correlation)
     multiplexing::publisher::correlate();
+  return ;
+}
+
+/**
+ *  Reap terminated threads.
+ */
+void config::reap() {
+  for (std::list<concurrency::thread*>::iterator
+         it = gl_erasable.begin(),
+         end = gl_erasable.end();
+       it != end;
+       ++it)
+    try {
+      delete *it;
+    }
+    catch (exceptions::basic const& e) {
+    }
+  gl_erasable.clear();
+  return ;
+}
+
+/**
+ *  Unload configuration objects.
+ */
+void config::unload() {
+  logging::config << logging::HIGH << "unloading configuration";
+  std::map<config::interface, concurrency::thread*>::iterator it, end;
+
+  /* Close input sources. */
+  for (it = gl_inputs.begin(), end = gl_inputs.end(); it != end; ++it)
+    try {
+      it->second->exit();
+    }
+    catch (exceptions::basic const& e) {}
+
+  /* Wait for input sources to terminate. */
+  for (it = gl_inputs.begin(), end = gl_inputs.end(); it != end; ++it) {
+    try {
+      it->second->join();
+    }
+    catch (exceptions::basic const& e) {
+      try {
+        it->second->cancel();
+      }
+      catch (exceptions::basic const& e) {}
+    }
+    delete it->second;
+  }
+  gl_inputs.clear();
+
+  /* Close output destinations. */
+  for (it = gl_outputs.begin(), end = gl_outputs.end(); it != end; ++it)
+    try {
+      it->second->exit();
+    }
+    catch (exceptions::basic const& e) {}
+
+  /* Wait for output destinations to terminate. */
+  for (it = gl_outputs.begin(), end = gl_outputs.end(); it != end; ++it) {
+    try {
+      it->second->join();
+    }
+    catch (exceptions::basic const& e) {
+      try {
+        it->second->cancel();
+      }
+      catch (exceptions::basic const& e) {}
+    }
+    delete it->second;
+  }
+  gl_outputs.clear();
+
+  /* Reap remaining threads. */
+  config::reap();
+
+  /* Closing log objects. */
+  for (std::map<logger, logging::backend*>::iterator
+         it2 = gl_loggers.begin(),
+         end2 = gl_loggers.end();
+       it2 != end2;
+       ++it2)
+    delete it->second;
+  gl_loggers.clear();
+
   return ;
 }

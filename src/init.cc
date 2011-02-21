@@ -18,6 +18,7 @@
 ** For more information: contact@centreon.com
 */
 
+#include "config/handle.hh"
 #include "exceptions/retval.hh"
 #include "init.hh"
 #include "interface/db/internal.hh"
@@ -40,7 +41,7 @@
 void deinit() {
   // Unload configuration.
   logging::debug << logging::MEDIUM << "unloading configuration";
-  // XXX
+  config::unload();
 
 #ifdef USE_TLS
   // Unload GNU TLS library.

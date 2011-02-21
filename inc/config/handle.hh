@@ -27,6 +27,8 @@
 namespace config {
   void    handle();
   void    handle(std::string const& config_file);
+  void    reap();
+  void    unload();
 }
 
 #endif /* !CONFIG_HANDLE_HH_ */

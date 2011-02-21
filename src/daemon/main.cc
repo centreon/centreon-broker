@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
       // potential cleanup and sleep again.
       while (!gl_exit) {
 	gl_cv.sleep(gl_mutex, time(NULL) + 60);
-	// XXX Configuration::Manager::Instance().Reap();
+        config::reap();
       }
 
       // Global unloading.
