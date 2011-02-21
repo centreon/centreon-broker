@@ -1026,15 +1026,15 @@ void destination::_process_service_group_member(events::event const& e) {
 
     // Insert servicegroup membership.
     std::ostringstream oss;
-    ss << "INSERT INTO "
-       << mapped_type<events::service_group_member>::table
-       << " (host_id, service_id, servicegroup_id) VALUES("
-       << sgm.host_id << ", "
-       << sgm.service_id << ", "
-       << servicegroup_id << ")";
+    oss << "INSERT INTO "
+        << mapped_type<events::service_group_member>::table
+        << " (host_id, service_id, servicegroup_id) VALUES("
+        << sgm.host_id << ", "
+        << sgm.service_id << ", "
+        << servicegroup_id << ")";
     logging::info << logging::LOW << "executing query: "
-                  << ss.str().c_str();
-    _conn->exec(ss.str().c_str());
+                  << oss.str().c_str();
+    _conn->exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
