@@ -24,6 +24,7 @@
 #include "events/event.hh"
 #include "interface/destination.hh"
 #include "interface/source.hh"
+#include "logging/logging.hh"
 #include "processing/feeder.hh"
 
 using namespace processing;
@@ -104,16 +105,23 @@ void feeder::feed(interface::source* source,
   events::event* event = NULL;
   try {
     // Fetch first event.
+    logging::debug << logging::LOW << "feeder fetch event";
     event = source->event();
     while (!_should_exit && event) {
       // Send event.
+      logging::debug << logging::LOW << "feeder send event";
       dest->event(event);
       event = NULL;
       // Fetch next event.
+      logging::debug << logging::LOW << "feeder fetch event";
       event = source->event();
     }
+    logging::debug << logging::MEDIUM
+                   << "exiting feeding loop without error";
   }
   catch (...) {
+    logging::debug << logging::LOW
+                   << "rethrowing exception from feeder";
     if (event)
       event->remove_reader();
     throw ;

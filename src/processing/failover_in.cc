@@ -106,7 +106,9 @@ void failover_in::operator()() {
     catch (std::exception const& e) {
       logging::error << logging::HIGH
                      << "error while processing input: " << e.what();
-      // XXX : configure
+      logging::info << logging::MEDIUM
+                    << "waiting 5 seconds before attempting reconnection";
+      // XXX : configure sleeping time
       sleep(5);
     }
     catch (...) {

@@ -161,7 +161,9 @@ void failover_out_base::operator()() {
         _failover.reset(new failover_out_as_in);
         _failover->run(this, *_dest_conf->failover);
       }
-      // XXX : configure
+      // XXX : configure sleeping time
+      logging::info << logging::MEDIUM
+                    << "waiting 5 seconds before attempting reconnection";
       sleep(5);
     }
     catch (...) {
