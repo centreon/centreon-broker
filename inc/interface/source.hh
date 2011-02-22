@@ -49,6 +49,7 @@ namespace                    interface {
     virtual                ~source();
     virtual void           close() = 0;
     virtual events::event* event() = 0;
+    virtual unsigned int   size() const;
   };
 }
 

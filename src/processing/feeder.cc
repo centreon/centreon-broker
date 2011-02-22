@@ -107,7 +107,15 @@ void feeder::feed(interface::source* source,
     // Fetch first event.
     logging::debug << logging::LOW << "feeder fetch event";
     event = source->event();
-    while (!_should_exit && event) {
+    while (!_should_exit || event) {
+      // Print output messages.
+      if (_should_exit) {
+        unsigned int n(source->size());
+        if (!(n % 1000)) {
+          logging::info << logging::HIGH << n
+                        << " events to process";
+        }
+      }
       // Send event.
       logging::debug << logging::LOW << "feeder send event";
       dest->event(event);

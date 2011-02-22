@@ -18,6 +18,7 @@
 ** For more information: contact@centreon.com
 */
 
+#include <limits.h>
 #include "interface/source.hh"
 
 using namespace interface;
@@ -70,3 +71,12 @@ source& source::operator=(source const& s) {
  *  Destructor.
  */
 source::~source() {}
+
+/**
+ *  Get the number of remaining events.
+ *
+ *  @return Number of events available from the source.
+ */
+unsigned int source::size() const {
+  return (UINT_MAX);
+}
