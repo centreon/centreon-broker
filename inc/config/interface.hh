@@ -23,6 +23,7 @@
 
 # include <memory>
 # include <string>
+# include <sys/types.h>
 
 namespace                    config {
   /**
@@ -71,6 +72,7 @@ namespace                    config {
     std::string              password;
     short                    port;
     protocol_type            protocol;
+    time_t                   reconnect_interval;
     std::string              socket;
     type_t                   type;
     std::string              user;

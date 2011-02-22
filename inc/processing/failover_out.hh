@@ -22,6 +22,7 @@
 # define PROCESSING_FAILOVER_OUT_HH_
 
 # include <memory>
+# include <sys/types.h>
 # include "concurrency/mutex.hh"
 # include "interface/source_destination.hh"
 # include "processing/feeder.hh"
@@ -52,12 +53,14 @@ namespace              processing {
                        _dest_conf;
     std::auto_ptr<failover_out_as_in>
                        _failover;
+    time_t             _reconnect_interval;
 
    public:
                        failover_out_base();
     virtual            ~failover_out_base();
     void               operator()();
     virtual void       connect() = 0;
+    void               reconnect_interval(time_t ri);
   };
 
   class                failover_out : public failover_out_base {

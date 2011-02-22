@@ -22,6 +22,7 @@
 # define PROCESSING_FAILOVER_IN_HH_
 
 # include <memory>
+# include <sys/types.h>
 # include "concurrency/mutex.hh"
 # include "interface/source_destination.hh"
 # include "processing/feeder.hh"
@@ -37,6 +38,7 @@ namespace              processing {
     std::auto_ptr<interface::destination>
                        _dest;
     concurrency::mutex _destm;
+    time_t             _reconnect_interval;
     std::auto_ptr<interface::source>
                        _source;
     concurrency::mutex _sourcem;
@@ -54,6 +56,7 @@ namespace              processing {
     events::event*     event();
     void               event(events::event* e);
     void               exit();
+    void               reconnect_interval(time_t ri);
     void               run(config::interface const& source_conf,
                          interface::destination* dest,
                          concurrency::thread_listener* tl = NULL);

@@ -79,7 +79,7 @@ failover_in& failover_in::operator=(failover_in const& fi) {
 /**
  *  Default constructor.
  */
-failover_in::failover_in() {}
+failover_in::failover_in() : _reconnect_interval(30) {}
 
 /**
  *  Destructor.
@@ -107,9 +107,10 @@ void failover_in::operator()() {
       logging::error << logging::HIGH
                      << "error while processing input: " << e.what();
       logging::info << logging::MEDIUM
-                    << "waiting 5 seconds before attempting reconnection";
-      // XXX : configure sleeping time
-      sleep(5);
+                    << "waiting "
+                    << static_cast<unsigned int>(_reconnect_interval)
+                    << " seconds before attempting reconnection";
+      sleep(_reconnect_interval);
     }
     catch (...) {
       logging::error << logging::HIGH
@@ -178,6 +179,14 @@ void failover_in::exit() {
 }
 
 /**
+ *  Set the reconnection interval.
+ */
+void failover_in::reconnect_interval(time_t ri) {
+  _reconnect_interval = ri;
+  return ;
+}
+
+/**
  *  Run failover thread.
  */
 void failover_in::run(config::interface const& source_conf,
@@ -191,6 +200,7 @@ void failover_in::run(config::interface const& source_conf,
     concurrency::lock l(_destm);
     _dest.reset(dest);
   }
+  reconnect_interval(source_conf.reconnect_interval);
   concurrency::thread::run(tl);
   return ;
 }

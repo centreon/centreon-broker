@@ -49,6 +49,7 @@ parser::_tag_id const parser::_interface_tag_to_id[] = {
   {"password", _interface_password},
   {"port", _interface_port},
   {"protocol", _interface_protocol},
+  {"reconnect_interval", _interface_reconnect},
   {"socket", _interface_socket},
   {"type", _interface_type},
   {"user", _interface_user},
@@ -244,6 +245,12 @@ bool parser::endElement(QString const& uri,
         _outputs.back().protocol = p;
     }
     break ;
+   case _interface_reconnect:
+    if (_current.top() == _input)
+      _inputs.back().reconnect_interval = strtoul(_data.c_str(), NULL, 0);
+    else
+      _outputs.back().reconnect_interval = strtoul(_data.c_str(), NULL, 0);
+    break ;
    case _interface_socket:
    case _interface_type:
     {
@@ -255,11 +262,11 @@ bool parser::endElement(QString const& uri,
         i = &_outputs.back();
       t = _data.c_str();
       if (!strcasecmp(t, "db2"))
-	i->type = interface::db2;
+        i->type = interface::db2;
       else if (!strcasecmp(t, "file"))
         i->type = interface::file;
       else if (!strcasecmp(t, "ibase"))
-	i->type = interface::ibase;
+        i->type = interface::ibase;
       else if (!strcasecmp(t, "ipv4"))
         i->type = (i->host.empty() ? interface::ipv4_server
                                    : interface::ipv4_client);
@@ -269,15 +276,15 @@ bool parser::endElement(QString const& uri,
       else if (!strcasecmp(t, "mysql"))
         i->type = interface::mysql;
       else if (!strcasecmp(t, "odbc"))
-	i->type = interface::odbc;
+        i->type = interface::odbc;
       else if (!strcasecmp(t, "oracle"))
         i->type = interface::oracle;
       else if (!strcasecmp(t, "postgresql"))
         i->type = interface::postgresql;
       else if (!strcasecmp(t, "sqlite"))
-	i->type = interface::sqlite;
+        i->type = interface::sqlite;
       else if (!strcasecmp(t, "tds"))
-	i->type = interface::tds;
+        i->type = interface::tds;
       else if (!strcasecmp(t, "unix_client"))
         i->type = interface::unix_client;
       else if (!strcasecmp(t, "unix_server"))

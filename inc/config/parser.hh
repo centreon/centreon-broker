@@ -54,6 +54,7 @@ namespace                     config {
       _interface_password,
       _interface_port,
       _interface_protocol,
+      _interface_reconnect,
       _interface_socket,
       _interface_type,
       _interface_user,

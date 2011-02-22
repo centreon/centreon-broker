@@ -49,6 +49,7 @@ void interface::_internal_copy(interface const& i) {
   password = i.password;
   port = i.port;
   protocol = i.protocol;
+  reconnect_interval = i.reconnect_interval;
   socket = i.socket;
   type = i.type;
   user = i.user;
@@ -74,6 +75,7 @@ void interface::_internal_copy(interface const& i) {
 interface::interface()
   : port(5668),
     protocol(ndo),
+    reconnect_interval(30),
     type(unknown)
 #ifdef USE_TLS
     ,compress(false)
@@ -135,6 +137,7 @@ bool interface::operator==(interface const& i) const {
              && (net_iface == i.net_iface)
              && (port == i.port)
              && (protocol == i.protocol)
+             && (reconnect_interval == i.reconnect_interval)
 #ifdef USE_TLS
              && (tls == i.tls)
              && (!tls || ((ca == i.ca)
@@ -158,6 +161,7 @@ bool interface::operator==(interface const& i) const {
       ret = ((db == i.db)
              && (host == i.host)
              && (password == i.password)
+             && (reconnect_interval == i.reconnect_interval)
              && (user == i.user)
              && ((!failover.get() && !(i.failover.get()))
                  || (failover.get()
@@ -167,6 +171,7 @@ bool interface::operator==(interface const& i) const {
      case unix_client:
      case unix_server:
       ret = ((socket == i.socket)
+             && (reconnect_interval == i.reconnect_interval)
 #ifdef USE_TLS
              && (tls == i.tls)
              && (!tls || ((ca == i.ca)
@@ -229,6 +234,8 @@ bool interface::operator<(interface const& i) const {
         ret = (port < i.port);
       else if (protocol != i.protocol)
         ret = (protocol < i.protocol);
+      else if (reconnect_interval != i.reconnect_interval)
+        ret = (reconnect_interval < i.reconnect_interval);
 #ifdef USE_TLS
       else if (tls != i.tls)
         ret = (tls < i.tls);
@@ -260,6 +267,8 @@ bool interface::operator<(interface const& i) const {
         ret = (host < i.host);
       else if (password != i.password)
         ret = (password < i.password);
+      else if (reconnect_interval != i.reconnect_interval)
+        ret = (reconnect_interval < i.reconnect_interval);
       else if (user != i.user)
         ret = (user < i.user);
       else if (failover.get() && i.failover.get())
@@ -271,6 +280,8 @@ bool interface::operator<(interface const& i) const {
      case unix_server:
       if (socket != i.socket)
         ret = (socket < i.socket);
+      else if (reconnect_interval != i.reconnect_interval)
+        ret = (reconnect_interval < i.reconnect_interval);
 #ifdef USE_TLS
       else if (tls != i.tls)
         ret = (tls < i.tls);

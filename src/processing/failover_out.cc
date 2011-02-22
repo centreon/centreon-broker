@@ -161,10 +161,11 @@ void failover_out_base::operator()() {
         _failover.reset(new failover_out_as_in);
         _failover->run(this, *_dest_conf->failover);
       }
-      // XXX : configure sleeping time
       logging::info << logging::MEDIUM
-                    << "waiting 5 seconds before attempting reconnection";
-      sleep(5);
+                    << "waiting "
+                    << static_cast<unsigned int>(_reconnect_interval)
+                    << " seconds before attempting reconnection";
+      sleep(_reconnect_interval);
     }
     catch (...) {
       logging::error << logging::HIGH
@@ -174,6 +175,14 @@ void failover_out_base::operator()() {
       break ;
     }
   }
+  return ;
+}
+
+/**
+ *  Set the reconnection interval. Default is 30s.
+ */
+void failover_out_base::reconnect_interval(time_t ri) {
+  _reconnect_interval = ri;
   return ;
 }
 
@@ -322,6 +331,7 @@ void failover_out::run(interface::source* source,
     concurrency::lock l(_sourcem);
     _source.reset(source);
   }
+  reconnect_interval(dest_conf.reconnect_interval);
   concurrency::thread::run(tl);
   return ;
 }
