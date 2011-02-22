@@ -250,7 +250,7 @@ static void send_host_list() {
     my_host->check_type = h->check_type;
     my_host->current_check_attempt = h->current_attempt;
     my_host->current_notification_number = h->current_notification_number;
-    my_host->current_state = h->current_state;
+    my_host->current_state = (h->last_check ? h->current_state : 4);
     my_host->default_active_checks_enabled = h->checks_enabled;
     my_host->default_event_handler_enabled = h->event_handler_enabled;
     my_host->default_failure_prediction = h->failure_prediction_enabled;
@@ -540,7 +540,7 @@ static void send_service_list() {
     my_service->check_type = s->check_type;
     my_service->current_check_attempt = s->current_attempt;
     my_service->current_notification_number = s->current_notification_number;
-    my_service->current_state = s->current_state;
+    my_service->current_state = (s->last_check ? s->current_state : 4);
     my_service->default_active_checks_enabled = s->checks_enabled;
     my_service->default_event_handler_enabled = s->event_handler_enabled;
     my_service->default_failure_prediction = s->failure_prediction_enabled;
