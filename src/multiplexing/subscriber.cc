@@ -92,6 +92,7 @@ void subscriber::clean() {
 subscriber::subscriber() {
   concurrency::lock l(gl_subscribersm);
   gl_subscribers.push_back(this);
+  _registered = true;
 }
 
 /**
@@ -108,6 +109,7 @@ subscriber::~subscriber() {
 void subscriber::close() {
   concurrency::lock l(gl_subscribersm);
   std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
+  _registered = false;
   _cv.wake_all();
   return ;
 }
@@ -132,19 +134,21 @@ events::event* subscriber::event() {
 events::event* subscriber::event(time_t deadline) {
   std::auto_ptr<events::event> event;
   concurrency::lock l(_mutex);
-  if (_events.empty()) {
-    if (-1 == deadline)
-      _cv.sleep(_mutex);
-    else
-      _cv.sleep(_mutex, deadline);
-    if (!_events.empty()) {
+  if (_registered) {
+    if (_events.empty()) {
+      if (-1 == deadline)
+        _cv.sleep(_mutex);
+      else
+        _cv.sleep(_mutex, deadline);
+      if (!_events.empty()) {
+        event.reset(_events.front());
+        _events.pop();
+      }
+    }
+    else {
       event.reset(_events.front());
       _events.pop();
     }
-  }
-  else {
-    event.reset(_events.front());
-    _events.pop();
   }
   return (event.release());
 }

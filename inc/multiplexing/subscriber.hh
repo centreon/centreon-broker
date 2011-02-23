@@ -48,6 +48,7 @@ namespace                      multiplexing {
                                _cv;
     std::queue<events::event*> _events;
     mutable concurrency::mutex _mutex;
+    bool                       _registered;
                                subscriber(subscriber const& s);
     subscriber&                operator=(subscriber const& s);
     void                       clean();

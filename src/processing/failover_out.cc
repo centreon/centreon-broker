@@ -305,6 +305,8 @@ void failover_out::event(events::event* e) {
  *  Tell the processing thread to stop ASAP.
  */
 void failover_out::exit() {
+  logging::debug << logging::MEDIUM
+                 << "output processing thread received termination request";
   {
     if (_source.get())
       _source->close();
@@ -449,6 +451,8 @@ void failover_out_as_in::event(events::event* e) {
  *  Ask the thread to exit ASAP.
  */
 void failover_out_as_in::exit() {
+  logging::debug << logging::MEDIUM
+                 << "output failover thread received termination request";
   this->close();
   feeder::exit();
   return ;
