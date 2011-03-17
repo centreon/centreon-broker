@@ -1053,6 +1053,10 @@ static mapped_data<host_status> const host_status_mapping[] = {
 // instance members mapping.
 static mapped_data<instance> const instance_mapping[] = {
   mapped_data<instance>(
+    &instance::engine,
+    NDO_DATA_STATE,
+    "engine"),
+  mapped_data<instance>(
     &instance::id,
     NDO_DATA_INSTANCE,
     "instance_id",
@@ -1077,6 +1081,10 @@ static mapped_data<instance> const instance_mapping[] = {
     &instance::program_start,
     NDO_DATA_PROGRAMSTARTTIME,
     "start_time"),
+  mapped_data<instance>(
+    &instance::version,
+    NDO_DATA_PROGRAMVERSION,
+    "version"),
   mapped_data<instance>()
 };
 

@@ -38,12 +38,14 @@ namespace       events {
     void        _internal_copy(instance const& i);
 
    public:
+    std::string engine;
     int         id;
     bool        is_running;
     std::string name;
     int         pid;
     time_t      program_end;
     time_t      program_start;
+    std::string version;
                 instance();
                 instance(instance const& i);
                 ~instance();

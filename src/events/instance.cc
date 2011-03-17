@@ -38,12 +38,14 @@ using namespace events;
  *  @param[in] i Object to copy.
  */
 void instance::_internal_copy(instance const& i) {
+  engine = i.engine;
   id = i.id;
   is_running = i.is_running;
   name = i.name;
   pid = i.pid;
   program_end = i.program_end;
   program_start = i.program_start;
+  version = i.version;
   return ;
 }
 

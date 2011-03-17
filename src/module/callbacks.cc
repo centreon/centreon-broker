@@ -31,12 +31,16 @@
 #include "module/set_log_data.hh"
 #include "nagios/broker.h"
 #include "nagios/comments.h"
+#include "nagios/common.h"
 #include "nagios/nebmodules.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
 
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
+
+// External function to get program version.
+extern char const* get_program_version();
 
 /**
  *  @brief Function that process acknowledgement data.
@@ -576,11 +580,17 @@ int callback_process(int callback_type, void *data) {
       // Fill output var.
       config::handle(gl_configuration_file);
       logging::log_on(gl_initial_logger, 0, logging::NONE);
+#ifdef PROGRAM_NAME
+      instance->engine = PROGRAM_NAME;
+#else
+      instance->engine = "Nagios";
+#endif /* PROGRAM_NAME */
       instance->id = config::globals::instance;
       instance->is_running = true;
       instance->name = config::globals::instance_name;
       instance->pid = getpid();
       instance->program_start = time(NULL);
+      instance->version = get_program_version();
       start_time = instance->program_start;
 
       // Send initial event and then configuration.
@@ -615,12 +625,18 @@ int callback_process(int callback_type, void *data) {
       std::auto_ptr<events::instance> instance(new events::instance);
 
       // Fill output var.
+#ifdef PROGRAM_NAME
+      instance->engine = PROGRAM_NAME;
+#else
+      instance->engine = "Nagios";
+#endif /* PROGRAM_NAME */
       instance->id = config::globals::instance;
       instance->is_running = false;
       instance->name = config::globals::instance_name;
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;
+      instance->version = get_program_version();
 
       // Send event.
       instance->add_reader();
