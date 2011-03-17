@@ -40,7 +40,9 @@
 extern nebmodule* neb_module_list;
 
 // External function to get program version.
-extern char const* get_program_version();
+extern "C" {
+  char const* get_program_version();
+}
 
 /**
  *  @brief Function that process acknowledgement data.
