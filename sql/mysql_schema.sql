@@ -55,6 +55,7 @@ CREATE TABLE instances (
   daemon_mode boolean default NULL,
   description varchar(128) default NULL,
   end_time int default NULL,
+  engine varchar(64) default NULL,
   event_handlers boolean default NULL,
   failure_prediction boolean default NULL,
   flap_detection boolean default NULL,
@@ -74,6 +75,7 @@ CREATE TABLE instances (
   process_perfdata boolean default NULL,
   running boolean default NULL,
   start_time int default NULL,
+  version varchar(16) default NULL,
 
   PRIMARY KEY (instance_id)
 ) ENGINE=InnoDB;

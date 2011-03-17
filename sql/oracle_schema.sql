@@ -54,6 +54,7 @@ CREATE TABLE instances (
   daemon_mode char(1) default NULL,
   description varchar(128) default NULL,
   end_time int default NULL,
+  engine varchar(64) default NULL,
   event_handlers char(1) default NULL,
   failure_prediction char(1) default NULL,
   flap_detection char(1) default NULL,
@@ -73,6 +74,7 @@ CREATE TABLE instances (
   process_perfdata char(1) default NULL,
   running char(1) default NULL,
   start_time int default NULL,
+  version varchar(16) default NULL,
 
   PRIMARY KEY (instance_id)
 );
