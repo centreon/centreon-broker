@@ -221,10 +221,10 @@ int callback_downtime(int callback_type, void* data) {
     downtime->internal_id = downtime_data->downtime_id;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
-    if ((NEBTYPE_DOWNTIME_DELETE == downtime_data->downtime_type)
-        || (NEBTYPE_DOWNTIME_STOP == downtime_data->downtime_type))
+    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
       downtime->was_cancelled = true;
-    if (NEBTYPE_DOWNTIME_START == downtime_data->downtime_type)
+    if ((NEBTYPE_DOWNTIME_START == downtime_data->type)
+        || (NEBTYPE_DOWNTIME_STOP == downtime_data->type))
       downtime->was_started = true;
 
     // Send event.
