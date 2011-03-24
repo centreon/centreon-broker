@@ -537,7 +537,7 @@ void parser::parse(std::string const& file) {
   try {
     bool ok(parser.parse(source.get()));
     if (!ok)
-      throw (exceptions::basic() << "parsing failed");
+      throw (exceptions::basic() << "configuration file parsing failed");
   }
   catch (QXmlParseException const& e) {
     logging::config << logging::HIGH << "configuration parsing error on \""
@@ -545,11 +545,13 @@ void parser::parse(std::string const& file) {
                     << (unsigned int)e.lineNumber() << "): "
                     << e.message().toStdString().c_str();
     _clear();
+    throw (exceptions::basic() << "configuration file parsing failed");
   }
   catch (exceptions::basic const& e) {
     logging::config << logging::HIGH << "error while parsing config file \""
                     << file.c_str() << "\": " << e.what();
     _clear();
+    throw (exceptions::basic() << "configuration file parsing failed");
   }
   return ;
 }

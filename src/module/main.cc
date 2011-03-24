@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include "callbacks.hh"
+#include "config/parser.hh"
 #include "init.hh"
 #include "logging/logging.hh"
 #include "logging/syslogger.hh"
@@ -194,8 +195,18 @@ extern "C" {
       logging::log_on(gl_initial_logger,
         logging::CONFIG | logging::ERROR,
         logging::HIGH);
+
+      // Try configuration parsing.
+      config::parser p;
+      p.parse(gl_configuration_file);
+    }
+    catch (std::exception const& e) {
+      logging::config << logging::HIGH << e.what();
+      return (-1);
     }
     catch (...) {
+      logging::config << logging::HIGH
+                      << "configuration file parsing failed";
       return (-1);
     }
 
