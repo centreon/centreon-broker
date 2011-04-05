@@ -19,6 +19,7 @@
 */
 
 #include <memory>
+#include <set>
 #include <time.h>
 #include <unistd.h>
 #include "callbacks.hh"
@@ -182,6 +183,9 @@ int callback_comment(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int callback_downtime(int callback_type, void* data) {
+  // Unstarted downtimes.
+  std::set<unsigned int> unstarted;
+
   // Log message.
   logging::info << logging::MEDIUM << "generating downtime event";
   (void)callback_type;
@@ -221,11 +225,27 @@ int callback_downtime(int callback_type, void* data) {
     downtime->internal_id = downtime_data->downtime_id;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
-    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
-      downtime->was_cancelled = true;
-    if ((NEBTYPE_DOWNTIME_START == downtime_data->type)
-        || (NEBTYPE_DOWNTIME_STOP == downtime_data->type))
+    if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
+        || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
       downtime->was_started = true;
+      unstarted.insert(downtime_data->downtime_id);
+    }
+    if ((NEBTYPE_DOWNTIME_START == downtime_data->type)
+       || (NEBTYPE_DOWNTIME_STOP == downtime_data->type)) {
+      downtime->was_started = true;
+      unstarted.erase(downtime_data->downtime_id);
+    }
+    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type) {
+      downtime->was_cancelled = true;
+      std::set<unsigned int>::iterator it;
+      it = unstarted.find(downtime_data->downtime_id);
+      if (it != unstarted.end()) {
+        downtime->was_started = false;
+        unstarted.erase(it);
+      }
+      else
+        downtime->was_started = true;
+    }
 
     // Send event.
     downtime->add_reader();
