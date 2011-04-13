@@ -122,12 +122,17 @@ destination& destination::operator=(destination const& dest) {
  *  @param[in] instance_id Instance ID to remove.
  */
 void destination::_clean_tables(int instance_id) {
-  // Disable hosts.
+  // Disable hosts and services.
   {
     std::ostringstream ss;
     ss << "UPDATE " << mapped_type<events::host>::table
-       << " SET enabled=0 "
-       << " WHERE instance_id=" << instance_id;
+       << " JOIN " << mapped_type<events::service>::table << " ON "
+       << mapped_type<events::host>::table << ".host_id="
+       << mapped_type<events::service>::table << ".host_id SET "
+       << mapped_type<events::host>::table << ".enabled=0, "
+       << mapped_type<events::service>::table << ".enabled=0"
+       << " WHERE " << mapped_type<events::host>::table
+       << ".instance_id=" << instance_id;
     _conn->exec(ss.str().c_str());
   }
 
