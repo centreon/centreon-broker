@@ -94,15 +94,25 @@ static void term_handler(int signum) {
  *  @return 0 on normal termination, any other value on failure.
  */
 int main(int argc, char* argv[]) {
+  char const* conf_file;
   int exit_code;
 
   try {
     // Check the command line.
-    if (argc != 2) {
-      std::cerr << "USAGE: " << argv[0] << " <configfile>" << std::endl;
+    if ((argc != 2) && (argc != 3)) {
+      std::cerr << "USAGE: " << argv[0] << " [-c] <configfile>" << std::endl;
       exit_code = 1;
     }
     else {
+      // Configuration check ?
+      bool check(false);
+      if (!strcmp(argv[1], "-c")) {
+        check = true;
+        conf_file = argv[2];
+      }
+      else
+        conf_file = argv[1];
+
       // Lock termination mutex.
       concurrency::lock l(gl_mutex);
 
@@ -112,6 +122,18 @@ int main(int argc, char* argv[]) {
       // Initial logging object.
       logging::backend* b(new logging::ostream(std::cerr));
       logging::log_on(b, logging::CONFIG | logging::ERROR, logging::HIGH);
+
+      // Configuration check.
+      if (check) {
+        try {
+          config::parser p;
+          p.parse(conf_file);
+        }
+        catch (std::exception const& e) {
+          return (1);
+        }
+        return (0);
+      }
 
       // Load configuration file.
       config::handle(argv[1]);
@@ -128,7 +150,7 @@ int main(int argc, char* argv[]) {
       // Everything's loaded, sleep for 60 seconds, then perform some
       // potential cleanup and sleep again.
       while (!gl_exit) {
-	gl_cv.sleep(gl_mutex, time(NULL) + 60);
+        gl_cv.sleep(gl_mutex, time(NULL) + 60);
         config::reap();
       }
 
