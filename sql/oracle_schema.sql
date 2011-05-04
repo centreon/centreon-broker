@@ -173,7 +173,15 @@ CREATE TABLE hosts (
   UNIQUE (host_id),
   UNIQUE (instance_id, name),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  INDEX (address),
+  INDEX (alias),
+  INDEX (enabled),
+  INDEX (last_hard_state),
+  INDEX (last_hard_state_change),
+  INDEX (name),
+  INDEX (state),
+  INDEX (state_type)
 );
 
 
@@ -352,7 +360,15 @@ CREATE TABLE services (
 
   UNIQUE (host_id, service_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  INDEX (acknowledged),
+  INDEX (enabled),
+  INDEX (last_hard_state),
+  INDEX (last_hard_state_change),
+  INDEX (last_state_change),
+  INDEX (scheduled_downtime_depth),
+  INDEX (state),
+  INDEX (state_type)
 );
 
 
