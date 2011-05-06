@@ -8,6 +8,7 @@
  *
  *    - a C++ compiler (like @b gcc)
  *    - @b QtSql for database support
+ *    - @b QtXML for XML support
  *    - the <b>GNU TLS</b> library if you want TLS support
  *
  *  Centreon Broker is compatible only with Unix-like platforms (Linux,
@@ -89,7 +90,28 @@
  *  CMake will check for all necessary dependencies and indicates if
  *  they could not be found.
  *
- *  // XXX : available flags
+ *  @subsection variables Variables
+ *
+ *  Your Centreon Broker can be tweaked to your particular needs using
+ *  CMake's variable system. Variables can be set like this :
+ *
+ *  @code
+ *    cmake -D<variable1>=<value1> [-D<variable2>=<value2>] .
+ *  @endcode
+ *
+ *  Here's the list of variables available and their description :
+ *
+ *  <table>
+ *  <tr>
+ *    <td><b>Variable</b></td><td><b>Description</b></td>
+ *  </tr>
+ *  <tr>
+ *    <td>debug</td><td>Enable or disable debug messages.</td>
+ *  </tr>
+ *  <tr>
+ *    <td>TLS</td><td>Enable or disable TLS support.</td>
+ *  </tr>
+ *  </table>
  *
  *
  *  @section compilation Compilation
