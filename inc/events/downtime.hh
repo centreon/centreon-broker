@@ -14,53 +14,57 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_DOWNTIME_HH_
-# define EVENTS_DOWNTIME_HH_
+#ifndef CCB_EVENTS_DOWNTIME_HH_
+# define CCB_EVENTS_DOWNTIME_HH_
 
-# include <string>
-# include <sys/time.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace              events {
-  /**
-   *  @class downtime downtime.hh "events/downtime.hh"
-   *  @brief Represents a downtime inside Nagios.
-   *
-   *  A Nagios user may have the ability to define downtimes, which are
-   *  time periods inside which some host or service shall not generate
-   *  any notification. This can occur when an admin sys perform
-   *  maintenance on a server for example.
-   */
-  class                downtime : public event {
-   private:
-    void               _internal_copy(downtime const& d);
+namespace           com {
+  namespace         centreon {
+    namespace       broker {
+      namespace     events {
+        /**
+         *  @class downtime downtime.hh "events/downtime.hh"
+         *  @brief Represents a downtime inside Nagios.
+         *
+         *  A user may have the ability to define downtimes, which are
+         *  time periods inside which some host or service shall not
+         *  generate any notification. This can occur when a system
+         *  administrator perform maintenance on a server for example.
+         */
+        class       downtime : public event {
+         private:
+          void      _internal_copy(downtime const& d);
 
-   public:
-    std::string        author;
-    std::string        comment;
-    short              downtime_type;
-    time_t             duration;
-    time_t             end_time;
-    time_t             entry_time;
-    bool               fixed;
-    int                host_id;
-    int                instance_id;
-    int                internal_id;
-    int                service_id;
-    time_t             start_time;
-    int                triggered_by;
-    bool               was_cancelled;
-    bool               was_started;
-                       downtime();
-                       downtime(downtime const& d);
-                       ~downtime();
-    downtime&          operator=(downtime const& d);
-    int                get_type() const;
-  };
+         public:
+          QString   author;
+          QString   comment;
+          short     downtime_type;
+          time_t    duration;
+          time_t    end_time;
+          time_t    entry_time;
+          bool      fixed;
+          int       host_id;
+          int       instance_id;
+          int       internal_id;
+          int       service_id;
+          time_t    start_time;
+          int       triggered_by;
+          bool      was_cancelled;
+          bool      was_started;
+                    downtime();
+                    downtime(downtime const& d);
+                    ~downtime();
+          downtime& operator=(downtime const& d);
+          int       get_type() const;
+        };
+      }
+    }
+  }
 }
 
 #endif /* !EVENTS_DOWNTIME_HH_ */

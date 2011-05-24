@@ -14,35 +14,39 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_CUSTOM_VARIABLE_HH_
-# define EVENTS_CUSTOM_VARIABLE_HH_
+#ifndef CCB_EVENTS_CUSTOM_VARIABLE_HH_
+# define CCB_EVENTS_CUSTOM_VARIABLE_HH_
 
 # include "events/custom_variable_status.hh"
 
-namespace            events {
-  /**
-   *  @class custom_variable custom_variable.hh "events/custom_variable.hh"
-   *  @brief Custom variable definition.
-   *
-   *  Nagios allows users to declare variables attached to a specific
-   *  host or service.
-   */
-  class              custom_variable : public custom_variable_status {
-   private:
-    void             _internal_copy(custom_variable const& cv);
+namespace                  com {
+  namespace                centreon {
+    namespace              broker {
+      namespace            events {
+        /**
+         *  @class custom_variable custom_variable.hh "events/custom_variable.hh"
+         *  @brief Custom variable definition.
+         *
+         *  Nagios allows users to declare variables attached to a
+         *  specific host or service.
+         */
+        class              custom_variable : public custom_variable_status {
+         private:
+          void             _internal_copy(custom_variable const& cv);
 
-   public:
-    short            type;
-                     custom_variable();
-                     custom_variable(custom_variable const& cv);
-                     ~custom_variable();
-    custom_variable& operator=(custom_variable const& cv);
-    int              get_type() const;
-  };
+         public:
+          short            type;
+                           custom_variable();
+                           custom_variable(custom_variable const& cv);
+                           ~custom_variable();
+          custom_variable& operator=(custom_variable const& cv);
+          int              get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_CUSTOM_VARIABLE_HH_ */
+#endif /* !CCB_EVENTS_CUSTOM_VARIABLE_HH_ */

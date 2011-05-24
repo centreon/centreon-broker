@@ -14,39 +14,43 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_CHECK_HH_
-# define EVENTS_CHECK_HH_
+#ifndef CCB_EVENTS_CHECK_HH_
+# define CCB_EVENTS_CHECK_HH_
 
-# include <string>
+# include <QString>
 # include "events/event.hh"
 
-namespace       events {
-  /**
-   *  @class check check.hh "events/check.hh"
-   *  @brief Check that has been executed.
-   *
-   *  Once a check has been executed (the check itself, not deduced
-   *  information), this kind of event is sent.
-   *
-   *  @see host_check
-   *  @see service_check
-   */
-  class         check : public event {
-   private:
-    void        _internal_copy(check const& c);
+namespace         com {
+  namespace       centreon {
+    namespace     broker {
+      namespace   events {
+        /**
+         *  @class check check.hh "events/check.hh"
+         *  @brief Check that has been executed.
+         *
+         *  Once a check has been executed (the check itself, not
+         *  deduced information), this kind of event is sent.
+         *
+         *  @see host_check
+         *  @see service_check
+         */
+        class     check : public event {
+         private:
+          void    _internal_copy(check const& c);
 
-   public:
-    std::string command_line;
-    int         host_id;
-                check();
-                check(check const& c);
-    virtual     ~check();
-    check&      operator=(check const& c);
-  };
+         public:
+          QString command_line;
+          int     host_id;
+                  check();
+                  check(check const& c);
+          virtual ~check();
+          check&  operator=(check const& c);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_CHECK_H_ */
+#endif /* !CCB_EVENTS_CHECK_HH_ */

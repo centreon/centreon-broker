@@ -20,7 +20,7 @@
 
 #include "events/group_member.hh"
 
-using namespace events;
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *

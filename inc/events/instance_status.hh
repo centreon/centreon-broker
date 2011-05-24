@@ -14,55 +14,60 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_INSTANCE_STATUS_HH_
-# define EVENTS_INSTANCE_STATUS_HH_
+#ifndef CCB_EVENTS_INSTANCE_STATUS_HH_
+# define CCB_EVENTS_INSTANCE_STATUS_HH_
 
-# include <string>
-# include <sys/types.h>
+# include <QString>
+# include <time.h>
 # include "events/status.hh"
 
-namespace              events {
-  /**
-   *  @class instance_status instance_status.hh "events/instance_status.hh"
-   *  @brief Information about Nagios process.
-   *
-   *  instance_status holds information about a Nagios process, like
-   *  whether it is running or not, in daemon mode or not, ...
-   */
-  class                instance_status : public status {
-   private:
-    void               _internal_copy(instance_status const& is);
+namespace                  com {
+  namespace                centreon {
+    namespace              broker {
+      namespace            events {
+        /**
+         *  @class instance_status instance_status.hh "events/instance_status.hh"
+         *  @brief Information about Nagios process.
+         *
+         *  instance_status holds information about a scheduling
+         *  process, like whether it is running or not, in daemon mode
+         *  or not, ...
+         */
+        class              instance_status : public status {
+         private:
+          void             _internal_copy(instance_status const& is);
 
-   public:
-    bool               active_host_checks_enabled;
-    bool               active_service_checks_enabled;
-    std::string        address;
-    bool               check_hosts_freshness;
-    bool               check_services_freshness;
-    bool               daemon_mode;
-    std::string        description;
-    std::string        global_host_event_handler;
-    std::string        global_service_event_handler;
-    int                id;
-    time_t             last_alive;
-    time_t             last_command_check;
-    time_t             last_log_rotation;
-    int                modified_host_attributes;
-    int                modified_service_attributes;
-    bool               obsess_over_hosts;
-    bool               obsess_over_services;
-    bool               passive_host_checks_enabled;
-    bool               passive_service_checks_enabled;
-                       instance_status();
-                       instance_status(instance_status const& is);
-                       ~instance_status();
-    instance_status&   operator=(instance_status const& is);
-    int                get_type() const;
-  };
+         public:
+          bool             active_host_checks_enabled;
+          bool             active_service_checks_enabled;
+          QString          address;
+          bool             check_hosts_freshness;
+          bool             check_services_freshness;
+          bool             daemon_mode;
+          QString          description;
+          QString          global_host_event_handler;
+          QString          global_service_event_handler;
+          int              id;
+          time_t           last_alive;
+          time_t           last_command_check;
+          time_t           last_log_rotation;
+          int              modified_host_attributes;
+          int              modified_service_attributes;
+          bool             obsess_over_hosts;
+          bool             obsess_over_services;
+          bool             passive_host_checks_enabled;
+          bool             passive_service_checks_enabled;
+                           instance_status();
+                           instance_status(instance_status const& is);
+                           ~instance_status();
+          instance_status& operator=(instance_status const& is);
+          int              get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_INSTANCE_STATUS_HH_ */
+#endif /* !CCB_EVENTS_INSTANCE_STATUS_HH_ */

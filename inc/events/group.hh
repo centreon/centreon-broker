@@ -14,44 +14,47 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_GROUP_HH_
-# define EVENTS_GROUP_HH_
+#ifndef CCB_EVENTS_GROUP_HH_
+# define CCB_EVENTS_GROUP_HH_
 
-# include <list>
-# include <string>
+# include <QString>
 # include "events/event.hh"
 
-namespace                  events {
-  /**
-   *  @class group group.hh "events/group.hh"
-   *  @brief Base of host and service group classes.
-   *
-   *  Nagios handles group. This can be service groups or host groups
-   *  for example.
-   *
-   *  @see host_group
-   *  @see service_group
-   */
-  class                    group : public event {
-   private:
-    void                   _internal_copy(group const& g);
+namespace         com {
+  namespace       centreon {
+    namespace     broker {
+      namespace   events {
+        /**
+         *  @class group group.hh "events/group.hh"
+         *  @brief Base of host and service group classes.
+         *
+         *  The scheduling engine handles group. This can be service
+         *  groups or host groups for example.
+         *
+         *  @see host_group
+         *  @see service_group
+         */
+        class     group : public event {
+         private:
+          void    _internal_copy(group const& g);
 
-   public:
-    std::string            action_url;
-    std::string            alias;
-    int                    instance_id;
-    std::string            name;
-    std::string            notes;
-    std::string            notes_url;
-                           group();
-                           group(group const& g);
-    virtual                ~group();
-    group&                 operator=(group const& g);
-  };
+         public:
+          QString action_url;
+          QString alias;
+          int     instance_id;
+          QString name;
+          QString notes;
+          QString notes_url;
+                  group();
+                  group(group const& g);
+          virtual ~group();
+          group&  operator=(group const& g);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_GROUP_HH_ */
+#endif /* !CCB_EVENTS_GROUP_HH_ */

@@ -14,49 +14,53 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_COMMENT_HH_
-# define EVENTS_COMMENT_HH_
+#ifndef CCB_EVENTS_COMMENT_HH_
+# define CCB_EVENTS_COMMENT_HH_
 
-# include <string>
-# include <sys/time.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace              events {
-  /**
-   *  @class comment comment.hh "events/comment.hh"
-   *  @brief Represents a comment inside Nagios.
-   *
-   *  Some user can make a comment on whatever objects he wants.
-   */
-  class                comment : public event {
-   private:
-    void               _internal_copy(comment const& c);
+namespace          com {
+  namespace        centreon {
+    namespace      broker {
+      namespace    events {
+        /**
+         *  @class comment comment.hh "events/comment.hh"
+         *  @brief Represents a comment inside Nagios.
+         *
+         *  Some user can make a comment on whatever objects he wants.
+         */
+        class      comment : public event {
+         private:
+          void     _internal_copy(comment const& c);
 
-   public:
-    std::string        author;
-    std::string        data;
-    time_t             deletion_time;
-    time_t             entry_time;
-    short              entry_type;
-    time_t             expire_time;
-    bool               expires;
-    int                host_id;
-    int                instance_id;
-    int                internal_id;
-    bool               persistent;
-    int                service_id;
-    short              source;
-    short              type;
-                       comment();
-                       comment(comment const& c);
-                       ~comment();
-    comment&           operator=(comment const& c);
-    int                get_type() const;
-  };
+         public:
+          QString  author;
+          QString  data;
+          time_t   deletion_time;
+          time_t   entry_time;
+          short    entry_type;
+          time_t   expire_time;
+          bool     expires;
+          int      host_id;
+          int      instance_id;
+          int      internal_id;
+          bool     persistent;
+          int      service_id;
+          short    source;
+          short    type;
+                   comment();
+                   comment(comment const& c);
+                   ~comment();
+          comment& operator=(comment const& c);
+          int      get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_COMMENT_HH_ */
+#endif /* !CCB_EVENTS_COMMENT_HH_ */

@@ -14,41 +14,45 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_CUSTOM_VARIABLE_STATUS_HH_
-# define EVENTS_CUSTOM_VARIABLE_STATUS_HH_
+#ifndef CCB_EVENTS_CUSTOM_VARIABLE_STATUS_HH_
+# define CCB_EVENTS_CUSTOM_VARIABLE_STATUS_HH_
 
-# include <string>
+# include <QString>
 # include <time.h>
 # include "events/event.hh"
 
-namespace                   events {
-  /**
-   *  @class custom_variable_status custom_variable_status.hh "events/custom_variable_status.hh"
-   *  @brief Custom variable update.
-   *
-   *  The value of a custom variable has changed.
-   */
-  class                     custom_variable_status : public event {
-   private:
-    void                    _internal_copy(custom_variable_status const& cvs);
+namespace                         com {
+  namespace                       centreon {
+    namespace                     broker {
+      namespace                   events {
+        /**
+         *  @class custom_variable_status custom_variable_status.hh "events/custom_variable_status.hh"
+         *  @brief Custom variable update.
+         *
+         *  The value of a custom variable has changed.
+         */
+        class                     custom_variable_status : public event {
+         private:
+          void                    _internal_copy(custom_variable_status const& cvs);
 
-   public:
-    int                     host_id;
-    bool                    modified;
-    std::string             name;
-    int                     service_id;
-    time_t                  update_time;
-    std::string             value;
-                            custom_variable_status();
-                            custom_variable_status(custom_variable_status const& cvs);
-    virtual                 ~custom_variable_status();
-    custom_variable_status& operator=(custom_variable_status const& cvs);
-    virtual int             get_type() const;
-  };
+         public:
+          int                     host_id;
+          bool                    modified;
+          QString                 name;
+          int                     service_id;
+          time_t                  update_time;
+          QString                 value;
+                                  custom_variable_status();
+                                  custom_variable_status(custom_variable_status const& cvs);
+          virtual                 ~custom_variable_status();
+          custom_variable_status& operator=(custom_variable_status const& cvs);
+          virtual int             get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_CUSTOM_VARIABLE_STATUS_HH_ */
+#endif /* !CCB_EVENTS_CUSTOM_VARIABLE_STATUS_HH_ */

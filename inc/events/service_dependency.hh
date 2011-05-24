@@ -14,36 +14,40 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_SERVICE_DEPENDENCY_HH_
-# define EVENTS_SERVICE_DEPENDENCY_HH_
+#ifndef CCB_EVENTS_SERVICE_DEPENDENCY_HH_
+# define CCB_EVENTS_SERVICE_DEPENDENCY_HH_
 
 # include "events/dependency.hh"
 
-namespace               events {
-  /**
-   *  @class service_dependency service_dependency.hh "events/service_dependency.hh"
-   *  @brief Service dependency relationship.
-   *
-   *  Defines a dependency between two services.
-   */
-  class                 service_dependency : public dependency {
-   private:
-    void                _internal_copy(service_dependency const& sd);
+namespace                     com {
+  namespace                   centreon {
+    namespace                 broker {
+      namespace               events {
+        /**
+         *  @class service_dependency service_dependency.hh "events/service_dependency.hh"
+         *  @brief Service dependency relationship.
+         *
+         *  Defines a dependency between two services.
+         */
+        class                 service_dependency : public dependency {
+         private:
+          void                _internal_copy(service_dependency const& sd);
 
-   public:
-    int                 dependent_service_id;
-    int                 service_id;
-                        service_dependency();
-                        service_dependency(
-                          service_dependency const& sd);
-                        ~service_dependency();
-    service_dependency& operator=(service_dependency const& sd);
-    int                 get_type() const;
-  };
+         public:
+          int                 dependent_service_id;
+          int                 service_id;
+                              service_dependency();
+                              service_dependency(
+                                service_dependency const& sd);
+                              ~service_dependency();
+          service_dependency& operator=(service_dependency const& sd);
+          int                 get_type() const;
+        };
+      }
+    }
+  }
 }
 
 #endif /* !EVENTS_SERVICE_DEPENDENCY_HH_ */

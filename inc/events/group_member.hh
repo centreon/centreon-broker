@@ -14,39 +14,43 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_GROUP_MEMBER_HH_
-# define EVENTS_GROUP_MEMBER_HH_
+#ifndef CCB_EVENTS_GROUP_MEMBER_HH_
+# define CCB_EVENTS_GROUP_MEMBER_HH_
 
-# include <string>
+# include <QString>
 # include "events/event.hh"
 
-namespace         events {
-  /**
-   *  @class group_member group_member.h "events/group_member.hh"
-   *  @brief Member of a group.
-   *
-   *  Base class defining that a member is part of a group.
-   *
-   *  @see host_group_member
-   *  @see service_group_member
-   */
-  class           group_member : public event {
-   private:
-    void          _internal_copy(group_member const& gm);
+namespace               com {
+  namespace             centreon {
+    namespace           broker {
+      namespace         events {
+        /**
+         *  @class group_member group_member.h "events/group_member.hh"
+         *  @brief Member of a group.
+         *
+         *  Base class defining that a member is part of a group.
+         *
+         *  @see host_group_member
+         *  @see service_group_member
+         */
+        class           group_member : public event {
+         private:
+          void          _internal_copy(group_member const& gm);
 
-   public:
-    std::string   group;
-    int           host_id;
-    int           instance_id;
-                  group_member();
-                  group_member(group_member const& gm);
-    virtual       ~group_member();
-    group_member& operator=(group_member const& gm);
-  };
+         public:
+          QString       group;
+          int           host_id;
+          int           instance_id;
+                        group_member();
+                        group_member(group_member const& gm);
+          virtual       ~group_member();
+          group_member& operator=(group_member const& gm);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_GROUP_MEMBER_HH_ */
+#endif /* !CCB_EVENTS_GROUP_MEMBER_HH_ */

@@ -14,42 +14,46 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_STATUS_HH_
-# define EVENTS_STATUS_HH_
+#ifndef CCB_EVENTS_STATUS_HH_
+# define CCB_EVENTS_STATUS_HH_
 
 # include "events/event.hh"
 
-namespace       events {
-  /**
-   *  @class status status.hh "events/status.hh"
-   *  @brief Root class of status events.
-   *
-   *  This is the root class of status events : host, program and
-   *  service status events.
-   *
-   *  @see host_status
-   *  @see program_status
-   *  @see service_status
-   */
-  class         status : public event {
-   private:
-    void        _internal_copy(status const& s);
+namespace             com {
+  namespace           centreon {
+    namespace         broker {
+      namespace       events {
+        /**
+         *  @class status status.hh "events/status.hh"
+         *  @brief Root class of status events.
+         *
+         *  This is the root class of status events : host, program and
+         *  service status events.
+         *
+         *  @see host_status
+         *  @see program_status
+         *  @see service_status
+         */
+        class         status : public event {
+         private:
+          void        _internal_copy(status const& s);
 
-   public:
-    bool        event_handler_enabled;
-    bool        failure_prediction_enabled;
-    bool        flap_detection_enabled;
-    bool        notifications_enabled;
-    bool        process_performance_data;
-                status();
-                status(status const& s);
-    virtual     ~status();
-    status&     operator=(status const& s);
-  };
+         public:
+          bool        event_handler_enabled;
+          bool        failure_prediction_enabled;
+          bool        flap_detection_enabled;
+          bool        notifications_enabled;
+          bool        process_performance_data;
+                      status();
+                      status(status const& s);
+          virtual     ~status();
+          status&     operator=(status const& s);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_STATUS_HH_ */
+#endif /* !CCB_EVENTS_STATUS_HH_ */

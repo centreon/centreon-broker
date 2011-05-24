@@ -15,21 +15,19 @@
 ## along with Centreon Broker. If not, see
 ## <http://www.gnu.org/licenses/>.
 ##
-## For more information: contact@centreon.com
-##
 
 # Global options.
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-include_directories("../inc" "../inc/daemon" "../inc/module")
-
-# Set TinyXML macro.
-add_definitions(-DTIXML_USE_STL)
+include_directories("../inc")# "../inc/daemon" "../inc/module")
+set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/inc")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 
 # Enable or not the debug mode.
-option(debug "Generate debug messages." OFF)
-if (NOT debug)
+option(WITH_DEBUG "Generate debug messages." OFF)
+if (NOT WITH_DEBUG)
   add_definitions(-DNDEBUG)
   message(STATUS "Debug messages disabled.")
 else ()
@@ -37,158 +35,197 @@ else ()
 endif ()
 
 # Find pthread library.
-include("FindThreads")
-if (NOT CMAKE_USE_PTHREADS_INIT)
-  message(FATAL_ERROR "Could not find pthread library.")
-endif ()
+#include("FindThreads")
+#if (NOT CMAKE_USE_PTHREADS_INIT)
+#  message(FATAL_ERROR "Could not find pthread library.")
+#endif ()
 
-# Find QtSql module.
+# Find Qt.
 find_package(Qt4 COMPONENTS QtCore QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 
 # Check for GNU TLS.
-option(TLS "TLS support." ON)
-if (TLS)
-  set(GNUTLS_DIR .)
-  find_package(GNUTLS REQUIRED)
-  include_directories(${GNUTLS_INCLUDE_DIR})
-  add_definitions(-DUSE_TLS)
-endif ()
+#option(TLS "TLS support." ON)
+#if (TLS)
+#  set(GNUTLS_DIR .)
+#  find_package(GNUTLS REQUIRED)
+#  include_directories(${GNUTLS_INCLUDE_DIR})
+#  add_definitions(-DUSE_TLS)
+#endif ()
 
-# libroker library.
+# Event library.
 set(LIBROKER_SOURCES
-	../src/concurrency/condition_variable.cc
-	../src/concurrency/lock.cc
-	../src/concurrency/mutex.cc
-	../src/concurrency/thread.cc
-	../src/concurrency/thread_listener.cc
-	../src/events/acknowledgement.cc
-	../src/events/check.cc
-	../src/events/comment.cc
-	../src/events/custom_variable.cc
-	../src/events/custom_variable_status.cc
-	../src/events/dependency.cc
-	../src/events/downtime.cc
-	../src/events/event.cc
-	../src/events/event_handler.cc
-	../src/events/flapping_status.cc
-	../src/events/group.cc
-	../src/events/group_member.cc
-	../src/events/host.cc
-	../src/events/host_check.cc
-	../src/events/host_dependency.cc
-	../src/events/host_group.cc
-	../src/events/host_group_member.cc
-	../src/events/host_parent.cc
-	../src/events/host_service.cc
-	../src/events/host_service_status.cc
-	../src/events/host_state.cc
-	../src/events/host_status.cc
-	../src/events/instance.cc
-	../src/events/instance_status.cc
-	../src/events/issue.cc
-	../src/events/issue_parent.cc
-	../src/events/log_entry.cc
-	../src/events/module.cc
-	../src/events/notification.cc
-	../src/events/service.cc
-	../src/events/service_check.cc
-	../src/events/service_dependency.cc
-	../src/events/service_group.cc
-	../src/events/service_group_member.cc
-	../src/events/service_state.cc
-	../src/events/service_status.cc
-	../src/events/state.cc
-	../src/events/status.cc
-	../src/exceptions/basic.cc
-	../src/exceptions/concurrency.cc
-	../src/exceptions/retval.cc
-	../src/interface/db/destination.cc
-	../src/interface/db/internal.cc
-	../src/interface/destination.cc
-	../src/interface/ndo/base.cc
-	../src/interface/ndo/destination.cc
-	../src/interface/ndo/internal.cc
-	../src/interface/ndo/source.cc
-	../src/interface/ndo/source_destination.cc
-	../src/interface/source.cc
-	../src/interface/source_destination.cc
-	../src/interface/xml/destination.cc
-	../src/interface/xml/internal.cc
-	../src/interface/xml/source.cc
-	../src/io/acceptor.cc
-	../src/io/fd.cc
-	../src/io/file.cc
-	../src/io/net/ipv4.cc
-	../src/io/net/ipv6.cc
-	../src/io/net/socket.cc
-	../src/io/net/unix.cc
-	../src/io/split.cc
-	../src/io/stream.cc
-	../src/io/text.cc
-	../src/logging/backend.cc
-	../src/logging/file.cc
-	../src/logging/logger.cc
-	../src/logging/logging.cc
-	../src/logging/ostream.cc
-	../src/logging/syslogger.cc
-	../src/logging/temp_logger.cc
-	../src/logging/void_logger.cc
-	../src/mapping.cc
-	../src/misc/stringifier.cc
+  # Sources.
+#  ../src/concurrency/condition_variable.cc
+#  ../src/concurrency/lock.cc
+#  ../src/concurrency/mutex.cc
+#  ../src/concurrency/thread.cc
+#  ../src/concurrency/thread_listener.cc
+  "${SRC_DIR}/events/acknowledgement.cc"
+  "${SRC_DIR}/events/check.cc"
+  "${SRC_DIR}/events/comment.cc"
+  "${SRC_DIR}/events/custom_variable.cc"
+  "${SRC_DIR}/events/custom_variable_status.cc"
+  "${SRC_DIR}/events/dependency.cc"
+  "${SRC_DIR}/events/downtime.cc"
+  "${SRC_DIR}/events/event.cc"
+  "${SRC_DIR}/events/event_handler.cc"
+  "${SRC_DIR}/events/flapping_status.cc"
+  "${SRC_DIR}/events/group.cc"
+  "${SRC_DIR}/events/group_member.cc"
+  "${SRC_DIR}/events/host.cc"
+  "${SRC_DIR}/events/host_check.cc"
+  "${SRC_DIR}/events/host_dependency.cc"
+  "${SRC_DIR}/events/host_group.cc"
+  "${SRC_DIR}/events/host_group_member.cc"
+  "${SRC_DIR}/events/host_parent.cc"
+  "${SRC_DIR}/events/host_service.cc"
+  "${SRC_DIR}/events/host_service_status.cc"
+  "${SRC_DIR}/events/host_state.cc"
+  "${SRC_DIR}/events/host_status.cc"
+  "${SRC_DIR}/events/instance.cc"
+  "${SRC_DIR}/events/instance_status.cc"
+#	../src/events/issue.cc
+#	../src/events/issue_parent.cc
+  "${SRC_DIR}/events/log_entry.cc"
+  "${SRC_DIR}/events/module.cc"
+  "${SRC_DIR}/events/notification.cc"
+  "${SRC_DIR}/events/service.cc"
+  "${SRC_DIR}/events/service_check.cc"
+  "${SRC_DIR}/events/service_dependency.cc"
+  "${SRC_DIR}/events/service_group.cc"
+  "${SRC_DIR}/events/service_group_member.cc"
+  "${SRC_DIR}/events/service_state.cc"
+  "${SRC_DIR}/events/service_status.cc"
+  "${SRC_DIR}/events/state.cc"
+  "${SRC_DIR}/events/status.cc"
+#	../src/exceptions/basic.cc
+#	../src/exceptions/concurrency.cc
+#	../src/exceptions/retval.cc
+#	../src/interface/db/destination.cc
+#	../src/interface/db/internal.cc
+#	../src/interface/destination.cc
+#	../src/interface/ndo/base.cc
+#	../src/interface/ndo/destination.cc
+#	../src/interface/ndo/internal.cc
+#	../src/interface/ndo/source.cc
+#	../src/interface/ndo/source_destination.cc
+#	../src/interface/source.cc
+#	../src/interface/source_destination.cc
+#	../src/interface/xml/destination.cc
+#	../src/interface/xml/internal.cc
+#	../src/interface/xml/source.cc
+#	../src/io/acceptor.cc
+#  ../src/io/fd.cc
+#	../src/io/file.cc
+#	../src/io/net/ipv4.cc
+#	../src/io/net/ipv6.cc
+#	../src/io/net/socket.cc
+#	../src/io/net/unix.cc
+#	../src/io/split.cc
+#	../src/io/stream.cc
+#	../src/io/text.cc
+#	../src/logging/backend.cc
+#	../src/logging/file.cc
+#	../src/logging/logger.cc
+#	../src/logging/logging.cc
+#	../src/logging/ostream.cc
+#	../src/logging/syslogger.cc
+#	../src/logging/temp_logger.cc
+#	../src/logging/void_logger.cc
+#	../src/mapping.cc
+#	../src/misc/stringifier.cc
+  # Headers.
+  "${INC_DIR}/events/acknowledgement.hh"
+  "${INC_DIR}/events/check.hh"
+  "${INC_DIR}/events/comment.hh"
+  "${INC_DIR}/events/custom_variable.hh"
+  "${INC_DIR}/events/custom_variable_status.hh"
+  "${INC_DIR}/events/dependency.hh"
+  "${INC_DIR}/events/downtime.hh"
+  "${INC_DIR}/events/event.hh"
+  "${INC_DIR}/events/event_handler.hh"
+  "${INC_DIR}/events/events.hh"
+  "${INC_DIR}/events/flapping_status.hh"
+  "${INC_DIR}/events/group.hh"
+  "${INC_DIR}/events/group_member.hh"
+  "${INC_DIR}/events/host.hh"
+  "${INC_DIR}/events/host_check.hh"
+  "${INC_DIR}/events/host_dependency.hh"
+  "${INC_DIR}/events/host_group.hh"
+  "${INC_DIR}/events/host_group_member.hh"
+  "${INC_DIR}/events/host_parent.hh"
+  "${INC_DIR}/events/host_service.hh"
+  "${INC_DIR}/events/host_service_status.hh"
+  "${INC_DIR}/events/host_state.hh"
+  "${INC_DIR}/events/host_status.hh"
+  "${INC_DIR}/events/instance.hh"
+  "${INC_DIR}/events/instance_status.hh"
+  "${INC_DIR}/events/log_entry.hh"
+  "${INC_DIR}/events/module.hh"
+  "${INC_DIR}/events/notification.hh"
+  "${INC_DIR}/events/service.hh"
+  "${INC_DIR}/events/service_check.hh"
+  "${INC_DIR}/events/service_dependency.hh"
+  "${INC_DIR}/events/service_group.hh"
+  "${INC_DIR}/events/service_group_member.hh"
+  "${INC_DIR}/events/service_state.hh"
+  "${INC_DIR}/events/service_status.hh"
+  "${INC_DIR}/events/state.hh"
+  "${INC_DIR}/events/status.hh"
 )
-if (TLS)
-  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
-	../src/io/tls/acceptor.cc
-	../src/io/tls/connector.cc
-	../src/io/tls/internal.cc
-	../src/io/tls/params.cc
-	../src/io/tls/stream.cc
-  )
-endif ()
-add_library(roker SHARED ${LIBROKER_SOURCES})
-target_link_libraries(roker ${GNUTLS_LIBRARIES})
+#if (TLS)
+#  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
+#	../src/io/tls/acceptor.cc
+#	../src/io/tls/connector.cc
+#	../src/io/tls/internal.cc
+#	../src/io/tls/params.cc
+#	../src/io/tls/stream.cc
+#  )
+#endif ()
+add_library(roker STATIC ${LIBROKER_SOURCES})
+#target_link_libraries(roker ${GNUTLS_LIBRARIES})
 target_link_libraries(roker ${QT_LIBRARIES})
-target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
+#target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
-set(COMMON_SOURCES
-	../src/config/factory/interface.cc
-	../src/config/factory/logger.cc
-	../src/config/globals.cc
-	../src/config/handle.cc
-	../src/config/interface.cc
-	../src/config/logger.cc
-	../src/config/parser.cc
-	../src/correlation/correlator.cc
-	../src/correlation/node.cc
-	../src/correlation/parser.cc
-	../src/init.cc
-	../src/multiplexing/internal.cc
-	../src/multiplexing/publisher.cc
-	../src/multiplexing/subscriber.cc
-	../src/processing/failover_in.cc
-	../src/processing/failover_out.cc
-	../src/processing/feeder.cc
-	../src/processing/listener.cc
-)
+#set(COMMON_SOURCES
+#	../src/config/factory/interface.cc
+#	../src/config/factory/logger.cc
+#	../src/config/globals.cc
+#	../src/config/handle.cc
+#	../src/config/interface.cc
+#	../src/config/logger.cc
+#	../src/config/parser.cc
+#	../src/correlation/correlator.cc
+#	../src/correlation/node.cc
+#	../src/correlation/parser.cc
+#	../src/init.cc
+#	../src/multiplexing/internal.cc
+#	../src/multiplexing/publisher.cc
+#	../src/multiplexing/subscriber.cc
+#	../src/processing/failover_in.cc
+#	../src/processing/failover_out.cc
+#	../src/processing/feeder.cc
+#	../src/processing/listener.cc
+#)
 
 # Standalone binary.
-add_executable(cbd ${COMMON_SOURCES} ../src/daemon/main.cc)
-target_link_libraries(cbd roker ${QT_LIBRARIES})
+#add_executable(cbd ${SRC_DIR}/daemon/main.cc)
+#target_link_libraries(cbd roker ${QT_LIBRARIES})
 
 # Module.
-add_library(cbmod SHARED
-	${COMMON_SOURCES}
-	../src/module/callbacks.cc
-	../src/module/initial.cc
-	../src/module/set_log_data.cc
-	../src/module/main.cc
-)
-target_link_libraries(cbmod roker ${QT_LIBRARIES})
+#add_library(cbmod SHARED
+#	${COMMON_SOURCES}
+#	../src/module/callbacks.cc
+#	../src/module/initial.cc
+#	../src/module/set_log_data.cc
+#	../src/module/main.cc
+#)
+#target_link_libraries(cbmod roker ${QT_LIBRARIES})
 
 # Install rules.
-install(TARGETS roker cbd
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib)
+#install(TARGETS roker cbd
+#	RUNTIME DESTINATION bin
+#	LIBRARY DESTINATION lib
+#	ARCHIVE DESTINATION lib)

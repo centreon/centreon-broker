@@ -14,30 +14,34 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_HOST_GROUP_HH_
-# define EVENTS_HOST_GROUP_HH_
+#ifndef CCB_EVENTS_HOST_GROUP_HH_
+# define CCB_EVENTS_HOST_GROUP_HH_
 
 # include "events/group.hh"
 
-namespace       events {
-  /**
-   *  @class host_group host_group.hh "events/host_group.hh"
-   *  @brief Represents a group of hosts within Nagios.
-   *
-   *  A group of hosts within Nagios.
-   */
-  class         host_group : public group {
-   public:
-                host_group();
-                host_group(host_group const& hg);
-                ~host_group();
-    host_group& operator=(host_group const& hg);
-    int         get_type() const;
-  };
+namespace             com {
+  namespace           centreon {
+    namespace         broker {
+      namespace       events {
+        /**
+         *  @class host_group host_group.hh "events/host_group.hh"
+         *  @brief Represents a group of hosts.
+         *
+         *  A group of hosts within the scheduling engine.
+         */
+        class         host_group : public group {
+         public:
+                      host_group();
+                      host_group(host_group const& hg);
+                      ~host_group();
+          host_group& operator=(host_group const& hg);
+          int         get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_HOST_GROUP_HH_ */
+#endif /* !CCB_EVENTS_HOST_GROUP_HH_ */

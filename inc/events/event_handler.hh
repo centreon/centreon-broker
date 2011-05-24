@@ -14,50 +14,54 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_EVENT_HANDLER_HH_
-# define EVENTS_EVENT_HANDLER_HH_
+#ifndef CCB_EVENTS_EVENT_HANDLER_HH_
+# define CCB_EVENTS_EVENT_HANDLER_HH_
 
-# include <string>
-# include <sys/types.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace          events {
-  /**
-   *  @class event_handler event_handler.hh "events/event_handler.hh"
-   *  @brief Represents an event handler inside Nagios.
-   *
-   *  Event handlers, as their name suggests, are executed upon the
-   *  detection of some events by Nagios.
-   */
-  class            event_handler : public event {
-   private:
-    void           _internal_copy(event_handler const& eh);
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          events {
+        /**
+         *  @class event_handler event_handler.hh "events/event_handler.hh"
+         *  @brief Represents an event handler inside the scheduling engine.
+         *
+         *  Event handlers, as their name suggests, are executed upon
+         *  the detection of some events by the scheduling engine.
+         */
+        class            event_handler : public event {
+         private:
+          void           _internal_copy(event_handler const& eh);
 
-   public:
-    std::string    command_args;
-    std::string    command_line;
-    short          early_timeout;
-    time_t         end_time;
-    double         execution_time;
-    int            host_id;
-    std::string    output;
-    short          return_code;
-    int            service_id;
-    time_t         start_time;
-    short          state;
-    short          state_type;
-    short          timeout;
-    short          type;
-                   event_handler();
-                   event_handler(event_handler const& eh);
-                   ~event_handler();
-    event_handler& operator=(event_handler const& eh);
-    int            get_type() const;
-  };
+         public:
+          QString        command_args;
+          QString        command_line;
+          short          early_timeout;
+          time_t         end_time;
+          double         execution_time;
+          int            host_id;
+          QString        output;
+          short          return_code;
+          int            service_id;
+          time_t         start_time;
+          short          state;
+          short          state_type;
+          short          timeout;
+          short          type;
+                         event_handler();
+                         event_handler(event_handler const& eh);
+                         ~event_handler();
+          event_handler& operator=(event_handler const& eh);
+          int            get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_EVENT_HANDLER_HH_ */
+#endif /* !CCB_EVENTS_EVENT_HANDLER_HH_ */

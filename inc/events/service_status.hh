@@ -14,43 +14,43 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_SERVICE_STATUS_HH_
-# define EVENTS_SERVICE_STATUS_HH_
+#ifndef CCB_EVENTS_SERVICE_STATUS_HH_
+# define CCB_EVENTS_SERVICE_STATUS_HH_
 
-# include <string>
-# include <sys/types.h>
+# include <time.h>
 # include "events/host_service_status.hh"
 
-namespace               events {
-  // Forward declaration.
-  class                 event_subscriber;
+namespace                 com {
+  namespace               centreon {
+    namespace             broker {
+      namespace           events {
+        /**
+         *  @class service_status service_status.hh "events/service_status.hh"
+         *  @brief When the status of a service change, such an event is generated.
+         *
+         *  This class represents a change in a service status.
+         */
+        class             service_status : public host_service_status {
+         private:
+          void            _internal_copy(service_status const& ss);
 
-  /**
-   *  @class service_status service_status.hh "events/service_status.hh"
-   *  @brief When the status of a service change, such an event is generated.
-   *
-   *  This class represents a change in a service status.
-   */
-  class                service_status : public host_service_status {
-   private:
-    void               _internal_copy(service_status const& ss);
-
-   public:
-    time_t             last_time_critical;
-    time_t             last_time_ok;
-    time_t             last_time_unknown;
-    time_t             last_time_warning;
-    int                service_id;
-                       service_status();
-                       service_status(service_status const& ss);
-    virtual            ~service_status();
-    service_status&    operator=(service_status const& ss);
-    int                get_type() const;
-  };
+         public:
+          time_t          last_time_critical;
+          time_t          last_time_ok;
+          time_t          last_time_unknown;
+          time_t          last_time_warning;
+          int             service_id;
+                          service_status();
+                          service_status(service_status const& ss);
+          virtual         ~service_status();
+          service_status& operator=(service_status const& ss);
+          int             get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_SERVICE_STATUS_HH_ */
+#endif /* !CCB_EVENTS_SERVICE_STATUS_HH_ */

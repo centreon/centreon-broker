@@ -14,50 +14,54 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_NOTIFICATION_HH_
-# define EVENTS_NOTIFICATION_HH_
+#ifndef CCB_EVENTS_NOTIFICATION_HH_
+# define CCB_EVENTS_NOTIFICATION_HH_
 
-# include <string>
-# include <sys/time.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace         events {
-  /**
-   *  @class notification notification.hh "events/notification.hh"
-   *  @brief Represents a notification inside Nagios.
-   *
-   *  Notifications are sent by Nagios to notify users of an issue in
-   *  their monitored IT infrastructure.
-   */
-  class           notification : public event {
-   private:
-    void          _internal_copy(notification const& n);
+namespace               com {
+  namespace             centreon {
+    namespace           broker {
+      namespace         events {
+        /**
+         *  @class notification notification.hh "events/notification.hh"
+         *  @brief Represents a notification.
+         *
+         *  Notifications are sent by the scheduling engine to notify
+         *  users of an issue in their monitored IT infrastructure.
+         */
+        class           notification : public event {
+         private:
+          void          _internal_copy(notification const& n);
 
-   public:
-    std::string   ack_author;
-    std::string   ack_data;
-    std::string   command_name;
-    std::string   contact_name;
-    bool          contacts_notified;
-    time_t        end_time;
-    bool          escalated;
-    int           host_id;
-    std::string   output;
-    int           reason_type;
-    int           service_id;
-    time_t        start_time;
-    int           state;
-    int           type;
-                  notification();
-                  notification(notification const& n);
-                  ~notification();
-    notification& operator=(notification const& n);
-    int           get_type() const;
-  };
+         public:
+          QString       ack_author;
+          QString       ack_data;
+          QString       command_name;
+          QString       contact_name;
+          bool          contacts_notified;
+          time_t        end_time;
+          bool          escalated;
+          int           host_id;
+          QString       output;
+          int           reason_type;
+          int           service_id;
+          time_t        start_time;
+          int           state;
+          int           type;
+                        notification();
+                        notification(notification const& n);
+                        ~notification();
+          notification& operator=(notification const& n);
+          int           get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_NOTIFICATION_HH_ */
+#endif /* !CCB_EVENTS_NOTIFICATION_HH_ */

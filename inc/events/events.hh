@@ -14,12 +14,10 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_EVENTS_HH_
-# define EVENTS_EVENTS_HH_
+#ifndef CCB_EVENTS_EVENTS_HH_
+# define CCB_EVENTS_EVENTS_HH_
 
 # include "events/acknowledgement.hh"
 # include "events/comment.hh"
@@ -51,4 +49,4 @@
 # include "events/service_state.hh"
 # include "events/service_status.hh"
 
-#endif /* EVENTS_EVENTS_HH_ */
+#endif /* CCB_EVENTS_EVENTS_HH_ */

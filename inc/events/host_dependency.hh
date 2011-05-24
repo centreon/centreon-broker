@@ -14,30 +14,34 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_HOST_DEPENDENCY_HH_
-# define EVENTS_HOST_DEPENDENCY_HH_
+#ifndef CCB_EVENTS_HOST_DEPENDENCY_HH_
+# define CCB_EVENTS_HOST_DEPENDENCY_HH_
 
 # include "events/dependency.hh"
 
-namespace            events {
-  /**
-   *  @class host_dependency host_dependency.hh "events/host_dependency.hh"
-   *  @brief Host dependency relationship.
-   *
-   *  Defines a dependency between two hosts.
-   */
-  class              host_dependency : public dependency {
-   public:
-                     host_dependency();
-                     host_dependency(host_dependency const& hd);
-                     ~host_dependency();
-    host_dependency& operator=(host_dependency const& hd);
-    int              get_type() const;
-  };
+namespace                  com {
+  namespace                centreon {
+    namespace              broker {
+      namespace            events {
+        /**
+         *  @class host_dependency host_dependency.hh "events/host_dependency.hh"
+         *  @brief Host dependency relationship.
+         *
+         *  Defines a dependency between two hosts.
+         */
+        class              host_dependency : public dependency {
+         public:
+                           host_dependency();
+                           host_dependency(host_dependency const& hd);
+                           ~host_dependency();
+          host_dependency& operator=(host_dependency const& hd);
+          int              get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_HOST_DEPENDENCY_HH_ */
+#endif /* !CCB_EVENTS_HOST_DEPENDENCY_HH_ */

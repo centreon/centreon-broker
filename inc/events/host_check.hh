@@ -14,32 +14,35 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_HOST_CHECK_HH_
-# define EVENTS_HOST_CHECK_HH_
+#ifndef CCB_EVENTS_HOST_CHECK_HH_
+# define CCB_EVENTS_HOST_CHECK_HH_
 
-# include <string>
 # include "events/check.hh"
 
-namespace       events {
-  /**
-   *  @class host_check host_check.hh "events/host_check.hh"
-   *  @brief Check that has been executed on a host.
-   *
-   *  Once a check has been executed on a host, an object of this class
-   *  is sent.
-   */
-  class         host_check : public check {
-   public:
-                host_check();
-                host_check(host_check const& hc);
-    virtual     ~host_check();
-    host_check& operator=(host_check const& hc);
-    int         get_type() const;
-  };
+namespace             com {
+  namespace           centreon {
+    namespace         broker {
+      namespace       events {
+        /**
+         *  @class host_check host_check.hh "events/host_check.hh"
+         *  @brief Check that has been executed on a host.
+         *
+         *  Once a check has been executed on a host, an object of this class
+         *  is sent.
+         */
+        class         host_check : public check {
+         public:
+                      host_check();
+                      host_check(host_check const& hc);
+          virtual     ~host_check();
+          host_check& operator=(host_check const& hc);
+          int         get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_HOST_CHECK_HH_ */
+#endif /* !CCB_EVENTS_HOST_CHECK_HH_ */

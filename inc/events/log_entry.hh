@@ -14,51 +14,56 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_LOG_ENTRY_HH_
-# define EVENTS_LOG_ENTRY_HH_
+#ifndef CCB_EVENTS_LOG_ENTRY_HH_
+# define CCB_EVENTS_LOG_ENTRY_HH_
 
-# include <string>
-# include <sys/types.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace              events {
-  /**
-   *  @class log_entry log_entry.hh "events/log_entry.hh"
-   *  @brief Nagios-generated log message.
-   *
-   *  From time to time, Nagios generates a log message. These messages
-   *  can be useful, especially when investigating problems. This class
-   *  holds all information related to a log entry.
-   */
-  class                log_entry : public event {
-   private:
-    void               _internal_copy(log_entry const& le);
+namespace            com {
+  namespace          centreon {
+    namespace        broker {
+      namespace      events {
+        /**
+         *  @class log_entry log_entry.hh "events/log_entry.hh"
+         *  @brief Nagios-generated log message.
+         *
+         *  From time to time, the scheduling engine generates a log
+         *  message. These messages can be useful, especially when
+         *  investigating problems. This class holds all information
+         *  related to a log entry.
+         */
+        class        log_entry : public event {
+         private:
+          void       _internal_copy(log_entry const& le);
 
-   public:
-    time_t             c_time;
-    int                host_id;
-    std::string        host_name;
-    std::string        instance_name;
-    time_t             issue_start_time;
-    short              msg_type;
-    std::string        notification_cmd;
-    std::string        notification_contact;
-    std::string        output;
-    int                retry;
-    std::string        service_description;
-    int                service_id;
-    short              status;
-    short              type;
-                       log_entry();
-                       log_entry(log_entry const& le);
-                       ~log_entry();
-    log_entry&         operator=(const log_entry& le);
-    int                get_type() const;
-  };
+         public:
+          time_t     c_time;
+          int        host_id;
+          QString    host_name;
+          QString    instance_name;
+          time_t     issue_start_time;
+          short      msg_type;
+          QString    notification_cmd;
+          QString    notification_contact;
+          QString    output;
+          int        retry;
+          QString    service_description;
+          int        service_id;
+          short      status;
+          short      type;
+                     log_entry();
+                     log_entry(log_entry const& le);
+                     ~log_entry();
+          log_entry& operator=(const log_entry& le);
+          int        get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_LOG_ENTRY_HH_ */
+#endif /* !CCB_EVENTS_LOG_ENTRY_HH_ */

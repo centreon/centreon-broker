@@ -14,30 +14,34 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_SERVICE_STATE_HH_
-# define EVENTS_SERVICE_STATE_HH_
+#ifndef CCB_EVENTS_SERVICE_STATE_HH_
+# define CCB_EVENTS_SERVICE_STATE_HH_
 
 # include "events/state.hh"
 
-namespace          events {
-  /**
-   *  @class service_state service_state.hh "events/service_state.hh"
-   *  @brief Service state.
-   *
-   *  State of a service at a given time.
-   */
-  class            service_state : public state {
-   public:
-                   service_state();
-                   service_state(service_state const& ss);
-                   ~service_state();
-    service_state& operator=(service_state const& ss);
-    int            get_type() const;
-  };
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          events {
+        /**
+         *  @class service_state service_state.hh "events/service_state.hh"
+         *  @brief Service state.
+         *
+         *  State of a service at a given time.
+         */
+        class            service_state : public state {
+         public:
+                         service_state();
+                         service_state(service_state const& ss);
+                         ~service_state();
+          service_state& operator=(service_state const& ss);
+          int            get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_SERVICE_STATE_HH_ */
+#endif /* !CCB_EVENTS_SERVICE_STATE_HH_ */

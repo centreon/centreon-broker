@@ -14,41 +14,42 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_HOST_STATUS_HH_
-# define EVENTS_HOST_STATUS_HH_
+#ifndef CCB_EVENTS_HOST_STATUS_HH_
+# define CCB_EVENTS_HOST_STATUS_HH_
 
-# include <sys/types.h>
+# include <time.h>
 # include "events/host_service_status.hh"
 
-namespace              events {
-  // Forward declaration.
-  class                event_subscriber;
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
+        /**
+         *  @class host_status host_status.hh "events/host_status.hh"
+         *  @brief host_status represents a status change of an host.
+         *
+         *  host_status are generated when the status of an host change.
+         *  Appropriate fields should be updated.
+         */
+        class          host_status : public host_service_status {
+         private:
+          void         _internal_copy(host_status const& hs);
 
-  /**
-   *  @class host_status host_status.hh "events/host_status.hh"
-   *  @brief host_status represents a status change of an host.
-   *
-   *  host_status are generated when the status of an host change.
-   *  Appropriate fields should be updated.
-   */
-  class                host_status : public host_service_status {
-   private:
-    void               _internal_copy(host_status const& hs);
-
-   public:
-    time_t             last_time_down;
-    time_t             last_time_unreachable;
-    time_t             last_time_up;
+         public:
+          time_t       last_time_down;
+          time_t       last_time_unreachable;
+          time_t       last_time_up;
                        host_status();
                        host_status(host_status const& hs);
-    virtual            ~host_status();
-    host_status&       operator=(host_status const& hs);
-    int                get_type() const;
-  };
+          virtual      ~host_status();
+          host_status& operator=(host_status const& hs);
+          int          get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_HOST_STATUS_HH_ */
+#endif /* !CCB_EVENTS_HOST_STATUS_HH_ */

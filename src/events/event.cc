@@ -14,14 +14,12 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include "concurrency/lock.hh"
+#include <QMutexLocker>
 #include "events/event.hh"
 
-using namespace events;
+using namespace com::centreon::broker::events;
 
 /**************************************
 *                                     *
@@ -75,10 +73,10 @@ event::~event() {}
  *  Specify that somebody is reading the event. It shall not be
  *  destructed until the reader specify that he's done with the event.
  *
- *  @see remove_reader
+ *  @see remove_reader()
  */
 void event::add_reader() {
-  concurrency::lock l(_mutex);
+  QMutexLocker lock(&_mutex);
   ++_readers;
   return ;
 }
@@ -86,16 +84,16 @@ void event::add_reader() {
 /**
  *  Remove a reader from the event.
  *
- *  @see add_reader
+ *  @see add_reader()
  */
 void event::remove_reader() {
   bool destroy;
-  concurrency::lock l(_mutex);
+  QMutexLocker lock(&_mutex);
   if (--_readers <= 0)
     destroy = true;
   else
     destroy = false;
-  l.release();
+  lock.unlock();
   if (destroy)
     delete (this);
   return ;

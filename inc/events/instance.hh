@@ -14,44 +14,48 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EVENTS_INSTANCE_HH_
-# define EVENTS_INSTANCE_HH_
+#ifndef CCB_EVENTS_INSTANCE_HH_
+# define CCB_EVENTS_INSTANCE_HH_
 
-# include <string>
-# include <sys/types.h>
+# include <QString>
+# include <time.h>
 # include "events/event.hh"
 
-namespace       events {
-  /**
-   *  @class instance instance.hh "events/instance.hh"
-   *  @brief Information about Nagios process.
-   *
-   *  This class holds information about a Nagios process, like whether
-   *  it is running or not, in daemon mode or not, ...
-   */
-  class         instance : public event {
-   private:
-    void        _internal_copy(instance const& i);
+namespace           com {
+  namespace         centreon {
+    namespace       broker {
+      namespace     events {
+        /**
+         *  @class instance instance.hh "events/instance.hh"
+         *  @brief Information about Nagios process.
+         *
+         *  This class holds information about a Nagios process, like whether
+         *  it is running or not, in daemon mode or not, ...
+         */
+        class       instance : public event {
+         private:
+          void      _internal_copy(instance const& i);
 
-   public:
-    std::string engine;
-    int         id;
-    bool        is_running;
-    std::string name;
-    int         pid;
-    time_t      program_end;
-    time_t      program_start;
-    std::string version;
-                instance();
-                instance(instance const& i);
-                ~instance();
-    instance&   operator=(instance const& i);
-    int         get_type() const;
-  };
+         public:
+          QString   engine;
+          int       id;
+          bool      is_running;
+          QString   name;
+          int       pid;
+          time_t    program_end;
+          time_t    program_start;
+          QString   version;
+                    instance();
+                    instance(instance const& i);
+                    ~instance();
+          instance& operator=(instance const& i);
+          int       get_type() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EVENTS_INSTANCE_HH_ */
+#endif /* !CCB_EVENTS_INSTANCE_HH_ */
