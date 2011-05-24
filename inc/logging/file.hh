@@ -14,35 +14,39 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef LOGGING_FILE_HH_
-# define LOGGING_FILE_HH_
+#ifndef CCB_LOGGING_FILE_HH_
+# define CCB_LOGGING_FILE_HH_
 
 # include <fstream>
 # include "logging/ostream.hh"
 
-namespace         logging {
-  /**
-   *  @class file file.hh "logging/file.hh"
-   *  @brief Log messages to a file.
-   *
-   *  Log messages to a file.
-   */
-  class           file : public ostream {
-   private:
-    std::ofstream _ofs;
-                  file(file const& f);
-    file&         operator=(file const& f);
+namespace               com {
+  namespace             centreon {
+    namespace           broker {
+      namespace         logging {
+        /**
+         *  @class file file.hh "logging/file.hh"
+         *  @brief Log messages to a file.
+         *
+         *  Log messages to a file.
+         */
+        class           file : public ostream {
+         private:
+          std::ofstream _ofs;
+                        file(file const& f);
+          file&         operator=(file const& f);
 
-   public:
-                  file();
-                  file(char const* filename);
-                  ~file();
-    void          open(char const* filename);
-  };
+         public:
+                        file();
+                        file(char const* filename);
+                        ~file();
+          void          open(char const* filename);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !LOGGING_FILE_HH_ */
+#endif /* !CCB_LOGGING_FILE_HH_ */

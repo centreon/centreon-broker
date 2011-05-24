@@ -14,20 +14,23 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef LOGGING_INTERNAL_HH_
-# define LOGGING_INTERNAL_HH_
+#ifndef CCB_LOGGING_INTERNAL_HH_
+# define CCB_LOGGING_INTERNAL_HH_
 
 # include <map>
-# include <memory>
 # include <utility>
 # include "logging/backend.hh"
 
-namespace logging {
-  extern std::map<backend*, std::pair<unsigned int, level> > backends;
+namespace com {
+  namespace centreon {
+    namespace broker {
+      namespace logging {
+        extern std::map<backend*, std::pair<unsigned int, level> > backends;
+      }
+    }
+  }
 }
 
-#endif /* !LOGGING_INTERNAL_HH_ */
+#endif /* !CCB_LOGGING_INTERNAL_HH_ */

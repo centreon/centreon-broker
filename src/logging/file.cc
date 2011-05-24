@@ -14,15 +14,13 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <assert.h>
 #include "exceptions/basic.hh"
 #include "logging/file.hh"
 
-using namespace logging;
+using namespace com::centreon::broker::logging;
 
 /**************************************
 *                                     *

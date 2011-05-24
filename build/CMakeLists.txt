@@ -125,14 +125,14 @@ set(LIBROKER_SOURCES
 #	../src/io/split.cc
 #	../src/io/stream.cc
 #	../src/io/text.cc
-#	../src/logging/backend.cc
-#	../src/logging/file.cc
-#	../src/logging/logger.cc
-#	../src/logging/logging.cc
-#	../src/logging/ostream.cc
-#	../src/logging/syslogger.cc
-#	../src/logging/temp_logger.cc
-#	../src/logging/void_logger.cc
+  "${SRC_DIR}/logging/backend.cc"
+  "${SRC_DIR}/logging/file.cc"
+  "${SRC_DIR}/logging/logger.cc"
+  "${SRC_DIR}/logging/logging.cc"
+  "${SRC_DIR}/logging/ostream.cc"
+  "${SRC_DIR}/logging/syslogger.cc"
+  "${SRC_DIR}/logging/temp_logger.cc"
+  "${SRC_DIR}/logging/void_logger.cc"
 #	../src/mapping.cc
 #	../src/misc/stringifier.cc
   "${SRC_DIR}/multiplexing/internal.cc"
@@ -178,6 +178,16 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/events/status.hh"
   "${INC_DIR}/interface/destination.hh"
   "${INC_DIR}/interface/source.hh"
+  "${INC_DIR}/logging/backend.hh"
+  "${INC_DIR}/logging/defines.hh"
+  "${INC_DIR}/logging/file.hh"
+  "${INC_DIR}/logging/internal.hh"
+  "${INC_DIR}/logging/logger.hh"
+  "${INC_DIR}/logging/logging.hh"
+  "${INC_DIR}/logging/ostream.hh"
+  "${INC_DIR}/logging/syslogger.hh"
+  "${INC_DIR}/logging/temp_logger.hh"
+  "${INC_DIR}/logging/void_logger.hh"
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"

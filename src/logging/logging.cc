@@ -14,15 +14,13 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include "logging/defines.hh"
 #include "logging/internal.hh"
 #include "logging/logging.hh"
 
-using namespace logging;
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
@@ -31,7 +29,7 @@ using namespace logging;
 **************************************/
 
 // List of registered backends.
-std::map<backend*, std::pair<unsigned int, level> > logging::backends;
+std::map<logging::backend*, std::pair<unsigned int, logging::level> > logging::backends;
 
 /**************************************
 *                                     *
@@ -39,14 +37,14 @@ std::map<backend*, std::pair<unsigned int, level> > logging::backends;
 *                                     *
 **************************************/
 
-logger      logging::config(CONFIG);
+logging::logger      logging::config(CONFIG);
 #ifdef NDEBUG
-void_logger logging::debug;
+logging::void_logger logging::debug;
 #else
-logger      logging::debug(DEBUG);
+logging::logger      logging::debug(DEBUG);
 #endif /* NDEBUG */
-logger      logging::error(ERROR);
-logger      logging::info(INFO);
+logging::logger      logging::error(ERROR);
+logging::logger      logging::info(INFO);
 
 /**
  *  Clear the list of logging objects.

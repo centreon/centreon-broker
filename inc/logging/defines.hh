@@ -14,29 +14,33 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef LOGGING_DEFINES_HH_
-# define LOGGING_DEFINES_HH_
+#ifndef CCB_LOGGING_DEFINES_HH_
+# define CCB_LOGGING_DEFINES_HH_
 
-namespace logging {
-  // Log levels.
-  enum    level {
-    NONE = 0,
-    HIGH,
-    MEDIUM,
-    LOW
-  };
+namespace com {
+  namespace centreon {
+    namespace broker {
+      namespace logging {
+        // Log levels.
+        enum    level {
+          NONE = 0,
+          HIGH,
+          MEDIUM,
+          LOW
+        };
 
-  // Log types.
-  enum    type {
-    CONFIG = 1,
-    DEBUG = 2,
-    ERROR = 4,
-    INFO = 8
-  };
+        // Log types.
+        enum    type {
+          CONFIG = 1,
+          DEBUG = 2,
+          ERROR = 4,
+          INFO = 8
+        };
+      }
+    }
+  }
 }
 
-#endif /* !LOGGING_DEFINES_HH_ */
+#endif /* !CCB_LOGGING_DEFINES_HH_ */

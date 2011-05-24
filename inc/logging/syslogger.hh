@@ -14,34 +14,38 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef LOGGING_SYSLOGGER_HH_
-# define LOGGING_SYSLOGGER_HH_
+#ifndef CCB_LOGGING_SYSLOGGER_HH_
+# define CCB_LOGGING_SYSLOGGER_HH_
 
 # include "logging/backend.hh"
 
-namespace      logging {
-  /**
-   *  @class syslogger syslogger.hh "logging/syslogger.hh"
-   *  @brief Log messages to syslog.
-   *
-   *  Log messages to a configured facility of syslog.
-   */
-  class        syslogger : public backend {
-   public:
-               syslogger();
-               syslogger(syslogger const& s);
-               syslogger(int facility);
-               ~syslogger();
-    syslogger& operator=(syslogger const& s);
-    void       log_msg(char const* msg,
-                 unsigned int len,
-                 type log_type,
-                 level l) throw ();
-  };
+namespace            com {
+  namespace          centreon {
+    namespace        broker {
+      namespace      logging {
+        /**
+         *  @class syslogger syslogger.hh "logging/syslogger.hh"
+         *  @brief Log messages to syslog.
+         *
+         *  Log messages to a configured facility of syslog.
+         */
+        class        syslogger : public backend {
+         public:
+                     syslogger();
+                     syslogger(syslogger const& s);
+                     syslogger(int facility);
+                     ~syslogger();
+          syslogger& operator=(syslogger const& s);
+          void       log_msg(char const* msg,
+                       unsigned int len,
+                       type log_type,
+                       level l) throw ();
+        };
+      }
+    }
+  }
 }
 
-#endif /* !LOGGING_SYSLOGGER_HH_ */
+#endif /* !CCB_LOGGING_SYSLOGGER_HH_ */

@@ -24,6 +24,7 @@
 #include "multiplexing/publisher.hh"
 #include "multiplexing/subscriber.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
 /**************************************
