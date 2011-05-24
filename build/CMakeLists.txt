@@ -135,6 +135,7 @@ set(LIBROKER_SOURCES
 #	../src/mapping.cc
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/modules/handle.cc"
+  "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
@@ -192,6 +193,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/logging/void_logger.hh"
   "${INC_DIR}/misc/stringifier.hh"
   "${INC_DIR}/modules/handle.hh"
+  "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
