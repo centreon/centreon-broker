@@ -171,7 +171,7 @@ extern "C" {
       "Copyright 2009-2011 Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_VERSION,
-      "1.2.1");
+      "1.2.2");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_LICENSE,
       "GPL version 2");
