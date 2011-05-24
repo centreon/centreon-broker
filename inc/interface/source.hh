@@ -14,43 +14,42 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef INTERFACE_SOURCE_HH_
-# define INTERFACE_SOURCE_HH_
+#ifndef CCB_INTERFACE_SOURCE_HH_
+# define CCB_INTERFACE_SOURCE_HH_
 
 // Forward declaration.
-namespace                    events
-{ class                      event; }
+namespace                        events
+{ class                          event; }
 
-namespace                    interface {
-  /**
-   *  @class source source.hh "interface/source.hh"
-   *  @brief Base interface for event-generating objects.
-   *
-   *  interface::source is the base interface used to get objects from
-   *  an input source. The underlying source can be either a XML stream,
-   *  a database, ...
-   *
-   *  @see db::db
-   *  @see file::file
-   *  @see ndo::ndo
-   *  @see xml::xml
-   */
-  class                    source {
-   protected:
-                           source();
-                           source(source const& s);
-    source&                operator=(source const& s);
+namespace                        com {
+  namespace                      centreon {
+    namespace                    broker {
+      namespace                  interface {
+        /**
+         *  @class source source.hh "interface/source.hh"
+         *  @brief Base interface for event-generating objects.
+         *
+         *  interface::source is the base interface used to get objects
+         *  from an input source. The underlying source can be either a
+         *  XML stream, a database, ...
+         */
+        class                    source {
+         protected:
+                                 source();
+                                 source(source const& s);
+          source&                operator=(source const& s);
 
-   public:
-    virtual                ~source();
-    virtual void           close() = 0;
-    virtual events::event* event() = 0;
-    virtual unsigned int   size() const;
-  };
+         public:
+          virtual                ~source();
+          virtual void           close() = 0;
+          virtual events::event* event() = 0;
+          virtual unsigned int   size() const;
+        };
+      }
+    }
+  }
 }
 
-#endif /* !INTERFACE_SOURCE_HH_ */
+#endif /* !CCB_INTERFACE_SOURCE_HH_ */

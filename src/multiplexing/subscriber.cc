@@ -14,20 +14,18 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <algorithm>
 #include <assert.h>
-#include <memory>
+#include <QMutexLocker>
+#include <QScopedPointer>
 #include <stdlib.h>
-#include "concurrency/lock.hh"
 #include "events/event.hh"
 #include "multiplexing/internal.hh"
 #include "multiplexing/subscriber.hh"
 
-using namespace multiplexing;
+using namespace com::centreon::broker::multiplexing;
 
 /**************************************
 *                                     *
@@ -71,10 +69,9 @@ subscriber& subscriber::operator=(subscriber const& s) {
  *  Release all events stored within the internal list.
  */
 void subscriber::clean() {
-  concurrency::lock l(_mutex);
-  while (!_events.empty()) {
-    events::event* event = _events.front();
-    _events.pop();
+  QMutexLocker lock(&_mutex);
+  while (!_events.isEmpty()) {
+    events::event* event(_events.dequeue());
     event->remove_reader();
   }
   return ;
@@ -90,7 +87,7 @@ void subscriber::clean() {
  *  Default constructor.
  */
 subscriber::subscriber() {
-  concurrency::lock l(gl_subscribersm);
+  QMutexLocker lock(&gl_subscribersm);
   gl_subscribers.push_back(this);
   _registered = true;
 }
@@ -107,10 +104,10 @@ subscriber::~subscriber() {
  *  Unregister from event publishing notifications.
  */
 void subscriber::close() {
-  concurrency::lock l(gl_subscribersm);
+  QMutexLocker lock(&gl_subscribersm);
   std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
   _registered = false;
-  _cv.wake_all();
+  _cv.wakeAll();
   return ;
 }
 
@@ -119,7 +116,7 @@ void subscriber::close() {
  *
  *  @return Next available event.
  */
-events::event* subscriber::event() {
+com::centreon::broker::events::event* subscriber::event() {
   return (this->event(-1));
 }
 
@@ -131,26 +128,23 @@ events::event* subscriber::event() {
  *
  *  @return Next available event, NULL if timeout occured.
  */
-events::event* subscriber::event(time_t deadline) {
-  std::auto_ptr<events::event> event;
-  concurrency::lock l(_mutex);
+com::centreon::broker::events::event* subscriber::event(time_t deadline) {
+  QScopedPointer<com::centreon::broker::events::event> event;
+  QMutexLocker lock(&_mutex);
   if (_registered) {
     if (_events.empty()) {
       if (-1 == deadline)
-        _cv.sleep(_mutex);
+        _cv.wait(&_mutex);
       else
-        _cv.sleep(_mutex, deadline);
+        _cv.wait(&_mutex, deadline);
       if (!_events.empty()) {
-        event.reset(_events.front());
-        _events.pop();
+        event.reset(_events.dequeue());
       }
     }
-    else {
-      event.reset(_events.front());
-      _events.pop();
-    }
+    else
+      event.reset(_events.dequeue());
   }
-  return (event.release());
+  return (event.take());
 }
 
 /**
@@ -159,8 +153,8 @@ events::event* subscriber::event(time_t deadline) {
  *  @param[in] event Event to add.
  */
 void subscriber::event(events::event* event) {
-  concurrency::lock l(_mutex);
-  _events.push(event);
-  _cv.wake();
+  QMutexLocker lock(&_mutex);
+  _events.enqueue(event);
+  _cv.wakeOne();
   return ;
 }

@@ -14,33 +14,17 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <algorithm>
-#include <utility>
-#include "concurrency/lock.hh"
-#include "concurrency/mutex.hh"
-#include "config/globals.hh"
-#include "correlation/correlator.hh"
+#include <QMutexLocker>
 #include "events/events.hh"
 #include "logging/logging.hh"
 #include "multiplexing/internal.hh"
 #include "multiplexing/publisher.hh"
 #include "multiplexing/subscriber.hh"
 
-using namespace multiplexing;
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-// Correlation engine.
-static correlation::correlator gl_correlator;
-static concurrency::mutex      gl_correlatorm;
+using namespace com::centreon::broker::multiplexing;
 
 /**************************************
 *                                     *
@@ -97,15 +81,6 @@ void publisher::close() {
 }
 
 /**
- *  Launch the correlation engine.
- */
-void publisher::correlate() {
-  concurrency::lock l(gl_correlatorm);
-  gl_correlator.load(config::globals::correlation_file.c_str());
-  return ;
-}
-
-/**
  *  @brief Send an event to all subscribers.
  *
  *  As soon as the method returns, the event object is owned by the
@@ -115,37 +90,16 @@ void publisher::correlate() {
  *  @param[in] e Event to publish.
  */
 void publisher::event(events::event* e) {
-
-  // Pass object to correlation.
-  if (config::globals::correlation) {
-    concurrency::lock l(gl_correlatorm);
-    gl_correlator.event(*e);
-  }
-
   // Send object to every subscriber.
   {
-    concurrency::lock l(gl_subscribersm);
-    std::list<subscriber*>::iterator end = gl_subscribers.end();
-    for (std::list<subscriber*>::iterator it = gl_subscribers.begin();
+    QMutexLocker lock(&gl_subscribersm);
+    for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
+           end = gl_subscribers.end();
          it != end;
          ++it) {
       e->add_reader();
       (*it)->event(e);
     }
-  }
-
-  // Get correlated events.
-  std::auto_ptr<events::event> correlated;
-  {
-    concurrency::lock l(gl_correlatorm);
-    correlated.reset(gl_correlator.event());
-  }
-
-  // Dispatch event recursively.
-  if (correlated.get()) {
-    correlated->add_reader();
-    this->event(correlated.get());
-    correlated.release();
   }
 
   // Self deregistration.

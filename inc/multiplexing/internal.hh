@@ -14,23 +14,27 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef MULTIPLEXING_INTERNAL_HH_
-# define MULTIPLEXING_INTERNAL_HH_
+#ifndef CCB_MULTIPLEXING_INTERNAL_HH_
+# define CCB_MULTIPLEXING_INTERNAL_HH_
 
-# include <list>
-# include "concurrency/mutex.hh"
+# include <QList>
+# include <QMutex>
 
-namespace                       multiplexing {
-  // Forward declaration.
-  class                         subscriber;
+namespace                         com {
+  namespace                       centreon {
+    namespace                     broker {
+      namespace                   multiplexing {
+        // Forward declaration.
+        class                     subscriber;
 
-  // Internal multiplexing variables.
-  extern std::list<subscriber*> gl_subscribers;
-  extern concurrency::mutex     gl_subscribersm;
+        // Internal multiplexing variables.
+        extern QList<subscriber*> gl_subscribers;
+        extern QMutex             gl_subscribersm;
+      }
+    }
+  }
 }
 
-#endif /* !MULTIPLEXING_INTERNAL_HH_ */
+#endif /* !CCB_MULTIPLEXING_INTERNAL_HH_ */

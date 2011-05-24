@@ -14,42 +14,41 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef INTERFACE_DESTINATION_HH_
-# define INTERFACE_DESTINATION_HH_
+#ifndef CCB_INTERFACE_DESTINATION_HH_
+# define CCB_INTERFACE_DESTINATION_HH_
 
 // Forward declaration.
 namespace          events
 { class            event; }
 
-namespace          interface {
-  /**
-   *  @class destination destination.hh "interface/destination.hh"
-   *  @brief Base interface for event-storing objects.
-   *
-   *  interface::destination is the base interface used to store objects
-   *  in an output destination. The underlying destination can either be
-   *  a XML stream, a database, ...
-   *
-   *  @see db::db
-   *  @see file::file
-   *  @see ndo::ndo
-   *  @see xml::xml
-   */
-  class          destination {
-   protected:
-                 destination();
-                 destination(destination const& dest);
-    destination& operator=(destination const& dest);
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        interface {
+        /**
+         *  @class destination destination.hh "interface/destination.hh"
+         *  @brief Base interface for event-storing objects.
+         *
+         *  interface::destination is the base interface used to store
+         *  objects in an output destination. The underlying destination
+         *  can either be a XML stream, a database, ...
+         */
+        class          destination {
+         protected:
+                       destination();
+                       destination(destination const& dest);
+          destination& operator=(destination const& dest);
 
-   public:
-    virtual      ~destination();
-    virtual void close() = 0;
-    virtual void event(events::event* e) = 0;
-  };
+         public:
+          virtual      ~destination();
+          virtual void close() = 0;
+          virtual void event(events::event* e) = 0;
+        };
+      }
+    }
+  }
 }
 
 #endif /* !INTERFACE_DESTINATION_HH_ */

@@ -14,11 +14,11 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include "multiplexing/internal.hh"
+
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
@@ -27,5 +27,5 @@
 **************************************/
 
 // List of subscribers.
-std::list<multiplexing::subscriber*> multiplexing::gl_subscribers;
-concurrency::mutex                   multiplexing::gl_subscribersm;
+QList<multiplexing::subscriber*> multiplexing::gl_subscribers;
+QMutex                           multiplexing::gl_subscribersm;

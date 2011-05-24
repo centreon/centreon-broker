@@ -104,13 +104,13 @@ set(LIBROKER_SOURCES
 #	../src/exceptions/retval.cc
 #	../src/interface/db/destination.cc
 #	../src/interface/db/internal.cc
-#	../src/interface/destination.cc
+  "${SRC_DIR}/interface/destination.cc"
 #	../src/interface/ndo/base.cc
 #	../src/interface/ndo/destination.cc
 #	../src/interface/ndo/internal.cc
 #	../src/interface/ndo/source.cc
 #	../src/interface/ndo/source_destination.cc
-#	../src/interface/source.cc
+  "${SRC_DIR}/interface/source.cc"
 #	../src/interface/source_destination.cc
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
@@ -135,6 +135,9 @@ set(LIBROKER_SOURCES
 #	../src/logging/void_logger.cc
 #	../src/mapping.cc
 #	../src/misc/stringifier.cc
+  "${SRC_DIR}/multiplexing/internal.cc"
+  "${SRC_DIR}/multiplexing/publisher.cc"
+  "${SRC_DIR}/multiplexing/subscriber.cc"
   # Headers.
   "${INC_DIR}/events/acknowledgement.hh"
   "${INC_DIR}/events/check.hh"
@@ -173,6 +176,11 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/events/service_status.hh"
   "${INC_DIR}/events/state.hh"
   "${INC_DIR}/events/status.hh"
+  "${INC_DIR}/interface/destination.hh"
+  "${INC_DIR}/interface/source.hh"
+  "${INC_DIR}/multiplexing/internal.hh"
+  "${INC_DIR}/multiplexing/publisher.hh"
+  "${INC_DIR}/multiplexing/subscriber.hh"
 )
 #if (TLS)
 #  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
@@ -201,9 +209,6 @@ target_link_libraries(roker ${QT_LIBRARIES})
 #	../src/correlation/node.cc
 #	../src/correlation/parser.cc
 #	../src/init.cc
-#	../src/multiplexing/internal.cc
-#	../src/multiplexing/publisher.cc
-#	../src/multiplexing/subscriber.cc
 #	../src/processing/failover_in.cc
 #	../src/processing/failover_out.cc
 #	../src/processing/feeder.cc

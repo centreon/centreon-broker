@@ -14,14 +14,12 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <limits.h>
 #include "interface/source.hh"
 
-using namespace interface;
+using namespace com::centreon::broker::interface;
 
 /**************************************
 *                                     *
