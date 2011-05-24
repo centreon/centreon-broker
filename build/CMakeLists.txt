@@ -99,9 +99,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/events/service_status.cc"
   "${SRC_DIR}/events/state.cc"
   "${SRC_DIR}/events/status.cc"
-#	../src/exceptions/basic.cc
-#	../src/exceptions/concurrency.cc
-#	../src/exceptions/retval.cc
+  "${SRC_DIR}/exceptions/basic.cc"
+  "${SRC_DIR}/exceptions/retval.cc"
 #	../src/interface/db/destination.cc
 #	../src/interface/db/internal.cc
   "${SRC_DIR}/interface/destination.cc"
@@ -176,6 +175,8 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/events/service_status.hh"
   "${INC_DIR}/events/state.hh"
   "${INC_DIR}/events/status.hh"
+  "${INC_DIR}/exceptions/basic.hh"
+  "${INC_DIR}/exceptions/retval.hh"
   "${INC_DIR}/interface/destination.hh"
   "${INC_DIR}/interface/source.hh"
   "${INC_DIR}/logging/backend.hh"

@@ -14,41 +14,45 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef EXCEPTIONS_RETVAL_HH_
-# define EXCEPTIONS_RETVAL_HH_
+#ifndef CCB_EXCEPTIONS_RETVAL_HH_
+# define CCB_EXCEPTIONS_RETVAL_HH_
 
 # include "exceptions/basic.hh"
 
-namespace   exceptions {
-  /**
-   *  @class retval retval.hh "exceptions/retval.hh"
-   *  @brief Exceptions with return value.
-   *
-   *  This kind of exception embed a return value along with an error
-   *  message.
-   */
-  class     retval : public basic {
-   private:
-    int     _retval;
+namespace         com {
+  namespace       centreon {
+    namespace     broker {
+      namespace   exceptions {
+        /**
+         *  @class retval retval.hh "exceptions/retval.hh"
+         *  @brief Exceptions with return value.
+         *
+         *  This kind of exception embed a return value along with an
+         *  error message.
+         */
+        class     retval : public basic {
+         private:
+          int     _retval;
 
-   public:
-            retval(int r = 0) throw ();
-            retval(retval const& r) throw ();
-    virtual ~retval() throw ();
-    retval& operator=(retval const& r) throw ();
-    retval& operator<<(bool b) throw ();
-    retval& operator<<(double d) throw ();
-    retval& operator<<(int i) throw ();
-    retval& operator<<(unsigned int i) throw ();
-    retval& operator<<(char const* str) throw ();
-    retval& operator<<(time_t t) throw ();
-    int     get_retval() const throw ();
-    void    set_retval(int r) throw ();
-  };
+         public:
+                  retval(int r = 0) throw ();
+                  retval(retval const& r) throw ();
+          virtual ~retval() throw ();
+          retval& operator=(retval const& r) throw ();
+          retval& operator<<(bool b) throw ();
+          retval& operator<<(double d) throw ();
+          retval& operator<<(int i) throw ();
+          retval& operator<<(unsigned int i) throw ();
+          retval& operator<<(char const* str) throw ();
+          retval& operator<<(time_t t) throw ();
+          int     get_retval() const throw ();
+          void    set_retval(int r) throw ();
+        };
+      }
+    }
+  }
 }
 
-#endif /* !EXCEPTIONS_RETVAL_HH_ */
+#endif /* !CCB_EXCEPTIONS_RETVAL_HH_ */
