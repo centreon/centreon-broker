@@ -223,9 +223,6 @@ target_link_libraries(roker ${QT_LIBRARIES})
 
 # Common sources files.
 #set(COMMON_SOURCES
-#	../src/config/factory/interface.cc
-#	../src/config/factory/logger.cc
-#	../src/config/globals.cc
 #	../src/config/handle.cc
 #	../src/config/interface.cc
 #	../src/config/logger.cc
