@@ -116,6 +116,8 @@ set(LIBROKER_SOURCES
 #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/acceptor.cc"
   "${SRC_DIR}/io/connector.cc"
+  "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
 #	../src/io/file.cc
@@ -184,6 +186,9 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/interface/source.hh"
   "${INC_DIR}/io/acceptor.hh"
   "${INC_DIR}/io/connector.hh"
+  "${INC_DIR}/io/endpoint.hh"
+  "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
