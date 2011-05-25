@@ -56,11 +56,7 @@ include(${QT_USE_FILE})
 # Event library.
 set(LIBROKER_SOURCES
   # Sources.
-#  ../src/concurrency/condition_variable.cc
-#  ../src/concurrency/lock.cc
-#  ../src/concurrency/mutex.cc
-#  ../src/concurrency/thread.cc
-#  ../src/concurrency/thread_listener.cc
+  "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/events/acknowledgement.cc"
   "${SRC_DIR}/events/check.cc"
   "${SRC_DIR}/events/comment.cc"
@@ -143,6 +139,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   # Headers.
+  "${INC_DIR}/config/endpoint.hh"
   "${INC_DIR}/events/acknowledgement.hh"
   "${INC_DIR}/events/check.hh"
   "${INC_DIR}/events/comment.hh"
@@ -224,7 +221,6 @@ target_link_libraries(roker ${QT_LIBRARIES})
 # Common sources files.
 #set(COMMON_SOURCES
 #	../src/config/handle.cc
-#	../src/config/interface.cc
 #	../src/config/logger.cc
 #	../src/config/parser.cc
 #	../src/correlation/correlator.cc
