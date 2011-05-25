@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,44 +14,40 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef IO_ACCEPTOR_HH_
-# define IO_ACCEPTOR_HH_
+#ifndef CCB_IO_ACCEPTOR_HH_
+# define CCB_IO_ACCEPTOR_HH_
 
-namespace           io {
-  // Forward declaration.
-  class             stream;
+# include <QSharedPointer>
+# include "io/stream.hh"
 
-  /**
-   *  @class acceptor acceptor.hh "io/acceptor.hh"
-   *  @brief Accept incoming clients.
-   *
-   *  An acceptor is a kind of 'gate' on which clients can come,
-   *  eventually authentify, in order to generate a new session
-   *  (represented by a stream object) and perform I/O operations with
-   *  the application. It is not defined within the acceptor interface
-   *  how the client connects to the acceptor or how or if it
-   *  authenticates.
-   *
-   *  @see io::net::ipv4_acceptor
-   *  @see io::net::ipv6_acceptor
-   *  @see io::net::unix_acceptor
-   *  @see stream
-   */
-  class             acceptor {
-   protected:
-                    acceptor();
-                    acceptor(acceptor const& a);
-    acceptor&       operator=(acceptor const& a);
+namespace                          com {
+  namespace                        centreon {
+    namespace                      broker {
+      namespace                    io {
+        /**
+         *  @class acceptor acceptor.hh "io/acceptor.hh"
+         *  @brief Acceptor class.
+         *
+         *  Such classes accept incoming stream.
+         */
+        class                      acceptor {
+         protected:
+          QSharedPointer<acceptor> _down;
 
-   public:
-    virtual         ~acceptor();
-    virtual stream* accept() = 0;
-    virtual void    close() = 0;
-  };
+         public:
+                                   acceptor();
+                                   acceptor(acceptor const& a);
+          virtual                  ~acceptor();
+          acceptor&                operator=(acceptor const& a);
+          virtual void             accept(QSharedPointer<stream> ptr
+                                     = QSharedPointer<stream>()) = 0;
+          void                     on(QSharedPointer<acceptor> down);
+        };
+      }
+    }
+  }
 }
 
-#endif /* !IO_ACCEPTOR_HH_ */
+#endif /* !CCB_IO_ACCEPTOR_HH_ */

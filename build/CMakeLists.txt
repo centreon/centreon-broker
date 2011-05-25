@@ -114,7 +114,9 @@ set(LIBROKER_SOURCES
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
 #	../src/interface/xml/source.cc
-#	../src/io/acceptor.cc
+  "${SRC_DIR}/io/acceptor.cc"
+  "${SRC_DIR}/io/connector.cc"
+  "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
 #	../src/io/file.cc
 #	../src/io/net/ipv4.cc
@@ -122,7 +124,6 @@ set(LIBROKER_SOURCES
 #	../src/io/net/socket.cc
 #	../src/io/net/unix.cc
 #	../src/io/split.cc
-#	../src/io/stream.cc
 #	../src/io/text.cc
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
@@ -181,6 +182,9 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/exceptions/retval.hh"
   "${INC_DIR}/interface/destination.hh"
   "${INC_DIR}/interface/source.hh"
+  "${INC_DIR}/io/acceptor.hh"
+  "${INC_DIR}/io/connector.hh"
+  "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"

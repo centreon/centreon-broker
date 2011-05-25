@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,17 +14,15 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include "io/stream.hh"
 
-using namespace io;
+using namespace com::centreon::broker::io;
 
 /**************************************
 *                                     *
-*          Protected Methods          *
+*           Public Methods            *
 *                                     *
 **************************************/
 
@@ -34,38 +32,46 @@ using namespace io;
 stream::stream() {}
 
 /**
- *  @brief Copy constructor.
+ *  Copy constructor.
  *
- *  As stream does not hold any data member, this constructor does
- *  nothing.
- *
- *  @param[in] s Unused.
+ *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) {
-  (void)s;
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  As stream does not hold any data member, this method does nothing.
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  return (*this);
-}
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+stream::stream(stream const& s) : _from(s._from), _to(s._to) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {}
+
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] s Object to copy.
+ *
+ *  @return This object.
+ */
+stream& stream::operator=(stream const& s) {
+  _from = s._from;
+  _to = s._to;
+  return (*this);
+}
+
+/**
+ *  Set the object from which to read from.
+ *
+ *  @param[in] Object to read from.
+ */
+void stream::read_from(QSharedPointer<stream> from) {
+  _from = from;
+  return ;
+}
+
+/**
+ *  Set the object to write to.
+ *
+ *  @param[in] Object to write to.
+ */
+void stream::write_to(QSharedPointer<stream> to) {
+  _to = to;
+  return ;
+}

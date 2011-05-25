@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/acceptor.hh"
+#include "io/connector.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -29,38 +29,38 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() {}
+connector::connector() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] a Object to copy.
+ *  @param[in] c Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : _down(a._down) {}
+connector::connector(connector const& c) : _down(c._down) {}
 
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+connector::~connector() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] a Object to copy.
+ *  @param[in] c Object to copy.
  *
  *  @return This object.
  */
-acceptor& acceptor::operator=(acceptor const& a) {
-  _down = a._down;
+connector& connector::operator=(connector const& c) {
+  _down = c._down;
   return (*this);
 }
 
 /**
- *  Forward incoming object to the following acceptor.
+ *  Set the object to forward successful connection to.
  *
- *  @param[in] down Object to forward to.
+ *  @param[in] down Object that will receive new connections.
  */
-void acceptor::on(QSharedPointer<acceptor> down) {
+void connector::on(QSharedPointer<connector> down) {
   _down = down;
   return ;
 }
