@@ -19,9 +19,9 @@
 #ifndef CCB_LOGGING_DEFINES_HH_
 # define CCB_LOGGING_DEFINES_HH_
 
-namespace com {
-  namespace centreon {
-    namespace broker {
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
       namespace logging {
         // Log levels.
         enum    level {
