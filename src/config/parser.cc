@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,64 +14,16 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include <memory>
-#include <QtXml>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "config/globals.hh"
+#include <QDomDocument>
+#include <QDomElement>
+#include <QFile>
 #include "config/parser.hh"
 #include "exceptions/basic.hh"
-#include "logging/logging.hh"
+#include "logging/defines.hh"
 
-using namespace config;
-
-/**************************************
-*                                     *
-*            Local Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Associations between tag name and its id.
- */
-parser::_tag_id const parser::_interface_tag_to_id[] = {
-  {"db", _interface_db},
-  {"failover", _interface_failover},
-  {"filename", _interface_filename},
-  {"host", _interface_host},
-  {"name", _interface_name},
-  {"net_iface", _interface_net_iface},
-  {"password", _interface_password},
-  {"port", _interface_port},
-  {"protocol", _interface_protocol},
-  {"reconnect_interval", _interface_reconnect},
-  {"socket", _interface_socket},
-  {"type", _interface_type},
-  {"user", _interface_user},
-#ifdef USE_TLS
-  {"ca", _interface_ca},
-  {"cert", _interface_cert},
-  {"compress", _interface_compress},
-  {"key", _interface_key},
-  {"tls", _interface_tls},
-#endif /* !USE_TLS */
-  {NULL, _unknown}
-};
-parser::_tag_id const parser::_logger_tag_to_id[] = {
-  {"config", _logger_config},
-  {"debug", _logger_debug},
-  {"error", _logger_error},
-  {"info", _logger_info},
-  {"level", _logger_level},
-  {"name", _logger_name},
-  {"type", _logger_type},
-  {NULL, _unknown}
-};
+using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
@@ -80,380 +32,87 @@ parser::_tag_id const parser::_logger_tag_to_id[] = {
 **************************************/
 
 /**
- *  Clear all parsing elements.
- */
-void parser::_clear() {
-  while (!_current.empty())
-    _current.pop();
-  _current.push(_unknown);
-  _inputs.clear();
-  _loggers.clear();
-  _outputs.clear();
-  return ;
-}
-
-/**
- *  Copy internal data members to this object.
+ *  Parse the configuration of an endpoint.
  *
- *  @param[in] p Object to copy from.
+ *  @param[in]  elem XML element that have the endpoint configuration.
+ *  @param[out] e    Element object.
  */
-void parser::_internal_copy(parser const& p) {
-  _current = p._current;
-  _loggers = p._loggers;
-  return ;
-}
-
-/**
- *  Parse properties of main tags.
- */
-void parser::_parse_properties(char const* localname, 
-                              parser::_tag_id const tag_to_id[]) {
-  if (!localname)
-    throw (exceptions::basic() << "could not get name of XML properties");
-  _current_type prev(_current.top());
-  for (unsigned int i = 0; tag_to_id[i].tag; ++i)
-    if (!strcmp(localname, tag_to_id[i].tag)) {
-      _current.push(tag_to_id[i].id);
-      break ;
+void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
+  QDomNodeList nlist(elem.childNodes());
+  for (int i = 0, len = nlist.size(); i < len; ++i) {
+    QDomElement entry(nlist.item(i).toElement());
+    if (!entry.isNull()) {
+      QString name(entry.tagName());
+      if (name == "failover")
+        e.failover = entry.text();
+      else if (name == "name")
+        e.name = entry.text();
+      else if (name == "type")
+        e.type = entry.text();
+      else
+        e.params[name] = entry.text();
     }
-  if (_current.top() == prev) {
-    exceptions::basic e;
-    e << "invalid token \"" << localname << "\"";
-    throw (e);
   }
   return ;
 }
 
 /**
- *  Receive notification of character data.
+ *  Parse the configuration of a logging object.
  *
- *  @param[in] chars  Characters.
- *  @param[in] length Length of chars.
- *
- *  @return true on success.
+ *  @param[in]  elem XML element that have the logger configuration.
+ *  @param[out] l    Logger object.
  */
-bool parser::characters(QString const& ch) {
-  _data.append(ch.toStdString());
-  return (true);
-}
-
-/**
- *  @brief End of XML element.
- *
- *  This callback is called by the SAX parser.
- *
- *  @param[in] uri       Unused.
- *  @param[in] localname Unused.
- *  @param[in] qname     Unused.
- *
- *  @return true on success.
- */
-bool parser::endElement(QString const& uri,
-                        QString const& localname,
-                        QString const& qname) {
-  (void)uri;
-  (void)localname;
-  (void)qname;
-  _current_type prev(_current.top());
-  _current.pop();
-  switch (prev) {
-   case _conf:
-   case _input:
-   case _output:
-   case _logger:
-    break ;
-   case _correlation:
-    globals::correlation = strtol(_data.c_str(), NULL, 0);
-    break ;
-   case _correlation_file:
-    globals::correlation_file = _data;
-    break ;
-   case _instance:
-    globals::instance = strtol(_data.c_str(), NULL, 0);
-    break ;
-   case _instance_name:
-    globals::instance_name = _data;
-    break ;
-   case _interface_db:
-    if (_current.top() == _input)
-      _inputs.back().db = _data;
-    else
-      _outputs.back().db = _data;
-    break ;
-   case _interface_failover:
-    if (_current.top() == _input)
-      _inputs.back().failover_name = _data;
-    else
-      _outputs.back().failover_name = _data;
-    break ;
-   case _interface_filename:
-    if (_current.top() == _input)
-      _inputs.back().filename = _data;
-    else
-      _outputs.back().filename = _data;
-    break ;
-   case _interface_host:
-    {
-      interface* i;
-      if (_current.top() == _input)
-        i = &_inputs.back();
-      else
-        i = &_outputs.back();
-      i->host = _data;
-      if (i->type == interface::ipv4_server)
-        i->type = interface::ipv4_client;
-      else if (i->type == interface::ipv6_server)
-        i->type = interface::ipv6_client;
-    }
-    break ;
-   case _interface_name:
-    if (_current.top() == _input)
-      _inputs.back().name = _data;
-    else
-      _outputs.back().name = _data;
-    break ;
-   case _interface_net_iface:
-    if (_current.top() == _input)
-      _inputs.back().net_iface = _data;
-    else
-      _outputs.back().net_iface = _data;
-    break ;
-   case _interface_password:
-    if (_current.top() == _input)
-      _inputs.back().password = _data;
-    else
-      _outputs.back().password = _data;
-    break ;
-   case _interface_port:
-    if (_current.top() == _input)
-      _inputs.back().port = strtol(_data.c_str(), NULL, 0);
-    else
-      _outputs.back().port = strtol(_data.c_str(), NULL, 0);
-    break ;
-   case _interface_protocol:
-    {
-      interface::protocol_type p;
-      if (!strcasecmp(_data.c_str(), "ndo"))
-        p = interface::ndo;
-      else if (!strcasecmp(_data.c_str(), "xml"))
-        p = interface::xml;
-      else
-        p = interface::unknown_proto;
-      if (_current.top() == _input)
-        _inputs.back().protocol = p;
-      else
-        _outputs.back().protocol = p;
-    }
-    break ;
-   case _interface_reconnect:
-    if (_current.top() == _input)
-      _inputs.back().reconnect_interval = strtoul(_data.c_str(), NULL, 0);
-    else
-      _outputs.back().reconnect_interval = strtoul(_data.c_str(), NULL, 0);
-    break ;
-   case _interface_socket:
-   case _interface_type:
-    {
-      interface* i;
-      char const* t;
-      if (_current.top() == _input)
-        i = &_inputs.back();
-      else
-        i = &_outputs.back();
-      t = _data.c_str();
-      if (!strcasecmp(t, "db2"))
-        i->type = interface::db2;
-      else if (!strcasecmp(t, "file"))
-        i->type = interface::file;
-      else if (!strcasecmp(t, "ibase"))
-        i->type = interface::ibase;
-      else if (!strcasecmp(t, "ipv4"))
-        i->type = (i->host.empty() ? interface::ipv4_server
-                                   : interface::ipv4_client);
-      else if (!strcasecmp(t, "ipv6"))
-        i->type = (i->host.empty() ? interface::ipv6_server
-                                   : interface::ipv6_client);
-      else if (!strcasecmp(t, "mysql"))
-        i->type = interface::mysql;
-      else if (!strcasecmp(t, "odbc"))
-        i->type = interface::odbc;
-      else if (!strcasecmp(t, "oracle"))
-        i->type = interface::oracle;
-      else if (!strcasecmp(t, "postgresql"))
-        i->type = interface::postgresql;
-      else if (!strcasecmp(t, "sqlite"))
-        i->type = interface::sqlite;
-      else if (!strcasecmp(t, "tds"))
-        i->type = interface::tds;
-      else if (!strcasecmp(t, "unix_client"))
-        i->type = interface::unix_client;
-      else if (!strcasecmp(t, "unix_server"))
-        i->type = interface::unix_server;
-      else
-        throw (exceptions::basic() << "unknown interface type \""
-                                   << t << "\"");
-    }
-    break ;
-   case _interface_user:
-    if (_current.top() == _input)
-      _inputs.back().user = _data;
-    else
-      _outputs.back().user = _data;
-    break ;
-#ifdef USE_TLS
-   case _interface_ca:
-    if (_current.top() == _input)
-      _inputs.back().ca = _data;
-    else
-      _outputs.back().ca = _data;
-    break ;
-   case _interface_cert:
-    if (_current.top() == _input)
-      _inputs.back().cert = _data;
-    else
-      _outputs.back().cert = _data;
-    break ;
-   case _interface_compress:
-    if (_current.top() == _input)
-      _inputs.back().compress = strtol(_data.c_str(), NULL, 0);
-    else
-      _outputs.back().compress = strtol(_data.c_str(), NULL, 0);
-    break ;
-   case _interface_key:
-    if (_current.top() == _input)
-      _inputs.back().key = _data;
-    else
-      _outputs.back().key = _data;
-    break ;
-   case _interface_tls:
-    if (_current.top() == _input)
-      _inputs.back().tls = strtol(_data.c_str(), NULL, 0);
-    else
-      _outputs.back().tls = strtol(_data.c_str(), NULL, 0);
-    break ;
-#endif /* USE_TLS */
-   case _logger_config:
-    _loggers.back().config(strtol(_data.c_str(), NULL, 0));
-    break ;
-   case _logger_debug:
-    _loggers.back().debug(strtol(_data.c_str(), NULL, 0));
-    break ;
-   case _logger_error:
-    _loggers.back().error(strtol(_data.c_str(), NULL, 0));
-    break ;
-   case _logger_info:
-    _loggers.back().info(strtol(_data.c_str(), NULL, 0));
-    break ;
-   case _logger_level:
-    {
-      logging::level lvl;
-      int val(strtol(_data.c_str(), NULL, 0));
-      if (logging::NONE == val)
-        lvl = logging::NONE;
-      else if (logging::HIGH == val)
-        lvl = logging::HIGH;
-      else if (logging::MEDIUM == val)
-        lvl = logging::MEDIUM;
-      else
-        lvl = logging::LOW;
-      _loggers.back().level(lvl);
-    }
-    break ;
-   case _logger_name:
-    _loggers.back().name(_data);
-    break ;
-   case _logger_type:
-    {
-      logger::logger_type t;
-      if (!strcasecmp(_data.c_str(), "file"))
-        t = logger::file;
-      else if (!strcasecmp(_data.c_str(), "standard"))
-        t = logger::standard;
-      else if (!strcasecmp(_data.c_str(), "syslog"))
-        t = logger::syslog;
-      else
-        throw (exceptions::basic() << "invalid logger type \""
-                                   << _data.c_str() << "\"");
-      _loggers.back().type(t);
-    }
-    break ;
-   default:
-    throw (exceptions::basic() << "bug in the config parsing engine");
-  }
-  return (true);
-}
-
-/**
- *  @brief Beginning of an XML element.
- *
- *  This callback is called by the SAX parser.
- *
- *  @param[in] uri       
- *  @param[in] localname Name of the attribute.
- *  @param[in] qname     
- *  @param[in] attrs     
- *
- *  @return true on success.
- */
-bool parser::startElement(QString const& uri,
-                          QString const& localname,
-                          QString const& qname,
-                          QXmlAttributes const& attrs) {
-  (void)uri;
-  (void)qname;
-  (void)attrs;
-  _data.clear();
-  switch (_current.top()) {
-   case _conf:
-    {
-      char const* name(localname.toStdString().c_str());
-      if (!strcmp(name, "correlation"))
-        _current.push(_correlation);
-      else if (!strcmp(name, "correlation_file"))
-        _current.push(_correlation_file);
-      else if (!strcmp(name, "input")) {
-        _current.push(_input);
-        _inputs.push_back(interface());
+void parser::_parse_logger(QDomElement& elem, logger& l) {
+  QDomNodeList nlist(elem.childNodes());
+  for (int i = 0, len = nlist.size(); i < len; ++i) {
+    QDomElement entry(nlist.item(i).toElement());
+    if (!entry.isNull()) {
+      QString name(entry.tagName());
+      if (name == "config") {
+        QString val(entry.text());
+        l.config((val == "yes") || val.toInt());
       }
-      else if (!strcmp(name, "instance"))
-        _current.push(_instance);
-      else if (!strcmp(name, "instance_name"))
-        _current.push(_instance_name);
-      else if (!strcmp(name, "logger")) {
-        _current.push(_logger);
-        _loggers.push_back(logger());
+      else if (name == "debug") {
+        QString val(entry.text());
+        l.debug((val == "yes") || val.toInt());
       }
-      else if (!strcmp(name, "output")) {
-        _current.push(_output);
-        _outputs.push_back(interface());
+      else if (name == "error") {
+        QString val(entry.text());
+        l.error((val == "yes") || val.toInt());
       }
-      else {
-        exceptions::basic e;
-        e << "invalid token \"" << name << "\"";
-        throw (e);
+      else if (name == "info") {
+        QString val(entry.text());
+        l.error((val == "yes") || val.toInt());
       }
-    }
-    break ;
-   case _input:
-   case _output:
-    _parse_properties(localname.toStdString().c_str(),
-      _interface_tag_to_id);
-    break ;
-   case _logger:
-    _parse_properties(localname.toStdString().c_str(),
-      _logger_tag_to_id);
-    break ;
-   case _unknown:
-    _current.push(_conf);
-    break ;
-   default:
-    {
-      exceptions::basic e;
-      e << "invalid tag \"" << localname.toStdString().c_str() << "\"";
-      throw (e);
+      else if (name == "level") {
+        QString val_str(entry.text());
+        int val(val_str.toInt());
+        if ((val == 3) || (val_str == "low"))
+          l.level(com::centreon::broker::logging::LOW);
+        else if ((val == 2) || (val_str == "medium"))
+          l.level(com::centreon::broker::logging::MEDIUM);
+        else if ((val == 0) || (val_str == "none"))
+          l.level(com::centreon::broker::logging::NONE);
+        else
+          l.level(com::centreon::broker::logging::HIGH);
+      }
+      else if (name == "name")
+        l.name(entry.text());
+      else if (name == "type") {
+        QString val(entry.text());
+        if (val == "file")
+          l.type(logger::file);
+        else if (val == "standard")
+          l.type(logger::standard);
+        else if (val == "syslog")
+          l.type(logger::syslog);
+        else
+          throw (exceptions::basic() << "unknown logger type '"
+                   << val.toStdString().c_str() << "'");
+      }
     }
   }
-  return (true);
+  return ;
 }
 
 /**************************************
@@ -465,17 +124,15 @@ bool parser::startElement(QString const& uri,
 /**
  *  Default constructor.
  */
-parser::parser() {
-  _current.push(_unknown);
-}
+parser::parser() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] p Object to copy.
  */
-parser::parser(parser const& p) : QXmlDefaultHandler() {
-  _internal_copy(p);
+parser::parser(parser const& p) {
+  (void)p;
 }
 
 /**
@@ -491,67 +148,67 @@ parser::~parser() {}
  *  @return This object.
  */
 parser& parser::operator=(parser const& p) {
-  _internal_copy(p);
+  (void)p;
   return (*this);
-}
-
-/**
- *  Return the list of parsed input objects.
- *
- *  @return List of parsed input objects.
- */
-std::list<interface>& parser::inputs() {
-  return (_inputs);
-}
-
-/**
- *  Return the list of parsed logger objects.
- *
- *  @return List of parsed logger objects.
- */
-std::list<logger>& parser::loggers() {
-  return (_loggers);
-}
-
-/**
- *  Return the list of parsed output objects.
- *
- *  @return List of parsed output objects.
- */
-std::list<interface>& parser::outputs() {
-  return (_outputs);
 }
 
 /**
  *  Parse a configuration file.
  *
- *  @param[in] file XML configuration file.
+ *  @param[in]  file File to process.
+ *  @param[out] s    Resulting configuration state.
  */
-void parser::parse(std::string const& file) {
-  _clear();
-  QXmlSimpleReader parser;
-  QFile qf(file.c_str());
-  std::auto_ptr<QXmlInputSource> source(new QXmlInputSource(&qf));
-  parser.setContentHandler(this);
-  parser.setErrorHandler(this);
-  try {
-    bool ok(parser.parse(source.get()));
-    if (!ok)
-      throw (exceptions::basic() << "configuration file parsing failed");
+void parser::parse(QString const& file, state& s) {
+  // Parse XML document.
+  QFile f(file);
+  if (!f.open(QIODevice::ReadOnly))
+    throw (exceptions::basic() << "could not open configuration file '"
+             << file.toStdString().c_str() << "': "
+             << f.errorString().toStdString().c_str());
+  QDomDocument d;
+  {
+    QString msg;
+    int line;
+    int col;
+    if (!d.setContent(&f, false, &msg, &line, &col))
+      throw (exceptions::basic() << "could not parse configuration file '"
+               << file.toStdString().c_str() << "': "
+               << msg.toStdString().c_str() << " (line " << line
+               << ", column " << col << ")");
   }
-  catch (QXmlParseException const& e) {
-    logging::config << logging::HIGH << "configuration parsing error on \""
-                    << file.c_str() << "\" (line "
-                    << (unsigned int)e.lineNumber() << "): "
-                    << e.message().toStdString().c_str();
-    _clear();
-    throw (exceptions::basic() << "configuration file parsing failed");
+
+  // Clear state.
+  s.clear();
+
+  // Browse first-level elements.
+  QDomElement root(d.documentElement());
+  QDomNodeList level1(root.childNodes());
+  for (int i = 0, len = level1.size(); i < len; ++i) {
+    QDomElement elem(level1.item(i).toElement());
+    // Process only element nodes.
+    if (!elem.isNull()) {
+      QString name(elem.tagName());
+      if (name == "input") {
+        endpoint in;
+        _parse_endpoint(elem, in);
+        s.inputs().push_back(in);
+      }
+      else if (name == "logger") {
+        logger logr;
+        _parse_logger(elem, logr);
+        s.loggers().push_back(logr);
+      }
+      else if (name == "module_directory")
+        s.module_directory(elem.text());
+      else if (name == "output") {
+        endpoint out;
+        _parse_endpoint(elem, out);
+        s.outputs().push_back(out);
+      }
+      else
+        s.params()[name] = elem.text();
+    }
   }
-  catch (exceptions::basic const& e) {
-    logging::config << logging::HIGH << "error while parsing config file \""
-                    << file.c_str() << "\": " << e.what();
-    _clear();
-    throw (exceptions::basic() << "configuration file parsing failed");
-  }
+
   return ;
 }

@@ -58,6 +58,7 @@ set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/config/logger.cc"
+  "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/events/acknowledgement.cc"
   "${SRC_DIR}/events/check.cc"
@@ -143,6 +144,7 @@ set(LIBROKER_SOURCES
   # Headers.
   "${INC_DIR}/config/endpoint.hh"
   "${INC_DIR}/config/logger.hh"
+  "${INC_DIR}/config/parser.hh"
   "${INC_DIR}/config/state.hh"
   "${INC_DIR}/events/acknowledgement.hh"
   "${INC_DIR}/events/check.hh"
