@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,13 +14,11 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include "config/logger.hh"
 
-using namespace config;
+using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
@@ -91,8 +89,8 @@ logger& logger::operator=(logger const& l) {
 bool logger::operator==(logger const& l) const {
   bool ret;
   ret = ((_level == l._level)
-	 && (_type == l._type)
-	 && (_types == l._types));
+         && (_type == l._type)
+         && (_types == l._types));
   if (ret && ((file == _type) || (standard == _type)))
     ret = (ret && (_name == l._name));
   return (ret);
@@ -125,7 +123,7 @@ bool logger::operator<(logger const& l) const {
   else if (_types != l._types)
     ret = (_types < l._types);
   else if (((file == _type) || (standard == _type))
-	   && (_name != l._name))
+           && (_name != l._name))
     ret = (_name < l._name);
   else
     ret = false;
@@ -235,7 +233,7 @@ void logger::level(logging::level l) {
  *
  *  @return Current value.
  */
-logging::level logger::level() const {
+com::centreon::broker::logging::level logger::level() const {
   return (_level);
 }
 
@@ -244,7 +242,7 @@ logging::level logger::level() const {
  *
  *  @param[in] n New value.
  */
-void logger::name(std::string const& n) {
+void logger::name(QString const& n) {
   _name = n;
   return ;
 }
@@ -254,7 +252,7 @@ void logger::name(std::string const& n) {
  *
  *  @return Current value.
  */
-std::string const& logger::name() const {
+QString const& logger::name() const {
   return (_name);
 }
 

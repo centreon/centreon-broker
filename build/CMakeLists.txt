@@ -57,6 +57,7 @@ include(${QT_USE_FILE})
 set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/config/endpoint.cc"
+  "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/events/acknowledgement.cc"
   "${SRC_DIR}/events/check.cc"
   "${SRC_DIR}/events/comment.cc"
@@ -140,6 +141,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/subscriber.cc"
   # Headers.
   "${INC_DIR}/config/endpoint.hh"
+  "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/events/acknowledgement.hh"
   "${INC_DIR}/events/check.hh"
   "${INC_DIR}/events/comment.hh"
