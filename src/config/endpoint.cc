@@ -61,10 +61,10 @@ endpoint::endpoint() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] e Object to copy.
  */
-endpoint::endpoint(endpoint const& i) {
-  _internal_copy(i);
+endpoint::endpoint(endpoint const& e) {
+  _internal_copy(e);
 }
 
 /**
@@ -75,11 +75,72 @@ endpoint::~endpoint() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] e Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& i) {
-  _internal_copy(i);
+endpoint& endpoint::operator=(endpoint const& e) {
+  _internal_copy(e);
   return (*this);
+}
+
+/**
+ *  Check that two endpoint configurations are equal.
+ *
+ *  @param[in] e Object to compare to.
+ *
+ *  @return true if both objects are equal, false otherwise.
+ */
+bool endpoint::operator==(endpoint const& e) const {
+  return ((type == e.type)
+          && (name == e.name)
+          && (failover == e.failover)
+          && ((failover_config.isNull() && e.failover_config.isNull())
+              || (*failover_config == *e.failover_config))
+          && (params == e.params));
+}
+
+/**
+ *  Check that two endpoint configurations are inequal.
+ *
+ *  @param[in] e Object to compare to.
+ *
+ *  @return true if both objects are not equal, false otherwise.
+ */
+bool endpoint::operator!=(endpoint const& e) const {
+  return (!operator==(e));
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] e Object to compare to.
+ *
+ *  @return true if this object is strictly less than the object e.
+ */
+bool endpoint::operator<(endpoint const& e) const {
+  // Check properties that can directly be checked.
+  if (type != e.type)
+    return (type < e.type);
+  else if (name != e.name)
+    return (name < e.name);
+  else if (failover != e.failover)
+    return (failover < e.failover);
+  else if (failover_config.isNull() && !e.failover_config.isNull())
+    return (true);
+  else if (!failover_config.isNull() && e.failover_config.isNull())
+    return (false);
+
+  // Need to check all parameters one by one.
+  QMap<QString, QString>::const_iterator it1(params.begin()),
+    it2(e.params.begin()),
+    end1(params.end()),
+    end2(e.params.end());
+  while ((it1 != end1) && (it2 != end2)) {
+    if (it1.key() != it2.key())
+      return (it1.key() < it2.key());
+    else if (it1.value() != it2.value())
+      return (it1.value() != it2.value());
+  }
+  return ((it1 == end1) && (it2 != end2));
 }

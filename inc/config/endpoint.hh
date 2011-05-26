@@ -49,6 +49,9 @@ namespace                          com {
                                    endpoint(endpoint const& e);
                                    ~endpoint();
           endpoint&                operator=(endpoint const& e);
+          bool                     operator==(endpoint const& e) const;
+          bool                     operator!=(endpoint const& e) const;
+          bool                     operator<(endpoint const& e) const;
         };
       }
     }
