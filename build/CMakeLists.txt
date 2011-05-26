@@ -226,9 +226,6 @@ target_link_libraries(roker ${QT_LIBRARIES})
 
 # Common sources files.
 #set(COMMON_SOURCES
-#	../src/config/handle.cc
-#	../src/config/logger.cc
-#	../src/config/parser.cc
 #	../src/correlation/correlator.cc
 #	../src/correlation/node.cc
 #	../src/correlation/parser.cc
