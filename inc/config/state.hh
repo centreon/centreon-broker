@@ -25,10 +25,10 @@
 # include "config/endpoint.hh"
 # include "config/logger.hh"
 
-namespace                         com {
-  namespace                       centreon {
-    namespace                     broker {
-      namespace                   config {
+namespace                               com {
+  namespace                             centreon {
+    namespace                           broker {
+      namespace                         config {
         /**
          *  @class state state.hh "config/state.hh"
          *  @brief Full configuration state.
@@ -37,27 +37,31 @@ namespace                         com {
          *  class which holds mandatory parameters as well as optional
          *  parameters, along with object definitions.
          */
-        class                     state {
+        class                           state {
          private:
-          QList<endpoint>         _inputs;
-          QList<logger>           _loggers;
-          QString                 _module_dir;
-          QList<endpoint>         _outputs;
-          QMap<QString, QString>  _params;
-          void                    _internal_copy(state const& s);
+          QList<endpoint>               _inputs;
+          QList<logger>                 _loggers;
+          QString                       _module_dir;
+          QList<endpoint>               _outputs;
+          QMap<QString, QString>        _params;
+          void                          _internal_copy(state const& s);
 
          public:
-                                  state();
-                                  state(state const& s);
-                                  ~state();
-          state&                  operator=(state const& s);
-          void                    clear();
-          QList<endpoint>&        inputs();
-          QList<logger>&          loggers();
-          QString const&          module_directory() const;
-          void                    module_directory(QString const& dir);
-          QList<endpoint>&        outputs();
-          QMap<QString, QString>& params();
+                                        state();
+                                        state(state const& s);
+                                        ~state();
+          state&                        operator=(state const& s);
+          void                          clear();
+          QList<endpoint>&              inputs();
+          QList<endpoint> const&        inputs() const;
+          QList<logger>&                loggers();
+          QList<logger> const&          loggers() const;
+          QString const&                module_directory() const;
+          void                          module_directory(QString const& dir);
+          QList<endpoint>&              outputs();
+          QList<endpoint> const&        outputs() const;
+          QMap<QString, QString>&       params();
+          QMap<QString, QString> const& params() const;
         };
       }
     }

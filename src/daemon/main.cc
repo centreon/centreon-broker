@@ -14,36 +14,26 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include <iostream>
+#include <errno.h>
+#include <QCoreApplication>
 #include <signal.h>
-#include <time.h>
-#include "concurrency/condition_variable.hh"
-#include "concurrency/lock.hh"
-#include "concurrency/mutex.hh"
-#include "config/handle.hh"
-#include "init.hh"
+#include <string.h>
+#include "config/applier/state.hh"
+#include "config/logger.hh"
+#include "config/parser.hh"
+#include "config/state.hh"
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
-#include "logging/ostream.hh"
-#include "mapping.hh"
+
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
 *           Static Objects            *
 *                                     *
 **************************************/
-
-// Condition variable used to wake up the main thread when receiving SIGTERM.
-static concurrency::condition_variable gl_cv;
-// Mutex linked to the condition variable above.
-static concurrency::mutex              gl_mutex;
-// Determines whether or not SIGTERM has been received.
-static bool                            gl_exit = false;
-// Original SIGTERM handler.
-static void (*                         gl_sigterm_handler)(int) = NULL;
 
 /**
  *  Function called on termination request (when program receives
@@ -52,27 +42,17 @@ static void (*                         gl_sigterm_handler)(int) = NULL;
  *  @param[in] signum Signal number.
  */
 static void term_handler(int signum) {
-  logging::info << logging::HIGH << "caught termination signal";
-  try {
-    concurrency::lock l(gl_mutex);
+  (void)signum;
 
-    // Signal number is ignored.
-    (void)signum;
-    // Main thread should exit.
-    gl_exit = true;
-    // Wake up main thread.
-    gl_cv.wake_all();
-    // Restore original signal handler.
-    signal(SIGTERM, gl_sigterm_handler);
-  }
-  catch (std::exception const& e) {
-    logging::error << logging::HIGH
-                   << "termination handler error: " << e.what();
-  }
-  catch (...) {
-    logging::error << logging::HIGH
-                   << "termination handler unknown error";
-  }
+  // Log message.
+  logging::info << logging::HIGH << "termination request received";
+
+  // Reset original signal handler.
+  signal(SIGTERM, SIG_DFL);
+
+  // Ask event loop to quit.
+  QCoreApplication::exit(0);
+
   return ;
 }
 
@@ -94,84 +74,73 @@ static void term_handler(int signum) {
  *  @return 0 on normal termination, any other value on failure.
  */
 int main(int argc, char* argv[]) {
-  char const* conf_file;
   int exit_code;
 
   try {
+    // Apply default configuration (log important messages on stderr).
+    {
+      // Logging object.
+      config::logger default_log;
+      default_log.config(true);
+      default_log.debug(false);
+      default_log.error(true);
+      default_log.info(true);
+      default_log.level(logging::HIGH);
+      default_log.name("stderr");
+      default_log.type(config::logger::standard);
+
+      // Configuration object.
+      config::state default_state;
+      default_state.loggers().push_back(default_log);
+
+      // Apply configuration.
+      config::applier::state::instance().apply(default_state);
+    }
+
     // Check the command line.
-    if ((argc != 2) && (argc != 3)) {
-      std::cerr << "USAGE: " << argv[0] << " [-c] <configfile>" << std::endl;
+    if (argc != 2) {
+      logging::error << logging::HIGH << "USAGE: " << argv[0]
+                     << " <configfile>";
       exit_code = 1;
     }
     else {
-      // Configuration check ?
-      bool check(false);
-      if (!strcmp(argv[1], "-c")) {
-        check = true;
-        conf_file = argv[2];
-      }
-      else
-        conf_file = argv[1];
+      // Initialize QCoreApplication object.
+      QCoreApplication app(argc, argv);
+      app.setApplicationName("Centreon Broker");
+      app.setApplicationVersion("2");
+      app.setOrganizationDomain("merethis.com");
+      app.setOrganizationName("Merethis");
 
-      // Lock termination mutex.
-      concurrency::lock l(gl_mutex);
+      {
+        // Parse configuration file.
+        config::parser parsr;
+        config::state conf;
+        parsr.parse(argv[1], conf);
 
-      // Global initialization.
-      init();
-
-      // Initial logging object.
-      logging::backend* b(new logging::ostream(std::cerr));
-      logging::log_on(b, logging::CONFIG | logging::ERROR, logging::HIGH);
-
-      // Configuration check.
-      if (check) {
-        try {
-          config::parser p;
-          p.parse(conf_file);
-        }
-        catch (std::exception const& e) {
-          return (1);
-        }
-        return (0);
+        // Apply resulting configuration.
+        config::applier::state::instance().apply(conf);
       }
 
-      // Load configuration file.
-      config::handle(argv[1]);
+      // Set termination handler.
+      if (signal(SIGTERM, term_handler) == SIG_ERR)
+        logging::info << logging::HIGH
+          << "could not register termination handler: "
+          << strerror(errno);
 
-      // Remove initial logging object.
-      logging::log_on(b, 0, logging::NONE);
-
-      // Register handler for SIGTERM.
-      gl_sigterm_handler = signal(SIGTERM, term_handler);
-      if (SIG_ERR == gl_sigterm_handler)
-        logging::info << logging::MEDIUM
-                      << "unable to register termination handler";
-
-      // Everything's loaded, sleep for 60 seconds, then perform some
-      // potential cleanup and sleep again.
-      while (!gl_exit) {
-        gl_cv.sleep(gl_mutex, time(NULL) + 60);
-        config::reap();
-      }
-
-      // Global unloading.
-      deinit();
-
-      // Everything went well.
-      exit_code = 0;
+      // Launch event loop.
+      exit_code = app.exec();
     }
   }
   // Standard exception.
   catch (std::exception const& e) {
-    std::cerr << "Caught exception :" << std::endl
-              << '\t' << e.what() << std::endl;
+    logging::error << logging::HIGH << "error: " << e.what();
     exit_code = 1;
   }
   // Unknown exception.
   catch (...) {
-    std::cerr << "Caught unknown exception, aborting execution ..."
-              << std::endl;
+    logging::error << logging::HIGH << "unknown error, stopping execution";
     exit_code = 1;
   }
+
   return (exit_code);
 }

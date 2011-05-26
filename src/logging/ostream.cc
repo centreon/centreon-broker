@@ -95,19 +95,19 @@ void ostream::log_msg(char const* msg,
     char const* prefix;
     switch (log_type) {
      case CONFIG:
-      prefix = "CONFIG: ";
+      prefix = "config: ";
       break ;
      case DEBUG:
-      prefix = "DEBUG: ";
+      prefix = "debug: ";
       break ;
      case ERROR:
-      prefix = "ERROR: ";
+      prefix = "error: ";
       break ;
      case INFO:
-      prefix = "INFO: ";
+      prefix = "info: ";
       break ;
      default:
-      prefix = "UNDEFINED: ";
+      prefix = "undefined: ";
     }
     *_os << prefix << msg;
     _os->flush();

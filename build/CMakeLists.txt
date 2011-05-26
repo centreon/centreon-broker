@@ -56,6 +56,8 @@ include(${QT_USE_FILE})
 # Event library.
 set(LIBROKER_SOURCES
   # Sources.
+  "${SRC_DIR}/config/applier/logger.cc"
+  "${SRC_DIR}/config/applier/state.cc"
   "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"
@@ -142,6 +144,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   # Headers.
+  "${INC_DIR}/config/applier/logger.hh"
+  "${INC_DIR}/config/applier/state.hh"
   "${INC_DIR}/config/endpoint.hh"
   "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/config/parser.hh"
@@ -237,8 +241,8 @@ target_link_libraries(roker ${QT_LIBRARIES})
 #)
 
 # Standalone binary.
-#add_executable(cbd ${SRC_DIR}/daemon/main.cc)
-#target_link_libraries(cbd roker ${QT_LIBRARIES})
+add_executable(cbd "${SRC_DIR}/daemon/main.cc")
+target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 
 # Module.
 #add_library(cbmod SHARED

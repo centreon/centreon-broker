@@ -101,11 +101,29 @@ QList<endpoint>& state::inputs() {
 }
 
 /**
+ *  Get the list of inputs.
+ *
+ *  @return Input list.
+ */
+QList<endpoint> const& state::inputs() const {
+  return (_inputs);
+}
+
+/**
  *  Get the logger list.
  *
  *  @return Logger list.
  */
 QList<logger>& state::loggers() {
+  return (_loggers);
+}
+
+/**
+ *  Get the logger list.
+ *
+ *  @return Logger list.
+ */
+QList<logger> const& state::loggers() const {
   return (_loggers);
 }
 
@@ -138,10 +156,28 @@ QList<endpoint>& state::outputs() {
 }
 
 /**
+ *  Get the list of outputs.
+ *
+ *  @return Output list.
+ */
+QList<endpoint> const& state::outputs() const {
+  return (_outputs);
+}
+
+/**
  *  Get the additional parameters.
  *
  *  @return Additional parameters list.
  */
 QMap<QString, QString>& state::params() {
+  return (_params);
+}
+
+/**
+ *  Get the additional parameters.
+ *
+ *  @return Additional parameters list.
+ */
+QMap<QString, QString> const& state::params() const {
   return (_params);
 }
