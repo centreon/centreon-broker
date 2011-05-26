@@ -23,6 +23,7 @@
 #include <QScopedPointer>
 #include <stdlib.h>
 #include "config/applier/logger.hh"
+#include "config/applier/modules.hh"
 #include "config/applier/state.hh"
 
 using namespace com::centreon::broker::config::applier;
@@ -84,25 +85,16 @@ state::~state() {}
  *  @param[in] s State to apply.
  */
 void state::apply(com::centreon::broker::config::state const& s) {
-  // Unload old modules.
-  // XXX
-
-  // Load new modules.
-  // XXX
-
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
-  // Close old inputs.
+  // Apply modules configuration.
+  modules::instance().apply(s.module_directory());
+
+  // Apply input configuration.
   // XXX
 
-  // Close old outputs.
-  // XXX
-
-  // Open new outputs.
-  // XXX
-
-  // Open new inputs.
+  // Apply output configuration.
   // XXX
 
   return ;
