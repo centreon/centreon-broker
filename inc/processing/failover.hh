@@ -19,7 +19,9 @@
 #ifndef CCB_PROCESSING_FAILOVER_HH_
 # define CCB_PROCESSING_FAILOVER_HH_
 
+# include <QSharedPointer>
 # include <QThread>
+# include "io/endpoint.hh"
 
 namespace           com {
   namespace         centreon {
@@ -32,11 +34,17 @@ namespace           com {
          *  Process an endpoint and launch failover if necessary.
          */
         class       failover : public QThread {
-         private:
+          Q_OBJECT;
+
+         public:
           enum      mode {
             input = 1,
             output
           };
+
+         private:
+          QSharedPointer<com::centreon::broker::io::endpoint>
+                    _endpoint;
           mode      _mode;
                     failover(failover const& f);
           failover& operator=(failover const& f);
@@ -45,7 +53,8 @@ namespace           com {
                     failover();
                     ~failover();
           void      run();
-          void      set_endpoint(mode m);
+          void      set_endpoint(QSharedPointer<com::centreon::broker::io::endpoint> endp,
+                      mode m);
         };
       }
     }

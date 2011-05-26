@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include "logging/logging.hh"
 #include "processing/failover.hh"
 
 using namespace com::centreon::broker::processing;
@@ -69,18 +70,33 @@ failover& failover::operator=(failover const& f) {
 failover::failover() {}
 
 /**
+ *  Destructor.
+ */
+failover::~failover() {}
+
+/**
  *  Run the failover thread.
  */
 void failover::run() {
+  // Check that endpoint is not empty.
+  if (_endpoint.isNull()) {
+    logging::error << logging::HIGH << "thread launched with no valid endpoint";
+    return ;
+  }
+
+  // Launch processing.
+  // XXX : need exiting method
 }
 
 /**
  *  Set the endpoint this thread will work on.
  *
- *  @param[in] m Processing mode (input or output).
+ *  @param[in] endp Thread endpoint.
+ *  @param[in] m    Processing mode (input or output).
  */
-void failover::set_endpoint(failover::mode m) {
-  // XXX
+void failover::set_endpoint(QSharedPointer<com::centreon::broker::io::endpoint> endp,
+                            failover::mode m) {
+  _endpoint = endp;
   _mode = m;
   return ;
 }

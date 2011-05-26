@@ -53,6 +53,11 @@ include(${QT_USE_FILE})
 #  add_definitions(-DUSE_TLS)
 #endif ()
 
+# Some files must be processed by Qt's moc.
+qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/config/applier/endpoint.hh"
+  "${INC_DIR}/processing/failover.hh")
+
 # Event library.
 set(LIBROKER_SOURCES
   # Sources.
@@ -147,6 +152,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
+  "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/logger.hh"

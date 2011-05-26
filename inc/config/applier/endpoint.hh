@@ -20,7 +20,10 @@
 # define CCB_CONFIG_APPLIER_ENDPOINT_HH_
 
 # include <QList>
+# include <QMap>
+# include <QObject>
 # include "config/endpoint.hh"
+# include "processing/failover.hh"
 
 namespace                    com {
   namespace                  centreon {
@@ -33,17 +36,33 @@ namespace                    com {
            *
            *  Apply the configuration of the input and output endpoints.
            */
-          class              endpoint {
+          class              endpoint : public QObject {
+            Q_OBJECT;
+
            private:
+            QMap<config::endpoint, com::centreon::broker::processing::failover*>
+                             _inputs;
+            QMap<config::endpoint, com::centreon::broker::processing::failover*>
+                             _outputs;
                              endpoint();
                              endpoint(endpoint const& e);
             endpoint&        operator=(endpoint const& e);
+            void             _create_endpoint(config::endpoint const& cfg,
+                               bool is_output);
+            void             _diff_endpoints(QMap<com::centreon::broker::config::endpoint,
+                                 com::centreon::broker::processing::failover*>& current,
+                               QList<com::centreon::broker::config::endpoint> const& new_endpoints,
+                               QList<com::centreon::broker::config::endpoint>& to_create);
 
            public:
                              ~endpoint();
             void             apply(QList<com::centreon::broker::config::endpoint> const& inputs,
                                QList<com::centreon::broker::config::endpoint> const& outputs);
             static endpoint& instance();
+
+           public slots:
+            void             terminated_input();
+            void             terminated_output();
           };
         }
       }

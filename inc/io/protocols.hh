@@ -36,20 +36,26 @@ namespace                           com {
          *  to build input or output objects.
          */
         class                       protocols {
-         private:
+         public:
           struct                    protocol {
             QSharedPointer<factory> endpntfactry;
             unsigned short          osi_from;
             unsigned short          osi_to;
-	  };
-	  QMap<QString, protocol>   _protocols;
+          };
+
+         private:
+          QMap<QString, protocol>   _protocols;
                                     protocols();
                                     protocols(protocols const& p);
           protocols&                operator=(protocols const& p);
 
          public:
                                     ~protocols();
-          protocols&                instance();
+          QMap<QString, protocol>::const_iterator
+                                    begin() const;
+          QMap<QString, protocol>::const_iterator
+                                    end() const;
+          static protocols&         instance();
           void                      reg(QString const& name,
                                       factory const& fac,
                                       unsigned short osi_from,

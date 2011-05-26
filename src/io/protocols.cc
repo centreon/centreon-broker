@@ -64,6 +64,45 @@ protocols& protocols::operator=(protocols const& p) {
   return (*this);
 }
 
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Destructor.
+ */
+protocols::~protocols() {}
+
+/**
+ *  Get an iterator to the first registered protocol.
+ *
+ *  @return Iterator to the beginning of the protocol list.
+ */
+QMap<QString, protocols::protocol>::const_iterator protocols::begin() const {
+  return (_protocols.begin());
+}
+
+/**
+ *  Get an iterator to the end of the protocol list.
+ *
+ *  @return Iterator to the end of the protocol list.
+ */
+QMap<QString, protocols::protocol>::const_iterator protocols::end() const {
+  return (_protocols.end());
+}
+
+/**
+ *  Get the class instance.
+ *
+ *  @return Class instance.
+ */
+protocols& protocols::instance() {
+  static protocols gl_protocols;
+  return (gl_protocols);
+}
+
 /**
  *  Register a protocol.
  *
