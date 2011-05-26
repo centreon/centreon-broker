@@ -56,6 +56,7 @@ include(${QT_USE_FILE})
 # Event library.
 set(LIBROKER_SOURCES
   # Sources.
+  "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/logger.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -145,6 +146,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   # Headers.
+  "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/logger.hh"
   "${INC_DIR}/config/applier/modules.hh"
   "${INC_DIR}/config/applier/state.hh"

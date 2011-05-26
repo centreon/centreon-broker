@@ -17,16 +17,10 @@
 */
 
 #include <assert.h>
-#include <QCoreApplication>
-#include <QMutex>
-#include <QMutexLocker>
-#include <QScopedPointer>
 #include <stdlib.h>
 #include "config/applier/endpoint.hh"
-#include "config/applier/logger.hh"
-#include "config/applier/modules.hh"
-#include "config/applier/state.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 /**************************************
@@ -38,17 +32,17 @@ using namespace com::centreon::broker::config::applier;
 /**
  *  Default constructor.
  */
-state::state() {}
+endpoint::endpoint() {}
 
 /**
  *  @brief Copy constructor.
  *
  *  Any call to this constructor will result in a call to abort().
  *
- *  @param[in] s Object to copy.
+ *  @param[in] e Object to copy.
  */
-state::state(state const& s) {
-  (void)s;
+endpoint::endpoint(endpoint const& e) {
+  (void)e;
   assert(false);
   abort();
 }
@@ -58,12 +52,12 @@ state::state(state const& s) {
  *
  *  Any call to this method will result in a call to abort().
  *
- *  @param[in] s Object to copy.
+ *  @param[in] e Object to copy.
  *
  *  @return This object.
  */
-state& state::operator=(state const& s) {
-  (void)s;
+endpoint& endpoint::operator=(endpoint const& e) {
+  (void)e;
   assert(false);
   abort();
   return (*this);
@@ -78,32 +72,24 @@ state& state::operator=(state const& s) {
 /**
  *  Destructor.
  */
-state::~state() {}
+endpoint::~endpoint() {}
 
 /**
- *  Apply a configuration state.
+ *  Apply the endpoint configuration.
  *
- *  @param[in] s State to apply.
+ *  @param[in] inputs  Inputs configuration.
+ *  @param[in] outputs Outputs configuration.
  */
-void state::apply(com::centreon::broker::config::state const& s) {
-  // Apply logging configuration.
-  logger::instance().apply(s.loggers());
-
-  // Apply modules configuration.
-  modules::instance().apply(s.module_directory());
-
-  // Apply input and output configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs());
-
-  return ;
+void endpoint::apply(QList<config::endpoint> const& inputs,
+                     QList<config::endpoint> const& outputs) {
 }
 
 /**
- *  Get the instance of this object.
+ *  Get the class instance.
  *
  *  @return Class instance.
  */
-state& state::instance() {
-  static state gl_state;
-  return (gl_state);
+endpoint& endpoint::instance() {
+  static endpoint gl_endpoint;
+  return (gl_endpoint);
 }
