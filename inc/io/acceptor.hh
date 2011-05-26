@@ -20,6 +20,7 @@
 # define CCB_IO_ACCEPTOR_HH_
 
 # include <QSharedPointer>
+# include "io/endpoint.hh"
 # include "io/stream.hh"
 
 namespace                          com {
@@ -32,7 +33,7 @@ namespace                          com {
          *
          *  Such classes accept incoming stream.
          */
-        class                      acceptor {
+        class                      acceptor : public endpoint {
          protected:
           QSharedPointer<acceptor> _down;
 

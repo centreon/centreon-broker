@@ -20,8 +20,8 @@
 # define CCB_IO_PROTOCOLS_HH_
 
 # include <QMap>
+# include <QSharedPointer>
 # include <QString>
-# include "endpoint.hh"
 # include "factory.hh"
 
 namespace                           com {

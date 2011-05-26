@@ -36,7 +36,8 @@ connector::connector() {}
  *
  *  @param[in] c Object to copy.
  */
-connector::connector(connector const& c) : _down(c._down) {}
+connector::connector(connector const& c)
+  : endpoint(c), _down(c._down) {}
 
 /**
  *  Destructor.
@@ -51,6 +52,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
+  endpoint::operator=(c);
   _down = c._down;
   return (*this);
 }

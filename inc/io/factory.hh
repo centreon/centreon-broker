@@ -21,25 +21,25 @@
 
 # include "endpoint.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            io {
+namespace                   com {
+  namespace                 centreon {
+    namespace               broker {
+      namespace             io {
         /**
          *  @class factory factory.hh "io/factory.hh"
          *  @brief Endpoint factory.
          *
          *  Build endpoint according to some configuration.
          */
-        class              factory {
+        class               factory {
          public:
-                           factory();
-                           factory(factory const& f);
-          virtual          ~factory();
-          factory&         operator=(factory const& f);
-          virtual factory* clone() const = 0;
-          virtual bool     had_endpoint() const = 0;
-          virtual endpoint new_endpoint() const = 0;
+                            factory();
+                            factory(factory const& f);
+          virtual           ~factory();
+          factory&          operator=(factory const& f);
+          virtual factory*  clone() const = 0;
+          virtual bool      had_endpoint() const = 0;
+          virtual endpoint* new_endpoint() const = 0;
         };
       }
     }

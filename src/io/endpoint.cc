@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/acceptor.hh"
+#include "io/endpoint.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -29,39 +29,30 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() {}
+endpoint::endpoint() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] a Object to copy.
+ *  @param[in] e Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : endpoint(a), _down(a._down) {}
+endpoint::endpoint(endpoint const& e) {
+  (void)e;
+}
 
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+endpoint::~endpoint() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] a Object to copy.
+ *  @param[in] e Object to copy.
  *
  *  @return This object.
  */
-acceptor& acceptor::operator=(acceptor const& a) {
-  endpoint::operator=(a);
-  _down = a._down;
+endpoint& endpoint::operator=(endpoint const& e) {
+  (void)e;
   return (*this);
-}
-
-/**
- *  Forward incoming object to the following acceptor.
- *
- *  @param[in] down Object to forward to.
- */
-void acceptor::on(QSharedPointer<acceptor> down) {
-  _down = down;
-  return ;
 }

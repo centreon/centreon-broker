@@ -119,6 +119,7 @@ set(LIBROKER_SOURCES
 #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/acceptor.cc"
   "${SRC_DIR}/io/connector.cc"
+  "${SRC_DIR}/io/endpoint.cc"
   "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/stream.cc"
@@ -238,10 +239,6 @@ target_link_libraries(roker ${QT_LIBRARIES})
 #	../src/correlation/node.cc
 #	../src/correlation/parser.cc
 #	../src/init.cc
-#	../src/processing/failover_in.cc
-#	../src/processing/failover_out.cc
-#	../src/processing/feeder.cc
-#	../src/processing/listener.cc
 #)
 
 # Standalone binary.

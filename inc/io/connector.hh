@@ -20,6 +20,7 @@
 # define CCB_IO_CONNECTOR_HH_
 
 # include <QSharedPointer>
+# include "io/endpoint.hh"
 # include "io/stream.hh"
 
 namespace                           com {
@@ -32,7 +33,7 @@ namespace                           com {
          *
          *  Connect to some remote endpoint.
          */
-        class                       connector {
+        class                       connector : public endpoint {
          protected:
           QSharedPointer<connector> _down;
 

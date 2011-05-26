@@ -19,17 +19,24 @@
 #ifndef CCB_IO_ENDPOINT_HH_
 # define CCB_IO_ENDPOINT_HH_
 
-# include "io/acceptor.hh"
-# include "io/connector.hh"
-
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      io{
-        // An endpoint is either an acceptor or a connector.
-        union        endpoint {
-          acceptor*  accptr;
-          connector* cnnctr;
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        io {
+        /**
+         *  @class endpoint endpoint.hh "io/endpoint.hh"
+         *  @brief Base class of connectors and acceptors.
+         *
+         *  Interface that have all methods used by processing threads.
+         */
+        class          endpoint {
+         public:
+                       endpoint();
+                       endpoint(endpoint const& e);
+          virtual      ~endpoint();
+          endpoint&    operator=(endpoint const& e);
+          virtual void close() = 0;
+          virtual void open() = 0;
         };
       }
     }
