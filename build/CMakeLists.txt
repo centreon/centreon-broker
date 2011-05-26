@@ -146,6 +146,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
+  "${SRC_DIR}/processing/failover.cc"
   # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/logger.hh"
@@ -218,6 +219,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
+  "${INC_DIR}/processing/failover.hh"
 )
 #if (TLS)
 #  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
