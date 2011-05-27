@@ -143,7 +143,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
   "${SRC_DIR}/logging/void_logger.cc"
-#	../src/mapping.cc
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/modules/handle.cc"
   "${SRC_DIR}/modules/loader.cc"
@@ -252,7 +251,9 @@ target_link_libraries(roker ${QT_LIBRARIES})
 add_executable(cbd
   "${SRC_DIR}/daemon/main.cc"
   "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/mapping.cc"
   "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/mapping.hh"
 )
 target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 

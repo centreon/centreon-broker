@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,15 +14,14 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include "events/events.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 
-using namespace events;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::events;
 
 // acknowledgement members mapping.
 static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
@@ -1190,6 +1189,7 @@ static mapped_data<instance_status> const instance_status_mapping[] = {
   mapped_data<instance_status>()
 };
 
+/*
 // issue members mapping.
 static mapped_data<issue> const issue_mapping[] = {
   mapped_data<issue>(
@@ -1257,6 +1257,7 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     "start_time"),
   mapped_data<issue_parent>()
 };
+*/
 
 // Log members mapping.
 static mapped_data<log_entry> log_mapping[] = {
@@ -2200,6 +2201,7 @@ template <> const mapped_data<events::instance_status>*
 template <> const char*
   mapped_type<events::instance_status>::table("instances");
 
+/*
 // issue mapping.
 template <> const mapped_data<events::issue>*
   mapped_type<events::issue>::members(issue_mapping);
@@ -2211,6 +2213,7 @@ template <> const mapped_data<events::issue_parent>*
   mapped_type<events::issue_parent>::members(issue_parent_mapping);
 template <> const char*
   mapped_type<events::issue_parent>::table("issues_issues_parents");
+*/
 
 // log_entry mapping.
 template <> const mapped_data<events::log_entry>*
