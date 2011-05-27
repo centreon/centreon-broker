@@ -112,6 +112,7 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
           static_cast<io::connector*>(prev)->on(current);
           prev = current.data();
         }
+        level = it.value().osi_to;
         break ;
       }
       ++it;
@@ -130,7 +131,7 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
        : processing::failover::input));
 
   // Connect thread.
-  connect(fo.data(), SIGNAL(finished()), fo.data(), SLOT(deleteLater));
+  connect(fo.data(), SIGNAL(finished()), fo.data(), SLOT(deleteLater()));
   if (!is_output) {
     connect(fo.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
     _inputs[cfg] = fo.data();
