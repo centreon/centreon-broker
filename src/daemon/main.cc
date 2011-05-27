@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   }
   // Standard exception.
   catch (std::exception const& e) {
-    logging::error << logging::HIGH << "error: " << e.what();
+    logging::error << logging::HIGH << e.what();
     exit_code = 1;
   }
   // Unknown exception.
