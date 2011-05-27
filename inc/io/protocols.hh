@@ -22,7 +22,7 @@
 # include <QMap>
 # include <QSharedPointer>
 # include <QString>
-# include "factory.hh"
+# include "io/factory.hh"
 
 namespace                           com {
   namespace                         centreon {
