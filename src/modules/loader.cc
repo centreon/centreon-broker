@@ -90,5 +90,6 @@ void loader::load_dir(QString const& dirname) {
 void loader::load_file(QString const& filename) {
   QSharedPointer<handle> handl(new handle);
   handl->open(filename);
+  _handles.push_back(handl);
   return ;
 }

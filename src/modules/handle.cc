@@ -93,7 +93,7 @@ void handle::close() {
       throw (exceptions::basic() << "could not find module deinitialiation routine in '"
                << _handle->fileName().toStdString().c_str()
                << "': " << _handle->errorString().toStdString().c_str());
-    (*(void (*)())(sym))();
+    (*(void (*)(bool))(sym))(true);
 
     // Reset library handle.
     _handle.clear();
