@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2011 MERETHIS
+## Copyright 2009-2011 Merethis
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -41,7 +41,7 @@ endif ()
 #endif ()
 
 # Find Qt.
-find_package(Qt4 COMPONENTS QtCore QtSql QtXml REQUIRED)
+find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 
 # Check for GNU TLS.
@@ -125,7 +125,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/acceptor.cc"
   "${SRC_DIR}/io/connector.cc"
   "${SRC_DIR}/io/endpoint.cc"
-  "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
@@ -250,7 +249,11 @@ target_link_libraries(roker ${QT_LIBRARIES})
 #)
 
 # Standalone binary.
-add_executable(cbd "${SRC_DIR}/daemon/main.cc")
+add_executable(cbd
+  "${SRC_DIR}/daemon/main.cc"
+  "${SRC_DIR}/io/factory.cc"
+  "${INC_DIR}/io/factory.hh"
+)
 target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 
 # Module.
@@ -268,3 +271,6 @@ target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 #	RUNTIME DESTINATION bin
 #	LIBRARY DESTINATION lib
 #	ARCHIVE DESTINATION lib)
+
+# TCP module.
+add_subdirectory("tcp")
