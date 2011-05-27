@@ -19,7 +19,8 @@
 #ifndef CCB_IO_FACTORY_HH_
 # define CCB_IO_FACTORY_HH_
 
-# include "endpoint.hh"
+# include "config/endpoint.hh"
+# include "io/endpoint.hh"
 
 namespace                   com {
   namespace                 centreon {
@@ -38,8 +39,9 @@ namespace                   com {
           virtual           ~factory();
           factory&          operator=(factory const& f);
           virtual factory*  clone() const = 0;
-          virtual bool      had_endpoint() const = 0;
-          virtual endpoint* new_endpoint() const = 0;
+          virtual bool      has_endpoint(com::centreon::broker::config::endpoint const& cfg) const = 0;
+          virtual endpoint* new_endpoint(com::centreon::broker::config::endpoint const& cfg,
+                              bool& is_acceptor) const = 0;
         };
       }
     }
