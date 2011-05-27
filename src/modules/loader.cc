@@ -72,8 +72,12 @@ void loader::load_dir(QString const& dirname) {
   l = dir.entryList();
   for (QStringList::iterator it = l.begin(), end = l.end();
        it != end;
-       ++it)
-    load_file(*it);
+       ++it) {
+    QString file(dirname);
+    file.append("/");
+    file.append(*it);
+    load_file(file);
+  }
 
   return ;
 }
