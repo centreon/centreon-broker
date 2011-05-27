@@ -50,11 +50,6 @@ logging::logger      logging::info(INFO);
  *  Clear the list of logging objects.
  */
 void logging::clear() {
-  for (std::map<backend*, std::pair<unsigned int, level> >::iterator
-         it = backends.begin(), end = backends.end();
-       it != end;
-       ++it)
-    delete (it->first);
   backends.clear();
 }
 
@@ -75,9 +70,7 @@ void logging::log_on(backend* b,
     backends[b].first = types;
     backends[b].second = min_priority;
     }
-  else {
-    delete b;
+  else
     backends.erase(b);
-  }
   return ;
 }
