@@ -34,7 +34,7 @@ namespace                        com {
         class                    stream {
          protected:
           QSharedPointer<stream> _from;
-	  QSharedPointer<stream> _to;
+          QSharedPointer<stream> _to;
 
          public:
                                  stream();
@@ -43,7 +43,7 @@ namespace                        com {
           stream&                operator=(stream const& s);
           virtual unsigned int   read(void* data, unsigned int size) = 0;
           void                   read_from(QSharedPointer<stream> from);
-          virtual unsigned int   write(void* data, unsigned int size) = 0;
+          virtual unsigned int   write(void const* data, unsigned int size) = 0;
           void                   write_to(QSharedPointer<stream> to);
         };
       }

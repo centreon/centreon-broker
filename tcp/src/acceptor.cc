@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "exceptions/basic.hh"
 #include "tcp/acceptor.hh"
+#include "tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -116,8 +117,24 @@ void acceptor::open() {
     throw (exceptions::basic() << "could not listen on port " << _port
              << ": " << _socket.errorString().toStdString().c_str());
 
-  // Wait for incoming connections.
-  // XXX
+  while (true) {
+    // Wait for incoming connections.
+    if (!_socket.waitForNewConnection(-1))
+      throw (exceptions::basic() << "could not accept incoming TCP client: "
+               << _socket.errorString().toStdString().c_str());
+
+    // Accept client.
+    QSharedPointer<QTcpSocket> incoming(_socket.nextPendingConnection());
+    if (incoming.isNull())
+      throw (exceptions::basic() << "could not accept incoming TCP client: "
+               << _socket.errorString().toStdString().c_str());
+
+    // Forward object.
+    if (!_down.isNull()) {
+      QSharedPointer<stream> new_client(new stream(incoming));
+      _down->accept(new_client);
+    }
+  }
 
   return ;
 }

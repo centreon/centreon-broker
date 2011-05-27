@@ -28,9 +28,11 @@ add_library("tcp" MODULE
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/tcp/acceptor.hh"
   "${INC_DIR}/tcp/connector.hh"
   "${INC_DIR}/tcp/factory.hh"
+  "${INC_DIR}/tcp/stream.hh"
 )
 set_target_properties("tcp" PROPERTIES PREFIX "")

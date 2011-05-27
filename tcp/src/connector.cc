@@ -18,6 +18,7 @@
 
 #include "exceptions/basic.hh"
 #include "tcp/connector.hh"
+#include "tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -82,7 +83,8 @@ connector& connector::operator=(connector const& c) {
  *  Close the connector socket.
  */
 void connector::close() {
-  // XXX
+  _socket->close();
+  return ;
 }
 
 /**
@@ -124,7 +126,11 @@ void connector::open() {
              << _host.toStdString().c_str() << ":" << _port
              << ": " << _socket->errorString().toStdString().c_str());
 
-  // XXX : launch stream
+  // Forward stream.
+  if (!_down.isNull()) {
+    QSharedPointer<io::stream> ptr(new stream(_socket));
+    _down->connect(ptr);
+  }
 
   return ;
 }
