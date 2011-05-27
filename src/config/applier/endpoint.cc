@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include "config/applier/endpoint.hh"
 #include "exceptions/basic.hh"
+#include "io/acceptor.hh"
+#include "io/connector.hh"
 #include "io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -74,21 +76,51 @@ endpoint& endpoint::operator=(endpoint const& e) {
 void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
   // Create endpoint object.
   QSharedPointer<io::endpoint> endp;
-  int level(1);
+  bool is_acceptor;
+  int level;
   for (QMap<QString, io::protocols::protocol>::const_iterator it = io::protocols::instance().begin(),
          end = io::protocols::instance().end();
        it != end;
        ++it) {
-    if ((it.value().osi_from == level)
-        && it.value().endpntfactry->had_endpoint()) {
-      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint());
+    if ((it.value().osi_from == 1)
+        && it.value().endpntfactry->has_endpoint(cfg)) {
+      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor));
+      level = it.value().osi_to + 1;
       break ;
     }
   }
   if (endp.isNull())
     throw (exceptions::basic() << "no matching protocol found for endpoint '"
              << cfg.name.toStdString().c_str() << "'");
-  // XXX : remaining objects.
+
+  // Create remaining objects.
+  io::endpoint* prev(endp.data());
+  while (level <= 7) {
+    // Browse protocol list.
+    QMap<QString, io::protocols::protocol>::const_iterator it(io::protocols::instance().begin());
+    QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
+    while (it != end) {
+      if ((it.value().osi_from == level)
+          && (it.value().endpntfactry->has_endpoint(cfg))) {
+        if (is_acceptor) {
+          QSharedPointer<io::acceptor> current(static_cast<io::acceptor*>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor)));
+          static_cast<io::acceptor*>(prev)->on(current);
+          prev = current.data();
+        }
+        else {
+          QSharedPointer<io::connector> current(static_cast<io::connector*>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor)));
+          static_cast<io::connector*>(prev)->on(current);
+          prev = current.data();
+        }
+        break ;
+      }
+      ++it;
+    }
+    if ((7 == level) && (it == end))
+      throw (exceptions::basic() << "no matching protocol found for endpoint '"
+               << cfg.name.toStdString().c_str() << "'");
+    ++level;
+  }
 
   // Create thread.
   QScopedPointer<processing::failover> fo(new processing::failover);
