@@ -83,8 +83,8 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
        it != end;
        ++it) {
     if ((it.value().osi_from == 1)
-        && it.value().endpntfactry->has_endpoint(cfg)) {
-      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor));
+        && it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output)) {
+      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor));
       level = it.value().osi_to + 1;
       break ;
     }
@@ -101,14 +101,14 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
     QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
     while (it != end) {
       if ((it.value().osi_from == level)
-          && (it.value().endpntfactry->has_endpoint(cfg))) {
+          && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
         if (is_acceptor) {
-          QSharedPointer<io::acceptor> current(static_cast<io::acceptor*>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor)));
+          QSharedPointer<io::acceptor> current(static_cast<io::acceptor*>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor)));
           static_cast<io::acceptor*>(prev)->on(current);
           prev = current.data();
         }
         else {
-          QSharedPointer<io::connector> current(static_cast<io::connector*>(it.value().endpntfactry->new_endpoint(cfg, is_acceptor)));
+          QSharedPointer<io::connector> current(static_cast<io::connector*>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor)));
           static_cast<io::connector*>(prev)->on(current);
           prev = current.data();
         }

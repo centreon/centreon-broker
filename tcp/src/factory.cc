@@ -72,9 +72,17 @@ io::factory* factory::clone() const {
 /**
  *  Check if a configuration supports this protocol.
  *
+ *  @param[in] cfg       Object configuration.
+ *  @param[in] is_input  Unused.
+ *  @param[in] is_output Unused.
+ *
  *  @return true if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint const& cfg) const {
+bool factory::has_endpoint(config::endpoint const& cfg,
+                           bool is_input,
+                           bool is_output) const {
+  (void)is_input;
+  (void)is_output;
   return ((cfg.type == "ip")
           || (cfg.type == "tcp")
           || (cfg.type == "ipv4")
@@ -85,11 +93,19 @@ bool factory::has_endpoint(config::endpoint const& cfg) const {
  *  Create a new endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
+ *  @param[in]  is_input    Unused.
+ *  @param[in]  is_output   Unused.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *
  *  @return Endpoint matching configuration.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg, bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
+                                    bool is_input,
+                                    bool is_output,
+                                    bool& is_acceptor) const {
+  (void)is_input;
+  (void)is_output;
+
   // Find host (if exist).
   QString host;
   {

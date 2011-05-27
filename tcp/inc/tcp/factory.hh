@@ -39,9 +39,13 @@ namespace          com {
           factory& operator=(factory const& f);
           com::centreon::broker::io::factory*
                    clone() const;
-          bool     has_endpoint(com::centreon::broker::config::endpoint const& cfg) const;
+          bool     has_endpoint(com::centreon::broker::config::endpoint const& cfg,
+                     bool is_input,
+                     bool is_output) const;
           com::centreon::broker::io::endpoint*
                    new_endpoint(com::centreon::broker::config::endpoint const& cfg,
+                     bool is_input,
+                     bool is_output,
                      bool& is_acceptor) const;
         };
       }
