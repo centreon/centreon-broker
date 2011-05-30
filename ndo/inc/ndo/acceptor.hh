@@ -19,6 +19,7 @@
 #ifndef CCB_NDO_ACCEPTOR_HH_
 # define CCB_NDO_ACCEPTOR_HH_
 
+# include <QSharedPointer>
 # include "io/acceptor.hh"
 
 namespace           com {
@@ -33,12 +34,13 @@ namespace           com {
          */
         class       acceptor : public com::centreon::broker::io::acceptor {
          private:
-                    acceptor(acceptor const& a);
-          acceptor& operator=(acceptor const& a);
+          bool      _is_out;
 
          public:
-                    acceptor();
+                    acceptor(bool is_out);
+                    acceptor(acceptor const& a);
                     ~acceptor();
+          acceptor& operator=(acceptor const& a);
           void      accept(QSharedPointer<com::centreon::broker::io::stream> ptr);
           void      close();
           void      open();

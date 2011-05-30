@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,16 +14,15 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
-#include "interface/ndo/internal.hh"
+#include "ndo/internal.hh"
 
-using namespace interface::ndo;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::ndo;
 
 /**************************************
 *                                     *
@@ -82,7 +81,7 @@ template <typename T>
 static void get_string(T const& t,
                        data_member<T> const& member,
                        std::stringstream& buffer) {
-  buffer << t.*(member.S);
+  buffer << (t.*(member.S)).toStdString();
   return ;
 }
 
@@ -213,91 +212,91 @@ static void static_init() {
 **************************************/
 
 template <> std::map<int, getter_setter<events::acknowledgement> >
-  interface::ndo::ndo_mapped_type<events::acknowledgement>::map =
+  ndo::ndo_mapped_type<events::acknowledgement>::map =
     std::map<int, getter_setter<events::acknowledgement> >();
 template <> std::map<int, getter_setter<events::comment> >
-  interface::ndo::ndo_mapped_type<events::comment>::map =
+  ndo::ndo_mapped_type<events::comment>::map =
     std::map<int, getter_setter<events::comment> >();
 template <> std::map<int, getter_setter<events::custom_variable> >
-  interface::ndo::ndo_mapped_type<events::custom_variable>::map =
+  ndo::ndo_mapped_type<events::custom_variable>::map =
     std::map<int, getter_setter<events::custom_variable> >();
 template <> std::map<int, getter_setter<events::custom_variable_status> >
-  interface::ndo::ndo_mapped_type<events::custom_variable_status>::map =
+  ndo::ndo_mapped_type<events::custom_variable_status>::map =
     std::map<int, getter_setter<events::custom_variable_status> >();
 template <> std::map<int, getter_setter<events::downtime> >
-  interface::ndo::ndo_mapped_type<events::downtime>::map =
+  ndo::ndo_mapped_type<events::downtime>::map =
     std::map<int, getter_setter<events::downtime> >();
 template <> std::map<int, getter_setter<events::event_handler> >
-  interface::ndo::ndo_mapped_type<events::event_handler>::map =
+  ndo::ndo_mapped_type<events::event_handler>::map =
     std::map<int, getter_setter<events::event_handler> >();
 template <> std::map<int, getter_setter<events::flapping_status> >
-  interface::ndo::ndo_mapped_type<events::flapping_status>::map =
+  ndo::ndo_mapped_type<events::flapping_status>::map =
     std::map<int, getter_setter<events::flapping_status> >();
 template <> std::map<int, getter_setter<events::host> >
-  interface::ndo::ndo_mapped_type<events::host>::map =
+  ndo::ndo_mapped_type<events::host>::map =
     std::map<int, getter_setter<events::host> >();
 template <> std::map<int, getter_setter<events::host_check> >
-  interface::ndo::ndo_mapped_type<events::host_check>::map =
+  ndo::ndo_mapped_type<events::host_check>::map =
     std::map<int, getter_setter<events::host_check> >();
 template <> std::map<int, getter_setter<events::host_dependency> >
-  interface::ndo::ndo_mapped_type<events::host_dependency>::map =
+  ndo::ndo_mapped_type<events::host_dependency>::map =
     std::map<int, getter_setter<events::host_dependency> >();
 template <> std::map<int, getter_setter<events::host_group> >
-  interface::ndo::ndo_mapped_type<events::host_group>::map =
+  ndo::ndo_mapped_type<events::host_group>::map =
     std::map<int, getter_setter<events::host_group> >();
 template <> std::map<int, getter_setter<events::host_group_member> >
-  interface::ndo::ndo_mapped_type<events::host_group_member>::map =
+  ndo::ndo_mapped_type<events::host_group_member>::map =
     std::map<int, getter_setter<events::host_group_member> >();
 template <> std::map<int, getter_setter<events::host_parent> >
-  interface::ndo::ndo_mapped_type<events::host_parent>::map =
+  ndo::ndo_mapped_type<events::host_parent>::map =
     std::map<int, getter_setter<events::host_parent> >();
 template <> std::map<int, getter_setter<events::host_state> >
-  interface::ndo::ndo_mapped_type<events::host_state>::map =
+  ndo::ndo_mapped_type<events::host_state>::map =
     std::map<int, getter_setter<events::host_state> >();
 template <> std::map<int, getter_setter<events::host_status> >
-  interface::ndo::ndo_mapped_type<events::host_status>::map =
+  ndo::ndo_mapped_type<events::host_status>::map =
     std::map<int, getter_setter<events::host_status> >();
 template <> std::map<int, getter_setter<events::instance> >
-  interface::ndo::ndo_mapped_type<events::instance>::map =
+  ndo::ndo_mapped_type<events::instance>::map =
     std::map<int, getter_setter<events::instance> >();
 template <> std::map<int, getter_setter<events::instance_status> >
-  interface::ndo::ndo_mapped_type<events::instance_status>::map =
+  ndo::ndo_mapped_type<events::instance_status>::map =
     std::map<int, getter_setter<events::instance_status> >();
-template <> std::map<int, getter_setter<events::issue> >
-  interface::ndo::ndo_mapped_type<events::issue>::map =
+/*template <> std::map<int, getter_setter<events::issue> >
+  ndo::ndo_mapped_type<events::issue>::map =
     std::map<int, getter_setter<events::issue> >();
 template <> std::map<int, getter_setter<events::issue_parent> >
-  interface::ndo::ndo_mapped_type<events::issue_parent>::map =
-    std::map<int, getter_setter<events::issue_parent> >();
+  ndo::ndo_mapped_type<events::issue_parent>::map =
+  std::map<int, getter_setter<events::issue_parent> >();*/
 template <> std::map<int, getter_setter<events::log_entry> >
-  interface::ndo::ndo_mapped_type<events::log_entry>::map =
+  ndo::ndo_mapped_type<events::log_entry>::map =
     std::map<int, getter_setter<events::log_entry> >();
 template <> std::map<int, getter_setter<events::module> >
-  interface::ndo::ndo_mapped_type<events::module>::map =
+  ndo::ndo_mapped_type<events::module>::map =
     std::map<int, getter_setter<events::module> >();
 template <> std::map<int, getter_setter<events::notification> >
-  interface::ndo::ndo_mapped_type<events::notification>::map =
+  ndo::ndo_mapped_type<events::notification>::map =
     std::map<int, getter_setter<events::notification> >();
 template <> std::map<int, getter_setter<events::service> >
-  interface::ndo::ndo_mapped_type<events::service>::map =
+  ndo::ndo_mapped_type<events::service>::map =
     std::map<int, getter_setter<events::service> >();
 template <> std::map<int, getter_setter<events::service_check> >
-  interface::ndo::ndo_mapped_type<events::service_check>::map =
+  ndo::ndo_mapped_type<events::service_check>::map =
     std::map<int, getter_setter<events::service_check> >();
 template <> std::map<int, getter_setter<events::service_dependency> >
-  interface::ndo::ndo_mapped_type<events::service_dependency>::map =
+  ndo::ndo_mapped_type<events::service_dependency>::map =
     std::map<int, getter_setter<events::service_dependency> >();
 template <> std::map<int, getter_setter<events::service_group> >
-  interface::ndo::ndo_mapped_type<events::service_group>::map =
+  ndo::ndo_mapped_type<events::service_group>::map =
     std::map<int, getter_setter<events::service_group> >();
 template <> std::map<int, getter_setter<events::service_group_member> >
-  interface::ndo::ndo_mapped_type<events::service_group_member>::map =
+  ndo::ndo_mapped_type<events::service_group_member>::map =
     std::map<int, getter_setter<events::service_group_member> >();
 template <> std::map<int, getter_setter<events::service_state> >
-  interface::ndo::ndo_mapped_type<events::service_state>::map =
+  ndo::ndo_mapped_type<events::service_state>::map =
     std::map<int, getter_setter<events::service_state> >();
 template <> std::map<int, getter_setter<events::service_status> >
-  interface::ndo::ndo_mapped_type<events::service_status>::map =
+  ndo::ndo_mapped_type<events::service_status>::map =
     std::map<int, getter_setter<events::service_status> >();
 
 /**************************************
@@ -311,7 +310,7 @@ template <> std::map<int, getter_setter<events::service_status> >
  *
  *  Initialize NDO mappings.
  */
-void interface::ndo::initialize() {
+void ndo::initialize() {
   static_init<events::acknowledgement>();
   static_init<events::comment>();
   static_init<events::custom_variable>();
@@ -329,8 +328,8 @@ void interface::ndo::initialize() {
   static_init<events::host_status>();
   static_init<events::instance>();
   static_init<events::instance_status>();
-  static_init<events::issue>();
-  static_init<events::issue_parent>();
+  //static_init<events::issue>();
+  //static_init<events::issue_parent>();
   static_init<events::log_entry>();
   static_init<events::module>();
   static_init<events::notification>();
