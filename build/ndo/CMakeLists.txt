@@ -25,6 +25,7 @@ include_directories("${INC_DIR}")
 add_library("ndo" MODULE
   # Sources.
   "${SRC_DIR}/acceptor.cc"
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/input.cc"
   "${SRC_DIR}/internal.cc"
@@ -32,6 +33,7 @@ add_library("ndo" MODULE
   "${SRC_DIR}/output.cc"
   # Headers.
   "${INC_DIR}/ndo/acceptor.hh"
+  "${INC_DIR}/ndo/connector.hh"
   "${INC_DIR}/ndo/factory.hh"
   "${INC_DIR}/ndo/input.hh"
   "${INC_DIR}/ndo/internal.hh"

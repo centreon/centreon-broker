@@ -19,7 +19,6 @@
 #ifndef CCB_NDO_ACCEPTOR_HH_
 # define CCB_NDO_ACCEPTOR_HH_
 
-# include <QSharedPointer>
 # include "io/acceptor.hh"
 
 namespace           com {
