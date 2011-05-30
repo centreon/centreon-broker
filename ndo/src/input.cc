@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,25 +14,23 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include <assert.h>
-#include <memory>
+#include <QScopedPointer>
 #include <stdlib.h>
-#include <string.h>
 #include "events/events.hh"
-#include "interface/ndo/internal.hh"
-#include "interface/ndo/source.hh"
-#include "io/stream.hh"
+#include "exceptions/basic.hh"
+#include "mapping.hh"
 #include "nagios/protoapi.h"
+#include "ndo/input.hh"
+#include "ndo/internal.hh"
 
-using namespace interface::ndo;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::ndo;
 
 /**************************************
 *                                     *
-*           Static Methods            *
+*           Private Methods           *
 *                                     *
 **************************************/
 
@@ -40,14 +38,14 @@ using namespace interface::ndo;
  *  Extract event parameters from the data stream.
  */
 template <typename T>
-static T* handle_event(io::text& s) {
-  std::auto_ptr<T> event(new T);
+T* input::_handle_event() {
+  QScopedPointer<T> event(new T);
   int key;
   char const* key_str;
   char const* value_str;
 
   while (1) {
-    key_str = s.line();
+    key_str = _get_line();
     if (key_str) {
       typename std::map<int, getter_setter<T> >::const_iterator it;
       key = strtol(key_str, NULL, 10);
@@ -57,50 +55,14 @@ static T* handle_event(io::text& s) {
       value_str = (value_str ? value_str + 1 : "");
       it = ndo_mapped_type<T>::map.find(key);
       if (it != ndo_mapped_type<T>::map.end())
-        (*it->second.setter)(*event.get(), *it->second.member, value_str);
+        (*it->second.setter)(*event.data(), *it->second.member, value_str);
     }
     else {
       event.reset();
       break ;
     }
   }
-  return (event.release());
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  As source is not copyable, any attempt to use the copy constructor
- *  will result in a call to abort().
- *
- *  @param[in] s Unused.
- */
-source::source(source const& s) : base(NULL), interface::source(s) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  As source is not copyable, any attempt to use the assignment
- *  operator will result in a call to abort().
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-source& source::operator=(source const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
+  return (event.take());
 }
 
 /**************************************
@@ -110,27 +72,33 @@ source& source::operator=(source const& s) {
 **************************************/
 
 /**
- *  @brief Constructor.
- *
- *  Build an NDO input source that uses the stream object as raw binary
- *  input. The stream object must not be NULL and is owned by the source
- *  object upon successful return from the constructor.
- *
- *  @param[in] s Input stream object.
+ *  Default constructor.
  */
-source::source(io::stream* s) : base(s) {}
+input::input() {}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] i Object to copy.
+ */
+input::input(input const& i)
+  : io::istream(i), serialization::iserial(i) {}
 
 /**
  *  Destructor.
  */
-source::~source() {}
+input::~input() {}
 
 /**
- *  Close the source object.
+ *  Assignment operator.
+ *
+ *  @param[in] i Object to copy.
+ *
+ *  @return This object.
  */
-void source::close() {
-  _stream.close();
-  return ;
+input& input::operator=(input const& i) {
+  serialization::iserial::operator=(i);
+  return (*this);
 }
 
 /**
@@ -141,113 +109,123 @@ void source::close() {
  *
  *  @return Next available event, NULL if stream is closed.
  */
-events::event* source::event() {
-  std::auto_ptr<events::event> e;
+QSharedPointer<events::event> input::deserialize() {
+  QScopedPointer<events::event> e;
   char const* line;
 
   // Get the next non-empty line.
   do {
-    line = _stream.line();
+    line = _get_line();
   } while (line && !line[0]);
 
   if (line) {
     int id = strtol(line, NULL, 10);
     switch (id) {
      case NDO_API_ACKNOWLEDGEMENTDATA:
-      e.reset(handle_event<events::acknowledgement>(_stream));
+      e.reset(_handle_event<events::acknowledgement>());
       break ;
      case NDO_API_COMMENTDATA:
-      e.reset(handle_event<events::comment>(_stream));
+      e.reset(_handle_event<events::comment>());
       break ;
      case NDO_API_RUNTIMEVARIABLES:
-      e.reset(handle_event<events::custom_variable>(_stream));
+      e.reset(_handle_event<events::custom_variable>());
       break ;
      case NDO_API_CONFIGVARIABLES:
-      e.reset(handle_event<events::custom_variable_status>(_stream));
+      e.reset(_handle_event<events::custom_variable_status>());
       break ;
      case NDO_API_DOWNTIMEDATA:
-      e.reset(handle_event<events::downtime>(_stream));
+      e.reset(_handle_event<events::downtime>());
       break ;
      case NDO_API_EVENTHANDLERDATA:
-      e.reset(handle_event<events::event_handler>(_stream));
+      e.reset(_handle_event<events::event_handler>());
       break ;
      case NDO_API_FLAPPINGDATA:
-      e.reset(handle_event<events::flapping_status>(_stream));
+      e.reset(_handle_event<events::flapping_status>());
       break ;
      case NDO_API_HOSTCHECKDATA:
-      e.reset(handle_event<events::host_check>(_stream));
+      e.reset(_handle_event<events::host_check>());
       break ;
      case NDO_API_HOSTDEFINITION:
-      e.reset(handle_event<events::host>(_stream));
+      e.reset(_handle_event<events::host>());
       break ;
      case NDO_API_HOSTDEPENDENCYDEFINITION:
-      e.reset(handle_event<events::host_dependency>(_stream));
+      e.reset(_handle_event<events::host_dependency>());
       break ;
      case NDO_API_HOSTGROUPDEFINITION:
-      e.reset(handle_event<events::host_group>(_stream));
+      e.reset(_handle_event<events::host_group>());
       break ;
      case NDO_API_HOSTGROUPMEMBERDEFINITION:
-      e.reset(handle_event<events::host_group_member>(_stream));
+      e.reset(_handle_event<events::host_group_member>());
       break ;
      case NDO_API_HOSTPARENT:
-      e.reset(handle_event<events::host_parent>(_stream));
+      e.reset(_handle_event<events::host_parent>());
       break ;
      case NDO_API_STATECHANGEDATA:
-      e.reset(handle_event<events::host_state>(_stream));
+      e.reset(_handle_event<events::host_state>());
       break ;
      case NDO_API_HOSTSTATUSDATA:
-      e.reset(handle_event<events::host_status>(_stream));
+      e.reset(_handle_event<events::host_status>());
       break ;
      case NDO_API_PROCESSDATA:
-      e.reset(handle_event<events::instance>(_stream));
+      e.reset(_handle_event<events::instance>());
       break ;
      case NDO_API_PROGRAMSTATUSDATA:
-      e.reset(handle_event<events::instance_status>(_stream));
+      e.reset(_handle_event<events::instance_status>());
       break ;
      case NDO_API_LOGDATA:
-      e.reset(handle_event<events::log_entry>(_stream));
+      e.reset(_handle_event<events::log_entry>());
       break ;
      case NDO_API_COMMANDDEFINITION:
-      e.reset(handle_event<events::module>(_stream));
+      e.reset(_handle_event<events::module>());
       break ;
      case NDO_API_NOTIFICATIONDATA:
-      e.reset(handle_event<events::notification>(_stream));
+      e.reset(_handle_event<events::notification>());
       break ;
      case NDO_API_SERVICECHECKDATA:
-      e.reset(handle_event<events::service_check>(_stream));
+      e.reset(_handle_event<events::service_check>());
       break ;
      case NDO_API_SERVICEDEFINITION:
-      e.reset(handle_event<events::service>(_stream));
+      e.reset(_handle_event<events::service>());
       break ;
      case NDO_API_SERVICEDEPENDENCYDEFINITION:
-      e.reset(handle_event<events::service_dependency>(_stream));
+      e.reset(_handle_event<events::service_dependency>());
       break ;
      case NDO_API_SERVICEGROUPDEFINITION:
-      e.reset(handle_event<events::service_group>(_stream));
+      e.reset(_handle_event<events::service_group>());
       break ;
      case NDO_API_SERVICEGROUPMEMBERDEFINITION:
-      e.reset(handle_event<events::service_group_member>(_stream));
+      e.reset(_handle_event<events::service_group_member>());
       break ;
      case NDO_API_ADAPTIVESERVICEDATA:
-      e.reset(handle_event<events::service_state>(_stream));
+      e.reset(_handle_event<events::service_state>());
       break ;
      case NDO_API_SERVICESTATUSDATA:
-      e.reset(handle_event<events::service_status>(_stream));
+      e.reset(_handle_event<events::service_status>());
       break ;
      default:
       // Skip this event.
       while (id != NDO_API_ENDDATA) {
-        line = _stream.line();
+        line = _get_line();
         if (line)
           id = strtol(line, NULL, 10);
         else
           break ;
       }
       if (line)
-        return (this->event());
+        return (this->deserialize());
     }
   }
-  if (e.get())
+  if (!e.isNull())
     e->add_reader();
-  return (e.release());
+  return (QSharedPointer<events::event>(e.take()));
+}
+
+/**
+ *  Read data.
+ */
+unsigned int input::read(void* data, unsigned int size) {
+  (void)data;
+  (void)size;
+  throw (exceptions::basic() << "attempt to read from the NDO protocol");
+  return (0);
 }

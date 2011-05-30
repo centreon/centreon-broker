@@ -56,7 +56,9 @@ include(${QT_USE_FILE})
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/config/applier/endpoint.hh"
-  "${INC_DIR}/processing/failover.hh")
+  "${INC_DIR}/processing/failover.hh"
+  "${INC_DIR}/processing/feeder.hh"
+)
 
 # Event library.
 set(LIBROKER_SOURCES
@@ -111,20 +113,19 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/exceptions/retval.cc"
 #	../src/interface/db/destination.cc
 #	../src/interface/db/internal.cc
-  "${SRC_DIR}/interface/destination.cc"
 #	../src/interface/ndo/base.cc
 #	../src/interface/ndo/destination.cc
 #	../src/interface/ndo/internal.cc
 #	../src/interface/ndo/source.cc
 #	../src/interface/ndo/source_destination.cc
-  "${SRC_DIR}/interface/source.cc"
-#	../src/interface/source_destination.cc
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
 #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/acceptor.cc"
   "${SRC_DIR}/io/connector.cc"
   "${SRC_DIR}/io/endpoint.cc"
+  "${SRC_DIR}/io/istream.cc"
+  "${SRC_DIR}/io/ostream.cc"
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
@@ -150,6 +151,10 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
+  "${SRC_DIR}/processing/feeder.cc"
+  "${SRC_DIR}/serialization/iserial.cc"
+  "${SRC_DIR}/serialization/oserial.cc"
+  "${SRC_DIR}/serialization/serial.cc"
   "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
@@ -199,12 +204,12 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/events/status.hh"
   "${INC_DIR}/exceptions/basic.hh"
   "${INC_DIR}/exceptions/retval.hh"
-  "${INC_DIR}/interface/destination.hh"
-  "${INC_DIR}/interface/source.hh"
   "${INC_DIR}/io/acceptor.hh"
   "${INC_DIR}/io/connector.hh"
   "${INC_DIR}/io/endpoint.hh"
   "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/istream.hh"
+  "${INC_DIR}/io/ostream.hh"
   "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/logging/backend.hh"
@@ -224,6 +229,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/processing/failover.hh"
+  "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/serialization/iserial.hh"
+  "${INC_DIR}/serialization/oserial.hh"
+  "${INC_DIR}/serialization/serial.hh"
 )
 #if (TLS)
 #  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
@@ -249,10 +258,14 @@ target_link_libraries(roker ${QT_LIBRARIES})
 
 # Standalone binary.
 add_executable(cbd
+  # Sources.
   "${SRC_DIR}/daemon/main.cc"
   "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/io/stream.cc"
   "${SRC_DIR}/mapping.cc"
+  # Headers.
   "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/mapping.hh"
 )
 target_link_libraries(cbd "roker" ${QT_LIBRARIES})

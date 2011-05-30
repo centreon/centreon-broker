@@ -22,9 +22,11 @@
 #include <QScopedPointer>
 #include <stdlib.h>
 #include "events/event.hh"
+#include "exceptions/basic.hh"
 #include "multiplexing/internal.hh"
 #include "multiplexing/subscriber.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
 /**************************************
@@ -41,7 +43,8 @@ using namespace com::centreon::broker::multiplexing;
  *
  *  @param[in] s Unused.
  */
-subscriber::subscriber(subscriber const& s) {
+subscriber::subscriber(subscriber const& s)
+  : io::istream(), serialization::iserial(), io::ostream(), serialization::oserial(), serialization::serial() {
   (void)s;
   assert(false);
   abort();
@@ -70,7 +73,7 @@ subscriber& subscriber::operator=(subscriber const& s) {
 void subscriber::clean() {
   QMutexLocker lock(&_mutex);
   while (!_events.isEmpty()) {
-    events::event* event(_events.dequeue());
+    QSharedPointer<events::event> event(_events.dequeue());
     event->remove_reader();
   }
   return ;
@@ -115,8 +118,8 @@ void subscriber::close() {
  *
  *  @return Next available event.
  */
-com::centreon::broker::events::event* subscriber::event() {
-  return (this->event(-1));
+QSharedPointer<events::event> subscriber::deserialize() {
+  return (this->deserialize(-1));
 }
 
 /**
@@ -127,8 +130,8 @@ com::centreon::broker::events::event* subscriber::event() {
  *
  *  @return Next available event, NULL if timeout occured.
  */
-com::centreon::broker::events::event* subscriber::event(time_t deadline) {
-  QScopedPointer<com::centreon::broker::events::event> event;
+QSharedPointer<events::event> subscriber::deserialize(time_t deadline) {
+  QSharedPointer<events::event> event;
   QMutexLocker lock(&_mutex);
   if (_registered) {
     if (_events.empty()) {
@@ -137,13 +140,28 @@ com::centreon::broker::events::event* subscriber::event(time_t deadline) {
       else
         _cv.wait(&_mutex, deadline);
       if (!_events.empty()) {
-        event.reset(_events.dequeue());
+        event = QSharedPointer<events::event>(_events.dequeue());
       }
     }
     else
-      event.reset(_events.dequeue());
+      event = QSharedPointer<events::event>(_events.dequeue());
   }
-  return (event.take());
+  return (event);
+}
+
+/**
+ *  Try to read from the subscriber.
+ *
+ *  @param[in] data Unused.
+ *  @param[in] size Unused.
+ *
+ *  @return Does not return, throw an exception.
+ */
+unsigned int subscriber::read(void* data, unsigned int size) {
+  (void)data;
+  (void)size;
+  throw (exceptions::basic() << "attempt to read from a subscriber");
+  return (0);
 }
 
 /**
@@ -151,9 +169,24 @@ com::centreon::broker::events::event* subscriber::event(time_t deadline) {
  *
  *  @param[in] event Event to add.
  */
-void subscriber::event(events::event* event) {
+void subscriber::serialize(QSharedPointer<events::event> event) {
   QMutexLocker lock(&_mutex);
   _events.enqueue(event);
   _cv.wakeOne();
   return ;
+}
+
+/**
+ *  Try to write to the subscriber.
+ *
+ *  @param[in] data Unused.
+ *  @param[in] size Unused.
+ *
+ *  @return Does not return, throw an exception.
+ */
+unsigned int subscriber::write(void const* data, unsigned int size) {
+  (void)data;
+  (void)size;
+  throw (exceptions::basic() << "attempt to write to a subscriber");
+  return (0);
 }

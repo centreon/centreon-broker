@@ -16,7 +16,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QSharedPointer>
+#include "multiplexing/subscriber.hh"
 #include "ndo/acceptor.hh"
+#include "ndo/input.hh"
+#include "processing/feeder.hh"
+#include "serialization/iserial.hh"
+#include "serialization/oserial.hh"
 
 using namespace com::centreon::broker::ndo;
 
@@ -66,7 +72,23 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *  @param[in] ptr New connection object.
  */
 void acceptor::accept(QSharedPointer<io::stream> ptr) {
-  
+  if (!_is_out) {
+    // Create input and objects.
+    QSharedPointer<serialization::iserial> in(new ndo::input);
+    in->read_from(ptr);
+    QSharedPointer<serialization::oserial> out(new multiplexing::subscriber);
+
+    // Feeder thread.
+    QScopedPointer<processing::feeder> feedr(new processing::feeder);
+    feedr->prepare(in, out);
+    QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
+    processing::feeder* f(feedr.take());
+    f->run();
+  }
+  else {
+    // XXX
+  }
+  return ;
 }
 
 /**

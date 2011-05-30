@@ -100,7 +100,7 @@ void publisher::event(events::event* e) {
          it != end;
          ++it) {
       e->add_reader();
-      (*it)->event(e);
+      (*it)->serialize(QSharedPointer<events::event>(e));
     }
   }
 

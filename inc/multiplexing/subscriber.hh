@@ -23,6 +23,7 @@
 # include <QQueue>
 # include <QWaitCondition>
 # include <time.h>
+# include "serialization/serial.hh"
 
 namespace                        com {
   namespace                      centreon {
@@ -40,10 +41,11 @@ namespace                        com {
          *
          *  @see publisher
          */
-        class                    subscriber {
+        class                    subscriber : public com::centreon::broker::serialization::serial {
          private:
           QWaitCondition         _cv;
-          QQueue<events::event*> _events;
+          QQueue<QSharedPointer<events::event> >
+                                 _events;
           QMutex                 _mutex;
           bool                   _registered;
                                  subscriber(subscriber const& s);
@@ -54,9 +56,13 @@ namespace                        com {
                                  subscriber();
                                  ~subscriber();
           void                   close();
-          events::event*         event();
-          events::event*         event(time_t deadline);
-          void                   event(events::event* e);
+          QSharedPointer<com::centreon::broker::events::event>
+                                 deserialize();
+          QSharedPointer<com::centreon::broker::events::event>
+                                 deserialize(time_t deadline);
+          unsigned int           read(void* data, unsigned int size);
+          void                   serialize(QSharedPointer<com::centreon::broker::events::event> e);
+          unsigned int           write(void const* data, unsigned int size);
         };
       }
     }
