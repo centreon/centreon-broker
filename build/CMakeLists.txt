@@ -152,9 +152,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
-  "${SRC_DIR}/serialization/iserial.cc"
-  "${SRC_DIR}/serialization/oserial.cc"
-  "${SRC_DIR}/serialization/serial.cc"
   "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
@@ -263,10 +260,16 @@ add_executable(cbd
   "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/stream.cc"
   "${SRC_DIR}/mapping.cc"
+  "${SRC_DIR}/serialization/iserial.cc"
+  "${SRC_DIR}/serialization/oserial.cc"
+  "${SRC_DIR}/serialization/serial.cc"
   # Headers.
   "${INC_DIR}/io/factory.hh"
   "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/mapping.hh"
+  "${INC_DIR}/serialization/iserial.hh"
+  "${INC_DIR}/serialization/oserial.hh"
+  "${INC_DIR}/serialization/serial.hh"
 )
 target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 

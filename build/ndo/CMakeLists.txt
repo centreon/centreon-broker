@@ -29,12 +29,12 @@ add_library("ndo" MODULE
   "${SRC_DIR}/input.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/ostream.cc"
+  "${SRC_DIR}/output.cc"
   # Headers.
   "${INC_DIR}/ndo/acceptor.hh"
   "${INC_DIR}/ndo/factory.hh"
   "${INC_DIR}/ndo/input.hh"
   "${INC_DIR}/ndo/internal.hh"
-  "${INC_DIR}/ndo/ostream.hh"
+  "${INC_DIR}/ndo/output.hh"
 )
 set_target_properties("ndo" PROPERTIES PREFIX "")

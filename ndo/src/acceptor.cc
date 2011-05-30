@@ -17,9 +17,11 @@
 */
 
 #include <QSharedPointer>
+#include "multiplexing/publisher.hh"
 #include "multiplexing/subscriber.hh"
 #include "ndo/acceptor.hh"
 #include "ndo/input.hh"
+#include "ndo/output.hh"
 #include "processing/feeder.hh"
 #include "serialization/iserial.hh"
 #include "serialization/oserial.hh"
@@ -72,22 +74,29 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *  @param[in] ptr New connection object.
  */
 void acceptor::accept(QSharedPointer<io::stream> ptr) {
-  if (!_is_out) {
-    // Create input and objects.
-    QSharedPointer<serialization::iserial> in(new ndo::input);
-    in->read_from(ptr);
-    QSharedPointer<serialization::oserial> out(new multiplexing::subscriber);
+  // In and out objects.
+  QSharedPointer<serialization::iserial> in;
+  QSharedPointer<serialization::oserial> out;
 
-    // Feeder thread.
-    QScopedPointer<processing::feeder> feedr(new processing::feeder);
-    feedr->prepare(in, out);
-    QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
-    processing::feeder* f(feedr.take());
-    f->run();
+  // Create input and output objects.
+  if (!_is_out) {
+    in = QSharedPointer<serialization::iserial>(new ndo::input);
+    in->read_from(ptr);
+    out = QSharedPointer<serialization::oserial>(new multiplexing::publisher);
   }
   else {
-    // XXX
+    in = QSharedPointer<serialization::iserial>(new multiplexing::subscriber);
+    out = QSharedPointer<serialization::oserial>(new ndo::output);
+    out->write_to(ptr);
   }
+
+  // Feeder thread.
+  QScopedPointer<processing::feeder> feedr(new processing::feeder);
+  feedr->prepare(in, out);
+  QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
+  processing::feeder* f(feedr.take());
+  f->run();
+
   return ;
 }
 

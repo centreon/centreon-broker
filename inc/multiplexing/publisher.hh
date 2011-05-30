@@ -19,10 +19,12 @@
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH_
 # define CCB_MULTIPLEXING_PUBLISHER_HH_
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       multiplexing {
+# include "serialization/oserial.hh"
+
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        multiplexing {
         /**
          *  @class publisher publisher.hh "multiplexing/publisher.hh"
          *  @brief Publish events to registered subscribers.
@@ -32,14 +34,15 @@ namespace             com {
          *
          *  @see subscriber
          */
-        class         publisher {
+        class          publisher : public com::centreon::broker::serialization::oserial {
          public:
-                      publisher();
-                      publisher(publisher const& p);
-                      ~publisher();
-          publisher&  operator=(publisher const& p);
-          void        close();
-          void        event(events::event* e);
+                       publisher();
+                       publisher(publisher const& p);
+                       ~publisher();
+          publisher&   operator=(publisher const& p);
+          void         close();
+          void         serialize(QSharedPointer<events::event> e);
+	  unsigned int write(void const* data, unsigned int size);
         };
       }
     }

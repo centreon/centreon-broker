@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <QMutexLocker>
 #include "events/events.hh"
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "multiplexing/internal.hh"
 #include "multiplexing/publisher.hh"
@@ -46,7 +47,7 @@ publisher::publisher() {}
  *
  *  @param[in] p Unused.
  */
-publisher::publisher(publisher const& p) {
+publisher::publisher(publisher const& p) : io::ostream(p), serialization::oserial(p) {
   (void)p;
 }
 
@@ -66,7 +67,7 @@ publisher::~publisher() {}
  *  @return This object.
  */
 publisher& publisher::operator=(publisher const& p) {
-  (void)p;
+  serialization::oserial::operator=(p);
   return (*this);
 }
 
@@ -91,7 +92,7 @@ void publisher::close() {
  *
  *  @param[in] e Event to publish.
  */
-void publisher::event(events::event* e) {
+void publisher::serialize(QSharedPointer<events::event> e) {
   // Send object to every subscriber.
   {
     QMutexLocker lock(&gl_subscribersm);
@@ -108,4 +109,19 @@ void publisher::event(events::event* e) {
   e->remove_reader();
 
   return ;
+}
+
+/**
+ *  Attempt to write to a publisher.
+ *
+ *  @param[in] data Unused.
+ *  @param[in] size Unused.
+ *
+ *  @return Does not return, throw an exception.
+ */
+unsigned int publisher::write(void const* data, unsigned int size) {
+  (void)data;
+  (void)size;
+  throw (exceptions::basic() << "attempt to write to a publisher");
+  return (0);
 }

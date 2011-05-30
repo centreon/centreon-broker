@@ -1,0 +1,49 @@
+/*
+** Copyright 2009-2011 Merethis
+** This file is part of Centreon Broker.
+**
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
+**
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef CCB_NDO_OUTPUT_HH_
+# define CCB_NDO_OUTPUT_HH_
+
+# include "serialization/oserial.hh"
+
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        ndo {
+        /**
+         *  @class output output.hh "ndo/output.hh"
+         *  @brief NDO output destination.
+         *
+         *  The class converts events to an output stream using a
+         *  modified version of the NDO protocol.
+         */
+        class          output : virtual public com::centreon::broker::serialization::oserial {
+         public:
+                       output();
+                       output(output const& o);
+          virtual      ~output();
+          output&      operator=(output const& o);
+          void         serialize(QSharedPointer<com::centreon::broker::events::event> e);
+          unsigned int write(void const* data, unsigned int size);
+        };
+      }
+    }
+  }
+}
+
+#endif /* !CCB_NDO_OUTPUT_HH_ */
