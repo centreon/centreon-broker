@@ -46,8 +46,9 @@ publisher::publisher() {}
  *
  *  @param[in] p Unused.
  */
-publisher::publisher(publisher const& p)
-  : interface::destination(p) {}
+publisher::publisher(publisher const& p) {
+  (void)p;
+}
 
 /**
  *  Destructor.
@@ -65,7 +66,7 @@ publisher::~publisher() {}
  *  @return This object.
  */
 publisher& publisher::operator=(publisher const& p) {
-  interface::destination::operator=(p);
+  (void)p;
   return (*this);
 }
 

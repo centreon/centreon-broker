@@ -19,8 +19,6 @@
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH_
 # define CCB_MULTIPLEXING_PUBLISHER_HH_
 
-# include "interface/destination.hh"
-
 namespace             com {
   namespace           centreon {
     namespace         broker {
@@ -34,7 +32,7 @@ namespace             com {
          *
          *  @see subscriber
          */
-        class         publisher : public interface::destination {
+        class         publisher {
          public:
                       publisher();
                       publisher(publisher const& p);

@@ -41,9 +41,8 @@ using namespace com::centreon::broker::multiplexing;
  *
  *  @param[in] s Unused.
  */
-subscriber::subscriber(subscriber const& s)
-  : interface::destination(s),
-    interface::source(s) {
+subscriber::subscriber(subscriber const& s) {
+  (void)s;
   assert(false);
   abort();
 }

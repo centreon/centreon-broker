@@ -40,7 +40,8 @@ stream::stream(QSharedPointer<QTcpSocket> sock) : _socket(sock) {}
  *
  *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) : io::stream(s), _socket(s._socket) {}
+stream::stream(stream const& s)
+  : io::istream(s), io::ostream(s), io::stream(s), _socket(s._socket) {}
 
 /**
  *  Destructor.

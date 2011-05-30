@@ -23,8 +23,6 @@
 # include <QQueue>
 # include <QWaitCondition>
 # include <time.h>
-# include "interface/destination.hh"
-# include "interface/source.hh"
 
 namespace                        com {
   namespace                      centreon {
@@ -42,8 +40,7 @@ namespace                        com {
          *
          *  @see publisher
          */
-        class                    subscriber : public interface::destination,
-                                              public interface::source {
+        class                    subscriber {
          private:
           QWaitCondition         _cv;
           QQueue<events::event*> _events;
