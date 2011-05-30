@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,47 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "interface/destination.hh"
+#include "io/istream.hh"
 
-using namespace com::centreon::broker::interface;
-
-/**************************************
-*                                     *
-*          Protected Methods          *
-*                                     *
-**************************************/
-
-/**
- *  Default constructor.
- */
-destination::destination() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  As destination is an interface object with no data members, the copy
- *  constructor does nothing.
- *
- *  @param[in] dest Unused.
- */
-destination::destination(destination const& dest) {
-  (void)dest;
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  As destination is an interface object with no data members, the
- *  assignment operator does nothing.
- *
- *  @param[in] dest Unused.
- *
- *  @return This object.
- */
-destination& destination::operator=(destination const& dest) {
-  (void)dest;
-  return (*this);
-}
+using namespace com::centreon::broker::io;
 
 /**************************************
 *                                     *
@@ -65,6 +27,40 @@ destination& destination::operator=(destination const& dest) {
 **************************************/
 
 /**
+ *  Default constructor.
+ */
+istream::istream() {}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] i Object to copy.
+ */
+istream::istream(istream const& i) : _from(i._from) {}
+
+/**
  *  Destructor.
  */
-destination::~destination() {}
+istream::~istream() {}
+
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] i Object to copy.
+ *
+ *  @return This object.
+ */
+istream& istream::operator=(istream const& i) {
+  _from = i._from;
+  return (*this);
+}
+
+/**
+ *  Set the stream from which this stream will read.
+ *
+ *  @param[in] from Stream to read from.
+ */
+void istream::read_from(QSharedPointer<istream> from) {
+  _from = from;
+  return ;
+}

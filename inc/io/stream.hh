@@ -19,7 +19,8 @@
 #ifndef CCB_IO_STREAM_HH_
 # define CCB_IO_STREAM_HH_
 
-# include <QSharedPointer>
+# include "io/istream.hh"
+# include "io/ostream.hh"
 
 namespace                        com {
   namespace                      centreon {
@@ -31,20 +32,13 @@ namespace                        com {
          *
          *  Interface to exchange data.
          */
-        class                    stream {
-         protected:
-          QSharedPointer<stream> _from;
-          QSharedPointer<stream> _to;
-
+        class                    stream : virtual public istream,
+                                          virtual public ostream {
          public:
                                  stream();
                                  stream(stream const& s);
           virtual                ~stream();
           stream&                operator=(stream const& s);
-          virtual unsigned int   read(void* data, unsigned int size) = 0;
-          void                   read_from(QSharedPointer<stream> from);
-          virtual unsigned int   write(void const* data, unsigned int size) = 0;
-          void                   write_to(QSharedPointer<stream> to);
         };
       }
     }

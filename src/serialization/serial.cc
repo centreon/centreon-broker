@@ -16,9 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/stream.hh"
+#include "serialization/serial.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::serialization;
 
 /**************************************
 *                                     *
@@ -29,19 +30,20 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-stream::stream() {}
+serial::serial() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) : istream(s), ostream(s) {}
+serial::serial(serial const& s)
+  : io::istream(s), iserial(s), io::ostream(s), oserial(s) {}
 
 /**
  *  Destructor.
  */
-stream::~stream() {}
+serial::~serial() {}
 
 /**
  *  Assignment operator.
@@ -50,8 +52,8 @@ stream::~stream() {}
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& s) {
-  istream::operator=(s);
-  ostream::operator=(s);
+serial& serial::operator=(serial const& s) {
+  iserial::operator=(s);
+  oserial::operator=(s);
   return (*this);
 }

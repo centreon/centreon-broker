@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/stream.hh"
+#include "io/ostream.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -29,29 +29,38 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-stream::stream() {}
+ostream::ostream() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] o Object to copy.
  */
-stream::stream(stream const& s) : istream(s), ostream(s) {}
+ostream::ostream(ostream const& o) : _to(o._to) {}
 
 /**
  *  Destructor.
  */
-stream::~stream() {}
+ostream::~ostream() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] o Object to copy.
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& s) {
-  istream::operator=(s);
-  ostream::operator=(s);
+ostream& ostream::operator=(ostream const& o) {
+  _to = o._to;
   return (*this);
+}
+
+/**
+ *  Set the stream to which this stream will write.
+ *
+ *  @param[in] to Stream to write to.
+ */
+void ostream::write_to(QSharedPointer<ostream> to) {
+  _to = to;
+  return ;
 }
