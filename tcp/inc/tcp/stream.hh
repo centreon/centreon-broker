@@ -43,8 +43,9 @@ namespace              com {
                        stream(stream const& s);
                        ~stream();
           stream&      operator=(stream const& s);
-          unsigned int read(void* data, unsigned int size);
-          unsigned int write(void const* data, unsigned int size);
+          QSharedPointer<com::centreon::broker::io::data>
+                       read();
+          void         write(QSharedPointer<com::centreon::broker::io::data> d);
         };
       }
     }

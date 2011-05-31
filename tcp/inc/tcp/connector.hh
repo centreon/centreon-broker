@@ -50,7 +50,8 @@ namespace                com {
           void           close();
           void           connect(QSharedPointer<com::centreon::broker::io::stream> ptr);
           void           connect_to(QString const& host, unsigned short port);
-          void           open();
+          QSharedPointer<com::centreon::broker::io::stream>
+                         open();
         };
       }
     }

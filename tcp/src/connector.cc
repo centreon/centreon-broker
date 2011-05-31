@@ -116,7 +116,7 @@ void connector::connect_to(QString const& host, unsigned short port) {
 /**
  *  Connect to the remote host.
  */
-void connector::open() {
+QSharedPointer<io::stream> connector::open() {
   // Launch connection process.
   _socket->connectToHost(_host, _port);
 
@@ -130,7 +130,8 @@ void connector::open() {
   if (!_down.isNull()) {
     QSharedPointer<io::stream> ptr(new stream(_socket));
     _down->connect(ptr);
+    return (ptr);
   }
 
-  return ;
+  return (QSharedPointer<io::stream>());
 }

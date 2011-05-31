@@ -17,6 +17,7 @@
 */
 
 #include "exceptions/basic.hh"
+#include "io/raw.hh"
 #include "tcp/stream.hh"
 
 using namespace com::centreon::broker;
@@ -41,7 +42,7 @@ stream::stream(QSharedPointer<QTcpSocket> sock) : _socket(sock) {}
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s)
-  : io::istream(s), io::ostream(s), io::stream(s), _socket(s._socket) {}
+  : io::stream(s), _socket(s._socket) {}
 
 /**
  *  Destructor.
@@ -64,32 +65,29 @@ stream& stream::operator=(stream const& s) {
 /**
  *  Read data from the socket.
  *
- *  @param[out] data Buffer in which to read.
- *  @param[in]  size Maximum size that can be read.
- *
- *  @return Number of bytes read.
+ *  @return Data read.
  */
-unsigned int stream::read(void* data, unsigned int size) {
+QSharedPointer<io::data> stream::read() {
   _socket->waitForReadyRead(-1);
-  qint64 rb(_socket->read(static_cast<char*>(data), size));
+  char buffer[2048];
+  qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
     throw (exceptions::basic() << "TCP read error: "
              << _socket->errorString().toStdString().c_str());
-  return (rb);
+  QSharedPointer<io::raw> data(new io::raw);
+  data->append(buffer, rb);
+  return (data.staticCast<io::data>());
 }
 
 /**
  *  Write data to the socket.
  *
- *  @param[in] data Buffer to send.
- *  @param[in] size Maximum number of bytes to send.
- *
- *  @return Number of bytes written.
+ *  @param[in] d Data to write.
  */
-unsigned int stream::write(void const* data, unsigned int size) {
-  qint64 wb(_socket->write(static_cast<char const*>(data), size));
+void stream::write(QSharedPointer<io::data> d) {
+  qint64 wb(_socket->write(static_cast<char*>(d->memory()), d->size()));
   if (wb < 0)
     throw (exceptions::basic() << "TCP write error: "
              << _socket->errorString().toStdString().c_str());
-  return (wb);
+  return ;
 }
