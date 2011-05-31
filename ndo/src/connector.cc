@@ -80,18 +80,18 @@ void connector::close() {
  */
 void connector::connect(QSharedPointer<io::stream> ptr) {
   // In and out objects.
-  QSharedPointer<serialization::iserial> in;
-  QSharedPointer<serialization::oserial> out;
+  QSharedPointer<io::stream> in;
+  QSharedPointer<io::stream> out;
 
   // Create input and output objects.
   if (_is_in) {
-    in = QSharedPointer<serialization::iserial>(new ndo::input);
+    in = QSharedPointer<io::stream>(new ndo::input);
     in->read_from(ptr);
-    out = QSharedPointer<serialization::oserial>(new multiplexing::publisher);
+    out = QSharedPointer<io::stream>(new multiplexing::publisher);
   }
   else {
-    in = QSharedPointer<serialization::iserial>(new multiplexing::subscriber);
-    out = QSharedPointer<serialization::oserial>(new ndo::output);
+    in = QSharedPointer<io::stream>(new multiplexing::subscriber);
+    out = QSharedPointer<io::stream>(new ndo::output);
     out->write_to(ptr);
   }
 
@@ -101,6 +101,6 @@ void connector::connect(QSharedPointer<io::stream> ptr) {
 /**
  *  Open the connector.
  */
-void connector::open() {
-  return ;
+QSharedPointer<io::stream> connector::open() {
+  return (QSharedPointer<io::stream>());
 }

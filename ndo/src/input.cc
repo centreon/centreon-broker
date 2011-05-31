@@ -81,8 +81,7 @@ input::input() {}
  *
  *  @param[in] i Object to copy.
  */
-input::input(input const& i)
-  : io::istream(i), serialization::iserial(i) {}
+input::input(input const& i) : io::stream(i) {}
 
 /**
  *  Destructor.
@@ -97,7 +96,7 @@ input::~input() {}
  *  @return This object.
  */
 input& input::operator=(input const& i) {
-  serialization::iserial::operator=(i);
+  io::stream::operator=(i);
   return (*this);
 }
 
@@ -109,7 +108,7 @@ input& input::operator=(input const& i) {
  *
  *  @return Next available event, NULL if stream is closed.
  */
-QSharedPointer<events::event> input::deserialize() {
+QSharedPointer<io::data> input::read() {
   QScopedPointer<events::event> e;
   char const* line;
 
@@ -212,20 +211,19 @@ QSharedPointer<events::event> input::deserialize() {
           break ;
       }
       if (line)
-        return (this->deserialize());
+        return (this->read());
     }
   }
-  if (!e.isNull())
-    e->add_reader();
-  return (QSharedPointer<events::event>(e.take()));
+  return (QSharedPointer<io::data>((io::data*)(e.take())));
 }
 
 /**
- *  Read data.
+ *  Write data.
+ *
+ *  @param[in] d Object to copy.
  */
-unsigned int input::read(void* data, unsigned int size) {
-  (void)data;
-  (void)size;
-  throw (exceptions::basic() << "attempt to read from the NDO protocol");
-  return (0);
+void input::write(QSharedPointer<io::data> d) {
+  (void)d;
+  throw (exceptions::basic() << "attempt to write from an NDO input object (software bug)");
+  return ;
 }

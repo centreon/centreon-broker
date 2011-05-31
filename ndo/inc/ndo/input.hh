@@ -19,7 +19,7 @@
 #ifndef CCB_NDO_INPUT_HH_
 # define CCB_NDO_INPUT_HH_
 
-# include "serialization/iserial.hh"
+# include "io/stream.hh"
 
 namespace              com {
   namespace            centreon {
@@ -32,7 +32,7 @@ namespace              com {
          *  The class converts an input stream into events using a
          *  modified version of the NDO protocol.
          */
-        class          input : virtual public com::centreon::broker::serialization::iserial {
+        class          input : virtual public com::centreon::broker::io::stream {
          private:
           char const*  _get_line();
           template     <typename T>
@@ -43,9 +43,9 @@ namespace              com {
                        input(input const& i);
           virtual      ~input();
           input&       operator=(input const& i);
-          virtual QSharedPointer<events::event>
-                       deserialize();
-          unsigned int read(void* data, unsigned int size);
+          virtual QSharedPointer<io::data>
+                       read();
+          virtual void write(QSharedPointer<io::data> d);
         };
       }
     }

@@ -124,11 +124,8 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
   }
 
   // Create thread.
-  QScopedPointer<processing::failover> fo(new processing::failover);
-  fo->set_endpoint(endp,
-    (is_output
-       ? processing::failover::output
-       : processing::failover::input));
+  QScopedPointer<processing::failover> fo(new processing::failover(is_output));
+  fo->set_endpoint(endp);
 
   // Connect thread.
   connect(fo.data(), SIGNAL(finished()), fo.data(), SLOT(deleteLater()));

@@ -33,13 +33,19 @@ namespace                              com {
          *  Interface to exchange data.
          */
         class                          stream {
+         protected:
+          QSharedPointer<stream>       _from;
+          QSharedPointer<stream>       _to;
+
          public:
                                        stream();
                                        stream(stream const& s);
           virtual                      ~stream();
           stream&                      operator=(stream const& s);
           virtual QSharedPointer<data> read() = 0;
-          virtual void                 write(QSharedPointer<data> d);
+          void                         read_from(QSharedPointer<stream> from);
+          virtual void                 write(QSharedPointer<data> d) = 0;
+          void                         write_to(QSharedPointer<stream> to);
         };
       }
     }

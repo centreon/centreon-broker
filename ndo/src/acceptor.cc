@@ -23,9 +23,8 @@
 #include "ndo/input.hh"
 #include "ndo/output.hh"
 #include "processing/feeder.hh"
-#include "serialization/iserial.hh"
-#include "serialization/oserial.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
 
 /**************************************
@@ -75,18 +74,18 @@ acceptor& acceptor::operator=(acceptor const& a) {
  */
 void acceptor::accept(QSharedPointer<io::stream> ptr) {
   // In and out objects.
-  QSharedPointer<serialization::iserial> in;
-  QSharedPointer<serialization::oserial> out;
+  QSharedPointer<io::stream> in;
+  QSharedPointer<io::stream> out;
 
   // Create input and output objects.
   if (!_is_out) {
-    in = QSharedPointer<serialization::iserial>(new ndo::input);
+    in = QSharedPointer<io::stream>(new ndo::input);
     in->read_from(ptr);
-    out = QSharedPointer<serialization::oserial>(new multiplexing::publisher);
+    out = QSharedPointer<io::stream>(new multiplexing::publisher);
   }
   else {
-    in = QSharedPointer<serialization::iserial>(new multiplexing::subscriber);
-    out = QSharedPointer<serialization::oserial>(new ndo::output);
+    in = QSharedPointer<io::stream>(new multiplexing::subscriber);
+    out = QSharedPointer<io::stream>(new ndo::output);
     out->write_to(ptr);
   }
 
@@ -110,6 +109,6 @@ void acceptor::close() {
 /**
  *  Open the acceptor.
  */
-void acceptor::open() {
-  return ;
+QSharedPointer<io::stream> acceptor::open() {
+  return (QSharedPointer<io::stream>());
 }

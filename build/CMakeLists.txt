@@ -63,10 +63,10 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 # Event library.
 set(LIBROKER_SOURCES
   # Sources.
-#  "${SRC_DIR}/config/applier/endpoint.cc"
-#  "${SRC_DIR}/config/applier/logger.cc"
-#  "${SRC_DIR}/config/applier/modules.cc"
-#  "${SRC_DIR}/config/applier/state.cc"
+  "${SRC_DIR}/config/applier/endpoint.cc"
+  "${SRC_DIR}/config/applier/logger.cc"
+  "${SRC_DIR}/config/applier/modules.cc"
+  "${SRC_DIR}/config/applier/state.cc"
   "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"

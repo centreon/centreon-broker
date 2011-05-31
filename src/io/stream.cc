@@ -56,3 +56,23 @@ stream& stream::operator=(stream const& s) {
   (void)s;
   return (*this);
 }
+
+/**
+ *  Read from another stream.
+ *
+ *  @param[in] from Stream to read from.
+ */
+void stream::read_from(QSharedPointer<stream> from) {
+  _from = from;
+  return ;
+}
+
+/**
+ *  Write to another stream.
+ *
+ *  @param[in] to Stream to write to.
+ */
+void stream::write_to(QSharedPointer<stream> to) {
+  _to = to;
+  return ;
+}
