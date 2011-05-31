@@ -1228,7 +1228,7 @@ stream::stream(QString const& type,
 
   // Connection ID.
   QString id;
-  id.arg((qulonglong)this);
+  id.setNum((qulonglong)this, 16);
 
   // Add database connection.
   _db = QSqlDatabase::addDatabase(t, id);
@@ -1255,7 +1255,7 @@ stream::stream(QString const& type,
 stream::stream(stream const& s) : io::stream(s) {
   // Connection ID.
   QString id;
-  id.arg((qulonglong)this);
+  id.setNum((qulonglong)this, 16);
 
   // Clone database.
   _db = QSqlDatabase::cloneDatabase(s._db, id);
@@ -1274,7 +1274,7 @@ stream::stream(stream const& s) : io::stream(s) {
 stream::~stream() {
   // Connection ID.
   QString id;
-  id.arg((qulonglong)this);
+  id.setNum((qulonglong)this, 16);
 
   // Remove database connection.
   QSqlDatabase::removeDatabase(id);

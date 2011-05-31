@@ -80,9 +80,9 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_input,
                            bool is_output) const {
-  (void)is_input;
+  (void)is_output;
   QMap<QString, QString>::const_iterator it(cfg.params.find("db"));
-  return (!is_output && (it != cfg.params.end()));
+  return (!is_input && (it != cfg.params.end()));
 }
 
 /**
@@ -101,16 +101,6 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   (void)is_output;
   if (is_input)
     throw (exceptions::basic() << "SQL layer cannot act as input object");
-
-  // Find DB type.
-  QString type;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("type"));
-    if (it == cfg.params.end())
-      throw (exceptions::basic() << "no 'type' defined for SQL endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
-    type = it.value();
-  }
 
   // Find DB host.
   QString host;
@@ -154,7 +144,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Connector.
   QScopedPointer<sql::connector> c(new sql::connector);
-  c->connect_to(type, host, user, password, name);
+  c->connect_to(cfg.type, host, user, password, name);
   is_acceptor = false;
   return (c.take());
 }
