@@ -118,10 +118,9 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   unsigned short port;
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("port"));
-    if (it == cfg.params.end()) {
+    if (it == cfg.params.end())
       throw (exceptions::basic() << "no 'port' defined for TCP endpoint '"
-               << cfg.name.toStdString().c_str());
-    }
+               << cfg.name.toStdString().c_str() << "'");
     port = it.value().toUShort();
   }
 

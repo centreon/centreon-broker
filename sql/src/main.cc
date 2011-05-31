@@ -17,7 +17,7 @@
 */
 
 #include "io/protocols.hh"
-#include "ndo/factory.hh"
+#include "sql/factory.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,8 +34,8 @@ extern "C" {
   void broker_module_deinit(bool force) {
     // Decrement instance number.
     if (!--instances && !force)
-      // Deregister NDO protocol.
-      io::protocols::instance().unreg("NDO");
+      // Deregister SQL layer.
+      io::protocols::instance().unreg("SQL");
     return ;
   }
 
@@ -43,12 +43,12 @@ extern "C" {
    *  Module initialization routine.
    */
   void broker_module_init() {
-    // Increment instance number.
+    // Increment instance nuber.
     if (!instances++) {
-      // Register NDO protocol.
-      io::protocols::instance().reg("NDO",
-        ndo::factory(),
-        7,
+      // Register SQL layer.
+      io::protocols::instance().reg("SQL",
+        sql::factory(),
+        1,
         7);
     }
     return ;

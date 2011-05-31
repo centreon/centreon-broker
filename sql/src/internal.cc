@@ -22,9 +22,10 @@
 #include <QVariant>
 #include <assert.h>
 #include <stdlib.h>
-#include "interface/db/internal.hh"
+#include "sql/internal.hh"
 
-using namespace interface::db;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::sql;
 
 /**************************************
 *                                     *
@@ -118,7 +119,7 @@ static void get_string(T const& t,
                        QSqlQuery& q) {
   std::string field(":");
   field.append(name);
-  q.bindValue(field.c_str(), QVariant((t.*(member.S)).c_str()));
+  q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
   return ;
 }
 
@@ -198,88 +199,88 @@ static void to_base(QSqlQuery& q, T const& t) {
 **************************************/
 
 template <> std::list<std::pair<std::string, getter_setter<events::acknowledgement> > >
-  interface::db::db_mapped_type<events::acknowledgement>::list =
+  sql::db_mapped_type<events::acknowledgement>::list =
     std::list<std::pair<std::string, getter_setter<events::acknowledgement> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::comment> > >
-  interface::db::db_mapped_type<events::comment>::list =
+  sql::db_mapped_type<events::comment>::list =
     std::list<std::pair<std::string, getter_setter<events::comment> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::custom_variable> > >
-  interface::db::db_mapped_type<events::custom_variable>::list =
+  sql::db_mapped_type<events::custom_variable>::list =
     std::list<std::pair<std::string, getter_setter<events::custom_variable> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::custom_variable_status> > >
-  interface::db::db_mapped_type<events::custom_variable_status>::list =
+  sql::db_mapped_type<events::custom_variable_status>::list =
     std::list<std::pair<std::string, getter_setter<events::custom_variable_status> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::downtime> > >
-  interface::db::db_mapped_type<events::downtime>::list =
+  sql::db_mapped_type<events::downtime>::list =
     std::list<std::pair<std::string, getter_setter<events::downtime> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::event_handler> > >
-  interface::db::db_mapped_type<events::event_handler>::list =
+  sql::db_mapped_type<events::event_handler>::list =
     std::list<std::pair<std::string, getter_setter<events::event_handler> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::flapping_status> > >
-  interface::db::db_mapped_type<events::flapping_status>::list =
+  sql::db_mapped_type<events::flapping_status>::list =
     std::list<std::pair<std::string, getter_setter<events::flapping_status> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host> > >
-  interface::db::db_mapped_type<events::host>::list =
+  sql::db_mapped_type<events::host>::list =
     std::list<std::pair<std::string, getter_setter<events::host> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_check> > >
-  interface::db::db_mapped_type<events::host_check>::list =
+  sql::db_mapped_type<events::host_check>::list =
     std::list<std::pair<std::string, getter_setter<events::host_check> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_dependency> > >
-  interface::db::db_mapped_type<events::host_dependency>::list =
+  sql::db_mapped_type<events::host_dependency>::list =
     std::list<std::pair<std::string, getter_setter<events::host_dependency> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_group> > >
-  interface::db::db_mapped_type<events::host_group>::list =
+  sql::db_mapped_type<events::host_group>::list =
     std::list<std::pair<std::string, getter_setter<events::host_group> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_group_member> > >
-  interface::db::db_mapped_type<events::host_group_member>::list =
+  sql::db_mapped_type<events::host_group_member>::list =
     std::list<std::pair<std::string, getter_setter<events::host_group_member> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_parent> > >
-  interface::db::db_mapped_type<events::host_parent>::list =
+  sql::db_mapped_type<events::host_parent>::list =
     std::list<std::pair<std::string, getter_setter<events::host_parent> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_state> > >
-  interface::db::db_mapped_type<events::host_state>::list =
+  sql::db_mapped_type<events::host_state>::list =
     std::list<std::pair<std::string, getter_setter<events::host_state> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::host_status> > >
-  interface::db::db_mapped_type<events::host_status>::list =
+  sql::db_mapped_type<events::host_status>::list =
     std::list<std::pair<std::string, getter_setter<events::host_status> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::instance> > >
-  interface::db::db_mapped_type<events::instance>::list =
+  sql::db_mapped_type<events::instance>::list =
     std::list<std::pair<std::string, getter_setter<events::instance> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::instance_status> > >
-  interface::db::db_mapped_type<events::instance_status>::list =
+  sql::db_mapped_type<events::instance_status>::list =
     std::list<std::pair<std::string, getter_setter<events::instance_status> > >();
-template <> std::list<std::pair<std::string, getter_setter<events::issue> > >
-  interface::db::db_mapped_type<events::issue>::list =
-    std::list<std::pair<std::string, getter_setter<events::issue> > >();
+/*template <> std::list<std::pair<std::string, getter_setter<events::issue> > >
+  sql::db_mapped_type<events::issue>::list =
+  std::list<std::pair<std::string, getter_setter<events::issue> > >();*/
 template <> std::list<std::pair<std::string, getter_setter<events::log_entry> > >
-  interface::db::db_mapped_type<events::log_entry>::list =
+  sql::db_mapped_type<events::log_entry>::list =
     std::list<std::pair<std::string, getter_setter<events::log_entry> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::module> > >
-  interface::db::db_mapped_type<events::module>::list =
+  sql::db_mapped_type<events::module>::list =
     std::list<std::pair<std::string, getter_setter<events::module> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::notification> > >
-  interface::db::db_mapped_type<events::notification>::list =
+  sql::db_mapped_type<events::notification>::list =
     std::list<std::pair<std::string, getter_setter<events::notification> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service> > >
-  interface::db::db_mapped_type<events::service>::list =
+  sql::db_mapped_type<events::service>::list =
     std::list<std::pair<std::string, getter_setter<events::service> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_check> > >
-  interface::db::db_mapped_type<events::service_check>::list =
+  sql::db_mapped_type<events::service_check>::list =
     std::list<std::pair<std::string, getter_setter<events::service_check> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_dependency> > >
-  interface::db::db_mapped_type<events::service_dependency>::list =
+  sql::db_mapped_type<events::service_dependency>::list =
     std::list<std::pair<std::string, getter_setter<events::service_dependency> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_group> > >
-  interface::db::db_mapped_type<events::service_group>::list =
+  sql::db_mapped_type<events::service_group>::list =
     std::list<std::pair<std::string, getter_setter<events::service_group> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_group_member> > >
-  interface::db::db_mapped_type<events::service_group_member>::list =
+  sql::db_mapped_type<events::service_group_member>::list =
     std::list<std::pair<std::string, getter_setter<events::service_group_member> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_state> > >
-  interface::db::db_mapped_type<events::service_state>::list =
+  sql::db_mapped_type<events::service_state>::list =
     std::list<std::pair<std::string, getter_setter<events::service_state> > >();
 template <> std::list<std::pair<std::string, getter_setter<events::service_status> > >
-  interface::db::db_mapped_type<events::service_status>::list =
+  sql::db_mapped_type<events::service_status>::list =
     std::list<std::pair<std::string, getter_setter<events::service_status> > >();
 
 /**************************************
@@ -293,7 +294,7 @@ template <> std::list<std::pair<std::string, getter_setter<events::service_statu
  *
  *  Initialize DB mappings.
  */
-void interface::db::initialize() {
+void sql::initialize() {
   static_init<events::acknowledgement>();
   static_init<events::comment>();
   static_init<events::custom_variable>();
@@ -311,7 +312,7 @@ void interface::db::initialize() {
   static_init<events::host_status>();
   static_init<events::instance>();
   static_init<events::instance_status>();
-  static_init<events::issue>();
+  //static_init<events::issue>();
   static_init<events::log_entry>();
   static_init<events::module>();
   static_init<events::notification>();
@@ -464,10 +465,10 @@ QSqlQuery& operator<<(QSqlQuery& q, events::instance_status const& ps) {
 /**
  *  ORM operator for issue.
  */
-QSqlQuery& operator<<(QSqlQuery& q, events::issue const& i) {
+/*QSqlQuery& operator<<(QSqlQuery& q, events::issue const& i) {
   to_base(q, i);
   return (q);
-}
+  }*/
 
 /**
  *  ORM operator for log_entry.

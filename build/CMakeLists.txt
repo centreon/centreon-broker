@@ -283,5 +283,8 @@ target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 # NDO module.
 add_subdirectory("ndo")
 
+# SQL module.
+add_subdirectory("sql")
+
 # TCP module.
 add_subdirectory("tcp")
