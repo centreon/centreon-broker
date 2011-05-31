@@ -43,9 +43,7 @@ using namespace com::centreon::broker::multiplexing;
  *
  *  @param[in] s Unused.
  */
-subscriber::subscriber(subscriber const& s)
-  : io::istream(), serialization::iserial(), io::ostream(), serialization::oserial(), serialization::serial() {
-  (void)s;
+subscriber::subscriber(subscriber const& s) : io::stream(s) {
   assert(false);
   abort();
 }
@@ -72,10 +70,7 @@ subscriber& subscriber::operator=(subscriber const& s) {
  */
 void subscriber::clean() {
   QMutexLocker lock(&_mutex);
-  while (!_events.isEmpty()) {
-    QSharedPointer<events::event> event(_events.dequeue());
-    event->remove_reader();
-  }
+  _events.clear();
   return ;
 }
 
@@ -118,8 +113,8 @@ void subscriber::close() {
  *
  *  @return Next available event.
  */
-QSharedPointer<events::event> subscriber::deserialize() {
-  return (this->deserialize(-1));
+QSharedPointer<io::data> subscriber::read() {
+  return (this->read(-1));
 }
 
 /**
@@ -130,8 +125,8 @@ QSharedPointer<events::event> subscriber::deserialize() {
  *
  *  @return Next available event, NULL if timeout occured.
  */
-QSharedPointer<events::event> subscriber::deserialize(time_t deadline) {
-  QSharedPointer<events::event> event;
+QSharedPointer<io::data> subscriber::read(time_t deadline) {
+  QSharedPointer<io::data> event;
   QMutexLocker lock(&_mutex);
   if (_registered) {
     if (_events.empty()) {
@@ -140,28 +135,13 @@ QSharedPointer<events::event> subscriber::deserialize(time_t deadline) {
       else
         _cv.wait(&_mutex, deadline);
       if (!_events.empty()) {
-        event = QSharedPointer<events::event>(_events.dequeue());
+        event = _events.dequeue();
       }
     }
     else
-      event = QSharedPointer<events::event>(_events.dequeue());
+      event = _events.dequeue();
   }
   return (event);
-}
-
-/**
- *  Try to read from the subscriber.
- *
- *  @param[in] data Unused.
- *  @param[in] size Unused.
- *
- *  @return Does not return, throw an exception.
- */
-unsigned int subscriber::read(void* data, unsigned int size) {
-  (void)data;
-  (void)size;
-  throw (exceptions::basic() << "attempt to read from a subscriber");
-  return (0);
 }
 
 /**
@@ -169,24 +149,9 @@ unsigned int subscriber::read(void* data, unsigned int size) {
  *
  *  @param[in] event Event to add.
  */
-void subscriber::serialize(QSharedPointer<events::event> event) {
+void subscriber::write(QSharedPointer<io::data> event) {
   QMutexLocker lock(&_mutex);
   _events.enqueue(event);
   _cv.wakeOne();
   return ;
-}
-
-/**
- *  Try to write to the subscriber.
- *
- *  @param[in] data Unused.
- *  @param[in] size Unused.
- *
- *  @return Does not return, throw an exception.
- */
-unsigned int subscriber::write(void const* data, unsigned int size) {
-  (void)data;
-  (void)size;
-  throw (exceptions::basic() << "attempt to write to a subscriber");
-  return (0);
 }

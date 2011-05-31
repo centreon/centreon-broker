@@ -21,9 +21,7 @@
 
 # include <QSharedPointer>
 # include <QThread>
-# include "exceptions/basic.hh"
-# include "serialization/iserial.hh"
-# include "serialization/oserial.hh"
+# include "io/stream.hh"
 
 namespace         com {
   namespace       centreon {
@@ -39,9 +37,9 @@ namespace         com {
           Q_OBJECT;
 
          private:
-          QSharedPointer<com::centreon::broker::serialization::iserial>
+          QSharedPointer<com::centreon::broker::io::stream>
                   _in;
-          QSharedPointer<com::centreon::broker::serialization::oserial>
+          QSharedPointer<com::centreon::broker::io::stream>
                   _out;
 
          public:
@@ -49,8 +47,8 @@ namespace         com {
                   feeder(feeder const& f);
                   ~feeder();
           feeder& operator=(feeder const& f);
-          void    prepare(QSharedPointer<com::centreon::broker::serialization::iserial> in,
-                    QSharedPointer<com::centreon::broker::serialization::oserial> out);
+          void    prepare(QSharedPointer<com::centreon::broker::io::stream> in,
+                    QSharedPointer<com::centreon::broker::io::stream> out);
           void    run();
         };
       }

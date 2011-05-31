@@ -64,8 +64,8 @@ feeder& feeder::operator=(feeder const& f) {
  *  @param[in] in  Input object.
  *  @param[in] out Output object.
  */
-void feeder::prepare(QSharedPointer<serialization::iserial> in,
-                     QSharedPointer<serialization::oserial> out) {
+void feeder::prepare(QSharedPointer<io::stream> in,
+                     QSharedPointer<io::stream> out) {
   _in = in;
   _out = out;
   return ;
@@ -81,10 +81,11 @@ void feeder::run() {
     if (_out.isNull())
       throw (exceptions::basic() << "could not feed with empty output");
     while (true) {
-      QSharedPointer<events::event> e(_in->deserialize());
-      if (e.isNull())
+      QSharedPointer<io::data> data;
+      data = _in->read();
+      if (data.isNull() || !data->size())
         break ;
-      _out->serialize(e);
+      _out->write(data);
     }
   }
   catch (...) {

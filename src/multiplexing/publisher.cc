@@ -47,9 +47,7 @@ publisher::publisher() {}
  *
  *  @param[in] p Unused.
  */
-publisher::publisher(publisher const& p) : io::ostream(p), serialization::oserial(p) {
-  (void)p;
-}
+publisher::publisher(publisher const& p) : io::stream(p) {}
 
 /**
  *  Destructor.
@@ -67,20 +65,18 @@ publisher::~publisher() {}
  *  @return This object.
  */
 publisher& publisher::operator=(publisher const& p) {
-  serialization::oserial::operator=(p);
+  io::stream::operator=(p);
   return (*this);
 }
 
 /**
- *  @brief Prevent any event to be sent without error.
+ *  Try to read.
  *
- *  In theory close() should prevent any event to be sent through the
- *  event(events::event*) method without error. However for performance
- *  purposes, no check is actually performed and therefore this method
- *  does nothing.
+ *  @param[in] d Unused.
  */
-void publisher::close() {
-  return ;
+QSharedPointer<io::data> publisher::read() {
+  throw (exceptions::basic() << "tried to read from a publisher (software bug)");
+  return (QSharedPointer<io::data>());
 }
 
 /**
@@ -92,36 +88,16 @@ void publisher::close() {
  *
  *  @param[in] e Event to publish.
  */
-void publisher::serialize(QSharedPointer<events::event> e) {
+void publisher::write(QSharedPointer<io::data> e) {
   // Send object to every subscriber.
   {
     QMutexLocker lock(&gl_subscribersm);
     for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
            end = gl_subscribers.end();
          it != end;
-         ++it) {
-      e->add_reader();
-      (*it)->serialize(QSharedPointer<events::event>(e));
-    }
+         ++it)
+      (*it)->write(e);
   }
 
-  // Self deregistration.
-  e->remove_reader();
-
   return ;
-}
-
-/**
- *  Attempt to write to a publisher.
- *
- *  @param[in] data Unused.
- *  @param[in] size Unused.
- *
- *  @return Does not return, throw an exception.
- */
-unsigned int publisher::write(void const* data, unsigned int size) {
-  (void)data;
-  (void)size;
-  throw (exceptions::basic() << "attempt to write to a publisher");
-  return (0);
 }

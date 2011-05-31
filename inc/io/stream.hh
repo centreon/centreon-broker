@@ -19,26 +19,27 @@
 #ifndef CCB_IO_STREAM_HH_
 # define CCB_IO_STREAM_HH_
 
-# include "io/istream.hh"
-# include "io/ostream.hh"
+# include <QSharedPointer>
+# include "io/data.hh"
 
-namespace                        com {
-  namespace                      centreon {
-    namespace                    broker {
-      namespace                  io {
+namespace                              com {
+  namespace                            centreon {
+    namespace                          broker {
+      namespace                        io {
         /**
          *  @class stream stream.hh "io/stream.hh"
          *  @brief Class used to exchange data.
          *
          *  Interface to exchange data.
          */
-        class                    stream : virtual public istream,
-                                          virtual public ostream {
+        class                          stream {
          public:
-                                 stream();
-                                 stream(stream const& s);
-          virtual                ~stream();
-          stream&                operator=(stream const& s);
+                                       stream();
+                                       stream(stream const& s);
+          virtual                      ~stream();
+          stream&                      operator=(stream const& s);
+          virtual QSharedPointer<data> read() = 0;
+          virtual void                 write(QSharedPointer<data> d);
         };
       }
     }

@@ -19,6 +19,9 @@
 #ifndef CCB_IO_ENDPOINT_HH_
 # define CCB_IO_ENDPOINT_HH_
 
+# include <QSharedPointer>
+# include "io/stream.hh"
+
 namespace              com {
   namespace            centreon {
     namespace          broker {
@@ -36,7 +39,8 @@ namespace              com {
           virtual      ~endpoint();
           endpoint&    operator=(endpoint const& e);
           virtual void close() = 0;
-          virtual void open() = 0;
+          virtual QSharedPointer<stream>
+                       open() = 0;
         };
       }
     }

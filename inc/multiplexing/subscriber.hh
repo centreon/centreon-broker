@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,14 +16,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_SUBSCRIBER_H_
-# define CCB_MULTIPLEXING_SUBSCRIBER_H_
+#ifndef CCB_MULTIPLEXING_SUBSCRIBER_HH_
+# define CCB_MULTIPLEXING_SUBSCRIBER_HH_
 
 # include <QMutex>
 # include <QQueue>
 # include <QWaitCondition>
 # include <time.h>
-# include "serialization/serial.hh"
+# include "io/stream.hh"
 
 namespace                        com {
   namespace                      centreon {
@@ -41,28 +41,26 @@ namespace                        com {
          *
          *  @see publisher
          */
-        class                    subscriber : public com::centreon::broker::serialization::serial {
+        class            subscriber : public com::centreon::broker::io::stream {
          private:
-          QWaitCondition         _cv;
-          QQueue<QSharedPointer<events::event> >
-                                 _events;
-          QMutex                 _mutex;
-          bool                   _registered;
-                                 subscriber(subscriber const& s);
-          subscriber&            operator=(subscriber const& s);
-          void                   clean();
+          QWaitCondition _cv;
+          QQueue<QSharedPointer<com::centreon::broker::io::data> >
+                         _events;
+          QMutex         _mutex;
+          bool           _registered;
+                         subscriber(subscriber const& s);
+          subscriber&    operator=(subscriber const& s);
+          void           clean();
 
          public:
-                                 subscriber();
-                                 ~subscriber();
-          void                   close();
-          QSharedPointer<com::centreon::broker::events::event>
-                                 deserialize();
-          QSharedPointer<com::centreon::broker::events::event>
-                                 deserialize(time_t deadline);
-          unsigned int           read(void* data, unsigned int size);
-          void                   serialize(QSharedPointer<com::centreon::broker::events::event> e);
-          unsigned int           write(void const* data, unsigned int size);
+                         subscriber();
+                         ~subscriber();
+          void           close();
+          QSharedPointer<com::centreon::broker::io::data>
+                         read();
+          QSharedPointer<com::centreon::broker::io::data>
+                         read(time_t deadline);
+          void           write(QSharedPointer<com::centreon::broker::io::data> d);
         };
       }
     }

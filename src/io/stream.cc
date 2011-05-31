@@ -36,7 +36,9 @@ stream::stream() {}
  *
  *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) : istream(s), ostream(s) {}
+stream::stream(stream const& s) {
+  (void)s;
+}
 
 /**
  *  Destructor.
@@ -51,7 +53,6 @@ stream::~stream() {}
  *  @return This object.
  */
 stream& stream::operator=(stream const& s) {
-  istream::operator=(s);
-  ostream::operator=(s);
+  (void)s;
   return (*this);
 }
