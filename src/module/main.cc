@@ -21,7 +21,6 @@
 #include <stddef.h>
 #include "config/parser.hh"
 #include "config/state.hh"
-#include "init.hh"
 #include "logging/logging.hh"
 #include "logging/syslogger.hh"
 #include "module/callbacks.hh"
@@ -128,9 +127,6 @@ extern "C" {
     (void)reason;
     try {
       deregister_callbacks();
-
-      // Release allocated memory.
-      deinit();
     }
     // Avoid exception propagation in C code.
     catch (...) {}
@@ -183,9 +179,6 @@ extern "C" {
       "cb2db.");
 
     try {
-      // Initialize necessary structures.
-      init();
-
       // Set configuration file.
       if (args)
         module::gl_configuration_file = args;
