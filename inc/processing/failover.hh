@@ -36,7 +36,7 @@ namespace              com {
          */
         class          failover : public QThread,
                                   public com::centreon::broker::io::stream {
-          Q_OBJECT;
+          Q_OBJECT
 
          private:
           QSharedPointer<com::centreon::broker::io::stream>

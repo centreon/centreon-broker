@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "exceptions/basic.hh"
 #include "storage/factory.hh"
 
 using namespace com::centreon::broker;
@@ -95,4 +96,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  // Check that endpoint should not be an input.
+  if (is_input)
+    throw (exceptions::basic() << "cannot create an input storage endpoint");
+
 }

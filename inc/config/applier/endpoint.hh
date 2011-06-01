@@ -37,7 +37,7 @@ namespace                    com {
            *  Apply the configuration of the input and output endpoints.
            */
           class              endpoint : public QObject {
-            Q_OBJECT;
+            Q_OBJECT
 
            private:
             QMap<config::endpoint, com::centreon::broker::processing::failover*>

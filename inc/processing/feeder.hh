@@ -34,7 +34,7 @@ namespace         com {
          *  Take events from a source and send them to a destination.
          */
         class     feeder : public QThread {
-          Q_OBJECT;
+          Q_OBJECT
 
          private:
           QSharedPointer<com::centreon::broker::io::stream>
