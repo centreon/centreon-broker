@@ -24,9 +24,17 @@ include_directories("${INC_DIR}")
 # Storage module.
 add_library("storage" MODULE
   # Sources.
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/parser.cc"
+  "${SRC_DIR}/perfdata.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
+  "${INC_DIR}/storage/connector.hh"
   "${INC_DIR}/storage/factory.hh"
+  "${INC_DIR}/storage/parser.hh"
+  "${INC_DIR}/storage/perfdata.hh"
+  "${INC_DIR}/storage/stream.hh"
 )
 set_target_properties("storage" PROPERTIES PREFIX "")

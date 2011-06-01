@@ -16,11 +16,37 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QScopedPointer>
 #include "exceptions/basic.hh"
+#include "storage/connector.hh"
 #include "storage/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Find a parameter in configuration.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Properties to get.
+ *
+ *  @return Properties value.
+ */
+static QString const& find_param(config::endpoint const& cfg,
+                                 QString const& key) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (it == cfg.params.end())
+    throw (exceptions::basic() << "no '" << key.toStdString().c_str()
+             << "' defined for storage endpoint '"
+             << cfg.name.toStdString().c_str());
+  return (it.value());
+}
 
 /**************************************
 *                                     *
@@ -96,8 +122,38 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_output;
+
   // Check that endpoint should not be an input.
   if (is_input)
     throw (exceptions::basic() << "cannot create an input storage endpoint");
 
+  // Find centreon DB parameters.
+  QString centreon_type(find_param(cfg, "centreon_type"));
+  QString centreon_host(find_param(cfg, "centreon_host"));
+  QString centreon_user(find_param(cfg, "centreon_user"));
+  QString centreon_password(find_param(cfg, "centreon_password"));
+  QString centreon_db(find_param(cfg, "centreon_db"));
+
+  // Find storage DB parameters.
+  QString storage_type(find_param(cfg, "storage_type"));
+  QString storage_host(find_param(cfg, "storage_host"));
+  QString storage_user(find_param(cfg, "storage_user"));
+  QString storage_password(find_param(cfg, "storage_password"));
+  QString storage_db(find_param(cfg, "storage_db"));
+
+  // Connector.
+  QScopedPointer<storage::connector> c(new storage::connector);
+  c->connect_to(centreon_type,
+    centreon_host,
+    centreon_user,
+    centreon_password,
+    centreon_db,
+    storage_type,
+    storage_host,
+    storage_user,
+    storage_password,
+    storage_db);
+  is_acceptor = false;
+  return (c.take());
 }
