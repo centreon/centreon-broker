@@ -94,6 +94,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/events/log_entry.cc"
   "${SRC_DIR}/events/module.cc"
   "${SRC_DIR}/events/notification.cc"
+  "${SRC_DIR}/events/perfdata.cc"
   "${SRC_DIR}/events/service.cc"
   "${SRC_DIR}/events/service_check.cc"
   "${SRC_DIR}/events/service_dependency.cc"

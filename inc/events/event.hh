@@ -98,6 +98,7 @@ namespace              com {
             LOG,
             MODULE,
             NOTIFICATION,
+            PERFDATA,
             SERVICE,
             SERVICECHECK,
             SERVICEDEPENDENCY,

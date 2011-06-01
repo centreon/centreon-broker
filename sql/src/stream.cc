@@ -61,6 +61,7 @@ void (stream::* stream::processing_table[])(events::event const&) = {
   &stream::_process_log,                    // LOG
   &stream::_process_module,                 // MODULE
   &stream::_process_notification,           // NOTIFICATION
+  NULL,                                     // PERFDATA
   &stream::_process_service,                // SERVICE
   &stream::_process_service_check,          // SERVICECHECK
   &stream::_process_service_dependency,     // SERVICEDEPENDENCY
