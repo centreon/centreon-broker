@@ -18,6 +18,7 @@
 
 #include "io/protocols.hh"
 #include "ndo/factory.hh"
+#include "ndo/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -50,6 +51,8 @@ extern "C" {
         ndo::factory(),
         7,
         7);
+      // Initialize mappings.
+      ndo::initialize();
     }
     return ;
   }

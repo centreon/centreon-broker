@@ -18,6 +18,7 @@
 
 #include "io/protocols.hh"
 #include "sql/factory.hh"
+#include "sql/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -44,12 +45,15 @@ extern "C" {
    */
   void broker_module_init() {
     // Increment instance number.
-    if (!instances++)
+    if (!instances++) {
       // Register SQL layer.
       io::protocols::instance().reg("SQL",
         sql::factory(),
         1,
         7);
+      // Initialize mappings.
+      sql::initialize();
+    }
     return ;
   }
 }

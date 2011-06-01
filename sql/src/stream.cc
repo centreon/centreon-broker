@@ -1190,9 +1190,9 @@ void stream::_process_service_status(events::event const& e) {
 /**
  *  Constructor.
  *
- *  @param[in] type Database type.
- *  @param[in] host Database host.
- *  @param[in] user User.
+ *  @param[in] type     Database type.
+ *  @param[in] host     Database host.
+ *  @param[in] user     User.
  *  @param[in] password Password.
  *  @param[in] db       Database name.
  */
