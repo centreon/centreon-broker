@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -40,12 +40,12 @@ void notification::_internal_copy(notification const& n) {
   end_time = n.end_time;
   escalated = n.escalated;
   host_id = n.host_id;
+  notification_type = n.notification_type;
   output = n.output;
   reason_type = n.reason_type;
   service_id = n.service_id;
   start_time = n.start_time;
   state = n.state;
-  type = n.type;
   return ;
 }
 
@@ -63,11 +63,11 @@ notification::notification()
     end_time(0),
     escalated(false),
     host_id(0),
+    notification_type(0),
     reason_type(0),
     service_id(0),
     start_time(0),
-    state(0),
-    type(0) {}
+    state(0) {}
 
 /**
  *  Copy constructor.
@@ -101,6 +101,6 @@ notification& notification::operator=(notification const& n) {
  *
  *  @return NOTIFICATION.
  */
-int notification::get_type() const {
+unsigned int notification::type() const {
   return (NOTIFICATION);
 }

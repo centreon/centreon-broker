@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -55,7 +55,7 @@ namespace                  com {
                            acknowledgement(acknowledgement const& ack);
                            ~acknowledgement();
           acknowledgement& operator=(acknowledgement const& ack);
-          int              get_type() const;
+          unsigned int     type() const;
         };
       }
     }

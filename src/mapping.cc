@@ -82,6 +82,10 @@ static mapped_data<comment> const comment_mapping[] = {
     NDO_DATA_AUTHORNAME,
     "author"),
   mapped_data<comment>(
+    &comment::comment_type,
+    NDO_DATA_COMMENTTYPE,
+    "type"),
+  mapped_data<comment>(
     &comment::deletion_time,
     NDO_DATA_ENDTIME,
     "deletion_time"),
@@ -129,10 +133,6 @@ static mapped_data<comment> const comment_mapping[] = {
     NDO_DATA_SOURCE,
     "source"),
   mapped_data<comment>(
-    &comment::type,
-    NDO_DATA_COMMENTTYPE,
-    "type"),
-  mapped_data<comment>(
     &comment::data,
     NDO_DATA_COMMENT,
     "data"),
@@ -160,13 +160,13 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
     "service_id",
     true),
   mapped_data<custom_variable>(
-    &custom_variable::type,
-    NDO_DATA_TYPE,
-    "type"),
-  mapped_data<custom_variable>(
     &custom_variable::update_time,
     NDO_DATA_ENTRYTIME,
     "update_time"),
+  mapped_data<custom_variable>(
+    &custom_variable::var_type,
+    NDO_DATA_TYPE,
+    "type"),
   mapped_data<custom_variable>(
     &custom_variable::value,
     NDO_DATA_ACTIVESERVICECHECKSENABLED,
@@ -292,6 +292,10 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
     NDO_DATA_EXECUTIONTIME,
     "execution_time"),
   mapped_data<event_handler>(
+    &event_handler::handler_type,
+    NDO_DATA_TYPE,
+    "type"),
+  mapped_data<event_handler>(
     &event_handler::host_id,
     NDO_DATA_HOST,
     "host_id",
@@ -322,10 +326,6 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
     NDO_DATA_TIMEOUT,
     "timeout"),
   mapped_data<event_handler>(
-    &event_handler::type,
-    NDO_DATA_TYPE,
-    "type"),
-  mapped_data<event_handler>(
     &event_handler::command_args,
     NDO_DATA_COMMANDARGS,
     "command_args"),
@@ -354,6 +354,10 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
     &flapping_status::event_type,
     NDO_DATA_ENTRYTYPE,
     "event_type"),
+  mapped_data<flapping_status>(
+    &flapping_status::flapping_type,
+    NDO_DATA_TYPE,
+    "type"),
   mapped_data<flapping_status>(
     &flapping_status::high_threshold,
     NDO_DATA_HIGHTHRESHOLD,
@@ -384,10 +388,6 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
     NDO_DATA_SERVICE,
     "service_id",
     true),
-  mapped_data<flapping_status>(
-    &flapping_status::type,
-    NDO_DATA_TYPE,
-    "type"),
   mapped_data<flapping_status>()
 };
 
@@ -1283,6 +1283,10 @@ static mapped_data<log_entry> log_mapping[] = {
     NDO_DATA_DURATION,
     NULL),
   mapped_data<log_entry>(
+    &log_entry::log_type,
+    NDO_DATA_TYPE,
+    "type"),
+  mapped_data<log_entry>(
     &log_entry::msg_type,
     NDO_DATA_ENTRYTYPE,
     "msg_type"),
@@ -1311,10 +1315,6 @@ static mapped_data<log_entry> log_mapping[] = {
     &log_entry::status,
     NDO_DATA_CURRENTSTATE,
     "status"),
-  mapped_data<log_entry>(
-    &log_entry::type,
-    NDO_DATA_TYPE,
-    "type"),
   mapped_data<log_entry>(
     &log_entry::output,
     NDO_DATA_OUTPUT,
@@ -1368,6 +1368,10 @@ static mapped_data<notification> const notification_mapping[] = {
     "host_id",
     true),
   mapped_data<notification>(
+    &notification::notification_type,
+    NDO_DATA_NOTIFICATIONTYPE,
+    "type"),
+  mapped_data<notification>(
     &notification::reason_type,
     NDO_DATA_NOTIFICATIONREASON,
     "reason_type"),
@@ -1384,10 +1388,6 @@ static mapped_data<notification> const notification_mapping[] = {
     &notification::state,
     NDO_DATA_STATE,
     "state"),
-  mapped_data<notification>(
-    &notification::type,
-    NDO_DATA_NOTIFICATIONTYPE,
-    "type"),
   mapped_data<notification>(
     &notification::ack_author,
     NDO_DATA_ACKAUTHOR,

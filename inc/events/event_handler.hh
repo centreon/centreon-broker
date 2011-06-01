@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -44,6 +44,7 @@ namespace                com {
           short          early_timeout;
           time_t         end_time;
           double         execution_time;
+          short          handler_type;
           int            host_id;
           QString        output;
           short          return_code;
@@ -52,12 +53,11 @@ namespace                com {
           short          state;
           short          state_type;
           short          timeout;
-          short          type;
                          event_handler();
                          event_handler(event_handler const& eh);
                          ~event_handler();
           event_handler& operator=(event_handler const& eh);
-          int            get_type() const;
+          unsigned int   type() const;
         };
       }
     }

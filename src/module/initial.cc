@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,17 +14,14 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <memory>
 #include <stdlib.h>
 #include <string.h>
-#include "config/globals.hh"
 #include "events/events.hh"
-#include "initial.hh"
 #include "logging/logging.hh"
+#include "module/initial.hh"
 #include "module/internal.hh"
 #include "nagios/objects.h"
 
@@ -37,6 +34,9 @@ extern "C" {
   extern servicedependency* servicedependency_list;
   extern servicegroup* servicegroup_list;
 }
+
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::module;
 
 /**************************************
 *                                     *
@@ -62,7 +62,7 @@ static void send_custom_variables_list() {
       // Send all custom variables.
       for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
         if (cv->variable_name && strcmp(cv->variable_name, "HOST_ID")) {
-          std::auto_ptr<events::custom_variable> c(new events::custom_variable);
+          QSharedPointer<events::custom_variable> c(new events::custom_variable);
           c->host_id = host_id;
           c->modified = false;
           // c->type = XXX;
@@ -74,10 +74,8 @@ static void send_custom_variables_list() {
 
           // Send custom variable event.
           logging::debug << logging::LOW << "  new custom variable '"
-                         << c->name.c_str() << "'";
-          c->add_reader();
-          gl_publisher.event(c.get());
-          c.release();
+                         << c->name.toStdString().c_str() << "'";
+          gl_publisher.write(c.staticCast<io::data>());
         }
     }
   }
@@ -96,7 +94,7 @@ static void send_custom_variables_list() {
         if (cv->variable_name
             && strcmp(cv->variable_name, "HOST_ID")
             && strcmp(cv->variable_name, "SERVICE_ID")) {
-          std::auto_ptr<events::custom_variable> c(new events::custom_variable);
+          QSharedPointer<events::custom_variable> c(new events::custom_variable);
           c->host_id = host_id;
           c->modified = false;
           c->service_id = service_id;
@@ -109,10 +107,8 @@ static void send_custom_variables_list() {
 
           // Send custom variable event.
           logging::debug << logging::LOW << "  new custom variable '"
-                         << c->name.c_str() << "'";
-          c->add_reader();
-          gl_publisher.event(c.get());
-          c.release();
+                         << c->name.toStdString().c_str() << "'";
+          gl_publisher.write(c.staticCast<io::data>());
         }
     }
   }
@@ -134,7 +130,7 @@ static void send_host_dependencies_list() {
 
   // Loop through all dependencies.
   for (hostdependency* hd = hostdependency_list; hd; hd = hd->next) {
-    std::auto_ptr<events::host_dependency> host_dependency(
+    QSharedPointer<events::host_dependency> host_dependency(
       new events::host_dependency);
     std::map<std::string, int>::const_iterator it;
 
@@ -154,9 +150,7 @@ static void send_host_dependencies_list() {
     }
 
     // Send host dependency event.
-    host_dependency->add_reader();
-    gl_publisher.event(host_dependency.get());
-    host_dependency.release();
+    gl_publisher.write(host_dependency.staticCast<io::data>());
   }
 
   // End log message.
@@ -176,29 +170,27 @@ static void send_host_group_list() {
 
   // Loop through all host groups.
   for (hostgroup* hg = hostgroup_list; hg; hg = hg->next) {
-    std::auto_ptr<events::host_group> host_group(new events::host_group);
+    QSharedPointer<events::host_group> host_group(new events::host_group);
 
     // Set host group parameters.
     if (hg->alias)
       host_group->alias = hg->alias;
-    host_group->instance_id = config::globals::instance;
+    host_group->instance_id = instance_id;
     if (hg->group_name)
       host_group->name = hg->group_name;
 
     // Send host group event.
-    host_group->add_reader();
-    gl_publisher.event(host_group.get());
-    host_group.release();
+    gl_publisher.write(host_group.staticCast<io::data>());
 
     // Dump host group members.
     for (hostsmember* hgm = hg->members; hgm; hgm = hgm->next) {
-      std::auto_ptr<events::host_group_member> host_group_member(
+      QSharedPointer<events::host_group_member> host_group_member(
         new events::host_group_member);
 
       // Set host group members parameters.
       if (hg->group_name)
         host_group_member->group = hg->group_name;
-      host_group_member->instance_id = config::globals::instance;
+      host_group_member->instance_id = instance_id;
       if (hgm->host_name) {
         std::map<std::string, int>::const_iterator it;
         it = gl_hosts.find(hgm->host_name);
@@ -207,9 +199,7 @@ static void send_host_group_list() {
       }
 
       // Send host group member event.
-      host_group_member->add_reader();
-      gl_publisher.event(host_group_member.get());
-      host_group_member.release();
+      gl_publisher.write(host_group_member.staticCast<io::data>());
     }
   }
 
@@ -230,7 +220,7 @@ static void send_host_list() {
 
   // Loop through all hosts.
   for (host* h = host_list; h; h = h->next) {
-    std::auto_ptr<events::host> my_host(new events::host);
+    QSharedPointer<events::host> my_host(new events::host);
 
     // Set host parameters.
     my_host->acknowledgement_type = h->acknowledgement_type;
@@ -280,7 +270,7 @@ static void send_host_list() {
       my_host->icon_image = h->icon_image;
     if (h->icon_image_alt)
       my_host->icon_image_alt = h->icon_image_alt;
-    my_host->instance_id = config::globals::instance;
+    my_host->instance_id = instance_id;
     my_host->is_flapping = h->is_flapping;
     my_host->last_check = h->last_check;
     my_host->last_hard_state = h->last_hard_state;
@@ -340,13 +330,11 @@ static void send_host_list() {
           && cv->variable_value
           && !strcmp(cv->variable_name, "HOST_ID")) {
         my_host->host_id = strtol(cv->variable_value, NULL, 0);
-        gl_hosts[my_host->host_name] = my_host->host_id;
+        gl_hosts[my_host->host_name.toStdString()] = my_host->host_id;
       }
 
     // Send host event.
-    my_host->add_reader();
-    gl_publisher.event(my_host.get());
-    my_host.release();
+    gl_publisher.write(my_host.staticCast<io::data>());
   }
 
   // End log message.
@@ -382,7 +370,7 @@ static void send_host_parents_list() {
 
     // Loop through all dependencies.
     for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next) {
-      std::auto_ptr<events::host_parent> hp(new events::host_parent);
+      QSharedPointer<events::host_parent> hp(new events::host_parent);
       std::map<std::string, int>::const_iterator it;
 
       hp->host_id = host_id;
@@ -393,9 +381,7 @@ static void send_host_parents_list() {
       }
 
       // Send host parent event.
-      hp->add_reader();
-      gl_publisher.event(hp.get());
-      hp.release();
+      gl_publisher.write(hp.staticCast<io::data>());
     }
   }
 
@@ -418,7 +404,7 @@ static void send_service_dependencies_list() {
   // Loop through all dependencies.
   for (servicedependency* sd = servicedependency_list; sd; sd = sd->next) {
     std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-    std::auto_ptr<events::service_dependency> service_dependency(
+    QSharedPointer<events::service_dependency> service_dependency(
       new events::service_dependency);
 
     // Search IDs.
@@ -443,9 +429,7 @@ static void send_service_dependencies_list() {
     }
 
     // Send service dependency event.
-    service_dependency->add_reader();
-    gl_publisher.event(service_dependency.get());
-    service_dependency.release();
+    gl_publisher.write(service_dependency.staticCast<io::data>());
   }
 
   // End log message.
@@ -465,30 +449,28 @@ static void send_service_group_list() {
 
   // Loop through all service groups.
   for (servicegroup* sg = servicegroup_list; sg; sg = sg->next) {
-    std::auto_ptr<events::service_group> service_group(
+    QSharedPointer<events::service_group> service_group(
       new events::service_group);
 
     // Set service group parameters.
     if (sg->alias)
       service_group->alias = sg->alias;
-    service_group->instance_id = config::globals::instance;
+    service_group->instance_id = instance_id;
     if (sg->group_name)
       service_group->name = sg->group_name;
 
     // Send service group event.
-    service_group->add_reader();
-    gl_publisher.event(service_group.get());
-    service_group.release();
+    gl_publisher.write(service_group.staticCast<io::data>());
 
     // Dump service group members.
     for (servicesmember* sgm = sg->members; sgm; sgm = sgm->next) {
-      std::auto_ptr<events::service_group_member> service_group_member(
+      QSharedPointer<events::service_group_member> service_group_member(
         new events::service_group_member);
 
       // Set service group members parameters.
       if (sg->group_name)
         service_group_member->group = sg->group_name;
-      service_group_member->instance_id = config::globals::instance;
+      service_group_member->instance_id = instance_id;
       if (sgm->host_name && sgm->service_description) {
         std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
 
@@ -501,9 +483,7 @@ static void send_service_group_list() {
       }
 
       // Send service group event.
-      service_group_member->add_reader();
-      gl_publisher.event(service_group_member.get());
-      service_group_member.release();
+      gl_publisher.write(service_group_member.staticCast<io::data>());
     }
   }
 
@@ -524,7 +504,7 @@ static void send_service_list() {
 
   // Loop through all services.
   for (service* s = service_list; s; s = s->next) {
-    std::auto_ptr<events::service> my_service(new events::service);
+    QSharedPointer<events::service> my_service(new events::service);
 
     // Set service parameters.
     my_service->acknowledgement_type = s->acknowledgement_type;
@@ -644,15 +624,13 @@ static void send_service_list() {
         else if (!strcmp(cv->variable_name, "SERVICE_ID")) {
           my_service->service_id = strtol(cv->variable_value, NULL, 0);
           gl_services[std::make_pair((s->host_name ? s->host_name : ""),
-                                     my_service->service_description)]
+                                     my_service->service_description.toStdString())]
             = std::make_pair(my_service->host_id, my_service->service_id);
         }
       }
 
     // Send service event.
-    my_service->add_reader();
-    gl_publisher.event(my_service.get());
-    my_service.release();
+    gl_publisher.write(my_service.staticCast<io::data>());
   }
 
   // End log message.
@@ -671,7 +649,7 @@ static void send_service_list() {
 /**
  *  Send initial configuration to the global publisher.
  */
-void send_initial_configuration() {
+void module::send_initial_configuration() {
   send_host_list();
   send_host_parents_list();
   send_service_list();

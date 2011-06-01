@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -40,7 +40,7 @@ namespace                    com {
                              host_group_member(host_group_member const& hgm);
           virtual            ~host_group_member();
           host_group_member& operator=(host_group_member const& hgm);
-          int                get_type() const;
+          unsigned int       type() const;
         };
       }
     }

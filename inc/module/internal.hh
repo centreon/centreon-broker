@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,12 +14,10 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef MODULE_INTERNAL_HH_
-# define MODULE_INTERNAL_HH_
+#ifndef CCB_MODULE_INTERNAL_HH_
+# define CCB_MODULE_INTERNAL_HH_
 
 # include <map>
 # include <string>
@@ -27,19 +25,29 @@
 # include "logging/backend.hh"
 # include "multiplexing/publisher.hh"
 
-// Configuration file name.
-extern std::string gl_configuration_file;
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
+      namespace module {
 
-// Initial logging object.
-extern logging::backend* gl_initial_logger;
+        // Configuration file.
+        extern QString gl_configuration_file;
 
-// List of host IDs.
-extern std::map<std::string, int> gl_hosts;
+        // Instance informations.
+        extern unsigned int instance_id;
+        extern QString      instance_name;
 
-// List of service IDs.
-extern std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
+        // List of host IDs.
+        extern std::map<std::string, int> gl_hosts;
 
-// Sender object.
-extern multiplexing::publisher gl_publisher;
+        // List of service IDs.
+        extern std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
 
-#endif /* !MODULE_INTERNAL_HH_ */
+        // Sender object.
+        extern com::centreon::broker::multiplexing::publisher gl_publisher;
+      }
+    }
+  }
+}
+
+#endif /* !CCB_MODULE_INTERNAL_HH_ */

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,16 +14,16 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <stdlib.h>
 #include <string.h>
 #include "events/log_entry.hh"
-#include "exceptions/retval.hh"
+#include "exceptions/basic.hh"
 #include "module/internal.hh"
 #include "module/set_log_data.hh"
+
+using namespace com::centreon::broker;
 
 /**
  *  Extract the first element of a log string.
@@ -96,17 +96,17 @@ void set_log_data(events::log_entry& le, char const* log_data) {
     if (!strcmp(datadup, "SERVICE ALERT")) {
       le.msg_type = 0;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
       le.retry = strtol(log_extract(&lasts), NULL, 0);
       le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "HOST ALERT")) {
       le.msg_type = 1;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
       le.retry = strtol(log_extract(&lasts), NULL, 0);
       le.output = log_extract(&lasts);
     }
@@ -130,43 +130,43 @@ void set_log_data(events::log_entry& le, char const* log_data) {
     else if (!strcmp(datadup, "CURRENT SERVICE STATE")) {
       le.msg_type = 6;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
     }
     else if (!strcmp(datadup, "CURRENT HOST STATE")) {
       le.msg_type = 7;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
     }
     else if (!strcmp(datadup, "INITIAL HOST STATE")) {
       le.msg_type = 9;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
     }
     else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
       le.msg_type = 8;
       le.host_name = log_extract_first(lasts, &lasts);
+      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
-      le.type = type_id(log_extract(&lasts));
     }
     else if (!strcmp(datadup, "EXTERNAL_COMMAND")) {
       char* data(log_extract_first(lasts, &lasts));
       if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM")) {
-	le.msg_type = 10;
-	le.host_name = log_extract(&lasts);
-	le.service_description = log_extract(&lasts);
-	le.notification_contact = log_extract(&lasts);
-	le.output = log_extract(&lasts);
+        le.msg_type = 10;
+        le.host_name = log_extract(&lasts);
+        le.service_description = log_extract(&lasts);
+        le.notification_contact = log_extract(&lasts);
+        le.output = log_extract(&lasts);
       }
       else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM")) {
-	le.msg_type = 11;
-	le.host_name = log_extract(&lasts);
-	le.notification_contact = log_extract(&lasts);
-	le.output = log_extract(&lasts);
+        le.msg_type = 11;
+        le.host_name = log_extract(&lasts);
+        le.notification_contact = log_extract(&lasts);
+        le.output = log_extract(&lasts);
       }
       else
         // XXX : seems like it should be something else ...
@@ -187,12 +187,12 @@ void set_log_data(events::log_entry& le, char const* log_data) {
   // Set host and service IDs.
   std::map<std::string, int>::const_iterator host_it;
   std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator service_it;
-  host_it = gl_hosts.find(le.host_name);
-  if (host_it != gl_hosts.end())
+  host_it = module::gl_hosts.find(le.host_name.toStdString());
+  if (host_it != module::gl_hosts.end())
     le.host_id = host_it->second;
-  service_it = gl_services.find(std::make_pair(le.host_name,
-    le.service_description));
-  if (service_it != gl_services.end()) {
+  service_it = module::gl_services.find(std::make_pair(le.host_name.toStdString(),
+    le.service_description.toStdString()));
+  if (service_it != module::gl_services.end()) {
     le.host_id = service_it->second.first;
     le.service_id = service_it->second.second;
   }

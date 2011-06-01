@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -60,7 +60,6 @@ host_check& host_check::operator=(host_check const& hc) {
  *
  *  @return event::HOSTCHECK.
  */
-int host_check::get_type() const
-{
+unsigned int host_check::type() const {
   return (HOSTCHECK);
 }

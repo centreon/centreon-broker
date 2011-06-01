@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,10 +21,10 @@
 
 # include "events/check.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class host_check host_check.hh "events/host_check.hh"
          *  @brief Check that has been executed on a host.
@@ -32,13 +32,13 @@ namespace             com {
          *  Once a check has been executed on a host, an object of this class
          *  is sent.
          */
-        class         host_check : public check {
+        class          host_check : public check {
          public:
-                      host_check();
-                      host_check(host_check const& hc);
-          virtual     ~host_check();
-          host_check& operator=(host_check const& hc);
-          int         get_type() const;
+                       host_check();
+                       host_check(host_check const& hc);
+          virtual      ~host_check();
+          host_check&  operator=(host_check const& hc);
+          unsigned int type() const;
         };
       }
     }

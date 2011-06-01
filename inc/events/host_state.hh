@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,23 +21,23 @@
 
 # include "events/state.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class host_state host_state.hh "events/host_state.hh"
          *  @brief Host state.
          *
          *  State of an host at a given time.
          */
-        class         host_state : public state {
+        class          host_state : public state {
          public:
-                      host_state();
-                      host_state(host_state const& hs);
-                      ~host_state();
-          host_state& operator=(host_state const& hs);
-          int         get_type() const;
+                       host_state();
+                       host_state(host_state const& hs);
+                       ~host_state();
+          host_state&  operator=(host_state const& hs);
+          unsigned int type() const;
         };
       }
     }

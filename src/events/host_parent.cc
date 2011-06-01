@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -63,6 +63,6 @@ host_parent& host_parent::operator=(host_parent const& hp) {
  *
  *  @return event::HOSTPARENT
  */
-int host_parent::get_type() const {
+unsigned int host_parent::type() const {
   return (HOSTPARENT);
 }

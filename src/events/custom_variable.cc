@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -32,7 +32,7 @@ using namespace com::centreon::broker::events;
  *  @param[in] cv Object to copy.
  */
 void custom_variable::_internal_copy(custom_variable const& cv) {
-  type = cv.type;
+  var_type = cv.var_type;
   return ;
 }
 
@@ -45,7 +45,7 @@ void custom_variable::_internal_copy(custom_variable const& cv) {
 /**
  *  Default constructor.
  */
-custom_variable::custom_variable() : type(0) {
+custom_variable::custom_variable() : var_type(0) {
   modified = false;
 }
 
@@ -82,6 +82,6 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
  *
  *  @return CUSTOMVARIABLE.
  */
-int custom_variable::get_type() const {
+unsigned int custom_variable::type() const {
   return (CUSTOMVARIABLE);
 }

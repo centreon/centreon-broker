@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -48,7 +48,7 @@ namespace                         com {
                                   custom_variable_status(custom_variable_status const& cvs);
           virtual                 ~custom_variable_status();
           custom_variable_status& operator=(custom_variable_status const& cvs);
-          virtual int             get_type() const;
+          virtual unsigned int    type() const;
         };
       }
     }

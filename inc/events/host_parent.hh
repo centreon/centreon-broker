@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -39,7 +39,7 @@ namespace              com {
                        host_parent(host_parent const& hp);
                        ~host_parent();
           host_parent& operator=(host_parent const& hp);
-          int          get_type() const;
+          unsigned int type() const;
         };
       }
     }

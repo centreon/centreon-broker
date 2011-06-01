@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -42,6 +42,7 @@ using namespace com::centreon::broker::events;
  */
 void comment::_internal_copy(comment const& c) {
   author = c.author;
+  comment_type = c.comment_type;
   data = c.data;
   deletion_time = c.deletion_time;
   entry_time = c.entry_time;
@@ -54,7 +55,6 @@ void comment::_internal_copy(comment const& c) {
   persistent = c.persistent;
   service_id = c.service_id;
   source = c.source;
-  type = c.type;
   return ;
 }
 
@@ -70,7 +70,8 @@ void comment::_internal_copy(comment const& c) {
  *  Set all members to their default value (0, NULL or equivalent).
  */
 comment::comment()
-  :  deletion_time(0),
+  :  comment_type(0),
+     deletion_time(0),
      entry_time(0),
      entry_type(0),
      expire_time(0),
@@ -80,8 +81,7 @@ comment::comment()
      internal_id(0),
      persistent(false),
      service_id(0),
-     source(0),
-     type(0) {}
+     source(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -124,6 +124,6 @@ comment& comment::operator=(comment const& c) {
  *
  *  @return event::COMMENT
  */
-int comment::get_type() const {
+unsigned int comment::type() const {
   return (event::COMMENT);
 }

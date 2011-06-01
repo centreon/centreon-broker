@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -37,6 +37,7 @@ void event_handler::_internal_copy(event_handler const& eh) {
   early_timeout = eh.early_timeout;
   end_time = eh.end_time;
   execution_time = eh.execution_time;
+  handler_type = eh.handler_type;
   host_id = eh.host_id;
   output = eh.output;
   return_code = eh.return_code;
@@ -45,7 +46,6 @@ void event_handler::_internal_copy(event_handler const& eh) {
   state = eh.state;
   state_type = eh.state_type;
   timeout = eh.timeout;
-  type = eh.type;
   return ;
 }
 
@@ -62,14 +62,14 @@ event_handler::event_handler()
   : early_timeout(0),
     end_time(0),
     execution_time(0),
+    handler_type(0),
     host_id(0),
     return_code(0),
     service_id(0),
     start_time(0),
     state(0),
     state_type(0),
-    timeout(0),
-    type(0) {}
+    timeout(0) {}
 
 /**
  *  Copy constructor.
@@ -103,6 +103,6 @@ event_handler& event_handler::operator=(event_handler const& eh) {
  *
  *  @return EVENTHANDLER.
  */
-int event_handler::get_type() const {
+unsigned int event_handler::type() const {
   return (EVENTHANDLER);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,24 +14,30 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef CALLBACKS_HH_
-# define CALLBACKS_HH_
+#ifndef CCB_MODULE_CALLBACKS_HH_
+# define CCB_MODULECALLBACKS_HH_
 
-int callback_acknowledgement(int callback_type, void* data);
-int callback_comment(int callback_type, void* data);
-int callback_downtime(int callback_type, void* data);
-int callback_event_handler(int callback_type, void* data);
-int callback_flapping_status(int callback_type, void* data);
-int callback_host_check(int callback_type, void* data);
-int callback_host_status(int callback_type, void* data);
-int callback_log(int callback_type, void* data);
-int callback_process(int callback_type, void* data);
-int callback_program_status(int callback_type, void* data);
-int callback_service_check(int callback_type, void* data);
-int callback_service_status(int callback_type, void* data);
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
+      namespace module {
+        int     callback_acknowledgement(int callback_type, void* data);
+        int     callback_comment(int callback_type, void* data);
+        int     callback_downtime(int callback_type, void* data);
+        int     callback_event_handler(int callback_type, void* data);
+        int     callback_flapping_status(int callback_type, void* data);
+        int     callback_host_check(int callback_type, void* data);
+        int     callback_host_status(int callback_type, void* data);
+        int     callback_log(int callback_type, void* data);
+        int     callback_process(int callback_type, void* data);
+        int     callback_program_status(int callback_type, void* data);
+        int     callback_service_check(int callback_type, void* data);
+        int     callback_service_status(int callback_type, void* data);
+      }
+    }
+  }
+}
 
-#endif /* !CALLBACKS_HH_ */
+#endif /* !CCB_MODULE_CALLBACKS_HH_ */

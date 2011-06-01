@@ -1297,6 +1297,6 @@ QSharedPointer<io::data> stream::read() {
  */
 void stream::write(QSharedPointer<io::data> data) {
   events::event* e((events::event*)data->memory());
-  (this->*processing_table[e->get_type()])(*e);
+  (this->*processing_table[e->type()])(*e);
   return ;
 }

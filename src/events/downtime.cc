@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -123,6 +123,6 @@ downtime& downtime::operator=(downtime const& d) {
  *
  *  @return event::DOWNTIME
  */
-int downtime::get_type() const {
+unsigned int downtime::type() const {
   return (DOWNTIME);
 }

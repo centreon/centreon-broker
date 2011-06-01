@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -99,6 +99,6 @@ host_status& host_status::operator=(host_status const& hs) {
  *
  *  @return event::HOSTSTATUS
  */
-int host_status::get_type() const {
+unsigned int host_status::type() const {
   return (HOSTSTATUS);
 }

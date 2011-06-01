@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -61,6 +61,6 @@ host_dependency& host_dependency::operator=(host_dependency const& hd) {
  *
  *  @return event::HOSTDEPENDENCY
  */
-int host_dependency::get_type() const {
+unsigned int host_dependency::type() const {
   return (HOSTDEPENDENCY);
 }

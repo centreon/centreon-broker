@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,13 +19,12 @@
 #ifndef CCB_EVENTS_EVENT_HH_
 # define CCB_EVENTS_EVENT_HH_
 
-# include <QMutex>
-# include <QString>
+# include "io/data.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class event event.hh "events/event.hh"
          *  @brief Base class of all events.
@@ -52,14 +51,10 @@ namespace             com {
          *  @see multiplexing::publisher
          *  @see multiplexing::subscriber
          */
-        class         event {
-         private:
-          QMutex      _mutex;
-          int         _readers;
-
+        class          event : public io::data {
          protected:
-                      event(event const& e);
-          event&      operator=(event const& e);
+                       event(event const& e);
+          event&       operator=(event const& e);
 
          public:
           /**
@@ -77,9 +72,9 @@ namespace             com {
            *    - src/mapping.cc                       : members and type mappings
            *    - src/module/{callbacks.cc|initial.cc} : generate event
            *
-           *  @see get_type()
+           *  @see type()
            */
-          enum        type {
+          enum {
             UNKNOWN = 0,
             ACKNOWLEDGEMENT,
             COMMENT,
@@ -112,11 +107,11 @@ namespace             com {
             SERVICESTATUS,
             EVENT_TYPES_NB
           };
-                      event();
-          virtual     ~event();
-          void        add_reader();
-          virtual int get_type() const = 0;
-          void        remove_reader();
+                       event();
+          virtual      ~event();
+          void*        memory();
+          void const*  memory() const;
+          unsigned int size() const;
         };
       }
     }

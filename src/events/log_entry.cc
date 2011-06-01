@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -41,6 +41,7 @@ void log_entry::_internal_copy(log_entry const& le) {
   host_name = le.host_name;
   instance_name = le.instance_name;
   issue_start_time = le.issue_start_time;
+  log_type = le.log_type;
   msg_type = le.msg_type;
   notification_cmd = le.notification_cmd;
   notification_contact = le.notification_contact;
@@ -49,7 +50,6 @@ void log_entry::_internal_copy(log_entry const& le) {
   service_description = le.service_description;
   service_id = le.service_id;
   status = le.status;
-  type = le.type;
   return ;
 }
 
@@ -68,11 +68,11 @@ log_entry::log_entry()
   : c_time(0),
     host_id(0),
     issue_start_time(0),
+    log_type(0),
     msg_type(0),
     retry(0),
     service_id(0),
-    status(0),
-    type(0) {}
+    status(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -112,6 +112,6 @@ log_entry& log_entry::operator=(log_entry const& le) {
  *
  *  @return event::LOG
  */
-int log_entry::get_type() const {
+unsigned int log_entry::type() const {
   return (event::LOG);
 }

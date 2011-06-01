@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -39,7 +39,7 @@ namespace                com {
                          service_check(service_check const& sc);
           virtual        ~service_check();
           service_check& operator=(service_check const& sc);
-          int            get_type() const;
+          unsigned int   type() const;
         };
       }
     }

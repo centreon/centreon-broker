@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -23,10 +23,10 @@
 # include <time.h>
 # include "events/event.hh"
 
-namespace           com {
-  namespace         centreon {
-    namespace       broker {
-      namespace     events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class downtime downtime.hh "events/downtime.hh"
          *  @brief Represents a downtime inside Nagios.
@@ -36,31 +36,31 @@ namespace           com {
          *  generate any notification. This can occur when a system
          *  administrator perform maintenance on a server for example.
          */
-        class       downtime : public event {
+        class          downtime : public event {
          private:
-          void      _internal_copy(downtime const& d);
+          void         _internal_copy(downtime const& d);
 
          public:
-          QString   author;
-          QString   comment;
-          short     downtime_type;
-          time_t    duration;
-          time_t    end_time;
-          time_t    entry_time;
-          bool      fixed;
-          int       host_id;
-          int       instance_id;
-          int       internal_id;
-          int       service_id;
-          time_t    start_time;
-          int       triggered_by;
-          bool      was_cancelled;
-          bool      was_started;
-                    downtime();
-                    downtime(downtime const& d);
-                    ~downtime();
-          downtime& operator=(downtime const& d);
-          int       get_type() const;
+          QString      author;
+          QString      comment;
+          short        downtime_type;
+          time_t       duration;
+          time_t       end_time;
+          time_t       entry_time;
+          bool         fixed;
+          int          host_id;
+          int          instance_id;
+          int          internal_id;
+          int          service_id;
+          time_t       start_time;
+          int          triggered_by;
+          bool         was_cancelled;
+          bool         was_started;
+                       downtime();
+                       downtime(downtime const& d);
+                       ~downtime();
+          downtime&    operator=(downtime const& d);
+          unsigned int type() const;
         };
       }
     }

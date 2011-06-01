@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,20 +14,20 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <memory>
 #include <set>
 #include <time.h>
 #include <unistd.h>
-#include "callbacks.hh"
-#include "config/globals.hh"
-#include "config/handle.hh"
+#include "config/applier/state.hh"
+#include "config/logger.hh"
+#include "config/parser.hh"
+#include "config/state.hh"
 #include "events/events.hh"
-#include "initial.hh"
 #include "logging/logging.hh"
+#include "module/callbacks.hh"
+#include "module/initial.hh"
 #include "module/internal.hh"
 #include "module/set_log_data.hh"
 #include "nagios/broker.h"
@@ -36,6 +36,8 @@
 #include "nagios/nebmodules.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
+
+using namespace com::centreon::broker;
 
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
@@ -58,7 +60,7 @@ extern "C" {
  *
  *  @return 0 on success.
  */
-int callback_acknowledgement(int callback_type, void* data) {
+int module::callback_acknowledgement(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating acknowledgement event";
   (void)callback_type;
@@ -66,7 +68,7 @@ int callback_acknowledgement(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_acknowledgement_data const* ack_data;
-    std::auto_ptr<events::acknowledgement> ack(new events::acknowledgement);
+    QSharedPointer<events::acknowledgement> ack(new events::acknowledgement);
 
     // Fill output var.
     ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
@@ -91,16 +93,14 @@ int callback_acknowledgement(int callback_type, void* data) {
         }
       }
     }
-    ack->instance_id = config::globals::instance;
+    ack->instance_id = instance_id;
     ack->is_sticky = ack_data->is_sticky;
     ack->notify_contacts = ack_data->notify_contacts;
     ack->persistent_comment = ack_data->persistent_comment;
     ack->state = ack_data->state;
 
     // Send event.
-    ack->add_reader();
-    gl_publisher.event(ack.get());
-    ack.release();
+    gl_publisher.write(ack.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -118,7 +118,7 @@ int callback_acknowledgement(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_comment(int callback_type, void* data) {
+int module::callback_comment(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating comment event";
   (void)callback_type;
@@ -126,7 +126,7 @@ int callback_comment(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_comment_data const* comment_data;
-    std::auto_ptr<events::comment> comment(new events::comment);
+    QSharedPointer<events::comment> comment(new events::comment);
 
     // Fill output var.
     comment_data = static_cast<nebstruct_comment_data*>(data);
@@ -134,7 +134,7 @@ int callback_comment(int callback_type, void* data) {
       comment->author = comment_data->author_name;
     if (comment_data->comment_data)
       comment->data = comment_data->comment_data;
-    comment->type = comment_data->type;
+    comment->comment_type = comment_data->type;
     if (NEBTYPE_COMMENT_DELETE == comment_data->type)
       comment->deletion_time = time(NULL);
     comment->entry_time = time(NULL);
@@ -156,15 +156,13 @@ int callback_comment(int callback_type, void* data) {
         }
       }
     }
-    comment->instance_id = config::globals::instance;
+    comment->instance_id = instance_id;
     comment->internal_id = comment_data->comment_id;
     comment->persistent = comment_data->persistent;
     comment->source = comment_data->source;
 
     // Send event.
-    comment->add_reader();
-    gl_publisher.event(comment.get());
-    comment.release();
+    gl_publisher.write(comment.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -182,7 +180,7 @@ int callback_comment(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_downtime(int callback_type, void* data) {
+int module::callback_downtime(int callback_type, void* data) {
   // Unstarted downtimes.
   std::set<unsigned int> unstarted;
 
@@ -193,7 +191,7 @@ int callback_downtime(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_downtime_data const* downtime_data;
-    std::auto_ptr<events::downtime> downtime(new events::downtime);
+    QSharedPointer<events::downtime> downtime(new events::downtime);
 
     // Fill output var.
     downtime_data = static_cast<nebstruct_downtime_data*>(data);
@@ -221,7 +219,7 @@ int callback_downtime(int callback_type, void* data) {
         }
       }
     }
-    downtime->instance_id = config::globals::instance;
+    downtime->instance_id = instance_id;
     downtime->internal_id = downtime_data->downtime_id;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
@@ -248,9 +246,7 @@ int callback_downtime(int callback_type, void* data) {
     }
 
     // Send event.
-    downtime->add_reader();
-    gl_publisher.event(downtime.get());
-    downtime.release();
+    gl_publisher.write(downtime.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -270,7 +266,7 @@ int callback_downtime(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_event_handler(int callback_type, void* data) {
+int module::callback_event_handler(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating event handler event";
   (void)callback_type;
@@ -278,7 +274,7 @@ int callback_event_handler(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_event_handler_data const* event_handler_data;
-    std::auto_ptr<events::event_handler> event_handler(new events::event_handler);
+    QSharedPointer<events::event_handler> event_handler(new events::event_handler);
 
     // Fill output var.
     event_handler_data = static_cast<nebstruct_event_handler_data*>(data);
@@ -311,12 +307,10 @@ int callback_event_handler(int callback_type, void* data) {
     event_handler->state = event_handler_data->state;
     event_handler->state_type = event_handler_data->state_type;
     event_handler->timeout = event_handler_data->timeout;
-    event_handler->type = event_handler_data->eventhandler_type;
+    event_handler->handler_type = event_handler_data->eventhandler_type;
 
     // Send event.
-    event_handler->add_reader();
-    gl_publisher.event(event_handler.get());
-    event_handler.release();
+    gl_publisher.write(event_handler.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -336,7 +330,7 @@ int callback_event_handler(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_flapping_status(int callback_type, void* data) {
+int module::callback_flapping_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating flapping event";
   (void)callback_type;
@@ -344,7 +338,7 @@ int callback_flapping_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_flapping_data const* flapping_data;
-    std::auto_ptr<events::flapping_status> flapping_status(new events::flapping_status);
+    QSharedPointer<events::flapping_status> flapping_status(new events::flapping_status);
 
     // Fill output var.
     flapping_data = static_cast<nebstruct_flapping_data*>(data);
@@ -380,12 +374,10 @@ int callback_flapping_status(int callback_type, void* data) {
     flapping_status->low_threshold = flapping_data->low_threshold;
     flapping_status->percent_state_change = flapping_data->percent_change;
     // flapping_status->reason_type = XXX;
-    flapping_status->type = flapping_data->flapping_type;
+    flapping_status->flapping_type = flapping_data->flapping_type;
 
     // Send event.
-    flapping_status->add_reader();
-    gl_publisher.event(flapping_status.get());
-    flapping_status.release();
+    gl_publisher.write(flapping_status.staticCast<io::data>());
   }
   // Avoid exception propagation to C code.
   catch (...) {}
@@ -404,7 +396,7 @@ int callback_flapping_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_host_check(int callback_type, void* data) {
+int module::callback_host_check(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating host check event";
   (void)callback_type;
@@ -412,7 +404,7 @@ int callback_host_check(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_host_check_data const* hcdata;
-    std::auto_ptr<events::host_check> host_check(new events::host_check);
+    QSharedPointer<events::host_check> host_check(new events::host_check);
 
     // Fill output var.
     hcdata = static_cast<nebstruct_host_check_data*>(data);
@@ -426,9 +418,7 @@ int callback_host_check(int callback_type, void* data) {
       }
 
       // Send event.
-      host_check->add_reader();
-      gl_publisher.event(host_check.get());
-      host_check.release();
+      gl_publisher.write(host_check.staticCast<io::data>());
     }
   }
   // Avoid exception propagation in C code.
@@ -448,7 +438,7 @@ int callback_host_check(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_host_status(int callback_type, void* data) {
+int module::callback_host_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating host status event";
   (void)callback_type;
@@ -456,7 +446,7 @@ int callback_host_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     host const* h;
-    std::auto_ptr<events::host_status> host_status(new events::host_status);
+    QSharedPointer<events::host_status> host_status(new events::host_status);
 
     // Fill output var.
     h = static_cast<host*>(
@@ -521,9 +511,7 @@ int callback_host_status(int callback_type, void* data) {
     host_status->state_type = h->state_type;
 
     // Send event.
-    host_status->add_reader();
-    gl_publisher.event(host_status.get());
-    host_status.release();
+    gl_publisher.write(host_status.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -541,7 +529,7 @@ int callback_host_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_log(int callback_type, void* data) {
+int module::callback_log(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating log event";
   (void)callback_type;
@@ -549,12 +537,12 @@ int callback_log(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_log_data const* log_data;
-    std::auto_ptr<events::log_entry> le(new events::log_entry);
+    QSharedPointer<events::log_entry> le(new events::log_entry);
 
     // Fill output var.
     log_data = static_cast<nebstruct_log_data*>(data);
     le->c_time = log_data->entry_time;
-    le->instance_name = config::globals::instance_name;
+    le->instance_name = instance_name;
     if (log_data->data) {
       if (log_data->data)
         le->output = log_data->data;
@@ -562,9 +550,7 @@ int callback_log(int callback_type, void* data) {
     }
 
     // Send event.
-    le->add_reader();
-    gl_publisher.event(le.get());
-    le.release();
+    gl_publisher.write(le.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -582,7 +568,7 @@ int callback_log(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_process(int callback_type, void *data) {
+int module::callback_process(int callback_type, void *data) {
   // Log message.
   logging::debug << logging::LOW << "process event callback";
   (void)callback_type;
@@ -597,54 +583,83 @@ int callback_process(int callback_type, void *data) {
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       logging::info << logging::MEDIUM << "generating process start event";
       // Output variable.
-      std::auto_ptr<events::instance> instance(new events::instance);
+      QSharedPointer<events::instance> instance(new events::instance);
 
-      // Fill output var.
-      config::handle(gl_configuration_file);
-      logging::log_on(gl_initial_logger, 0, logging::NONE);
+      // Logging object.
+      config::logger default_log;
+      default_log.config(true);
+      default_log.debug(false);
+      default_log.error(true);
+      default_log.info(true);
+      default_log.level(logging::HIGH);
+      default_log.name("stderr");
+      default_log.type(config::logger::standard);
+
+      // Configuration object.
+      config::state default_state;
+      default_state.loggers().push_back(default_log);
+
+      // Apply configuration.
+      config::applier::state::instance().apply(default_state);
+
+      // Parse configuration file.
+      {
+        config::parser parsr;
+        config::state conf;
+        parsr.parse(gl_configuration_file, conf);
+
+        // Apply resulting configuration.
+        config::applier::state::instance().apply(conf);
+
+        // Set variables.
+        QMap<QString, QString>::const_iterator it;
+        it = conf.params().find("instance");
+        if (it != conf.params().end())
+          instance_id = it.value().toUInt();
+        it = conf.params().find("instance_name");
+        if (it != conf.params().end())
+          instance_name = it.value();
+      }
+
 #ifdef PROGRAM_NAME
       instance->engine = PROGRAM_NAME;
 #else
       instance->engine = "Nagios";
 #endif /* PROGRAM_NAME */
-      instance->id = config::globals::instance;
+      instance->id = instance_id;
       instance->is_running = true;
-      instance->name = config::globals::instance_name;
+      instance->name = instance_name;
       instance->pid = getpid();
       instance->program_start = time(NULL);
       instance->version = get_program_version();
       start_time = instance->program_start;
 
       // Send initial event and then configuration.
-      instance->add_reader();
-      gl_publisher.event(instance.get());
-      instance.release();
+      gl_publisher.write(instance.staticCast<io::data>());
       send_initial_configuration();
 
       // Generate module list.
       for (nebmodule* nm = neb_module_list; nm; nm = nm->next)
         if (nm->filename) {
           // Output variable.
-          std::auto_ptr<events::module> module(new events::module);
+          QSharedPointer<events::module> module(new events::module);
 
           // Fill output var.
           if (nm->args)
             module->args = nm->args;
           module->filename = nm->filename;
-          module->instance_id = config::globals::instance;
+          module->instance_id = instance_id;
           module->loaded = nm->is_currently_loaded;
           module->should_be_loaded = nm->should_be_loaded;
 
           // Send events.
-          module->add_reader();
-          gl_publisher.event(module.get());
-          module.release();
+          gl_publisher.write(module.staticCast<io::data>());
         }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info << logging::MEDIUM << "generating process end event";
       // Output variable.
-      std::auto_ptr<events::instance> instance(new events::instance);
+      QSharedPointer<events::instance> instance(new events::instance);
 
       // Fill output var.
 #ifdef PROGRAM_NAME
@@ -652,18 +667,16 @@ int callback_process(int callback_type, void *data) {
 #else
       instance->engine = "Nagios";
 #endif /* PROGRAM_NAME */
-      instance->id = config::globals::instance;
+      instance->id = instance_id;
       instance->is_running = false;
-      instance->name = config::globals::instance_name;
+      instance->name = instance_name;
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;
       instance->version = get_program_version();
 
       // Send event.
-      instance->add_reader();
-      gl_publisher.event(instance.get());
-      instance.release();
+      gl_publisher.write(instance.staticCast<io::data>());
     }
   }
   // Avoid exception propagation in C code.
@@ -684,7 +697,7 @@ int callback_process(int callback_type, void *data) {
  *
  *  @return 0 on success.
  */
-int callback_program_status(int callback_type, void* data) {
+int module::callback_program_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating instance status event";
   (void)callback_type;
@@ -692,7 +705,7 @@ int callback_program_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_program_status_data const* program_status_data;
-    std::auto_ptr<events::instance_status> is(
+    QSharedPointer<events::instance_status> is(
       new events::instance_status);
 
     // Fill output var.
@@ -714,7 +727,7 @@ int callback_program_status(int callback_type, void* data) {
     if (program_status_data->global_service_event_handler)
       is->global_service_event_handler
         = program_status_data->global_service_event_handler;
-    is->id = config::globals::instance;
+    is->id = instance_id;
     is->last_alive = time(NULL);
     is->last_command_check = program_status_data->last_command_check;
     is->last_log_rotation
@@ -737,9 +750,7 @@ int callback_program_status(int callback_type, void* data) {
       = program_status_data->process_performance_data;
 
     // Send event.
-    is->add_reader();
-    gl_publisher.event(is.get());
-    is.release();
+    gl_publisher.write(is.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -759,7 +770,7 @@ int callback_program_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_service_check(int callback_type, void* data) {
+int module::callback_service_check(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating service check event";
   (void)callback_type;
@@ -767,7 +778,7 @@ int callback_service_check(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_service_check_data const* scdata;
-    std::auto_ptr<events::service_check> service_check(
+    QSharedPointer<events::service_check> service_check(
       new events::service_check);
 
     // Fill output var.
@@ -785,9 +796,7 @@ int callback_service_check(int callback_type, void* data) {
       }
 
       // Send event.
-      service_check->add_reader();
-      gl_publisher.event(service_check.get());
-      service_check.release();
+      gl_publisher.write(service_check.staticCast<io::data>());
     }
   }
   // Avoid exception propagation in C code.
@@ -808,7 +817,7 @@ int callback_service_check(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int callback_service_status(int callback_type, void* data) {
+int module::callback_service_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating service status event";
   (void)callback_type;
@@ -816,7 +825,7 @@ int callback_service_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     service const* s;
-    std::auto_ptr<events::service_status> service_status(
+    QSharedPointer<events::service_status> service_status(
       new events::service_status);
 
     // Fill output var.
@@ -889,9 +898,7 @@ int callback_service_status(int callback_type, void* data) {
     service_status->state_type = s->state_type;
 
     // Send event.
-    service_status->add_reader();
-    gl_publisher.event(service_status.get());
-    service_status.release();
+    gl_publisher.write(service_status.staticCast<io::data>());
   }
   // Avoid exception propagation in C code.
   catch (...) {}

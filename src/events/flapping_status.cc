@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -35,6 +35,7 @@ void flapping_status::_internal_copy(flapping_status const& fs) {
   comment_time = fs.comment_time;
   event_time = fs.event_time;
   event_type = fs.event_type;
+  flapping_type = fs.flapping_type;
   high_threshold = fs.high_threshold;
   host_id = fs.host_id;
   internal_comment_id = fs.internal_comment_id;
@@ -42,7 +43,6 @@ void flapping_status::_internal_copy(flapping_status const& fs) {
   percent_state_change = fs.percent_state_change;
   reason_type = fs.reason_type;
   service_id = fs.service_id;
-  type = fs.type;
   return ;
 }
 
@@ -59,14 +59,14 @@ flapping_status::flapping_status()
   : comment_time(0),
     event_time(0),
     event_type(0),
+    flapping_type(0),
     high_threshold(0),
     host_id(0),
     internal_comment_id(0),
     low_threshold(0),
     percent_state_change(0),
     reason_type(0),
-    service_id(0),
-    type(0) {}
+    service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -100,6 +100,6 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
  *
  *  @return FLAPPINGSTATUS.
  */
-int flapping_status::get_type() const {
+unsigned int flapping_status::type() const {
   return (FLAPPINGSTATUS);
 }

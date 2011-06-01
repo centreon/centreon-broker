@@ -34,12 +34,6 @@ else ()
   message(STATUS "Debug messages enabled.")
 endif ()
 
-# Find pthread library.
-#include("FindThreads")
-#if (NOT CMAKE_USE_PTHREADS_INIT)
-#  message(FATAL_ERROR "Could not find pthread library.")
-#endif ()
-
 # Find Qt.
 find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
@@ -264,21 +258,29 @@ add_executable(cbd
 )
 target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 
-# Module.
-#add_library(cbmod SHARED
-#	${COMMON_SOURCES}
-#	../src/module/callbacks.cc
-#	../src/module/initial.cc
-#	../src/module/set_log_data.cc
-#	../src/module/main.cc
-#)
-#target_link_libraries(cbmod roker ${QT_LIBRARIES})
+# Centreon Engine/Nagios module.
+add_library(cbmod SHARED
+  # roker sources must be compiled within the module.
+  ${LIBROKER_SOURCES}
+  # Sources.
+  "${SRC_DIR}/module/callbacks.cc"
+  "${SRC_DIR}/module/initial.cc"
+  "${SRC_DIR}/module/set_log_data.cc"
+  "${SRC_DIR}/module/main.cc"
+  # Headers.
+  "${INC_DIR}/module/callbacks.hh"
+  "${INC_DIR}/module/initial.hh"
+  "${INC_DIR}/module/internal.hh"
+  "${INC_DIR}/module/set_log_data.hh"
+)
+target_link_libraries(cbmod "roker" ${QT_LIBRARIES})
+set_target_properties(cbmod PROPERTIES PREFIX "")
 
 # Install rules.
-#install(TARGETS roker cbd
-#	RUNTIME DESTINATION bin
-#	LIBRARY DESTINATION lib
-#	ARCHIVE DESTINATION lib)
+install(TARGETS roker cbd
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 # File module.
 add_subdirectory("file")

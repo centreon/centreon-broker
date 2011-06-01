@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,13 +14,19 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef INITIAL_HH_
-# define INITIAL_HH_
+#ifndef CCB_MODULE_INITIAL_HH_
+# define CCB_MODULE_INITIAL_HH_
 
-void send_initial_configuration();
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
+      namespace module {
+        void    send_initial_configuration();
+      }
+    }
+  }
+}
 
-#endif /* !INITIAL_HH_ */
+#endif /* !CCB_MODULE_INITIAL_HH_ */

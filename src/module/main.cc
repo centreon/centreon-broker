@@ -19,14 +19,17 @@
 */
 
 #include <stddef.h>
-#include "callbacks.hh"
 #include "config/parser.hh"
+#include "config/state.hh"
 #include "init.hh"
 #include "logging/logging.hh"
 #include "logging/syslogger.hh"
+#include "module/callbacks.hh"
 #include "module/internal.hh"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
+
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
@@ -38,19 +41,16 @@
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 // Configuration file name.
-std::string gl_configuration_file;
-
-// Initial logging object.
-logging::backend* gl_initial_logger = NULL;
+QString module::gl_configuration_file;
 
 // List of host IDs.
-std::map<std::string, int> gl_hosts;
+std::map<std::string, int> module::gl_hosts;
 
 // List of service IDs.
-std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
+std::map<std::pair<std::string, std::string>, std::pair<int, int> > module::gl_services;
 
 // Sender object.
-multiplexing::publisher gl_publisher;
+multiplexing::publisher module::gl_publisher;
 
 /**************************************
 *                                     *
@@ -64,18 +64,18 @@ static struct {
   int (* callback)(int, void*);
   bool registered;
 } gl_callbacks[] = {
-  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, callback_acknowledgement, false },
-  { NEBCALLBACK_COMMENT_DATA, callback_comment, false },
-  { NEBCALLBACK_DOWNTIME_DATA, callback_downtime, false },
-  { NEBCALLBACK_EVENT_HANDLER_DATA, callback_event_handler, false },
-  { NEBCALLBACK_FLAPPING_DATA, callback_flapping_status, false },
-  { NEBCALLBACK_HOST_CHECK_DATA, callback_host_check, false },
-  { NEBCALLBACK_HOST_STATUS_DATA, callback_host_status, false },
-  { NEBCALLBACK_LOG_DATA, callback_log, false },
-  { NEBCALLBACK_PROCESS_DATA, callback_process, false },
-  { NEBCALLBACK_PROGRAM_STATUS_DATA, callback_program_status, false },
-  { NEBCALLBACK_SERVICE_CHECK_DATA, callback_service_check, false },
-  { NEBCALLBACK_SERVICE_STATUS_DATA, callback_service_status, false }
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &module::callback_acknowledgement, false },
+  { NEBCALLBACK_COMMENT_DATA, &module::callback_comment, false },
+  { NEBCALLBACK_DOWNTIME_DATA, &module::callback_downtime, false },
+  { NEBCALLBACK_EVENT_HANDLER_DATA, &module::callback_event_handler, false },
+  { NEBCALLBACK_FLAPPING_DATA, &module::callback_flapping_status, false },
+  { NEBCALLBACK_HOST_CHECK_DATA, &module::callback_host_check, false },
+  { NEBCALLBACK_HOST_STATUS_DATA, &module::callback_host_status, false },
+  { NEBCALLBACK_LOG_DATA, &module::callback_log, false },
+  { NEBCALLBACK_PROCESS_DATA, &module::callback_process, false },
+  { NEBCALLBACK_PROGRAM_STATUS_DATA, &module::callback_program_status, false },
+  { NEBCALLBACK_SERVICE_CHECK_DATA, &module::callback_service_check, false },
+  { NEBCALLBACK_SERVICE_STATUS_DATA, &module::callback_service_status, false }
 };
 
 // Module handle
@@ -171,7 +171,7 @@ extern "C" {
       "Copyright 2009-2011 Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_VERSION,
-      "1.2.2");
+      "2.0.0");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_LICENSE,
       "GPL version 2");
@@ -188,17 +188,12 @@ extern "C" {
 
       // Set configuration file.
       if (args)
-        gl_configuration_file = args;
-
-      // Initial logging object.
-      gl_initial_logger = new logging::syslogger;
-      logging::log_on(gl_initial_logger,
-        logging::CONFIG | logging::ERROR,
-        logging::HIGH);
+        module::gl_configuration_file = args;
 
       // Try configuration parsing.
       config::parser p;
-      p.parse(gl_configuration_file);
+      config::state s;
+      p.parse(module::gl_configuration_file, s);
     }
     catch (std::exception const& e) {
       logging::config << logging::HIGH << e.what();

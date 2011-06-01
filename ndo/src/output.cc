@@ -104,7 +104,7 @@ void output::write(QSharedPointer<io::data> i) {
   events::event* e((events::event*)i.data());
   try {
     std::stringstream buffer;
-    switch (e->get_type()) {
+    switch (e->type()) {
      case events::event::ACKNOWLEDGEMENT:
       buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
       handle_event<events::acknowledgement>(

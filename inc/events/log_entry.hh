@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -23,10 +23,10 @@
 # include <time.h>
 # include "events/event.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class log_entry log_entry.hh "events/log_entry.hh"
          *  @brief Nagios-generated log message.
@@ -36,30 +36,30 @@ namespace            com {
          *  investigating problems. This class holds all information
          *  related to a log entry.
          */
-        class        log_entry : public event {
+        class          log_entry : public event {
          private:
-          void       _internal_copy(log_entry const& le);
+          void         _internal_copy(log_entry const& le);
 
          public:
-          time_t     c_time;
-          int        host_id;
-          QString    host_name;
-          QString    instance_name;
-          time_t     issue_start_time;
-          short      msg_type;
-          QString    notification_cmd;
-          QString    notification_contact;
-          QString    output;
-          int        retry;
-          QString    service_description;
-          int        service_id;
-          short      status;
-          short      type;
-                     log_entry();
-                     log_entry(log_entry const& le);
-                     ~log_entry();
-          log_entry& operator=(const log_entry& le);
-          int        get_type() const;
+          time_t       c_time;
+          int          host_id;
+          QString      host_name;
+          QString      instance_name;
+          time_t       issue_start_time;
+          short        log_type;
+          short        msg_type;
+          QString      notification_cmd;
+          QString      notification_contact;
+          QString      output;
+          int          retry;
+          QString      service_description;
+          int          service_id;
+          short        status;
+                       log_entry();
+                       log_entry(log_entry const& le);
+                       ~log_entry();
+          log_entry&   operator=(const log_entry& le);
+          unsigned int type() const;
         };
       }
     }

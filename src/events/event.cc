@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -34,10 +34,7 @@ using namespace com::centreon::broker::events;
  *
  *  @param[in] e Object to copy from.
  */
-event::event(event const& e) {
-  (void)e;
-  _readers = 0;
-}
+event::event(event const& e) : io::data(e) {}
 
 /**
  *  Assignment operator.
@@ -47,7 +44,7 @@ event::event(event const& e) {
  *  @return This object.
  */
 event& event::operator=(event const& e) {
-  (void)e;
+  io::data::operator=(e);
   return (*this);
 }
 
@@ -60,7 +57,7 @@ event& event::operator=(event const& e) {
 /**
  *  Default constructor.
  */
-event::event() : _readers(0) {}
+event::event() {}
 
 /**
  *  Destructor.
@@ -68,33 +65,28 @@ event::event() : _readers(0) {}
 event::~event() {}
 
 /**
- *  @brief Add a reader to the event.
+ *  Get the event memory.
  *
- *  Specify that somebody is reading the event. It shall not be
- *  destructed until the reader specify that he's done with the event.
- *
- *  @see remove_reader()
+ *  @return Pointer to this event.
  */
-void event::add_reader() {
-  QMutexLocker lock(&_mutex);
-  ++_readers;
-  return ;
+void* event::memory() {
+  return (this);
 }
 
 /**
- *  Remove a reader from the event.
+ *  Get the event memory.
  *
- *  @see add_reader()
+ *  @return Pointer to this event.
  */
-void event::remove_reader() {
-  bool destroy;
-  QMutexLocker lock(&_mutex);
-  if (--_readers <= 0)
-    destroy = true;
-  else
-    destroy = false;
-  lock.unlock();
-  if (destroy)
-    delete (this);
-  return ;
+void const* event::memory() const {
+  return (this);
+}
+
+/**
+ *  Get the event size.
+ *
+ *  @return sizeof(event).
+ */
+unsigned int event::size() const {
+  return (sizeof(event));
 }

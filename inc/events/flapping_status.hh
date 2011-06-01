@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -40,6 +40,7 @@ namespace                  com {
           time_t           comment_time;
           time_t           event_time;
           int              event_type;
+          short            flapping_type;
           double           high_threshold;
           int              host_id;
           int              internal_comment_id;
@@ -47,12 +48,11 @@ namespace                  com {
           double           percent_state_change;
           short            reason_type;
           int              service_id;
-          short            type;
                            flapping_status();
                            flapping_status(flapping_status const& fs);
                            ~flapping_status();
           flapping_status& operator=(flapping_status const& fs);
-          int              get_type() const;
+          unsigned int     type() const;
         };
       }
     }

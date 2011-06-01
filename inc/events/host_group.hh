@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,23 +21,23 @@
 
 # include "events/group.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class host_group host_group.hh "events/host_group.hh"
          *  @brief Represents a group of hosts.
          *
          *  A group of hosts within the scheduling engine.
          */
-        class         host_group : public group {
+        class          host_group : public group {
          public:
-                      host_group();
-                      host_group(host_group const& hg);
-                      ~host_group();
-          host_group& operator=(host_group const& hg);
-          int         get_type() const;
+                       host_group();
+                       host_group(host_group const& hg);
+                       ~host_group();
+          host_group&  operator=(host_group const& hg);
+          unsigned int type() const;
         };
       }
     }

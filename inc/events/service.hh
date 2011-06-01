@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -24,10 +24,10 @@
 # include "events/host_service.hh"
 # include "events/service_status.hh"
 
-namespace          com {
-  namespace        centreon {
-    namespace      broker {
-      namespace    events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class service service.hh "events/service.hh"
          *  @brief Service as handled by Nagios.
@@ -37,33 +37,33 @@ namespace          com {
          *  @see host_service
          *  @see service_status
          */
-        class      service : public host_service,
-                             public service_status {
+        class          service : public host_service,
+                                 public service_status {
          private:
-          void     _internal_copy(service const& s);
-          void     _zero_initialize();
+          void         _internal_copy(service const& s);
+          void         _zero_initialize();
 
          public:
-          QString  failure_prediction_options;
-          bool     flap_detection_on_critical;
-          bool     flap_detection_on_ok;
-          bool     flap_detection_on_unknown;
-          bool     flap_detection_on_warning;
-          bool     is_volatile;
-          bool     notify_on_critical;
-          bool     notify_on_unknown;
-          bool     notify_on_warning;
-          QString  service_description;
-          bool     stalk_on_critical;
-          bool     stalk_on_ok;
-          bool     stalk_on_unknown;
-          bool     stalk_on_warning;
-                   service();
-                   service(service_status const& ss);
-                   service(service const& s);
-                   ~service();
-          service& operator=(service const& s);
-          int      get_type() const;
+          QString      failure_prediction_options;
+          bool         flap_detection_on_critical;
+          bool         flap_detection_on_ok;
+          bool         flap_detection_on_unknown;
+          bool         flap_detection_on_warning;
+          bool         is_volatile;
+          bool         notify_on_critical;
+          bool         notify_on_unknown;
+          bool         notify_on_warning;
+          QString      service_description;
+          bool         stalk_on_critical;
+          bool         stalk_on_ok;
+          bool         stalk_on_unknown;
+          bool         stalk_on_warning;
+                       service();
+                       service(service_status const& ss);
+                       service(service const& s);
+                       ~service();
+          service&     operator=(service const& s);
+          unsigned int type() const;
         };
       }
     }

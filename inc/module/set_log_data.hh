@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,17 +14,23 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#ifndef MODULE_SET_LOG_DATA_HH_
-# define MODULE_SET_LOG_DATA_HH_
+#ifndef CCB_MODULE_SET_LOG_DATA_HH_
+# define CCB_MODULE_SET_LOG_DATA_HH_
 
-// Forward declaration.
-namespace   events
-{ class     log_entry; }
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
+      // Forward declaration.
+      namespace events
+      { class   log_entry; }
 
-void        set_log_data(events::log_entry& le, char const* log_data);
+      namespace module {
+        void    set_log_data(events::log_entry& le, char const* log_data);
+      }
+    }
+  }
+}
 
-#endif /* !MODULE_SET_LOG_DATA_HH_ */
+#endif /* !CCB_MODULE_SET_LOG_DATA_HH_ */

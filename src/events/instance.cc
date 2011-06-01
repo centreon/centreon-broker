@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -101,6 +101,6 @@ instance& instance::operator=(instance const& i) {
  *
  *  @return event::INSTANCE
  */
-int instance::get_type() const {
+unsigned int instance::type() const {
   return (INSTANCE);
 }

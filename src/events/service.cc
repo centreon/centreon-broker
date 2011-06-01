@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -141,6 +141,6 @@ service& service::operator=(service const& s) {
  *
  *  @return event::SERVICE
  */
-int service::get_type() const {
+unsigned int service::type() const {
   return (SERVICE);
 }

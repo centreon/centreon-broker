@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -45,7 +45,7 @@ namespace              com {
                        host_status(host_status const& hs);
           virtual      ~host_status();
           host_status& operator=(host_status const& hs);
-          int          get_type() const;
+          unsigned int type() const;
         };
       }
     }

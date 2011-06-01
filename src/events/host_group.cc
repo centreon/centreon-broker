@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -69,6 +69,6 @@ host_group& host_group::operator=(host_group const& hg) {
  *
  *  @return event::HOSTGROUP
  */
-int host_group::get_type() const {
+unsigned int host_group::type() const {
   return (HOSTGROUP);
 }

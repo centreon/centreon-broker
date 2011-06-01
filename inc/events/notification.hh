@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -47,17 +47,17 @@ namespace               com {
           time_t        end_time;
           bool          escalated;
           int           host_id;
+          int           notification_type;
           QString       output;
           int           reason_type;
           int           service_id;
           time_t        start_time;
           int           state;
-          int           type;
                         notification();
                         notification(notification const& n);
                         ~notification();
           notification& operator=(notification const& n);
-          int           get_type() const;
+          unsigned int  type() const;
         };
       }
     }

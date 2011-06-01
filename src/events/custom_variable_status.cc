@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -89,6 +89,6 @@ custom_variable_status& custom_variable_status::operator=(custom_variable_status
  *
  *  @return CUSTOMVARIABLESTATUS.
  */
-int custom_variable_status::get_type() const {
+unsigned int custom_variable_status::type() const {
   return (CUSTOMVARIABLESTATUS);
 }

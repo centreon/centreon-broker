@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -63,7 +63,7 @@ namespace                  com {
                            instance_status(instance_status const& is);
                            ~instance_status();
           instance_status& operator=(instance_status const& is);
-          int              get_type() const;
+          unsigned int     type() const;
         };
       }
     }

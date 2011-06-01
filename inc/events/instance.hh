@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -23,10 +23,10 @@
 # include <time.h>
 # include "events/event.hh"
 
-namespace           com {
-  namespace         centreon {
-    namespace       broker {
-      namespace     events {
+namespace              com {
+  namespace            centreon {
+    namespace          broker {
+      namespace        events {
         /**
          *  @class instance instance.hh "events/instance.hh"
          *  @brief Information about Nagios process.
@@ -34,24 +34,24 @@ namespace           com {
          *  This class holds information about a Nagios process, like whether
          *  it is running or not, in daemon mode or not, ...
          */
-        class       instance : public event {
+        class          instance : public event {
          private:
-          void      _internal_copy(instance const& i);
+          void         _internal_copy(instance const& i);
 
          public:
-          QString   engine;
-          int       id;
-          bool      is_running;
-          QString   name;
-          int       pid;
-          time_t    program_end;
-          time_t    program_start;
-          QString   version;
-                    instance();
-                    instance(instance const& i);
-                    ~instance();
-          instance& operator=(instance const& i);
-          int       get_type() const;
+          QString      engine;
+          int          id;
+          bool         is_running;
+          QString      name;
+          int          pid;
+          time_t       program_end;
+          time_t       program_start;
+          QString      version;
+                       instance();
+                       instance(instance const& i);
+                       ~instance();
+          instance&    operator=(instance const& i);
+          unsigned int type() const;
         };
       }
     }
