@@ -17,6 +17,7 @@
 */
 
 #include <assert.h>
+#include <math.h>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlField>
@@ -24,12 +25,34 @@
 #include <QVariant>
 #include <sstream>
 #include <stdlib.h>
+#include "events/perfdata.hh"
 #include "events/service_status.hh"
 #include "exceptions/basic.hh"
+#include "multiplexing/publisher.hh"
+#include "storage/parser.hh"
+#include "storage/perfdata.hh"
 #include "storage/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Check that the floating point value is a NaN, in which case return a
+ *  NULL QVariant.
+ *
+ *  @param[in] f Floating point value.
+ *
+ *  @return NULL QVariant if f is a NaN, f casted as QVariant otherwise.
+ */
+static inline QVariant check_double(double f) {
+  return (isnan(f) ? QVariant(QVariant::Double) : QVariant(f));
+}
 
 /**************************************
 *                                     *
@@ -410,8 +433,54 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] data Event pointer.
  */
 void stream::write(QSharedPointer<io::data> data) {
+  // Process service status events.
   if (data->type() == events::event::SERVICESTATUS) {
-    
+    QSharedPointer<events::service_status> ss(data.staticCast<events::service_status>());
+
+    // Parse perfdata.
+    std::list<perfdata> pds;
+    parser p;
+    p.parse_perfdata(ss->perf_data, pds);
+
+    // Loop through all metrics.
+    for (std::list<perfdata>::iterator it = pds.begin(), end = pds.end();
+         it != end;
+         ++it) {
+      perfdata& pd(*it);
+
+      // Find index_id.
+      unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
+
+      // Find metric_id.
+      unsigned int metric_id(_find_metric_id(index_id, pd.name()));
+
+      // Update metrics table.
+      _update_metrics->bindValue(":unit_name", pd.unit());
+      _update_metrics->bindValue(":warn", check_double(pd.warning()));
+      _update_metrics->bindValue(":crit", check_double(pd.critical()));
+      _update_metrics->bindValue(":min", check_double(pd.min()));
+      _update_metrics->bindValue(":max", check_double(pd.max()));
+      _update_metrics->bindValue(":index_id", index_id);
+      _update_metrics->bindValue(":metric_name", pd.name());
+      _update_metrics->exec();
+
+      if (_store_in_db) {
+        // Insert perfdata in data_bin.
+        _insert_data_bin->bindValue(":id_metric", metric_id);
+        _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->execution_time));
+        _insert_data_bin->bindValue(":value", pd.value());
+        _insert_data_bin->bindValue(":status", ss->current_state);
+        _insert_data_bin->exec();
+      }
+
+      // Send perfdata event to processing.
+      QSharedPointer<events::perfdata> perf(new events::perfdata);
+      perf->ctime = ss->execution_time;
+      perf->metric_id = metric_id;
+      perf->status = ss->current_state;
+      perf->value = pd.value();
+      multiplexing::publisher().write(perf.staticCast<io::data>());
+    }
   }
   return ;
 }
