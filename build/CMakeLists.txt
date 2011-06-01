@@ -291,5 +291,8 @@ add_subdirectory("ndo")
 # SQL module.
 add_subdirectory("sql")
 
+# Storage module.
+add_subdirectory("storage")
+
 # TCP module.
 add_subdirectory("tcp")

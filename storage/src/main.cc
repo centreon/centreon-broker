@@ -17,7 +17,7 @@
 */
 
 #include "io/protocols.hh"
-#include "sql/factory.hh"
+#include "storage/factory.hh"
 
 using namespace com::centreon::broker;
 
@@ -29,13 +29,13 @@ extern "C" {
    *  Module deinitialization routine.
    *
    *  @param[in] force true if module unloading is forced (no need to
-   *                   cleanup).
+   *                   cleanup.
    */
   void broker_module_deinit(bool force) {
     // Decrement instance number.
     if (!--instances && !force)
-      // Deregister SQL layer.
-      io::protocols::instance().unreg("SQL");
+      // Deregister storage layer.
+      io::protocols::instance().unreg("storage");
     return ;
   }
 
@@ -45,9 +45,9 @@ extern "C" {
   void broker_module_init() {
     // Increment instance number.
     if (!instances++)
-      // Register SQL layer.
-      io::protocols::instance().reg("SQL",
-        sql::factory(),
+      // Register storage layer.
+      io::protocols::instance().reg("storage",
+        storage::factory(),
         1,
         7);
     return ;
