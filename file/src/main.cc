@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "file/factory.hh"
 #include "io/protocols.hh"
-#include "tcp/factory.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,8 +34,8 @@ extern "C" {
   void broker_module_deinit(bool force) {
     // Decrement instance number.
     if (!--instances && !force)
-      // Unregister TCP protocol.
-      io::protocols::instance().unreg("TCP");
+      // Unregister file layer.
+      io::protocols::instance().unreg("file");
     return ;
   }
 
@@ -45,9 +45,9 @@ extern "C" {
   void broker_module_init() {
     // Increment instance number.
     if (!instances++)
-      // Register TCP protocol.
-      io::protocols::instance().reg("TCP",
-        tcp::factory(),
+      // Register file layer.
+      io::protocols::instance().reg("file",
+        file::factory(),
         1,
         3);
     return ;

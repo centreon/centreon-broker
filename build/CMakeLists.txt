@@ -280,6 +280,9 @@ target_link_libraries(cbd "roker" ${QT_LIBRARIES})
 #	LIBRARY DESTINATION lib
 #	ARCHIVE DESTINATION lib)
 
+# File module.
+add_subdirectory("file")
+
 # NDO module.
 add_subdirectory("ndo")
 
