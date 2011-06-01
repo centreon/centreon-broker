@@ -17,6 +17,7 @@
 */
 
 #include "exceptions/basic.hh"
+#include "rrd/connector.hh"
 #include "rrd/factory.hh"
 
 using namespace com::centreon::broker;
@@ -96,8 +97,21 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_output;
+
   // Check that endpoint is output only.
   if (is_input)
     throw (exceptions::basic() << "cannot create an input RRD endpoint");
 
+  // Get RRD path.
+  QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
+  if (it == cfg.params.end())
+    throw (exceptions::basic() << "no 'path' defined for RRD endpoint '"
+             << cfg.name.toStdString().c_str() << "'");
+
+  // Create endpoint.
+  QScopedPointer<rrd::connector> endp(new rrd::connector);
+  endp->set_path(it.value());
+  is_acceptor = false;
+  return (endp.take());
 }
