@@ -288,6 +288,9 @@ add_subdirectory("file")
 # NDO module.
 add_subdirectory("ndo")
 
+# RRD module.
+add_subdirectory("rrd")
+
 # SQL module.
 add_subdirectory("sql")
 
