@@ -17,8 +17,10 @@
 */
 
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "modules/handle.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
 /**************************************
@@ -32,12 +34,17 @@ using namespace com::centreon::broker::modules;
  */
 void handle::_init() {
   // Initialize module.
+  logging::debug << logging::LOW << "resolving initialization routine of module '"
+    << _handle->fileName().toStdString().c_str() << "'";
   void* sym(_handle->resolve("broker_module_init"));
   if (!sym)
     throw (exceptions::basic() << "could not find module initialization routine in '"
              << _handle->fileName().toStdString().c_str()
              << "': " << _handle->errorString().toStdString().c_str());
   (*(void (*)())(sym))();
+  logging::debug << logging::LOW << "module '"
+    << _handle->fileName().toStdString().c_str()
+    << "' successfully initialized";
   return ;
 }
 
@@ -88,12 +95,17 @@ handle& handle::operator=(handle const& h) {
 void handle::close() {
   if (is_open()) {
     // Call deinit function.
+    logging::debug << logging::LOW << "resolving deinitialization routine of module '"
+      << _handle->fileName().toStdString().c_str() << "'";
     void* sym(_handle->resolve("broker_module_deinit"));
     if (!sym)
       throw (exceptions::basic() << "could not find module deinitialiation routine in '"
                << _handle->fileName().toStdString().c_str()
                << "': " << _handle->errorString().toStdString().c_str());
     (*(void (*)(bool))(sym))(true);
+    logging::debug << logging::LOW << "module '"
+      << _handle->fileName().toStdString().c_str()
+      << "' successfully deinitialized";
 
     // Reset library handle.
     _handle.clear();
@@ -120,14 +132,22 @@ void handle::open(QString const& filename) {
   this->close();
 
   // Load library.
+  logging::debug << logging::MEDIUM << "loading module '"
+    << filename.toStdString().c_str() << "'";
   _handle->setFileName(filename);
   if (!_handle->load())
     throw (exceptions::basic() << "could not load module '"
              << filename.toStdString().c_str()
              << "': " << _handle->errorString().toStdString().c_str());
+  logging::debug << logging::MEDIUM << "module '"
+    << filename.toStdString().c_str() << "' successfully loaded";
 
   // Call module's initialization routine.
+  logging::debug << logging::MEDIUM << "initializing module '"
+    << filename.toStdString().c_str() << "'";
   _init();
+  logging::debug << logging::MEDIUM << "module '"
+    << filename.toStdString().c_str() << "' successfully initialized";
 
   return ;
 }

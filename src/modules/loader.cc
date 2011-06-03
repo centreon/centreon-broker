@@ -17,8 +17,10 @@
 */
 
 #include <QDir>
+#include "logging/logging.hh"
 #include "modules/loader.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
 /**************************************
@@ -62,6 +64,10 @@ loader& loader::operator=(loader const& l) {
  *  @param[in] dirname Directory name.
  */
 void loader::load_dir(QString const& dirname) {
+  // Debug message.
+  logging::debug << logging::MEDIUM << "loading module directory '"
+    << dirname.toStdString().c_str() << "'";
+
   // Set directory browsing parameters.
   QDir dir(dirname);
   QStringList l;

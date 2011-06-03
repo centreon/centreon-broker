@@ -22,6 +22,25 @@ using namespace com::centreon::broker::events;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] p Object to copy.
+ */
+void perfdata::_internal_copy(perfdata const& p) {
+  ctime = p.ctime;
+  metric_id = p.metric_id;
+  status = p.status;
+  value = p.value;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/

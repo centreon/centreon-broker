@@ -78,7 +78,7 @@ static int type_id(char const* type) {
 /**
  *  Extract Nagios-formated log data to the C++ object.
  */
-void set_log_data(events::log_entry& le, char const* log_data) {
+void module::set_log_data(events::log_entry& le, char const* log_data) {
   // Duplicate string so that we can split it with strtok_r.
   char* datadup(strdup(log_data));
   if (!datadup)

@@ -33,7 +33,7 @@ namespace       com {
         // Configuration file.
         extern QString gl_configuration_file;
 
-        // Instance informations.
+        // Instance information.
         extern unsigned int instance_id;
         extern QString      instance_name;
 

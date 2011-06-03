@@ -42,6 +42,10 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 // Configuration file name.
 QString module::gl_configuration_file;
 
+// Instance information.
+unsigned int module::instance_id;
+QString      module::instance_name;
+
 // List of host IDs.
 std::map<std::string, int> module::gl_hosts;
 
