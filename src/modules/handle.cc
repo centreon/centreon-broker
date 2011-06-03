@@ -135,6 +135,8 @@ void handle::open(QString const& filename) {
   logging::debug << logging::MEDIUM << "loading module '"
     << filename.toStdString().c_str() << "'";
   _handle->setFileName(filename);
+  _handle->setLoadHints(QLibrary::ResolveAllSymbolsHint
+    | QLibrary::ExportExternalSymbolsHint);
   if (!_handle->load())
     throw (exceptions::basic() << "could not load module '"
              << filename.toStdString().c_str()

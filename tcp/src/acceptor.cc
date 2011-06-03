@@ -17,6 +17,7 @@
 */
 
 #include <assert.h>
+#include <QScopedPointer>
 #include <stdlib.h>
 #include "exceptions/basic.hh"
 #include "tcp/acceptor.hh"
@@ -94,7 +95,10 @@ void acceptor::accept(QSharedPointer<com::centreon::broker::io::stream> ptr) {
  *  Close the acceptor.
  */
 void acceptor::close() {
-  _socket.close();
+  if (!_socket.isNull()) {
+    _socket->close();
+    _socket.reset();
+  }
   return ;
 }
 
@@ -105,10 +109,6 @@ void acceptor::close() {
  */
 void acceptor::listen_on(unsigned short port) {
   _port = port;
-  // Listen on port.
-  if (!_socket.listen(QHostAddress::Any, _port))
-    throw (exceptions::basic() << "could not listen on port " << _port
-             << ": " << _socket.errorString().toStdString().c_str());
   return ;
 }
 
@@ -116,16 +116,24 @@ void acceptor::listen_on(unsigned short port) {
  *  Start connection acception.
  */
 QSharedPointer<io::stream> acceptor::open() {
+  // Listen on port.
+  if (_socket.isNull()) {
+    _socket.reset(new QTcpServer);
+    if (!_socket->listen(QHostAddress::Any, _port))
+      throw (exceptions::basic() << "could not listen on port " << _port
+               << ": " << _socket->errorString().toStdString().c_str());
+  }
+
   // Wait for incoming connections.
-  if (!_socket.waitForNewConnection(-1))
+  if (!_socket->waitForNewConnection(-1))
     throw (exceptions::basic() << "could not accept incoming TCP client: "
-             << _socket.errorString().toStdString().c_str());
+             << _socket->errorString().toStdString().c_str());
 
   // Accept client.
-  QSharedPointer<QTcpSocket> incoming(_socket.nextPendingConnection());
+  QSharedPointer<QTcpSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
     throw (exceptions::basic() << "could not accept incoming TCP client: "
-             << _socket.errorString().toStdString().c_str());
+             << _socket->errorString().toStdString().c_str());
 
   // Forward object.
   if (!_down.isNull()) {

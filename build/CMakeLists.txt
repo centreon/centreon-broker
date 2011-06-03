@@ -232,9 +232,9 @@ set(LIBROKER_SOURCES
 #	../src/io/tls/stream.cc
 #  )
 #endif ()
-add_library(roker STATIC ${LIBROKER_SOURCES})
+#add_library(roker STATIC ${LIBROKER_SOURCES})
 #target_link_libraries(roker ${GNUTLS_LIBRARIES})
-target_link_libraries(roker ${QT_LIBRARIES})
+#target_link_libraries(roker ${QT_LIBRARIES})
 #target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
@@ -247,6 +247,7 @@ target_link_libraries(roker ${QT_LIBRARIES})
 
 # Standalone binary.
 add_executable(cbd
+  ${LIBROKER_SOURCES}
   # Sources.
   "${SRC_DIR}/daemon/main.cc"
   "${SRC_DIR}/io/factory.cc"
@@ -257,7 +258,7 @@ add_executable(cbd
   "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/mapping.hh"
 )
-target_link_libraries(cbd "roker" ${QT_LIBRARIES})
+target_link_libraries(cbd ${QT_LIBRARIES})
 
 # Centreon Engine/Nagios module.
 add_library(cbmod SHARED
@@ -284,7 +285,7 @@ target_link_libraries(cbmod "roker" ${QT_LIBRARIES})
 set_target_properties(cbmod PROPERTIES PREFIX "")
 
 # Install rules.
-install(TARGETS roker cbd
+install(TARGETS cbd cbmod
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)

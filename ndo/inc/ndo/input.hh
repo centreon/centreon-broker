@@ -19,6 +19,7 @@
 #ifndef CCB_NDO_INPUT_HH_
 # define CCB_NDO_INPUT_HH_
 
+# include <sstream>
 # include "io/stream.hh"
 
 namespace              com {
@@ -34,6 +35,8 @@ namespace              com {
          */
         class          input : virtual public com::centreon::broker::io::stream {
          private:
+          std::string  _buffer;
+          std::string  _old;
           char const*  _get_line();
           template     <typename T>
           T*           _handle_event();

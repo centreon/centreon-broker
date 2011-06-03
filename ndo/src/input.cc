@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <QScopedPointer>
 #include <stdlib.h>
 #include "events/events.hh"
@@ -33,6 +34,22 @@ using namespace com::centreon::broker::ndo;
 *           Private Methods           *
 *                                     *
 **************************************/
+
+/**
+ *  Read a line of input.
+ */
+char const* input::_get_line() {
+  size_t it;
+  while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
+    QSharedPointer<io::data> data(_from->read());
+    if (data.isNull() || !data->size())
+      break ;
+    _buffer.append(static_cast<char*>(data->memory()), data->size());
+  }
+  _old = _buffer.substr(0, it);
+  _buffer.erase(0, it);
+  return (_old.c_str());
+}
 
 /**
  *  Extract event parameters from the data stream.

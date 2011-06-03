@@ -35,7 +35,8 @@ namespace                com {
         class            acceptor : public com::centreon::broker::io::acceptor {
          private:
           unsigned short _port;
-	  QTcpServer     _socket;
+	  QScopedPointer<QTcpServer>
+                         _socket;
                          acceptor(acceptor const& a);
           acceptor&      operator=(acceptor const& a);
 
