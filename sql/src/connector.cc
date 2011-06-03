@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
 #include "sql/connector.hh"
 #include "sql/stream.hh"
 
@@ -73,17 +72,6 @@ connector& connector::operator=(connector const& c) {
  *  Close the connector.
  */
 void connector::close() {
-  return ;
-}
-
-/**
- *  Connect a lower layer stream.
- *
- *  @param[in] ptr Unused.
- */
-void connector::connect(QSharedPointer<io::stream> ptr) {
-  (void)ptr;
-  throw (exceptions::basic() << "cannot connect through a SQL connect (software bug)");
   return ;
 }
 

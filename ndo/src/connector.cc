@@ -74,33 +74,20 @@ void connector::close() {
 }
 
 /**
- *  Connect to a remote NDO connection.
- *
- *  @param[in] ptr Incoming connection.
- */
-void connector::connect(QSharedPointer<io::stream> ptr) {
-  // In and out objects.
-  QSharedPointer<io::stream> in;
-  QSharedPointer<io::stream> out;
-
-  // Create input and output objects.
-  if (_is_in) {
-    in = QSharedPointer<io::stream>(new ndo::input);
-    in->read_from(ptr);
-    out = QSharedPointer<io::stream>(new multiplexing::publisher);
-  }
-  else {
-    in = QSharedPointer<io::stream>(new multiplexing::subscriber);
-    out = QSharedPointer<io::stream>(new ndo::output);
-    out->write_to(ptr);
-  }
-
-  // Loop through events.
-}
-
-/**
  *  Open the connector.
  */
 QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>());
+  QSharedPointer<io::stream> retval;
+  if (!_down.isNull()) {
+    retval = _down->open();
+    QSharedPointer<io::stream> ndo_stream;
+    if (_is_in)
+      ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+    else
+      ndo_stream = QSharedPointer<io::stream>(new ndo::output);
+    ndo_stream->read_from(retval);
+    ndo_stream->write_to(retval);
+    retval = ndo_stream;
+  }
+  return (retval);
 }

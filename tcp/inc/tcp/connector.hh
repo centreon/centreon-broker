@@ -48,7 +48,6 @@ namespace                com {
                          ~connector();
           connector&     operator=(connector const& c);
           void           close();
-          void           connect(QSharedPointer<com::centreon::broker::io::stream> ptr);
           void           connect_to(QString const& host, unsigned short port);
           QSharedPointer<com::centreon::broker::io::stream>
                          open();

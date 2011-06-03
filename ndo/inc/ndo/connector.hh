@@ -42,7 +42,6 @@ namespace            com {
                      ~connector();
           connector& operator=(connector const& c);
           void       close();
-          void       connect(QSharedPointer<com::centreon::broker::io::stream> ptr);
           QSharedPointer<com::centreon::broker::io::stream>
                      open();
         };

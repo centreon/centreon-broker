@@ -88,20 +88,6 @@ void connector::close() {
 }
 
 /**
- *  @brief Connect from another stream.
- *
- *  This method should not be called, as TCP directly handles
- *  connection.
- *
- *  @param[in] ptr Unused.
- */
-void connector::connect(QSharedPointer<io::stream> ptr) {
-  (void)ptr;
-  throw (exceptions::basic() << "attempt to connect a TCP connector from another stream (this is a software bug)");
-  return ;
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] host Host to connect to.
@@ -127,12 +113,6 @@ QSharedPointer<io::stream> connector::open() {
              << _host.toStdString().c_str() << ":" << _port
              << ": " << _socket->errorString().toStdString().c_str());
 
-  // Forward stream.
-  if (!_down.isNull()) {
-    QSharedPointer<io::stream> ptr(new stream(_socket));
-    _down->connect(ptr);
-    return (ptr);
-  }
-
-  return (QSharedPointer<io::stream>());
+  // Return stream.
+  return (QSharedPointer<io::stream>(new stream(_socket)));
 }

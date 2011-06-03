@@ -42,9 +42,7 @@ namespace                           com {
                                     connector(connector const& c);
           virtual                   ~connector();
           connector&                operator=(connector const& c);
-          virtual void              connect(QSharedPointer<stream> ptr
-                                      = QSharedPointer<stream>()) = 0;
-          void                      on(QSharedPointer<connector> down);
+          void                      from(QSharedPointer<connector> down);
         };
       }
     }

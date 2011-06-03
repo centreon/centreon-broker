@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
 #include "storage/connector.hh"
 #include "storage/stream.hh"
 
@@ -130,17 +129,6 @@ connector& connector::operator=(connector const& c) {
  *  Close the connector.
  */
 void connector::close() {
-  return ;
-}
-
-/**
- *  Connect a lower layer stream.
- *
- *  @param[in] ptr Unused.
- */
-void connector::connect(QSharedPointer<io::stream> ptr) {
-  (void)ptr;
-  throw (exceptions::basic() << "cannot connect through a storage connect (software bug)");
   return ;
 }
 

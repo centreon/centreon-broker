@@ -62,7 +62,7 @@ connector& connector::operator=(connector const& c) {
  *
  *  @param[in] down Object that will receive new connections.
  */
-void connector::on(QSharedPointer<connector> down) {
+void connector::from(QSharedPointer<connector> down) {
   _down = down;
   return ;
 }

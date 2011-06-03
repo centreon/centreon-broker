@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
 #include "rrd/connector.hh"
 
 using namespace com::centreon::broker;
@@ -63,17 +62,6 @@ connector& connector::operator=(connector const& c) {
  *  Close the connector.
  */
 void connector::close() {
-  return ;
-}
-
-/**
- *  Connect to a lower layer stream.
- *
- *  @param[in] ptr Unused.
- */
-void connector::connect(QSharedPointer<io::stream> ptr) {
-  (void)ptr;
-  throw (exceptions::basic() << "attempt to connect through a RRD connector (software bug)");
   return ;
 }
 
