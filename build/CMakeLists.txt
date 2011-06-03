@@ -264,11 +264,17 @@ add_library(cbmod SHARED
   # roker sources must be compiled within the module.
   ${LIBROKER_SOURCES}
   # Sources.
+  "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/io/stream.cc"
+  "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module/callbacks.cc"
   "${SRC_DIR}/module/initial.cc"
   "${SRC_DIR}/module/set_log_data.cc"
   "${SRC_DIR}/module/main.cc"
   # Headers.
+  "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/stream.hh"
+  "${INC_DIR}/mapping.hh"
   "${INC_DIR}/module/callbacks.hh"
   "${INC_DIR}/module/initial.hh"
   "${INC_DIR}/module/internal.hh"

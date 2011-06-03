@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include "config/parser.hh"
 #include "config/state.hh"
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "logging/syslogger.hh"
 #include "module/callbacks.hh"
@@ -186,6 +187,8 @@ extern "C" {
       // Set configuration file.
       if (args)
         module::gl_configuration_file = args;
+      else
+        throw (exceptions::basic() << "no configuration file provided");
 
       // Try configuration parsing.
       config::parser p;

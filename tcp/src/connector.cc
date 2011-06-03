@@ -50,7 +50,7 @@ void connector::_internal_copy(connector const& c) {
 /**
  *  Default constructor.
  */
-connector::connector() : _port(0), _socket(new QTcpSocket) {}
+connector::connector() : _port(0) {}
 
 /**
  *  Copy constructor.
@@ -118,6 +118,7 @@ void connector::connect_to(QString const& host, unsigned short port) {
  */
 QSharedPointer<io::stream> connector::open() {
   // Launch connection process.
+  _socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
   _socket->connectToHost(_host, _port);
 
   // Wait for connection result.

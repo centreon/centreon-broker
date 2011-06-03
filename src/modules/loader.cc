@@ -17,6 +17,7 @@
 */
 
 #include <QDir>
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "modules/loader.hh"
 
@@ -82,7 +83,12 @@ void loader::load_dir(QString const& dirname) {
     QString file(dirname);
     file.append("/");
     file.append(*it);
-    load_file(file);
+    try {
+      load_file(file);
+    }
+    catch (exceptions::basic const& e) {
+      logging::error << logging::HIGH << e.what();
+    }
   }
 
   return ;
