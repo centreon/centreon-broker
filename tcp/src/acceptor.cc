@@ -20,6 +20,7 @@
 #include <QScopedPointer>
 #include <stdlib.h>
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "tcp/acceptor.hh"
 #include "tcp/stream.hh"
 
@@ -77,21 +78,6 @@ acceptor::acceptor() : _port(0) {}
 acceptor::~acceptor() {}
 
 /**
- *  @brief Accept an incoming connection.
- *
- *  This method should not be called, as TCP directly handles connection
- *  acception.
- *
- *  @param[in] ptr Unused.
- */
-void acceptor::accept(QSharedPointer<com::centreon::broker::io::stream> ptr) {
-  (void)ptr;
-  throw (exceptions::basic() << "attempt make a TCP acceptor accept " \
-           "an incoming connection from a lower layer (this is a software bug)");
-  return ;
-}
-
-/**
  *  Close the acceptor.
  */
 void acceptor::close() {
@@ -125,6 +111,7 @@ QSharedPointer<io::stream> acceptor::open() {
   }
 
   // Wait for incoming connections.
+  logging::debug << logging::MEDIUM << "TCP: waiting for new connection";
   if (!_socket->waitForNewConnection(-1))
     throw (exceptions::basic() << "could not accept incoming TCP client: "
              << _socket->errorString().toStdString().c_str());
@@ -134,12 +121,12 @@ QSharedPointer<io::stream> acceptor::open() {
   if (incoming.isNull())
     throw (exceptions::basic() << "could not accept incoming TCP client: "
              << _socket->errorString().toStdString().c_str());
+  logging::info << logging::MEDIUM << "TCP: new client successfully connected";
 
-  // Forward object.
-  if (!_down.isNull()) {
-    QSharedPointer<io::stream> new_client(new stream(incoming));
-    _down->accept(new_client);
-  }
+  // Return object.
+  QSharedPointer<io::stream> new_client;
+  if (!_down.isNull())
+    new_client = QSharedPointer<io::stream>(new stream(incoming));
 
-  return (QSharedPointer<io::stream>());
+  return (new_client);
 }

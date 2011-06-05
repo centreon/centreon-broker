@@ -68,38 +68,6 @@ acceptor& acceptor::operator=(acceptor const& a) {
 }
 
 /**
- *  Accept an incoming connection.
- *
- *  @param[in] ptr New connection object.
- */
-void acceptor::accept(QSharedPointer<io::stream> ptr) {
-  // In and out objects.
-  QSharedPointer<io::stream> in;
-  QSharedPointer<io::stream> out;
-
-  // Create input and output objects.
-  if (!_is_out) {
-    in = QSharedPointer<io::stream>(new ndo::input);
-    in->read_from(ptr);
-    out = QSharedPointer<io::stream>(new multiplexing::publisher);
-  }
-  else {
-    in = QSharedPointer<io::stream>(new multiplexing::subscriber);
-    out = QSharedPointer<io::stream>(new ndo::output);
-    out->write_to(ptr);
-  }
-
-  // Feeder thread.
-  QScopedPointer<processing::feeder> feedr(new processing::feeder);
-  feedr->prepare(in, out);
-  QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
-  processing::feeder* f(feedr.take());
-  f->run();
-
-  return ;
-}
-
-/**
  *  Close the acceptor.
  */
 void acceptor::close() {
@@ -110,14 +78,37 @@ void acceptor::close() {
  *  Open the acceptor.
  */
 QSharedPointer<io::stream> acceptor::open() {
-  QSharedPointer<io::stream> retval;
+  // Wait for client from the lower layer.
   if (!_down.isNull()) {
-    retval = _down->open();
-    QSharedPointer<io::stream> ndo_stream;
-    ndo_stream = QSharedPointer<io::stream>(new ndo::input);
-    ndo_stream->read_from(retval);
-    ndo_stream->write_to(retval);
-    retval = ndo_stream;
+    QSharedPointer<io::stream> base(_down->open());
+
+    if (!base.isNull()) {
+      // In and out objects.
+      QSharedPointer<io::stream> in;
+      QSharedPointer<io::stream> out;
+
+      // Create input and output objects.
+      if (!_is_out) {
+        in = QSharedPointer<io::stream>(new ndo::input);
+        in->read_from(base);
+        in->write_to(base);
+        out = QSharedPointer<io::stream>(new multiplexing::publisher);
+      }
+      else {
+        in = QSharedPointer<io::stream>(new multiplexing::subscriber);
+        out = QSharedPointer<io::stream>(new ndo::output);
+        out->read_from(base);
+        out->write_to(base);
+      }
+
+      // Feeder thread.
+      QScopedPointer<processing::feeder> feedr(new processing::feeder);
+      feedr->prepare(in, out);
+      QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
+      processing::feeder* f(feedr.take());
+      f->start();
+    }
   }
-  return (retval);
+
+  return (QSharedPointer<io::stream>());
 }

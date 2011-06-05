@@ -104,7 +104,7 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
           && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
         if (is_acceptor) {
           QSharedPointer<io::acceptor> current(static_cast<io::acceptor*>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor)));
-          static_cast<io::acceptor*>(prev)->on(current);
+          static_cast<io::acceptor*>(prev)->from(current);
           prev = current.data();
         }
         else {

@@ -17,6 +17,7 @@
 */
 
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "tcp/connector.hh"
 #include "tcp/stream.hh"
 
@@ -112,6 +113,8 @@ QSharedPointer<io::stream> connector::open() {
     throw (exceptions::basic() << "could not connect to "
              << _host.toStdString().c_str() << ":" << _port
              << ": " << _socket->errorString().toStdString().c_str());
+  logging::info << logging::MEDIUM << "TCP: successfully connected to "
+    << _host.toStdString().c_str() << ":" << _port;
 
   // Return stream.
   return (QSharedPointer<io::stream>(new stream(_socket)));

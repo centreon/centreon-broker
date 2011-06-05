@@ -42,9 +42,7 @@ namespace                          com {
                                    acceptor(acceptor const& a);
           virtual                  ~acceptor();
           acceptor&                operator=(acceptor const& a);
-          virtual void             accept(QSharedPointer<stream> ptr
-                                     = QSharedPointer<stream>()) = 0;
-          void                     on(QSharedPointer<acceptor> down);
+          void                     from(QSharedPointer<acceptor> down);
         };
       }
     }

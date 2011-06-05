@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "events/events.hh"
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 #include "ndo/input.hh"
@@ -66,8 +67,10 @@ T* input::_handle_event() {
     if (key_str) {
       typename std::map<int, getter_setter<T> >::const_iterator it;
       key = strtol(key_str, NULL, 10);
-      if (NDO_API_ENDDATA == key)
+      if (NDO_API_ENDDATA == key) {
+        logging::debug << logging::MEDIUM << "NDO: new event successfully generated";
         break ;
+      }
       value_str = strchr(key_str, '=');
       value_str = (value_str ? value_str + 1 : "");
       it = ndo_mapped_type<T>::map.find(key);
@@ -75,6 +78,7 @@ T* input::_handle_event() {
         (*it->second.setter)(*event.data(), *it->second.member, value_str);
     }
     else {
+      logging::debug << logging::MEDIUM << "NDO: could not build a complete event";
       event.reset();
       break ;
     }

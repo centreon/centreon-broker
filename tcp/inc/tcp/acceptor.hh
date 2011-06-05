@@ -43,7 +43,6 @@ namespace                com {
          public:
                          acceptor();
                          ~acceptor();
-          void           accept(QSharedPointer<com::centreon::broker::io::stream> ptr);
           void           close();
           void           listen_on(unsigned short port);
           QSharedPointer<com::centreon::broker::io::stream>

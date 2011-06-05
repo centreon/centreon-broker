@@ -81,12 +81,14 @@ QSharedPointer<io::stream> connector::open() {
   if (!_down.isNull()) {
     retval = _down->open();
     QSharedPointer<io::stream> ndo_stream;
-    if (_is_in)
-      ndo_stream = QSharedPointer<io::stream>(new ndo::input);
-    else
-      ndo_stream = QSharedPointer<io::stream>(new ndo::output);
-    ndo_stream->read_from(retval);
-    ndo_stream->write_to(retval);
+    if (!retval.isNull()) {
+      if (_is_in)
+        ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+      else
+        ndo_stream = QSharedPointer<io::stream>(new ndo::output);
+      ndo_stream->read_from(retval);
+      ndo_stream->write_to(retval);
+    }
     retval = ndo_stream;
   }
   return (retval);

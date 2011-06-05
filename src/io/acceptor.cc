@@ -61,7 +61,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *
  *  @param[in] down Object to forward to.
  */
-void acceptor::on(QSharedPointer<acceptor> down) {
+void acceptor::from(QSharedPointer<acceptor> down) {
   _down = down;
   return ;
 }

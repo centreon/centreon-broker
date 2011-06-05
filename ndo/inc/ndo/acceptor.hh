@@ -40,7 +40,6 @@ namespace           com {
                     acceptor(acceptor const& a);
                     ~acceptor();
           acceptor& operator=(acceptor const& a);
-          void      accept(QSharedPointer<com::centreon::broker::io::stream> ptr);
           void      close();
           QSharedPointer<com::centreon::broker::io::stream>
                     open();
