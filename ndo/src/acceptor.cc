@@ -110,5 +110,14 @@ void acceptor::close() {
  *  Open the acceptor.
  */
 QSharedPointer<io::stream> acceptor::open() {
-  return (QSharedPointer<io::stream>());
+  QSharedPointer<io::stream> retval;
+  if (!_down.isNull()) {
+    retval = _down->open();
+    QSharedPointer<io::stream> ndo_stream;
+    ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+    ndo_stream->read_from(retval);
+    ndo_stream->write_to(retval);
+    retval = ndo_stream;
+  }
+  return (retval);
 }

@@ -281,7 +281,7 @@ add_library(cbmod SHARED
   "${INC_DIR}/module/internal.hh"
   "${INC_DIR}/module/set_log_data.hh"
 )
-target_link_libraries(cbmod "roker" ${QT_LIBRARIES})
+target_link_libraries(cbmod ${QT_LIBRARIES})
 set_target_properties(cbmod PROPERTIES PREFIX "")
 
 # Install rules.
