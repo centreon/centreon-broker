@@ -19,6 +19,7 @@
 #include "events/events.hh"
 #include "exceptions/basic.hh"
 #include "io/raw.hh"
+#include "logging/logging.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 #include "ndo/internal.hh"
@@ -101,6 +102,7 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] i Event to send.
  */
 void output::write(QSharedPointer<io::data> i) {
+  logging::debug << logging::MEDIUM << "NDO: writing data";
   events::event* e((events::event*)i.data());
   try {
     std::stringstream buffer;
@@ -300,6 +302,7 @@ void output::write(QSharedPointer<io::data> i) {
     QSharedPointer<io::raw> data(new io::raw);
     data->append(buffer.str().c_str());
     _to->write(data.staticCast<io::data>());
+    logging::debug << logging::MEDIUM << "data successfully sent";
   }
   catch (...) {}
 

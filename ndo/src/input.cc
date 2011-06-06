@@ -48,7 +48,10 @@ char const* input::_get_line() {
     _buffer.append(static_cast<char*>(data->memory()), data->size());
   }
   _old = _buffer.substr(0, it);
-  _buffer.erase(0, it);
+  if (it != std::string::npos)
+    _buffer.erase(0, it + 1);
+  else
+    _buffer.erase(0, it);
   return (_old.c_str());
 }
 
@@ -130,10 +133,12 @@ input& input::operator=(input const& i) {
  *  @return Next available event, NULL if stream is closed.
  */
 QSharedPointer<io::data> input::read() {
+  // Return value.
   QScopedPointer<events::event> e;
-  char const* line;
 
   // Get the next non-empty line.
+  logging::debug << logging::MEDIUM << "NDO: reading event";
+  char const* line;
   do {
     line = _get_line();
   } while (line && !line[0]);

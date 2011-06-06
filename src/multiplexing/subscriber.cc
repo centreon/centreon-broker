@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "events/event.hh"
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "multiplexing/internal.hh"
 #include "multiplexing/subscriber.hh"
 
@@ -136,10 +137,15 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
         _cv.wait(&_mutex, deadline);
       if (!_events.empty()) {
         event = _events.dequeue();
+        logging::debug << logging::LOW << _events.size()
+          << " events remaining in subcriber";
       }
     }
-    else
+    else {
       event = _events.dequeue();
+      logging::debug << logging::LOW << _events.size()
+        << " events remaining in subscriber";
+    }
   }
   return (event);
 }

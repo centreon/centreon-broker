@@ -89,5 +89,6 @@ void stream::write(QSharedPointer<io::data> d) {
   if (wb < 0)
     throw (exceptions::basic() << "TCP write error: "
              << _socket->errorString().toStdString().c_str());
+  _socket->waitForBytesWritten(-1);
   return ;
 }
