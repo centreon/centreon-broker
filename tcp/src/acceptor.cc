@@ -124,9 +124,5 @@ QSharedPointer<io::stream> acceptor::open() {
   logging::info << logging::MEDIUM << "TCP: new client successfully connected";
 
   // Return object.
-  QSharedPointer<io::stream> new_client;
-  if (!_down.isNull())
-    new_client = QSharedPointer<io::stream>(new stream(incoming));
-
-  return (new_client);
+  return (QSharedPointer<io::stream>(new stream(incoming)));
 }
