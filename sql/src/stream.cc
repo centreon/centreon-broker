@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <QSqlError>
 #include <QVariant>
 #include <sstream>
 #include <stdlib.h>
@@ -114,7 +115,7 @@ void stream::_clean_tables(int instance_id) {
        << mapped_type<events::service>::table << ".enabled=0"
        << " WHERE " << mapped_type<events::host>::table
        << ".instance_id=" << instance_id;
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove host groups.
@@ -122,7 +123,7 @@ void stream::_clean_tables(int instance_id) {
     std::ostringstream ss;
     ss << "DELETE FROM " << mapped_type<events::host_group>::table
        << " WHERE instance_id=" << instance_id;
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove service groups.
@@ -130,7 +131,7 @@ void stream::_clean_tables(int instance_id) {
     std::ostringstream ss;
     ss << "DELETE FROM " << mapped_type<events::service_group>::table
        << " WHERE instance_id=" << instance_id;
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove host dependencies.
@@ -145,7 +146,7 @@ void stream::_clean_tables(int instance_id) {
           "  SELECT host_id"
           "   FROM " << mapped_type<events::host>::table
        << "   WHERE instance_id=" << instance_id << ")";
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove host parents.
@@ -160,7 +161,7 @@ void stream::_clean_tables(int instance_id) {
           "  SELECT host_id"
           "   FROM " << mapped_type<events::host>::table
        << "   WHERE instance_id=" << instance_id << ")";
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove service dependencies.
@@ -179,7 +180,7 @@ void stream::_clean_tables(int instance_id) {
           "   JOIN " << mapped_type<events::host>::table << " AS hosts"
           "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
        << instance_id << ")";
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
   // Remove list of modules.
@@ -187,9 +188,38 @@ void stream::_clean_tables(int instance_id) {
     std::ostringstream ss;
     ss << "DELETE FROM " << mapped_type<events::module>::table
        << " WHERE instance_id=" << instance_id;
-    _db.exec(ss.str().c_str());
+    _execute(ss.str().c_str());
   }
 
+  return ;
+}
+
+/**
+ *  Execute a plain SQL query.
+ *
+ *  @param[in] query Query to execute.
+ */
+void stream::_execute(QString const& query) {
+  logging::debug << logging::LOW << "SQL: executing query: "
+    << query.toStdString().c_str();
+  _db.exec(query);
+  QSqlError err(_db.lastError());
+  if (err.type() != QSqlError::NoError)
+    throw (exceptions::basic() << "SQL: "
+             << err.text().toStdString().c_str());
+  return ;
+}
+
+/**
+ *  Execute a prepare SQL query.
+ *
+ *  @param[in] query Query to execute.
+ */
+void stream::_execute(QSqlQuery& query) {
+  logging::debug << logging::LOW << "SQL: executing query";
+  if (!query.exec())
+    throw (exceptions::basic() << "SQL: "
+      << query.lastError().text().toStdString().c_str());
   return ;
 }
 
@@ -226,7 +256,6 @@ bool stream::_insert(T const& t) {
   }
   query.resize(query.size() - 2);
   query.append(")");
-  logging::info << logging::LOW << "executing query: " << query.c_str();
 
   // Execute query.
   QSqlQuery q(_db);
@@ -452,7 +481,7 @@ void stream::_process_acknowledgement(events::event const& e) {
     *static_cast<events::acknowledgement const*>(&e));
   if (!_insert(ack)) {
     *_acknowledgement_stmt << ack;
-    _acknowledgement_stmt->exec();
+    _execute(*_acknowledgement_stmt);
   }
 
   return ;
@@ -471,7 +500,7 @@ void stream::_process_comment(events::event const& e) {
   events::comment const& c(*static_cast<events::comment const*>(&e));
   if (!_insert(c)) {
     *_comment_stmt << c;
-    _comment_stmt->exec();
+    _execute(*_comment_stmt);
   }
 
   return ;
@@ -490,7 +519,7 @@ void stream::_process_custom_variable(events::event const& e) {
   events::custom_variable const& cv(
     *static_cast<events::custom_variable const*>(&e));
   *_custom_variable_insert_stmt << cv;
-  _custom_variable_insert_stmt->exec();
+  _execute(*_custom_variable_insert_stmt);
 
   return ;
 }
@@ -508,7 +537,7 @@ void stream::_process_custom_variable_status(events::event const& e) {
   events::custom_variable_status const& cvs(
     *static_cast<events::custom_variable_status const*>(&e));
   *_custom_variable_status_stmt << cvs;
-  _custom_variable_status_stmt->exec();
+  _execute(*_custom_variable_status_stmt);
 
   return ;
 }
@@ -526,7 +555,7 @@ void stream::_process_downtime(events::event const& e) {
   events::downtime const& d(*static_cast<events::downtime const*>(&e));
   if (!_insert(d)) {
     *_downtime_stmt << d;
-    _downtime_stmt->exec();
+    _execute(*_downtime_stmt);
   }
 
   return ;
@@ -546,7 +575,7 @@ void stream::_process_event_handler(events::event const& e) {
     *static_cast<events::event_handler const*>(&e));
   if (!_insert(eh)) {
     *_event_handler_stmt << eh;
-    _event_handler_stmt->exec();
+    _execute(*_event_handler_stmt);
   }
 
   return ;
@@ -566,7 +595,7 @@ void stream::_process_flapping_status(events::event const& e) {
     *static_cast<events::flapping_status const*>(&e));
   if (!_insert(fs)) {
     *_flapping_status_stmt << fs;
-    _flapping_status_stmt->exec();
+    _execute(*_flapping_status_stmt);
   }
 
   return ;
@@ -584,7 +613,7 @@ void stream::_process_host(events::event const& e) {
   // Processing.
   events::host const& h(*static_cast<events::host const*>(&e));
   *_host_stmt << h;
-  _host_stmt->exec();
+  _execute(*_host_stmt);
   int matched = _host_stmt->numRowsAffected();
   if (!matched || (-1 == matched))
     _insert(h);
@@ -605,7 +634,7 @@ void stream::_process_host_check(events::event const& e) {
   events::host_check const& hc(
     *static_cast<events::host_check const*>(&e));
   *_host_check_stmt << hc;
-  _host_check_stmt->exec();
+  _execute(*_host_check_stmt);
 
   return ;
 }
@@ -724,7 +753,7 @@ void stream::_process_host_state(events::event const& e) {
     *static_cast<events::host_state const*>(&e));
   if (hs.end_time) {
     *_host_state_stmt << hs;
-    _host_state_stmt->exec();
+    _execute(*_host_state_stmt);
   }
   else
     _insert(hs);
@@ -745,7 +774,7 @@ void stream::_process_host_status(events::event const& e) {
   events::host_status const& hs(
     *static_cast<events::host_status const*>(&e));
   *_host_status_stmt << hs;
-  _host_status_stmt->exec();
+  _execute(*_host_status_stmt);
 
   return ;
 }
@@ -767,13 +796,13 @@ void stream::_process_instance(events::event const& e) {
   if (!i.program_end) {
     if (!_insert(i)) {
       *_instance_stmt << i;
-      _instance_stmt->exec();
+      _execute(*_instance_stmt);
     }
   }
   // Program end.
   else {
     *_instance_stmt << i;
-    _instance_stmt->exec();
+    _execute(*_instance_stmt);
   }
 
   return ;
@@ -792,7 +821,7 @@ void stream::_process_instance_status(events::event const& e) {
   events::instance_status const& is(
     *static_cast<events::instance_status const*>(&e));
   *_instance_status_stmt << is;
-  _instance_status_stmt->exec();
+  _execute(*_instance_status_stmt);
 
   return ;
 }
@@ -976,7 +1005,7 @@ void stream::_process_log(events::event const& e) {
   q.prepare(query.c_str());
   q << le;
   q.bindValue(field, issue);
-  q.exec();
+  _execute(q);
 
   return ;
 }
@@ -1011,7 +1040,7 @@ void stream::_process_notification(events::event const& e) {
     *static_cast<events::notification const*>(&e));
   if (!_insert(n)) {
     *_notification_stmt << n;
-    _notification_stmt->exec();
+    _execute(*_notification_stmt);
   }
 
   return ;
@@ -1029,11 +1058,11 @@ void stream::_process_service(events::event const& e) {
   // Processing.
   events::service const& s(*static_cast<events::service const*>(&e));
   *_service_stmt << s;
-  _service_stmt->exec();
+  _execute(*_service_stmt);
   int matched = _service_stmt->numRowsAffected();
   if (!matched || (-1 == matched)) {
     *_service_insert_stmt << s;
-    _service_insert_stmt->exec();
+    _execute(*_service_insert_stmt);
   }
 
   return ;
@@ -1052,7 +1081,7 @@ void stream::_process_service_check(events::event const& e) {
   events::service_check const& sc(
     *static_cast<events::service_check const*>(&e));
   *_service_check_stmt << sc;
-  _service_check_stmt->exec();
+  _execute(*_service_check_stmt);
 
   return ;
 }
@@ -1155,7 +1184,7 @@ void stream::_process_service_state(events::event const& e) {
     *static_cast<events::service_state const*>(&e));
   if (ss.end_time) {
     *_service_state_stmt << ss;
-    _service_state_stmt->exec();
+    _execute(*_service_state_stmt);
   }
   else
     _insert(ss);
@@ -1176,7 +1205,7 @@ void stream::_process_service_status(events::event const& e) {
   events::service_status const& ss(
     *static_cast<events::service_status const*>(&e));
   *_service_status_stmt << ss;
-  _service_status_stmt->exec();
+  _execute(*_service_status_stmt);
 
   return ;
 }
@@ -1276,6 +1305,28 @@ stream::~stream() {
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
+
+  // Reset statements.
+  _acknowledgement_stmt.reset();
+  _comment_stmt.reset();
+  _custom_variable_insert_stmt.reset();
+  _custom_variable_status_stmt.reset();
+  _downtime_stmt.reset();
+  _event_handler_stmt.reset();
+  _flapping_status_stmt.reset();
+  _host_stmt.reset();
+  _host_check_stmt.reset();
+  _host_state_stmt.reset();
+  _host_status_stmt.reset();
+  _instance_stmt.reset();
+  _instance_status_stmt.reset();
+  _issue_stmt.reset();
+  _notification_stmt.reset();
+  _service_insert_stmt.reset();
+  _service_stmt.reset();
+  _service_check_stmt.reset();
+  _service_state_stmt.reset();
+  _service_status_stmt.reset();
 
   // Remove database connection.
   QSqlDatabase::removeDatabase(id);

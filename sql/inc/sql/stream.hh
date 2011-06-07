@@ -63,6 +63,8 @@ namespace              com {
           QSqlDatabase _db;
           stream&      operator=(stream const& s);
           void         _clean_tables(int instance_id);
+          void         _execute(QString const& query);
+          void         _execute(QSqlQuery& query);
           template     <typename T>
           bool         _insert(T const& t);
           void         _prepare();

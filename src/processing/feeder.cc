@@ -31,14 +31,18 @@ using namespace com::centreon::broker::processing;
 /**
  *  Default constructor.
  */
-feeder::feeder() {}
+feeder::feeder() : _should_exit(false) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] f Object to copy.
  */
-feeder::feeder(feeder const& f) : QThread(), _in(f._in), _out(f._out) {}
+feeder::feeder(feeder const& f)
+  : QThread(),
+    _in(f._in),
+    _out(f._out),
+    _should_exit(false) {}
 
 /**
  *  Destructor.
@@ -59,6 +63,14 @@ feeder& feeder::operator=(feeder const& f) {
 }
 
 /**
+ *  Request thread termination.
+ */
+void feeder::exit() {
+  _should_exit = true;
+  return ;
+}
+
+/**
  *  Prepare the object before running.
  *
  *  @param[in] in  Input object.
@@ -75,12 +87,13 @@ void feeder::prepare(QSharedPointer<io::stream> in,
  *  Thread main routine.
  */
 void feeder::run() {
+  _should_exit = false;
   try {
     if (_in.isNull())
       throw (exceptions::basic() << "could not feed with empty input");
     if (_out.isNull())
       throw (exceptions::basic() << "could not feed with empty output");
-    while (true) {
+    while (!_should_exit) {
       QSharedPointer<io::data> data;
       data = _in->read();
       if (data.isNull() || !data->size())
@@ -89,8 +102,13 @@ void feeder::run() {
     }
   }
   catch (...) {
-    if (!isRunning())
+    if (!isRunning()) {
+      _in.clear();
+      _out.clear();
       throw ;
+    }
   }
+  _in.clear();
+  _out.clear();
   return ;
 }

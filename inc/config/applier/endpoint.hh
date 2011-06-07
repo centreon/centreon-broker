@@ -47,8 +47,11 @@ namespace                    com {
                              endpoint();
                              endpoint(endpoint const& e);
             endpoint&        operator=(endpoint const& e);
-            void             _create_endpoint(config::endpoint const& cfg,
-                               bool is_output);
+            com::centreon::broker::processing::failover*
+                             _create_endpoint(com::centreon::broker::config::endpoint const& cfg,
+                               bool is_input,
+                               bool is_output,
+                               QList<com::centreon::broker::config::endpoint> const& l);
             void             _diff_endpoints(QMap<com::centreon::broker::config::endpoint,
                                  com::centreon::broker::processing::failover*>& current,
                                QList<com::centreon::broker::config::endpoint> const& new_endpoints,

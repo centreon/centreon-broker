@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <assert.h>
 #include <QMutexLocker>
 #include <QScopedPointer>
@@ -88,6 +87,8 @@ subscriber::subscriber() {
   QMutexLocker lock(&gl_subscribersm);
   gl_subscribers.push_back(this);
   _registered = true;
+  logging::debug << logging::LOW << gl_subscribers.size()
+    << " subscribers are registered after insertion";
 }
 
 /**
@@ -103,8 +104,10 @@ subscriber::~subscriber() {
  */
 void subscriber::close() {
   QMutexLocker lock(&gl_subscribersm);
-  std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
+  gl_subscribers.removeOne(this);
   _registered = false;
+  logging::debug << logging::LOW << gl_subscribers.size()
+    << " subscribers are registered after deletion";
   _cv.wakeAll();
   return ;
 }

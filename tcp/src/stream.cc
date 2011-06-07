@@ -47,7 +47,10 @@ stream::stream(stream const& s)
 /**
  *  Destructor.
  */
-stream::~stream() {}
+stream::~stream() {
+  if (!_socket.isNull())
+    _socket->close();
+}
 
 /**
  *  Assignment operator.

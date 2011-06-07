@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <assert.h>
 #include <stdlib.h>
 #include "config/applier/endpoint.hh"
@@ -26,6 +27,52 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
+
+/**************************************
+*                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Comparison classes.
+ */
+class                  failover_match_name {
+ private:
+  QString              _failover;
+
+ public:
+                       failover_match_name(QString const& fo)
+    : _failover(fo) {}
+                       failover_match_name(failover_match_name const& fmn)
+    : _failover(fmn._failover) {}
+                       ~failover_match_name() {}
+  failover_match_name& operator=(failover_match_name& fmn) {
+    _failover = fmn._failover;
+    return (*this);
+  }
+  bool                 operator()(config::endpoint const& endp) const {
+    return (_failover == endp.name);
+  }
+};
+class                  name_match_failover {
+ private:
+  QString              _name;
+
+ public:
+                       name_match_failover(QString const& name)
+    : _name(name) {}
+                       name_match_failover(name_match_failover const& nmf)
+    : _name(nmf._name) {}
+                       ~name_match_failover() {}
+  name_match_failover& operator=(name_match_failover const& nmf) {
+    _name = nmf._name;
+    return (*this);
+  }
+  bool                 operator()(config::endpoint const& endp) const {
+    return (_name == endp.failover);
+  }
+};
 
 /**************************************
 *                                     *
@@ -71,9 +118,26 @@ endpoint& endpoint::operator=(endpoint const& e) {
  *  Create and register an endpoint according to configuration.
  *
  *  @param[in] cfg       Endpoint configuration.
+ *  @param[in] is_input  true if the endpoint will act as input.
  *  @param[in] is_output true if the endpoint will act as output.
+ *  @param[in] l         List of endpoints.
  */
-void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
+processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
+                                                 bool is_input,
+                                                 bool is_output,
+                                                 QList<config::endpoint> const& l) {
+  // Check that failover is configured.
+  QSharedPointer<processing::failover> failovr;
+  if (!cfg.failover.isEmpty()) {
+    QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
+    if (it == l.end())
+      throw (exceptions::basic() << "could not find failover '"
+               << cfg.failover.toStdString().c_str()
+               << "' for endpoint '"
+               << cfg.name.toStdString().c_str()) << "'";
+    failovr = QSharedPointer<processing::failover>(_create_endpoint(*it, is_input || is_output, is_output, l));
+  }
+  
   // Create endpoint object.
   QSharedPointer<io::endpoint> endp;
   bool is_acceptor;
@@ -84,7 +148,7 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
        ++it) {
     if ((it.value().osi_from == 1)
         && it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output)) {
-      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor));
+      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, is_input, is_output, is_acceptor));
       level = it.value().osi_to + 1;
       break ;
     }
@@ -122,25 +186,11 @@ void endpoint::_create_endpoint(config::endpoint const& cfg, bool is_output) {
     ++level;
   }
 
-  // Create thread.
-  QScopedPointer<processing::failover> fo(new processing::failover(is_output));
+  // Return failover thread.
+  QScopedPointer<processing::failover> fo(new processing::failover(true));
   fo->set_endpoint(endp);
-
-  // Connect thread.
-  connect(fo.data(), SIGNAL(finished()), fo.data(), SLOT(deleteLater()));
-  if (!is_output) {
-    connect(fo.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
-    _inputs[cfg] = fo.data();
-  }
-  else {
-    connect(fo.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
-    _outputs[cfg] = fo.data();
-  }
-
-  // Run thread.
-  fo.take()->start();
-
-  return ;
+  fo->set_failover(failovr);
+  return (fo.take());
 }
 
 /**
@@ -171,9 +221,11 @@ void endpoint::_diff_endpoints(QMap<config::endpoint, processing::failover*> & c
          end = to_delete.end();
        it != end;
        ++it) {
-    // XXX : send only termination request, object will
-    //       be destroyed by event loop on termination.
-    //       But wait for threads, because 
+    // Send only termination request, object will be destroyed by event
+    // loop on termination. But wait for threads because they hold
+    // resources that might be used by other endpoints.
+    (*it)->exit();
+    (*it)->wait();
   }
 
   return ;
@@ -211,14 +263,40 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
          end = out_to_create.end();
        it != end;
        ++it)
-    _create_endpoint(*it, true);
+    // Check that output is not a failover.
+    if (std::find_if(out_to_create.begin(),
+            out_to_create.end(),
+            name_match_failover(it->name))
+          == out_to_create.end()) {
+      // Create endpoint.
+      QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
+      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
+      connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
+      _outputs[*it] = endp.data();
+
+      // Run thread.
+      endp.take()->start();
+    }
 
   // Create new inputs.
   for (QList<config::endpoint>::iterator it = in_to_create.begin(),
          end = in_to_create.end();
        it != end;
        ++it)
-    _create_endpoint(*it, false);
+    // Check that output is not a failover.
+    if (std::find_if(in_to_create.begin(),
+            in_to_create.end(),
+            name_match_failover(it->name))
+          == in_to_create.end()) {
+      // Create endpoint.
+      QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
+      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
+      connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
+      _inputs[*it] = endp.data();
+
+      // Run thread.
+      endp.take()->start();
+    }    
 
   return ;
 }
