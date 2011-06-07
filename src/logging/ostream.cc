@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QDateTime>
 #include "logging/ostream.hh"
 
 using namespace com::centreon::broker::logging;
@@ -95,21 +96,22 @@ void ostream::log_msg(char const* msg,
     char const* prefix;
     switch (log_type) {
      case CONFIG:
-      prefix = "config: ";
+      prefix = "config:  ";
       break ;
      case DEBUG:
-      prefix = "debug: ";
+      prefix = "debug:   ";
       break ;
      case ERROR:
-      prefix = "error: ";
+      prefix = "error:   ";
       break ;
      case INFO:
-      prefix = "info: ";
+      prefix = "info:    ";
       break ;
      default:
-      prefix = "undefined: ";
+      prefix = "unknown: ";
     }
-    *_os << prefix << msg;
+    *_os << "[" << QDateTime::currentDateTime().toTime_t() << "]"
+         << prefix << msg;
     _os->flush();
   }
   return ;

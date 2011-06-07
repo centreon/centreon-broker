@@ -24,6 +24,7 @@
 #include "io/acceptor.hh"
 #include "io/connector.hh"
 #include "io/protocols.hh"
+#include "logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -126,6 +127,9 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
                                                  bool is_input,
                                                  bool is_output,
                                                  QList<config::endpoint> const& l) {
+  // Debug message.
+  logging::config << logging::MEDIUM << "creating new endpoint";
+
   // Check that failover is configured.
   QSharedPointer<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
@@ -250,6 +254,9 @@ endpoint::~endpoint() {}
  */
 void endpoint::apply(QList<config::endpoint> const& inputs,
                      QList<config::endpoint> const& outputs) {
+  // Debug message.
+  logging::config << logging::HIGH << "loading endpoint configuration";
+
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
   _diff_endpoints(_inputs, inputs, in_to_create);

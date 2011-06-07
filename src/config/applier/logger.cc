@@ -132,6 +132,9 @@ logger::~logger() {}
  *  @param[in] loggers List of loggers that should exist.
  */
 void logger::apply(QList<config::logger> const& loggers) {
+  // Debug message.
+  logging::config << logging::HIGH << "loading logger configuration";
+
   // Find which loggers are already created,
   // which should be created
   // and which should be deleted.
@@ -170,6 +173,7 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_create.end();
        it != end;
        ++it) {
+    logging::config << logging::MEDIUM << "creating new logger";
     QSharedPointer<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
     logging::log_on(backend.data(), it->types(), it->level());

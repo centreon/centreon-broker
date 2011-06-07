@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "config/applier/modules.hh"
+#include "logging/logging.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -79,6 +80,7 @@ modules::~modules() {}
  *  @param[in] module_dir Module directory.
  */
 void modules::apply(QString const& module_dir) {
+  logging::config << logging::HIGH << "loading module directory";
   _loader.load_dir(module_dir);
   return ;
 }
