@@ -62,7 +62,7 @@ void (stream::* stream::processing_table[])(events::event const&) = {
   &stream::_process_log,                    // LOG
   &stream::_process_module,                 // MODULE
   &stream::_process_notification,           // NOTIFICATION
-  NULL,                                     // PERFDATA
+  &stream::_process_nothing,                // PERFDATA
   &stream::_process_service,                // SERVICE
   &stream::_process_service_check,          // SERVICECHECK
   &stream::_process_service_dependency,     // SERVICEDEPENDENCY
@@ -1023,6 +1023,16 @@ void stream::_process_module(events::event const& e) {
   events::module const& m(*static_cast<events::module const*>(&e));
   _insert(m);
 
+  return ;
+}
+
+/**
+ *  Process nothing.
+ *
+ *  @param[in] e Uncasted notification.
+ */
+void stream::_process_nothing(events::event const& e) {
+  (void)e;
   return ;
 }
 
