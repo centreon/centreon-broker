@@ -25,6 +25,7 @@
 #include "config/parser.hh"
 #include "config/state.hh"
 #include "events/events.hh"
+#include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "module/callbacks.hh"
 #include "module/initial.hh"
@@ -603,7 +604,7 @@ int module::callback_process(int callback_type, void *data) {
       config::applier::state::instance().apply(default_state);
 
       // Parse configuration file.
-      {
+      try {
         config::parser parsr;
         config::state conf;
         parsr.parse(gl_configuration_file, conf);
@@ -619,6 +620,10 @@ int module::callback_process(int callback_type, void *data) {
         it = conf.params().find("instance_name");
         if (it != conf.params().end())
           instance_name = it.value();
+      }
+      catch (exceptions::basic const& e) {
+        logging::config << logging::HIGH << e.what();
+        return (0);
       }
 
 #ifdef PROGRAM_NAME

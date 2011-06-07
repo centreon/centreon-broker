@@ -110,7 +110,7 @@ void ostream::log_msg(char const* msg,
      default:
       prefix = "unknown: ";
     }
-    *_os << "[" << QDateTime::currentDateTime().toTime_t() << "]"
+    *_os << "[" << QDateTime::currentDateTime().toTime_t() << "] "
          << prefix << msg;
     _os->flush();
   }
