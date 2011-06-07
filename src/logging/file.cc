@@ -103,5 +103,8 @@ void file::open(char const* filename) {
   // Don't forget to set the stream to write on.
   ostream::operator=(_ofs);
 
+  // Opening message.
+  _ofs << "Centreon Broker log file successfully opened";
+
   return ;
 }
