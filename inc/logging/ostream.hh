@@ -38,6 +38,7 @@ namespace               com {
         class           ostream : public backend {
          protected:
           std::ostream* _os;
+          static bool   _with_timestamp;
 
          public:
                         ostream();
@@ -50,6 +51,7 @@ namespace               com {
                           unsigned int len,
                           type log_type,
                           level l) throw ();
+          static void   with_timestamp(bool enable);
         };
       }
     }

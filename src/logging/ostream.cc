@@ -21,6 +21,9 @@
 
 using namespace com::centreon::broker::logging;
 
+// Should timestamp printing be used ?
+bool ostream::_with_timestamp(true);
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -110,9 +113,22 @@ void ostream::log_msg(char const* msg,
      default:
       prefix = "unknown: ";
     }
-    *_os << "[" << QDateTime::currentDateTime().toTime_t() << "] "
-         << prefix << msg;
+    if (_with_timestamp)
+      *_os << "[" << QDateTime::currentDateTime().toTime_t() << "] "
+           << prefix << msg;
+    else
+      *_os << prefix << msg;
     _os->flush();
   }
+  return ;
+}
+
+/**
+ *  Set if timestamp should be printed or not.
+ *
+ *  @param[in] enable true to enable timestamp printing.
+ */
+void ostream::with_timestamp(bool enable) {
+  _with_timestamp = enable;
   return ;
 }

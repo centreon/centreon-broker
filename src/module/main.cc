@@ -23,7 +23,7 @@
 #include "config/state.hh"
 #include "exceptions/basic.hh"
 #include "logging/logging.hh"
-#include "logging/syslogger.hh"
+#include "logging/ostream.hh"
 #include "module/callbacks.hh"
 #include "module/internal.hh"
 #include "nagios/common.h"
@@ -182,6 +182,9 @@ extern "C" {
       "convert internal Nagios events to a proper data "    \
       "stream that can then be parsed by CentreonBroker's " \
       "cb2db.");
+
+    // Disable timestamp printing in logs (cause starvation when forking).
+    logging::ostream::with_timestamp(false);
 
     try {
       // Set configuration file.
