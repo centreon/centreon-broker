@@ -19,6 +19,7 @@
 #include <sstream>
 #include "events/perfdata.hh"
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "rrd/lib.hh"
 #include "rrd/output.hh"
 
@@ -82,6 +83,7 @@ QSharedPointer<io::data> output::read() {
  */
 void output::write(QSharedPointer<io::data> d) {
   if (d->type() == events::event::PERFDATA) {
+    logging::debug << logging::HIGH << "RRD: new perfdata event";
     QSharedPointer<events::perfdata> e(d.staticCast<events::perfdata>());
     std::ostringstream oss1;
     oss1 << _rrd_path.toStdString() << "/" << e->metric_id << ".rrd";

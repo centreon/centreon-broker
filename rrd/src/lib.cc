@@ -20,8 +20,10 @@
 #include <rrd.h>
 #include <sstream>
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "rrd/lib.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
@@ -127,6 +129,9 @@ void lib::open(QString const& filename,
                unsigned int length,
                time_t from,
                time_t interval) {
+  logging::debug << logging::HIGH << "RRD: opening file '"
+    << filename.toStdString().c_str() << "'";
+
   // Close previous file.
   this->close();
 
@@ -171,7 +176,8 @@ void lib::open(QString const& filename,
         from,
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::basic() << "could not create RRD file '" << _filename.toStdString().c_str()
+    throw (exceptions::basic() << "could not create RRD file '"
+             << _filename.toStdString().c_str()
              << "': " << rrd_get_error());
   // XXX : is tuning really needed ?
 
@@ -185,6 +191,8 @@ void lib::open(QString const& filename,
  *  @param[in] value Associated value.
  */
 void lib::update(time_t t, QString const& value) {
+  logging::debug << logging::HIGH << "RRD: updating file";
+
   // Build argument string.
   std::string arg;
   {

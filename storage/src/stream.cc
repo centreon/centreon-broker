@@ -28,6 +28,7 @@
 #include "events/perfdata.hh"
 #include "events/service_status.hh"
 #include "exceptions/basic.hh"
+#include "logging/logging.hh"
 #include "multiplexing/publisher.hh"
 #include "storage/parser.hh"
 #include "storage/perfdata.hh"
@@ -435,6 +436,7 @@ QSharedPointer<io::data> stream::read() {
 void stream::write(QSharedPointer<io::data> data) {
   // Process service status events.
   if (data->type() == events::event::SERVICESTATUS) {
+    logging::debug << logging::HIGH << "storage: processing service status event";
     QSharedPointer<events::service_status> ss(data.staticCast<events::service_status>());
 
     // Parse perfdata.
@@ -474,6 +476,7 @@ void stream::write(QSharedPointer<io::data> data) {
       }
 
       // Send perfdata event to processing.
+      logging::debug << logging::HIGH << "storage: generating perfdata event";
       QSharedPointer<events::perfdata> perf(new events::perfdata);
       perf->ctime = ss->execution_time;
       perf->metric_id = metric_id;
