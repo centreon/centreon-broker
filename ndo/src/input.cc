@@ -206,6 +206,9 @@ QSharedPointer<io::data> input::read() {
      case NDO_API_NOTIFICATIONDATA:
       e.reset(_handle_event<events::notification>());
       break ;
+     case NDO_API_PERFDATA:
+      e.reset(_handle_event<events::perfdata>());
+      break ;
      case NDO_API_SERVICECHECKDATA:
       e.reset(_handle_event<events::service_check>());
       break ;

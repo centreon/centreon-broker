@@ -1411,6 +1411,27 @@ static mapped_data<notification> const notification_mapping[] = {
   mapped_data<notification>()
 };
 
+// perfdata members mapping.
+static mapped_data<perfdata> const perfdata_mapping[] = {
+  mapped_data<perfdata>(
+    &perfdata::ctime,
+    1,
+    "ctime"),
+  mapped_data<perfdata>(
+    &perfdata::metric_id,
+    2,
+    "metric_id"),
+  mapped_data<perfdata>(
+    &perfdata::status,
+    3,
+    "status"),
+  mapped_data<perfdata>(
+    &perfdata::value,
+    4,
+    "value"),
+  mapped_data<perfdata>()
+};
+
 // service members mapping.
 static mapped_data<service> const service_mapping[] = {
   mapped_data<service>(
@@ -2232,6 +2253,12 @@ template <> mapped_data<events::notification> const*
   mapped_type<events::notification>::members(notification_mapping);
 template <> char const*
   mapped_type<events::notification>::table("notifications");
+
+// perfdata mapping.
+template <> mapped_data<events::perfdata> const*
+  mapped_type<events::perfdata>::members(perfdata_mapping);
+template <> char const*
+  mapped_type<events::perfdata>::table("data_bin");
 
 // service mapping.
 template <> const mapped_data<events::service>*

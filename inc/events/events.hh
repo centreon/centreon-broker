@@ -41,6 +41,7 @@
 # include "events/log_entry.hh"
 # include "events/module.hh"
 # include "events/notification.hh"
+# include "events/perfdata.hh"
 # include "events/service.hh"
 # include "events/service_check.hh"
 # include "events/service_dependency.hh"

@@ -247,6 +247,13 @@ void output::write(QSharedPointer<io::data> i) {
         buffer);
       buffer << NDO_API_ENDDATA << "\n";
       break ;
+     case events::event::PERFDATA:
+      buffer << NDO_API_PERFDATA << ":\n";
+      handle_event<events::perfdata>(
+        *static_cast<events::perfdata*>(e),
+        buffer);
+      buffer << NDO_API_ENDDATA << "\n";
+      break ;
      case events::event::SERVICE:
       buffer << NDO_API_SERVICEDEFINITION << ":\n";
       handle_event<events::service>(
