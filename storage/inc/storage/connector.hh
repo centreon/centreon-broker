@@ -37,11 +37,15 @@ namespace            com {
           QString    _centreon_db;
           QString    _centreon_host;
           QString    _centreon_password;
+          unsigned short
+                     _centreon_port;
           QString    _centreon_user;
           QString    _centreon_type;
           QString    _storage_db;
           QString    _storage_host;
           QString    _storage_password;
+          unsigned short
+                     _storage_port;
           QString    _storage_user;
           QString    _storage_type;
           void       _internal_copy(connector const& c);
@@ -54,11 +58,13 @@ namespace            com {
           void       close();
           void       connect_to(QString const& centreon_type,
                        QString const& centreon_host,
+                       unsigned short centreon_port,
                        QString const& centreon_user,
                        QString const& centreon_password,
                        QString const& centreon_db,
                        QString const& storage_type,
                        QString const& storage_host,
+                       unsigned short storage_port,
                        QString const& storage_user,
                        QString const& storage_password,
                        QString const& storage_db);

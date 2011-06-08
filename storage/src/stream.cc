@@ -300,22 +300,26 @@ void stream::_prepare() {
  *
  *  @param[in] centreon_type     Centreon DB type.
  *  @param[in] centreon_host     Centreon DB host.
+ *  @param[in] centreon_port     Centreon DB port.
  *  @param[in] centreon_user     Centreon DB user.
  *  @param[in] centreon_password Centreon DB password.
  *  @param[in] centreon_db       Centreon DB name.
  *  @param[in] storage_type      Storage DB type.
  *  @param[in] storage_host      Storage DB host.
+ *  @param[in] storage_port      Storage DB port.
  *  @param[in] storage_user      Storage DB user.
  *  @param[in] storage_password  Storage DB password.
  *  @param[in] storage_db        Storage DB name.
  */
 stream::stream(QString const& centreon_type,
                QString const& centreon_host,
+               unsigned short centreon_port,
                QString const& centreon_user,
                QString const& centreon_password,
                QString const& centreon_db,
                QString const& storage_type,
                QString const& storage_host,
+               unsigned short storage_port,
                QString const& storage_user,
                QString const& storage_password,
                QString const& storage_db) {
@@ -331,6 +335,7 @@ stream::stream(QString const& centreon_type,
 
   // Open database.
   _centreon_db->setHostName(centreon_host);
+  _centreon_db->setPort(centreon_port);
   _centreon_db->setUserName(centreon_user);
   _centreon_db->setPassword(centreon_password);
   _centreon_db->setDatabaseName(centreon_db);
@@ -352,6 +357,7 @@ stream::stream(QString const& centreon_type,
 
   // Open database.
   _storage_db->setHostName(storage_host);
+  _storage_db->setPort(storage_port);
   _storage_db->setUserName(storage_user);
   _storage_db->setPassword(storage_password);
   _storage_db->setDatabaseName(storage_db);

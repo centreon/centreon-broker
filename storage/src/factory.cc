@@ -131,6 +131,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find centreon DB parameters.
   QString centreon_type(find_param(cfg, "centreon_type"));
   QString centreon_host(find_param(cfg, "centreon_host"));
+  QString centreon_port(find_param(cfg, "centreon_port"));
   QString centreon_user(find_param(cfg, "centreon_user"));
   QString centreon_password(find_param(cfg, "centreon_password"));
   QString centreon_db(find_param(cfg, "centreon_db"));
@@ -138,6 +139,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find storage DB parameters.
   QString storage_type(find_param(cfg, "storage_type"));
   QString storage_host(find_param(cfg, "storage_host"));
+  QString storage_port(find_param(cfg, "storage_port"));
   QString storage_user(find_param(cfg, "storage_user"));
   QString storage_password(find_param(cfg, "storage_password"));
   QString storage_db(find_param(cfg, "storage_db"));
@@ -146,11 +148,13 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   QScopedPointer<storage::connector> c(new storage::connector);
   c->connect_to(centreon_type,
     centreon_host,
+    centreon_port.toUShort(),
     centreon_user,
     centreon_password,
     centreon_db,
     storage_type,
     storage_host,
+    storage_port.toUShort(),
     storage_user,
     storage_password,
     storage_db);

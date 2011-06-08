@@ -65,11 +65,13 @@ namespace              com {
          public:
                        stream(QString const& centreon_type,
                          QString const& centreon_host,
+                         unsigned short centreon_port,
                          QString const& centreon_user,
                          QString const& centreon_password,
                          QString const& centreon_db,
                          QString const& storage_type,
                          QString const& storage_host,
+                         unsigned short storage_port,
                          QString const& storage_user,
                          QString const& storage_password,
                          QString const& storage_db);
