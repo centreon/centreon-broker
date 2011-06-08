@@ -128,7 +128,8 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
                                                  bool is_output,
                                                  QList<config::endpoint> const& l) {
   // Debug message.
-  logging::config << logging::MEDIUM << "creating new endpoint";
+  logging::config << logging::MEDIUM << "creating new endpoint '"
+    << cfg.name.toStdString().c_str() << "'";
 
   // Check that failover is configured.
   QSharedPointer<processing::failover> failovr;
@@ -256,6 +257,9 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
                      QList<config::endpoint> const& outputs) {
   // Debug message.
   logging::config << logging::HIGH << "loading endpoint configuration";
+  logging::debug << logging::HIGH << "endpoint applier: "
+    << inputs.size() << " inputs, "
+    << outputs.size() << " outputs";
 
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
@@ -264,6 +268,11 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
   // Remove old outputs and generate outputs to create.
   QList<config::endpoint> out_to_create;
   _diff_endpoints(_outputs, outputs, out_to_create);
+
+  // Debug message.
+  logging::debug << logging::HIGH << "endpoint applier: "
+    << in_to_create.size() << " inputs to create, "
+    << out_to_create.size() << " outputs to create";
 
   // Create new outputs.
   for (QList<config::endpoint>::iterator it = out_to_create.begin(),
