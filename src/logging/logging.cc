@@ -69,7 +69,7 @@ void logging::log_on(backend* b,
   if (types && min_priority) {
     backends[b].first = types;
     backends[b].second = min_priority;
-    }
+  }
   else
     backends.erase(b);
   return ;

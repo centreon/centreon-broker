@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -38,7 +38,7 @@ namespace                           com {
          */
         class                       stringifier {
          public:
-          static unsigned int const max_len = 1000;
+          static unsigned int const max_len = 4000;
 
          private:
           template                  <typename T>
