@@ -21,6 +21,13 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/rrd/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/rrd/src")
 include_directories("${INC_DIR}")
 
+# Find librrd.
+include(FindPkgConfig)
+if (NOT PKG_CONFIG_FOUND)
+  message(FATAL_ERRO "Could not find pkg-config.")
+endif ()
+pkg_check_modules(LIBRRD REQUIRED "librrd")
+
 # RRD module.
 add_library("rrd" MODULE
   # Sources.
@@ -40,6 +47,28 @@ add_library("rrd" MODULE
   "${INC_DIR}/rrd/output.hh"
 )
 set_target_properties("rrd" PROPERTIES PREFIX "")
+
+# Compile with librrd flags.
+if (LIBRRD_CFLAGS)
+  get_source_file_property(RRD_SOURCE_CXXFLAGS "${SRC_DIR}/lib.cc" COMPILE_FLAGS)
+  if (LIBRRD_SOURCE_CXXFLAGS)
+    set_source_files_properties("${SRC_DIR}/lib.cc" PROPERTIES
+      COMPILE_FLAGS "${RRD_SOURCE_CXXFLAGS} ${LIBRRD_CFLAGS}")
+  else ()
+    set_source_files_properties("${SRC_DIR}/lib.cc" PROPERTIES
+      COMPILE_FLAGS "${LIBRRD_CFLAGS}")
+  endif ()
+endif ()
+if (LIBRRD_LDFLAGS)
+  get_target_property(RRD_LDFLAGS "rrd" LINK_FLAGS)
+  if (RRD_LDFLAGS)
+    set_target_properties("rrd" PROPERTIES
+      LINK_FLAGS "${RRD_LDFLAGS} ${LIBRRD_LDFLAGS}")
+  else ()
+    set_target_properties("rrd" PROPERTIES
+      LINK_FLAGS "${LIBRRD_LDFLAGS}")
+  endif ()
+endif ()
 
 # Install rule.
 install(TARGETS rrd
