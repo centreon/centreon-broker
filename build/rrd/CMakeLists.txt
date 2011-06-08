@@ -24,12 +24,20 @@ include_directories("${INC_DIR}")
 # RRD module.
 add_library("rrd" MODULE
   # Sources.
+  "${SRC_DIR}/backend.cc"
+  "${SRC_DIR}/cached.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/output.cc"
   # Headers.
+  "${INC_DIR}/rrd/backend.hh"
+  "${INC_DIR}/rrd/cached.hh"
   "${INC_DIR}/rrd/connector.hh"
   "${INC_DIR}/rrd/factory.hh"
+  "${INC_DIR}/rrd/lib.hh"
+  "${INC_DIR}/rrd/output.hh"
 )
 set_target_properties("rrd" PROPERTIES PREFIX "")
 

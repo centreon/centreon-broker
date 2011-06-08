@@ -1422,12 +1422,16 @@ static mapped_data<perfdata> const perfdata_mapping[] = {
     2,
     "metric_id"),
   mapped_data<perfdata>(
-    &perfdata::status,
+    &perfdata::name,
     3,
+    "name"),
+  mapped_data<perfdata>(
+    &perfdata::status,
+    4,
     "status"),
   mapped_data<perfdata>(
     &perfdata::value,
-    4,
+    5,
     "value"),
   mapped_data<perfdata>()
 };

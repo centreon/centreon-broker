@@ -19,6 +19,7 @@
 #ifndef CCB_EVENTS_PERFDATA_HH_
 # define CCB_EVENTS_PERFDATA_HH_
 
+# include <QString>
 # include <time.h>
 # include "events/event.hh"
 
@@ -39,6 +40,7 @@ namespace              com {
          public:
           time_t       ctime;
           int          metric_id;
+          QString      name;
           short        status;
           double       value;
                        perfdata();

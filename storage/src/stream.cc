@@ -477,6 +477,7 @@ void stream::write(QSharedPointer<io::data> data) {
       QSharedPointer<events::perfdata> perf(new events::perfdata);
       perf->ctime = ss->execution_time;
       perf->metric_id = metric_id;
+      perf->name = pd.name();
       perf->status = ss->current_state;
       perf->value = pd.value();
       multiplexing::publisher().write(perf.staticCast<io::data>());

@@ -34,6 +34,7 @@ using namespace com::centreon::broker::events;
 void perfdata::_internal_copy(perfdata const& p) {
   ctime = p.ctime;
   metric_id = p.metric_id;
+  name = p.name;
   status = p.status;
   value = p.value;
   return ;

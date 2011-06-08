@@ -16,71 +16,43 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "rrd/connector.hh"
-#include "rrd/output.hh"
+#include "rrd/backend.hh"
 
-using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
-*           Public Methods            *
+*            Public Methods           *
 *                                     *
 **************************************/
 
 /**
  *  Default constructor.
  */
-connector::connector() {}
+backend::backend() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] b Object to copy.
  */
-connector::connector(connector const& c)
-  : io::connector(c), _rrd_path(c._rrd_path) {}
+backend::backend(backend const& b) {
+  (void)b;
+}
 
 /**
  *  Destructor.
  */
-connector::~connector() {}
+backend::~backend() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] b Object to copy.
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& c) {
-  io::connector::operator=(c);
-  _rrd_path = c._rrd_path;
+backend& backend::operator=(backend const& b) {
+  (void)b;
   return (*this);
-}
-
-/**
- *  Close the connector.
- */
-void connector::close() {
-  return ;
-}
-
-/**
- *  Connect.
- *
- *  @return Stream object.
- */
-QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new output(_rrd_path)));
-}
-
-/**
- *  Set the RRD path.
- *
- *  @param[in] rrd_path Where RRD files will be written.
- */
-void connector::set_path(QString const& rrd_path) {
-  _rrd_path = rrd_path;
-  return ;
 }
