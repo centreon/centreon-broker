@@ -79,6 +79,17 @@ stream& stream::operator=(stream const& s) {
 }
 
 /**
+ *  Clear QtSql objects.
+ */
+void stream::_clear_qsql() {
+  _insert_data_bin.reset();
+  _update_metrics.reset();
+  _centreon_db.reset();
+  _storage_db.reset();
+  return ;
+}
+
+/**
  *  @brief Find index ID.
  *
  *  Look through the index cache for the specified index. If it cannot
@@ -107,14 +118,14 @@ unsigned int stream::_find_index_id(unsigned int host_id,
            " VALUES (" << host_id << ", " << service_id << ")";
 
     // Execute query.
-    QSqlQuery q(_storage_db.exec(oss.str().c_str()));
-    if (_storage_db.lastError().isValid())
-      throw (exceptions::basic() << "insertion of index (" << host_id << ", "
+    QSqlQuery q(_storage_db->exec(oss.str().c_str()));
+    if (_storage_db->lastError().isValid())
+      throw (exceptions::basic() << "storage: insertion of index (" << host_id << ", "
                << service_id << ") failed: "
-               << _storage_db.lastError().text().toStdString().c_str());
+               << _storage_db->lastError().text().toStdString().c_str());
 
     // Fetch insert ID with query if possible.
-    if (_storage_db.driver()->hasFeature(QSqlDriver::LastInsertId)
+    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.lastInsertId().toUInt())) {
       q.finish();
       std::ostringstream oss2;
@@ -122,14 +133,14 @@ unsigned int stream::_find_index_id(unsigned int host_id,
               " FROM index_data" \
               " WHERE host_id=" << host_id
            << " AND service_id=" << service_id;
-      QSqlQuery q2(_storage_db.exec(oss2.str().c_str()));
-      if (_storage_db.lastError().isValid())
-        throw (exceptions::basic() << "could not fetch index_id of newly inserted index ("
+      QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
+      if (_storage_db->lastError().isValid())
+        throw (exceptions::basic() << "storage: could not fetch index_id of newly inserted index ("
                  << host_id << ", " << service_id << "): "
-                 << _storage_db.lastError().text().toStdString().c_str());
+                 << _storage_db->lastError().text().toStdString().c_str());
       retval = q2.value(0).toUInt();
       if (!retval)
-        throw (exceptions::basic() << "index_data table is corrupted: got 0 as index_id");
+        throw (exceptions::basic() << "storage: index_data table is corrupted: got 0 as index_id");
     }
 
     // Insert index in cache.
@@ -165,21 +176,21 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
   else {
     // Build query.
     std::ostringstream oss;
-    std::string escaped_metric_name(_storage_db.driver()->formatValue(QSqlField(metric_name.toStdString().c_str(),
+    std::string escaped_metric_name(_storage_db->driver()->formatValue(QSqlField(metric_name.toStdString().c_str(),
         QVariant::String),
       true).toStdString());
     oss << "INSERT INTO metrics (index_id, metric_name, must_be_rebuild)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ", 1)";
 
     // Execute query.
-    QSqlQuery q(_storage_db.exec(oss.str().c_str()));
-    if (_storage_db.lastError().isValid())
-      throw (exceptions::basic() << "insertion of metric '" << metric_name.toStdString().c_str()
+    QSqlQuery q(_storage_db->exec(oss.str().c_str()));
+    if (_storage_db->lastError().isValid())
+      throw (exceptions::basic() << "storage: insertion of metric '" << metric_name.toStdString().c_str()
                << "' of index " << index_id << " failed: "
-               << _storage_db.lastError().text().toStdString().c_str());
+               << _storage_db->lastError().text().toStdString().c_str());
 
     // Fetch insert ID with query if possible.
-    if (_storage_db.driver()->hasFeature(QSqlDriver::LastInsertId)
+    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.lastInsertId().toUInt())) {
       q.finish();
       std::ostringstream oss2;
@@ -187,14 +198,14 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
               " FROM metrics" \
               " WHERE index_id=" << index_id
            << " AND metric_name=" << escaped_metric_name;
-      QSqlQuery q2(_storage_db.exec(oss2.str().c_str()));
-      if (_storage_db.lastError().isValid())
-        throw (exceptions::basic() << "could not fetch metric_id of newly inserted metric '"
+      QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
+      if (_storage_db->lastError().isValid())
+        throw (exceptions::basic() << "storage: could not fetch metric_id of newly inserted metric '"
                  << metric_name.toStdString().c_str() << "' of index " << index_id
-                 << ": " << _storage_db.lastError().text().toStdString().c_str());
+                 << ": " << _storage_db->lastError().text().toStdString().c_str());
       retval = q2.value(0).toUInt();
       if (!retval)
-        throw (exceptions::basic() << "metrics table is corrupted: got 0 as metric_id");
+        throw (exceptions::basic() << "storage: metrics table is corrupted: got 0 as metric_id");
     }
 
     // Insert metric in cache.
@@ -211,11 +222,11 @@ void stream::_prepare() {
   // Fill index cache.
   {
     // Execute query.
-    QSqlQuery q(_storage_db.exec("SELECT id, host_id, service_id" \
-                                 " FROM index_data"));
-    if (_storage_db.lastError().isValid())
-      throw (exceptions::basic() << "could not fetch index list from data DB: "
-               << _storage_db.lastError().text().toStdString().c_str());
+    QSqlQuery q(_storage_db->exec("SELECT id, host_id, service_id" \
+                                  " FROM index_data"));
+    if (_storage_db->lastError().isValid())
+      throw (exceptions::basic() << "storage: could not fetch index list from data DB: "
+               << _storage_db->lastError().text().toStdString().c_str());
 
     // Loop through result set.
     while (q.next())
@@ -227,11 +238,11 @@ void stream::_prepare() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q(_storage_db.exec("SELECT metric_id, index_id, metric_name" \
-                                 " FROM metrics"));
-    if (_storage_db.lastError().isValid())
-      throw (exceptions::basic() << "could not fetch metric list from data DB: "
-               << _storage_db.lastError().text().toStdString().c_str());
+    QSqlQuery q(_storage_db->exec("SELECT metric_id, index_id, metric_name" \
+                                  " FROM metrics"));
+    if (_storage_db->lastError().isValid())
+      throw (exceptions::basic() << "storage: could not fetch metric list from data DB: "
+               << _storage_db->lastError().text().toStdString().c_str());
 
     // Loop through result set.
     while (q.next())
@@ -242,17 +253,17 @@ void stream::_prepare() {
 
   // Fetch configuration from DB.
   {
-    QSqlQuery q(_storage_db.exec("SELECT RRDdatabase_path, storage_type" \
-                                 " FROM config"));
-    if (_storage_db.lastError().isValid())
-      throw (exceptions::basic() << "could not get configuration from DB: "
-               << _storage_db.lastError().text().toStdString().c_str());
+    QSqlQuery q(_storage_db->exec("SELECT RRDdatabase_path, storage_type" \
+                                  " FROM config"));
+    if (_storage_db->lastError().isValid())
+      throw (exceptions::basic() << "storage: could not get configuration from DB: "
+               << _storage_db->lastError().text().toStdString().c_str());
     _metrics_path = q.value(0).toString();
     _store_in_db = (q.value(1).toUInt() == 2);
   }
 
   // Prepare metrics update query.
-  _update_metrics.reset(new QSqlQuery(_storage_db));
+  _update_metrics.reset(new QSqlQuery(*_storage_db));
   if (!_update_metrics->prepare("UPDATE metrics" \
                                 " SET unit_name=:unit_name," \
                                 " warn=:warn," \
@@ -261,18 +272,18 @@ void stream::_prepare() {
                                 " max=:max" \
                                 " WHERE index_id=:index_id" \
                                 " AND metric_name=:metric_name"))
-    throw (exceptions::basic() << "could not prepare metrics update query: "
+    throw (exceptions::basic() << "storage: could not prepare metrics update query: "
              << _update_metrics->lastError().text().toStdString().c_str());
 
   // Prepare data_bind insert query.
-  _insert_data_bin.reset(new QSqlQuery(_storage_db));
+  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
   if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
                                  " id_metric, ctime, value, status)" \
                                  " VALUES (:id_metric," \
                                  " :ctime," \
                                  " :value," \
                                  " :status)"))
-    throw (exceptions::basic() << "could not prepare data_bin insert query: "
+    throw (exceptions::basic() << "storage: could not prepare data_bin insert query: "
              << _insert_data_bin->lastError().text().toStdString().c_str());
 
   return ;
@@ -314,18 +325,19 @@ stream::stream(QString const& centreon_type,
   centreon_id.append("Centreon");
 
   // Add database connection.
-  _centreon_db = QSqlDatabase::addDatabase(centreon_type, centreon_id);
+  _centreon_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(centreon_type, centreon_id)));
   if (centreon_type == "QMYSQL")
-    _centreon_db.setConnectOptions("CLIENT_FOUND_ROWS");
+    _centreon_db->setConnectOptions("CLIENT_FOUND_ROWS");
 
   // Open database.
-  _centreon_db.setHostName(centreon_host);
-  _centreon_db.setUserName(centreon_user);
-  _centreon_db.setPassword(centreon_password);
-  _centreon_db.setDatabaseName(centreon_db);
-  if (!_centreon_db.open()) {
+  _centreon_db->setHostName(centreon_host);
+  _centreon_db->setUserName(centreon_user);
+  _centreon_db->setPassword(centreon_password);
+  _centreon_db->setDatabaseName(centreon_db);
+  if (!_centreon_db->open()) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
-    throw (exceptions::basic() << "could not connect to Centreon database");
+    throw (exceptions::basic() << "storage: could not connect to Centreon database");
   }
 
   // Storage connection ID.
@@ -334,19 +346,20 @@ stream::stream(QString const& centreon_type,
   storage_id.append("Storage");
 
   // Add database connection.
-  _storage_db = QSqlDatabase::addDatabase(storage_type, storage_id);
+  _storage_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(storage_type, storage_id)));
   if (centreon_type == "QMYSQL")
-    _storage_db.setConnectOptions("CLIENT_FOUND_ROWS");
+    _storage_db->setConnectOptions("CLIENT_FOUND_ROWS");
 
   // Open database.
-  _storage_db.setHostName(storage_host);
-  _storage_db.setUserName(storage_user);
-  _storage_db.setPassword(storage_password);
-  _storage_db.setDatabaseName(storage_db);
-  if (!_storage_db.open()) {
+  _storage_db->setHostName(storage_host);
+  _storage_db->setUserName(storage_user);
+  _storage_db->setPassword(storage_password);
+  _storage_db->setDatabaseName(storage_db);
+  if (!_storage_db->open()) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
-    throw (exceptions::basic() << "could not connect to Centreon Storage database");
+    throw (exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
 
   // Prepare queries.
@@ -354,6 +367,7 @@ stream::stream(QString const& centreon_type,
     _prepare();
   }
   catch (...) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
@@ -372,12 +386,13 @@ stream::stream(stream const& s) : io::stream(s) {
   centreon_id.append("Centreon");
 
   // Clone Centreon database.
-  _centreon_db = QSqlDatabase::cloneDatabase(s._centreon_db, centreon_id);
+  _centreon_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._centreon_db, centreon_id)));
 
   // Open Centreon database.
-  if (!_centreon_db.open()) {
+  if (!_centreon_db->open()) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
-    throw (exceptions::basic() << "could not connect to Centreon database");
+    throw (exceptions::basic() << "storage: could not connect to Centreon database");
   }
 
   // Storage connection ID.
@@ -386,13 +401,14 @@ stream::stream(stream const& s) : io::stream(s) {
   storage_id.append("Storage");
 
   // Clone Storage database.
-  _storage_db = QSqlDatabase::cloneDatabase(s._storage_db, storage_id);
+  _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._storage_db, storage_id)));
 
   // Open Storage database.
-  if (!_storage_db.open()) {
+  if (!_storage_db->open()) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
-    throw (exceptions::basic() << "could not connect to Centreon Storage database");
+    throw (exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
 
   // Prepare queries.
@@ -400,6 +416,7 @@ stream::stream(stream const& s) : io::stream(s) {
     _prepare();
   }
   catch (...) {
+    _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
@@ -414,6 +431,7 @@ stream::~stream() {
   centreon_id.setNum((qulonglong)this, 16);
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
+  _clear_qsql();
   QSqlDatabase::removeDatabase(centreon_id);
   QSqlDatabase::removeDatabase(storage_id);
 }
@@ -424,7 +442,7 @@ stream::~stream() {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> stream::read() {
-  throw (exceptions::basic() << "attempt to read from a storage stream (software bug)");
+  throw (exceptions::basic() << "storage: attempt to read from a storage stream (software bug)");
   return (QSharedPointer<io::data>());
 }
 

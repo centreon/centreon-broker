@@ -50,8 +50,11 @@ namespace              com {
           bool         _store_in_db;
 	  QScopedPointer<QSqlQuery>
                        _update_metrics;
-          QSqlDatabase _centreon_db;
-          QSqlDatabase _storage_db;
+          QScopedPointer<QSqlDatabase>
+                       _centreon_db;
+          QScopedPointer<QSqlDatabase>
+                       _storage_db;
+          void         _clear_qsql();
           unsigned int _find_index_id(unsigned int host_id,
                          unsigned int service_id);
           unsigned int _find_metric_id(unsigned int index_id,
