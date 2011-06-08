@@ -36,3 +36,8 @@ add_library("sql" MODULE
   "${INC_DIR}/sql/stream.hh"
 )
 set_target_properties("sql" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS sql
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)

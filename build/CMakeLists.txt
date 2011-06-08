@@ -284,11 +284,31 @@ add_library(cbmod SHARED
 target_link_libraries(cbmod ${QT_LIBRARIES})
 set_target_properties(cbmod PROPERTIES PREFIX "")
 
+# Install directories.
+if (WITH_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "${WITH_PREFIX}")
+endif ()
+if (WITH_PREFIX_BINARY)
+  set(PREFIX_BINARY "${WITH_PREFIX_BINARY}")
+else ()
+  set(PREFIX_BINARY "bin")
+endif ()
+if (WITH_PREFIX_BROKER)
+  set(PREFIX_BROKER "${WITH_PREFIX_BROKER}")
+else ()
+  set(PREFIX_BROKER "lib")
+endif ()
+if (WITH_PREFIX_MODULES)
+  set(PREFIX_MODULES "${WITH_PREFIX_MODULES}")
+else ()
+  set(PREFIX_MODULES "lib/centreon-broker")
+endif ()
+
 # Install rules.
 install(TARGETS cbd cbmod
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  RUNTIME DESTINATION "${PREFIX_BINARY}"
+  LIBRARY DESTINATION "${PREFIX_BROKER}"
+)
 
 # File module.
 add_subdirectory("file")
@@ -307,3 +327,16 @@ add_subdirectory("storage")
 
 # TCP module.
 add_subdirectory("tcp")
+
+# Print installation summary.
+message(STATUS "")
+message(STATUS "  Centreon Broker Installation Summary")
+message(STATUS "")
+message(STATUS "    System                  ${CMAKE_SYSTEM_NAME}")
+message(STATUS "      - Version             ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "      - Processor           ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "    Installation Directory  ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
+message(STATUS "      - Broker Directory    ${PREFIX_BROKER}")
+message(STATUS "      - Modules Directory   ${PREFIX_MODULES}")
+message(STATUS "")

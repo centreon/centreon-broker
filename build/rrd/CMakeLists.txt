@@ -32,3 +32,8 @@ add_library("rrd" MODULE
   "${INC_DIR}/rrd/factory.hh"
 )
 set_target_properties("rrd" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS rrd
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)

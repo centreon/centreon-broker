@@ -38,3 +38,8 @@ add_library("storage" MODULE
   "${INC_DIR}/storage/stream.hh"
 )
 set_target_properties("storage" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS storage
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)

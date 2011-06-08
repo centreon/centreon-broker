@@ -30,3 +30,8 @@ add_library("file" MODULE
   "${INC_DIR}/file/factory.hh"
 )
 set_target_properties("file" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS file
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)

@@ -36,3 +36,8 @@ add_library("tcp" MODULE
   "${INC_DIR}/tcp/stream.hh"
 )
 set_target_properties("tcp" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS tcp
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)

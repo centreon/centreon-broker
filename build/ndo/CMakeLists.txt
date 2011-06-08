@@ -40,3 +40,8 @@ add_library("ndo" MODULE
   "${INC_DIR}/ndo/output.hh"
 )
 set_target_properties("ndo" PROPERTIES PREFIX "")
+
+# Install rule.
+install(TARGETS ndo
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)
