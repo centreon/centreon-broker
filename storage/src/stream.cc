@@ -84,7 +84,6 @@ stream& stream::operator=(stream const& s) {
 void stream::_clear_qsql() {
   _insert_data_bin.reset();
   _update_metrics.reset();
-  _centreon_db.reset();
   _storage_db.reset();
   return ;
 }
@@ -251,25 +250,6 @@ void stream::_prepare() {
           = q.value(0).toUInt();
   }
 
-  // Fetch configuration from configuration DB.
-  {
-    QSqlQuery q(_centreon_db->exec("SELECT interval_length" \
-                                   " FROM cfg_nagios" \
-                                   " WHERE interval_length IS NOT NULL AND interval_length > 0" \
-                                   " ORDER BY interval_length"));
-    if (_centreon_db->lastError().isValid() || !q.next()) {
-      logging::config << logging::HIGH << "storage: could not get interval length, assuming 60 seconds";
-      _interval_length = 60;
-    }
-    else {
-      _interval_length = q.value(0).toUInt();
-      if (!_interval_length)
-        _interval_length = 60;
-      logging::config << logging::MEDIUM << "storage: interval length is "
-        << static_cast<unsigned int>(_interval_length) << " seconds";
-    }
-  }
-
   // Fetch configuration from data DB.
   {
     QSqlQuery q(_storage_db->exec("SELECT len_storage_rrd, RRDdatabase_path, storage_type" \
@@ -326,53 +306,23 @@ void stream::_prepare() {
 /**
  *  Constructor.
  *
- *  @param[in] centreon_type     Centreon DB type.
- *  @param[in] centreon_host     Centreon DB host.
- *  @param[in] centreon_port     Centreon DB port.
- *  @param[in] centreon_user     Centreon DB user.
- *  @param[in] centreon_password Centreon DB password.
- *  @param[in] centreon_db       Centreon DB name.
  *  @param[in] storage_type      Storage DB type.
  *  @param[in] storage_host      Storage DB host.
  *  @param[in] storage_port      Storage DB port.
  *  @param[in] storage_user      Storage DB user.
  *  @param[in] storage_password  Storage DB password.
  *  @param[in] storage_db        Storage DB name.
+ *  @param[in] rrd_len           RRD length.
+ *  @param[in] interval_length   Interval length.
  */
-stream::stream(QString const& centreon_type,
-               QString const& centreon_host,
-               unsigned short centreon_port,
-               QString const& centreon_user,
-               QString const& centreon_password,
-               QString const& centreon_db,
-               QString const& storage_type,
+stream::stream(QString const& storage_type,
                QString const& storage_host,
                unsigned short storage_port,
                QString const& storage_user,
                QString const& storage_password,
-               QString const& storage_db) {
-  // Centreon connection ID.
-  QString centreon_id;
-  centreon_id.setNum((qulonglong)this, 16);
-  centreon_id.append("Centreon");
-
-  // Add database connection.
-  _centreon_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(centreon_type, centreon_id)));
-  if (centreon_type == "QMYSQL")
-    _centreon_db->setConnectOptions("CLIENT_FOUND_ROWS");
-
-  // Open database.
-  _centreon_db->setHostName(centreon_host);
-  _centreon_db->setPort(centreon_port);
-  _centreon_db->setUserName(centreon_user);
-  _centreon_db->setPassword(centreon_password);
-  _centreon_db->setDatabaseName(centreon_db);
-  if (!_centreon_db->open()) {
-    _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
-    throw (exceptions::basic() << "storage: could not connect to Centreon database");
-  }
-
+               QString const& storage_db,
+               unsigned int rrd_len,
+               time_t interval_length) {
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
@@ -380,7 +330,7 @@ stream::stream(QString const& centreon_type,
 
   // Add database connection.
   _storage_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(storage_type, storage_id)));
-  if (centreon_type == "QMYSQL")
+  if (storage_type == "QMYSQL")
     _storage_db->setConnectOptions("CLIENT_FOUND_ROWS");
 
   // Open database.
@@ -391,7 +341,6 @@ stream::stream(QString const& centreon_type,
   _storage_db->setDatabaseName(storage_db);
   if (!_storage_db->open()) {
     _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw (exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
@@ -402,10 +351,13 @@ stream::stream(QString const& centreon_type,
   }
   catch (...) {
     _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
   }
+
+  // Set parameters.
+  _rrd_len = rrd_len;
+  _interval_length = interval_length;
 }
 
 /**
@@ -418,16 +370,6 @@ stream::stream(stream const& s) : io::stream(s) {
   QString centreon_id;
   centreon_id.setNum((qulonglong)this, 16);
   centreon_id.append("Centreon");
-
-  // Clone Centreon database.
-  _centreon_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._centreon_db, centreon_id)));
-
-  // Open Centreon database.
-  if (!_centreon_db->open()) {
-    _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
-    throw (exceptions::basic() << "storage: could not connect to Centreon database");
-  }
 
   // Storage connection ID.
   QString storage_id;

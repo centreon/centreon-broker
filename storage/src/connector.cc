@@ -73,12 +73,8 @@ static void to_qt_sql_type(QString const& type, QString& out) {
  *  @param[in] c Object to copy.
  */
 void connector::_internal_copy(connector const& c) {
-  _centreon_db = c._centreon_db;
-  _centreon_host = c._centreon_host;
-  _centreon_password = c._centreon_password;
-  _centreon_port = c._centreon_port;
-  _centreon_user = c._centreon_user;
-  _centreon_type = c._centreon_type;
+  _interval_length = c._interval_length;
+  _rrd_len = c._rrd_len;
   _storage_db = c._storage_db;
   _storage_host = c._storage_host;
   _storage_password = c._storage_password;
@@ -137,43 +133,31 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] centreon_type     Centreon DB type.
- *  @param[in] centreon_host     Centreon DB host.
- *  @param[in] centreon_port     Centreon DB port.
- *  @param[in] centreon_user     Centreon DB user.
- *  @param[in] centreon_password Centreon DB password.
- *  @param[in] centreon_db       Centreon DB name.
  *  @param[in] storage_type      Storage DB type.
  *  @param[in] storage_host      Storage DB host.
  *  @param[in] storage_port      Storage DB port.
  *  @param[in] storage_user      Storage DB user.
  *  @param[in] storage_password  Storage DB password.
  *  @param[in] storage_db        Storage DB name.
+ *  @param[in] rrd_len           RRD storage length.
+ *  @param[in] interval_length   Interval length.
  */
-void connector::connect_to(QString const& centreon_type,
-                           QString const& centreon_host,
-                           unsigned short centreon_port,
-                           QString const& centreon_user,
-                           QString const& centreon_password,
-                           QString const& centreon_db,
-                           QString const& storage_type,
+void connector::connect_to(QString const& storage_type,
                            QString const& storage_host,
                            unsigned short storage_port,
                            QString const& storage_user,
                            QString const& storage_password,
-                           QString const& storage_db) {
-  _centreon_db = centreon_db;
-  _centreon_host = centreon_host;
-  _centreon_password = centreon_password;
-  _centreon_port = centreon_port;
-  _centreon_user = centreon_user;
-  to_qt_sql_type(centreon_type, _centreon_type);
+                           QString const& storage_db,
+                           unsigned int rrd_len,
+                           time_t interval_length) {
   _storage_db = storage_db;
   _storage_host = storage_host;
   _storage_password = storage_password;
   _storage_port = storage_port;
   _storage_user = storage_user;
   to_qt_sql_type(storage_type, _storage_type);
+  _rrd_len = rrd_len;
+  _interval_length = interval_length;
   return ;
 }
 
@@ -183,16 +167,12 @@ void connector::connect_to(QString const& centreon_type,
  *  @return Storage connection object.
  */
 QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new stream(_centreon_type,
-            _centreon_host,
-            _centreon_port,
-            _centreon_user,
-            _centreon_password,
-            _centreon_db,
-            _storage_type,
+  return (QSharedPointer<io::stream>(new stream(_storage_type,
             _storage_host,
             _storage_port,
             _storage_user,
             _storage_password,
-            _storage_db)));
+            _storage_db,
+            _rrd_len,
+            _interval_length)));
 }

@@ -128,13 +128,9 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   if (is_input)
     throw (exceptions::basic() << "cannot create an input storage endpoint");
 
-  // Find centreon DB parameters.
-  QString centreon_type(find_param(cfg, "centreon_type"));
-  QString centreon_host(find_param(cfg, "centreon_host"));
-  QString centreon_port(find_param(cfg, "centreon_port"));
-  QString centreon_user(find_param(cfg, "centreon_user"));
-  QString centreon_password(find_param(cfg, "centreon_password"));
-  QString centreon_db(find_param(cfg, "centreon_db"));
+  // Find lengths.
+  unsigned int interval_length(find_param(cfg, "interval").toUInt());
+  unsigned int rrd_length(find_param(cfg, "length").toUInt());
 
   // Find storage DB parameters.
   QString storage_type(find_param(cfg, "storage_type"));
@@ -146,18 +142,14 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Connector.
   QScopedPointer<storage::connector> c(new storage::connector);
-  c->connect_to(centreon_type,
-    centreon_host,
-    centreon_port.toUShort(),
-    centreon_user,
-    centreon_password,
-    centreon_db,
-    storage_type,
+  c->connect_to(storage_type,
     storage_host,
     storage_port.toUShort(),
     storage_user,
     storage_password,
-    storage_db);
+    storage_db,
+    rrd_length,
+    interval_length);
   is_acceptor = false;
   return (c.take());
 }

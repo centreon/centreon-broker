@@ -20,56 +20,48 @@
 # define CCB_STORAGE_CONNECTOR_HH_
 
 # include <QString>
+# include <time.h>
 # include "io/connector.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      storage {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          storage {
         /**
          *  @class connector connector.hh "storage/connector.hh"
          *  @brief Connect to a database.
          *
          *  Send perfdata in a Centreon Storage database.
          */
-        class        connector : public com::centreon::broker::io::connector {
+        class            connector : public com::centreon::broker::io::connector {
          private:
-          QString    _centreon_db;
-          QString    _centreon_host;
-          QString    _centreon_password;
+          time_t         _interval_length;
+          unsigned int   _rrd_len;
+          QString        _storage_db;
+          QString        _storage_host;
+          QString        _storage_password;
           unsigned short
-                     _centreon_port;
-          QString    _centreon_user;
-          QString    _centreon_type;
-          QString    _storage_db;
-          QString    _storage_host;
-          QString    _storage_password;
-          unsigned short
-                     _storage_port;
-          QString    _storage_user;
-          QString    _storage_type;
-          void       _internal_copy(connector const& c);
+                         _storage_port;
+          QString        _storage_user;
+          QString        _storage_type;
+          void           _internal_copy(connector const& c);
 
          public:
-                     connector();
-                     connector(connector const& c);
-                     ~connector();
-          connector& operator=(connector const& c);
-          void       close();
-          void       connect_to(QString const& centreon_type,
-                       QString const& centreon_host,
-                       unsigned short centreon_port,
-                       QString const& centreon_user,
-                       QString const& centreon_password,
-                       QString const& centreon_db,
-                       QString const& storage_type,
-                       QString const& storage_host,
-                       unsigned short storage_port,
-                       QString const& storage_user,
-                       QString const& storage_password,
-                       QString const& storage_db);
+                         connector();
+                         connector(connector const& c);
+                         ~connector();
+          connector&     operator=(connector const& c);
+          void           close();
+          void           connect_to(QString const& storage_type,
+                           QString const& storage_host,
+                           unsigned short storage_port,
+                           QString const& storage_user,
+                           QString const& storage_password,
+                           QString const& storage_db,
+                           unsigned int rrd_len,
+                           time_t interval_length);
           QSharedPointer<com::centreon::broker::io::stream>
-                     open();
+                         open();
         };
       }
     }

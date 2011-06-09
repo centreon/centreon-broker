@@ -53,8 +53,6 @@ namespace              com {
 	  QScopedPointer<QSqlQuery>
                        _update_metrics;
           QScopedPointer<QSqlDatabase>
-                       _centreon_db;
-          QScopedPointer<QSqlDatabase>
                        _storage_db;
           void         _clear_qsql();
           unsigned int _find_index_id(unsigned int host_id,
@@ -65,18 +63,14 @@ namespace              com {
           stream&      operator=(stream const& s);
 
          public:
-                       stream(QString const& centreon_type,
-                         QString const& centreon_host,
-                         unsigned short centreon_port,
-                         QString const& centreon_user,
-                         QString const& centreon_password,
-                         QString const& centreon_db,
-                         QString const& storage_type,
+                       stream(QString const& storage_type,
                          QString const& storage_host,
                          unsigned short storage_port,
                          QString const& storage_user,
                          QString const& storage_password,
-                         QString const& storage_db);
+                         QString const& storage_db,
+                         unsigned int rrd_len,
+                         time_t interval_length);
                        stream(stream const& s);
                        ~stream();
           QSharedPointer<com::centreon::broker::io::data>
