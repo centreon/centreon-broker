@@ -250,26 +250,6 @@ void stream::_prepare() {
           = q.value(0).toUInt();
   }
 
-  // Fetch configuration from data DB.
-  {
-    QSqlQuery q(_storage_db->exec("SELECT len_storage_rrd, RRDdatabase_path, storage_type" \
-                                  " FROM config"));
-    if (_storage_db->lastError().isValid())
-      throw (exceptions::basic() << "storage: could not get configuration from DB: "
-               << _storage_db->lastError().text().toStdString().c_str());
-    _rrd_len = q.value(0).toUInt() * 24 * 60 * 60 / _interval_length;
-    logging::config << logging::MEDIUM << "storage: RRD length is "
-      << _rrd_len << " seconds";
-    _metrics_path = q.value(1).toString();
-    logging::config << logging::MEDIUM << "storage: metrics path is "
-      << _metrics_path.toStdString().c_str();
-    _store_in_db = (q.value(2).toUInt() == 2);
-    if (_store_in_db)
-      logging::config << logging::MEDIUM << "storage: will store in 'data_bin'";
-    else
-      logging::config << logging::MEDIUM << "storage: will not store in 'data_bin'";
-  }
-
   // Prepare metrics update query.
   _update_metrics.reset(new QSqlQuery(*_storage_db));
   if (!_update_metrics->prepare("UPDATE metrics" \
