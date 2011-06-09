@@ -93,7 +93,7 @@ void output::write(QSharedPointer<io::data> d) {
     catch (exceptions::basic const& b) {
       _backend->open(oss1.str().c_str(),
         e->name,
-        e->rrd_len,
+        e->rrd_len / e->interval,
         0,
         e->interval);
     }
