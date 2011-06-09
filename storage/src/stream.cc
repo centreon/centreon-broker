@@ -251,15 +251,30 @@ void stream::_prepare() {
           = q.value(0).toUInt();
   }
 
-  // Fetch configuration from DB.
+  // Fetch configuration from configuration DB.
   {
-    QSqlQuery q(_storage_db->exec("SELECT RRDdatabase_path, storage_type" \
+    QSqlQuery q(_centreon_db->exec("SELECT interval_length" \
+                                   " FROM cfg_nagios" \
+                                   " WHERE interval_length IS NOT NULL AND interval_length > 0" \
+                                   " ORDER BY interval_length"));
+    if (_centreon_db->lastError().isValid() || !q.next()) {
+      logging::config << logging::HIGH << "storage: could not get interval length, assuming 60 seconds";
+      _interval_length = 60;
+    }
+    else
+      _interval_length = q.value(0).toUInt();
+  }
+
+  // Fetch configuration from data DB.
+  {
+    QSqlQuery q(_storage_db->exec("SELECT len_storage_rrd, RRDdatabase_path, storage_type" \
                                   " FROM config"));
     if (_storage_db->lastError().isValid())
       throw (exceptions::basic() << "storage: could not get configuration from DB: "
                << _storage_db->lastError().text().toStdString().c_str());
-    _metrics_path = q.value(0).toString();
-    _store_in_db = (q.value(1).toUInt() == 2);
+    _rrd_len = q.value(0).toUInt() * 24 * 60 * 60 / _interval_length;
+    _metrics_path = q.value(1).toString();
+    _store_in_db = (q.value(2).toUInt() == 2);
   }
 
   // Prepare metrics update query.
@@ -503,8 +518,10 @@ void stream::write(QSharedPointer<io::data> data) {
       logging::debug << logging::HIGH << "storage: generating perfdata event";
       QSharedPointer<events::perfdata> perf(new events::perfdata);
       perf->ctime = ss->execution_time;
+      perf->interval = ss->check_interval * _interval_length;
       perf->metric_id = metric_id;
       perf->name = pd.name();
+      perf->rrd_len = _rrd_len;
       perf->status = ss->current_state;
       perf->value = pd.value();
       multiplexing::publisher().write(perf.staticCast<io::data>());

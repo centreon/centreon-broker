@@ -1418,20 +1418,28 @@ static mapped_data<perfdata> const perfdata_mapping[] = {
     1,
     "ctime"),
   mapped_data<perfdata>(
-    &perfdata::metric_id,
+    &perfdata::interval,
     2,
+    "interval"),
+  mapped_data<perfdata>(
+    &perfdata::metric_id,
+    3,
     "metric_id"),
   mapped_data<perfdata>(
     &perfdata::name,
-    3,
+    4,
     "name"),
   mapped_data<perfdata>(
+    &perfdata::rrd_len,
+    5,
+    "rrd_len"),
+  mapped_data<perfdata>(
     &perfdata::status,
-    4,
+    6,
     "status"),
   mapped_data<perfdata>(
     &perfdata::value,
-    5,
+    7,
     "value"),
   mapped_data<perfdata>()
 };

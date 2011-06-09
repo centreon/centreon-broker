@@ -33,8 +33,10 @@ using namespace com::centreon::broker::events;
  */
 void perfdata::_internal_copy(perfdata const& p) {
   ctime = p.ctime;
+  interval = p.interval;
   metric_id = p.metric_id;
   name = p.name;
+  rrd_len = p.rrd_len;
   status = p.status;
   value = p.value;
   return ;
@@ -49,7 +51,13 @@ void perfdata::_internal_copy(perfdata const& p) {
 /**
  *  Default constructor.
  */
-perfdata::perfdata() : ctime(0), metric_id(0), status(0), value(0.0) {}
+perfdata::perfdata()
+  : ctime(0),
+    interval(0),
+    metric_id(0),
+    rrd_len(0),
+    status(0),
+    value(0.0) {}
 
 /**
  *  Copy constructor.

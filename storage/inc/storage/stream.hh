@@ -44,9 +44,11 @@ namespace              com {
                        _index_cache;
 	  QScopedPointer<QSqlQuery>
                        _insert_data_bin;
+          time_t       _interval_length;
           std::map<std::pair<unsigned int, QString>, unsigned int>
                        _metric_cache;
 	  QString      _metrics_path;
+          unsigned int _rrd_len;
           bool         _store_in_db;
 	  QScopedPointer<QSqlQuery>
                        _update_metrics;

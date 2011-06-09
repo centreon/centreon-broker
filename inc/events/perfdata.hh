@@ -39,8 +39,10 @@ namespace              com {
 
          public:
           time_t       ctime;
+          time_t       interval;
           int          metric_id;
           QString      name;
+          int          rrd_len;
           short        status;
           double       value;
                        perfdata();
