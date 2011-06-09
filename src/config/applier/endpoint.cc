@@ -128,7 +128,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
                                                  bool is_output,
                                                  QList<config::endpoint> const& l) {
   // Debug message.
-  logging::config << logging::MEDIUM << "creating new endpoint '"
+  logging::config << logging::MEDIUM << "endpoint applier: creating new endpoint '"
     << cfg.name.toStdString().c_str() << "'";
 
   // Check that failover is configured.
@@ -136,7 +136,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
   if (!cfg.failover.isEmpty()) {
     QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
     if (it == l.end())
-      throw (exceptions::basic() << "could not find failover '"
+      throw (exceptions::basic() << "endpoint applier: could not find failover '"
                << cfg.failover.toStdString().c_str()
                << "' for endpoint '"
                << cfg.name.toStdString().c_str()) << "'";
@@ -159,7 +159,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
     }
   }
   if (endp.isNull())
-    throw (exceptions::basic() << "no matching protocol found for endpoint '"
+    throw (exceptions::basic() << "endpoint applier: no matching protocol found for endpoint '"
              << cfg.name.toStdString().c_str() << "'");
 
   // Create remaining objects.
@@ -256,7 +256,7 @@ endpoint::~endpoint() {}
 void endpoint::apply(QList<config::endpoint> const& inputs,
                      QList<config::endpoint> const& outputs) {
   // Debug message.
-  logging::config << logging::HIGH << "loading endpoint configuration";
+  logging::config << logging::HIGH << "endpoint applier: loading configuration";
   logging::debug << logging::HIGH << "endpoint applier: "
     << inputs.size() << " inputs, "
     << outputs.size() << " outputs";
@@ -280,10 +280,11 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
        it != end;
        ++it)
     // Check that output is not a failover.
-    if (std::find_if(out_to_create.begin(),
-            out_to_create.end(),
-            name_match_failover(it->name))
-          == out_to_create.end()) {
+    if (it->name.isEmpty()
+        || (std::find_if(out_to_create.begin(),
+              out_to_create.end(),
+              name_match_failover(it->name))
+            == out_to_create.end())) {
       // Create endpoint.
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
@@ -300,10 +301,11 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
        it != end;
        ++it)
     // Check that output is not a failover.
-    if (std::find_if(in_to_create.begin(),
-            in_to_create.end(),
-            name_match_failover(it->name))
-          == in_to_create.end()) {
+    if (it->name.isEmpty()
+        || (std::find_if(in_to_create.begin(),
+              in_to_create.end(),
+              name_match_failover(it->name))
+            == in_to_create.end())) {
       // Create endpoint.
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
