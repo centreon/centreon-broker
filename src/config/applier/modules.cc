@@ -80,8 +80,12 @@ modules::~modules() {}
  *  @param[in] module_dir Module directory.
  */
 void modules::apply(QString const& module_dir) {
-  logging::config << logging::HIGH << "loading module directory";
-  _loader.load_dir(module_dir);
+  if (!module_dir.isEmpty()) {
+    logging::config << logging::HIGH << "module applier: loading directory";
+    _loader.load_dir(module_dir);
+  }
+  else
+    logging::debug << logging::HIGH << "module applier: no directory defined";
   return ;
 }
 

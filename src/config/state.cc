@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QDir>
 #include "config/state.hh"
 
 using namespace com::centreon::broker::config;
@@ -86,7 +85,7 @@ state& state::operator=(state const& s) {
 void state::clear() {
   _inputs.clear();
   _loggers.clear();
-  _module_dir = QDir::currentPath();
+  _module_dir.clear();
   _outputs.clear();
   _params.clear();
   return ;
