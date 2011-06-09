@@ -87,7 +87,16 @@ void output::write(QSharedPointer<io::data> d) {
     QSharedPointer<events::perfdata> e(d.staticCast<events::perfdata>());
     std::ostringstream oss1;
     oss1 << _rrd_path.toStdString() << "/" << e->metric_id << ".rrd";
-    _backend->open(oss1.str().c_str(), e->name);
+    try {
+      _backend->open(oss1.str().c_str(), e->name);
+    }
+    catch (exceptions::basic const& b) {
+      _backend->open(oss1.str().c_str(),
+        e->name,
+        e->rrd_len,
+        0,
+        e->interval);
+    }
     std::ostringstream oss2;
     oss2 << e->value;
     _backend->update(e->ctime, oss2.str().c_str());
