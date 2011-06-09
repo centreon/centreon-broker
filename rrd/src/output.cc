@@ -99,7 +99,12 @@ void output::write(QSharedPointer<io::data> d) {
     }
     std::ostringstream oss2;
     oss2 << e->value;
-    _backend->update(e->ctime, oss2.str().c_str());
+    try {
+      _backend->update(e->ctime, oss2.str().c_str());
+    }
+    catch (exceptions::basic const& b) {
+      logging::error << logging::MEDIUM << b.what() << " (ignored)";
+    }
   }
   return ;
 }
