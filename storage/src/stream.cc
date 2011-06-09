@@ -452,7 +452,7 @@ void stream::write(QSharedPointer<io::data> data) {
       // Send perfdata event to processing.
       logging::debug << logging::HIGH << "storage: generating perfdata event";
       QSharedPointer<events::perfdata> perf(new events::perfdata);
-      perf->ctime = ss->execution_time;
+      perf->ctime = ss->last_check;
       perf->interval = ss->check_interval * _interval_length;
       perf->metric_id = metric_id;
       perf->name = pd.name();
