@@ -261,8 +261,13 @@ void stream::_prepare() {
       logging::config << logging::HIGH << "storage: could not get interval length, assuming 60 seconds";
       _interval_length = 60;
     }
-    else
+    else {
       _interval_length = q.value(0).toUInt();
+      if (!_interval_length)
+        _interval_length = 60;
+      logging::config << logging::MEDIUM << "storage: interval length is "
+        << static_cast<unsigned int>(_interval_length) << " seconds";
+    }
   }
 
   // Fetch configuration from data DB.
@@ -273,8 +278,16 @@ void stream::_prepare() {
       throw (exceptions::basic() << "storage: could not get configuration from DB: "
                << _storage_db->lastError().text().toStdString().c_str());
     _rrd_len = q.value(0).toUInt() * 24 * 60 * 60 / _interval_length;
+    logging::config << logging::MEDIUM << "storage: RRD length is "
+      << _rrd_len << " seconds";
     _metrics_path = q.value(1).toString();
+    logging::config << logging::MEDIUM << "storage: metrics path is "
+      << _metrics_path.toStdString().c_str();
     _store_in_db = (q.value(2).toUInt() == 2);
+    if (_store_in_db)
+      logging::config << logging::MEDIUM << "storage: will store in 'data_bin'";
+    else
+      logging::config << logging::MEDIUM << "storage: will not store in 'data_bin'";
   }
 
   // Prepare metrics update query.
