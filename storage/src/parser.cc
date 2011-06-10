@@ -111,7 +111,7 @@ parser::~parser() {}
  *  @param[out] pd  List of parsed metrics.
  */
 void parser::parse_perfdata(QString const& str,
-                                     std::list<perfdata>& pd) {
+                            std::list<perfdata>& pd) {
   /* Extract metrics strings. */
   std::string buf(str.toStdString());
   char const* ptr(buf.c_str());
@@ -153,7 +153,7 @@ void parser::parse_perfdata(QString const& str,
       p.value(0.0);
 
     // Extract unit.
-    t = strcspn(ptr, ";");
+    t = strcspn(ptr, " ;");
     p.unit(std::string(ptr, t).c_str());
     ptr += t;
     if (*ptr)
