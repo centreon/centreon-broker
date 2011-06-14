@@ -20,10 +20,10 @@
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-include_directories("../inc")# "../inc/daemon" "../inc/module")
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
-set(INC_DIR "${PROJECT_SOURCE_DIR}/inc")
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
+include_directories("${INC_DIR}")
 
 # Enable or not the debug mode.
 option(WITH_DEBUG "Generate debug messages." OFF)
