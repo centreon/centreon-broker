@@ -307,7 +307,6 @@ stream::stream(QString const& storage_type,
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
-  storage_id.append("Storage");
 
   // Add database connection.
   _storage_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(storage_type, storage_id)));
@@ -347,15 +346,9 @@ stream::stream(QString const& storage_type,
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) : io::stream(s) {
-  // Centreon connection ID.
-  QString centreon_id;
-  centreon_id.setNum((qulonglong)this, 16);
-  centreon_id.append("Centreon");
-
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
-  storage_id.append("Storage");
 
   // Clone Storage database.
   _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._storage_db, storage_id)));
@@ -363,7 +356,6 @@ stream::stream(stream const& s) : io::stream(s) {
   // Open Storage database.
   if (!_storage_db->open()) {
     _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw (broker::exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
@@ -374,7 +366,6 @@ stream::stream(stream const& s) : io::stream(s) {
   }
   catch (...) {
     _clear_qsql();
-    QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
   }
@@ -384,12 +375,9 @@ stream::stream(stream const& s) : io::stream(s) {
  *  Destructor.
  */
 stream::~stream() {
-  QString centreon_id;
-  centreon_id.setNum((qulonglong)this, 16);
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
   _clear_qsql();
-  QSqlDatabase::removeDatabase(centreon_id);
   QSqlDatabase::removeDatabase(storage_id);
 }
 
