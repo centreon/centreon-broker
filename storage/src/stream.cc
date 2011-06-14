@@ -134,7 +134,7 @@ unsigned int stream::_find_index_id(unsigned int host_id,
               " WHERE host_id=" << host_id
            << " AND service_id=" << service_id;
       QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
-      if (_storage_db->lastError().isValid())
+      if (_storage_db->lastError().isValid() || !q2.next())
         throw (broker::exceptions::basic() << "storage: could not fetch index_id of newly inserted index ("
                  << host_id << ", " << service_id << "): "
                  << _storage_db->lastError().text().toStdString().c_str());
@@ -190,7 +190,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
                << _storage_db->lastError().text().toStdString().c_str());
 
     // Fetch insert ID with query if possible.
-    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
+    if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.lastInsertId().toUInt())) {
       q.finish();
       std::ostringstream oss2;
@@ -199,7 +199,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
               " WHERE index_id=" << index_id
            << " AND metric_name=" << escaped_metric_name;
       QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
-      if (_storage_db->lastError().isValid())
+      if (_storage_db->lastError().isValid() || !q2.next())
         throw (broker::exceptions::basic() << "storage: could not fetch metric_id of newly inserted metric '"
                  << metric_name.toStdString().c_str() << "' of index " << index_id
                  << ": " << _storage_db->lastError().text().toStdString().c_str());
