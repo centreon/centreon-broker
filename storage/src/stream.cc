@@ -100,7 +100,7 @@ void stream::_clear_qsql() {
  *  @return Index ID matching host and service ID.
  */
 unsigned int stream::_find_index_id(unsigned int host_id,
-                                               unsigned int service_id) {
+                                    unsigned int service_id) {
   unsigned int retval;
 
   // Look in the cache.
@@ -113,8 +113,8 @@ unsigned int stream::_find_index_id(unsigned int host_id,
   else {
     // Build query.
     std::ostringstream oss;
-    oss << "INSERT INTO index_data (host_id, service_id)" \
-           " VALUES (" << host_id << ", " << service_id << ")";
+    oss << "INSERT INTO index_data (host_id, service_id, must_be_rebuild)" \
+           " VALUES (" << host_id << ", " << service_id << ", 1)";
 
     // Execute query.
     QSqlQuery q(_storage_db->exec(oss.str().c_str()));
@@ -178,8 +178,8 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     std::string escaped_metric_name(_storage_db->driver()->formatValue(QSqlField(metric_name.toStdString().c_str(),
         QVariant::String),
       true).toStdString());
-    oss << "INSERT INTO metrics (index_id, metric_name, must_be_rebuild)" \
-      " VALUES (" << index_id << ", " << escaped_metric_name << ", 1)";
+    oss << "INSERT INTO metrics (index_id, metric_name)" \
+      " VALUES (" << index_id << ", " << escaped_metric_name << ")";
 
     // Execute query.
     QSqlQuery q(_storage_db->exec(oss.str().c_str()));
