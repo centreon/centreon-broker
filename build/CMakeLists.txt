@@ -105,7 +105,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/events/state.cc"
   "${SRC_DIR}/events/status.cc"
   "${SRC_DIR}/exceptions/basic.cc"
-  "${SRC_DIR}/exceptions/retval.cc"
 #	../src/interface/db/destination.cc
 #	../src/interface/db/internal.cc
 #	../src/interface/ndo/base.cc
@@ -195,7 +194,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/events/state.hh"
   "${INC_DIR}/events/status.hh"
   "${INC_DIR}/exceptions/basic.hh"
-  "${INC_DIR}/exceptions/retval.hh"
   "${INC_DIR}/io/acceptor.hh"
   "${INC_DIR}/io/connector.hh"
   "${INC_DIR}/io/data.hh"

@@ -22,7 +22,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "exceptions/basic.hh"
+#include "storage/exceptions/perfdata.hh"
 #include "storage/parser.hh"
 #include "storage/perfdata.hh"
 
@@ -144,7 +144,7 @@ void parser::parse_perfdata(QString const& str,
 
     // Check format.
     if (*ptr != '=')
-      throw (exceptions::basic() << "invalid perfdata format: equal sign not present or misplaced");
+      throw (exceptions::perfdata() << "storage: invalid perfdata format: equal sign not present or misplaced");
     ++ptr;
 
     // Extract value.

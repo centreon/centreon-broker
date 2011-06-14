@@ -30,6 +30,7 @@
 #include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "multiplexing/publisher.hh"
+#include "storage/exceptions/perfdata.hh"
 #include "storage/parser.hh"
 #include "storage/perfdata.hh"
 #include "storage/stream.hh"
@@ -119,7 +120,7 @@ unsigned int stream::_find_index_id(unsigned int host_id,
     // Execute query.
     QSqlQuery q(_storage_db->exec(oss.str().c_str()));
     if (_storage_db->lastError().isValid())
-      throw (exceptions::basic() << "storage: insertion of index (" << host_id << ", "
+      throw (broker::exceptions::basic() << "storage: insertion of index (" << host_id << ", "
                << service_id << ") failed: "
                << _storage_db->lastError().text().toStdString().c_str());
 
@@ -134,12 +135,12 @@ unsigned int stream::_find_index_id(unsigned int host_id,
            << " AND service_id=" << service_id;
       QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
       if (_storage_db->lastError().isValid())
-        throw (exceptions::basic() << "storage: could not fetch index_id of newly inserted index ("
+        throw (broker::exceptions::basic() << "storage: could not fetch index_id of newly inserted index ("
                  << host_id << ", " << service_id << "): "
                  << _storage_db->lastError().text().toStdString().c_str());
       retval = q2.value(0).toUInt();
       if (!retval)
-        throw (exceptions::basic() << "storage: index_data table is corrupted: got 0 as index_id");
+        throw (broker::exceptions::basic() << "storage: index_data table is corrupted: got 0 as index_id");
     }
 
     // Insert index in cache.
@@ -184,7 +185,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     // Execute query.
     QSqlQuery q(_storage_db->exec(oss.str().c_str()));
     if (_storage_db->lastError().isValid())
-      throw (exceptions::basic() << "storage: insertion of metric '" << metric_name.toStdString().c_str()
+      throw (broker::exceptions::basic() << "storage: insertion of metric '" << metric_name.toStdString().c_str()
                << "' of index " << index_id << " failed: "
                << _storage_db->lastError().text().toStdString().c_str());
 
@@ -199,12 +200,12 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
            << " AND metric_name=" << escaped_metric_name;
       QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
       if (_storage_db->lastError().isValid())
-        throw (exceptions::basic() << "storage: could not fetch metric_id of newly inserted metric '"
+        throw (broker::exceptions::basic() << "storage: could not fetch metric_id of newly inserted metric '"
                  << metric_name.toStdString().c_str() << "' of index " << index_id
                  << ": " << _storage_db->lastError().text().toStdString().c_str());
       retval = q2.value(0).toUInt();
       if (!retval)
-        throw (exceptions::basic() << "storage: metrics table is corrupted: got 0 as metric_id");
+        throw (broker::exceptions::basic() << "storage: metrics table is corrupted: got 0 as metric_id");
     }
 
     // Insert metric in cache.
@@ -224,7 +225,7 @@ void stream::_prepare() {
     QSqlQuery q(_storage_db->exec("SELECT id, host_id, service_id" \
                                   " FROM index_data"));
     if (_storage_db->lastError().isValid())
-      throw (exceptions::basic() << "storage: could not fetch index list from data DB: "
+      throw (broker::exceptions::basic() << "storage: could not fetch index list from data DB: "
                << _storage_db->lastError().text().toStdString().c_str());
 
     // Loop through result set.
@@ -240,7 +241,7 @@ void stream::_prepare() {
     QSqlQuery q(_storage_db->exec("SELECT metric_id, index_id, metric_name" \
                                   " FROM metrics"));
     if (_storage_db->lastError().isValid())
-      throw (exceptions::basic() << "storage: could not fetch metric list from data DB: "
+      throw (broker::exceptions::basic() << "storage: could not fetch metric list from data DB: "
                << _storage_db->lastError().text().toStdString().c_str());
 
     // Loop through result set.
@@ -260,7 +261,7 @@ void stream::_prepare() {
                                 " max=:max" \
                                 " WHERE index_id=:index_id" \
                                 " AND metric_name=:metric_name"))
-    throw (exceptions::basic() << "storage: could not prepare metrics update query: "
+    throw (broker::exceptions::basic() << "storage: could not prepare metrics update query: "
              << _update_metrics->lastError().text().toStdString().c_str());
 
   // Prepare data_bind insert query.
@@ -271,7 +272,7 @@ void stream::_prepare() {
                                  " :ctime," \
                                  " :value," \
                                  " :status)"))
-    throw (exceptions::basic() << "storage: could not prepare data_bin insert query: "
+    throw (broker::exceptions::basic() << "storage: could not prepare data_bin insert query: "
              << _insert_data_bin->lastError().text().toStdString().c_str());
 
   return ;
@@ -322,7 +323,7 @@ stream::stream(QString const& storage_type,
   if (!_storage_db->open()) {
     _clear_qsql();
     QSqlDatabase::removeDatabase(storage_id);
-    throw (exceptions::basic() << "storage: could not connect to Centreon Storage database");
+    throw (broker::exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
 
   // Prepare queries.
@@ -364,7 +365,7 @@ stream::stream(stream const& s) : io::stream(s) {
     _clear_qsql();
     QSqlDatabase::removeDatabase(centreon_id);
     QSqlDatabase::removeDatabase(storage_id);
-    throw (exceptions::basic() << "storage: could not connect to Centreon Storage database");
+    throw (broker::exceptions::basic() << "storage: could not connect to Centreon Storage database");
   }
 
   // Prepare queries.
@@ -398,7 +399,7 @@ stream::~stream() {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> stream::read() {
-  throw (exceptions::basic() << "storage: attempt to read from a storage stream (software bug)");
+  throw (broker::exceptions::basic() << "storage: attempt to read from a storage stream (software bug)");
   return (QSharedPointer<io::data>());
 }
 
@@ -416,7 +417,13 @@ void stream::write(QSharedPointer<io::data> data) {
     // Parse perfdata.
     std::list<perfdata> pds;
     parser p;
-    p.parse_perfdata(ss->perf_data, pds);
+    try {
+      p.parse_perfdata(ss->perf_data, pds);
+    }
+    catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+      logging::error << logging::MEDIUM << e.what();
+      return ;
+    }
 
     // Loop through all metrics.
     for (std::list<perfdata>::iterator it = pds.begin(), end = pds.end();

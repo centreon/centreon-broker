@@ -25,6 +25,7 @@ include_directories("${INC_DIR}")
 add_library("storage" MODULE
   # Sources.
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/exceptions/perfdata.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/parser.cc"
@@ -32,6 +33,7 @@ add_library("storage" MODULE
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/storage/connector.hh"
+  "${INC_DIR}/storage/exceptions/perfdata.hh"
   "${INC_DIR}/storage/factory.hh"
   "${INC_DIR}/storage/parser.hh"
   "${INC_DIR}/storage/perfdata.hh"
