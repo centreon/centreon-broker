@@ -138,6 +138,9 @@ void failover::run() {
     }
 
     try {
+      // Close previous endpoint if any.
+      _stream.clear();
+
       // Open endpoint.
       logging::debug << logging::MEDIUM << "failover: opening endpoint";
       _stream = _endpoint->open();
@@ -157,6 +160,9 @@ void failover::run() {
     }
     catch (exceptions::basic const& e) {
       logging::error << logging::HIGH << e.what();
+    }
+    catch (std::exception const& e) {
+      logging::error << logging::HIGH << "failover: standard library error: " << e.what();
     }
     catch (...) {
       logging::error << logging::HIGH << "failover: unknown error caught in processing thread";
