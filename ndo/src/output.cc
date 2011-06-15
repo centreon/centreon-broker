@@ -301,6 +301,13 @@ void output::write(QSharedPointer<io::data> i) {
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
     break ;
+   case events::event::STATUSDATA:
+    buffer << NDO_API_STATUSDATA << ":\n";
+    handle_event<events::status_data>(
+      *static_cast<events::status_data*>(e),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+    break ;
   }
   buffer << "\n";
 

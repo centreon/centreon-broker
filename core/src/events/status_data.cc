@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "events/perfdata.hh"
+#include "events/status_data.hh"
 
 using namespace com::centreon::broker::events;
 
@@ -29,15 +29,14 @@ using namespace com::centreon::broker::events;
 /**
  *  Copy internal data members.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] sd Object to copy.
  */
-void perfdata::_internal_copy(perfdata const& p) {
-  ctime = p.ctime;
-  interval = p.interval;
-  metric_id = p.metric_id;
-  name = p.name;
-  rrd_len = p.rrd_len;
-  value = p.value;
+void status_data::_internal_copy(status_data const& sd) {
+  ctime = sd.ctime;
+  index_id = sd.index_id;
+  interval = sd.interval;
+  rrd_len = sd.rrd_len;
+  status = sd.status;
   return ;
 }
 
@@ -50,45 +49,45 @@ void perfdata::_internal_copy(perfdata const& p) {
 /**
  *  Default constructor.
  */
-perfdata::perfdata()
+status_data::status_data()
   : ctime(0),
+    index_id(0),
     interval(0),
-    metric_id(0),
     rrd_len(0),
-    value(0.0) {}
+    status(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] sd Object to copy.
  */
-perfdata::perfdata(perfdata const& p) : event(p) {
-  _internal_copy(p);
+status_data::status_data(status_data const& sd) : event(sd) {
+  _internal_copy(sd);
 }
 
 /**
  *  Destructor.
  */
-perfdata::~perfdata() {}
+status_data::~status_data() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] sd Object to copy.
  *
  *  @return This object.
  */
-perfdata& perfdata::operator=(perfdata const& p) {
-  event::operator=(p);
-  _internal_copy(p);
+status_data& status_data::operator=(status_data const& sd) {
+  event::operator=(sd);
+  _internal_copy(sd);
   return (*this);
 }
 
 /**
- *  Get the event type (PERFDATA).
+ *  Get the event type (STATUSDATA).
  *
- *  @return event::PERFDATA.
+ *  @return STATUSDATA.
  */
-unsigned int perfdata::type() const {
-  return (PERFDATA);
+unsigned int status_data::type() const {
+  return (STATUSDATA);
 }

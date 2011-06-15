@@ -1434,10 +1434,6 @@ static mapped_data<perfdata> const perfdata_mapping[] = {
     5,
     "rrd_len"),
   mapped_data<perfdata>(
-    &perfdata::status,
-    6,
-    "status"),
-  mapped_data<perfdata>(
     &perfdata::value,
     7,
     "value"),
@@ -2132,6 +2128,31 @@ static mapped_data<service_status> const service_status_mapping[] = {
   mapped_data<service_status>()
 };
 
+// status_data members mapping.
+static mapped_data<status_data> const status_data_mapping[] = {
+  mapped_data<status_data>(
+    &status_data::ctime,
+    1,
+    "ctime"),
+  mapped_data<status_data>(
+    &status_data::index_id,
+    2,
+    "index_id"),
+  mapped_data<status_data>(
+    &status_data::interval,
+    3,
+    "interval"),
+  mapped_data<status_data>(
+    &status_data::rrd_len,
+    4,
+    "rrd_len"),
+  mapped_data<status_data>(
+    &status_data::status,
+    5,
+    "status"),
+  mapped_data<status_data>()
+};
+
 // acknowledgement mapping.
 template <> const mapped_data<events::acknowledgement>*
   mapped_type<events::acknowledgement>::members(acknowledgement_mapping);
@@ -2313,3 +2334,9 @@ template <> const mapped_data<events::service_status>*
   mapped_type<events::service_status>::members(service_status_mapping);
 template <> const char*
   mapped_type<events::service_status>::table("services");
+
+// status_data mapping.
+template <> const mapped_data<events::status_data>*
+  mapped_type<events::status_data>::members(status_data_mapping);
+template <> const char*
+  mapped_type<events::status_data>::table("status_data");

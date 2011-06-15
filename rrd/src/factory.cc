@@ -103,15 +103,22 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   if (is_input)
     throw (exceptions::basic() << "cannot create an input RRD endpoint");
 
-  // Get RRD path.
-  QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
-  if (it == cfg.params.end())
-    throw (exceptions::basic() << "no 'path' defined for RRD endpoint '"
+  // Get metrics RRD path.
+  QMap<QString, QString>::const_iterator it1(cfg.params.find("metrics_path"));
+  if (it1 == cfg.params.end())
+    throw (exceptions::basic() << "no 'metrics_path' defined for RRD endpoint '"
+             << cfg.name.toStdString().c_str() << "'");
+
+  // Get status RRD path.
+  QMap<QString, QString>::const_iterator it2(cfg.params.find("status_path"));
+  if (it2 == cfg.params.end())
+    throw (exceptions::basic() << "no 'status_path' defined for RRD endpoint '"
              << cfg.name.toStdString().c_str() << "'");
 
   // Create endpoint.
   QScopedPointer<rrd::connector> endp(new rrd::connector);
-  endp->set_path(it.value());
+  endp->set_metrics_path(it1.value());
+  endp->set_status_path(it2.value());
   is_acceptor = false;
   return (endp.take());
 }

@@ -301,6 +301,9 @@ template <> std::map<int, getter_setter<events::service_state> >
 template <> std::map<int, getter_setter<events::service_status> >
   ndo::ndo_mapped_type<events::service_status>::map =
     std::map<int, getter_setter<events::service_status> >();
+template <> std::map<int, getter_setter<events::status_data> >
+  ndo::ndo_mapped_type<events::status_data>::map =
+    std::map<int, getter_setter<events::status_data> >();
 
 /**************************************
 *                                     *
@@ -344,5 +347,6 @@ void ndo::initialize() {
   static_init<events::service_group_member>();
   static_init<events::service_state>();
   static_init<events::service_status>();
+  static_init<events::status_data>();
   return ;
 }

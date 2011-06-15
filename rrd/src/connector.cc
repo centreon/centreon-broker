@@ -39,7 +39,9 @@ connector::connector() {}
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::connector(c), _rrd_path(c._rrd_path) {}
+  : io::connector(c),
+    _metrics_path(c._metrics_path),
+    _status_path(c._status_path) {}
 
 /**
  *  Destructor.
@@ -55,7 +57,8 @@ connector::~connector() {}
  */
 connector& connector::operator=(connector const& c) {
   io::connector::operator=(c);
-  _rrd_path = c._rrd_path;
+  _metrics_path = c._metrics_path;
+  _status_path = c._status_path;
   return (*this);
 }
 
@@ -72,15 +75,26 @@ void connector::close() {
  *  @return Stream object.
  */
 QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new output(_rrd_path)));
+  return (QSharedPointer<io::stream>(new output(_metrics_path,
+                                                _status_path)));
 }
 
 /**
- *  Set the RRD path.
+ *  Set the RRD metrics path.
  *
- *  @param[in] rrd_path Where RRD files will be written.
+ *  @param[in] metrics_path Where metrics RRD files will be written.
  */
-void connector::set_path(QString const& rrd_path) {
-  _rrd_path = rrd_path;
+void connector::set_metrics_path(QString const& metrics_path) {
+  _metrics_path = metrics_path;
+  return ;
+}
+
+/**
+ *  Set the RRD status path.
+ *
+ *  @param[in] status_path Where status RRD files will be written.
+ */
+void connector::set_status_path(QString const& status_path) {
+  _status_path = status_path;
   return ;
 }

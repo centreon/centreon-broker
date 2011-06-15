@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include "events/perfdata.hh"
 #include "events/service_status.hh"
+#include "events/status_data.hh"
 #include "exceptions/basic.hh"
 #include "logging/logging.hh"
 #include "multiplexing/publisher.hh"
@@ -402,6 +403,17 @@ void stream::write(QSharedPointer<io::data> data) {
     logging::debug << logging::HIGH << "storage: processing service status event";
     QSharedPointer<events::service_status> ss(data.staticCast<events::service_status>());
 
+    // Find index_id.
+    unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
+
+    // Generate status event.
+    QSharedPointer<events::status_data> status(new events::status_data);
+    status->ctime = ss->last_check;
+    status->index_id = index_id;
+    status->interval = ss->check_interval * _interval_length;
+    status->rrd_len = _rrd_len;
+    status->status = ss->current_state;
+
     // Parse perfdata.
     std::list<perfdata> pds;
     parser p;
@@ -418,9 +430,6 @@ void stream::write(QSharedPointer<io::data> data) {
          it != end;
          ++it) {
       perfdata& pd(*it);
-
-      // Find index_id.
-      unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
 
       // Find metric_id.
       unsigned int metric_id(_find_metric_id(index_id, pd.name()));
@@ -452,7 +461,6 @@ void stream::write(QSharedPointer<io::data> data) {
       perf->metric_id = metric_id;
       perf->name = pd.name();
       perf->rrd_len = _rrd_len;
-      perf->status = ss->current_state;
       perf->value = pd.value();
       multiplexing::publisher().write(perf.staticCast<io::data>());
     }

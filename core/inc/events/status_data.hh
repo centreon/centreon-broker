@@ -16,10 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EVENTS_PERFDATA_HH_
-# define CCB_EVENTS_PERFDATA_HH_
+#ifndef CCB_EVENTS_STATUS_DATA_HH_
+# define CCB_EVENTS_STATUS_DATA_HH_
 
-# include <QString>
 # include <time.h>
 # include "events/event.hh"
 
@@ -28,26 +27,25 @@ namespace              com {
     namespace          broker {
       namespace        events {
         /**
-         *  @class perfdata perfdata.hh "events/perfdata.hh"
-         *  @brief Perfdata object.
+         *  @class status_data status_data.hh "events/status_data.hh"
+         *  @brief Status data used to generate status graphs.
          *
-         *  Already processed perfdata, ready to get inserted.
+         *  Status data event used to generate status graphs.
          */
-        class          perfdata : public event {
+        class          status_data : public event {
          private:
-          void         _internal_copy(perfdata const& p);
+          void         _internal_copy(status_data const& sd);
 
          public:
           time_t       ctime;
+          int          index_id;
           time_t       interval;
-          int          metric_id;
-          QString      name;
-          int          rrd_len;
-          double       value;
-                       perfdata();
-                       perfdata(perfdata const& p);
-                       ~perfdata();
-          perfdata&    operator=(perfdata const& p);
+          time_t       rrd_len;
+          short        status;
+                       status_data();
+                       status_data(status_data const& sd);
+                       ~status_data();
+          status_data& operator=(status_data const& sd);
           unsigned int type() const;
         };
       }
@@ -55,4 +53,4 @@ namespace              com {
   }
 }
 
-#endif /* !CCB_EVENTS_PERFDATA_HH_ */
+#endif /* !CCB_EVENTS_STATUS_DATA_HH_ */

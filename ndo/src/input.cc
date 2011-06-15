@@ -230,6 +230,9 @@ QSharedPointer<io::data> input::read() {
      case NDO_API_SERVICESTATUSDATA:
       e.reset(_handle_event<events::service_status>());
       break ;
+     case NDO_API_STATUSDATA:
+      e.reset(_handle_event<events::status_data>());
+      break ;
      default:
       // Skip this event.
       while (id != NDO_API_ENDDATA) {

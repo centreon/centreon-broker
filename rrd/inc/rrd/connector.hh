@@ -34,7 +34,8 @@ namespace            com {
          */
         class        connector : public com::centreon::broker::io::connector {
          private:
-          QString    _rrd_path;
+          QString    _metrics_path;
+          QString    _status_path;
 
          public:
                      connector();
@@ -44,7 +45,8 @@ namespace            com {
           void       close();
           QSharedPointer<com::centreon::broker::io::stream>
                      open();
-          void       set_path(QString const& rrd_path);
+          void       set_metrics_path(QString const& metrics_path);
+          void       set_status_path(QString const& status_path);
         };
       }
     }

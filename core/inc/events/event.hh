@@ -106,6 +106,7 @@ namespace              com {
             SERVICEGROUPMEMBER,
             SERVICESTATE,
             SERVICESTATUS,
+            STATUSDATA,
             EVENT_TYPES_NB
           };
                        event();

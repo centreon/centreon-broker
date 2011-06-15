@@ -49,5 +49,6 @@
 # include "events/service_group_member.hh"
 # include "events/service_state.hh"
 # include "events/service_status.hh"
+# include "events/status_data.hh"
 
 #endif /* CCB_EVENTS_EVENTS_HH_ */

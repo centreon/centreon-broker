@@ -38,10 +38,12 @@ namespace         com {
          private:
 	  QScopedPointer<backend>
                   _backend;
-          QString _rrd_path;
+          QString _metrics_path;
+          QString _status_path;
 
          public:
-                  output(QString const& rrd_path);
+                  output(QString const& metrics_path,
+                    QString const& status_path);
                   output(output const& o);
                   ~output();
           output& operator=(output const& o);
