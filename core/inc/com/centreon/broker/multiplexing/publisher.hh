@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,15 +20,15 @@
 # define CCB_MULTIPLEXING_PUBLISHER_HH_
 
 # include <QSharedPointer>
-# include "io/data.hh"
-# include "io/stream.hh"
+# include "com/centreon/broker/io/data.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace            com {
   namespace          centreon {
     namespace        broker {
       namespace      multiplexing {
         /**
-         *  @class publisher publisher.hh "multiplexing/publisher.hh"
+         *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
          *  @brief Publish events to registered subscribers.
          *
          *  A publisher object broadcast an event sent to it to every
@@ -36,15 +36,15 @@ namespace            com {
          *
          *  @see subscriber
          */
-        class        publisher : public com::centreon::broker::io::stream {
+        class        publisher : public io::stream {
          public:
                      publisher();
                      publisher(publisher const& p);
                      ~publisher();
           publisher& operator=(publisher const& p);
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                      read();
-          void       write(QSharedPointer<com::centreon::broker::io::data> d);
+          void       write(QSharedPointer<io::data> d);
         };
       }
     }

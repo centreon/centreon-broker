@@ -23,14 +23,14 @@
 # include <QQueue>
 # include <QWaitCondition>
 # include <time.h>
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
-namespace                        com {
-  namespace                      centreon {
-    namespace                    broker {
-      namespace                  multiplexing {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          multiplexing {
         /**
-         *  @class subscriber subscriber.hh "multiplexing/subscriber.hh"
+         *  @class subscriber subscriber.hh "com/centreon/broker/multiplexing/subscriber.hh"
          *  @brief Receive events from publishers and make them
          *         available through the interface::source interface.
          *
@@ -41,10 +41,10 @@ namespace                        com {
          *
          *  @see publisher
          */
-        class            subscriber : public com::centreon::broker::io::stream {
+        class            subscriber : public io::stream {
          private:
           QWaitCondition _cv;
-          QQueue<QSharedPointer<com::centreon::broker::io::data> >
+          QQueue<QSharedPointer<io::data> >
                          _events;
           QMutex         _mutex;
           bool           _registered;
@@ -56,11 +56,11 @@ namespace                        com {
                          subscriber();
                          ~subscriber();
           void           close();
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                          read();
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                          read(time_t deadline);
-          void           write(QSharedPointer<com::centreon::broker::io::data> d);
+          void           write(QSharedPointer<io::data> d);
         };
       }
     }

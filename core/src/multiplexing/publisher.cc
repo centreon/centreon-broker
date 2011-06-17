@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,12 +18,11 @@
 
 #include <algorithm>
 #include <QMutexLocker>
-#include "events/events.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "multiplexing/internal.hh"
-#include "multiplexing/publisher.hh"
-#include "multiplexing/subscriber.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/internal.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -75,7 +74,7 @@ publisher& publisher::operator=(publisher const& p) {
  *  @param[in] d Unused.
  */
 QSharedPointer<io::data> publisher::read() {
-  throw (exceptions::basic() << "tried to read from a publisher (software bug)");
+  throw (exceptions::msg() << "tried to read from a publisher (software bug)");
   return (QSharedPointer<io::data>());
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,11 +20,9 @@
 #include <QMutexLocker>
 #include <QScopedPointer>
 #include <stdlib.h>
-#include "events/event.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "multiplexing/internal.hh"
-#include "multiplexing/subscriber.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/internal.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
