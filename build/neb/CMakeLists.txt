@@ -47,6 +47,7 @@ set(EVENT_SOURCES
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_status.cc"
   "${SRC_DIR}/log_entry.cc"
+  "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module.cc"
   "${SRC_DIR}/notification.cc"
   "${SRC_DIR}/service.cc"
