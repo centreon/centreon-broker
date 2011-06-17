@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/host_check.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -29,38 +29,38 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-endpoint::endpoint() {}
+host_check::host_check() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] hc Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+host_check::host_check(host_check const& hc) : check(hc) {}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+host_check::~host_check() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] hc Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+host_check& host_check::operator=(host_check const& hc) {
+  check::operator=(hc);
   return (*this);
 }
 
 /**
- *  Set the lower layer endpoint object of this endpoint.
+ *  Get the type of this event.
  *
- *  @param[in] endp Lower layer endpoint object.
+ *  @return The string "com::centreon::broker::neb::host_check".
  */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
+QString const& host_check::type() const {
+  static QString const hc_type("com::centreon::broker::neb::host_check");
+  return (hc_type);
 }

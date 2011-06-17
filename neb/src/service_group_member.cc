@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/service_group_member.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -29,38 +29,40 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-endpoint::endpoint() {}
+service_group_member::service_group_member() : service_id(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  \param[in] sgm Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+service_group_member::service_group_member(service_group_member const& sgm)
+  : group_member(sgm), service_id(sgm.service_id) {}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+service_group_member::~service_group_member() {}
 
 /**
- *  Assignment operator.
+ *  Assignement operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] sgm Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+service_group_member& service_group_member::operator=(service_group_member const& sgm) {
+  group_member::operator=(sgm);
+  service_id = sgm.service_id;
   return (*this);
 }
 
 /**
- *  Set the lower layer endpoint object of this endpoint.
+ *  Get the type of this event.
  *
- *  @param[in] endp Lower layer endpoint object.
+ *  @return event::SERVICEGROUPMEMBER
  */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
+QString const& service_group_member::type() const {
+  static QString const sgm_type("com::centreon::broker::neb::service_group_member");
+  return (sgm_type);
 }

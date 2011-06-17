@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/data.hh"
+#include "com/centreon/broker/io/data.hh"
 
 using namespace com::centreon::broker::io;
 

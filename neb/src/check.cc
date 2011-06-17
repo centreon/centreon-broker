@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,26 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/check.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data of the given object to the current instance.
+ *
+ *  @param[in] c Object to copy from.
+ */
+void check::_internal_copy(check const& c) {
+  command_line = c.command_line;
+  host_id = c.host_id;
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -29,38 +46,31 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-endpoint::endpoint() {}
+check::check() : host_id(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] c Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+check::check(check const& c) : io::data(c) {
+  _internal_copy(c);
+}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+check::~check() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] c Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+check& check::operator=(check const& c) {
+  io::data::operator=(c);
+  _internal_copy(c);
   return (*this);
-}
-
-/**
- *  Set the lower layer endpoint object of this endpoint.
- *
- *  @param[in] endp Lower layer endpoint object.
- */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
 }

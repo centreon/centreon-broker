@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/host_parent.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -29,38 +29,41 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-endpoint::endpoint() {}
+host_parent::host_parent() : host_id(0), parent_id(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] hp Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+host_parent::host_parent(host_parent const& hp)
+  : io::data(hp), host_id(hp.host_id), parent_id(hp.parent_id) {}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+host_parent::~host_parent() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] hp Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+host_parent& host_parent::operator=(host_parent const& hp) {
+  io::data::operator=(hp);
+  host_id = hp.host_id;
+  parent_id = hp.parent_id;
   return (*this);
 }
 
 /**
- *  Set the lower layer endpoint object of this endpoint.
+ *  Get the type of this event.
  *
- *  @param[in] endp Lower layer endpoint object.
+ *  @return The string "com::centreon::broker::neb::host_parent".
  */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
+QString const& host_parent::type() const {
+  static QString const hp_type("com::centreon::broker::neb::host_parent");
+  return (hp_type);
 }

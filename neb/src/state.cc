@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,29 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/state.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members from the given object.
+ *
+ *  @param[in] s Object to copy.
+ */
+void state::_internal_copy(state const& s) {
+  current_state = s.current_state;
+  end_time = s.end_time;
+  host_id = s.host_id;
+  service_id = s.service_id;
+  start_time = s.start_time;
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -27,40 +47,38 @@ using namespace com::centreon::broker::io;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-endpoint::endpoint() {}
+state::state()
+  : current_state(-1),
+    end_time(0),
+    host_id(0),
+    service_id(0),
+    start_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] s Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+state::state(state const& s) : io::data(s) {
+  _internal_copy(s);
+}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+state::~state() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] s Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+state& state::operator=(state const& s) {
+  io::data::operator=(s);
+  _internal_copy(s);
   return (*this);
-}
-
-/**
- *  Set the lower layer endpoint object of this endpoint.
- *
- *  @param[in] endp Lower layer endpoint object.
- */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
 }

@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/stream.hh"
+#include "com/centreon/broker/io/stream.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -37,7 +37,8 @@ stream::stream() {}
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) {
-  (void)s;
+  _from = s._from;
+  _to = s._to;
 }
 
 /**
@@ -53,7 +54,8 @@ stream::~stream() {}
  *  @return This object.
  */
 stream& stream::operator=(stream const& s) {
-  (void)s;
+  _from = s._from;
+  _to = s._to;
   return (*this);
 }
 

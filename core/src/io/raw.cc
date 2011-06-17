@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/raw.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -88,7 +88,7 @@ unsigned int raw::size() const {
  *
  *  @return Raw data.
  */
-unsigned int raw::type() const {
-  // XXX
-  return (0);
+QString const& raw::type() const {
+  static QString const raw_type("com::centreon::broker::io::raw");
+  return (raw_type);
 }

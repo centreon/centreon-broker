@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/neb/host_group.hh"
 
-using namespace com::centreon::broker::io;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -27,40 +27,46 @@ using namespace com::centreon::broker::io;
 **************************************/
 
 /**
- *  Default constructor.
+ *  @brief Default constructor.
+ *
+ *  Set all members to their default value (0, NULL or equivalent).
  */
-endpoint::endpoint() {}
+host_group::host_group() {}
 
 /**
- *  Copy constructor.
+ *  @brief Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  Copy internal data of the host group object to the current instance.
+ *
+ *  @param[in] hg Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+host_group::host_group(host_group const& hg) : group(hg) {}
 
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+host_group::~host_group() {}
 
 /**
- *  Assignment operator.
+ *  @brief Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  Copy internal data of the host group object to the current instance.
+ *
+ *  @param[in] hg Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+host_group& host_group::operator=(host_group const& hg) {
+  group::operator=(hg);
   return (*this);
 }
 
 /**
- *  Set the lower layer endpoint object of this endpoint.
+ *  Get the event's type.
  *
- *  @param[in] endp Lower layer endpoint object.
+ *  @return The string "com::centreon::broker::neb::host_group".
  */
-void endpoint::from(QSharedPointer<endpoint> endp) {
-  _from = endp;
-  return ;
+QString const& host_group::type() const {
+  static QString const hg_type("com::centreon::broker::neb::host_group");
+  return (hg_type);
 }
