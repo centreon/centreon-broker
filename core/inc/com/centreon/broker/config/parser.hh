@@ -22,14 +22,14 @@
 # include <QDomElement>
 # include <QList>
 # include <QString>
-# include "config/state.hh"
+# include "com/centreon/broker/config/state.hh"
 
 namespace         com {
   namespace       centreon {
     namespace     broker {
       namespace   config {
         /**
-         *  @class parser parser.hh "config/parser.hh"
+         *  @class parser parser.hh "com/centreon/broker/config/parser.hh"
          *  @brief Parse configuration file.
          *
          *  Parse a configuration file and generate appropriate objects for further

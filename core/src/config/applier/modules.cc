@@ -18,8 +18,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "config/applier/modules.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::config::applier;
 

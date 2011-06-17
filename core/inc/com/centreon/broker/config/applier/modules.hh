@@ -20,31 +20,30 @@
 # define CCB_CONFIG_APPLIER_MODULES_HH_
 
 # include <QString>
-# include "modules/loader.hh"
+# include "com/centreon/broker/modules/loader.hh"
 
-namespace                   com {
-  namespace                 centreon {
-    namespace               broker {
-      namespace             config {
-        namespace           applier {
+namespace                           com {
+  namespace                         centreon {
+    namespace                       broker {
+      namespace                     config {
+        namespace                   applier {
           /**
-           *  @class modules modules.hh "config/applier/modules.hh"
+           *  @class modules modules.hh "com/centreon/broker/config/applier/modules.hh"
            *  @brief Load necessary modules.
            *
            *  Load modules as per the configuration.
            */
-          class             modules {
+          class                     modules {
            private:
-            com::centreon::broker::modules::loader
-                            _loader;
-                            modules();
-                            modules(modules const& m);
-            modules&        operator=(modules const& m);
+	    broker::modules::loader _loader;
+                                    modules();
+                                    modules(modules const& m);
+            modules&                operator=(modules const& m);
 
            public:
-                            ~modules();
-            void            apply(QString const& module_dir);
-            static modules& instance();
+                                    ~modules();
+            void                    apply(QString const& module_dir);
+            static modules&         instance();
           };
         }
       }

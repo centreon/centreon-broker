@@ -21,37 +21,36 @@
 
 # include <QSharedPointer>
 # include <QThread>
-# include "io/endpoint.hh"
-# include "io/stream.hh"
-# include "processing/feeder.hh"
+# include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/processing/feeder.hh"
 
 namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         processing {
         /**
-         *  @class failover failover.hh "processing/failover.hh"
+         *  @class failover failover.hh "com/centreon/broker/processing/failover.hh"
          *  @brief Failover thread.
          *
          *  Thread that provide failover on inputs or outputs.
          */
-        class           failover : public QThread,
-                                   public com::centreon::broker::io::stream {
+        class           failover : public QThread, public io::stream {
           Q_OBJECT
 
          private:
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                         _destination;
-          QSharedPointer<com::centreon::broker::io::endpoint>
+          QSharedPointer<io::endpoint>
                         _endpoint;
           QSharedPointer<failover>
                         _failover;
           feeder        _feeder;
           bool          _is_out;
           volatile bool _should_exit;
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                         _source;
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                         _stream;
 
          public:
@@ -60,12 +59,12 @@ namespace               com {
                         ~failover();
           failover&     operator=(failover const& f);
           void          exit();
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                         read();
           void          run();
-          void          set_endpoint(QSharedPointer<com::centreon::broker::io::endpoint> endp);
-          void          set_failover(QSharedPointer<com::centreon::broker::processing::failover> fo);
-          void          write(QSharedPointer<com::centreon::broker::io::data> d);
+          void          set_endpoint(QSharedPointer<io::endpoint> endp);
+          void          set_failover(QSharedPointer<processing::failover> fo);
+          void          write(QSharedPointer<io::data> d);
         };
       }
     }

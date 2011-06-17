@@ -28,7 +28,7 @@ namespace                          com {
     namespace                      broker {
       namespace                    config {
         /**
-         *  @class endpoint endpoint.hh "config/endpoint.hh"
+         *  @class endpoint endpoint.hh "com/centreon/broker/config/endpoint.hh"
          *  @brief Hold configuration of an endpoint.
          *
          *  An endpoint is an external source or destination for events.

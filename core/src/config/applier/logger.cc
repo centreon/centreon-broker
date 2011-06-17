@@ -20,12 +20,12 @@
 #include <iostream>
 #include <QScopedPointer>
 #include <stdlib.h>
-#include "config/applier/logger.hh"
-#include "exceptions/basic.hh"
-#include "logging/file.hh"
-#include "logging/logging.hh"
-#include "logging/ostream.hh"
-#include "logging/syslogger.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/file.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/ostream.hh"
+#include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -83,7 +83,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
    case config::logger::file:
     {
       if (cfg.name().isEmpty())
-	throw (exceptions::basic() << "attempt to log on an empty file");
+	throw (exceptions::msg() << "attempt to log on an empty file");
       QScopedPointer<logging::file> file(new logging::file);
       file->open(cfg.name().toStdString().c_str());
       back = QSharedPointer<logging::backend>(file.data());
@@ -100,7 +100,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
 	out = &std::cout;
       else
-	throw (exceptions::basic() << "attempt to log on an undefined output object");
+	throw (exceptions::msg() << "attempt to log on an undefined output object");
       back = QSharedPointer<logging::backend>(new logging::ostream(*out));
     }
     break ;
@@ -109,7 +109,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
     back = QSharedPointer<logging::backend>(new logging::syslogger);
     break ;
    default:
-    throw (exceptions::basic() << "attempt to create a logging object of unknown type");
+    throw (exceptions::msg() << "attempt to create a logging object of unknown type");
   }
 
   return (back);

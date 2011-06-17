@@ -22,14 +22,14 @@
 # include <QMap>
 # include <QSharedPointer>
 # include <QString>
-# include "io/factory.hh"
+# include "com/centreon/broker/io/factory.hh"
 
 namespace                           com {
   namespace                         centreon {
     namespace                       broker {
       namespace                     io {
         /**
-         *  @class protocols protocols.hh "io/protocols.hh"
+         *  @class protocols protocols.hh "com/centreon/broker/io/protocols.hh"
          *  @brief Reference available protocols.
          *
          *  This class registers every available protocol that are used

@@ -17,15 +17,15 @@
 */
 
 #include <errno.h>
+#include <exception>
 #include <QCoreApplication>
 #include <signal.h>
 #include <string.h>
-#include "config/applier/state.hh"
-#include "config/logger.hh"
-#include "config/parser.hh"
-#include "config/state.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/logger.hh"
+#include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 

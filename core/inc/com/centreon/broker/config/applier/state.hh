@@ -19,7 +19,7 @@
 #ifndef CCB_CONFIG_APPLIER_STATE_HH_
 # define CCB_CONFIG_APPLIER_STATE_HH_
 
-# include "config/state.hh"
+# include "com/centreon/broker/config/state.hh"
 
 namespace                 com {
   namespace               centreon {
@@ -27,7 +27,7 @@ namespace                 com {
       namespace           config {
         namespace         applier {
           /**
-           *  @class state state.hh "config/applier/state.hh"
+           *  @class state state.hh "com/centreon/broker/config/applier/state.hh"
            *  @brief Apply a configuration.
            *
            *  Apply some configuration state.
@@ -40,7 +40,7 @@ namespace                 com {
 
            public:
                           ~state();
-            void          apply(com::centreon::broker::config::state const& s);
+            void          apply(config::state const& s);
             static state& instance();
           };
         }

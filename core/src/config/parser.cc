@@ -19,9 +19,9 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "config/parser.hh"
-#include "exceptions/basic.hh"
-#include "logging/defines.hh"
+#include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/defines.hh"
 
 using namespace com::centreon::broker::config;
 
@@ -107,7 +107,7 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         else if (val == "syslog")
           l.type(logger::syslog);
         else
-          throw (exceptions::basic() << "unknown logger type '"
+          throw (exceptions::msg() << "unknown logger type '"
                    << val.toStdString().c_str() << "'");
       }
     }
@@ -162,7 +162,7 @@ void parser::parse(QString const& file, state& s) {
   // Parse XML document.
   QFile f(file);
   if (!f.open(QIODevice::ReadOnly))
-    throw (exceptions::basic() << "could not open configuration file '"
+    throw (exceptions::msg() << "could not open configuration file '"
              << file.toStdString().c_str() << "': "
              << f.errorString().toStdString().c_str());
   QDomDocument d;
@@ -171,7 +171,7 @@ void parser::parse(QString const& file, state& s) {
     int line;
     int col;
     if (!d.setContent(&f, false, &msg, &line, &col))
-      throw (exceptions::basic() << "could not parse configuration file '"
+      throw (exceptions::msg() << "could not parse configuration file '"
                << file.toStdString().c_str() << "': "
                << msg.toStdString().c_str() << " (line " << line
                << ", column " << col << ")");

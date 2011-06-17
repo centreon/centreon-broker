@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "processing/feeder.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -90,13 +90,13 @@ void feeder::run() {
   _should_exit = false;
   try {
     if (_in.isNull())
-      throw (exceptions::basic() << "could not feed with empty input");
+      throw (exceptions::msg() << "could not feed with empty input");
     if (_out.isNull())
-      throw (exceptions::basic() << "could not feed with empty output");
+      throw (exceptions::msg() << "could not feed with empty output");
     while (!_should_exit) {
       QSharedPointer<io::data> data;
       data = _in->read();
-      if (data.isNull() || !data->size())
+      if (data.isNull())
         break ;
       _out->write(data);
     }

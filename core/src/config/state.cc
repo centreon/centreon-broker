@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "config/state.hh"
+#include "com/centreon/broker/config/state.hh"
 
 using namespace com::centreon::broker::config;
 

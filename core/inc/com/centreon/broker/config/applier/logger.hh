@@ -22,8 +22,8 @@
 # include <QList>
 # include <QMap>
 # include <QSharedPointer>
-# include "config/logger.hh"
-# include "logging/backend.hh"
+# include "com/centreon/broker/config/logger.hh"
+# include "com/centreon/broker/logging/backend.hh"
 
 namespace                  com {
   namespace                centreon {
@@ -31,7 +31,7 @@ namespace                  com {
       namespace            config {
         namespace          applier {
           /**
-           *  @class logger logger.hh "config/applier/logger.hh"
+           *  @class logger logger.hh "com/centreon/broker/config/applier/logger.hh"
            *  @brief Open and close loggers.
            *
            *  According to some configuration, open and close logging
@@ -39,18 +39,17 @@ namespace                  com {
            */
           class            logger {
            private:
-            QMap<com::centreon::broker::config::logger,
-                 QSharedPointer<com::centreon::broker::logging::backend> >
+            QMap<config::logger, QSharedPointer<logging::backend> >
                            _backends;
                            logger();
                            logger(logger const& l);
             logger&        operator=(logger const& l);
-            QSharedPointer<com::centreon::broker::logging::backend>
-                           _new_backend(com::centreon::broker::config::logger const& cfg);
+            QSharedPointer<logging::backend>
+                           _new_backend(config::logger const& cfg);
 
            public:
                            ~logger();
-            void           apply(QList<com::centreon::broker::config::logger> const& loggers);
+            void           apply(QList<config::logger> const& loggers);
             static logger& instance();
           };
         }

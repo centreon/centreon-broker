@@ -16,11 +16,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "multiplexing/publisher.hh"
-#include "multiplexing/subscriber.hh"
-#include "processing/failover.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/processing/failover.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -106,7 +106,7 @@ QSharedPointer<io::data> failover::read() {
     catch (...) {
       caught = true;
     }
-    if (caught || data.isNull() || !data->size()) {
+    if (caught || data.isNull()) {
       logging::debug << logging::LOW << "failover: could not get event from remote thread";
       logging::info << logging::MEDIUM << "failover: requesting failover thread termination";
       this->exit();
@@ -158,7 +158,7 @@ void failover::run() {
       _feeder.prepare(_source, _destination);
       _feeder.run(); // Yes run(), we do not want to start another thread.
     }
-    catch (exceptions::basic const& e) {
+    catch (exceptions::msg const& e) {
       logging::error << logging::HIGH << e.what();
     }
     catch (std::exception const& e) {
@@ -210,6 +210,6 @@ void failover::set_failover(QSharedPointer<failover> fo) {
  */
 void failover::write(QSharedPointer<io::data> d) {
   (void)d;
-  throw (exceptions::basic() << "attempt to use a failover thread as a destination (software bug)");
+  throw (exceptions::msg() << "attempt to use a failover thread as a destination (software bug)");
   return ;
 }

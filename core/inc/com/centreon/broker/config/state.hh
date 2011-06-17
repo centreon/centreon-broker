@@ -22,15 +22,15 @@
 # include <QList>
 # include <QMap>
 # include <QString>
-# include "config/endpoint.hh"
-# include "config/logger.hh"
+# include "com/centreon/broker/config/endpoint.hh"
+# include "com/centreon/broker/config/logger.hh"
 
 namespace                               com {
   namespace                             centreon {
     namespace                           broker {
       namespace                         config {
         /**
-         *  @class state state.hh "config/state.hh"
+         *  @class state state.hh "com/centreon/broker/config/state.hh"
          *  @brief Full configuration state.
          *
          *  A fully parsed configuration is represented within this

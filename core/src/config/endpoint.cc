@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "config/endpoint.hh"
+#include "com/centreon/broker/config/endpoint.hh"
 
 using namespace com::centreon::broker::config;
 

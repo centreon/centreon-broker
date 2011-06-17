@@ -22,10 +22,10 @@
 #include <QMutexLocker>
 #include <QScopedPointer>
 #include <stdlib.h>
-#include "config/applier/endpoint.hh"
-#include "config/applier/logger.hh"
-#include "config/applier/modules.hh"
-#include "config/applier/state.hh"
+#include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 
 using namespace com::centreon::broker::config::applier;
 

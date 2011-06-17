@@ -19,12 +19,11 @@
 #include <algorithm>
 #include <assert.h>
 #include <stdlib.h>
-#include "config/applier/endpoint.hh"
-#include "exceptions/basic.hh"
-#include "io/acceptor.hh"
-#include "io/connector.hh"
-#include "io/protocols.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -136,7 +135,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
   if (!cfg.failover.isEmpty()) {
     QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
     if (it == l.end())
-      throw (exceptions::basic() << "endpoint applier: could not find failover '"
+      throw (exceptions::msg() << "endpoint applier: could not find failover '"
                << cfg.failover.toStdString().c_str()
                << "' for endpoint '"
                << cfg.name.toStdString().c_str()) << "'";
@@ -159,7 +158,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
     }
   }
   if (endp.isNull())
-    throw (exceptions::basic() << "endpoint applier: no matching protocol found for endpoint '"
+    throw (exceptions::msg() << "endpoint applier: no matching protocol found for endpoint '"
              << cfg.name.toStdString().c_str() << "'");
 
   // Create remaining objects.
@@ -170,23 +169,16 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
     while (it != end) {
       if ((it.value().osi_from == level)
           && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
-        if (is_acceptor) {
-          QSharedPointer<io::acceptor> current(static_cast<io::acceptor*>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor)));
-          current->from(endp.staticCast<io::acceptor>());
-          endp = current;
-        }
-        else {
-          QSharedPointer<io::connector> current(static_cast<io::connector*>(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor)));
-          current->from(endp.staticCast<io::connector>());
-          endp = current;
-        }
+        QSharedPointer<io::endpoint> current(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor));
+        current->from(endp);
+        endp = current;
         level = it.value().osi_to;
         break ;
       }
       ++it;
     }
     if ((7 == level) && (it == end))
-      throw (exceptions::basic() << "no matching protocol found for endpoint '"
+      throw (exceptions::msg() << "no matching protocol found for endpoint '"
                << cfg.name.toStdString().c_str() << "'");
     ++level;
   }

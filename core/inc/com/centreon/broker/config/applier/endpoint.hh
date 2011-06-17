@@ -22,8 +22,8 @@
 # include <QList>
 # include <QMap>
 # include <QObject>
-# include "config/endpoint.hh"
-# include "processing/failover.hh"
+# include "com/centreon/broker/config/endpoint.hh"
+# include "com/centreon/broker/processing/failover.hh"
 
 namespace                    com {
   namespace                  centreon {
@@ -31,7 +31,7 @@ namespace                    com {
       namespace              config {
         namespace            applier {
           /**
-           *  @class endpoint endpoint.hh "config/applier/endpoint.hh"
+           *  @class endpoint endpoint.hh "com/centreon/broker/config/applier/endpoint.hh"
            *  @brief Apply the configuration of input and output endpoints.
            *
            *  Apply the configuration of the input and output endpoints.
@@ -40,27 +40,27 @@ namespace                    com {
             Q_OBJECT
 
            private:
-            QMap<config::endpoint, com::centreon::broker::processing::failover*>
+            QMap<config::endpoint, processing::failover*>
                              _inputs;
-            QMap<config::endpoint, com::centreon::broker::processing::failover*>
+            QMap<config::endpoint, processing::failover*>
                              _outputs;
                              endpoint();
                              endpoint(endpoint const& e);
             endpoint&        operator=(endpoint const& e);
-            com::centreon::broker::processing::failover*
-                             _create_endpoint(com::centreon::broker::config::endpoint const& cfg,
+            processing::failover*
+                             _create_endpoint(config::endpoint const& cfg,
                                bool is_input,
                                bool is_output,
-                               QList<com::centreon::broker::config::endpoint> const& l);
-            void             _diff_endpoints(QMap<com::centreon::broker::config::endpoint,
-                                 com::centreon::broker::processing::failover*>& current,
-                               QList<com::centreon::broker::config::endpoint> const& new_endpoints,
-                               QList<com::centreon::broker::config::endpoint>& to_create);
+                               QList<config::endpoint> const& l);
+            void             _diff_endpoints(QMap<config::endpoint,
+                               processing::failover*>& current,
+                               QList<config::endpoint> const& new_endpoints,
+                               QList<config::endpoint>& to_create);
 
            public:
                              ~endpoint();
-            void             apply(QList<com::centreon::broker::config::endpoint> const& inputs,
-                               QList<com::centreon::broker::config::endpoint> const& outputs);
+            void             apply(QList<config::endpoint> const& inputs,
+                               QList<config::endpoint> const& outputs);
             static endpoint& instance();
 
            public slots:

@@ -49,62 +49,22 @@ include(${QT_USE_FILE})
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/config/applier/endpoint.hh"
-  "${INC_DIR}/processing/failover.hh"
-  "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
+  "${INC_DIR}/com/centreon/broker/processing/failover.hh"
+  "${INC_DIR}/com/centreon/broker/processing/feeder.hh"
 )
 
-# Event library.
+# Core library.
 set(LIBROKER_SOURCES
   # Sources.
-#  "${SRC_DIR}/config/applier/endpoint.cc"
-#  "${SRC_DIR}/config/applier/logger.cc"
-#  "${SRC_DIR}/config/applier/modules.cc"
-#  "${SRC_DIR}/config/applier/state.cc"
-#  "${SRC_DIR}/config/endpoint.cc"
-#  "${SRC_DIR}/config/logger.cc"
-#  "${SRC_DIR}/config/parser.cc"
-#  "${SRC_DIR}/config/state.cc"
-#  "${SRC_DIR}/events/acknowledgement.cc"
-#  "${SRC_DIR}/events/check.cc"
-#  "${SRC_DIR}/events/comment.cc"
-#  "${SRC_DIR}/events/custom_variable.cc"
-#  "${SRC_DIR}/events/custom_variable_status.cc"
-#  "${SRC_DIR}/events/dependency.cc"
-#  "${SRC_DIR}/events/downtime.cc"
-#  "${SRC_DIR}/events/event.cc"
-#  "${SRC_DIR}/events/event_handler.cc"
-#  "${SRC_DIR}/events/flapping_status.cc"
-#  "${SRC_DIR}/events/group.cc"
-#  "${SRC_DIR}/events/group_member.cc"
-#  "${SRC_DIR}/events/host.cc"
-#  "${SRC_DIR}/events/host_check.cc"
-#  "${SRC_DIR}/events/host_dependency.cc"
-#  "${SRC_DIR}/events/host_group.cc"
-#  "${SRC_DIR}/events/host_group_member.cc"
-#  "${SRC_DIR}/events/host_parent.cc"
-#  "${SRC_DIR}/events/host_service.cc"
-#  "${SRC_DIR}/events/host_service_status.cc"
-#  "${SRC_DIR}/events/host_state.cc"
-#  "${SRC_DIR}/events/host_status.cc"
-#  "${SRC_DIR}/events/instance.cc"
-#  "${SRC_DIR}/events/instance_status.cc"
-#	../src/events/issue.cc
-#	../src/events/issue_parent.cc
-#  "${SRC_DIR}/events/log_entry.cc"
-#  "${SRC_DIR}/events/module.cc"
-#  "${SRC_DIR}/events/notification.cc"
-#  "${SRC_DIR}/events/perfdata.cc"
-#  "${SRC_DIR}/events/service.cc"
-#  "${SRC_DIR}/events/service_check.cc"
-#  "${SRC_DIR}/events/service_dependency.cc"
-#  "${SRC_DIR}/events/service_group.cc"
-#  "${SRC_DIR}/events/service_group_member.cc"
-#  "${SRC_DIR}/events/service_state.cc"
-#  "${SRC_DIR}/events/service_status.cc"
-#  "${SRC_DIR}/events/state.cc"
-#  "${SRC_DIR}/events/status.cc"
-#  "${SRC_DIR}/events/status_data.cc"
+  "${SRC_DIR}/config/applier/endpoint.cc"
+  "${SRC_DIR}/config/applier/logger.cc"
+  "${SRC_DIR}/config/applier/modules.cc"
+  "${SRC_DIR}/config/applier/state.cc"
+  "${SRC_DIR}/config/endpoint.cc"
+  "${SRC_DIR}/config/logger.cc"
+  "${SRC_DIR}/config/parser.cc"
+  "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
 #	../src/interface/db/destination.cc
 #	../src/interface/db/internal.cc
@@ -116,11 +76,9 @@ set(LIBROKER_SOURCES
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
 #	../src/interface/xml/source.cc
-#  "${SRC_DIR}/io/acceptor.cc"
-#  "${SRC_DIR}/io/connector.cc"
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
-#  "${SRC_DIR}/io/protocols.cc"
+  "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
@@ -145,63 +103,23 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
-#  "${SRC_DIR}/processing/failover.cc"
-#  "${SRC_DIR}/processing/feeder.cc"
-#  "${QT_WRAPPED_SOURCES}"
+  "${SRC_DIR}/processing/failover.cc"
+  "${SRC_DIR}/processing/feeder.cc"
+  "${QT_WRAPPED_SOURCES}"
   # Headers.
-#  "${INC_DIR}/config/applier/endpoint.hh"
-#  "${INC_DIR}/config/applier/logger.hh"
-#  "${INC_DIR}/config/applier/modules.hh"
-#  "${INC_DIR}/config/applier/state.hh"
-#  "${INC_DIR}/config/endpoint.hh"
-#  "${INC_DIR}/config/logger.hh"
-#  "${INC_DIR}/config/parser.hh"
-#  "${INC_DIR}/config/state.hh"
-#  "${INC_DIR}/events/acknowledgement.hh"
-#  "${INC_DIR}/events/check.hh"
-#  "${INC_DIR}/events/comment.hh"
-#  "${INC_DIR}/events/custom_variable.hh"
-#  "${INC_DIR}/events/custom_variable_status.hh"
-#  "${INC_DIR}/events/dependency.hh"
-#  "${INC_DIR}/events/downtime.hh"
-#  "${INC_DIR}/events/event.hh"
-#  "${INC_DIR}/events/event_handler.hh"
-#  "${INC_DIR}/events/events.hh"
-#  "${INC_DIR}/events/flapping_status.hh"
-#  "${INC_DIR}/events/group.hh"
-#  "${INC_DIR}/events/group_member.hh"
-#  "${INC_DIR}/events/host.hh"
-#  "${INC_DIR}/events/host_check.hh"
-#  "${INC_DIR}/events/host_dependency.hh"
-#  "${INC_DIR}/events/host_group.hh"
-#  "${INC_DIR}/events/host_group_member.hh"
-#  "${INC_DIR}/events/host_parent.hh"
-#  "${INC_DIR}/events/host_service.hh"
-#  "${INC_DIR}/events/host_service_status.hh"
-#  "${INC_DIR}/events/host_state.hh"
-#  "${INC_DIR}/events/host_status.hh"
-#  "${INC_DIR}/events/instance.hh"
-#  "${INC_DIR}/events/instance_status.hh"
-#  "${INC_DIR}/events/log_entry.hh"
-#  "${INC_DIR}/events/module.hh"
-#  "${INC_DIR}/events/notification.hh"
-#  "${INC_DIR}/events/service.hh"
-#  "${INC_DIR}/events/service_check.hh"
-#  "${INC_DIR}/events/service_dependency.hh"
-#  "${INC_DIR}/events/service_group.hh"
-#  "${INC_DIR}/events/service_group_member.hh"
-#  "${INC_DIR}/events/service_state.hh"
-#  "${INC_DIR}/events/service_status.hh"
-#  "${INC_DIR}/events/state.hh"
-#  "${INC_DIR}/events/status.hh"
-#  "${INC_DIR}/events/status_data.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/logger.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/modules.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/state.hh"
+  "${INC_DIR}/com/centreon/broker/config/endpoint.hh"
+  "${INC_DIR}/com/centreon/broker/config/logger.hh"
+  "${INC_DIR}/com/centreon/broker/config/parser.hh"
+  "${INC_DIR}/com/centreon/broker/config/state.hh"
   "${INC_DIR}/com/centreon/broker/exceptions/msg.hh"
-#  "${INC_DIR}/io/acceptor.hh"
-#  "${INC_DIR}/io/connector.hh"
   "${INC_DIR}/com/centreon/broker/io/data.hh"
   "${INC_DIR}/com/centreon/broker/io/endpoint.hh"
-#  "${INC_DIR}/io/factory.hh"
-#  "${INC_DIR}/io/protocols.hh"
+  "${INC_DIR}/com/centreon/broker/io/factory.hh"
+  "${INC_DIR}/com/centreon/broker/io/protocols.hh"
   "${INC_DIR}/com/centreon/broker/io/raw.hh"
   "${INC_DIR}/com/centreon/broker/io/stream.hh"
   "${INC_DIR}/com/centreon/broker/logging/backend.hh"
@@ -220,8 +138,8 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/multiplexing/internal.hh"
   "${INC_DIR}/com/centreon/broker/multiplexing/publisher.hh"
   "${INC_DIR}/com/centreon/broker/multiplexing/subscriber.hh"
-#  "${INC_DIR}/processing/failover.hh"
-#  "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/com/centreon/broker/processing/failover.hh"
+  "${INC_DIR}/com/centreon/broker/processing/feeder.hh"
 )
 #if (TLS)
 #  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
@@ -232,9 +150,9 @@ set(LIBROKER_SOURCES
 #	../src/io/tls/stream.cc
 #  )
 #endif ()
-#add_library(roker STATIC ${LIBROKER_SOURCES})
+add_library("roker" STATIC ${LIBROKER_SOURCES})
+target_link_libraries("roker" ${QT_LIBRARIES})
 #target_link_libraries(roker ${GNUTLS_LIBRARIES})
-#target_link_libraries(roker ${QT_LIBRARIES})
 #target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
@@ -244,22 +162,6 @@ set(LIBROKER_SOURCES
 #	../src/correlation/parser.cc
 #	../src/init.cc
 #)
-
-# Standalone binary.
-add_executable(cbd
-  ${LIBROKER_SOURCES}
-  # Sources.
-  "${SRC_DIR}/main.cc"
-  #"${SRC_DIR}/daemon/main.cc"
-  #"${SRC_DIR}/io/factory.cc"
-  #"${SRC_DIR}/io/stream.cc"
-  #"${SRC_DIR}/mapping.cc"
-  # Headers.
-  #"${INC_DIR}/io/factory.hh"
-  #"${INC_DIR}/io/stream.hh"
-  #"${INC_DIR}/mapping.hh"
-)
-target_link_libraries(cbd ${QT_LIBRARIES})
 
 # Centreon Engine/Nagios module.
 #add_library(cbmod SHARED
@@ -289,15 +191,20 @@ target_link_libraries(cbd ${QT_LIBRARIES})
 if (WITH_PREFIX)
   set(CMAKE_INSTALL_PREFIX "${WITH_PREFIX}")
 endif ()
+if (WITH_PREFIX_ARCHIVE)
+  set(PREFIX_ARCHIVE "${WITH_PREFIX_ARCHIVE}")
+else ()
+  set(PREFIX_ARCHIVE "lib")
+endif ()
 if (WITH_PREFIX_BINARY)
   set(PREFIX_BINARY "${WITH_PREFIX_BINARY}")
 else ()
   set(PREFIX_BINARY "bin")
 endif ()
-if (WITH_PREFIX_BROKER)
-  set(PREFIX_BROKER "${WITH_PREFIX_BROKER}")
+if (WITH_PREFIX_LIBRARY)
+  set(PREFIX_LIBRARY "${WITH_PREFIX_LIBRARY}")
 else ()
-  set(PREFIX_BROKER "lib")
+  set(PREFIX_LIBRARY "lib")
 endif ()
 if (WITH_PREFIX_MODULES)
   set(PREFIX_MODULES "${WITH_PREFIX_MODULES}")
@@ -305,11 +212,13 @@ else ()
   set(PREFIX_MODULES "lib/centreon-broker")
 endif ()
 
-# Install rules.
-#install(TARGETS cbd cbmod
-#  RUNTIME DESTINATION "${PREFIX_BINARY}"
-#  LIBRARY DESTINATION "${PREFIX_BROKER}"
-#)
+# Install rule.
+install(TARGETS "roker"
+  ARCHIVE DESTINATION "${PREFIX_ARCHIVE}"
+)
+
+# Daemon binary.
+add_subdirectory("daemon")
 
 # File module.
 #add_subdirectory("file")
@@ -340,7 +249,8 @@ message(STATUS "    System                  ${CMAKE_SYSTEM_NAME}")
 message(STATUS "      - Version             ${CMAKE_SYSTEM_VERSION}")
 message(STATUS "      - Processor           ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "    Installation Directory  ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "      - Archive Directory   ${PREFIX_ARCHIVE}")
 message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
-message(STATUS "      - Broker Directory    ${PREFIX_BROKER}")
+message(STATUS "      - Library Directory   ${PREFIX_LIBRARY}")
 message(STATUS "      - Modules Directory   ${PREFIX_MODULES}")
 message(STATUS "")

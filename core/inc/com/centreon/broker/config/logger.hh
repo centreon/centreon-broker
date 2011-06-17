@@ -20,14 +20,14 @@
 # define CCB_CONFIG_LOGGER_HH_
 
 # include <QString>
-# include "logging/defines.hh"
+# include "com/centreon/broker/logging/defines.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
       namespace          config {
         /**
-         *  @class logger logger.hh "config/logger.hh"
+         *  @class logger logger.hh "com/centreon/broker/config/logger.hh"
          *  @brief Parameters of a logger object.
          *
          *  The logger class reflects parameters of logging objects of the logging

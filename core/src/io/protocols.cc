@@ -18,7 +18,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "io/protocols.hh"
+#include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker::io;
 

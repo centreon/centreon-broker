@@ -21,14 +21,14 @@
 
 # include <QSharedPointer>
 # include <QThread>
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         processing {
         /**
-         *  @class feeder feeder.hh "processing/feeder.hh"
+         *  @class feeder feeder.hh "com/centreon/broker/processing/feeder.hh"
          *  @brief Feed events from a source to a destination.
          *
          *  Take events from a source and send them to a destination.
@@ -37,9 +37,9 @@ namespace               com {
           Q_OBJECT
 
          private:
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                         _in;
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                         _out;
           volatile bool _should_exit;
 
@@ -49,8 +49,8 @@ namespace               com {
                         ~feeder();
           feeder&       operator=(feeder const& f);
           void          exit();
-          void          prepare(QSharedPointer<com::centreon::broker::io::stream> in,
-                          QSharedPointer<com::centreon::broker::io::stream> out);
+          void          prepare(QSharedPointer<io::stream> in,
+                          QSharedPointer<io::stream> out);
           void          run();
         };
       }

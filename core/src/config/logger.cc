@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "config/logger.hh"
+#include "com/centreon/broker/config/logger.hh"
 
 using namespace com::centreon::broker::config;
 
