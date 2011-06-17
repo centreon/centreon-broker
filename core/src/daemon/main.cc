@@ -35,6 +35,32 @@ using namespace com::centreon::broker;
 *                                     *
 **************************************/
 
+// Main config file.
+static QString gl_mainconfigfile;
+
+/**
+ *  Function called when updating configuration (when program receives
+ *  SIGHUP).
+ *
+ *  @param[in] signum Signal number.
+ */
+static void hup_handler(int signum) {
+  (void)signum;
+
+  // Log message.
+  logging::config << logging::HIGH << "configuration update requested";
+
+  // Parse configuration file.
+  config::parser parsr;
+  config::state conf;
+  parsr.parse(gl_mainconfigfile, conf);
+
+  // Apply resulting configuration.
+  config::applier::state::instance().apply(conf);
+
+  return ;
+}
+
 /**
  *  Function called on termination request (when program receives
  *  SIGTERM).
@@ -112,20 +138,33 @@ int main(int argc, char* argv[]) {
       app.setOrganizationName("Merethis");
 
       {
+        // Set main configuration file.
+        gl_mainconfigfile = argv[1];
+
         // Parse configuration file.
         config::parser parsr;
         config::state conf;
-        parsr.parse(argv[1], conf);
+        parsr.parse(gl_mainconfigfile, conf);
 
         // Apply resulting configuration.
         config::applier::state::instance().apply(conf);
       }
 
+      // Set configuration update handler.
+      if (signal(SIGHUP, hup_handler) == SIG_ERR) {
+        char const* err(strerror(errno));
+        logging::info << logging::HIGH
+          << "could not register configuration update handler: "
+          << err;
+      }
+
       // Set termination handler.
-      if (signal(SIGTERM, term_handler) == SIG_ERR)
+      if (signal(SIGTERM, term_handler) == SIG_ERR) {
+        char const* err(strerror(errno));
         logging::info << logging::HIGH
           << "could not register termination handler: "
-          << strerror(errno);
+          << err;
+      }
 
       // Launch event loop.
       exit_code = app.exec();
