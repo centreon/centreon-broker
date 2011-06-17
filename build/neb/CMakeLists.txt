@@ -21,8 +21,8 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/neb/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/neb/src")
 include_directories("${INC_DIR}")
 
-# Centreon Engine/Nagios module.
-add_library("cbmod" SHARED
+# Event sources.
+set(EVENT_SOURCES
   # Sources.
   "${SRC_DIR}/acknowledgement.cc"
   "${SRC_DIR}/check.cc"
@@ -91,5 +91,34 @@ add_library("cbmod" SHARED
   "${INC_DIR}/com/centreon/broker/neb/service_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/status.hh"
 )
+
+# Centreon Broker module.
+add_library("neb" MODULE
+  # Event sources.
+  ${EVENT_SOURCES}
+)
+set_target_properties("neb" PROPERTIES PREFIX "")
+install(TARGETS "neb"
+  LIBRARY DESTINATION "${PREFIX_MODULES}"
+)
+
+# Centreon Engine/Nagios module.
+add_library("cbmod" SHARED
+  # Event sources.
+  ${EVENT_SOURCES}
+  # Sources.
+  "${SRC_DIR}/callbacks.cc"
+  "${SRC_DIR}/initial.cc"
+  "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/set_log_data.cc"
+  # Headers.
+  "${INC_DIR}/com/centreon/broker/neb/callbacks.hh"
+  "${INC_DIR}/com/centreon/broker/neb/initial.hh"
+  "${INC_DIR}/com/centreon/broker/neb/internal.hh"
+  "${INC_DIR}/com/centreon/broker/neb/set_log_data.hh"
+)
 target_link_libraries("cbmod" ${QT_LIBRARIES})
 set_target_properties("cbmod" PROPERTIES PREFIX "")
+install(TARGETS "cbmod"
+  LIBRARY DESTINATION "${PREFIX_LIBRARY}"
+)

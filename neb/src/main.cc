@@ -19,13 +19,13 @@
 */
 
 #include <stddef.h>
-#include "config/parser.hh"
-#include "config/state.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "logging/ostream.hh"
-#include "module/callbacks.hh"
-#include "module/internal.hh"
+#include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/ostream.hh"
+#include "com/centreon/broker/neb/callbacks.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "nagios/common.h"
 #include "nagios/nebcallbacks.h"
 
@@ -41,20 +41,20 @@ using namespace com::centreon::broker;
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 // Configuration file name.
-QString module::gl_configuration_file;
+QString neb::gl_configuration_file;
 
 // Instance information.
-unsigned int module::instance_id;
-QString      module::instance_name;
+unsigned int neb::instance_id;
+QString      neb::instance_name;
 
 // List of host IDs.
-std::map<std::string, int> module::gl_hosts;
+std::map<std::string, int> neb::gl_hosts;
 
 // List of service IDs.
-std::map<std::pair<std::string, std::string>, std::pair<int, int> > module::gl_services;
+std::map<std::pair<std::string, std::string>, std::pair<int, int> > neb::gl_services;
 
 // Sender object.
-multiplexing::publisher module::gl_publisher;
+multiplexing::publisher neb::gl_publisher;
 
 /**************************************
 *                                     *
@@ -68,18 +68,18 @@ static struct {
   int (* callback)(int, void*);
   bool registered;
 } gl_callbacks[] = {
-  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &module::callback_acknowledgement, false },
-  { NEBCALLBACK_COMMENT_DATA, &module::callback_comment, false },
-  { NEBCALLBACK_DOWNTIME_DATA, &module::callback_downtime, false },
-  { NEBCALLBACK_EVENT_HANDLER_DATA, &module::callback_event_handler, false },
-  { NEBCALLBACK_FLAPPING_DATA, &module::callback_flapping_status, false },
-  { NEBCALLBACK_HOST_CHECK_DATA, &module::callback_host_check, false },
-  { NEBCALLBACK_HOST_STATUS_DATA, &module::callback_host_status, false },
-  { NEBCALLBACK_LOG_DATA, &module::callback_log, false },
-  { NEBCALLBACK_PROCESS_DATA, &module::callback_process, false },
-  { NEBCALLBACK_PROGRAM_STATUS_DATA, &module::callback_program_status, false },
-  { NEBCALLBACK_SERVICE_CHECK_DATA, &module::callback_service_check, false },
-  { NEBCALLBACK_SERVICE_STATUS_DATA, &module::callback_service_status, false }
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement, false },
+  { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment, false },
+  { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime, false },
+  { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler, false },
+  { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status, false },
+  { NEBCALLBACK_HOST_CHECK_DATA, &neb::callback_host_check, false },
+  { NEBCALLBACK_HOST_STATUS_DATA, &neb::callback_host_status, false },
+  { NEBCALLBACK_LOG_DATA, &neb::callback_log, false },
+  { NEBCALLBACK_PROCESS_DATA, &neb::callback_process, false },
+  { NEBCALLBACK_PROGRAM_STATUS_DATA, &neb::callback_program_status, false },
+  { NEBCALLBACK_SERVICE_CHECK_DATA, &neb::callback_service_check, false },
+  { NEBCALLBACK_SERVICE_STATUS_DATA, &neb::callback_service_status, false }
 };
 
 // Module handle
@@ -189,14 +189,14 @@ extern "C" {
     try {
       // Set configuration file.
       if (args)
-        module::gl_configuration_file = args;
+        neb::gl_configuration_file = args;
       else
-        throw (exceptions::basic() << "no configuration file provided");
+        throw (exceptions::msg() << "no configuration file provided");
 
       // Try configuration parsing.
       config::parser p;
       config::state s;
-      p.parse(module::gl_configuration_file, s);
+      p.parse(neb::gl_configuration_file, s);
     }
     catch (std::exception const& e) {
       logging::config << logging::HIGH << e.what();

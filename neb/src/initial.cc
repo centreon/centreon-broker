@@ -19,10 +19,10 @@
 #include <memory>
 #include <stdlib.h>
 #include <string.h>
-#include "events/events.hh"
-#include "logging/logging.hh"
-#include "module/initial.hh"
-#include "module/internal.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/neb/initial.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "nagios/objects.h"
 
 // Internal Nagios host list.
@@ -36,7 +36,6 @@ extern "C" {
 }
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::module;
 
 /**************************************
 *                                     *
@@ -57,12 +56,12 @@ static void send_custom_variables_list() {
   for (host* h = host_list; h; h = h->next) {
     if (h->name) {
       // Find host ID first.
-      unsigned int host_id(gl_hosts[h->name]);
+      unsigned int host_id(neb::gl_hosts[h->name]);
 
       // Send all custom variables.
       for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
         if (cv->variable_name && strcmp(cv->variable_name, "HOST_ID")) {
-          QSharedPointer<events::custom_variable> c(new events::custom_variable);
+          QSharedPointer<neb::custom_variable> c(new neb::custom_variable);
           c->host_id = host_id;
           c->modified = false;
           // c->type = XXX;
@@ -75,7 +74,7 @@ static void send_custom_variables_list() {
           // Send custom variable event.
           logging::debug << logging::LOW << "  new custom variable '"
                          << c->name.toStdString().c_str() << "'";
-          gl_publisher.write(c.staticCast<io::data>());
+          neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
   }
@@ -85,7 +84,7 @@ static void send_custom_variables_list() {
     if (s->host_name && s->description) {
       // Find host ID and service ID first.
       std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator it
-        = gl_services.find(std::make_pair(s->host_name, s->description));
+        = neb::gl_services.find(std::make_pair(s->host_name, s->description));
       unsigned int host_id(it->second.first);
       unsigned int service_id(it->second.second);
 
@@ -94,7 +93,7 @@ static void send_custom_variables_list() {
         if (cv->variable_name
             && strcmp(cv->variable_name, "HOST_ID")
             && strcmp(cv->variable_name, "SERVICE_ID")) {
-          QSharedPointer<events::custom_variable> c(new events::custom_variable);
+          QSharedPointer<neb::custom_variable> c(new neb::custom_variable);
           c->host_id = host_id;
           c->modified = false;
           c->service_id = service_id;
@@ -108,7 +107,7 @@ static void send_custom_variables_list() {
           // Send custom variable event.
           logging::debug << logging::LOW << "  new custom variable '"
                          << c->name.toStdString().c_str() << "'";
-          gl_publisher.write(c.staticCast<io::data>());
+          neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
   }
@@ -130,27 +129,27 @@ static void send_host_dependencies_list() {
 
   // Loop through all dependencies.
   for (hostdependency* hd = hostdependency_list; hd; hd = hd->next) {
-    QSharedPointer<events::host_dependency> host_dependency(
-      new events::host_dependency);
+    QSharedPointer<neb::host_dependency> host_dependency(
+      new neb::host_dependency);
     std::map<std::string, int>::const_iterator it;
 
     // Set host dependency parameters.
     if (hd->dependency_period)
       host_dependency->dependency_period = hd->dependency_period;
     if (hd->dependent_host_name) {
-      it = gl_hosts.find(hd->dependent_host_name);
-      if (it != gl_hosts.end())
+      it = neb::gl_hosts.find(hd->dependent_host_name);
+      if (it != neb::gl_hosts.end())
         host_dependency->dependent_host_id = it->second;
     }
     host_dependency->inherits_parent = hd->inherits_parent;
     if (hd->host_name) {
-      it = gl_hosts.find(hd->host_name);
-      if (it != gl_hosts.end())
+      it = neb::gl_hosts.find(hd->host_name);
+      if (it != neb::gl_hosts.end())
         host_dependency->host_id = it->second;
     }
 
     // Send host dependency event.
-    gl_publisher.write(host_dependency.staticCast<io::data>());
+    neb::gl_publisher.write(host_dependency.staticCast<io::data>());
   }
 
   // End log message.
@@ -170,36 +169,36 @@ static void send_host_group_list() {
 
   // Loop through all host groups.
   for (hostgroup* hg = hostgroup_list; hg; hg = hg->next) {
-    QSharedPointer<events::host_group> host_group(new events::host_group);
+    QSharedPointer<neb::host_group> host_group(new neb::host_group);
 
     // Set host group parameters.
     if (hg->alias)
       host_group->alias = hg->alias;
-    host_group->instance_id = instance_id;
+    host_group->instance_id = neb::instance_id;
     if (hg->group_name)
       host_group->name = hg->group_name;
 
     // Send host group event.
-    gl_publisher.write(host_group.staticCast<io::data>());
+    neb::gl_publisher.write(host_group.staticCast<io::data>());
 
     // Dump host group members.
     for (hostsmember* hgm = hg->members; hgm; hgm = hgm->next) {
-      QSharedPointer<events::host_group_member> host_group_member(
-        new events::host_group_member);
+      QSharedPointer<neb::host_group_member> host_group_member(
+        new neb::host_group_member);
 
       // Set host group members parameters.
       if (hg->group_name)
         host_group_member->group = hg->group_name;
-      host_group_member->instance_id = instance_id;
+      host_group_member->instance_id = neb::instance_id;
       if (hgm->host_name) {
         std::map<std::string, int>::const_iterator it;
-        it = gl_hosts.find(hgm->host_name);
-        if (it != gl_hosts.end())
+        it = neb::gl_hosts.find(hgm->host_name);
+        if (it != neb::gl_hosts.end())
           host_group_member->host_id = it->second;
       }
 
       // Send host group member event.
-      gl_publisher.write(host_group_member.staticCast<io::data>());
+      neb::gl_publisher.write(host_group_member.staticCast<io::data>());
     }
   }
 
@@ -220,7 +219,7 @@ static void send_host_list() {
 
   // Loop through all hosts.
   for (host* h = host_list; h; h = h->next) {
-    QSharedPointer<events::host> my_host(new events::host);
+    QSharedPointer<neb::host> my_host(new neb::host);
 
     // Set host parameters.
     my_host->acknowledgement_type = h->acknowledgement_type;
@@ -270,7 +269,7 @@ static void send_host_list() {
       my_host->icon_image = h->icon_image;
     if (h->icon_image_alt)
       my_host->icon_image_alt = h->icon_image_alt;
-    my_host->instance_id = instance_id;
+    my_host->instance_id = neb::instance_id;
     my_host->is_flapping = h->is_flapping;
     my_host->last_check = h->last_check;
     my_host->last_hard_state = h->last_hard_state;
@@ -330,11 +329,11 @@ static void send_host_list() {
           && cv->variable_value
           && !strcmp(cv->variable_name, "HOST_ID")) {
         my_host->host_id = strtol(cv->variable_value, NULL, 0);
-        gl_hosts[my_host->host_name.toStdString()] = my_host->host_id;
+        neb::gl_hosts[my_host->host_name.toStdString()] = my_host->host_id;
       }
 
     // Send host event.
-    gl_publisher.write(my_host.staticCast<io::data>());
+    neb::gl_publisher.write(my_host.staticCast<io::data>());
   }
 
   // End log message.
@@ -359,8 +358,8 @@ static void send_host_parents_list() {
 
     // Search host_id.
     if (h->name) {
-      it = gl_hosts.find(h->name);
-      if (it != gl_hosts.end())
+      it = neb::gl_hosts.find(h->name);
+      if (it != neb::gl_hosts.end())
         host_id = it->second;
       else
         host_id = 0;
@@ -370,18 +369,18 @@ static void send_host_parents_list() {
 
     // Loop through all dependencies.
     for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next) {
-      QSharedPointer<events::host_parent> hp(new events::host_parent);
+      QSharedPointer<neb::host_parent> hp(new neb::host_parent);
       std::map<std::string, int>::const_iterator it;
 
       hp->host_id = host_id;
       if (parent->host_name) {
-        it = gl_hosts.find(parent->host_name);
-        if (it != gl_hosts.end())
+        it = neb::gl_hosts.find(parent->host_name);
+        if (it != neb::gl_hosts.end())
           hp->parent_id = it->second;
       }
 
       // Send host parent event.
-      gl_publisher.write(hp.staticCast<io::data>());
+      neb::gl_publisher.write(hp.staticCast<io::data>());
     }
   }
 
@@ -404,14 +403,14 @@ static void send_service_dependencies_list() {
   // Loop through all dependencies.
   for (servicedependency* sd = servicedependency_list; sd; sd = sd->next) {
     std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-    QSharedPointer<events::service_dependency> service_dependency(
-      new events::service_dependency);
+    QSharedPointer<neb::service_dependency> service_dependency(
+      new neb::service_dependency);
 
     // Search IDs.
     if (sd->dependent_host_name && sd->dependent_service_description) {
-      it = gl_services.find(std::make_pair<std::string, std::string>(
+      it = neb::gl_services.find(std::make_pair<std::string, std::string>(
              sd->dependent_host_name, sd->dependent_service_description));
-      if (it != gl_services.end()) {
+      if (it != neb::gl_services.end()) {
         service_dependency->dependent_host_id = it->second.first;
         service_dependency->dependent_service_id = it->second.second;
       }
@@ -420,16 +419,16 @@ static void send_service_dependencies_list() {
       service_dependency->dependency_period = sd->dependency_period;
     service_dependency->inherits_parent = sd->inherits_parent;
     if (sd->host_name && sd->service_description) {
-      it = gl_services.find(std::make_pair<std::string, std::string>(
+      it = neb::gl_services.find(std::make_pair<std::string, std::string>(
              sd->host_name, sd->service_description));
-      if (it != gl_services.end()) {
+      if (it != neb::gl_services.end()) {
         service_dependency->host_id = it->second.first;
         service_dependency->service_id = it->second.second;
       }
     }
 
     // Send service dependency event.
-    gl_publisher.write(service_dependency.staticCast<io::data>());
+    neb::gl_publisher.write(service_dependency.staticCast<io::data>());
   }
 
   // End log message.
@@ -449,41 +448,41 @@ static void send_service_group_list() {
 
   // Loop through all service groups.
   for (servicegroup* sg = servicegroup_list; sg; sg = sg->next) {
-    QSharedPointer<events::service_group> service_group(
-      new events::service_group);
+    QSharedPointer<neb::service_group> service_group(
+      new neb::service_group);
 
     // Set service group parameters.
     if (sg->alias)
       service_group->alias = sg->alias;
-    service_group->instance_id = instance_id;
+    service_group->instance_id = neb::instance_id;
     if (sg->group_name)
       service_group->name = sg->group_name;
 
     // Send service group event.
-    gl_publisher.write(service_group.staticCast<io::data>());
+    neb::gl_publisher.write(service_group.staticCast<io::data>());
 
     // Dump service group members.
     for (servicesmember* sgm = sg->members; sgm; sgm = sgm->next) {
-      QSharedPointer<events::service_group_member> service_group_member(
-        new events::service_group_member);
+      QSharedPointer<neb::service_group_member> service_group_member(
+        new neb::service_group_member);
 
       // Set service group members parameters.
       if (sg->group_name)
         service_group_member->group = sg->group_name;
-      service_group_member->instance_id = instance_id;
+      service_group_member->instance_id = neb::instance_id;
       if (sgm->host_name && sgm->service_description) {
         std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
 
-        it = gl_services.find(std::make_pair(sgm->host_name,
+        it = neb::gl_services.find(std::make_pair(sgm->host_name,
                                              sgm->service_description));
-        if (it != gl_services.end()) {
+        if (it != neb::gl_services.end()) {
           service_group_member->host_id = it->second.first;
           service_group_member->service_id = it->second.second;
         }
       }
 
       // Send service group event.
-      gl_publisher.write(service_group_member.staticCast<io::data>());
+      neb::gl_publisher.write(service_group_member.staticCast<io::data>());
     }
   }
 
@@ -504,7 +503,7 @@ static void send_service_list() {
 
   // Loop through all services.
   for (service* s = service_list; s; s = s->next) {
-    QSharedPointer<events::service> my_service(new events::service);
+    QSharedPointer<neb::service> my_service(new neb::service);
 
     // Set service parameters.
     my_service->acknowledgement_type = s->acknowledgement_type;
@@ -550,8 +549,8 @@ static void send_service_list() {
     my_service->high_flap_threshold = s->high_flap_threshold;
     if (s->host_name) { // Redonduncy with custom var browsing.
       std::map<std::string, int>::const_iterator it;
-      it = gl_hosts.find(s->host_name);
-      if (it != gl_hosts.end())
+      it = neb::gl_hosts.find(s->host_name);
+      if (it != neb::gl_hosts.end())
         my_service->host_id = it->second;
     }
     if (s->icon_image)
@@ -623,14 +622,14 @@ static void send_service_list() {
           my_service->host_id = strtol(cv->variable_value, NULL, 0);
         else if (!strcmp(cv->variable_name, "SERVICE_ID")) {
           my_service->service_id = strtol(cv->variable_value, NULL, 0);
-          gl_services[std::make_pair((s->host_name ? s->host_name : ""),
+          neb::gl_services[std::make_pair((s->host_name ? s->host_name : ""),
                                      my_service->service_description.toStdString())]
             = std::make_pair(my_service->host_id, my_service->service_id);
         }
       }
 
     // Send service event.
-    gl_publisher.write(my_service.staticCast<io::data>());
+    neb::gl_publisher.write(my_service.staticCast<io::data>());
   }
 
   // End log message.
@@ -649,7 +648,7 @@ static void send_service_list() {
 /**
  *  Send initial configuration to the global publisher.
  */
-void module::send_initial_configuration() {
+void neb::send_initial_configuration() {
   send_host_list();
   send_host_parents_list();
   send_service_list();

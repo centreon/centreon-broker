@@ -16,21 +16,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULE_SET_LOG_DATA_HH_
-# define CCB_MODULE_SET_LOG_DATA_HH_
+#ifndef CCB_NEB_INITIAL_HH_
+# define CCB_NEB_INITIAL_HH_
 
 namespace       com {
   namespace     centreon {
     namespace   broker {
-      // Forward declaration.
-      namespace events
-      { class   log_entry; }
-
-      namespace module {
-        void    set_log_data(events::log_entry& le, char const* log_data);
+      namespace neb {
+        void    send_initial_configuration();
       }
     }
   }
 }
 
-#endif /* !CCB_MODULE_SET_LOG_DATA_HH_ */
+#endif /* !CCB_NEB_INITIAL_HH_ */

@@ -20,17 +20,17 @@
 #include <set>
 #include <time.h>
 #include <unistd.h>
-#include "config/applier/state.hh"
-#include "config/logger.hh"
-#include "config/parser.hh"
-#include "config/state.hh"
-#include "events/events.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "module/callbacks.hh"
-#include "module/initial.hh"
-#include "module/internal.hh"
-#include "module/set_log_data.hh"
+#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/logger.hh"
+#include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/callbacks.hh"
+#include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/neb/initial.hh"
+#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/set_log_data.hh"
 #include "nagios/broker.h"
 #include "nagios/comments.h"
 #include "nagios/common.h"
@@ -61,7 +61,7 @@ extern "C" {
  *
  *  @return 0 on success.
  */
-int module::callback_acknowledgement(int callback_type, void* data) {
+int neb::callback_acknowledgement(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating acknowledgement event";
   (void)callback_type;
@@ -69,7 +69,7 @@ int module::callback_acknowledgement(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_acknowledgement_data const* ack_data;
-    QSharedPointer<events::acknowledgement> ack(new events::acknowledgement);
+    QSharedPointer<neb::acknowledgement> ack(new neb::acknowledgement);
 
     // Fill output var.
     ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
@@ -119,7 +119,7 @@ int module::callback_acknowledgement(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_comment(int callback_type, void* data) {
+int neb::callback_comment(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating comment event";
   (void)callback_type;
@@ -127,7 +127,7 @@ int module::callback_comment(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_comment_data const* comment_data;
-    QSharedPointer<events::comment> comment(new events::comment);
+    QSharedPointer<neb::comment> comment(new neb::comment);
 
     // Fill output var.
     comment_data = static_cast<nebstruct_comment_data*>(data);
@@ -181,7 +181,7 @@ int module::callback_comment(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_downtime(int callback_type, void* data) {
+int neb::callback_downtime(int callback_type, void* data) {
   // Unstarted downtimes.
   std::set<unsigned int> unstarted;
 
@@ -192,7 +192,7 @@ int module::callback_downtime(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_downtime_data const* downtime_data;
-    QSharedPointer<events::downtime> downtime(new events::downtime);
+    QSharedPointer<neb::downtime> downtime(new neb::downtime);
 
     // Fill output var.
     downtime_data = static_cast<nebstruct_downtime_data*>(data);
@@ -267,7 +267,7 @@ int module::callback_downtime(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_event_handler(int callback_type, void* data) {
+int neb::callback_event_handler(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating event handler event";
   (void)callback_type;
@@ -275,7 +275,7 @@ int module::callback_event_handler(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_event_handler_data const* event_handler_data;
-    QSharedPointer<events::event_handler> event_handler(new events::event_handler);
+    QSharedPointer<neb::event_handler> event_handler(new neb::event_handler);
 
     // Fill output var.
     event_handler_data = static_cast<nebstruct_event_handler_data*>(data);
@@ -331,7 +331,7 @@ int module::callback_event_handler(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_flapping_status(int callback_type, void* data) {
+int neb::callback_flapping_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating flapping event";
   (void)callback_type;
@@ -339,7 +339,7 @@ int module::callback_flapping_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_flapping_data const* flapping_data;
-    QSharedPointer<events::flapping_status> flapping_status(new events::flapping_status);
+    QSharedPointer<neb::flapping_status> flapping_status(new neb::flapping_status);
 
     // Fill output var.
     flapping_data = static_cast<nebstruct_flapping_data*>(data);
@@ -360,12 +360,12 @@ int module::callback_flapping_status(int callback_type, void* data) {
             flapping_status->service_id = it2->second.second;
 
           // Set comment time.
-          comment* com = find_service_comment(flapping_data->comment_id);
+          ::comment* com = find_service_comment(flapping_data->comment_id);
           if (com)
             flapping_status->comment_time = com->entry_time;
         }
         else {
-          comment* com = find_host_comment(flapping_data->comment_id);
+          ::comment* com = find_host_comment(flapping_data->comment_id);
           if (com)
             flapping_status->comment_time = com->entry_time;
         }
@@ -397,7 +397,7 @@ int module::callback_flapping_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_host_check(int callback_type, void* data) {
+int neb::callback_host_check(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating host check event";
   (void)callback_type;
@@ -405,7 +405,7 @@ int module::callback_host_check(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_host_check_data const* hcdata;
-    QSharedPointer<events::host_check> host_check(new events::host_check);
+    QSharedPointer<neb::host_check> host_check(new neb::host_check);
 
     // Fill output var.
     hcdata = static_cast<nebstruct_host_check_data*>(data);
@@ -439,18 +439,18 @@ int module::callback_host_check(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_host_status(int callback_type, void* data) {
+int neb::callback_host_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating host status event";
   (void)callback_type;
 
   try {
     // In/Out variables.
-    host const* h;
-    QSharedPointer<events::host_status> host_status(new events::host_status);
+    ::host const* h;
+    QSharedPointer<neb::host_status> host_status(new neb::host_status);
 
     // Fill output var.
-    h = static_cast<host*>(
+    h = static_cast< ::host*>(
       static_cast<nebstruct_host_status_data*>(data)->object_ptr);
     host_status->acknowledgement_type = h->acknowledgement_type;
     host_status->active_checks_enabled = h->checks_enabled;
@@ -530,7 +530,7 @@ int module::callback_host_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_log(int callback_type, void* data) {
+int neb::callback_log(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating log event";
   (void)callback_type;
@@ -538,7 +538,7 @@ int module::callback_log(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_log_data const* log_data;
-    QSharedPointer<events::log_entry> le(new events::log_entry);
+    QSharedPointer<neb::log_entry> le(new neb::log_entry);
 
     // Fill output var.
     log_data = static_cast<nebstruct_log_data*>(data);
@@ -569,7 +569,7 @@ int module::callback_log(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_process(int callback_type, void *data) {
+int neb::callback_process(int callback_type, void *data) {
   // Log message.
   logging::debug << logging::LOW << "process event callback";
   (void)callback_type;
@@ -584,7 +584,7 @@ int module::callback_process(int callback_type, void *data) {
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       logging::info << logging::MEDIUM << "generating process start event";
       // Output variable.
-      QSharedPointer<events::instance> instance(new events::instance);
+      QSharedPointer<neb::instance> instance(new neb::instance);
 
       // Logging object.
       config::logger default_log;
@@ -621,7 +621,7 @@ int module::callback_process(int callback_type, void *data) {
         if (it != conf.params().end())
           instance_name = it.value();
       }
-      catch (exceptions::basic const& e) {
+      catch (exceptions::msg const& e) {
         logging::config << logging::HIGH << e.what();
         return (0);
       }
@@ -647,7 +647,7 @@ int module::callback_process(int callback_type, void *data) {
       for (nebmodule* nm = neb_module_list; nm; nm = nm->next)
         if (nm->filename) {
           // Output variable.
-          QSharedPointer<events::module> module(new events::module);
+          QSharedPointer<neb::module> module(new neb::module);
 
           // Fill output var.
           if (nm->args)
@@ -664,7 +664,7 @@ int module::callback_process(int callback_type, void *data) {
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info << logging::MEDIUM << "generating process end event";
       // Output variable.
-      QSharedPointer<events::instance> instance(new events::instance);
+      QSharedPointer<neb::instance> instance(new neb::instance);
 
       // Fill output var.
 #ifdef PROGRAM_NAME
@@ -702,7 +702,7 @@ int module::callback_process(int callback_type, void *data) {
  *
  *  @return 0 on success.
  */
-int module::callback_program_status(int callback_type, void* data) {
+int neb::callback_program_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating instance status event";
   (void)callback_type;
@@ -710,8 +710,8 @@ int module::callback_program_status(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_program_status_data const* program_status_data;
-    QSharedPointer<events::instance_status> is(
-      new events::instance_status);
+    QSharedPointer<neb::instance_status> is(
+      new neb::instance_status);
 
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
@@ -775,7 +775,7 @@ int module::callback_program_status(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_service_check(int callback_type, void* data) {
+int neb::callback_service_check(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating service check event";
   (void)callback_type;
@@ -783,8 +783,8 @@ int module::callback_service_check(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_service_check_data const* scdata;
-    QSharedPointer<events::service_check> service_check(
-      new events::service_check);
+    QSharedPointer<neb::service_check> service_check(
+      new neb::service_check);
 
     // Fill output var.
     scdata = static_cast<nebstruct_service_check_data*>(data);
@@ -822,19 +822,19 @@ int module::callback_service_check(int callback_type, void* data) {
  *
  *  @return 0 on success.
  */
-int module::callback_service_status(int callback_type, void* data) {
+int neb::callback_service_status(int callback_type, void* data) {
   // Log message.
   logging::info << logging::MEDIUM << "generating service status event";
   (void)callback_type;
 
   try {
     // In/Out variables.
-    service const* s;
-    QSharedPointer<events::service_status> service_status(
-      new events::service_status);
+    ::service const* s;
+    QSharedPointer<neb::service_status> service_status(
+      new neb::service_status);
 
     // Fill output var.
-    s = static_cast<service*>(
+    s = static_cast< ::service*>(
       static_cast<nebstruct_service_status_data*>(data)->object_ptr);
     service_status->acknowledgement_type = s->acknowledgement_type;
     service_status->active_checks_enabled = s->checks_enabled;

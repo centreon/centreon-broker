@@ -16,17 +16,19 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULE_INITIAL_HH_
-# define CCB_MODULE_INITIAL_HH_
+#ifndef CCB_NEB_SET_LOG_DATA_HH_
+# define CCB_NEB_SET_LOG_DATA_HH_
+
+# include "com/centreon/broker/neb/log_entry.hh"
 
 namespace       com {
   namespace     centreon {
     namespace   broker {
-      namespace module {
-        void    send_initial_configuration();
+      namespace neb {
+        void    set_log_data(neb::log_entry& le, char const* log_data);
       }
     }
   }
 }
 
-#endif /* !CCB_MODULE_INITIAL_HH_ */
+#endif /* !CCB_NEB_SET_LOG_DATA_HH_ */

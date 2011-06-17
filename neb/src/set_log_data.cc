@@ -18,10 +18,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "events/log_entry.hh"
-#include "exceptions/basic.hh"
-#include "module/internal.hh"
-#include "module/set_log_data.hh"
+#include "com/centreon/broker/neb/log_entry.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/set_log_data.hh"
 
 using namespace com::centreon::broker;
 
@@ -31,7 +31,7 @@ using namespace com::centreon::broker;
 static char* log_extract_first(char* str, char** lasts) {
   char* data(strtok_r(str, ";", lasts));
   if (!data)
-    throw (exceptions::basic() << "log data extraction failed");
+    throw (exceptions::msg() << "log data extraction failed");
   return (data);
 }
 
@@ -41,7 +41,7 @@ static char* log_extract_first(char* str, char** lasts) {
 static char* log_extract(char** lasts) {
   char* data(strtok_r(NULL, ";", lasts));
   if (!data)
-    throw (exceptions::basic() << "log data extraction failed");
+    throw (exceptions::msg() << "log data extraction failed");
   return (data);
 }
 
@@ -78,11 +78,11 @@ static int type_id(char const* type) {
 /**
  *  Extract Nagios-formated log data to the C++ object.
  */
-void module::set_log_data(events::log_entry& le, char const* log_data) {
+void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   // Duplicate string so that we can split it with strtok_r.
   char* datadup(strdup(log_data));
   if (!datadup)
-    throw (exceptions::basic() << "log data extraction failed");
+    throw (exceptions::msg() << "log data extraction failed");
 
   try {
     char* lasts;
@@ -170,7 +170,7 @@ void module::set_log_data(events::log_entry& le, char const* log_data) {
       }
       else
         // XXX : seems like it should be something else ...
-        throw (exceptions::basic() << "log data extraction failed");
+        throw (exceptions::msg() << "log data extraction failed");
     }
     else if (!strcmp(datadup, "Warning")) {
       le.msg_type = 4;
@@ -187,12 +187,12 @@ void module::set_log_data(events::log_entry& le, char const* log_data) {
   // Set host and service IDs.
   std::map<std::string, int>::const_iterator host_it;
   std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator service_it;
-  host_it = module::gl_hosts.find(le.host_name.toStdString());
-  if (host_it != module::gl_hosts.end())
+  host_it = neb::gl_hosts.find(le.host_name.toStdString());
+  if (host_it != neb::gl_hosts.end())
     le.host_id = host_it->second;
-  service_it = module::gl_services.find(std::make_pair(le.host_name.toStdString(),
+  service_it = neb::gl_services.find(std::make_pair(le.host_name.toStdString(),
     le.service_description.toStdString()));
-  if (service_it != module::gl_services.end()) {
+  if (service_it != neb::gl_services.end()) {
     le.host_id = service_it->second.first;
     le.service_id = service_it->second.second;
   }

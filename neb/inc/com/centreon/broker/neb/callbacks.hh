@@ -16,13 +16,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULE_CALLBACKS_HH_
-# define CCB_MODULECALLBACKS_HH_
+#ifndef CCB_NEB_CALLBACKS_HH_
+# define CCB_NEB_CALLBACKS_HH_
 
 namespace       com {
   namespace     centreon {
     namespace   broker {
-      namespace module {
+      namespace neb {
         int     callback_acknowledgement(int callback_type, void* data);
         int     callback_comment(int callback_type, void* data);
         int     callback_downtime(int callback_type, void* data);
@@ -40,4 +40,4 @@ namespace       com {
   }
 }
 
-#endif /* !CCB_MODULE_CALLBACKS_HH_ */
+#endif /* !CCB_NEB_CALLBACKS_HH_ */

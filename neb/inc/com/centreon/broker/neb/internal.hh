@@ -16,19 +16,19 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULE_INTERNAL_HH_
-# define CCB_MODULE_INTERNAL_HH_
+#ifndef CCB_NEB_INTERNAL_HH_
+# define CCB_NEB_INTERNAL_HH_
 
 # include <map>
 # include <string>
 # include <utility>
-# include "logging/backend.hh"
-# include "multiplexing/publisher.hh"
+# include "com/centreon/broker/logging/backend.hh"
+# include "com/centreon/broker/multiplexing/publisher.hh"
 
 namespace       com {
   namespace     centreon {
     namespace   broker {
-      namespace module {
+      namespace neb {
 
         // Configuration file.
         extern QString gl_configuration_file;
@@ -44,7 +44,7 @@ namespace       com {
         extern std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
 
         // Sender object.
-        extern com::centreon::broker::multiplexing::publisher gl_publisher;
+        extern multiplexing::publisher gl_publisher;
       }
     }
   }
