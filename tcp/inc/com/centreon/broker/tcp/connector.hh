@@ -22,19 +22,19 @@
 # include <QSharedPointer>
 # include <QString>
 # include <QTcpSocket>
-# include "io/connector.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
       namespace          tcp {
         /**
-         *  @class connector connector.hh "tcp/connector.hh"
+         *  @class connector connector.hh "com/centreon/broker/tcp/connector.hh"
          *  @brief TCP connector.
          *
          *  Connect to some remote TCP host.
          */
-        class            connector : public com::centreon::broker::io::connector {
+        class            connector : public io::endpoint {
          private:
           QString        _host;
           unsigned short _port;
@@ -49,7 +49,7 @@ namespace                com {
           connector&     operator=(connector const& c);
           void           close();
           void           connect_to(QString const& host, unsigned short port);
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                          open();
         };
       }

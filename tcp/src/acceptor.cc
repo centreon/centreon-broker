@@ -19,10 +19,10 @@
 #include <assert.h>
 #include <QScopedPointer>
 #include <stdlib.h>
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "tcp/acceptor.hh"
-#include "tcp/stream.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/tcp/acceptor.hh"
+#include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -40,7 +40,7 @@ using namespace com::centreon::broker::tcp;
  *
  *  @param[in] a Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : io::acceptor(a) {
+acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
   assert(false);
   abort();
 }
@@ -106,20 +106,20 @@ QSharedPointer<io::stream> acceptor::open() {
   if (_socket.isNull()) {
     _socket.reset(new QTcpServer);
     if (!_socket->listen(QHostAddress::Any, _port))
-      throw (exceptions::basic() << "could not listen on port " << _port
+      throw (exceptions::msg() << "could not listen on port " << _port
                << ": " << _socket->errorString().toStdString().c_str());
   }
 
   // Wait for incoming connections.
   logging::debug << logging::MEDIUM << "TCP: waiting for new connection";
   if (!_socket->waitForNewConnection(-1))
-    throw (exceptions::basic() << "could not accept incoming TCP client: "
+    throw (exceptions::msg() << "could not accept incoming TCP client: "
              << _socket->errorString().toStdString().c_str());
 
   // Accept client.
   QSharedPointer<QTcpSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
-    throw (exceptions::basic() << "could not accept incoming TCP client: "
+    throw (exceptions::msg() << "could not accept incoming TCP client: "
              << _socket->errorString().toStdString().c_str());
   logging::info << logging::MEDIUM << "TCP: new client successfully connected";
 

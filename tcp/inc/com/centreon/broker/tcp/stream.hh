@@ -21,19 +21,19 @@
 
 # include <QSharedPointer>
 # include <QTcpSocket>
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        tcp {
         /**
-         *  @class stream stream.hh "tcp/stream.hh"
+         *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
          *  @brief TCP stream.
          *
          *  TCP stream.
          */
-        class          stream : public com::centreon::broker::io::stream {
+        class          stream : public io::stream {
          private:
           QSharedPointer<QTcpSocket>
                        _socket;
@@ -43,9 +43,9 @@ namespace              com {
                        stream(stream const& s);
                        ~stream();
           stream&      operator=(stream const& s);
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                        read();
-          void         write(QSharedPointer<com::centreon::broker::io::data> d);
+          void         write(QSharedPointer<io::data> d);
         };
       }
     }

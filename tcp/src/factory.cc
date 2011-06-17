@@ -17,10 +17,10 @@
 */
 
 #include <QString>
-#include "exceptions/basic.hh"
-#include "tcp/acceptor.hh"
-#include "tcp/connector.hh"
-#include "tcp/factory.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/tcp/acceptor.hh"
+#include "com/centreon/broker/tcp/connector.hh"
+#include "com/centreon/broker/tcp/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -119,7 +119,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("port"));
     if (it == cfg.params.end())
-      throw (exceptions::basic() << "no 'port' defined for TCP endpoint '"
+      throw (exceptions::msg() << "no 'port' defined for TCP endpoint '"
                << cfg.name.toStdString().c_str() << "'");
     port = it.value().toUShort();
   }

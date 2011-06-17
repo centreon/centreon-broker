@@ -30,14 +30,14 @@ add_library("tcp" MODULE
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
-  "${INC_DIR}/tcp/acceptor.hh"
-  "${INC_DIR}/tcp/connector.hh"
-  "${INC_DIR}/tcp/factory.hh"
-  "${INC_DIR}/tcp/stream.hh"
+  "${INC_DIR}/com/centreon/broker/tcp/acceptor.hh"
+  "${INC_DIR}/com/centreon/broker/tcp/connector.hh"
+  "${INC_DIR}/com/centreon/broker/tcp/factory.hh"
+  "${INC_DIR}/com/centreon/broker/tcp/stream.hh"
 )
 set_target_properties("tcp" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS tcp
+install(TARGETS "tcp"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

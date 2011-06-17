@@ -16,10 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "tcp/connector.hh"
-#include "tcp/stream.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/tcp/connector.hh"
+#include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -58,7 +58,7 @@ connector::connector() : _port(0) {}
  *
  *  @param[in] c Object to copy.
  */
-connector::connector(connector const& c) : io::connector(c) {
+connector::connector(connector const& c) : io::endpoint(c) {
   _internal_copy(c);
 }
 
@@ -75,7 +75,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::connector::operator=(c);
+  io::endpoint::operator=(c);
   _internal_copy(c);
   return (*this);
 }
@@ -110,7 +110,7 @@ QSharedPointer<io::stream> connector::open() {
 
   // Wait for connection result.
   if (!_socket->waitForConnected())
-    throw (exceptions::basic() << "could not connect to "
+    throw (exceptions::msg() << "could not connect to "
              << _host.toStdString().c_str() << ":" << _port
              << ": " << _socket->errorString().toStdString().c_str());
   logging::info << logging::MEDIUM << "TCP: successfully connected to "

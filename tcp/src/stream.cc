@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "io/raw.hh"
-#include "tcp/stream.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -75,7 +75,7 @@ QSharedPointer<io::data> stream::read() {
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
-    throw (exceptions::basic() << "TCP read error: "
+    throw (exceptions::msg() << "TCP read error: "
              << _socket->errorString().toStdString().c_str());
   QSharedPointer<io::raw> data(new io::raw);
   data->append(buffer, rb);
@@ -88,10 +88,13 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] d Data to write.
  */
 void stream::write(QSharedPointer<io::data> d) {
-  qint64 wb(_socket->write(static_cast<char*>(d->memory()), d->size()));
-  if (wb < 0)
-    throw (exceptions::basic() << "TCP write error: "
-             << _socket->errorString().toStdString().c_str());
-  _socket->waitForBytesWritten(-1);
+  if (d->type() == "com::centreon::broker::io::raw") {
+    QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+    qint64 wb(_socket->write(static_cast<char*>(r->memory()), r->size()));
+    if (wb < 0)
+      throw (exceptions::msg() << "TCP write error: "
+               << _socket->errorString().toStdString().c_str());
+    _socket->waitForBytesWritten(-1);
+  }
   return ;
 }

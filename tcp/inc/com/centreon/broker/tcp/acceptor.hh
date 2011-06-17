@@ -20,19 +20,19 @@
 # define CCB_TCP_ACCEPTOR_HH_
 
 # include <QTcpServer>
-# include "io/acceptor.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
       namespace          tcp {
         /**
-         *  @class acceptor acceptor.hh "tcp/acceptor.hh"
+         *  @class acceptor acceptor.hh "com/centreon/broker/tcp/acceptor.hh"
          *  @brief TCP acceptor.
          *
          *  Accept TCP connections.
          */
-        class            acceptor : public com::centreon::broker::io::acceptor {
+        class            acceptor : public io::endpoint {
          private:
           unsigned short _port;
 	  QScopedPointer<QTcpServer>
@@ -45,7 +45,7 @@ namespace                com {
                          ~acceptor();
           void           close();
           void           listen_on(unsigned short port);
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                          open();
         };
       }
