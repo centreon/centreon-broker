@@ -197,7 +197,7 @@ install(TARGETS "roker"
 add_subdirectory("daemon")
 
 # File module.
-#add_subdirectory("file")
+add_subdirectory("file")
 
 # NDO module.
 #add_subdirectory("ndo")

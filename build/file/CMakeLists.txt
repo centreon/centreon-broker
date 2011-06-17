@@ -27,7 +27,7 @@ add_library("file" MODULE
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   # Headers.
-  "${INC_DIR}/file/factory.hh"
+  "${INC_DIR}/com/centreon/broker/file/factory.hh"
 )
 set_target_properties("file" PROPERTIES PREFIX "")
 

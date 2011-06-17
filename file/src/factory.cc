@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "file/factory.hh"
+#include "com/centreon/broker/file/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
