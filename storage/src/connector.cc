@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "storage/connector.hh"
-#include "storage/stream.hh"
+#include "com/centreon/broker/storage/connector.hh"
+#include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -101,7 +101,7 @@ connector::connector() {}
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::connector(c) {
+  : io::endpoint(c) {
   _internal_copy(c);
 }
 
@@ -118,7 +118,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::connector::operator=(c);
+  io::endpoint::operator=(c);
   _internal_copy(c);
   return (*this);
 }

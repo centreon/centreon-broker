@@ -19,7 +19,7 @@
 #ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH_
 # define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH_
 
-# include "exceptions/basic.hh"
+# include "com/centreon/broker/exceptions/msg.hh"
 
 namespace             com {
   namespace           centreon {
@@ -27,12 +27,12 @@ namespace             com {
       namespace       storage {
         namespace     exceptions {
           /**
-           *  @class perfdata perfdata.hh "storage/exceptions/perfdata.hh"
+           *  @class perfdata perfdata.hh "com/centreon/broker/storage/exceptions/perfdata.hh"
            *  @brief Perfdata exception.
            *
            *  Exception thrown when handling performance data.
            */
-          class       perfdata : public com::centreon::broker::exceptions::basic {
+          class       perfdata : public broker::exceptions::msg {
            public:
                       perfdata() throw ();
                       perfdata(perfdata const& pd) throw ();

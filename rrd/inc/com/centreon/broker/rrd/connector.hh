@@ -20,19 +20,19 @@
 # define CCB_RRD_CONNECTOR_HH_
 
 # include <QString>
-# include "io/connector.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace            com {
   namespace          centreon {
     namespace        broker {
       namespace      rrd {
         /**
-         *  @class connector connector.hh "rrd/connector.hh"
+         *  @class connector connector.hh "com/centreon/broker/rrd/connector.hh"
          *  @brief RRD connector.
          *
          *  Generate an RRD stream that will write files.
          */
-        class        connector : public com::centreon::broker::io::connector {
+        class        connector : public io::endpoint {
          private:
           QString    _metrics_path;
           QString    _status_path;
@@ -43,7 +43,7 @@ namespace            com {
                      ~connector();
           connector& operator=(connector const& c);
           void       close();
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                      open();
           void       set_metrics_path(QString const& metrics_path);
           void       set_status_path(QString const& status_path);

@@ -25,20 +25,20 @@
 # include <QSqlDatabase>
 # include <QString>
 # include <utility>
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        storage {
         /**
-         *  @class stream stream.hh "storage/stream.hh"
+         *  @class stream stream.hh "com/centreon/broker/storage/stream.hh"
          *  @brief Storage stream.
          *
          *  Handle perfdata and insert proper informations in index_data
          *  and metrics table of a centstorage DB.
          */
-        class          stream : public com::centreon::broker::io::stream {
+        class          stream : public io::stream {
          private:
           std::map<std::pair<unsigned int, unsigned int>, unsigned int>
                        _index_cache;
@@ -73,9 +73,9 @@ namespace              com {
                          time_t interval_length);
                        stream(stream const& s);
                        ~stream();
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                        read();
-          void         write(QSharedPointer<com::centreon::broker::io::data> d);
+          void         write(QSharedPointer<io::data> d);
         };
       }
     }

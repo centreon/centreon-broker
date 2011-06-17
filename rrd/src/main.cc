@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "io/protocols.hh"
-#include "rrd/factory.hh"
+#include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/rrd/factory.hh"
 
 using namespace com::centreon::broker;
 

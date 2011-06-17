@@ -16,41 +16,41 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EVENTS_STATUS_DATA_HH_
-# define CCB_EVENTS_STATUS_DATA_HH_
+#ifndef CCB_RRD_STATUS_HH_
+# define CCB_RRD_STATUS_HH_
 
 # include <time.h>
-# include "events/event.hh"
+# include "com/centreon/broker/io/data.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        events {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          rrd {
         /**
-         *  @class status_data status_data.hh "events/status_data.hh"
+         *  @class status status.hh "com/centreon/broker/rrd/status.hh"
          *  @brief Status data used to generate status graphs.
          *
          *  Status data event used to generate status graphs.
          */
-        class          status_data : public event {
+        class            status : public io::data {
          private:
-          void         _internal_copy(status_data const& sd);
+          void           _internal_copy(status const& s);
 
          public:
-          time_t       ctime;
-          int          index_id;
-          time_t       interval;
-          time_t       rrd_len;
-          short        status;
-                       status_data();
-                       status_data(status_data const& sd);
-                       ~status_data();
-          status_data& operator=(status_data const& sd);
-          unsigned int type() const;
+          time_t         ctime;
+          unsigned int   index_id;
+          time_t         interval;
+          time_t         rrd_len;
+          short          state;
+                         status();
+                         status(status const& s);
+                         ~status();
+          status&        operator=(status const& s);
+          QString const& type() const;
         };
       }
     }
   }
 }
 
-#endif /* !CCB_EVENTS_STATUS_DATA_HH_ */
+#endif /* !CCB_RRD_STATUS_HH_ */

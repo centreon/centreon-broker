@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "rrd/connector.hh"
-#include "rrd/output.hh"
+#include "com/centreon/broker/rrd/connector.hh"
+#include "com/centreon/broker/rrd/output.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -39,7 +39,7 @@ connector::connector() {}
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::connector(c),
+  : io::endpoint(c),
     _metrics_path(c._metrics_path),
     _status_path(c._status_path) {}
 
@@ -56,7 +56,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::connector::operator=(c);
+  io::endpoint::operator=(c);
   _metrics_path = c._metrics_path;
   _status_path = c._status_path;
   return (*this);

@@ -17,7 +17,7 @@
 */
 
 #include <math.h>
-#include "storage/perfdata.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
 

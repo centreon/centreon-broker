@@ -17,9 +17,9 @@
 */
 
 #include <QScopedPointer>
-#include "exceptions/basic.hh"
-#include "storage/connector.hh"
-#include "storage/factory.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/storage/connector.hh"
+#include "com/centreon/broker/storage/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -42,7 +42,7 @@ static QString const& find_param(config::endpoint const& cfg,
                                  QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (it == cfg.params.end())
-    throw (exceptions::basic() << "no '" << key.toStdString().c_str()
+    throw (exceptions::msg() << "no '" << key.toStdString().c_str()
              << "' defined for storage endpoint '"
              << cfg.name.toStdString().c_str());
   return (it.value());
@@ -126,7 +126,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Check that endpoint should not be an input.
   if (is_input)
-    throw (exceptions::basic() << "cannot create an input storage endpoint");
+    throw (exceptions::msg() << "cannot create an input storage endpoint");
 
   // Find lengths.
   unsigned int interval_length(find_param(cfg, "interval").toUInt());

@@ -17,12 +17,12 @@
 */
 
 #include <sstream>
-#include "events/perfdata.hh"
-#include "events/status_data.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "rrd/lib.hh"
-#include "rrd/output.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/rrd/lib.hh"
+#include "com/centreon/broker/rrd/metric.hh"
+#include "com/centreon/broker/rrd/output.hh"
+#include "com/centreon/broker/rrd/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -82,7 +82,7 @@ output& output::operator=(output const& o) {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> output::read() {
-  throw (exceptions::basic() << "attempt to read data from an RRD output endpoint");
+  throw (exceptions::msg() << "attempt to read data from an RRD output endpoint");
   return (QSharedPointer<io::data>());
 }
 
@@ -92,10 +92,10 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] d Data to write.
  */
 void output::write(QSharedPointer<io::data> d) {
-  if (d->type() == events::event::PERFDATA) {
+  if (d->type() == "com::centreon::broker::rrd::metric") {
     // Debug message.
-    logging::debug << logging::MEDIUM << "RRD: new perfdata event";
-    QSharedPointer<events::perfdata> e(d.staticCast<events::perfdata>());
+    logging::debug << logging::MEDIUM << "RRD: new metric data";
+    QSharedPointer<rrd::metric> e(d.staticCast<rrd::metric>());
 
     // Write metrics RRD.
     std::ostringstream oss1;
@@ -103,7 +103,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->open(oss1.str().c_str(), e->name);
     }
-    catch (exceptions::basic const& b) { // XXX : should be specialized
+    catch (exceptions::msg const& b) { // XXX : should be specialized
       _backend->open(oss1.str().c_str(),
         e->name,
         e->rrd_len / e->interval,
@@ -115,14 +115,14 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->update(e->ctime, oss2.str().c_str());
     }
-    catch (exceptions::basic const& b) { // XXX : should be specialized
+    catch (exceptions::msg const& b) { // XXX : should be specialized
       logging::error << logging::MEDIUM << b.what() << " (ignored)";
     }
   }
-  else if (d->type() == events::event::STATUSDATA) {
+  else if (d->type() == "com::centreon::broker::rrd::status") {
     // Debug message.
-    logging::debug << logging::MEDIUM << "RRD: new status data event";
-    QSharedPointer<events::status_data> e(d.staticCast<events::status_data>());
+    logging::debug << logging::MEDIUM << "RRD: new status data";
+    QSharedPointer<rrd::status> e(d.staticCast<rrd::status>());
 
     // Write status RRD.
     std::ostringstream oss1;
@@ -130,7 +130,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->open(oss1.str().c_str(), "status");
     }
-    catch (exceptions::basic const& b) { // XXX : should be specialized
+    catch (exceptions::msg const& b) { // XXX : should be specialized
       _backend->open(oss1.str().c_str(),
         "status",
         e->rrd_len / e->interval,
@@ -138,16 +138,16 @@ void output::write(QSharedPointer<io::data> d) {
         e->interval);
     }
     std::ostringstream oss2;
-    if (e->status == 0)
+    if (e->state == 0)
       oss2 << 100;
-    else if (e->status == 1)
+    else if (e->state == 1)
       oss2 << 75;
-    else if (e->status == 2)
+    else if (e->state == 2)
       oss2 << 0;
     try {
       _backend->update(e->ctime, oss2.str().c_str());
     }
-    catch (exceptions::basic const& b) { // XXX : should be specialized
+    catch (exceptions::msg const& b) { // XXX : should be specialized
       logging::error << logging::MEDIUM << b.what() << " (ignored)";
     }
   }

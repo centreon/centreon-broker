@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "events/perfdata.hh"
+#include "com/centreon/broker/rrd/status.hh"
 
-using namespace com::centreon::broker::events;
+using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
@@ -29,15 +29,14 @@ using namespace com::centreon::broker::events;
 /**
  *  Copy internal data members.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] s Object to copy.
  */
-void perfdata::_internal_copy(perfdata const& p) {
-  ctime = p.ctime;
-  interval = p.interval;
-  metric_id = p.metric_id;
-  name = p.name;
-  rrd_len = p.rrd_len;
-  value = p.value;
+void status::_internal_copy(status const& s) {
+  ctime = s.ctime;
+  index_id = s.index_id;
+  interval = s.interval;
+  rrd_len = s.rrd_len;
+  state = s.state;
   return ;
 }
 
@@ -50,45 +49,46 @@ void perfdata::_internal_copy(perfdata const& p) {
 /**
  *  Default constructor.
  */
-perfdata::perfdata()
+status::status()
   : ctime(0),
+    index_id(0),
     interval(0),
-    metric_id(0),
     rrd_len(0),
-    value(0.0) {}
+    state(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] s Object to copy.
  */
-perfdata::perfdata(perfdata const& p) : event(p) {
-  _internal_copy(p);
+status::status(status const& s) : io::data(s) {
+  _internal_copy(s);
 }
 
 /**
  *  Destructor.
  */
-perfdata::~perfdata() {}
+status::~status() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] s Object to copy.
  *
  *  @return This object.
  */
-perfdata& perfdata::operator=(perfdata const& p) {
-  event::operator=(p);
-  _internal_copy(p);
+status& status::operator=(status const& s) {
+  io::data::operator=(s);
+  _internal_copy(s);
   return (*this);
 }
 
 /**
- *  Get the event type (PERFDATA).
+ *  Get the event type.
  *
- *  @return event::PERFDATA.
+ *  @return The string "com::centreon::broker::rrd::status".
  */
-unsigned int perfdata::type() const {
-  return (PERFDATA);
+QString const& status::type() const {
+  static QString const status_type("com::centreon::broker::rrd::status");
+  return (status_type);
 }

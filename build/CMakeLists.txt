@@ -83,12 +83,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/stream.cc"
 #  ../src/io/fd.cc
 #	../src/io/file.cc
-#	../src/io/net/ipv4.cc
-#	../src/io/net/ipv6.cc
-#	../src/io/net/socket.cc
 #	../src/io/net/unix.cc
 #	../src/io/split.cc
-#	../src/io/text.cc
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
@@ -206,13 +202,13 @@ add_subdirectory("file")
 add_subdirectory("neb")
 
 # RRD module.
-#add_subdirectory("rrd")
+add_subdirectory("rrd")
 
 # SQL module.
 #add_subdirectory("sql")
 
 # Storage module.
-#add_subdirectory("storage")
+add_subdirectory("storage")
 
 # TCP module.
 add_subdirectory("tcp")

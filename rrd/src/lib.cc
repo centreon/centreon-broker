@@ -19,9 +19,9 @@
 #include <QFile>
 #include <rrd.h>
 #include <sstream>
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "rrd/lib.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/rrd/lib.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -104,7 +104,7 @@ void lib::open(QString const& filename,
 
   // Check that the file exists.
   if (!QFile::exists(filename))
-    throw (exceptions::basic() << "RRD: file '"
+    throw (exceptions::msg() << "RRD: file '"
              << filename.toStdString().c_str()
              << "' does not exist");
 
@@ -176,7 +176,7 @@ void lib::open(QString const& filename,
         from,
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::basic() << "could not create RRD file '"
+    throw (exceptions::msg() << "could not create RRD file '"
              << _filename.toStdString().c_str()
              << "': " << rrd_get_error());
   // XXX : is tuning really needed ?
@@ -212,7 +212,7 @@ void lib::update(time_t t, QString const& value) {
         _metric.toStdString().c_str(),
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::basic() << "failed to update value for metric "
+    throw (exceptions::msg() << "failed to update value for metric "
              << _metric.toStdString().c_str() << ": " << rrd_get_error());
 
   return ;

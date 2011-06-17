@@ -16,35 +16,50 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_LIB_HH_
-# define CCB_RRD_LIB_HH_
+#ifndef CCB_RRD_CACHED_HH_
+# define CCB_RRD_CACHED_HH_
 
-# include "rrd/backend.hh"
+# include <QIODevice>
+# include <QScopedPointer>
+# include <QString>
+# include "com/centreon/broker/rrd/backend.hh"
 
 namespace         com {
   namespace       centreon {
     namespace     broker {
       namespace   rrd {
         /**
-         *  @class lib lib.hh "rrd/lib.hh"
-         *  @brief Handle RRD file access through librrd.
+         *  @class cached cached.hh "com/centreon/broker/rrd/cached.hh"
+         *  @brief Handle RRD file access through rrdcached.
          *
-         *  Handle creation, deletion, tuning and update of an RRD file
-         *  with librrd.
+         *  Handle creation, deletion, tuning and update of an RRD file with
+         *  rrdcached. The advantage of rrdcached is to have a batch mode that
+         *  allows bulk operations.
+         *
+         *  @see begin()
+         *  @see commit()
          */
-        class     lib : public backend {
+        class     cached : public backend {
          private:
+          bool    _batch;
           QString _filename;
           QString _metric;
+          QScopedPointer<QIODevice>
+                  _socket;
+                  cached(cached const& c);
+          cached& operator=(cached const& c);
+          void    _send_to_cached(char const* command,
+                    unsigned int size = 0);
 
          public:
-                  lib();
-                  lib(lib const& l);
-                  ~lib();
-          lib&    operator=(lib const& l);
+                  cached();
+                  ~cached();
           void    begin();
           void    close();
           void    commit();
+          void    connect_local(QString const& name);
+          void    connect_remote(QString const& address,
+                    unsigned short port);
           void    open(QString const& filename,
                     QString const& metric);
           void    open(QString const& filename,
@@ -52,12 +67,11 @@ namespace         com {
                     unsigned int length,
                     time_t from,
                     time_t interval);
-          void    update(time_t t,
-                    QString const& value);
+          void    update(time_t t, QString const& value);
         };
       }
     }
   }
 }
 
-#endif /* !CCB_RRD_LIB_HH_ */
+#endif /* !CCB_RRD_CACHED_HH_ */

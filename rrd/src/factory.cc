@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "rrd/connector.hh"
-#include "rrd/factory.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/rrd/connector.hh"
+#include "com/centreon/broker/rrd/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -101,18 +101,18 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Check that endpoint is output only.
   if (is_input)
-    throw (exceptions::basic() << "cannot create an input RRD endpoint");
+    throw (exceptions::msg() << "cannot create an input RRD endpoint");
 
   // Get metrics RRD path.
   QMap<QString, QString>::const_iterator it1(cfg.params.find("metrics_path"));
   if (it1 == cfg.params.end())
-    throw (exceptions::basic() << "no 'metrics_path' defined for RRD endpoint '"
+    throw (exceptions::msg() << "no 'metrics_path' defined for RRD endpoint '"
              << cfg.name.toStdString().c_str() << "'");
 
   // Get status RRD path.
   QMap<QString, QString>::const_iterator it2(cfg.params.find("status_path"));
   if (it2 == cfg.params.end())
-    throw (exceptions::basic() << "no 'status_path' defined for RRD endpoint '"
+    throw (exceptions::msg() << "no 'status_path' defined for RRD endpoint '"
              << cfg.name.toStdString().c_str() << "'");
 
   // Create endpoint.

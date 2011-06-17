@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "events/status_data.hh"
+#include "com/centreon/broker/rrd/metric.hh"
 
-using namespace com::centreon::broker::events;
+using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
@@ -29,14 +29,15 @@ using namespace com::centreon::broker::events;
 /**
  *  Copy internal data members.
  *
- *  @param[in] sd Object to copy.
+ *  @param[in] m Object to copy.
  */
-void status_data::_internal_copy(status_data const& sd) {
-  ctime = sd.ctime;
-  index_id = sd.index_id;
-  interval = sd.interval;
-  rrd_len = sd.rrd_len;
-  status = sd.status;
+void metric::_internal_copy(metric const& m) {
+  ctime = m.ctime;
+  interval = m.interval;
+  metric_id = m.metric_id;
+  name = m.name;
+  rrd_len = m.rrd_len;
+  value = m.value;
   return ;
 }
 
@@ -49,45 +50,46 @@ void status_data::_internal_copy(status_data const& sd) {
 /**
  *  Default constructor.
  */
-status_data::status_data()
+metric::metric()
   : ctime(0),
-    index_id(0),
     interval(0),
+    metric_id(0),
     rrd_len(0),
-    status(0) {}
+    value(0.0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] sd Object to copy.
+ *  @param[in] m Object to copy.
  */
-status_data::status_data(status_data const& sd) : event(sd) {
-  _internal_copy(sd);
+metric::metric(metric const& m) : io::data(m) {
+  _internal_copy(m);
 }
 
 /**
  *  Destructor.
  */
-status_data::~status_data() {}
+metric::~metric() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] sd Object to copy.
+ *  @param[in] m Object to copy.
  *
  *  @return This object.
  */
-status_data& status_data::operator=(status_data const& sd) {
-  event::operator=(sd);
-  _internal_copy(sd);
+metric& metric::operator=(metric const& m) {
+  io::data::operator=(m);
+  _internal_copy(m);
   return (*this);
 }
 
 /**
- *  Get the event type (STATUSDATA).
+ *  Get the event type.
  *
- *  @return STATUSDATA.
+ *  @return The string "com::centreon::broker::rrd::metric".
  */
-unsigned int status_data::type() const {
-  return (STATUSDATA);
+QString const& metric::type() const {
+  static QString const metric_type("com::centreon::broker::rrd::metric");
+  return (metric_type);
 }

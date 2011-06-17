@@ -21,16 +21,14 @@
 
 # include <list>
 # include <QString>
+# include "com/centreon/broker/storage/perfdata.hh"
 
 namespace         com {
   namespace       centreon {
     namespace     broker {
       namespace   storage {
-        // Forward declaration.
-        class     perfdata;
-
         /**
-         *  @class parser parser.hh "storage/parser.hh"
+         *  @class parser parser.hh "com/centreon/broker/storage/parser.hh"
          *  @brief Parse raw perfdatas.
          *
          *  Parse perfdata as given by plugins output and convert them to a

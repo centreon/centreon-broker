@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage::exceptions;
@@ -38,7 +38,7 @@ perfdata::perfdata() throw () {}
  *  @param[in] pd Object to copy.
  */
 perfdata::perfdata(perfdata const& pd) throw ()
-  : com::centreon::broker::exceptions::basic(pd) {}
+  : broker::exceptions::msg(pd) {}
 
 /**
  *  Destructor.
@@ -53,6 +53,6 @@ perfdata::~perfdata() throw () {}
  *  @return This object.
  */
 perfdata& perfdata::operator=(perfdata const& pd) throw () {
-  com::centreon::broker::exceptions::basic::operator=(pd);
+  broker::exceptions::msg::operator=(pd);
   return (*this);
 }

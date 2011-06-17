@@ -22,9 +22,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "storage/exceptions/perfdata.hh"
-#include "storage/parser.hh"
-#include "storage/perfdata.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/parser.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
 

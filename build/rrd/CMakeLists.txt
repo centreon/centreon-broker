@@ -37,14 +37,18 @@ add_library("rrd" MODULE
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/output.cc"
+  "${SRC_DIR}/status.cc"
   # Headers.
-  "${INC_DIR}/rrd/backend.hh"
-  "${INC_DIR}/rrd/cached.hh"
-  "${INC_DIR}/rrd/connector.hh"
-  "${INC_DIR}/rrd/factory.hh"
-  "${INC_DIR}/rrd/lib.hh"
-  "${INC_DIR}/rrd/output.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/backend.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/cached.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/connector.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/factory.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/lib.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/metric.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/output.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/status.hh"
 )
 set_target_properties("rrd" PROPERTIES PREFIX "")
 
@@ -71,6 +75,6 @@ if (LIBRRD_LDFLAGS)
 endif ()
 
 # Install rule.
-install(TARGETS rrd
+install(TARGETS "rrd"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

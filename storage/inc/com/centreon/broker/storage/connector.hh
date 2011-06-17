@@ -21,19 +21,19 @@
 
 # include <QString>
 # include <time.h>
-# include "io/connector.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
       namespace          storage {
         /**
-         *  @class connector connector.hh "storage/connector.hh"
+         *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
          *  @brief Connect to a database.
          *
          *  Send perfdata in a Centreon Storage database.
          */
-        class            connector : public com::centreon::broker::io::connector {
+        class            connector : public io::endpoint {
          private:
           time_t         _interval_length;
           unsigned int   _rrd_len;
@@ -60,7 +60,7 @@ namespace                com {
                            QString const& storage_db,
                            unsigned int rrd_len,
                            time_t interval_length);
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                          open();
         };
       }

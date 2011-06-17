@@ -27,7 +27,7 @@ namespace              com {
     namespace          broker {
       namespace        rrd {
         /**
-         *  @class backend backend.hh "rrd/backend.hh"
+         *  @class backend backend.hh "com/centreon/broker/rrd/backend.hh"
          *  @brief Generic access to RRD files.
          *
          *  Provide a unified access to RRD files. Files can be accessed

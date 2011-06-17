@@ -20,6 +20,8 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/storage/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/storage/src")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 
 # Storage module.
 add_library("storage" MODULE
@@ -32,16 +34,16 @@ add_library("storage" MODULE
   "${SRC_DIR}/perfdata.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
-  "${INC_DIR}/storage/connector.hh"
-  "${INC_DIR}/storage/exceptions/perfdata.hh"
-  "${INC_DIR}/storage/factory.hh"
-  "${INC_DIR}/storage/parser.hh"
-  "${INC_DIR}/storage/perfdata.hh"
-  "${INC_DIR}/storage/stream.hh"
+  "${INC_DIR}/com/centreon/broker/storage/connector.hh"
+  "${INC_DIR}/com/centreon/broker/storage/exceptions/perfdata.hh"
+  "${INC_DIR}/com/centreon/broker/storage/factory.hh"
+  "${INC_DIR}/com/centreon/broker/storage/parser.hh"
+  "${INC_DIR}/com/centreon/broker/storage/perfdata.hh"
+  "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
 set_target_properties("storage" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS storage
+install(TARGETS "storage"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

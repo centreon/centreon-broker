@@ -21,20 +21,20 @@
 
 # include <QScopedPointer>
 # include <QString>
-# include "io/stream.hh"
-# include "rrd/backend.hh"
+# include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/rrd/backend.hh"
 
 namespace         com {
   namespace       centreon {
     namespace     broker {
       namespace   rrd {
         /**
-         *  @class output output.hh "rrd/output.hh"
+         *  @class output output.hh "com/centreon/broker/rrd/output.hh"
          *  @brief RRD output class.
          *
          *  Write RRD files.
          */
-        class     output : public com::centreon::broker::io::stream {
+        class     output : public io::stream {
          private:
 	  QScopedPointer<backend>
                   _backend;
@@ -47,9 +47,9 @@ namespace         com {
                   output(output const& o);
                   ~output();
           output& operator=(output const& o);
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                   read();
-          void    write(QSharedPointer<com::centreon::broker::io::data> d);
+          void    write(QSharedPointer<io::data> d);
         };
       }
     }

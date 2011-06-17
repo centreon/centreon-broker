@@ -26,7 +26,7 @@ namespace                com {
     namespace            broker {
       namespace          storage {
         /**
-         *  @class perfdata perfdata.hh
+         *  @class perfdata perfdata.hh "com/centreon/broker/storage/perfdata.hh"
          *  @brief Store perfdata values.
          *
          *  Store perfdata values.
