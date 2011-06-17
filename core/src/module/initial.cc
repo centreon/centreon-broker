@@ -569,7 +569,7 @@ static void send_service_list() {
     my_service->last_time_ok = s->last_time_ok;
     my_service->last_time_unknown = s->last_time_unknown;
     my_service->last_time_warning = s->last_time_warning;
-    // my_service->last_update = XXX;
+    my_service->last_update = time(NULL); // XXX
     my_service->latency = s->latency;
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
