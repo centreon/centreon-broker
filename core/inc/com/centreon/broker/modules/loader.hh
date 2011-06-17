@@ -22,14 +22,14 @@
 # include <QList>
 # include <QSharedPointer>
 # include <QString>
-# include "modules/handle.hh"
+# include "com/centreon/broker/modules/handle.hh"
 
 namespace         com {
   namespace       centreon {
     namespace     broker {
       namespace   modules {
         /**
-         *  @class loader loader.hh "modules/loader.hh"
+         *  @class loader loader.hh "com/centreon/broker/modules/loader.hh"
          *  @brief Load Centreon Broker plugins.
          *
          *  This class is used to load Centreon Broker plugins and hold

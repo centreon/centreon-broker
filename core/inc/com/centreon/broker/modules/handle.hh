@@ -27,7 +27,7 @@ namespace                          com {
     namespace                      broker {
       namespace                    modules {
         /**
-         *  @class handle handle.hh "modules/handle.hh"
+         *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
          *  @brief Plugin library handle.
          *
          *  Centreon Broker can load plugins. This class represents such

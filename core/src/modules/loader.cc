@@ -17,9 +17,9 @@
 */
 
 #include <QDir>
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "modules/loader.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/modules/loader.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
@@ -86,7 +86,7 @@ void loader::load_dir(QString const& dirname) {
     try {
       load_file(file);
     }
-    catch (exceptions::basic const& e) {
+    catch (exceptions::msg const& e) {
       logging::error << logging::HIGH << e.what();
     }
   }

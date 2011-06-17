@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
-#include "modules/handle.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/modules/handle.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
@@ -38,7 +38,7 @@ void handle::_init() {
     << _handle->fileName().toStdString().c_str() << "'";
   void* sym(_handle->resolve("broker_module_init"));
   if (!sym)
-    throw (exceptions::basic() << "could not find module initialization routine in '"
+    throw (exceptions::msg() << "could not find module initialization routine in '"
              << _handle->fileName().toStdString().c_str()
              << "': " << _handle->errorString().toStdString().c_str());
   (*(void (*)())(sym))();
@@ -99,7 +99,7 @@ void handle::close() {
       << _handle->fileName().toStdString().c_str() << "'";
     void* sym(_handle->resolve("broker_module_deinit"));
     if (!sym)
-      throw (exceptions::basic() << "could not find module deinitialiation routine in '"
+      throw (exceptions::msg() << "could not find module deinitialiation routine in '"
                << _handle->fileName().toStdString().c_str()
                << "': " << _handle->errorString().toStdString().c_str());
     (*(void (*)(bool))(sym))(true);
@@ -138,7 +138,7 @@ void handle::open(QString const& filename) {
   _handle->setLoadHints(QLibrary::ResolveAllSymbolsHint
     | QLibrary::ExportExternalSymbolsHint);
   if (!_handle->load())
-    throw (exceptions::basic() << "could not load module '"
+    throw (exceptions::msg() << "could not load module '"
              << filename.toStdString().c_str()
              << "': " << _handle->errorString().toStdString().c_str());
   logging::debug << logging::MEDIUM << "module '"
