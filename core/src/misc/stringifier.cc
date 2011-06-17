@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "misc/stringifier.hh"
+#include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker::misc;
 

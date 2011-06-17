@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,7 +17,7 @@
 */
 
 #include <syslog.h>
-#include "logging/syslogger.hh"
+#include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker::logging;
 

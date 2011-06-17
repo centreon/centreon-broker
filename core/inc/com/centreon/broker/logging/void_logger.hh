@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -24,7 +24,7 @@ namespace              com {
     namespace          broker {
       namespace        logging {
         /**
-         *  @class void_logger void_logger.hh "logging/void_logger.hh"
+         *  @class void_logger void_logger.hh "com/centreon/broker/logging/void_logger.hh"
          *  @brief Log nothing.
          *
          *  Used for compatibility if a message type is deactivated

@@ -16,40 +16,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EXCEPTIONS_BASIC_HH_
-# define CCB_EXCEPTIONS_BASIC_HH_
+#ifndef CCB_EXCEPTIONS_MSG_HH_
+# define CCB_EXCEPTIONS_MSG_HH_
 
 # include <exception>
 # include <time.h>
-# include "misc/stringifier.hh"
+# include "com/centreon/broker/misc/stringifier.hh"
 
 namespace                           com {
   namespace                         centreon {
     namespace                       broker {
       namespace                     exceptions {
         /**
-         *  @class basic basic.hh "exceptions/basic.hh"
+         *  @class msg msg.hh "exceptions/msg.hh"
          *  @brief Base class of exceptions thrown in Centreon Broker.
          *
-         *  basic is a simple exception class that is only associated
-         *  with a message. basic accepts multiple types on input but
+         *  msg is a simple exception class that is only associated
+         *  with a message. msg accepts multiple types on input but
          *  its limitation is that it only accepts until
-         *  basic::max_msg_len characters of exception message.
+         *  msg::max_msg_len characters of exception message.
          */
-        class                       basic : private misc::stringifier,
-                                            public std::exception {
+        class                       msg : private misc::stringifier,
+                                          public std::exception {
          public:
           static unsigned int const max_msg_len = misc::stringifier::max_len;
-                                    basic() throw ();
-                                    basic(basic const& b) throw ();
-          virtual                   ~basic() throw ();
-          basic&                    operator=(basic const& b) throw ();
-          basic&                    operator<<(bool b) throw ();
-          basic&                    operator<<(double d) throw ();
-          basic&                    operator<<(int i) throw ();
-          basic&                    operator<<(unsigned int i) throw ();
-          basic&                    operator<<(char const* str) throw ();
-          basic&                    operator<<(time_t t) throw ();
+                                    msg() throw ();
+                                    msg(msg const& b) throw ();
+          virtual                   ~msg() throw ();
+          msg&                      operator=(msg const& b) throw ();
+          msg&                      operator<<(bool b) throw ();
+          msg&                      operator<<(double d) throw ();
+          msg&                      operator<<(int i) throw ();
+          msg&                      operator<<(unsigned int i) throw ();
+          msg&                      operator<<(char const* str) throw ();
+          msg&                      operator<<(time_t t) throw ();
           char const*               what() const throw ();
         };
       }
@@ -57,4 +57,4 @@ namespace                           com {
   }
 }
 
-#endif /* !CCB_EXCEPTIONS_BASIC_HH_ */
+#endif /* !CCB_EXCEPTIONS_MSG_HH_ */

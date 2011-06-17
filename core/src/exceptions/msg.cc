@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::exceptions;
 
@@ -29,20 +29,20 @@ using namespace com::centreon::broker::exceptions;
 /**
  *  Default constructor.
  */
-basic::basic() throw () {}
+msg::msg() throw () {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] b Object to build from.
  */
-basic::basic(basic const& b) throw ()
+msg::msg(msg const& b) throw ()
   : misc::stringifier(b), std::exception(b) {}
 
 /**
  *  Destructor.
  */
-basic::~basic() throw () {}
+msg::~msg() throw () {}
 
 /**
  *  Assignment operator overload.
@@ -51,7 +51,7 @@ basic::~basic() throw () {}
  *
  *  @return This instance.
  */
-basic& basic::operator=(basic const& b) throw () {
+msg& msg::operator=(msg const& b) throw () {
   misc::stringifier::operator=(b);
   std::exception::operator=(b);
   return (*this);
@@ -64,7 +64,7 @@ basic& basic::operator=(basic const& b) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(bool b) throw () {
+msg& msg::operator<<(bool b) throw () {
   stringifier::operator<<(b);
   return (*this);
 }
@@ -76,7 +76,7 @@ basic& basic::operator<<(bool b) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(double d) throw () {
+msg& msg::operator<<(double d) throw () {
   stringifier::operator<<(d);
   return (*this);
 }
@@ -88,7 +88,7 @@ basic& basic::operator<<(double d) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(int i) throw () {
+msg& msg::operator<<(int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -100,7 +100,7 @@ basic& basic::operator<<(int i) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(unsigned int i) throw () {
+msg& msg::operator<<(unsigned int i) throw () {
   stringifier::operator<<(i);
   return (*this);
 }
@@ -112,7 +112,7 @@ basic& basic::operator<<(unsigned int i) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(char const* str) throw () {
+msg& msg::operator<<(char const* str) throw () {
   stringifier::operator<<(str);
   return (*this);
 }
@@ -124,7 +124,7 @@ basic& basic::operator<<(char const* str) throw () {
  *
  *  @return This instance.
  */
-basic& basic::operator<<(time_t t) throw () {
+msg& msg::operator<<(time_t t) throw () {
   stringifier::operator<<(t);
   return (*this);
 }
@@ -134,6 +134,6 @@ basic& basic::operator<<(time_t t) throw () {
  *
  *  @return Nul-terminated message.
  */
-char const* basic::what() const throw () {
+char const* msg::what() const throw () {
   return (_buffer);
 }

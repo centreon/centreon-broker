@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,20 +20,20 @@
 # define CCB_LOGGING_OSTREAM_HH_
 
 # include <ostream>
-# include "logging/backend.hh"
+# include "com/centreon/broker/logging/backend.hh"
 
 namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         logging {
         /**
-         *  @class ostream ostream.hh "logging/ostream.hh"
+         *  @class ostream ostream.hh "com/centreon/broker/logging/ostream.hh"
          *  @brief Log messages to standard output streams.
          *
          *  Log messages to standard output stream objects, like
          *  std::cout or std::cerr.
          *
-         *  @see logging::file
+         *  @see com::centreon::broker::logging::file
          */
         class           ostream : public backend {
          protected:

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,14 +20,14 @@
 # define CCB_LOGGING_FILE_HH_
 
 # include <fstream>
-# include "logging/ostream.hh"
+# include "com/centreon/broker/logging/ostream.hh"
 
 namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         logging {
         /**
-         *  @class file file.hh "logging/file.hh"
+         *  @class file file.hh "com/centreon/broker/logging/file.hh"
          *  @brief Log messages to a file.
          *
          *  Log messages to a file.

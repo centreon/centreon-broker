@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 # include <map>
 # include <utility>
-# include "logging/backend.hh"
+# include "com/centreon/broker/logging/backend.hh"
 
 namespace com {
   namespace centreon {

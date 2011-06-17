@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,7 +17,8 @@
 */
 
 #include <assert.h>
-#include "logging/logger.hh"
+#include <stdlib.h>
+#include "com/centreon/broker/logging/logger.hh"
 
 using namespace com::centreon::broker::logging;
 
@@ -37,6 +38,7 @@ using namespace com::centreon::broker::logging;
 logger::logger(logger const& l) {
   (void)l;
   assert(false);
+  abort();
 }
 
 /**
@@ -51,6 +53,7 @@ logger::logger(logger const& l) {
 logger& logger::operator=(logger const& l) {
   (void)l;
   assert(false);
+  abort();
   return (*this);
 }
 

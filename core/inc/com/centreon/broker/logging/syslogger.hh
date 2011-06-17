@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,14 +19,14 @@
 #ifndef CCB_LOGGING_SYSLOGGER_HH_
 # define CCB_LOGGING_SYSLOGGER_HH_
 
-# include "logging/backend.hh"
+# include "com/centreon/broker/logging/backend.hh"
 
 namespace            com {
   namespace          centreon {
     namespace        broker {
       namespace      logging {
         /**
-         *  @class syslogger syslogger.hh "logging/syslogger.hh"
+         *  @class syslogger syslogger.hh "com/centreon/broker/logging/syslogger.hh"
          *  @brief Log messages to syslog.
          *
          *  Log messages to a configured facility of syslog.

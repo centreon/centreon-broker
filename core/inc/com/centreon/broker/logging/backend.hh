@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,14 +19,14 @@
 #ifndef CCB_LOGGING_BACKEND_HH_
 # define CCB_LOGGING_BACKEND_HH_
 
-# include "logging/defines.hh"
+# include "com/centreon/broker/logging/defines.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        logging {
         /**
-         *  @class backend backend.hh "logging/backend.hh"
+         *  @class backend backend.hh "com/centreon/broker/logging/backend.hh"
          *  @brief Interface for log backends.
          *
          *  In Broker, multiple backends are available for log writing.

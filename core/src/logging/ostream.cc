@@ -17,7 +17,7 @@
 */
 
 #include <QDateTime>
-#include "logging/ostream.hh"
+#include "com/centreon/broker/logging/ostream.hh"
 
 using namespace com::centreon::broker::logging;
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,9 +19,9 @@
 #ifndef CCB_LOGGING_LOGGING_HH_
 # define CCB_LOGGING_LOGGING_HH_
 
-# include "logging/backend.hh"
-# include "logging/logger.hh"
-# include "logging/void_logger.hh"
+# include "com/centreon/broker/logging/backend.hh"
+# include "com/centreon/broker/logging/logger.hh"
+# include "com/centreon/broker/logging/void_logger.hh"
 
 namespace                  com {
   namespace                centreon {

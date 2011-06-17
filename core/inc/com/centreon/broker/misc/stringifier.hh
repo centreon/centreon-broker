@@ -26,7 +26,7 @@ namespace                           com {
     namespace                       broker {
       namespace                     misc {
         /**
-         *  @class safe_buffer safe_buffer.hh "misc/safe_buffer.hh"
+         *  @class stringifier stringifier.hh "com/centreon/broker/misc/stringifier.hh"
          *  @brief Help converting various data types to string.
          *
          *  stringifier accepts various data types on input and convert

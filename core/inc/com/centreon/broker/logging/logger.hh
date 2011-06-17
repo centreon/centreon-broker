@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,15 +19,15 @@
 #ifndef CCB_LOGGING_LOGGER_HH_
 # define CCB_LOGGING_LOGGER_HH_
 
-# include "logging/defines.hh"
-# include "logging/temp_logger.hh"
+# include "com/centreon/broker/logging/defines.hh"
+# include "com/centreon/broker/logging/temp_logger.hh"
 
 namespace             com {
   namespace           centreon {
     namespace         broker {
       namespace       logging {
         /**
-         *  @class logger logger.hh "logging/logger.hh"
+         *  @class logger logger.hh "com/centreon/broker/logging/logger.hh"
          *  @brief Log messages.
          *
          *  Messages can be sent in various forms and stored in multiple

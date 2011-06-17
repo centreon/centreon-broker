@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,8 +17,9 @@
 */
 
 #include <assert.h>
-#include "exceptions/basic.hh"
-#include "logging/file.hh"
+#include <stdlib.h>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::logging;
 
@@ -36,6 +37,7 @@ using namespace com::centreon::broker::logging;
 file::file(file const& f) : ostream(f) {
   (void)f;
   assert(false);
+  abort();
 }
 
 /**
@@ -48,6 +50,7 @@ file::file(file const& f) : ostream(f) {
 file& file::operator=(file const& f) {
   (void)f;
   assert(false);
+  abort();
   return (*this);
 }
 
@@ -80,13 +83,11 @@ file::~file() {}
  *  Open a log file.
  *
  *  @param[in] filename Name of the file to open.
- *
- *  @throw exceptions::basic Could not open file.
  */
 void file::open(char const* filename) {
   // Check filename is not NULL.
   if (!filename)
-    throw (exceptions::basic() << "trying to open NULL log file");
+    throw (exceptions::msg() << "trying to open NULL log file");
 
   // Close file if previously opened.
   if (_ofs.is_open())
@@ -97,8 +98,8 @@ void file::open(char const* filename) {
                       | std::ios_base::app
                       | std::ios_base::ate);
   if (_ofs.fail())
-    throw (exceptions::basic() << "could not open \""
-                               << filename << "\" log file");
+    throw (exceptions::msg() << "could not open \""
+                             << filename << "\" log file");
 
   // Don't forget to set the stream to write on.
   ostream::operator=(_ofs);
