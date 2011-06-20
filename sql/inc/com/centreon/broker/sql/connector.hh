@@ -20,19 +20,19 @@
 # define CCB_SQL_CONNECTOR_HH_
 
 # include <QString>
-# include "io/connector.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace            com {
   namespace          centreon {
     namespace        broker {
       namespace      sql {
         /**
-         *  @class connector connector.hh "sql/connector.hh"
+         *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
          *  @brief Connect to a database.
          *
          *  Send events to a SQL database.
          */
-        class        connector : public com::centreon::broker::io::connector {
+        class        connector : public io::endpoint {
          private:
           QString    _db;
           QString    _host;
@@ -51,7 +51,7 @@ namespace            com {
                        QString const& user,
                        QString const& password,
                        QString const& db);
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                      open();
         };
       }

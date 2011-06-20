@@ -20,6 +20,7 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/sql/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # SQL module.
 add_library("sql" MODULE
@@ -29,11 +30,12 @@ add_library("sql" MODULE
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
+  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
-  "${INC_DIR}/sql/connector.hh"
-  "${INC_DIR}/sql/factory.hh"
-  "${INC_DIR}/sql/internal.hh"
-  "${INC_DIR}/sql/stream.hh"
+  "${INC_DIR}/com/centreon/broker/sql/connector.hh"
+  "${INC_DIR}/com/centreon/broker/sql/factory.hh"
+  "${INC_DIR}/com/centreon/broker/sql/internal.hh"
+  "${INC_DIR}/com/centreon/broker/sql/stream.hh"
 )
 set_target_properties("sql" PROPERTIES PREFIX "")
 

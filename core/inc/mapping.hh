@@ -20,7 +20,7 @@
 # define CCB_MAPPING_HH_
 
 # include <QString>
-# include "events/events.hh"
+# include "com/centreon/broker/neb/events.hh"
 
 namespace              com {
   namespace            centreon {
@@ -36,6 +36,7 @@ namespace              com {
         short          T::*s;
         QString        T::*S;
         time_t         T::*t;
+        unsigned int   T::*u;
       };
 
       /**
@@ -57,7 +58,8 @@ namespace              com {
           INT = 'i',
           SHORT = 's',
           STRING = 'S',
-          TIME_T = 't'
+          TIME_T = 't',
+          UINT = 'u'
         };
         unsigned int   id;
         data_member<T> member;
@@ -78,9 +80,8 @@ namespace              com {
 
                        mapped_data(int T::* I,
                          unsigned int i,
-                         char const* n,
-                         bool is_id = false)
-          : id(i), name(n), type(is_id ? ID : INT)
+                         char const* n)
+          : id(i), name(n), type(INT)
         { member.i = I; }
 
                        mapped_data(short T::* s,
@@ -100,6 +101,13 @@ namespace              com {
                          char const* n)
           : id(i), name(n), type(TIME_T)
         { member.t = t; }
+
+                       mapped_data(unsigned int T::* u,
+                         unsigned int i,
+                         char const* n,
+                         bool is_id = false)
+          : id(i), name(n), type(is_id ? ID : UINT)
+        { member.u = u; }
       };
 
       template                       <typename T>

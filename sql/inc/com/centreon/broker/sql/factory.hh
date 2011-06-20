@@ -19,34 +19,32 @@
 #ifndef CCB_SQL_FACTORY_HH_
 # define CCB_SQL_FACTORY_HH_
 
-# include "io/factory.hh"
+# include "com/centreon/broker/io/factory.hh"
 
-namespace          com {
-  namespace        centreon {
-    namespace      broker {
-      namespace    sql {
+namespace               com {
+  namespace             centreon {
+    namespace           broker {
+      namespace         sql {
         /**
-         *  @class factory factory.hh "sql/factory.hh"
+         *  @class factory factory.hh "com/centreon/broker/sql/factory.hh"
          *  @brief SQL layer factory.
          *
          *  Build SQL layer objects.
          */
-        class      factory : public com::centreon::broker::io::factory {
+        class           factory : public io::factory {
          public:
-                   factory();
-                   factory(factory const& f);
-                   ~factory();
-          factory& operator=(factory const& f);
-          com::centreon::broker::io::factory*
-                   clone() const;
-          bool     has_endpoint(com::centreon::broker::config::endpoint const& cfg,
-                     bool is_input,
-                     bool is_output) const;
-          com::centreon::broker::io::endpoint*
-                   new_endpoint(com::centreon::broker::config::endpoint const& cfg,
-                     bool is_input,
-                     bool is_output,
-                     bool& is_acceptor) const;
+                        factory();
+                        factory(factory const& f);
+                        ~factory();
+          factory&      operator=(factory const& f);
+          io::factory*  clone() const;
+          bool          has_endpoint(config::endpoint const& cfg,
+                          bool is_input,
+                          bool is_output) const;
+          io::endpoint* new_endpoint(config::endpoint const& cfg,
+                          bool is_input,
+                          bool is_output,
+                          bool& is_acceptor) const;
         };
       }
     }

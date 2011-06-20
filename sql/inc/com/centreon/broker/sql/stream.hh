@@ -20,26 +20,28 @@
 # define CCB_SQL_STREAM_HH_
 
 # include <memory>
+# include <QHash>
 # include <QSqlDatabase>
 # include <QString>
 # include <string>
 # include <vector>
-# include "events/events.hh"
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        sql {
         /**
-         *  @class stream stream.hh "sql/stream.hh"
+         *  @class stream stream.hh "com/centreon/broker/sql/stream.hh"
          *  @brief SQL stream.
          *
          *  Stream events into SQL database.
          */
-        class          stream : public com::centreon::broker::io::stream {
+        class          stream : public io::stream {
          private:
-          static void                    (stream::* processing_table[])(events::event const&);
+          static struct dummy { dummy(); } _dummy;
+          static QHash<QString, void (stream::*)(io::data const&)>
+                                         processing_table;
           std::auto_ptr<QSqlQuery>       _acknowledgement_stmt;
           std::auto_ptr<QSqlQuery>       _comment_stmt;
           std::auto_ptr<QSqlQuery>       _custom_variable_insert_stmt;
@@ -49,7 +51,7 @@ namespace              com {
           std::auto_ptr<QSqlQuery>       _flapping_status_stmt;
           std::auto_ptr<QSqlQuery>       _host_stmt;
           std::auto_ptr<QSqlQuery>       _host_check_stmt;
-          std::auto_ptr<QSqlQuery>       _host_state_stmt;
+          //std::auto_ptr<QSqlQuery>       _host_state_stmt;
           std::auto_ptr<QSqlQuery>       _host_status_stmt;
           std::auto_ptr<QSqlQuery>       _instance_stmt;
           std::auto_ptr<QSqlQuery>       _instance_status_stmt;
@@ -58,7 +60,7 @@ namespace              com {
           std::auto_ptr<QSqlQuery>       _service_insert_stmt;
           std::auto_ptr<QSqlQuery>       _service_stmt;
           std::auto_ptr<QSqlQuery>       _service_check_stmt;
-          std::auto_ptr<QSqlQuery>       _service_state_stmt;
+          //std::auto_ptr<QSqlQuery>       _service_state_stmt;
           std::auto_ptr<QSqlQuery>       _service_status_stmt;
           QSqlDatabase _db;
           stream&      operator=(stream const& s);
@@ -73,36 +75,36 @@ namespace              com {
           template     <typename T>
           bool         _prepare_update(std::auto_ptr<QSqlQuery>& st,
                          std::vector<QString> const& id);
-          void         _process_acknowledgement(events::event const& e);
-          void         _process_comment(events::event const& e);
-          void         _process_custom_variable(events::event const& e);
-          void         _process_custom_variable_status(events::event const& e);
-          void         _process_downtime(events::event const& e);
-          void         _process_event_handler(events::event const& e);
-          void         _process_flapping_status(events::event const& e);
-          void         _process_host(events::event const& e);
-          void         _process_host_check(events::event const& e);
-          void         _process_host_dependency(events::event const& e);
-          void         _process_host_group(events::event const& e);
-          void         _process_host_group_member(events::event const& e);
-          void         _process_host_parent(events::event const& e);
-          void         _process_host_state(events::event const& e);
-          void         _process_host_status(events::event const& e);
-          void         _process_instance(events::event const& e);
-          void         _process_instance_status(events::event const& e);
-          //void         _process_issue(events::event const& e);
-          //void         _process_issue_parent(events::event const& e);
-          void         _process_log(events::event const& e);
-          void         _process_module(events::event const& e);
-          void         _process_nothing(events::event const& e);
-          void         _process_notification(events::event const& e);
-          void         _process_service(events::event const& e);
-          void         _process_service_check(events::event const& e);
-          void         _process_service_dependency(events::event const& e);
-          void         _process_service_group(events::event const& e);
-          void         _process_service_group_member(events::event const& e);
-          void         _process_service_state(events::event const& e);
-          void         _process_service_status(events::event const& e);
+          void         _process_acknowledgement(io::data const& e);
+          void         _process_comment(io::data const& e);
+          void         _process_custom_variable(io::data const& e);
+          void         _process_custom_variable_status(io::data const& e);
+          void         _process_downtime(io::data const& e);
+          void         _process_event_handler(io::data const& e);
+          void         _process_flapping_status(io::data const& e);
+          void         _process_host(io::data const& e);
+          void         _process_host_check(io::data const& e);
+          void         _process_host_dependency(io::data const& e);
+          void         _process_host_group(io::data const& e);
+          void         _process_host_group_member(io::data const& e);
+          void         _process_host_parent(io::data const& e);
+          //void         _process_host_state(io::data const& e);
+          void         _process_host_status(io::data const& e);
+          void         _process_instance(io::data const& e);
+          void         _process_instance_status(io::data const& e);
+          //void         _process_issue(io::data const& e);
+          //void         _process_issue_parent(io::data const& e);
+          void         _process_log(io::data const& e);
+          void         _process_module(io::data const& e);
+          void         _process_nothing(io::data const& e);
+          void         _process_notification(io::data const& e);
+          void         _process_service(io::data const& e);
+          void         _process_service_check(io::data const& e);
+          void         _process_service_dependency(io::data const& e);
+          void         _process_service_group(io::data const& e);
+          void         _process_service_group_member(io::data const& e);
+          //void         _process_service_state(io::data const& e);
+          void         _process_service_status(io::data const& e);
 
          public:
                        stream(QString const& type,
@@ -112,9 +114,9 @@ namespace              com {
                               QString const& db);
                        stream(stream const& s);
                        ~stream();
-          QSharedPointer<com::centreon::broker::io::data>
+          QSharedPointer<io::data>
                        read();
-          void         write(QSharedPointer<com::centreon::broker::io::data> d);
+          void         write(QSharedPointer<io::data> d);
         };
       }
     }

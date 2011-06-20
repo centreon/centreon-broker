@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "sql/connector.hh"
-#include "sql/stream.hh"
+#include "com/centreon/broker/sql/connector.hh"
+#include "com/centreon/broker/sql/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
@@ -39,7 +39,7 @@ connector::connector() {}
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::connector(c),
+  : io::endpoint(c),
     _db(c._db),
     _host(c._host),
     _password(c._password),
@@ -59,7 +59,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::connector::operator=(c);
+  io::endpoint::operator=(c);
   _db = c._db;
   _host = c._host;
   _password = c._password;

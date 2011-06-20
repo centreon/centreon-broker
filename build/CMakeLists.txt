@@ -207,7 +207,7 @@ add_subdirectory("neb")
 add_subdirectory("rrd")
 
 # SQL module.
-#add_subdirectory("sql")
+add_subdirectory("sql")
 
 # Storage module.
 add_subdirectory("storage")
