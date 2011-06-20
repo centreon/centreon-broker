@@ -16,7 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QScopedPointer>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/factory.hh"
+#include "com/centreon/broker/file/opener.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -96,4 +99,16 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_acceptor;
+
+  // Find path to the file.
+  QMap<QString, QString>::const_iterator it(cfg.params.find("name"));
+  if (it != cfg.params.end())
+    throw (exceptions::msg() << "no 'name' defined for file endpoint '"
+             << cfg.name.toStdString().c_str() << "'");
+
+  // Generate opener.
+  QScopedPointer<opener> openr(new opener(is_input, is_output));
+  openr->set_filename(it.value());
+  return (openr.take());
 }
