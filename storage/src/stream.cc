@@ -407,6 +407,7 @@ void stream::write(QSharedPointer<io::data> data) {
     unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
 
     // Generate status event.
+    logging::debug << logging::LOW << "storage: generating status event";
     QSharedPointer<rrd::status> status(new rrd::status);
     status->ctime = ss->last_check;
     status->index_id = index_id;

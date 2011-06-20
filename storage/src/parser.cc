@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -112,13 +113,17 @@ parser::~parser() {}
  */
 void parser::parse_perfdata(QString const& str,
                             std::list<perfdata>& pd) {
-  /* Extract metrics strings. */
+  // Extract metrics strings.
   std::string buf(str.toStdString());
   char const* ptr(buf.c_str());
   // Skip initial whitespaces.
   while (isblank(*ptr))
     ++ptr;
   while (*ptr) {
+    // Debug message.
+    logging::debug << logging::MEDIUM
+      << "storage: parsing perfdata string '" << ptr << "'";
+
     // Perfdata object.
     perfdata p;
 
@@ -170,6 +175,16 @@ void parser::parse_perfdata(QString const& str,
 
     // Extract maximum.
     p.max(extract_double(&ptr));
+
+    // Log new perfdata.
+    logging::debug << logging::LOW << "storage: got new perfdata (name="
+      << p.name().toStdString().c_str()
+      << ", value=" << p.value()
+      << ", unit=" << p.unit().toStdString().c_str()
+      << ", warning=" << p.warning()
+      << ", critical=" << p.critical()
+      << ", min=" << p.min()
+      << ", max=" << p.max() << ")";
 
     // Append to list.
     pd.push_back(p);
