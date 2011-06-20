@@ -99,6 +99,17 @@ static void get_timet(T const& t,
 }
 
 /**
+ *  Get an unsigned integer from an object.
+ */
+template <typename T>
+static void get_uint(T const& t,
+                     data_member<T> const& member,
+                     std::stringstream& buffer) {
+  buffer << t.*(member.u);
+  return ;
+}
+
+/**
  *  Set a boolean within an object.
  */
 template <typename T>
@@ -165,6 +176,17 @@ static void set_timet(T& t,
 }
 
 /**
+ *  Set an unsigned integer within an object.
+ */
+template <typename T>
+static void set_uint(T& t,
+                     data_member<T> const& member,
+                     char const* str) {
+  t.*(member.u) = strtoul(str, NULL, 0);
+  return ;
+}
+
+/**
  *  Static initialization template used by Initialize().
  */
 template <typename T>
@@ -182,7 +204,6 @@ static void static_init() {
         gs.getter = &get_double<T>;
         gs.setter = &set_double<T>;
         break ;
-       case mapped_data<T>::ID:
        case mapped_data<T>::INT:
         gs.getter = &get_integer<T>;
         gs.setter = &set_integer<T>;
@@ -198,6 +219,11 @@ static void static_init() {
        case mapped_data<T>::TIME_T:
         gs.getter = &get_timet<T>;
         gs.setter = &set_timet<T>;
+        break ;
+       case mapped_data<T>::ID:
+       case mapped_data<T>::UINT:
+        gs.getter = &get_uint<T>;
+        gs.setter = &set_uint<T>;
         break ;
        default: // Error in one of the mappings.
         assert(false);

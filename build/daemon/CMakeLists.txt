@@ -20,15 +20,16 @@
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/daemon/src")
 
 # Standalone binary.
-add_executable("cbd"
+set(DAEMON "cbd")
+add_executable("${DAEMON}"
   # Core sources.
   ${LIBROKER_SOURCES}
   # Sources.
   "${SRC_DIR}/main.cc"
 )
-target_link_libraries("cbd" ${QT_LIBRARIES})
+target_link_libraries("${DAEMON}" ${QT_LIBRARIES})
 
 # Install rule.
-install(TARGETS "cbd"
+install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BINARY}"
 )

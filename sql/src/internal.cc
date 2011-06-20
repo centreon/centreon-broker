@@ -134,6 +134,20 @@ static void get_timet(T const& t,
 }
 
 /**
+ *  Get an unsigned int from an object.
+ */
+template <typename T>
+static void get_uint(T const& t,
+                     std::string const& name,
+                     data_member<T> const& member,
+                     QSqlQuery& q) {
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant((t.*(member.u))));
+  return ;
+}
+
+/**
  *  Static initialization template used by initialize().
  */
 template <typename T>
@@ -167,6 +181,9 @@ static void static_init() {
         break ;
        case mapped_data<T>::TIME_T:
         gs.getter = &get_timet<T>;
+        break ;
+       case mapped_data<T>::UINT:
+        gs.getter = &get_uint<T>;
         break ;
        default: // Error in one of the mappings.
         assert(false);

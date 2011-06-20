@@ -23,7 +23,8 @@ include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # SQL module.
-add_library("sql" MODULE
+set(SQL "80-sql")
+add_library("${SQL}" MODULE
   # Sources.
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
@@ -37,9 +38,9 @@ add_library("sql" MODULE
   "${INC_DIR}/com/centreon/broker/sql/internal.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
 )
-set_target_properties("sql" PROPERTIES PREFIX "")
+set_target_properties("${SQL}" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS sql
+install(TARGETS "${SQL}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

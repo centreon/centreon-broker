@@ -22,7 +22,8 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
 include_directories("${INC_DIR}")
 
 # TCP module.
-add_library("tcp" MODULE
+set(TCP "50-tcp")
+add_library("${TCP}" MODULE
   # Sources.
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
@@ -35,9 +36,9 @@ add_library("tcp" MODULE
   "${INC_DIR}/com/centreon/broker/tcp/factory.hh"
   "${INC_DIR}/com/centreon/broker/tcp/stream.hh"
 )
-set_target_properties("tcp" PROPERTIES PREFIX "")
+set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS "tcp"
+install(TARGETS "${TCP}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

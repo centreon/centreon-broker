@@ -24,7 +24,8 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 
 # NDO module.
-add_library("ndo" MODULE
+set(NDO "80-ndo")
+add_library("${NDO}" MODULE
   # Sources.
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
@@ -43,9 +44,9 @@ add_library("ndo" MODULE
   "${INC_DIR}/com/centreon/broker/ndo/internal.hh"
   "${INC_DIR}/com/centreon/broker/ndo/output.hh"
 )
-set_target_properties("ndo" PROPERTIES PREFIX "")
+set_target_properties("${NDO}" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS ndo
+install(TARGETS "${NDO}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

@@ -22,16 +22,17 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/file/src")
 include_directories("${INC_DIR}")
 
 # File module.
-add_library("file" MODULE
+set(FILE "50-file")
+add_library("${FILE}" MODULE
   # Sources.
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/file/factory.hh"
 )
-set_target_properties("file" PROPERTIES PREFIX "")
+set_target_properties("${FILE}" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS file
+install(TARGETS "${FILE}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

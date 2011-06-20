@@ -29,7 +29,8 @@ endif ()
 pkg_check_modules(LIBRRD REQUIRED "librrd")
 
 # RRD module.
-add_library("rrd" MODULE
+set(RRD "30-rrd")
+add_library("${RRD}" MODULE
   # Sources.
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/cached.cc"
@@ -50,7 +51,7 @@ add_library("rrd" MODULE
   "${INC_DIR}/com/centreon/broker/rrd/output.hh"
   "${INC_DIR}/com/centreon/broker/rrd/status.hh"
 )
-set_target_properties("rrd" PROPERTIES PREFIX "")
+set_target_properties("${RRD}" PROPERTIES PREFIX "")
 
 # Compile with librrd flags.
 if (LIBRRD_CFLAGS)
@@ -64,17 +65,17 @@ if (LIBRRD_CFLAGS)
   endif ()
 endif ()
 if (LIBRRD_LDFLAGS)
-  get_target_property(RRD_LDFLAGS "rrd" LINK_FLAGS)
+  get_target_property(RRD_LDFLAGS "${RRD}" LINK_FLAGS)
   if (RRD_LDFLAGS)
-    set_target_properties("rrd" PROPERTIES
+    set_target_properties("${RRD}" PROPERTIES
       LINK_FLAGS "${RRD_LDFLAGS} ${LIBRRD_LDFLAGS}")
   else ()
-    set_target_properties("rrd" PROPERTIES
+    set_target_properties("${RRD}" PROPERTIES
       LINK_FLAGS "${LIBRRD_LDFLAGS}")
   endif ()
 endif ()
 
 # Install rule.
-install(TARGETS "rrd"
+install(TARGETS "${RRD}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

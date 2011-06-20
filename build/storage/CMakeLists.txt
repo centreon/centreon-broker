@@ -24,7 +24,8 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 
 # Storage module.
-add_library("storage" MODULE
+set(STORAGE "70-storage")
+add_library("${STORAGE}" MODULE
   # Sources.
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/exceptions/perfdata.cc"
@@ -41,9 +42,9 @@ add_library("storage" MODULE
   "${INC_DIR}/com/centreon/broker/storage/perfdata.hh"
   "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
-set_target_properties("storage" PROPERTIES PREFIX "")
+set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 
 # Install rule.
-install(TARGETS "storage"
+install(TARGETS "${STORAGE}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )
