@@ -165,6 +165,16 @@ target_link_libraries("roker" ${QT_LIBRARIES})
 #	../src/init.cc
 #)
 
+# Standalone binary.
+set(DAEMON "cbd")
+add_executable("${DAEMON}"
+  # Core sources.
+  ${LIBROKER_SOURCES}
+  # Sources.
+  "${SRC_DIR}/main.cc"
+)
+target_link_libraries("${DAEMON}" ${QT_LIBRARIES})
+
 # Install directories.
 if (WITH_PREFIX)
   set(CMAKE_INSTALL_PREFIX "${WITH_PREFIX}")
@@ -195,8 +205,10 @@ install(TARGETS "roker"
   ARCHIVE DESTINATION "${PREFIX_ARCHIVE}"
 )
 
-# Daemon binary.
-add_subdirectory("daemon")
+# Install rule.
+install(TARGETS "${DAEMON}"
+  RUNTIME DESTINATION "${PREFIX_BINARY}"
+)
 
 # File module.
 add_subdirectory("file")
