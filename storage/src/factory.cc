@@ -104,8 +104,9 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint const& cfg, 
                            bool is_input,
                            bool is_output) const {
+  (void)is_input;
   (void)is_output;
-  return (!is_input && (cfg.type == "storage"));
+  return (cfg.type == "storage");
 }
 
 /**

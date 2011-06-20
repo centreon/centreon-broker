@@ -80,9 +80,10 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_input,
                            bool is_output) const {
+  (void)is_input;
   (void)is_output;
   QMap<QString, QString>::const_iterator it(cfg.params.find("db"));
-  return (!is_input && (it != cfg.params.end()));
+  return (it != cfg.params.end());
 }
 
 /**
