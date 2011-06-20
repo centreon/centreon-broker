@@ -17,12 +17,12 @@
 */
 
 #include <QSharedPointer>
-#include "multiplexing/publisher.hh"
-#include "multiplexing/subscriber.hh"
-#include "ndo/acceptor.hh"
-#include "ndo/input.hh"
-#include "ndo/output.hh"
-#include "processing/feeder.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/ndo/acceptor.hh"
+#include "com/centreon/broker/ndo/input.hh"
+#include "com/centreon/broker/ndo/output.hh"
+#include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -45,7 +45,7 @@ acceptor::acceptor(bool is_out) : _is_out(is_out) {}
  *
  *  @param[in] a Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : io::acceptor(a) {
+acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
   _is_out = a._is_out;
 }
 
@@ -62,7 +62,7 @@ acceptor::~acceptor() {}
  *  @return This object.
  */
 acceptor& acceptor::operator=(acceptor const& a) {
-  io::acceptor::operator=(a);
+  io::endpoint::operator=(a);
   _is_out = a._is_out;
   return (*this);
 }
@@ -79,8 +79,8 @@ void acceptor::close() {
  */
 QSharedPointer<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
-  if (!_down.isNull()) {
-    QSharedPointer<io::stream> base(_down->open());
+  if (!_from.isNull()) {
+    QSharedPointer<io::stream> base(_from->open());
 
     if (!base.isNull()) {
       // In and out objects.

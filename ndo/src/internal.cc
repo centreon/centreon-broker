@@ -19,7 +19,9 @@
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
-#include "ndo/internal.hh"
+#include "com/centreon/broker/ndo/internal.hh"
+#include "com/centreon/broker/rrd/metric.hh"
+#include "com/centreon/broker/rrd/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -211,99 +213,93 @@ static void static_init() {
 *                                     *
 **************************************/
 
-template <> std::map<int, getter_setter<events::acknowledgement> >
-  ndo::ndo_mapped_type<events::acknowledgement>::map =
-    std::map<int, getter_setter<events::acknowledgement> >();
-template <> std::map<int, getter_setter<events::comment> >
-  ndo::ndo_mapped_type<events::comment>::map =
-    std::map<int, getter_setter<events::comment> >();
-template <> std::map<int, getter_setter<events::custom_variable> >
-  ndo::ndo_mapped_type<events::custom_variable>::map =
-    std::map<int, getter_setter<events::custom_variable> >();
-template <> std::map<int, getter_setter<events::custom_variable_status> >
-  ndo::ndo_mapped_type<events::custom_variable_status>::map =
-    std::map<int, getter_setter<events::custom_variable_status> >();
-template <> std::map<int, getter_setter<events::downtime> >
-  ndo::ndo_mapped_type<events::downtime>::map =
-    std::map<int, getter_setter<events::downtime> >();
-template <> std::map<int, getter_setter<events::event_handler> >
-  ndo::ndo_mapped_type<events::event_handler>::map =
-    std::map<int, getter_setter<events::event_handler> >();
-template <> std::map<int, getter_setter<events::flapping_status> >
-  ndo::ndo_mapped_type<events::flapping_status>::map =
-    std::map<int, getter_setter<events::flapping_status> >();
-template <> std::map<int, getter_setter<events::host> >
-  ndo::ndo_mapped_type<events::host>::map =
-    std::map<int, getter_setter<events::host> >();
-template <> std::map<int, getter_setter<events::host_check> >
-  ndo::ndo_mapped_type<events::host_check>::map =
-    std::map<int, getter_setter<events::host_check> >();
-template <> std::map<int, getter_setter<events::host_dependency> >
-  ndo::ndo_mapped_type<events::host_dependency>::map =
-    std::map<int, getter_setter<events::host_dependency> >();
-template <> std::map<int, getter_setter<events::host_group> >
-  ndo::ndo_mapped_type<events::host_group>::map =
-    std::map<int, getter_setter<events::host_group> >();
-template <> std::map<int, getter_setter<events::host_group_member> >
-  ndo::ndo_mapped_type<events::host_group_member>::map =
-    std::map<int, getter_setter<events::host_group_member> >();
-template <> std::map<int, getter_setter<events::host_parent> >
-  ndo::ndo_mapped_type<events::host_parent>::map =
-    std::map<int, getter_setter<events::host_parent> >();
-template <> std::map<int, getter_setter<events::host_state> >
-  ndo::ndo_mapped_type<events::host_state>::map =
-    std::map<int, getter_setter<events::host_state> >();
-template <> std::map<int, getter_setter<events::host_status> >
-  ndo::ndo_mapped_type<events::host_status>::map =
-    std::map<int, getter_setter<events::host_status> >();
-template <> std::map<int, getter_setter<events::instance> >
-  ndo::ndo_mapped_type<events::instance>::map =
-    std::map<int, getter_setter<events::instance> >();
-template <> std::map<int, getter_setter<events::instance_status> >
-  ndo::ndo_mapped_type<events::instance_status>::map =
-    std::map<int, getter_setter<events::instance_status> >();
-/*template <> std::map<int, getter_setter<events::issue> >
-  ndo::ndo_mapped_type<events::issue>::map =
-    std::map<int, getter_setter<events::issue> >();
-template <> std::map<int, getter_setter<events::issue_parent> >
-  ndo::ndo_mapped_type<events::issue_parent>::map =
-  std::map<int, getter_setter<events::issue_parent> >();*/
-template <> std::map<int, getter_setter<events::log_entry> >
-  ndo::ndo_mapped_type<events::log_entry>::map =
-    std::map<int, getter_setter<events::log_entry> >();
-template <> std::map<int, getter_setter<events::module> >
-  ndo::ndo_mapped_type<events::module>::map =
-    std::map<int, getter_setter<events::module> >();
-template <> std::map<int, getter_setter<events::notification> >
-  ndo::ndo_mapped_type<events::notification>::map =
-    std::map<int, getter_setter<events::notification> >();
-template <> std::map<int, getter_setter<events::perfdata> >
-  ndo::ndo_mapped_type<events::perfdata>::map =
-    std::map<int, getter_setter<events::perfdata> >();
-template <> std::map<int, getter_setter<events::service> >
-  ndo::ndo_mapped_type<events::service>::map =
-    std::map<int, getter_setter<events::service> >();
-template <> std::map<int, getter_setter<events::service_check> >
-  ndo::ndo_mapped_type<events::service_check>::map =
-    std::map<int, getter_setter<events::service_check> >();
-template <> std::map<int, getter_setter<events::service_dependency> >
-  ndo::ndo_mapped_type<events::service_dependency>::map =
-    std::map<int, getter_setter<events::service_dependency> >();
-template <> std::map<int, getter_setter<events::service_group> >
-  ndo::ndo_mapped_type<events::service_group>::map =
-    std::map<int, getter_setter<events::service_group> >();
-template <> std::map<int, getter_setter<events::service_group_member> >
-  ndo::ndo_mapped_type<events::service_group_member>::map =
-    std::map<int, getter_setter<events::service_group_member> >();
-template <> std::map<int, getter_setter<events::service_state> >
-  ndo::ndo_mapped_type<events::service_state>::map =
-    std::map<int, getter_setter<events::service_state> >();
-template <> std::map<int, getter_setter<events::service_status> >
-  ndo::ndo_mapped_type<events::service_status>::map =
-    std::map<int, getter_setter<events::service_status> >();
-template <> std::map<int, getter_setter<events::status_data> >
-  ndo::ndo_mapped_type<events::status_data>::map =
-    std::map<int, getter_setter<events::status_data> >();
+template <> std::map<int, getter_setter<neb::acknowledgement> >
+  ndo::ndo_mapped_type<neb::acknowledgement>::map =
+    std::map<int, getter_setter<neb::acknowledgement> >();
+template <> std::map<int, getter_setter<neb::comment> >
+  ndo::ndo_mapped_type<neb::comment>::map =
+    std::map<int, getter_setter<neb::comment> >();
+template <> std::map<int, getter_setter<neb::custom_variable> >
+  ndo::ndo_mapped_type<neb::custom_variable>::map =
+    std::map<int, getter_setter<neb::custom_variable> >();
+template <> std::map<int, getter_setter<neb::custom_variable_status> >
+  ndo::ndo_mapped_type<neb::custom_variable_status>::map =
+    std::map<int, getter_setter<neb::custom_variable_status> >();
+template <> std::map<int, getter_setter<neb::downtime> >
+  ndo::ndo_mapped_type<neb::downtime>::map =
+    std::map<int, getter_setter<neb::downtime> >();
+template <> std::map<int, getter_setter<neb::event_handler> >
+  ndo::ndo_mapped_type<neb::event_handler>::map =
+    std::map<int, getter_setter<neb::event_handler> >();
+template <> std::map<int, getter_setter<neb::flapping_status> >
+  ndo::ndo_mapped_type<neb::flapping_status>::map =
+    std::map<int, getter_setter<neb::flapping_status> >();
+template <> std::map<int, getter_setter<neb::host> >
+  ndo::ndo_mapped_type<neb::host>::map =
+    std::map<int, getter_setter<neb::host> >();
+template <> std::map<int, getter_setter<neb::host_check> >
+  ndo::ndo_mapped_type<neb::host_check>::map =
+    std::map<int, getter_setter<neb::host_check> >();
+template <> std::map<int, getter_setter<neb::host_dependency> >
+  ndo::ndo_mapped_type<neb::host_dependency>::map =
+    std::map<int, getter_setter<neb::host_dependency> >();
+template <> std::map<int, getter_setter<neb::host_group> >
+  ndo::ndo_mapped_type<neb::host_group>::map =
+    std::map<int, getter_setter<neb::host_group> >();
+template <> std::map<int, getter_setter<neb::host_group_member> >
+  ndo::ndo_mapped_type<neb::host_group_member>::map =
+    std::map<int, getter_setter<neb::host_group_member> >();
+template <> std::map<int, getter_setter<neb::host_parent> >
+  ndo::ndo_mapped_type<neb::host_parent>::map =
+    std::map<int, getter_setter<neb::host_parent> >();
+template <> std::map<int, getter_setter<neb::host_status> >
+  ndo::ndo_mapped_type<neb::host_status>::map =
+    std::map<int, getter_setter<neb::host_status> >();
+template <> std::map<int, getter_setter<neb::instance> >
+  ndo::ndo_mapped_type<neb::instance>::map =
+    std::map<int, getter_setter<neb::instance> >();
+template <> std::map<int, getter_setter<neb::instance_status> >
+  ndo::ndo_mapped_type<neb::instance_status>::map =
+    std::map<int, getter_setter<neb::instance_status> >();
+/*template <> std::map<int, getter_setter<neb::issue> >
+  ndo::ndo_mapped_type<neb::issue>::map =
+    std::map<int, getter_setter<neb::issue> >();
+template <> std::map<int, getter_setter<neb::issue_parent> >
+  ndo::ndo_mapped_type<neb::issue_parent>::map =
+  std::map<int, getter_setter<neb::issue_parent> >();*/
+template <> std::map<int, getter_setter<neb::log_entry> >
+  ndo::ndo_mapped_type<neb::log_entry>::map =
+    std::map<int, getter_setter<neb::log_entry> >();
+template <> std::map<int, getter_setter<neb::module> >
+  ndo::ndo_mapped_type<neb::module>::map =
+    std::map<int, getter_setter<neb::module> >();
+template <> std::map<int, getter_setter<neb::notification> >
+  ndo::ndo_mapped_type<neb::notification>::map =
+    std::map<int, getter_setter<neb::notification> >();
+template <> std::map<int, getter_setter<neb::service> >
+  ndo::ndo_mapped_type<neb::service>::map =
+    std::map<int, getter_setter<neb::service> >();
+template <> std::map<int, getter_setter<neb::service_check> >
+  ndo::ndo_mapped_type<neb::service_check>::map =
+    std::map<int, getter_setter<neb::service_check> >();
+template <> std::map<int, getter_setter<neb::service_dependency> >
+  ndo::ndo_mapped_type<neb::service_dependency>::map =
+    std::map<int, getter_setter<neb::service_dependency> >();
+template <> std::map<int, getter_setter<neb::service_group> >
+  ndo::ndo_mapped_type<neb::service_group>::map =
+    std::map<int, getter_setter<neb::service_group> >();
+template <> std::map<int, getter_setter<neb::service_group_member> >
+  ndo::ndo_mapped_type<neb::service_group_member>::map =
+    std::map<int, getter_setter<neb::service_group_member> >();
+template <> std::map<int, getter_setter<neb::service_status> >
+  ndo::ndo_mapped_type<neb::service_status>::map =
+    std::map<int, getter_setter<neb::service_status> >();
+template <> std::map<int, getter_setter<rrd::metric> >
+  ndo::ndo_mapped_type<rrd::metric>::map =
+    std::map<int, getter_setter<rrd::metric> >();
+template <> std::map<int, getter_setter<rrd::status> >
+  ndo::ndo_mapped_type<rrd::status>::map =
+    std::map<int, getter_setter<rrd::status> >();
 
 /**************************************
 *                                     *
@@ -317,36 +313,36 @@ template <> std::map<int, getter_setter<events::status_data> >
  *  Initialize NDO mappings.
  */
 void ndo::initialize() {
-  static_init<events::acknowledgement>();
-  static_init<events::comment>();
-  static_init<events::custom_variable>();
-  static_init<events::custom_variable_status>();
-  static_init<events::downtime>();
-  static_init<events::event_handler>();
-  static_init<events::flapping_status>();
-  static_init<events::host>();
-  static_init<events::host_check>();
-  static_init<events::host_dependency>();
-  static_init<events::host_group>();
-  static_init<events::host_group_member>();
-  static_init<events::host_parent>();
-  static_init<events::host_state>();
-  static_init<events::host_status>();
-  static_init<events::instance>();
-  static_init<events::instance_status>();
-  //static_init<events::issue>();
-  //static_init<events::issue_parent>();
-  static_init<events::log_entry>();
-  static_init<events::module>();
-  static_init<events::notification>();
-  static_init<events::perfdata>();
-  static_init<events::service>();
-  static_init<events::service_check>();
-  static_init<events::service_dependency>();
-  static_init<events::service_group>();
-  static_init<events::service_group_member>();
-  static_init<events::service_state>();
-  static_init<events::service_status>();
-  static_init<events::status_data>();
+  static_init<neb::acknowledgement>();
+  static_init<neb::comment>();
+  static_init<neb::custom_variable>();
+  static_init<neb::custom_variable_status>();
+  static_init<neb::downtime>();
+  static_init<neb::event_handler>();
+  static_init<neb::flapping_status>();
+  static_init<neb::host>();
+  static_init<neb::host_check>();
+  static_init<neb::host_dependency>();
+  static_init<neb::host_group>();
+  static_init<neb::host_group_member>();
+  static_init<neb::host_parent>();
+  //static_init<neb::host_state>();
+  static_init<neb::host_status>();
+  static_init<neb::instance>();
+  static_init<neb::instance_status>();
+  //static_init<neb::issue>();
+  //static_init<neb::issue_parent>();
+  static_init<neb::log_entry>();
+  static_init<neb::module>();
+  static_init<neb::notification>();
+  static_init<neb::service>();
+  static_init<neb::service_check>();
+  static_init<neb::service_dependency>();
+  static_init<neb::service_group>();
+  static_init<neb::service_group_member>();
+  //static_init<neb::service_state>();
+  static_init<neb::service_status>();
+  static_init<rrd::metric>();
+  static_init<rrd::status>();
   return ;
 }

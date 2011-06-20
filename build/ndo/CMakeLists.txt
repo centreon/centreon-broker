@@ -20,6 +20,8 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/ndo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/ndo/src")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 
 # NDO module.
 add_library("ndo" MODULE
@@ -31,13 +33,15 @@ add_library("ndo" MODULE
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
+  "${SRC_DIR}/temp_mapping.cc"
+  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
-  "${INC_DIR}/ndo/acceptor.hh"
-  "${INC_DIR}/ndo/connector.hh"
-  "${INC_DIR}/ndo/factory.hh"
-  "${INC_DIR}/ndo/input.hh"
-  "${INC_DIR}/ndo/internal.hh"
-  "${INC_DIR}/ndo/output.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/acceptor.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/connector.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/factory.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/input.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/internal.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/output.hh"
 )
 set_target_properties("ndo" PROPERTIES PREFIX "")
 

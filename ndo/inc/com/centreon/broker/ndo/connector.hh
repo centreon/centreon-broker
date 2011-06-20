@@ -19,19 +19,19 @@
 #ifndef CCB_NDO_CONNECTOR_HH_
 # define CCB_NDO_CONNECTOR_HH_
 
-# include "io/connector.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace            com {
   namespace          centreon {
     namespace        broker {
       namespace      ndo {
         /**
-         *  @class connector connector.hh "ndo/connector.hh"
+         *  @class connector connector.hh "com/centreon/broker/ndo/connector.hh"
          *  @brief NDO connector.
          *
          *  Initiate NDO connections.
          */
-        class        connector : public com::centreon::broker::io::connector {
+        class        connector : public io::endpoint {
          private:
           bool       _is_in;
           bool       _is_out;
@@ -42,7 +42,7 @@ namespace            com {
                      ~connector();
           connector& operator=(connector const& c);
           void       close();
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                      open();
         };
       }

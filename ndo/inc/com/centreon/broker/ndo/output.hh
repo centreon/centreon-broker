@@ -19,28 +19,28 @@
 #ifndef CCB_NDO_OUTPUT_HH_
 # define CCB_NDO_OUTPUT_HH_
 
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        ndo {
         /**
-         *  @class output output.hh "ndo/output.hh"
+         *  @class output output.hh "com/centreon/broker/ndo/output.hh"
          *  @brief NDO output destination.
          *
          *  The class converts events to an output stream using a
          *  modified version of the NDO protocol.
          */
-        class          output : virtual public com::centreon::broker::io::stream {
+        class          output : virtual public io::stream {
          public:
                        output();
                        output(output const& o);
           virtual      ~output();
           output&      operator=(output const& o);
-          virtual QSharedPointer<com::centreon::broker::io::data>
+          virtual QSharedPointer<io::data>
                        read();
-          virtual void write(QSharedPointer<com::centreon::broker::io::data> e);
+          virtual void write(QSharedPointer<io::data> e);
         };
       }
     }

@@ -19,13 +19,16 @@
 #include <algorithm>
 #include <QScopedPointer>
 #include <stdlib.h>
-#include "events/events.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/ndo/input.hh"
+#include "com/centreon/broker/ndo/internal.hh"
+#include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/rrd/metric.hh"
+#include "com/centreon/broker/rrd/status.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
-#include "ndo/input.hh"
-#include "ndo/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -43,9 +46,12 @@ char const* input::_get_line() {
   size_t it;
   while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
     QSharedPointer<io::data> data(_from->read());
-    if (data.isNull() || !data->size())
+    if (data.isNull())
       break ;
-    _buffer.append(static_cast<char*>(data->memory()), data->size());
+    if (data->type() == "com::centreon::broker::io::raw") {
+      QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
+      _buffer.append(static_cast<char*>(raw->memory()), raw->size());
+    }
   }
   _old = _buffer.substr(0, it);
   if (it != std::string::npos)
@@ -134,7 +140,7 @@ input& input::operator=(input const& i) {
  */
 QSharedPointer<io::data> input::read() {
   // Return value.
-  QScopedPointer<events::event> e;
+  QScopedPointer<io::data> e;
 
   // Get the next non-empty line.
   logging::debug << logging::MEDIUM << "NDO: reading event";
@@ -147,91 +153,85 @@ QSharedPointer<io::data> input::read() {
     int id = strtol(line, NULL, 10);
     switch (id) {
      case NDO_API_ACKNOWLEDGEMENTDATA:
-      e.reset(_handle_event<events::acknowledgement>());
+      e.reset(_handle_event<neb::acknowledgement>());
       break ;
      case NDO_API_COMMENTDATA:
-      e.reset(_handle_event<events::comment>());
+      e.reset(_handle_event<neb::comment>());
       break ;
      case NDO_API_RUNTIMEVARIABLES:
-      e.reset(_handle_event<events::custom_variable>());
+      e.reset(_handle_event<neb::custom_variable>());
       break ;
      case NDO_API_CONFIGVARIABLES:
-      e.reset(_handle_event<events::custom_variable_status>());
+      e.reset(_handle_event<neb::custom_variable_status>());
       break ;
      case NDO_API_DOWNTIMEDATA:
-      e.reset(_handle_event<events::downtime>());
+      e.reset(_handle_event<neb::downtime>());
       break ;
      case NDO_API_EVENTHANDLERDATA:
-      e.reset(_handle_event<events::event_handler>());
+      e.reset(_handle_event<neb::event_handler>());
       break ;
      case NDO_API_FLAPPINGDATA:
-      e.reset(_handle_event<events::flapping_status>());
+      e.reset(_handle_event<neb::flapping_status>());
       break ;
      case NDO_API_HOSTCHECKDATA:
-      e.reset(_handle_event<events::host_check>());
+      e.reset(_handle_event<neb::host_check>());
       break ;
      case NDO_API_HOSTDEFINITION:
-      e.reset(_handle_event<events::host>());
+      e.reset(_handle_event<neb::host>());
       break ;
      case NDO_API_HOSTDEPENDENCYDEFINITION:
-      e.reset(_handle_event<events::host_dependency>());
+      e.reset(_handle_event<neb::host_dependency>());
       break ;
      case NDO_API_HOSTGROUPDEFINITION:
-      e.reset(_handle_event<events::host_group>());
+      e.reset(_handle_event<neb::host_group>());
       break ;
      case NDO_API_HOSTGROUPMEMBERDEFINITION:
-      e.reset(_handle_event<events::host_group_member>());
+      e.reset(_handle_event<neb::host_group_member>());
       break ;
      case NDO_API_HOSTPARENT:
-      e.reset(_handle_event<events::host_parent>());
-      break ;
-     case NDO_API_STATECHANGEDATA:
-      e.reset(_handle_event<events::host_state>());
+      e.reset(_handle_event<neb::host_parent>());
       break ;
      case NDO_API_HOSTSTATUSDATA:
-      e.reset(_handle_event<events::host_status>());
+      e.reset(_handle_event<neb::host_status>());
       break ;
      case NDO_API_PROCESSDATA:
-      e.reset(_handle_event<events::instance>());
+      e.reset(_handle_event<neb::instance>());
       break ;
      case NDO_API_PROGRAMSTATUSDATA:
-      e.reset(_handle_event<events::instance_status>());
+      e.reset(_handle_event<neb::instance_status>());
       break ;
      case NDO_API_LOGDATA:
-      e.reset(_handle_event<events::log_entry>());
+      e.reset(_handle_event<neb::log_entry>());
       break ;
      case NDO_API_COMMANDDEFINITION:
-      e.reset(_handle_event<events::module>());
+      e.reset(_handle_event<neb::module>());
       break ;
      case NDO_API_NOTIFICATIONDATA:
-      e.reset(_handle_event<events::notification>());
-      break ;
-     case NDO_API_PERFDATA:
-      e.reset(_handle_event<events::perfdata>());
+      e.reset(_handle_event<neb::notification>());
       break ;
      case NDO_API_SERVICECHECKDATA:
-      e.reset(_handle_event<events::service_check>());
+      e.reset(_handle_event<neb::service_check>());
       break ;
      case NDO_API_SERVICEDEFINITION:
-      e.reset(_handle_event<events::service>());
+      e.reset(_handle_event<neb::service>());
       break ;
      case NDO_API_SERVICEDEPENDENCYDEFINITION:
-      e.reset(_handle_event<events::service_dependency>());
+      e.reset(_handle_event<neb::service_dependency>());
       break ;
      case NDO_API_SERVICEGROUPDEFINITION:
-      e.reset(_handle_event<events::service_group>());
+      e.reset(_handle_event<neb::service_group>());
       break ;
      case NDO_API_SERVICEGROUPMEMBERDEFINITION:
-      e.reset(_handle_event<events::service_group_member>());
-      break ;
-     case NDO_API_ADAPTIVESERVICEDATA:
-      e.reset(_handle_event<events::service_state>());
+      e.reset(_handle_event<neb::service_group_member>());
       break ;
      case NDO_API_SERVICESTATUSDATA:
-      e.reset(_handle_event<events::service_status>());
+      e.reset(_handle_event<neb::service_status>());
       break ;
-     case NDO_API_STATUSDATA:
-      e.reset(_handle_event<events::status_data>());
+     case NDO_API_RRDMETRIC:
+      e.reset(_handle_event<rrd::metric>());
+      break ;
+     case NDO_API_RRDSTATUS:
+      e.reset(_handle_event<rrd::status>());
       break ;
      default:
       // Skip this event.
@@ -256,6 +256,6 @@ QSharedPointer<io::data> input::read() {
  */
 void input::write(QSharedPointer<io::data> d) {
   (void)d;
-  throw (exceptions::basic() << "attempt to write from an NDO input object (software bug)");
+  throw (exceptions::msg() << "attempt to write from an NDO input object (software bug)");
   return ;
 }

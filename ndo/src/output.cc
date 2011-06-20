@@ -16,14 +16,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "events/events.hh"
-#include "exceptions/basic.hh"
-#include "io/raw.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/ndo/internal.hh"
+#include "com/centreon/broker/ndo/output.hh"
+#include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/rrd/metric.hh"
+#include "com/centreon/broker/rrd/status.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
-#include "ndo/internal.hh"
-#include "ndo/output.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -92,222 +94,206 @@ output& output::operator=(output const& o) {
  *  Read data.
  */
 QSharedPointer<io::data> output::read() {
-  throw (exceptions::basic() << "attempt to read from an NDO output object (software bug)");
+  throw (exceptions::msg() << "attempt to read from an NDO output object (software bug)");
   return (QSharedPointer<io::data>());
 }
 
 /**
  *  Send an event.
  *
- *  @param[in] i Event to send.
+ *  @param[in] e Event to send.
  */
-void output::write(QSharedPointer<io::data> i) {
+void output::write(QSharedPointer<io::data> e) {
   logging::debug << logging::MEDIUM << "NDO: writing data";
-  events::event* e((events::event*)i.data());
   std::stringstream buffer;
-  switch (e->type()) {
-   case events::event::ACKNOWLEDGEMENT:
+  if (e->type() == "com::centreon::broker::neb::acknowledgement") {
     buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
-    handle_event<events::acknowledgement>(
-      *static_cast<events::acknowledgement*>(e),
+    handle_event<neb::acknowledgement>(
+      *static_cast<neb::acknowledgement*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::COMMENT:
+  }
+  else if (e->type() == "com::centreon::broker::neb::comment") {
     buffer << NDO_API_COMMENTDATA << ":\n";
-    handle_event<events::comment>(
-      *static_cast<events::comment*>(e),
+    handle_event<neb::comment>(
+      *static_cast<neb::comment*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::CUSTOMVARIABLE:
+  }
+  else if (e->type() == "com::centreon::broker::neb::custom_variable") {
     buffer << NDO_API_RUNTIMEVARIABLES << ":\n";
-    handle_event<events::custom_variable>(
-      *static_cast<events::custom_variable*>(e),
+    handle_event<neb::custom_variable>(
+      *static_cast<neb::custom_variable*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::CUSTOMVARIABLESTATUS:
+  }
+  else if (e->type() == "com::centreon::broker::neb::custom_variable_status") {
     buffer << NDO_API_CONFIGVARIABLES << ":\n";
-    handle_event<events::custom_variable_status>(
-      *static_cast<events::custom_variable_status*>(e),
+    handle_event<neb::custom_variable_status>(
+      *static_cast<neb::custom_variable_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::DOWNTIME:
+  }
+  else if (e->type() == "com::centreon::broker::neb::downtime") {
     buffer << NDO_API_DOWNTIMEDATA << ":\n";
-    handle_event<events::downtime>(
-      *static_cast<events::downtime*>(e),
+    handle_event<neb::downtime>(
+      *static_cast<neb::downtime*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::EVENTHANDLER:
+  }
+  else if (e->type() == "com::centreon::broker::neb::event_handler") {
     buffer << NDO_API_EVENTHANDLERDATA << ":\n";
-    handle_event<events::event_handler>(
-      *static_cast<events::event_handler*>(e),
+    handle_event<neb::event_handler>(
+      *static_cast<neb::event_handler*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::FLAPPINGSTATUS:
+  }
+  else if (e->type() == "com::centreon::broker::neb::flapping_status") {
     buffer << NDO_API_FLAPPINGDATA << ":\n";
-    handle_event<events::flapping_status>(
-      *static_cast<events::flapping_status*>(e),
+    handle_event<neb::flapping_status>(
+      *static_cast<neb::flapping_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOST:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host") {
     buffer << NDO_API_HOSTDEFINITION << ":\n";
-    handle_event<events::host>(
-      *static_cast<events::host*>(e),
+    handle_event<neb::host>(
+      *static_cast<neb::host*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTCHECK:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_check") {
     buffer << NDO_API_HOSTCHECKDATA << ":\n";
-    handle_event<events::host_check>(
-      *static_cast<events::host_check*>(e),
+    handle_event<neb::host_check>(
+      *static_cast<neb::host_check*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTDEPENDENCY:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_dependency") {
     buffer << NDO_API_HOSTDEPENDENCYDEFINITION << ":\n";
-    handle_event<events::host_dependency>(
-      *static_cast<events::host_dependency*>(e),
+    handle_event<neb::host_dependency>(
+      *static_cast<neb::host_dependency*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTGROUP:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_group") {
     buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
-    handle_event<events::host_group>(
-      *static_cast<events::host_group*>(e),
+    handle_event<neb::host_group>(
+      *static_cast<neb::host_group*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTGROUPMEMBER:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_group_member") {
     buffer << NDO_API_HOSTGROUPMEMBERDEFINITION << ":\n";
-    handle_event<events::host_group_member>(
-      *static_cast<events::host_group_member*>(e),
+    handle_event<neb::host_group_member>(
+      *static_cast<neb::host_group_member*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTPARENT:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_parent") {
     buffer << NDO_API_HOSTPARENT << ":\n";
-    handle_event<events::host_parent>(
-      *static_cast<events::host_parent*>(e),
+    handle_event<neb::host_parent>(
+      *static_cast<neb::host_parent*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTSTATE:
-    buffer << NDO_API_STATECHANGEDATA << ":\n";
-    handle_event<events::host_state>(
-      *static_cast<events::host_state*>(e),
-      buffer);
-    buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::HOSTSTATUS:
+  }
+  else if (e->type() == "com::centreon::broker::neb::host_status") {
     buffer << NDO_API_HOSTSTATUSDATA << ":\n";
-    handle_event<events::host_status>(
-      *static_cast<events::host_status*>(e),
+    handle_event<neb::host_status>(
+      *static_cast<neb::host_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::INSTANCE:
+  }
+  else if (e->type() == "com::centreon::broker::neb::instance") {
     buffer << NDO_API_PROCESSDATA << ":\n";
-    handle_event<events::instance>(
-      *static_cast<events::instance*>(e),
+    handle_event<neb::instance>(
+      *static_cast<neb::instance*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::INSTANCESTATUS:
+  }
+  else if (e->type() == "com::centreon::broker::neb::instance_status") {
     buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
-    handle_event<events::instance_status>(
-      *static_cast<events::instance_status*>(e),
+    handle_event<neb::instance_status>(
+      *static_cast<neb::instance_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::LOG:
+  }
+  else if (e->type() == "com::centreon::broker::neb::log_entry") {
     buffer << NDO_API_LOGDATA << ":\n";
-    handle_event<events::log_entry>(
-      *static_cast<events::log_entry*>(e),
+    handle_event<neb::log_entry>(
+      *static_cast<neb::log_entry*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::MODULE:
+  }
+  else if (e->type() == "com::centreon::broker::neb::module") {
     buffer << NDO_API_COMMANDDEFINITION << ":\n";
-    handle_event<events::module>(
-      *static_cast<events::module*>(e),
+    handle_event<neb::module>(
+      *static_cast<neb::module*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::NOTIFICATION:
+  }
+  else if (e->type() == "com::centreon::broker::neb::notification") {
     buffer << NDO_API_NOTIFICATIONDATA << ":\n";
-    handle_event<events::notification>(
-      *static_cast<events::notification*>(e),
+    handle_event<neb::notification>(
+      *static_cast<neb::notification*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::PERFDATA:
-    buffer << NDO_API_PERFDATA << ":\n";
-    handle_event<events::perfdata>(
-      *static_cast<events::perfdata*>(e),
-      buffer);
-    buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICE:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service") {
     buffer << NDO_API_SERVICEDEFINITION << ":\n";
-    handle_event<events::service>(
-      *static_cast<events::service*>(e),
+    handle_event<neb::service>(
+      *static_cast<neb::service*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICECHECK:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service_check") {
     buffer << NDO_API_SERVICECHECKDATA << ":\n";
-    handle_event<events::service_check>(
-      *static_cast<events::service_check*>(e),
+    handle_event<neb::service_check>(
+      *static_cast<neb::service_check*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICEDEPENDENCY:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service_dependency") {
     buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";
-    handle_event<events::service_dependency>(
-      *static_cast<events::service_dependency*>(e),
+    handle_event<neb::service_dependency>(
+      *static_cast<neb::service_dependency*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-   case events::event::SERVICEGROUP:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service_group") {
     buffer << NDO_API_SERVICEGROUPDEFINITION << ":\n";
-    handle_event<events::service_group>(
-      *static_cast<events::service_group*>(e),
+    handle_event<neb::service_group>(
+      *static_cast<neb::service_group*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICEGROUPMEMBER:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service_group_member") {
     buffer << NDO_API_SERVICEGROUPMEMBERDEFINITION << ":\n";
-    handle_event<events::service_group_member>(
-      *static_cast<events::service_group_member*>(e),
+    handle_event<neb::service_group_member>(
+      *static_cast<neb::service_group_member*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICESTATE:
-    buffer << NDO_API_ADAPTIVESERVICEDATA << ":\n";
-    handle_event<events::service_state>(
-      *static_cast<events::service_state*>(e),
-      buffer);
-    buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::SERVICESTATUS:
+  }
+  else if (e->type() == "com::centreon::broker::neb::service_status") {
     buffer << NDO_API_SERVICESTATUSDATA << ":\n";
-    handle_event<events::service_status>(
-      *static_cast<events::service_status*>(e),
+    handle_event<neb::service_status>(
+      *static_cast<neb::service_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
-   case events::event::STATUSDATA:
-    buffer << NDO_API_STATUSDATA << ":\n";
-    handle_event<events::status_data>(
-      *static_cast<events::status_data*>(e),
+  }
+  else if (e->type() == "com::centreon::broker::rrd::metric") {
+    buffer << NDO_API_RRDMETRIC << ":\n";
+    handle_event<rrd::metric>(
+      *static_cast<rrd::metric*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
-    break ;
+  }
+  else if (e->type() == "com::centreon::broker::rrd::status") {
+    buffer << NDO_API_RRDSTATUS << ":\n";
+    handle_event<rrd::status>(
+      *static_cast<rrd::status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
   }
   buffer << "\n";
 

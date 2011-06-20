@@ -198,7 +198,7 @@ add_subdirectory("daemon")
 add_subdirectory("file")
 
 # NDO module.
-#add_subdirectory("ndo")
+add_subdirectory("ndo")
 
 # NEB module.
 add_subdirectory("neb")

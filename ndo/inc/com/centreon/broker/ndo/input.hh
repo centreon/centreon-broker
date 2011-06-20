@@ -20,20 +20,20 @@
 # define CCB_NDO_INPUT_HH_
 
 # include <sstream>
-# include "io/stream.hh"
+# include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
   namespace            centreon {
     namespace          broker {
       namespace        ndo {
         /**
-         *  @class input input.hh "ndo/input.hh"
+         *  @class input input.hh "com/centreon/broker/ndo/input.hh"
          *  @brief NDO input source.
          *
          *  The class converts an input stream into events using a
          *  modified version of the NDO protocol.
          */
-        class          input : virtual public com::centreon::broker::io::stream {
+        class          input : virtual public io::stream {
          private:
           std::string  _buffer;
           std::string  _old;

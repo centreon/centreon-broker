@@ -33,7 +33,7 @@ namespace                                com {
          *  Interface that have all methods used by processing threads.
          */
         class                            endpoint {
-         private:
+         protected:
           QSharedPointer<endpoint>       _from;
 
          public:

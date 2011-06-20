@@ -19,19 +19,19 @@
 #ifndef CCB_NDO_ACCEPTOR_HH_
 # define CCB_NDO_ACCEPTOR_HH_
 
-# include "io/acceptor.hh"
+# include "com/centreon/broker/io/endpoint.hh"
 
 namespace           com {
   namespace         centreon {
     namespace       broker {
       namespace     ndo {
         /**
-         *  @class acceptor acceptor.hh "ndo/acceptor.hh"
+         *  @class acceptor acceptor.hh "com/centreon/broker/ndo/acceptor.hh"
          *  @brief NDO acceptor.
          *
          *  Accept incoming NDO connections.
          */
-        class       acceptor : public com::centreon::broker::io::acceptor {
+        class       acceptor : public io::endpoint {
          private:
           bool      _is_out;
 
@@ -41,7 +41,7 @@ namespace           com {
                     ~acceptor();
           acceptor& operator=(acceptor const& a);
           void      close();
-          QSharedPointer<com::centreon::broker::io::stream>
+          QSharedPointer<io::stream>
                     open();
         };
       }

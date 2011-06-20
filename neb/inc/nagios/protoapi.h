@@ -106,8 +106,8 @@
 #define NDO_API_HOSTGROUPMEMBERDEFINITION            414
 #define NDO_API_SERVICEGROUPMEMBERDEFINITION         415
 #define NDO_API_HOSTPARENT                           416
-#define NDO_API_PERFDATA                             500
-#define NDO_API_STATUSDATA                           501
+#define NDO_API_RRDMETRIC                            500
+#define NDO_API_RRDSTATUS                            501
 
 
 /************** COMMON DATA ATTRIBUTES **************/

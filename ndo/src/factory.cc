@@ -16,10 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "exceptions/basic.hh"
-#include "ndo/acceptor.hh"
-#include "ndo/connector.hh"
-#include "ndo/factory.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/ndo/acceptor.hh"
+#include "com/centreon/broker/ndo/connector.hh"
+#include "com/centreon/broker/ndo/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -104,7 +104,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   io::endpoint* retval(NULL);
   if (is_acceptor) {
     if (is_input && is_output)
-      throw (exceptions::basic() << "acceptor mode is not supported " \
+      throw (exceptions::msg() << "acceptor mode is not supported " \
                "for objects that are both input/output (failovers for example)");
     retval = new ndo::acceptor(is_output);
   }

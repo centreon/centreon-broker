@@ -16,11 +16,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "multiplexing/publisher.hh"
-#include "multiplexing/subscriber.hh"
-#include "ndo/connector.hh"
-#include "ndo/input.hh"
-#include "ndo/output.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/ndo/connector.hh"
+#include "com/centreon/broker/ndo/input.hh"
+#include "com/centreon/broker/ndo/output.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -46,7 +46,7 @@ connector::connector(bool is_in, bool is_out)
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::connector(c), _is_in(c._is_in), _is_out(c._is_out) {}
+  : io::endpoint(c), _is_in(c._is_in), _is_out(c._is_out) {}
 
 /**
  *  Destructor.
@@ -61,6 +61,7 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
+  io::endpoint::operator=(c);
   _is_in = c._is_in;
   _is_out = c._is_out;
   return (*this);
@@ -78,8 +79,8 @@ void connector::close() {
  */
 QSharedPointer<io::stream> connector::open() {
   QSharedPointer<io::stream> retval;
-  if (!_down.isNull()) {
-    retval = _down->open();
+  if (!_from.isNull()) {
+    retval = _from->open();
     QSharedPointer<io::stream> ndo_stream;
     if (!retval.isNull()) {
       if (_is_in)
