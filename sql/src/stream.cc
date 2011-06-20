@@ -37,6 +37,9 @@ using namespace com::centreon::broker::sql;
 *                                     *
 **************************************/
 
+// Dummy object will initialize processing table.
+stream::dummy stream::_dummy;
+
 // Processing table.
 QHash<QString, void (stream::*)(io::data const&)> stream::processing_table;
 
