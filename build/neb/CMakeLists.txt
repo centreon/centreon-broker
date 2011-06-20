@@ -111,6 +111,8 @@ set(CBMOD "cbmod")
 add_library("${CBMOD}" SHARED
   # Event sources.
   ${EVENT_SOURCES}
+  # Core sources.
+  ${LIBROKER_SOURCES}
   # Sources.
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
