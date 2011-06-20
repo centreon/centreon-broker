@@ -19,6 +19,7 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/sql/factory.hh"
 #include "com/centreon/broker/sql/internal.hh"
+#include "com/centreon/broker/sql/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -53,6 +54,7 @@ extern "C" {
         7);
       // Initialize mappings.
       sql::initialize();
+      sql::stream::initialize();
     }
     return ;
   }

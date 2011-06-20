@@ -37,66 +37,8 @@ using namespace com::centreon::broker::sql;
 *                                     *
 **************************************/
 
-// Dummy object will initialize processing table.
-stream::dummy stream::_dummy;
-
 // Processing table.
 QHash<QString, void (stream::*)(io::data const&)> stream::processing_table;
-
-// Fill processing table.
-stream::dummy::dummy() {
-  processing_table["com::centreon::broker::neb::acknowledgement"]
-    = &stream::_process_acknowledgement;
-  processing_table["com::centreon::broker::neb::comment"]
-    = &stream::_process_comment;
-  processing_table["com::centreon::broker::neb::custom_variable"]
-    = &stream::_process_custom_variable;
-  processing_table["com::centreon::broker::neb::custom_variable_status"]
-    = &stream::_process_custom_variable_status;
-  processing_table["com::centreon::broker::neb::downtime"]
-    = &stream::_process_downtime;
-  processing_table["com::centreon::broker::neb::event_handler"]
-    = &stream::_process_event_handler;
-  processing_table["com::centreon::broker::neb::flapping_status"]
-    = &stream::_process_flapping_status;
-  processing_table["com::centreon::broker::neb::host"]
-    = &stream::_process_host;
-  processing_table["com::centreon::broker::neb::host_check"]
-    = &stream::_process_host_check;
-  processing_table["com::centreon::broker::neb::host_dependency"]
-    = &stream::_process_host_dependency;
-  processing_table["com::centreon::broker::neb::host_group"]
-    = &stream::_process_host_group;
-  processing_table["com::centreon::broker::neb::host_group_member"]
-    = &stream::_process_host_group_member;
-  processing_table["com::centreon::broker::neb::host_parent"]
-    = &stream::_process_host_parent;
-  processing_table["com::centreon::broker::neb::host_status"]
-    = &stream::_process_host_status;
-  processing_table["com::centreon::broker::neb::instance"]
-    = &stream::_process_instance;
-  processing_table["com::centreon::broker::neb::instance_status"]
-    = &stream::_process_instance_status;
-  processing_table["com::centreon::broker::neb::log_entry"]
-    = &stream::_process_log;
-  processing_table["com::centreon::broker::neb::module"]
-    = &stream::_process_module;
-  processing_table["com::centreon::broker::neb::notification"]
-    = &stream::_process_notification;
-  processing_table["com::centreon::broker::neb::service"]
-    = &stream::_process_service;
-  processing_table["com::centreon::broker::neb::service_check"]
-    = &stream::_process_service_check;
-  processing_table["com::centreon::broker::neb::service_dependency"]
-    = &stream::_process_service_dependency;
-  processing_table["com::centreon::broker::neb::service_group"]
-    = &stream::_process_service_group;
-  processing_table["com::centreon::broker::neb::service_group_member"]
-    = &stream::_process_service_group_member;
-  processing_table["com::centreon::broker::neb::service_status"]
-    = &stream::_process_service_status;
-  processing_table.squeeze();
-}
 
 /*
 void (stream::* stream::processing_table[])(io::data const&) = {
@@ -1401,6 +1343,65 @@ stream::~stream() {
 
   // Remove database connection.
   QSqlDatabase::removeDatabase(id);
+}
+
+/**
+ *  Initialize SQL layer.
+ */
+void stream::initialize() {
+  // Fill processing table.
+  processing_table["com::centreon::broker::neb::acknowledgement"]
+    = &stream::_process_acknowledgement;
+  processing_table["com::centreon::broker::neb::comment"]
+    = &stream::_process_comment;
+  processing_table["com::centreon::broker::neb::custom_variable"]
+    = &stream::_process_custom_variable;
+  processing_table["com::centreon::broker::neb::custom_variable_status"]
+    = &stream::_process_custom_variable_status;
+  processing_table["com::centreon::broker::neb::downtime"]
+    = &stream::_process_downtime;
+  processing_table["com::centreon::broker::neb::event_handler"]
+    = &stream::_process_event_handler;
+  processing_table["com::centreon::broker::neb::flapping_status"]
+    = &stream::_process_flapping_status;
+  processing_table["com::centreon::broker::neb::host"]
+    = &stream::_process_host;
+  processing_table["com::centreon::broker::neb::host_check"]
+    = &stream::_process_host_check;
+  processing_table["com::centreon::broker::neb::host_dependency"]
+    = &stream::_process_host_dependency;
+  processing_table["com::centreon::broker::neb::host_group"]
+    = &stream::_process_host_group;
+  processing_table["com::centreon::broker::neb::host_group_member"]
+    = &stream::_process_host_group_member;
+  processing_table["com::centreon::broker::neb::host_parent"]
+    = &stream::_process_host_parent;
+  processing_table["com::centreon::broker::neb::host_status"]
+    = &stream::_process_host_status;
+  processing_table["com::centreon::broker::neb::instance"]
+    = &stream::_process_instance;
+  processing_table["com::centreon::broker::neb::instance_status"]
+    = &stream::_process_instance_status;
+  processing_table["com::centreon::broker::neb::log_entry"]
+    = &stream::_process_log;
+  processing_table["com::centreon::broker::neb::module"]
+    = &stream::_process_module;
+  processing_table["com::centreon::broker::neb::notification"]
+    = &stream::_process_notification;
+  processing_table["com::centreon::broker::neb::service"]
+    = &stream::_process_service;
+  processing_table["com::centreon::broker::neb::service_check"]
+    = &stream::_process_service_check;
+  processing_table["com::centreon::broker::neb::service_dependency"]
+    = &stream::_process_service_dependency;
+  processing_table["com::centreon::broker::neb::service_group"]
+    = &stream::_process_service_group;
+  processing_table["com::centreon::broker::neb::service_group_member"]
+    = &stream::_process_service_group_member;
+  processing_table["com::centreon::broker::neb::service_status"]
+    = &stream::_process_service_status;
+  processing_table.squeeze();
+  return ;
 }
 
 /**

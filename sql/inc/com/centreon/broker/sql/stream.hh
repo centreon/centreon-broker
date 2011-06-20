@@ -39,7 +39,6 @@ namespace              com {
          */
         class          stream : public io::stream {
          private:
-          static struct dummy { dummy(); } _dummy;
           static QHash<QString, void (stream::*)(io::data const&)>
                                          processing_table;
           std::auto_ptr<QSqlQuery>       _acknowledgement_stmt;
@@ -114,6 +113,7 @@ namespace              com {
                               QString const& db);
                        stream(stream const& s);
                        ~stream();
+          static void  initialize();
           QSharedPointer<io::data>
                        read();
           void         write(QSharedPointer<io::data> d);
