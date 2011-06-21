@@ -38,16 +38,18 @@ using namespace com::centreon::broker::storage;
 /**
  *  Extract a real value from a perfdata string.
  *
- *  @param[in,out] str Pointer to a perfdata string.
+ *  @param[in,out] str  Pointer to a perfdata string.
+ *  @param[in]     skip true to skip semicolon.
  *
  *  @return Extracted real value if successful, NaN otherwise.
  */
-static inline double extract_double(char const** str) {
+static inline double extract_double(char const** str,
+                                    bool skip = true) {
   double retval;
   char* tmp;
   retval = strtod(*str, &tmp);
   *str = tmp;
-  if (**str == ';')
+  if (skip && (**str == ';'))
     ++*str;
   return (retval);
 }
@@ -153,7 +155,7 @@ void parser::parse_perfdata(QString const& str,
     ++ptr;
 
     // Extract value.
-    p.value(extract_double(&ptr));
+    p.value(extract_double(&ptr, false));
     if (isnan(p.value()))
       p.value(0.0);
 
@@ -161,7 +163,7 @@ void parser::parse_perfdata(QString const& str,
     t = strcspn(ptr, " ;");
     p.unit(std::string(ptr, t).c_str());
     ptr += t;
-    if (*ptr)
+    if (*ptr == ';')
       ++ptr;
 
     // Extract warning.
