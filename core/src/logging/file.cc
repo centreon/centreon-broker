@@ -105,7 +105,7 @@ void file::open(char const* filename) {
   ostream::operator=(_ofs);
 
   // Opening message.
-  _ofs << "Centreon Broker log file successfully opened";
+  _ofs << "Centreon Broker log file successfully opened\n";
 
   return ;
 }
