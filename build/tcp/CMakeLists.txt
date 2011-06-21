@@ -21,6 +21,12 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/tcp/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
 include_directories("${INC_DIR}")
 
+# Some files must be processed by Qt's moc.
+unset(QT_WRAPPED_SOURCES)
+qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
+)
+
 # TCP module.
 set(TCP "50-tcp")
 add_library("${TCP}" MODULE
@@ -30,11 +36,14 @@ add_library("${TCP}" MODULE
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
+  "${SRC_DIR}/tls_server.cc"
+  ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/com/centreon/broker/tcp/acceptor.hh"
   "${INC_DIR}/com/centreon/broker/tcp/connector.hh"
   "${INC_DIR}/com/centreon/broker/tcp/factory.hh"
   "${INC_DIR}/com/centreon/broker/tcp/stream.hh"
+  "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
 )
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 

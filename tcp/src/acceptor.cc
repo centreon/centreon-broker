@@ -23,6 +23,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
+#include "com/centreon/broker/tcp/tls_server.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -104,7 +105,8 @@ void acceptor::listen_on(unsigned short port) {
 QSharedPointer<io::stream> acceptor::open() {
   // Listen on port.
   if (_socket.isNull()) {
-    _socket.reset(new QTcpServer);
+    _socket.reset(_tls ? new tls_server(_private, _public, _ca)
+                       : new QTcpServer);
     if (!_socket->listen(QHostAddress::Any, _port))
       throw (exceptions::msg() << "could not listen on port " << _port
                << ": " << _socket->errorString().toStdString().c_str());
