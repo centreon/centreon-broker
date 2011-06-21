@@ -422,7 +422,9 @@ void stream::write(QSharedPointer<io::data> data) {
       p.parse_perfdata(ss->perf_data, pds);
     }
     catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-      logging::error << logging::MEDIUM << e.what();
+      logging::error << logging::MEDIUM
+        << "storage: error while parsing performance data of service "
+        << ss->service_id << ": " << e.what();
       return ;
     }
 
