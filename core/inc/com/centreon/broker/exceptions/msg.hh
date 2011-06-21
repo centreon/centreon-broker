@@ -48,6 +48,7 @@ namespace                           com {
           msg&                      operator<<(double d) throw ();
           msg&                      operator<<(int i) throw ();
           msg&                      operator<<(unsigned int i) throw ();
+          msg&                      operator<<(unsigned long long l) throw ();
           msg&                      operator<<(char const* str) throw ();
           msg&                      operator<<(time_t t) throw ();
           char const*               what() const throw ();

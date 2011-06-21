@@ -106,6 +106,18 @@ msg& msg::operator<<(unsigned int i) throw () {
 }
 
 /**
+ *  Append an unsigned long long to the exceptions message.
+ *
+ *  @param[in] l Unsigned long long to append.
+ *
+ *  @return This instance.
+ */
+msg& msg::operator<<(unsigned long long l) throw () {
+  stringifier::operator<<(l);
+  return (*this);
+}
+
+/**
  *  Append a string to the exception message.
  *
  *  @param[in] str String to append.

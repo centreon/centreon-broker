@@ -133,6 +133,17 @@ stringifier& stringifier::operator<<(unsigned int i) throw () {
 }
 
 /**
+ *  Append an unsigned long long to the internal buffer.
+ *
+ *  @param[in] l Unsigned long long to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(unsigned long long l) throw () {
+  return (_numeric_conversion("%llu", l));
+}
+
+/**
  *  Append a timestamp to the internal buffer.
  *
  *  @param[in] t Timestamp to append.

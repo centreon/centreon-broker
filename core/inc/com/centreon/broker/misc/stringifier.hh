@@ -57,6 +57,7 @@ namespace                           com {
           stringifier&              operator<<(double d) throw ();
           stringifier&              operator<<(int i) throw ();
           stringifier&              operator<<(unsigned int i) throw ();
+          stringifier&              operator<<(unsigned long long l) throw ();
           stringifier&              operator<<(char const* str) throw ();
           stringifier&              operator<<(time_t t) throw ();
           void                      reset() throw ();

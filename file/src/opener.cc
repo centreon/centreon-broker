@@ -16,7 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/broker/file/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -77,6 +79,14 @@ void opener::close() {
  *  @return Opened stream.
  */
 QSharedPointer<io::stream> opener::open() {
+  QIODevice::OpenMode mode(QIODevice::Append);
+  if (_is_in)
+    mode |= (_is_out ? QIODevice::ReadWrite : QIODevice::ReadOnly);
+  else if (_is_out)
+    mode |= QIODevice::WriteOnly;
+  else
+    throw (exceptions::msg() << "file: attempt to open a file with invalid flags");
+  return (QSharedPointer<io::stream>(new stream(_filename, mode)));
 }
 
 /**
