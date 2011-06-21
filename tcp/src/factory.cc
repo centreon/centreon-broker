@@ -124,12 +124,46 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     port = it.value().toUShort();
   }
 
+  // Find TLS parameters (optional).
+  bool tls(false);
+  QString ca_cert;
+  QString private_key;
+  QString public_cert;
+  {
+    // Is TLS enabled ?
+    QMap<QString, QString>::const_iterator it(cfg.params.find("tls"));
+    if (it != cfg.params.end()) {
+      tls = (!it.value().compare("yes", Qt::CaseInsensitive)
+             || !it.value().compare("true", Qt::CaseInsensitive)
+             || !it.value().compare("enable", Qt::CaseInsensitive)
+             || !it.value().compare("enabled", Qt::CaseInsensitive)
+             || it.value().toInt());
+      if (tls) {
+        // CA certificate.
+        it = cfg.params.find("ca_certificate");
+        if (it != cfg.params.end())
+          ca_cert = it.value();
+
+        // Private key.
+        it = cfg.params.find("private_key");
+        if (it != cfg.params.end())
+          private_key = it.value();
+
+        // Public certificate.
+        it = cfg.params.find("public_cert");
+        if (it != cfg.params.end())
+          public_cert = it.value();
+      }
+    }
+  }
+
   // Acceptor.
   QScopedPointer<io::endpoint> endp;
   if (host.isEmpty()) {
     is_acceptor = true;
     QScopedPointer<tcp::acceptor> a(new tcp::acceptor);
     a->listen_on(port);
+    a->set_tls(tls, private_key, public_cert, ca_cert);
     endp.reset(a.take());
   }
   // Connector.
@@ -137,6 +171,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     is_acceptor = false;
     QScopedPointer<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
+    c->set_tls(tls, private_key, public_cert, ca_cert);
     endp.reset(c.take());
   }
   

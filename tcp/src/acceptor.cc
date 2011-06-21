@@ -70,7 +70,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
 /**
  *  Default constructor.
  */
-acceptor::acceptor() : _port(0) {}
+acceptor::acceptor() : _port(0), _tls(false) {}
 
 /**
  *  Destructor.
@@ -125,4 +125,24 @@ QSharedPointer<io::stream> acceptor::open() {
 
   // Return object.
   return (QSharedPointer<io::stream>(new stream(incoming)));
+}
+
+/**
+ *  Set TLS parameters.
+ *
+ *  @param[in] enable true to enable TLS encryption.
+ *  @param[in] private_key Private key to use for encryption.
+ *  @param[in] public_cert Public certificate to use for encryption.
+ *  @param[in] ca_cert     Trusted CA's certificate, used to
+ *                         authenticate peers.
+ */
+void acceptor::set_tls(bool enable,
+                       QString const& private_key,
+                       QString const& public_cert,
+                       QString const& ca_cert) {
+  _ca = ca_cert;
+  _private = private_key;
+  _public = public_cert;
+  _tls = enable;
+  return ;
 }

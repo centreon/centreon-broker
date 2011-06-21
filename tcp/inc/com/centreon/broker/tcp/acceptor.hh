@@ -34,9 +34,13 @@ namespace                com {
          */
         class            acceptor : public io::endpoint {
          private:
+          QString        _ca;
           unsigned short _port;
-	  QScopedPointer<QTcpServer>
+          QString        _private;
+          QString        _public;
+          QScopedPointer<QTcpServer>
                          _socket;
+          bool           _tls;
                          acceptor(acceptor const& a);
           acceptor&      operator=(acceptor const& a);
 
@@ -47,6 +51,10 @@ namespace                com {
           void           listen_on(unsigned short port);
           QSharedPointer<io::stream>
                          open();
+          void           set_tls(bool enable,
+                           QString const& private_key = QString(),
+                           QString const& public_cert = QString(),
+                           QString const& ca_cert = QString());
         };
       }
     }

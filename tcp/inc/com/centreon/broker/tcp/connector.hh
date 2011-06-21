@@ -36,10 +36,14 @@ namespace                com {
          */
         class            connector : public io::endpoint {
          private:
+          QString        _ca;
           QString        _host;
           unsigned short _port;
+          QString        _private;
+          QString        _public;
           QSharedPointer<QTcpSocket>
                          _socket;
+          bool           _tls;
           void           _internal_copy(connector const& c);
 
          public:
@@ -51,6 +55,10 @@ namespace                com {
           void           connect_to(QString const& host, unsigned short port);
           QSharedPointer<io::stream>
                          open();
+          void           set_tls(bool enable,
+                           QString const& private_key = QString(),
+                           QString const& public_cert = QString(),
+                           QString const& ca_cert = QString());
         };
       }
     }

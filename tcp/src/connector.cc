@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QSslSocket>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/connector.hh"
@@ -36,9 +37,13 @@ using namespace com::centreon::broker::tcp;
  *  @param[in] c Object to copy.
  */
 void connector::_internal_copy(connector const& c) {
+  _ca = c._ca;
   _host = c._host;
   _port = c._port;
+  _private = c._private;
+  _public = c._public;
   _socket = c._socket;
+  _tls = c._tls;
   return ;
 }
 
@@ -51,7 +56,7 @@ void connector::_internal_copy(connector const& c) {
 /**
  *  Default constructor.
  */
-connector::connector() : _port(0) {}
+connector::connector() : _port(0), _tls(false) {}
 
 /**
  *  Copy constructor.
@@ -104,18 +109,73 @@ void connector::connect_to(QString const& host, unsigned short port) {
  *  Connect to the remote host.
  */
 QSharedPointer<io::stream> connector::open() {
-  // Launch connection process.
-  _socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
-  _socket->connectToHost(_host, _port);
+  // Is TLS enabled ?
+  if (_tls) {
+    // Create socket object.
+    QSharedPointer<QSslSocket> ssl_socket(new QSslSocket);
+    _socket = ssl_socket.staticCast<QTcpSocket>();
 
-  // Wait for connection result.
-  if (!_socket->waitForConnected())
-    throw (exceptions::msg() << "could not connect to "
-             << _host.toStdString().c_str() << ":" << _port
-             << ": " << _socket->errorString().toStdString().c_str());
+    // Use only TLS protocol.
+    ssl_socket->setProtocol(QSsl::TlsV1);
+
+    // Set self certificates.
+    if (!_private.isEmpty() && !_public.isEmpty()) {
+      ssl_socket->setLocalCertificate(_public);
+      ssl_socket->setPrivateKey(_private);
+    }
+
+    // Set CA certificate.
+    if (!_ca.isEmpty()) {
+      ssl_socket->addCaCertificates(_ca);
+      ssl_socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
+      ssl_socket->setPeerVerifyDepth(0);
+    }
+    else
+      ssl_socket->setPeerVerifyMode(QSslSocket::VerifyNone);
+
+    // Launch connection and handshake process.
+    ssl_socket->connectToHostEncrypted(_host, _port);
+
+    // Wait for connection result.
+    if (!ssl_socket->waitForEncrypted(-1))
+      throw (exceptions::msg() << "TCP: could not connect to "
+               << _host.toStdString().c_str() << ":" << _port
+               << ": " << _socket->errorString().toStdString().c_str());
+  }
+  else {
+    // Launch connection process.
+    _socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
+    _socket->connectToHost(_host, _port);
+
+    // Wait for connection result.
+    if (!_socket->waitForConnected(-1))
+      throw (exceptions::msg() << "TCP: could not connect to "
+               << _host.toStdString().c_str() << ":" << _port
+               << ": " << _socket->errorString().toStdString().c_str());
+  }
   logging::info << logging::MEDIUM << "TCP: successfully connected to "
     << _host.toStdString().c_str() << ":" << _port;
 
   // Return stream.
   return (QSharedPointer<io::stream>(new stream(_socket)));
+}
+
+/**
+ *  Set TLS parameters.
+ *
+ *  @param[in] enable      true to enable, false to disable.
+ *  @param[in] private_key Private key to use for encryption.
+ *  @param[in] public_cert Public certificate to use for encryption.
+ *  @param[in] ca_cert     Trusted CA's certificate, used to
+ *                         authenticate peers.
+ */
+void connector::set_tls(bool enable,
+                        QString const& private_key,
+                        QString const& public_cert,
+                        QString const& ca_cert) {
+  _ca = ca_cert;
+  _private = private_key;
+  _public = public_cert;
+  _tls = enable;
+  return ;
 }
