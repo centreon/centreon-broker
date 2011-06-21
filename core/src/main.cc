@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,6 +18,7 @@
 
 #include <errno.h>
 #include <exception>
+#include <locale.h>
 #include <QCoreApplication>
 #include <signal.h>
 #include <string.h>
@@ -136,6 +137,9 @@ int main(int argc, char* argv[]) {
       app.setApplicationVersion("2");
       app.setOrganizationDomain("merethis.com");
       app.setOrganizationName("Merethis");
+
+      // Reset locale.
+      setlocale(LC_NUMERIC, "C");
 
       {
         // Set main configuration file.
