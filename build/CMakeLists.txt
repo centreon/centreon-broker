@@ -38,15 +38,6 @@ endif ()
 find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 
-# Check for GNU TLS.
-#option(TLS "TLS support." ON)
-#if (TLS)
-#  set(GNUTLS_DIR .)
-#  find_package(GNUTLS REQUIRED)
-#  include_directories(${GNUTLS_INCLUDE_DIR})
-#  add_definitions(-DUSE_TLS)
-#endif ()
-
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
@@ -142,18 +133,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/processing/failover.hh"
   "${INC_DIR}/com/centreon/broker/processing/feeder.hh"
 )
-#if (TLS)
-#  set(LIBROKER_SOURCES ${LIBROKER_SOURCES}
-#	../src/io/tls/acceptor.cc
-#	../src/io/tls/connector.cc
-#	../src/io/tls/internal.cc
-#	../src/io/tls/params.cc
-#	../src/io/tls/stream.cc
-#  )
-#endif ()
+
+# Static library.
 add_library("roker" STATIC ${LIBROKER_SOURCES} ${QT_WRAPPED_SOURCES})
 target_link_libraries("roker" ${QT_LIBRARIES})
-#target_link_libraries(roker ${GNUTLS_LIBRARIES})
 #target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
