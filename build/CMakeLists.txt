@@ -104,7 +104,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
-  "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
   "${INC_DIR}/com/centreon/broker/config/applier/logger.hh"
@@ -152,7 +151,7 @@ set(LIBROKER_SOURCES
 #	../src/io/tls/stream.cc
 #  )
 #endif ()
-add_library("roker" STATIC ${LIBROKER_SOURCES})
+add_library("roker" STATIC ${LIBROKER_SOURCES} ${QT_WRAPPED_SOURCES})
 target_link_libraries("roker" ${QT_LIBRARIES})
 #target_link_libraries(roker ${GNUTLS_LIBRARIES})
 #target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
@@ -170,6 +169,8 @@ set(DAEMON "cbd")
 add_executable("${DAEMON}"
   # Core sources.
   ${LIBROKER_SOURCES}
+  # Core Qt sources.
+  ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/main.cc"
 )

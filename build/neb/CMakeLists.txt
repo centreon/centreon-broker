@@ -108,11 +108,19 @@ install(TARGETS "${NEB}"
 
 # Centreon Engine/Nagios module.
 set(CBMOD "cbmod")
+unset(QT_WRAPPED_SOURCES)
+qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker/config/applier/endpoint.hh"
+  "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker/processing/failover.hh"
+  "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker/processing/feeder.hh"
+)
 add_library("${CBMOD}" SHARED
   # Event sources.
   ${EVENT_SOURCES}
   # Core sources.
   ${LIBROKER_SOURCES}
+  # Core Qt sources.
+  ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
