@@ -122,6 +122,51 @@ stringifier& stringifier::operator<<(int i) throw () {
 }
 
 /**
+ *  Append a long integer to the internal buffer.
+ *
+ *  @param[in] l Long integer to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(long l) throw () {
+  return (_numeric_conversion("%ld", l));
+}
+
+/**
+ *  Append a long long integer to the internal buffer.
+ *
+ *  @param[in] ll Long long integer to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(long long ll) throw () {
+  return (_numeric_conversion("%lld", ll));
+}
+
+/**
+ *  @brief Append a QString to the internal buffer.
+ *
+ *  The QString (Unicode) is converted to latin1 and inserted in the
+ *  buffer. However this process might include extra allocation which
+ *  can cause exceptions if memory is exhausted. However such errors are
+ *  caught and if string could not be converted the string "(unknown)"
+ *  is inserted instead.
+ *
+ *  @param[in] q QString to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(QString const& q) throw () {
+  try {
+    operator<<(qPrintable(q));
+  }
+  catch (...) {
+    operator<<("(unknown)");
+  }
+  return (*this);
+}
+
+/**
  *  Append an unsigned integer to the internal buffer.
  *
  *  @param[in] i Unsigned integer to append.
@@ -133,6 +178,17 @@ stringifier& stringifier::operator<<(unsigned int i) throw () {
 }
 
 /**
+ *  Append an unsigned long to the internal buffer.
+ *
+ *  @param[in] l Unsigned long to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(unsigned long l) throw () {
+  return (_numeric_conversion("%lu", l));
+}
+
+/**
  *  Append an unsigned long long to the internal buffer.
  *
  *  @param[in] l Unsigned long long to append.
@@ -141,18 +197,6 @@ stringifier& stringifier::operator<<(unsigned int i) throw () {
  */
 stringifier& stringifier::operator<<(unsigned long long l) throw () {
   return (_numeric_conversion("%llu", l));
-}
-
-/**
- *  Append a timestamp to the internal buffer.
- *
- *  @param[in] t Timestamp to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(time_t t) throw () {
-  long l(t);
-  return (_numeric_conversion("%ld", l));
 }
 
 /**
@@ -182,6 +226,15 @@ stringifier& stringifier::operator<<(char const* str) throw () {
   _buffer[_current] = '\0';
 
   return (*this);
+}
+
+/**
+ *  Get the string buffer.
+ *
+ *  @return String buffer.
+ */
+char const* stringifier::data() const throw () {
+  return (_buffer);
 }
 
 /**

@@ -63,5 +63,5 @@ msg& msg::operator=(msg const& b) throw () {
  *  @return Nul-terminated message.
  */
 char const* msg::what() const throw () {
-  return (_buffer);
+  return (misc::stringifier::data());
 }

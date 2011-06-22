@@ -19,7 +19,7 @@
 #ifndef CCB_MISC_STRINGIFIER_HH_
 # define CCB_MISC_STRINGIFIER_HH_
 
-# include <time.h>
+# include <QString>
 
 namespace                           com {
   namespace                         centreon {
@@ -38,7 +38,7 @@ namespace                           com {
          */
         class                       stringifier {
          public:
-          static unsigned int const max_len = 4000;
+          static unsigned int const max_len = 6000;
 
          private:
           template                  <typename T>
@@ -56,10 +56,14 @@ namespace                           com {
           stringifier&              operator<<(bool b) throw ();
           stringifier&              operator<<(double d) throw ();
           stringifier&              operator<<(int i) throw ();
+          stringifier&              operator<<(long l) throw ();
+          stringifier&              operator<<(long long ll) throw ();
+          stringifier&              operator<<(QString const& q) throw ();
           stringifier&              operator<<(unsigned int i) throw ();
+          stringifier&              operator<<(unsigned long l) throw ();
           stringifier&              operator<<(unsigned long long l) throw ();
           stringifier&              operator<<(char const* str) throw ();
-          stringifier&              operator<<(time_t t) throw ();
+          char const*               data() const throw ();
           void                      reset() throw ();
         };
       }

@@ -23,10 +23,11 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include_directories("${INC_DIR}")
 
 # Enable or not the debug mode.
-option(WITH_DEBUG "Generate debug messages." OFF)
+option(WITH_DEBUG "Generate debug messages." ON)
 if (NOT WITH_DEBUG)
   add_definitions(-DNDEBUG)
   message(STATUS "Debug messages disabled.")
@@ -57,12 +58,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
-#	../src/interface/db/destination.cc
-#	../src/interface/db/internal.cc
 #	../src/interface/ndo/base.cc
-#	../src/interface/ndo/destination.cc
-#	../src/interface/ndo/internal.cc
-#	../src/interface/ndo/source.cc
 #	../src/interface/ndo/source_destination.cc
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
@@ -73,8 +69,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
-#  ../src/io/fd.cc
-#	../src/io/file.cc
 #	../src/io/net/unix.cc
 #	../src/io/split.cc
   "${SRC_DIR}/logging/backend.cc"
@@ -158,6 +152,99 @@ add_executable("${DAEMON}"
   "${SRC_DIR}/main.cc"
 )
 target_link_libraries("${DAEMON}" ${QT_LIBRARIES})
+
+# Enable testing.
+option(WITH_TESTING "Generate unit tests." OFF)
+if (WITH_TESTING)
+  enable_testing()
+
+  # misc namespace tests.
+  # misc::stringifier tests.
+  #   Default construction.
+  set(TEST_NAME "core_misc_stringifier_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   C-string insertion.
+  set(TEST_NAME "core_misc_stringifier_string")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/string.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Boolean insertion.
+  set(TEST_NAME "core_misc_stringifier_bool")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/bool.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Integer insertion.
+  set(TEST_NAME "core_misc_stringifier_int")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/int.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Long insertion.
+  set(TEST_NAME "core_misc_stringifier_long")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/long.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Long long insertion.
+  set(TEST_NAME "core_misc_stringifier_long_long")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/long_long.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   QString insertion.
+  set(TEST_NAME "core_misc_stringifier_qstring")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/qstring.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Unsigned integer insertion.
+  set(TEST_NAME "core_misc_stringifier_uint")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/uint.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Unsigned long integer insertion.
+  set(TEST_NAME "core_misc_stringifier_ulong")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/ulong.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Unsigned long long integer insertion.
+  set(TEST_NAME "core_misc_stringifier_ulong_long")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/ulong_long.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Mixed insertions.
+  set(TEST_NAME "core_misc_stringifier_mixed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/mixed.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reinitialization of object.
+  set(TEST_NAME "core_misc_stringifier_reset")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/reset.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "core_misc_stringifier_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_misc_stringifier_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install directories.
 if (WITH_PREFIX)
