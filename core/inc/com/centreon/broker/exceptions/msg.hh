@@ -20,38 +20,40 @@
 # define CCB_EXCEPTIONS_MSG_HH_
 
 # include <exception>
-# include <time.h>
 # include "com/centreon/broker/misc/stringifier.hh"
 
-namespace                           com {
-  namespace                         centreon {
-    namespace                       broker {
-      namespace                     exceptions {
+namespace             com {
+  namespace           centreon {
+    namespace         broker {
+      namespace       exceptions {
         /**
          *  @class msg msg.hh "exceptions/msg.hh"
          *  @brief Base class of exceptions thrown in Centreon Broker.
          *
          *  msg is a simple exception class that is only associated
          *  with a message. msg accepts multiple types on input but
-         *  its limitation is that it only accepts until
-         *  msg::max_msg_len characters of exception message.
+         *  its limitation is that it only accepts a limited number of
+         *  characters in the exception message.
          */
-        class                       msg : private misc::stringifier,
-                                          public std::exception {
+        class         msg : private misc::stringifier,
+                            public std::exception {
          public:
-          static unsigned int const max_msg_len = misc::stringifier::max_len;
-                                    msg() throw ();
-                                    msg(msg const& b) throw ();
-          virtual                   ~msg() throw ();
-          msg&                      operator=(msg const& b) throw ();
-          msg&                      operator<<(bool b) throw ();
-          msg&                      operator<<(double d) throw ();
-          msg&                      operator<<(int i) throw ();
-          msg&                      operator<<(unsigned int i) throw ();
-          msg&                      operator<<(unsigned long long l) throw ();
-          msg&                      operator<<(char const* str) throw ();
-          msg&                      operator<<(time_t t) throw ();
-          char const*               what() const throw ();
+                      msg() throw ();
+                      msg(msg const& b) throw ();
+          virtual     ~msg() throw ();
+          msg&        operator=(msg const& b) throw ();
+          char const* what() const throw ();
+
+          /**
+           *  Insert data in message.
+           *
+           *  @param[in] t Data to insert.
+           */
+          template    <typename T>
+          msg&        operator<<(T t) throw () {
+            misc::stringifier::operator<<(t);
+            return (*this);
+          }
         };
       }
     }
