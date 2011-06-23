@@ -24,7 +24,7 @@ include_directories("${INC_DIR}")
 # Find librrd.
 include(FindPkgConfig)
 if (NOT PKG_CONFIG_FOUND)
-  message(FATAL_ERRO "Could not find pkg-config.")
+  message(FATAL_ERROR "Could not find pkg-config.")
 endif ()
 pkg_check_modules(LIBRRD REQUIRED "librrd")
 
