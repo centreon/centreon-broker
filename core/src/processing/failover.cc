@@ -210,6 +210,7 @@ void failover::set_failover(QSharedPointer<failover> fo) {
  */
 void failover::write(QSharedPointer<io::data> d) {
   (void)d;
-  throw (exceptions::msg() << "attempt to use a failover thread as a destination (software bug)");
+  throw (exceptions::msg() << "failover: attempt to use a failover " \
+           "thread as a destination (software bug)");
   return ;
 }

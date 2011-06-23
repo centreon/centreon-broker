@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
@@ -87,7 +88,7 @@ file::~file() {}
 void file::open(char const* filename) {
   // Check filename is not NULL.
   if (!filename)
-    throw (exceptions::msg() << "trying to open NULL log file");
+    throw (exceptions::msg() << "log: trying to open empty file name");
 
   // Close file if previously opened.
   if (_ofs.is_open())
@@ -98,14 +99,17 @@ void file::open(char const* filename) {
                       | std::ios_base::app
                       | std::ios_base::ate);
   if (_ofs.fail())
-    throw (exceptions::msg() << "could not open \""
-                             << filename << "\" log file");
+    throw (exceptions::msg() << "log: could not open \""
+                             << filename << "\" file");
 
   // Don't forget to set the stream to write on.
   ostream::operator=(_ofs);
 
   // Opening message.
-  _ofs << "Centreon Broker log file successfully opened\n";
+  _ofs << "-----------------------\n"
+          "    Centreon Broker\n"
+          "-----------------------\n"
+          "PID " << getpid() << "\n\n";
 
   return ;
 }
