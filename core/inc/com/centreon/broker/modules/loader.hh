@@ -19,7 +19,7 @@
 #ifndef CCB_MODULES_LOADER_HH_
 # define CCB_MODULES_LOADER_HH_
 
-# include <QList>
+# include <QHash>
 # include <QSharedPointer>
 # include <QString>
 # include "com/centreon/broker/modules/handle.hh"
@@ -37,7 +37,7 @@ namespace         com {
          */
         class     loader {
          private:
-          QList<QSharedPointer<handle> >
+          QHash<QString, QSharedPointer<handle> >
                   _handles;
 
          public:

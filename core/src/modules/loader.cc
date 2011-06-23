@@ -66,13 +66,17 @@ loader& loader::operator=(loader const& l) {
  */
 void loader::load_dir(QString const& dirname) {
   // Debug message.
-  logging::debug << logging::MEDIUM << "loading module directory '"
-    << dirname.toStdString().c_str() << "'";
+  logging::debug << logging::MEDIUM
+    << "modules: loading directory '" << dirname << "'";
 
   // Set directory browsing parameters.
   QDir dir(dirname);
   QStringList l;
+#ifdef Q_OS_WIN32
+  l.push_back("*.dll");
+#else
   l.push_back("*.so");
+#endif /* Q_OS_WIN32 */
   dir.setNameFilters(l);
 
   // Iterate through all modules in directory.
@@ -91,6 +95,10 @@ void loader::load_dir(QString const& dirname) {
     }
   }
 
+  // Ending log message.
+  logging::debug << logging::MEDIUM
+    << "modules: finished loading directory '" << dirname << "'";
+
   return ;
 }
 
@@ -100,8 +108,15 @@ void loader::load_dir(QString const& dirname) {
  *  @param[in] filename File name.
  */
 void loader::load_file(QString const& filename) {
-  QSharedPointer<handle> handl(new handle);
-  handl->open(filename);
-  _handles.push_back(handl);
+  if (_handles.find(filename) == _handles.end()) {
+    logging::debug << logging::LOW << "modules: loading '"
+      << filename << "' which is NOT already loaded";
+    QSharedPointer<handle> handl(new handle);
+    handl->open(filename);
+    _handles[filename] = handl;
+  }
+  else
+    logging::info << logging::LOW << "modules: attempt to load file '"
+      << filename << "' which is already loaded";
   return ;
 }
