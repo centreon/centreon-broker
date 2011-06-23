@@ -90,66 +90,6 @@ temp_logger& temp_logger::operator=(temp_logger const& t) {
 }
 
 /**
- *  Log a boolean.
- *
- *  @param[in] b Boolean to log (expanded to "true" or "false").
- *
- *  @return Current instance.
- */
-temp_logger& temp_logger::operator<<(bool b) throw () {
-  stringifier::operator<<(b);
-  return (*this);
-}
-
-/**
- *  Log a double.
- *
- *  @param[in] d Double to log.
- *
- *  @return Current instance.
- */
-temp_logger& temp_logger::operator<<(double d) throw () {
-  stringifier::operator<<(d);
-  return (*this);
-}
-
-/**
- *  Log an integer.
- *
- *  @param[in] i Integer to log.
- *
- *  @return Current instance.
- */
-temp_logger& temp_logger::operator<<(int i) throw () {
-  stringifier::operator<<(i);
-  return (*this);
-}
-
-/**
- *  Log an unsigned integer.
- *
- *  @param[in] i Unsigned integer to log.
- *
- *  @return Current instance.
- */
-temp_logger& temp_logger::operator<<(unsigned int i) throw () {
-  stringifier::operator<<(i);
-  return (*this);
-}
-
-/**
- *  Log a string.
- *
- *  @param[in] str String to log.
- *
- *  @return Current instance.
- */
-temp_logger& temp_logger::operator<<(char const* str) throw () {
-  stringifier::operator<<(str);
-  return (*this);
-}
-
-/**
  *  Change log level.
  *
  *  @param[in] l New level.

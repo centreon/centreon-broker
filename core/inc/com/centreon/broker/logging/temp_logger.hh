@@ -45,12 +45,18 @@ namespace              com {
                        temp_logger(temp_logger const& t);
                        ~temp_logger();
           temp_logger& operator=(temp_logger const& t);
-          temp_logger& operator<<(bool b) throw ();
-          temp_logger& operator<<(double d) throw ();
-          temp_logger& operator<<(int i) throw ();
-          temp_logger& operator<<(unsigned int i) throw ();
-          temp_logger& operator<<(char const* str) throw ();
           temp_logger& operator<<(level l) throw ();
+
+          /**
+           *  Insert data in message.
+           *
+           *  @param[in] t Data to insert.
+           */
+          template     <typename T>
+          temp_logger& operator<<(T t) throw () {
+            misc::stringifier::operator<<(t);
+            return (*this);
+          }
         };
       }
     }

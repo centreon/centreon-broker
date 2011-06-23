@@ -25,6 +25,16 @@ using namespace com::centreon::broker::modules;
 
 /**************************************
 *                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Routine symbols.
+char const* handle::deinitialization = "broker_module_deinit";
+char const* handle::initialization = "broker_module_init";
+
+/**************************************
+*                                     *
 *           Private Methods           *
 *                                     *
 **************************************/
@@ -33,18 +43,27 @@ using namespace com::centreon::broker::modules;
  *  Call the module's initialization routine.
  */
 void handle::_init() {
-  // Initialize module.
-  logging::debug << logging::LOW << "resolving initialization routine of module '"
-    << _handle->fileName().toStdString().c_str() << "'";
-  void* sym(_handle->resolve("broker_module_init"));
-  if (!sym)
-    throw (exceptions::msg() << "could not find module initialization routine in '"
-             << _handle->fileName().toStdString().c_str()
-             << "': " << _handle->errorString().toStdString().c_str());
+  // Find initialization routine.
+  logging::debug << logging::LOW << "modules: searching "
+       "initialization routine (symbol " << initialization
+    << ") in '" << _handle.fileName() << "'";
+  void* sym(_handle.resolve(initialization));
+
+  // Could not find initialization routine.
+  if (!sym) {
+    QString error_str(_handle.errorString());
+    throw (exceptions::msg() << "modules: could not find " \
+                "initialization routine in '" << _handle.fileName()
+             << "' (not a Centreon Broker module ?): " << error_str);
+  }
+
+  // Call initialization routine.
+  logging::debug << logging::LOW << "modules: calling initialization " \
+    "routine of '" << _handle.fileName() << "'";
   (*(void (*)())(sym))();
-  logging::debug << logging::LOW << "module '"
-    << _handle->fileName().toStdString().c_str()
-    << "' successfully initialized";
+  logging::debug << logging::MEDIUM << "modules: initialization routine " \
+    "of '" << _handle.fileName() << "' successfully completed";
+
   return ;
 }
 
@@ -57,22 +76,31 @@ void handle::_init() {
 /**
  *  Default constructor.
  */
-handle::handle() : _handle(new QLibrary) {}
+handle::handle() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] h Object to copy.
  */
-handle::handle(handle const& h) : _handle(h._handle) {
-  _init();
+handle::handle(handle const& h) {
+  this->open(h._handle.fileName());
 }
 
 /**
  *  Destructor.
  */
 handle::~handle() {
-  this->close();
+  try {
+    this->close();
+  }
+  catch (std::exception const& e) {
+    logging::error << logging::HIGH << e.what();
+  }
+  catch (...) {
+    logging::error << logging::HIGH << "modules: unknown error while " \
+      "unloading '" << _handle.fileName() << "'";
+  }
 }
 
 /**
@@ -84,31 +112,60 @@ handle::~handle() {
  */
 handle& handle::operator=(handle const& h) {
   this->close();
-  _handle = h._handle;
-  _init();
+  this->open(h._handle.fileName());
   return (*this);
 }
 
 /**
- *  Close the library object.
+ *  @brief Close the library object.
+ *
+ *  If the underlying library object is open, this method will call the
+ *  module's deinitialization routine (if it exists) and then unload the
+ *  library.
  */
 void handle::close() {
   if (is_open()) {
-    // Call deinit function.
-    logging::debug << logging::LOW << "resolving deinitialization routine of module '"
-      << _handle->fileName().toStdString().c_str() << "'";
-    void* sym(_handle->resolve("broker_module_deinit"));
-    if (!sym)
-      throw (exceptions::msg() << "could not find module deinitialiation routine in '"
-               << _handle->fileName().toStdString().c_str()
-               << "': " << _handle->errorString().toStdString().c_str());
-    (*(void (*)(bool))(sym))(true);
-    logging::debug << logging::LOW << "module '"
-      << _handle->fileName().toStdString().c_str()
-      << "' successfully deinitialized";
+    // Log message.
+    logging::info << logging::MEDIUM << "modules: closing '"
+      << _handle.fileName() << "'";
+
+    // Find deinitialization routine.
+    logging::debug << logging::LOW << "modules: searching " \
+         "deinitialization routine (symbol " << deinitialization
+      << ") in '" << _handle.fileName() << "'";
+    void* sym(_handle.resolve(deinitialization));
+
+    // Could not find deinitialization routine.
+    if (!sym) {
+      QString error_str(_handle.errorString());
+      logging::info << logging::MEDIUM << "modules: could not find " \
+           "deinitialization routine in '" << _handle.fileName()
+        << "': " << error_str;
+    }
+    // Call deinitialization routine.
+    else {
+      logging::debug << logging::LOW << "modules: calling " \
+        "deinitialization routine of '" << _handle.fileName() << "'";
+      (*(void (*)(bool))(sym))(true);
+      logging::debug << logging::LOW << "modules: deinitialization " \
+           "routine of '" << _handle.fileName()
+        << "' successfully completed";
+    }
 
     // Reset library handle.
-    _handle.clear();
+    logging::debug << logging::LOW << "modules: unloading library '"
+      << _handle.fileName() << "'";
+    // Library was not unloaded.
+    if (!_handle.unload()) {
+      QString error_str(_handle.errorString());
+      logging::info << logging::MEDIUM
+        << "modules: could not unload library '"
+        << _handle.fileName() << "': " << error_str;
+    }
+    // Library was unloaded.
+    else
+      logging::info << logging::MEDIUM << "modules: library '"
+        << _handle.fileName() << "' unloaded";
   }
   return ;
 }
@@ -119,7 +176,7 @@ void handle::close() {
  *  @return true if the library is loaded, false otherwise.
  */
 bool handle::is_open() const {
-  return (!_handle.isNull() && _handle->isLoaded());
+  return (_handle.isLoaded());
 }
 
 /**
@@ -132,24 +189,21 @@ void handle::open(QString const& filename) {
   this->close();
 
   // Load library.
-  logging::debug << logging::MEDIUM << "loading module '"
-    << filename.toStdString().c_str() << "'";
-  _handle->setFileName(filename);
-  _handle->setLoadHints(QLibrary::ResolveAllSymbolsHint
+  logging::debug << logging::MEDIUM << "modules: loading library '"
+    << filename << "'";
+  _handle.setFileName(filename);
+  _handle.setLoadHints(QLibrary::ResolveAllSymbolsHint
     | QLibrary::ExportExternalSymbolsHint);
-  if (!_handle->load())
-    throw (exceptions::msg() << "could not load module '"
-             << filename.toStdString().c_str()
-             << "': " << _handle->errorString().toStdString().c_str());
-  logging::debug << logging::MEDIUM << "module '"
-    << filename.toStdString().c_str() << "' successfully loaded";
 
-  // Call module's initialization routine.
-  logging::debug << logging::MEDIUM << "initializing module '"
-    << filename.toStdString().c_str() << "'";
+  // Could not load library.
+  if (!_handle.load())
+    throw (exceptions::msg() << "modules: could not load library '"
+             << filename << "': " << _handle.errorString());
+  logging::info << logging::MEDIUM << "modules: library '"
+    << filename << "' loaded";
+
+  // Initialize module.
   _init();
-  logging::debug << logging::MEDIUM << "module '"
-    << filename.toStdString().c_str() << "' successfully initialized";
 
   return ;
 }

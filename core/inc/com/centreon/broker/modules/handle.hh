@@ -22,10 +22,10 @@
 # include <QLibrary>
 # include <QSharedPointer>
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    modules {
+namespace                    com {
+  namespace                  centreon {
+    namespace                broker {
+      namespace              modules {
         /**
          *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
          *  @brief Plugin library handle.
@@ -33,19 +33,23 @@ namespace                          com {
          *  Centreon Broker can load plugins. This class represents such
          *  plugins.
          */
-        class                      handle {
+        class                handle {
+         public:
+          static char const* deinitialization;
+          static char const* initialization;
+
          private:
-          QSharedPointer<QLibrary> _handle;
-	  void                     _init();
+          QLibrary           _handle;
+          void               _init();
 
          public:
-                                   handle();
-                                   handle(handle const& h);
-                                   ~handle();
-          handle&                  operator=(handle const& h);
-          void                     close();
-          bool                     is_open() const;
-          void                     open(QString const& filename);
+                             handle();
+                             handle(handle const& h);
+                             ~handle();
+          handle&            operator=(handle const& h);
+          void               close();
+          bool               is_open() const;
+          void               open(QString const& filename);
         };
       }
     }
