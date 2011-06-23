@@ -16,16 +16,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/misc/stringifier.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Chech that default construction works properly.
+ *  Check that default construction works properly.
  *
  *  @return 0 on success.
  */
 int main() {
-  misc::stringifier s;
-  return (s.data()[0] != '\0');
+  exceptions::msg e;
+  return (e.what()[0] != '\0');
 }

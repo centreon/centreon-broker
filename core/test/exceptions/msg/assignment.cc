@@ -16,16 +16,32 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/misc/stringifier.hh"
+#include <string.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Chech that default construction works properly.
+ *  Chat that assignment operator works properly.
  *
  *  @return 0 on success.
  */
 int main() {
-  misc::stringifier s;
-  return (s.data()[0] != '\0');
+  // First object.
+  exceptions::msg e1;
+  e1 << 4189545612ul << "foo   " << " bar" << -123456789ll;
+
+  // Second object.
+  exceptions::msg e2;
+  e2 << "baz" << 42u << 123456 << -7410;
+
+  // Assign.
+  e2 = e1;
+
+  // Update first object.
+  e1 << "qux";
+
+  // Check.
+  return (strcmp(e1.what(), "4189545612foo    bar-123456789qux")
+	  || (strcmp(e2.what(), "4189545612foo    bar-123456789")));
 }

@@ -244,6 +244,34 @@ if (WITH_TESTING)
     "${TEST_DIR}/misc/stringifier/assignment.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # exceptions namespace tests.
+  # exceptions::msg tests.
+  #   Default construction.
+  set(TEST_NAME "core_exceptions_msg_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/msg/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "core_exceptions_msg_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/msg/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_exceptions_msg_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/msg/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Throw test.
+  set(TEST_NAME "core_exceptions_msg_throw")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/msg/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install directories.
@@ -314,4 +342,9 @@ message(STATUS "      - Archive Directory   ${PREFIX_ARCHIVE}")
 message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
 message(STATUS "      - Library Directory   ${PREFIX_LIBRARY}")
 message(STATUS "      - Modules Directory   ${PREFIX_MODULES}")
+if (WITH_DEBUG)
+  message(STATUS "    Debug messages          enabled")
+else ()
+  message(STATUS "    Debug messages          disabled")
+endif ()
 message(STATUS "")

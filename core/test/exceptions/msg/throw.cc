@@ -16,16 +16,48 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/misc/stringifier.hh"
+#include <string.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Chech that default construction works properly.
+ *  Check that exception is properly thrown.
  *
  *  @return 0 on success.
  */
 int main() {
-  misc::stringifier s;
-  return (s.data()[0] != '\0');
+  // Return value.
+  int retval(0);
+
+  // First throw.
+  try {
+    try {
+      throw (exceptions::msg() << "foobar" << 42 << -789654ll);
+      retval |= 1;
+    }
+    catch (exceptions::msg const& e) { // Properly caught.
+      retval |= strcmp(e.what(), "foobar42-789654");
+    }
+  }
+  catch (...) {
+    retval |= 1;
+  }
+
+  // Second throw.
+  try {
+    try {
+      throw (exceptions::msg() << "bazqux" << -74125896321445ll << 36);
+      retval |= 1;
+    }
+    catch (std::exception const& e) {
+      retval |= strcmp(e.what(), "bazqux-7412589632144536");
+    }
+  }
+  catch (...) {
+    retval |= 1;
+  }
+
+  // Return test result.
+  return (retval);
 }

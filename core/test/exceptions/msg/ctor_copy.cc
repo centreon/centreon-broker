@@ -16,16 +16,30 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/misc/stringifier.hh"
+#include <string.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Chech that default construction works properly.
+ *  Check that copy constructor works properly.
  *
  *  @return 0 on success.
  */
 int main() {
-  misc::stringifier s;
-  return (s.data()[0] != '\0');
+  // First object.
+  exceptions::msg e1;
+  e1 << "foobar" << 42 << 7894561236549877ull << false << "baz  qux  ";
+
+  // Second object.
+  exceptions::msg e2(e1);
+
+  // Update first object.
+  e1 << "another string";
+
+  // Check.
+  return (strcmp(e1.what(),
+                 "foobar427894561236549877falsebaz  qux  another string")
+          || strcmp(e2.what(),
+                    "foobar427894561236549877falsebaz  qux  "));
 }
