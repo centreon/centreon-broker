@@ -77,13 +77,11 @@ stream::stream(QString const& filename, QIODevice::OpenMode mode)
   : _file(filename) {
   if (!_file.open(mode))
     throw (exceptions::msg() << "file: could not open '"
-             << filename.toStdString().c_str() << "': "
-             << _file.errorString().toStdString().c_str());
+             << filename << "': " << _file.errorString());
   _woffset = _file.pos();
   if (!_file.reset())
     throw (exceptions::msg() << "file: could not reset in '"
-             << filename.toStdString().c_str() << "': "
-             << _file.errorString().toStdString().c_str());
+             << filename << "': " << _file.errorString());
   _roffset = _file.pos();
   _coffset = _roffset;
 }
@@ -108,9 +106,8 @@ QSharedPointer<io::data> stream::read() {
   // Seek if necessary.
   if (_roffset != _coffset) {
     if (!_file.seek(_roffset))
-      throw (exceptions::msg() << "file: could not seek for reading in '"
-               << _file.fileName().toStdString().c_str()
-               << "' at offset "
+      throw (exceptions::msg() << "file: could not seek for reading " \
+                  "in '" << _file.fileName() << "' at offset "
                << static_cast<unsigned long long>(_roffset));
   }
 
@@ -128,8 +125,7 @@ QSharedPointer<io::data> stream::read() {
   else if (rb < 0) {
     exceptions::msg e;
     e << "file: could not read data from '"
-      << _file.fileName().toStdString().c_str()
-      << "': " << _file.errorString().toStdString().c_str();
+      << _file.fileName() << "': " << _file.errorString();
     _roffset = _file.pos();
     _coffset = _roffset;
     throw (e);
@@ -155,9 +151,8 @@ void stream::write(QSharedPointer<io::data> d) {
     // Seek to end of file if necessary.
     if (_woffset != _coffset) {
       if (!_file.seek(_woffset))
-        throw (exceptions::msg() << "file: could not seek for writing in '"
-                 << _file.fileName().toStdString().c_str()
-                 << "' at offset "
+        throw (exceptions::msg() << "file: could not seek for writing" \
+                    " in '" << _file.fileName() << "' at offset "
                  << static_cast<unsigned long long>(_woffset));
     }
 
@@ -175,9 +170,8 @@ void stream::write(QSharedPointer<io::data> d) {
       qint64 wb(_file.write(static_cast<char*>(memory), size));
       if (wb <= 0) {
         exceptions::msg e;
-        e << "file: could not write data in '"
-          << _file.fileName().toStdString().c_str()
-          << "': " << _file.errorString().toStdString().c_str();
+        e << "file: could not write data in '" << _file.fileName()
+          << "': " << _file.errorString();
         _woffset = _file.pos();
         _coffset = _woffset;
         throw (e);

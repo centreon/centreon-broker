@@ -104,8 +104,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find path to the file.
   QMap<QString, QString>::const_iterator it(cfg.params.find("name"));
   if (it != cfg.params.end())
-    throw (exceptions::msg() << "no 'name' defined for file endpoint '"
-             << cfg.name.toStdString().c_str() << "'");
+    throw (exceptions::msg() << "file: no 'name' defined for file " \
+             "endpoint '" << cfg.name << "'");
 
   // Generate opener.
   QScopedPointer<opener> openr(new opener(is_input, is_output));

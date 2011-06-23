@@ -42,9 +42,8 @@ static QString const& find_param(config::endpoint const& cfg,
                                  QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (it == cfg.params.end())
-    throw (exceptions::msg() << "no '" << key.toStdString().c_str()
-             << "' defined for storage endpoint '"
-             << cfg.name.toStdString().c_str());
+    throw (exceptions::msg() << "storage: no '" << key
+             << "' defined for endpoint '" << cfg.name);
   return (it.value());
 }
 
@@ -127,7 +126,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Check that endpoint should not be an input.
   if (is_input)
-    throw (exceptions::msg() << "cannot create an input storage endpoint");
+    throw (exceptions::msg()
+             << "storage: cannot create an input endpoint");
 
   // Find lengths.
   unsigned int interval_length(find_param(cfg, "interval").toUInt());

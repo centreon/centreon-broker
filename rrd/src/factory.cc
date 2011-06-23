@@ -107,14 +107,14 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Get metrics RRD path.
   QMap<QString, QString>::const_iterator it1(cfg.params.find("metrics_path"));
   if (it1 == cfg.params.end())
-    throw (exceptions::msg() << "no 'metrics_path' defined for RRD endpoint '"
-             << cfg.name.toStdString().c_str() << "'");
+    throw (exceptions::msg() << "no 'metrics_path' defined for RRD " \
+             "endpoint '" << cfg.name << "'");
 
   // Get status RRD path.
   QMap<QString, QString>::const_iterator it2(cfg.params.find("status_path"));
   if (it2 == cfg.params.end())
-    throw (exceptions::msg() << "no 'status_path' defined for RRD endpoint '"
-             << cfg.name.toStdString().c_str() << "'");
+    throw (exceptions::msg() << "RRD: no 'status_path' defined for " \
+             "endpoint '" << cfg.name << "'");
 
   // Create endpoint.
   QScopedPointer<rrd::connector> endp(new rrd::connector);

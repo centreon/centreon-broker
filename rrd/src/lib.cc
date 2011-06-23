@@ -105,8 +105,7 @@ void lib::open(QString const& filename,
   // Check that the file exists.
   if (!QFile::exists(filename))
     throw (exceptions::msg() << "RRD: file '"
-             << filename.toStdString().c_str()
-             << "' does not exist");
+             << filename << "' does not exist");
 
   // Remember information for further operations.
   _filename = filename;
@@ -130,7 +129,7 @@ void lib::open(QString const& filename,
                time_t from,
                time_t interval) {
   logging::debug << logging::HIGH << "RRD: opening file '"
-    << filename.toStdString().c_str() << "'";
+    << filename << "'";
 
   // Close previous file.
   this->close();
@@ -176,9 +175,8 @@ void lib::open(QString const& filename,
         from,
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::msg() << "could not create RRD file '"
-             << _filename.toStdString().c_str()
-             << "': " << rrd_get_error());
+    throw (exceptions::msg() << "RRD: could not create file '"
+             << _filename << "': " << rrd_get_error());
   // XXX : is tuning really needed ?
 
   return ;
@@ -212,8 +210,8 @@ void lib::update(time_t t, QString const& value) {
         _metric.toStdString().c_str(),
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::msg() << "failed to update value for metric "
-             << _metric.toStdString().c_str() << ": " << rrd_get_error());
+    throw (exceptions::msg() << "RRD: failed to update value for " \
+             "metric " << _metric << ": " << rrd_get_error());
 
   return ;
 }

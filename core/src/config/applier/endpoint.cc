@@ -127,18 +127,17 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
                                                  bool is_output,
                                                  QList<config::endpoint> const& l) {
   // Debug message.
-  logging::config << logging::MEDIUM << "endpoint applier: creating new endpoint '"
-    << cfg.name.toStdString().c_str() << "'";
+  logging::config << logging::MEDIUM
+    << "endpoint applier: creating new endpoint '" << cfg.name << "'";
 
   // Check that failover is configured.
   QSharedPointer<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
     QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
     if (it == l.end())
-      throw (exceptions::msg() << "endpoint applier: could not find failover '"
-               << cfg.failover.toStdString().c_str()
-               << "' for endpoint '"
-               << cfg.name.toStdString().c_str()) << "'";
+      throw (exceptions::msg() << "endpoint applier: could not find " \
+                  "failover '" << cfg.failover << "' for endpoint '"
+               << cfg.name << "'");
     failovr = QSharedPointer<processing::failover>(_create_endpoint(*it, is_input || is_output, is_output, l));
   }
   
@@ -158,8 +157,8 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
     }
   }
   if (endp.isNull())
-    throw (exceptions::msg() << "endpoint applier: no matching protocol found for endpoint '"
-             << cfg.name.toStdString().c_str() << "'");
+    throw (exceptions::msg() << "endpoint applier: no matching " \
+             "protocol found for endpoint '" << cfg.name << "'");
 
   // Create remaining objects.
   while (level <= 7) {
@@ -178,8 +177,8 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
       ++it;
     }
     if ((7 == level) && (it == end))
-      throw (exceptions::msg() << "no matching protocol found for endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
+      throw (exceptions::msg() << "endpoint applier: no matching " \
+               "protocol found for endpoint '" << cfg.name << "'");
     ++level;
   }
 
@@ -247,11 +246,12 @@ endpoint::~endpoint() {}
  */
 void endpoint::apply(QList<config::endpoint> const& inputs,
                      QList<config::endpoint> const& outputs) {
-  // Debug message.
-  logging::config << logging::HIGH << "endpoint applier: loading configuration";
+  // Log messages.
+  logging::config << logging::HIGH
+    << "endpoint applier: loading configuration";
   logging::debug << logging::HIGH << "endpoint applier: "
-    << inputs.size() << " inputs, "
-    << outputs.size() << " outputs";
+    << inputs.size() << " inputs and "
+    << outputs.size() << " outputs to apply";
 
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;

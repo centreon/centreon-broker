@@ -151,7 +151,8 @@ void parser::parse_perfdata(QString const& str,
 
     // Check format.
     if (*ptr != '=')
-      throw (exceptions::perfdata() << "storage: invalid perfdata format: equal sign not present or misplaced");
+      throw (exceptions::perfdata() << "storage: invalid perfdata " \
+               "format: equal sign not present or misplaced");
     ++ptr;
 
     // Extract value.
@@ -180,13 +181,9 @@ void parser::parse_perfdata(QString const& str,
 
     // Log new perfdata.
     logging::debug << logging::LOW << "storage: got new perfdata (name="
-      << p.name().toStdString().c_str()
-      << ", value=" << p.value()
-      << ", unit=" << p.unit().toStdString().c_str()
-      << ", warning=" << p.warning()
-      << ", critical=" << p.critical()
-      << ", min=" << p.min()
-      << ", max=" << p.max() << ")";
+      << p.name() << ", value=" << p.value() << ", unit=" << p.unit()
+      << ", warning=" << p.warning() << ", critical=" << p.critical()
+      << ", min=" << p.min() << ", max=" << p.max() << ")";
 
     // Append to list.
     pd.push_back(p);

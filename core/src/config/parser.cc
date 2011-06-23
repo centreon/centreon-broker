@@ -107,8 +107,8 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         else if (val == "syslog")
           l.type(logger::syslog);
         else
-          throw (exceptions::msg() << "unknown logger type '"
-                   << val.toStdString().c_str() << "'");
+          throw (exceptions::msg() << "config parser: unknown logger " \
+                   "type '" << val << "'");
       }
     }
   }
@@ -162,18 +162,16 @@ void parser::parse(QString const& file, state& s) {
   // Parse XML document.
   QFile f(file);
   if (!f.open(QIODevice::ReadOnly))
-    throw (exceptions::msg() << "could not open configuration file '"
-             << file.toStdString().c_str() << "': "
-             << f.errorString().toStdString().c_str());
+    throw (exceptions::msg() << "config parser: could not open file '"
+             << file << "': " << f.errorString());
   QDomDocument d;
   {
     QString msg;
     int line;
     int col;
     if (!d.setContent(&f, false, &msg, &line, &col))
-      throw (exceptions::msg() << "could not parse configuration file '"
-               << file.toStdString().c_str() << "': "
-               << msg.toStdString().c_str() << " (line " << line
+      throw (exceptions::msg() << "config parser: could not parse " \
+                  "file '" << file << "': " << msg << " (line " << line
                << ", column " << col << ")");
   }
 

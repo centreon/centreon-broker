@@ -83,7 +83,8 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
    case config::logger::file:
     {
       if (cfg.name().isEmpty())
-	throw (exceptions::msg() << "attempt to log on an empty file");
+	throw (exceptions::msg()
+                 << "log applier: attempt to log on an empty file");
       QScopedPointer<logging::file> file(new logging::file);
       file->open(cfg.name().toStdString().c_str());
       back = QSharedPointer<logging::backend>(file.data());
@@ -100,7 +101,8 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
 	out = &std::cout;
       else
-	throw (exceptions::msg() << "attempt to log on an undefined output object");
+	throw (exceptions::msg() << "log applier: attempt to log on " \
+                 "an undefined output object");
       back = QSharedPointer<logging::backend>(new logging::ostream(*out));
     }
     break ;
@@ -109,7 +111,8 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
     back = QSharedPointer<logging::backend>(new logging::syslogger);
     break ;
    default:
-    throw (exceptions::msg() << "attempt to create a logging object of unknown type");
+    throw (exceptions::msg() << "log applier: attempt to create a " \
+             "logging object of unknown type");
   }
 
   return (back);
@@ -132,8 +135,9 @@ logger::~logger() {}
  *  @param[in] loggers List of loggers that should exist.
  */
 void logger::apply(QList<config::logger> const& loggers) {
-  // Debug message.
-  logging::config << logging::HIGH << "loading logger configuration";
+  // Log message.
+  logging::config << logging::HIGH << "log applier: applying "
+    << loggers.size() << " logging objects";
 
   // Find which loggers are already created,
   // which should be created
@@ -173,7 +177,8 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_create.end();
        it != end;
        ++it) {
-    logging::config << logging::MEDIUM << "creating new logger";
+    logging::config << logging::MEDIUM
+      << "log applier: creating new logger";
     QSharedPointer<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
     logging::log_on(backend.data(), it->types(), it->level());

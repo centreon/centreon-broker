@@ -72,7 +72,8 @@ void cached::_send_to_cached(char const* command,
                              unsigned int size) {
   // Check socket.
   if (!_socket.data())
-    throw (exceptions::msg() << "attempt to communicate with rrdcached without connecting first");
+    throw (exceptions::msg() << "RRD: attempt to communicate with " \
+             "rrdcached without connecting first");
 
   // Check command size.
   if (!size)
@@ -83,8 +84,8 @@ void cached::_send_to_cached(char const* command,
     qint64 rb;
     rb = _socket->write(command, size);
     if (rb < 0)
-      throw (exceptions::msg() << "error while sending command to rrdcached: "
-               << _socket->errorString().toStdString().c_str());
+      throw (exceptions::msg() << "RRD: error while sending command " \
+               "to rrdcached: " << _socket->errorString());
     size -= rb;
   }
 
@@ -92,14 +93,14 @@ void cached::_send_to_cached(char const* command,
   if (!_batch) {
     char line[1024];
     if (_socket->readLine(line, sizeof(line)) < 0)
-      throw (exceptions::msg() << "error while getting response from rrdcached: "
-               << _socket->errorString().toStdString().c_str());
+      throw (exceptions::msg() << "RRD: error while getting response " \
+               "from rrdcached: " << _socket->errorString());
     unsigned int lines;
     lines = strtoul(line, NULL, 10);
     while (lines > 0)
       if (_socket->readLine(line, sizeof(line)) < 0)
-        throw (exceptions::msg() << "error while getting response from rrdcached: "
-                 << _socket->errorString().toStdString().c_str());
+        throw (exceptions::msg() << "RRD: error while getting " \
+                 "response from rrdcached: " << _socket->errorString());
   }
 
   return ;
@@ -169,8 +170,8 @@ void cached::connect_local(QString const& name) {
   ls->connectToServer(name);
   if (!ls->waitForConnected(-1)) {
     exceptions::msg e;
-    e << "could not connect to local socket '" << name.toStdString().c_str()
-      << ": " << ls->errorString().toStdString().c_str();
+    e << "RRD: could not connect to local socket '" << name
+      << ": " << ls->errorString();
     _socket.reset();
     throw (e);
   }
@@ -194,9 +195,8 @@ void cached::connect_remote(QString const& address,
   ts->connectToHost(address, port);
   if (!ts->waitForConnected(-1)) {
     exceptions::msg e;
-    e << "could not connect to remote server '" << address.toStdString().c_str()
-      << ":" << port << "': "
-      << ts->errorString().toStdString().c_str();
+    e << "RRD: could not connect to remote server '" << address
+      << ":" << port << "': " << ts->errorString();
     _socket.reset();
     throw (e);
   }
@@ -217,7 +217,8 @@ void cached::open(QString const& filename,
 
   // Check that the file exists.
   if (!QFile::exists(filename))
-    throw (exceptions::msg() << "RRD file '" << filename.toStdString().c_str() << "' does not exist");
+    throw (exceptions::msg() << "RRD: file '" << filename
+             << "' does not exist");
 
   // Remember information for further operations.
   _filename = filename;

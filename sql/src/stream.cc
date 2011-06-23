@@ -40,41 +40,6 @@ using namespace com::centreon::broker::sql;
 // Processing table.
 QHash<QString, void (stream::*)(io::data const&)> stream::processing_table;
 
-/*
-void (stream::* stream::processing_table[])(io::data const&) = {
-  NULL,                                     // UNKNOWN
-  &stream::_process_acknowledgement,        // ACKNOWLEDGEMENT
-  &stream::_process_comment,                // COMMENT
-  &stream::_process_custom_variable,        // CUSTOMVARIABLE
-  &stream::_process_custom_variable_status, // CUSTOMVARIABLESTATUS
-  &stream::_process_downtime,               // DOWNTIME
-  &stream::_process_event_handler,          // EVENTHANDLER
-  &stream::_process_flapping_status,        // FLAPPINGSTATUS
-  &stream::_process_host,                   // HOST
-  &stream::_process_host_check,             // HOSTCHECK
-  &stream::_process_host_dependency,        // HOSTDEPENDENCY
-  &stream::_process_host_group,             // HOSTGROUP
-  &stream::_process_host_group_member,      // HOSTGROUPMEMBER
-  &stream::_process_host_parent,            // HOSTPARENT
-  NULL, //&stream::_process_host_state,             // HOSTSTATE
-  &stream::_process_host_status,            // HOSTSTATUS
-  &stream::_process_instance,               // INSTANCE
-  &stream::_process_instance_status,        // INSTANCESTATUS
-  NULL, //&stream::_process_issue,                  // ISSUE
-  NULL, //&stream::_process_issue_parent,           // ISSUEPARENT
-  &stream::_process_log,                    // LOG
-  &stream::_process_module,                 // MODULE
-  &stream::_process_notification,           // NOTIFICATION
-  &stream::_process_nothing,                // PERFDATA
-  &stream::_process_service,                // SERVICE
-  &stream::_process_service_check,          // SERVICECHECK
-  &stream::_process_service_dependency,     // SERVICEDEPENDENCY
-  &stream::_process_service_group,          // SERVICEGROUP
-  &stream::_process_service_group_member,   // SERVICEGROUPMEMBER
-  NULL, //&stream::_process_service_state,          // SERVICESTATE
-  &stream::_process_service_status,         // SERVICESTATUS
-  };*/
-
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -203,13 +168,11 @@ void stream::_clean_tables(int instance_id) {
  *  @param[in] query Query to execute.
  */
 void stream::_execute(QString const& query) {
-  logging::debug << logging::LOW << "SQL: executing query: "
-    << query.toStdString().c_str();
+  logging::debug << logging::LOW << "SQL: executing query: " << query;
   _db.exec(query);
   QSqlError err(_db.lastError());
   if (err.type() != QSqlError::NoError)
-    throw (exceptions::msg() << "SQL: "
-             << err.text().toStdString().c_str());
+    throw (exceptions::msg() << "SQL: " << err.text());
   return ;
 }
 
@@ -221,8 +184,7 @@ void stream::_execute(QString const& query) {
 void stream::_execute(QSqlQuery& query) {
   logging::debug << logging::LOW << "SQL: executing query";
   if (!query.exec())
-    throw (exceptions::msg() << "SQL: "
-      << query.lastError().text().toStdString().c_str());
+    throw (exceptions::msg() << "SQL: " << query.lastError().text());
   return ;
 }
 
