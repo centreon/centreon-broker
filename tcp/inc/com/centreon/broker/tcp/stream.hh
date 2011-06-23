@@ -37,12 +37,12 @@ namespace              com {
          private:
           QSharedPointer<QTcpSocket>
                        _socket;
+                       stream(stream const& s);
+          stream&      operator=(stream const& s);
 
          public:
                        stream(QSharedPointer<QTcpSocket> sock);
-                       stream(stream const& s);
                        ~stream();
-          stream&      operator=(stream const& s);
           QSharedPointer<io::data>
                        read();
           void         write(QSharedPointer<io::data> d);

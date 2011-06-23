@@ -16,9 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <QScopedPointer>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -35,31 +33,17 @@ using namespace com::centreon::broker::tcp;
 **************************************/
 
 /**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
+ *  Copy internal data members.
  *
  *  @param[in] a Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] a Object to copy.
- *
- *  @return This object.
- */
-acceptor& acceptor::operator=(acceptor const& a) {
-  (void)a;
-  assert(false);
-  abort();
-  return (*this);
+void acceptor::_internal_copy(acceptor const& a) {
+  _ca = a._ca;
+  _port = a._port;
+  _private = a._private;
+  _public = a._public;
+  _tls = a._tls;
+  return ;
 }
 
 /**************************************
@@ -74,9 +58,39 @@ acceptor& acceptor::operator=(acceptor const& a) {
 acceptor::acceptor() : _port(0), _tls(false) {}
 
 /**
+ *  @brief Copy constructor.
+ *
+ *  The constructor only copy connection parameters. The socket will
+ *  have to be opened after construction using open().
+ *
+ *  @param[in] a Object to copy.
+ */
+acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
+  _internal_copy(a);
+}
+
+/**
  *  Destructor.
  */
 acceptor::~acceptor() {}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  The method close the previous connection and copy the connection
+ *  parameters of the object. The socket will have to be opened after
+ *  assignment using open().
+ *
+ *  @param[in] a Object to copy.
+ *
+ *  @return This object.
+ */
+acceptor& acceptor::operator=(acceptor const& a) {
+  this->close();
+  io::endpoint::operator=(a);
+  _internal_copy(a);
+  return (*this);
+}
 
 /**
  *  Close the acceptor.
@@ -95,6 +109,7 @@ void acceptor::close() {
  *  @param[in] port Port on which the acceptor will listen.
  */
 void acceptor::listen_on(unsigned short port) {
+  this->close();
   _port = port;
   return ;
 }
@@ -107,23 +122,27 @@ QSharedPointer<io::stream> acceptor::open() {
   if (_socket.isNull()) {
     _socket.reset(_tls ? new tls_server(_private, _public, _ca)
                        : new QTcpServer);
-    if (!_socket->listen(QHostAddress::Any, _port))
-      throw (exceptions::msg() << "could not listen on port " << _port
-               << ": " << _socket->errorString().toStdString().c_str());
+    if (!_socket->listen(QHostAddress::Any, _port)) {
+      exceptions::msg e;
+      e << "TCP: could not listen on port " << _port
+        << ": " << _socket->errorString();
+      _socket.reset();
+      throw (e);
+    }
   }
 
   // Wait for incoming connections.
   logging::debug << logging::MEDIUM << "TCP: waiting for new connection";
   if (!_socket->waitForNewConnection(-1))
-    throw (exceptions::msg() << "could not accept incoming TCP client: "
-             << _socket->errorString().toStdString().c_str());
+    throw (exceptions::msg() << "TCP: error while waiting for " \
+             "client: " << _socket->errorString());
 
   // Accept client.
   QSharedPointer<QTcpSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
-    throw (exceptions::msg() << "could not accept incoming TCP client: "
-             << _socket->errorString().toStdString().c_str());
-  logging::info << logging::MEDIUM << "TCP: new client successfully connected";
+    throw (exceptions::msg() << "TCP: could not accept client: "
+             << _socket->errorString());
+  logging::info << logging::MEDIUM << "TCP: new client connected";
 
   // Return object.
   return (QSharedPointer<io::stream>(new stream(incoming)));

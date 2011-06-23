@@ -139,8 +139,8 @@ QSharedPointer<io::stream> connector::open() {
     // Wait for connection result.
     if (!ssl_socket->waitForEncrypted(-1))
       throw (exceptions::msg() << "TCP: could not connect to "
-               << _host.toStdString().c_str() << ":" << _port
-               << ": " << _socket->errorString().toStdString().c_str());
+               << _host << ":" << _port << ": "
+               << _socket->errorString());
   }
   else {
     // Launch connection process.
@@ -150,11 +150,11 @@ QSharedPointer<io::stream> connector::open() {
     // Wait for connection result.
     if (!_socket->waitForConnected(-1))
       throw (exceptions::msg() << "TCP: could not connect to "
-               << _host.toStdString().c_str() << ":" << _port
-               << ": " << _socket->errorString().toStdString().c_str());
+               << _host << ":" << _port << ": "
+               << _socket->errorString());
   }
   logging::info << logging::MEDIUM << "TCP: successfully connected to "
-    << _host.toStdString().c_str() << ":" << _port;
+    << _host << ":" << _port;
 
   // Return stream.
   return (QSharedPointer<io::stream>(new stream(_socket)));

@@ -19,6 +19,7 @@
 #ifndef CCB_TCP_ACCEPTOR_HH_
 # define CCB_TCP_ACCEPTOR_HH_
 
+# include <QScopedPointer>
 # include <QTcpServer>
 # include "com/centreon/broker/io/endpoint.hh"
 
@@ -41,12 +42,13 @@ namespace                com {
           QScopedPointer<QTcpServer>
                          _socket;
           bool           _tls;
-                         acceptor(acceptor const& a);
-          acceptor&      operator=(acceptor const& a);
+          void           _internal_copy(acceptor const& a);
 
          public:
                          acceptor();
+                         acceptor(acceptor const& a);
                          ~acceptor();
+          acceptor&      operator=(acceptor const& a);
           void           close();
           void           listen_on(unsigned short port);
           QSharedPointer<io::stream>

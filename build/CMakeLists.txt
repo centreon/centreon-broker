@@ -312,6 +312,9 @@ install(TARGETS "${DAEMON}"
 # File module.
 add_subdirectory("file")
 
+# Local sockets module.
+add_subdirectory("local")
+
 # NDO module.
 add_subdirectory("ndo")
 
