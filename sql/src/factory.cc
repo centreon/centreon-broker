@@ -26,6 +26,29 @@ using namespace com::centreon::broker::sql;
 
 /**************************************
 *                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Find a parameter in configuration.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *
+ *  @return Property value.
+ */
+static QString const& find_param(config::endpoint const& cfg,
+                                 QString const& key) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    throw (exceptions::msg() << "SQL: no '" << key
+             << "' defined for endpoint '" << cfg.name << "'");
+  return (it.value());
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -102,50 +125,27 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   (void)is_input;
   (void)is_output;
 
+  // Find DB type.
+  QString type(find_param(cfg, "db_type"));
+
   // Find DB host.
-  QString host;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("host"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "SQL: no 'host' defined for " \
-               "endpoint '" << cfg.name << "'");
-    host = it.value();
-  }
+  QString host(find_param(cfg, "db_host"));
+
+  // Find DB port.
+  unsigned short port(find_param(cfg, "db_port").toUShort());
 
   // Find DB user.
-  QString user;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("user"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "SQL: no 'user' defined for " \
-               "endpoint '" << cfg.name << "'");
-    user = it.value();
-  }
+  QString user(find_param(cfg, "db_user"));
 
   // Find DB password.
-  QString password;
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("password"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "SQL: no 'password' defined for " \
-               "endpoint '" << cfg.name << "'");
-    password = it.value();
-  }
+  QString password(find_param(cfg, "db_password"));
 
   // Find DB name.
-  QString name;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("db"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "SQL: no 'db' defined for endpoint '"
-               << cfg.name << "'");
-    name = it.value();
-  }
+  QString name(find_param(cfg, "db_name"));
 
   // Connector.
   QScopedPointer<sql::connector> c(new sql::connector);
-  c->connect_to(cfg.type, host, user, password, name);
+  c->connect_to(type, host, port, user, password, name);
   is_acceptor = false;
   return (c.take());
 }

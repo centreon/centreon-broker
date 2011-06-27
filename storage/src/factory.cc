@@ -34,16 +34,16 @@ using namespace com::centreon::broker::storage;
  *  Find a parameter in configuration.
  *
  *  @param[in] cfg Configuration object.
- *  @param[in] key Properties to get.
+ *  @param[in] key Property to get.
  *
- *  @return Properties value.
+ *  @return Property value.
  */
 static QString const& find_param(config::endpoint const& cfg,
                                  QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
-  if (it == cfg.params.end())
+  if (cfg.params.end() == it)
     throw (exceptions::msg() << "storage: no '" << key
-             << "' defined for endpoint '" << cfg.name);
+	   << "' defined for endpoint '" << cfg.name << "'");
   return (it.value());
 }
 
@@ -134,21 +134,21 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   unsigned int rrd_length(find_param(cfg, "length").toUInt());
 
   // Find storage DB parameters.
-  QString storage_type(find_param(cfg, "storage_type"));
-  QString storage_host(find_param(cfg, "storage_host"));
-  QString storage_port(find_param(cfg, "storage_port"));
-  QString storage_user(find_param(cfg, "storage_user"));
-  QString storage_password(find_param(cfg, "storage_password"));
-  QString storage_db(find_param(cfg, "storage_db"));
+  QString type(find_param(cfg, "db_type"));
+  QString host(find_param(cfg, "db_host"));
+  unsigned short port(find_param(cfg, "db_port").toUShort());
+  QString user(find_param(cfg, "db_user"));
+  QString password(find_param(cfg, "db_password"));
+  QString name(find_param(cfg, "db_name"));
 
   // Connector.
   QScopedPointer<storage::connector> c(new storage::connector);
-  c->connect_to(storage_type,
-    storage_host,
-    storage_port.toUShort(),
-    storage_user,
-    storage_password,
-    storage_db,
+  c->connect_to(type,
+    host,
+    port,
+    user,
+    password,
+    name,
     rrd_length,
     interval_length);
   is_acceptor = false;

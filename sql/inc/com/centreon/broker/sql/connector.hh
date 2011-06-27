@@ -22,37 +22,38 @@
 # include <QString>
 # include "com/centreon/broker/io/endpoint.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      sql {
+namespace                            com {
+  namespace                          centreon {
+    namespace                        broker {
+      namespace                      sql {
         /**
          *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
          *  @brief Connect to a database.
          *
          *  Send events to a SQL database.
          */
-        class        connector : public io::endpoint {
+        class                        connector : public io::endpoint {
          private:
-          QString    _db;
-          QString    _host;
-          QString    _password;
-          QString    _type;
-          QString    _user;
+          QString                    _db;
+          QString                    _host;
+          QString                    _password;
+          unsigned short             _port;
+          QString                    _type;
+          QString                    _user;
 
          public:
-                     connector();
-                     connector(connector const& c);
-                     ~connector();
-          connector& operator=(connector const& c);
-          void       close();
-          void       connect_to(QString const& type,
-                       QString const& host,
-                       QString const& user,
-                       QString const& password,
-                       QString const& db);
-          QSharedPointer<io::stream>
-                     open();
+                                     connector();
+                                     connector(connector const& c);
+                                     ~connector();
+          connector&                 operator=(connector const& c);
+          void                       close();
+          void                       connect_to(QString const& type,
+                                       QString const& host,
+                                       unsigned short port,
+                                       QString const& user,
+                                       QString const& password,
+                                       QString const& db);
+          QSharedPointer<io::stream> open();
         };
       }
     }

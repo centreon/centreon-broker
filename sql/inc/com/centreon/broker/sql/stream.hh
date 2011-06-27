@@ -107,10 +107,11 @@ namespace              com {
 
          public:
                        stream(QString const& type,
-                              QString const& host,
-                              QString const& user,
-                              QString const& password,
-                              QString const& db);
+                         QString const& host,
+                         unsigned short port,
+                         QString const& user,
+                         QString const& password,
+                         QString const& db);
                        stream(stream const& s);
                        ~stream();
           static void  initialize();

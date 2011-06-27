@@ -1214,12 +1214,14 @@ void stream::_process_service_status(io::data const& e) {
  *
  *  @param[in] type     Database type.
  *  @param[in] host     Database host.
+ *  @param[in] port     Database port.
  *  @param[in] user     User.
  *  @param[in] password Password.
  *  @param[in] db       Database name.
  */
 stream::stream(QString const& type,
                QString const& host,
+               unsigned short port,
                QString const& user,
                QString const& password,
                QString const& db) {
@@ -1260,6 +1262,7 @@ stream::stream(QString const& type,
 
   // Open database.
   _db.setHostName(host);
+  _db.setPort(port);
   _db.setUserName(user);
   _db.setPassword(password);
   _db.setDatabaseName(db);

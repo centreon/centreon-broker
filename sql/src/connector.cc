@@ -43,6 +43,7 @@ connector::connector(connector const& c)
     _db(c._db),
     _host(c._host),
     _password(c._password),
+    _port(c._port),
     _type(c._type),
     _user(c._user) {}
 
@@ -63,6 +64,7 @@ connector& connector::operator=(connector const& c) {
   _db = c._db;
   _host = c._host;
   _password = c._password;
+  _port = c._port;
   _type = c._type;
   _user = c._user;
   return (*this);
@@ -80,18 +82,21 @@ void connector::close() {
  *
  *  @param[in] type     Database type.
  *  @param[in] host     Database host.
+ *  @param[in] port     Database port.
  *  @param[in] user     User.
  *  @param[in] password Password.
  *  @param[in] db       Database name.
  */
 void connector::connect_to(QString const& type,
                            QString const& host,
+                           unsigned short port,
                            QString const& user,
                            QString const& password,
                            QString const& db) {
   _db = db;
   _host = host;
   _password = password;
+  _port = port;
   _type = type;
   _user = user;
   return ;
@@ -105,6 +110,7 @@ void connector::connect_to(QString const& type,
 QSharedPointer<io::stream> connector::open() {
   return (QSharedPointer<io::stream>(new stream(_type,
             _host,
+            _port,
             _user,
             _password,
             _db)));
