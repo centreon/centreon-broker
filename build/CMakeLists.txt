@@ -89,6 +89,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
+  "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
   "${INC_DIR}/com/centreon/broker/config/applier/logger.hh"
@@ -129,9 +130,18 @@ set(LIBROKER_SOURCES
 )
 
 # Static library.
-add_library("roker" STATIC ${LIBROKER_SOURCES} ${QT_WRAPPED_SOURCES})
+add_library("roker" STATIC ${LIBROKER_SOURCES})
+if (CMAKE_COMPILER_IS_GNUCXX)
+  get_target_property(ROKER_CXXFLAGS "roker" COMPILE_FLAGS)
+  if (ROKER_CXXFLAGS)
+    set_target_properties("roker" PROPERTIES
+      COMPILE_FLAGS "${ROKER_CXXFLAGS} -fPIC")
+  else ()
+    set_target_properties("roker" PROPERTIES
+      COMPILE_FLAGS "-fPIC")
+  endif ()
+endif ()
 target_link_libraries("roker" ${QT_LIBRARIES})
-#target_link_libraries(roker ${CMAKE_THREAD_LIBS_INIT})
 
 # Common sources files.
 #set(COMMON_SOURCES
@@ -144,14 +154,16 @@ target_link_libraries("roker" ${QT_LIBRARIES})
 # Standalone binary.
 set(DAEMON "cbd")
 add_executable("${DAEMON}"
-  # Core sources.
-  ${LIBROKER_SOURCES}
-  # Core Qt sources.
-  ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/main.cc"
 )
-target_link_libraries("${DAEMON}" ${QT_LIBRARIES})
+if (CMAKE_COMPILER_IS_GNUCXX)
+  # Flags needed to include all symbols in binary.
+  target_link_libraries("${DAEMON}"
+    "-Wl,--whole-archive" "roker" "-Wl,--no-whole-archive")
+else ()
+  target_link_libraries("${DAEMON}" "roker")
+endif ()
 
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
