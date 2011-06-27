@@ -94,7 +94,8 @@ output& output::operator=(output const& o) {
  *  Read data.
  */
 QSharedPointer<io::data> output::read() {
-  throw (exceptions::msg() << "attempt to read from an NDO output object (software bug)");
+  throw (exceptions::msg() << "NDO: attempt to read from an " \
+           "output object (software bug)");
   return (QSharedPointer<io::data>());
 }
 
@@ -301,7 +302,7 @@ void output::write(QSharedPointer<io::data> e) {
   QSharedPointer<io::raw> data(new io::raw);
   data->append(buffer.str().c_str());
   _to->write(data.staticCast<io::data>());
-  logging::debug << logging::MEDIUM << "data successfully sent";
+  logging::debug << logging::MEDIUM << "NDO: data successfully sent";
 
   return ;
 }

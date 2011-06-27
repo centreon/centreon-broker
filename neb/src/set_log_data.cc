@@ -31,7 +31,7 @@ using namespace com::centreon::broker;
 static char* log_extract_first(char* str, char** lasts) {
   char* data(strtok_r(str, ";", lasts));
   if (!data)
-    throw (exceptions::msg() << "log data extraction failed");
+    throw (exceptions::msg() << "log: data extraction failed");
   return (data);
 }
 
@@ -41,7 +41,7 @@ static char* log_extract_first(char* str, char** lasts) {
 static char* log_extract(char** lasts) {
   char* data(strtok_r(NULL, ";", lasts));
   if (!data)
-    throw (exceptions::msg() << "log data extraction failed");
+    throw (exceptions::msg() << "log: data extraction failed");
   return (data);
 }
 
@@ -82,7 +82,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   // Duplicate string so that we can split it with strtok_r.
   char* datadup(strdup(log_data));
   if (!datadup)
-    throw (exceptions::msg() << "log data extraction failed");
+    throw (exceptions::msg() << "log: data extraction failed");
 
   try {
     char* lasts;
@@ -170,7 +170,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       }
       else
         // XXX : seems like it should be something else ...
-        throw (exceptions::msg() << "log data extraction failed");
+        throw (exceptions::msg() << "log: data extraction failed");
     }
     else if (!strcmp(datadup, "Warning")) {
       le.msg_type = 4;

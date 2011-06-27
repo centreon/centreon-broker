@@ -74,7 +74,8 @@ publisher& publisher::operator=(publisher const& p) {
  *  @param[in] d Unused.
  */
 QSharedPointer<io::data> publisher::read() {
-  throw (exceptions::msg() << "tried to read from a publisher (software bug)");
+  throw (exceptions::msg() << "multiplexing: tried to read from " \
+           "a publisher (software bug)");
   return (QSharedPointer<io::data>());
 }
 

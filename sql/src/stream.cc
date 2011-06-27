@@ -423,7 +423,7 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
     query.append(" AND ");
   }
   query.resize(query.size() - 5);
-  logging::info << logging::LOW << "preparing statement: "
+  logging::info << logging::LOW << "SQL: preparing statement: "
                 << query.c_str();
 
   // Prepare statement.
@@ -439,7 +439,7 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
 void stream::_process_acknowledgement(io::data const& e) {
   // Log message.
   logging::info << logging::MEDIUM
-                << "processing acknowledgement event";
+    << "SQL: processing acknowledgement event";
 
   // Processing.
   neb::acknowledgement const& ack(
@@ -459,7 +459,7 @@ void stream::_process_acknowledgement(io::data const& e) {
  */
 void stream::_process_comment(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing comment event";
+  logging::info << logging::MEDIUM << "SQL: processing comment event";
 
   // Processing.
   neb::comment const& c(*static_cast<neb::comment const*>(&e));
@@ -478,7 +478,8 @@ void stream::_process_comment(io::data const& e) {
  */
 void stream::_process_custom_variable(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing custom variable event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing custom variable event";
 
   // Processing.
   neb::custom_variable const& cv(
@@ -496,7 +497,8 @@ void stream::_process_custom_variable(io::data const& e) {
  */
 void stream::_process_custom_variable_status(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing custom variable status event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing custom variable status event";
 
   // Processing.
   neb::custom_variable_status const& cvs(
@@ -514,7 +516,8 @@ void stream::_process_custom_variable_status(io::data const& e) {
  */
 void stream::_process_downtime(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing downtime event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing downtime event";
 
   // Processing.
   neb::downtime const& d(*static_cast<neb::downtime const*>(&e));
@@ -533,7 +536,8 @@ void stream::_process_downtime(io::data const& e) {
  */
 void stream::_process_event_handler(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing event handler event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing event handler event";
 
   // Processing.
   neb::event_handler const& eh(
@@ -553,7 +557,8 @@ void stream::_process_event_handler(io::data const& e) {
  */
 void stream::_process_flapping_status(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing flapping status event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing flapping status event";
 
   // Processing.
   neb::flapping_status const& fs(
@@ -573,7 +578,8 @@ void stream::_process_flapping_status(io::data const& e) {
  */
 void stream::_process_host(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host event";
 
   // Processing.
   neb::host const& h(*static_cast<neb::host const*>(&e));
@@ -593,7 +599,8 @@ void stream::_process_host(io::data const& e) {
  */
 void stream::_process_host_check(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host check event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host check event";
 
   // Processing.
   neb::host_check const& hc(
@@ -611,7 +618,8 @@ void stream::_process_host_check(io::data const& e) {
  */
 void stream::_process_host_dependency(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host dependency event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host dependency event";
 
   // Processing.
   neb::host_dependency const& hd(
@@ -628,7 +636,8 @@ void stream::_process_host_dependency(io::data const& e) {
  */
 void stream::_process_host_group(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host group event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host group event";
 
   // Processing.
   neb::host_group const& hg(
@@ -645,7 +654,8 @@ void stream::_process_host_group(io::data const& e) {
  */
 void stream::_process_host_group_member(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host group member event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host group member event";
 
   // Fetch proper structure.
   neb::host_group_member const& hgm(
@@ -664,7 +674,7 @@ void stream::_process_host_group_member(io::data const& e) {
     // Fetch hostgroup ID.
     int hostgroup_id(q.value(0).toInt());
     logging::debug << logging::MEDIUM
-                   << "fetch hostgroup of id " << hostgroup_id;
+      << "SQL: fetch hostgroup of id " << hostgroup_id;
 
     // Insert hostgroup membership.
     std::ostringstream oss;
@@ -673,16 +683,15 @@ void stream::_process_host_group_member(io::data const& e) {
         << " (host_id, hostgroup_id) VALUES("
         << hgm.host_id << ", "
         << hostgroup_id << ")";
-    logging::info << logging::LOW << "executing query: "
-                  << oss.str().c_str();
+    logging::info << logging::LOW << "SQL: executing query: "
+      << oss.str().c_str();
     _db.exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
-                  << "discarding membership between host "
-                  << hgm.host_id << " and hostgroup ("
-                  << hgm.instance_id << ", " << hgm.group.toStdString().c_str()
-                  << ")";
+      << "SQL: discarding membership between host " << hgm.host_id
+      << " and hostgroup (" << hgm.instance_id << ", " << hgm.group
+      << ")";
 
   return ;
 }
@@ -694,7 +703,8 @@ void stream::_process_host_group_member(io::data const& e) {
  */
 void stream::_process_host_parent(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host parent event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host parent event";
 
   // Processing.
   neb::host_parent const& hp(
@@ -733,7 +743,8 @@ void stream::_process_host_state(io::data const& e) {
  */
 void stream::_process_host_status(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host status event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host status event";
 
   // Processing.
   neb::host_status const& hs(
@@ -751,7 +762,7 @@ void stream::_process_host_status(io::data const& e) {
  */
 void stream::_process_instance(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing instance event";
+  logging::info << logging::MEDIUM << "SQL: processing instance event";
 
   // Clean tables.
   neb::instance const& i(*static_cast<neb::instance const*>(&e));
@@ -780,7 +791,8 @@ void stream::_process_instance(io::data const& e) {
  */
 void stream::_process_instance_status(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing instance status event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing instance status event";
 
   // Processing.
   neb::instance_status const& is(
@@ -909,7 +921,7 @@ void stream::_process_instance_status(io::data const& e) {
  */
 void stream::_process_log(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing log event";
+  logging::info << logging::MEDIUM << "SQL: processing log event";
 
   // Fetch proper structure.
   neb::log_entry const& le(
@@ -965,7 +977,8 @@ void stream::_process_log(io::data const& e) {
   query.append(")");
 
   // Execute query.
-  logging::info << logging::LOW << "executing query: " << query.c_str();
+  logging::info << logging::LOW
+    << "SQL: executing query: " << query.c_str();
   QSqlQuery q(_db);
   q.prepare(query.c_str());
   q << le;
@@ -982,7 +995,7 @@ void stream::_process_log(io::data const& e) {
  */
 void stream::_process_module(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing module event";
+  logging::info << logging::MEDIUM << "SQL: processing module event";
 
   // Processing.
   neb::module const& m(*static_cast<neb::module const*>(&e));
@@ -1008,7 +1021,8 @@ void stream::_process_nothing(io::data const& e) {
  */
 void stream::_process_notification(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing notification event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing notification event";
 
   // Processing.
   neb::notification const& n(
@@ -1028,7 +1042,7 @@ void stream::_process_notification(io::data const& e) {
  */
 void stream::_process_service(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service event";
+  logging::info << logging::MEDIUM << "SQL: processing service event";
 
   // Processing.
   neb::service const& s(*static_cast<neb::service const*>(&e));
@@ -1050,7 +1064,8 @@ void stream::_process_service(io::data const& e) {
  */
 void stream::_process_service_check(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service check event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service check event";
 
   // Processing.
   neb::service_check const& sc(
@@ -1068,7 +1083,8 @@ void stream::_process_service_check(io::data const& e) {
  */
 void stream::_process_service_dependency(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing ServiceDependency event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service dependency event";
 
   // Processing.
   neb::service_dependency const& sd(
@@ -1085,7 +1101,8 @@ void stream::_process_service_dependency(io::data const& e) {
  */
 void stream::_process_service_group(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service group event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service group event";
 
   // Processing.
   neb::service_group const& sg(
@@ -1102,7 +1119,8 @@ void stream::_process_service_group(io::data const& e) {
  */
 void stream::_process_service_group_member(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service group member event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service group member event";
 
   // Fetch proper structure.
   neb::service_group_member const& sgm(
@@ -1115,13 +1133,13 @@ void stream::_process_service_group_member(io::data const& e) {
      << " WHERE instance_id=" << sgm.instance_id
      << " AND name=\"" << sgm.group.toStdString() << "\"";
   QSqlQuery q(_db);
-  logging::info << logging::LOW << "executing query: "
-                << ss.str().c_str();
+  logging::info << logging::LOW << "SQL: executing query: "
+    << ss.str().c_str();
   if (q.exec(ss.str().c_str()) && q.next()) {
     // Fetch servicegroup ID.
     int servicegroup_id(q.value(0).toInt());
     logging::debug << logging::MEDIUM
-                   << "fetch servicegroup of id " << servicegroup_id;
+      << "SQL: fetch servicegroup of id " << servicegroup_id;
 
     // Insert servicegroup membership.
     std::ostringstream oss;
@@ -1131,16 +1149,15 @@ void stream::_process_service_group_member(io::data const& e) {
         << sgm.host_id << ", "
         << sgm.service_id << ", "
         << servicegroup_id << ")";
-    logging::info << logging::LOW << "executing query: "
-                  << oss.str().c_str();
+    logging::info << logging::LOW << "SQL: executing query: "
+      << oss.str().c_str();
     _db.exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
-                  << "discarding membership between service ("
-                  << sgm.host_id << ", " << sgm.service_id
-                  << ") and servicegroup (" << sgm.instance_id
-                  << ", " << sgm.group.toStdString().c_str() << ")";
+      << "SQL: discarding membership between service ("
+      << sgm.host_id << ", " << sgm.service_id << ") and servicegroup ("
+      << sgm.instance_id << ", " << sgm.group << ")";
 
   return ;
 }
@@ -1174,7 +1191,8 @@ void stream::_process_service_state(io::data const& e) {
  */
 void stream::_process_service_status(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service status event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service status event";
 
   // Processing.
   neb::service_status const& ss(
@@ -1246,7 +1264,7 @@ stream::stream(QString const& type,
   _db.setPassword(password);
   _db.setDatabaseName(db);
   if (!_db.open())
-    throw (exceptions::msg() << "could not open SQL database");
+    throw (exceptions::msg() << "SQL: could not open SQL database");
 
   // Prepare queries.
   _prepare();
@@ -1267,7 +1285,7 @@ stream::stream(stream const& s) : io::stream(s) {
 
   // Open database.
   if (!_db.open())
-    throw (exceptions::msg() << "could not open SQL database");
+    throw (exceptions::msg() << "SQL: could not open SQL database");
 
   // Prepare queries.
   _prepare();
@@ -1372,7 +1390,8 @@ void stream::initialize() {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> stream::read() {
-  throw (exceptions::msg() << "attempt to read from a SQL stream (software bug)");
+  throw (exceptions::msg()
+           << "SQL: attempt to read from a SQL stream (software bug)");
   return (QSharedPointer<io::data>());
 }
 

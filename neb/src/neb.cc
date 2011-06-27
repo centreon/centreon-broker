@@ -189,7 +189,8 @@ extern "C" {
       if (args)
         neb::gl_configuration_file = args;
       else
-        throw (exceptions::msg() << "no configuration file provided");
+        throw (exceptions::msg()
+                 << "main: no configuration file provided");
 
       // Try configuration parsing.
       config::parser p;
@@ -202,7 +203,7 @@ extern "C" {
     }
     catch (...) {
       logging::config << logging::HIGH
-                      << "configuration file parsing failed";
+                      << "main: configuration file parsing failed";
       return (-1);
     }
 

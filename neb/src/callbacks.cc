@@ -63,7 +63,8 @@ extern "C" {
  */
 int neb::callback_acknowledgement(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating acknowledgement event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating acknowledgement event";
   (void)callback_type;
 
   try {
@@ -121,7 +122,8 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
  */
 int neb::callback_comment(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating comment event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating comment event";
   (void)callback_type;
 
   try {
@@ -186,7 +188,8 @@ int neb::callback_downtime(int callback_type, void* data) {
   std::set<unsigned int> unstarted;
 
   // Log message.
-  logging::info << logging::MEDIUM << "generating downtime event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating downtime event";
   (void)callback_type;
 
   try {
@@ -269,7 +272,8 @@ int neb::callback_downtime(int callback_type, void* data) {
  */
 int neb::callback_event_handler(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating event handler event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating event handler event";
   (void)callback_type;
 
   try {
@@ -333,7 +337,8 @@ int neb::callback_event_handler(int callback_type, void* data) {
  */
 int neb::callback_flapping_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating flapping event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating flapping event";
   (void)callback_type;
 
   try {
@@ -399,7 +404,8 @@ int neb::callback_flapping_status(int callback_type, void* data) {
  */
 int neb::callback_host_check(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating host check event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating host check event";
   (void)callback_type;
 
   try {
@@ -441,7 +447,8 @@ int neb::callback_host_check(int callback_type, void* data) {
  */
 int neb::callback_host_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating host status event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating host status event";
   (void)callback_type;
 
   try {
@@ -532,7 +539,7 @@ int neb::callback_host_status(int callback_type, void* data) {
  */
 int neb::callback_log(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating log event";
+  logging::info << logging::MEDIUM << "callbacks: generating log event";
   (void)callback_type;
 
   try {
@@ -571,7 +578,7 @@ int neb::callback_log(int callback_type, void* data) {
  */
 int neb::callback_process(int callback_type, void *data) {
   // Log message.
-  logging::debug << logging::LOW << "process event callback";
+  logging::debug << logging::LOW << "callbacks: process event callback";
   (void)callback_type;
 
   try {
@@ -582,7 +589,8 @@ int neb::callback_process(int callback_type, void *data) {
     // Check process event type.
     process_data = static_cast<nebstruct_process_data*>(data);
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
-      logging::info << logging::MEDIUM << "generating process start event";
+      logging::info << logging::MEDIUM
+        << "callbacks: generating process start event";
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);
 
@@ -704,7 +712,8 @@ int neb::callback_process(int callback_type, void *data) {
  */
 int neb::callback_program_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating instance status event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating instance status event";
   (void)callback_type;
 
   try {
@@ -777,7 +786,8 @@ int neb::callback_program_status(int callback_type, void* data) {
  */
 int neb::callback_service_check(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating service check event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating service check event";
   (void)callback_type;
 
   try {
@@ -824,7 +834,8 @@ int neb::callback_service_check(int callback_type, void* data) {
  */
 int neb::callback_service_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "generating service status event";
+  logging::info << logging::MEDIUM
+    << "callbacks: generating service status event";
   (void)callback_type;
 
   try {

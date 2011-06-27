@@ -85,7 +85,8 @@ QSharedPointer<io::stream> opener::open() {
   else if (_is_out)
     mode |= QIODevice::WriteOnly;
   else
-    throw (exceptions::msg() << "file: attempt to open a file with invalid flags");
+    throw (exceptions::msg()
+             << "file: attempt to open a file with invalid flags");
   return (QSharedPointer<io::stream>(new stream(_filename, mode)));
 }
 

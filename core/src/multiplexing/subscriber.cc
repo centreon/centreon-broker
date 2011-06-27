@@ -85,7 +85,8 @@ subscriber::subscriber() {
   QMutexLocker lock(&gl_subscribersm);
   gl_subscribers.push_back(this);
   _registered = true;
-  logging::debug << logging::LOW << gl_subscribers.size()
+  logging::debug << logging::LOW << "multiplexing: "
+    << gl_subscribers.size()
     << " subscribers are registered after insertion";
 }
 
@@ -104,7 +105,8 @@ void subscriber::close() {
   QMutexLocker lock(&gl_subscribersm);
   gl_subscribers.removeOne(this);
   _registered = false;
-  logging::debug << logging::LOW << gl_subscribers.size()
+  logging::debug << logging::LOW << "multiplexing: "
+    << gl_subscribers.size()
     << " subscribers are registered after deletion";
   _cv.wakeAll();
   return ;
@@ -138,14 +140,14 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
         _cv.wait(&_mutex, deadline);
       if (!_events.empty()) {
         event = _events.dequeue();
-        logging::debug << logging::LOW << _events.size()
-          << " events remaining in subcriber";
+        logging::debug << logging::LOW << "multiplexing: "
+          << _events.size() << " events remaining in subcriber";
       }
     }
     else {
       event = _events.dequeue();
-      logging::debug << logging::LOW << _events.size()
-        << " events remaining in subscriber";
+      logging::debug << logging::LOW << "multiplexing: "
+        << _events.size() << " events remaining in subscriber";
     }
   }
   return (event);

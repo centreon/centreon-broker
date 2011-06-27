@@ -256,6 +256,7 @@ QSharedPointer<io::data> input::read() {
  */
 void input::write(QSharedPointer<io::data> d) {
   (void)d;
-  throw (exceptions::msg() << "attempt to write from an NDO input object (software bug)");
+  throw (exceptions::msg() << "NDO: attempt to write to an input " \
+           "object (software bug)");
   return ;
 }

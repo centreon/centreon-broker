@@ -102,14 +102,9 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool& is_acceptor) const {
   (void)cfg;
   io::endpoint* retval(NULL);
-  if (is_acceptor) {
-    if (is_input && is_output)
-      throw (exceptions::msg() << "acceptor mode is not supported " \
-               "for objects that are both input/output (failovers for example)");
+  if (is_acceptor)
     retval = new ndo::acceptor(is_output);
-  }
-  else {
+  else
     retval = new ndo::connector(is_input, is_output);
-  }
   return (retval);
 }

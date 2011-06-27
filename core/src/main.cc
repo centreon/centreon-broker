@@ -49,7 +49,8 @@ static void hup_handler(int signum) {
   (void)signum;
 
   // Log message.
-  logging::config << logging::HIGH << "configuration update requested";
+  logging::config << logging::HIGH
+    << "main: configuration update requested";
 
   // Parse configuration file.
   config::parser parsr;
@@ -72,7 +73,8 @@ static void term_handler(int signum) {
   (void)signum;
 
   // Log message.
-  logging::info << logging::HIGH << "termination request received";
+  logging::info << logging::HIGH
+    << "main: termination request received";
 
   // Reset original signal handler.
   signal(SIGTERM, SIG_DFL);
@@ -158,7 +160,7 @@ int main(int argc, char* argv[]) {
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
         char const* err(strerror(errno));
         logging::info << logging::HIGH
-          << "could not register configuration update handler: "
+          << "main: could not register configuration update handler: "
           << err;
       }
 
@@ -166,7 +168,7 @@ int main(int argc, char* argv[]) {
       if (signal(SIGTERM, term_handler) == SIG_ERR) {
         char const* err(strerror(errno));
         logging::info << logging::HIGH
-          << "could not register termination handler: "
+          << "main: could not register termination handler: "
           << err;
       }
 
@@ -181,7 +183,8 @@ int main(int argc, char* argv[]) {
   }
   // Unknown exception.
   catch (...) {
-    logging::error << logging::HIGH << "unknown error, stopping execution";
+    logging::error << logging::HIGH
+      << "main: unknown error, stopping execution";
     exit_code = 1;
   }
 

@@ -99,17 +99,16 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_input;
   (void)is_output;
-  if (is_input)
-    throw (exceptions::msg() << "SQL layer cannot act as input object");
 
   // Find DB host.
   QString host;
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("host"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "no 'host' defined for SQL endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
+      throw (exceptions::msg() << "SQL: no 'host' defined for " \
+               "endpoint '" << cfg.name << "'");
     host = it.value();
   }
 
@@ -118,18 +117,19 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("user"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "no 'user' defined for SQL endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
+      throw (exceptions::msg() << "SQL: no 'user' defined for " \
+               "endpoint '" << cfg.name << "'");
     user = it.value();
   }
 
   // Find DB password.
   QString password;
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("password"));
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("password"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "no 'password' defined for SQL endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
+      throw (exceptions::msg() << "SQL: no 'password' defined for " \
+               "endpoint '" << cfg.name << "'");
     password = it.value();
   }
 
@@ -138,8 +138,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("db"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "no 'db' defined for SQL endpoint '"
-               << cfg.name.toStdString().c_str() << "'");
+      throw (exceptions::msg() << "SQL: no 'db' defined for endpoint '"
+               << cfg.name << "'");
     name = it.value();
   }
 

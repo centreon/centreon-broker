@@ -82,7 +82,8 @@ output& output::operator=(output const& o) {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> output::read() {
-  throw (exceptions::msg() << "attempt to read data from an RRD output endpoint");
+  throw (exceptions::msg()
+           << "RRD: attempt to read data from an output endpoint");
   return (QSharedPointer<io::data>());
 }
 

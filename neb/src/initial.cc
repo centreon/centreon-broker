@@ -49,7 +49,7 @@ using namespace com::centreon::broker;
 static void send_custom_variables_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning custom variables dump";
+    << "init: beginning custom variables dump";
   time_t now(time(NULL));
 
   // Iterate through all hosts.
@@ -72,8 +72,8 @@ static void send_custom_variables_list() {
             c->value = cv->variable_value;
 
           // Send custom variable event.
-          logging::debug << logging::LOW << "  new custom variable '"
-                         << c->name.toStdString().c_str() << "'";
+          logging::debug << logging::LOW
+            << "init:  new custom variable '" << c->name << "'";
           neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
@@ -105,8 +105,8 @@ static void send_custom_variables_list() {
             c->value = cv->variable_value;
 
           // Send custom variable event.
-          logging::debug << logging::LOW << "  new custom variable '"
-                         << c->name.toStdString().c_str() << "'";
+          logging::debug << logging::LOW
+            << "init:  new custom variable '" << c->name << "'";
           neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
@@ -114,7 +114,7 @@ static void send_custom_variables_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of custom variables dump";
+    << "init: end of custom variables dump";
 
   return ;
 }
@@ -125,7 +125,7 @@ static void send_custom_variables_list() {
 static void send_host_dependencies_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning host dependencies dump";
+    << "init: beginning host dependencies dump";
 
   // Loop through all dependencies.
   for (hostdependency* hd = hostdependency_list; hd; hd = hd->next) {
@@ -154,7 +154,7 @@ static void send_host_dependencies_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of host dependencies dump";
+    << "init: end of host dependencies dump";
 
   return ;
 }
@@ -165,7 +165,7 @@ static void send_host_dependencies_list() {
 static void send_host_group_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning host group dump";
+    << "init: beginning host group dump";
 
   // Loop through all host groups.
   for (hostgroup* hg = hostgroup_list; hg; hg = hg->next) {
@@ -204,7 +204,7 @@ static void send_host_group_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of host group dump";
+    << "init: end of host group dump";
 
   return ;
 }
@@ -215,7 +215,7 @@ static void send_host_group_list() {
 static void send_host_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning host dump";
+    << "init: beginning host dump";
 
   // Loop through all hosts.
   for (host* h = host_list; h; h = h->next) {
@@ -338,7 +338,7 @@ static void send_host_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of host dump";
+    << "init: end of host dump";
 
   return ;
 }
@@ -349,7 +349,7 @@ static void send_host_list() {
 static void send_host_parents_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning host parents dump";
+    << "init: beginning host parents dump";
 
   // Loop through all hosts.
   int host_id;
@@ -386,7 +386,7 @@ static void send_host_parents_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of host parents dump";
+    << "init: end of host parents dump";
 
   return ;
 }
@@ -398,7 +398,7 @@ static void send_host_parents_list() {
 static void send_service_dependencies_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning service dependencies dump";
+    << "init: beginning service dependencies dump";
 
   // Loop through all dependencies.
   for (servicedependency* sd = servicedependency_list; sd; sd = sd->next) {
@@ -433,7 +433,7 @@ static void send_service_dependencies_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of service dependencies dump";
+    << "init: end of service dependencies dump";
 
   return ;
 }
@@ -444,7 +444,7 @@ static void send_service_dependencies_list() {
 static void send_service_group_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning service group dump";
+    << "init: beginning service group dump";
 
   // Loop through all service groups.
   for (servicegroup* sg = servicegroup_list; sg; sg = sg->next) {
@@ -488,7 +488,7 @@ static void send_service_group_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of service groups dump";
+    << "init: end of service groups dump";
 
   return ;
 }
@@ -499,7 +499,7 @@ static void send_service_group_list() {
 static void send_service_list() {
   // Start log message.
   logging::info << logging::MEDIUM
-                << "beginning service dump";
+    << "init: beginning service dump";
 
   // Loop through all services.
   for (service* s = service_list; s; s = s->next) {
@@ -634,7 +634,7 @@ static void send_service_list() {
 
   // End log message.
   logging::info << logging::MEDIUM
-                << "end of services dump";
+    << "init: end of services dump";
 
   return ;
 }

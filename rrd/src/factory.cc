@@ -102,12 +102,13 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
 
   // Check that endpoint is output only.
   if (is_input)
-    throw (exceptions::msg() << "cannot create an input RRD endpoint");
+    throw (exceptions::msg()
+             << "RRD: cannot create an input RRD endpoint");
 
   // Get metrics RRD path.
   QMap<QString, QString>::const_iterator it1(cfg.params.find("metrics_path"));
   if (it1 == cfg.params.end())
-    throw (exceptions::msg() << "no 'metrics_path' defined for RRD " \
+    throw (exceptions::msg() << "RRD: no 'metrics_path' defined for " \
              "endpoint '" << cfg.name << "'");
 
   // Get status RRD path.

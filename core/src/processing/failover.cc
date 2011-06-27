@@ -132,7 +132,7 @@ void failover::run() {
   while (!_should_exit) {
     // Check endpoint.
     if (_endpoint.isNull()) {
-      logging::error << logging::HIGH << "attempt to run a failover " \
+      logging::error << logging::HIGH << "failover: attempt to run a " \
         "thread with a non-existent endpoint";
       return ;
     }
