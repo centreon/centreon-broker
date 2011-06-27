@@ -102,9 +102,9 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   (void)is_acceptor;
 
   // Find path to the file.
-  QMap<QString, QString>::const_iterator it(cfg.params.find("name"));
+  QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
   if (it != cfg.params.end())
-    throw (exceptions::msg() << "file: no 'name' defined for file " \
+    throw (exceptions::msg() << "file: no 'path' defined for file " \
              "endpoint '" << cfg.name << "'");
 
   // Generate opener.

@@ -108,9 +108,9 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find name.
   QString name;
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("name"));
+    QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "local: factory: no 'name' defined " \
+      throw (exceptions::msg() << "local: factory: no 'path' defined " \
                   "for endpoint '" << cfg.name << "'");
     name = it.value();
   }
