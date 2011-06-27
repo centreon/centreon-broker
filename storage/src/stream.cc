@@ -29,11 +29,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/rrd/metric.hh"
-#include "com/centreon/broker/rrd/status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
+#include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -421,7 +421,7 @@ void stream::write(QSharedPointer<io::data> data) {
     // Generate status event.
     logging::debug << logging::LOW
       << "storage: generating status event";
-    QSharedPointer<rrd::status> status(new rrd::status);
+    QSharedPointer<storage::status> status(new storage::status);
     status->ctime = ss->last_check;
     status->index_id = index_id;
     status->interval = ss->check_interval * _interval_length;
@@ -472,7 +472,7 @@ void stream::write(QSharedPointer<io::data> data) {
       // Send perfdata event to processing.
       logging::debug << logging::HIGH
         << "storage: generating perfdata event";
-      QSharedPointer<rrd::metric> perf(new rrd::metric);
+      QSharedPointer<storage::metric> perf(new storage::metric);
       perf->ctime = ss->last_check;
       perf->interval = ss->check_interval * _interval_length;
       perf->metric_id = metric_id;

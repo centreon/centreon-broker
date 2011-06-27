@@ -24,22 +24,26 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 
 # Storage module.
-set(STORAGE "70-storage")
+set(STORAGE "20-storage")
 add_library("${STORAGE}" MODULE
   # Sources.
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/exceptions/perfdata.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/parser.cc"
   "${SRC_DIR}/perfdata.cc"
+  "${SRC_DIR}/status.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/storage/connector.hh"
   "${INC_DIR}/com/centreon/broker/storage/exceptions/perfdata.hh"
   "${INC_DIR}/com/centreon/broker/storage/factory.hh"
+  "${INC_DIR}/com/centreon/broker/storage/metric.hh"
   "${INC_DIR}/com/centreon/broker/storage/parser.hh"
   "${INC_DIR}/com/centreon/broker/storage/perfdata.hh"
+  "${INC_DIR}/com/centreon/broker/storage/status.hh"
   "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")

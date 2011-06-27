@@ -20,8 +20,8 @@
 #include <sstream>
 #include <stdlib.h>
 #include "com/centreon/broker/ndo/internal.hh"
-#include "com/centreon/broker/rrd/metric.hh"
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -320,12 +320,12 @@ template <> std::map<int, getter_setter<neb::service_group_member> >
 template <> std::map<int, getter_setter<neb::service_status> >
   ndo::ndo_mapped_type<neb::service_status>::map =
     std::map<int, getter_setter<neb::service_status> >();
-template <> std::map<int, getter_setter<rrd::metric> >
-  ndo::ndo_mapped_type<rrd::metric>::map =
-    std::map<int, getter_setter<rrd::metric> >();
-template <> std::map<int, getter_setter<rrd::status> >
-  ndo::ndo_mapped_type<rrd::status>::map =
-    std::map<int, getter_setter<rrd::status> >();
+template <> std::map<int, getter_setter<storage::metric> >
+  ndo::ndo_mapped_type<storage::metric>::map =
+    std::map<int, getter_setter<storage::metric> >();
+template <> std::map<int, getter_setter<storage::status> >
+  ndo::ndo_mapped_type<storage::status>::map =
+    std::map<int, getter_setter<storage::status> >();
 
 /**************************************
 *                                     *
@@ -368,7 +368,7 @@ void ndo::initialize() {
   static_init<neb::service_group_member>();
   //static_init<neb::service_state>();
   static_init<neb::service_status>();
-  static_init<rrd::metric>();
-  static_init<rrd::status>();
+  static_init<storage::metric>();
+  static_init<storage::status>();
   return ;
 }

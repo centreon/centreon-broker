@@ -20,6 +20,7 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/rrd/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/rrd/src")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # Find librrd.
 include(FindPkgConfig)
@@ -29,7 +30,7 @@ endif ()
 pkg_check_modules(LIBRRD REQUIRED "librrd")
 
 # RRD module.
-set(RRD "30-rrd")
+set(RRD "70-rrd")
 add_library("${RRD}" MODULE
   # Sources.
   "${SRC_DIR}/backend.cc"
@@ -38,18 +39,14 @@ add_library("${RRD}" MODULE
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/output.cc"
-  "${SRC_DIR}/status.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/rrd/backend.hh"
   "${INC_DIR}/com/centreon/broker/rrd/cached.hh"
   "${INC_DIR}/com/centreon/broker/rrd/connector.hh"
   "${INC_DIR}/com/centreon/broker/rrd/factory.hh"
   "${INC_DIR}/com/centreon/broker/rrd/lib.hh"
-  "${INC_DIR}/com/centreon/broker/rrd/metric.hh"
   "${INC_DIR}/com/centreon/broker/rrd/output.hh"
-  "${INC_DIR}/com/centreon/broker/rrd/status.hh"
 )
 set_target_properties("${RRD}" PROPERTIES PREFIX "")
 

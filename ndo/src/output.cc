@@ -22,8 +22,8 @@
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/ndo/output.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/rrd/metric.hh"
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 
@@ -282,17 +282,17 @@ void output::write(QSharedPointer<io::data> e) {
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == "com::centreon::broker::rrd::metric") {
-    buffer << NDO_API_RRDMETRIC << ":\n";
-    handle_event<rrd::metric>(
-      *static_cast<rrd::metric*>(e.data()),
+  else if (e->type() == "com::centreon::broker::storage::metric") {
+    buffer << NDO_API_STORAGEMETRIC << ":\n";
+    handle_event<storage::metric>(
+      *static_cast<storage::metric*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == "com::centreon::broker::rrd::status") {
-    buffer << NDO_API_RRDSTATUS << ":\n";
-    handle_event<rrd::status>(
-      *static_cast<rrd::status*>(e.data()),
+  else if (e->type() == "com::centreon::broker::storage::status") {
+    buffer << NDO_API_STORAGESTATUS << ":\n";
+    handle_event<storage::status>(
+      *static_cast<storage::status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

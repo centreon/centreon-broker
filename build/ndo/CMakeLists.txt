@@ -21,7 +21,7 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/ndo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/ndo/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # NDO module.
 set(NDO "80-ndo")

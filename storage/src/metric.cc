@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/rrd/metric.hh"
+#include "com/centreon/broker/storage/metric.hh"
 
-using namespace com::centreon::broker::rrd;
+using namespace com::centreon::broker::storage;
 
 /**************************************
 *                                     *
@@ -87,9 +87,9 @@ metric& metric::operator=(metric const& m) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::rrd::metric".
+ *  @return The string "com::centreon::broker::storage::metric".
  */
 QString const& metric::type() const {
-  static QString const metric_type("com::centreon::broker::rrd::metric");
+  static QString const metric_type("com::centreon::broker::storage::metric");
   return (metric_type);
 }

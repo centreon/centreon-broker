@@ -16,12 +16,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/rrd/metric.hh"
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::rrd;
+using namespace com::centreon::broker::storage;
 
 static mapped_data<metric> const metric_mapping[] = {
   mapped_data<metric>(
@@ -79,12 +79,12 @@ static mapped_data<status> const status_mapping[] = {
   mapped_data<status>()
 };
 
-template <> const mapped_data<rrd::metric>*
-  mapped_type<rrd::metric>::members(metric_mapping);
+template <> const mapped_data<storage::metric>*
+  mapped_type<storage::metric>::members(metric_mapping);
 template <> char const*
-  mapped_type<rrd::metric>::table("data_bin");
+  mapped_type<storage::metric>::table("data_bin");
 
-template <> const mapped_data<rrd::status>*
-  mapped_type<rrd::status>::members(status_mapping);
+template <> const mapped_data<storage::status>*
+  mapped_type<storage::status>::members(status_mapping);
 template <> char const*
-  mapped_type<rrd::status>::table("data_bin2");
+  mapped_type<storage::status>::table("data_bin2");

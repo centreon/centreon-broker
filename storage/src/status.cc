@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/status.hh"
 
-using namespace com::centreon::broker::rrd;
+using namespace com::centreon::broker::storage;
 
 /**************************************
 *                                     *
@@ -86,9 +86,10 @@ status& status::operator=(status const& s) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::rrd::status".
+ *  @return The string "com::centreon::broker::storage::status".
  */
 QString const& status::type() const {
-  static QString const status_type("com::centreon::broker::rrd::status");
+  static QString const status_type(
+    "com::centreon::broker::storage::status");
   return (status_type);
 }

@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_METRIC_HH_
-# define CCB_RRD_METRIC_HH_
+#ifndef CCB_STORAGE_METRIC_HH_
+# define CCB_STORAGE_METRIC_HH_
 
 # include <QString>
 # include <time.h>
@@ -26,12 +26,12 @@
 namespace                com {
   namespace              centreon {
     namespace            broker {
-      namespace          rrd {
+      namespace          storage {
         /**
-         *  @class metric metric.hh "com/centreon/broker/rrd/metric.hh"
+         *  @class metric metric.hh "com/centreon/broker/storage/metric.hh"
          *  @brief Metric information.
          *
-         *  Metric information, used to update RRD files.
+         *  Metric information, mainly used to update RRD files.
          */
         class            metric : public io::data {
          private:
@@ -55,4 +55,4 @@ namespace                com {
   }
 }
 
-#endif /* !CCB_RRD_METRIC_HH_ */
+#endif /* !CCB_STORAGE_METRIC_HH_ */

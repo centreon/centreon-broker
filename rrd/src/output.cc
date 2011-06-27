@@ -20,9 +20,9 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/lib.hh"
-#include "com/centreon/broker/rrd/metric.hh"
 #include "com/centreon/broker/rrd/output.hh"
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -93,10 +93,10 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] d Data to write.
  */
 void output::write(QSharedPointer<io::data> d) {
-  if (d->type() == "com::centreon::broker::rrd::metric") {
+  if (d->type() == "com::centreon::broker::storage::metric") {
     // Debug message.
     logging::debug << logging::MEDIUM << "RRD: new metric data";
-    QSharedPointer<rrd::metric> e(d.staticCast<rrd::metric>());
+    QSharedPointer<storage::metric> e(d.staticCast<storage::metric>());
 
     // Write metrics RRD.
     std::ostringstream oss1;
@@ -120,10 +120,10 @@ void output::write(QSharedPointer<io::data> d) {
       logging::error << logging::MEDIUM << b.what() << " (ignored)";
     }
   }
-  else if (d->type() == "com::centreon::broker::rrd::status") {
+  else if (d->type() == "com::centreon::broker::storage::status") {
     // Debug message.
     logging::debug << logging::MEDIUM << "RRD: new status data";
-    QSharedPointer<rrd::status> e(d.staticCast<rrd::status>());
+    QSharedPointer<storage::status> e(d.staticCast<storage::status>());
 
     // Write status RRD.
     std::ostringstream oss1;

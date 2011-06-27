@@ -25,8 +25,8 @@
 #include "com/centreon/broker/ndo/input.hh"
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/rrd/metric.hh"
-#include "com/centreon/broker/rrd/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 
@@ -227,11 +227,11 @@ QSharedPointer<io::data> input::read() {
      case NDO_API_SERVICESTATUSDATA:
       e.reset(_handle_event<neb::service_status>());
       break ;
-     case NDO_API_RRDMETRIC:
-      e.reset(_handle_event<rrd::metric>());
+     case NDO_API_STORAGEMETRIC:
+      e.reset(_handle_event<storage::metric>());
       break ;
-     case NDO_API_RRDSTATUS:
-      e.reset(_handle_event<rrd::status>());
+     case NDO_API_STORAGESTATUS:
+      e.reset(_handle_event<storage::status>());
       break ;
      default:
       // Skip this event.

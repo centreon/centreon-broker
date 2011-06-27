@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_STATUS_HH_
-# define CCB_RRD_STATUS_HH_
+#ifndef CCB_STORAGE_STATUS_HH_
+# define CCB_STORAGE_STATUS_HH_
 
 # include <time.h>
 # include "com/centreon/broker/io/data.hh"
@@ -25,12 +25,12 @@
 namespace                com {
   namespace              centreon {
     namespace            broker {
-      namespace          rrd {
+      namespace          storage {
         /**
-         *  @class status status.hh "com/centreon/broker/rrd/status.hh"
+         *  @class status status.hh "com/centreon/broker/storage/status.hh"
          *  @brief Status data used to generate status graphs.
          *
-         *  Status data event used to generate status graphs.
+         *  Status data event, mainly used to generate status graphs.
          */
         class            status : public io::data {
          private:
@@ -53,4 +53,4 @@ namespace                com {
   }
 }
 
-#endif /* !CCB_RRD_STATUS_HH_ */
+#endif /* !CCB_STORAGE_STATUS_HH_ */
