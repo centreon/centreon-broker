@@ -424,7 +424,8 @@ void stream::write(QSharedPointer<io::data> data) {
     QSharedPointer<storage::status> status(new storage::status);
     status->ctime = ss->last_check;
     status->index_id = index_id;
-    status->interval = ss->check_interval * _interval_length;
+    status->interval = static_cast<time_t>(ss->check_interval
+                                           * _interval_length);
     status->rrd_len = _rrd_len;
     status->state = ss->current_state;
 
@@ -474,7 +475,8 @@ void stream::write(QSharedPointer<io::data> data) {
         << "storage: generating perfdata event";
       QSharedPointer<storage::metric> perf(new storage::metric);
       perf->ctime = ss->last_check;
-      perf->interval = ss->check_interval * _interval_length;
+      perf->interval = static_cast<time_t>(ss->check_interval
+                                           * _interval_length);
       perf->metric_id = metric_id;
       perf->name = pd.name();
       perf->rrd_len = _rrd_len;
