@@ -31,7 +31,7 @@ using namespace com::centreon::broker::rrd;
 /**
  *  Default constructor.
  */
-connector::connector() {}
+connector::connector() : _cached_port(0) {}
 
 /**
  *  Copy constructor.
@@ -40,6 +40,8 @@ connector::connector() {}
  */
 connector::connector(connector const& c)
   : io::endpoint(c),
+    _cached_local(c._cached_local),
+    _cached_port(c._cached_port),
     _metrics_path(c._metrics_path),
     _status_path(c._status_path) {}
 
@@ -57,6 +59,8 @@ connector::~connector() {}
  */
 connector& connector::operator=(connector const& c) {
   io::endpoint::operator=(c);
+  _cached_local = c._cached_local;
+  _cached_port = c._cached_port;
   _metrics_path = c._metrics_path;
   _status_path = c._status_path;
   return (*this);
@@ -75,8 +79,39 @@ void connector::close() {
  *  @return Stream object.
  */
 QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new output(_metrics_path,
-                                                _status_path)));
+  QSharedPointer<io::stream> retval;
+  if (!_cached_local.isEmpty())
+    retval = QSharedPointer<io::stream>(new output(_metrics_path,
+                                                   _status_path,
+                                                   _cached_local));
+  else if (_cached_port)
+    retval = QSharedPointer<io::stream>(new output(_metrics_path,
+                                                   _status_path,
+                                                   _cached_port));
+  else
+    retval = QSharedPointer<io::stream>(new output(_metrics_path,
+                                                   _status_path));
+  return (retval);
+}
+
+/**
+ *  Set the local socket path.
+ *
+ *  @param[in] local_socket Local socket path.
+ */
+void connector::set_cached_local(QString const& local_socket) {
+  _cached_local = local_socket;
+  return ;
+}
+
+/**
+ *  Set the network connection port.
+ *
+ *  @param[in] port rrdcached port.
+ */
+void connector::set_cached_net(unsigned short port) {
+  _cached_port = port;
+  return ;
 }
 
 /**

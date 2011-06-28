@@ -16,9 +16,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <assert.h>
 #include <sstream>
+#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/rrd/output.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -29,12 +32,46 @@ using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] o Object to copy.
+ */
+output::output(output const& o) : io::stream(o) {
+  assert(false);
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] o Object to copy.
+ *
+ *  @return This object.
+ */
+output& output::operator=(output const& o) {
+  (void)o;
+  assert(false);
+  abort();
+  return (*this);
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
 
 /**
- *  Constructor.
+ *  Standard constructor.
  *
  *  @param[in] metrics_path Path in which metrics RRD files should be
  *                          written.
@@ -47,34 +84,43 @@ output::output(QString const& metrics_path, QString const& status_path)
     _status_path(status_path) {}
 
 /**
- *  Copy constructor.
+ *  Local socket constructor.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] metrics_path See standard constructor.
+ *  @param[in] status_path  See standard constructor.
+ *  @param[in] local        Local socket connection parameters.
  */
-output::output(output const& o)
-  : io::stream(o),
-    _backend(new lib),
-    _metrics_path(o._metrics_path),
-    _status_path(o._status_path) {}
+output::output(QString const& metrics_path,
+               QString const& status_path,
+               QString const& local)
+  : _metrics_path(metrics_path),
+    _status_path(status_path) {
+  QScopedPointer<cached> rrdcached(new cached);
+  rrdcached->connect_local(local);
+  _backend.reset(rrdcached.take());
+}
+
+/**
+ *  Network socket constructor.
+ *
+ *  @param[in] metrics_path See standard constructor.
+ *  @param[in] status_path  See standard constructor.
+ *  @param[in] port         rrdcached listening port.
+ */
+output::output(QString const& metrics_path,
+               QString const& status_path,
+               unsigned short port)
+  : _metrics_path(metrics_path),
+    _status_path(status_path) {
+  QScopedPointer<cached> rrdcached(new cached);
+  rrdcached->connect_remote("localhost", port);
+  _backend.reset(rrdcached.take());
+}
 
 /**
  *  Destructor.
  */
 output::~output() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] o Object to copy.
- *
- *  @return This object.
- */
-output& output::operator=(output const& o) {
-  io::stream::operator=(o);
-  _metrics_path = o._metrics_path;
-  _status_path = o._status_path;
-  return (*this);
-}
 
 /**
  *  Read data.

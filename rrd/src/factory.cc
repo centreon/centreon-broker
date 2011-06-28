@@ -25,6 +25,35 @@ using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Search for a property value.
+ *
+ *  @param[in] cfg  Configuration object.
+ *  @param[in] key  Key to get.
+ *  @param[in] thrw Should throw if value is not found.
+ *  @param[in] def  Default value.
+ */
+static QString const& find_param(config::endpoint const& cfg,
+                                 QString const& key,
+                                 bool thrw = true,
+                                 QString const& def = QString()) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it) {
+    if (thrw)
+      throw (exceptions::msg() << "RRD: no '" << key << "' defined " \
+               " for endpoint '" << cfg.name << "'");
+    else
+      return (def);
+  }
+  return (it.value());
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -98,6 +127,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_acceptor;
   (void)is_output;
 
   // Check that endpoint is output only.
@@ -106,21 +136,26 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
              << "RRD: cannot create an input RRD endpoint");
 
   // Get metrics RRD path.
-  QMap<QString, QString>::const_iterator it1(cfg.params.find("metrics_path"));
-  if (it1 == cfg.params.end())
-    throw (exceptions::msg() << "RRD: no 'metrics_path' defined for " \
-             "endpoint '" << cfg.name << "'");
+  QString metrics_path(find_param(cfg, "metrics_path"));
 
   // Get status RRD path.
-  QMap<QString, QString>::const_iterator it2(cfg.params.find("status_path"));
-  if (it2 == cfg.params.end())
-    throw (exceptions::msg() << "RRD: no 'status_path' defined for " \
-             "endpoint '" << cfg.name << "'");
+  QString status_path(find_param(cfg, "status_path"));
+
+  // Local socket path.
+  QString path(find_param(cfg, "path", false));
+
+  // Network connection.
+  unsigned short port;
+  port = find_param(cfg, "port", false, "0").toUShort();
 
   // Create endpoint.
   QScopedPointer<rrd::connector> endp(new rrd::connector);
-  endp->set_metrics_path(it1.value());
-  endp->set_status_path(it2.value());
+  endp->set_metrics_path(metrics_path);
+  endp->set_status_path(status_path);
+  if (!path.isEmpty())
+    endp->set_cached_local(path);
+  else if (port)
+    endp->set_cached_net(port);
   is_acceptor = false;
   return (endp.take());
 }
