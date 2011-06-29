@@ -55,7 +55,7 @@ namespace             com {
 
 #if QT_VERSION < 0x040700
          private:
-          QQueue<auto_ptr<QTcpSocket> >
+          QQueue<std::auto_ptr<QTcpSocket> >
                       _pending;
 
          public:
