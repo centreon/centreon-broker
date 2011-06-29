@@ -121,9 +121,38 @@ void tls_server::incomingConnection(int socketDescriptor) {
   // XXX : blocking
   // Wait for handshake to be performed.
   if (ssl_socket->waitForEncrypted(-1)) {
+#if QT_VERSION < 0x040700
+    _pending.enqueue(ssl_socket.take());
+#else
     addPendingConnection(ssl_socket.take());
+#endif /* QT_VERSION < 4.7 */
     emit newConnection();
   }
 
   return ;
 }
+
+#if QT_VERSION < 0x040700
+/**
+ *  Check if the server has pending connections.
+ *
+ *  @return true if some connections are pending.
+ */
+bool tls_server::hasPendingConnections() const {
+  return (!_pending.isEmpty());
+}
+
+/**
+ *  Get the next pending connection.
+ *
+ *  @return Next pending connection.
+ */
+QTcpSocket* tls_server::nextPendingConnection() const {
+  QScopedPointer<QTcpSocket> sock;
+  if (!_pending.isEmpty()) {
+    sock.reset(_pending.head().release());
+    _pending.dequeue();
+  }
+  return (sock.take());
+}
+#endif /* QT_VERSION < 4.7 */

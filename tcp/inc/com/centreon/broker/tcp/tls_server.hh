@@ -21,6 +21,10 @@
 
 # include <QString>
 # include <QTcpServer>
+# if QT_VERSION < 0x040700
+#  include <memory>
+#  include <QQueue>
+# endif /* QT_VERSION < 4.7 */
 
 namespace             com {
   namespace           centreon {
@@ -48,6 +52,16 @@ namespace             com {
                         QString const& ca_cert = QString());
                       ~tls_server();
           void        incomingConnection(int socketDescriptor);
+
+#if QT_VERSION < 0x040700
+         private:
+          QQueue<auto_ptr<QTcpSocket> >
+                      _pending;
+
+         public:
+          bool        hasPendingConnections() const;
+          QTcpSocket* nextPendingConnection();
+#endif /* QT_VERSION < 4.7 */
         };
       }
     }
