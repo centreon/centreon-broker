@@ -321,6 +321,9 @@ install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BINARY}"
 )
 
+# Compression module.
+add_subdirectory("compression")
+
 # File module.
 add_subdirectory("file")
 

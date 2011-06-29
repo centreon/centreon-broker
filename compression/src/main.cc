@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/tcp/factory.hh"
+#include "com/centreon/broker/compression/factory.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,8 +34,8 @@ extern "C" {
   void broker_module_deinit(bool force) {
     // Decrement instance number.
     if (!--instances && !force)
-      // Unregister TCP protocol.
-      io::protocols::instance().unreg("TCP");
+      // Unregister compression layer.
+      io::protocols::instance().unreg("compression");
     return ;
   }
 
@@ -45,11 +45,11 @@ extern "C" {
   void broker_module_init() {
     // Increment instance number.
     if (!instances++)
-      // Register TCP protocol.
-      io::protocols::instance().reg("TCP",
-        tcp::factory(),
-        1,
-        4);
+      // Register compression layer.
+      io::protocols::instance().reg("compression",
+        compression::factory(),
+        6,
+        6);
     return ;
   }
 }
