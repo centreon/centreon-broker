@@ -35,6 +35,7 @@ namespace               com {
         class         file : public backend {
          private:
           QFile       _file;
+          bool        _special;
           static bool _with_timestamp;
                       file(file const& f);
           file&       operator=(file const& f);

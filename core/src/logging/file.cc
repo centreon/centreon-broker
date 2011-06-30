@@ -109,7 +109,7 @@ void file::_write(char const* data) throw () {
  *
  *  @param[in] path Path to the log file.
  */
-file::file(QString const& path) : _file(path) {
+file::file(QString const& path) : _file(path), _special(false) {
   if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
     throw (exceptions::msg() << "log: could not open file '" << path
              << "': " << _file.errorString());
@@ -122,7 +122,7 @@ file::file(QString const& path) : _file(path) {
  *
  *  @param[in] special Special file handle.
  */
-file::file(FILE* special) {
+file::file(FILE* special) : _special(true) {
   if (!_file.open(special, QIODevice::WriteOnly))
     throw (exceptions::msg() << "log: could not open special file: "
              << _file.errorString());
@@ -132,7 +132,8 @@ file::file(FILE* special) {
  *  Destructor.
  */
 file::~file() {
-  _write("Centreon Broker log file closed\n");
+  if (!_special)
+    _write("Centreon Broker log file closed\n");
   _file.flush();
   _file.close();
 }

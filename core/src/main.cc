@@ -20,6 +20,7 @@
 #include <exception>
 #include <locale.h>
 #include <QCoreApplication>
+#include <QLibraryInfo>
 #include <signal.h>
 #include <string.h>
 #include "com/centreon/broker/config/applier/state.hh"
@@ -103,18 +104,32 @@ static void term_handler(int signum) {
  *  @return 0 on normal termination, any other value on failure.
  */
 int main(int argc, char* argv[]) {
-  int exit_code;
+  // Return value.
+  int retval(0);
 
   try {
-    // Apply default configuration (log important messages on stderr).
+    // Check the command line.
+    bool debug(false);
+    bool help(false);
+    if (argc >= 2) {
+      for (int i = 1; i < argc; ++i)
+        if (!strcmp(argv[i], "-d"))
+          debug = true;
+        else if (!strcmp(argv[i], "-h"))
+          help = true;
+        else
+          gl_mainconfigfile = argv[i];
+    }
+
+    // Apply default configuration.
     {
       // Logging object.
       config::logger default_log;
       default_log.config(true);
-      default_log.debug(false);
+      default_log.debug(debug);
       default_log.error(true);
       default_log.info(true);
-      default_log.level(logging::HIGH);
+      default_log.level(debug ? logging::LOW : logging::HIGH);
       default_log.name("stderr");
       default_log.type(config::logger::standard);
 
@@ -126,11 +141,16 @@ int main(int argc, char* argv[]) {
       config::applier::state::instance().apply(default_state);
     }
 
-    // Check the command line.
-    if (argc != 2) {
-      logging::error << logging::HIGH << "USAGE: " << argv[0]
-                     << " <configfile>";
-      exit_code = 1;
+    // Check parameters requirements.
+    if (help) {
+      logging::info << "USAGE: " << argv[0]
+        << " [-d] [-h] [<configfile>]";
+      retval = 0;
+    }
+    else if (gl_mainconfigfile.isEmpty()) {
+      logging::error << "USAGE: " << argv[0]
+        << " [-d] [-h] [<configfile>]";
+      retval = 1;
     }
     else {
       // Initialize QCoreApplication object.
@@ -139,14 +159,25 @@ int main(int argc, char* argv[]) {
       app.setApplicationVersion("2");
       app.setOrganizationDomain("merethis.com");
       app.setOrganizationName("Merethis");
+      logging::info << logging::MEDIUM << "Centreon Broker v2";
+      logging::info << logging::MEDIUM << "Copyright 2009-2011 Merethis";
+      logging::info << logging::MEDIUM << "License GPLv2: GNU GPL " \
+        "version 2 <http://gnu.org/licenses/gpl.html>";
+      logging::info << logging::LOW << "PID: " << app.applicationPid();
+      logging::info << logging::MEDIUM << "Qt version " << QT_VERSION_STR;
+      logging::info << logging::MEDIUM << "  Build Date: "
+        << QLibraryInfo::buildDate().toString();
+      logging::info << logging::MEDIUM << "  Build Key: "
+        << QLibraryInfo::buildKey();
+      logging::info << logging::MEDIUM << "  Licensee: "
+        << QLibraryInfo::licensee();
+      logging::info << logging::MEDIUM << "  Licensed Products: "
+        << QLibraryInfo::licensedProducts();
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
 
       {
-        // Set main configuration file.
-        gl_mainconfigfile = argv[1];
-
         // Parse configuration file.
         config::parser parsr;
         config::state conf;
@@ -173,20 +204,20 @@ int main(int argc, char* argv[]) {
       }
 
       // Launch event loop.
-      exit_code = app.exec();
+      retval = app.exec();
     }
   }
   // Standard exception.
   catch (std::exception const& e) {
     logging::error << logging::HIGH << e.what();
-    exit_code = 1;
+    retval = 1;
   }
   // Unknown exception.
   catch (...) {
     logging::error << logging::HIGH
-      << "main: unknown error, stopping execution";
-    exit_code = 1;
+      << "main: unknown error, aborting execution";
+    retval = 1;
   }
 
-  return (exit_code);
+  return (retval);
 }
