@@ -104,6 +104,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
+  (void)is_acceptor;
 
   // Get compression level.
   int level(-1);
