@@ -18,11 +18,35 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::logging;
+
+// Should timestamp printing be used ?
+bool file::_with_timestamp(true);
+
+/**************************************
+*                                     *
+*           Local objects.            *
+*                                     *
+**************************************/
+
+// These templates are used to compute the maximum printing size of any
+// integer.
+template <unsigned long long ll>
+struct ll_width {
+  static unsigned int const value = 1 + ll_width<ll / 10>::value;
+};
+template <>
+struct ll_width<0ull> {
+  static unsigned int const value = 1;
+};
+template <typename T>
+struct integer_width {
+  static unsigned int const value
+    = 2 + ll_width<((((1ull << (sizeof(T) * 8 - 1)) - 1) << 1) | 1)>::value;
+};
 
 /**************************************
 *                                     *
@@ -35,7 +59,7 @@ using namespace com::centreon::broker::logging;
  *
  *  @param[in] f Unused.
  */
-file::file(file const& f) : ostream(f) {
+file::file(file const& f) : backend() {
   (void)f;
   assert(false);
   abort();
@@ -55,6 +79,25 @@ file& file::operator=(file const& f) {
   return (*this);
 }
 
+/**
+ *  Write an amount of data to the file.
+ *
+ *  @param[in] data Data to write.
+ */
+void file::_write(char const* data) throw () {
+  qint64 to_write(strlen(data));
+  qint64 rb(_file.write(data, to_write));
+  to_write -= rb;
+  data += rb;
+  while ((to_write > 0) && (rb >= 0)) {
+    _file.waitForBytesWritten(-1);
+    rb = _file.write(data, to_write);
+    to_write -= rb;
+    data += rb;
+  }
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -62,54 +105,93 @@ file& file::operator=(file const& f) {
 **************************************/
 
 /**
- *  Default constructor.
+ *  Regular file constructor.
+ *
+ *  @param[in] path Path to the log file.
  */
-file::file() {}
+file::file(QString const& path) : _file(path) {
+  if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
+    throw (exceptions::msg() << "log: could not open file '" << path
+             << "': " << _file.errorString());
+  _write("Centreon Broker log file opened\n");
+  _file.flush();
+}
 
 /**
- *  Constructor.
+ *  Special file constructor.
  *
- *  @param[in] filename Name of the file to open.
+ *  @param[in] special Special file handle.
  */
-file::file(char const* filename) {
-  open(filename);
+file::file(FILE* special) {
+  if (!_file.open(special, QIODevice::WriteOnly))
+    throw (exceptions::msg() << "log: could not open special file: "
+             << _file.errorString());
 }
 
 /**
  *  Destructor.
  */
-file::~file() {}
+file::~file() {
+  _write("Centreon Broker log file closed\n");
+  _file.flush();
+  _file.close();
+}
 
 /**
- *  Open a log file.
+ *  Write log message to stream.
  *
- *  @param[in] filename Name of the file to open.
+ *  @param[in] msg      Log message.
+ *  @param[in] len      Message length.
+ *  @param[in] log_type Type of the log message.
+ *  @param[in] l        Log level.
  */
-void file::open(char const* filename) {
-  // Check filename is not NULL.
-  if (!filename)
-    throw (exceptions::msg() << "log: trying to open empty file name");
+void file::log_msg(char const* msg,
+                   unsigned int len,
+                   type log_type,
+                   level l) throw () {
+  (void)len;
+  (void)l;
+  if (msg) {
+    char const* prefix;
+    switch (log_type) {
+     case CONFIG:
+      prefix = "config:  ";
+      break ;
+     case DEBUG:
+      prefix = "debug:   ";
+      break ;
+     case ERROR:
+      prefix = "error:   ";
+      break ;
+     case INFO:
+      prefix = "info:    ";
+      break ;
+     default:
+      prefix = "unknown: ";
+    }
+    if (_with_timestamp) {
+      _write("[");
+      char buffer[integer_width<time_t>::value];
+      snprintf(buffer,
+        sizeof(buffer),
+        "%llu",
+        static_cast<unsigned long long>(time(NULL)));
+      _write(buffer);
+      _write("] ");
+    }
+    _write(prefix);
+    _write(msg);
+    _file.flush();
+  }
+  return ;
+}
 
-  // Close file if previously opened.
-  if (_ofs.is_open())
-    _ofs.close();
-
-  // Open file.
-  _ofs.open(filename, std::ios_base::out
-                      | std::ios_base::app
-                      | std::ios_base::ate);
-  if (_ofs.fail())
-    throw (exceptions::msg() << "log: could not open \""
-                             << filename << "\" file");
-
-  // Don't forget to set the stream to write on.
-  ostream::operator=(_ofs);
-
-  // Opening message.
-  _ofs << "-----------------------\n"
-          "    Centreon Broker\n"
-          "-----------------------\n"
-          "PID " << getpid() << "\n\n";
-
+/**
+ *  Set if timestamp should be printed or not.
+ *
+ *  @param[in] enable true to enable timestamp printing.
+ */
+void file::with_timestamp(bool enable) {
+  _with_timestamp = enable;
   return ;
 }

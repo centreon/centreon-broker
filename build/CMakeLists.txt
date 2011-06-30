@@ -75,7 +75,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
   "${SRC_DIR}/logging/logging.cc"
-  "${SRC_DIR}/logging/ostream.cc"
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
   "${SRC_DIR}/logging/void_logger.cc"
@@ -112,7 +111,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/logging/internal.hh"
   "${INC_DIR}/com/centreon/broker/logging/logger.hh"
   "${INC_DIR}/com/centreon/broker/logging/logging.hh"
-  "${INC_DIR}/com/centreon/broker/logging/ostream.hh"
   "${INC_DIR}/com/centreon/broker/logging/syslogger.hh"
   "${INC_DIR}/com/centreon/broker/logging/temp_logger.hh"
   "${INC_DIR}/com/centreon/broker/logging/void_logger.hh"
@@ -282,6 +280,26 @@ if (WITH_TESTING)
   set(TEST_NAME "core_exceptions_msg_throw")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/exceptions/msg/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # logging namespace tests.
+  # logging::file tests.
+  #   Logging with timestamp.
+  set(TEST_NAME "core_logging_file_log_with_timestamp")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/file/common.cc"
+    "${TEST_DIR}/logging/file/log_with_timestamp.cc"
+    "${TEST_DIR}/logging/file/common.hh")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Logging without timestamp.
+  set(TEST_NAME "core_logging_file_log_without_timestamp")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/file/common.cc"
+    "${TEST_DIR}/logging/file/log_without_timestamp.cc"
+    "${TEST_DIR}/logging/file/common.hh")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()

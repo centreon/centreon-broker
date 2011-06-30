@@ -34,9 +34,8 @@ namespace              com {
          *  outputs. This class defines an interface to communicate with
          *  any of these backends.
          *
-         *  @see file_backend
-         *  @see standard_backend
-         *  @see syslog_backend
+         *  @see file
+         *  @see syslog
          */
         class          backend {
          public:

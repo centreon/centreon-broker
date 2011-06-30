@@ -20,8 +20,8 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/logging/ostream.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "nagios/common.h"
@@ -182,7 +182,7 @@ extern "C" {
       "cb2db.");
 
     // Disable timestamp printing in logs (cause starvation when forking).
-    logging::ostream::with_timestamp(false);
+    logging::file::with_timestamp(false);
 
     try {
       // Set configuration file.

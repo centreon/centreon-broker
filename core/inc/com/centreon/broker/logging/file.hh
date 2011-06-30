@@ -19,8 +19,8 @@
 #ifndef CCB_LOGGING_FILE_HH_
 # define CCB_LOGGING_FILE_HH_
 
-# include <fstream>
-# include "com/centreon/broker/logging/ostream.hh"
+# include <QFile>
+# include "com/centreon/broker/logging/backend.hh"
 
 namespace               com {
   namespace             centreon {
@@ -32,17 +32,24 @@ namespace               com {
          *
          *  Log messages to a file.
          */
-        class           file : public ostream {
+        class         file : public backend {
          private:
-          std::ofstream _ofs;
-                        file(file const& f);
-          file&         operator=(file const& f);
+          QFile       _file;
+          static bool _with_timestamp;
+                      file(file const& f);
+          file&       operator=(file const& f);
+          void        _write(char const* data) throw ();
 
          public:
-                        file();
-                        file(char const* filename);
-                        ~file();
-          void          open(char const* filename);
+                      file(QString const& path);
+                      file(FILE* special);
+                      ~file();
+          void        log_msg(char const* msg,
+                        unsigned int len,
+                        type log_type,
+                        level l) throw ();
+          static bool with_timestamp();
+          static void with_timestamp(bool enable);
         };
       }
     }

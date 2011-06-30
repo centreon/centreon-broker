@@ -24,7 +24,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/logging/ostream.hh"
 #include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker;
@@ -85,25 +84,22 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       if (cfg.name().isEmpty())
 	throw (exceptions::msg()
                  << "log applier: attempt to log on an empty file");
-      QScopedPointer<logging::file> file(new logging::file);
-      file->open(cfg.name().toStdString().c_str());
+      QScopedPointer<logging::file> file(new logging::file(cfg.name()));
       back = QSharedPointer<logging::backend>(file.data());
       file.take();
     }
     break ;
    case config::logger::standard:
     {
-      std::ostream* out;
+      FILE* out;
       if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
-	out = &std::cerr;
-      else if ((cfg.name() == "stdlog") || (cfg.name() == "clog"))
-	out = &std::clog;
+	out = stderr;
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
-	out = &std::cout;
+	out = stdout;
       else
 	throw (exceptions::msg() << "log applier: attempt to log on " \
                  "an undefined output object");
-      back = QSharedPointer<logging::backend>(new logging::ostream(*out));
+      back = QSharedPointer<logging::backend>(new logging::file(out));
     }
     break ;
    case config::logger::syslog:
