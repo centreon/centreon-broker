@@ -22,7 +22,6 @@
 # include <QString>
 # include <QTcpServer>
 # if QT_VERSION < 0x040700
-#  include <memory>
 #  include <QQueue>
 # endif /* QT_VERSION < 4.7 */
 
@@ -55,7 +54,7 @@ namespace             com {
 
 #if QT_VERSION < 0x040700
          private:
-          QQueue<std::auto_ptr<QTcpSocket> >
+          QQueue<QTcpSocket*>
                       _pending;
 
          public:
