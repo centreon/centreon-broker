@@ -213,90 +213,98 @@ static void to_base(QSqlQuery& q, T const& t) {
 *                                     *
 **************************************/
 
-template <> std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >
-  sql::db_mapped_type<neb::acknowledgement>::list =
-    std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::comment> > >
-  sql::db_mapped_type<neb::comment>::list =
-    std::list<std::pair<std::string, getter_setter<neb::comment> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >
-  sql::db_mapped_type<neb::custom_variable>::list =
-    std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >
-  sql::db_mapped_type<neb::custom_variable_status>::list =
-    std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::downtime> > >
-  sql::db_mapped_type<neb::downtime>::list =
-    std::list<std::pair<std::string, getter_setter<neb::downtime> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::event_handler> > >
-  sql::db_mapped_type<neb::event_handler>::list =
-    std::list<std::pair<std::string, getter_setter<neb::event_handler> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >
-  sql::db_mapped_type<neb::flapping_status>::list =
-    std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host> > >
-  sql::db_mapped_type<neb::host>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host_check> > >
-  sql::db_mapped_type<neb::host_check>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_check> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >
-  sql::db_mapped_type<neb::host_dependency>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host_group> > >
-  sql::db_mapped_type<neb::host_group>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_group> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >
-  sql::db_mapped_type<neb::host_group_member>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::host_parent> > >
-  sql::db_mapped_type<neb::host_parent>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_parent> > >();
-/*template <> std::list<std::pair<std::string, getter_setter<neb::host_state> > >
-  sql::db_mapped_type<neb::host_state>::list =
-  std::list<std::pair<std::string, getter_setter<neb::host_state> > >();*/
-template <> std::list<std::pair<std::string, getter_setter<neb::host_status> > >
-  sql::db_mapped_type<neb::host_status>::list =
-    std::list<std::pair<std::string, getter_setter<neb::host_status> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::instance> > >
-  sql::db_mapped_type<neb::instance>::list =
-    std::list<std::pair<std::string, getter_setter<neb::instance> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::instance_status> > >
-  sql::db_mapped_type<neb::instance_status>::list =
-    std::list<std::pair<std::string, getter_setter<neb::instance_status> > >();
-/*template <> std::list<std::pair<std::string, getter_setter<neb::issue> > >
-  sql::db_mapped_type<neb::issue>::list =
-  std::list<std::pair<std::string, getter_setter<neb::issue> > >();*/
-template <> std::list<std::pair<std::string, getter_setter<neb::log_entry> > >
-  sql::db_mapped_type<neb::log_entry>::list =
-    std::list<std::pair<std::string, getter_setter<neb::log_entry> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::module> > >
-  sql::db_mapped_type<neb::module>::list =
-    std::list<std::pair<std::string, getter_setter<neb::module> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::notification> > >
-  sql::db_mapped_type<neb::notification>::list =
-    std::list<std::pair<std::string, getter_setter<neb::notification> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::service> > >
-  sql::db_mapped_type<neb::service>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::service_check> > >
-  sql::db_mapped_type<neb::service_check>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service_check> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >
-  sql::db_mapped_type<neb::service_dependency>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::service_group> > >
-  sql::db_mapped_type<neb::service_group>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service_group> > >();
-template <> std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >
-  sql::db_mapped_type<neb::service_group_member>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >();
-/*template <> std::list<std::pair<std::string, getter_setter<neb::service_state> > >
-  sql::db_mapped_type<neb::service_state>::list =
-  std::list<std::pair<std::string, getter_setter<neb::service_state> > >();*/
-template <> std::list<std::pair<std::string, getter_setter<neb::service_status> > >
-  sql::db_mapped_type<neb::service_status>::list =
-    std::list<std::pair<std::string, getter_setter<neb::service_status> > >();
+namespace       com {
+  namespace     centreon {
+    namespace   broker {
+      namespace sql {
+        template <> std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >
+          db_mapped_type<neb::acknowledgement>::list =
+            std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::comment> > >
+          db_mapped_type<neb::comment>::list =
+            std::list<std::pair<std::string, getter_setter<neb::comment> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >
+          db_mapped_type<neb::custom_variable>::list =
+            std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >
+          db_mapped_type<neb::custom_variable_status>::list =
+            std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::downtime> > >
+          db_mapped_type<neb::downtime>::list =
+            std::list<std::pair<std::string, getter_setter<neb::downtime> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::event_handler> > >
+          db_mapped_type<neb::event_handler>::list =
+            std::list<std::pair<std::string, getter_setter<neb::event_handler> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >
+          db_mapped_type<neb::flapping_status>::list =
+            std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host> > >
+          db_mapped_type<neb::host>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_check> > >
+          db_mapped_type<neb::host_check>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_check> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >
+          db_mapped_type<neb::host_dependency>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_group> > >
+          db_mapped_type<neb::host_group>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_group> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >
+          db_mapped_type<neb::host_group_member>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_parent> > >
+          db_mapped_type<neb::host_parent>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_parent> > >();
+        /*template <> std::list<std::pair<std::string, getter_setter<neb::host_state> > >
+          db_mapped_type<neb::host_state>::list =
+          std::list<std::pair<std::string, getter_setter<neb::host_state> > >();*/
+        template <> std::list<std::pair<std::string, getter_setter<neb::host_status> > >
+          db_mapped_type<neb::host_status>::list =
+            std::list<std::pair<std::string, getter_setter<neb::host_status> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::instance> > >
+          db_mapped_type<neb::instance>::list =
+            std::list<std::pair<std::string, getter_setter<neb::instance> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::instance_status> > >
+          db_mapped_type<neb::instance_status>::list =
+            std::list<std::pair<std::string, getter_setter<neb::instance_status> > >();
+        /*template <> std::list<std::pair<std::string, getter_setter<neb::issue> > >
+          db_mapped_type<neb::issue>::list =
+          std::list<std::pair<std::string, getter_setter<neb::issue> > >();*/
+        template <> std::list<std::pair<std::string, getter_setter<neb::log_entry> > >
+          db_mapped_type<neb::log_entry>::list =
+            std::list<std::pair<std::string, getter_setter<neb::log_entry> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::module> > >
+          db_mapped_type<neb::module>::list =
+            std::list<std::pair<std::string, getter_setter<neb::module> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::notification> > >
+          db_mapped_type<neb::notification>::list =
+            std::list<std::pair<std::string, getter_setter<neb::notification> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::service> > >
+          db_mapped_type<neb::service>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::service_check> > >
+          db_mapped_type<neb::service_check>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service_check> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >
+          db_mapped_type<neb::service_dependency>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::service_group> > >
+          db_mapped_type<neb::service_group>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service_group> > >();
+        template <> std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >
+          db_mapped_type<neb::service_group_member>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >();
+        /*template <> std::list<std::pair<std::string, getter_setter<neb::service_state> > >
+          db_mapped_type<neb::service_state>::list =
+          std::list<std::pair<std::string, getter_setter<neb::service_state> > >();*/
+        template <> std::list<std::pair<std::string, getter_setter<neb::service_status> > >
+          db_mapped_type<neb::service_status>::list =
+            std::list<std::pair<std::string, getter_setter<neb::service_status> > >();
+      }
+    }
+  }
+}
 
 /**************************************
 *                                     *

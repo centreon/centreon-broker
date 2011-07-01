@@ -79,12 +79,18 @@ static mapped_data<status> const status_mapping[] = {
   mapped_data<status>()
 };
 
-template <> const mapped_data<storage::metric>*
-  mapped_type<storage::metric>::members(metric_mapping);
-template <> char const*
-  mapped_type<storage::metric>::table("data_bin");
+namespace     com {
+  namespace   centreon {
+    namespace broker {
+      template <> const mapped_data<storage::metric>*
+        mapped_type<storage::metric>::members(metric_mapping);
+      template <> char const*
+        mapped_type<storage::metric>::table("data_bin");
 
-template <> const mapped_data<storage::status>*
-  mapped_type<storage::status>::members(status_mapping);
-template <> char const*
-  mapped_type<storage::status>::table("data_bin2");
+      template <> const mapped_data<storage::status>*
+        mapped_type<storage::status>::members(status_mapping);
+      template <> char const*
+        mapped_type<storage::status>::table("data_bin2");
+    }
+  }
+}

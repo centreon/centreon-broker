@@ -129,7 +129,9 @@ set(LIBROKER_SOURCES
 
 # Static library.
 add_library("roker" STATIC ${LIBROKER_SOURCES})
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"))
   get_target_property(ROKER_CXXFLAGS "roker" COMPILE_FLAGS)
   if (ROKER_CXXFLAGS)
     set_target_properties("roker" PROPERTIES
