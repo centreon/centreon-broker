@@ -125,9 +125,9 @@ int main(int argc, char* argv[]) {
     {
       // Logging object.
       config::logger default_log;
-      default_log.config(true);
+      default_log.config(!help);
       default_log.debug(debug);
-      default_log.error(true);
+      default_log.error(!help);
       default_log.info(true);
       default_log.level(debug ? logging::LOW : logging::HIGH);
       default_log.name("stderr");
@@ -143,12 +143,12 @@ int main(int argc, char* argv[]) {
 
     // Check parameters requirements.
     if (help) {
-      logging::info << "USAGE: " << argv[0]
+      logging::info << logging::HIGH << "USAGE: " << argv[0]
         << " [-d] [-h] [<configfile>]";
       retval = 0;
     }
     else if (gl_mainconfigfile.isEmpty()) {
-      logging::error << "USAGE: " << argv[0]
+      logging::error << logging::HIGH << "USAGE: " << argv[0]
         << " [-d] [-h] [<configfile>]";
       retval = 1;
     }

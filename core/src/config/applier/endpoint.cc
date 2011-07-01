@@ -144,7 +144,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
   // Create endpoint object.
   QSharedPointer<io::endpoint> endp;
   bool is_acceptor;
-  int level;
+  int level(0);
   for (QMap<QString, io::protocols::protocol>::const_iterator it = io::protocols::instance().begin(),
          end = io::protocols::instance().end();
        it != end;
