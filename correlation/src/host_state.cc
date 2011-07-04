@@ -16,9 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/neb/service_state.hh"
+#include "com/centreon/broker/correlation/host_state.hh"
 
-using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
@@ -29,38 +29,38 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-service_state::service_state() {}
+host_state::host_state() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] hs Object to copy.
  */
-service_state::service_state(service_state const& ss) : state(ss) {}
+host_state::host_state(host_state const& hs) : state(hs) {}
 
 /**
  *  Destructor.
  */
-service_state::~service_state() {}
+host_state::~host_state() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] hs Object to copy.
  *
- *  @return This object.
+ *  @return This instance.
  */
-service_state& service_state::operator=(service_state const& ss) {
-  state::operator=(ss);
+host_state& host_state::operator=(host_state const& hs) {
+  state::operator=(hs);
   return (*this);
 }
 
 /**
- *  Get the type of this object.
+ *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::service_state".
+ *  @return The string "com::centreon::broker::correlation::host_state".
  */
-QString const& service_state::type() const {
-  static QString const ss_type("com::centreon::broker::neb::service_state");
-  return (ss_type);
+QString const& host_state::type() const {
+  static QString const hs_type("com::centreon::broker::correlation::host_state");
+  return (hs_type);
 }

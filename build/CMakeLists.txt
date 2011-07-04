@@ -347,6 +347,9 @@ install(TARGETS "${DAEMON}"
 # Compression module.
 add_subdirectory("compression")
 
+# Correlation module.
+add_subdirectory("correlation")
+
 # File module.
 add_subdirectory("file")
 

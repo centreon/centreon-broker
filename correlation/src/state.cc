@@ -16,9 +16,29 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/neb/host_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
-using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::correlation;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members from the given object.
+ *
+ *  @param[in] s Object to copy.
+ */
+void state::_internal_copy(state const& s) {
+  current_state = s.current_state;
+  end_time = s.end_time;
+  host_id = s.host_id;
+  service_id = s.service_id;
+  start_time = s.start_time;
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -27,40 +47,38 @@ using namespace com::centreon::broker::neb;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-host_state::host_state() {}
+state::state()
+  : current_state(-1),
+    end_time(0),
+    host_id(0),
+    service_id(0),
+    start_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] hs Object to copy.
+ *  @param[in] s Object to copy.
  */
-host_state::host_state(host_state const& hs) : state(hs) {}
+state::state(state const& s) : io::data(s) {
+  _internal_copy(s);
+}
 
 /**
  *  Destructor.
  */
-host_state::~host_state() {}
+state::~state() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] hs Object to copy.
+ *  @param[in] s Object to copy.
  *
- *  @return This instance.
+ *  @return This object.
  */
-host_state& host_state::operator=(host_state const& hs) {
-  state::operator=(hs);
+state& state::operator=(state const& s) {
+  io::data::operator=(s);
+  _internal_copy(s);
   return (*this);
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The string "com::centreon::broker::neb::host_state".
- */
-QString const& host_state::type() const {
-  static QString const hs_type("com::centreon::broker::neb::host_state");
-  return (hs_type);
 }

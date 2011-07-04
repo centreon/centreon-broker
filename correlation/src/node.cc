@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,13 +14,13 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include "events/issue.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/node.hh"
 
-using namespace events;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
@@ -31,16 +31,24 @@ using namespace events;
 /**
  *  @brief Copy internal members.
  *
- *  This method is used by the copy constructor and the assignment operator.
+ *  This method is used by the copy constructor and the assignment
+ *  operator.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] n Object to copy.
  */
-void issue::_internal_copy(issue const& i) {
-  ack_time = i.ack_time;
-  end_time = i.end_time;
-  host_id = i.host_id;
-  service_id = i.service_id;
-  start_time = i.start_time;
+void node::_internal_copy(node const& n) {
+  children = n.children;
+  depended_by = n.depended_by;
+  depends_on = n.depends_on;
+  host_id = n.host_id;
+  if (!n.my_issue.isNull())
+    my_issue = QSharedPointer<issue>(new issue(*(n.my_issue)));
+  else
+    my_issue.clear();
+  parents = n.parents;
+  service_id = n.service_id;
+  since = n.since;
+  state = n.state;
   return ;
 }
 
@@ -53,45 +61,35 @@ void issue::_internal_copy(issue const& i) {
 /**
  *  Constructor.
  */
-issue::issue()
-  : ack_time(0),
-    end_time(0),
-    host_id(0),
+node::node()
+  : host_id(0),
+    my_issue(NULL),
     service_id(0),
-    start_time(0) {}
+    since(0),
+    state(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] n Object to copy.
  */
-issue::issue(issue const& i) : events::event(i) {
-  _internal_copy(i);
+node::node(node const& n) {
+  _internal_copy(n);
 }
 
 /**
  *  Destructor.
  */
-issue::~issue() {}
+node::~node() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] n Object to copy.
  *
  *  @return This object.
  */
-issue& issue::operator=(issue const& i) {
-  event::operator=(i);
-  _internal_copy(i);
+node& node::operator=(node const& n) {
+  _internal_copy(n);
   return (*this);
-}
-
-/**
- *  Get the type of this event (event::ISSUE).
- *
- *  @return event::ISSUE.
- */
-int issue::get_type() const {
-  return (ISSUE);
 }

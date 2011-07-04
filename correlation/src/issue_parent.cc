@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,13 +14,12 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include "events/issue_parent.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
 
-using namespace events;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
@@ -69,7 +68,7 @@ issue_parent::issue_parent()
  *
  *  @param[in] issue_parent Object to copy.
  */
-issue_parent::issue_parent(issue_parent const& ip) : event(ip) {
+issue_parent::issue_parent(issue_parent const& ip) : io::data(ip) {
   _internal_copy(ip);
 }
 
@@ -86,7 +85,7 @@ issue_parent::~issue_parent() {}
  *  @return This object.
  */
 issue_parent& issue_parent::operator=(issue_parent const& ip) {
-  event::operator=(ip);
+  io::data::operator=(ip);
   _internal_copy(ip);
   return (*this);
 }
@@ -94,8 +93,9 @@ issue_parent& issue_parent::operator=(issue_parent const& ip) {
 /**
  *  Get the type of this event.
  *
- *  @return event::ISSUEPARENT.
+ *  @return The string "com::centreon::broker::correlation::issue_parent".
  */
-int issue_parent::get_type() const {
-  return (ISSUEPARENT);
+QString const& issue_parent::type() const {
+  static QString const ip_type("com::centreon::broker::correlation::issue_parent");
+  return (ip_type);
 }

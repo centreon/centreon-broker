@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,64 +14,30 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
 #include <assert.h>
+#include <memory>
 #include <time.h>
-#include "correlation/correlator.hh"
-#include "correlation/parser.hh"
-#include "events/host.hh"
-#include "events/host_state.hh"
-#include "events/issue.hh"
-#include "events/issue_parent.hh"
-#include "events/service_state.hh"
-#include "events/service_status.hh"
-#include "exceptions/basic.hh"
-#include "multiplexing/publisher.hh"
+#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 
-using namespace correlation;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
 *           Static Objects            *
 *                                     *
 **************************************/
-
-// Dispatch table.
-void (correlator::* correlator::_dispatch_table[])(events::event&) = {
-  &correlator::_correlate_nothing,        // UNKNOWN
-  &correlator::_correlate_nothing,        // ACKNOWLEDGEMENT
-  &correlator::_correlate_nothing,        // COMMENT
-  &correlator::_correlate_nothing,        // CUSTOMVARIABLE
-  &correlator::_correlate_nothing,        // CUSTOMVARIABLESTATUS
-  &correlator::_correlate_nothing,        // DOWNTIME
-  &correlator::_correlate_nothing,        // EVENTHANDLER
-  &correlator::_correlate_nothing,        // FLAPPINGSTATUS
-  &correlator::_correlate_nothing,        // HOST
-  &correlator::_correlate_nothing,        // HOSTCHECK
-  &correlator::_correlate_nothing,        // HOSTDEPENDENCY
-  &correlator::_correlate_nothing,        // HOSTGROUP
-  &correlator::_correlate_nothing,        // HOSTGROUPMEMBER
-  &correlator::_correlate_nothing,        // HOSTPARENT
-  &correlator::_correlate_nothing,        // HOSTSTATE
-  &correlator::_correlate_host_status,    // HOSTSTATUS
-  &correlator::_correlate_nothing,        // INSTANCE
-  &correlator::_correlate_nothing,        // INSTANCESTATUS
-  &correlator::_correlate_nothing,        // ISSUE
-  &correlator::_correlate_nothing,        // ISSUEPARENT
-  &correlator::_correlate_log,            // LOG
-  &correlator::_correlate_nothing,        // MODULE
-  &correlator::_correlate_nothing,        // NOTIFICATION
-  &correlator::_correlate_nothing,        // SERVICE
-  &correlator::_correlate_nothing,        // SERVICECHECK
-  &correlator::_correlate_nothing,        // SERVICEDEPENDENCY
-  &correlator::_correlate_nothing,        // SERVICEGROUP
-  &correlator::_correlate_nothing,        // SERVICEGROUPMEMBER
-  &correlator::_correlate_nothing,        // SERVICESTATE
-  &correlator::_correlate_service_status, // SERVICESTATUS
-};
 
 /**
  *  Determine whether or not a node should have the unknown state.
@@ -87,7 +53,7 @@ static bool should_be_unknown(node const& n) {
   // If node has no parents, then all_parents_down will be false.
   if (n.parents.size()) {
     all_parents_down = true;
-    for (std::list<node*>::const_iterator it = n.parents.begin(),
+    for (QList<node*>::const_iterator it = n.parents.begin(),
            end = n.parents.end();
          it != end;
          ++it)
@@ -98,7 +64,7 @@ static bool should_be_unknown(node const& n) {
 
   // Check dependencies.
   one_dependency_down = false;
-  for (std::list<node*>::const_iterator it = n.depends_on.begin(),
+  for (QList<node*>::const_iterator it = n.depends_on.begin(),
          end = n.depends_on.end();
        it != end;
        ++it)
@@ -119,26 +85,26 @@ static bool should_be_unknown(node const& n) {
  *  @param[in] e       Event to process.
  *  @param[in] is_host true if the event is a host_status.
  */
-void correlator::_correlate_host_service_status(events::event& e,
+void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                                                 bool is_host) {
-  events::host_service_status& hss(
-    *static_cast<events::host_service_status*>(&e));
+  neb::host_service_status& hss(
+    *static_cast<neb::host_service_status*>(&*e));
   node* n;
 
   // Find node in appropriate list.
   if (is_host) {
-    events::host_status& hs(*static_cast<events::host_status*>(&e));
-    std::map<int, node>::iterator hs_it(_hosts.find(hs.host_id));
+    neb::host_status& hs(*static_cast<neb::host_status*>(&*e));
+    std::map<unsigned int, node>::iterator hs_it(_hosts.find(hs.host_id));
     if (hs_it == _hosts.end())
-      throw (exceptions::basic() << "invalid host status provided");
+      throw (exceptions::msg() << "correlation: invalid host status provided");
     n = &hs_it->second;
   }
   else {
-    events::service_status& ss(*static_cast<events::service_status*>(&e));
-    std::map<std::pair<int, int>, node>::iterator ss_it(
+    neb::service_status& ss(*static_cast<neb::service_status*>(&*e));
+    std::map<std::pair<unsigned int, unsigned int>, node>::iterator ss_it(
       _services.find(std::make_pair(ss.host_id, ss.service_id)));
     if (ss_it == _services.end())
-      throw (exceptions::basic() << "invalid service status provided");
+      throw (exceptions::msg() << "correlation: invalid service status provided");
     n = &ss_it->second;
   }
 
@@ -153,15 +119,15 @@ void correlator::_correlate_host_service_status(events::event& e,
     // Update states.
     {
       // Old state.
-      std::auto_ptr<events::state> state_update(
-        is_host ? static_cast<events::state*>(new events::host_state)
-                : static_cast<events::state*>(new events::service_state));
+      std::auto_ptr<state> state_update(
+        is_host ? static_cast<state*>(new host_state)
+                : static_cast<state*>(new service_state));
       state_update->current_state = n->state;
       state_update->end_time = now;
       state_update->host_id = n->host_id;
       state_update->service_id = n->service_id;
       state_update->start_time = n->since;
-      _events.push_back(state_update.get());
+      _events.push_back(QSharedPointer<io::data>(state_update.get()));
       state_update.release();
 
       // Update node.
@@ -170,231 +136,223 @@ void correlator::_correlate_host_service_status(events::event& e,
 
       // New state.
       state_update.reset(
-        is_host ? static_cast<events::state*>(new events::host_state)
-                : static_cast<events::state*>(new events::service_state));
+        is_host ? static_cast<state*>(new host_state)
+                : static_cast<state*>(new service_state));
       state_update->current_state = n->state;
       state_update->end_time = 0;
       state_update->host_id = n->host_id;
       state_update->service_id = n->service_id;
       state_update->start_time = n->since;
-      _events.push_back(state_update.get());
+      _events.push_back(QSharedPointer<io::data>(state_update.get()));
       state_update.release();
     }
 
-    if (n->issue) {
+    if (n->my_issue) {
       // Issue is over.
       if (!n->state) {
         // Issue parenting deletion.
-        for (std::list<node*>::iterator it = n->depends_on.begin(),
+        for (QList<node*>::iterator it = n->depends_on.begin(),
                end = n->depends_on.end();
              it != end;
              ++it)
-          if ((*it)->issue) {
-            std::auto_ptr<events::issue_parent> p(
-              new events::issue_parent);
+          if ((*it)->my_issue) {
+            std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
-            p->child_start_time = n->issue->start_time;
+            p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
             p->parent_service_id = (*it)->service_id;
-            p->parent_start_time = (*it)->issue->start_time;
+            p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.get());
+            _events.push_back(QSharedPointer<io::data>(p.get()));
             p.release();
           }
-        for (std::list<node*>::iterator it = n->depended_by.begin(),
+        for (QList<node*>::iterator it = n->depended_by.begin(),
                end = n->depended_by.end();
              it != end;
              ++it)
-          if ((*it)->issue) {
-            std::auto_ptr<events::issue_parent> p(
-              new events::issue_parent);
+          if ((*it)->my_issue) {
+            std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = (*it)->host_id;
             p->child_service_id = (*it)->service_id;
-            p->child_start_time = (*it)->issue->start_time;
+            p->child_start_time = (*it)->my_issue->start_time;
             p->parent_host_id = n->host_id;
             p->parent_service_id = n->service_id;
-            p->parent_start_time = n->issue->start_time;
+            p->parent_start_time = n->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.get());
+            _events.push_back(QSharedPointer<io::data>(p.get()));
             p.release();
           }
         bool all_parents = true;
-        for (std::list<node*>::iterator it = n->parents.begin(),
+        for (QList<node*>::iterator it = n->parents.begin(),
                end = n->parents.end();
              it != end;
              ++it)
-          if (!(*it)->issue)
+          if (!(*it)->my_issue)
             all_parents = false;
         if (all_parents)
-          for (std::list<node*>::iterator it = n->parents.begin(),
+          for (QList<node*>::iterator it = n->parents.begin(),
                  end = n->parents.end();
                it != end;
                ++it) {
-            std::auto_ptr<events::issue_parent> p(
-              new events::issue_parent);
+            std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
-            p->child_start_time = n->issue->start_time;
+            p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
             p->parent_service_id = (*it)->service_id;
-            p->parent_start_time = (*it)->issue->start_time;
+            p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.get());
+            _events.push_back(QSharedPointer<io::data>(p.get()));
             p.release();
           }
         all_parents = true;
-        for (std::list<node*>::iterator it = n->children.begin(),
+        for (QList<node*>::iterator it = n->children.begin(),
                end = n->children.end();
              it != end;
              ++it)
-          if (!(*it)->issue)
+          if (!(*it)->my_issue)
             all_parents = false;
         if (all_parents)
-          for (std::list<node*>::iterator it = n->children.begin(),
+          for (QList<node*>::iterator it = n->children.begin(),
                  end = n->children.end();
                it != end;
                ++it) {
-            std::auto_ptr<events::issue_parent> p(
-              new events::issue_parent);
+            std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = (*it)->host_id;
             p->child_service_id = (*it)->service_id;
-            p->child_start_time = (*it)->issue->start_time;
+            p->child_start_time = (*it)->my_issue->start_time;
             p->parent_host_id = n->host_id;
             p->parent_service_id = n->service_id;
-            p->parent_start_time = n->issue->start_time;
+            p->parent_start_time = n->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.get());
+            _events.push_back(QSharedPointer<io::data>(p.get()));
             p.release();
           }
 
         // Terminate issue.
-        n->issue->end_time = now;
-        _events.push_back(n->issue);
-        n->issue = NULL;
+        n->my_issue->end_time = now;
+        _events.push_back(QSharedPointer<io::data>(n->my_issue));
+        n->my_issue.clear();
       }
     }
     else {
       // Set issue.
-      n->issue = new events::issue;
-      n->issue->host_id = n->host_id;
-      n->issue->service_id = n->service_id;
-      n->issue->start_time = now;
+      n->my_issue = QSharedPointer<issue>(new issue);
+      n->my_issue->host_id = n->host_id;
+      n->my_issue->service_id = n->service_id;
+      n->my_issue->start_time = now;
 
       // Store issue.
       {
-        std::auto_ptr<events::issue> i(new events::issue(*(n->issue)));
-        _events.push_back(i.get());
+        std::auto_ptr<issue> i(new issue(*(n->my_issue)));
+        _events.push_back(QSharedPointer<io::data>(i.get()));
         i.release();
       }
 
       // Declare parenting.
       if (3 == n->state) {
         // Loop dependencies.
-        for (std::list<node*>::iterator it = n->depends_on.begin(),
+        for (QList<node*>::iterator it = n->depends_on.begin(),
                end = n->depends_on.end();
              it != end;
              ++it)
-          if ((*it)->issue) {
-            std::auto_ptr<events::issue_parent> parenting(
-              new events::issue_parent);
+          if ((*it)->my_issue) {
+            std::auto_ptr<issue_parent> parenting(new issue_parent);
             parenting->child_host_id = n->host_id;
             parenting->child_service_id = n->service_id;
-            parenting->child_start_time = n->issue->start_time;
+            parenting->child_start_time = n->my_issue->start_time;
             parenting->parent_host_id = (*it)->host_id;
             parenting->parent_service_id = (*it)->service_id;
-            parenting->parent_start_time = (*it)->issue->start_time;
-            parenting->start_time = n->issue->start_time;
-            _events.push_back(parenting.get());
+            parenting->parent_start_time = (*it)->my_issue->start_time;
+            parenting->start_time = n->my_issue->start_time;
+            _events.push_back(QSharedPointer<io::data>(parenting.get()));
             parenting.release();
           }
 
         // Loop parents.
         bool all_parent_issue = true;
-        for (std::list<node*>::iterator it = n->parents.begin(),
+        for (QList<node*>::iterator it = n->parents.begin(),
                end = n->parents.end();
              it != end;
              ++it)
-          all_parent_issue = (all_parent_issue && (*it)->issue);
+          all_parent_issue = (all_parent_issue && (*it)->my_issue);
         if (all_parent_issue) {
-          for (std::list<node*>::iterator it = n->parents.begin(),
+          for (QList<node*>::iterator it = n->parents.begin(),
                  end = n->parents.end();
                it != end;
                ++it) {
-            std::auto_ptr<events::issue_parent> parenting(
-              new events::issue_parent);
+            std::auto_ptr<issue_parent> parenting(new issue_parent);
             parenting->child_host_id = n->host_id;
             parenting->child_service_id = n->service_id;
-            parenting->child_start_time = n->issue->start_time;
+            parenting->child_start_time = n->my_issue->start_time;
             parenting->parent_host_id = (*it)->host_id;
             parenting->parent_service_id = (*it)->service_id;
-            parenting->parent_start_time = (*it)->issue->start_time;
-            parenting->start_time = n->issue->start_time;
-            _events.push_back(parenting.get());
+            parenting->parent_start_time = (*it)->my_issue->start_time;
+            parenting->start_time = n->my_issue->start_time;
+            _events.push_back(QSharedPointer<io::data>(parenting.get()));
             parenting.release();
           }
         }
       }
 
       // Loop dependant nodes.
-      for (std::list<node*>::iterator it = n->depended_by.begin(),
+      for (QList<node*>::iterator it = n->depended_by.begin(),
              end = n->depended_by.end();
            it != end;
            ++it)
-        if ((*it)->issue) {
-          std::auto_ptr<events::issue_parent> parenting(
-            new events::issue_parent);
+        if (!(*it)->my_issue.isNull()) {
+          std::auto_ptr<issue_parent> parenting(new issue_parent);
           parenting->child_host_id = (*it)->host_id;
           parenting->child_service_id = (*it)->service_id;
-          parenting->child_start_time = (*it)->issue->start_time;
+          parenting->child_start_time = (*it)->my_issue->start_time;
           parenting->parent_host_id = n->host_id;
           parenting->parent_service_id = n->service_id;
-          parenting->parent_start_time = n->issue->start_time;
-          parenting->start_time = n->issue->start_time;
-          _events.push_back(parenting.get());
+          parenting->parent_start_time = n->my_issue->start_time;
+          parenting->start_time = n->my_issue->start_time;
+          _events.push_back(QSharedPointer<io::data>(parenting.get()));
           parenting.release();
         }
                 
       // Loop children.
-      for (std::list<node*>::iterator it = n->children.begin(),
+      for (QList<node*>::iterator it = n->children.begin(),
              end = n->children.end();
            it != end;
            ++it)
-        if ((*it)->issue) {
+        if (!(*it)->my_issue.isNull()) {
           // Check that all parents of the node have an issue.
           bool all_parent_issue = true;
-          for (std::list<node*>::iterator it2 = (*it)->parents.begin(),
+          for (QList<node*>::iterator it2 = (*it)->parents.begin(),
                  end2 = (*it)->parents.end();
                it2 != end2;
                ++it2)
-            all_parent_issue = (all_parent_issue && (*it2)->issue);
+            all_parent_issue = (all_parent_issue && !(*it2)->my_issue.isNull());
 
           if (all_parent_issue)
-            for (std::list<node*>::iterator it2 = (*it)->parents.begin(),
+            for (QList<node*>::iterator it2 = (*it)->parents.begin(),
                    end2 = (*it)->parents.end();
                  it2 != end2;
                  ++it2) {
-              std::auto_ptr<events::issue_parent> parenting(
-                new events::issue_parent);
+              std::auto_ptr<issue_parent> parenting(new issue_parent);
               parenting->child_host_id = (*it2)->host_id;
               parenting->child_service_id = (*it2)->service_id;
-              parenting->child_start_time = (*it2)->issue->start_time;
+              parenting->child_start_time = (*it2)->my_issue->start_time;
               parenting->parent_host_id = n->host_id;
               parenting->parent_service_id = n->service_id;
-              parenting->parent_start_time = n->issue->start_time;
-              parenting->start_time = n->issue->start_time;
+              parenting->parent_start_time = n->my_issue->start_time;
+              parenting->start_time = n->my_issue->start_time;
             }
         }
     }
@@ -407,7 +365,7 @@ void correlator::_correlate_host_service_status(events::event& e,
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_host_status(events::event& e) {
+void correlator::_correlate_host_status(QSharedPointer<io::data> e) {
   _correlate_host_service_status(e, true);
   return ;
 }
@@ -417,12 +375,12 @@ void correlator::_correlate_host_status(events::event& e) {
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_log(events::event& e) {
-  events::log_entry* l(static_cast<events::log_entry*>(&e));
+void correlator::_correlate_log(QSharedPointer<io::data> e) {
+  neb::log_entry* l(static_cast<neb::log_entry*>(&*e));
   node* n;
 
   if (l->service_id) {
-    std::map<std::pair<int, int>, node>::iterator it(
+    std::map<std::pair<unsigned int, unsigned int>, node>::iterator it(
       _services.find(std::make_pair(l->host_id, l->service_id)));
     if (it != _services.end())
       n = &it->second;
@@ -430,27 +388,17 @@ void correlator::_correlate_log(events::event& e) {
       n = NULL;
   }
   else {
-    std::map<int, node>::iterator it(_hosts.find(l->host_id));
+    std::map<unsigned int, node>::iterator it(_hosts.find(l->host_id));
     if (it != _hosts.end())
       n = &it->second;
     else
       n = NULL;
   }
   if (n && n->state) {
-    events::issue* issue(_find_related_issue(*n));
-    if (issue)
-      l->issue_start_time = issue->start_time;
+    QSharedPointer<issue> isu(_find_related_issue(*n));
+    if (!isu.isNull())
+      l->issue_start_time = isu->start_time;
   }
-  return ;
-}
-
-/**
- *  Do nothing (callback called on untreated event types).
- *
- *  @param[in] et Unused.
- */
-void correlator::_correlate_nothing(events::event& e) {
-  (void)e;
   return ;
 }
 
@@ -459,7 +407,7 @@ void correlator::_correlate_nothing(events::event& e) {
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_service_status(events::event& e) {
+void correlator::_correlate_service_status(QSharedPointer<io::data> e) {
   _correlate_host_service_status(e, false);
   return ;
 }
@@ -472,33 +420,33 @@ void correlator::_correlate_service_status(events::event& e) {
  *
  *  @return The issue associated with node.
  */
-events::issue* correlator::_find_related_issue(node& n) {
-  events::issue* issue;
+QSharedPointer<issue> correlator::_find_related_issue(node& n) {
+  QSharedPointer<issue> isu;
 
-  if (n.state && n.issue)
-    issue = n.issue;
+  if (n.state && !n.my_issue.isNull())
+    isu = n.my_issue;
   else {
-    issue = NULL;
-    for (std::list<node*>::iterator it = n.depends_on.begin(),
+    isu.clear();
+    for (QList<node*>::iterator it = n.depends_on.begin(),
            end = n.depends_on.end();
          it != end;
          ++it)
       if ((*it)->state) {
-        issue = _find_related_issue(**it);
+        isu = _find_related_issue(**it);
         break ;
       }
-    if (!issue) {
-      for (std::list<node*>::iterator it = n.parents.begin(),
+    if (isu.isNull()) {
+      for (QList<node*>::iterator it = n.parents.begin(),
              end = n.parents.end();
            it != end;
            ++it)
         if ((*it)->state) {
-          issue = _find_related_issue(**it);
+          isu = _find_related_issue(**it);
           break ;
         }
     }
   }
-  return (issue);
+  return (isu);
 }
 
 /**
@@ -523,10 +471,7 @@ void correlator::_internal_copy(correlator const& c) {
 /**
  *  Constructor.
  */
-correlator::correlator() {
-  assert((sizeof(_dispatch_table) / sizeof(*_dispatch_table))
-         == events::event::EVENT_TYPES_NB);
-}
+correlator::correlator() {}
 
 /**
  *  Copy constructor.
@@ -559,8 +504,13 @@ correlator& correlator::operator=(correlator const& c) {
  *
  *  @param[inout] e Event to process.
  */
-void correlator::event(events::event& e) {
-  (this->*_dispatch_table[e.get_type()])(e);
+void correlator::event(QSharedPointer<io::data> e) {
+  if ("com::centreon::broker::neb::host_status" == e->type())
+    _correlate_host_status(e);
+  else if ("com::centreon::broker::neb::service_status" == e->type())
+    _correlate_service_status(e);
+  else if ("com::centreon::broker::neb::log_entry" == e->type())
+    _correlate_log(e);
   return ;
 }
 
@@ -569,12 +519,9 @@ void correlator::event(events::event& e) {
  *
  *  @return The next available correlated event.
  */
-events::event* correlator::event() {
-  events::event* e;
-
-  if (_events.empty())
-    e = NULL;
-  else {
+QSharedPointer<io::data> correlator::event() {
+  QSharedPointer<io::data> e;
+  if (!_events.empty()) {
     e = _events.front();
     _events.pop_front();
   }

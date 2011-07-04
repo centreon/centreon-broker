@@ -16,27 +16,36 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_STATE_HH_
-# define CCB_NEB_HOST_STATE_HH_
+#ifndef CCB_CORRELATION_ISSUE_HH_
+# define CCB_CORRELATION_ISSUE_HH_
 
-# include "com/centreon/broker/neb/state.hh"
+# include <time.h>
+# include "com/centreon/broker/io/data.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
-      namespace          neb {
+      namespace          correlation {
         /**
-         *  @class host_state host_state.hh "com/centreon/broker/neb/host_state.hh"
-         *  @brief Host state.
+         *  @class issue issue.hh "com/centreon/broker/correlation/issue.hh"
+         *  @brief Issue event.
          *
-         *  State of an host at a given time.
+         *  Update or create an issue.
          */
-        class            host_state : public state {
+        class            issue : public io::data {
+         private:
+          void           _internal_copy(issue const& i);
+
          public:
-                         host_state();
-                         host_state(host_state const& hs);
-                         ~host_state();
-          host_state&    operator=(host_state const& hs);
+          time_t         ack_time;
+          time_t         end_time;
+          unsigned int   host_id;
+          unsigned int   service_id;
+          time_t         start_time;
+                         issue();
+                         issue(issue const& i);
+                         ~issue();
+          issue&         operator=(issue const& i);
           QString const& type() const;
         };
       }
@@ -44,4 +53,4 @@ namespace                com {
   }
 }
 
-#endif /* !CCB_NEB_HOST_STATE_HH_ */
+#endif /* !CCB_CORRELATION_ISSUE_HH_ */

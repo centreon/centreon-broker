@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,18 +14,18 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
+#include <memory>
 #include <QtXml>
 #include <stdlib.h>
 #include <string.h>
-#include "correlation/parser.hh"
-#include "exceptions/basic.hh"
-#include "logging/logging.hh"
+#include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
-using namespace correlation;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
@@ -37,18 +37,16 @@ using namespace correlation;
  *  Generate automatic services dependencies.
  */
 void parser::_auto_services_dependencies() {
-  for (std::map<std::pair<int, int>, node>::iterator
+  for (std::map<std::pair<unsigned int, unsigned int>, node>::iterator
          it = _services->begin(),
          end = _services->end();
        it != end;
        ++it) {
-    std::map<int, node>::iterator it2(_hosts->find(it->first.first));
-    if (it2 == _hosts->end()) {
-      exceptions::basic e;
-      e << "could not find host " << it->first.first
-        << " for service " << it->first.second;
-      throw (e);
-    }
+    std::map<unsigned int, node>::iterator it2(_hosts->find(it->first.first));
+    if (it2 == _hosts->end())
+      throw (exceptions::msg() << "could not find host "
+               << it->first.first << " for service "
+               << it->first.second);
     it->second.depends_on.push_back(&(it2->second));
     it2->second.depended_by.push_back(&(it->second));
   }
@@ -66,15 +64,15 @@ void parser::_auto_services_dependencies() {
 node* parser::_find_node(char const* host_id, char const* service_id) {
   node* n(NULL);
   if (!service_id) {
-    std::map<int, node>::iterator it(
-      _hosts->find(strtol(host_id, NULL, 0)));
+    std::map<unsigned int, node>::iterator it(
+      _hosts->find(strtoul(host_id, NULL, 0)));
     if (it != _hosts->end())
       n = &it->second;
   }
   else {
-    std::map<std::pair<int, int>, node>::iterator it(
-      _services->find(std::make_pair(strtol(host_id, NULL, 0),
-        strtol(service_id, NULL, 0))));
+    std::map<std::pair<unsigned int, unsigned int>, node>::iterator it(
+      _services->find(std::make_pair(strtoul(host_id, NULL, 0),
+        strtoul(service_id, NULL, 0))));
     if (it != _services->end())
       n = &it->second;
   }
@@ -108,11 +106,9 @@ bool parser::startElement(QString const& uri,
       hi2 = attrs.value("host_id");
       si1 = attrs.value("dependent_service_id");
       si2 = attrs.value("service_id");
-      if (!hi1.size() || !hi2.size()) {
-        exceptions::basic e;
-        e << "missing an host id for an element of a dependency definition.";
-        throw (e);
-      }
+      if (!hi1.size() || !hi2.size())
+        throw (exceptions::msg() << "missing an host id for an " \
+                 "element of a dependency definition");
       if (si1.size())
         service_id1 = si1.toStdString().c_str();
       if (si2.size())
@@ -132,36 +128,32 @@ bool parser::startElement(QString const& uri,
 
       // Get XML node attribute.
       i_attr = attrs.value("id");
-      if (!i_attr.size()) {
-        exceptions::basic e;
-        e << "could not find an 'id' attribute on a 'host' definition.";
-        throw (e);
-      }
+      if (!i_attr.size())
+        throw (exceptions::msg() << "could not find an 'id' attribute" \
+                 " on a 'host' definition");
 
       // Process attribute.
-      n.host_id = strtol(i_attr.toStdString().c_str(), NULL, 0);
+      n.host_id = strtoul(i_attr.toStdString().c_str(), NULL, 0);
       (*_hosts)[n.host_id] = n;
     }
     else if (!strcmp(value, "parent")) {
       QString host_attr;
       QString parent_attr;
-      std::map<int, node>::iterator it1;
-      std::map<int, node>::iterator it2;
+      std::map<unsigned int, node>::iterator it1;
+      std::map<unsigned int, node>::iterator it2;
 
       // Get XML node attributes.
       host_attr = attrs.value("host");
       parent_attr = attrs.value("parent");
-      if (!host_attr.size() || !parent_attr.size()) {
-        exceptions::basic e;
-        e << "could not find 'host' or 'parent' attribute of a parenting definition";
-        throw (e);
-      }
+      if (!host_attr.size() || !parent_attr.size())
+        throw (exceptions::msg() << "could not find 'host' or " \
+                 "'parent' attribute of a parenting definition");
 
       // Process attributes.
-      it1 = (*_hosts).find(strtol(host_attr.toStdString().c_str(),
+      it1 = (*_hosts).find(strtoul(host_attr.toStdString().c_str(),
         NULL,
         0));
-      it2 = (*_hosts).find(strtol(parent_attr.toStdString().c_str(),
+      it2 = (*_hosts).find(strtoul(parent_attr.toStdString().c_str(),
         NULL,
         0));
       if ((it1 != (*_hosts).end()) && (it2 != (*_hosts).end())) {
@@ -177,15 +169,13 @@ bool parser::startElement(QString const& uri,
       // Get XML node attributes.
       host_attr = attrs.value("host");
       id_attr = attrs.value("id");
-      if (!host_attr.size() || !id_attr.size()) {
-        exceptions::basic e;
-        e << "could not find 'host' or 'id' attribute of a 'service' definition.";
-        throw (e);
-      }
+      if (!host_attr.size() || !id_attr.size())
+        throw (exceptions::msg() << "could not find 'host' or 'id' " \
+                 "attribute of a 'service' definition");
 
       // Process attributes.
-      n.host_id = strtol(host_attr.toStdString().c_str(), NULL, 0);
-      n.service_id = strtol(id_attr.toStdString().c_str(), NULL, 0);
+      n.host_id = strtoul(host_attr.toStdString().c_str(), NULL, 0);
+      n.service_id = strtoul(id_attr.toStdString().c_str(), NULL, 0);
       (*_services)[std::make_pair(n.host_id, n.service_id)] = n;
     }
   }
@@ -237,8 +227,8 @@ parser& parser::operator=(parser const& p) {
  *  @param[out] services List of services.
  */
 void parser::parse(char const* filename,
-                   std::map<int, node>& hosts,
-                   std::map<std::pair<int, int>, node>& services) {
+                   std::map<unsigned int, node>& hosts,
+                   std::map<std::pair<unsigned int, unsigned int>, node>& services) {
   QXmlSimpleReader reader;
   _hosts = &hosts;
   _services = &services;
@@ -251,15 +241,14 @@ void parser::parse(char const* filename,
     _auto_services_dependencies();
   }
   catch (QXmlParseException const& e) {
-    logging::config << logging::HIGH << "correlation parsing error on \""
-                    << filename << "\" (line "
-                    << (unsigned int)e.lineNumber() << ", character "
-                    << (unsigned int)e.columnNumber() << "): "
-                    << e.message().toStdString().c_str();
+    logging::config << logging::HIGH << "correlation: parsing error " \
+         "on \"" << filename << "\" (line "
+      << (unsigned int)e.lineNumber() << ", character "
+      << (unsigned int)e.columnNumber() << "): " << e.message();
   }
-  catch (exceptions::basic const& e) {
-    logging::config << logging::HIGH << "error while parsing correlation file \""
-                    << filename << "\": " << e.what();
+  catch (exceptions::msg const& e) {
+    logging::config << logging::HIGH << "correlation: error while " \
+      "parsing correlation file \"" << filename << "\": " << e.what();
   }
   return ;
 }

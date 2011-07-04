@@ -16,8 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATE_HH_
-# define CCB_NEB_STATE_HH_
+#ifndef CCB_CORRELATION_STATE_HH_
+# define CCB_CORRELATION_STATE_HH_
 
 # include <time.h>
 # include "com/centreon/broker/io/data.hh"
@@ -25,9 +25,9 @@
 namespace              com {
   namespace            centreon {
     namespace          broker {
-      namespace        neb {
+      namespace        correlation {
         /**
-         *  @class state state.hh "com/centreon/broker/neb/state.hh"
+         *  @class state state.hh "com/centreon/broker/correlation/state.hh"
          *  @brief State of a checkpoint.
          *
          *  This class represent the state of a specific checkpoint for
@@ -54,4 +54,4 @@ namespace              com {
   }
 }
 
-#endif /* !CCB_NEB_STATE_HH_ */
+#endif /* !CCB_CORRELATION_STATE_HH_ */

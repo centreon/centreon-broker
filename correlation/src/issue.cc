@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 MERETHIS
+** Copyright 2009-2011 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -14,14 +14,12 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
-**
-** For more information: contact@centreon.com
 */
 
-#include "correlation/node.hh"
-#include "events/issue.hh"
+#include "com/centreon/broker/correlation/issue.hh"
 
-using namespace correlation;
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 
 /**************************************
 *                                     *
@@ -35,21 +33,14 @@ using namespace correlation;
  *  This method is used by the copy constructor and the assignment
  *  operator.
  *
- *  @param[in] n Object to copy.
+ *  @param[in] i Object to copy.
  */
-void node::_internal_copy(node const& n) {
-  children = n.children;
-  depended_by = n.depended_by;
-  depends_on = n.depends_on;
-  host_id = n.host_id;
-  if (n.issue)
-    issue = new events::issue(*(n.issue));
-  else
-    issue = NULL;
-  parents = n.parents;
-  service_id = n.service_id;
-  since = n.since;
-  state = n.state;
+void issue::_internal_copy(issue const& i) {
+  ack_time = i.ack_time;
+  end_time = i.end_time;
+  host_id = i.host_id;
+  service_id = i.service_id;
+  start_time = i.start_time;
   return ;
 }
 
@@ -62,47 +53,46 @@ void node::_internal_copy(node const& n) {
 /**
  *  Constructor.
  */
-node::node() : host_id(0), issue(NULL), service_id(0), since(0), state(0) {}
+issue::issue()
+  : ack_time(0),
+    end_time(0),
+    host_id(0),
+    service_id(0),
+    start_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] n Object to copy.
+ *  @param[in] i Object to copy.
  */
-node::node(node const& n) {
-  _internal_copy(n);
+issue::issue(issue const& i) : io::data(i) {
+  _internal_copy(i);
 }
 
 /**
  *  Destructor.
  */
-node::~node() {
-  if (issue)
-    delete (issue);
-}
+issue::~issue() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] n Object to copy.
+ *  @param[in] i Object to copy.
  *
  *  @return This object.
  */
-node& node::operator=(node const& n) {
-  _internal_copy(n);
+issue& issue::operator=(issue const& i) {
+  io::data::operator=(i);
+  _internal_copy(i);
   return (*this);
 }
 
 /**
- *  Extract useful status fields from an host status.
+ *  Get the type of this event.
  *
- *  @param[in] hs host_status to extract from.
- *
- *  @return This object.
+ *  @return The string "com::centreon::broker::correlation::issue".
  */
-node& node::operator<<(events::host_status const& hs) {
-  host_id = hs.host_id;
-  service_id = 0;
-  state = 0;
-  return (*this);
+QString const& issue::type() const {
+  static QString const issue_type("com::centreon::broker::correlation::issue");
+  return (issue_type);
 }

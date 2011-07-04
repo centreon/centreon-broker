@@ -16,17 +16,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_SERVICE_STATE_HH_
-# define CCB_NEB_SERVICE_STATE_HH_
+#ifndef CCB_CORRELATION_SERVICE_STATE_HH_
+# define CCB_CORRELATION_SERVICE_STATE_HH_
 
-# include "com/centreon/broker/neb/state.hh"
+# include "com/centreon/broker/correlation/state.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
-      namespace          neb {
+      namespace          correlation {
         /**
-         *  @class service_state service_state.hh "com/centreon/broker/neb/service_state.hh"
+         *  @class service_state service_state.hh "com/centreon/broker/correlation/service_state.hh"
          *  @brief Service state.
          *
          *  State of a service at a given time.
@@ -44,4 +44,4 @@ namespace                com {
   }
 }
 
-#endif /* !CCB_NEB_SERVICE_STATE_HH_ */
+#endif /* !CCB_CORRELATION_SERVICE_STATE_HH_ */
