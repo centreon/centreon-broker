@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <QMutexLocker>
+#include <QQueue>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
@@ -26,6 +27,24 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
+
+/**************************************
+*                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+// Hooks.
+static QList<QSharedPointer<io::stream> > _hooks;
+
+// Data queue.
+static QQueue<QSharedPointer<io::data> > _kiew;
+
+// Mutex.
+static QMutex _mutex(QMutex::Recursive);
+
+// Processing flag.
+static bool _processing;
 
 /**************************************
 *                                     *
@@ -39,10 +58,7 @@ using namespace com::centreon::broker::multiplexing;
 publisher::publisher() {}
 
 /**
- *  @brief Copy constructor.
- *
- *  As publisher does not hold any data value, this constructor is
- *  similar to the default constructor.
+ *  Copy constructor.
  *
  *  @param[in] p Unused.
  */
@@ -54,12 +70,9 @@ publisher::publisher(publisher const& p) : io::stream(p) {}
 publisher::~publisher() {}
 
 /**
- *  @brief Assignment operator.
+ *  Assignment operator.
  *
- *  As publisher does not hold any data value, this assignment operator
- *  does nothing.
- *
- *  @param[in] p Unused.
+ *  @param[in] p Object to copy.
  *
  *  @return This object.
  */
@@ -69,14 +82,35 @@ publisher& publisher::operator=(publisher const& p) {
 }
 
 /**
+ *  Set a hook.
+ *
+ *  @param[in] h Hook.
+ */
+void publisher::hook(QSharedPointer<io::stream> h) {
+  QMutexLocker lock(&_mutex);
+  _hooks.push_back(h);
+  return ;
+}
+
+/**
  *  Try to read.
  *
  *  @param[in] d Unused.
  */
 QSharedPointer<io::data> publisher::read() {
-  throw (exceptions::msg() << "multiplexing: tried to read from " \
-           "a publisher (software bug)");
+  throw (exceptions::msg() << "multiplexing: tried to read from a " \
+           "publisher");
   return (QSharedPointer<io::data>());
+}
+
+/**
+ *  Remove a hook.
+ *
+ *  @param[in] h Hook.
+ */
+void publisher::unhook(QSharedPointer<io::stream> h) {
+  std::remove(_hooks.begin(), _hooks.end(), h);
+  return ;
 }
 
 /**
@@ -89,14 +123,44 @@ QSharedPointer<io::data> publisher::read() {
  *  @param[in] e Event to publish.
  */
 void publisher::write(QSharedPointer<io::data> e) {
-  // Send object to every subscriber.
-  {
-    QMutexLocker lock(&gl_subscribersm);
-    for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
-           end = gl_subscribers.end();
-         it != end;
-         ++it)
-      (*it)->write(e);
+  // Lock mutex.
+  QMutexLocker lock(&_mutex);
+
+  // Store object for further processing.
+  _kiew.enqueue(e);
+
+  if (!_processing) {
+    // Set processing flag.
+    _processing = true;
+
+    try {
+      // Send object to every hook.
+      for (QList<QSharedPointer<io::stream> >::iterator it = _hooks.begin(),
+             end = _hooks.end();
+           it != end;
+           ++it)
+        (*it)->write(e);
+
+      // Process all queued events.
+      while (!_kiew.isEmpty()) {
+        // Send object to every subscriber.
+        QMutexLocker lock(&gl_subscribersm);
+        for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
+               end = gl_subscribers.end();
+             it != end;
+             ++it)
+          (*it)->write(_kiew.head());
+	_kiew.dequeue();
+      }
+
+      // Reset processing flag.
+      _processing = false;
+    }
+    catch (...) {
+      // Reset processing flag.
+      _processing = false;
+      throw ;
+    }
   }
 
   return ;

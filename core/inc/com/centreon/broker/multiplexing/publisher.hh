@@ -19,14 +19,12 @@
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH_
 # define CCB_MULTIPLEXING_PUBLISHER_HH_
 
-# include <QSharedPointer>
-# include "com/centreon/broker/io/data.hh"
 # include "com/centreon/broker/io/stream.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      multiplexing {
+namespace                          com {
+  namespace                        centreon {
+    namespace                      broker {
+      namespace                    multiplexing {
         /**
          *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
          *  @brief Publish events to registered subscribers.
@@ -36,15 +34,16 @@ namespace            com {
          *
          *  @see subscriber
          */
-        class        publisher : public io::stream {
+        class                      publisher : public io::stream {
          public:
-                     publisher();
-                     publisher(publisher const& p);
-                     ~publisher();
-          publisher& operator=(publisher const& p);
-          QSharedPointer<io::data>
-                     read();
-          void       write(QSharedPointer<io::data> d);
+                                   publisher();
+                                   publisher(publisher const& p);
+                                   ~publisher();
+          publisher&               operator=(publisher const& p);
+          static void              hook(QSharedPointer<io::stream> h);
+          QSharedPointer<io::data> read();
+          static void              unhook(QSharedPointer<io::stream> h);
+          void                     write(QSharedPointer<io::data> d);
         };
       }
     }
