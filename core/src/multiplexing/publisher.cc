@@ -138,8 +138,14 @@ void publisher::write(QSharedPointer<io::data> e) {
       for (QList<QSharedPointer<io::stream> >::iterator it = _hooks.begin(),
              end = _hooks.end();
            it != end;
-           ++it)
+           ++it) {
         (*it)->write(e);
+        QSharedPointer<io::data> d((*it)->read());
+        while (!d.isNull()) {
+          _kiew.enqueue(d);
+          d = (*it)->read();
+        }
+      }
 
       // Process all queued events.
       while (!_kiew.isEmpty()) {
@@ -150,7 +156,7 @@ void publisher::write(QSharedPointer<io::data> e) {
              it != end;
              ++it)
           (*it)->write(_kiew.head());
-	_kiew.dequeue();
+        _kiew.dequeue();
       }
 
       // Reset processing flag.

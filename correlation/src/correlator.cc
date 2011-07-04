@@ -478,7 +478,7 @@ correlator::correlator() {}
  *
  *  @param[in] c Object to copy.
  */
-correlator::correlator(correlator const& c) {
+correlator::correlator(correlator const& c) : io::stream(c) {
   _internal_copy(c);
 }
 
@@ -495,37 +495,9 @@ correlator::~correlator() {}
  *  @return This object.
  */
 correlator& correlator::operator=(correlator const& c) {
+  io::stream::operator=(c);
   _internal_copy(c);
   return (*this);
-}
-
-/**
- *  Treat a new event.
- *
- *  @param[inout] e Event to process.
- */
-void correlator::event(QSharedPointer<io::data> e) {
-  if ("com::centreon::broker::neb::host_status" == e->type())
-    _correlate_host_status(e);
-  else if ("com::centreon::broker::neb::service_status" == e->type())
-    _correlate_service_status(e);
-  else if ("com::centreon::broker::neb::log_entry" == e->type())
-    _correlate_log(e);
-  return ;
-}
-
-/**
- *  Get the next available correlated event.
- *
- *  @return The next available correlated event.
- */
-QSharedPointer<io::data> correlator::event() {
-  QSharedPointer<io::data> e;
-  if (!_events.empty()) {
-    e = _events.front();
-    _events.pop_front();
-  }
-  return (e);
 }
 
 /**
@@ -537,5 +509,34 @@ QSharedPointer<io::data> correlator::event() {
 void correlator::load(char const* correlation_file) {
   parser p;
   p.parse(correlation_file, _hosts, _services);
+  return ;
+}
+
+/**
+ *  Get the next available correlated event.
+ *
+ *  @return The next available correlated event.
+ */
+QSharedPointer<io::data> correlator::read() {
+  QSharedPointer<io::data> e;
+  if (!_events.empty()) {
+    e = _events.front();
+    _events.pop_front();
+  }
+  return (e);
+}
+
+/**
+ *  Treat a new event.
+ *
+ *  @param[inout] e Event to process.
+ */
+void correlator::write(QSharedPointer<io::data> e) {
+  if ("com::centreon::broker::neb::host_status" == e->type())
+    _correlate_host_status(e);
+  else if ("com::centreon::broker::neb::service_status" == e->type())
+    _correlate_service_status(e);
+  else if ("com::centreon::broker::neb::log_entry" == e->type())
+    _correlate_log(e);
   return ;
 }
