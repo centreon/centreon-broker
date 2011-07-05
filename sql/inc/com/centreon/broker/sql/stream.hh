@@ -50,7 +50,7 @@ namespace              com {
           std::auto_ptr<QSqlQuery>       _flapping_status_stmt;
           std::auto_ptr<QSqlQuery>       _host_stmt;
           std::auto_ptr<QSqlQuery>       _host_check_stmt;
-          //std::auto_ptr<QSqlQuery>       _host_state_stmt;
+          std::auto_ptr<QSqlQuery>       _host_state_stmt;
           std::auto_ptr<QSqlQuery>       _host_status_stmt;
           std::auto_ptr<QSqlQuery>       _instance_stmt;
           std::auto_ptr<QSqlQuery>       _instance_status_stmt;
@@ -59,7 +59,7 @@ namespace              com {
           std::auto_ptr<QSqlQuery>       _service_insert_stmt;
           std::auto_ptr<QSqlQuery>       _service_stmt;
           std::auto_ptr<QSqlQuery>       _service_check_stmt;
-          //std::auto_ptr<QSqlQuery>       _service_state_stmt;
+          std::auto_ptr<QSqlQuery>       _service_state_stmt;
           std::auto_ptr<QSqlQuery>       _service_status_stmt;
           QSqlDatabase _db;
           stream&      operator=(stream const& s);
@@ -87,12 +87,12 @@ namespace              com {
           void         _process_host_group(io::data const& e);
           void         _process_host_group_member(io::data const& e);
           void         _process_host_parent(io::data const& e);
-          //void         _process_host_state(io::data const& e);
+          void         _process_host_state(io::data const& e);
           void         _process_host_status(io::data const& e);
           void         _process_instance(io::data const& e);
           void         _process_instance_status(io::data const& e);
-          //void         _process_issue(io::data const& e);
-          //void         _process_issue_parent(io::data const& e);
+          void         _process_issue(io::data const& e);
+          void         _process_issue_parent(io::data const& e);
           void         _process_log(io::data const& e);
           void         _process_module(io::data const& e);
           void         _process_nothing(io::data const& e);
@@ -102,7 +102,7 @@ namespace              com {
           void         _process_service_dependency(io::data const& e);
           void         _process_service_group(io::data const& e);
           void         _process_service_group_member(io::data const& e);
-          //void         _process_service_state(io::data const& e);
+          void         _process_service_state(io::data const& e);
           void         _process_service_status(io::data const& e);
 
          public:

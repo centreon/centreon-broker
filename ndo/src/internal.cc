@@ -19,7 +19,12 @@
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/ndo/internal.hh"
+#include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/status.hh"
 
@@ -243,6 +248,18 @@ namespace       com {
   namespace     centreon {
     namespace   broker {
       namespace ndo {
+        template <> std::map<int, getter_setter<correlation::host_state> >
+          ndo_mapped_type<correlation::host_state>::map =
+            std::map<int, getter_setter<correlation::host_state> >();
+        template <> std::map<int, getter_setter<correlation::issue> >
+          ndo_mapped_type<correlation::issue>::map =
+            std::map<int, getter_setter<correlation::issue> >();
+        template <> std::map<int, getter_setter<correlation::issue_parent> >
+          ndo_mapped_type<correlation::issue_parent>::map =
+          std::map<int, getter_setter<correlation::issue_parent> >();
+        template <> std::map<int, getter_setter<correlation::service_state> >
+          ndo_mapped_type<correlation::service_state>::map =
+            std::map<int, getter_setter<correlation::service_state> >();
         template <> std::map<int, getter_setter<neb::acknowledgement> >
           ndo_mapped_type<neb::acknowledgement>::map =
             std::map<int, getter_setter<neb::acknowledgement> >();
@@ -291,12 +308,6 @@ namespace       com {
         template <> std::map<int, getter_setter<neb::instance_status> >
           ndo_mapped_type<neb::instance_status>::map =
             std::map<int, getter_setter<neb::instance_status> >();
-        /*template <> std::map<int, getter_setter<neb::issue> >
-          ndo_mapped_type<neb::issue>::map =
-            std::map<int, getter_setter<neb::issue> >();
-        template <> std::map<int, getter_setter<neb::issue_parent> >
-          ndo_mapped_type<neb::issue_parent>::map =
-          std::map<int, getter_setter<neb::issue_parent> >();*/
         template <> std::map<int, getter_setter<neb::log_entry> >
           ndo_mapped_type<neb::log_entry>::map =
             std::map<int, getter_setter<neb::log_entry> >();

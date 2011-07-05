@@ -289,11 +289,6 @@ void stream::_prepare() {
   id.push_back("host_id");
   _prepare_update<neb::host_check>(_host_check_stmt, id);
 
-  /*id.clear();
-  id.push_back("host_id");
-  id.push_back("start_time");
-  _prepare_update<neb::host_state>(_host_state_stmt, id);*/
-
   id.clear();
   id.push_back("host_id");
   _prepare_update<neb::host_status>(_host_status_stmt, id);
@@ -305,12 +300,6 @@ void stream::_prepare() {
   id.clear();
   id.push_back("instance_id");
   _prepare_update<neb::instance_status>(_instance_status_stmt, id);
-
-  /*id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
-  _prepare_update<neb::issue>(_issue_stmt, id);*/
 
   id.clear();
   id.push_back("host_id");
@@ -328,16 +317,27 @@ void stream::_prepare() {
   id.push_back("service_id");
   _prepare_update<neb::service_check>(_service_check_stmt, id);
 
-  /*id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
-  _prepare_update<neb::service_state>(_service_state_stmt, id);*/
-
   id.clear();
   id.push_back("host_id");
   id.push_back("service_id");
   _prepare_update<neb::service_status>(_service_status_stmt, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("start_time");
+  _prepare_update<correlation::host_state>(_host_state_stmt, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  _prepare_update<correlation::issue>(_issue_stmt, id);
+
+  id.clear();
+  id.push_back("host_id");
+  id.push_back("service_id");
+  id.push_back("start_time");
+  _prepare_update<correlation::service_state>(_service_state_stmt, id);
 
   return ;
 }
@@ -718,14 +718,15 @@ void stream::_process_host_parent(io::data const& e) {
  *  Process a host state event.
  *
  *  @param[in] e Uncasted host state.
- *
+ */
 void stream::_process_host_state(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing host state event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing host state event";
 
   // Processing.
-  neb::host_state const& hs(
-    *static_cast<neb::host_state const*>(&e));
+  correlation::host_state const& hs(
+    *static_cast<correlation::host_state const*>(&e));
   if (hs.end_time) {
     *_host_state_stmt << hs;
     _execute(*_host_state_stmt);
@@ -734,7 +735,7 @@ void stream::_process_host_state(io::data const& e) {
     _insert(hs);
 
   return ;
-  }*/
+}
 
 /**
  *  Process a host status event.
@@ -808,32 +809,34 @@ void stream::_process_instance_status(io::data const& e) {
  *
  *  @param[in] e Uncasted issue.
  */
-/*void stream::_process_issue(io::data const& e) {
+void stream::_process_issue(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing issue event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing issue event";
 
   // Processing.
-  neb::issue const& i(*static_cast<neb::issue const*>(&e));
+  correlation::issue const& i(*static_cast<correlation::issue const*>(&e));
   if (!_insert(i)) {
     *_issue_stmt << i;
     _issue_stmt->exec();
   }
 
   return ;
-  }*/
+}
 
 /**
  *  Process an issue parent event.
  *
  *  @param[in] e Uncasted issue parent.
  */
-/*void stream::_process_issue_parent(io::data const& e) {
+void stream::_process_issue_parent(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing issue parent event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing issue parent event";
 
   // Fetch proper structure.
-  neb::issue_parent const& ip(
-    *static_cast<neb::issue_parent const*>(&e));
+  correlation::issue_parent const& ip(
+    *static_cast<correlation::issue_parent const*>(&e));
   int child_id;
   int parent_id;
 
@@ -841,7 +844,7 @@ void stream::_process_instance_status(io::data const& e) {
   {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
-          << mapped_type<neb::issue>::table << " WHERE host_id="
+          << mapped_type<correlation::issue>::table << " WHERE host_id="
           << ip.child_host_id << " AND service_id="
           << ip.child_service_id << " AND start_time="
           << ip.child_start_time;
@@ -850,50 +853,50 @@ void stream::_process_instance_status(io::data const& e) {
     QSqlQuery q(_db);
     if (q.exec(query.str().c_str()) && q.next()) {
       child_id = q.value(0).toInt();
-      logging::debug << logging::LOW << "child issue ID: " << child_id;
+      logging::debug << logging::LOW << "SQL: child issue ID: "
+        << child_id;
     }
     else
-      throw (exceptions::basic() << "could not fetch child issue ID ("
-                                 << "host=" << ip.child_host_id
-                                 << ", service=" << ip.child_service_id
-                                 << ", start=" << ip.child_start_time
-                                 << ")");
+      throw (exceptions::msg() << "SQL: could not fetch child issue " \
+               << "ID (host=" << ip.child_host_id << ", service="
+               << ip.child_service_id << ", start="
+               << ip.child_start_time << ")");
   }
 
   // Get parent ID.
   {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
-          << mapped_type<neb::issue>::table << " WHERE host_id="
+          << mapped_type<correlation::issue>::table << " WHERE host_id="
           << ip.parent_host_id << " AND service_id="
           << ip.parent_service_id << " AND start_time="
           << ip.parent_start_time;
-    logging::info << logging::LOW << "executing query: "
-                  << query.str().c_str();
+    logging::info << logging::LOW << "SQL: executing query: "
+      << query.str().c_str();
     QSqlQuery q(_db);
     if (q.exec(query.str().c_str()) && q.next()) {
       parent_id = q.value(0).toInt();
-      logging::debug << logging::LOW << "parent issue ID: " << parent_id;
+      logging::debug << logging::LOW << "SQL: parent issue ID: "
+        << parent_id;
     }
     else
-      throw (exceptions::basic() << "could not fetch parent issue ID ("
-                                 << "host=" << ip.parent_host_id
-                                 << ", service=" << ip.parent_service_id
-                                 << ", start=" << ip.parent_start_time
-                                 << ")");
+      throw (exceptions::msg() << "SQL: could not fetch parent issue " \
+               << "ID (host=" << ip.parent_host_id << ", service="
+               << ip.parent_service_id << ", start="
+               << ip.parent_start_time << ")");
   }
 
   // End of parenting.
   if (ip.end_time) {
     std::ostringstream query;
     query << "UPDATE "
-          << mapped_type<neb::issue_parent>::table
+          << mapped_type<correlation::issue_parent>::table
           << " SET end_time="
           << ip.end_time << " WHERE child_id="
           << child_id << " AND parent_id="
           << parent_id << " AND start_time="
           << ip.start_time;
-    logging::info << logging::LOW << "executing query: "
+    logging::info << logging::LOW << "SQL: executing query: "
                   << query.str().c_str();
     _db.exec(query.str().c_str());
   }
@@ -901,18 +904,18 @@ void stream::_process_instance_status(io::data const& e) {
   else {
     std::ostringstream query;
     query << "INSERT INTO "
-          << mapped_type<neb::issue_parent>::table
+          << mapped_type<correlation::issue_parent>::table
           << " (child_id, parent_id, start_time) VALUES("
           << child_id << ", "
           << parent_id << ", "
           << ip.start_time << ")";
-    logging::info << logging::LOW << "executing query: "
+    logging::info << logging::LOW << "SQL: executing query: "
                   << query.str().c_str();
     _db.exec(query.str().c_str());
   }
 
   return ;
-  }*/
+}
 
 /**
  *  Process a log event.
@@ -929,22 +932,22 @@ void stream::_process_log(io::data const& e) {
 
   // Fetch issue ID (if any).
   int issue;
-  /*if (le.issue_start_time) {
+  if (le.issue_start_time) {
     std::ostringstream ss;
     ss << "SELECT issue_id FROM "
-       << mapped_type<neb::issue>::table
+       << mapped_type<correlation::issue>::table
        << " WHERE host_id=" << le.host_id
        << " AND service_id=" << le.service_id
        << " AND start_time=" << le.issue_start_time;
-    logging::info << logging::LOW << "executing query: "
-                  << ss.str().c_str();
+    logging::info << logging::LOW << "SQL: executing query: "
+      << ss.str().c_str();
     QSqlQuery q(_db);
     if (q.exec(ss.str().c_str()) && q.next())
       issue = q.value(0).toInt();
     else
       issue = 0;
   }
-  else*/
+  else
     issue = 0;
 
   // Build insertion query.
@@ -1166,14 +1169,15 @@ void stream::_process_service_group_member(io::data const& e) {
  *  Process a service state event.
  *
  *  @param[in] e Uncasted service state.
- *
+ */
 void stream::_process_service_state(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "processing service state event";
+  logging::info << logging::MEDIUM
+    << "SQL: processing service state event";
 
   // Processing.
-  neb::service_state const& ss(
-    *static_cast<neb::service_state const*>(&e));
+  correlation::service_state const& ss(
+    *static_cast<correlation::service_state const*>(&e));
   if (ss.end_time) {
     *_service_state_stmt << ss;
     _execute(*_service_state_stmt);
@@ -1182,7 +1186,7 @@ void stream::_process_service_state(io::data const& e) {
     _insert(ss);
 
   return ;
-  }*/
+}
 
 /**
  *  Process a service status event.
@@ -1312,7 +1316,7 @@ stream::~stream() {
   _flapping_status_stmt.reset();
   _host_stmt.reset();
   _host_check_stmt.reset();
-  //_host_state_stmt.reset();
+  _host_state_stmt.reset();
   _host_status_stmt.reset();
   _instance_stmt.reset();
   _instance_status_stmt.reset();
@@ -1321,7 +1325,7 @@ stream::~stream() {
   _service_insert_stmt.reset();
   _service_stmt.reset();
   _service_check_stmt.reset();
-  //_service_state_stmt.reset();
+  _service_state_stmt.reset();
   _service_status_stmt.reset();
 
   // Remove database connection.
@@ -1383,6 +1387,14 @@ void stream::initialize() {
     = &stream::_process_service_group_member;
   processing_table["com::centreon::broker::neb::service_status"]
     = &stream::_process_service_status;
+  processing_table["com::centreon::broker::correlation::host_state"]
+    = &stream::_process_host_state;
+  processing_table["com::centreon::broker::correlation::issue"]
+    = &stream::_process_issue;
+  processing_table["com::centreon::broker::correlation::issue_parent"]
+    = &stream::_process_issue_parent;
+  processing_table["com::centreon::broker::correlation::service_state"]
+    = &stream::_process_service_state;
   processing_table.squeeze();
   return ;
 }

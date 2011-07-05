@@ -20,7 +20,6 @@
 # define CCB_MAPPING_HH_
 
 # include <QString>
-# include "com/centreon/broker/neb/events.hh"
 
 namespace              com {
   namespace            centreon {

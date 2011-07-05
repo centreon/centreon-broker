@@ -16,11 +16,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "mapping.hh"
 #include "nagios/protoapi.h"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 using namespace com::centreon::broker::neb;
 
 // acknowledgement members mapping.
@@ -839,7 +844,7 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
 };
 
 // host_state members mapping.
-/*static mapped_data<host_state> const host_state_mapping[] = {
+static mapped_data<host_state> const host_state_mapping[] = {
   mapped_data<host_state>(
     &host_state::current_state,
     0,
@@ -861,7 +866,7 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
     4,
     "start_time"),
   mapped_data<host_state>()
-  };*/
+};
 
 // host_status members mapping.
 static mapped_data<host_status> const host_status_mapping[] = {
@@ -1189,7 +1194,6 @@ static mapped_data<instance_status> const instance_status_mapping[] = {
   mapped_data<instance_status>()
 };
 
-/*
 // issue members mapping.
 static mapped_data<issue> const issue_mapping[] = {
   mapped_data<issue>(
@@ -1257,7 +1261,6 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     "start_time"),
   mapped_data<issue_parent>()
 };
-*/
 
 // Log members mapping.
 static mapped_data<log_entry> log_mapping[] = {
@@ -1876,7 +1879,7 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
 };
 
 // service_state members mapping.
-/*static mapped_data<service_state> const service_state_mapping [] = {
+static mapped_data<service_state> const service_state_mapping [] = {
   mapped_data<service_state>(
     &service_state::current_state,
     0,
@@ -1902,7 +1905,7 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
     5,
     "start_time"),
   mapped_data<service_state>()
-  };*/
+};
 
 // service_status members mapping.
 static mapped_data<service_status> const service_status_mapping[] = {
@@ -2180,12 +2183,6 @@ namespace     com {
       template <> const char*
         mapped_type<neb::host_parent>::table("hosts_hosts_parents");
       
-      // host_state mapping.
-      /*template <> const mapped_data<neb::host_state>*
-        mapped_type<neb::host_state>::members(host_state_mapping);
-      template <> const char*
-      mapped_type<neb::host_state>::table("hoststateevents");*/
-      
       // host_status mapping.
       template <> const mapped_data<neb::host_status>*
         mapped_type<neb::host_status>::members(host_status_mapping);
@@ -2203,21 +2200,7 @@ namespace     com {
         mapped_type<neb::instance_status>::members(instance_status_mapping);
       template <> const char*
         mapped_type<neb::instance_status>::table("instances");
-      
-      /*
-      // issue mapping.
-      template <> const mapped_data<neb::issue>*
-        mapped_type<neb::issue>::members(issue_mapping);
-      template <> const char*
-        mapped_type<neb::issue>::table("issues");
-      
-      // issue_parent mapping.
-      template <> const mapped_data<neb::issue_parent>*
-        mapped_type<neb::issue_parent>::members(issue_parent_mapping);
-      template <> const char*
-        mapped_type<neb::issue_parent>::table("issues_issues_parents");
-      */
-      
+
       // log_entry mapping.
       template <> const mapped_data<neb::log_entry>*
         mapped_type<neb::log_entry>::members(log_mapping);
@@ -2266,17 +2249,36 @@ namespace     com {
       template <> const char*
         mapped_type<neb::service_group_member>::table("services_servicegroups");
       
-      // service_state mapping.
-      /*template <> const mapped_data<neb::service_state>*
-        mapped_type<neb::service_state>::members(service_state_mapping);
-      template <> const char*
-      mapped_type<neb::service_state>::table("servicestateevents");*/
-      
       // service_status mapping.
       template <> const mapped_data<neb::service_status>*
         mapped_type<neb::service_status>::members(service_status_mapping);
       template <> const char*
         mapped_type<neb::service_status>::table("services");
+
+      // host_state mapping.
+      template <> const mapped_data<correlation::host_state>*
+        mapped_type<correlation::host_state>::members(host_state_mapping);
+      template <> const char*
+        mapped_type<correlation::host_state>::table("hoststateevents");
+      
+      // issue mapping.
+      template <> const mapped_data<correlation::issue>*
+        mapped_type<correlation::issue>::members(issue_mapping);
+      template <> const char*
+        mapped_type<correlation::issue>::table("issues");
+      
+      // issue_parent mapping.
+      template <> const mapped_data<correlation::issue_parent>*
+        mapped_type<correlation::issue_parent>::members(issue_parent_mapping);
+      template <> const char*
+        mapped_type<correlation::issue_parent>::table("issues_issues_parents");
+      
+      // service_state mapping.
+      template <> const mapped_data<correlation::service_state>*
+        mapped_type<correlation::service_state>::members(service_state_mapping);
+      template <> const char*
+        mapped_type<correlation::service_state>::table("servicestateevents");
+      
     }
   }
 }

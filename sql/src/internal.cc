@@ -256,9 +256,6 @@ namespace       com {
         template <> std::list<std::pair<std::string, getter_setter<neb::host_parent> > >
           db_mapped_type<neb::host_parent>::list =
             std::list<std::pair<std::string, getter_setter<neb::host_parent> > >();
-        /*template <> std::list<std::pair<std::string, getter_setter<neb::host_state> > >
-          db_mapped_type<neb::host_state>::list =
-          std::list<std::pair<std::string, getter_setter<neb::host_state> > >();*/
         template <> std::list<std::pair<std::string, getter_setter<neb::host_status> > >
           db_mapped_type<neb::host_status>::list =
             std::list<std::pair<std::string, getter_setter<neb::host_status> > >();
@@ -268,9 +265,6 @@ namespace       com {
         template <> std::list<std::pair<std::string, getter_setter<neb::instance_status> > >
           db_mapped_type<neb::instance_status>::list =
             std::list<std::pair<std::string, getter_setter<neb::instance_status> > >();
-        /*template <> std::list<std::pair<std::string, getter_setter<neb::issue> > >
-          db_mapped_type<neb::issue>::list =
-          std::list<std::pair<std::string, getter_setter<neb::issue> > >();*/
         template <> std::list<std::pair<std::string, getter_setter<neb::log_entry> > >
           db_mapped_type<neb::log_entry>::list =
             std::list<std::pair<std::string, getter_setter<neb::log_entry> > >();
@@ -295,13 +289,19 @@ namespace       com {
         template <> std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >
           db_mapped_type<neb::service_group_member>::list =
             std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >();
-        /*template <> std::list<std::pair<std::string, getter_setter<neb::service_state> > >
-          db_mapped_type<neb::service_state>::list =
-          std::list<std::pair<std::string, getter_setter<neb::service_state> > >();*/
         template <> std::list<std::pair<std::string, getter_setter<neb::service_status> > >
           db_mapped_type<neb::service_status>::list =
             std::list<std::pair<std::string, getter_setter<neb::service_status> > >();
-      }
+        template <> std::list<std::pair<std::string, getter_setter<correlation::host_state> > >
+          db_mapped_type<correlation::host_state>::list =
+            std::list<std::pair<std::string, getter_setter<correlation::host_state> > >();
+        template <> std::list<std::pair<std::string, getter_setter<correlation::issue> > >
+          db_mapped_type<correlation::issue>::list =
+            std::list<std::pair<std::string, getter_setter<correlation::issue> > >();
+        template <> std::list<std::pair<std::string, getter_setter<correlation::service_state> > >
+          db_mapped_type<correlation::service_state>::list =
+            std::list<std::pair<std::string, getter_setter<correlation::service_state> > >();
+     }
     }
   }
 }
@@ -331,11 +331,9 @@ void sql::initialize() {
   static_init<neb::host_group>();
   static_init<neb::host_group_member>();
   static_init<neb::host_parent>();
-  //static_init<neb::host_state>();
   static_init<neb::host_status>();
   static_init<neb::instance>();
   static_init<neb::instance_status>();
-  //static_init<neb::issue>();
   static_init<neb::log_entry>();
   static_init<neb::module>();
   static_init<neb::notification>();
@@ -344,8 +342,10 @@ void sql::initialize() {
   static_init<neb::service_dependency>();
   static_init<neb::service_group>();
   static_init<neb::service_group_member>();
-  //static_init<neb::service_state>();
   static_init<neb::service_status>();
+  static_init<correlation::host_state>();
+  static_init<correlation::issue>();
+  static_init<correlation::service_state>();
   return ;
 }
 
@@ -454,14 +454,6 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_parent const& hp) {
 }
 
 /**
- *  ORM operator for host_state.
- *
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_state const& hs) {
-  to_base(q, hs);
-  return (q);
-}
-*/
-/**
  *  ORM operator for host_status.
  */
 QSqlQuery& operator<<(QSqlQuery& q, neb::host_status const& hs) {
@@ -484,14 +476,6 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::instance_status const& ps) {
   to_base(q, ps);
   return (q);
 }
-
-/**
- *  ORM operator for issue.
- */
-/*QSqlQuery& operator<<(QSqlQuery& q, neb::issue const& i) {
-  to_base(q, i);
-  return (q);
-  }*/
 
 /**
  *  ORM operator for log_entry.
@@ -558,17 +542,33 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_group_member const& sgm) {
 }
 
 /**
- *  ORM operator for service_state.
- *
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_state const& ss) {
-  to_base(q, ss);
-  return (q);
-  }*/
-
-/**
  *  ORM operator for service_status.
  */
 QSqlQuery& operator<<(QSqlQuery& q, neb::service_status const& ss) {
+  to_base(q, ss);
+  return (q);
+}
+
+/**
+ *  ORM operator for host_state.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, correlation::host_state const& hs) {
+  to_base(q, hs);
+  return (q);
+}
+
+/**
+ *  ORM operator for issue.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, correlation::issue const& i) {
+  to_base(q, i);
+  return (q);
+}
+
+/**
+ *  ORM operator for service_state.
+ */
+QSqlQuery& operator<<(QSqlQuery& q, correlation::service_state const& ss) {
   to_base(q, ss);
   return (q);
 }

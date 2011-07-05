@@ -23,6 +23,10 @@
 # include <list>
 # include <string>
 # include <utility>
+# include "com/centreon/broker/correlation/host_state.hh"
+# include "com/centreon/broker/correlation/issue.hh"
+# include "com/centreon/broker/correlation/issue_parent.hh"
+# include "com/centreon/broker/correlation/service_state.hh"
 # include "com/centreon/broker/neb/events.hh"
 # include "mapping.hh"
 
@@ -66,11 +70,9 @@ QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_dependency 
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_group const& hg);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_group_member const& hgm);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_parent const& hp);
-//QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_state const& hs);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_status const& hs);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::instance const& p);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::instance_status const& ps);
-//QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::issue const& i);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::log_entry const& le);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::module const& m);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::notification const& n);
@@ -79,7 +81,9 @@ QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_check co
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_dependency const& sd);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_group const& sg);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_group_member const& sgm);
-//QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_state const& ss);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_status const& ss);
+QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::host_state const& hs);
+QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::issue const& i);
+QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::service_state const& ss);
 
 #endif /* !CCB_SQL_INTERNAL_HH_ */
