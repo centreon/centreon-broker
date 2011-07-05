@@ -286,6 +286,40 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
+  # config namespace tests.
+  # config::logger tests.
+  #   Default constructor.
+  set(TEST_NAME "core_config_logger_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "core_config_logger_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_config_logger_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Equality operator.
+  set(TEST_NAME "core_config_logger_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/equality.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Inequality operator.
+  set(TEST_NAME "core_config_logger_inequality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/inequality.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
   # logging namespace tests.
   # logging::file tests.
   #   Logging with timestamp.
@@ -304,6 +338,7 @@ if (WITH_TESTING)
     "${TEST_DIR}/logging/file/common.hh")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")

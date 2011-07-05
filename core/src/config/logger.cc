@@ -51,7 +51,7 @@ void logger::_internal_copy(logger const& l) {
 logger::logger()
   : _level(logging::HIGH),
     _type(unknown),
-    _types(-1) {}
+    _types(logging::CONFIG | logging::ERROR) {}
 
 /**
  *  Copy constructor.
