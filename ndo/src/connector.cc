@@ -21,6 +21,7 @@
 #include "com/centreon/broker/ndo/connector.hh"
 #include "com/centreon/broker/ndo/input.hh"
 #include "com/centreon/broker/ndo/output.hh"
+#include "com/centreon/broker/ndo/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;
@@ -83,8 +84,12 @@ QSharedPointer<io::stream> connector::open() {
     retval = _from->open();
     QSharedPointer<io::stream> ndo_stream;
     if (!retval.isNull()) {
-      if (_is_in)
-        ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+      if (_is_in) {
+        if (_is_out)
+          ndo_stream = QSharedPointer<io::stream>(new ndo::stream);
+        else
+          ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+      }
       else
         ndo_stream = QSharedPointer<io::stream>(new ndo::output);
       ndo_stream->read_from(retval);

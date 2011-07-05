@@ -95,7 +95,7 @@ output& output::operator=(output const& o) {
  */
 QSharedPointer<io::data> output::read() {
   throw (exceptions::msg() << "NDO: attempt to read from an " \
-           "output object (software bug)");
+           "output object");
   return (QSharedPointer<io::data>());
 }
 

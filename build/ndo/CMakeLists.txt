@@ -35,6 +35,7 @@ add_library("${NDO}" MODULE
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
+  "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/temp_mapping.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
@@ -44,6 +45,7 @@ add_library("${NDO}" MODULE
   "${INC_DIR}/com/centreon/broker/ndo/input.hh"
   "${INC_DIR}/com/centreon/broker/ndo/internal.hh"
   "${INC_DIR}/com/centreon/broker/ndo/output.hh"
+  "${INC_DIR}/com/centreon/broker/ndo/stream.hh"
 )
 set_target_properties("${NDO}" PROPERTIES PREFIX "")
 
