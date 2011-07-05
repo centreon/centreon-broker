@@ -92,6 +92,28 @@ void lib::commit() {
 }
 
 /**
+ *  Normalize a metric name.
+ *
+ *  @param[in] metric Metric name.
+ *
+ *  @return Normalized metric name.
+ */
+QString lib::normalize_metric_name(QString const& metric) {
+  QString normalized(metric);
+  normalized.replace('.', '-');
+  normalized.replace(':', '-');
+  normalized.replace(',', '-');
+  normalized.replace('{', '-');
+  normalized.replace('}', '-');
+  normalized.replace('[', '-');
+  normalized.replace(']', '-');
+  normalized.replace(' ', '-');
+  normalized.replace("/", "_slash");
+  normalized.replace("\\", "_bslash");
+  return (normalized);
+}
+
+/**
  *  Open a RRD file which already exists.
  *
  *  @param[in] filename Path to the RRD file.
@@ -109,7 +131,7 @@ void lib::open(QString const& filename,
 
   // Remember information for further operations.
   _filename = filename;
-  _metric = metric;
+  _metric = normalize_metric_name(metric);
 
   return ;
 }
@@ -136,7 +158,7 @@ void lib::open(QString const& filename,
 
   // Remember informations for further operations.
   _filename = filename;
-  _metric = metric;
+  _metric = normalize_metric_name(metric);
 
   /* Find step of RRD file if already existing. */
   /* XXX : why is it here ?

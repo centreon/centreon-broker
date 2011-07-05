@@ -222,7 +222,7 @@ void cached::open(QString const& filename,
 
   // Remember information for further operations.
   _filename = filename;
-  _metric = metric;
+  _metric = lib::normalize_metric_name(metric);
 
   return ;
 }
@@ -246,7 +246,7 @@ void cached::open(QString const& filename,
 
   // Remember informations for further operations.
   _filename = filename;
-  _metric = metric;
+  _metric = lib::normalize_metric_name(metric);
 
   /* We are unfortunately forced to use librrd to create RRD file as
   ** rrdcached does not support RRD file creation.

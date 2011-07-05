@@ -21,10 +21,10 @@
 
 # include "com/centreon/broker/rrd/backend.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   rrd {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          rrd {
         /**
          *  @class lib lib.hh "com/centreon/broker/rrd/lib.hh"
          *  @brief Handle RRD file access through librrd.
@@ -32,28 +32,29 @@ namespace         com {
          *  Handle creation, deletion, tuning and update of an RRD file
          *  with librrd.
          */
-        class     lib : public backend {
+        class            lib : public backend {
          private:
-          QString _filename;
-          QString _metric;
+          QString        _filename;
+          QString        _metric; // XXX : is it necessary ?
 
          public:
-                  lib();
-                  lib(lib const& l);
-                  ~lib();
-          lib&    operator=(lib const& l);
-          void    begin();
-          void    close();
-          void    commit();
-          void    open(QString const& filename,
-                    QString const& metric);
-          void    open(QString const& filename,
-                    QString const& metric,
-                    unsigned int length,
-                    time_t from,
-                    time_t interval);
-          void    update(time_t t,
-                    QString const& value);
+                         lib();
+                         lib(lib const& l);
+                         ~lib();
+          lib&           operator=(lib const& l);
+          void           begin();
+          void           close();
+          void           commit();
+	  static QString normalize_metric_name(QString const& metric);
+          void           open(QString const& filename,
+                           QString const& metric);
+          void           open(QString const& filename,
+                           QString const& metric,
+                           unsigned int length,
+                           time_t from,
+                           time_t interval);
+          void           update(time_t t,
+                           QString const& value);
         };
       }
     }
