@@ -20,6 +20,7 @@
 # define CCB_CORRELATION_PARSER_HH_
 
 # include <map>
+# include <QString>
 # include <QtXml>
 # include "com/centreon/broker/correlation/node.hh"
 
@@ -53,7 +54,7 @@ namespace                      com {
                                parser(parser const& p);
                                ~parser();
           parser&              operator=(parser const& p);
-          void                 parse(char const* filename,
+          void                 parse(QString const& filename,
                                  std::map<unsigned int, node>& hosts,
                                  std::map<std::pair<unsigned int, unsigned int>, node>& services);
         };

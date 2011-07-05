@@ -226,7 +226,7 @@ parser& parser::operator=(parser const& p) {
  *  @param[out] hosts    List of hosts.
  *  @param[out] services List of services.
  */
-void parser::parse(char const* filename,
+void parser::parse(QString const& filename,
                    std::map<unsigned int, node>& hosts,
                    std::map<std::pair<unsigned int, unsigned int>, node>& services) {
   QXmlSimpleReader reader;

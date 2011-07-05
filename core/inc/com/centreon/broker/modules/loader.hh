@@ -45,8 +45,10 @@ namespace         com {
                   loader(loader const& l);
                   ~loader();
           loader& operator=(loader const& l);
-          void    load_dir(QString const& dirname);
-          void    load_file(QString const& filename);
+          void    load_dir(QString const& dirname,
+                    void const* arg = NULL);
+          void    load_file(QString const& filename,
+                    void const* arg = NULL);
         };
       }
     }

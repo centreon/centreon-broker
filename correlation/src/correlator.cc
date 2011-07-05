@@ -506,7 +506,7 @@ correlator& correlator::operator=(correlator const& c) {
  *  @param[in] correlation_file Path to a file containing host and
  *                              service relationships.
  */
-void correlator::load(char const* correlation_file) {
+void correlator::load(QString const& correlation_file) {
   parser p;
   p.parse(correlation_file, _hosts, _services);
   return ;

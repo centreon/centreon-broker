@@ -22,6 +22,7 @@
 # include <map>
 # include <QList>
 # include <QScopedPointer>
+# include <QString>
 # include "com/centreon/broker/correlation/node.hh"
 # include "com/centreon/broker/io/stream.hh"
 # include "com/centreon/broker/neb/host_status.hh"
@@ -59,7 +60,7 @@ namespace                          com {
                                    correlator(correlator const& c);
                                    ~correlator();
           correlator&              operator=(correlator const& c);
-          void                     load(char const* correlation_file);
+          void                     load(QString const& correlation_file);
           QSharedPointer<io::data> read();
           void                     write(QSharedPointer<io::data> e);
         };

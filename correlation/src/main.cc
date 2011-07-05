@@ -17,6 +17,7 @@
 */
 
 #include <QSharedPointer>
+#include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
@@ -38,22 +39,33 @@ extern "C" {
   void broker_module_deinit(bool force) {
     // Decrement instance number.
     if (!--instances && !force) {
-      // Create and register correlation object.
-      obj = QSharedPointer<io::stream>(new correlation::correlator);
-      multiplexing::publisher::hook(obj);
+      // Unregister correlation object.
+      multiplexing::publisher::unhook(obj);
+      obj.clear();
     }
     return ;
   }
 
   /**
    *  Module initialization routine.
+   *
+   *  @param[in] arg Configuration argument.
    */
-  void broker_module_init() {
+  void broker_module_init(void const* arg) {
     // Increment instance number.
     if (!instances++) {
-      // Unregister correlation object.
-      multiplexing::publisher::unhook(obj);
-      obj.clear();
+      // Check that correlation is enabled.
+      config::state const& cfg(*static_cast<config::state const*>(arg));
+      QMap<QString, QString>::const_iterator
+        it(cfg.params().find("correlation"));
+      if (it != cfg.params().end()) {
+        // Create and register correlation object.
+        QSharedPointer<correlation::correlator>
+          crltr(new correlation::correlator);
+        crltr->load(it.value());
+        obj = crltr.staticCast<io::stream>();
+        multiplexing::publisher::hook(obj);
+      }
     }
     return ;
   }

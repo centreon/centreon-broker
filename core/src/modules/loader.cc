@@ -63,8 +63,9 @@ loader& loader::operator=(loader const& l) {
  *  Load a directory containing plugins.
  *
  *  @param[in] dirname Directory name.
+ *  @param[in] arg     Module argument.
  */
-void loader::load_dir(QString const& dirname) {
+void loader::load_dir(QString const& dirname, void const* arg) {
   // Debug message.
   logging::debug << logging::MEDIUM
     << "modules: loading directory '" << dirname << "'";
@@ -88,7 +89,7 @@ void loader::load_dir(QString const& dirname) {
     file.append("/");
     file.append(*it);
     try {
-      load_file(file);
+      load_file(file, arg);
     }
     catch (exceptions::msg const& e) {
       logging::error << logging::HIGH << e.what();
@@ -106,13 +107,14 @@ void loader::load_dir(QString const& dirname) {
  *  Load a plugin.
  *
  *  @param[in] filename File name.
+ *  @param[in] arg      Module argument.
  */
-void loader::load_file(QString const& filename) {
+void loader::load_file(QString const& filename, void const* arg) {
   if (_handles.find(filename) == _handles.end()) {
     logging::debug << logging::LOW << "modules: loading '"
       << filename << "' which is NOT already loaded";
     QSharedPointer<handle> handl(new handle);
-    handl->open(filename);
+    handl->open(filename, arg);
     _handles[filename] = handl;
   }
   else

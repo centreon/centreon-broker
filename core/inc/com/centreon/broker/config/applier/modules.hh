@@ -35,14 +35,15 @@ namespace                           com {
            */
           class                     modules {
            private:
-	    broker::modules::loader _loader;
+            broker::modules::loader _loader;
                                     modules();
                                     modules(modules const& m);
             modules&                operator=(modules const& m);
 
            public:
                                     ~modules();
-            void                    apply(QString const& module_dir);
+            void                    apply(QString const& module_dir,
+                                      void const* arg = NULL);
             static modules&         instance();
           };
         }

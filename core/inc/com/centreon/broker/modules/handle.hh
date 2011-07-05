@@ -40,7 +40,7 @@ namespace                    com {
 
          private:
           QLibrary           _handle;
-          void               _init();
+          void               _init(void const* arg = NULL);
 
          public:
                              handle();
@@ -49,7 +49,8 @@ namespace                    com {
           handle&            operator=(handle const& h);
           void               close();
           bool               is_open() const;
-          void               open(QString const& filename);
+          void               open(QString const& filename,
+                               void const* arg = NULL);
         };
       }
     }

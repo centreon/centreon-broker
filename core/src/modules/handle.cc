@@ -41,8 +41,10 @@ char const* handle::initialization = "broker_module_init";
 
 /**
  *  Call the module's initialization routine.
+ *
+ *  @param[in] arg Module argument.
  */
-void handle::_init() {
+void handle::_init(void const* arg) {
   // Find initialization routine.
   logging::debug << logging::LOW << "modules: searching "
        "initialization routine (symbol " << initialization
@@ -60,9 +62,9 @@ void handle::_init() {
   // Call initialization routine.
   logging::debug << logging::LOW << "modules: calling initialization " \
     "routine of '" << _handle.fileName() << "'";
-  (*(void (*)())(sym))();
-  logging::debug << logging::MEDIUM << "modules: initialization routine " \
-    "of '" << _handle.fileName() << "' successfully completed";
+  (*(void (*)(void const*))(sym))(arg);
+  logging::debug << logging::MEDIUM << "modules: initialization " \
+    "routine of '" << _handle.fileName() << "' successfully completed";
 
   return ;
 }
@@ -183,8 +185,9 @@ bool handle::is_open() const {
  *  Load a library file.
  *
  *  @param[in] filename Library filename.
+ *  @param[in] arg      Library argument.
  */
-void handle::open(QString const& filename) {
+void handle::open(QString const& filename, void const* arg) {
   // Close library if previously open.
   this->close();
 
@@ -203,7 +206,7 @@ void handle::open(QString const& filename) {
     << filename << "' loaded";
 
   // Initialize module.
-  _init();
+  _init(arg);
 
   return ;
 }

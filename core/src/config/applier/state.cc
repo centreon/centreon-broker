@@ -90,7 +90,7 @@ void state::apply(com::centreon::broker::config::state const& s) {
   logger::instance().apply(s.loggers());
 
   // Apply modules configuration.
-  modules::instance().apply(s.module_directory());
+  modules::instance().apply(s.module_directory(), &s);
 
   // Apply input and output configuration.
   endpoint::instance().apply(s.inputs(), s.outputs());
