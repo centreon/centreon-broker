@@ -118,10 +118,8 @@ QSharedPointer<io::data> stream::read() {
   // Read data.
   QSharedPointer<io::data> retval;
   qint64 rb(_file.read(data->QByteArray::data(), data->size()));
-  if (!rb) {
-    _file.flush();
-    _file.close();
-  }
+  if (!rb)
+    ; // Do nothing.
   else if (rb < 0) {
     exceptions::msg e;
     e << "file: could not read data from '"

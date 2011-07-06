@@ -19,6 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/file/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/file/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/file/test")
 include_directories("${INC_DIR}")
 
 # File module.
@@ -35,6 +36,24 @@ add_library("${FILE}" MODULE
   "${INC_DIR}/com/centreon/broker/file/stream.hh"
 )
 set_target_properties("${FILE}" PROPERTIES PREFIX "")
+
+if (WITH_TESTING)
+  # stream tests.
+  #   Writing.
+  set(TEST_NAME "file_stream_write")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/stream.cc"
+    "${TEST_DIR}/stream/write.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reading.
+  set(TEST_NAME "file_stream_read")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/stream.cc"
+    "${TEST_DIR}/stream/read.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${FILE}"
