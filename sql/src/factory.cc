@@ -105,7 +105,7 @@ bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_output) const {
   (void)is_input;
   (void)is_output;
-  QMap<QString, QString>::const_iterator it(cfg.params.find("db"));
+  QMap<QString, QString>::const_iterator it(cfg.params.find("db_name"));
   return (it != cfg.params.end());
 }
 
