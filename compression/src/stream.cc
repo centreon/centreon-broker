@@ -30,6 +30,30 @@ using namespace com::centreon::broker::compression;
 **************************************/
 
 /**
+ *  Get data with a fixed size.
+ *
+ *  @param[in] size Data size to get.
+ */
+bool stream::_get_data(unsigned int size) {
+  bool retval;
+  if (static_cast<unsigned int>(_rbuffer.size()) < size) {
+    QSharedPointer<io::data> d(_from->read());
+    if (!d.isNull())
+      retval = false;
+    else {
+      if (d->type() == "com::centreon::broker::io::data") {
+        QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+        _rbuffer.append(*r);
+      }
+      retval = _get_data(size);
+    }
+  }
+  else
+    retval = true;
+  return (retval);
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] s Object to copy.
