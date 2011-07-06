@@ -105,8 +105,7 @@ bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_output) const {
   (void)is_input;
   (void)is_output;
-  QMap<QString, QString>::const_iterator it(cfg.params.find("type"));
-  return ((it != cfg.params.end()) && !it.value().compare("sql"));
+  return (cfg.type.compare("sql", Qt::CaseInsensitive));
 }
 
 /**
