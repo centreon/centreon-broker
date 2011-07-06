@@ -105,7 +105,7 @@ bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_output) const {
   (void)is_input;
   (void)is_output;
-  return (cfg.type.compare("sql", Qt::CaseInsensitive));
+  return (!cfg.type.compare("sql", Qt::CaseInsensitive));
 }
 
 /**
