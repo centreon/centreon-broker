@@ -27,7 +27,7 @@ namespace              com {
     namespace          broker {
       namespace        exceptions {
         /**
-         *  @class msg msg.hh "exceptions/msg.hh"
+         *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
          *  @brief Base class of exceptions thrown in Centreon Broker.
          *
          *  msg is a simple exception class that is only associated
