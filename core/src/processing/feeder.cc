@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -100,7 +101,19 @@ void feeder::run() {
       data = _in->read();
       if (data.isNull())
         break ;
-      _out->write(data);
+      try {
+        _out->write(data);
+      }
+      catch (exceptions::msg const& e) {
+        try {
+          throw (exceptions::with_pointer(e, data));
+        }
+        catch (exceptions::with_pointer const& e) {
+          throw ;
+        }
+        catch (...) {}
+        throw ;
+      }
     }
   }
   catch (...) {

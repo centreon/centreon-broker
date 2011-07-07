@@ -58,6 +58,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
+  "${SRC_DIR}/exceptions/with_pointer.cc"
 #	../src/interface/ndo/base.cc
 #	../src/interface/ndo/source_destination.cc
 #	../src/interface/xml/destination.cc
@@ -99,6 +100,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/config/parser.hh"
   "${INC_DIR}/com/centreon/broker/config/state.hh"
   "${INC_DIR}/com/centreon/broker/exceptions/msg.hh"
+  "${INC_DIR}/com/centreon/broker/exceptions/with_pointer.hh"
   "${INC_DIR}/com/centreon/broker/io/data.hh"
   "${INC_DIR}/com/centreon/broker/io/endpoint.hh"
   "${INC_DIR}/com/centreon/broker/io/factory.hh"
