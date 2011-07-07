@@ -37,6 +37,7 @@ namespace                          com {
           QByteArray               _rbuffer;
           unsigned int             _size;
           QByteArray               _wbuffer;
+          void                     _flush();
           bool                     _get_data(unsigned int size);
           void                     _internal_copy(stream const& s);
 

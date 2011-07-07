@@ -23,7 +23,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE_NAME "centreon_broker_unit_test"
+#define TEMP_FILE_NAME "centreon_broker_unit_test.tmp"
 
 /**
  *  Check that file stream can be properly written to.

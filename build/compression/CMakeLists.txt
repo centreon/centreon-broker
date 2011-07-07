@@ -19,6 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/compression/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/compression/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/compression/test")
 include_directories("${INC_DIR}")
 
 # Compression module.
@@ -35,6 +36,20 @@ add_library("${COMPRESSION}" MODULE
   "${INC_DIR}/com/centreon/broker/compression/stream.hh"
 )
 set_target_properties("${COMPRESSION}" PROPERTIES PREFIX "")
+
+if (WITH_TESTING)
+  include_directories("${PROJECT_SOURCE_DIR}/file/inc")
+
+  # stream tests.
+  #   Compress/uncompress.
+  set(TEST_NAME "compression_stream_io")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/file/src/stream.cc"
+    "${SRC_DIR}/stream.cc"
+    "${TEST_DIR}/stream/io.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${COMPRESSION}"

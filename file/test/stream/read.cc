@@ -75,7 +75,7 @@ int main() {
     // Read data.
     if (raw.isNull()) {
       QSharedPointer<io::data> d(fs.read());
-      if (d.isNull())
+      if (d.isNull() || ("com::centreon::broker::io::raw" != d->type()))
         retval |= 1;
       else {
         raw = d.staticCast<io::raw>();
@@ -83,24 +83,26 @@ int main() {
       }
     }
 
-    // Compare data.
-    unsigned int cb(((raw->size() - rawc)
-                        < (sizeof(buffer) - 1 - bufferc))
-                    ? raw->size() - rawc
-                    : (sizeof(buffer) - 1 - bufferc));
-    retval |= memcmp(raw->QByteArray::data() + rawc,
-                     buffer + bufferc,
-                     cb);
+    if (!retval) {
+      // Compare data.
+      unsigned int cb(((raw->size() - rawc)
+                         < (sizeof(buffer) - 1 - bufferc))
+                      ? (raw->size() - rawc)
+                      : (sizeof(buffer) - 1 - bufferc));
+      retval |= memcmp(raw->QByteArray::data() + rawc,
+                       buffer + bufferc,
+                       cb);
 
-    // Adjust buffers.
-    bufferc = (bufferc + cb);
-    if (bufferc == (sizeof(buffer) - 1)) {
-      ++count;
-      bufferc = 0;
+      // Adjust buffers.
+      bufferc += cb;
+      if (bufferc == (sizeof(buffer) - 1)) {
+        ++count;
+        bufferc = 0;
+      }
+      rawc += cb;
+      if (rawc == raw->size())
+        raw.clear();
     }
-    rawc += cb;
-    if (rawc == raw->size())
-      raw.clear();
   }
   // EOF must be reached.
   retval |= !fs.read().isNull();

@@ -30,6 +30,32 @@ using namespace com::centreon::broker::compression;
 **************************************/
 
 /**
+ *  Flush data accumulated in write buffer.
+ */
+void stream::_flush() {
+  if (_wbuffer.size() > 0) {
+    // Compress data.
+    QSharedPointer<io::raw> compressed(new io::raw);
+    compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
+    _wbuffer.clear();
+
+    // Add compressed data size.
+    char buffer[4];
+    unsigned int size(compressed->size());
+    buffer[0] = (size >> 24) & 0xFF;
+    buffer[1] = (size >> 16) & 0xFF;
+    buffer[2] = (size >> 8) & 0xFF;
+    buffer[3] = size & 0xFF;
+    compressed->prepend(buffer, sizeof(buffer));
+
+    // Send compressed data.
+    _to->write(compressed);
+  }
+
+  return ;
+}
+
+/**
  *  Get data with a fixed size.
  *
  *  @param[in] size Data size to get.
@@ -38,10 +64,10 @@ bool stream::_get_data(unsigned int size) {
   bool retval;
   if (static_cast<unsigned int>(_rbuffer.size()) < size) {
     QSharedPointer<io::data> d(_from->read());
-    if (!d.isNull())
+    if (d.isNull())
       retval = false;
     else {
-      if (d->type() == "com::centreon::broker::io::data") {
+      if (d->type() == "com::centreon::broker::io::raw") {
         QSharedPointer<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }
@@ -93,7 +119,9 @@ stream::stream(stream const& s) : io::stream(s) {
 /**
  *  Destructor.
  */
-stream::~stream() {}
+stream::~stream() {
+  _flush();
+}
 
 /**
  *  Assignment operator.
@@ -161,12 +189,8 @@ void stream::write(QSharedPointer<io::data> d) {
     _wbuffer.append(*r);
 
     // Send compressed data if size limit is reached.
-    if (static_cast<unsigned int>(_wbuffer.size()) >= _size) {
-      QSharedPointer<io::raw> compressed(new io::raw);
-      compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
-      _wbuffer.clear();
-      _to->write(compressed);
-    }
+    if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
+      _flush();
   }
   return ;
 }
