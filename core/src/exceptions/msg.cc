@@ -58,6 +58,15 @@ msg& msg::operator=(msg const& b) throw () {
 }
 
 /**
+ *  Clone the exception object.
+ *
+ *  @return Copy of this exception object.
+ */
+msg* msg::clone() const {
+  return (new msg(*this));
+}
+
+/**
  *  Rethrow the exception.
  */
 void msg::rethrow() const {

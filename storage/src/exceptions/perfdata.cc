@@ -58,6 +58,15 @@ perfdata& perfdata::operator=(perfdata const& pd) throw () {
 }
 
 /**
+ *  Clone the exception object.
+ *
+ *  @return Copy of this exception object.
+ */
+exceptions::msg* perfdata::clone() const {
+  return (new perfdata(*this));
+}
+
+/**
  *  Rethrow the exception.
  */
 void perfdata::rethrow() const {

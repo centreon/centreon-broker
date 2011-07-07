@@ -65,6 +65,13 @@ if (WITH_TESTING)
     "${TEST_DIR}/exceptions/perfdata/rethrow.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Clone.
+  set(TEST_NAME "storage_exceptions_perfdata_clone")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/perfdata.cc"
+    "${TEST_DIR}/exceptions/perfdata/clone.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.

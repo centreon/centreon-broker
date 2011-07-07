@@ -42,6 +42,7 @@ namespace              com {
                        msg(msg const& b) throw ();
           virtual      ~msg() throw ();
           msg&         operator=(msg const& b) throw ();
+          virtual msg* clone() const;
           virtual void rethrow() const;
           char const*  what() const throw ();
 
