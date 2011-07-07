@@ -58,6 +58,14 @@ msg& msg::operator=(msg const& b) throw () {
 }
 
 /**
+ *  Rethrow the exception.
+ */
+void msg::rethrow() const {
+  throw (*this);
+  return ;
+}
+
+/**
  *  Get message associated with the exception.
  *
  *  @return Nul-terminated message.

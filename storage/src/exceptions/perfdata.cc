@@ -56,3 +56,11 @@ perfdata& perfdata::operator=(perfdata const& pd) throw () {
   broker::exceptions::msg::operator=(pd);
   return (*this);
 }
+
+/**
+ *  Rethrow the exception.
+ */
+void perfdata::rethrow() const {
+  throw (*this);
+  return ;
+}

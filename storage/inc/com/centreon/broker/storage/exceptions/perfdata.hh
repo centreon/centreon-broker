@@ -21,23 +21,35 @@
 
 # include "com/centreon/broker/exceptions/msg.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       storage {
-        namespace     exceptions {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          storage {
+        namespace        exceptions {
           /**
            *  @class perfdata perfdata.hh "com/centreon/broker/storage/exceptions/perfdata.hh"
            *  @brief Perfdata exception.
            *
            *  Exception thrown when handling performance data.
            */
-          class       perfdata : public broker::exceptions::msg {
+          class          perfdata : public broker::exceptions::msg {
            public:
-                      perfdata() throw ();
-                      perfdata(perfdata const& pd) throw ();
-                      ~perfdata() throw ();
-            perfdata& operator=(perfdata const& pdf) throw ();
+                         perfdata() throw ();
+                         perfdata(perfdata const& pd) throw ();
+                         ~perfdata() throw ();
+            perfdata&    operator=(perfdata const& pdf) throw ();
+            virtual void rethrow() const;
+
+            /**
+             *  Insert data in message.
+             *
+             *  @param[in] t Data to insert.
+             */
+            template     <typename T>
+            perfdata&    operator<<(T t) throw () {
+              broker::exceptions::msg::operator<<(t);
+              return (*this);
+            }
           };
         }
       }

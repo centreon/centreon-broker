@@ -19,6 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/storage/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/storage/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/storage/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
@@ -47,6 +48,24 @@ add_library("${STORAGE}" MODULE
   "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
+
+if (WITH_TESTING)
+  # Perfdata exception tests.
+  #   Throw.
+  set(TEST_NAME "storage_exceptions_perfdata_throw")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/perfdata.cc"
+    "${TEST_DIR}/exceptions/perfdata/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Rethrow.
+  set(TEST_NAME "storage_exceptions_perfdata_rethrow")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/perfdata.cc"
+    "${TEST_DIR}/exceptions/perfdata/rethrow.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${STORAGE}"
