@@ -36,7 +36,7 @@ backend::backend() {}
  *
  *  @param[in] b Unused.
  */
-backend::backend(backend const& b) {
+backend::backend(backend const& b) : QMutex() {
   (void)b;
 }
 

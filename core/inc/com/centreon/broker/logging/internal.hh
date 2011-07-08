@@ -19,15 +19,19 @@
 #ifndef CCB_LOGGING_INTERNAL_HH_
 # define CCB_LOGGING_INTERNAL_HH_
 
-# include <map>
-# include <utility>
+# include <QMap>
+# include <QPair>
+# include <QReadWriteLock>
+# include <QSharedPointer>
 # include "com/centreon/broker/logging/backend.hh"
 
-namespace com {
-  namespace centreon {
-    namespace broker {
-      namespace logging {
-        extern std::map<backend*, std::pair<unsigned int, level> > backends;
+namespace                     com {
+  namespace                   centreon {
+    namespace                 broker {
+      namespace               logging {
+        extern QMap<QSharedPointer<backend>, QPair<unsigned int, level> >
+                              backends;
+	extern QReadWriteLock backendsm;
       }
     }
   }

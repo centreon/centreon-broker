@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QWriteLocker>
 #include "com/centreon/broker/logging/defines.hh"
 #include "com/centreon/broker/logging/internal.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -29,7 +30,10 @@ using namespace com::centreon::broker;
 **************************************/
 
 // List of registered backends.
-std::map<logging::backend*, std::pair<unsigned int, logging::level> > logging::backends;
+QMap<QSharedPointer<logging::backend>,
+     QPair<unsigned int, logging::level> >
+               logging::backends;
+QReadWriteLock logging::backendsm;
 
 /**************************************
 *                                     *
@@ -63,14 +67,15 @@ void logging::clear() {
  *                          multiple logging::type.
  *  @param[in] min_priority Minimal priority of messages to be logged.
  */
-void logging::log_on(backend* b,
+void logging::log_on(QSharedPointer<backend> b,
                      unsigned int types,
                      level min_priority) {
+  QWriteLocker lock(&backendsm);
   if (types && min_priority) {
     backends[b].first = types;
     backends[b].second = min_priority;
   }
   else
-    backends.erase(b);
+    backends.remove(b);
   return ;
 }

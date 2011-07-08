@@ -16,6 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
+#include <QReadLocker>
 #include "com/centreon/broker/logging/internal.hh"
 #include "com/centreon/broker/logging/temp_logger.hh"
 
@@ -67,12 +69,16 @@ temp_logger::temp_logger(temp_logger const& t) : misc::stringifier(t) {
 temp_logger::~temp_logger() {
   if (!_copied) {
     operator<<("\n");
-    for (std::map<backend*, std::pair<unsigned int, level> >::iterator
+    QReadLocker lock(&backendsm);
+    for (QMap<QSharedPointer<backend>,
+             QPair<unsigned int, level> >::iterator
            it = backends.begin(), end = backends.end();
          it != end;
          ++it)
-      if ((it->second.first & _type) && (it->second.second >= _level))
-        it->first->log_msg(_buffer, _current, _type, _level);
+      if ((it->first & _type) && (it->second >= _level)) {
+        QMutexLocker l(it.key().data());
+        it.key()->log_msg(_buffer, _current, _type, _level);
+      }
   }
 }
 

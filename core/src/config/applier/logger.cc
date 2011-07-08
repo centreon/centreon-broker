@@ -162,7 +162,7 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_delete.end();
        it != end;
        ++it)
-    logging::log_on(it.value().data(), 0, logging::NONE);
+    logging::log_on(it.value(), 0, logging::NONE);
 
   // Free some memory.
   to_delete.clear();
@@ -177,7 +177,7 @@ void logger::apply(QList<config::logger> const& loggers) {
       << "log applier: creating new logger";
     QSharedPointer<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
-    logging::log_on(backend.data(), it->types(), it->level());
+    logging::log_on(backend, it->types(), it->level());
   }
 
   return ;

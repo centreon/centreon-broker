@@ -19,6 +19,7 @@
 #ifndef CCB_LOGGING_LOGGING_HH_
 # define CCB_LOGGING_LOGGING_HH_
 
+# include <QSharedPointer>
 # include "com/centreon/broker/logging/backend.hh"
 # include "com/centreon/broker/logging/logger.hh"
 # include "com/centreon/broker/logging/void_logger.hh"
@@ -38,7 +39,7 @@ namespace                  com {
         extern logger      info;
 
         void               clear();
-        void               log_on(backend* b,
+        void               log_on(QSharedPointer<backend> b,
                              unsigned int types = CONFIG | DEBUG | ERROR | INFO,
                              level min_priority = HIGH);
       }

@@ -19,6 +19,7 @@
 #ifndef CCB_LOGGING_BACKEND_HH_
 # define CCB_LOGGING_BACKEND_HH_
 
+# include <QMutex>
 # include "com/centreon/broker/logging/defines.hh"
 
 namespace              com {
@@ -37,7 +38,7 @@ namespace              com {
          *  @see file
          *  @see syslog
          */
-        class          backend {
+        class          backend : public QMutex {
          public:
                        backend();
                        backend(backend const& b);
