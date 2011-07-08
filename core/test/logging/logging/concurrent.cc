@@ -97,5 +97,8 @@ int main() {
     retval |= !f.readLine().isEmpty();
   }
 
+  // Remove temp file.
+  QFile::remove(filename);
+
   return (retval);
 }
