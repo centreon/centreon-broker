@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -51,6 +52,7 @@ failover::failover(bool is_out) : _is_out(is_out), _should_exit(false) {
 failover::failover(failover const& f)
   :  QThread(),
      io::stream(f),
+     _data(f._data),
      _destination(f._destination),
      _endpoint(f._endpoint),
      _failover(f._failover),
@@ -71,6 +73,7 @@ failover::~failover() {}
  *  @return This object.
  */
 failover& failover::operator=(failover const& f) {
+  _data = f._data;
   _destination = f._destination;
   _endpoint = f._endpoint;
   _failover = f._failover;
@@ -116,7 +119,12 @@ QSharedPointer<io::data> failover::read() {
     }
   }
   else {
-    data = _source->read();
+    if (!_data.isNull()) {
+      data = _data;
+      _data.clear();
+    }
+    else
+      data = _source->read();
     logging::debug << logging::LOW << "failover: got event from thread source";
   }
   return (data);
@@ -158,6 +166,10 @@ void failover::run() {
       _feeder.prepare(_source, _destination);
       _feeder.run(); // Yes run(), we do not want to start another thread.
     }
+    catch (exceptions::with_pointer const& e) {
+      if (!e.ptr().isNull() && !_failover.isNull() && !_failover->isRunning())
+        _failover->write(e.ptr());
+    }
     catch (exceptions::msg const& e) {
       logging::error << logging::HIGH << e.what();
     }
@@ -166,7 +178,7 @@ void failover::run() {
     }
     catch (...) {
       logging::error << logging::HIGH << "failover: unknown error caught in processing thread";
-    }
+     }
     if (_is_out)
       _destination.clear();
     else
@@ -209,8 +221,6 @@ void failover::set_failover(QSharedPointer<failover> fo) {
  *  @return Does not return, throw an exception.
  */
 void failover::write(QSharedPointer<io::data> d) {
-  (void)d;
-  throw (exceptions::msg() << "failover: attempt to use a failover " \
-           "thread as a destination (software bug)");
+  _data = d;
   return ;
 }

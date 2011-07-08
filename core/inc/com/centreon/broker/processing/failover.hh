@@ -39,6 +39,8 @@ namespace               com {
           Q_OBJECT
 
          private:
+          QSharedPointer<io::data>
+                        _data;
           QSharedPointer<io::stream>
                         _destination;
           QSharedPointer<io::endpoint>
