@@ -352,6 +352,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/logging/file/common.hh")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Concurrent logging.
+  set(TEST_NAME "core_logging_logging_concurrent")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/logging/concurrent.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # cbd tests.
