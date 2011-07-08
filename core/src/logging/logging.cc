@@ -29,6 +29,11 @@ using namespace com::centreon::broker;
 *                                     *
 **************************************/
 
+// Hash function.
+static uint qHash(QSharedPointer<logging::backend> const& b) {
+  return ((uint)(unsigned long long)b.data());
+}
+
 // List of registered backends.
 QHash<QSharedPointer<logging::backend>,
       QPair<unsigned int, logging::level> >
