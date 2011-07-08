@@ -30,8 +30,8 @@ using namespace com::centreon::broker;
 **************************************/
 
 // List of registered backends.
-QMap<QSharedPointer<logging::backend>,
-     QPair<unsigned int, logging::level> >
+QHash<QSharedPointer<logging::backend>,
+      QPair<unsigned int, logging::level> >
                logging::backends;
 QReadWriteLock logging::backendsm;
 

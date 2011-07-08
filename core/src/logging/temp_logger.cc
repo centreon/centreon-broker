@@ -70,7 +70,7 @@ temp_logger::~temp_logger() {
   if (!_copied) {
     operator<<("\n");
     QReadLocker lock(&backendsm);
-    for (QMap<QSharedPointer<backend>,
+    for (QHash<QSharedPointer<backend>,
              QPair<unsigned int, level> >::iterator
            it = backends.begin(), end = backends.end();
          it != end;
