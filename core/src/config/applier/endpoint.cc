@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <QMutexLocker>
 #include <stdlib.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -256,11 +257,17 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
 
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
-  _diff_endpoints(_inputs, inputs, in_to_create);
+  {
+    QMutexLocker lock(&_inputsm);
+    _diff_endpoints(_inputs, inputs, in_to_create);
+  }
 
   // Remove old outputs and generate outputs to create.
   QList<config::endpoint> out_to_create;
-  _diff_endpoints(_outputs, outputs, out_to_create);
+  {
+    QMutexLocker lock(&_outputsm);
+    _diff_endpoints(_outputs, outputs, out_to_create);
+  }
 
   // Debug message.
   logging::debug << logging::HIGH << "endpoint applier: "
@@ -282,7 +289,10 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
-      _outputs[*it] = endp.data();
+      {
+        QMutexLocker lock(&_outputsm);
+        _outputs[*it] = endp.data();
+      }
 
       // Run thread.
       endp.take()->start();
@@ -303,7 +313,10 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
-      _inputs[*it] = endp.data();
+      {
+        QMutexLocker lock(&_inputsm);
+        _inputs[*it] = endp.data();
+      }
 
       // Run thread.
       endp.take()->start();
@@ -326,12 +339,16 @@ endpoint& endpoint::instance() {
  *  An input thread finished executing.
  */
 void endpoint::terminated_input() {
-  // XXX
+  QMutexLocker lock(&_inputsm);
+  std::remove(_inputs.begin(), _inputs.end(), QObject::sender());
+  return ;
 }
 
 /**
  *  An output thread finished executing.
  */
 void endpoint::terminated_output() {
-  // XXX
+  QMutexLocker lock(&_outputsm);
+  std::remove(_outputs.begin(), _outputs.end(), QObject::sender());
+  return ;
 }

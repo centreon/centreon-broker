@@ -21,6 +21,7 @@
 
 # include <QList>
 # include <QMap>
+# include <QMutex>
 # include <QObject>
 # include "com/centreon/broker/config/endpoint.hh"
 # include "com/centreon/broker/processing/failover.hh"
@@ -42,8 +43,10 @@ namespace                    com {
            private:
             QMap<config::endpoint, processing::failover*>
                              _inputs;
+            QMutex           _inputsm;
             QMap<config::endpoint, processing::failover*>
                              _outputs;
+            QMutex           _outputsm;
                              endpoint();
                              endpoint(endpoint const& e);
             endpoint&        operator=(endpoint const& e);
