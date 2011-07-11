@@ -19,6 +19,7 @@
 #ifndef CCB_LOGGING_SYSLOGGER_HH_
 # define CCB_LOGGING_SYSLOGGER_HH_
 
+# include <syslog.h>
 # include "com/centreon/broker/logging/backend.hh"
 
 namespace            com {
@@ -33,9 +34,8 @@ namespace            com {
          */
         class        syslogger : public backend {
          public:
-                     syslogger();
+                     syslogger(int facility = LOG_LOCAL0);
                      syslogger(syslogger const& s);
-                     syslogger(int facility);
                      ~syslogger();
           syslogger& operator=(syslogger const& s);
           void       log_msg(char const* msg,

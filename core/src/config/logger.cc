@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <syslog.h>
 #include "com/centreon/broker/config/logger.hh"
 
 using namespace com::centreon::broker::config;
@@ -32,6 +33,7 @@ using namespace com::centreon::broker::config;
  *  @param[in] l Object to copy from.
  */
 void logger::_internal_copy(logger const& l) {
+  _facility = l._facility;
   _level = l._level;
   _name = l._name;
   _type = l._type;
@@ -49,7 +51,8 @@ void logger::_internal_copy(logger const& l) {
  *  Default constructor.
  */
 logger::logger()
-  : _level(logging::HIGH),
+  : _facility(LOG_LOCAL0),
+    _level(logging::HIGH),
     _type(unknown),
     _types(logging::CONFIG | logging::ERROR) {}
 
@@ -88,7 +91,8 @@ logger& logger::operator=(logger const& l) {
  */
 bool logger::operator==(logger const& l) const {
   bool ret;
-  ret = ((_level == l._level)
+  ret = ((_facility == l._facility)
+         && (_level == l._level)
          && (_type == l._type)
          && (_types == l._types));
   if (ret && ((file == _type) || (standard == _type)))
@@ -116,7 +120,9 @@ bool logger::operator!=(logger const& l) const {
  */
 bool logger::operator<(logger const& l) const {
   bool ret;
-  if (_level != l._level)
+  if (_facility != l._facility)
+    ret = (_facility < l._facility);
+  else if (_level != l._level)
     ret = (_level < l._level);
   else if (_type != l._type)
     ret = (_type < l._type);
@@ -194,6 +200,25 @@ void logger::error(bool e) {
  */
 bool logger::error() const {
   return (_types & logging::ERROR);
+}
+
+/**
+ *  Set the facility parameter.
+ *
+ *  @param[in] f Facility.
+ */
+void logger::facility(int f) {
+  _facility = f;
+  return ;
+}
+
+/**
+ *  Get the facility parameter.
+ *
+ *  @return Current value.
+ */
+int logger::facility() const {
+  return (_facility);
 }
 
 /**

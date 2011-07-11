@@ -28,12 +28,12 @@ using namespace com::centreon::broker::logging;
 **************************************/
 
 /**
- *  @brief Default constructor.
+ *  Constructor.
  *
- *  Open syslog facility USER.
+ *  @param[in] facility Facility syslogger should write on.
  */
-syslogger::syslogger() {
-  openlog("centreonbroker", 0, LOG_USER);
+syslogger::syslogger(int facility) {
+  openlog("centreonbroker", 0, facility);
 }
 
 /**
@@ -43,15 +43,6 @@ syslogger::syslogger() {
  */
 syslogger::syslogger(syslogger const& s) : backend(s) {
   (void)s;
-}
-
-/**
- *  Constructor.
- *
- *  @param[in] facility Facility syslogger should write on.
- */
-syslogger::syslogger(int facility) {
-  openlog("centreonbroker", 0, facility);
 }
 
 /**

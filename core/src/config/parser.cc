@@ -19,6 +19,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
+#include <syslog.h>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/defines.hh"
@@ -85,6 +86,45 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
       else if (name == "info") {
         QString val(entry.text());
         l.error((val == "yes") || val.toInt());
+      }
+      else if (name == "facility") {
+        QString val(entry.text());
+        if (!val.compare("kern", Qt::CaseInsensitive))
+          l.facility(LOG_KERN);
+        else if (!val.compare("user", Qt::CaseInsensitive))
+          l.facility(LOG_USER);
+        else if (!val.compare("mail", Qt::CaseInsensitive))
+          l.facility(LOG_MAIL);
+        else if (!val.compare("news", Qt::CaseInsensitive))
+          l.facility(LOG_NEWS);
+        else if (!val.compare("uucp", Qt::CaseInsensitive))
+          l.facility(LOG_UUCP);
+        else if (!val.compare("daemon", Qt::CaseInsensitive))
+          l.facility(LOG_DAEMON);
+        else if (!val.compare("auth", Qt::CaseInsensitive))
+          l.facility(LOG_AUTH);
+        else if (!val.compare("cron", Qt::CaseInsensitive))
+          l.facility(LOG_CRON);
+        else if (!val.compare("lpr", Qt::CaseInsensitive))
+          l.facility(LOG_LPR);
+        else if (!val.compare("local0", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL0);
+        else if (!val.compare("local1", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL1);
+        else if (!val.compare("local2", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL2);
+        else if (!val.compare("local3", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL3);
+        else if (!val.compare("local4", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL4);
+        else if (!val.compare("local5", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL5);
+        else if (!val.compare("local6", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL6);
+        else if (!val.compare("local7", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL7);
+        else
+          l.facility(val.toUInt());
       }
       else if (name == "level") {
         QString val_str(entry.text());

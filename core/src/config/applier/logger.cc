@@ -82,7 +82,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
    case config::logger::file:
     {
       if (cfg.name().isEmpty())
-	throw (exceptions::msg()
+        throw (exceptions::msg()
                  << "log applier: attempt to log on an empty file");
       QScopedPointer<logging::file> file(new logging::file(cfg.name()));
       back = QSharedPointer<logging::backend>(file.data());
@@ -93,18 +93,18 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
     {
       FILE* out;
       if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
-	out = stderr;
+        out = stderr;
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
-	out = stdout;
+        out = stdout;
       else
-	throw (exceptions::msg() << "log applier: attempt to log on " \
+        throw (exceptions::msg() << "log applier: attempt to log on " \
                  "an undefined output object");
       back = QSharedPointer<logging::backend>(new logging::file(out));
     }
     break ;
    case config::logger::syslog:
-    // XXX : handle facility
-    back = QSharedPointer<logging::backend>(new logging::syslogger);
+    back = QSharedPointer<logging::backend>(
+      new logging::syslogger(cfg.facility()));
     break ;
    default:
     throw (exceptions::msg() << "log applier: attempt to create a " \

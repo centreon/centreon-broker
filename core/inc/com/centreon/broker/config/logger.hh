@@ -43,6 +43,7 @@ namespace                com {
           };
 
          private:
+          int            _facility;
           logging::level _level;
           QString        _name;
           logger_type    _type;
@@ -63,6 +64,8 @@ namespace                com {
           bool           debug() const;
           void           error(bool e);
           bool           error() const;
+          void           facility(int f);
+          int            facility() const;
           void           info(bool i);
           bool           info() const;
           void           level(logging::level l);
