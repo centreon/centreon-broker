@@ -22,6 +22,7 @@
 # include <QMap>
 # include <QScopedPointer>
 # include <QString>
+# include <time.h>
 
 namespace                          com {
   namespace                        centreon {
@@ -44,6 +45,7 @@ namespace                          com {
           QScopedPointer<endpoint> failover_config;
           QString                  name;
           QMap<QString, QString>   params;
+          time_t                   retry_interval;
           QString                  type;
                                    endpoint();
                                    endpoint(endpoint const& e);

@@ -43,6 +43,7 @@ void endpoint::_internal_copy(endpoint const& e) {
     failover_config.reset();
   name = e.name;
   params = e.params;
+  retry_interval = e.retry_interval;
   type = e.type;
   return ;
 }
@@ -93,6 +94,7 @@ endpoint& endpoint::operator=(endpoint const& e) {
  */
 bool endpoint::operator==(endpoint const& e) const {
   return ((type == e.type)
+          && (retry_interval == e.retry_interval)
           && (name == e.name)
           && (failover == e.failover)
           && ((failover_config.isNull() && e.failover_config.isNull())
@@ -122,6 +124,8 @@ bool endpoint::operator<(endpoint const& e) const {
   // Check properties that can directly be checked.
   if (type != e.type)
     return (type < e.type);
+  else if (retry_interval != e.retry_interval)
+    return (retry_interval < e.retry_interval);
   else if (name != e.name)
     return (name < e.name);
   else if (failover != e.failover)

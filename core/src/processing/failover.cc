@@ -37,7 +37,8 @@ using namespace com::centreon::broker::processing;
  *
  *  @param[in] is_out true if the failover thread is an output thread.
  */
-failover::failover(bool is_out) : _is_out(is_out), _should_exit(false) {
+failover::failover(bool is_out)
+  : _is_out(is_out), _retry_interval(30), _should_exit(false) {
   if (_is_out)
     _source = QSharedPointer<io::stream>(new multiplexing::subscriber);
   else
@@ -57,6 +58,7 @@ failover::failover(failover const& f)
      _endpoint(f._endpoint),
      _failover(f._failover),
      _is_out(f._is_out),
+     _retry_interval(f._retry_interval),
      _should_exit(false),
      _source(f._source) {}
 
@@ -78,6 +80,7 @@ failover& failover::operator=(failover const& f) {
   _endpoint = f._endpoint;
   _failover = f._failover;
   _is_out = f._is_out;
+  _retry_interval = f._retry_interval;
   _source = f._source;
   return (*this);
 }
@@ -185,8 +188,9 @@ void failover::run() {
       _source.clear();
     if (!_failover.isNull() && !_failover->isRunning())
       _failover->start();
-    logging::info << logging::MEDIUM << "failover: sleeping a while before reconnection";
-    QThread::sleep(5);
+    logging::info << logging::MEDIUM << "failover: sleeping "
+      << _retry_interval << " seconds before reconnection";
+    QThread::sleep(_retry_interval);
   }
   return ;
 }
@@ -210,6 +214,17 @@ void failover::set_failover(QSharedPointer<failover> fo) {
   _failover = fo;
   if (!fo.isNull() && _is_out) // failover object will act as input for output threads.
     _source = _failover;
+  return ;
+}
+
+/**
+ *  Set the connection retry interval.
+ *
+ *  @param[in] retry_interval Time to wait between two connection
+ *                            attempts.
+ */
+void failover::set_retry_interval(time_t retry_interval) {
+  _retry_interval = retry_interval;
   return ;
 }
 

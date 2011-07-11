@@ -184,6 +184,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
 
   // Return failover thread.
   QScopedPointer<processing::failover> fo(new processing::failover(true));
+  fo->set_retry_interval(cfg.retry_interval);
   fo->set_endpoint(endp);
   fo->set_failover(failovr);
   return (fo.take());

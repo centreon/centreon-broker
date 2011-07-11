@@ -21,6 +21,7 @@
 
 # include <QSharedPointer>
 # include <QThread>
+# include <time.h>
 # include "com/centreon/broker/io/endpoint.hh"
 # include "com/centreon/broker/io/stream.hh"
 # include "com/centreon/broker/processing/feeder.hh"
@@ -49,6 +50,7 @@ namespace               com {
                         _failover;
           feeder        _feeder;
           bool          _is_out;
+          time_t        _retry_interval;
           volatile bool _should_exit;
           QSharedPointer<io::stream>
                         _source;
@@ -66,6 +68,7 @@ namespace               com {
           void          run();
           void          set_endpoint(QSharedPointer<io::endpoint> endp);
           void          set_failover(QSharedPointer<processing::failover> fo);
+          void          set_retry_interval(time_t retry_interval);
           void          write(QSharedPointer<io::data> d);
         };
       }

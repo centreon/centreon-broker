@@ -47,6 +47,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.failover = entry.text();
       else if (name == "name")
         e.name = entry.text();
+      else if (name == "retry_interval")
+        e.retry_interval = entry.text().toUInt();
       else if (name == "type")
         e.type = entry.text();
       else
