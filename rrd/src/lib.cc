@@ -21,6 +21,8 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/rrd/exceptions/open.hh"
+#include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
 using namespace com::centreon::broker;
@@ -126,7 +128,7 @@ void lib::open(QString const& filename,
 
   // Check that the file exists.
   if (!QFile::exists(filename))
-    throw (exceptions::msg() << "RRD: file '"
+    throw (exceptions::open() << "RRD: file '"
              << filename << "' does not exist");
 
   // Remember information for further operations.
@@ -197,7 +199,7 @@ void lib::open(QString const& filename,
         from,
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::msg() << "RRD: could not create file '"
+    throw (exceptions::open() << "RRD: could not create file '"
              << _filename << "': " << rrd_get_error());
   // XXX : is tuning really needed ?
 
@@ -232,7 +234,7 @@ void lib::update(time_t t, QString const& value) {
         _metric.toStdString().c_str(),
         sizeof(argv) / sizeof(*argv) - 1,
         argv))
-    throw (exceptions::msg() << "RRD: failed to update value for " \
+    throw (exceptions::update() << "RRD: failed to update value for " \
              "metric " << _metric << ": " << rrd_get_error());
 
   return ;

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/cached.hh"
+#include "com/centreon/broker/rrd/exceptions/open.hh"
+#include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
 using namespace com::centreon::broker;
@@ -72,8 +74,8 @@ void cached::_send_to_cached(char const* command,
                              unsigned int size) {
   // Check socket.
   if (!_socket.data())
-    throw (exceptions::msg() << "RRD: attempt to communicate with " \
-             "rrdcached without connecting first");
+    throw (broker::exceptions::msg() << "RRD: attempt to communicate " \
+             "with rrdcached without connecting first");
 
   // Check command size.
   if (!size)
@@ -84,8 +86,8 @@ void cached::_send_to_cached(char const* command,
     qint64 rb;
     rb = _socket->write(command, size);
     if (rb < 0)
-      throw (exceptions::msg() << "RRD: error while sending command " \
-               "to rrdcached: " << _socket->errorString());
+      throw (broker::exceptions::msg() << "RRD: error while sending " \
+               "command to rrdcached: " << _socket->errorString());
     size -= rb;
   }
 
@@ -93,14 +95,15 @@ void cached::_send_to_cached(char const* command,
   if (!_batch) {
     char line[1024];
     if (_socket->readLine(line, sizeof(line)) < 0)
-      throw (exceptions::msg() << "RRD: error while getting response " \
-               "from rrdcached: " << _socket->errorString());
+      throw (broker::exceptions::msg() << "RRD: error while getting " \
+               "response from rrdcached: " << _socket->errorString());
     unsigned int lines;
     lines = strtoul(line, NULL, 10);
     while (lines > 0)
       if (_socket->readLine(line, sizeof(line)) < 0)
-        throw (exceptions::msg() << "RRD: error while getting " \
-                 "response from rrdcached: " << _socket->errorString());
+        throw (broker::exceptions::msg() << "RRD: error while getting" \
+                    " response from rrdcached: "
+                 << _socket->errorString());
   }
 
   return ;
@@ -169,7 +172,7 @@ void cached::connect_local(QString const& name) {
   // Connect to server.
   ls->connectToServer(name);
   if (!ls->waitForConnected(-1)) {
-    exceptions::msg e;
+    broker::exceptions::msg e;
     e << "RRD: could not connect to local socket '" << name
       << ": " << ls->errorString();
     _socket.reset();
@@ -194,7 +197,7 @@ void cached::connect_remote(QString const& address,
   // Connect to server.
   ts->connectToHost(address, port);
   if (!ts->waitForConnected(-1)) {
-    exceptions::msg e;
+    broker::exceptions::msg e;
     e << "RRD: could not connect to remote server '" << address
       << ":" << port << "': " << ts->errorString();
     _socket.reset();
@@ -217,7 +220,7 @@ void cached::open(QString const& filename,
 
   // Check that the file exists.
   if (!QFile::exists(filename))
-    throw (exceptions::msg() << "RRD: file '" << filename
+    throw (exceptions::open() << "RRD: file '" << filename
              << "' does not exist");
 
   // Remember information for further operations.

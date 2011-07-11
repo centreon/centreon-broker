@@ -22,6 +22,8 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
+#include "com/centreon/broker/rrd/exceptions/open.hh"
+#include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/rrd/output.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -128,7 +130,7 @@ output::~output() {}
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> output::read() {
-  throw (exceptions::msg()
+  throw (broker::exceptions::msg()
            << "RRD: attempt to read data from an output endpoint");
   return (QSharedPointer<io::data>());
 }
@@ -150,7 +152,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->open(oss1.str().c_str(), e->name);
     }
-    catch (exceptions::msg const& b) { // XXX : should be specialized
+    catch (exceptions::open const& b) {
       _backend->open(oss1.str().c_str(),
         e->name,
         e->rrd_len / e->interval,
@@ -162,7 +164,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->update(e->ctime, oss2.str().c_str());
     }
-    catch (exceptions::msg const& b) { // XXX : should be specialized
+    catch (exceptions::update const& b) {
       logging::error << logging::MEDIUM << b.what() << " (ignored)";
     }
   }
@@ -177,7 +179,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->open(oss1.str().c_str(), "status");
     }
-    catch (exceptions::msg const& b) { // XXX : should be specialized
+    catch (exceptions::open const& b) {
       _backend->open(oss1.str().c_str(),
         "status",
         e->rrd_len / e->interval,
@@ -194,7 +196,7 @@ void output::write(QSharedPointer<io::data> d) {
     try {
       _backend->update(e->ctime, oss2.str().c_str());
     }
-    catch (exceptions::msg const& b) { // XXX : should be specialized
+    catch (exceptions::update const& b) {
       logging::error << logging::MEDIUM << b.what() << " (ignored)";
     }
   }

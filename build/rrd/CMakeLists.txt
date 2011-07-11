@@ -19,6 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/rrd/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/rrd/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/rrd/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
@@ -36,6 +37,8 @@ add_library("${RRD}" MODULE
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/cached.cc"
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/exceptions/open.cc"
+  "${SRC_DIR}/exceptions/update.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"
@@ -44,6 +47,8 @@ add_library("${RRD}" MODULE
   "${INC_DIR}/com/centreon/broker/rrd/backend.hh"
   "${INC_DIR}/com/centreon/broker/rrd/cached.hh"
   "${INC_DIR}/com/centreon/broker/rrd/connector.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/exceptions/open.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/exceptions/update.hh"
   "${INC_DIR}/com/centreon/broker/rrd/factory.hh"
   "${INC_DIR}/com/centreon/broker/rrd/lib.hh"
   "${INC_DIR}/com/centreon/broker/rrd/output.hh"
@@ -70,6 +75,53 @@ if (LIBRRD_LDFLAGS)
     set_target_properties("${RRD}" PROPERTIES
       LINK_FLAGS "${LIBRRD_LDFLAGS}")
   endif ()
+endif ()
+
+if (WITH_TESTING)
+  # Open exception tests.
+  #   Throw.
+  set(TEST_NAME "rrd_exceptions_open_throw")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/open.cc"
+    "${TEST_DIR}/exceptions/open/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Rethrow.
+  set(TEST_NAME "rrd_exceptions_open_rethrow")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/open.cc"
+    "${TEST_DIR}/exceptions/open/rethrow.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Clone.
+  set(TEST_NAME "rrd_exceptions_open_clone")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/open.cc"
+    "${TEST_DIR}/exceptions/open/clone.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Update exception tests.
+  #   Throw.
+  set(TEST_NAME "rrd_exceptions_update_throw")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/update.cc"
+    "${TEST_DIR}/exceptions/update/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Rethrow.
+  set(TEST_NAME "rrd_exceptions_update_rethrow")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/update.cc"
+    "${TEST_DIR}/exceptions/update/rethrow.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Clone.
+  set(TEST_NAME "rrd_exceptions_update_clone")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/update.cc"
+    "${TEST_DIR}/exceptions/update/clone.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.
