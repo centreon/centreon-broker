@@ -116,8 +116,8 @@ parser::~parser() {}
 void parser::parse_perfdata(QString const& str,
                             std::list<perfdata>& pd) {
   // Extract metrics strings.
-  std::string buf(str.toStdString());
-  char const* ptr(buf.c_str());
+  QString buf(str);
+  char const* ptr(qPrintable(buf.replace(',', '.')));
   // Skip initial whitespaces.
   while (isblank(*ptr))
     ++ptr;
