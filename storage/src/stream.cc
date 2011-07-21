@@ -179,9 +179,9 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
   else {
     // Build query.
     std::ostringstream oss;
-    std::string escaped_metric_name(_storage_db->driver()->formatValue(QSqlField(metric_name.toStdString().c_str(),
-        QVariant::String),
-      true).toStdString());
+    QSqlField field("metric_name", QVariant::String);
+    field.setValue(metric_name.toStdString().c_str());
+    std::string escaped_metric_name(_storage_db->driver()->formatValue(field, true).toStdString());
     oss << "INSERT INTO metrics (index_id, metric_name)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ")";
 
