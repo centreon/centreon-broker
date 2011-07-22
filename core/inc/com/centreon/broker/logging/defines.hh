@@ -26,9 +26,9 @@ namespace       com {
         // Log levels.
         enum    level {
           NONE = 0,
-          HIGH,
+          LOW,
           MEDIUM,
-          LOW
+          HIGH
         };
 
         // Log types.
