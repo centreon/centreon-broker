@@ -57,7 +57,7 @@ void endpoint::_internal_copy(endpoint const& e) {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() {}
+endpoint::endpoint() : retry_interval(30) {}
 
 /**
  *  Copy constructor.
