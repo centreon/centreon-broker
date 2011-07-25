@@ -129,7 +129,7 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
       else if (name == "level") {
         QString val_str(entry.text());
         int val(val_str.toInt());
-        if ((val == 1) || (val_str == "low"))
+        if ((val == 1) || (val_str == "high"))
           l.level(com::centreon::broker::logging::LOW);
         else if ((val == 2) || (val_str == "medium"))
           l.level(com::centreon::broker::logging::MEDIUM);
