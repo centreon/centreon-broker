@@ -34,7 +34,7 @@ perfdata::perfdata()
   : _critical(NAN),
     _max(NAN),
     _min(NAN),
-    _value(0.0),
+    _value(NAN),
     _warning(NAN) {}
 
 /**

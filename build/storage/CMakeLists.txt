@@ -73,6 +73,29 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Perfdata object tests.
+  #   Default construction.
+  set(TEST_NAME "storage_perfdata_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/perfdata.cc"
+    "${TEST_DIR}/perfdata/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "storage_perfdata_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/perfdata.cc"
+    "${TEST_DIR}/perfdata/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "storage_perfdata_assignment")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/perfdata.cc"
+    "${TEST_DIR}/perfdata/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Metric event tests.
   #   Default construction.
   set(TEST_NAME "storage_metric_ctor_default")
