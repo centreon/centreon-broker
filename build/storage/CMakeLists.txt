@@ -72,6 +72,52 @@ if (WITH_TESTING)
     "${TEST_DIR}/exceptions/perfdata/clone.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Metric event tests.
+  #   Default construction.
+  set(TEST_NAME "storage_metric_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/metric.cc"
+    "${TEST_DIR}/metric/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "storage_metric_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/metric.cc"
+    "${TEST_DIR}/metric/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "storage_metric_assignment")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/metric.cc"
+    "${TEST_DIR}/metric/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Status event tests.
+  #   Default construction.
+  set(TEST_NAME "storage_status_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/status.cc"
+    "${TEST_DIR}/status/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "storage_status_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/status.cc"
+    "${TEST_DIR}/status/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "storage_status_assignment")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/status.cc"
+    "${TEST_DIR}/status/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.

@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <math.h>
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker::storage;
@@ -55,7 +56,7 @@ metric::metric()
     interval(0),
     metric_id(0),
     rrd_len(0),
-    value(0.0) {}
+    value(NAN) {}
 
 /**
  *  Copy constructor.
