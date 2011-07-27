@@ -430,7 +430,7 @@ void stream::write(QSharedPointer<io::data> data) {
     status->state = ss->current_state;
 
     // Parse perfdata.
-    std::list<perfdata> pds;
+    QList<perfdata> pds;
     parser p;
     try {
       p.parse_perfdata(ss->perf_data, pds);
@@ -443,7 +443,7 @@ void stream::write(QSharedPointer<io::data> data) {
     }
 
     // Loop through all metrics.
-    for (std::list<perfdata>::iterator it = pds.begin(), end = pds.end();
+    for (QList<perfdata>::iterator it = pds.begin(), end = pds.end();
          it != end;
          ++it) {
       perfdata& pd(*it);

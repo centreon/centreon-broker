@@ -19,7 +19,7 @@
 #ifndef CCB_STORAGE_PARSER_HH_
 # define CCB_STORAGE_PARSER_HH_
 
-# include <list>
+# include <QList>
 # include <QString>
 # include "com/centreon/broker/storage/perfdata.hh"
 
@@ -35,15 +35,13 @@ namespace         com {
          *  perfdata structure.
          */
         class     parser {
-         private:
-                  parser(parser const& p);
-          parser& operator=(parser const& p);
-
          public:
                   parser();
+                  parser(parser const& p);
                   ~parser();
+          parser& operator=(parser const& p);
           void    parse_perfdata(QString const& str,
-                    std::list<perfdata>& pd);
+                    QList<perfdata>& pd);
         };
       }
     }

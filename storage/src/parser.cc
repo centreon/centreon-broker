@@ -16,10 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <ctype.h>
-#include <errno.h>
 #include <math.h>
+#include <QByteArray>
 #include <stdlib.h>
 #include <string.h>
 #include "com/centreon/broker/logging/logging.hh"
@@ -56,43 +55,6 @@ static inline double extract_double(char const** str,
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any attempt to use the copy constructor will result in a call to
- *  abort().
- *
- *  @param[in] pp Unused.
- */
-parser::parser(parser const& pp) {
-  (void)pp;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any attempt to use the assignment operator will result in a call to
- *  abort().
- *
- *  @param[in] pp Unused.
- *
- *  @return This object.
- */
-parser& parser::operator=(parser const& pp) {
-  (void)pp;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -103,9 +65,34 @@ parser& parser::operator=(parser const& pp) {
 parser::parser() {}
 
 /**
+ *  @brief Copy constructor.
+ *
+ *  No data is stored within the parser class.
+ *
+ *  @param[in] pp Unused.
+ */
+parser::parser(parser const& pp) {
+  (void)pp;
+}
+
+/**
  *  Destructor.
  */
 parser::~parser() {}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  No data is stored within the parser class.
+ *
+ *  @param[in] pp Unused.
+ *
+ *  @return This object.
+ */
+parser& parser::operator=(parser const& pp) {
+  (void)pp;
+  return (*this);
+}
 
 /**
  *  Parse perfdata string as given by plugin.
@@ -114,10 +101,12 @@ parser::~parser() {}
  *  @param[out] pd  List of parsed metrics.
  */
 void parser::parse_perfdata(QString const& str,
-                            std::list<perfdata>& pd) {
+                            QList<perfdata>& pd) {
   // Extract metrics strings.
-  QString buf(str);
-  char const* ptr(qPrintable(buf.replace(',', '.')));
+  QByteArray buf(qPrintable(str));
+  buf.replace(',', '.');
+  char const* ptr(buf.constData());
+
   // Skip initial whitespaces.
   while (isblank(*ptr))
     ++ptr;

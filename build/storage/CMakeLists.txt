@@ -141,6 +141,26 @@ if (WITH_TESTING)
     "${TEST_DIR}/status/assignment.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Parser tests.
+  #   Simple perfdata parsing.
+  set(TEST_NAME "storage_parser_parse_simple")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/perfdata.cc"
+    "${SRC_DIR}/parser.cc"
+    "${SRC_DIR}/perfdata.cc"
+    "${TEST_DIR}/parser/parse_simple.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Loop perfdata parsing.
+  set(TEST_NAME "storage_parser_parse_loop")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/exceptions/perfdata.cc"
+    "${SRC_DIR}/parser.cc"
+    "${SRC_DIR}/perfdata.cc"
+    "${TEST_DIR}/parser/parse_loop.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.
