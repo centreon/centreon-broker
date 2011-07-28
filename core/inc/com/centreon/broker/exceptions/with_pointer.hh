@@ -50,6 +50,7 @@ namespace                          com {
           virtual msg*             clone() const;
           QSharedPointer<io::data> ptr() const;
           virtual void             rethrow();
+          char const*              what() const throw ();
         };
       }
     }

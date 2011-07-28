@@ -33,8 +33,15 @@ using namespace com::centreon::broker::exceptions;
  *  @param[in] base Base exception.
  *  @param[in] ptr  Data pointer.
  */
-with_pointer::with_pointer(msg const& base, QSharedPointer<io::data> ptr)
-  : _base(base.clone()), _ptr(ptr) {}
+with_pointer::with_pointer(msg const& base,
+                           QSharedPointer<io::data> ptr) : _ptr(ptr) {
+  try {
+    _base.reset(base.clone());
+  }
+  catch (...) {
+    _base.reset();
+  }
+}
 
 /**
  *  Copy constructor.
@@ -42,7 +49,16 @@ with_pointer::with_pointer(msg const& base, QSharedPointer<io::data> ptr)
  *  @param[in] wp Object to copy.
  */
 with_pointer::with_pointer(with_pointer const& e)
-  : msg(e), _base(e._base->clone()), _ptr(e._ptr) {}
+  : msg(e), _ptr(e._ptr) {
+  if (!e._base.isNull()) {
+    try {
+      _base.reset(e._base->clone());
+    }
+    catch (...) {
+      _base.reset();
+    }
+  }
+}
 
 /**
  *  Destructor.
@@ -57,7 +73,16 @@ with_pointer::~with_pointer() throw () {}
  *  @return This object.
  */
 with_pointer& with_pointer::operator=(with_pointer const& wp) {
-  _base.reset(wp._base->clone());
+  if (wp._base.isNull())
+    _base.reset();
+  else {
+    try {
+      _base.reset(wp._base->clone());
+    }
+    catch (...) {
+      _base.reset();
+    }
+  }
   _ptr = wp._ptr;
   return (*this);
 }
@@ -86,4 +111,15 @@ QSharedPointer<io::data> with_pointer::ptr() const {
 void with_pointer::rethrow() {
   _base->rethrow();
   return ;
+}
+
+/**
+ *  Return exception message.
+ *
+ *  @return Exception message.
+ */
+char const* with_pointer::what() const throw () {
+  return (_base.isNull()
+            ? "generic: unknown chained exception"
+            : _base->what());
 }

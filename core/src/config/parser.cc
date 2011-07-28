@@ -85,7 +85,7 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
       }
       else if (name == "info") {
         QString val(entry.text());
-        l.error((val == "yes") || val.toInt());
+        l.info((val == "yes") || val.toInt());
       }
       else if (name == "facility") {
         QString val(entry.text());

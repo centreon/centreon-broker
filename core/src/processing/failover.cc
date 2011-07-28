@@ -170,6 +170,7 @@ void failover::run() {
       _feeder.run(); // Yes run(), we do not want to start another thread.
     }
     catch (exceptions::with_pointer const& e) {
+      logging::error << logging::HIGH << e.what();
       if (!e.ptr().isNull() && !_failover.isNull() && !_failover->isRunning())
         _failover->write(e.ptr());
     }
