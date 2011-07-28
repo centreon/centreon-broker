@@ -67,6 +67,8 @@ static struct {
   bool registered;
 } gl_callbacks[] = {
   { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement, false },
+  { NEBCALLBACK_ADAPTIVE_HOST_DATA, &neb::callback_adaptive_host, false },
+  { NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &neb::callback_adaptive_service, false },
   { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment, false },
   { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime, false },
   { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler, false },

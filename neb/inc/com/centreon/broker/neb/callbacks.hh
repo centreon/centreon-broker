@@ -24,6 +24,8 @@ namespace       com {
     namespace   broker {
       namespace neb {
         int     callback_acknowledgement(int callback_type, void* data);
+        int     callback_adaptive_host(int callback_type, void* data);
+        int     callback_adaptive_service(int callback_type, void* data);
         int     callback_comment(int callback_type, void* data);
         int     callback_downtime(int callback_type, void* data);
         int     callback_event_handler(int callback_type, void* data);
