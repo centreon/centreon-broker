@@ -82,11 +82,13 @@ modules::~modules() {}
  */
 void modules::apply(QString const& module_dir, void const* arg) {
   if (!module_dir.isEmpty()) {
-    logging::config << logging::HIGH << "module applier: loading directory";
+    logging::config << logging::HIGH
+      << "module applier: loading directory '" << module_dir << "'";
     _loader.load_dir(module_dir, arg);
   }
   else
-    logging::debug << logging::HIGH << "module applier: no directory defined";
+    logging::debug << logging::HIGH
+      << "module applier: no directory defined";
   return ;
 }
 

@@ -74,7 +74,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
 
     // Fill output var.
     ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
-    ack->acknowledgement_type = ack_data->type;
+    ack->acknowledgement_type = ack_data->acknowledgement_type;
     if (ack_data->author_name)
       ack->author = ack_data->author_name;
     if (ack_data->comment_data)
