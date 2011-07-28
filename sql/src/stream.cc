@@ -159,6 +159,19 @@ void stream::_clean_tables(int instance_id) {
     _execute(ss.str().c_str());
   }
 
+  // Remove custom variables.
+  {
+    std::ostringstream ss;
+    ss << "DELETE FROM " << mapped_type<neb::custom_variable>::table
+       << " USING " << mapped_type<neb::custom_variable>::table
+       << " JOIN "  << mapped_type<neb::host>::table << " ON "
+       << mapped_type<neb::custom_variable>::table << ".host_id="
+       << mapped_type<neb::host>::table << ".host_id" << " WHERE "
+       << mapped_type<neb::host>::table << ".instance_id="
+       << instance_id;
+    _execute(ss.str().c_str());
+  }
+
   return ;
 }
 
