@@ -123,6 +123,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
 int neb::callback_adaptive_host(int callback_type, void* data) {
   // Convert data pointer and check that we're interested.
   (void)callback_type;
+  logging::debug << logging::LOW << "callbacks: adaptive host data";
   nebstruct_adaptive_host_data* nahd(
     static_cast<nebstruct_adaptive_host_data*>(data));
   if (nahd && (nahd->modified_attribute & MODATTR_CUSTOM_VARIABLE)) {
@@ -188,6 +189,7 @@ int neb::callback_adaptive_host(int callback_type, void* data) {
 int neb::callback_adaptive_service(int callback_type, void* data) {
   // Convert data pointer and check that we're interested.
   (void)callback_type;
+  logging::debug << logging::LOW << "callbacks: adaptive service data";
   nebstruct_adaptive_service_data* nasd(
     static_cast<nebstruct_adaptive_service_data*>(data));
   if (nasd && (nasd->modified_attribute & MODATTR_CUSTOM_VARIABLE)) {
