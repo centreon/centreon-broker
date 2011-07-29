@@ -439,7 +439,7 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
        it != end;
        ++it) {
     if (it->second) {
-      query.append("CASE WHEN :");
+      query.append("( CASE WHEN :");
       query.append(it->first.toStdString());
       query.append(" IS NULL THEN ");
       query.append(it->first.toStdString());
@@ -447,7 +447,7 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
       query.append(it->first.toStdString());
       query.append("=:");
       query.append(it->first.toStdString());
-      query.append(" END");
+      query.append(" END )");
     }
     else {
       query.append(it->first.toStdString());
