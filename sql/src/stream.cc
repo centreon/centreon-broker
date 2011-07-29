@@ -439,9 +439,9 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
        it != end;
        ++it) {
     if (it->second) {
-      query.append("ISNULL(");
+      query.append("COALESCE(");
       query.append(it->first.toStdString());
-      query.append(", -1)=ISNULL(:");
+      query.append(", -1)=COALESCE(:");
       query.append(it->first.toStdString());
       query.append(", -1)");
     }
