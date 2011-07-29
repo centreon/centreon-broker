@@ -439,15 +439,11 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
        it != end;
        ++it) {
     if (it->second) {
-      query.append("( CASE WHEN :");
+      query.append("ISNULL(");
       query.append(it->first.toStdString());
-      query.append(" IS NULL THEN ");
+      query.append(", -1)=ISNULL(:");
       query.append(it->first.toStdString());
-      query.append(" IS NULL ELSE ");
-      query.append(it->first.toStdString());
-      query.append("=:");
-      query.append(it->first.toStdString());
-      query.append(" END )");
+      query.append(", -1)");
     }
     else {
       query.append(it->first.toStdString());
