@@ -333,7 +333,11 @@ static void send_host_list() {
       }
 
     // Send host event.
-    neb::gl_publisher.write(my_host.staticCast<io::data>());
+    if (my_host->host_id)
+      neb::gl_publisher.write(my_host.staticCast<io::data>());
+    else
+      logging::error << logging::MEDIUM << "init: host '"
+        << (h->name ? h->name : "(unknown)") << "' has no ID defined";
   }
 
   // End log message.
@@ -629,7 +633,16 @@ static void send_service_list() {
       }
 
     // Send service event.
-    neb::gl_publisher.write(my_service.staticCast<io::data>());
+    if (my_service->host_id && my_service->service_id)
+      neb::gl_publisher.write(my_service.staticCast<io::data>());
+    else
+      logging::error << logging::HIGH
+        << "init: service has no host ID or no service ID (host '"
+        << ((s->host_ptr && s->host_ptr->name)
+              ? s->host_ptr->name : "(unknown)")
+        << "', service '"
+        << (s->description ? s->description : "(unknown)")
+        << "')";
   }
 
   // End log message.

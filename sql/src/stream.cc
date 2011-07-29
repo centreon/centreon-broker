@@ -613,11 +613,16 @@ void stream::_process_host(io::data const& e) {
 
   // Processing.
   neb::host const& h(*static_cast<neb::host const*>(&e));
-  *_host_stmt << h;
-  _execute(*_host_stmt);
-  int matched = _host_stmt->numRowsAffected();
-  if (!matched || (-1 == matched))
-    _insert(h);
+  if (h.host_id) {
+    *_host_stmt << h;
+    _execute(*_host_stmt);
+    int matched = _host_stmt->numRowsAffected();
+    if (!matched || (-1 == matched))
+      _insert(h);
+  }
+  else
+    logging::error << logging::HIGH << "SQL: host '"
+      << h.host_name << "' has no ID";
 
   return ;
 }
@@ -1079,13 +1084,18 @@ void stream::_process_service(io::data const& e) {
 
   // Processing.
   neb::service const& s(*static_cast<neb::service const*>(&e));
-  *_service_stmt << s;
-  _execute(*_service_stmt);
-  int matched = _service_stmt->numRowsAffected();
-  if (!matched || (-1 == matched)) {
-    *_service_insert_stmt << s;
-    _execute(*_service_insert_stmt);
+  if (s.host_id && s.service_id) {
+    *_service_stmt << s;
+    _execute(*_service_stmt);
+    int matched = _service_stmt->numRowsAffected();
+    if (!matched || (-1 == matched)) {
+      *_service_insert_stmt << s;
+      _execute(*_service_insert_stmt);
+    }
   }
+  else
+    logging::error << logging::HIGH << "SQL: service '"
+      << s.service_description << "' has no host ID or no service ID";
 
   return ;
 }

@@ -659,7 +659,12 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->state_type = h->state_type;
 
     // Send event.
-    gl_publisher.write(host_status.staticCast<io::data>());
+    if (host_status->host_id)
+      gl_publisher.write(host_status.staticCast<io::data>());
+    else
+      logging::info << logging::MEDIUM
+        << "callbacks: host '" << (h->name ? h->name : "(unknown)")
+        << "' has no ID";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -1054,7 +1059,15 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->state_type = s->state_type;
 
     // Send event.
-    gl_publisher.write(service_status.staticCast<io::data>());
+    if (service_status->host_id && service_status->service_id)
+      gl_publisher.write(service_status.staticCast<io::data>());
+    else
+      logging::info << logging::MEDIUM
+        << "callbacks: service with no host ID or no service ID (host '"
+        << ((s->host_ptr && s->host_ptr->name)
+              ? s->host_ptr->name : "(unknown)")
+        << "', service '"
+        << (s->description ? s->description : "(unknown)") << "')";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
