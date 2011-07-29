@@ -16,10 +16,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <assert.h>
+#include <QPair>
 #include <QSqlError>
 #include <QVariant>
+#include <QVector>
 #include <sstream>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -255,101 +256,101 @@ void stream::_prepare() {
   _prepare_insert<neb::service>(_service_insert_stmt);
 
   // Prepare update queries.
-  std::vector<QString> id;
+  QVector<QPair<QString, bool> > id;
 
   id.clear();
-  id.push_back("entry_time");
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("entry_time"), false));
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
   _prepare_update<neb::acknowledgement>(_acknowledgement_stmt, id);
 
   id.clear();
-  id.push_back("entry_time");
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("entry_time"), false));
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
   _prepare_update<neb::comment>(_comment_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("name");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("name"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
   _prepare_update<neb::custom_variable_status>(_custom_variable_status_stmt,
     id);
 
   id.clear();
-  id.push_back("entry_time");
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("entry_time"), false));
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
   _prepare_update<neb::downtime>(_downtime_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
+  id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<neb::event_handler>(_event_handler_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("event_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
+  id.push_back(qMakePair(QString("event_time"), false));
   _prepare_update<neb::flapping_status>(_flapping_status_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
+  id.push_back(qMakePair(QString("host_id"), false));
   _prepare_update<neb::host>(_host_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
+  id.push_back(qMakePair(QString("host_id"), false));
   _prepare_update<neb::host_check>(_host_check_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
+  id.push_back(qMakePair(QString("host_id"), false));
   _prepare_update<neb::host_status>(_host_status_stmt, id);
 
   id.clear();
-  id.push_back("instance_id");
+  id.push_back(qMakePair(QString("instance_id"), false));
   _prepare_update<neb::instance>(_instance_stmt, id);
 
   id.clear();
-  id.push_back("instance_id");
+  id.push_back(qMakePair(QString("instance_id"), false));
   _prepare_update<neb::instance_status>(_instance_status_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
+  id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<neb::notification>(_notification_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), false));
   _prepare_update<neb::service>(_service_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), false));
   _prepare_update<neb::service_check>(_service_check_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), false));
   _prepare_update<neb::service_status>(_service_status_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("start_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<correlation::host_state>(_host_state_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
+  id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<correlation::issue>(_issue_stmt, id);
 
   id.clear();
-  id.push_back("host_id");
-  id.push_back("service_id");
-  id.push_back("start_time");
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), false));
+  id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<correlation::service_state>(_service_state_stmt, id);
 
   return ;
@@ -406,7 +407,7 @@ bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
  */
 template <typename T>
 bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
-                             std::vector<QString> const& id) {
+                             QVector<QPair<QString, bool> > const& id) {
   // Build query string.
   std::string query;
   query = "UPDATE ";
@@ -416,23 +417,43 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
-       ++it)
-    if (std::find(id.begin(), id.end(), QString(it->first.c_str())) == id.end()) {
+       ++it) {
+    bool found(false);
+    for (QVector<QPair<QString, bool> >::const_iterator
+           it2 = id.begin(), end2 = id.end();
+         it2 != end2;
+         ++it2)
+      if (it->first == it2->first.toStdString())
+        found = true;
+    if (!found) {
       query.append(it->first);
       query.append("=:");
       query.append(it->first);
       query.append(", ");
     }
+  }
   query.resize(query.size() - 2);
   query.append(" WHERE ");
-  for (std::vector<QString>::const_iterator
-         it = id.begin(),
-         end = id.end();
+  for (QVector<QPair<QString, bool> >::const_iterator
+         it = id.begin(), end = id.end();
        it != end;
        ++it) {
-    query.append(it->toStdString());
-    query.append("=:");
-    query.append(it->toStdString());
+    if (it->second) {
+      query.append("CASE WHEN :");
+      query.append(it->first.toStdString());
+      query.append(" IS NULL THEN ");
+      query.append(it->first.toStdString());
+      query.append(" IS NULL ELSE ");
+      query.append(it->first.toStdString());
+      query.append("=:");
+      query.append(it->first.toStdString());
+      query.append(" END");
+    }
+    else {
+      query.append(it->first.toStdString());
+      query.append("=:");
+      query.append(it->first.toStdString());
+    }
     query.append(" AND ");
   }
   query.resize(query.size() - 5);

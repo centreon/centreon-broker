@@ -238,6 +238,10 @@ int neb::callback_adaptive_service(int callback_type, void* data) {
             }
           }
       }
+      else
+        logging::debug << logging::LOW << "callbacks: could not dump " \
+          "service custom var because of invalid service pointer, " \
+          "invalid host name or invalid service description";
     }
     // Avoid exception propagation in C code.
     catch (...) {}

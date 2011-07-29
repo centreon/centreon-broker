@@ -21,10 +21,10 @@
 
 # include <memory>
 # include <QHash>
+# include <QPair>
 # include <QSqlDatabase>
 # include <QString>
-# include <string>
-# include <vector>
+# include <QVector>
 # include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
@@ -73,7 +73,7 @@ namespace              com {
           bool         _prepare_insert(std::auto_ptr<QSqlQuery>& st);
           template     <typename T>
           bool         _prepare_update(std::auto_ptr<QSqlQuery>& st,
-                         std::vector<QString> const& id);
+				       QVector<QPair<QString, bool> > const& id);
           void         _process_acknowledgement(io::data const& e);
           void         _process_comment(io::data const& e);
           void         _process_custom_variable(io::data const& e);
