@@ -437,59 +437,61 @@ void stream::write(QSharedPointer<io::data> data) {
     status->rrd_len = _rrd_len;
     status->state = ss->current_state;
 
-    // Parse perfdata.
-    QList<perfdata> pds;
-    parser p;
-    try {
-      p.parse_perfdata(ss->perf_data, pds);
-    }
-    catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-      logging::error << logging::MEDIUM
-        << "storage: error while parsing performance data of service "
-        << ss->service_id << ": " << e.what();
-      return ;
-    }
-
-    // Loop through all metrics.
-    for (QList<perfdata>::iterator it = pds.begin(), end = pds.end();
-         it != end;
-         ++it) {
-      perfdata& pd(*it);
-
-      // Find metric_id.
-      unsigned int metric_id(_find_metric_id(index_id, pd.name()));
-
-      // Update metrics table.
-      _update_metrics->bindValue(":unit_name", pd.unit());
-      _update_metrics->bindValue(":warn", check_double(pd.warning()));
-      _update_metrics->bindValue(":crit", check_double(pd.critical()));
-      _update_metrics->bindValue(":min", check_double(pd.min()));
-      _update_metrics->bindValue(":max", check_double(pd.max()));
-      _update_metrics->bindValue(":index_id", index_id);
-      _update_metrics->bindValue(":metric_name", pd.name());
-      _update_metrics->exec();
-
-      if (_store_in_db) {
-        // Insert perfdata in data_bin.
-        _insert_data_bin->bindValue(":id_metric", metric_id);
-        _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->execution_time));
-        _insert_data_bin->bindValue(":value", pd.value());
-        _insert_data_bin->bindValue(":status", ss->current_state);
-        _insert_data_bin->exec();
+    if (!ss->perf_data.isEmpty()) {
+      // Parse perfdata.
+      QList<perfdata> pds;
+      parser p;
+      try {
+        p.parse_perfdata(ss->perf_data, pds);
+      }
+      catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+        logging::error << logging::MEDIUM
+          << "storage: error while parsing performance data of service "
+          << ss->service_id << ": " << e.what();
+        return ;
       }
 
-      // Send perfdata event to processing.
-      logging::debug << logging::HIGH
-        << "storage: generating perfdata event";
-      QSharedPointer<storage::metric> perf(new storage::metric);
-      perf->ctime = ss->last_check;
-      perf->interval = static_cast<time_t>(ss->check_interval
-                                           * _interval_length);
-      perf->metric_id = metric_id;
-      perf->name = pd.name();
-      perf->rrd_len = _rrd_len;
-      perf->value = pd.value();
-      multiplexing::publisher().write(perf.staticCast<io::data>());
+      // Loop through all metrics.
+      for (QList<perfdata>::iterator it = pds.begin(), end = pds.end();
+           it != end;
+           ++it) {
+        perfdata& pd(*it);
+
+        // Find metric_id.
+        unsigned int metric_id(_find_metric_id(index_id, pd.name()));
+
+        // Update metrics table.
+        _update_metrics->bindValue(":unit_name", pd.unit());
+        _update_metrics->bindValue(":warn", check_double(pd.warning()));
+        _update_metrics->bindValue(":crit", check_double(pd.critical()));
+        _update_metrics->bindValue(":min", check_double(pd.min()));
+        _update_metrics->bindValue(":max", check_double(pd.max()));
+        _update_metrics->bindValue(":index_id", index_id);
+        _update_metrics->bindValue(":metric_name", pd.name());
+        _update_metrics->exec();
+
+        if (_store_in_db) {
+          // Insert perfdata in data_bin.
+          _insert_data_bin->bindValue(":id_metric", metric_id);
+          _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->execution_time));
+          _insert_data_bin->bindValue(":value", pd.value());
+          _insert_data_bin->bindValue(":status", ss->current_state);
+          _insert_data_bin->exec();
+        }
+
+        // Send perfdata event to processing.
+        logging::debug << logging::HIGH
+          << "storage: generating perfdata event";
+        QSharedPointer<storage::metric> perf(new storage::metric);
+        perf->ctime = ss->last_check;
+        perf->interval = static_cast<time_t>(ss->check_interval
+                                             * _interval_length);
+        perf->metric_id = metric_id;
+        perf->name = pd.name();
+        perf->rrd_len = _rrd_len;
+        perf->value = pd.value();
+        multiplexing::publisher().write(perf.staticCast<io::data>());
+      }
     }
   }
   return ;
