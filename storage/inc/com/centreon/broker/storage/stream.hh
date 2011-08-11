@@ -42,15 +42,15 @@ namespace              com {
          private:
           std::map<std::pair<unsigned int, unsigned int>, unsigned int>
                        _index_cache;
-	  QScopedPointer<QSqlQuery>
+          QScopedPointer<QSqlQuery>
                        _insert_data_bin;
           time_t       _interval_length;
           std::map<std::pair<unsigned int, QString>, unsigned int>
                        _metric_cache;
-	  QString      _metrics_path;
+          QString      _metrics_path;
           unsigned int _rrd_len;
           bool         _store_in_db;
-	  QScopedPointer<QSqlQuery>
+          QScopedPointer<QSqlQuery>
                        _update_metrics;
           QScopedPointer<QSqlDatabase>
                        _storage_db;
@@ -70,7 +70,8 @@ namespace              com {
                          QString const& storage_password,
                          QString const& storage_db,
                          unsigned int rrd_len,
-                         time_t interval_length);
+                         time_t interval_length,
+                         bool store_in_db = true);
                        stream(stream const& s);
                        ~stream();
           QSharedPointer<io::data>

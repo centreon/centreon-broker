@@ -304,6 +304,7 @@ void stream::_prepare() {
  *  @param[in] storage_db        Storage DB name.
  *  @param[in] rrd_len           RRD length.
  *  @param[in] interval_length   Interval length.
+ *  @param[in] store_in_db       Should we insert data in data_bin ?
  */
 stream::stream(QString const& storage_type,
                QString const& storage_host,
@@ -312,7 +313,11 @@ stream::stream(QString const& storage_type,
                QString const& storage_password,
                QString const& storage_db,
                unsigned int rrd_len,
-               time_t interval_length) {
+               time_t interval_length,
+               bool store_in_db) {
+  // Store in DB.
+  _store_in_db = store_in_db;
+
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
@@ -356,6 +361,9 @@ stream::stream(QString const& storage_type,
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) : io::stream(s) {
+  // Store in DB.
+  _store_in_db = s._store_in_db;
+
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
