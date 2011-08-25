@@ -29,30 +29,8 @@
 
 using namespace com::centreon::broker;
 
-/**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
-
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
-
-// Configuration file name.
-QString neb::gl_configuration_file;
-
-// Instance information.
-unsigned int neb::instance_id;
-QString      neb::instance_name;
-
-// List of host IDs.
-std::map<std::string, int> neb::gl_hosts;
-
-// List of service IDs.
-std::map<std::pair<std::string, std::string>, std::pair<int, int> > neb::gl_services;
-
-// Sender object.
-multiplexing::publisher neb::gl_publisher;
 
 /**************************************
 *                                     *

@@ -96,18 +96,18 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
     if (!strcmp(datadup, "SERVICE ALERT")) {
       le.msg_type = 0;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 0);
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
       le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "HOST ALERT")) {
       le.msg_type = 1;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 0);
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
       le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "SERVICE NOTIFICATION")) {
@@ -130,41 +130,55 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
     else if (!strcmp(datadup, "CURRENT SERVICE STATE")) {
       le.msg_type = 6;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "CURRENT HOST STATE")) {
       le.msg_type = 7;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "INITIAL HOST STATE")) {
       le.msg_type = 9;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.status = status_id(log_extract(&lasts));
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
       le.msg_type = 8;
       le.host_name = log_extract_first(lasts, &lasts);
-      le.log_type = type_id(log_extract(&lasts));
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
+      le.log_type = type_id(log_extract(&lasts));
+      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.output = log_extract(&lasts);
     }
-    else if (!strcmp(datadup, "EXTERNAL_COMMAND")) {
+    else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
       char* data(log_extract_first(lasts, &lasts));
       if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM")) {
         le.msg_type = 10;
         le.host_name = log_extract(&lasts);
         le.service_description = log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
         le.notification_contact = log_extract(&lasts);
         le.output = log_extract(&lasts);
       }
       else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM")) {
         le.msg_type = 11;
         le.host_name = log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
         le.notification_contact = log_extract(&lasts);
         le.output = log_extract(&lasts);
       }

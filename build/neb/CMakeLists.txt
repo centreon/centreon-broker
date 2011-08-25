@@ -19,6 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/neb/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/neb/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/neb/test")
 include_directories("${INC_DIR}")
 
 # Event sources.
@@ -46,6 +47,7 @@ set(EVENT_SOURCES
   "${SRC_DIR}/host_status.cc"
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_status.cc"
+  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/log_entry.cc"
   "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module.cc"
@@ -81,6 +83,7 @@ set(EVENT_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/host_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/instance.hh"
   "${INC_DIR}/com/centreon/broker/neb/instance_status.hh"
+  "${INC_DIR}/com/centreon/broker/neb/internal.hh"
   "${INC_DIR}/com/centreon/broker/neb/log_entry.hh"
   "${INC_DIR}/com/centreon/broker/neb/module.hh"
   "${INC_DIR}/com/centreon/broker/neb/notification.hh"
@@ -130,6 +133,103 @@ else ()
   target_link_libraries("${CBMOD}" "roker")
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
+
+# Unit tests.
+if (WITH_TESTING)
+  # set_log_data tests.
+  #   Host alert.
+  set(TEST_NAME "neb_set_log_data_host_alert")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/host_alert.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Service alert.
+  set(TEST_NAME "neb_set_log_data_service_alert")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/service_alert.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Host notification.
+  set(TEST_NAME "neb_set_log_data_host_notification")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/host_notification.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Service notification.
+  set(TEST_NAME "neb_set_log_data_service_notification")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/service_notification.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Initial host state.
+  set(TEST_NAME "neb_set_log_data_initial_host_state")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/initial_host_state.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Initial service state.
+  set(TEST_NAME "neb_set_log_data_initial_service_state")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/initial_service_state.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Current host state.
+  set(TEST_NAME "neb_set_log_data_current_host_state")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/current_host_state.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Current service state.
+  set(TEST_NAME "neb_set_log_data_current_service_state")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/current_service_state.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Host acknowledgement external command.
+  set(TEST_NAME "neb_set_log_data_external_acknowledge_host")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/external_acknowledge_host.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Service acknowledgement external command.
+  set(TEST_NAME "neb_set_log_data_external_acknowledge_service")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/external_acknowledge_service.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")  
+endif ()
+
+# Install rules.
 install(TARGETS "${CBMOD}"
   LIBRARY DESTINATION "${PREFIX_LIBRARY}"
 )
