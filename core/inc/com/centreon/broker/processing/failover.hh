@@ -19,6 +19,7 @@
 #ifndef CCB_PROCESSING_FAILOVER_HH_
 # define CCB_PROCESSING_FAILOVER_HH_
 
+# include <QMutex>
 # include <QSharedPointer>
 # include <QThread>
 # include <time.h>
@@ -56,6 +57,7 @@ namespace               com {
                         _source;
           QSharedPointer<io::stream>
                         _stream;
+          QMutex        _streamm;
 
          public:
                         failover(bool is_out);

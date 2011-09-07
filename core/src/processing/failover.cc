@@ -16,6 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -106,7 +107,11 @@ QSharedPointer<io::data> failover::read() {
     logging::debug << logging::LOW << "failover: reading event from a different thread";
     bool caught(false);
     try {
-      data = _stream->read();
+      {
+        QMutexLocker lock(&_streamm);
+        if (!_stream.isNull())
+          data = _stream->read();
+      }
       logging::debug << logging::LOW << "failover: got event from remote thread";
     }
     catch (...) {
@@ -117,7 +122,10 @@ QSharedPointer<io::data> failover::read() {
       logging::info << logging::MEDIUM << "failover: requesting failover thread termination";
       this->exit();
       this->wait();
-      _stream.clear();
+      {
+        QMutexLocker lock(&_streamm);
+        _stream.clear();
+      }
       data = this->read();
     }
   }
@@ -150,19 +158,26 @@ void failover::run() {
 
     try {
       // Close previous endpoint if any.
-      _stream.clear();
+      {
+        QMutexLocker lock(&_streamm);
+        _stream.clear();
+      }
 
       // Open endpoint.
       logging::debug << logging::MEDIUM << "failover: opening endpoint";
-      _stream = _endpoint->open();
-      if (_stream.isNull()) { // Retry connection.
-        logging::debug << logging::MEDIUM << "failover: resulting stream is nul, retrying";
-        continue ;
+      {
+        QMutexLocker lock(&_streamm);
+        _stream = _endpoint->open();
+        if (_stream.isNull()) { // Retry connection.
+          lock.unlock();
+          logging::debug << logging::MEDIUM << "failover: resulting stream is nul, retrying";
+          continue ;
+        }
+        if (_is_out)
+          _destination = _stream;
+        else
+          _source = _stream;
       }
-      if (_is_out)
-        _destination = _stream;
-      else
-        _source = _stream;
 
       // Process input and output.
       logging::debug << logging::MEDIUM << "failover: launching feeder";
