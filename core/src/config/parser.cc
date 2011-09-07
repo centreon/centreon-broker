@@ -245,8 +245,11 @@ void parser::parse(QString const& file, state& s) {
         _parse_endpoint(elem, out);
         s.outputs().push_back(out);
       }
-      else
-        s.params()[name] = elem.text();
+      else {
+        QDomDocument subdoc;
+        subdoc.appendChild(subdoc.importNode(elem, true));
+        s.params()[name] = subdoc.toString();
+      }
     }
   }
 

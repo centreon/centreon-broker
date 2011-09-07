@@ -16,6 +16,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QDomDocument>
+#include <QDomElement>
 #include <QSharedPointer>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
@@ -59,12 +61,28 @@ extern "C" {
       QMap<QString, QString>::const_iterator
         it(cfg.params().find("correlation"));
       if (it != cfg.params().end()) {
-        // Create and register correlation object.
-        QSharedPointer<correlation::correlator>
-          crltr(new correlation::correlator);
-        crltr->load(it.value());
-        obj = crltr.staticCast<io::stream>();
-        multiplexing::publisher::hook(obj);
+        // Parse XML.
+        QDomDocument d;
+        if (d.setContent(it.value())) {
+          // Browse first-level elements.
+          QDomElement root(d.documentElement());
+          QDomNodeList level1(root.childNodes());
+          for (int i = 0, len = level1.size(); i < len; ++i) {
+            QDomElement elem(level1.item(i).toElement());
+            if (!elem.isNull()) {
+              QString name(elem.tagName());
+              if (name == "file") {
+                // Create and register correlation object.
+                QSharedPointer<correlation::correlator>
+                  crltr(new correlation::correlator);
+                crltr->load(it.value());
+                obj = crltr.staticCast<io::stream>();
+                multiplexing::publisher::hook(obj);
+                break ;
+              }
+            }
+          }
+        }
       }
     }
     return ;
