@@ -22,6 +22,7 @@
 # include <memory>
 # include <QHash>
 # include <QPair>
+# include <QScopedPointer>
 # include <QSqlDatabase>
 # include <QString>
 # include <QVector>
@@ -61,7 +62,7 @@ namespace              com {
           std::auto_ptr<QSqlQuery>       _service_check_stmt;
           std::auto_ptr<QSqlQuery>       _service_state_stmt;
           std::auto_ptr<QSqlQuery>       _service_status_stmt;
-          QSqlDatabase _db;
+          QScopedPointer<QSqlDatabase>   _db;
           stream&      operator=(stream const& s);
           void         _clean_tables(int instance_id);
           void         _execute(QString const& query);

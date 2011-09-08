@@ -183,8 +183,8 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_execute(QString const& query) {
   logging::debug << logging::LOW << "SQL: executing query: " << query;
-  _db.exec(query);
-  QSqlError err(_db.lastError());
+  _db->exec(query);
+  QSqlError err(_db->lastError());
   if (err.type() != QSqlError::NoError)
     throw (exceptions::msg() << "SQL: " << err.text());
   return ;
@@ -237,7 +237,7 @@ bool stream::_insert(T const& t) {
   query.append(")");
 
   // Execute query.
-  QSqlQuery q(_db);
+  QSqlQuery q(*_db);
   bool ret(q.prepare(query.c_str()));
   if (ret) {
     q << t;
@@ -394,7 +394,7 @@ bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
                 << query.c_str();
 
   // Prepare statement.
-  st.reset(new QSqlQuery(_db));
+  st.reset(new QSqlQuery(*_db));
   return (st->prepare(query.c_str()));
 }
 
@@ -457,7 +457,7 @@ bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
                 << query.c_str();
 
   // Prepare statement.
-  st.reset(new QSqlQuery(_db));
+  st.reset(new QSqlQuery(*_db));
   return (st->prepare(query.c_str()));
 }
 
@@ -702,7 +702,7 @@ void stream::_process_host_group_member(io::data const& e) {
      << mapped_type<neb::host_group>::table
      << " WHERE instance_id=" << hgm.instance_id
      << " AND name=\"" << hgm.group.toStdString() << "\"";
-  QSqlQuery q(_db);
+  QSqlQuery q(*_db);
   logging::info << logging::LOW << "executing query: "
                 << ss.str().c_str();
   if (q.exec(ss.str().c_str()) && q.next()) {
@@ -720,7 +720,7 @@ void stream::_process_host_group_member(io::data const& e) {
         << hostgroup_id << ")";
     logging::info << logging::LOW << "SQL: executing query: "
       << oss.str().c_str();
-    _db.exec(oss.str().c_str());
+    _db->exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
@@ -885,7 +885,7 @@ void stream::_process_issue_parent(io::data const& e) {
           << ip.child_start_time;
     logging::info << logging::LOW << "executing query: "
                   << query.str().c_str();
-    QSqlQuery q(_db);
+    QSqlQuery q(*_db);
     if (q.exec(query.str().c_str()) && q.next()) {
       child_id = q.value(0).toInt();
       logging::debug << logging::LOW << "SQL: child issue ID: "
@@ -908,7 +908,7 @@ void stream::_process_issue_parent(io::data const& e) {
           << ip.parent_start_time;
     logging::info << logging::LOW << "SQL: executing query: "
       << query.str().c_str();
-    QSqlQuery q(_db);
+    QSqlQuery q(*_db);
     if (q.exec(query.str().c_str()) && q.next()) {
       parent_id = q.value(0).toInt();
       logging::debug << logging::LOW << "SQL: parent issue ID: "
@@ -933,7 +933,7 @@ void stream::_process_issue_parent(io::data const& e) {
           << ip.start_time;
     logging::info << logging::LOW << "SQL: executing query: "
                   << query.str().c_str();
-    _db.exec(query.str().c_str());
+    _db->exec(query.str().c_str());
   }
   // New parenting.
   else {
@@ -946,7 +946,7 @@ void stream::_process_issue_parent(io::data const& e) {
           << ip.start_time << ")";
     logging::info << logging::LOW << "SQL: executing query: "
                   << query.str().c_str();
-    _db.exec(query.str().c_str());
+    _db->exec(query.str().c_str());
   }
 
   return ;
@@ -976,7 +976,7 @@ void stream::_process_log(io::data const& e) {
        << " AND start_time=" << le.issue_start_time;
     logging::info << logging::LOW << "SQL: executing query: "
       << ss.str().c_str();
-    QSqlQuery q(_db);
+    QSqlQuery q(*_db);
     if (q.exec(ss.str().c_str()) && q.next())
       issue = q.value(0).toInt();
     else
@@ -1017,7 +1017,7 @@ void stream::_process_log(io::data const& e) {
   // Execute query.
   logging::info << logging::LOW
     << "SQL: executing query: " << query.c_str();
-  QSqlQuery q(_db);
+  QSqlQuery q(*_db);
   q.prepare(query.c_str());
   q << le;
   q.bindValue(field, issue);
@@ -1175,7 +1175,7 @@ void stream::_process_service_group_member(io::data const& e) {
      << mapped_type<neb::service_group>::table
      << " WHERE instance_id=" << sgm.instance_id
      << " AND name=\"" << sgm.group.toStdString() << "\"";
-  QSqlQuery q(_db);
+  QSqlQuery q(*_db);
   logging::info << logging::LOW << "SQL: executing query: "
     << ss.str().c_str();
   if (q.exec(ss.str().c_str()) && q.next()) {
@@ -1194,7 +1194,7 @@ void stream::_process_service_group_member(io::data const& e) {
         << servicegroup_id << ")";
     logging::info << logging::LOW << "SQL: executing query: "
       << oss.str().c_str();
-    _db.exec(oss.str().c_str());
+    _db->exec(oss.str().c_str());
   }
   else
     logging::info << logging::HIGH
@@ -1300,21 +1300,27 @@ stream::stream(QString const& type,
   id.setNum((qulonglong)this, 16);
 
   // Add database connection.
-  _db = QSqlDatabase::addDatabase(t, id);
-  if (t == "QMYSQL")
-    _db.setConnectOptions("CLIENT_FOUND_ROWS");
+  _db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t, id)));
+  try {
+    if (t == "QMYSQL")
+      _db->setConnectOptions("CLIENT_FOUND_ROWS");
 
-  // Open database.
-  _db.setHostName(host);
-  _db.setPort(port);
-  _db.setUserName(user);
-  _db.setPassword(password);
-  _db.setDatabaseName(db);
-  if (!_db.open())
-    throw (exceptions::msg() << "SQL: could not open SQL database");
+    // Open database.
+    _db->setHostName(host);
+    _db->setPort(port);
+    _db->setUserName(user);
+    _db->setPassword(password);
+    _db->setDatabaseName(db);
+    if (!_db->open())
+      throw (exceptions::msg() << "SQL: could not open SQL database");
 
-  // Prepare queries.
-  _prepare();
+    // Prepare queries.
+    _prepare();
+  }
+  catch (...) {
+    QSqlDatabase::removeDatabase(id);
+    throw ;
+  }
 }
 
 /**
@@ -1328,14 +1334,20 @@ stream::stream(stream const& s) : io::stream(s) {
   id.setNum((qulonglong)this, 16);
 
   // Clone database.
-  _db = QSqlDatabase::cloneDatabase(s._db, id);
+  _db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._db, id)));
 
-  // Open database.
-  if (!_db.open())
-    throw (exceptions::msg() << "SQL: could not open SQL database");
+  try {
+    // Open database.
+    if (!_db->open())
+      throw (exceptions::msg() << "SQL: could not open SQL database");
 
-  // Prepare queries.
-  _prepare();
+    // Prepare queries.
+    _prepare();
+  }
+  catch (...) {
+    QSqlDatabase::removeDatabase(id);
+    throw ;
+  }
 }
 
 /**
@@ -1367,6 +1379,10 @@ stream::~stream() {
   _service_check_stmt.reset();
   _service_state_stmt.reset();
   _service_status_stmt.reset();
+
+  // Close database.
+  _db->close();
+  _db.reset();
 
   // Remove database connection.
   QSqlDatabase::removeDatabase(id);
