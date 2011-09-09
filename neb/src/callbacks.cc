@@ -17,6 +17,8 @@
 */
 
 #include <memory>
+#include <QDomDocument>
+#include <QDomElement>
 #include <set>
 #include <time.h>
 #include <unistd.h>
@@ -46,6 +48,27 @@ extern nebmodule* neb_module_list;
 // External function to get program version.
 extern "C" {
   char const* get_program_version();
+}
+
+/**
+ *  Extract an XML value from a node.
+ *
+ *  @param[in] str XML string.
+ *
+ *  @return XML value.
+ */
+static QString extract_xml_text(QString const& str) {
+  QString xml_doc_str;
+  xml_doc_str = "<root>";
+  xml_doc_str.append(str);
+  xml_doc_str.append("</root>");
+  QDomDocument xml_doc;
+  xml_doc.setContent(xml_doc_str);
+  QDomElement elem(xml_doc.documentElement().firstChild().toElement());
+  QString ret;
+  if (!elem.isNull())
+    ret = elem.text();
+  return (ret);
 }
 
 /**
@@ -769,10 +792,10 @@ int neb::callback_process(int callback_type, void *data) {
         QMap<QString, QString>::const_iterator it;
         it = conf.params().find("instance");
         if (it != conf.params().end())
-          instance_id = it.value().toUInt();
+          instance_id = extract_xml_text(it.value()).toUInt();
         it = conf.params().find("instance_name");
         if (it != conf.params().end())
-          instance_name = it.value();
+          instance_name = extract_xml_text(it.value());
       }
       catch (exceptions::msg const& e) {
         logging::config << logging::HIGH << e.what();
