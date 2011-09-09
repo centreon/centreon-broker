@@ -104,8 +104,7 @@ bool factory::has_endpoint(config::endpoint const& cfg,
                            bool is_input,
                            bool is_output) const {
   (void)is_input;
-  (void)is_output;
-  return (cfg.type == "storage");
+  return (is_output && (cfg.type == "storage"));
 }
 
 /**
@@ -122,12 +121,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
+  (void)is_input;
   (void)is_output;
-
-  // Check that endpoint should not be an input.
-  if (is_input)
-    throw (exceptions::msg()
-             << "storage: cannot create an input endpoint");
 
   // Find lengths.
   unsigned int interval_length(find_param(cfg, "interval").toUInt());
