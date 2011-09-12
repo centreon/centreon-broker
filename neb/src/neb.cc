@@ -16,7 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <stddef.h>
+#include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -61,7 +64,15 @@ static struct {
 };
 
 // Module handle
-static void*   gl_mod_handle = NULL;
+static void*       gl_mod_handle = NULL;
+
+// Qt initialization flag.
+static bool        gl_initialized_qt(false);
+static int         gl_qt_argc;
+static char const* gl_qt_argv[2] = {
+  "CentreonBrokerModule",
+  NULL
+};
 
 /**************************************
 *                                     *
@@ -108,8 +119,18 @@ extern "C" {
   int nebmodule_deinit(int flags, int reason) {
     (void)flags;
     (void)reason;
+
     try {
+      // Deregister callbacks.
       deregister_callbacks();
+
+      // Unload singletons.
+      config::applier::endpoint::instance().unload();
+      config::applier::modules::instance().unload();
+
+      // Deregister Qt application object.
+      if (gl_initialized_qt)
+        delete [] QCoreApplication::instance();
     }
     // Avoid exception propagation in C code.
     catch (...) {}
@@ -160,6 +181,10 @@ extern "C" {
       "convert internal Nagios events to a proper data "    \
       "stream that can then be parsed by CentreonBroker's " \
       "cb2db.");
+
+    // Initialize Qt if not already done by parent process.
+    if (!QCoreApplication::instance())
+      new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
 
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);

@@ -23,6 +23,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -90,6 +91,8 @@ stream::stream(QString const& filename, QIODevice::OpenMode mode)
  *  Destructor.
  */
 stream::~stream() {
+  logging::debug << logging::MEDIUM << "file: closing '"
+    << _file.fileName() << "'";
   _file.flush();
   _file.close();
 }
@@ -163,6 +166,10 @@ void stream::write(QSharedPointer<io::data> d) {
       size = data->size();
     }
 
+    // Debug message.
+    logging::debug << logging::LOW << "file: write request of "
+      << size << " bytes";
+
     // Write data.
     while (size > 0) {
       qint64 wb(_file.write(static_cast<char*>(memory), size));
@@ -180,5 +187,8 @@ void stream::write(QSharedPointer<io::data> d) {
     }
     _coffset = _woffset;
   }
+  else
+    logging::info << logging::LOW << "file: write request with " \
+      "invalid data (" << d->type() << ")";
   return ;
 }

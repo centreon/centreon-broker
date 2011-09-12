@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <QCoreApplication>
 #include <QMutexLocker>
 #include <stdlib.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
@@ -144,7 +145,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
   
   // Create endpoint object.
   QSharedPointer<io::endpoint> endp;
-  bool is_acceptor;
+  bool is_acceptor(false);
   int level(0);
   for (QMap<QString, io::protocols::protocol>::const_iterator it = io::protocols::instance().begin(),
          end = io::protocols::instance().end();
@@ -289,12 +290,17 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
+      connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_output()));
       {
         QMutexLocker lock(&_outputsm);
         _outputs[*it] = endp.data();
       }
 
       // Run thread.
+      logging::debug << logging::MEDIUM
+        << "endpoint applier: output thread 0x"
+       << QString().setNum((qulonglong)static_cast<QObject*>(endp.data()), 16)
+        << " is registered and ready to run";
       endp.take()->start();
     }
 
@@ -313,12 +319,17 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
       connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
+      connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_input()));
       {
         QMutexLocker lock(&_inputsm);
         _inputs[*it] = endp.data();
       }
 
       // Run thread.
+      logging::debug << logging::MEDIUM
+        << "endpoint applier: input thread 0x"
+        << QString().setNum((qulonglong)static_cast<QObject*>(endp.data()), 16)
+        << " is registered and ready to run";
       endp.take()->start();
     }    
 
@@ -339,8 +350,20 @@ endpoint& endpoint::instance() {
  *  An input thread finished executing.
  */
 void endpoint::terminated_input() {
+  QObject* sendr(QObject::sender());
+  logging::debug << logging::MEDIUM
+    << "endpoint applier: input thread 0x"
+    << QString().setNum((qulonglong)sendr, 16)
+    << " terminated";
   QMutexLocker lock(&_inputsm);
-  std::remove(_inputs.begin(), _inputs.end(), QObject::sender());
+  QList<config::endpoint> keys(_inputs.keys(
+    static_cast<processing::failover*>(sendr)));
+  for (QList<config::endpoint>::iterator
+         it = keys.begin(),
+         end = keys.end();
+       it != end;
+       ++it)
+    _inputs.remove(*it);
   return ;
 }
 
@@ -348,7 +371,86 @@ void endpoint::terminated_input() {
  *  An output thread finished executing.
  */
 void endpoint::terminated_output() {
+  QObject* sendr(QObject::sender());
+  logging::debug << logging::MEDIUM
+    << "endpoint applier: output thread 0x"
+    << QString().setNum((qulonglong)sendr, 16)
+    << " terminated";
   QMutexLocker lock(&_outputsm);
-  std::remove(_outputs.begin(), _outputs.end(), QObject::sender());
+  QList<config::endpoint> keys(_outputs.keys(
+    static_cast<processing::failover*>(sendr)));
+  for (QList<config::endpoint>::iterator
+         it = keys.begin(),
+         end = keys.end();
+       it != end;
+       ++it)
+    _outputs.remove(*it);
   return ;
+}
+
+/**
+ *  Unload the singleton.
+ */
+void endpoint::unload() {
+  logging::debug << logging::HIGH << "endpoint applier: destruction";
+
+  // Exit input threads.
+  {
+    logging::debug << logging::MEDIUM << "endpoint applier: " \
+      "requesting input threads termination";
+    QMutexLocker lock(&_inputsm);
+
+    // Send termination requests.
+    for (QMap<config::endpoint, processing::failover*>::iterator
+           it = _inputs.begin(),
+           end = _inputs.end();
+         it != end;
+         ++it)
+      (*it)->exit();
+
+    // Wait for threads.
+    while (!_inputs.empty()) {
+      logging::debug << logging::LOW << "endpoint applier: "
+        << _inputs.size() << " input threads remaining";
+      lock.unlock();
+      time_t now(time(NULL));
+      do {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+      } while (time(NULL) <= now);
+      lock.relock();
+    }
+    logging::debug << logging::MEDIUM << "endpoint applier: all " \
+      "input threads are terminated";
+    _inputs.clear();
+  }
+
+  // Exit output threads.
+  {
+    logging::debug << logging::MEDIUM << "endpoint applier: " \
+      "requesting output threads termination";
+    QMutexLocker lock(&_outputsm);
+
+    // Send termination requests.
+    for (QMap<config::endpoint, processing::failover*>::iterator
+           it = _outputs.begin(),
+           end = _outputs.end();
+         it != end;
+         ++it)
+      (*it)->exit();
+
+    // Wait for threads.
+    while (!_outputs.empty()) {
+      logging::debug << logging::LOW << "endpoint applier: "
+        << _outputs.size() << " output threads remaining";
+      lock.unlock();
+      time_t now(time(NULL));
+      do {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+      } while (time(NULL) <= now);
+      lock.relock();
+    }
+    logging::debug << logging::MEDIUM << "endpoint applier :all " \
+      "output threads are terminated";
+    _outputs.clear();
+  }
 }

@@ -123,7 +123,9 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
 /**
  *  Destructor.
  */
-logger::~logger() {}
+logger::~logger() {
+  logging::debug << logging::HIGH << "log applier: destruction";
+}
 
 /**
  *  Apply the configuration of a set of loggers.

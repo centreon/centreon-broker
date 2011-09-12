@@ -65,6 +65,7 @@ namespace                    com {
             void             apply(QList<config::endpoint> const& inputs,
                                QList<config::endpoint> const& outputs);
             static endpoint& instance();
+            void             unload();
 
            public slots:
             void             terminated_input();

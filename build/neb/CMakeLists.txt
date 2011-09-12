@@ -47,7 +47,6 @@ set(EVENT_SOURCES
   "${SRC_DIR}/host_status.cc"
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_status.cc"
-  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/log_entry.cc"
   "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module.cc"
@@ -117,6 +116,7 @@ add_library("${CBMOD}" SHARED
   # Sources.
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
+  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/neb.cc"
   "${SRC_DIR}/set_log_data.cc"
   # Headers.

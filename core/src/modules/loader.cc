@@ -45,7 +45,9 @@ loader::loader(loader const& l) : _handles(l._handles) {}
 /**
  *  Destructor.
  */
-loader::~loader() {}
+loader::~loader() {
+  unload();
+}
 
 /**
  *  Assignment operator.
@@ -120,5 +122,24 @@ void loader::load_file(QString const& filename, void const* arg) {
   else
     logging::info << logging::LOW << "modules: attempt to load file '"
       << filename << "' which is already loaded";
+  return ;
+}
+
+/**
+ *  Unload modules.
+ */
+void loader::unload() {
+  QString key;
+  while (!_handles.empty()) {
+    QHash<QString, QSharedPointer<handle> >::iterator
+      it(_handles.begin());
+    key = it.key();
+    QHash<QString, QSharedPointer<handle> >::iterator
+      end(_handles.end());
+    while (++it != end)
+      if (it.key() > key)
+        key = it.key();
+    _handles.remove(key);
+  }
   return ;
 }

@@ -144,7 +144,9 @@ bool endpoint::operator<(endpoint const& e) const {
     if (it1.key() != it2.key())
       return (it1.key() < it2.key());
     else if (it1.value() != it2.value())
-      return (it1.value() != it2.value());
+      return (it1.value() < it2.value());
+    ++it1;
+    ++it2;
   }
   return ((it1 == end1) && (it2 != end2));
 }

@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -68,6 +69,8 @@ feeder& feeder::operator=(feeder const& f) {
  */
 void feeder::exit() {
   _should_exit = true;
+  if (!_in.isNull())
+    _in->write(QSharedPointer<io::data>(new io::raw()));
   return ;
 }
 

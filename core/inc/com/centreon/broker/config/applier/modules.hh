@@ -45,6 +45,7 @@ namespace                           com {
             void                    apply(QString const& module_dir,
                                       void const* arg = NULL);
             static modules&         instance();
+            void                    unload();
           };
         }
       }

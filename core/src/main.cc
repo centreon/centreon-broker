@@ -23,6 +23,8 @@
 #include <QLibraryInfo>
 #include <signal.h>
 #include <string.h>
+#include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -107,6 +109,9 @@ int main(int argc, char* argv[]) {
   // Return value.
   int retval(0);
 
+  // Qt application object.
+  QCoreApplication app(argc, argv);
+
   try {
     // Check the command line.
     bool debug(false);
@@ -153,8 +158,6 @@ int main(int argc, char* argv[]) {
       retval = 1;
     }
     else {
-      // Initialize QCoreApplication object.
-      QCoreApplication app(argc, argv);
       app.setApplicationName("Centreon Broker");
       app.setApplicationVersion("2");
       app.setOrganizationDomain("merethis.com");
@@ -218,6 +221,10 @@ int main(int argc, char* argv[]) {
       << "main: unknown error, aborting execution";
     retval = 1;
   }
+
+  // Unload singletons.
+  config::applier::endpoint::instance().unload();
+  config::applier::modules::instance().unload();
 
   return (retval);
 }

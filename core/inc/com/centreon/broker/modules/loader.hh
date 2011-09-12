@@ -49,6 +49,7 @@ namespace         com {
                     void const* arg = NULL);
           void    load_file(QString const& filename,
                     void const* arg = NULL);
+          void    unload();
         };
       }
     }

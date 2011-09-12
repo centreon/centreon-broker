@@ -72,7 +72,9 @@ modules& modules::operator=(modules const& m) {
 /**
  *  Destructor.
  */
-modules::~modules() {}
+modules::~modules() {
+  logging::debug << logging::HIGH << "module applier: destruction";
+}
 
 /**
  *  Apply a module configuration.
@@ -100,4 +102,12 @@ void modules::apply(QString const& module_dir, void const* arg) {
 modules& modules::instance() {
   static modules gl_modules;
   return (gl_modules);
+}
+
+/**
+ *  Unload modules.
+ */
+void modules::unload() {
+  _loader.unload();
+  return ;
 }

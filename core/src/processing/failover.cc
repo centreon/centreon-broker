@@ -204,9 +204,11 @@ void failover::run() {
       _source.clear();
     if (!_failover.isNull() && !_failover->isRunning())
       _failover->start();
-    logging::info << logging::MEDIUM << "failover: sleeping "
-      << _retry_interval << " seconds before reconnection";
-    QThread::sleep(_retry_interval);
+    if (!_should_exit) {
+      logging::info << logging::MEDIUM << "failover: sleeping "
+        << _retry_interval << " seconds before reconnection";
+      QThread::sleep(_retry_interval);
+    }
   }
   return ;
 }

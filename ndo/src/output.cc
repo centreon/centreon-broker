@@ -105,7 +105,8 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] e Event to send.
  */
 void output::write(QSharedPointer<io::data> e) {
-  logging::debug << logging::MEDIUM << "NDO: writing data";
+  logging::debug << logging::MEDIUM << "NDO: writing data ("
+    << e->type() << ")";
   std::stringstream buffer;
   if (e->type() == "com::centreon::broker::neb::acknowledgement") {
     buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
