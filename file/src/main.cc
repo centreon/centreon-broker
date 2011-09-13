@@ -27,13 +27,10 @@ static unsigned int instances(0);
 extern "C" {
   /**
    *  Module deinitialization routine.
-   *
-   *  @param[in] force true if module unloading is forced (no need to
-   *                   cleanup).
    */
-  void broker_module_deinit(bool force) {
+  void broker_module_deinit() {
     // Decrement instance number.
-    if (!--instances && !force)
+    if (!--instances)
       // Unregister file layer.
       io::protocols::instance().unreg("file");
     return ;

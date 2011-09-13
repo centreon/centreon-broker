@@ -288,9 +288,9 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
             == out_to_create.end())) {
       // Create endpoint.
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
-      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
       connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_output()));
+      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       {
         QMutexLocker lock(&_outputsm);
         _outputs[*it] = endp.data();
@@ -317,9 +317,9 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
             == in_to_create.end())) {
       // Create endpoint.
       QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
-      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
       connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_input()));
+      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
       {
         QMutexLocker lock(&_inputsm);
         _inputs[*it] = endp.data();

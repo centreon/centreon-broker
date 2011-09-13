@@ -34,13 +34,10 @@ static QSharedPointer<io::stream> obj;
 extern "C" {
   /**
    *  Module deinitialization routine.
-   *
-   *  @param[in] force true if module unloading is forced (no need to
-   *                   cleanup).
    */
-  void broker_module_deinit(bool force) {
+  void broker_module_deinit() {
     // Decrement instance number.
-    if (!--instances && !force) {
+    if (!--instances) {
       // Unregister correlation object.
       multiplexing::publisher::unhook(obj);
       obj.clear();

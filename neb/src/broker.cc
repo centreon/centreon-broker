@@ -19,12 +19,8 @@
 extern "C" {
   /**
    *  Module deinitialization routine.
-   *
-   *  @param[in] force true if module unloading is forced (no need to
-   *                   cleanup).
    */
-  void broker_module_deinit(bool force) {
-    (void)force;
+  void broker_module_deinit() {
     return ;
   }
 

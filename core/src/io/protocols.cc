@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -73,7 +74,10 @@ protocols& protocols::operator=(protocols const& p) {
 /**
  *  Destructor.
  */
-protocols::~protocols() {}
+protocols::~protocols() {
+  logging::info << logging::LOW << "protocols: destruction ("
+    << _protocols.size() << " protocols still registered)";
+}
 
 /**
  *  Get an iterator to the first registered protocol.

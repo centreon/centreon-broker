@@ -148,7 +148,7 @@ void handle::close() {
     else {
       logging::debug << logging::LOW << "modules: calling " \
         "deinitialization routine of '" << _handle.fileName() << "'";
-      (*(void (*)(bool))(sym))(true);
+      (*(void (*)())(sym))();
       logging::debug << logging::LOW << "modules: deinitialization " \
            "routine of '" << _handle.fileName()
         << "' successfully completed";
