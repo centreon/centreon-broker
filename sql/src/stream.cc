@@ -39,7 +39,7 @@ using namespace com::centreon::broker::sql;
 **************************************/
 
 // Processing table.
-QHash<QString, void (stream::*)(io::data const&)> stream::processing_table;
+QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
 
 /**************************************
 *                                     *
@@ -252,8 +252,19 @@ bool stream::_insert(T const& t) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
-  _prepare_insert<neb::custom_variable>(_custom_variable_insert_stmt);
-  _prepare_insert<neb::service>(_service_insert_stmt);
+  _prepare_insert<neb::acknowledgement>(_acknowledgement_insert);
+  _prepare_insert<neb::comment>(_comment_insert);
+  _prepare_insert<neb::custom_variable>(_custom_variable_insert);
+  _prepare_insert<neb::downtime>(_downtime_insert);
+  _prepare_insert<neb::event_handler>(_event_handler_insert);
+  _prepare_insert<neb::flapping_status>(_flapping_status_insert);
+  _prepare_insert<neb::host>(_host_insert);
+  _prepare_insert<neb::instance>(_instance_insert);
+  _prepare_insert<neb::notification>(_notification_insert);
+  _prepare_insert<neb::service>(_service_insert);
+  _prepare_insert<correlation::host_state>(_host_state_insert);
+  _prepare_insert<correlation::issue>(_issue_insert);
+  _prepare_insert<correlation::service_state>(_service_state_insert);
 
   // Prepare update queries.
   QVector<QPair<QString, bool> > id;
@@ -262,96 +273,104 @@ void stream::_prepare() {
   id.push_back(qMakePair(QString("entry_time"), false));
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
-  _prepare_update<neb::acknowledgement>(_acknowledgement_stmt, id);
+  _prepare_update<neb::acknowledgement>(_acknowledgement_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("entry_time"), false));
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
-  _prepare_update<neb::comment>(_comment_stmt, id);
+  _prepare_update<neb::comment>(_comment_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("name"), false));
   id.push_back(qMakePair(QString("service_id"), true));
-  _prepare_update<neb::custom_variable_status>(_custom_variable_status_stmt,
+  _prepare_update<neb::custom_variable>(_custom_variable_update, id);
+
+  id.clear();
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("name"), false));
+  id.push_back(qMakePair(QString("service_id"), true));
+  _prepare_update<neb::custom_variable_status>(
+    _custom_variable_status_update,
     id);
 
   id.clear();
   id.push_back(qMakePair(QString("entry_time"), false));
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
-  _prepare_update<neb::downtime>(_downtime_stmt, id);
+  _prepare_update<neb::downtime>(_downtime_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
   id.push_back(qMakePair(QString("start_time"), false));
-  _prepare_update<neb::event_handler>(_event_handler_stmt, id);
+  _prepare_update<neb::event_handler>(_event_handler_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
   id.push_back(qMakePair(QString("event_time"), false));
-  _prepare_update<neb::flapping_status>(_flapping_status_stmt, id);
+  _prepare_update<neb::flapping_status>(_flapping_status_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
-  _prepare_update<neb::host>(_host_stmt, id);
+  _prepare_update<neb::host>(_host_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
-  _prepare_update<neb::host_check>(_host_check_stmt, id);
+  _prepare_update<neb::host_check>(_host_check_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
-  _prepare_update<neb::host_status>(_host_status_stmt, id);
+  _prepare_update<neb::host_status>(_host_status_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("instance_id"), false));
-  _prepare_update<neb::instance>(_instance_stmt, id);
+  _prepare_update<neb::instance>(_instance_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("instance_id"), false));
-  _prepare_update<neb::instance_status>(_instance_status_stmt, id);
+  _prepare_update<neb::instance_status>(_instance_status_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
   id.push_back(qMakePair(QString("start_time"), false));
-  _prepare_update<neb::notification>(_notification_stmt, id);
+  _prepare_update<neb::notification>(_notification_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
-  _prepare_update<neb::service>(_service_stmt, id);
+  _prepare_update<neb::service>(_service_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
-  _prepare_update<neb::service_check>(_service_check_stmt, id);
+  _prepare_update<neb::service_check>(_service_check_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
-  _prepare_update<neb::service_status>(_service_status_stmt, id);
+  _prepare_update<neb::service_status>(_service_status_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("start_time"), false));
-  _prepare_update<correlation::host_state>(_host_state_stmt, id);
+  _prepare_update<correlation::host_state>(_host_state_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
   id.push_back(qMakePair(QString("start_time"), false));
-  _prepare_update<correlation::issue>(_issue_stmt, id);
+  _prepare_update<correlation::issue>(_issue_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
   id.push_back(qMakePair(QString("start_time"), false));
-  _prepare_update<correlation::service_state>(_service_state_stmt, id);
+  _prepare_update<correlation::service_state>(_service_state_update,
+    id);
 
   return ;
 }
@@ -363,7 +382,7 @@ void stream::_prepare() {
  *  @param[in]  t  Object that will be bound to the statement.
  */
 template <typename T>
-bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
+bool stream::_prepare_insert(QScopedPointer<QSqlQuery>& st) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
@@ -406,7 +425,7 @@ bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
  *  @param[in]  id List of fields that form an UNIQUE.
  */
 template <typename T>
-bool stream::_prepare_update(std::auto_ptr<QSqlQuery>& st,
+bool stream::_prepare_update(QScopedPointer<QSqlQuery>& st,
                              QVector<QPair<QString, bool> > const& id) {
   // Build query string.
   std::string query;
@@ -472,12 +491,9 @@ void stream::_process_acknowledgement(io::data const& e) {
     << "SQL: processing acknowledgement event";
 
   // Processing.
-  neb::acknowledgement const& ack(
+  _update_on_none_insert(*_acknowledgement_insert,
+    *_acknowledgement_update,
     *static_cast<neb::acknowledgement const*>(&e));
-  if (!_insert(ack)) {
-    *_acknowledgement_stmt << ack;
-    _execute(*_acknowledgement_stmt);
-  }
 
   return ;
 }
@@ -492,11 +508,9 @@ void stream::_process_comment(io::data const& e) {
   logging::info << logging::MEDIUM << "SQL: processing comment event";
 
   // Processing.
-  neb::comment const& c(*static_cast<neb::comment const*>(&e));
-  if (!_insert(c)) {
-    *_comment_stmt << c;
-    _execute(*_comment_stmt);
-  }
+  _update_on_none_insert(*_comment_insert,
+    *_comment_update,
+    *static_cast<neb::comment const*>(&e));
 
   return ;
 }
@@ -512,10 +526,9 @@ void stream::_process_custom_variable(io::data const& e) {
     << "SQL: processing custom variable event";
 
   // Processing.
-  neb::custom_variable const& cv(
+  _update_on_none_insert(*_custom_variable_insert,
+    *_custom_variable_update,
     *static_cast<neb::custom_variable const*>(&e));
-  *_custom_variable_insert_stmt << cv;
-  _execute(*_custom_variable_insert_stmt);
 
   return ;
 }
@@ -533,8 +546,12 @@ void stream::_process_custom_variable_status(io::data const& e) {
   // Processing.
   neb::custom_variable_status const& cvs(
     *static_cast<neb::custom_variable_status const*>(&e));
-  *_custom_variable_status_stmt << cvs;
-  _execute(*_custom_variable_status_stmt);
+  *_custom_variable_status_update << cvs;
+  _execute(*_custom_variable_status_update);
+  if (_custom_variable_status_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: custom variable ("
+      << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
+      << ") was not updated because it was not found in database";
 
   return ;
 }
@@ -550,11 +567,9 @@ void stream::_process_downtime(io::data const& e) {
     << "SQL: processing downtime event";
 
   // Processing.
-  neb::downtime const& d(*static_cast<neb::downtime const*>(&e));
-  if (!_insert(d)) {
-    *_downtime_stmt << d;
-    _execute(*_downtime_stmt);
-  }
+  _update_on_none_insert(*_downtime_insert,
+    *_downtime_update,
+    *static_cast<neb::downtime const*>(&e));
 
   return ;
 }
@@ -570,12 +585,9 @@ void stream::_process_event_handler(io::data const& e) {
     << "SQL: processing event handler event";
 
   // Processing.
-  neb::event_handler const& eh(
+  _update_on_none_insert(*_event_handler_insert,
+    *_event_handler_update,
     *static_cast<neb::event_handler const*>(&e));
-  if (!_insert(eh)) {
-    *_event_handler_stmt << eh;
-    _execute(*_event_handler_stmt);
-  }
 
   return ;
 }
@@ -591,12 +603,9 @@ void stream::_process_flapping_status(io::data const& e) {
     << "SQL: processing flapping status event";
 
   // Processing.
-  neb::flapping_status const& fs(
+  _update_on_none_insert(*_flapping_status_insert,
+    *_flapping_status_update,
     *static_cast<neb::flapping_status const*>(&e));
-  if (!_insert(fs)) {
-    *_flapping_status_stmt << fs;
-    _execute(*_flapping_status_stmt);
-  }
 
   return ;
 }
@@ -613,13 +622,8 @@ void stream::_process_host(io::data const& e) {
 
   // Processing.
   neb::host const& h(*static_cast<neb::host const*>(&e));
-  if (h.host_id) {
-    *_host_stmt << h;
-    _execute(*_host_stmt);
-    int matched = _host_stmt->numRowsAffected();
-    if (!matched || (-1 == matched))
-      _insert(h);
-  }
+  if (h.host_id)
+    _update_on_none_insert(*_host_insert, *_host_update, h);
   else
     logging::error << logging::HIGH << "SQL: host '"
       << h.host_name << "' has no ID";
@@ -640,8 +644,12 @@ void stream::_process_host_check(io::data const& e) {
   // Processing.
   neb::host_check const& hc(
     *static_cast<neb::host_check const*>(&e));
-  *_host_check_stmt << hc;
-  _execute(*_host_check_stmt);
+  *_host_check_update << hc;
+  _execute(*_host_check_update);
+  if (_host_check_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: host check could not " \
+         "be updated because host " << hc.host_id
+      << " was not found in database";
 
   return ;
 }
@@ -656,10 +664,8 @@ void stream::_process_host_dependency(io::data const& e) {
   logging::info << logging::MEDIUM
     << "SQL: processing host dependency event";
 
-  // Processing.
-  neb::host_dependency const& hd(
-    *static_cast<neb::host_dependency const*>(&e));
-  _insert(hd);
+  // Processing (errors are silently ignored).
+  _insert(*static_cast<neb::host_dependency const*>(&e));
 
   return ;
 }
@@ -674,10 +680,8 @@ void stream::_process_host_group(io::data const& e) {
   logging::info << logging::MEDIUM
     << "SQL: processing host group event";
 
-  // Processing.
-  neb::host_group const& hg(
-    *static_cast<neb::host_group const*>(&e));
-  _insert(hg);
+  // Processing (errors are silently ignored).
+  _insert(*static_cast<neb::host_group const*>(&e));
 
   return ;
 }
@@ -741,10 +745,8 @@ void stream::_process_host_parent(io::data const& e) {
   logging::info << logging::MEDIUM
     << "SQL: processing host parent event";
 
-  // Processing.
-  neb::host_parent const& hp(
-    *static_cast<neb::host_parent const*>(&e));
-  _insert(hp);
+  // Processing (errors are silently ignored).
+  _insert(*static_cast<neb::host_parent const*>(&e));
 
   return ;
 }
@@ -760,14 +762,9 @@ void stream::_process_host_state(io::data const& e) {
     << "SQL: processing host state event";
 
   // Processing.
-  correlation::host_state const& hs(
+  _update_on_none_insert(*_host_state_insert,
+    *_host_state_update,
     *static_cast<correlation::host_state const*>(&e));
-  if (hs.end_time) {
-    *_host_state_stmt << hs;
-    _execute(*_host_state_stmt);
-  }
-  else
-    _insert(hs);
 
   return ;
 }
@@ -785,8 +782,12 @@ void stream::_process_host_status(io::data const& e) {
   // Processing.
   neb::host_status const& hs(
     *static_cast<neb::host_status const*>(&e));
-  *_host_status_stmt << hs;
-  _execute(*_host_status_stmt);
+  *_host_status_update << hs;
+  _execute(*_host_status_update);
+  if (_host_status_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: host could not be " \
+         "updated because host " << hs.host_id
+      << " was not found in database";
 
   return ;
 }
@@ -804,18 +805,8 @@ void stream::_process_instance(io::data const& e) {
   neb::instance const& i(*static_cast<neb::instance const*>(&e));
   _clean_tables(i.id);
 
-  // Program start.
-  if (!i.program_end) {
-    if (!_insert(i)) {
-      *_instance_stmt << i;
-      _execute(*_instance_stmt);
-    }
-  }
-  // Program end.
-  else {
-    *_instance_stmt << i;
-    _execute(*_instance_stmt);
-  }
+  // Processing.
+  _update_on_none_insert(*_instance_insert, *_instance_update, i);
 
   return ;
 }
@@ -833,8 +824,12 @@ void stream::_process_instance_status(io::data const& e) {
   // Processing.
   neb::instance_status const& is(
     *static_cast<neb::instance_status const*>(&e));
-  *_instance_status_stmt << is;
-  _execute(*_instance_status_stmt);
+  *_instance_status_update << is;
+  _execute(*_instance_status_update);
+  if (_instance_status_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: instance "
+      << is.id << " was not updated because no matching entry " \
+         "was found in database";
 
   return ;
 }
@@ -850,11 +845,9 @@ void stream::_process_issue(io::data const& e) {
     << "SQL: processing issue event";
 
   // Processing.
-  correlation::issue const& i(*static_cast<correlation::issue const*>(&e));
-  if (!_insert(i)) {
-    *_issue_stmt << i;
-    _issue_stmt->exec();
-  }
+  _update_on_none_insert(*_issue_insert,
+    *_issue_update,
+    *static_cast<correlation::issue const*>(&e));
 
   return ;
 }
@@ -1036,19 +1029,8 @@ void stream::_process_module(io::data const& e) {
   logging::info << logging::MEDIUM << "SQL: processing module event";
 
   // Processing.
-  neb::module const& m(*static_cast<neb::module const*>(&e));
-  _insert(m);
+  _insert(*static_cast<neb::module const*>(&e));
 
-  return ;
-}
-
-/**
- *  Process nothing.
- *
- *  @param[in] e Uncasted notification.
- */
-void stream::_process_nothing(io::data const& e) {
-  (void)e;
   return ;
 }
 
@@ -1063,12 +1045,9 @@ void stream::_process_notification(io::data const& e) {
     << "SQL: processing notification event";
 
   // Processing.
-  neb::notification const& n(
+  _update_on_none_insert(*_notification_insert,
+    *_notification_update,
     *static_cast<neb::notification const*>(&e));
-  if (!_insert(n)) {
-    *_notification_stmt << n;
-    _execute(*_notification_stmt);
-  }
 
   return ;
 }
@@ -1085,13 +1064,9 @@ void stream::_process_service(io::data const& e) {
   // Processing.
   neb::service const& s(*static_cast<neb::service const*>(&e));
   if (s.host_id && s.service_id) {
-    *_service_stmt << s;
-    _execute(*_service_stmt);
-    int matched = _service_stmt->numRowsAffected();
-    if (!matched || (-1 == matched)) {
-      *_service_insert_stmt << s;
-      _execute(*_service_insert_stmt);
-    }
+    _update_on_none_insert(*_service_insert,
+      *_service_update,
+      s);
   }
   else
     logging::error << logging::HIGH << "SQL: service '"
@@ -1113,8 +1088,12 @@ void stream::_process_service_check(io::data const& e) {
   // Processing.
   neb::service_check const& sc(
     *static_cast<neb::service_check const*>(&e));
-  *_service_check_stmt << sc;
-  _execute(*_service_check_stmt);
+  *_service_check_update << sc;
+  _execute(*_service_check_update);
+  if (_service_check_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: service check could " \
+         "not be updated because service (" << sc.host_id << ", "
+      << sc.service_id << ") was not found in database";
 
   return ;
 }
@@ -1129,10 +1108,8 @@ void stream::_process_service_dependency(io::data const& e) {
   logging::info << logging::MEDIUM
     << "SQL: processing service dependency event";
 
-  // Processing.
-  neb::service_dependency const& sd(
-    *static_cast<neb::service_dependency const*>(&e));
-  _insert(sd);
+  // Processing (errors are silently ignored).
+  _insert(*static_cast<neb::service_dependency const*>(&e));
 
   return ;
 }
@@ -1147,10 +1124,8 @@ void stream::_process_service_group(io::data const& e) {
   logging::info << logging::MEDIUM
     << "SQL: processing service group event";
 
-  // Processing.
-  neb::service_group const& sg(
-    *static_cast<neb::service_group const*>(&e));
-  _insert(sg);
+  // Processing (errors are silently ignored).
+  _insert(*static_cast<neb::service_group const*>(&e));
 
   return ;
 }
@@ -1216,14 +1191,9 @@ void stream::_process_service_state(io::data const& e) {
     << "SQL: processing service state event";
 
   // Processing.
-  correlation::service_state const& ss(
+  _update_on_none_insert(*_service_state_insert,
+    *_service_state_update,
     *static_cast<correlation::service_state const*>(&e));
-  if (ss.end_time) {
-    *_service_state_stmt << ss;
-    _execute(*_service_state_stmt);
-  }
-  else
-    _insert(ss);
 
   return ;
 }
@@ -1241,8 +1211,29 @@ void stream::_process_service_status(io::data const& e) {
   // Processing.
   neb::service_status const& ss(
     *static_cast<neb::service_status const*>(&e));
-  *_service_status_stmt << ss;
-  _execute(*_service_status_stmt);
+  *_service_status_update << ss;
+  _execute(*_service_status_update);
+  if (_service_status_update->numRowsAffected() != 1)
+    logging::error << logging::MEDIUM << "SQL: service could not be " \
+         "updated because service (" << ss.host_id << ", "
+      << ss.service_id << ") was not found in database";
+
+  return ;
+}
+
+template <typename T>
+void stream::_update_on_none_insert(QSqlQuery& ins,
+                                    QSqlQuery& up,
+                                    T& t) {
+  // Try udpate.
+  up << t;
+  _execute(up);
+
+  // Try insertion.
+  if (up.numRowsAffected() != 1) {
+    ins << t;
+    _execute(ins);
+  }
 
   return ;
 }
@@ -1359,26 +1350,38 @@ stream::~stream() {
   id.setNum((qulonglong)this, 16);
 
   // Reset statements.
-  _acknowledgement_stmt.reset();
-  _comment_stmt.reset();
-  _custom_variable_insert_stmt.reset();
-  _custom_variable_status_stmt.reset();
-  _downtime_stmt.reset();
-  _event_handler_stmt.reset();
-  _flapping_status_stmt.reset();
-  _host_stmt.reset();
-  _host_check_stmt.reset();
-  _host_state_stmt.reset();
-  _host_status_stmt.reset();
-  _instance_stmt.reset();
-  _instance_status_stmt.reset();
-  _issue_stmt.reset();
-  _notification_stmt.reset();
-  _service_insert_stmt.reset();
-  _service_stmt.reset();
-  _service_check_stmt.reset();
-  _service_state_stmt.reset();
-  _service_status_stmt.reset();
+  _acknowledgement_insert.reset();
+  _acknowledgement_update.reset();
+  _comment_insert.reset();
+  _comment_update.reset();
+  _custom_variable_insert.reset();
+  _custom_variable_update.reset();
+  _custom_variable_status_update.reset();
+  _downtime_insert.reset();
+  _downtime_update.reset();
+  _event_handler_insert.reset();
+  _event_handler_update.reset();
+  _flapping_status_insert.reset();
+  _flapping_status_update.reset();
+  _host_insert.reset();
+  _host_update.reset();
+  _host_check_update.reset();
+  _host_state_insert.reset();
+  _host_state_update.reset();
+  _host_status_update.reset();
+  _instance_insert.reset();
+  _instance_update.reset();
+  _instance_status_update.reset();
+  _issue_insert.reset();
+  _issue_update.reset();
+  _notification_insert.reset();
+  _notification_update.reset();
+  _service_insert.reset();
+  _service_update.reset();
+  _service_check_update.reset();
+  _service_state_insert.reset();
+  _service_state_update.reset();
+  _service_status_update.reset();
 
   // Close database.
   _db->close();
@@ -1393,65 +1396,65 @@ stream::~stream() {
  */
 void stream::initialize() {
   // Fill processing table.
-  processing_table["com::centreon::broker::neb::acknowledgement"]
+  _processing_table["com::centreon::broker::neb::acknowledgement"]
     = &stream::_process_acknowledgement;
-  processing_table["com::centreon::broker::neb::comment"]
+  _processing_table["com::centreon::broker::neb::comment"]
     = &stream::_process_comment;
-  processing_table["com::centreon::broker::neb::custom_variable"]
+  _processing_table["com::centreon::broker::neb::custom_variable"]
     = &stream::_process_custom_variable;
-  processing_table["com::centreon::broker::neb::custom_variable_status"]
+  _processing_table["com::centreon::broker::neb::custom_variable_status"]
     = &stream::_process_custom_variable_status;
-  processing_table["com::centreon::broker::neb::downtime"]
+  _processing_table["com::centreon::broker::neb::downtime"]
     = &stream::_process_downtime;
-  processing_table["com::centreon::broker::neb::event_handler"]
+  _processing_table["com::centreon::broker::neb::event_handler"]
     = &stream::_process_event_handler;
-  processing_table["com::centreon::broker::neb::flapping_status"]
+  _processing_table["com::centreon::broker::neb::flapping_status"]
     = &stream::_process_flapping_status;
-  processing_table["com::centreon::broker::neb::host"]
+  _processing_table["com::centreon::broker::neb::host"]
     = &stream::_process_host;
-  processing_table["com::centreon::broker::neb::host_check"]
+  _processing_table["com::centreon::broker::neb::host_check"]
     = &stream::_process_host_check;
-  processing_table["com::centreon::broker::neb::host_dependency"]
+  _processing_table["com::centreon::broker::neb::host_dependency"]
     = &stream::_process_host_dependency;
-  processing_table["com::centreon::broker::neb::host_group"]
+  _processing_table["com::centreon::broker::neb::host_group"]
     = &stream::_process_host_group;
-  processing_table["com::centreon::broker::neb::host_group_member"]
+  _processing_table["com::centreon::broker::neb::host_group_member"]
     = &stream::_process_host_group_member;
-  processing_table["com::centreon::broker::neb::host_parent"]
+  _processing_table["com::centreon::broker::neb::host_parent"]
     = &stream::_process_host_parent;
-  processing_table["com::centreon::broker::neb::host_status"]
+  _processing_table["com::centreon::broker::neb::host_status"]
     = &stream::_process_host_status;
-  processing_table["com::centreon::broker::neb::instance"]
+  _processing_table["com::centreon::broker::neb::instance"]
     = &stream::_process_instance;
-  processing_table["com::centreon::broker::neb::instance_status"]
+  _processing_table["com::centreon::broker::neb::instance_status"]
     = &stream::_process_instance_status;
-  processing_table["com::centreon::broker::neb::log_entry"]
+  _processing_table["com::centreon::broker::neb::log_entry"]
     = &stream::_process_log;
-  processing_table["com::centreon::broker::neb::module"]
+  _processing_table["com::centreon::broker::neb::module"]
     = &stream::_process_module;
-  processing_table["com::centreon::broker::neb::notification"]
+  _processing_table["com::centreon::broker::neb::notification"]
     = &stream::_process_notification;
-  processing_table["com::centreon::broker::neb::service"]
+  _processing_table["com::centreon::broker::neb::service"]
     = &stream::_process_service;
-  processing_table["com::centreon::broker::neb::service_check"]
+  _processing_table["com::centreon::broker::neb::service_check"]
     = &stream::_process_service_check;
-  processing_table["com::centreon::broker::neb::service_dependency"]
+  _processing_table["com::centreon::broker::neb::service_dependency"]
     = &stream::_process_service_dependency;
-  processing_table["com::centreon::broker::neb::service_group"]
+  _processing_table["com::centreon::broker::neb::service_group"]
     = &stream::_process_service_group;
-  processing_table["com::centreon::broker::neb::service_group_member"]
+  _processing_table["com::centreon::broker::neb::service_group_member"]
     = &stream::_process_service_group_member;
-  processing_table["com::centreon::broker::neb::service_status"]
+  _processing_table["com::centreon::broker::neb::service_status"]
     = &stream::_process_service_status;
-  processing_table["com::centreon::broker::correlation::host_state"]
+  _processing_table["com::centreon::broker::correlation::host_state"]
     = &stream::_process_host_state;
-  processing_table["com::centreon::broker::correlation::issue"]
+  _processing_table["com::centreon::broker::correlation::issue"]
     = &stream::_process_issue;
-  processing_table["com::centreon::broker::correlation::issue_parent"]
+  _processing_table["com::centreon::broker::correlation::issue_parent"]
     = &stream::_process_issue_parent;
-  processing_table["com::centreon::broker::correlation::service_state"]
+  _processing_table["com::centreon::broker::correlation::service_state"]
     = &stream::_process_service_state;
-  processing_table.squeeze();
+  _processing_table.squeeze();
   return ;
 }
 
@@ -1473,8 +1476,8 @@ QSharedPointer<io::data> stream::read() {
  */
 void stream::write(QSharedPointer<io::data> data) {
   QHash<QString, void (stream::*)(io::data const&)>::const_iterator it;
-  it = processing_table.find(data->type());
-  if (it != processing_table.end())
+  it = _processing_table.find(data->type());
+  if (it != _processing_table.end())
     (this->*(it.value()))(*data);
   return ;
 }

@@ -19,11 +19,11 @@
 #ifndef CCB_SQL_STREAM_HH_
 # define CCB_SQL_STREAM_HH_
 
-# include <memory>
 # include <QHash>
 # include <QPair>
 # include <QScopedPointer>
 # include <QSqlDatabase>
+# include <QSqlQuery>
 # include <QString>
 # include <QVector>
 # include "com/centreon/broker/io/stream.hh"
@@ -41,28 +41,40 @@ namespace              com {
         class          stream : public io::stream {
          private:
           static QHash<QString, void (stream::*)(io::data const&)>
-                                         processing_table;
-          std::auto_ptr<QSqlQuery>       _acknowledgement_stmt;
-          std::auto_ptr<QSqlQuery>       _comment_stmt;
-          std::auto_ptr<QSqlQuery>       _custom_variable_insert_stmt;
-          std::auto_ptr<QSqlQuery>       _custom_variable_status_stmt;
-          std::auto_ptr<QSqlQuery>       _downtime_stmt;
-          std::auto_ptr<QSqlQuery>       _event_handler_stmt;
-          std::auto_ptr<QSqlQuery>       _flapping_status_stmt;
-          std::auto_ptr<QSqlQuery>       _host_stmt;
-          std::auto_ptr<QSqlQuery>       _host_check_stmt;
-          std::auto_ptr<QSqlQuery>       _host_state_stmt;
-          std::auto_ptr<QSqlQuery>       _host_status_stmt;
-          std::auto_ptr<QSqlQuery>       _instance_stmt;
-          std::auto_ptr<QSqlQuery>       _instance_status_stmt;
-          std::auto_ptr<QSqlQuery>       _issue_stmt;
-          std::auto_ptr<QSqlQuery>       _notification_stmt;
-          std::auto_ptr<QSqlQuery>       _service_insert_stmt;
-          std::auto_ptr<QSqlQuery>       _service_stmt;
-          std::auto_ptr<QSqlQuery>       _service_check_stmt;
-          std::auto_ptr<QSqlQuery>       _service_state_stmt;
-          std::auto_ptr<QSqlQuery>       _service_status_stmt;
-          QScopedPointer<QSqlDatabase>   _db;
+                                       _processing_table;
+          QScopedPointer<QSqlQuery>    _acknowledgement_insert;
+          QScopedPointer<QSqlQuery>    _acknowledgement_update;
+          QScopedPointer<QSqlQuery>    _comment_insert;
+          QScopedPointer<QSqlQuery>    _comment_update;
+          QScopedPointer<QSqlQuery>    _custom_variable_insert;
+          QScopedPointer<QSqlQuery>    _custom_variable_update;
+          QScopedPointer<QSqlQuery>    _custom_variable_status_update;
+          QScopedPointer<QSqlQuery>    _downtime_insert;
+          QScopedPointer<QSqlQuery>    _downtime_update;
+          QScopedPointer<QSqlQuery>    _event_handler_insert;
+          QScopedPointer<QSqlQuery>    _event_handler_update;
+          QScopedPointer<QSqlQuery>    _flapping_status_insert;
+          QScopedPointer<QSqlQuery>    _flapping_status_update;
+          QScopedPointer<QSqlQuery>    _host_insert;
+          QScopedPointer<QSqlQuery>    _host_update;
+          QScopedPointer<QSqlQuery>    _host_check_update;
+          QScopedPointer<QSqlQuery>    _host_state_insert;
+          QScopedPointer<QSqlQuery>    _host_state_update;
+          QScopedPointer<QSqlQuery>    _host_status_update;
+          QScopedPointer<QSqlQuery>    _instance_insert;
+          QScopedPointer<QSqlQuery>    _instance_update;
+          QScopedPointer<QSqlQuery>    _instance_status_update;
+          QScopedPointer<QSqlQuery>    _issue_insert;
+          QScopedPointer<QSqlQuery>    _issue_update;
+          QScopedPointer<QSqlQuery>    _notification_insert;
+          QScopedPointer<QSqlQuery>    _notification_update;
+          QScopedPointer<QSqlQuery>    _service_insert;
+          QScopedPointer<QSqlQuery>    _service_update;
+          QScopedPointer<QSqlQuery>    _service_check_update;
+          QScopedPointer<QSqlQuery>    _service_state_insert;
+          QScopedPointer<QSqlQuery>    _service_state_update;
+          QScopedPointer<QSqlQuery>    _service_status_update;
+          QScopedPointer<QSqlDatabase> _db;
           stream&      operator=(stream const& s);
           void         _clean_tables(int instance_id);
           void         _execute(QString const& query);
@@ -71,10 +83,10 @@ namespace              com {
           bool         _insert(T const& t);
           void         _prepare();
           template     <typename T>
-          bool         _prepare_insert(std::auto_ptr<QSqlQuery>& st);
+          bool         _prepare_insert(QScopedPointer<QSqlQuery>& st);
           template     <typename T>
-          bool         _prepare_update(std::auto_ptr<QSqlQuery>& st,
-				       QVector<QPair<QString, bool> > const& id);
+          bool         _prepare_update(QScopedPointer<QSqlQuery>& st,
+                         QVector<QPair<QString, bool> > const& id);
           void         _process_acknowledgement(io::data const& e);
           void         _process_comment(io::data const& e);
           void         _process_custom_variable(io::data const& e);
@@ -96,7 +108,6 @@ namespace              com {
           void         _process_issue_parent(io::data const& e);
           void         _process_log(io::data const& e);
           void         _process_module(io::data const& e);
-          void         _process_nothing(io::data const& e);
           void         _process_notification(io::data const& e);
           void         _process_service(io::data const& e);
           void         _process_service_check(io::data const& e);
@@ -105,6 +116,10 @@ namespace              com {
           void         _process_service_group_member(io::data const& e);
           void         _process_service_state(io::data const& e);
           void         _process_service_status(io::data const& e);
+          template     <typename T>
+          void         _update_on_none_insert(QSqlQuery& ins,
+                         QSqlQuery& up,
+                         T& t);
 
          public:
                        stream(QString const& type,
