@@ -9,6 +9,7 @@
  *    - a C++ compilation environment
  *    - @b CMake, a cross-platform build system
  *    - the @b Qt framework with QtCore, QtSql and QtXml modules
+ *    - RRDTool development files (for the RRD module)
  *
  *  Centreon Broker is compatible only with Unix-like platforms (Linux,
  *  FreeBSD, Solaris, ...).
@@ -53,6 +54,15 @@
  *  </tr>
  *  <tr>
  *    <td>Red Hat</td><td>qt4-devel</td>
+ *  </tr>
+ *  <tr>
+ *    <td rowspan="3">RRDTool development files</td><td>Debian</td><td rowspan="2">librrd-dev</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Ubuntu</td>
+ *  </tr>
+ *  <tr>
+ *    <td>Red Hat</td><td>rrdtool-devel</td>
  *  </tr>
  *  </table>
  *
