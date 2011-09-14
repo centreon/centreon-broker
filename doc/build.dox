@@ -6,13 +6,12 @@
  *  To build Centreon Broker, you will need the following external
  *  dependencies :
  *
- *    - a C++ compiler (like @b gcc)
- *    - @b QtSql for database support
- *    - @b QtXML for XML support
- *    - the <b>GNU TLS</b> library if you want TLS support
+ *    - a C++ compilation environment
+ *    - @b CMake, a cross-platform build system
+ *    - the @b Qt framework with QtCore, QtSql and QtXml modules
  *
  *  Centreon Broker is compatible only with Unix-like platforms (Linux,
- *  FreeBSD, Solaris, ...). It can easily be built using @b CMake.
+ *  FreeBSD, Solaris, ...).
  *
  *
  *  @section dependencies Dependencies
@@ -29,16 +28,16 @@
  *    <td><b>Software</b></td><td><b>OS Version</b></td><td><b>Package Name</b></td>
  *  </tr>
  *  <tr>
- *    <td rowspan="3">g++</td><td>Debian</td><td rowspan="2">g++</td>
+ *    <td rowspan="3">C++ compilation environment</td><td>Debian</td><td rowspan="2">build-essential</td>
  *  </tr>
  *  <tr>
  *    <td>Ubuntu</td>
  *  </tr>
  *  <tr>
- *    <td>Red Hat</td><td>gcc-c++</td>
+ *    <td>Red Hat</td><td>gcc-c++, make</td>
  *  </tr>
  *  <tr>
- *    <td rowspan="3">make</td><td>Debian</td><td rowspan="3">make</td>
+ *    <td rowspan="3">CMake (>= 2.8)</td><td>Debian</td><td rowspan="3">cmake</td>
  *  </tr>
  *  <tr>
  *    <td>Ubuntu</td>
@@ -47,19 +46,13 @@
  *    <td>Red Hat</td>
  *  </tr>
  *  <tr>
- *    <td rowspan="2">QtSql</td><td>Debian</td><td rowspan="2">libqt4-sql</td>
+ *    <td rowspan="3">Qt (>= 4.5)</td><td>Debian</td><td rowspan="2">libqt4-dev</td>
  *  </tr>
  *  <tr>
  *    <td>Ubuntu</td>
  *  </tr>
  *  <tr>
- *    <td rowspan="3">GNU TLS</td><td>Debian</td><td rowspan="2">libgnutls-dev</td>
- *  </tr>
- *  <tr>
- *    <td>Ubuntu</td>
- *  </tr>
- *  <tr>
- *    <td>Red Hat</td><td>gnutls-devel</td>
+ *    <td>Red Hat</td><td>qt4-devel</td>
  *  </tr>
  *  </table>
  *
@@ -74,7 +67,7 @@
  *    <td><b>Software</b></td><td><b>How to build</b></td>
  *  </tr>
  *  <tr>
- *    <td>GNU TLS</td><td>http://www.gnu.org/software/gnutls/devel.html</td>
+ *    <td>Qt (> 4.5)</td><td>http://doc.qt.nokia.com/4.7/installation.html</td>
  *  </tr>
  *  </table>
  *
@@ -106,10 +99,22 @@
  *    <td><b>Variable</b></td><td><b>Description</b></td>
  *  </tr>
  *  <tr>
- *    <td>debug</td><td>Enable or disable debug messages.</td>
+ *    <td>WITH_DEBUG</td><td>Enable or disable debug messages.</td>
  *  </tr>
  *  <tr>
- *    <td>TLS</td><td>Enable or disable TLS support.</td>
+ *    <td>WITH_PREFIX</td><td>Base directory for Centreon Broker installation. If other prefixes are expressed as relative paths, they are relative to this path.</td>
+ *  </tr>
+ *  <tr>
+ *    <td>WITH_PREFIX_ARCHIVE</td><td>Path in which development libraries (static libraries) will be installed.</td>
+ *  </tr>
+ *  <tr>
+ *    <td>WITH_PREFIX_BINARY</td><td>Path in which binaries will be installed.</td>
+ *  </tr>
+ *  <tr>
+ *    <td>WITH_PREFIX_LIBRARY</td><td>Where shared objects (like @em cbmod.so) will be installed.</td>
+ *  </tr>
+ *  <tr>
+ *    <td>WITH_PREFIX_MODULES</td><td>Where Centreon Broker modules will be installed.</td>
  *  </tr>
  *  </table>
  *
@@ -121,7 +126,5 @@
  *
  *  <code>make</code>
  *
- *  And wait until compilation completes. This process should build
- *  three files <tt>libroker.so</tt>, <tt>libcbmod.so</tt> and
- *  <tt>cbd</tt>.
+ *  And wait until compilation completes.
  */
