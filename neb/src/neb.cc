@@ -19,6 +19,7 @@
 #include <QCoreApplication>
 #include <stddef.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
@@ -201,6 +202,9 @@ extern "C" {
       config::parser p;
       config::state s;
       p.parse(neb::gl_configuration_file, s);
+
+      // Apply loggers.
+      config::applier::logger::instance().apply(s.loggers());
     }
     catch (std::exception const& e) {
       logging::config << logging::HIGH << e.what();

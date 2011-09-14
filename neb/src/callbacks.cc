@@ -23,7 +23,6 @@
 #include <time.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -761,23 +760,6 @@ int neb::callback_process(int callback_type, void *data) {
         << "callbacks: generating process start event";
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);
-
-      // Logging object.
-      config::logger default_log;
-      default_log.config(true);
-      default_log.debug(false);
-      default_log.error(true);
-      default_log.info(true);
-      default_log.level(logging::HIGH);
-      default_log.name("stderr");
-      default_log.type(config::logger::standard);
-
-      // Configuration object.
-      config::state default_state;
-      default_state.loggers().push_back(default_log);
-
-      // Apply configuration.
-      config::applier::state::instance().apply(default_state);
 
       // Parse configuration file.
       try {
