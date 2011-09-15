@@ -19,6 +19,8 @@
 #include <memory>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QString>
+#include <QStringList>
 #include <set>
 #include <time.h>
 #include <unistd.h>
@@ -128,146 +130,6 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
   }
   // Avoid exception propagation in C code.
   catch (...) {}
-  return (0);
-}
-
-/**
- *  @brief Function that process adaptive host data.
- *
- *  This function is called by the monitoring engine when some adaptive
- *  host data is available.
- *
- *  @param[in] callback_type Type of the callback
- *                           (NEBCALLBACK_ADAPTIVE_HOST_DATA).
- *  @param[in] data          A pointer to a
- *                           nebstruct_adaptive_host_data.
- */
-int neb::callback_adaptive_host(int callback_type, void* data) {
-  // Convert data pointer and check that we're interested.
-  (void)callback_type;
-  logging::debug << logging::LOW << "callbacks: adaptive host data";
-  nebstruct_adaptive_host_data* nahd(
-    static_cast<nebstruct_adaptive_host_data*>(data));
-  if (nahd && (nahd->modified_attribute & MODATTR_CUSTOM_VARIABLE)) {
-    try {
-      // Log message.
-      logging::info << logging::MEDIUM
-        << "callbacks: modified host custom variable";
-
-      // Dump host custom variables.
-      ::host* h(static_cast< ::host*>(nahd->object_ptr));
-      if (h && h->name) {
-        // Find host ID.
-        unsigned int host_id;
-        std::map<std::string, int>::const_iterator id;
-        id = gl_hosts.find(h->name);
-        if (id != gl_hosts.end()) {
-          host_id = id->second;
-
-          // Dump custom variables.
-          for (customvariablesmember* it = h->custom_variables;
-               it;
-               it = it->next)
-            if (it->has_been_modified) {
-              // Log message.
-              logging::debug << logging::LOW
-                << "callbacks: dumping host custom variable update";
-
-              // Fill custom variable.
-              QSharedPointer<neb::custom_variable_status> cvs(
-                new neb::custom_variable_status);
-              cvs->host_id = host_id;
-              cvs->modified = true;
-              if (it->variable_name)
-                cvs->name = it->variable_name;
-              cvs->service_id = 0;
-              cvs->update_time = nahd->timestamp.tv_sec;
-              if (it->variable_value)
-                cvs->value = it->variable_value;
-
-              // Send event.
-              gl_publisher.write(cvs.staticCast<io::data>());
-            }
-          }
-      }
-    }
-    // Avoid exception propagation in C code.
-    catch (...) {}
-  }
-  return (0);
-}
-
-/**
- *  @brief Function that process adaptive service data.
- *
- *  This function is called by the monitoring engine when some adaptive
- *  service data is available.
- *
- *  @param[in] callback_type Type of the callback
- *                           (NEBCALLBACK_ADAPTIVE_SERVICE_DATA).
- *  @param[in] data          A pointer to a
- *                           nebstruct_adaptive_service_data.
- */
-int neb::callback_adaptive_service(int callback_type, void* data) {
-  // Convert data pointer and check that we're interested.
-  (void)callback_type;
-  logging::debug << logging::LOW << "callbacks: adaptive service data";
-  nebstruct_adaptive_service_data* nasd(
-    static_cast<nebstruct_adaptive_service_data*>(data));
-  if (nasd && (nasd->modified_attribute & MODATTR_CUSTOM_VARIABLE)) {
-    try {
-      // Log message.
-      logging::info << logging::MEDIUM
-        << "callbacks: modified service custom variable";
-
-      // Dump service custom variables.
-      ::service* s(static_cast< ::service*>(nasd->object_ptr));
-      if (s && s->host_name && s->description) {
-        // Find host/service IDs.
-        unsigned int host_id;
-        unsigned int service_id;
-        std::map<std::pair<std::string, std::string>,
-                 std::pair<int, int> >::const_iterator ids;
-        ids = gl_services.find(std::make_pair(s->host_name,
-                                              s->description));
-        if (ids != gl_services.end()) {
-          host_id = ids->second.first;
-          service_id = ids->second.second;
-
-          // Dump custom variables.
-          for (customvariablesmember* it = s->custom_variables;
-               it;
-               it = it->next)
-            if (it->has_been_modified) {
-              // Log message.
-              logging::debug << logging::LOW
-                << "callbacks: dumping service custom variable update";
-
-              // Fill custom variable.
-              QSharedPointer<neb::custom_variable_status> cvs(
-                new neb::custom_variable_status);
-              cvs->host_id = host_id;
-              cvs->modified = true;
-              if (it->variable_name)
-                cvs->name = it->variable_name;
-              cvs->service_id = service_id;
-              cvs->update_time = nasd->timestamp.tv_sec;
-              if (it->variable_value)
-                cvs->value = it->variable_value;
-
-              // Send event.
-              gl_publisher.write(cvs.staticCast<io::data>());
-            }
-          }
-      }
-      else
-        logging::debug << logging::LOW << "callbacks: could not dump " \
-          "service custom var because of invalid service pointer, " \
-          "invalid host name or invalid service description";
-    }
-    // Avoid exception propagation in C code.
-    catch (...) {}
-  }
   return (0);
 }
 
@@ -481,6 +343,111 @@ int neb::callback_event_handler(int callback_type, void* data) {
   }
   // Avoid exception propagation in C code.
   catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process external commands.
+ *
+ *  This function is called by the monitoring engine when some external
+ *  command is received.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_EXTERNALCOMMAND_DATA).
+ *  @param[in] data          A pointer to a nebstruct_externalcommand_data
+ *                           containing the external command data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_external_command(int callback_type, void* data) {
+  // Log message.
+  logging::debug << logging::LOW
+    << "callbacks: external command data";
+  (void)callback_type;
+
+  nebstruct_external_command_data* necd(
+    static_cast<nebstruct_external_command_data*>(data));
+  if (necd && (necd->type == NEBTYPE_EXTERNALCOMMAND_START)) {
+    try {
+      if (necd->command_type == CMD_CHANGE_CUSTOM_HOST_VAR) {
+        logging::info << logging::MEDIUM
+          << "callbacks: generating host custom variable update event";
+
+        // Split argument string.
+        if (necd->command_args) {
+          QStringList l(QString(necd->command_args).split(';'));
+          if (l.size() != 3)
+            logging::error << logging::MEDIUM
+              << "callbacks: invalid host custom variable command";
+          else {
+            QStringList::iterator it(l.begin());
+            QString host(*it++);
+            QString var_name(var_name.append(*it++));
+            QString var_value(*it);
+
+            // Find host ID.
+            std::map<std::string, int>::const_iterator id;
+            id = gl_hosts.find(host.toStdString());
+            if (id != gl_hosts.end()) {
+              // Fill custom variable.
+              QSharedPointer<neb::custom_variable_status> cvs(
+                new neb::custom_variable_status);
+              cvs->host_id = id->second;
+              cvs->modified = true;
+              cvs->name = var_name;
+              cvs->service_id = 0;
+              cvs->update_time = necd->timestamp.tv_sec;
+              cvs->value = var_value;
+
+              // Send event.
+              gl_publisher.write(cvs.staticCast<io::data>());
+            }
+          }
+        }
+      }
+      else if (necd->command_type == CMD_CHANGE_CUSTOM_SVC_VAR) {
+        logging::info << logging::MEDIUM
+          << "callbacks: generating service custom variable update event";
+
+        // Split argument string.
+        if (necd->command_args) {
+          QStringList l(QString(necd->command_args).split(';'));
+          if (l.size() != 4)
+            logging::error << logging::MEDIUM
+              << "callbacks: invalid service custom variable command";
+          else {
+            QStringList::iterator it(l.begin());
+            QString host(*it++);
+            QString service(*it++);
+            QString var_name(*it++);
+            QString var_value(*it);
+
+            // Find host/service IDs.
+            std::map<std::pair<std::string, std::string>,
+                     std::pair<int, int> >::const_iterator ids;
+            ids = gl_services.find(std::make_pair(host.toStdString(),
+                                                  service.toStdString()));
+            if (ids != gl_services.end()) {
+              // Fill custom variable.
+              QSharedPointer<neb::custom_variable_status> cvs(
+                new neb::custom_variable_status);
+              cvs->host_id = ids->second.first;
+              cvs->modified = true;
+              cvs->name = var_name;
+              cvs->service_id = ids->second.second;
+              cvs->update_time = necd->timestamp.tv_sec;
+              cvs->value = var_value;
+
+              // Send event.
+              gl_publisher.write(cvs.staticCast<io::data>());
+            }
+          }
+        }
+      }
+    }
+    // Avoid exception propagation in C code.
+    catch (...) {}
+  }
   return (0);
 }
 
