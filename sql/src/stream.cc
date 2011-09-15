@@ -762,9 +762,13 @@ void stream::_process_host_state(io::data const& e) {
     << "SQL: processing host state event";
 
   // Processing.
+  logging::info << logging::MEDIUM
+    << "SQL: no insertion in hoststateevents";
+  /*
   _update_on_none_insert(*_host_state_insert,
     *_host_state_update,
     *static_cast<correlation::host_state const*>(&e));
+  */
 
   return ;
 }
@@ -1191,9 +1195,13 @@ void stream::_process_service_state(io::data const& e) {
     << "SQL: processing service state event";
 
   // Processing.
+  logging::info << logging::MEDIUM
+    << "SQL: no insertion in servicestateevents";
+  /*
   _update_on_none_insert(*_service_state_insert,
     *_service_state_update,
     *static_cast<correlation::service_state const*>(&e));
+  */
 
   return ;
 }
