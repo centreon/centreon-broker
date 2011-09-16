@@ -236,6 +236,8 @@ void parser::parse(QString const& filename,
     reader.setContentHandler(this);
     reader.setErrorHandler(this);
     QFile qf(filename);
+    if (!qf.open(QIODevice::ReadOnly))
+      throw (exceptions::msg() << qf.errorString());
     std::auto_ptr<QXmlInputSource> source(new QXmlInputSource(&qf));
     reader.parse(source.get());
     _auto_services_dependencies();

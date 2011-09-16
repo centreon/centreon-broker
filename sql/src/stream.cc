@@ -141,13 +141,13 @@ void stream::_clean_tables(int instance_id) {
           "  SELECT services.service_id"
           "   FROM " << mapped_type<neb::service>::table << " AS services"
        << "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
-       << "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+       << "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
        << instance_id << ")"
           " OR dependent_service_id IN ("
           "  SELECT services.service_id "
           "   FROM " << mapped_type<neb::service>::table << " AS services"
           "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
-          "   ON hosts.host_id=services.service_id WHERE hosts.instance_id="
+          "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
        << instance_id << ")";
     _execute(ss.str().c_str());
   }
@@ -707,7 +707,7 @@ void stream::_process_host_group_member(io::data const& e) {
      << " WHERE instance_id=" << hgm.instance_id
      << " AND name=\"" << hgm.group.toStdString() << "\"";
   QSqlQuery q(*_db);
-  logging::info << logging::LOW << "executing query: "
+  logging::info << logging::LOW << "SQL: host group member: "
                 << ss.str().c_str();
   if (q.exec(ss.str().c_str()) && q.next()) {
     // Fetch hostgroup ID.
@@ -877,11 +877,14 @@ void stream::_process_issue_parent(io::data const& e) {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
           << mapped_type<correlation::issue>::table << " WHERE host_id="
-          << ip.child_host_id << " AND service_id="
-          << ip.child_service_id << " AND start_time="
-          << ip.child_start_time;
-    logging::info << logging::LOW << "executing query: "
-                  << query.str().c_str();
+          << ip.child_host_id << " AND service_id";
+    if (ip.child_service_id)
+      query << "=" << ip.child_service_id;
+    else
+      query << " IS NULL";
+    query << " AND start_time=" << ip.child_start_time;
+    logging::info << logging::LOW << "SQL: issue parent: "
+      << query.str().c_str();
     QSqlQuery q(*_db);
     if (q.exec(query.str().c_str()) && q.next()) {
       child_id = q.value(0).toInt();
@@ -900,10 +903,13 @@ void stream::_process_issue_parent(io::data const& e) {
     std::ostringstream query;
     query << "SELECT issue_id FROM "
           << mapped_type<correlation::issue>::table << " WHERE host_id="
-          << ip.parent_host_id << " AND service_id="
-          << ip.parent_service_id << " AND start_time="
-          << ip.parent_start_time;
-    logging::info << logging::LOW << "SQL: executing query: "
+          << ip.parent_host_id << " AND service_id";
+    if (ip.parent_service_id)
+      query << "=" << ip.parent_service_id;
+    else
+      query << " IS NULL";
+    query << " AND start_time=" << ip.parent_start_time;
+    logging::info << logging::LOW << "SQL: issue child: "
       << query.str().c_str();
     QSqlQuery q(*_db);
     if (q.exec(query.str().c_str()) && q.next()) {

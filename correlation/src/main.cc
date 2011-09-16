@@ -72,7 +72,7 @@ extern "C" {
                 // Create and register correlation object.
                 QSharedPointer<correlation::correlator>
                   crltr(new correlation::correlator);
-                crltr->load(it.value());
+                crltr->load(elem.text());
                 obj = crltr.staticCast<io::stream>();
                 multiplexing::publisher::hook(obj);
                 break ;

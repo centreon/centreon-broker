@@ -26,6 +26,7 @@
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -110,13 +111,21 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
 
   if (hss.current_state
       && (hss.current_state != 3)
-      && should_be_unknown(*n))
+      && should_be_unknown(*n)) {
+    logging::debug << logging::MEDIUM
+      << "correlation: retagging node (" << n->host_id << ", "
+      << n->service_id << ") to unknown";
     hss.current_state = 3;
+  }
 
   if (n->state != hss.current_state) {
     time_t now(time(NULL));
 
     // Update states.
+    logging::debug << logging::MEDIUM
+      << "correlation: node (" << n->host_id << ", " << n->service_id
+      << ") changed status from " << n->state
+      << " to " << hss.current_state;
     {
       // Old state.
       std::auto_ptr<state> state_update(
@@ -357,6 +366,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
         }
     }
   }
+  else
+    logging::debug << logging::LOW
+      << "correlation: nothing changed since last time on node ("
+      << n->host_id << ", " << n->service_id << ")";
   return ;
 }
 
@@ -366,6 +379,8 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
  *  @param[in] e Event to process.
  */
 void correlator::_correlate_host_status(QSharedPointer<io::data> e) {
+  logging::debug << logging::MEDIUM
+    << "correlation: processing host status";
   _correlate_host_service_status(e, true);
   return ;
 }
@@ -408,6 +423,8 @@ void correlator::_correlate_log(QSharedPointer<io::data> e) {
  *  @param[in] e Event to process.
  */
 void correlator::_correlate_service_status(QSharedPointer<io::data> e) {
+  logging::debug << logging::MEDIUM
+    << "correlation: processing service status";
   _correlate_host_service_status(e, false);
   return ;
 }
@@ -532,11 +549,16 @@ QSharedPointer<io::data> correlator::read() {
  *  @param[inout] e Event to process.
  */
 void correlator::write(QSharedPointer<io::data> e) {
-  if ("com::centreon::broker::neb::host_status" == e->type())
-    _correlate_host_status(e);
-  else if ("com::centreon::broker::neb::service_status" == e->type())
-    _correlate_service_status(e);
-  else if ("com::centreon::broker::neb::log_entry" == e->type())
-    _correlate_log(e);
+  try {
+    if ("com::centreon::broker::neb::host_status" == e->type())
+      _correlate_host_status(e);
+    else if ("com::centreon::broker::neb::service_status" == e->type())
+      _correlate_service_status(e);
+    else if ("com::centreon::broker::neb::log_entry" == e->type())
+      _correlate_log(e);
+  }
+  catch (exceptions::msg const& e) {
+    logging::error << logging::HIGH << e.what();
+  }
   return ;
 }
