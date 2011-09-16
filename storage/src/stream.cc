@@ -436,6 +436,7 @@ void stream::write(QSharedPointer<io::data> data) {
                                            * _interval_length);
     status->rrd_len = _rrd_len;
     status->state = ss->current_state;
+    multiplexing::publisher().write(status.staticCast<io::data>());
 
     if (!ss->perf_data.isEmpty()) {
       // Parse perfdata.
