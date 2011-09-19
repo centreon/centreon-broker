@@ -181,7 +181,7 @@ void stream::_clean_tables(int instance_id) {
           " ON issues.host_id=hosts.host_id" \
           "  AND hosts.instance_id=instances.instance_id" \
           " SET issues.end_time=" << now
-       << " WHERE issues.end_time=0";
+       << " WHERE issues.end_time=0 OR issues.end_time IS NULL";
     _execute(ss.str().c_str());
   }
   {
@@ -194,7 +194,8 @@ void stream::_clean_tables(int instance_id) {
           "  AND issues.host_id=hosts.host_id" \
           "  AND hosts.instance_id=instances.instance_id" \
           " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0";
+       << " WHERE issues_issues_parents.end_time=0" \
+          "  OR issues_issues_parents.end_time IS NULL";
     _execute(ss.str().c_str());
   }
   {
@@ -207,7 +208,8 @@ void stream::_clean_tables(int instance_id) {
           "  AND issues.host_id=hosts.host_id" \
           "  AND hosts.instance_id=instances.instance_id" \
           " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0";
+       << " WHERE issues_issues_parents.end_time=0" \
+          "  OR issues_issues_parents.end_time IS NULL";
     _execute(ss.str().c_str());
   }
 
