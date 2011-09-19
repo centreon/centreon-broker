@@ -590,7 +590,7 @@ static mapped_data<host> const host_mapping[] = {
     "last_time_up"),
   mapped_data<host>(
     &host::last_update,
-    0, // XXX : should find macro
+    NDO_DATA_LASTUPDATE,
     "last_update"),
   mapped_data<host>(
     &host::latency,
@@ -973,7 +973,7 @@ static mapped_data<host_status> const host_status_mapping[] = {
     "last_time_up"),
   mapped_data<host_status>(
     &host_status::last_update,
-    0, // XXX : should find macro
+    NDO_DATA_LASTUPDATE,
     "last_update"),
   mapped_data<host_status>(
     &host_status::latency,
@@ -1613,7 +1613,7 @@ static mapped_data<service> const service_mapping[] = {
     "last_time_warning"),
   mapped_data<service>(
     &service::last_update,
-    0, // XXX : should find macro
+    NDO_DATA_LASTUPDATE,
     "last_update"),
   mapped_data<service>(
     &service::latency,
@@ -2017,7 +2017,7 @@ static mapped_data<service_status> const service_status_mapping[] = {
     "last_time_warning"),
   mapped_data<service_status>(
     &service_status::last_update,
-    0, // XXX : should find macro
+    NDO_DATA_LASTUPDATE,
     "last_update"),
   mapped_data<service_status>(
     &service_status::latency,

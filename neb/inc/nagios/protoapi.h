@@ -391,9 +391,10 @@
 #define NDO_DATA_CONTACT                             264
 #define NDO_DATA_LASTSTATE                           265
 
-/* CentreonBroker addon. */
+/* Centreon Broker addon. */
 #define NDO_DATA_INSTANCE                            266
 #define NDO_DATA_HOSTID                              267
 #define NDO_DATA_SERVICEID                           268
+#define NDO_DATA_LASTUPDATE                          269
 
 #endif
