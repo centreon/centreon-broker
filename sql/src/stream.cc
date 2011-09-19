@@ -173,6 +173,44 @@ void stream::_clean_tables(int instance_id) {
     _execute(ss.str().c_str());
   }
 
+  // Close issues.
+  time_t now(time(NULL));
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues JOIN hosts JOIN instances" \
+          " ON issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues.end_time=" << now
+       << " WHERE issues.end_time=0";
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues_issues_parents" \
+          " JOIN issues" \
+          " JOIN hosts" \
+          " JOIN instances" \
+          " ON issues_issues_parents.child_id=issues.issue_id" \
+          "  AND issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues_issues_parents.end_time=" << now
+       << " WHERE issues_issues_parents.end_time=0";
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues_issues_parents" \
+          " JOIN issues" \
+          " JOIN hosts" \
+          " JOIN instances" \
+          " ON issues_issues_parents.parent_id=issues.issue_id" \
+          "  AND issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues_issues_parents.end_time=" << now
+       << " WHERE issues_issues_parents.end_time=0";
+    _execute(ss.str().c_str());
+  }
+
   return ;
 }
 
@@ -616,12 +654,15 @@ void stream::_process_flapping_status(io::data const& e) {
  *  @param[in] e Uncasted host.
  */
 void stream::_process_host(io::data const& e) {
-  // Log message.
-  logging::info << logging::MEDIUM
-    << "SQL: processing host event";
-
-  // Processing.
+  // Cast object.
   neb::host const& h(*static_cast<neb::host const*>(&e));
+
+  // Log message.
+  logging::info << logging::MEDIUM << "SQL: processing host event (id: "
+    << h.host_id << ", name: " << h.host_name << ", instance: "
+    << h.instance_id << ")";
+
+  // Processing
   if (h.host_id)
     _update_on_none_insert(*_host_insert, *_host_update, h);
   else
