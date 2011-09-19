@@ -60,26 +60,6 @@ static void get_double(T const& t,
 }
 
 /**
- *  Get an ID from an object.
- */
-template <typename T>
-static void get_id(T const& t,
-                   std::string const& name,
-                   data_member<T> const& member,
-                   QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  int val(t.*(member.i));
-  // Not-NULL
-  if (val)
-    q.bindValue(field.c_str(), QVariant(val));
-  // NULL
-  else
-    q.bindValue(field.c_str(), QVariant(QVariant::Int));
-  return ;
-}
-
-/**
  *  Get an integer from an object.
  */
 template <typename T>
@@ -89,7 +69,13 @@ static void get_integer(T const& t,
                         QSqlQuery& q) {
   std::string field(":");
   field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.i)));
+  int val(t.*(member.i));
+  // Not-NULL.
+  if (val)
+    q.bindValue(field.c_str(), QVariant(val));
+  // NULL.
+  else
+    q.bindValue(field.c_str(), QVariant(QVariant::Int));
   return ;
 }
 
@@ -143,7 +129,13 @@ static void get_uint(T const& t,
                      QSqlQuery& q) {
   std::string field(":");
   field.append(name);
-  q.bindValue(field.c_str(), QVariant((t.*(member.u))));
+  unsigned int val(t.*(member.u));
+  // Not-NULL.
+  if (val)
+    q.bindValue(field.c_str(), QVariant(val));
+  // NULL
+  else
+    q.bindValue(field.c_str(), QVariant(QVariant::Int));
   return ;
 }
 
@@ -166,9 +158,6 @@ static void static_init() {
         break ;
        case mapped_data<T>::DOUBLE:
         gs.getter = &get_double<T>;
-        break ;
-       case mapped_data<T>::ID:
-        gs.getter = &get_id<T>;
         break ;
        case mapped_data<T>::INT:
         gs.getter = &get_integer<T>;

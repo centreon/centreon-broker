@@ -1203,7 +1203,8 @@ static mapped_data<issue> const issue_mapping[] = {
   mapped_data<issue>(
     &issue::end_time,
     NDO_DATA_ENDTIME,
-    "end_time"),
+    "end_time",
+    true),
   mapped_data<issue>(
     &issue::host_id,
     NDO_DATA_HOST,

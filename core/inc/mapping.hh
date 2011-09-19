@@ -53,7 +53,6 @@ namespace              com {
           UNKNOWN = '\0',
           BOOL = 'b',
           DOUBLE = 'd',
-          ID = 'I',
           INT = 'i',
           SHORT = 's',
           STRING = 'S',
@@ -61,51 +60,54 @@ namespace              com {
           UINT = 'u'
         };
         unsigned int   id;
+        bool           is_id;
         data_member<T> member;
         char const*    name;
+        bool           null_on_zero;
         char           type;
 
                        mapped_data() : id(0), name(NULL), type(UNKNOWN) {}
 
                        mapped_data(bool T::* b, unsigned int i, char const* n)
-          : id(i), name(n), type(BOOL)
-      { member.b = b; }
+          : id(i), name(n), null_on_zero(false), type(BOOL)
+        { member.b = b; }
 
                        mapped_data(double T::* d,
                          unsigned int i,
                          char const* n)
-          : id(i), name(n), type(DOUBLE)
+          : id(i), name(n), null_on_zero(false), type(DOUBLE)
         { member.d = d; }
 
                        mapped_data(int T::* I,
                          unsigned int i,
                          char const* n)
-          : id(i), name(n), type(INT)
+          : id(i), name(n), null_on_zero(false), type(INT)
         { member.i = I; }
 
                        mapped_data(short T::* s,
                          unsigned int i,
                          char const* n)
-          : id(i), name(n), type(SHORT)
+          : id(i), name(n), null_on_zero(false), type(SHORT)
         { member.s = s; }
 
                        mapped_data(QString T::* S,
                          unsigned int i,
                          char const* n)
-          : id(i), name(n), type(STRING)
+          : id(i), name(n), null_on_zero(false), type(STRING)
         { member.S = S; }
 
                        mapped_data(time_t T::* t,
                          unsigned int i,
-                         char const* n)
-          : id(i), name(n), type(TIME_T)
+                         char const* n,
+                         bool noz = false)
+          : id(i), name(n), null_on_zero(noz), type(TIME_T)
         { member.t = t; }
 
                        mapped_data(unsigned int T::* u,
                          unsigned int i,
                          char const* n,
-                         bool is_id = false)
-          : id(i), name(n), type(is_id ? ID : UINT)
+                         bool noz = false)
+          : id(i), name(n), null_on_zero(noz), type(UINT)
         { member.u = u; }
       };
 

@@ -92,6 +92,13 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     *static_cast<neb::host_service_status*>(&*e));
   node* n;
 
+  // Process only hard status.
+  if (hss.state_type != 1) {
+    logging::debug << logging::LOW
+      << "correlation: not processing non-hard host / service status";
+    return ;
+  }
+
   // Find node in appropriate list.
   if (is_host) {
     neb::host_status& hs(*static_cast<neb::host_status*>(&*e));

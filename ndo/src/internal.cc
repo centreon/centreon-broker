@@ -225,7 +225,6 @@ static void static_init() {
         gs.getter = &get_timet<T>;
         gs.setter = &set_timet<T>;
         break ;
-       case mapped_data<T>::ID:
        case mapped_data<T>::UINT:
         gs.getter = &get_uint<T>;
         gs.setter = &set_uint<T>;
