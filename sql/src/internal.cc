@@ -69,6 +69,20 @@ static void get_integer(T const& t,
                         QSqlQuery& q) {
   std::string field(":");
   field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*(member.i)));
+  return ;
+}
+
+/**
+ *  Get an integer that might be null from an object.
+ */
+template <typename T>
+static void get_integer_might_be_null(T const& t,
+                                      std::string const& name,
+                                      data_member<T> const& member,
+                                      QSqlQuery& q) {
+  std::string field(":");
+  field.append(name);
   int val(t.*(member.i));
   // Not-NULL.
   if (val)
@@ -115,7 +129,19 @@ static void get_timet(T const& t,
                       std::string const& name,
                       data_member<T> const& member,
                       QSqlQuery& q) {
-  get_integer(t, name, member, q);
+  get_integer<T>(t, name, member, q);
+  return ;
+}
+
+/**
+ *  Get a time_t that might be null from an object.
+ */
+template <typename T>
+static void get_timet_might_be_null(T const& t,
+                                    std::string const& name,
+                                    data_member<T> const& member,
+                                    QSqlQuery& q) {
+  get_integer_might_be_null<T>(t, name, member, q);
   return ;
 }
 
@@ -127,6 +153,20 @@ static void get_uint(T const& t,
                      std::string const& name,
                      data_member<T> const& member,
                      QSqlQuery& q) {
+  std::string field(":");
+  field.append(name);
+  q.bindValue(field.c_str(), QVariant(t.*member.u));
+  return ;
+}
+
+/**
+ *  Get an unsigned int that might be null from an object.
+ */
+template <typename T>
+static void get_uint_might_be_null(T const& t,
+                                   std::string const& name,
+                                   data_member<T> const& member,
+                                   QSqlQuery& q) {
   std::string field(":");
   field.append(name);
   unsigned int val(t.*(member.u));
@@ -160,7 +200,10 @@ static void static_init() {
         gs.getter = &get_double<T>;
         break ;
        case mapped_data<T>::INT:
-        gs.getter = &get_integer<T>;
+        if (mapped_type<T>::members[i].null_on_zero)
+          gs.getter = &get_integer_might_be_null<T>;
+        else
+          gs.getter = &get_integer<T>;
         break ;
        case mapped_data<T>::SHORT:
         gs.getter = &get_short<T>;
@@ -169,10 +212,16 @@ static void static_init() {
         gs.getter = &get_string<T>;
         break ;
        case mapped_data<T>::TIME_T:
-        gs.getter = &get_timet<T>;
+        if (mapped_type<T>::members[i].null_on_zero)
+          gs.getter = &get_timet_might_be_null<T>;
+        else
+          gs.getter = &get_timet<T>;
         break ;
        case mapped_data<T>::UINT:
-        gs.getter = &get_uint<T>;
+        if (mapped_type<T>::members[i].null_on_zero)
+          gs.getter = &get_uint_might_be_null<T>;
+        else
+          gs.getter = &get_uint<T>;
         break ;
        default: // Error in one of the mappings.
         assert(false);
