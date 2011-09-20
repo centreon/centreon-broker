@@ -187,7 +187,7 @@ void lib::open(QString const& filename,
   std::string ds(ds_oss.str());
   std::string rra1(rra1_oss.str());
   std::string rra2(rra2_oss.str());
-  char const* argv[4];
+  char const* argv[5];
   argv[0] = ds.c_str();
   argv[1] = rra1.c_str();
   argv[2] = rra2.c_str();
@@ -203,11 +203,29 @@ void lib::open(QString const& filename,
   if (rrd_create_r(_filename.toStdString().c_str(),
         interval,
         from,
-        sizeof(argv) / sizeof(*argv) - 1,
+        3,
         argv))
     throw (exceptions::open() << "RRD: could not create file '"
              << _filename << "': " << rrd_get_error());
-  // XXX : is tuning really needed ?
+
+  // Set parameters.
+  std::string fn(_filename.toStdString());
+  std::string hb;
+  {
+    std::ostringstream oss;
+    oss << qPrintable(_metric) << ":" << interval * 10;
+    hb = oss.str();
+  }
+  argv[0] = "librrd";
+  argv[1] = fn.c_str();
+  argv[2] = "-h"; // --heartbeat
+  argv[3] = hb.c_str();
+  argv[4] = NULL;
+
+  // Tune file.
+  if (rrd_tune(4, (char**)argv))
+    logging::error << logging::MEDIUM << "RRD: could not tune "\
+      "heartbeat of file '" << _filename << "'";
 
   return ;
 }
