@@ -382,7 +382,7 @@ int neb::callback_external_command(int callback_type, void* data) {
           else {
             QStringList::iterator it(l.begin());
             QString host(*it++);
-            QString var_name(var_name.append(*it++));
+            QString var_name(*it++);
             QString var_value(*it);
 
             // Find host ID.
