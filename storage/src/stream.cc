@@ -423,22 +423,22 @@ void stream::write(QSharedPointer<io::data> data) {
       "status event";
     QSharedPointer<neb::service_status> ss(data.staticCast<neb::service_status>());
 
-    // Find index_id.
-    unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
-
-    // Generate status event.
-    logging::debug << logging::LOW
-      << "storage: generating status event";
-    QSharedPointer<storage::status> status(new storage::status);
-    status->ctime = ss->last_check;
-    status->index_id = index_id;
-    status->interval = static_cast<time_t>(ss->check_interval
-                                           * _interval_length);
-    status->rrd_len = _rrd_len;
-    status->state = ss->current_state;
-    multiplexing::publisher().write(status.staticCast<io::data>());
-
     if (!ss->perf_data.isEmpty()) {
+      // Find index_id.
+      unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
+
+      // Generate status event.
+      logging::debug << logging::LOW
+        << "storage: generating status event";
+      QSharedPointer<storage::status> status(new storage::status);
+      status->ctime = ss->last_check;
+      status->index_id = index_id;
+      status->interval = static_cast<time_t>(ss->check_interval
+                                             * _interval_length);
+      status->rrd_len = _rrd_len;
+      status->state = ss->current_state;
+      multiplexing::publisher().write(status.staticCast<io::data>());
+
       // Parse perfdata.
       QList<perfdata> pds;
       parser p;
