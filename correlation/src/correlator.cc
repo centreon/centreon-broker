@@ -118,7 +118,8 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     neb::host_status& hs(*static_cast<neb::host_status*>(&*e));
     std::map<unsigned int, node>::iterator hs_it(_hosts.find(hs.host_id));
     if (hs_it == _hosts.end())
-      throw (exceptions::msg() << "correlation: invalid host status provided");
+      throw (exceptions::msg() << "correlation: invalid host status " \
+               "provided (" << hs.host_id);
     n = &hs_it->second;
   }
   else {
@@ -126,7 +127,9 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     std::map<std::pair<unsigned int, unsigned int>, node>::iterator ss_it(
       _services.find(std::make_pair(ss.host_id, ss.service_id)));
     if (ss_it == _services.end())
-      throw (exceptions::msg() << "correlation: invalid service status provided");
+      throw (exceptions::msg() << "correlation: invalid service " \
+                  "status provided (" << ss.host_id << ", "
+               << ss.service_id << ")");
     n = &ss_it->second;
   }
 
