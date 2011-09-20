@@ -156,9 +156,6 @@ void lib::open(QString const& filename,
                unsigned int length,
                time_t from,
                time_t interval) {
-  logging::debug << logging::HIGH << "RRD: opening file '"
-    << filename << "'";
-
   // Close previous file.
   this->close();
 
@@ -186,7 +183,7 @@ void lib::open(QString const& filename,
   std::ostringstream rra2_oss;
   ds_oss << "DS:" << _metric.toStdString() << ":GAUGE:" << interval << ":U:U";
   rra1_oss << "RRA:AVERAGE:0.5:1:" << length;
-  rra2_oss << "RRA:AVERAGE:0.5:12:" << length;
+  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12;
   std::string ds(ds_oss.str());
   std::string rra1(rra1_oss.str());
   std::string rra2(rra2_oss.str());
@@ -196,7 +193,12 @@ void lib::open(QString const& filename,
   argv[2] = rra2.c_str();
   argv[3] = NULL;
 
-  /* Create RRD file. */
+  // Debug message.
+  logging::debug << logging::HIGH << "RRD: opening file '" << filename
+    << "' (" << argv[0] << ", " << argv[1] << ", " << argv[2]
+    << ", interval " << interval << ", from " << from << ")";
+
+  // Create RRD file.
   rrd_clear_error();
   if (rrd_create_r(_filename.toStdString().c_str(),
         interval,
@@ -217,8 +219,6 @@ void lib::open(QString const& filename,
  *  @param[in] value Associated value.
  */
 void lib::update(time_t t, QString const& value) {
-  logging::debug << logging::HIGH << "RRD: updating file";
-
   // Build argument string.
   std::string arg;
   {
@@ -231,6 +231,10 @@ void lib::update(time_t t, QString const& value) {
   char const* argv[2];
   argv[0] = arg.c_str();
   argv[1] = NULL;
+
+  // Debug message.
+  logging::debug << logging::HIGH << "RRD: updating file '"
+    << _filename << "' (metric '" << _metric << "', " << argv[0] << ")";
 
   // Update RRD file.
   int fd(::open(_filename.toStdString().c_str(), O_WRONLY));
