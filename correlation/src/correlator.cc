@@ -180,12 +180,21 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     if (n->my_issue) {
       // Issue is over.
       if (!n->state) {
+        // Debug message.
+        logging::debug << logging::MEDIUM
+          << "correlation: issue on node (" << n->host_id
+          << ", " << n->service_id << ") is over";
+        
         // Issue parenting deletion.
         for (QList<node*>::iterator it = n->depends_on.begin(),
                end = n->depends_on.end();
              it != end;
              ++it)
           if ((*it)->my_issue) {
+            logging::debug << logging::LOW << "correlation: deleting " \
+                 "issue parenting between dependent node ("
+              << n->host_id << ", " << n->service_id << ") and node ("
+              << (*it)->host_id << ", " << (*it)->service_id << ")";
             std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
@@ -205,6 +214,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
              it != end;
              ++it)
           if ((*it)->my_issue) {
+            logging::debug << logging::LOW << "correlation: deleting " \
+                 "issue parenting between node (" << n->host_id << ", "
+              << n->service_id << ") and dependent node ("
+              << (*it)->host_id << ", " << (*it)->service_id << ")";
             std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = (*it)->host_id;
             p->child_service_id = (*it)->service_id;
@@ -231,6 +244,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  end = n->parents.end();
                it != end;
                ++it) {
+            logging::debug << logging::LOW << "correlation: deleting " \
+                 "issue parenting between node (" << n->host_id << ", "
+              << n->service_id << ") and parent node ("
+              << (*it)->host_id << ", " << (*it)->service_id << ")";
             std::auto_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
@@ -245,32 +262,44 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
             _events.push_back(QSharedPointer<io::data>(p.get()));
             p.release();
           }
-        all_parents = true;
         for (QList<node*>::iterator it = n->children.begin(),
                end = n->children.end();
              it != end;
-             ++it)
-          if (!(*it)->my_issue)
-            all_parents = false;
-        if (all_parents)
-          for (QList<node*>::iterator it = n->children.begin(),
-                 end = n->children.end();
-               it != end;
-               ++it) {
-            std::auto_ptr<issue_parent> p(new issue_parent);
-            p->child_host_id = (*it)->host_id;
-            p->child_service_id = (*it)->service_id;
-            p->child_start_time = (*it)->my_issue->start_time;
-            p->parent_host_id = n->host_id;
-            p->parent_service_id = n->service_id;
-            p->parent_start_time = n->my_issue->start_time;
-            p->start_time = (p->child_start_time > p->parent_start_time
-                             ? p->child_start_time
-                             : p->parent_start_time);
-            p->end_time = now;
-            _events.push_back(QSharedPointer<io::data>(p.get()));
-            p.release();
+             ++it) {
+          if (!(*it)->my_issue.isNull()) {
+            // Check that all parents of the node have an issue.
+            all_parents = true;
+            for (QList<node*>::iterator it2 = (*it)->parents.begin(),
+                   end2 = (*it)->parents.end();
+                 it2 != end2;
+                 ++it2)
+              all_parents = (all_parents && !(*it2)->my_issue.isNull());
+            if (all_parents)
+              for (QList<node*>::iterator it2 = (*it)->parents.begin(),
+                     end2 = (*it)->parents.end();
+                   it2 != end2;
+                   ++it2) {
+                logging::debug << logging::LOW << "correlation: " \
+                     "deleting issue parenting between node ("
+                  << (*it)->host_id << ", " << (*it)->service_id
+                  << ") and parent node (" << (*it2)->host_id << ", "
+                  << (*it2)->service_id << ")";
+                std::auto_ptr<issue_parent> p(new issue_parent);
+                p->child_host_id = (*it)->host_id;
+                p->child_service_id = (*it)->service_id;
+                p->child_start_time = (*it)->my_issue->start_time;
+                p->parent_host_id = (*it2)->host_id;
+                p->parent_service_id = (*it2)->service_id;
+                p->parent_start_time = (*it2)->my_issue->start_time;
+                p->start_time = (p->child_start_time > p->parent_start_time
+                                 ? p->child_start_time
+                                 : p->parent_start_time);
+                p->end_time = now;
+                _events.push_back(QSharedPointer<io::data>(p.get()));
+                p.release();
+              }
           }
+        }
 
         // Terminate issue.
         n->my_issue->end_time = now;
@@ -300,6 +329,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
              it != end;
              ++it)
           if ((*it)->my_issue) {
+            logging::debug << logging::LOW << "correlation: creating " \
+                 "issue parenting between dependent node ("
+              << n->host_id << ", " << n->service_id << ") and node ("
+              << (*it)->host_id << ", " << (*it)->service_id << ")";
             std::auto_ptr<issue_parent> parenting(new issue_parent);
             parenting->child_host_id = n->host_id;
             parenting->child_service_id = n->service_id;
@@ -324,6 +357,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  end = n->parents.end();
                it != end;
                ++it) {
+            logging::debug << logging::LOW << "correlation: creating " \
+                 "issue parenting between node (" << n->host_id << ", "
+              << n->service_id << ") and parent node ("
+              << (*it)->host_id << ", " << (*it)->service_id << ")";
             std::auto_ptr<issue_parent> parenting(new issue_parent);
             parenting->child_host_id = n->host_id;
             parenting->child_service_id = n->service_id;
@@ -344,6 +381,10 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
            it != end;
            ++it)
         if (!(*it)->my_issue.isNull()) {
+          logging::debug << logging::LOW << "correlation: creating " \
+               "issue parenting between node (" << n->host_id << ", "
+            << n->service_id << ") and dependent node ("
+            << (*it)->host_id << ", " << (*it)->service_id << ")";
           std::auto_ptr<issue_parent> parenting(new issue_parent);
           parenting->child_host_id = (*it)->host_id;
           parenting->child_service_id = (*it)->service_id;
@@ -375,14 +416,19 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                    end2 = (*it)->parents.end();
                  it2 != end2;
                  ++it2) {
+              logging::debug << logging::LOW << "correlation: " \
+                   "creating issue parenting between node ("
+                << (*it)->host_id << ", " << (*it)->service_id
+                << ") and parent node (" << (*it2)->host_id << ", "
+                << (*it2)->service_id << ")";
               std::auto_ptr<issue_parent> parenting(new issue_parent);
-              parenting->child_host_id = (*it2)->host_id;
-              parenting->child_service_id = (*it2)->service_id;
-              parenting->child_start_time = (*it2)->my_issue->start_time;
-              parenting->parent_host_id = n->host_id;
-              parenting->parent_service_id = n->service_id;
-              parenting->parent_start_time = n->my_issue->start_time;
-              parenting->start_time = n->my_issue->start_time;
+              parenting->child_host_id = (*it)->host_id;
+              parenting->child_service_id = (*it)->service_id;
+              parenting->child_start_time = (*it)->my_issue->start_time;
+              parenting->parent_host_id = (*it2)->host_id;
+              parenting->parent_service_id = (*it2)->service_id;
+              parenting->parent_start_time = (*it2)->my_issue->start_time;
+              parenting->start_time = (*it2)->my_issue->start_time;
             }
         }
     }
