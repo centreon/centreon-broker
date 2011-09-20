@@ -47,6 +47,9 @@ void parser::_auto_services_dependencies() {
       throw (exceptions::msg() << "could not find host "
                << it->first.first << " for service "
                << it->first.second);
+    logging::config << logging::MEDIUM << "correlation: service "
+      << it->first.second << " automatically depends on host "
+      << it->first.first;
     it->second.depends_on.push_back(&(it2->second));
     it2->second.depended_by.push_back(&(it->second));
   }
@@ -118,6 +121,9 @@ bool parser::startElement(QString const& uri,
       n1 = _find_node(host_id1, service_id1);
       n2 = _find_node(host_id2, service_id2);
       if (n1 && n2) {
+        logging::config << logging::MEDIUM << "correlation: node ("
+          << host_id1 << ", " << service_id1 << ") depends on node ("
+          << host_id2 << ", " << service_id2 << ")";
         n1->depends_on.push_back(n2);
         n2->depended_by.push_back(n1);
       }
@@ -135,6 +141,8 @@ bool parser::startElement(QString const& uri,
       // Process attribute.
       n.host_id = strtoul(i_attr.toStdString().c_str(), NULL, 0);
       (*_hosts)[n.host_id] = n;
+      logging::config << logging::MEDIUM
+        << "correlation: new host " << n.host_id;
     }
     else if (!strcmp(value, "parent")) {
       QString host_attr;
@@ -157,6 +165,9 @@ bool parser::startElement(QString const& uri,
         NULL,
         0));
       if ((it1 != (*_hosts).end()) && (it2 != (*_hosts).end())) {
+        logging::config << logging::MEDIUM << "correlation: host "
+          << it2->second.host_id << " is parent of host "
+          << it1->second.host_id;
         it1->second.parents.push_back(&it2->second);
         it2->second.children.push_back(&it1->second);
       }
@@ -177,6 +188,9 @@ bool parser::startElement(QString const& uri,
       n.host_id = strtoul(host_attr.toStdString().c_str(), NULL, 0);
       n.service_id = strtoul(id_attr.toStdString().c_str(), NULL, 0);
       (*_services)[std::make_pair(n.host_id, n.service_id)] = n;
+      logging::config << logging::MEDIUM
+        << "correlation: new service (" << n.host_id << ", "
+        << n.service_id << ")";
     }
   }
   return (true);

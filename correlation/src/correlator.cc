@@ -71,6 +71,20 @@ static bool should_be_unknown(node const& n) {
        ++it)
     one_dependency_down = (one_dependency_down || (*it)->state);
 
+  // Debug message.
+  if (all_parents_down && one_dependency_down)
+    logging::debug << logging::MEDIUM
+      << "correlation: unknown state of node (" << n.host_id << ", "
+      << n.service_id << ") is triggered by parenting AND dependencies";
+  else if (all_parents_down)
+    logging::debug << logging::MEDIUM
+      << "correlation: unknown state of node (" << n.host_id << ", "
+      << n.service_id << ") is triggered by parenting";
+  else if (one_dependency_down)
+    logging::debug << logging::MEDIUM
+      << "correlation: unknown state of node (" << n.host_id << ", "
+      << n.service_id << ") is triggered by dependencies";
+
   return (all_parents_down || one_dependency_down);
 }
 
