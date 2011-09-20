@@ -116,6 +116,7 @@ namespace              com {
           void         _process_service_group_member(io::data const& e);
           void         _process_service_state(io::data const& e);
           void         _process_service_status(io::data const& e);
+          void         _unprepare();
           template     <typename T>
           void         _update_on_none_insert(QSqlQuery& ins,
                          QSqlQuery& up,

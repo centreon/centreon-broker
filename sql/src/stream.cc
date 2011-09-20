@@ -1278,6 +1278,45 @@ void stream::_process_service_status(io::data const& e) {
   return ;
 }
 
+/**
+ *  Reset statements.
+ */
+void stream::_unprepare() {
+  _acknowledgement_insert.reset();
+  _acknowledgement_update.reset();
+  _comment_insert.reset();
+  _comment_update.reset();
+  _custom_variable_insert.reset();
+  _custom_variable_update.reset();
+  _custom_variable_status_update.reset();
+  _downtime_insert.reset();
+  _downtime_update.reset();
+  _event_handler_insert.reset();
+  _event_handler_update.reset();
+  _flapping_status_insert.reset();
+  _flapping_status_update.reset();
+  _host_insert.reset();
+  _host_update.reset();
+  _host_check_update.reset();
+  _host_state_insert.reset();
+  _host_state_update.reset();
+  _host_status_update.reset();
+  _instance_insert.reset();
+  _instance_update.reset();
+  _instance_status_update.reset();
+  _issue_insert.reset();
+  _issue_update.reset();
+  _notification_insert.reset();
+  _notification_update.reset();
+  _service_insert.reset();
+  _service_update.reset();
+  _service_check_update.reset();
+  _service_state_insert.reset();
+  _service_state_update.reset();
+  _service_status_update.reset();
+  return ;
+}
+
 template <typename T>
 void stream::_update_on_none_insert(QSqlQuery& ins,
                                     QSqlQuery& up,
@@ -1366,6 +1405,10 @@ stream::stream(QString const& type,
     _prepare();
   }
   catch (...) {
+    _unprepare();
+    if (_db->isOpen())
+      _db->close();
+    _db.reset();
     QSqlDatabase::removeDatabase(id);
     throw ;
   }
@@ -1393,6 +1436,10 @@ stream::stream(stream const& s) : io::stream(s) {
     _prepare();
   }
   catch (...) {
+    _unprepare();
+    if (_db->isOpen())
+      _db->close();
+    _db.reset();
     QSqlDatabase::removeDatabase(id);
     throw ;
   }
@@ -1407,38 +1454,7 @@ stream::~stream() {
   id.setNum((qulonglong)this, 16);
 
   // Reset statements.
-  _acknowledgement_insert.reset();
-  _acknowledgement_update.reset();
-  _comment_insert.reset();
-  _comment_update.reset();
-  _custom_variable_insert.reset();
-  _custom_variable_update.reset();
-  _custom_variable_status_update.reset();
-  _downtime_insert.reset();
-  _downtime_update.reset();
-  _event_handler_insert.reset();
-  _event_handler_update.reset();
-  _flapping_status_insert.reset();
-  _flapping_status_update.reset();
-  _host_insert.reset();
-  _host_update.reset();
-  _host_check_update.reset();
-  _host_state_insert.reset();
-  _host_state_update.reset();
-  _host_status_update.reset();
-  _instance_insert.reset();
-  _instance_update.reset();
-  _instance_status_update.reset();
-  _issue_insert.reset();
-  _issue_update.reset();
-  _notification_insert.reset();
-  _notification_update.reset();
-  _service_insert.reset();
-  _service_update.reset();
-  _service_check_update.reset();
-  _service_state_insert.reset();
-  _service_state_update.reset();
-  _service_status_update.reset();
+  _unprepare();
 
   // Close database.
   _db->close();
