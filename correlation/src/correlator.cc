@@ -620,8 +620,12 @@ QSharedPointer<io::data> correlator::read() {
  */
 void correlator::write(QSharedPointer<io::data> e) {
   try {
-    if ("com::centreon::broker::neb::host_status" == e->type())
+    if ("com::centreon::broker::neb::host" == e->type())
       _correlate_host_status(e);
+    else if ("com::centreon::broker::neb::host_status" == e->type())
+      _correlate_host_status(e);
+    else if ("com::centreon::broker::neb::service" == e->type())
+      _correlate_service_status(e);
     else if ("com::centreon::broker::neb::service_status" == e->type())
       _correlate_service_status(e);
     else if ("com::centreon::broker::neb::log_entry" == e->type())
