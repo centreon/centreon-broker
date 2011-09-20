@@ -105,10 +105,10 @@ bool parser::startElement(QString const& uri,
       char const* service_id2 = NULL;
 
       // Fetch attributes of the XML node.
-      hi1 = attrs.value("dependent_host_id");
-      hi2 = attrs.value("host_id");
-      si1 = attrs.value("dependent_service_id");
-      si2 = attrs.value("service_id");
+      hi1 = attrs.value("dependent_host");
+      hi2 = attrs.value("host");
+      si1 = attrs.value("dependent_service");
+      si2 = attrs.value("service");
       if (!hi1.size() || !hi2.size())
         throw (exceptions::msg() << "missing an host id for an " \
                  "element of a dependency definition");
