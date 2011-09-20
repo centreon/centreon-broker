@@ -182,9 +182,11 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
         le.notification_contact = log_extract(&lasts);
         le.output = log_extract(&lasts);
       }
-      else
-        // XXX : seems like it should be something else ...
-        throw (exceptions::msg() << "log: data extraction failed");
+      else {
+        le.msg_type = 5;
+        le.output = "EXTERNAL COMMAND: ";
+        le.output.append(lasts);
+      }
     }
     else if (!strcmp(datadup, "Warning")) {
       le.msg_type = 4;
