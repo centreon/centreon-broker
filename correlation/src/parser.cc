@@ -95,14 +95,10 @@ bool parser::startElement(QString const& uri,
     if (!strcmp(value, "dependency")) {
       QString hi1;
       QString hi2;
-      char* host_id1 = NULL;
-      char* host_id2 = NULL;
       node* n1 = NULL;
       node* n2 = NULL;
       QString si1;
       QString si2;
-      char const* service_id1 = NULL;
-      char const* service_id2 = NULL;
 
       // Fetch attributes of the XML node.
       hi1 = attrs.value("dependent_host");
@@ -112,18 +108,15 @@ bool parser::startElement(QString const& uri,
       if (!hi1.size() || !hi2.size())
         throw (exceptions::msg() << "missing an host id for an " \
                  "element of a dependency definition");
-      if (si1.size())
-        service_id1 = si1.toStdString().c_str();
-      if (si2.size())
-        service_id2 = si2.toStdString().c_str();
 
       // Process these attributes.
-      n1 = _find_node(host_id1, service_id1);
-      n2 = _find_node(host_id2, service_id2);
+      n1 = _find_node(qPrintable(hi1), (si1.size() ? qPrintable(si1) : NULL));
+      n2 = _find_node(qPrintable(hi2), (si2.size() ? qPrintable(si2) : NULL));
       if (n1 && n2) {
         logging::config << logging::MEDIUM << "correlation: node ("
-          << host_id1 << ", " << service_id1 << ") depends on node ("
-          << host_id2 << ", " << service_id2 << ")";
+          << n1->host_id << ", " << n1->service_id
+          << ") depends on node (" << n2->host_id << ", "
+          << n2->service_id << ")";
         n1->depends_on.push_back(n2);
         n2->depended_by.push_back(n1);
       }
