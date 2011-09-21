@@ -88,6 +88,13 @@ static bool should_be_unknown(node const& n) {
   return (all_parents_down || one_dependency_down);
 }
 
+/**
+ *  Get the unknown state that match a host.
+ */
+static int unknown_state(node const& n) {
+  return (n.service_id ? 3 : 2); // Unknown is UNREACHABLE for hosts.
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -134,12 +141,12 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
   }
 
   if (hss.current_state
-      && (hss.current_state != 3)
+      && (hss.current_state != unknown_state(*n))
       && should_be_unknown(*n)) {
     logging::debug << logging::MEDIUM
       << "correlation: retagging node (" << n->host_id << ", "
       << n->service_id << ") to unknown";
-    hss.current_state = 3;
+    hss.current_state = unknown_state(*n);
   }
 
   if (n->state != hss.current_state) {
@@ -325,7 +332,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
       }
 
       // Declare parenting.
-      if (3 == n->state) {
+      if (unknown_state(*n) == n->state) {
         // Loop dependencies.
         for (QList<node*>::iterator it = n->depends_on.begin(),
                end = n->depends_on.end();
