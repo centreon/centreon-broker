@@ -250,14 +250,16 @@ void parser::parse(QString const& filename,
     _auto_services_dependencies();
   }
   catch (QXmlParseException const& e) {
-    logging::config << logging::HIGH << "correlation: parsing error " \
-         "on \"" << filename << "\" (line "
-      << (unsigned int)e.lineNumber() << ", character "
-      << (unsigned int)e.columnNumber() << "): " << e.message();
+    throw (exceptions::msg() << "parsing error on '" << filename
+             << "' at line "
+             << static_cast<unsigned int>(e.lineNumber())
+             << ", character "
+             << static_cast<unsigned int>(e.columnNumber())
+             << ": " << e.message());
   }
   catch (exceptions::msg const& e) {
-    logging::config << logging::HIGH << "correlation: error while " \
-      "parsing correlation file \"" << filename << "\": " << e.what();
+    throw (exceptions::msg() << "parsing error on '" << filename
+           << "': " << e.what());
   }
   return ;
 }
