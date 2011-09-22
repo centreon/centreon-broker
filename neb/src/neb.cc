@@ -124,6 +124,9 @@ extern "C" {
       // Deregister callbacks.
       deregister_callbacks();
 
+      // Stop multiplexing.
+      multiplexing::publisher::stop();
+
       // Unload singletons.
       config::applier::endpoint::instance().unload();
       config::applier::modules::instance().unload();

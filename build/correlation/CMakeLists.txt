@@ -27,6 +27,7 @@ set(CORRELATION "20-correlation")
 add_library("${CORRELATION}" MODULE
   # Sources.
   "${SRC_DIR}/correlator.cc"
+  "${SRC_DIR}/engine.cc"
   "${SRC_DIR}/host_state.cc"
   "${SRC_DIR}/issue.cc"
   "${SRC_DIR}/issue_parent.cc"
@@ -37,6 +38,7 @@ add_library("${CORRELATION}" MODULE
   "${SRC_DIR}/state.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/correlation/correlator.hh"
+  "${INC_DIR}/com/centreon/broker/correlation/engine.hh"
   "${INC_DIR}/com/centreon/broker/correlation/host_state.hh"
   "${INC_DIR}/com/centreon/broker/correlation/issue.hh"
   "${INC_DIR}/com/centreon/broker/correlation/issue_parent.hh"

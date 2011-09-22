@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <QScopedPointer>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/engine.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -232,6 +235,15 @@ QSharedPointer<io::data> input::read() {
       break ;
      case NDO_API_STORAGESTATUS:
       e.reset(_handle_event<storage::status>());
+      break ;
+     case NDO_API_CORRELATIONENGINE:
+      e.reset(_handle_event<correlation::engine>());
+      break ;
+     case NDO_API_CORRELATIONISSUE:
+      e.reset(_handle_event<correlation::issue>());
+      break ;
+     case NDO_API_CORRELATIONISSUEPARENT:
+      e.reset(_handle_event<correlation::issue_parent>());
       break ;
      default:
       // Skip this event.

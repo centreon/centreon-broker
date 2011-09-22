@@ -26,6 +26,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -94,6 +95,9 @@ void state::apply(com::centreon::broker::config::state const& s) {
 
   // Apply input and output configuration.
   endpoint::instance().apply(s.inputs(), s.outputs());
+
+  // Enable multiplexing loop.
+  com::centreon::broker::multiplexing::publisher::start();
 
   return ;
 }

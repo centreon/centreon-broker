@@ -35,7 +35,7 @@ using namespace com::centreon::broker::multiplexing;
 **************************************/
 
 // Hooks.
-static QList<QSharedPointer<io::stream> > _hooks;
+static QList<QSharedPointer<hooker> > _hooks;
 
 // Data queue.
 static QQueue<QSharedPointer<io::data> > _kiew;
@@ -45,6 +45,74 @@ static QMutex _mutex(QMutex::Recursive);
 
 // Processing flag.
 static bool _processing;
+
+// Write method.
+void (publisher::* publisher::_write_func)(QSharedPointer<io::data>) = &publisher::_nop;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Do nothing.
+ *
+ *  @param[in] d Unused.
+ */
+void publisher::_nop(QSharedPointer<io::data> d) {
+  (void)d;
+  return ;
+}
+
+/**
+ *  Publish event.
+ *
+ *  @param[in] d Data to publish.
+ */
+void publisher::_write(QSharedPointer<io::data> e) {
+  if (!_processing) {
+    // Set processing flag.
+    _processing = true;
+
+    try {
+      // Send object to every hook.
+      for (QList<QSharedPointer<hooker> >::iterator it = _hooks.begin(),
+             end = _hooks.end();
+           it != end;
+           ++it) {
+        (*it)->write(e);
+        QSharedPointer<io::data> d((*it)->read());
+        while (!d.isNull()) {
+          _kiew.enqueue(d);
+          d = (*it)->read();
+        }
+      }
+
+      // Process all queued events.
+      while (!_kiew.isEmpty()) {
+        // Send object to every subscriber.
+        QMutexLocker lock(&gl_subscribersm);
+        for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
+               end = gl_subscribers.end();
+             it != end;
+             ++it)
+          (*it)->write(_kiew.head());
+        _kiew.dequeue();
+      }
+
+      // Reset processing flag.
+      _processing = false;
+    }
+    catch (...) {
+      // Reset processing flag.
+      _processing = false;
+      throw ;
+    }
+  }
+
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -86,7 +154,7 @@ publisher& publisher::operator=(publisher const& p) {
  *
  *  @param[in] h Hook.
  */
-void publisher::hook(QSharedPointer<io::stream> h) {
+void publisher::hook(QSharedPointer<hooker> h) {
   QMutexLocker lock(&_mutex);
   _hooks.push_back(h);
   return ;
@@ -104,11 +172,42 @@ QSharedPointer<io::data> publisher::read() {
 }
 
 /**
+ *  Start multiplexing.
+ */
+void publisher::start() {
+  if (_write_func != &publisher::_write) {
+    logging::debug << logging::HIGH << "multiplexing: starting";
+    _write_func = &publisher::_write;
+    for (QList<QSharedPointer<hooker> >::iterator
+           it = _hooks.begin(),
+           end = _hooks.end();
+         it != end;
+         ++it)
+      (*it)->starting();
+  }
+  return ;
+}
+
+/**
+ *  Stop multiplexing.
+ */
+void publisher::stop() {
+  logging::debug << logging::HIGH << "multiplexing: stopping";
+  for (QList<QSharedPointer<hooker> >::iterator
+         it = _hooks.begin(),
+         end = _hooks.end();
+       it != end;
+       ++it)
+    (*it)->stopping();
+  return ;
+}
+
+/**
  *  Remove a hook.
  *
  *  @param[in] h Hook.
  */
-void publisher::unhook(QSharedPointer<io::stream> h) {
+void publisher::unhook(QSharedPointer<hooker> h) {
   std::remove(_hooks.begin(), _hooks.end(), h);
   return ;
 }
@@ -129,45 +228,8 @@ void publisher::write(QSharedPointer<io::data> e) {
   // Store object for further processing.
   _kiew.enqueue(e);
 
-  if (!_processing) {
-    // Set processing flag.
-    _processing = true;
-
-    try {
-      // Send object to every hook.
-      for (QList<QSharedPointer<io::stream> >::iterator it = _hooks.begin(),
-             end = _hooks.end();
-           it != end;
-           ++it) {
-        (*it)->write(e);
-        QSharedPointer<io::data> d((*it)->read());
-        while (!d.isNull()) {
-          _kiew.enqueue(d);
-          d = (*it)->read();
-        }
-      }
-
-      // Process all queued events.
-      while (!_kiew.isEmpty()) {
-        // Send object to every subscriber.
-        QMutexLocker lock(&gl_subscribersm);
-        for (QList<subscriber*>::iterator it = gl_subscribers.begin(),
-               end = gl_subscribers.end();
-             it != end;
-             ++it)
-          (*it)->write(_kiew.head());
-        _kiew.dequeue();
-      }
-
-      // Reset processing flag.
-      _processing = false;
-    }
-    catch (...) {
-      // Reset processing flag.
-      _processing = false;
-      throw ;
-    }
-  }
+  // Processing function.
+  (this->*_write_func)(e);
 
   return ;
 }

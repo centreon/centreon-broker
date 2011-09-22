@@ -30,6 +30,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 
@@ -222,7 +223,10 @@ int main(int argc, char* argv[]) {
     retval = 1;
   }
 
-  // Unload singletons.
+  // Stop multiplexing.
+  multiplexing::publisher::stop();
+
+  // Unload endpoints.
   config::applier::endpoint::instance().unload();
   config::applier::modules::instance().unload();
 

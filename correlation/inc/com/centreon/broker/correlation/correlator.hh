@@ -24,7 +24,7 @@
 # include <QScopedPointer>
 # include <QString>
 # include "com/centreon/broker/correlation/node.hh"
-# include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/multiplexing/hooker.hh"
 # include "com/centreon/broker/neb/host_status.hh"
 # include "com/centreon/broker/neb/log_entry.hh"
 
@@ -39,7 +39,7 @@ namespace                          com {
          *  This class aggregate data from multiple events and generates
          *  according issues which are used to group those events.
          */
-        class                      correlator : public io::stream {
+        class                      correlator : public multiplexing::hooker {
          private:
           QList<QSharedPointer<io::data> >
                                    _events;
@@ -62,6 +62,8 @@ namespace                          com {
           correlator&              operator=(correlator const& c);
           void                     load(QString const& correlation_file);
           QSharedPointer<io::data> read();
+          void                     starting();
+          void                     stopping();
           void                     write(QSharedPointer<io::data> e);
         };
       }

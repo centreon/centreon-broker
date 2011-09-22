@@ -173,46 +173,6 @@ void stream::_clean_tables(int instance_id) {
     _execute(ss.str().c_str());
   }
 
-  // Close issues.
-  time_t now(time(NULL));
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues JOIN hosts JOIN instances" \
-          " ON issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues.end_time=" << now
-       << " WHERE issues.end_time=0 OR issues.end_time IS NULL";
-    _execute(ss.str().c_str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues_issues_parents" \
-          " JOIN issues" \
-          " JOIN hosts" \
-          " JOIN instances" \
-          " ON issues_issues_parents.child_id=issues.issue_id" \
-          "  AND issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0" \
-          "  OR issues_issues_parents.end_time IS NULL";
-    _execute(ss.str().c_str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues_issues_parents" \
-          " JOIN issues" \
-          " JOIN hosts" \
-          " JOIN instances" \
-          " ON issues_issues_parents.parent_id=issues.issue_id" \
-          "  AND issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0" \
-          "  OR issues_issues_parents.end_time IS NULL";
-    _execute(ss.str().c_str());
-  }
-
   return ;
 }
 
@@ -610,6 +570,61 @@ void stream::_process_downtime(io::data const& e) {
   _update_on_none_insert(*_downtime_insert,
     *_downtime_update,
     *static_cast<neb::downtime const*>(&e));
+
+  return ;
+}
+
+/**
+ *  Process a correlation engine event.
+ *
+ *  @param[in] e Uncasted correlation engine event.
+ */
+void stream::_process_engine(io::data const& e) {
+  (void)e;
+
+  // Log message.
+  logging::info << logging::MEDIUM
+    << "SQL: processing correlation engine event";
+
+  // Close issues.
+  time_t now(time(NULL));
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues JOIN hosts JOIN instances" \
+          " ON issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues.end_time=" << now
+       << " WHERE issues.end_time=0 OR issues.end_time IS NULL";
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues_issues_parents" \
+          " JOIN issues" \
+          " JOIN hosts" \
+          " JOIN instances" \
+          " ON issues_issues_parents.child_id=issues.issue_id" \
+          "  AND issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues_issues_parents.end_time=" << now
+       << " WHERE issues_issues_parents.end_time=0" \
+          "  OR issues_issues_parents.end_time IS NULL";
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "UPDATE issues_issues_parents" \
+          " JOIN issues" \
+          " JOIN hosts" \
+          " JOIN instances" \
+          " ON issues_issues_parents.parent_id=issues.issue_id" \
+          "  AND issues.host_id=hosts.host_id" \
+          "  AND hosts.instance_id=instances.instance_id" \
+          " SET issues_issues_parents.end_time=" << now
+       << " WHERE issues_issues_parents.end_time=0" \
+          "  OR issues_issues_parents.end_time IS NULL";
+    _execute(ss.str().c_str());
+  }
 
   return ;
 }
@@ -1519,6 +1534,8 @@ void stream::initialize() {
     = &stream::_process_service_group_member;
   _processing_table["com::centreon::broker::neb::service_status"]
     = &stream::_process_service_status;
+  _processing_table["com::centreon::broker::correlation::engine"]
+    = &stream::_process_engine;
   _processing_table["com::centreon::broker::correlation::host_state"]
     = &stream::_process_host_state;
   _processing_table["com::centreon::broker::correlation::issue"]

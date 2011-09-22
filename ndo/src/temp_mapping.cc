@@ -16,12 +16,22 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/engine.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::correlation;
 using namespace com::centreon::broker::storage;
+
+static mapped_data<engine> const engine_mapping[] = {
+  mapped_data<engine>(
+    &engine::activated,
+    1,
+    "activated"),
+  mapped_data<engine>()
+};
 
 static mapped_data<metric> const metric_mapping[] = {
   mapped_data<metric>(
@@ -82,6 +92,11 @@ static mapped_data<status> const status_mapping[] = {
 namespace     com {
   namespace   centreon {
     namespace broker {
+      template <> const mapped_data<correlation::engine>*
+        mapped_type<correlation::engine>::members(engine_mapping);
+      template <> char const*
+        mapped_type<correlation::engine>::table("engine");
+
       template <> const mapped_data<storage::metric>*
         mapped_type<storage::metric>::members(metric_mapping);
       template <> char const*

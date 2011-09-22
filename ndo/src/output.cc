@@ -16,6 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/engine.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -294,6 +297,27 @@ void output::write(QSharedPointer<io::data> e) {
     buffer << NDO_API_STORAGESTATUS << ":\n";
     handle_event<storage::status>(
       *static_cast<storage::status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == "com::centreon::broker::correlation::engine") {
+    buffer << NDO_API_CORRELATIONENGINE << ":\n";
+    handle_event<correlation::engine>(
+      *static_cast<correlation::engine*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == "com::centreon::broker::correlation::issue") {
+    buffer << NDO_API_CORRELATIONISSUE << ":\n";
+    handle_event<correlation::issue>(
+      *static_cast<correlation::issue*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == "com::centreon::broker::correlation::issue_parent") {
+    buffer << NDO_API_CORRELATIONISSUEPARENT << ":\n";
+    handle_event<correlation::issue_parent>(
+      *static_cast<correlation::issue_parent*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

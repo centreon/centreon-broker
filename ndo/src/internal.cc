@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/engine.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -247,6 +248,9 @@ namespace       com {
   namespace     centreon {
     namespace   broker {
       namespace ndo {
+        template <> std::map<int, getter_setter<correlation::engine> >
+          ndo_mapped_type<correlation::engine>::map =
+            std::map<int, getter_setter<correlation::engine> >();
         template <> std::map<int, getter_setter<correlation::host_state> >
           ndo_mapped_type<correlation::host_state>::map =
             std::map<int, getter_setter<correlation::host_state> >();
@@ -374,8 +378,6 @@ void ndo::initialize() {
   static_init<neb::host_status>();
   static_init<neb::instance>();
   static_init<neb::instance_status>();
-  //static_init<neb::issue>();
-  //static_init<neb::issue_parent>();
   static_init<neb::log_entry>();
   static_init<neb::module>();
   static_init<neb::notification>();
@@ -388,5 +390,8 @@ void ndo::initialize() {
   static_init<neb::service_status>();
   static_init<storage::metric>();
   static_init<storage::status>();
+  static_init<correlation::engine>();
+  static_init<correlation::issue>();
+  static_init<correlation::issue_parent>();
   return ;
 }

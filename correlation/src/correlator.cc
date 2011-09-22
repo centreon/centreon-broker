@@ -20,6 +20,7 @@
 #include <memory>
 #include <time.h>
 #include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/engine.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -572,7 +573,7 @@ correlator::correlator() {}
  *
  *  @param[in] c Object to copy.
  */
-correlator::correlator(correlator const& c) : io::stream(c) {
+correlator::correlator(correlator const& c) : multiplexing::hooker(c) {
   _internal_copy(c);
 }
 
@@ -589,7 +590,7 @@ correlator::~correlator() {}
  *  @return This object.
  */
 correlator& correlator::operator=(correlator const& c) {
-  io::stream::operator=(c);
+  multiplexing::hooker::operator=(c);
   _internal_copy(c);
   return (*this);
 }
@@ -618,6 +619,26 @@ QSharedPointer<io::data> correlator::read() {
     _events.pop_front();
   }
   return (e);
+}
+
+/**
+ *  Start event correlation.
+ */
+void correlator::starting() {
+  QSharedPointer<engine> event(new engine);
+  event->activated = true;
+  multiplexing::publisher().write(event.staticCast<io::data>());
+  return ;
+}
+
+/**
+ *  Stop event correlation.
+ */
+void correlator::stopping() {
+  QSharedPointer<engine> event(new engine);
+  event->activated = false;
+  multiplexing::publisher().write(event.staticCast<io::data>());
+  return ;
 }
 
 /**

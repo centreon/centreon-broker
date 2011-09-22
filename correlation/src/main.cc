@@ -30,7 +30,7 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Correlation object.
-static QSharedPointer<io::stream> obj;
+static QSharedPointer<multiplexing::hooker> obj;
 
 extern "C" {
   /**
@@ -76,7 +76,7 @@ extern "C" {
                   crltr(new correlation::correlator);
                 try {
                   crltr->load(elem.text());
-                  obj = crltr.staticCast<io::stream>();
+                  obj = crltr.staticCast<multiplexing::hooker>();
                   multiplexing::publisher::hook(obj);
                   loaded = true;
                 }

@@ -92,6 +92,7 @@ namespace              com {
           void         _process_custom_variable(io::data const& e);
           void         _process_custom_variable_status(io::data const& e);
           void         _process_downtime(io::data const& e);
+          void         _process_engine(io::data const& e);
           void         _process_event_handler(io::data const& e);
           void         _process_flapping_status(io::data const& e);
           void         _process_host(io::data const& e);
