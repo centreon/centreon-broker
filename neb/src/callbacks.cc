@@ -189,7 +189,11 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->source = comment_data->source;
 
     // Send event.
-    gl_publisher.write(comment.staticCast<io::data>());
+    if (comment->host_id)
+      gl_publisher.write(comment.staticCast<io::data>());
+    else
+      logging::error << logging::LOW << "callbacks: discarding " \
+        "comment because attached host could not be found";
   }
   // Avoid exception propagation in C code.
   catch (...) {}

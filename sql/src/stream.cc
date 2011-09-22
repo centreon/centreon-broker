@@ -508,9 +508,14 @@ void stream::_process_comment(io::data const& e) {
   logging::info << logging::MEDIUM << "SQL: processing comment event";
 
   // Processing.
-  _update_on_none_insert(*_comment_insert,
-    *_comment_update,
-    *static_cast<neb::comment const*>(&e));
+  neb::comment const& com(*static_cast<neb::comment const*>(&e));
+  if (com.host_id)
+    _update_on_none_insert(*_comment_insert,
+      *_comment_update,
+      *static_cast<neb::comment const*>(&e));
+  else
+    logging::error << logging::LOW << "SQL: could not process event " \
+      "which does not have an host ID";
 
   return ;
 }
