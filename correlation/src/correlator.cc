@@ -625,6 +625,7 @@ QSharedPointer<io::data> correlator::read() {
  *  Start event correlation.
  */
 void correlator::starting() {
+  logging::debug << logging::MEDIUM << "correlation: engine starting";
   QSharedPointer<engine> event(new engine);
   event->activated = true;
   multiplexing::publisher().write(event.staticCast<io::data>());
@@ -635,6 +636,8 @@ void correlator::starting() {
  *  Stop event correlation.
  */
 void correlator::stopping() {
+  logging::debug << logging::MEDIUM
+    << "correlation: engine shutting down";
   QSharedPointer<engine> event(new engine);
   event->activated = false;
   multiplexing::publisher().write(event.staticCast<io::data>());
