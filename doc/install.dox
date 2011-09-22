@@ -1,7 +1,41 @@
 /**
  *  @page install Installing Centreon Broker
  *
- *  // XXX : installation process
- *  // XXX : package
- *  // XXX : files description
+ *  @section installprocess Installation Process
+ *
+ *  Centreon Broker has multiple components which can be splitted in
+ *  5 groups :
+ *    - binaries
+ *    - Centreon Engine / Nagios modules
+ *    - Centreon Broker modules
+ *    - development headers
+ *    - development libraries
+ *
+ *  Each of these groups can have a separate installation directory
+ *  which are configurable as specified in the @ref build "Building
+ *  Centreon Broker" section. Once Centreon Broker has been successfully
+ *  built, the install process is very simple. Just run the following
+ *  command as a priviledged user :
+ *  @verbatim
+ *    make install
+ *  @endverbatim
+ *
+ *
+ *  @section package Packages
+ *
+ *  Centreon Broker can be packaged directly as a RPM or a DEB package
+ *  using CPack (part of the CMake software suite). To generate the
+ *  appropriate package, refer to the @ref build "Building Centreon
+ *  Broker" section and set the following variables to enable package
+ *  creation :
+ *    - CPACK_BINARY_DEB for Debian package generation
+ *    - CPACK_BINARY_RPM for RPM package generation
+ *
+ *  Also note that Merethis provides RPM packages of Centreon Broker
+ *  using its Centreon Enterprise Server (CES) product.
+ *
+ *
+ *  @section installdescription Files Description
+ *
+ *  // XXX
  */

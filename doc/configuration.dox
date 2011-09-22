@@ -293,4 +293,39 @@
  *    <td>ca_certificate</td><td>Trusted Certificate Authority certificate. If this parameter is set, the CA's certificate is used to authenticate client connections which are denied if the peer key could not be validated.</td>
  *  </tr>
  *  </table>
+ *
+ *
+ *  @section failover Failover
+ *
+ *  The failover feature is a key concept in Centreon Broker. This
+ *  feature allows you to redirect event stream from a failed output
+ *  to another output. One common use case is when a database becomes
+ *  unavailable (network outage, DB server shutdown, ...) events are
+ *  temporarily stored in a file. When the server is back online, data
+ *  is read from the file and stored back in the database.
+ *
+ *  Centreon Broker's failover feature is a generalization of this
+ *  process. You can use any output as a failover to another. Of course
+ *  the data replaying process is only available if the protocol
+ *  supports it.
+ *
+ *  All endpoints can have a <name> tag that is used by the <failover>
+ *  tag to identify which endpoint if the failover of another.
+ *
+ *  @verbatim
+ *  <output>
+ *    <name>MyFile</name>
+ *    <type>file</type>
+ *    <protocol>ndo</protocol>
+ *  </output>
+ *  <output>
+ *    <name>MyDB</name>
+ *    <type>sql</type>
+ *    ...
+ *    <failover>MyFile</failover>
+ *  </output>
+ *  @endverbatim
+ *
+ *  In this example, the MyFile endpoint will only be activated if the
+ *  output to MyDB fails.
  */
