@@ -40,7 +40,8 @@ namespace                 com {
 
            public:
                           ~state();
-            void          apply(config::state const& s);
+            void          apply(config::state const& s,
+                            bool run_mux = true);
             static state& instance();
           };
         }

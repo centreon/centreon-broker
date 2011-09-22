@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
       default_state.loggers().push_back(default_log);
 
       // Apply configuration.
-      config::applier::state::instance().apply(default_state);
+      config::applier::state::instance().apply(default_state, false);
     }
 
     // Check parameters requirements.

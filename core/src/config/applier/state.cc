@@ -84,9 +84,11 @@ state::~state() {}
 /**
  *  Apply a configuration state.
  *
- *  @param[in] s State to apply.
+ *  @param[in] s       State to apply.
+ *  @param[in] run_mux Set to true if multiplexing must be run.
  */
-void state::apply(com::centreon::broker::config::state const& s) {
+void state::apply(com::centreon::broker::config::state const& s,
+                  bool run_mux) {
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
@@ -97,7 +99,8 @@ void state::apply(com::centreon::broker::config::state const& s) {
   endpoint::instance().apply(s.inputs(), s.outputs());
 
   // Enable multiplexing loop.
-  com::centreon::broker::multiplexing::publisher::start();
+  if (run_mux)
+    com::centreon::broker::multiplexing::publisher::start();
 
   return ;
 }
