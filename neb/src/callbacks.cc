@@ -603,7 +603,9 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->current_check_attempt = h->current_attempt;
     host_status->current_notification_number
       = h->current_notification_number;
-    host_status->current_state = h->current_state;
+    host_status->current_state = (h->has_been_checked
+                                  ? h->current_state
+                                  : 4); // Pending state.
     if (h->event_handler)
       host_status->event_handler = h->event_handler;
     host_status->event_handler_enabled = h->event_handler_enabled;
@@ -649,7 +651,9 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->retry_interval = h->retry_interval;
     host_status->scheduled_downtime_depth = h->scheduled_downtime_depth;
     host_status->should_be_scheduled = h->should_be_scheduled;
-    host_status->state_type = h->state_type;
+    host_status->state_type = (h->has_been_checked
+                               ? h->state_type
+                               : HARD_STATE);
 
     // Send event.
     if (host_status->host_id)
@@ -979,7 +983,9 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->current_check_attempt = s->current_attempt;
     service_status->current_notification_number
       = s->current_notification_number;
-    service_status->current_state = s->current_state;
+    service_status->current_state = (s->has_been_checked
+                                     ? s->current_state
+                                     : 4); // Pending state.
     if (s->event_handler)
       service_status->event_handler = s->event_handler;
     service_status->event_handler_enabled = s->event_handler_enabled;
@@ -1032,7 +1038,9 @@ int neb::callback_service_status(int callback_type, void* data) {
       }
     }
     service_status->should_be_scheduled = s->should_be_scheduled;
-    service_status->state_type = s->state_type;
+    service_status->state_type = (s->has_been_checked
+                                  ? s->state_type
+                                  : HARD_STATE);
 
     // Send event.
     if (service_status->host_id && service_status->service_id)

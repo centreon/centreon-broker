@@ -239,7 +239,9 @@ static void send_host_list() {
     my_host->check_type = h->check_type;
     my_host->current_check_attempt = h->current_attempt;
     my_host->current_notification_number = h->current_notification_number;
-    my_host->current_state = (h->last_check ? h->current_state : 4);
+    my_host->current_state = (h->has_been_checked
+                              ? h->current_state
+                              : 4); // Pending state.
     my_host->default_active_checks_enabled = h->checks_enabled;
     my_host->default_event_handler_enabled = h->event_handler_enabled;
     my_host->default_failure_prediction = h->failure_prediction_enabled;
@@ -319,7 +321,9 @@ static void send_host_list() {
     my_host->stalk_on_down = h->stalk_on_down;
     my_host->stalk_on_unreachable = h->stalk_on_unreachable;
     my_host->stalk_on_up = h->stalk_on_up;
-    my_host->state_type = h->state_type;
+    my_host->state_type = (h->has_been_checked
+                           ? h->state_type
+                           : HARD_STATE);
     if (h->statusmap_image)
       my_host->statusmap_image = h->statusmap_image;
 
@@ -523,7 +527,9 @@ static void send_service_list() {
     my_service->check_type = s->check_type;
     my_service->current_check_attempt = s->current_attempt;
     my_service->current_notification_number = s->current_notification_number;
-    my_service->current_state = (s->last_check ? s->current_state : 4);
+    my_service->current_state = (s->has_been_checked
+                                 ? s->current_state
+                                 : 4); // Pending state.
     my_service->default_active_checks_enabled = s->checks_enabled;
     my_service->default_event_handler_enabled = s->event_handler_enabled;
     my_service->default_failure_prediction = s->failure_prediction_enabled;
@@ -617,7 +623,9 @@ static void send_service_list() {
     my_service->stalk_on_ok = s->stalk_on_ok;
     my_service->stalk_on_unknown = s->stalk_on_unknown;
     my_service->stalk_on_warning = s->stalk_on_warning;
-    my_service->state_type = s->state_type;
+    my_service->state_type = (s->has_been_checked
+                              ? s->state_type
+                              : HARD_STATE);
 
     // Search host_id and service_id through customvars.
     for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next)
