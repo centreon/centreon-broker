@@ -171,7 +171,6 @@ CREATE TABLE hosts (
   statusmap_image varchar(255) default NULL,
 
   UNIQUE (host_id),
-  UNIQUE (instance_id, name),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE,
   INDEX (address),
