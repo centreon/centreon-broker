@@ -20,27 +20,32 @@
 #include <QDir>
 #include <QRegExp>
 #include <QString>
-#include "common.hh"
+#include "test/logging/file/common.hh"
 
 using namespace com::centreon::broker;
-
-// Log messages.
-#define MSG1 "my first normal message\n"
-#define MSG2 "my second foobar longer message\n"
-#define MSG3 "my third message is even longer than the second\n"
-#define MSG4 "my fourth messages is finally the longest of all bazqux\n"
 
 /**
  *  Check a file content.
  *
  *  @param[in] path    File path.
  *  @param[in] pattern Core content pattern.
+ *  @param[in] msg_nb  Number of messages to check.
+ *  @param[in] lines   Lines if not all messages should be matched.
  *
  *  @return true if all log file match pattern.
  */
-bool check_content(QString const& path, QString const& pattern) {
+bool check_content(QString const& path,
+                   QString const& pattern,
+                   unsigned int msg_nb,
+                   char const* const* lines) {
   // Return value.
   bool retval(true);
+
+  // Default content strings.
+  static char const* const content[] =
+    { MSG1, MSG2, MSG3, MSG4, MSG5, MSG6, MSG7, MSG8 };
+  if (!lines)
+    lines = content;
 
   // Open log file.
   QFile f(path);
@@ -48,27 +53,32 @@ bool check_content(QString const& path, QString const& pattern) {
     // First line.
     f.waitForReadyRead(-1);
     QByteArray line(f.readLine());
-
-    // Content strings.
-    char const* content[] = { MSG1, MSG2, MSG3, MSG4 };
+    retval &= (line == "Centreon Broker log file opened\n");
 
     // Match lines.
     for (unsigned int i = 0;
-         i < sizeof(content) / sizeof(*content);
+         (i < msg_nb) && retval;
          ++i) {
       // Read line.
       f.waitForReadyRead(-1);
       line = f.readLine();
+      if (!line.isEmpty())
+        line.resize(line.size() - 1);
 
       // Match line.
       QString my_pattern(pattern);
-      my_pattern.replace("<MSG>", content[i]);
-      retval &= (QRegExp(my_pattern).indexIn(line) != -1);
+      if (!content[i])
+        retval = false;
+      else {
+        my_pattern.replace("<MSG>", lines[i]);
+        retval &= (QRegExp(my_pattern).indexIn(line) != -1);
+      }
     }
 
     // Last line.
     f.waitForReadyRead(-1);
     line = f.readLine();
+    retval &= (line == "Centreon Broker log file closed\n");
     f.waitForReadyRead(-1);
     f.readLine();
     retval &= (!line.isEmpty() && f.atEnd());
@@ -83,45 +93,91 @@ bool check_content(QString const& path, QString const& pattern) {
 /**
  *  Get a temporary file path.
  *
+ *  @param[in] suffix File suffix.
+ *
  *  @return Temporary file path.
  */
-QString temp_file_path() {
+QString temp_file_path(QString const& suffix) {
   QString file_path;
   file_path.append(QDir::tempPath());
   file_path.append("/");
   file_path.append("centreon_broker_unit_test");
+  file_path.append(suffix);
   return (file_path);
 }
 
 /**
  *  Write log messages to a backend.
  *
- *  @param[out] b Backend to write to.
+ *  @param[out] b      Backend to write to.
+ *  @param[in]  msg_nb Number of messages to write.
  */
-void write_log_messages(logging::backend* b) {
+void write_log_messages(logging::backend* b, unsigned int msg_nb) {
   // First message.
-  b->log_msg(MSG1,
-    strlen(MSG1),
+  b->log_msg(
+    MSG1 "\n",
+    sizeof(MSG1),
     logging::config_type,
     logging::high);
+  if (msg_nb <= 1)
+    return ;
 
   // Second message.
-  b->log_msg(MSG2,
-    strlen(MSG2),
+  b->log_msg(
+    MSG2 "\n",
+    sizeof(MSG2),
     logging::debug_type,
     logging::medium);
+  if (2 == msg_nb)
+    return ;
 
   // Third message.
-  b->log_msg(MSG3,
-    strlen(MSG3),
+  b->log_msg(
+    MSG3 "\n",
+    sizeof(MSG3),
     logging::error_type,
     logging::low);
+  if (3 == msg_nb)
+    return ;
 
   // Fourth message.
-  b->log_msg(MSG4,
-    strlen(MSG4),
+  b->log_msg(
+    MSG4 "\n",
+    sizeof(MSG4),
     logging::info_type,
     logging::high);
+  if (4 == msg_nb)
+    return ;
+
+  // Fifth message.
+  b->log_msg(
+    MSG5 "\n",
+    sizeof(MSG5),
+    logging::config_type,
+    logging::low);
+  if (5 == msg_nb)
+    return ;
+
+  // Sixth message.
+  b->log_msg(
+    MSG6 "\n",
+    sizeof(MSG6),
+    logging::debug_type,
+    logging::low);
+
+  // Seventh message.
+  b->log_msg(
+    MSG7 "\n",
+    sizeof(MSG7),
+    logging::info_type,
+    logging::medium);
+
+  // Height message.
+  b->log_msg(
+    MSG8 "\n",
+    sizeof(MSG8),
+    logging::error_type,
+    logging::medium);
 
   return ;
 }

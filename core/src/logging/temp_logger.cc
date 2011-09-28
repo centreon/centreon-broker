@@ -71,9 +71,8 @@ temp_logger::redir const temp_logger::_redir_stringifier = {
 void temp_logger::_internal_copy(temp_logger const& t) {
   _level = t._level;
   _redir = t._redir;
+  t._redir = &_redir_nothing;
   _type = t._type;
-  _copied = false;
-  t._copied = true;
   return ;
 }
 
@@ -115,8 +114,7 @@ temp_logger& temp_logger::_to_stringifier(T t) throw () {
 temp_logger::temp_logger(type log_type,
                          level l,
                          bool enable)
-  : _copied(false),
-    _level(l),
+  : _level(l),
     _redir(enable ? &_redir_stringifier : &_redir_nothing),
     _type(log_type) {}
 
@@ -133,7 +131,7 @@ temp_logger::temp_logger(temp_logger const& t) : misc::stringifier(t) {
  *  Destructor.
  */
 temp_logger::~temp_logger() {
-  if (!_copied) {
+  if (_redir != &_redir_nothing) {
     operator<<("\n");
     manager::instance().log_msg(_buffer, _current, _type, _level);
   }

@@ -52,8 +52,7 @@ manager::manager() : _level(none), _types(0) {}
  *
  *  @param[in] m Unused.
  */
-manager::manager(manager const& m) : QObject() {
-  (void)m;
+manager::manager(manager const& m) : backend(m) {
   assert(false);
   abort();
 }

@@ -22,7 +22,7 @@
 #include <QDir>
 #include <QFile>
 #include "com/centreon/broker/logging/file.hh"
-#include "common.hh"
+#include "test/logging/file/common.hh"
 
 using namespace com::centreon::broker;
 

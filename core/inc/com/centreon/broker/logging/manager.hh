@@ -40,8 +40,8 @@ namespace                 com {
          *  Register logging objects. This is the external access point
          *  to the logging system.
          */
-        class             manager : public QObject {
-          Q_OBJECT;
+        class             manager : public backend {
+          Q_OBJECT
 
          private:
           QHash<backend*, QPair<unsigned int, level> >
