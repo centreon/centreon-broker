@@ -332,21 +332,36 @@ if (WITH_TESTING)
 
   # logging namespace tests.
   # logging::file tests.
+  #   Logging with no timestamp nor thread ID.
+  add_library("ccb_test_logging_file"
+    STATIC
+    "${TEST_DIR}/logging/file/common.cc")
+  set(TEST_NAME "core_logging_file_log_with_nothing")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/file/log_with_nothing.cc"
+    "${TEST_DIR}/logging/file/common.hh")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging with timestamp.
   set(TEST_NAME "core_logging_file_log_with_timestamp")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/logging/file/common.cc"
     "${TEST_DIR}/logging/file/log_with_timestamp.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Logging without timestamp.
-  set(TEST_NAME "core_logging_file_log_without_timestamp")
+  #   Logging with thread ID.
+  set(TEST_NAME "core_logging_file_log_with_thread_id")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/logging/file/common.cc"
-    "${TEST_DIR}/logging/file/log_without_timestamp.cc"
+    "${TEST_DIR}/logging/file/log_with_thread_id.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Logging with timestamp and thread ID.
+  set(TEST_NAME "core_logging_file_log_with_everything")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/file/log_with_everything.cc"
+    "${TEST_DIR}/logging/file/common.hh")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Concurrent logging.
   set(TEST_NAME "core_logging_logging_concurrent")

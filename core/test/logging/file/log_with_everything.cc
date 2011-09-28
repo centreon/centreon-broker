@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -42,14 +43,17 @@ int main() {
     {
       // Open log file object.
       logging::file f(file_path);
-      f.with_timestamp(false);
+      f.with_thread_id(true);
+      f.with_timestamp(true);
 
       // Write log messages.
       write_log_messages(&f);
     }
 
     // Check file content.
-    retval |= !check_content(file_path, "^[a-zA-Z]*: *<MSG>$");
+    retval |= !check_content(
+      file_path,
+      "^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *<MSG>$");
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;

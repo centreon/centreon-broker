@@ -43,8 +43,8 @@ int main() {
     {
       // Open log file object.
       logging::file f(file_path);
-      f.with_thread_id(false);
-      f.with_timestamp(true);
+      f.with_thread_id(true);
+      f.with_timestamp(false);
 
       // Write log messages.
       write_log_messages(&f);
@@ -53,7 +53,7 @@ int main() {
     // Check file content.
     retval |= !check_content(
       file_path,
-      "^\\[[0-9]*\\] [a-zA-Z]*: *<MSG>$");
+      "^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *<MSG>$");
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
