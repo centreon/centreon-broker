@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,31 +22,30 @@
 
 # include <syslog.h>
 # include "com/centreon/broker/logging/backend.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      logging {
-        /**
-         *  @class syslogger syslogger.hh "com/centreon/broker/logging/syslogger.hh"
-         *  @brief Log messages to syslog.
-         *
-         *  Log messages to a configured facility of syslog.
-         */
-        class        syslogger : public backend {
-         public:
-                     syslogger(int facility = LOG_LOCAL0);
-                     syslogger(syslogger const& s);
-                     ~syslogger();
-          syslogger& operator=(syslogger const& s);
-          void       log_msg(char const* msg,
-                       unsigned int len,
-                       type log_type,
-                       level l) throw ();
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace      logging {
+  /**
+   *  @class syslogger syslogger.hh "com/centreon/broker/logging/syslogger.hh"
+   *  @brief Log messages to syslog.
+   *
+   *  Log messages to a configured facility of syslog.
+   */
+  class        syslogger : public backend {
+   public:
+               syslogger(int facility = LOG_LOCAL0);
+               syslogger(syslogger const& s);
+               ~syslogger();
+    syslogger& operator=(syslogger const& s);
+    void       log_msg(char const* msg,
+                 unsigned int len,
+                 type log_type,
+                 level l) throw ();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_SYSLOGGER_HH_ */

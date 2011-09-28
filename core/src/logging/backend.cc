@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -36,7 +37,7 @@ backend::backend() {}
  *
  *  @param[in] b Unused.
  */
-backend::backend(backend const& b) : QMutex() {
+backend::backend(backend const& b) : QObject(), QMutex() {
   (void)b;
 }
 

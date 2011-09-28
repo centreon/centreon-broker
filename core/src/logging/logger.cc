@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/logging/logger.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
 
@@ -72,3 +74,25 @@ logger::logger(type log_type) : _type(log_type) {}
  *  Destructor.
  */
 logger::~logger() {}
+
+/**
+ *  Get temporary logging object.
+ *
+ *  @param[in] l Log level.
+ *
+ *  @return Temporary logging object.
+ */
+temp_logger logger::operator<<(level l) throw () {
+  return (manager::instance().get_temp_logger(_type, l));
+}
+
+/**
+ *  Get temporary logging object.
+ *
+ *  @param[in] l Log level.
+ *
+ *  @return Temporary logging object.
+ */
+temp_logger logger::operator()(level l) throw () {
+  return (manager::instance().get_temp_logger(_type, l));
+}

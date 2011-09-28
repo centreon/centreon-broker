@@ -24,6 +24,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker;
@@ -164,7 +165,7 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_delete.end();
        it != end;
        ++it)
-    logging::log_on(it.value(), 0, logging::NONE);
+    logging::manager::instance().log_on(*it.value(), 0, logging::none);
 
   // Free some memory.
   to_delete.clear();
@@ -175,11 +176,14 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_create.end();
        it != end;
        ++it) {
-    logging::config << logging::MEDIUM
+    logging::config << logging::medium
       << "log applier: creating new logger";
     QSharedPointer<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
-    logging::log_on(backend, it->types(), it->level());
+    logging::manager::instance().log_on(
+      *backend,
+      it->types(),
+      it->level());
   }
 
   return ;

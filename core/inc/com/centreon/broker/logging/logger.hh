@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,46 +22,32 @@
 
 # include "com/centreon/broker/logging/defines.hh"
 # include "com/centreon/broker/logging/temp_logger.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace             com {
-  namespace           centreon {
-    namespace         broker {
-      namespace       logging {
-        /**
-         *  @class logger logger.hh "com/centreon/broker/logging/logger.hh"
-         *  @brief Log messages.
-         *
-         *  Messages can be sent in various forms and stored in multiple
-         *  facilities like syslog, files or standard output.
-         */
-        class         logger {
-         private:
-          type        _type;
-                      logger(logger const& l);
-          logger&     operator=(logger const& l);
+CCB_BEGIN()
 
-         public:
-                      logger(type log_type);
-                      ~logger();
+namespace       logging {
+  /**
+   *  @class logger logger.hh "com/centreon/broker/logging/logger.hh"
+   *  @brief Log messages.
+   *
+   *  Messages can be sent in various forms and stored in multiple
+   *  facilities like syslog, files or standard output.
+   */
+  class         logger {
+   private:
+    type        _type;
+                logger(logger const& l);
+    logger&     operator=(logger const& l);
 
-          /**
-           *  @brief Output an element.
-           *
-           *  If the type of this element is supported, it will be sent
-           *  to configured outputs.
-           *
-           *  @param[in] t Element to send.
-           *
-           *  @return Temporary object.
-           */
-          template    <typename T>
-          temp_logger operator<<(T t) throw () {
-            return (temp_logger(_type) << t);
-          }
-        };
-      }
-    }
-  }
+   public:
+                logger(type log_type);
+                ~logger();
+    temp_logger operator<<(level l) throw (); // XXX : remove
+    temp_logger operator()(level l) throw ();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_LOGGER_HH_ */

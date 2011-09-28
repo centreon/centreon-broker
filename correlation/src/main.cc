@@ -95,7 +95,7 @@ extern "C" {
         }
       }
       if (!loaded)
-        logging::config << logging::ERROR << "correlation: invalid " \
+        logging::config << logging::HIGH << "correlation: invalid " \
           "correlation configuration, correlation engine is NOT loaded";
     }
     return ;

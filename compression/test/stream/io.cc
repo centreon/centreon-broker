@@ -20,6 +20,7 @@
 #include <QFile>
 #include <string.h>
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
 
@@ -33,6 +34,9 @@ using namespace com::centreon::broker;
  *  @return 0 on success.
  */
 int main() {
+  // Initialization.
+  config::applier::init();
+
   // Generate file name.
   QString filename(QDir::tempPath());
   filename.append("/" TEMP_FILE_NAME);

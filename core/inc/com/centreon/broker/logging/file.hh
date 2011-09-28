@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,40 +22,42 @@
 
 # include <QFile>
 # include "com/centreon/broker/logging/backend.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         logging {
-        /**
-         *  @class file file.hh "com/centreon/broker/logging/file.hh"
-         *  @brief Log messages to a file.
-         *
-         *  Log messages to a file.
-         */
-        class         file : public backend {
-         private:
-          QFile       _file;
-          bool        _special;
-          static bool _with_timestamp;
-                      file(file const& f);
-          file&       operator=(file const& f);
-          void        _write(char const* data) throw ();
+CCB_BEGIN()
 
-         public:
-                      file(QString const& path);
-                      file(FILE* special);
-                      ~file();
-          void        log_msg(char const* msg,
-                        unsigned int len,
-                        type log_type,
-                        level l) throw ();
-          static bool with_timestamp();
-          static void with_timestamp(bool enable);
-        };
-      }
-    }
-  }
+namespace         logging {
+  /**
+   *  @class file file.hh "com/centreon/broker/logging/file.hh"
+   *  @brief Log messages to a file.
+   *
+   *  Log messages to a file.
+   */
+  class         file : public backend {
+   private:
+    QFile       _file;
+    bool        _special;
+    static bool _with_timestamp;
+    static bool _with_thread_id;
+                file(file const& f);
+    file&       operator=(file const& f);
+    void        _write(char const* data) throw ();
+
+   public:
+                file(QString const& path);
+                file(FILE* special);
+                ~file();
+    void        log_msg(char const* msg,
+                  unsigned int len,
+                  type log_type,
+                  level l) throw ();
+    static bool with_thread_id();
+    static void with_thread_id(bool enable);
+    static bool with_timestamp();
+    static void with_timestamp(bool enable);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_FILE_HH_ */

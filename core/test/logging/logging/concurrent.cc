@@ -23,6 +23,7 @@
 #include <QtCore>
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
 
@@ -46,6 +47,9 @@ static void log_messages() {
  *  @return 0 on success.
  */
 int main() {
+  // Initialization.
+  logging::manager::load();
+
   // Build filename.
   QString filename(QDir::tempPath());
   filename.append("/" TEMP_FILE);
@@ -55,10 +59,10 @@ int main() {
 
   // Initialize file backend.
   logging::file::with_timestamp(true);
-  QSharedPointer<logging::file> backend(new logging::file(filename));
+  logging::file backend(filename);
 
   // Add backend to logging list.
-  logging::log_on(backend);
+  logging::manager::instance().log_on(backend);
 
   // Reserve threads.
   for (unsigned int i = 0; i < THREAD_COUNT; ++i)
@@ -72,8 +76,7 @@ int main() {
   QThreadPool::globalInstance()->waitForDone();
 
   // Remove backend from logging.
-  logging::log_on(backend, 0, logging::NONE);
-  backend.clear();
+  logging::manager::instance().log_on(backend, 0, logging::none);
 
   // Release threads.
   QThreadPool::globalInstance()->releaseThread();

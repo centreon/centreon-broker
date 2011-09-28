@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,25 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOGGING_INTERNAL_HH_
-# define CCB_LOGGING_INTERNAL_HH_
+#ifndef CCB_CONFIG_APPLIER_INIT_HH_
+# define CCB_CONFIG_APPLIER_INIT_HH_
 
-# include <QHash>
-# include <QPair>
-# include <QReadWriteLock>
-# include <QSharedPointer>
-# include "com/centreon/broker/logging/backend.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                     com {
-  namespace                   centreon {
-    namespace                 broker {
-      namespace               logging {
-        extern QHash<QSharedPointer<backend>, QPair<unsigned int, level> >
-                              backends;
-	extern QReadWriteLock backendsm;
-      }
-    }
+CCB_BEGIN()
+
+namespace   config {
+  namespace applier {
+    void    deinit();
+    void    init();
   }
 }
 
-#endif /* !CCB_LOGGING_INTERNAL_HH_ */
+CCB_END()
+
+#endif /* !CCB_CONFIG_APPLIER_INIT_HH_ */

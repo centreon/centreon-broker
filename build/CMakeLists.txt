@@ -26,15 +26,6 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include_directories("${INC_DIR}")
 
-# Enable or not the debug mode.
-option(WITH_DEBUG "Generate debug messages." ON)
-if (NOT WITH_DEBUG)
-  add_definitions(-DNDEBUG)
-  message(STATUS "Debug messages disabled.")
-else ()
-  message(STATUS "Debug messages enabled.")
-endif ()
-
 # Find Qt.
 find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
@@ -42,6 +33,8 @@ include(${QT_USE_FILE})
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
+  "${INC_DIR}/com/centreon/broker/logging/backend.hh"
+  "${INC_DIR}/com/centreon/broker/logging/manager.hh"
   "${INC_DIR}/com/centreon/broker/processing/failover.hh"
   "${INC_DIR}/com/centreon/broker/processing/feeder.hh"
 )
@@ -50,6 +43,7 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/config/applier/endpoint.cc"
+  "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -76,9 +70,9 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
   "${SRC_DIR}/logging/logging.cc"
+  "${SRC_DIR}/logging/manager.cc"
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
-  "${SRC_DIR}/logging/void_logger.cc"
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/stringifier.cc"
@@ -93,6 +87,7 @@ set(LIBROKER_SOURCES
   "${QT_WRAPPED_SOURCES}"
   # Headers.
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
+  "${INC_DIR}/com/centreon/broker/config/applier/init.hh"
   "${INC_DIR}/com/centreon/broker/config/applier/logger.hh"
   "${INC_DIR}/com/centreon/broker/config/applier/modules.hh"
   "${INC_DIR}/com/centreon/broker/config/applier/state.hh"
@@ -111,12 +106,11 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/logging/backend.hh"
   "${INC_DIR}/com/centreon/broker/logging/defines.hh"
   "${INC_DIR}/com/centreon/broker/logging/file.hh"
-  "${INC_DIR}/com/centreon/broker/logging/internal.hh"
   "${INC_DIR}/com/centreon/broker/logging/logger.hh"
   "${INC_DIR}/com/centreon/broker/logging/logging.hh"
+  "${INC_DIR}/com/centreon/broker/logging/manager.hh"
   "${INC_DIR}/com/centreon/broker/logging/syslogger.hh"
   "${INC_DIR}/com/centreon/broker/logging/temp_logger.hh"
-  "${INC_DIR}/com/centreon/broker/logging/void_logger.hh"
   "${INC_DIR}/com/centreon/broker/mapping/entry.hh"
   "${INC_DIR}/com/centreon/broker/mapping/property.hh"
   "${INC_DIR}/com/centreon/broker/mapping/source.hh"
@@ -443,11 +437,6 @@ message(STATUS "      - Archive Directory   ${PREFIX_ARCHIVE}")
 message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
 message(STATUS "      - Library Directory   ${PREFIX_LIBRARY}")
 message(STATUS "      - Modules Directory   ${PREFIX_MODULES}")
-if (WITH_DEBUG)
-  message(STATUS "    Debug messages          enabled")
-else ()
-  message(STATUS "    Debug messages          disabled")
-endif ()
 if (WITH_TESTING)
   message(STATUS "    Unit tests              enabled")
 else ()

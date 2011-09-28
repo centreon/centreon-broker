@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,6 +21,7 @@
 # define CCB_LOGGING_BACKEND_HH_
 
 # include <QMutex>
+# include <QObject>
 # include "com/centreon/broker/logging/defines.hh"
 
 namespace              com {
@@ -38,13 +40,16 @@ namespace              com {
          *  @see file
          *  @see syslog
          */
-        class          backend : public QMutex {
+        class          backend : public QObject, public QMutex {
+          Q_OBJECT;
+
          public:
                        backend();
                        backend(backend const& b);
           virtual      ~backend();
           backend&     operator=(backend const& b);
-          virtual void log_msg(char const* msg,
+          virtual void log_msg(
+                         char const* msg,
                          unsigned int len,
                          type log_type,
                          level l) throw () = 0;

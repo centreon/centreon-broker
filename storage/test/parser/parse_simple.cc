@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include <QList>
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -30,6 +31,9 @@ using namespace com::centreon::broker::storage;
  *  @return 0 on success.
  */
 int main() {
+  // Initialization.
+  config::applier::init();
+
   // Objects.
   QList<perfdata> list;
   parser p;

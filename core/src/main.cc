@@ -24,6 +24,7 @@
 #include <signal.h>
 #include <string.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/logger.hh"
@@ -107,6 +108,9 @@ static void term_handler(int signum) {
  *  @return 0 on normal termination, any other value on failure.
  */
 int main(int argc, char* argv[]) {
+  // Initialization.
+  config::applier::init();
+
   // Return value.
   int retval(0);
 

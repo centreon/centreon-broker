@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,28 +20,32 @@
 #ifndef CCB_LOGGING_DEFINES_HH_
 # define CCB_LOGGING_DEFINES_HH_
 
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace logging {
-        // Log levels.
-        enum    level {
-          NONE = 0,
-          HIGH,
-          MEDIUM,
-          LOW
-        };
+# include "com/centreon/broker/namespace.hh"
 
-        // Log types.
-        enum    type {
-          CONFIG = 1,
-          DEBUG = 2,
-          ERROR = 4,
-          INFO = 8
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace logging {
+  // Log levels.
+  enum    level {
+    none = 0,
+    high,
+    medium,
+    low,
+    NONE = none,
+    HIGH = high,
+    MEDIUM = medium,
+    LOW = low
+  };
+
+  // Log types.
+  enum    type {
+    config_type = 1,
+    debug_type = 2,
+    error_type = 4,
+    info_type = 8
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_DEFINES_HH_ */

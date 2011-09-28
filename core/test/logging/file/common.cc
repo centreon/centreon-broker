@@ -101,26 +101,26 @@ void write_log_messages(logging::backend* b) {
   // First message.
   b->log_msg(MSG1,
     strlen(MSG1),
-    logging::CONFIG,
-    logging::HIGH);
+    logging::config_type,
+    logging::high);
 
   // Second message.
   b->log_msg(MSG2,
     strlen(MSG2),
-    logging::DEBUG,
-    logging::MEDIUM);
+    logging::debug_type,
+    logging::medium);
 
   // Third message.
   b->log_msg(MSG3,
     strlen(MSG3),
-    logging::ERROR,
-    logging::LOW);
+    logging::error_type,
+    logging::low);
 
   // Fourth message.
   b->log_msg(MSG4,
     strlen(MSG4),
-    logging::INFO,
-    logging::HIGH);
+    logging::info_type,
+    logging::high);
 
   return ;
 }

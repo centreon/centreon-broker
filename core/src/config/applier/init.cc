@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,43 +17,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/logging/void_logger.hh"
+#include <stdlib.h>
+#include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
-using namespace com::centreon::broker::logging;
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
-*           Public Methods            *
+*           Global Functions          *
 *                                     *
 **************************************/
 
 /**
- *  Default constructor.
+ *  Unload necessary structures.
  */
-void_logger::void_logger() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] v Unused.
- */
-void_logger::void_logger(void_logger const& v) {
-  (void)v;
+void config::applier::deinit() {
+  logging::manager::unload();
+  return ;
 }
 
 /**
- *  Destructor.
+ *  Load necessary structures.
  */
-void_logger::~void_logger() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] v Unused.
- *
- *  @return This object.
- */
-void_logger& void_logger::operator=(void_logger const& v) {
-  (void)v;
-  return (*this);
+void config::applier::init() {
+  logging::manager::load();
+  atexit(&deinit);
+  return ;
 }

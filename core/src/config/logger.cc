@@ -18,6 +18,7 @@
 
 #include <syslog.h>
 #include "com/centreon/broker/config/logger.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::config;
 
@@ -52,9 +53,9 @@ void logger::_internal_copy(logger const& l) {
  */
 logger::logger()
   : _facility(LOG_LOCAL0),
-    _level(logging::HIGH),
+    _level(logging::high),
     _type(unknown),
-    _types(logging::CONFIG | logging::ERROR) {}
+    _types(logging::config_type | logging::error_type) {}
 
 /**
  *  Copy constructor.
@@ -143,9 +144,9 @@ bool logger::operator<(logger const& l) const {
  */
 void logger::config(bool c) {
   if (c)
-    _types = (_types | logging::CONFIG);
+    _types = (_types | logging::config_type);
   else
-    _types = (_types & ~logging::CONFIG);
+    _types = (_types & ~logging::config_type);
   return ;
 }
 
@@ -155,7 +156,7 @@ void logger::config(bool c) {
  *  @return Current value.
  */
 bool logger::config() const {
-  return (_types & logging::CONFIG);
+  return (_types & logging::config_type);
 }
 
 /**
@@ -165,9 +166,9 @@ bool logger::config() const {
  */
 void logger::debug(bool d) {
   if (d)
-    _types = (_types | logging::DEBUG);
+    _types = (_types | logging::debug_type);
   else
-    _types = (_types & ~logging::DEBUG);
+    _types = (_types & ~logging::debug_type);
   return ;
 }
 
@@ -177,7 +178,7 @@ void logger::debug(bool d) {
  *  @return Current value.
  */
 bool logger::debug() const {
-  return (_types & logging::DEBUG);
+  return (_types & logging::debug_type);
 }
 
 /**
@@ -187,9 +188,9 @@ bool logger::debug() const {
  */
 void logger::error(bool e) {
   if (e)
-    _types = (_types | logging::ERROR);
+    _types = (_types | logging::error_type);
   else
-    _types = (_types & ~logging::ERROR);
+    _types = (_types & ~logging::error_type);
   return ;
 }
 
@@ -199,7 +200,7 @@ void logger::error(bool e) {
  *  @return Current value.
  */
 bool logger::error() const {
-  return (_types & logging::ERROR);
+  return (_types & logging::error_type);
 }
 
 /**
@@ -228,9 +229,9 @@ int logger::facility() const {
  */
 void logger::info(bool i) {
   if (i)
-    _types = (_types | logging::INFO);
+    _types = (_types | logging::info_type);
   else
-    _types = (_types & ~logging::INFO);
+    _types = (_types & ~logging::info_type);
   return ;
 }
 
@@ -240,7 +241,7 @@ void logger::info(bool i) {
  *  @return Current value.
  */
 bool logger::info() const {
-  return (_types & logging::INFO);
+  return (_types & logging::info_type);
 }
 
 /**

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -80,16 +81,16 @@ void syslogger::log_msg(char const* msg,
   (void)l;
   int priority;
   switch (log_type) {
-   case CONFIG:
+   case config_type:
     priority = LOG_INFO;
     break ;
-   case DEBUG:
+   case debug_type:
     priority = LOG_DEBUG;
     break ;
-   case ERROR:
+   case error_type:
     priority = LOG_ERR;
     break ;
-   case INFO:
+   case info_type:
     priority = LOG_NOTICE;
     break ;
    default:

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,13 +18,16 @@
 */
 
 #include <assert.h>
+#include <QThread>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::logging;
 
-// Should timestamp printing be used ?
+// Should thread ID be printed ?
+bool file::_with_thread_id(false);
+// Should timestamp be printed ?
 bool file::_with_timestamp(true);
 
 /**************************************
@@ -155,16 +159,16 @@ void file::log_msg(char const* msg,
   if (msg) {
     char const* prefix;
     switch (log_type) {
-     case CONFIG:
+     case config_type:
       prefix = "config:  ";
       break ;
-     case DEBUG:
+     case debug_type:
       prefix = "debug:   ";
       break ;
-     case ERROR:
+     case error_type:
       prefix = "error:   ";
       break ;
-     case INFO:
+     case info_type:
       prefix = "info:    ";
       break ;
      default:
@@ -180,11 +184,50 @@ void file::log_msg(char const* msg,
       _write(buffer);
       _write("] ");
     }
+    if (_with_thread_id) {
+      _write("[");
+      // 2 characters for 0x
+      char buffer[integer_width<QThread*>::value + 2];
+      snprintf(buffer,
+        sizeof(buffer),
+        "0x%llu",
+        (unsigned long long)(QThread::currentThread()));
+      _write(buffer);
+      _write("] ");
+    }
     _write(prefix);
     _write(msg);
     _file.flush();
   }
   return ;
+}
+
+/**
+ *  Check if thread ID should be printed.
+ *
+ *  @return true if thread ID should be printed.
+ */
+bool file::with_thread_id() {
+  return (_with_thread_id);
+}
+
+/**
+ *  Set if thread ID should be printed or not.
+ *
+ *  @param[in] enable true to enable thread ID printing.
+ */
+void file::with_thread_id(bool enable) {
+  _with_thread_id = enable;
+  return ;
+}
+
+/**
+ *  Check if timestamp should be printed.
+ *
+ *  @return true if timestamp should be printed.
+ */
+bool file::with_timestamp() {
+  return (_with_timestamp);
 }
 
 /**

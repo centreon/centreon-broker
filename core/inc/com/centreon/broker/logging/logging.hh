@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,32 +20,19 @@
 #ifndef CCB_LOGGING_LOGGING_HH_
 # define CCB_LOGGING_LOGGING_HH_
 
-# include <QSharedPointer>
-# include "com/centreon/broker/logging/backend.hh"
 # include "com/centreon/broker/logging/logger.hh"
-# include "com/centreon/broker/logging/void_logger.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            logging {
-        // Standard logging objects.
-        extern logger      config;
-# ifdef NDEBUG
-        extern void_logger debug;
-# else
-        extern logger      debug;
-# endif /* NDEBUG */
-        extern logger      error;
-        extern logger      info;
+CCB_BEGIN()
 
-        void               clear();
-        void               log_on(QSharedPointer<backend> b,
-                             unsigned int types = CONFIG | DEBUG | ERROR | INFO,
-                             level min_priority = HIGH);
-      }
-    }
-  }
+namespace       logging {
+  // Standard logging objects.
+  extern logger config;
+  extern logger debug;
+  extern logger error;
+  extern logger info;
 }
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_LOGGING_HH_ */

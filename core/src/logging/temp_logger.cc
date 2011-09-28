@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,10 +19,43 @@
 
 #include <QMutexLocker>
 #include <QReadLocker>
-#include "com/centreon/broker/logging/internal.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/logging/temp_logger.hh"
 
 using namespace com::centreon::broker::logging;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+temp_logger::redir const temp_logger::_redir_nothing = {
+  &temp_logger::_nothing<bool>,
+  &temp_logger::_nothing<double>,
+  &temp_logger::_nothing<int>,
+  &temp_logger::_nothing<long>,
+  &temp_logger::_nothing<long long>,
+  &temp_logger::_nothing<QString const&>,
+  &temp_logger::_nothing<unsigned int>,
+  &temp_logger::_nothing<unsigned long>,
+  &temp_logger::_nothing<unsigned long long>,
+  &temp_logger::_nothing<char const*>,
+  &temp_logger::_nothing<void const*>
+};
+temp_logger::redir const temp_logger::_redir_stringifier = {
+  &temp_logger::_to_stringifier<bool>,
+  &temp_logger::_to_stringifier<double>,
+  &temp_logger::_to_stringifier<int>,
+  &temp_logger::_to_stringifier<long>,
+  &temp_logger::_to_stringifier<long long>,
+  &temp_logger::_to_stringifier<QString const&>,
+  &temp_logger::_to_stringifier<unsigned int>,
+  &temp_logger::_to_stringifier<unsigned long>,
+  &temp_logger::_to_stringifier<unsigned long long>,
+  &temp_logger::_to_stringifier<char const*>,
+  &temp_logger::_to_stringifier<void const*>
+};
 
 /**************************************
 *                                     *
@@ -36,10 +70,37 @@ using namespace com::centreon::broker::logging;
  */
 void temp_logger::_internal_copy(temp_logger const& t) {
   _level = t._level;
+  _redir = t._redir;
   _type = t._type;
   _copied = false;
   t._copied = true;
   return ;
+}
+
+/**
+ *  Do nothing.
+ *
+ *  @param[in] t Unused.
+ *
+ *  @return This object.
+ */
+template <typename T>
+temp_logger& temp_logger::_nothing(T t) throw () {
+  (void)t;
+  return (*this);
+}
+
+/**
+ *  Redirect to stringifier.
+ *
+ *  @param[in] t Parameter to forward.
+ *
+ *  @return This object.
+ */
+template <typename T>
+temp_logger& temp_logger::_to_stringifier(T t) throw () {
+  misc::stringifier::operator<<(t);
+  return (*this);
 }
 
 /**************************************
@@ -51,8 +112,13 @@ void temp_logger::_internal_copy(temp_logger const& t) {
 /**
  *  Default constructor.
  */
-temp_logger::temp_logger(type log_type)
-  : _copied(false), _level(MEDIUM), _type(log_type) {}
+temp_logger::temp_logger(type log_type,
+                         level l,
+                         bool enable)
+  : _copied(false),
+    _level(l),
+    _redir(enable ? &_redir_stringifier : &_redir_nothing),
+    _type(log_type) {}
 
 /**
  *  Copy constructor.
@@ -69,16 +135,7 @@ temp_logger::temp_logger(temp_logger const& t) : misc::stringifier(t) {
 temp_logger::~temp_logger() {
   if (!_copied) {
     operator<<("\n");
-    QReadLocker lock(&backendsm);
-    for (QHash<QSharedPointer<backend>,
-             QPair<unsigned int, level> >::iterator
-           it = backends.begin(), end = backends.end();
-         it != end;
-         ++it)
-      if ((it->first & _type) && (it->second >= _level)) {
-        QMutexLocker l(it.key().data());
-        it.key()->log_msg(_buffer, _current, _type, _level);
-      }
+    manager::instance().log_msg(_buffer, _current, _type, _level);
   }
 }
 
@@ -96,13 +153,122 @@ temp_logger& temp_logger::operator=(temp_logger const& t) {
 }
 
 /**
- *  Change log level.
+ *  Boolean redirection.
  *
- *  @param[in] l New level.
+ *  @param[in] b Boolean.
  *
- *  @return Current instance.
+ *  @return This object.
  */
-temp_logger& temp_logger::operator<<(level l) throw () {
-  _level = l;
-  return (*this);
+temp_logger& temp_logger::operator<<(bool b) throw () {
+  return ((this->*(_redir->redirect_bool))(b));
+}
+
+/**
+ *  Double redirection.
+ *
+ *  @param[in] d Double.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(double d) throw () {
+  return ((this->*(_redir->redirect_double))(d));
+}
+
+/**
+ *  Integer redirection.
+ *
+ *  @param[in] i Integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(int i) throw () {
+  return ((this->*(_redir->redirect_int))(i));
+}
+
+/**
+ *  Long redirection.
+ *
+ *  @param[in] l Long integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(long l) throw () {
+  return ((this->*(_redir->redirect_long))(l));
+}
+
+/**
+ *  Long long redirection.
+ *
+ *  @param[in] ll Long long integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(long long ll) throw () {
+  return ((this->*(_redir->redirect_long_long))(ll));
+}
+
+/**
+ *  QString redirection.
+ *
+ *  @param[in] q Qt string.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(QString const& q) throw () {
+  return ((this->*(_redir->redirect_qstring))(q));
+}
+
+/**
+ *  Unsigned integer redirection.
+ *
+ *  @param[in] u Unsigned integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(unsigned int u) throw () {
+  return ((this->*(_redir->redirect_unsigned_int))(u));
+}
+
+/**
+ *  Unsigned long integer redirection.
+ *
+ *  @param[in] ul Unsigned long integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(unsigned long ul) throw () {
+  return ((this->*(_redir->redirect_unsigned_long))(ul));
+}
+
+/**
+ *  Unsigned long long integer redirection.
+ *
+ *  @param[in] ull Unsigned long long integer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(unsigned long long ull) throw () {
+  return ((this->*(_redir->redirect_unsigned_long_long))(ull));
+}
+
+/**
+ *  String redirection.
+ *
+ *  @param[in] str String.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(char const* str) throw () {
+  return ((this->*(_redir->redirect_string))(str));
+}
+
+/**
+ *  Pointer redirection.
+ *
+ *  @param[in] ptr Pointer.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(void const* ptr) throw () {
+  return ((this->*(_redir->redirect_pointer))(ptr));
 }
