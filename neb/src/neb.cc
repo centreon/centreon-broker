@@ -19,6 +19,7 @@
 #include <QCoreApplication>
 #include <stddef.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -158,6 +159,9 @@ extern "C" {
    */
   int nebmodule_init(int flags, char const* args, void* handle) {
     (void)flags;
+
+    // Initialization.
+    config::applier::init();
 
     // Save module handle for future use.
     gl_mod_handle = handle;
