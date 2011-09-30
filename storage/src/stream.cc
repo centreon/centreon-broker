@@ -476,7 +476,7 @@ void stream::write(QSharedPointer<io::data> data) {
           _insert_data_bin->bindValue(":id_metric", metric_id);
           _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->last_check));
           _insert_data_bin->bindValue(":value", pd.value());
-          _insert_data_bin->bindValue(":status", ss->current_state);
+          _insert_data_bin->bindValue(":status", ss->current_state + 1);
           _insert_data_bin->exec();
         }
 
