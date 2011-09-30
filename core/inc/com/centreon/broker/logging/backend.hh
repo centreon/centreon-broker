@@ -41,7 +41,7 @@ namespace              com {
          *  @see syslog
          */
         class          backend : public QObject, public QMutex {
-          Q_OBJECT;
+          Q_OBJECT
 
          public:
                        backend();
