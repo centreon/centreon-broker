@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,28 +21,27 @@
 # define CCB_CORRELATION_HOST_STATE_HH_
 
 # include "com/centreon/broker/correlation/state.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          correlation {
-        /**
-         *  @class host_state host_state.hh "com/centreon/broker/correlation/host_state.hh"
-         *  @brief Host state.
-         *
-         *  State of an host at a given time.
-         */
-        class            host_state : public state {
-         public:
-                         host_state();
-                         host_state(host_state const& hs);
-                         ~host_state();
-          host_state&    operator=(host_state const& hs);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          correlation {
+  /**
+   *  @class host_state host_state.hh "com/centreon/broker/correlation/host_state.hh"
+   *  @brief Host state.
+   *
+   *  State of an host at a given time.
+   */
+  class            host_state : public state {
+   public:
+                   host_state();
+                   host_state(host_state const& hs);
+                   ~host_state();
+    host_state&    operator=(host_state const& hs);
+    QString const& type() const;
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_CORRELATION_HOST_STATE_HH_ */

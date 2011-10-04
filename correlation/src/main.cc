@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -60,6 +61,10 @@ extern "C" {
       QMap<QString, QString>::const_iterator
         it(cfg.params().find("correlation"));
       if (it != cfg.params().end()) {
+        // Parameters.
+        QString correlation_file;
+        QString retention_file;
+
         // Parse XML.
         QDomDocument d;
         if (d.setContent(it.value())) {
@@ -70,27 +75,31 @@ extern "C" {
             QDomElement elem(level1.item(i).toElement());
             if (!elem.isNull()) {
               QString name(elem.tagName());
-              if (name == "file") {
-                // Create and register correlation object.
-                QSharedPointer<correlation::correlator>
-                  crltr(new correlation::correlator);
-                try {
-                  crltr->load(elem.text());
-                  obj = crltr.staticCast<multiplexing::hooker>();
-                  multiplexing::publisher::hook(obj);
-                  loaded = true;
-                }
-                catch (std::exception const& e) {
-                  logging::config << logging::HIGH << "correlation: " \
-                    "configuration loading error: " << e.what();
-                }
-                catch (...) {
-                  logging::config << logging::HIGH << "correlation: " \
-                    "configuration loading error";
-                }
-                break ;
-              }
+              if (name == "file")
+                correlation_file = elem.text();
+              else if (name == "retention")
+                retention_file = elem.text();
             }
+          }
+        }
+
+        if (!correlation_file.isEmpty()) {
+          // Create and register correlation object.
+          QSharedPointer<correlation::correlator>
+            crltr(new correlation::correlator);
+          try {
+            crltr->load(correlation_file, retention_file);
+            obj = crltr.staticCast<multiplexing::hooker>();
+            multiplexing::publisher::hook(obj);
+            loaded = true;
+          }
+          catch (std::exception const& e) {
+            logging::config << logging::HIGH << "correlation: "         \
+              "configuration loading error: " << e.what();
+          }
+          catch (...) {
+            logging::config << logging::HIGH << "correlation: " \
+              "configuration loading error";
           }
         }
       }

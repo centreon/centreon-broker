@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -85,6 +86,33 @@ issue& issue::operator=(issue const& i) {
   io::data::operator=(i);
   _internal_copy(i);
   return (*this);
+}
+
+/**
+ *  Check that two issues are equal.
+ *
+ *  @param[in] i Issue to compare to.
+ *
+ *  @return true if both issues are equal.
+ */
+bool issue::operator==(issue const& i) const {
+  return ((this == &i)
+          || ((ack_time == i.ack_time)
+              && (end_time == i.end_time)
+              && (host_id == i.host_id)
+              && (service_id == i.service_id)
+              && (start_time == i.start_time)));
+}
+
+/**
+ *  Check that two issues are not equal.
+ *
+ *  @param[in] i Issue to compare to.
+ *
+ *  @return true if both issues are not equal.
+ */
+bool issue::operator!=(issue const& i) const {
+  return (!this->operator==(i));
 }
 
 /**

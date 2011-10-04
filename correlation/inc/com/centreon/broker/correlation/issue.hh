@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,36 +22,37 @@
 
 # include <time.h>
 # include "com/centreon/broker/io/data.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          correlation {
-        /**
-         *  @class issue issue.hh "com/centreon/broker/correlation/issue.hh"
-         *  @brief Issue event.
-         *
-         *  Update or create an issue.
-         */
-        class            issue : public io::data {
-         private:
-          void           _internal_copy(issue const& i);
+CCB_BEGIN()
 
-         public:
-          time_t         ack_time;
-          time_t         end_time;
-          unsigned int   host_id;
-          unsigned int   service_id;
-          time_t         start_time;
-                         issue();
-                         issue(issue const& i);
-                         ~issue();
-          issue&         operator=(issue const& i);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          correlation {
+  /**
+   *  @class issue issue.hh "com/centreon/broker/correlation/issue.hh"
+   *  @brief Issue event.
+   *
+   *  Update or create an issue.
+   */
+  class            issue : public io::data {
+   private:
+    void           _internal_copy(issue const& i);
+
+   public:
+    time_t         ack_time;
+    time_t         end_time;
+    unsigned int   host_id;
+    unsigned int   service_id;
+    time_t         start_time;
+                   issue();
+                   issue(issue const& i);
+                   ~issue();
+    issue&         operator=(issue const& i);
+    bool           operator==(issue const& i) const;
+    bool           operator!=(issue const& i) const;
+    QString const& type() const;
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_CORRELATION_ISSUE_HH_ */

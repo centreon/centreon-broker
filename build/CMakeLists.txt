@@ -333,36 +333,36 @@ if (WITH_TESTING)
 
   # logging namespace tests.
   # logging::file tests.
-  #   Logging with no timestamp nor thread ID.
-  add_library("ccb_test_logging_file"
+  add_library("ccb_core_logging_file"
     STATIC
     "${TEST_DIR}/logging/file/common.cc")
+  #   Logging with no timestamp nor thread ID.
   set(TEST_NAME "core_logging_file_log_with_nothing")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/file/log_with_nothing.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging with timestamp.
   set(TEST_NAME "core_logging_file_log_with_timestamp")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/file/log_with_timestamp.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging with thread ID.
   set(TEST_NAME "core_logging_file_log_with_thread_id")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/file/log_with_thread_id.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging with timestamp and thread ID.
   set(TEST_NAME "core_logging_file_log_with_everything")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/file/log_with_everything.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # logging::manager tests.
   #   Simple logging.
@@ -370,28 +370,28 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/manager/simple.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging on multiple backends.
   set(TEST_NAME "core_logging_manager_multiple")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/manager/multiple.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Logging on backends with different options.
   set(TEST_NAME "core_logging_manager_cross")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/manager/cross.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Stop logging on a backend.
   set(TEST_NAME "core_logging_manager_backend_unlog")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/manager/backend_unlog.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # logging::temp_logger tests.
   #   Default test.
@@ -399,28 +399,28 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/temp_logger/enabled.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Object copy.
   set(TEST_NAME "core_logging_temp_logger_copied")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/temp_logger/copied.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Data insertion.
   set(TEST_NAME "core_logging_temp_logger_insertion")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/temp_logger/insertion.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Test with temp_logger disabled.
   set(TEST_NAME "core_logging_temp_logger_disabled")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/temp_logger/disabled.cc"
     "${TEST_DIR}/logging/file/common.hh")
-  target_link_libraries("${TEST_NAME}" "roker" "ccb_test_logging_file")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Global tests.
   #   Concurrent logging.

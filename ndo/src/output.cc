@@ -16,7 +16,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/correlation/engine.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -297,13 +296,6 @@ void output::write(QSharedPointer<io::data> e) {
     buffer << NDO_API_STORAGESTATUS << ":\n";
     handle_event<storage::status>(
       *static_cast<storage::status*>(e.data()),
-      buffer);
-    buffer << NDO_API_ENDDATA << "\n";
-  }
-  else if (e->type() == "com::centreon::broker::correlation::engine") {
-    buffer << NDO_API_CORRELATIONENGINE << ":\n";
-    handle_event<correlation::engine>(
-      *static_cast<correlation::engine*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

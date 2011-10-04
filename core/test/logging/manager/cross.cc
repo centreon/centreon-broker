@@ -106,9 +106,9 @@ int main () {
   }
 
   // Remove file.
-  //QFile::remove(file_path1);
-  //QFile::remove(file_path2);
-  //QFile::remove(file_path3);
+  QFile::remove(file_path1);
+  QFile::remove(file_path2);
+  QFile::remove(file_path3);
 
   // Return check result.
   return (retval);
