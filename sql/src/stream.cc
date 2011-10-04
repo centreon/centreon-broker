@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -265,6 +266,15 @@ void stream::_prepare() {
   _prepare_insert<correlation::host_state>(_host_state_insert);
   _prepare_insert<correlation::issue>(_issue_insert);
   _prepare_insert<correlation::service_state>(_service_state_insert);
+  _issue_parent_insert.reset(new QSqlQuery(*_db));
+  {
+    QString query(
+      "INSERT INTO issues_issues_parents (child_id, end_time, start_time, parent_id)"
+      " VALUES (:child_id, :end_time, :start_time, :parent_id)");
+    logging::info(logging::low) << "SQL: preparing statement: "
+      << query;
+    _issue_parent_insert->prepare(query);
+  }
 
   // Prepare update queries.
   QVector<QPair<QString, bool> > id;
@@ -371,6 +381,18 @@ void stream::_prepare() {
   id.push_back(qMakePair(QString("start_time"), false));
   _prepare_update<correlation::service_state>(_service_state_update,
     id);
+
+  _issue_parent_update.reset(new QSqlQuery(*_db));
+  {
+    QString query(
+      "UPDATE issues_issues_parents SET end_time=:end_time"
+      " WHERE child_id=:child_id"
+      "       AND start_time=:start_time"
+      "       AND parent_id=:parent_id");
+    logging::info(logging::low) << "SQL: preparing statement: "
+      << query;
+    _issue_parent_update->prepare(query);
+  }
 
   return ;
 }
@@ -988,31 +1010,31 @@ void stream::_process_issue_parent(io::data const& e) {
   }
 
   // End of parenting.
-  if (ip.end_time) {
-    std::ostringstream query;
-    query << "UPDATE "
-          << mapped_type<correlation::issue_parent>::table
-          << " SET end_time="
-          << ip.end_time << " WHERE child_id="
-          << child_id << " AND parent_id="
-          << parent_id << " AND start_time="
-          << ip.start_time;
-    logging::info << logging::LOW << "SQL: executing query: "
-                  << query.str().c_str();
-    _db->exec(query.str().c_str());
-  }
-  // New parenting.
-  else {
-    std::ostringstream query;
-    query << "INSERT INTO "
-          << mapped_type<correlation::issue_parent>::table
-          << " (child_id, parent_id, start_time) VALUES("
-          << child_id << ", "
-          << parent_id << ", "
-          << ip.start_time << ")";
-    logging::info << logging::LOW << "SQL: executing query: "
-                  << query.str().c_str();
-    _db->exec(query.str().c_str());
+  _issue_parent_update->bindValue(
+    ":end_time",
+    static_cast<unsigned int>(ip.end_time));
+  _issue_parent_update->bindValue(":child_id", child_id);
+  _issue_parent_update->bindValue(
+    ":start_time",
+    static_cast<unsigned int>(ip.start_time));
+  _issue_parent_update->bindValue(":parent_id", parent_id);
+  logging::debug(logging::low) << "SQL: updating issue parenting entry";
+  if (!_issue_parent_update->exec())
+    throw (exceptions::msg() << "SQL: issue parent update query failed: "
+             << _issue_parent_update->lastError().text());
+  if (_issue_parent_update->numRowsAffected() <= 0) {
+    _issue_parent_insert->bindValue(
+      ":end_time",
+      static_cast<unsigned int>(ip.end_time));
+    _issue_parent_insert->bindValue(":child_id", child_id);
+    _issue_parent_insert->bindValue(
+      ":start_time",
+      static_cast<unsigned int>(ip.start_time));
+    _issue_parent_insert->bindValue(":parent_id", parent_id);
+    logging::debug(logging::low) << "SQL: inserting issue parenting";
+    if (!_issue_parent_insert->exec())
+      throw (exceptions::msg() << "SQL: issue parent insert query " \
+               "failed: " << _issue_parent_insert->lastError().text());
   }
 
   return ;

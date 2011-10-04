@@ -66,6 +66,8 @@ namespace              com {
           QScopedPointer<QSqlQuery>    _instance_status_update;
           QScopedPointer<QSqlQuery>    _issue_insert;
           QScopedPointer<QSqlQuery>    _issue_update;
+          QScopedPointer<QSqlQuery>    _issue_parent_insert;
+          QScopedPointer<QSqlQuery>    _issue_parent_update;
           QScopedPointer<QSqlQuery>    _notification_insert;
           QScopedPointer<QSqlQuery>    _notification_update;
           QScopedPointer<QSqlQuery>    _service_insert;
