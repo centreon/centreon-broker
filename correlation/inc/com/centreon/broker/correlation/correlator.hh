@@ -63,6 +63,7 @@ namespace                          com {
                                      QSharedPointer<io::data> e);
           issue*                   _find_related_issue(node& n);
           void                     _internal_copy(correlator const& c);
+          void                     _issue_parenting(node* n, bool full);
           QMap<QPair<unsigned int, unsigned int>, node>::iterator
                                    _remove_node(
                                      QMap<QPair<unsigned int, unsigned int>, node>::iterator it);
