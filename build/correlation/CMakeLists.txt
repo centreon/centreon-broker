@@ -24,6 +24,7 @@ include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # Some files must be processed by Qt's moc.
+unset(QT_WRAPPED_SOURCES)
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/com/centreon/broker/correlation/correlator.hh")
 
