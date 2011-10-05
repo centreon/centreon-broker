@@ -744,12 +744,16 @@ void correlator::load(QString const& correlation_file,
 
   // Load configuration file.
   {
+    logging::debug(logging::medium)
+      << "correlation: loading configuration file";
     parser p;
     p.parse(_correlation_file, false, _nodes);
   }
 
   // Load retention file.
   if (!_retention_file.isEmpty() && QFile::exists(_retention_file)) {
+    logging::debug(logging::medium)
+      << "correlation: loading retention file";
     parser p;
     p.parse(_retention_file, true, _nodes);
   }
@@ -760,9 +764,13 @@ void correlator::load(QString const& correlation_file,
          end = _nodes.end();
        it != end;
        ++it)
-    if (!it->my_issue.isNull())
+    if (!it->my_issue.isNull()) {
+      logging::debug(logging::medium)
+        << "correlation: reopening issue of node ("
+        << it->host_id << ", " << it->service_id << ")";
       _events.push_back(
         QSharedPointer<io::data>(new issue(*(it->my_issue))));
+    }
 
   // Re-link issues.
   for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
