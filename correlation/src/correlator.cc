@@ -853,7 +853,23 @@ void correlator::starting() {
 void correlator::stopping() {
   logging::debug << logging::MEDIUM
     << "correlation: engine shutting down";
+
+  // Dump correlation state.
   _write_issues();
+
+  // Close issues.
+  time_t now(time(NULL));
+  for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
+         it = _nodes.begin(),
+         end = _nodes.end();
+       it != end;
+       ++it)
+    if (!it->my_issue.isNull()) {
+      QSharedPointer<issue> i(new issue(*it->my_issue));
+      i->end_time = now;
+      _events.push_back(i.staticCast<io::data>());
+    }
+
   return ;
 }
 

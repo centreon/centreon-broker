@@ -39,5 +39,5 @@ int main() {
           || !n.parents().isEmpty()
           || (n.service_id != 0)
           || (n.since != 0)
-          || (n.state != 3));
+          || (n.state != 0));
 }

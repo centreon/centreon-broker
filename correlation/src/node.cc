@@ -94,7 +94,7 @@ node::node()
   : host_id(0),
     service_id(0),
     since(0),
-    state(3) {}
+    state(0) {}
 
 /**
  *  Copy constructor.
