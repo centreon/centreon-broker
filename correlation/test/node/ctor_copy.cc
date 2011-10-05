@@ -75,7 +75,7 @@ int main() {
           || (cn.my_issue->end_time != 234)
           || (cn.my_issue->start_time != 7678353)
           || (cn.service_id != 765334)
-          || (cn.since != 3945239074u)
+          || (cn.since != static_cast<time_t>(3945239074u))
           || (cn.state != 2)
           || (cn.children().size() != 1)
           || (*cn.children().begin() != &n1)

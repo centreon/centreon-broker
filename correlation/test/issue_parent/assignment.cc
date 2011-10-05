@@ -63,7 +63,7 @@ int main() {
           || (ip1.start_time != 456887)
           || (ip2.child_host_id != 48745748)
           || (ip2.child_service_id != 1)
-          || (ip2.child_start_time != 3148514254u)
+          || (ip2.child_start_time != static_cast<time_t>(3148514254u))
           || (ip2.end_time != 7456987)
           || (ip2.parent_host_id != 4578)
           || (ip2.parent_service_id != 42)
