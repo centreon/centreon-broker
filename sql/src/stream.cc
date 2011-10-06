@@ -1010,9 +1010,14 @@ void stream::_process_issue_parent(io::data const& e) {
   }
 
   // End of parenting.
-  _issue_parent_update->bindValue(
-    ":end_time",
-    static_cast<unsigned int>(ip.end_time));
+  if (ip.end_time)
+    _issue_parent_update->bindValue(
+      ":end_time",
+      static_cast<unsigned int>(ip.end_time));
+  else
+    _issue_parent_update->bindValue(
+      ":end_time",
+      QVariant(QVariant::Int));
   _issue_parent_update->bindValue(":child_id", child_id);
   _issue_parent_update->bindValue(
     ":start_time",
@@ -1023,9 +1028,14 @@ void stream::_process_issue_parent(io::data const& e) {
     throw (exceptions::msg() << "SQL: issue parent update query failed: "
              << _issue_parent_update->lastError().text());
   if (_issue_parent_update->numRowsAffected() <= 0) {
-    _issue_parent_insert->bindValue(
-      ":end_time",
-      static_cast<unsigned int>(ip.end_time));
+    if (ip.end_time)
+      _issue_parent_insert->bindValue(
+        ":end_time",
+        static_cast<unsigned int>(ip.end_time));
+    else
+      _issue_parent_insert->bindValue(
+        ":end_time",
+        QVariant(QVariant::Int));
     _issue_parent_insert->bindValue(":child_id", child_id);
     _issue_parent_insert->bindValue(
       ":start_time",
