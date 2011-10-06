@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -32,7 +33,8 @@ pkg_check_modules(LIBRRD REQUIRED "librrd")
 
 # RRD module.
 set(RRD "70-rrd")
-add_library("${RRD}" MODULE
+set(RRD "${RRD}" PARENT_SCOPE)
+add_library("${RRD}" SHARED
   # Sources.
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/cached.cc"
@@ -78,49 +80,45 @@ if (LIBRRD_LDFLAGS)
 endif ()
 
 if (WITH_TESTING)
+  set(TEST_LIBRARIES "${RRD}" "roker")
+
   # Open exception tests.
   #   Throw.
   set(TEST_NAME "rrd_exceptions_open_throw")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/open.cc"
     "${TEST_DIR}/exceptions/open/throw.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Rethrow.
   set(TEST_NAME "rrd_exceptions_open_rethrow")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/open.cc"
     "${TEST_DIR}/exceptions/open/rethrow.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Clone.
   set(TEST_NAME "rrd_exceptions_open_clone")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/open.cc"
     "${TEST_DIR}/exceptions/open/clone.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Update exception tests.
   #   Throw.
   set(TEST_NAME "rrd_exceptions_update_throw")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/update.cc"
     "${TEST_DIR}/exceptions/update/throw.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Rethrow.
   set(TEST_NAME "rrd_exceptions_update_rethrow")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/update.cc"
     "${TEST_DIR}/exceptions/update/rethrow.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Clone.
   set(TEST_NAME "rrd_exceptions_update_clone")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/exceptions/update.cc"
     "${TEST_DIR}/exceptions/update/clone.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 

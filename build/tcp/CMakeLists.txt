@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -29,7 +30,8 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 
 # TCP module.
 set(TCP "50-tcp")
-add_library("${TCP}" MODULE
+set(TCP "${TCP}" PARENT_SCOPE)
+add_library("${TCP}" SHARED
   # Sources.
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"

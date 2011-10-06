@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -25,7 +26,8 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # SQL module.
 set(SQL "80-sql")
-add_library("${SQL}" MODULE
+set(SQL "${SQL}" PARENT_SCOPE)
+add_library("${SQL}" SHARED
   # Sources.
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"

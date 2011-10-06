@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -26,7 +27,8 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # NDO module.
 set(NDO "80-ndo")
-add_library("${NDO}" MODULE
+set(NDO "${NDO}" PARENT_SCOPE)
+add_library("${NDO}" SHARED
   # Sources.
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"

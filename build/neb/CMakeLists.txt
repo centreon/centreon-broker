@@ -1,5 +1,6 @@
 ##
 ## Copyright 2009-2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -97,7 +98,8 @@ set(NEB_SOURCES
 
 # Centreon Broker module.
 set(NEB "10-neb")
-add_library("${NEB}" MODULE
+set(NEB "${NEB}" PARENT_SCOPE)
+add_library("${NEB}" SHARED
   # Event sources.
   ${NEB_SOURCES}
   # Main source.
@@ -136,20 +138,18 @@ set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
 # Unit tests.
 if (WITH_TESTING)
-  # Static neb library.
-  add_library("ccb_neb"
-    STATIC
-    ${NEB_SOURCES})
-
   # set_log_data tests.
+  #   set_log_data library.
+  add_library("ccb_neb_set_log_data" STATIC
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/log_entry.cc"
+    "${SRC_DIR}/set_log_data.cc")
+  set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "roker")
   #   Host alert.
   set(TEST_NAME "neb_set_log_data_host_alert")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
-    "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/host_alert.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Service alert.
   set(TEST_NAME "neb_set_log_data_service_alert")
@@ -158,7 +158,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/service_alert.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Host notification.
   set(TEST_NAME "neb_set_log_data_host_notification")
@@ -167,7 +167,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/host_notification.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Service notification.
   set(TEST_NAME "neb_set_log_data_service_notification")
@@ -176,7 +176,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/service_notification.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Initial host state.
   set(TEST_NAME "neb_set_log_data_initial_host_state")
@@ -194,7 +194,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/initial_service_state.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Current host state.
   set(TEST_NAME "neb_set_log_data_current_host_state")
@@ -203,7 +203,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/current_host_state.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Current service state.
   set(TEST_NAME "neb_set_log_data_current_service_state")
@@ -212,7 +212,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/current_service_state.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Host acknowledgement external command.
   set(TEST_NAME "neb_set_log_data_external_acknowledge_host")
@@ -221,7 +221,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/external_acknowledge_host.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Service acknowledgement external command.
   set(TEST_NAME "neb_set_log_data_external_acknowledge_service")
@@ -230,7 +230,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/external_acknowledge_service.cc")
-  target_link_libraries("${TEST_NAME}" "ccb_neb" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")  
 endif ()
 

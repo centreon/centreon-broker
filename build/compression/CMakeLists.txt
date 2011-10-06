@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -24,7 +25,8 @@ include_directories("${INC_DIR}")
 
 # Compression module.
 set(COMPRESSION "60-compression")
-add_library("${COMPRESSION}" MODULE
+set(COMPRESSION "${COMPRESSION}" PARENT_SCOPE)
+add_library("${COMPRESSION}" SHARED
   # Sources.
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
@@ -44,10 +46,11 @@ if (WITH_TESTING)
   #   Compress/uncompress.
   set(TEST_NAME "compression_stream_io")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/file/src/stream.cc"
-    "${SRC_DIR}/stream.cc"
     "${TEST_DIR}/stream/io.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}"
+    "${FILE}"
+    "${COMPRESSION}"
+    "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 

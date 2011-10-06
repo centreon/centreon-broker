@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -23,6 +24,7 @@ include_directories("${INC_DIR}")
 
 # Local sockets module.
 set(LOCAL "50-local")
+set(LOCAL "${LOCAL}" PARENT_SCOPE)
 add_library("${LOCAL}" MODULE
   # Sources.
   "${SRC_DIR}/acceptor.cc"

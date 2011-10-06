@@ -1,5 +1,6 @@
 ##
 ## Copyright 2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -24,7 +25,8 @@ include_directories("${INC_DIR}")
 
 # File module.
 set(FILE "50-file")
-add_library("${FILE}" MODULE
+set(FILE "${FILE}" PARENT_SCOPE)
+add_library("${FILE}" SHARED
   # Sources.
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
@@ -38,20 +40,20 @@ add_library("${FILE}" MODULE
 set_target_properties("${FILE}" PROPERTIES PREFIX "")
 
 if (WITH_TESTING)
+  set(TEST_LIBRARIES "${FILE}" "roker")
+
   # stream tests.
   #   Writing.
   set(TEST_NAME "file_stream_write")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/stream.cc"
     "${TEST_DIR}/stream/write.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Reading.
   set(TEST_NAME "file_stream_read")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/stream.cc"
     "${TEST_DIR}/stream/read.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 

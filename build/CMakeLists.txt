@@ -1,5 +1,6 @@
 ##
 ## Copyright 2009-2011 Merethis
+##
 ## This file is part of Centreon Broker.
 ##
 ## Centreon Broker is free software: you can redistribute it and/or
@@ -19,7 +20,6 @@
 # Global options.
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
@@ -53,8 +53,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/with_pointer.cc"
-#	../src/interface/ndo/base.cc
-#	../src/interface/ndo/source_destination.cc
 #	../src/interface/xml/destination.cc
 #	../src/interface/xml/internal.cc
 #	../src/interface/xml/source.cc
@@ -64,7 +62,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
-#	../src/io/net/unix.cc
 #	../src/io/split.cc
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
@@ -140,14 +137,6 @@ if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   endif ()
 endif ()
 target_link_libraries("roker" ${QT_LIBRARIES})
-
-# Common sources files.
-#set(COMMON_SOURCES
-#	../src/correlation/correlator.cc
-#	../src/correlation/node.cc
-#	../src/correlation/parser.cc
-#	../src/init.cc
-#)
 
 # Standalone binary.
 set(DAEMON "cbd")
@@ -470,23 +459,23 @@ install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BINARY}"
 )
 
+# NEB module.
+add_subdirectory("neb")
+
+# File module.
+add_subdirectory("file")
+
 # Compression module.
 add_subdirectory("compression")
 
 # Correlation module.
 add_subdirectory("correlation")
 
-# File module.
-add_subdirectory("file")
-
 # Local sockets module.
 add_subdirectory("local")
 
 # NDO module.
 add_subdirectory("ndo")
-
-# NEB module.
-add_subdirectory("neb")
 
 # RRD module.
 add_subdirectory("rrd")
