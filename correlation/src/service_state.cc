@@ -57,6 +57,35 @@ service_state& service_state::operator=(service_state const& ss) {
 }
 
 /**
+ *  Equality operator.
+ *
+ *  @param[in] ss Object to compare to.
+ *
+ *  @return true if both objects are equal.
+ */
+bool service_state::operator==(service_state const& ss) const {
+  return ((this == &ss)
+          || ((ack_time == ss.ack_time)
+              && (current_state == ss.current_state)
+              && (end_time == ss.end_time)
+              && (host_id == ss.host_id)
+              && (in_downtime == ss.in_downtime)
+              && (service_id == ss.service_id)
+              && (start_time == ss.start_time)));
+}
+
+/**
+ *  Non-equality operator.
+ *
+ *  @param[in] ss Object to compare to.
+ *
+ *  @return true if both objects are not equal.
+ */
+bool service_state::operator!=(service_state const& ss) const {
+  return (!this->operator==(ss));
+}
+
+/**
  *  Get the type of this object.
  *
  *  @return The string "com::centreon::broker::correlation::service_state".

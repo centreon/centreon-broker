@@ -37,7 +37,9 @@ host_state::host_state() {}
  *
  *  @param[in] hs Object to copy.
  */
-host_state::host_state(host_state const& hs) : state(hs) {}
+host_state::host_state(host_state const& hs) : state(hs) {
+  service_id = 0;
+}
 
 /**
  *  Destructor.
@@ -53,7 +55,36 @@ host_state::~host_state() {}
  */
 host_state& host_state::operator=(host_state const& hs) {
   state::operator=(hs);
+  service_id = 0;
   return (*this);
+}
+
+/**
+ *  Equality operator.
+ *
+ *  @param[in] hs Object to compare to.
+ *
+ *  @return true if both objects are equal.
+ */
+bool host_state::operator==(host_state const& hs) const {
+  return ((this == &hs)
+          || ((ack_time == hs.ack_time)
+              && (current_state == hs.current_state)
+              && (end_time == hs.end_time)
+              && (host_id == hs.host_id)
+              && (in_downtime == hs.in_downtime)
+              && (start_time == hs.start_time)));
+}
+
+/**
+ *  Non-equality operator.
+ *
+ *  @param[in] hs Object to compare to.
+ *
+ *  @return true if both objects are not equal.
+ */
+bool host_state::operator!=(host_state const& hs) const {
+  return (!this->operator==(hs));
 }
 
 /**

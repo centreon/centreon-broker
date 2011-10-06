@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -45,7 +46,8 @@ connector::connector(connector const& c)
     _password(c._password),
     _port(c._port),
     _type(c._type),
-    _user(c._user) {}
+    _user(c._user),
+    _with_state_events(c._with_state_events) {}
 
 /**
  *  Destructor.
@@ -67,6 +69,7 @@ connector& connector::operator=(connector const& c) {
   _port = c._port;
   _type = c._type;
   _user = c._user;
+  _with_state_events = c._with_state_events;
   return (*this);
 }
 
@@ -92,13 +95,15 @@ void connector::connect_to(QString const& type,
                            unsigned short port,
                            QString const& user,
                            QString const& password,
-                           QString const& db) {
+                           QString const& db,
+                           bool with_state_events) {
   _db = db;
   _host = host;
   _password = password;
   _port = port;
   _type = type;
   _user = user;
+  _with_state_events = with_state_events;
   return ;
 }
 
@@ -113,5 +118,6 @@ QSharedPointer<io::stream> connector::open() {
             _port,
             _user,
             _password,
-            _db)));
+            _db,
+            _with_state_events)));
 }

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -40,6 +41,7 @@ namespace                            com {
           unsigned short             _port;
           QString                    _type;
           QString                    _user;
+          bool                       _with_state_events;
 
          public:
                                      connector();
@@ -52,7 +54,8 @@ namespace                            com {
                                        unsigned short port,
                                        QString const& user,
                                        QString const& password,
-                                       QString const& db);
+                                       QString const& db,
+                                       bool with_state_events = false);
           QSharedPointer<io::stream> open();
         };
       }

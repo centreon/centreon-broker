@@ -70,6 +70,7 @@ void node::_internal_copy(node const& n) {
 
   // Copy other members.
   host_id = n.host_id;
+  in_downtime = n.in_downtime;
   if (!n.my_issue.isNull())
     my_issue.reset(new issue(*(n.my_issue)));
   else
@@ -92,6 +93,7 @@ void node::_internal_copy(node const& n) {
  */
 node::node()
   : host_id(0),
+    in_downtime(false),
     service_id(0),
     since(0),
     state(0) {}
@@ -161,6 +163,7 @@ bool node::operator==(node const& n) const {
   if (this == &n)
     retval = true;
   else if ((host_id == n.host_id)
+           && (in_downtime == n.in_downtime)
            && (service_id == n.service_id)
            && (since == n.since)
            && (state == n.state)

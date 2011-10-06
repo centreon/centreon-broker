@@ -142,9 +142,16 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find DB name.
   QString name(find_param(cfg, "db_name"));
 
+  // Use state events ?
+  bool wse(false);
+  QMap<QString, QString>::const_iterator
+    it(cfg.params.find("with_state_events"));
+  if (it != cfg.params.end())
+    wse = true;
+
   // Connector.
   QScopedPointer<sql::connector> c(new sql::connector);
-  c->connect_to(type, host, port, user, password, name);
+  c->connect_to(type, host, port, user, password, name, wse);
   is_acceptor = false;
   return (c.take());
 }

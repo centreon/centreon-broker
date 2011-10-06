@@ -33,6 +33,7 @@ using namespace com::centreon::broker::correlation;
  *  @param[in] s Object to copy.
  */
 void state::_internal_copy(state const& s) {
+  ack_time = s.ack_time;
   current_state = s.current_state;
   end_time = s.end_time;
   host_id = s.host_id;
@@ -52,7 +53,8 @@ void state::_internal_copy(state const& s) {
  *  Constructor.
  */
 state::state()
-  : current_state(3),
+  : ack_time(0),
+    current_state(3),
     end_time(0),
     host_id(0),
     in_downtime(false),

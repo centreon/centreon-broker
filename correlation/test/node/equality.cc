@@ -31,6 +31,7 @@ int main() {
   // Base object.
   correlation::node bn;
   bn.host_id = 42;
+  bn.in_downtime = true;
   bn.my_issue.reset(new correlation::issue);
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
@@ -54,6 +55,7 @@ int main() {
   // Reset base object.
   correlation::node dn(bn);
   dn.host_id = 23;
+  dn.in_downtime = false;
   dn.my_issue.reset();
   dn.service_id = 2347;
   dn.since = 553445;

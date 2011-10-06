@@ -77,6 +77,7 @@ namespace              com {
           QScopedPointer<QSqlQuery>    _service_state_update;
           QScopedPointer<QSqlQuery>    _service_status_update;
           QScopedPointer<QSqlDatabase> _db;
+          bool                         _with_state_events;
           stream&      operator=(stream const& s);
           void         _clean_tables(int instance_id);
           void         _execute(QString const& query);
@@ -131,7 +132,8 @@ namespace              com {
                          unsigned short port,
                          QString const& user,
                          QString const& password,
-                         QString const& db);
+                         QString const& db,
+                         bool with_state_events);
                        stream(stream const& s);
                        ~stream();
           static void  initialize();

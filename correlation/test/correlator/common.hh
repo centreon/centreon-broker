@@ -43,6 +43,23 @@ void add_issue_parent(
        unsigned int parent_service_id,
        time_t parent_start_time,
        time_t start_time);
+void add_state_host(
+       QList<QSharedPointer<com::centreon::broker::io::data> >& content,
+       time_t ack_time,
+       int current_state,
+       time_t end_time,
+       unsigned int host_id,
+       bool in_downtime,
+       time_t start_time);
+void add_state_service(
+       QList<QSharedPointer<com::centreon::broker::io::data> >& content,
+       time_t ack_time,
+       int current_state,
+       time_t end_time,
+       unsigned int host_id,
+       bool in_downtime,
+       unsigned int service_id,
+       time_t start_time);
 bool check_content(
        com::centreon::broker::io::stream& s,
        QList<QSharedPointer<com::centreon::broker::io::data> > const& content);

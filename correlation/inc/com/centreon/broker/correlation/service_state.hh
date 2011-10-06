@@ -38,6 +38,8 @@ namespace          correlation {
                    service_state(service_state const& ss);
                    ~service_state();
     service_state& operator=(service_state const& ss);
+    bool           operator==(service_state const& ss) const;
+    bool           operator!=(service_state const& ss) const;
     QString const& type() const;
   };
 }

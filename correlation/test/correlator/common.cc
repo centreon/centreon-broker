@@ -17,8 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -86,6 +88,69 @@ void add_issue_parent(QList<QSharedPointer<io::data> >& content,
 }
 
 /**
+ *  Add a host state to a content.
+ *
+ *  @param[out] content       Content.
+ *  @param[in]  ack_time      Acknowledgement time.
+ *  @param[in]  current_state Current service state.
+ *  @param[in]  end_time      State end time.
+ *  @param[in]  host_id       Host ID.
+ *  @param[in]  in_downtime   Is in downtime ?
+ *  @param[in]  start_time    State start time.
+ */
+void add_state_host(QList<QSharedPointer<io::data> >& content,
+                    time_t ack_time,
+                    int current_state,
+                    time_t end_time,
+                    unsigned int host_id,
+                    bool in_downtime,
+                    time_t start_time) {
+  QSharedPointer<correlation::host_state>
+    s(new correlation::host_state);
+  s->ack_time = ack_time;
+  s->current_state = current_state;
+  s->end_time = end_time;
+  s->host_id = host_id;
+  s->in_downtime = in_downtime;
+  s->start_time = start_time;
+  content.push_back(s.staticCast<io::data>());
+  return ;
+}
+
+/**
+ *  Add a service state to a content.
+ *
+ *  @param[out] content       Content.
+ *  @param[in]  ack_time      Acknowledgement time.
+ *  @param[in]  current_state Current service state.
+ *  @param[in]  end_time      State end time.
+ *  @param[in]  host_id       Host ID.
+ *  @param[in]  in_downtime   Is in downtime ?
+ *  @param[in]  service_id    Service ID.
+ *  @param[in]  start_time    State start time.
+ */
+void add_state_service(QList<QSharedPointer<io::data> >& content,
+                       time_t ack_time,
+                       int current_state,
+                       time_t end_time,
+                       unsigned int host_id,
+                       bool in_downtime,
+                       unsigned int service_id,
+                       time_t start_time) {
+  QSharedPointer<correlation::service_state>
+    s(new correlation::service_state);
+  s->ack_time = ack_time;
+  s->current_state = current_state;
+  s->end_time = end_time;
+  s->host_id = host_id;
+  s->in_downtime = in_downtime;
+  s->service_id = service_id;
+  s->start_time = start_time;
+  content.push_back(s.staticCast<io::data>());
+  return ;
+}
+
+/**
  *  Check the content read from a stream.
  *
  *  @param[in] s       Stream.
@@ -109,8 +174,7 @@ bool check_content(io::stream& s,
           i1(d.staticCast<correlation::issue>());
         QSharedPointer<correlation::issue>
           i2(it->staticCast<correlation::issue>());
-        retval = (((i1->ack_time && i2->ack_time)
-                   || (!i1->ack_time && !i2->ack_time))
+        retval = ((i1->ack_time == i2->ack_time)
                   && ((i1->end_time && i2->end_time)
                       || (!i1->end_time && !i2->end_time))
                   && (i1->host_id == i2->host_id)
@@ -138,6 +202,37 @@ bool check_content(io::stream& s,
                           && !ip2->parent_start_time))
                   && ((ip1->start_time && ip2->start_time)
                       || (!ip1->start_time && !ip2->start_time)));
+      }
+      else if (d->type()
+               == "com::centreon::broker::correlation::host_state") {
+        QSharedPointer<correlation::host_state>
+          s1(d.staticCast<correlation::host_state>());
+        QSharedPointer<correlation::host_state>
+          s2(it->staticCast<correlation::host_state>());
+        retval = ((s1->ack_time == s2->ack_time)
+                  && (s1->current_state == s2->current_state)
+                  && ((s1->end_time && s2->end_time)
+                      || (!s2->end_time && !s2->end_time))
+                  && (s1->host_id == s2->host_id)
+                  && (s1->in_downtime == s2->in_downtime)
+                  && ((s1->start_time && s2->start_time)
+                      || (!s1->start_time && !s2->start_time)));
+      }
+      else if (d->type()
+               == "com::centreon::broker::correlation::service_state") {
+        QSharedPointer<correlation::service_state>
+          s1(d.staticCast<correlation::service_state>());
+        QSharedPointer<correlation::service_state>
+          s2(it->staticCast<correlation::service_state>());
+        retval = ((s1->ack_time == s2->ack_time)
+                  && (s1->current_state == s2->current_state)
+                  && ((s1->end_time && s2->end_time)
+                      || (!s2->end_time && !s2->end_time))
+                  && (s1->host_id == s2->host_id)
+                  && (s1->in_downtime == s2->in_downtime)
+                  && (s1->service_id == s2->service_id)
+                  && ((s1->start_time && s2->start_time)
+                      || (!s1->start_time && !s2->start_time)));
       }
       ++it;
     }

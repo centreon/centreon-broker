@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,8 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -299,6 +302,13 @@ void output::write(QSharedPointer<io::data> e) {
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
+  else if (e->type() == "com::centreon::broker::correlation::host_state") {
+    buffer << NDO_API_CORRELATIONHOSTSTATE << ":\n";
+    handle_event<correlation::host_state>(
+      *static_cast<correlation::host_state*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
   else if (e->type() == "com::centreon::broker::correlation::issue") {
     buffer << NDO_API_CORRELATIONISSUE << ":\n";
     handle_event<correlation::issue>(
@@ -310,6 +320,13 @@ void output::write(QSharedPointer<io::data> e) {
     buffer << NDO_API_CORRELATIONISSUEPARENT << ":\n";
     handle_event<correlation::issue_parent>(
       *static_cast<correlation::issue_parent*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == "com::centreon::broker::correlation::service_state") {
+    buffer << NDO_API_CORRELATIONSERVICESTATE << ":\n";
+    handle_event<correlation::service_state>(
+      *static_cast<correlation::service_state*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

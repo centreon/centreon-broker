@@ -35,6 +35,7 @@ int main() {
           || !n.depended_by().isEmpty()
           || !n.depends_on().isEmpty()
           || (n.host_id != 0)
+          || n.in_downtime
           || n.my_issue.data()
           || !n.parents().isEmpty()
           || (n.service_id != 0)

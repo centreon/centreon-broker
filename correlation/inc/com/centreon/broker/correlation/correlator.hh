@@ -52,6 +52,8 @@ namespace                          com {
           QMap<QPair<unsigned int, unsigned int>, node>
                                    _nodes;
           QString                  _retention_file;
+          void                     _correlate_acknowledgement(
+                                     QSharedPointer<io::data> e);
           void                     _correlate_host_service_status(
                                      QSharedPointer<io::data> e,
                                      bool is_host);

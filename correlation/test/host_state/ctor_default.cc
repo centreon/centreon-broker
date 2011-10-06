@@ -31,7 +31,8 @@ int main() {
   correlation::host_state hs;
 
   // Check default construction.
-  return ((hs.current_state != 3)
+  return ((hs.ack_time != 0)
+          || (hs.current_state != 3)
           || (hs.end_time != 0)
           || (hs.host_id != 0)
           || (hs.in_downtime != false)

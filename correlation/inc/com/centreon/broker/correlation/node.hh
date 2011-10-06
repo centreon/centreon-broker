@@ -45,6 +45,7 @@ namespace                 correlation {
 
    public:
     unsigned int          host_id;
+    bool                  in_downtime;
     QScopedPointer<issue> my_issue;
     unsigned int          service_id;
     time_t                since;

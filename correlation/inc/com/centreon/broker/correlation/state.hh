@@ -39,6 +39,7 @@ namespace        correlation {
     void         _internal_copy(state const& s);
 
    public:
+    time_t       ack_time;
     int          current_state;
     time_t       end_time;
     unsigned int host_id;

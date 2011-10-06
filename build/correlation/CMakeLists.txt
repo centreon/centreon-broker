@@ -85,6 +85,18 @@ if (WITH_TESTING)
     "${TEST_DIR}/host_state/assignment.cc")
   target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Equality.
+  set(TEST_NAME "correlation_host_state_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host_state/equality.cc")
+  target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Non-equality.
+  set(TEST_NAME "correlation_host_state_non_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host_state/non_equality.cc")
+  target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # service_state tests.
   #   Default construction.
   set(TEST_NAME "correlation_service_state_ctor_default")
@@ -102,6 +114,18 @@ if (WITH_TESTING)
   set(TEST_NAME "correlation_service_state_assignment")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/service_state/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Equality.
+  set(TEST_NAME "correlation_service_state_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/service_state/equality.cc")
+  target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Non-equality.
+  set(TEST_NAME "correlation_service_state_non_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/service_state/non_equality.cc")
   target_link_libraries("${TEST_NAME}" "ccb_correlation" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # issue tests.
@@ -359,6 +383,39 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}"
     "ccb_correlation"
     "ccb_correlation_parser"
+    "ccb_neb"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   State creation.
+  set(TEST_NAME "correlation_correlator_state")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/state.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation"
+    "ccb_correlation_correlator"
+    "ccb_neb"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Downtime handling.
+  set(TEST_NAME "correlation_correlator_downtime")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/downtime.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation"
+    "ccb_correlation_correlator"
+    "ccb_neb"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Acknowledgement handling.
+  set(TEST_NAME "correlation_correlator_acknowledgement")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/acknowledgement.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation"
+    "ccb_correlation_correlator"
     "ccb_neb"
     "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")

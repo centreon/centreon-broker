@@ -30,7 +30,10 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/host_status.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
@@ -104,6 +107,68 @@ static int unknown_state(node const& n) {
 **************************************/
 
 /**
+ *  Process an acknowledgement event.
+ *
+ *  @param[in] e Event to process.
+ */
+void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
+  // Cast event.
+  neb::acknowledgement& ack(
+    *static_cast<neb::acknowledgement*>(&*e));
+
+  // Find associated node.
+  logging::debug(logging::low)
+    << "correlation: processing acknowledgement";
+  QMap<QPair<unsigned int, unsigned int>, node>::iterator it;
+  it = _nodes.find(qMakePair(ack.host_id, ack.service_id));
+  if ((it != _nodes.end())
+      && !it->my_issue.isNull()
+      && !it->my_issue->ack_time) {
+    // Set issue acknowledgement time.
+    logging::debug(logging::medium)
+      << "correlation: setting issue of node (" << it->host_id << ", "
+      << it->service_id << ") first acknowledgement time to "
+      << static_cast<unsigned long long>(ack.entry_time);
+    it->my_issue->ack_time = ack.entry_time;
+
+    time_t now(time(NULL));
+
+    // Old state.
+    {
+      QSharedPointer<state> state_update(
+        ack.service_id ? static_cast<state*>(new service_state)
+                       : static_cast<state*>(new host_state));
+      state_update->current_state = it->state;
+      state_update->end_time = now;
+      state_update->host_id = it->host_id;
+      state_update->in_downtime = it->in_downtime;
+      state_update->service_id = it->service_id;
+      state_update->start_time = it->since;
+      _events.push_back(state_update.staticCast<io::data>());
+    }
+
+    // New state.
+    {
+      QSharedPointer<state> state_update(
+        ack.service_id ? static_cast<state*>(new service_state)
+                       : static_cast<state*>(new host_state));
+      state_update->ack_time = ack.entry_time;
+      state_update->current_state = it->state;
+      state_update->host_id = it->host_id;
+      state_update->in_downtime = it->in_downtime;
+      state_update->service_id = it->service_id;
+      state_update->start_time = now;
+      _events.push_back(state_update.staticCast<io::data>());
+    }
+
+    // Send updated issue.
+    _events.push_back(QSharedPointer<io::data>(
+      new issue(*it->my_issue)));
+  }
+  return ;
+}
+
+/**
  *  Process a host_status or service_status event.
  *
  *  @param[in] e       Event to process.
@@ -152,46 +217,70 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     hss.current_state = unknown_state(*n);
   }
 
-  if (n->state != hss.current_state) {
-    time_t now(time(NULL));
+  time_t now(time(NULL));
+  bool state_changed(n->state != hss.current_state);
+  if (state_changed
+      || (n->in_downtime && !hss.scheduled_downtime_depth)
+      || (!n->in_downtime && hss.scheduled_downtime_depth)) {
 
     // Update states.
     logging::debug << logging::MEDIUM
-      << "correlation: node (" << n->host_id << ", " << n->service_id
-      << ") changed status from " << n->state
-      << " to " << hss.current_state;
+      << "correlation: node (" << n->host_id << ", "
+      << n->service_id << ") has new state event";
     {
       // Old state.
       {
         QSharedPointer<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
+        state_update->ack_time =
+          (n->my_issue.isNull() ? 0 : n->my_issue->ack_time);
         state_update->current_state = n->state;
         state_update->end_time = now;
         state_update->host_id = n->host_id;
+        state_update->in_downtime = n->in_downtime;
         state_update->service_id = n->service_id;
-        state_update->start_time = n->since;
+        if (n->my_issue.isNull())
+          state_update->start_time = n->since;
+        else
+          state_update->start_time =
+            ((n->since < n->my_issue->ack_time)
+              ? n->my_issue->ack_time
+              : n->since);
         _events.push_back(state_update.staticCast<io::data>());
       }
 
       // Update node.
-      n->since = now;
-      n->state = hss.current_state;
+      n->in_downtime = hss.scheduled_downtime_depth;
+      if (state_changed) {
+        n->since = now;
+        n->state = hss.current_state;
+      }
 
       // New state.
       {
         QSharedPointer<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
+        state_update->ack_time =
+          ((n->my_issue.isNull() || !n->state)
+            ? 0
+            : n->my_issue->ack_time);
         state_update->current_state = n->state;
-        state_update->end_time = 0;
         state_update->host_id = n->host_id;
+        state_update->in_downtime = n->in_downtime;
         state_update->service_id = n->service_id;
         state_update->start_time = n->since;
         _events.push_back(state_update.staticCast<io::data>());
       }
     }
+  }
 
+  if (state_changed) {
+    logging::debug << logging::MEDIUM
+      << "correlation: node (" << n->host_id << ", " << n->service_id
+      << ") changed status from " << n->state
+      << " to " << hss.current_state;
     if (n->my_issue) {
       // Issue is over.
       if (!n->state) {
@@ -932,6 +1021,8 @@ void correlator::write(QSharedPointer<io::data> e) {
       _correlate_service_status(e);
     else if ("com::centreon::broker::neb::log_entry" == e->type())
       _correlate_log(e);
+    else if ("com::centreon::broker::neb::acknowledgement" == e->type())
+      _correlate_acknowledgement(e);
   }
   catch (exceptions::msg const& e) {
     logging::error << logging::HIGH << e.what();

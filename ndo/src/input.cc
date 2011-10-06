@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,8 +20,10 @@
 #include <algorithm>
 #include <QScopedPointer>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -235,11 +238,17 @@ QSharedPointer<io::data> input::read() {
      case NDO_API_STORAGESTATUS:
       e.reset(_handle_event<storage::status>());
       break ;
+     case NDO_API_CORRELATIONHOSTSTATE:
+      e.reset(_handle_event<correlation::host_state>());
+      break ;
      case NDO_API_CORRELATIONISSUE:
       e.reset(_handle_event<correlation::issue>());
       break ;
      case NDO_API_CORRELATIONISSUEPARENT:
       e.reset(_handle_event<correlation::issue_parent>());
+      break ;
+     case NDO_API_CORRELATIONSERVICESTATE:
+      e.reset(_handle_event<correlation::service_state>());
       break ;
      default:
       // Skip this event.

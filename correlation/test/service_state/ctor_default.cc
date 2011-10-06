@@ -31,7 +31,8 @@ int main() {
   correlation::service_state ss;
 
   // Check default construction.
-  return ((ss.current_state != 3)
+  return ((ss.ack_time != 0)
+          || (ss.current_state != 3)
           || (ss.end_time != 0)
           || (ss.host_id != 0)
           || (ss.in_downtime != false)

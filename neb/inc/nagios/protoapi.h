@@ -108,8 +108,10 @@
 #define NDO_API_HOSTPARENT                           416
 #define NDO_API_STORAGEMETRIC                        500
 #define NDO_API_STORAGESTATUS                        501
+#define NDO_API_CORRELATIONHOSTSTATE                 502
 #define NDO_API_CORRELATIONISSUE                     503
 #define NDO_API_CORRELATIONISSUEPARENT               504
+#define NDO_API_CORRELATIONSERVICESTATE              505
 
 
 /************** COMMON DATA ATTRIBUTES **************/

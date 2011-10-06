@@ -847,13 +847,11 @@ void stream::_process_host_state(io::data const& e) {
     << "SQL: processing host state event";
 
   // Processing.
-  logging::info << logging::MEDIUM
-    << "SQL: no insertion in hoststateevents";
-  /*
-  _update_on_none_insert(*_host_state_insert,
-    *_host_state_update,
-    *static_cast<correlation::host_state const*>(&e));
-  */
+  if (_with_state_events) {
+    _update_on_none_insert(*_host_state_insert,
+      *_host_state_update,
+      *static_cast<correlation::host_state const*>(&e));
+  }
 
   return ;
 }
@@ -1296,13 +1294,11 @@ void stream::_process_service_state(io::data const& e) {
     << "SQL: processing service state event";
 
   // Processing.
-  logging::info << logging::MEDIUM
-    << "SQL: no insertion in servicestateevents";
-  /*
-  _update_on_none_insert(*_service_state_insert,
-    *_service_state_update,
-    *static_cast<correlation::service_state const*>(&e));
-  */
+  if (_with_state_events) {
+    _update_on_none_insert(*_service_state_insert,
+      *_service_state_update,
+      *static_cast<correlation::service_state const*>(&e));
+  }
 
   return ;
 }
@@ -1401,13 +1397,16 @@ void stream::_update_on_none_insert(QSqlQuery& ins,
  *  @param[in] user     User.
  *  @param[in] password Password.
  *  @param[in] db       Database name.
+ *  @param[in] wse      With state events.
  */
 stream::stream(QString const& type,
                QString const& host,
                unsigned short port,
                QString const& user,
                QString const& password,
-               QString const& db) {
+               QString const& db,
+               bool wse)
+  : _with_state_events(wse) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -1472,6 +1471,9 @@ stream::stream(QString const& type,
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) : io::stream(s) {
+  // Process state events.
+  _with_state_events = s._with_state_events;
+
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);

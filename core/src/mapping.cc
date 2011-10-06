@@ -846,24 +846,28 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
 // host_state members mapping.
 static mapped_data<host_state> const host_state_mapping[] = {
   mapped_data<host_state>(
+    &host_state::ack_time,
+    1,
+    "ack_time"),
+  mapped_data<host_state>(
     &host_state::current_state,
-    0,
+    2,
     "state"),
   mapped_data<host_state>(
     &host_state::end_time,
-    1,
+    3,
     "end_time"),
   mapped_data<host_state>(
     &host_state::host_id,
-    2,
+    4,
     "host_id"),
   mapped_data<host_state>(
     &host_state::in_downtime,
-    3,
+    5,
     "in_downtime"),
   mapped_data<host_state>(
     &host_state::start_time,
-    4,
+    6,
     "start_time"),
   mapped_data<host_state>()
 };
@@ -1882,28 +1886,32 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
 // service_state members mapping.
 static mapped_data<service_state> const service_state_mapping [] = {
   mapped_data<service_state>(
+    &service_state::ack_time,
+    1,
+    "ack_time"),
+  mapped_data<service_state>(
     &service_state::current_state,
-    0,
+    2,
     "state"),
   mapped_data<service_state>(
     &service_state::end_time,
-    1,
+    3,
     "end_time"),
   mapped_data<service_state>(
     &service_state::host_id,
-    2,
+    4,
     "host_id"),
   mapped_data<service_state>(
     &service_state::in_downtime,
-    3,
+    5,
     "in_downtime"),
   mapped_data<service_state>(
     &service_state::service_id,
-    4,
+    6,
     "service_id"),
   mapped_data<service_state>(
     &service_state::start_time,
-    5,
+    7,
     "start_time"),
   mapped_data<service_state>()
 };

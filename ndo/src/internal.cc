@@ -370,7 +370,6 @@ void ndo::initialize() {
   static_init<neb::host_group>();
   static_init<neb::host_group_member>();
   static_init<neb::host_parent>();
-  //static_init<neb::host_state>();
   static_init<neb::host_status>();
   static_init<neb::instance>();
   static_init<neb::instance_status>();
@@ -382,11 +381,12 @@ void ndo::initialize() {
   static_init<neb::service_dependency>();
   static_init<neb::service_group>();
   static_init<neb::service_group_member>();
-  //static_init<neb::service_state>();
   static_init<neb::service_status>();
   static_init<storage::metric>();
   static_init<storage::status>();
+  static_init<correlation::host_state>();
   static_init<correlation::issue>();
   static_init<correlation::issue_parent>();
+  static_init<correlation::service_state>();
   return ;
 }

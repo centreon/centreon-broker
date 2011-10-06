@@ -22,7 +22,7 @@
 using namespace com::centreon::broker;
 
 /**
- *  Check that host_state can be properly assigned.
+ *  Check that host_state can be checked for non-equality.
  *
  *  @return 0 on success.
  */
@@ -38,31 +38,23 @@ int main() {
   hs1.start_time = 123456789;
 
   // Second object.
-  correlation::host_state hs2;
-  hs2 = hs1;
+  correlation::host_state hs2(hs1);
 
   // Reset first object.
-  hs1.ack_time = 834957;
-  hs1.current_state = 1;
-  hs1.end_time = 5478963;
-  hs1.host_id = 983;
-  hs1.in_downtime = false;
-  hs1.service_id = 471;
-  hs1.start_time = 456887;
+  correlation::host_state hs3;
+  hs3.ack_time = 834957;
+  hs3.current_state = 1;
+  hs3.end_time = 5478963;
+  hs3.host_id = 983;
+  hs3.in_downtime = false;
+  hs3.service_id = 471;
+  hs3.start_time = 456887;
 
   // Check.
-  return ((hs1.ack_time != 834957)
-          || (hs1.current_state != 1)
-          || (hs1.end_time != 5478963)
-          || (hs1.host_id != 983)
-          || (hs1.in_downtime != false)
-          || (hs1.service_id != 471)
-          || (hs1.start_time != 456887)
-          || (hs2.ack_time != 6762)
-          || (hs2.current_state != 2)
-          || (hs2.end_time != 7456987)
-          || (hs2.host_id != 21)
-          || (hs2.in_downtime != true)
-          || (hs2.service_id != 0)
-          || (hs2.start_time != 123456789));
+  return ((hs1 != hs2)
+          || !(hs1 != hs3)
+          || !(hs2 != hs3)
+          || (hs1 != hs1)
+          || (hs2 != hs2)
+          || (hs3 != hs3));
 }

@@ -31,6 +31,7 @@ int main() {
   // Base object.
   correlation::node bn;
   bn.host_id = 42;
+  bn.in_downtime = true;
   bn.my_issue.reset(new correlation::issue);
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
@@ -53,6 +54,7 @@ int main() {
 
   // Reset base object.
   bn.host_id = 23;
+  bn.in_downtime = false;
   bn.my_issue.reset();
   bn.service_id = 2347;
   bn.since = 553445;
@@ -62,6 +64,7 @@ int main() {
 
   // Check copy construction.
   return ((bn.host_id != 23)
+          || bn.in_downtime
           || !bn.my_issue.isNull()
           || (bn.service_id != 2347)
           || (bn.since != 553445)
@@ -71,6 +74,7 @@ int main() {
           || !bn.depends_on().isEmpty()
           || (bn.parents().size() != 1)
           || (cn.host_id != 42)
+          || !cn.in_downtime
           || cn.my_issue.isNull()
           || (cn.my_issue->end_time != 234)
           || (cn.my_issue->start_time != 7678353)
