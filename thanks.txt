@@ -1,0 +1,5 @@
+-----------------------------------------------------------------------
+| Great thanks to the people below who contributed to Centreon Broker |
+-----------------------------------------------------------------------
+
+Raphael Troiano
