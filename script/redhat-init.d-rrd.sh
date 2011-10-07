@@ -31,8 +31,8 @@
 # 
 # For more information : contact@centreon.com
 # 
-# SVN : $URL: http://svn.centreon.com/trunk/centreon/tmpl/install/centcore.init.d $
-# SVN : $Id: centcore.init.d 11677 2011-02-14 15:28:03Z jmathis $
+# SVN : $URL: 
+# SVN : $Id: 
 #
 ####################################################################################
 #
@@ -95,14 +95,19 @@ pid_centbroker ()
 	PID=`head -n 1 $RunFile`
 }
 
-# Variables
+# Variables a modifier
 Bin=/usr/local/bin/cbd
 DeamonType="central-rrd"
 CfgPath=/etc/centreon
+StopTimeout=20
+
+#####################################
+# -- Dont touch behind this line -- #
+#####################################
 CfgFile=${CfgPath}/${DeamonType}.xml
 RunDir=/var/run/centreon
 RunFile=${RunDir}/${DeamonType}.pid
-STOP_TIMEOUT=20
+
 
 # Source function library
 # Solaris doesn't have an rc.d directory, so do a test first
@@ -170,15 +175,11 @@ case "$1" in
 		fi    
 		echo -n "Stopping $DeamonType"
 		pid_centbroker
-		killproc_centbroker
 
- 		# now we have to wait for nagios to exit and remove its
- 		# own NagiosRunFile, otherwise a following "start" could
- 		# happen, and then the exiting nagios will remove the
- 		# new NagiosRunFile, allowing multiple nagios daemons
- 		# to (sooner or later) run - John Sellens
-		#echo -n 'Waiting for nagios to exit .'
- 		for i in 1 2 3 4 5 6 7 8 9 10 ; do
+		killproc_centbroker
+		
+		# Now wait stopping centreon-broker
+ 		for i in `seq 1 $StopTimeout`;  do
  		    if status_centbroker > /dev/null; then
 				echo -n '.'
 				sleep 1
@@ -191,7 +192,7 @@ case "$1" in
 	    if status_centbroker > /dev/null; then
 			echo ""
 			echo "Warning - running $DeamonType did not exit in time"
-		    else
+		else
 			echo " done."
 	    fi
     ;;
