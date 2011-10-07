@@ -21,6 +21,7 @@
 #include <QReadLocker>
 #include <QWriteLocker>
 #include <stdlib.h>
+#include <string.h>
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
@@ -43,7 +44,9 @@ QScopedPointer<manager> manager::_instance;
 /**
  *  Default constructor.
  */
-manager::manager() : _level(none), _types(0) {}
+manager::manager() {
+  memset(_limits, 0, sizeof(_limits));
+}
 
 /**
  *  @brief Copy constructor.
@@ -78,17 +81,14 @@ manager& manager::operator=(manager const& m) {
  *  possible.
  */
 void manager::_compute_optimizations() {
-  _level = none;
-  _types = 0;
-  for (QHash<backend*, QPair<unsigned int, level> >::const_iterator
+  memset(_limits, 0, sizeof(_limits));
+  for (QVector<manager_backend>::const_iterator
          it = _backends.begin(),
          end = _backends.end();
        it != end;
-       ++it) {
-    _types |= it->first;
-    if (it->second > _level)
-      _level = it->second;
-  }
+       ++it)
+    for (unsigned int i = 1; i <= it->l; ++i)
+      _limits[i] |= it->types;
   return ;
 }
 
@@ -105,7 +105,13 @@ void manager::_on_backend_destruction(QObject* obj) {
   QWriteLocker lock(&_backendsm);
 
   // Remove backend from backend list.
-  _backends.remove((backend*)obj);
+  for (QVector<manager_backend>::iterator
+         it = _backends.begin();
+       it != _backends.end();)
+    if (it->b == obj)
+      it = _backends.erase(it);
+    else
+      ++it;
 
   // Recompute optimization parameters.
   _compute_optimizations();
@@ -133,7 +139,7 @@ manager::~manager() {}
  *  @return Temporary logging object.
  */
 temp_logger manager::get_temp_logger(type t, level l) throw () {
-  return (temp_logger(t, l, (_types & t) && (l <= _level)));
+  return (temp_logger(t, l, (_limits[l] & t)));
 }
 
 /**
@@ -166,14 +172,14 @@ void manager::log_msg(char const* msg,
                       type t,
                       level l) throw () {
   QReadLocker lock(&_backendsm);
-  for (QHash<backend*, QPair<unsigned int, level> >::iterator
+  for (QVector<manager_backend>::iterator
          it = _backends.begin(),
          end = _backends.end();
        it != end;
        ++it)
-    if (msg && (it->first & t) && (it->second >= l)) {
-      QMutexLocker lock(it.key());
-      it.key()->log_msg(msg, len, t, l);
+    if (msg && (it->types & t) && (it->l >= l)) {
+      QMutexLocker lock(it->b);
+      it->b->log_msg(msg, len, t, l);
     }
   return ;
 }
@@ -195,12 +201,13 @@ void manager::log_on(backend& b,
 
   // Either add backend to list.
   if (types && min_priority) {
-    QPair<unsigned int, level>& p(_backends[&b]);
-    p.first = types;
-    p.second = min_priority;
-    _types |= types;
-    if (min_priority > _level)
-      _level = min_priority;
+    manager_backend p;
+    p.b = &b;
+    p.l = min_priority;
+    p.types = types;
+    _backends.push_back(p);
+    for (unsigned int i = 1; i <= min_priority; ++i)
+      _limits[i] |= types;
     connect(
       &b,
       SIGNAL(destroyed(QObject*)),
@@ -209,7 +216,13 @@ void manager::log_on(backend& b,
   }
   // Or remove it.
   else {
-    _backends.remove(&b);
+    for (QVector<manager_backend>::iterator
+           it = _backends.begin();
+         it != _backends.end();)
+      if (it->b == &b)
+        it = _backends.erase(it);
+      else
+        ++it;
     _compute_optimizations();
   }
 

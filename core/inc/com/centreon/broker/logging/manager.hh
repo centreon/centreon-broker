@@ -20,11 +20,10 @@
 #ifndef CCB_LOGGING_MANAGER_HH_
 # define CCB_LOGGING_MANAGER_HH_
 
-# include <QHash>
 # include <QObject>
-# include <QPair>
 # include <QReadWriteLock>
 # include <QScopedPointer>
+# include <QVector>
 # include "com/centreon/broker/logging/backend.hh"
 # include "com/centreon/broker/logging/defines.hh"
 # include "com/centreon/broker/logging/temp_logger.hh"
@@ -44,13 +43,17 @@ namespace                 com {
           Q_OBJECT
 
          private:
-          QHash<backend*, QPair<unsigned int, level> >
+          struct          manager_backend {
+            backend*      b;
+            level         l;
+            unsigned int  types;
+          };
+          QVector<manager_backend>
                           _backends;
           QReadWriteLock  _backendsm;
           static QScopedPointer<manager>
                           _instance;
-          level           _level;
-          unsigned int    _types;
+          unsigned int    _limits[4];
                           manager();
                           manager(manager const& m);
           manager&        operator=(manager const& m);

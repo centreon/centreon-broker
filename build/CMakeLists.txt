@@ -418,6 +418,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/logging/logging/concurrent.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Performance testing.
+  set(TEST_NAME "core_logging_logging_performance")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/logging/performance.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # cbd tests.
