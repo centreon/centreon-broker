@@ -1,0 +1,335 @@
+/*
+** Copyright 2009-2011 Merethis
+**
+** This file is part of Centreon Broker.
+**
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
+**
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
+*/
+
+#include <assert.h>
+#include <QMutexLocker>
+#include <QQueue>
+#include <QScopedPointer>
+#include <QVector>
+#include <stdlib.h>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/internal.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
+
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::multiplexing;
+
+/**************************************
+*                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+// Hooks.
+static QVector<hooker*> _hooks;
+
+// Pointer.
+QScopedPointer<engine> engine::_instance;
+
+// Data queue.
+static QQueue<QSharedPointer<io::data> > _kiew;
+
+// Mutex.
+static QMutex _mutex(QMutex::Recursive);
+
+// Processing flag.
+static bool _processing;
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Do nothing.
+ *
+ *  @param[in] d Unused.
+ */
+void engine::_nop(QSharedPointer<io::data> d) {
+  (void)d;
+  return ;
+}
+
+/**
+ *  On hook object destruction.
+ *
+ *  @param[in] obj Destroyed object.
+ */
+void engine::_on_hook_destroy(QObject* obj) {
+  QMutexLocker lock(&_mutex);
+  for (QVector<hooker*>::iterator
+         it = _hooks.begin();
+       it != _hooks.end();)
+    if (*it == obj)
+      it = _hooks.erase(it);
+    else
+      ++it;
+  return ;
+}
+
+/**
+ *  Send queued events to subscribers.
+ */
+void engine::_send_to_subscribers() {
+  // Process all queued events.
+  while (!_kiew.isEmpty()) {
+    // Send object to every subscriber.
+    QMutexLocker lock(&gl_subscribersm);
+    for (QVector<subscriber*>::iterator
+           it = gl_subscribers.begin(),
+           end = gl_subscribers.end();
+         it != end;
+         ++it)
+      (*it)->write(_kiew.head());
+    _kiew.dequeue();
+  }
+  return ;
+}
+
+/**
+ *  Publish event.
+ *
+ *  @param[in] d Data to publish.
+ */
+void engine::_write(QSharedPointer<io::data> e) {
+  if (!_processing) {
+    // Set processing flag.
+    _processing = true;
+
+    try {
+      // Send object to every hook.
+      for (QVector<hooker*>::iterator
+             it = _hooks.begin(),
+             end = _hooks.end();
+           it != end;
+           ++it) {
+        (*it)->write(e);
+        QSharedPointer<io::data> d((*it)->read());
+        while (!d.isNull()) {
+          _kiew.enqueue(d);
+          d = (*it)->read();
+        }
+      }
+
+      // Send events to subscribers.
+      _send_to_subscribers();
+
+      // Reset processing flag.
+      _processing = false;
+    }
+    catch (...) {
+      // Reset processing flag.
+      _processing = false;
+      throw ;
+    }
+  }
+
+  return ;
+}
+
+/**
+ *  Default constructor.
+ */
+engine::engine() : _write_func(&engine::_nop) {}
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] e Unused.
+ */
+engine::engine(engine const& e) : QObject() {
+  (void)e;
+  assert(false);
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] e Unused.
+ *
+ *  @return This object.
+ */
+engine& engine::operator=(engine const& p) {
+  (void)p;
+  assert(false);
+  abort();
+  return (*this);
+}
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Destructor.
+ */
+engine::~engine() {}
+
+/**
+ *  Set a hook.
+ *
+ *  @param[in] h Hook.
+ */
+void engine::hook(hooker& h) {
+  QMutexLocker lock(&_mutex);
+  _hooks.push_back(&h);
+  return ;
+}
+
+/**
+ *  Get engine instance.
+ *
+ *  @return Class instance.
+ */
+engine& engine::instance() {
+  return (*_instance);
+}
+
+/**
+ *  Load engine instance.
+ */
+void engine::load() {
+  _instance.reset(new engine);
+  return ;
+}
+
+/**
+ *  Send an event to all subscribers.
+ *
+ *  @param[in] e Event to publish.
+ */
+void engine::publish(QSharedPointer<io::data> e) {
+  // Lock mutex.
+  QMutexLocker lock(&_mutex);
+
+  // Store object for further processing.
+  _kiew.enqueue(e);
+
+  // Processing function.
+  (this->*_write_func)(e);
+
+  return ;
+}
+
+/**
+ *  Start multiplexing.
+ */
+void engine::start() {
+  if (_write_func != &engine::_write) {
+    // Set writing method.
+    logging::debug << logging::HIGH << "multiplexing: starting";
+    _write_func = &engine::_write;
+
+    // Copy event queue.
+    QMutexLocker lock(&_mutex);
+    QQueue<QSharedPointer<io::data> > kiew(_kiew);
+    _kiew.clear();
+
+    // Notify hooks of multiplexing loop start.
+    for (QVector<hooker*>::iterator
+           it = _hooks.begin(),
+           end = _hooks.end();
+         it != end;
+         ++it) {
+      (*it)->starting();
+
+      // Read events from hook.
+      QSharedPointer<io::data> d((*it)->read());
+      while (!d.isNull()) {
+        _kiew.enqueue(d);
+        d = (*it)->read();
+      }
+    }
+
+    // Process events from hooks.
+    _send_to_subscribers();
+
+    // Send events queued while multiplexing was stopped.
+    while (!kiew.isEmpty()) {
+      publish(kiew.head());
+      kiew.dequeue();
+    }
+  }
+  return ;
+}
+
+/**
+ *  Stop multiplexing.
+ */
+void engine::stop() {
+  if (_write_func != &engine::_nop) {
+    // Notify hooks of multiplexing loop end.
+    logging::debug << logging::HIGH << "multiplexing: stopping";
+    QMutexLocker lock(&_mutex);
+    for (QVector<hooker*>::iterator
+           it = _hooks.begin(),
+           end = _hooks.end();
+         it != end;
+         ++it) {
+      (*it)->stopping();
+
+      // Read events from hook.
+      QSharedPointer<io::data> d((*it)->read());
+      while (!d.isNull()) {
+        _kiew.enqueue(d);
+        d = (*it)->read();
+      }
+    }
+
+    // Process events from hooks.
+    _send_to_subscribers();
+
+    // Set writing method.
+    _write_func = &engine::_nop;
+  }
+  return ;
+}
+
+/**
+ *  Remove a hook.
+ *
+ *  @param[in] h Hook.
+ */
+void engine::unhook(hooker& h) {
+  for (QVector<hooker*>::iterator it = _hooks.begin();
+       it != _hooks.end();)
+    if (*it == &h)
+      it = _hooks.erase(it);
+    else
+      ++it;
+  return ;
+}
+
+/**
+ *  Unload class instance.
+ */
+void engine::unload() {
+  _instance.reset();
+  return ;
+}

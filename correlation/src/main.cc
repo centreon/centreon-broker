@@ -23,7 +23,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 
@@ -41,7 +41,7 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Unregister correlation object.
-      multiplexing::publisher::unhook(obj);
+      multiplexing::engine::instance().unhook(*obj);
       obj.clear();
     }
     return ;
@@ -90,7 +90,7 @@ extern "C" {
           try {
             crltr->load(correlation_file, retention_file);
             obj = crltr.staticCast<multiplexing::hooker>();
-            multiplexing::publisher::hook(obj);
+            multiplexing::engine::instance().hook(*obj);
             loaded = true;
           }
           catch (std::exception const& e) {

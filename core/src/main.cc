@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -31,7 +32,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 
@@ -228,7 +229,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Stop multiplexing.
-  multiplexing::publisher::stop();
+  multiplexing::engine::instance().stop();
 
   // Unload endpoints.
   config::applier::endpoint::instance().unload();

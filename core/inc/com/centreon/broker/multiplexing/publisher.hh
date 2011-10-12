@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,42 +20,32 @@
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH_
 # define CCB_MULTIPLEXING_PUBLISHER_HH_
 
-# include "com/centreon/broker/multiplexing/hooker.hh"
+# include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                           com {
-  namespace                         centreon {
-    namespace                       broker {
-      namespace                     multiplexing {
-        /**
-         *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
-         *  @brief Publish events to registered subscribers.
-         *
-         *  A publisher object broadcast an event sent to it to every
-         *  subscriber.
-         *
-         *  @see subscriber
-         */
-        class                       publisher : public io::stream {
-         private:
-          static void (publisher::* _write_func)(QSharedPointer<io::data>);
-          void                      _nop(QSharedPointer<io::data> d);
-          void                      _write(QSharedPointer<io::data> d);
+CCB_BEGIN()
 
-         public:
-                                    publisher();
-                                    publisher(publisher const& p);
-                                    ~publisher();
-          publisher&                operator=(publisher const& p);
-          static void               hook(QSharedPointer<hooker> h);
-          QSharedPointer<io::data>  read();
-          static void               start();
-          static void               stop();
-          static void               unhook(QSharedPointer<hooker> h);
-          void                      write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace                    multiplexing {
+  /**
+   *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
+   *  @brief Publish events to the multiplexing engine.
+   *
+   *  Publish events written to the publisher to the multiplexing
+   *  engine.
+   *
+   *  @see engine
+   */
+  class                      publisher : public io::stream {
+   public:
+                             publisher();
+                             publisher(publisher const& p);
+                             ~publisher();
+    publisher&               operator=(publisher const& p);
+    QSharedPointer<io::data> read();
+    void                     write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_MULTIPLEXING_PUBLISHER_HH_ */

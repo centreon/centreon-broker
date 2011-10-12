@@ -35,6 +35,8 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/com/centreon/broker/config/applier/endpoint.hh"
   "${INC_DIR}/com/centreon/broker/logging/backend.hh"
   "${INC_DIR}/com/centreon/broker/logging/manager.hh"
+  "${INC_DIR}/com/centreon/broker/multiplexing/engine.hh"
+  "${INC_DIR}/com/centreon/broker/multiplexing/hooker.hh"
   "${INC_DIR}/com/centreon/broker/processing/failover.hh"
   "${INC_DIR}/com/centreon/broker/processing/feeder.hh"
 )
@@ -75,6 +77,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/modules/handle.cc"
   "${SRC_DIR}/modules/loader.cc"
+  "${SRC_DIR}/multiplexing/engine.cc"
   "${SRC_DIR}/multiplexing/hooker.cc"
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
@@ -114,6 +117,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/com/centreon/broker/misc/stringifier.hh"
   "${INC_DIR}/com/centreon/broker/modules/handle.hh"
   "${INC_DIR}/com/centreon/broker/modules/loader.hh"
+  "${INC_DIR}/com/centreon/broker/multiplexing/engine.hh"
   "${INC_DIR}/com/centreon/broker/multiplexing/hooker.hh"
   "${INC_DIR}/com/centreon/broker/multiplexing/internal.hh"
   "${INC_DIR}/com/centreon/broker/multiplexing/publisher.hh"
@@ -428,6 +432,54 @@ if (WITH_TESTING)
   set(TEST_NAME "core_logging_logging_performance")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/logging/logging/performance.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # multiplexing namespace tests.
+  # multiplexing::subscriber tests.
+  #   Default constructor.
+  set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # multiplexing::engine tests.
+  add_library("ccb_multiplexing_engine" STATIC
+    "${TEST_DIR}/multiplexing/engine/hooker.cc")
+  #   Start and stop.
+  set(TEST_NAME "core_multiplexing_engine_start_stop")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/start_stop.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Hook.
+  set(TEST_NAME "core_multiplexing_engine_hook")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/hook.cc")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_multiplexing_engine"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Unhook.
+  set(TEST_NAME "core_multiplexing_engine_unhook")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/unhook.cc")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_multiplexing_engine"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # multiplexing::publisher tests.
+  #   Read.
+  set(TEST_NAME "core_multiplexing_engine_read")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/publisher/read.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Write.
+  set(TEST_NAME "core_multiplexing_engine_write")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/publisher/write.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

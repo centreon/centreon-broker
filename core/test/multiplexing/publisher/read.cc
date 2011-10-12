@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2011 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,25 +17,33 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_INTERNAL_HH_
-# define CCB_MULTIPLEXING_INTERNAL_HH_
+#include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
-# include <QMutex>
-# include <QVector>
+using namespace com::centreon::broker;
 
-namespace                           com {
-  namespace                         centreon {
-    namespace                       broker {
-      namespace                     multiplexing {
-        // Forward declaration.
-        class                       subscriber;
+/**
+ *  We should not be able to read from publisher.
+ *
+ *  @return 0 on success.
+ */
+int main() {
+  // Initialization.
+  config::applier::init();
 
-        // Internal multiplexing variables.
-        extern QVector<subscriber*> gl_subscribers;
-        extern QMutex               gl_subscribersm;
-      }
-    }
+  // Return value.
+  int retval(0);
+
+  // Publisher.
+  multiplexing::publisher p;
+
+  // Read from publisher.
+  try {
+    p.read();
+    retval = 1;
   }
-}
+  catch (...) {}
 
-#endif /* !CCB_MULTIPLEXING_INTERNAL_HH_ */
+  // Return.
+  return (retval);
+}

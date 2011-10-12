@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 
@@ -33,6 +34,7 @@ using namespace com::centreon::broker;
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
+  multiplexing::engine::unload();
   logging::manager::unload();
   return ;
 }
@@ -42,6 +44,7 @@ void config::applier::deinit() {
  */
 void config::applier::init() {
   logging::manager::load();
+  multiplexing::engine::load();
   atexit(&deinit);
   return ;
 }

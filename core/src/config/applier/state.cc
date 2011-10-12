@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -26,7 +27,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -100,7 +101,7 @@ void state::apply(com::centreon::broker::config::state const& s,
 
   // Enable multiplexing loop.
   if (run_mux)
-    com::centreon::broker::multiplexing::publisher::start();
+    com::centreon::broker::multiplexing::engine::instance().start();
 
   return ;
 }

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -24,47 +25,46 @@
 # include <QWaitCondition>
 # include <time.h>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          multiplexing {
-        /**
-         *  @class subscriber subscriber.hh "com/centreon/broker/multiplexing/subscriber.hh"
-         *  @brief Receive events from publishers and make them
-         *         available through the interface::source interface.
-         *
-         *  This class is used as a cornerstone in event multiplexing.
-         *  Each output willing to receive events will request a
-         *  subscriber object. All publisher objects broadcast events
-         *  they receive to every subscriber objects.
-         *
-         *  @see publisher
-         */
-        class            subscriber : public io::stream {
-         private:
-          QWaitCondition _cv;
-          QQueue<QSharedPointer<io::data> >
-                         _events;
-          QMutex         _mutex;
-          bool           _registered;
-                         subscriber(subscriber const& s);
-          subscriber&    operator=(subscriber const& s);
-          void           clean();
+CCB_BEGIN()
 
-         public:
-                         subscriber();
-                         ~subscriber();
-          void           close();
-          QSharedPointer<io::data>
-                         read();
-          QSharedPointer<io::data>
-                         read(time_t deadline);
-          void           write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace          multiplexing {
+  /**
+   *  @class subscriber subscriber.hh "com/centreon/broker/multiplexing/subscriber.hh"
+   *  @brief Receive events from publishers and make them
+   *         available through the interface::source interface.
+   *
+   *  This class is used as a cornerstone in event multiplexing.
+   *  Each output willing to receive events will request a
+   *  subscriber object. All publisher objects broadcast events
+   *  they receive to every subscriber objects.
+   *
+   *  @see publisher
+   */
+  class            subscriber : public io::stream {
+   private:
+    QWaitCondition _cv;
+    QQueue<QSharedPointer<io::data> >
+                   _events;
+    QMutex         _mutex;
+    bool           _registered;
+                   subscriber(subscriber const& s);
+    subscriber&    operator=(subscriber const& s);
+    void           clean();
+
+   public:
+                   subscriber();
+                   ~subscriber();
+    void           close();
+    QSharedPointer<io::data>
+                   read();
+    QSharedPointer<io::data>
+                   read(time_t deadline);
+    void           write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_MULTIPLEXING_SUBSCRIBER_HH_ */

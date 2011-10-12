@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/multiplexing/hooker.hh"
+#include "com/centreon/broker/io/raw.hh"
+#include "test/multiplexing/engine/hooker.hh"
 
-using namespace com::centreon::broker::multiplexing;
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
@@ -37,7 +38,8 @@ hooker::hooker() {}
  *
  *  @param[in] h Object to copy.
  */
-hooker::hooker(hooker const& h) : QObject(), io::stream(h) {}
+hooker::hooker(hooker const& h)
+  : multiplexing::hooker(h), _queue(h._queue) {}
 
 /**
  *  Destructor.
@@ -52,6 +54,56 @@ hooker::~hooker() {}
  *  @return This object.
  */
 hooker& hooker::operator=(hooker const& h) {
-  io::stream::operator=(h);
+  if (this != &h) {
+    multiplexing::hooker::operator=(h);
+    _queue = h._queue;
+  }
   return (*this);
+}
+
+/**
+ *  Read events from the hook.
+ *
+ *  @return Event.
+ */
+QSharedPointer<io::data> hooker::read() {
+  QSharedPointer<io::data> d;
+  if (!_queue.isEmpty()) {
+    d = _queue.head();
+    _queue.dequeue();
+  }
+  return (d);
+}
+
+/**
+ *  Multiplexing engine is starting.
+ */
+void hooker::starting() {
+  QSharedPointer<io::raw> raw(new io::raw);
+  raw->append(HOOKMSG1);
+  _queue.enqueue(raw);
+  return ;
+}
+
+/**
+ *  Multiplexing engine is stopping.
+ */
+void hooker::stopping() {
+  QSharedPointer<io::raw> raw(new io::raw);
+  raw->append(HOOKMSG3);
+  _queue.enqueue(raw);
+  return ;
+}
+
+/**
+ *  Receive event to hook.
+ *
+ *  @param[in] d Ignored.
+ */
+void hooker::write(QSharedPointer<io::data> d) {
+  (void)d;
+  QSharedPointer<io::raw> raw(new io::raw);
+  raw->append(HOOKMSG2);
+  _queue.enqueue(raw);
+  return ;
 }

@@ -20,6 +20,7 @@
 #ifndef CCB_MULTIPLEXING_HOOKER_HH_
 # define CCB_MULTIPLEXING_HOOKER_HH_
 
+# include <QObject>
 # include "com/centreon/broker/io/stream.hh"
 
 namespace              com {
@@ -32,7 +33,9 @@ namespace              com {
          *
          *  Place a hook on the multiplexing engine.
          */
-        class          hooker : public io::stream {
+        class          hooker : public QObject, public io::stream {
+          Q_OBJECT
+
          public:
                        hooker();
                        hooker(hooker const& h);

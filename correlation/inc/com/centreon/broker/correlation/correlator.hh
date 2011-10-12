@@ -41,8 +41,7 @@ namespace                          com {
          *  This class aggregate data from multiple events and generates
          *  according issues which are used to group those events.
          */
-        class                      correlator : public QObject,
-                                                public multiplexing::hooker {
+        class                      correlator : public multiplexing::hooker {
           Q_OBJECT
 
          private:

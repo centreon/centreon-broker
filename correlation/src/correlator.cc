@@ -784,8 +784,7 @@ correlator::correlator() {}
  *
  *  @param[in] c Object to copy.
  */
-correlator::correlator(correlator const& c)
-  : QObject(), multiplexing::hooker(c) {
+correlator::correlator(correlator const& c) : multiplexing::hooker(c) {
   _internal_copy(c);
 }
 

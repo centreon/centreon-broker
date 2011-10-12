@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <assert.h>
 #include <QMutexLocker>
 #include <QScopedPointer>
@@ -103,7 +105,7 @@ subscriber::~subscriber() {
  */
 void subscriber::close() {
   QMutexLocker lock(&gl_subscribersm);
-  gl_subscribers.removeOne(this);
+  std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
   _registered = false;
   logging::debug << logging::LOW << "multiplexing: "
     << gl_subscribers.size()

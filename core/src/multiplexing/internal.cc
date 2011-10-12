@@ -27,5 +27,5 @@ using namespace com::centreon::broker;
 **************************************/
 
 // List of subscribers.
-QList<multiplexing::subscriber*> multiplexing::gl_subscribers;
-QMutex                           multiplexing::gl_subscribersm;
+QVector<multiplexing::subscriber*> multiplexing::gl_subscribers;
+QMutex                             multiplexing::gl_subscribersm;
