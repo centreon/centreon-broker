@@ -312,6 +312,15 @@ if (WITH_TESTING)
     "ccb_correlation_correlator"
     ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Use UNKNOWN for services and UNREACHABLE for hosts.
+  set(TEST_NAME "correlation_correlator_unknown_unreachable")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/unknown_unreachable.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation_correlator"
+    ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Single parent.
   set(TEST_NAME "correlation_correlator_parent_single")
   add_executable("${TEST_NAME}"
