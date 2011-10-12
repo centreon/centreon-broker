@@ -178,6 +178,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/misc/stringifier/bool.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Double insertion.
+  set(TEST_NAME "core_misc_stringifier_double")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/double.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Integer insertion.
   set(TEST_NAME "core_misc_stringifier_int")
   add_executable("${TEST_NAME}"

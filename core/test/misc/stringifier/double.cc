@@ -16,32 +16,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that C-string insertion works properly.
+ *  Check that double insertion works properly.
  *
  *  @return 0 on success.
  */
-int main() {
+int main () {
   // Return value.
   int retval(0);
 
   // First insertion.
-  misc::stringifier s;
-  s << "foo";
-  retval |= strcmp(s.data(), "foo");
+  misc::stringifier s1;
+  s1 << -36.0;
+  retval |= (fabs(strtod(s1.data(), NULL) + 36.0) > 0.1);
 
   // Second insertions.
-  s << " bar" << " baz" << " qux";
-  retval |= strcmp(s.data(), "foo bar baz qux");
-
-  // Third insertion.
-  s << static_cast<char const*>(NULL);
-  retval |= strcmp(s.data(), "foo bar baz qux(null)");
+  misc::stringifier s2;
+  s2 << 75697.248;
+  retval |= (fabs(strtod(s2.data(), NULL) - 75697.248) > 0.1);
 
   // Return test result.
   return (retval);
