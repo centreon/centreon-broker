@@ -17,18 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QList>
 #include <QMap>
 #include <QPair>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
-#include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**
- *  Check that node is properly default constructed.
+ *  Check that state can be properly set to the correlator.
  *
  *  @return 0 on success.
  */
@@ -36,7 +34,7 @@ int main() {
   // Initialization.
   config::applier::init();
 
-  // Create state.
+  // Create state. 
   QMap<QPair<unsigned int, unsigned int>, node> state;
   node& n1(state[qMakePair(42u, 24u)]);
   n1.host_id = 42;
@@ -54,22 +52,16 @@ int main() {
   n2.my_issue->host_id = 77;
   n2.my_issue->service_id = 56;
   n2.my_issue->start_time = 7466;
+  node& n3(state[qMakePair(123u, 0u)]);
+  n3.host_id = 123;
+  n3.service_id = 0;
+  n3.state = 0;
   n1.add_parent(&n2);
 
-  // Create correlator.
+  // Set state to correlator.
   correlator c;
   c.set_state(state);
 
-  // Start correlator then stop it.
-  c.starting();
-  c.stopping();
-
-  // Check correlation content.
-  QList<QSharedPointer<io::data> > content;
-  add_engine_state(content, true);
-  add_issue_parent(content, 42, 24, 1, 1, 77, 56, 1, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
-  add_issue(content, 0, 1, 77, 56, 1);
-  add_engine_state(content, false);
-  return (!check_content(c, content));
+  // Compare states.
+  return (c.get_state() != state);
 }

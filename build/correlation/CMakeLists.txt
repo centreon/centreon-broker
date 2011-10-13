@@ -305,6 +305,12 @@ if (WITH_TESTING)
   add_library("ccb_correlation_correlator"
     STATIC
     "${TEST_DIR}/correlator/common.cc")
+  #   Set correlator state.
+  set(TEST_NAME "correlation_correlator_set_state")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/set_state.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Start/stop.
   set(TEST_NAME "correlation_correlator_start_stop")
   add_executable("${TEST_NAME}"

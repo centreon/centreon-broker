@@ -904,6 +904,8 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
     n.service_id = it->service_id;
     n.since = it->since;
     n.state = it->state;
+    if (!it->my_issue.isNull())
+      n.my_issue.reset(new issue(*it->my_issue));
   }
 
   // Copy node links.
@@ -944,7 +946,7 @@ void correlator::starting() {
   logging::debug << logging::MEDIUM << "correlation: engine starting";
   QSharedPointer<engine_state> es(new engine_state);
   es->started = true;
-  _events.push_back(es.staticCast<io::data>());
+  _events.push_front(es.staticCast<io::data>());
   return ;
 }
 
@@ -958,7 +960,7 @@ void correlator::stopping() {
   // Dump correlation state.
   _write_issues();
 
-  // Close issues.
+  // Close issues and issues parenting.
   time_t now(time(NULL));
   for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
          it = _nodes.begin(),
@@ -966,6 +968,57 @@ void correlator::stopping() {
        it != end;
        ++it)
     if (!it->my_issue.isNull()) {
+      // Remove issue parenting.
+      for (QList<node*>::const_iterator
+             it2 = it->depends_on().begin(),
+             end2 = it->depends_on().end();
+           it2 != end2;
+           ++it2)
+        if (!(*it2)->my_issue.isNull()) {
+          QSharedPointer<issue_parent> p(new issue_parent);
+          p->child_host_id = it->host_id;
+          p->child_service_id = it->service_id;
+          p->child_start_time = it->my_issue->start_time;
+          p->parent_host_id = (*it2)->host_id;
+          p->parent_service_id = (*it2)->service_id;
+          p->parent_start_time = (*it2)->my_issue->start_time;
+          p->start_time = (p->child_start_time > p->parent_start_time
+                           ? p->child_start_time
+                           : p->parent_start_time);
+          p->end_time = now;
+          _events.push_back(p.staticCast<io::data>());
+        }
+      bool all_parents(true);
+      for (QList<node*>::const_iterator
+             it2 = it->parents().begin(),
+             end2 = it->parents().end();
+           it2 != end2;
+           ++it2)
+        all_parents = (all_parents && !(*it2)->my_issue.isNull());
+      if (all_parents) {
+        for (QList<node*>::const_iterator
+               it2 = it->parents().begin(),
+               end2 = it->parents().end();
+             it2 != end2;
+             ++it2) {
+          QSharedPointer<issue_parent> p(new issue_parent);
+          p->child_host_id = it->host_id;
+          p->child_service_id = it->service_id;
+          p->child_start_time = it->my_issue->start_time;
+          p->parent_host_id = (*it2)->host_id;
+          p->parent_service_id = (*it2)->service_id;
+          p->parent_start_time = (*it2)->my_issue->start_time;
+          p->start_time = (p->child_start_time > p->parent_start_time
+                           ? p->child_start_time
+                           : p->parent_start_time);
+          p->end_time = now;
+          _events.push_back(p.staticCast<io::data>());
+        }
+      }
+
+      // XXX : missing state closing
+
+      // Close issue itself.
       QSharedPointer<issue> i(new issue(*it->my_issue));
       i->end_time = now;
       _events.push_back(i.staticCast<io::data>());
