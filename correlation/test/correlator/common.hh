@@ -26,6 +26,9 @@
 # include "com/centreon/broker/io/data.hh"
 # include "com/centreon/broker/io/stream.hh"
 
+void add_engine_state(
+       QList<QSharedPointer<com::centreon::broker::io::data> >& content,
+       bool started);
 void add_issue(
        QList<QSharedPointer<com::centreon::broker::io::data> >& content,
        time_t ack_time,

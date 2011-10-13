@@ -22,6 +22,7 @@
 #include <QDomElement>
 #include <time.h>
 #include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -939,7 +940,11 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
  *  Start event correlation.
  */
 void correlator::starting() {
+  // Send engine state.
   logging::debug << logging::MEDIUM << "correlation: engine starting";
+  QSharedPointer<engine_state> es(new engine_state);
+  es->started = true;
+  _events.push_back(es.staticCast<io::data>());
   return ;
 }
 
@@ -965,6 +970,11 @@ void correlator::stopping() {
       i->end_time = now;
       _events.push_back(i.staticCast<io::data>());
     }
+
+  // Send engine state.
+  QSharedPointer<engine_state> es(new engine_state);
+  es->started = false;
+  _events.push_back(es.staticCast<io::data>());
 
   return ;
 }

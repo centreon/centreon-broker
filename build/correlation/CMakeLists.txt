@@ -35,6 +35,7 @@ set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
 add_library("${CORRELATION}" SHARED
   # Sources.
   "${SRC_DIR}/correlator.cc"
+  "${SRC_DIR}/engine_state.cc"
   "${SRC_DIR}/host_state.cc"
   "${SRC_DIR}/issue.cc"
   "${SRC_DIR}/issue_parent.cc"
@@ -45,6 +46,7 @@ add_library("${CORRELATION}" SHARED
   "${SRC_DIR}/state.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/correlation/correlator.hh"
+  "${INC_DIR}/com/centreon/broker/correlation/engine_state.hh"
   "${INC_DIR}/com/centreon/broker/correlation/host_state.hh"
   "${INC_DIR}/com/centreon/broker/correlation/issue.hh"
   "${INC_DIR}/com/centreon/broker/correlation/issue_parent.hh"
@@ -303,6 +305,15 @@ if (WITH_TESTING)
   add_library("ccb_correlation_correlator"
     STATIC
     "${TEST_DIR}/correlator/common.cc")
+  #   Start/stop.
+  set(TEST_NAME "correlation_correlator_start_stop")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/start_stop.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation_correlator"
+    ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Issue creation and deletion.
   set(TEST_NAME "correlation_correlator_issue")
   add_executable("${TEST_NAME}"

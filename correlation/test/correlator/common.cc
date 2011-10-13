@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -24,6 +25,22 @@
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
+
+/**
+ *  Add an engine state to a content.
+ *
+ *  @param[out] content Content.
+ *  @param[in]  started true if correlation engine is started, false
+ *                      otherwise.
+ */
+void add_engine_state(QList<QSharedPointer<io::data> >& content,
+                      bool started) {
+  QSharedPointer<correlation::engine_state>
+    es(new correlation::engine_state);
+  es->started = started;
+  content.push_back(es.staticCast<io::data>());
+  return ;
+}
 
 /**
  *  Add an issue to a content.
@@ -169,7 +186,14 @@ bool check_content(io::stream& s,
     if (d.isNull())
       retval = false;
     else if (d->type() == (*it)->type()) {
-      if (d->type() == "com::centreon::broker::correlation::issue") {
+      if (d->type() == "com::centreon::broker::correlation::engine_state") {
+        QSharedPointer<correlation::engine_state>
+          es1(d.staticCast<correlation::engine_state>());
+        QSharedPointer<correlation::engine_state>
+          es2(it->staticCast<correlation::engine_state>());
+        retval = (es1->started == es2->started);
+      }
+      else if (d->type() == "com::centreon::broker::correlation::issue") {
         QSharedPointer<correlation::issue>
           i1(d.staticCast<correlation::issue>());
         QSharedPointer<correlation::issue>

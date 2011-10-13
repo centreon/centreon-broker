@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <QScopedPointer>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -237,6 +238,9 @@ QSharedPointer<io::data> input::read() {
       break ;
      case NDO_API_STORAGESTATUS:
       e.reset(_handle_event<storage::status>());
+      break ;
+     case NDO_API_CORRELATIONENGINESTATE:
+      e.reset(_handle_event<correlation::engine_state>());
       break ;
      case NDO_API_CORRELATIONHOSTSTATE:
       e.reset(_handle_event<correlation::host_state>());

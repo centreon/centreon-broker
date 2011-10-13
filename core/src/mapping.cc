@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -280,6 +282,15 @@ static mapped_data<downtime> const downtime_mapping[] = {
     NDO_DATA_COMMENT,
     "comment_data"),
   mapped_data<downtime>()
+};
+
+// engine_state members mapping.
+static mapped_data<engine_state> const engine_state_mapping[] = {
+  mapped_data<engine_state>(
+    &engine_state::started,
+    1,
+    "started"),
+  mapped_data<engine_state>()
 };
 
 // event_handler members mapping.
@@ -2143,7 +2154,7 @@ namespace     com {
         mapped_type<neb::downtime>::members(downtime_mapping);
       template <> const char*
         mapped_type<neb::downtime>::table("downtimes");
-      
+
       // Event handler mapping.
       template <> const mapped_data<neb::event_handler>*
         mapped_type<neb::event_handler>::members(event_handler_mapping);
@@ -2264,6 +2275,12 @@ namespace     com {
       template <> const char*
         mapped_type<neb::service_status>::table("services");
 
+      // Correlation engine state mapping.
+      template <> const mapped_data<correlation::engine_state>*
+        mapped_type<correlation::engine_state>::members(engine_state_mapping);
+      template <> const char*
+        mapped_type<correlation::engine_state>::table("enginestates");
+      
       // host_state mapping.
       template <> const mapped_data<correlation::host_state>*
         mapped_type<correlation::host_state>::members(host_state_mapping);

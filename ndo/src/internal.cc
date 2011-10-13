@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,7 @@
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
@@ -247,6 +249,9 @@ namespace       com {
   namespace     centreon {
     namespace   broker {
       namespace ndo {
+        template <> std::map<int, getter_setter<correlation::engine_state> >
+          ndo_mapped_type<correlation::engine_state>::map =
+            std::map<int, getter_setter<correlation::engine_state> >();
         template <> std::map<int, getter_setter<correlation::host_state> >
           ndo_mapped_type<correlation::host_state>::map =
             std::map<int, getter_setter<correlation::host_state> >();
@@ -384,6 +389,7 @@ void ndo::initialize() {
   static_init<neb::service_status>();
   static_init<storage::metric>();
   static_init<storage::status>();
+  static_init<correlation::engine_state>();
   static_init<correlation::host_state>();
   static_init<correlation::issue>();
   static_init<correlation::issue_parent>();

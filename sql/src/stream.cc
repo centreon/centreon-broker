@@ -617,39 +617,14 @@ void stream::_process_engine(io::data const& e) {
   time_t now(time(NULL));
   {
     std::ostringstream ss;
-    ss << "UPDATE issues JOIN hosts JOIN instances" \
-          " ON issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues.end_time=" << now
-       << " WHERE issues.end_time=0 OR issues.end_time IS NULL";
+    ss << "UPDATE issues SET end_time=" << now
+       << " WHERE end_time=0 OR end_time IS NULL";
     _execute(ss.str().c_str());
   }
   {
     std::ostringstream ss;
-    ss << "UPDATE issues_issues_parents" \
-          " JOIN issues" \
-          " JOIN hosts" \
-          " JOIN instances" \
-          " ON issues_issues_parents.child_id=issues.issue_id" \
-          "  AND issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0" \
-          "  OR issues_issues_parents.end_time IS NULL";
-    _execute(ss.str().c_str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues_issues_parents" \
-          " JOIN issues" \
-          " JOIN hosts" \
-          " JOIN instances" \
-          " ON issues_issues_parents.parent_id=issues.issue_id" \
-          "  AND issues.host_id=hosts.host_id" \
-          "  AND hosts.instance_id=instances.instance_id" \
-          " SET issues_issues_parents.end_time=" << now
-       << " WHERE issues_issues_parents.end_time=0" \
-          "  OR issues_issues_parents.end_time IS NULL";
+    ss << "UPDATE issues_issues_parents SET end_time=" << now
+       << " WHERE end_time=0 OR end_time IS NULL";
     _execute(ss.str().c_str());
   }
 
@@ -1573,7 +1548,7 @@ void stream::initialize() {
     = &stream::_process_service_group_member;
   _processing_table["com::centreon::broker::neb::service_status"]
     = &stream::_process_service_status;
-  _processing_table["com::centreon::broker::correlation::engine"]
+  _processing_table["com::centreon::broker::correlation::engine_state"]
     = &stream::_process_engine;
   _processing_table["com::centreon::broker::correlation::host_state"]
     = &stream::_process_host_state;

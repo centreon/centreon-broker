@@ -112,6 +112,7 @@
 #define NDO_API_CORRELATIONISSUE                     503
 #define NDO_API_CORRELATIONISSUEPARENT               504
 #define NDO_API_CORRELATIONSERVICESTATE              505
+#define NDO_API_CORRELATIONENGINESTATE               506
 
 
 /************** COMMON DATA ATTRIBUTES **************/
