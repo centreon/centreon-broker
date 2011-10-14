@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -53,7 +54,6 @@ namespace                com {
           bool           notify_on_critical;
           bool           notify_on_unknown;
           bool           notify_on_warning;
-          QString        service_description;
           bool           stalk_on_critical;
           bool           stalk_on_ok;
           bool           stalk_on_unknown;

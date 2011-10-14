@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -43,7 +44,6 @@ void service::_internal_copy(service const& s) {
   notify_on_critical = s.notify_on_critical;
   notify_on_unknown = s.notify_on_unknown;
   notify_on_warning = s.notify_on_warning;
-  service_description = s.service_description;
   stalk_on_critical = s.stalk_on_critical;
   stalk_on_unknown = s.stalk_on_unknown;
   stalk_on_warning = s.stalk_on_warning;

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,7 @@
 #ifndef CCB_NEB_SERVICE_STATUS_HH_
 # define CCB_NEB_SERVICE_STATUS_HH_
 
+# include <QString>
 # include <time.h>
 # include "com/centreon/broker/neb/host_service_status.hh"
 
@@ -37,10 +39,12 @@ namespace                 com {
           void            _internal_copy(service_status const& ss);
 
          public:
+          QString         host_name;
           time_t          last_time_critical;
           time_t          last_time_ok;
           time_t          last_time_unknown;
           time_t          last_time_warning;
+          QString         service_description;
           unsigned int    service_id;
                           service_status();
                           service_status(service_status const& ss);

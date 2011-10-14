@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -28,6 +29,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -96,13 +98,17 @@ void stream::_clear_qsql() {
  *  Look through the index cache for the specified index. If it cannot
  *  be found, insert an entry in the database.
  *
- *  @param[in] host_id    Host ID associated to the index.
- *  @param[in] service_id Service ID associated to the index.
+ *  @param[in] host_id      Host ID associated to the index.
+ *  @param[in] service_id   Service ID associated to the index.
+ *  @param[in] host_name    Host name associated to the index.
+ *  @param[in] service_desc Service description associated to the index.
  *
  *  @return Index ID matching host and service ID.
  */
 unsigned int stream::_find_index_id(unsigned int host_id,
-                                    unsigned int service_id) {
+                                    unsigned int service_id,
+                                    QString const& host_name,
+                                    QString const& service_desc) {
   unsigned int retval;
 
   // Look in the cache.
@@ -115,11 +121,17 @@ unsigned int stream::_find_index_id(unsigned int host_id,
   else {
     // Build query.
     std::ostringstream oss;
-    oss << "INSERT INTO index_data (host_id, service_id, must_be_rebuild)" \
-           " VALUES (" << host_id << ", " << service_id << ", 1)";
+    oss << "INSERT INTO index_data (" \
+           "  host_id, host_name," \
+           "  service_id, service_description, must_be_rebuild)" \
+           " VALUES (" << host_id << ", :host_name, " << service_id
+        << ", :service_description, 1)";
+    QSqlQuery q(oss.str().c_str(), *_storage_db);
+    q.bindValue(":host_name", host_name);
+    q.bindValue(":service_description", service_desc);
 
     // Execute query.
-    QSqlQuery q(_storage_db->exec(oss.str().c_str()));
+    q.exec();
     if (_storage_db->lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "index (" << host_id << ", " << service_id
@@ -425,7 +437,11 @@ void stream::write(QSharedPointer<io::data> data) {
 
     if (!ss->perf_data.isEmpty()) {
       // Find index_id.
-      unsigned int index_id(_find_index_id(ss->host_id, ss->service_id));
+      unsigned int index_id(_find_index_id(
+        ss->host_id,
+        ss->service_id,
+        ss->host_name,
+        ss->service_description));
 
       // Generate status event.
       logging::debug << logging::LOW
@@ -494,6 +510,23 @@ void stream::write(QSharedPointer<io::data> data) {
         multiplexing::publisher().write(perf.staticCast<io::data>());
       }
     }
+  }
+  // Process service definition events.
+  else if (data->type() == "com::centreon::broker::neb::service") {
+    logging::debug << logging::HIGH << "storage: processing service " \
+      "definition event";
+    QSharedPointer<neb::service> s(data.staticCast<neb::service>());
+    // Update index_data table.
+    std::ostringstream oss;
+    oss << "UPDATE index_data" \
+           " SET host_name=:host_name," \
+           "     service_description=:service_description" \
+           " WHERE host_id=" << s->host_id
+        << " AND service_id=" << s->service_id;
+    QSqlQuery q(oss.str().c_str(), *_storage_db);
+    q.bindValue(":host_name", s->host_name);
+    q.bindValue(":service_description", s->service_description);
+    q.exec();
   }
   return ;
 }

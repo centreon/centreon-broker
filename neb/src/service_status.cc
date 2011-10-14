@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -37,10 +38,12 @@ using namespace com::centreon::broker::neb;
  *  @param[in] ss Object to copy.
  */
 void service_status::_internal_copy(service_status const& ss) {
+  host_name = ss.host_name;
   last_time_critical = ss.last_time_critical;
   last_time_ok = ss.last_time_ok;
   last_time_unknown = ss.last_time_unknown;
   last_time_warning = ss.last_time_warning;
+  service_description = ss.service_description;
   service_id = ss.service_id;
   return ;
 }

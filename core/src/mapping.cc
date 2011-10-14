@@ -1570,6 +1570,10 @@ static mapped_data<service> const service_mapping[] = {
     "host_id",
     true),
   mapped_data<service>(
+    &service::host_name,
+    NDO_DATA_HOSTID,
+    NULL),
+  mapped_data<service>(
     &service::icon_image,
     NDO_DATA_ICONIMAGE,
     "icon_image"),
@@ -1995,6 +1999,10 @@ static mapped_data<service_status> const service_status_mapping[] = {
     "host_id",
     true),
   mapped_data<service_status>(
+    &service_status::host_name,
+    NDO_DATA_HOSTID,
+    NULL),
+  mapped_data<service_status>(
     &service_status::is_flapping,
     NDO_DATA_ISFLAPPING,
     "flapping"),
@@ -2094,6 +2102,10 @@ static mapped_data<service_status> const service_status_mapping[] = {
     &service_status::scheduled_downtime_depth,
     NDO_DATA_SCHEDULEDDOWNTIMEDEPTH,
     "scheduled_downtime_depth"),
+  mapped_data<service_status>(
+    &service_status::service_description,
+    NDO_DATA_SERVICEDESCRIPTION,
+    NULL),
   mapped_data<service_status>(
     &service_status::service_id,
     NDO_DATA_SERVICE,
