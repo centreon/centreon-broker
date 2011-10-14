@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -116,6 +117,8 @@ QString lib::normalize_metric_name(QString const& metric) {
   normalized.replace(' ', '-');
   normalized.replace("/", "_slash");
   normalized.replace("\\", "_bslash");
+  if (normalized.size() > max_metric_length)
+    normalized.resize(max_metric_length);
   return (normalized);
 }
 
