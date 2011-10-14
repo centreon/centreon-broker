@@ -1028,6 +1028,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->retry_interval = s->retry_interval;
     service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
     if (s->host_name && s->description) {
+      service_status->host_name = s->host_name;
+      service_status->service_description = s->description;
       std::map<std::pair<std::string, std::string>,
                std::pair<int, int> >::const_iterator it;
       it = gl_services.find(std::make_pair(s->host_name,

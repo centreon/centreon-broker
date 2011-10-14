@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -558,6 +559,7 @@ static void send_service_list() {
     my_service->has_been_checked = s->has_been_checked;
     my_service->high_flap_threshold = s->high_flap_threshold;
     if (s->host_name) { // Redonduncy with custom var browsing.
+      my_service->host_name = s->host_name;
       std::map<std::string, int>::const_iterator it;
       it = neb::gl_hosts.find(s->host_name);
       if (it != neb::gl_hosts.end())
