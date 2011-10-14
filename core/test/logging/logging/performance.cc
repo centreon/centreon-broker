@@ -29,7 +29,7 @@
 using namespace com::centreon::broker;
 
 #define MESSAGE "0123456789abcdefghijklmnopqrstuvwxyz"
-#define MESSAGE_COUNT 1000000
+#define MESSAGE_COUNT 100000
 #define TEMP_FILE1 "centreon_broker_unit_test1"
 #define TEMP_FILE2 "centreon_broker_unit_test2"
 #define TEMP_FILE3 "centreon_broker_unit_test3"
