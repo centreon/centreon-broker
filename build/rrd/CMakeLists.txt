@@ -68,16 +68,7 @@ if (LIBRRD_CFLAGS)
       COMPILE_FLAGS "${LIBRRD_CFLAGS}")
   endif ()
 endif ()
-if (LIBRRD_LDFLAGS)
-  get_target_property(RRD_LDFLAGS "${RRD}" LINK_FLAGS)
-  if (RRD_LDFLAGS)
-    set_target_properties("${RRD}" PROPERTIES
-      LINK_FLAGS "${RRD_LDFLAGS} ${LIBRRD_LDFLAGS}")
-  else ()
-    set_target_properties("${RRD}" PROPERTIES
-      LINK_FLAGS "${LIBRRD_LDFLAGS}")
-  endif ()
-endif ()
+target_link_libraries("${RRD}" ${LIBRRD_LDFLAGS})
 
 if (WITH_TESTING)
   set(TEST_LIBRARIES "${RRD}" "roker")
