@@ -515,6 +515,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/feed.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Retry interval.
+  set(TEST_NAME "core_processing_failover_retry_interval")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/retry_interval.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Failing intermediate.
   set(TEST_NAME "core_processing_failover_failed_intermediate")
   add_executable("${TEST_NAME}"

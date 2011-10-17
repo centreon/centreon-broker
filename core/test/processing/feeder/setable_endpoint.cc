@@ -25,6 +25,25 @@ using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] se Object to copy.
+ */
+void setable_endpoint::_internal_copy(setable_endpoint const& se) {
+  _opened_streams = se._opened_streams;
+  _save_streams = se._save_streams;
+  _should_succeed = se._should_succeed;
+  _streams = se._streams;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -33,7 +52,9 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 setable_endpoint::setable_endpoint()
-  : _save_streams(false), _should_succeed(new volatile bool) {}
+  : _opened_streams(0),
+    _save_streams(false),
+    _should_succeed(new volatile bool) {}
 
 /**
  *  Copy constructor.
@@ -41,10 +62,9 @@ setable_endpoint::setable_endpoint()
  *  @param[in] se Object to copy.
  */
 setable_endpoint::setable_endpoint(setable_endpoint const& se)
-  : com::centreon::broker::io::endpoint(se),
-    _save_streams(se._save_streams),
-    _should_succeed(se._should_succeed),
-    _streams(se._streams) {}
+  : com::centreon::broker::io::endpoint(se) {
+  _internal_copy(se);
+}
 
 /**
  *  Destructor.
@@ -59,10 +79,10 @@ setable_endpoint::~setable_endpoint() {}
  *  @return This object.
  */
 setable_endpoint& setable_endpoint::operator=(setable_endpoint const& se) {
-  com::centreon::broker::io::endpoint::operator=(se);
-  _save_streams = se._save_streams;
-  _should_succeed = se._should_succeed;
-  _streams = se._streams;
+  if (&se != this) {
+    com::centreon::broker::io::endpoint::operator=(se);
+    _internal_copy(se);
+  }
   return (*this);
 }
 
@@ -80,6 +100,7 @@ void setable_endpoint::close() {
  *  @return New setable_stream.
  */
 QSharedPointer<com::centreon::broker::io::stream> setable_endpoint::open() {
+  ++_opened_streams;
   if (!*_should_succeed)
     throw (exceptions::msg() << "setable endpoint should not succeed");
   QSharedPointer<com::centreon::broker::io::stream> s;
@@ -93,6 +114,15 @@ QSharedPointer<com::centreon::broker::io::stream> setable_endpoint::open() {
     s = QSharedPointer<com::centreon::broker::io::stream>(
           new setable_stream(_should_succeed));
   return (s);
+}
+
+/**
+ *  Get the number of open attempts.
+ *
+ *  @return Number of times open() was called.
+ */
+unsigned int setable_endpoint::opened_streams() const {
+  return (_opened_streams);
 }
 
 /**

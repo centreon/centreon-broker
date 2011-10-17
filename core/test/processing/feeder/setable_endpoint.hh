@@ -33,11 +33,13 @@
  */
 class               setable_endpoint : public com::centreon::broker::io::endpoint {
  private:
+  unsigned int      _opened_streams;
   bool              _save_streams;
   QSharedPointer<volatile bool>
                     _should_succeed;
   QList<QSharedPointer<setable_stream> >
                     _streams;
+  void              _internal_copy(setable_endpoint const& se);
 
  public:
                     setable_endpoint();
@@ -47,6 +49,7 @@ class               setable_endpoint : public com::centreon::broker::io::endpoin
   void              close();
   QSharedPointer<com::centreon::broker::io::stream>
                     open();
+  unsigned int      opened_streams() const;
   void              save_streams(bool save);
   void              set(bool should_succeed);
   QList<QSharedPointer<setable_stream> >&
