@@ -451,7 +451,7 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
-  add_library("ccb_multiplexing_engine" STATIC
+  add_library("ccb_core_multiplexing_engine" STATIC
     "${TEST_DIR}/multiplexing/engine/hooker.cc")
   #   Start and stop.
   set(TEST_NAME "core_multiplexing_engine_start_stop")
@@ -464,7 +464,7 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/engine/hook.cc")
   target_link_libraries("${TEST_NAME}"
-    "ccb_multiplexing_engine"
+    "ccb_core_multiplexing_engine"
     "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Unhook.
@@ -472,7 +472,7 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/engine/unhook.cc")
   target_link_libraries("${TEST_NAME}"
-    "ccb_multiplexing_engine"
+    "ccb_core_multiplexing_engine"
     "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::publisher tests.
@@ -487,6 +487,33 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/publisher/write.cc")
   target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # processing namespace tests.
+  # processing::feeder tests.
+  add_library("ccb_core_processing_feeder" STATIC
+    "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
+    "${TEST_DIR}/processing/feeder/setable_stream.cc")
+  set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
+  #   Simple feeding.
+  set(TEST_NAME "core_processing_feeder_simple")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/simple.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Feeding with error.
+  set(TEST_NAME "core_processing_feeder_error")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/error.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # processing::failover tests.
+  #   Simple feeding.
+  set(TEST_NAME "core_processing_failover_feed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/feed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
