@@ -91,9 +91,9 @@ void engine::_on_hook_destroy(QObject* obj) {
  */
 void engine::_send_to_subscribers() {
   // Process all queued events.
+  QMutexLocker lock(&gl_subscribersm);
   while (!_kiew.isEmpty()) {
     // Send object to every subscriber.
-    QMutexLocker lock(&gl_subscribersm);
     for (QVector<subscriber*>::iterator
            it = gl_subscribers.begin(),
            end = gl_subscribers.end();
@@ -317,6 +317,7 @@ void engine::stop() {
  *  @param[in] h Hook.
  */
 void engine::unhook(hooker& h) {
+  QMutexLocker lock(&_mutex);
   for (QVector<hooker*>::iterator it = _hooks.begin();
        it != _hooks.end();)
     if (*it == &h)

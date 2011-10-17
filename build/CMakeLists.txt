@@ -444,6 +444,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Close.
+  set(TEST_NAME "core_multiplexing_subscriber_close")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/subscriber/close.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
   add_library("ccb_multiplexing_engine" STATIC
     "${TEST_DIR}/multiplexing/engine/hooker.cc")

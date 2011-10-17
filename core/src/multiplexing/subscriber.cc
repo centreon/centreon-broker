@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <assert.h>
 #include <QMutexLocker>
 #include <QScopedPointer>
@@ -104,13 +103,25 @@ subscriber::~subscriber() {
  *  Unregister from event publishing notifications.
  */
 void subscriber::close() {
-  QMutexLocker lock(&gl_subscribersm);
-  std::remove(gl_subscribers.begin(), gl_subscribers.end(), this);
-  _registered = false;
-  logging::debug << logging::LOW << "multiplexing: "
-    << gl_subscribers.size()
+  // Delete itself.
+  unsigned int remaining;
+  {
+    QMutexLocker lock(&gl_subscribersm);
+    for (QVector<subscriber*>::iterator it = gl_subscribers.begin();
+         it != gl_subscribers.end();)
+      if (*it == this)
+        it = gl_subscribers.erase(it);
+      else
+        ++it;
+    _registered = false;
+    remaining = gl_subscribers.size();
+    _cv.wakeAll();
+  }
+
+  // Log message.
+  logging::debug(logging::low) << "multiplexing: " << remaining
     << " subscribers are registered after deletion";
-  _cv.wakeAll();
+
   return ;
 }
 
@@ -134,8 +145,8 @@ QSharedPointer<io::data> subscriber::read() {
 QSharedPointer<io::data> subscriber::read(time_t deadline) {
   QSharedPointer<io::data> event;
   QMutexLocker lock(&_mutex);
-  if (_registered) {
-    if (_events.empty()) {
+  if (_events.empty()) {
+    if (_registered) {
       if (-1 == deadline)
         _cv.wait(&_mutex);
       else
@@ -146,11 +157,11 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
           << _events.size() << " events remaining in subcriber";
       }
     }
-    else {
-      event = _events.dequeue();
-      logging::debug << logging::LOW << "multiplexing: "
-        << _events.size() << " events remaining in subscriber";
-    }
+  }
+  else {
+    event = _events.dequeue();
+    logging::debug << logging::LOW << "multiplexing: "
+      << _events.size() << " events remaining in subscriber";
   }
   return (event);
 }
