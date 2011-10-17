@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
     QSharedPointer<setable_stream> ss(*se->streams().begin());
     unsigned int count(ss->count());
     unsigned int i(0);
-    QSharedPointer<io::data> event(s.read());
+    QSharedPointer<io::data> event(s.read(0));
     while (!event.isNull()) {
       if (event->type() != "com::centreon::broker::io::raw")
         retval |= 1;
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
         memcpy(&val, raw->memory(), sizeof(val));
         retval |= (val != ++i);
       }
-      event = s.read();
+      event = s.read(0);
     }
     retval |= (i != count);
   }
