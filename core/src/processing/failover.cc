@@ -90,6 +90,8 @@ failover& failover::operator=(failover const& f) {
  *  Request thread termination.
  */
 void failover::exit() {
+  if (!_failover.isNull() && _failover->isRunning())
+    _failover->exit();
   _should_exit = true;
   _feeder.exit();
   return ;
@@ -243,6 +245,16 @@ void failover::set_failover(QSharedPointer<failover> fo) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
+  return ;
+}
+
+/**
+ *  Wait for this thread to terminate along with other failovers.
+ */
+void failover::wait() {
+  if (!_failover.isNull() && _failover->isRunning())
+    _failover->wait();
+  this->QThread::wait();
   return ;
 }
 

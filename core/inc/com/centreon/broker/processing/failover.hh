@@ -71,6 +71,7 @@ namespace               com {
           void          set_endpoint(QSharedPointer<io::endpoint> endp);
           void          set_failover(QSharedPointer<processing::failover> fo);
           void          set_retry_interval(time_t retry_interval);
+          void          wait();
           void          write(QSharedPointer<io::data> d);
         };
       }
