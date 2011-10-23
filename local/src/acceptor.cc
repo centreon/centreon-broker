@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -33,7 +34,7 @@ using namespace com::centreon::broker::local;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() {}
+acceptor::acceptor() : endpoint(true) {}
 
 /**
  *  @brief Copy constructor.

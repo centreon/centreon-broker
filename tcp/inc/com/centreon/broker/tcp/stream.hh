@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,34 +23,36 @@
 # include <QSharedPointer>
 # include <QTcpSocket>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        tcp {
-        /**
-         *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
-         *  @brief TCP stream.
-         *
-         *  TCP stream.
-         */
-        class          stream : public io::stream {
-         private:
-          QSharedPointer<QTcpSocket>
-                       _socket;
-                       stream(stream const& s);
-          stream&      operator=(stream const& s);
+CCB_BEGIN()
 
-         public:
-                       stream(QSharedPointer<QTcpSocket> sock);
-                       ~stream();
-          QSharedPointer<io::data>
-                       read();
-          void         write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace        tcp {
+  /**
+   *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
+   *  @brief TCP stream.
+   *
+   *  TCP stream.
+   */
+  class          stream : public io::stream {
+   private:
+    bool         _process_in;
+    bool         _process_out;
+    QSharedPointer<QTcpSocket>
+                 _socket;
+                 stream(stream const& s);
+    stream&      operator=(stream const& s);
+
+   public:
+                 stream(QSharedPointer<QTcpSocket> sock);
+                 ~stream();
+    void         process(bool in = false, bool out = true);
+    QSharedPointer<io::data>
+                 read();
+    void         write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_TCP_STREAM_HH_ */

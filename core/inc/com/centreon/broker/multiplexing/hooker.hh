@@ -36,11 +36,15 @@ namespace              com {
         class          hooker : public QObject, public io::stream {
           Q_OBJECT
 
+         protected:
+          bool         _registered;
+
          public:
                        hooker();
                        hooker(hooker const& h);
           virtual      ~hooker();
           hooker&      operator=(hooker const &h);
+          void         process(bool in = false, bool out = true);
           virtual void starting() = 0;
           virtual void stopping() = 0;
         };

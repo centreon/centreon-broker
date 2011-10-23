@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -54,8 +55,10 @@ stream::~stream() {}
  *  @return This object.
  */
 stream& stream::operator=(stream const& s) {
-  _from = s._from;
-  _to = s._to;
+  if (&s != this) {
+    _from = s._from;
+    _to = s._to;
+  }
   return (*this);
 }
 

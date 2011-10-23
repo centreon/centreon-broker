@@ -20,6 +20,7 @@
 #include <QSharedPointer>
 #include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -53,7 +54,7 @@ int main() {
   multiplexing::engine::instance().publish(data.staticCast<io::data>());
 
   // Close subscriber.
-  s.close();
+  s.process(false, false);
 
   // Publish data.
   data = QSharedPointer<io::raw>(new io::raw);
@@ -70,7 +71,16 @@ int main() {
                   sizeof(MSG) - 1));
 
   // Try reading again.
-  retval |= !s.read(0).isNull();
+  try {
+    s.read(0);
+    retval |= 1;
+  }
+  catch (io::exceptions::shutdown const& s) {
+    (void)s;
+  }
+  catch (...) {
+    retval |= 1;
+  }
 
   // Return.
   return (retval);

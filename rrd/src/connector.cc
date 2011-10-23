@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -31,7 +32,7 @@ using namespace com::centreon::broker::rrd;
 /**
  *  Default constructor.
  */
-connector::connector() : _cached_port(0) {}
+connector::connector() : io::endpoint(false), _cached_port(0) {}
 
 /**
  *  Copy constructor.

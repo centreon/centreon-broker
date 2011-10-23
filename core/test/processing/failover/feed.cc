@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -64,13 +65,13 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit feeder thread.
-  f.exit();
+  f.process(false, true);
 
   // Wait for thread termination.
   f.wait();
 
   // Check output content.
-  s.close();
+  s.process(false, false);
   int retval(se->streams().isEmpty());
   if (!retval) {
     QSharedPointer<setable_stream> ss(*se->streams().begin());
@@ -83,10 +84,15 @@ int main(int argc, char* argv[]) {
       else {
         QSharedPointer<io::raw> raw(event.staticCast<io::raw>());
         unsigned int val;
-        memcpy(&val, raw->memory(), sizeof(val));
+        memcpy(&val, raw->QByteArray::data(), sizeof(val));
         retval |= (val != ++i);
       }
-      event = s.read(0);
+      try {
+        event = s.read(0);
+      }
+      catch (io::exceptions::shutdown const& e) {
+	event.clear();
+      }
     }
     retval |= (i != count);
   }

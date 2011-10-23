@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,38 +22,39 @@
 
 # include <sstream>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        ndo {
-        /**
-         *  @class input input.hh "com/centreon/broker/ndo/input.hh"
-         *  @brief NDO input source.
-         *
-         *  The class converts an input stream into events using a
-         *  modified version of the NDO protocol.
-         */
-        class          input : virtual public io::stream {
-         private:
-          std::string  _buffer;
-          std::string  _old;
-          char const*  _get_line();
-          template     <typename T>
-          T*           _handle_event();
+CCB_BEGIN()
 
-         public:
-                       input();
-                       input(input const& i);
-          virtual      ~input();
-          input&       operator=(input const& i);
-          virtual QSharedPointer<io::data>
-                       read();
-          virtual void write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace        ndo {
+  /**
+   *  @class input input.hh "com/centreon/broker/ndo/input.hh"
+   *  @brief NDO input source.
+   *
+   *  The class converts an input stream into events using a modified
+   *  version of the NDO protocol.
+   */
+  class          input : virtual public io::stream {
+   private:
+    std::string  _buffer;
+    bool         _process_in;
+    std::string  _old;
+    char const*  _get_line();
+    template     <typename T>
+    T*           _handle_event();
+
+   public:
+                 input();
+                 input(input const& i);
+    virtual      ~input();
+    input&       operator=(input const& i);
+    void         process(bool in = false, bool out = false);
+    virtual QSharedPointer<io::data>
+                 read();
+    virtual void write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_NDO_INPUT_HH_ */

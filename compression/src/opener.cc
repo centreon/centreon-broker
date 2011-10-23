@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -31,7 +32,7 @@ using namespace com::centreon::broker::compression;
 /**
  *  Default constructor.
  */
-opener::opener() : _level(-1), _size(0) {}
+opener::opener() : io::endpoint(false), _level(-1), _size(0) {}
 
 /**
  *  Copy constructor.
@@ -56,9 +57,11 @@ opener::~opener() {}
  *  @return This object.
  */
 opener& opener::operator=(opener const& o) {
-  io::endpoint::operator=(o);
-  _level = o._level;
-  _size = o._size;
+  if (this != &o) {
+    io::endpoint::operator=(o);
+    _level = o._level;
+    _size = o._size;
+  }
   return (*this);
 }
 

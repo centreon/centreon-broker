@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,39 +21,42 @@
 # define CCB_COMPRESSION_STREAM_HH_
 
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    compression {
-        /**
-         *  @class stream stream.hh "com/centreon/broker/compression/stream.hh"
-         *  @brief Compression stream.
-         *
-         *  Compress and uncompress data.
-         */
-        class                      stream : public io::stream {
-         private:
-          int                      _level;
-          QByteArray               _rbuffer;
-          unsigned int             _size;
-          QByteArray               _wbuffer;
-          void                     _flush();
-          bool                     _get_data(unsigned int size);
-          void                     _internal_copy(stream const& s);
+CCB_BEGIN()
 
-         public:
-                                   stream(int level = -1,
-                                     unsigned int size = 0);
-                                   stream(stream const& s);
-                                   ~stream();
-          stream&                  operator=(stream const& s);
-          QSharedPointer<io::data> read();
-          void                     write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace                    compression {
+  /**
+   *  @class stream stream.hh "com/centreon/broker/compression/stream.hh"
+   *  @brief Compression stream.
+   *
+   *  Compress and uncompress data.
+   */
+  class                      stream : public io::stream {
+   private:
+    int                      _level;
+    bool                     _process_in;
+    bool                     _process_out;
+    QByteArray               _rbuffer;
+    unsigned int             _size;
+    QByteArray               _wbuffer;
+    void                     _flush();
+    bool                     _get_data(unsigned int size);
+    void                     _internal_copy(stream const& s);
+
+   public:
+                             stream(
+                               int level = -1,
+                               unsigned int size = 0);
+                             stream(stream const& s);
+                             ~stream();
+    stream&                  operator=(stream const& s);
+    void                     process(bool in = false, bool out = false);
+    QSharedPointer<io::data> read();
+    void                     write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_COMPRESSION_STREAM_HH_ */

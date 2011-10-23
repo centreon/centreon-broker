@@ -22,21 +22,42 @@ using namespace com::centreon::broker::io;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] e Object to copy.
+ */
+void endpoint::_internal_copy(endpoint const& e) {
+  _from = e._from;
+  _is_acceptor = e._is_acceptor;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
 
 /**
  *  Default constructor.
+ *
+ *  @param[in] is_accptr true if endpoint is an acceptor.
  */
-endpoint::endpoint() {}
+endpoint::endpoint(bool is_accptr) : _is_acceptor(is_accptr) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] e Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : _from(e._from) {}
+endpoint::endpoint(endpoint const& e) {
+  _internal_copy(e);
+}
 
 /**
  *  Destructor.
@@ -51,7 +72,8 @@ endpoint::~endpoint() {}
  *  @return This object.
  */
 endpoint& endpoint::operator=(endpoint const& e) {
-  _from = e._from;
+  if (this != &e)
+    _internal_copy(e);
   return (*this);
 }
 
@@ -63,4 +85,22 @@ endpoint& endpoint::operator=(endpoint const& e) {
 void endpoint::from(QSharedPointer<endpoint> endp) {
   _from = endp;
   return ;
+}
+
+/**
+ *  Check if this endpoint is an acceptor.
+ *
+ *  @return true if endpoint is an acceptor.
+ */
+bool endpoint::is_acceptor() const throw () {
+  return (_is_acceptor);
+}
+
+/**
+ *  Check if this endpoint is a connector.
+ *
+ *  @return true if endpoint is a connector.
+ */
+bool endpoint::is_connector() const throw () {
+  return (!_is_acceptor);
 }

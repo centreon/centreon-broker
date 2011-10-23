@@ -36,11 +36,15 @@ namespace                    multiplexing {
    *  @see engine
    */
   class                      publisher : public io::stream {
+   private:
+    bool                     _process;
+
    public:
                              publisher();
                              publisher(publisher const& p);
                              ~publisher();
     publisher&               operator=(publisher const& p);
+    void                     process(bool in = false, bool out = true);
     QSharedPointer<io::data> read();
     void                     write(QSharedPointer<io::data> d);
   };

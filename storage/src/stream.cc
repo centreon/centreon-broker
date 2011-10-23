@@ -27,6 +27,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/service.hh"
@@ -327,6 +328,9 @@ stream::stream(QString const& storage_type,
                unsigned int rrd_len,
                time_t interval_length,
                bool store_in_db) {
+  // Process events.
+  _process_out = true;
+
   // Store in DB.
   _store_in_db = store_in_db;
 
@@ -373,6 +377,9 @@ stream::stream(QString const& storage_type,
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) : io::stream(s) {
+  // Processing.
+  _process_out = s._process_out;
+
   // Store in DB.
   _store_in_db = s._store_in_db;
 
@@ -413,6 +420,18 @@ stream::~stream() {
 }
 
 /**
+ *  Enable or disable output event processing.
+ *
+ *  @param[in] in  Unused.
+ *  @param[in] out Set to true to enable output event processing.
+ */
+void stream::process(bool in, bool out) {
+  (void)in;
+  _process_out = out;
+  return ;
+}
+
+/**
  *  Read from the datbase.
  *
  *  @return Does not return, throw an exception.
@@ -429,6 +448,11 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] data Event pointer.
  */
 void stream::write(QSharedPointer<io::data> data) {
+  // Check that processing is enabled.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+             << "storage stream is shutdown");
+
   // Process service status events.
   if (data->type() == "com::centreon::broker::neb::service_status") {
     logging::debug << logging::HIGH << "storage: processing service " \

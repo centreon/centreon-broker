@@ -21,6 +21,7 @@
 #include <QMutexLocker>
 #include <QScopedPointer>
 #include <stdlib.h>
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -83,7 +84,9 @@ void subscriber::clean() {
  *  Default constructor.
  */
 subscriber::subscriber() {
-  QMutexLocker lock(&gl_subscribersm);
+  // Register self in subscriber list.
+  QMutexLocker lock1(&gl_subscribersm);
+  QMutexLocker lock2(&_mutex);
   gl_subscribers.push_back(this);
   _registered = true;
   logging::debug << logging::LOW << "multiplexing: "
@@ -96,17 +99,22 @@ subscriber::subscriber() {
  */
 subscriber::~subscriber() {
   clean();
-  this->close();
+  process(false, false);
 }
 
 /**
- *  Unregister from event publishing notifications.
+ *  Unregister or re-register from event publishing notifications.
+ *
+ *  @param[in] in  Process input events.
+ *  @param[in] out Process output events.
  */
-void subscriber::close() {
-  // Delete itself.
-  unsigned int remaining;
-  {
-    QMutexLocker lock(&gl_subscribersm);
+void subscriber::process(bool in, bool out) {
+  // Lock mutexes.
+  QMutexLocker lock1(&gl_subscribersm);
+  QMutexLocker lock2(&_mutex);
+
+  // Unregister.
+  if ((!in || !out) && _registered) {
     for (QVector<subscriber*>::iterator it = gl_subscribers.begin();
          it != gl_subscribers.end();)
       if (*it == this)
@@ -114,13 +122,21 @@ void subscriber::close() {
       else
         ++it;
     _registered = false;
-    remaining = gl_subscribers.size();
     _cv.wakeAll();
+    // Log message.
+    logging::debug(logging::low) << "multiplexing: "
+      << gl_subscribers.size()
+      << " subscribers are registered after deletion";
   }
-
-  // Log message.
-  logging::debug(logging::low) << "multiplexing: " << remaining
-    << " subscribers are registered after deletion";
+  // Re-register.
+  else if ((in || out) && !_registered) {
+    gl_subscribers.push_back(this);
+    _registered = true;
+    // Log message.
+    logging::debug(logging::low) << "multiplexing: "
+      << gl_subscribers.size()
+      << " subscribers are registered after reregistration";
+  }
 
   return ;
 }
@@ -145,23 +161,31 @@ QSharedPointer<io::data> subscriber::read() {
 QSharedPointer<io::data> subscriber::read(time_t deadline) {
   QSharedPointer<io::data> event;
   QMutexLocker lock(&_mutex);
+
+  // No data is directly available.
   if (_events.empty()) {
+    // Wait a while if subscriber was not shutdown.
     if (_registered) {
       if (-1 == deadline)
         _cv.wait(&_mutex);
       else
         _cv.wait(&_mutex, deadline);
-      if (!_events.empty()) {
+      if (!_events.isEmpty()) {
         event = _events.dequeue();
-        logging::debug << logging::LOW << "multiplexing: "
+        logging::debug(logging::low) << "multiplexing: "
           << _events.size() << " events remaining in subcriber";
       }
     }
+    // If subscriber is shutdown, notify caller.
+    else
+      throw (io::exceptions::shutdown(true, true) << "subscriber "
+               << this << " is shutdown, cannot read");
   }
+  // Data is available, no need to wait.
   else {
     event = _events.dequeue();
-    logging::debug << logging::LOW << "multiplexing: "
-      << _events.size() << " events remaining in subscriber";
+    logging::debug(logging::low) << "multiplexing: " << _events.size()
+      << " events remaining in subscriber";
   }
   return (event);
 }
@@ -173,7 +197,12 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
  */
 void subscriber::write(QSharedPointer<io::data> event) {
   QMutexLocker lock(&_mutex);
-  _events.enqueue(event);
-  _cv.wakeOne();
+  if (_registered) {
+    _events.enqueue(event);
+    _cv.wakeOne();
+  }
+  else
+    throw (io::exceptions::shutdown(true, true) << "subscriber "
+             << this << " is shutdown, cannot write");
   return ;
 }

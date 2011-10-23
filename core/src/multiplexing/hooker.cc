@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/hooker.hh"
 
 using namespace com::centreon::broker::multiplexing;
@@ -30,7 +31,7 @@ using namespace com::centreon::broker::multiplexing;
 /**
  *  Default constructor.
  */
-hooker::hooker() {}
+hooker::hooker() : _registered(false) {}
 
 /**
  *  Copy constructor.
@@ -54,4 +55,22 @@ hooker::~hooker() {}
 hooker& hooker::operator=(hooker const& h) {
   io::stream::operator=(h);
   return (*this);
+}
+
+/**
+ *  Enable or disable hooking.
+ *
+ *  @param[in] in  Set to false will disable hooking.
+ *  @param[in] out Set to false will isable hooking.
+ */
+void hooker::process(bool in, bool out) {
+  if (_registered && (!in || !out)) {
+    engine::instance().unhook(*this);
+    _registered = false;
+  }
+  else if (!_registered && (in || out)) {
+    engine::instance().hook(*this);
+    _registered = true;
+  }
+  return ;
 }

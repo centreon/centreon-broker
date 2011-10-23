@@ -109,6 +109,12 @@ QList<QSharedPointer<com::centreon::broker::io::data> > const& setable_stream::e
 }
 
 /**
+ *  XXX
+ */
+void setable_stream::process(bool in, bool out) {
+}
+
+/**
  *  Read some data.
  *
  *  @return Some data.

@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
@@ -33,14 +34,15 @@ using namespace com::centreon::broker::multiplexing;
 /**
  *  Default constructor.
  */
-publisher::publisher() {}
+publisher::publisher() : _process(true) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] p Object to copy.
  */
-publisher::publisher(publisher const& p) : io::stream(p) {}
+publisher::publisher(publisher const& p)
+  : io::stream(p), _process(p._process) {}
 
 /**
  *  Destructor.
@@ -56,7 +58,20 @@ publisher::~publisher() {}
  */
 publisher& publisher::operator=(publisher const& p) {
   io::stream::operator=(p);
+  _process = p._process;
   return (*this);
+}
+
+/**
+ *  Set whether or not to process inputs and outputs.
+ *
+ *  @param[in] in  Unused.
+ *  @param[in] out Set to true to enable publisher.
+ */
+void publisher::process(bool in, bool out) {
+  (void)in;
+  _process = out;
+  return ;
 }
 
 /**
@@ -68,6 +83,7 @@ publisher& publisher::operator=(publisher const& p) {
  *  @return Empty data pointer.
  */
 QSharedPointer<io::data> publisher::read() {
+  // XXX : use io::exceptions::read_error
   throw (exceptions::msg()
            << "multiplexing: attempt to read from publisher");
   return (QSharedPointer<io::data>());
@@ -81,6 +97,10 @@ QSharedPointer<io::data> publisher::read() {
  *  @param[in] d Multiplexed data.
  */
 void publisher::write(QSharedPointer<io::data> d) {
-  engine::instance().publish(d);
+  if (_process)
+    engine::instance().publish(d);
+  else
+    throw (io::exceptions::shutdown(true, true) << "publisher "
+             << this << " is shutdown");
   return ;
 }

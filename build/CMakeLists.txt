@@ -33,38 +33,39 @@ include(${QT_USE_FILE})
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  # "${INC_DIR}/config/applier/endpoint.hh"
+  "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
   "${INC_DIR}/multiplexing/engine.hh"
   "${INC_DIR}/multiplexing/hooker.hh"
-  # "${INC_DIR}/processing/failover.hh"
-  # "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/processing/failover.hh"
+  "${INC_DIR}/processing/feeder.hh"
 )
 
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
-#   "${SRC_DIR}/config/applier/endpoint.cc"
+ "${SRC_DIR}/config/applier/endpoint.cc" #
   "${SRC_DIR}/config/applier/init.cc"
-#   "${SRC_DIR}/config/applier/logger.cc"
-#   "${SRC_DIR}/config/applier/modules.cc"
-#   "${SRC_DIR}/config/applier/state.cc"
-#   "${SRC_DIR}/config/endpoint.cc"
-#   "${SRC_DIR}/config/logger.cc"
-#   "${SRC_DIR}/config/parser.cc"
-#   "${SRC_DIR}/config/state.cc"
+  "${SRC_DIR}/config/applier/logger.cc" #
+  "${SRC_DIR}/config/applier/modules.cc" #
+  "${SRC_DIR}/config/applier/state.cc" #
+  "${SRC_DIR}/config/endpoint.cc" #
+  "${SRC_DIR}/config/logger.cc"
+  "${SRC_DIR}/config/parser.cc" #
+  "${SRC_DIR}/config/state.cc" #
   "${SRC_DIR}/exceptions/msg.cc"
-#   "${SRC_DIR}/exceptions/with_pointer.cc"
+  "${SRC_DIR}/exceptions/with_pointer.cc" #
 # #	../src/interface/xml/destination.cc
 # #	../src/interface/xml/internal.cc
 # #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
-#   "${SRC_DIR}/io/endpoint.cc"
-#   "${SRC_DIR}/io/factory.cc"
-#   "${SRC_DIR}/io/protocols.cc"
+  "${SRC_DIR}/io/endpoint.cc"
+  "${SRC_DIR}/io/exceptions/shutdown.cc"
+  "${SRC_DIR}/io/factory.cc" #
+  "${SRC_DIR}/io/protocols.cc" #
   "${SRC_DIR}/io/raw.cc"
-#   "${SRC_DIR}/io/stream.cc"
+  "${SRC_DIR}/io/stream.cc"
 # #	../src/io/split.cc
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
@@ -73,37 +74,38 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/manager.cc"
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
-#   "${SRC_DIR}/mapping/entry.cc"
-#   "${SRC_DIR}/mapping/source.cc"
+  "${SRC_DIR}/mapping/entry.cc" #
+  "${SRC_DIR}/mapping/source.cc" #
   "${SRC_DIR}/misc/stringifier.cc"
-#   "${SRC_DIR}/modules/handle.cc"
-#   "${SRC_DIR}/modules/loader.cc"
+  "${SRC_DIR}/modules/handle.cc" #
+  "${SRC_DIR}/modules/loader.cc" #
   "${SRC_DIR}/multiplexing/engine.cc"
   "${SRC_DIR}/multiplexing/hooker.cc"
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
-#   "${SRC_DIR}/processing/failover.cc"
-#   "${SRC_DIR}/processing/feeder.cc"
+  "${SRC_DIR}/processing/failover.cc" #
+  "${SRC_DIR}/processing/feeder.cc" #
   "${QT_WRAPPED_SOURCES}"
 #   # Headers.
-#   "${INC_DIR}/config/applier/endpoint.hh"
+  "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
-#   "${INC_DIR}/config/applier/logger.hh"
-#   "${INC_DIR}/config/applier/modules.hh"
-#   "${INC_DIR}/config/applier/state.hh"
-#   "${INC_DIR}/config/endpoint.hh"
-#   "${INC_DIR}/config/logger.hh"
-#   "${INC_DIR}/config/parser.hh"
-#   "${INC_DIR}/config/state.hh"
+  "${INC_DIR}/config/applier/logger.hh"
+  "${INC_DIR}/config/applier/modules.hh"
+  "${INC_DIR}/config/applier/state.hh"
+  "${INC_DIR}/config/endpoint.hh"
+  "${INC_DIR}/config/logger.hh"
+  "${INC_DIR}/config/parser.hh"
+  "${INC_DIR}/config/state.hh"
   "${INC_DIR}/exceptions/msg.hh"
-#   "${INC_DIR}/exceptions/with_pointer.hh"
+  "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/io/data.hh"
-#   "${INC_DIR}/io/endpoint.hh"
-#   "${INC_DIR}/io/factory.hh"
-#   "${INC_DIR}/io/protocols.hh"
+  "${INC_DIR}/io/endpoint.hh"
+  "${INC_DIR}/io/exceptions/shutdown.hh"
+  "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/raw.hh"
-#   "${INC_DIR}/io/stream.hh"
+  "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"
@@ -112,19 +114,19 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/logging/manager.hh"
   "${INC_DIR}/logging/syslogger.hh"
   "${INC_DIR}/logging/temp_logger.hh"
-#   "${INC_DIR}/mapping/entry.hh"
-#   "${INC_DIR}/mapping/property.hh"
-#   "${INC_DIR}/mapping/source.hh"
+  "${INC_DIR}/mapping/entry.hh"
+  "${INC_DIR}/mapping/property.hh"
+  "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/stringifier.hh"
-#   "${INC_DIR}/modules/handle.hh"
-#   "${INC_DIR}/modules/loader.hh"
+  "${INC_DIR}/modules/handle.hh"
+  "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"
   "${INC_DIR}/multiplexing/hooker.hh"
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
-#   "${INC_DIR}/processing/failover.hh"
-#   "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/processing/failover.hh"
+  "${INC_DIR}/processing/feeder.hh"
 )
 
 # Static library.
@@ -144,18 +146,18 @@ endif ()
 target_link_libraries("roker" ${QT_LIBRARIES})
 
 # Standalone binary.
-# set(DAEMON "cbd")
-# add_executable("${DAEMON}"
-#   # Sources.
-#   "${SRC_DIR}/main.cc"
-# )
-# if (CMAKE_COMPILER_IS_GNUCXX)
-#   # Flags needed to include all symbols in binary.
-#   target_link_libraries("${DAEMON}"
-#     "-Wl,--whole-archive" "roker" "-Wl,--no-whole-archive")
-# else ()
-#   target_link_libraries("${DAEMON}" "roker")
-# endif ()
+set(DAEMON "cbd")
+add_executable("${DAEMON}"
+  # Sources.
+  "${SRC_DIR}/main.cc"
+)
+if (CMAKE_COMPILER_IS_GNUCXX)
+  # Flags needed to include all symbols in binary.
+  target_link_libraries("${DAEMON}"
+    "-Wl,--whole-archive" "roker" "-Wl,--no-whole-archive")
+else ()
+  target_link_libraries("${DAEMON}" "roker")
+endif ()
 
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
@@ -297,38 +299,38 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # # config namespace tests.
-  # # config::logger tests.
-  # #   Default constructor.
-  # set(TEST_NAME "core_config_logger_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Copy constructor.
-  # set(TEST_NAME "core_config_logger_ctor_copy")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/ctor_copy.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Assignment operator.
-  # set(TEST_NAME "core_config_logger_assignment")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/assignment.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Equality operator.
-  # set(TEST_NAME "core_config_logger_equality")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/equality.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Inequality operator.
-  # set(TEST_NAME "core_config_logger_inequality")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/inequality.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # config namespace tests.
+  # config::logger tests.
+  #   Default constructor.
+  set(TEST_NAME "core_config_logger_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "core_config_logger_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_config_logger_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Equality operator.
+  set(TEST_NAME "core_config_logger_equality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/equality.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Inequality operator.
+  set(TEST_NAME "core_config_logger_inequality")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/logger/inequality.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # logging namespace tests.
@@ -445,6 +447,44 @@ if (WITH_TESTING)
     "${TEST_DIR}/io/raw/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # io::exceptions namespace tests.
+  # io::exceptions::shutdown tests.
+  #   Default constructor.
+  set(TEST_NAME "core_io_exceptions_shutdown_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "core_io_exceptions_shutdown_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_io_exceptions_shutdown_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Throw test.
+  set(TEST_NAME "core_io_exceptions_shutdown_throw")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Rethrow test.
+  set(TEST_NAME "core_io_exceptions_shutdown_rethrow")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/rethrow.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Clone test.
+  set(TEST_NAME "core_io_exceptions_shutdown_clone")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/io/exceptions/shutdown/clone.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # multiplexing namespace tests.
@@ -455,10 +495,10 @@ if (WITH_TESTING)
     "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Close.
-  set(TEST_NAME "core_multiplexing_subscriber_close")
+  #   Process.
+  set(TEST_NAME "core_multiplexing_subscriber_process")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/subscriber/close.cc")
+    "${TEST_DIR}/multiplexing/subscriber/process.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
@@ -501,53 +541,53 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # # processing namespace tests.
-  # # processing::feeder tests.
-  # add_library("ccb_core_processing_feeder" STATIC
-  #   "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
-  #   "${TEST_DIR}/processing/feeder/setable_stream.cc")
-  # set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
-  # #   Simple feeding.
-  # set(TEST_NAME "core_processing_feeder_simple")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/feeder/simple.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Feeding with error.
-  # set(TEST_NAME "core_processing_feeder_error")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/feeder/error.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # processing::failover tests.
-  # #   Simple feeding.
-  # set(TEST_NAME "core_processing_failover_feed")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/feed.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Retry interval.
-  # set(TEST_NAME "core_processing_failover_retry_interval")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/retry_interval.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Failing intermediate.
-  # set(TEST_NAME "core_processing_failover_failed_intermediate")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/failed_intermediate.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Exit while no data is available.
-  # set(TEST_NAME "core_processing_failover_exit_with_no_data")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # processing namespace tests.
+  # processing::feeder tests.
+  add_library("ccb_core_processing_feeder" STATIC
+    "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
+    "${TEST_DIR}/processing/feeder/setable_stream.cc")
+  set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
+  #   Simple feeding.
+  set(TEST_NAME "core_processing_feeder_simple")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/simple.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Feeding with error.
+  set(TEST_NAME "core_processing_feeder_error")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/error.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # processing::failover tests.
+  #   Simple feeding.
+  set(TEST_NAME "core_processing_failover_feed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/feed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Retry interval.
+  set(TEST_NAME "core_processing_failover_retry_interval")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/retry_interval.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Failing intermediate.
+  set(TEST_NAME "core_processing_failover_failed_intermediate")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/failed_intermediate.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Exit while no data is available.
+  set(TEST_NAME "core_processing_failover_exit_with_no_data")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # # cbd tests.
-  # add_test("cbd_help" "cbd" "-h")
+  # cbd tests.
+  add_test("cbd_help" "cbd" "-h")
 endif ()
 
 # Install directories.
@@ -581,39 +621,39 @@ install(TARGETS "roker"
 )
 
 # Install rule.
-# install(TARGETS "${DAEMON}"
-#   RUNTIME DESTINATION "${PREFIX_BINARY}"
-# )
+install(TARGETS "${DAEMON}"
+  RUNTIME DESTINATION "${PREFIX_BINARY}"
+)
 
-# # NEB module.
-# add_subdirectory("neb")
+# NEB module.
+add_subdirectory("neb")
 
-# # File module.
-# add_subdirectory("file")
+# File module.
+add_subdirectory("file")
 
-# # Compression module.
-# add_subdirectory("compression")
+# Compression module.
+add_subdirectory("compression")
 
-# # Correlation module.
-# add_subdirectory("correlation")
+# Correlation module.
+add_subdirectory("correlation")
 
-# # Local sockets module.
-# add_subdirectory("local")
+# Local sockets module.
+add_subdirectory("local")
 
-# # NDO module.
-# add_subdirectory("ndo")
+# NDO module.
+add_subdirectory("ndo")
 
-# # RRD module.
-# add_subdirectory("rrd")
+# RRD module.
+add_subdirectory("rrd")
 
-# # SQL module.
-# add_subdirectory("sql")
+# SQL module.
+add_subdirectory("sql")
 
-# # Storage module.
-# add_subdirectory("storage")
+# Storage module.
+add_subdirectory("storage")
 
-# # TCP module.
-# add_subdirectory("tcp")
+# TCP module.
+add_subdirectory("tcp")
 
 # Print installation summary.
 message(STATUS "")

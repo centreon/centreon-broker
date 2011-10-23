@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit failover thread.
-  f.exit();
+  f.process(false, true);
 
   // Wait for thread termination.
   f.wait();

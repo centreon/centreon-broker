@@ -56,7 +56,9 @@ char const* input::_get_line() {
       break ;
     if (data->type() == "com::centreon::broker::io::raw") {
       QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
-      _buffer.append(static_cast<char*>(raw->memory()), raw->size());
+      _buffer.append(static_cast<char*>(
+        raw->QByteArray::data()),
+        raw->size());
     }
   }
   _old = _buffer.substr(0, it);
@@ -110,14 +112,15 @@ T* input::_handle_event() {
 /**
  *  Default constructor.
  */
-input::input() {}
+input::input() : _process_in(true) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] i Object to copy.
  */
-input::input(input const& i) : io::stream(i) {}
+input::input(input const& i)
+  : io::stream(i), _process_in(i._process_in) {}
 
 /**
  *  Destructor.
@@ -132,8 +135,23 @@ input::~input() {}
  *  @return This object.
  */
 input& input::operator=(input const& i) {
-  io::stream::operator=(i);
+  if (this != &i) {
+    io::stream::operator=(i);
+    _process_in = i._process_in;
+  }
   return (*this);
+}
+
+/**
+ *  Enable or disable input processing.
+ *
+ *  @param[in] in  Set to true to enable input processing.
+ *  @param[in] out Unused.
+ */
+void input::process(bool in, bool out) {
+  (void)out;
+  _process_in = in;
+  return ;
 }
 
 /**

@@ -22,45 +22,45 @@
 
 # include <QString>
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                            com {
-  namespace                          centreon {
-    namespace                        broker {
-      namespace                      sql {
-        /**
-         *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
-         *  @brief Connect to a database.
-         *
-         *  Send events to a SQL database.
-         */
-        class                        connector : public io::endpoint {
-         private:
-          QString                    _db;
-          QString                    _host;
-          QString                    _password;
-          unsigned short             _port;
-          QString                    _type;
-          QString                    _user;
-          bool                       _with_state_events;
+CCB_BEGIN()
 
-         public:
-                                     connector();
-                                     connector(connector const& c);
-                                     ~connector();
-          connector&                 operator=(connector const& c);
-          void                       close();
-          void                       connect_to(QString const& type,
-                                       QString const& host,
-                                       unsigned short port,
-                                       QString const& user,
-                                       QString const& password,
-                                       QString const& db,
-                                       bool with_state_events = false);
-          QSharedPointer<io::stream> open();
-        };
-      }
-    }
-  }
+namespace                      sql {
+  /**
+   *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
+   *  @brief Connect to a database.
+   *
+   *  Send events to a SQL database.
+   */
+  class                        connector : public io::endpoint {
+   private:
+    QString                    _db;
+    QString                    _host;
+    QString                    _password;
+    unsigned short             _port;
+    QString                    _type;
+    QString                    _user;
+    bool                       _with_state_events;
+
+   public:
+                               connector();
+                               connector(connector const& c);
+                               ~connector();
+    connector&                 operator=(connector const& c);
+    void                       close();
+    void                       connect_to(
+                                 QString const& type,
+                                 QString const& host,
+                                 unsigned short port,
+                                 QString const& user,
+                                 QString const& password,
+                                 QString const& db,
+                                 bool with_state_events = false);
+    QSharedPointer<io::stream> open();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_SQL_CONNECTOR_HH_ */

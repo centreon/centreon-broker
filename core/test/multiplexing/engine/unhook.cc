@@ -43,7 +43,7 @@ int main() {
 
   // Hook.
   hooker h;
-  multiplexing::engine::instance().hook(h);
+  h.process(true, true);
 
   // Should read no events from subscriber.
   int retval(0);
@@ -61,7 +61,7 @@ int main() {
   }
 
   // Unhook.
-  multiplexing::engine::instance().unhook(h);
+  h.process(false, false);
 
   // Publish a new event.
   {

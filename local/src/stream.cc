@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/local/stream.hh"
 
@@ -70,7 +72,10 @@ stream& stream::operator=(stream const& s) {
  *
  *  @param[in] sock Local socket object.
  */
-stream::stream(QSharedPointer<QLocalSocket> sock) : _socket(sock) {}
+stream::stream(QSharedPointer<QLocalSocket> sock)
+  : _process_in(true),
+    _process_out(true),
+    _socket(sock) {}
 
 /**
  *  Destructor.
@@ -85,6 +90,9 @@ stream::~stream() {
  *  @return Data packet.
  */
 QSharedPointer<io::data> stream::read() {
+  if (!_process_in)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "local stream is shutdown");
   _socket->waitForReadyRead(-1);
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
@@ -102,9 +110,12 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] d Data to write.
  */
 void stream::write(QSharedPointer<io::data> d) {
+  if (!_process_out)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "local stream is shutdown");
   if (d->type() == "com::centreon::broker::io::raw") {
     QSharedPointer<io::raw> r(d.staticCast<io::raw>());
-    qint64 wb(_socket->write(static_cast<char*>(r->memory()),
+    qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                                                 r->size()));
     if (wb < 0)
       throw (exceptions::msg() << "local: write error: "

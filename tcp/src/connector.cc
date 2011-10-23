@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -56,7 +57,7 @@ void connector::_internal_copy(connector const& c) {
 /**
  *  Default constructor.
  */
-connector::connector() : _port(0), _tls(false) {}
+connector::connector() : io::endpoint(false), _port(0), _tls(false) {}
 
 /**
  *  Copy constructor.
@@ -80,8 +81,10 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::endpoint::operator=(c);
-  _internal_copy(c);
+  if (this != &c) {
+    io::endpoint::operator=(c);
+    _internal_copy(c);
+  }
   return (*this);
 }
 

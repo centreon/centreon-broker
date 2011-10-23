@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,6 +19,7 @@
 
 #include <QSharedPointer>
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
@@ -86,6 +88,8 @@ bool stream::_get_data(unsigned int size) {
  */
 void stream::_internal_copy(stream const& s) {
   _level = s._level;
+  _process_in = s._process_in;
+  _process_out = s._process_out;
   _rbuffer = s._rbuffer;
   _size = s._size;
   _wbuffer = s._wbuffer;
@@ -105,7 +109,7 @@ void stream::_internal_copy(stream const& s) {
  *  @param[in] size  Compression buffer size.
  */
 stream::stream(int level, unsigned int size)
-  : _level(level), _size(size) {}
+  : _level(level), _process_in(true), _process_out(true), _size(size) {}
 
 /**
  *  Copy constructor.
@@ -137,6 +141,18 @@ stream& stream::operator=(stream const& s) {
 }
 
 /**
+ *  Set which data to process.
+ *
+ *  @param[in] in  Set to true to process input events.
+ *  @param[in] out Set to true to process output events.
+ */
+void stream::process(bool in, bool out) {
+  _process_in = in;
+  _process_out = out;
+  return ;
+}
+
+/**
  *  Read data.
  *
  *  @return Data packet.
@@ -144,6 +160,11 @@ stream& stream::operator=(stream const& s) {
 QSharedPointer<io::data> stream::read() {
   // Return value.
   QSharedPointer<io::data> data;
+
+  // Check that data should be processed.
+  if (!_process_in)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "compression stream is shutdown");
 
   // Compute compressed data length.
   if (_get_data(sizeof(qint32))) {
@@ -182,6 +203,11 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] d Data to send.
  */
 void stream::write(QSharedPointer<io::data> d) {
+  // Check that data should be processed.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "compression stream is shutdown");
+
   // Process raw data only.
   if (d->type() == "com::centreon::broker::io::raw") {
     // Append data to write buffer.

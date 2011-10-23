@@ -112,7 +112,7 @@ int main() {
           bufferc = 0;
         }
         datac += cb;
-        if (datac == data->size())
+        if (datac == static_cast<unsigned int>(data->size()))
           data.clear();
       }
     }

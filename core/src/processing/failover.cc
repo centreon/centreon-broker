@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -87,11 +88,14 @@ failover& failover::operator=(failover const& f) {
 }
 
 /**
- *  Request thread termination.
+ *  Stop or start processing.
+ *
+ *  @param[in] in  true to process inputs.
+ *  @param[in] out true to process outputs.
  */
-void failover::exit() {
+void failover::process(bool in, bool out) {
   if (!_failover.isNull() && _failover->isRunning())
-    _failover->exit();
+    _failover->process(in, out);
   _should_exit = true;
   _feeder.exit();
   return ;

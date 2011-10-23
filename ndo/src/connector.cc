@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -39,7 +40,7 @@ using namespace com::centreon::broker::ndo;
  *  @param[in] is_out Connector should act as output.
  */
 connector::connector(bool is_in, bool is_out)
-  : _is_in(is_in), _is_out(is_out) {}
+  : io::endpoint(false), _is_in(is_in), _is_out(is_out) {}
 
 /**
  *  Copy constructor.

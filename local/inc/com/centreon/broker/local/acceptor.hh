@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -23,34 +24,33 @@
 # include <QScopedPointer>
 # include <QString>
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                              com {
-  namespace                            centreon {
-    namespace                          broker {
-      namespace                        local {
-        /**
-         *  @class acceptor acceptor.hh "com/centreon/broker/local/acceptor.hh"
-         *  @brief Local socket server.
-         *
-         *  Accept local connections.
-         */
-        class                          acceptor : public io::endpoint {
-         private:
-          QString                      _name;
-          QScopedPointer<QLocalServer> _socket;
+CCB_BEGIN()
 
-         public:
-                                       acceptor();
-                                       acceptor(acceptor const& a);
-                                       ~acceptor();
-          acceptor&                    operator=(acceptor const& a);
-          void                         close();
-          void                         listen_on(QString const& name);
-          QSharedPointer<io::stream>   open();
-        };
-      }
-    }
-  }
+namespace                        local {
+  /**
+   *  @class acceptor acceptor.hh "com/centreon/broker/local/acceptor.hh"
+   *  @brief Local socket server.
+   *
+   *  Accept local connections.
+   */
+  class                          acceptor : public io::endpoint {
+   private:
+    QString                      _name;
+    QScopedPointer<QLocalServer> _socket;
+
+   public:
+                                 acceptor();
+                                 acceptor(acceptor const& a);
+                                 ~acceptor();
+    acceptor&                    operator=(acceptor const& a);
+    void                         close();
+    void                         listen_on(QString const& name);
+    QSharedPointer<io::stream>   open();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOCAL_ACCEPTOR_HH_ */

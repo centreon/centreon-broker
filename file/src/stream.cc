@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,6 +23,7 @@
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -85,6 +87,8 @@ stream::stream(QString const& filename, QIODevice::OpenMode mode)
              << filename << "': " << _file.errorString());
   _roffset = _file.pos();
   _coffset = _roffset;
+  _process_in = (mode & QIODevice::ReadOnly);
+  _process_out = (mode & QIODevice::WriteOnly);
 }
 
 /**
@@ -98,6 +102,19 @@ stream::~stream() {
 }
 
 /**
+ *  Set processing flags.
+ *
+ *  @param[in] in  Set to true to process input events.
+ *  @param[in] out Set to true to process output events.
+ */
+void stream::process(bool in, bool out) {
+  QMutexLocker lock(&_mutex);
+  _process_in = in;
+  _process_out = out;
+  return ;
+}
+
+/**
  *  Read data from the file.
  *
  *  @return Bunch of data.
@@ -105,6 +122,11 @@ stream::~stream() {
 QSharedPointer<io::data> stream::read() {
   // Lock mutex.
   QMutexLocker lock(&_mutex);
+
+  // Check that read should be done.
+  if (!_process_in)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "file stream is shutdown");
 
   // Seek if necessary.
   if (_roffset != _coffset) {
@@ -145,6 +167,11 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] d Data to write.
  */
 void stream::write(QSharedPointer<io::data> d) {
+  // Check that writing should be processed.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "file stream is shutdown");
+
   if (d->type() == "com::centreon::broker::io::raw") {
     // Lock mutex.
     QMutexLocker lock(&_mutex);
@@ -162,12 +189,12 @@ void stream::write(QSharedPointer<io::data> d) {
     unsigned int size;
     {
       io::raw* data(static_cast<io::raw*>(d.data()));
-      memory = data->memory();
+      memory = data->QByteArray::data();
       size = data->size();
     }
 
     // Debug message.
-    logging::debug << logging::LOW << "file: write request of "
+    logging::debug(logging::low) << "file: write request of "
       << size << " bytes";
 
     // Write data.
@@ -188,7 +215,7 @@ void stream::write(QSharedPointer<io::data> d) {
     _coffset = _woffset;
   }
   else
-    logging::info << logging::LOW << "file: write request with " \
+    logging::info(logging::low) << "file: write request with "	\
       "invalid data (" << d->type() << ")";
   return ;
 }

@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,32 +20,32 @@
 #ifndef CCB_NDO_STREAM_HH_
 # define CCB_NDO_STREAM_HH_
 
+# include "com/centreon/broker/namespace.hh"
 # include "com/centreon/broker/ndo/input.hh"
 # include "com/centreon/broker/ndo/output.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    ndo {
-        /**
-         *  @class stream stream.hh "com/centreon/broker/ndo/stream.hh"
-         *  @brief NDO stream.
-         *
-         *  The class converts data to neb events back and forth.
-         */
-        class                      stream : public input,
-                                            public output {
-         public:
-                                   stream();
-                                   stream(stream const& s);
-                                   ~stream();
-          stream&                  operator=(stream const& s);
-          QSharedPointer<io::data> read();
-          void                     write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace                    ndo {
+  /**
+   *  @class stream stream.hh "com/centreon/broker/ndo/stream.hh"
+   *  @brief NDO stream.
+   *
+   *  The class converts data to neb events back and forth.
+   */
+  class                      stream : public input,
+                                      public output {
+   public:
+                             stream();
+                             stream(stream const& s);
+                             ~stream();
+    stream&                  operator=(stream const& s);
+    void                     process(bool in = false, bool out = true);
+    QSharedPointer<io::data> read();
+    void                     write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_NDO_STREAM_HH_ */

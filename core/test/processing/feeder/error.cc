@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
     else {
       QSharedPointer<io::raw> raw(it->staticCast<io::raw>());
       unsigned int val;
-      memcpy(&val, raw->memory(), sizeof(val));
+      memcpy(&val, raw->QByteArray::data(), sizeof(val));
       retval |= (val != ++i);
     }
   retval |= (i != count);

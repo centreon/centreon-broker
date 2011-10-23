@@ -52,7 +52,8 @@ void setable_endpoint::_internal_copy(setable_endpoint const& se) {
  *  Default constructor.
  */
 setable_endpoint::setable_endpoint()
-  : _opened_streams(0),
+  : io::endpoint(false),
+    _opened_streams(0),
     _save_streams(false),
     _should_succeed(new volatile bool) {}
 

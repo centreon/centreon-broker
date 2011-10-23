@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,35 +21,34 @@
 # define CCB_COMPRESSION_OPENER_HH_
 
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                            com {
-  namespace                          centreon {
-    namespace                        broker {
-      namespace                      compression {
-        /**
-         *  @class opener opener.hh "com/centreon/broker/compression/opener.hh"
-         *  @brief Open a compression stream.
-         *
-         *  Open a compression stream.
-         */
-        class                        opener : public io::endpoint {
-         private:
-          int                        _level;
-          unsigned int               _size;
+CCB_BEGIN()
 
-         public:
-                                     opener();
-                                     opener(opener const& o);
-                                     ~opener();
-          opener&                    operator=(opener const& o);
-          void                       close();
-          QSharedPointer<io::stream> open();
-          void                       set_level(int level = -1);
-          void                       set_size(unsigned int size = 0);
-        };
-      }
-    }
-  }
+namespace                      compression {
+  /**
+   *  @class opener opener.hh "com/centreon/broker/compression/opener.hh"
+   *  @brief Open a compression stream.
+   *
+   *  Open a compression stream.
+   */
+  class                        opener : public io::endpoint {
+   private:
+    int                        _level;
+    unsigned int               _size;
+
+   public:
+                               opener();
+                               opener(opener const& o);
+                               ~opener();
+    opener&                    operator=(opener const& o);
+    void                       close();
+    QSharedPointer<io::stream> open();
+    void                       set_level(int level = -1);
+    void                       set_size(unsigned int size = 0);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_COMPRESSION_OPENER_HH_ */

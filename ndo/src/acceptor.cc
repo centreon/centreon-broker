@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -38,7 +39,7 @@ using namespace com::centreon::broker::ndo;
  *
  *  @param[in] is_out true if the acceptor is an output acceptor.
  */
-acceptor::acceptor(bool is_out) : _is_out(is_out) {}
+acceptor::acceptor(bool is_out) : io::endpoint(true), _is_out(is_out) {}
 
 /**
  *  Copy constructor.
@@ -62,8 +63,10 @@ acceptor::~acceptor() {}
  *  @return This object.
  */
 acceptor& acceptor::operator=(acceptor const& a) {
-  io::endpoint::operator=(a);
-  _is_out = a._is_out;
+  if (this != &a) {
+    io::endpoint::operator=(a);
+    _is_out = a._is_out;
+  }
   return (*this);
 }
 

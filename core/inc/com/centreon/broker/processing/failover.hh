@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -64,7 +65,7 @@ namespace               com {
                         failover(failover const& f);
                         ~failover();
           failover&     operator=(failover const& f);
-          void          exit();
+          void          process(bool in = false, bool out = false);
           QSharedPointer<io::data>
                         read();
           void          run();

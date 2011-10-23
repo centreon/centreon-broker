@@ -49,6 +49,7 @@ namespace        storage {
     std::map<std::pair<unsigned int, QString>, unsigned int>
                  _metric_cache;
     QString      _metrics_path;
+    bool         _process_out;
     unsigned int _rrd_len;
     bool         _store_in_db;
     QScopedPointer<QSqlQuery>
@@ -80,6 +81,7 @@ namespace        storage {
                    bool store_in_db = true);
                  stream(stream const& s);
                  ~stream();
+    void         process(bool in = false, bool out = true);
     QSharedPointer<io::data>
                  read();
     void         write(QSharedPointer<io::data> d);

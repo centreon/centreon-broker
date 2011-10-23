@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,50 +23,49 @@
 # include <QString>
 # include <time.h>
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          storage {
-        /**
-         *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
-         *  @brief Connect to a database.
-         *
-         *  Send perfdata in a Centreon Storage database.
-         */
-        class            connector : public io::endpoint {
-         private:
-          time_t         _interval_length;
-          unsigned int   _rrd_len;
-          QString        _storage_db;
-          QString        _storage_host;
-          QString        _storage_password;
-          unsigned short
-                         _storage_port;
-          QString        _storage_user;
-          QString        _storage_type;
-          void           _internal_copy(connector const& c);
+CCB_BEGIN()
 
-         public:
-                         connector();
-                         connector(connector const& c);
-                         ~connector();
-          connector&     operator=(connector const& c);
-          void           close();
-          void           connect_to(QString const& storage_type,
-                           QString const& storage_host,
-                           unsigned short storage_port,
-                           QString const& storage_user,
-                           QString const& storage_password,
-                           QString const& storage_db,
-                           unsigned int rrd_len,
-                           time_t interval_length);
-          QSharedPointer<io::stream>
-                         open();
-        };
-      }
-    }
-  }
+namespace          storage {
+  /**
+   *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
+   *  @brief Connect to a database.
+   *
+   *  Send perfdata in a Centreon Storage database.
+   */
+  class            connector : public io::endpoint {
+   private:
+    time_t         _interval_length;
+    unsigned int   _rrd_len;
+    QString        _storage_db;
+    QString        _storage_host;
+    QString        _storage_password;
+    unsigned short _storage_port;
+    QString        _storage_user;
+    QString        _storage_type;
+    void           _internal_copy(connector const& c);
+
+   public:
+                   connector();
+                   connector(connector const& c);
+                   ~connector();
+    connector&     operator=(connector const& c);
+    void           close();
+    void           connect_to(
+                     QString const& storage_type,
+                     QString const& storage_host,
+                     unsigned short storage_port,
+                     QString const& storage_user,
+                     QString const& storage_password,
+                     QString const& storage_db,
+                     unsigned int rrd_len,
+                     time_t interval_length);
+    QSharedPointer<io::stream>
+                   open();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_STORAGE_CONNECTOR_HH_ */

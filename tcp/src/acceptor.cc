@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -55,7 +56,7 @@ void acceptor::_internal_copy(acceptor const& a) {
 /**
  *  Default constructor.
  */
-acceptor::acceptor() : _port(0), _tls(false) {}
+acceptor::acceptor() : io::endpoint(true), _port(0), _tls(false) {}
 
 /**
  *  @brief Copy constructor.
@@ -86,9 +87,11 @@ acceptor::~acceptor() {}
  *  @return This object.
  */
 acceptor& acceptor::operator=(acceptor const& a) {
-  this->close();
-  io::endpoint::operator=(a);
-  _internal_copy(a);
+  if (this != &a) {
+    this->close();
+    io::endpoint::operator=(a);
+    _internal_copy(a);
+  }
   return (*this);
 }
 

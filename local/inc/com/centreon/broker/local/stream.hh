@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,32 +23,36 @@
 # include <QSharedPointer>
 # include <QLocalSocket>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                              com {
-  namespace                            centreon {
-    namespace                          broker {
-      namespace                        local {
-        /**
-         *  @class stream stream.hh "com/centreon/broker/local/stream.hh"
-         *  @brief Local socket stream.
-         *
-         *  Local socket stream.
-         */
-        class                          stream : public io::stream {
-         private:
-          QSharedPointer<QLocalSocket> _socket;
-                                       stream(stream const& s);
-          stream&                      operator=(stream const& s);
+CCB_BEGIN()
 
-         public:
-                                       stream(QSharedPointer<QLocalSocket> sock);
-                                       ~stream();
-          QSharedPointer<io::data>     read();
-          void                         write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace                        local {
+  /**
+   *  @class stream stream.hh "com/centreon/broker/local/stream.hh"
+   *  @brief Local socket stream.
+   *
+   *  Local socket stream.
+   */
+  class                          stream : public io::stream {
+   private:
+    bool                         _process_in;
+    bool                         _process_out;
+    QSharedPointer<QLocalSocket> _socket;
+                                 stream(stream const& s);
+    stream&                      operator=(stream const& s);
+
+   public:
+                                 stream(QSharedPointer<QLocalSocket> sock);
+                                 ~stream();
+    void                         process(
+                                   bool in = false,
+                                   bool out = true);
+    QSharedPointer<io::data>     read();
+    void                         write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_LOCAL_STREAM_HH_ */

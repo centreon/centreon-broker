@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,6 +21,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
@@ -83,6 +85,7 @@ output& output::operator=(output const& o) {
 output::output(QString const& metrics_path, QString const& status_path)
   : _backend(new lib),
     _metrics_path(metrics_path),
+    _process_out(true),
     _status_path(status_path) {}
 
 /**
@@ -96,6 +99,7 @@ output::output(QString const& metrics_path,
                QString const& status_path,
                QString const& local)
   : _metrics_path(metrics_path),
+    _process_out(true),
     _status_path(status_path) {
   QScopedPointer<cached> rrdcached(new cached);
   rrdcached->connect_local(local);
@@ -113,6 +117,7 @@ output::output(QString const& metrics_path,
                QString const& status_path,
                unsigned short port)
   : _metrics_path(metrics_path),
+    _process_out(true),
     _status_path(status_path) {
   QScopedPointer<cached> rrdcached(new cached);
   rrdcached->connect_remote("localhost", port);
@@ -123,6 +128,18 @@ output::output(QString const& metrics_path,
  *  Destructor.
  */
 output::~output() {}
+
+/**
+ *  Set if output should be processed or not.
+ *
+ *  @param[in] in  Unused.
+ *  @param[in] out Set to true to process output events.
+ */
+void output::process(bool in, bool out) {
+  (void)in;
+  _process_out = out;
+  return ;
+}
 
 /**
  *  Read data.
@@ -141,6 +158,9 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] d Data to write.
  */
 void output::write(QSharedPointer<io::data> d) {
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+             << "RRD output is shutdown");
   if (d->type() == "com::centreon::broker::storage::metric") {
     // Debug message.
     logging::debug << logging::MEDIUM << "RRD: new metric data";

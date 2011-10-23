@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,34 +21,33 @@
 # define CCB_NDO_CONNECTOR_HH_
 
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        broker {
-      namespace      ndo {
-        /**
-         *  @class connector connector.hh "com/centreon/broker/ndo/connector.hh"
-         *  @brief NDO connector.
-         *
-         *  Initiate NDO connections.
-         */
-        class        connector : public io::endpoint {
-         private:
-          bool       _is_in;
-          bool       _is_out;
+CCB_BEGIN()
 
-         public:
-                     connector(bool is_in, bool is_out);
-                     connector(connector const& c);
-                     ~connector();
-          connector& operator=(connector const& c);
-          void       close();
-          QSharedPointer<io::stream>
-                     open();
-        };
-      }
-    }
-  }
+namespace      ndo {
+  /**
+   *  @class connector connector.hh "com/centreon/broker/ndo/connector.hh"
+   *  @brief NDO connector.
+   *
+   *  Initiate NDO connections.
+   */
+  class        connector : public io::endpoint {
+   private:
+    bool       _is_in;
+    bool       _is_out;
+
+   public:
+               connector(bool is_in, bool is_out);
+               connector(connector const& c);
+               ~connector();
+    connector& operator=(connector const& c);
+    void       close();
+    QSharedPointer<io::stream>
+               open();
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_NDO_CONNECTOR_HH_ */

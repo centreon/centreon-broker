@@ -23,6 +23,7 @@
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/ndo/internal.hh"
@@ -70,14 +71,15 @@ static void handle_event(T const& e,
 /**
  *  Default constructor.
  */
-output::output() {}
+output::output() : _process_out(true) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] o Object to copy.
  */
-output::output(output const& o) : io::stream(o) {}
+output::output(output const& o)
+  : io::stream(o), _process_out(o._process_out) {}
 
 /**
  *  Destructor.
@@ -92,8 +94,23 @@ output::~output() {}
  *  @return This object.
  */
 output& output::operator=(output const& o) {
-  io::stream::operator=(o);
+  if (this != &o) {
+    io::stream::operator=(o);
+    _process_out = o._process_out;
+  }
   return (*this);
+}
+
+/**
+ *  Enable or disable output processing.
+ *
+ *  @param[in] in  Unused.
+ *  @param[in] out Set to true to enable output processing.
+ */
+void output::process(bool in, bool out) {
+  (void)in;
+  _process_out = out;
+  return ;
 }
 
 /**
@@ -111,6 +128,9 @@ QSharedPointer<io::data> output::read() {
  *  @param[in] e Event to send.
  */
 void output::write(QSharedPointer<io::data> e) {
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, !_process_out)
+             << "NDO output stream is shutdown");
   logging::debug << logging::MEDIUM << "NDO: writing data ("
     << e->type() << ")";
   std::stringstream buffer;

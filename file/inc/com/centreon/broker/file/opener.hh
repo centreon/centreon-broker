@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,35 +21,34 @@
 # define CCB_FILE_OPENER_HH_
 
 # include "com/centreon/broker/io/endpoint.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                            com {
-  namespace                          centreon {
-    namespace                        broker {
-      namespace                      file {
-        /**
-         *  @class opener opener.hh "com/centreon/broker/file/opener.hh"
-         *  @brief Open a file stream.
-         *
-         *  Open a file stream.
-         */
-        class                        opener : public io::endpoint {
-         private:
-          QString                    _filename;
-          bool                       _is_in;
-          bool                       _is_out;
+CCB_BEGIN()
 
-         public:
-                                     opener(bool is_in, bool is_out);
-                                     opener(opener const& o);
-                                     ~opener();
-          opener&                    operator=(opener const& o);
-          void                       close();
-          QSharedPointer<io::stream> open();
-          void                       set_filename(QString const& filename);
-        };
-      }
-    }
-  }
+namespace                      file {
+  /**
+   *  @class opener opener.hh "com/centreon/broker/file/opener.hh"
+   *  @brief Open a file stream.
+   *
+   *  Open a file stream.
+   */
+  class                        opener : public io::endpoint {
+   private:
+    QString                    _filename;
+    bool                       _is_in;
+    bool                       _is_out;
+
+   public:
+                               opener(bool is_in, bool is_out);
+                               opener(opener const& o);
+                               ~opener();
+    opener&                    operator=(opener const& o);
+    void                       close();
+    QSharedPointer<io::stream> open();
+    void                       set_filename(QString const& filename);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_FILE_OPENER_HH_ */

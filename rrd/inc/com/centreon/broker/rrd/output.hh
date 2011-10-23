@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,42 +23,46 @@
 # include <QScopedPointer>
 # include <QString>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 # include "com/centreon/broker/rrd/backend.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    rrd {
-        /**
-         *  @class output output.hh "com/centreon/broker/rrd/output.hh"
-         *  @brief RRD output class.
-         *
-         *  Write RRD files.
-         */
-        class                      output : public io::stream {
-         private:
-          QScopedPointer<backend>  _backend;
-          QString                  _metrics_path;
-          QString                  _status_path;
-                                   output(output const& o);
-          output&                  operator=(output const& o);
+CCB_BEGIN()
 
-         public:
-                                   output(QString const& metrics_path,
-                                     QString const& status_path);
-                                   output(QString const& metrics_path,
-                                     QString const& status_path,
-                                     QString const& local);
-                                   output(QString const& metrics_path,
-                                     QString const& status_path,
-                                     unsigned short port);
-                                   ~output();
-          QSharedPointer<io::data> read();
-          void                     write(QSharedPointer<io::data> d);
-        };
-      }
-    }
-  }
+namespace                    rrd {
+  /**
+   *  @class output output.hh "com/centreon/broker/rrd/output.hh"
+   *  @brief RRD output class.
+   *
+   *  Write RRD files.
+   */
+  class                      output : public io::stream {
+   private:
+    QScopedPointer<backend>  _backend;
+    QString                  _metrics_path;
+    bool                     _process_out;
+    QString                  _status_path;
+                             output(output const& o);
+    output&                  operator=(output const& o);
+
+   public:
+                             output(
+                               QString const& metrics_path,
+                               QString const& status_path);
+                             output(
+                               QString const& metrics_path,
+                               QString const& status_path,
+                               QString const& local);
+                             output(
+                               QString const& metrics_path,
+                               QString const& status_path,
+                               unsigned short port);
+                             ~output();
+    void                     process(bool in = false, bool out = true);
+    QSharedPointer<io::data> read();
+    void                     write(QSharedPointer<io::data> d);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_RRD_OUTPUT_HH_ */

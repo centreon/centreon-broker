@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,31 +21,34 @@
 # define CCB_NDO_OUTPUT_HH_
 
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        ndo {
-        /**
-         *  @class output output.hh "com/centreon/broker/ndo/output.hh"
-         *  @brief NDO output destination.
-         *
-         *  The class converts events to an output stream using a
-         *  modified version of the NDO protocol.
-         */
-        class          output : virtual public io::stream {
-         public:
-                       output();
-                       output(output const& o);
-          virtual      ~output();
-          output&      operator=(output const& o);
-          virtual QSharedPointer<io::data>
-                       read();
-          virtual void write(QSharedPointer<io::data> e);
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace        ndo {
+  /**
+   *  @class output output.hh "com/centreon/broker/ndo/output.hh"
+   *  @brief NDO output destination.
+   *
+   *  The class converts events to an output stream using a modified
+   *  version of the NDO protocol.
+   */
+  class          output : virtual public io::stream {
+   private:
+    bool         _process_out;
+
+   public:
+                 output();
+                 output(output const& o);
+    virtual      ~output();
+    output&      operator=(output const& o);
+    void         process(bool in = false, bool out = false);
+    virtual QSharedPointer<io::data>
+                 read();
+    virtual void write(QSharedPointer<io::data> e);
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_NDO_OUTPUT_HH_ */

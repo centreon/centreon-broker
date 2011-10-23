@@ -32,7 +32,7 @@ using namespace com::centreon::broker::sql;
 /**
  *  Default constructor.
  */
-connector::connector() {}
+connector::connector() : io::endpoint(false) {}
 
 /**
  *  Copy constructor.

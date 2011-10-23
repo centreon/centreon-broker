@@ -50,6 +50,7 @@ class             setable_stream : public com::centreon::broker::io::stream {
   unsigned int    count() const;
   QList<QSharedPointer<com::centreon::broker::io::data> > const&
                   events() const;
+  void            process(bool in = false, bool out = true);
   QSharedPointer<com::centreon::broker::io::data>
                   read();
   void            set_sleep_time(unsigned int ms);

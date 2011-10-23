@@ -56,7 +56,7 @@ namespace          multiplexing {
    public:
                    subscriber();
                    ~subscriber();
-    void           close();
+    void           process(bool in = false, bool out = true);
     QSharedPointer<io::data>
                    read();
     QSharedPointer<io::data>

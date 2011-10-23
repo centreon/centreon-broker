@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/sql/internal.hh"
@@ -1381,7 +1382,8 @@ stream::stream(QString const& type,
                QString const& password,
                QString const& db,
                bool wse)
-  : _with_state_events(wse) {
+  : _process_out(true),
+    _with_state_events(wse) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -1446,6 +1448,9 @@ stream::stream(QString const& type,
  *  @param[in] s Object to copy.
  */
 stream::stream(stream const& s) : io::stream(s) {
+  // Output processing.
+  _process_out = s._process_out;
+
   // Process state events.
   _with_state_events = s._with_state_events;
 
@@ -1563,6 +1568,18 @@ void stream::initialize() {
 }
 
 /**
+ *  Enable or disable output event processing.
+ *
+ *  @param[in] in  Unused.
+ *  @param[in] out Set to true to enable output event processing.
+ */
+void stream::process(bool in, bool out) {
+  (void)in;
+  _process_out = out;
+  return ;
+}
+
+/**
  *  Read from the database.
  *
  *  @return Does not return, throw an exception.
@@ -1579,6 +1596,9 @@ QSharedPointer<io::data> stream::read() {
  *  @param[in] data Event pointer.
  */
 void stream::write(QSharedPointer<io::data> data) {
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+             << "SQL stream is shutdown");
   QHash<QString, void (stream::*)(io::data const&)>::const_iterator it;
   it = _processing_table.find(data->type());
   if (it != _processing_table.end())

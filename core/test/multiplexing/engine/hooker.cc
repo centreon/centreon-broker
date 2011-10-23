@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "test/multiplexing/engine/hooker.hh"
 
@@ -72,6 +73,9 @@ QSharedPointer<io::data> hooker::read() {
     d = _queue.head();
     _queue.dequeue();
   }
+  else if (!_registered)
+    throw (io::exceptions::shutdown(true, true)
+             << "hooker test object is shutdown");
   return (d);
 }
 
@@ -102,8 +106,13 @@ void hooker::stopping() {
  */
 void hooker::write(QSharedPointer<io::data> d) {
   (void)d;
-  QSharedPointer<io::raw> raw(new io::raw);
-  raw->append(HOOKMSG2);
-  _queue.enqueue(raw);
+  if (_registered) {
+    QSharedPointer<io::raw> raw(new io::raw);
+    raw->append(HOOKMSG2);
+    _queue.enqueue(raw);
+  }
+  else
+    throw (io::exceptions::shutdown(true, true)
+             << "hooker test object is shutdown");
   return ;
 }

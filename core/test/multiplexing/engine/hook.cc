@@ -44,7 +44,7 @@ int main() {
 
   // Hook.
   hooker h;
-  multiplexing::engine::instance().hook(h);
+  h.process(true, true);
 
   // Send events through engine.
   {
