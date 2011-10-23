@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -54,33 +55,6 @@ raw& raw::operator=(raw const& r) {
   data::operator=(r);
   QByteArray::operator=(r);
   return (*this);
-}
-
-/**
- *  Get the memory associated with this object.
- *
- *  @return Memory of the raw object.
- */
-void* raw::memory() {
-  return (QByteArray::data());
-}
-
-/**
- *  Get the memory associated with this object.
- *
- *  @return Memory of the raw object.
- */
-void const* raw::memory() const {
-  return (QByteArray::data());
-}
-
-/**
- *  Get the memory region size.
- *
- *  @return Memory region size.
- */
-unsigned int raw::size() const {
-  return (QByteArray::size());
 }
 
 /**

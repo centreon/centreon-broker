@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,45 +22,44 @@
 
 # include <exception>
 # include "com/centreon/broker/misc/stringifier.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                     com {
-  namespace                   centreon {
-    namespace                 broker {
-      namespace               exceptions {
-        /**
-         *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
-         *  @brief Base class of exceptions thrown in Centreon Broker.
-         *
-         *  msg is a simple exception class that is only associated
-         *  with a message. msg accepts multiple types on input but
-         *  its limitation is that it only accepts a limited number of
-         *  characters in the exception message.
-         */
-        class                 msg : private misc::stringifier,
-                                    public std::exception {
-         public:
-                              msg() throw ();
-                              msg(msg const& b) throw ();
-          virtual             ~msg() throw ();
-          msg&                operator=(msg const& b) throw ();
-          virtual msg*        clone() const;
-          virtual void        rethrow() const;
-          virtual char const* what() const throw ();
+CCB_BEGIN()
 
-          /**
-           *  Insert data in message.
-           *
-           *  @param[in] t Data to insert.
-           */
-          template            <typename T>
-          msg&                operator<<(T t) throw () {
-            misc::stringifier::operator<<(t);
-            return (*this);
-          }
-        };
-      }
+namespace               exceptions {
+  /**
+   *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
+   *  @brief Base class of exceptions thrown in Centreon Broker.
+   *
+   *  msg is a simple exception class that is only associated with a
+   *  message. msg accepts multiple types on input but its limitation is
+   *  that it only accepts a limited number of characters in the
+   *  exception message.
+   */
+  class                 msg : private misc::stringifier,
+			      public std::exception {
+   public:
+                        msg() throw ();
+                        msg(msg const& b) throw ();
+    virtual             ~msg() throw ();
+    msg&                operator=(msg const& b) throw ();
+    virtual msg*        clone() const;
+    virtual void        rethrow() const;
+    virtual char const* what() const throw ();
+
+    /**
+     *  Insert data in message.
+     *
+     *  @param[in] t Data to insert.
+     */
+    template            <typename T>
+    msg&                operator<<(T t) throw () {
+      misc::stringifier::operator<<(t);
+      return (*this);
     }
-  }
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_EXCEPTIONS_MSG_HH_ */

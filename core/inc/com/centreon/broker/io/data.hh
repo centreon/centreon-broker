@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -20,29 +21,30 @@
 # define CCB_IO_DATA_HH_
 
 # include <QString>
+# include "com/centreon/broker/namespace.hh"
 
-namespace                        com {
-  namespace                      centreon {
-    namespace                    broker {
-      namespace                  io {
-        /**
-         *  @class data data.hh "com/centreon/broker/io/data.hh"
-         *  @brief Data abstraction.
-         *
-         *  Data is the core element that is transmitted through
-         *  Centreon Broker.
-         */
-        class                    data {
-         public:
-                                 data();
-                                 data(data const& d);
-          virtual                ~data();
-          data&                  operator=(data const& d);
-          virtual QString const& type() const = 0;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace                  io {
+  /**
+   *  @class data data.hh "com/centreon/broker/io/data.hh"
+   *  @brief Data abstraction.
+   *
+   *  Data is the core element that is transmitted through Centreon
+   *  Broker. It is an interface that is implemented by all specific
+   *  module data that wish to be transmitted by the multiplexing
+   *  engine.
+   */
+  class                    data {
+   public:
+                           data();
+                           data(data const& d);
+    virtual                ~data();
+    data&                  operator=(data const& d);
+    virtual QString const& type() const = 0;
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_IO_DATA_HH_ */

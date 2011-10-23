@@ -17,48 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that exception is properly thrown.
+ *  Check that raw data is properly constructed.
  *
  *  @return 0 on success.
  */
 int main() {
-  // Return value.
-  int retval(0);
+  // Object.
+  io::raw data;
 
-  // First throw.
-  try {
-    try {
-      throw (exceptions::msg() << "foobar" << 42 << -789654ll);
-      retval |= 1;
-    }
-    catch (exceptions::msg const& e) { // Properly caught.
-      retval |= strcmp(e.what(), "foobar42-789654");
-    }
-  }
-  catch (...) {
-    retval |= 1;
-  }
-
-  // Second throw.
-  try {
-    try {
-      throw (exceptions::msg() << "bazqux" << -74125896321445ll << 36);
-      retval |= 1;
-    }
-    catch (std::exception const& e) {
-      retval |= strcmp(e.what(), "bazqux-7412589632144536");
-    }
-  }
-  catch (...) {
-    retval |= 1;
-  }
-
-  // Return test result.
-  return (retval);
+  // Check construction.
+  return ((data.type() != "com::centreon::broker::io::raw")
+	  || (data.size() != 0));
 }

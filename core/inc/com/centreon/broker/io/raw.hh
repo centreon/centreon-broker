@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,31 +22,27 @@
 
 # include <QByteArray>
 # include "com/centreon/broker/io/data.hh"
+# include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          io {
-        /**
-         *  @class raw raw.hh "io/raw.hh"
-         *  @brief Raw byte array.
-         *
-         *  Raw byte array.
-         */
-        class            raw : public data, public QByteArray {
-         public:
-                         raw();
-                         raw(raw const& r);
-                         ~raw();
-          raw&           operator=(raw const& r);
-          void*          memory();
-          void const*    memory() const;
-          unsigned int   size() const;
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          io {
+  /**
+   *  @class raw raw.hh "io/raw.hh"
+   *  @brief Raw byte array.
+   *
+   *  Raw byte array.
+   */
+  class            raw : public data, public QByteArray {
+   public:
+                   raw();
+                   raw(raw const& r);
+                   ~raw();
+    raw&           operator=(raw const& r);
+    QString const& type() const;
+  };
 }
+
+CCB_END()
 
 #endif /* !CCB_IO_RAW_HH_ */
