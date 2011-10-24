@@ -65,6 +65,7 @@ namespace               com {
                         failover(failover const& f);
                         ~failover();
           failover&     operator=(failover const& f);
+          time_t        get_retry_interval() const throw ();
           void          process(bool in = false, bool out = false);
           QSharedPointer<io::data>
                         read();
@@ -74,6 +75,10 @@ namespace               com {
           void          set_retry_interval(time_t retry_interval);
           void          wait();
           void          write(QSharedPointer<io::data> d);
+
+         signals:
+          void          exception_caught();
+          void          initial_lock();
         };
       }
     }

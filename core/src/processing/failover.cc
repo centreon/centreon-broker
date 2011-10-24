@@ -40,7 +40,9 @@ using namespace com::centreon::broker::processing;
  *  @param[in] is_out true if the failover thread is an output thread.
  */
 failover::failover(bool is_out)
-  : _is_out(is_out), _retry_interval(30), _should_exit(false) {
+  : _is_out(is_out),
+    _retry_interval(30),
+    _should_exit(false) {
   if (_is_out)
     _source = QSharedPointer<io::stream>(new multiplexing::subscriber);
   else
@@ -94,11 +96,20 @@ failover& failover::operator=(failover const& f) {
  *  @param[in] out true to process outputs.
  */
 void failover::process(bool in, bool out) {
+  _should_exit = true;
   if (!_failover.isNull() && _failover->isRunning())
     _failover->process(in, out);
-  _should_exit = true;
   _feeder.exit();
   return ;
+}
+
+/**
+ *  Get retry interval.
+ *
+ *  @return Failover thread retry interval.
+ */
+time_t failover::get_retry_interval() const throw () {
+  return (_retry_interval);
 }
 
 /**
@@ -110,7 +121,8 @@ void failover::process(bool in, bool out) {
 QSharedPointer<io::data> failover::read() {
   QSharedPointer<io::data> data;
   if (isRunning() && QThread::currentThread() != this) {
-    logging::debug << logging::LOW << "failover: reading event from a different thread";
+    logging::debug(logging::low)
+      << "failover: reading event from a different thread";
     bool caught(false);
     try {
       {
@@ -118,14 +130,17 @@ QSharedPointer<io::data> failover::read() {
         if (!_stream.isNull())
           data = _stream->read();
       }
-      logging::debug << logging::LOW << "failover: got event from remote thread";
+      logging::debug(logging::low)
+        << "failover: got event from remote thread";
     }
     catch (...) {
       caught = true;
     }
     if (caught || data.isNull()) {
-      logging::debug << logging::LOW << "failover: could not get event from remote thread";
-      logging::info << logging::MEDIUM << "failover: requesting failover thread termination";
+      logging::debug(logging::low)
+        << "failover: could not get event from remote thread";
+      logging::info(logging::medium)
+        << "failover: requesting failover thread termination";
       this->exit();
       this->wait();
       {
@@ -142,7 +157,8 @@ QSharedPointer<io::data> failover::read() {
     }
     else
       data = _source->read();
-    logging::debug << logging::LOW << "failover: got event from thread source";
+    logging::debug(logging::low)
+      << "failover: got event from thread source";
   }
   return (data);
 }
@@ -151,32 +167,60 @@ QSharedPointer<io::data> failover::read() {
  *  Thread core function.
  */
 void failover::run() {
+  // Check endpoint.
+  if (_endpoint.isNull()) {
+    logging::error(logging::high) << "failover: attempt to run a " \
+      "thread with a non-existent endpoint";
+    return ;
+  }
+
+  // Launch subfailover to fetch retained data.
+  if (!_failover.isNull()) {
+    connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
+    connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
+    connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
+    connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
+    _failover->start();
+    exec();
+    disconnect(
+      &*_failover,
+      SIGNAL(exception_caught()),
+      this,
+      SLOT(quit()));
+    disconnect(
+      &*_failover,
+      SIGNAL(initial_lock()),
+      this,
+      SLOT(quit()));
+    disconnect(
+      &*_failover,
+      SIGNAL(finished()),
+      this,
+      SLOT(quit()));
+    disconnect(
+      &*_failover,
+      SIGNAL(terminated()),
+      this,
+      SLOT(quit()));
+  }
+
   // Failover should continue as long as not exit request was received.
-  logging::debug << logging::MEDIUM << "failover: launching loop";
+  logging::debug(logging::medium) << "failover: launching loop";
   _should_exit = false;
+
   while (!_should_exit) {
-    // Check endpoint.
-    if (_endpoint.isNull()) {
-      logging::error << logging::HIGH << "failover: attempt to run a " \
-        "thread with a non-existent endpoint";
-      return ;
-    }
-
     try {
-      // Close previous endpoint if any.
+      // Close previous endpoint if any and then open it.
+      logging::debug(logging::medium) << "failover: opening endpoint";
       {
         QMutexLocker lock(&_streamm);
+        emit initial_lock();
         _stream.clear();
-      }
-
-      // Open endpoint.
-      logging::debug << logging::MEDIUM << "failover: opening endpoint";
-      {
-        QMutexLocker lock(&_streamm);
         _stream = _endpoint->open();
         if (_stream.isNull()) { // Retry connection.
           lock.unlock();
-          logging::debug << logging::MEDIUM << "failover: resulting stream is nul, retrying";
+          logging::debug(logging::medium)
+            << "failover: resulting stream is nul, retrying";
           continue ;
         }
         if (_is_out)
@@ -186,32 +230,35 @@ void failover::run() {
       }
 
       // Process input and output.
-      logging::debug << logging::MEDIUM << "failover: launching feeder";
+      logging::debug(logging::medium) << "failover: launching feeder";
       _feeder.prepare(_source, _destination);
       _feeder.run(); // Yes run(), we do not want to start another thread.
     }
     catch (exceptions::with_pointer const& e) {
-      logging::error << logging::HIGH << e.what();
+      logging::error(logging::high) << e.what();
       if (!e.ptr().isNull() && !_failover.isNull() && !_failover->isRunning())
         _failover->write(e.ptr());
     }
     catch (exceptions::msg const& e) {
-      logging::error << logging::HIGH << e.what();
+      logging::error(logging::high) << e.what();
     }
     catch (std::exception const& e) {
-      logging::error << logging::HIGH << "failover: standard library error: " << e.what();
+      logging::error(logging::high)
+        << "failover: standard library error: " << e.what();
     }
     catch (...) {
-      logging::error << logging::HIGH << "failover: unknown error caught in processing thread";
-     }
+      logging::error(logging::high)
+        << "failover: unknown error caught in processing thread";
+    }
+    emit exception_caught();
     if (_is_out)
       _destination.clear();
     else
       _source.clear();
-    if (!_failover.isNull() && !_failover->isRunning())
+    if (!_failover.isNull() && !_failover->isRunning() && !_should_exit)
       _failover->start();
     if (!_should_exit) {
-      logging::info << logging::MEDIUM << "failover: sleeping "
+      logging::info(logging::medium) << "failover: sleeping "
         << _retry_interval << " seconds before reconnection";
       QThread::sleep(_retry_interval);
     }
