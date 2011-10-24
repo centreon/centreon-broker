@@ -127,7 +127,8 @@ unsigned int stream::_find_index_id(unsigned int host_id,
            "  service_id, service_description, must_be_rebuild)" \
            " VALUES (" << host_id << ", :host_name, " << service_id
         << ", :service_description, 1)";
-    QSqlQuery q(oss.str().c_str(), *_storage_db);
+    QSqlQuery q(*_storage_db);
+    q.prepare(oss.str().c_str());
     q.bindValue(":host_name", host_name);
     q.bindValue(":service_description", service_desc);
 
@@ -555,7 +556,8 @@ void stream::write(QSharedPointer<io::data> data) {
            "     service_description=:service_description" \
            " WHERE host_id=" << s->host_id
         << " AND service_id=" << s->service_id;
-    QSqlQuery q(oss.str().c_str(), *_storage_db);
+    QSqlQuery q(*_storage_db);
+    q.prepare(oss.str().c_str());
     q.bindValue(":host_name", s->host_name);
     q.bindValue(":service_description", s->service_description);
     q.exec();
