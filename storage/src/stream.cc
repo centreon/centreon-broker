@@ -133,10 +133,10 @@ unsigned int stream::_find_index_id(unsigned int host_id,
 
     // Execute query.
     q.exec();
-    if (_storage_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "index (" << host_id << ", " << service_id
-               << ") failed: " << _storage_db->lastError().text());
+               << ") failed: " << q.lastError().text());
 
     // Fetch insert ID with query if possible.
     if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
@@ -147,12 +147,13 @@ unsigned int stream::_find_index_id(unsigned int host_id,
               " FROM index_data" \
               " WHERE host_id=" << host_id
            << " AND service_id=" << service_id;
-      QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
-      if (_storage_db->lastError().isValid() || !q2.next())
+      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+      q2.exec();
+      if (q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " index_id of newly inserted index (" << host_id
                  << ", " << service_id << "): "
-                 << _storage_db->lastError().text());
+                 << q2.lastError().text());
       retval = q2.value(0).toUInt();
       if (!retval)
         throw (broker::exceptions::msg() << "storage: index_data " \
@@ -194,16 +195,18 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     std::ostringstream oss;
     QSqlField field("metric_name", QVariant::String);
     field.setValue(metric_name.toStdString().c_str());
-    std::string escaped_metric_name(_storage_db->driver()->formatValue(field, true).toStdString());
+    std::string escaped_metric_name(
+      _storage_db->driver()->formatValue(field, true).toStdString());
     oss << "INSERT INTO metrics (index_id, metric_name)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ")";
 
     // Execute query.
-    QSqlQuery q(_storage_db->exec(oss.str().c_str()));
-    if (_storage_db->lastError().isValid())
+    QSqlQuery q(oss.str().c_str(), *_storage_db);
+    q.exec();
+    if (q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "metric '" << metric_name << "' of index " << index_id
-               << " failed: " << _storage_db->lastError().text());
+               << " failed: " << q.lastError().text());
 
     // Fetch insert ID with query if possible.
     if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
@@ -214,12 +217,13 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
               " FROM metrics" \
               " WHERE index_id=" << index_id
            << " AND metric_name=" << escaped_metric_name;
-      QSqlQuery q2(_storage_db->exec(oss2.str().c_str()));
-      if (_storage_db->lastError().isValid() || !q2.next())
+      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+      q2.exec();
+      if (q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " metric_id of newly inserted metric '"
                  << metric_name << "' of index " << index_id << ": "
-                 << _storage_db->lastError().text());
+                 << q2.lastError().text());
       retval = q2.value(0).toUInt();
       if (!retval)
         throw (broker::exceptions::msg() << "storage: metrics table " \
@@ -240,12 +244,14 @@ void stream::_prepare() {
   // Fill index cache.
   {
     // Execute query.
-    QSqlQuery q(_storage_db->exec("SELECT id, host_id, service_id" \
-                                  " FROM index_data"));
-    if (_storage_db->lastError().isValid())
+    QSqlQuery q("SELECT id, host_id, service_id" \
+                " FROM index_data",
+                *_storage_db);
+    q.exec();
+    if (q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \
                   "index list from data DB: "
-               << _storage_db->lastError().text());
+               << q.lastError().text());
 
     // Loop through result set.
     while (q.next())
@@ -257,12 +263,14 @@ void stream::_prepare() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q(_storage_db->exec("SELECT metric_id, index_id, metric_name" \
-                                  " FROM metrics"));
-    if (_storage_db->lastError().isValid())
+    QSqlQuery q("SELECT metric_id, index_id, metric_name" \
+                " FROM metrics",
+                *_storage_db);
+    q.exec();
+    if (q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \
                   "metric list from data DB: "
-               << _storage_db->lastError().text());
+               << q.lastError().text());
 
     // Loop through result set.
     while (q.next())
