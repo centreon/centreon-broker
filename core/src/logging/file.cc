@@ -190,7 +190,7 @@ void file::log_msg(char const* msg,
       char buffer[integer_width<QThread*>::value + 2];
       snprintf(buffer,
         sizeof(buffer),
-        "0x%llu",
+        "0x%llx",
         (unsigned long long)(QThread::currentThread()));
       _write(buffer);
       _write("] ");
