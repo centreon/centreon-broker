@@ -175,7 +175,16 @@ QSharedPointer<io::data> failover::read() {
         << "failover: could not get event from remote thread";
       logging::info(logging::medium)
         << "failover: requesting failover thread termination";
-      this->process(false, true);
+
+      // Exit this thread.
+      _should_exit = true;
+      if (_is_out && _failover.isNull()) {
+        QMutexLocker lock(&_fromm);
+        _from->process(false, true);
+      }
+      exit();
+      _feeder.exit();
+
       this->wait();
       {
         QMutexLocker lock(&_tom);
