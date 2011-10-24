@@ -21,6 +21,7 @@
 # define CCB_PROCESSING_FAILOVER_HH_
 
 # include <QMutex>
+# include <QReadWriteLock>
 # include <QSharedPointer>
 # include <QThread>
 # include <time.h>
@@ -50,7 +51,7 @@ namespace                com {
           QSharedPointer<failover>
                          _failover;
           feeder         _feeder;
-          mutable QMutex _fromm;
+          mutable QReadWriteLock _fromm;
           bool           _is_out;
           time_t         _retry_interval;
           volatile bool  _should_exit;

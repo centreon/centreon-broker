@@ -18,7 +18,9 @@
 */
 
 #include <QMutexLocker>
+#include <QReadLocker>
 #include <QTimer>
+#include <QWriteLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -70,7 +72,7 @@ failover::failover(failover const& f)
     _data = f._data;
   }
   {
-    QMutexLocker lock(&f._fromm);
+    QWriteLocker lock(&f._fromm);
     _from = f._from;
   }
   {
@@ -102,7 +104,7 @@ failover& failover::operator=(failover const& f) {
       _data = f._data;
     }
     {
-      QMutexLocker lock(&f._fromm);
+      QWriteLocker lock(&f._fromm);
       _from = f._from;
     }
     {
@@ -131,7 +133,7 @@ time_t failover::get_retry_interval() const throw () {
 void failover::process(bool in, bool out) {
   _should_exit = (!in || !out);
   {
-    QMutexLocker lock(&_fromm);
+    QReadLocker lock(&_fromm);
     if (!_from.isNull())
       _from->process(in, out);
   }
@@ -179,13 +181,17 @@ QSharedPointer<io::data> failover::read() {
 
       // Exit this thread.
       _should_exit = true;
-      if (_is_out && _failover.isNull()) {
-        QMutexLocker lock(&_fromm);
-        if (!_from.isNull())
-          _from->write(QSharedPointer<io::data>(new io::raw));
-      }
       exit();
-      _feeder.exit();
+      if (_is_out && _failover.isNull()) {
+        QReadLocker lock(&_fromm);
+        _feeder.exit();
+        if (!_from.isNull()) {
+          _from->process(true, true);
+          _from->write(QSharedPointer<io::data>(new io::raw));
+        }
+      }
+      else
+        _feeder.exit();
 
       this->wait();
       {
@@ -203,7 +209,7 @@ QSharedPointer<io::data> failover::read() {
       lock.unlock();
     }
     else {
-      QMutexLocker lock(&_fromm);
+      QReadLocker lock(&_fromm);
       data = _from->read();
     }
     logging::debug(logging::low)
@@ -261,22 +267,23 @@ void failover::run() {
     try {
       // Close previous endpoint if any and then open it.
       logging::debug(logging::medium) << "failover: opening endpoint";
-      QMutex* m;
-      QSharedPointer<io::stream>* s;
       if (_is_out) {
-        m = &_tom;
-        s = &_to;
+        QMutexLocker lock(&_tom);
+        emit initial_lock();
+        _to.clear();
+        _to = _endpoint->open();
+        if (_to.isNull()) { // Retry connection.
+          logging::debug(logging::medium)
+            << "failover: resulting stream is nul, retrying";
+          continue ;
+        }
       }
       else {
-        m = &_fromm;
-        s = &_from;
-      }
-      {
-        QMutexLocker lock(m);
+        QWriteLocker lock(&_fromm);
         emit initial_lock();
-        s->clear();
-        *s = _endpoint->open();
-        if (s->isNull()) { // Retry connection.
+        _from.clear();
+        _from = _endpoint->open();
+        if (_from.isNull()) { // Retry connection.
           logging::debug(logging::medium)
             << "failover: resulting stream is nul, retrying";
           continue ;
@@ -286,7 +293,7 @@ void failover::run() {
       // Process input and output.
       logging::debug(logging::medium) << "failover: launching feeder";
       {
-        QMutexLocker lock1(&_fromm);
+        QReadLocker lock1(&_fromm);
         QMutexLocker lock2(&_tom);
         _feeder.prepare(_from, _to);
       }
@@ -318,7 +325,7 @@ void failover::run() {
       _to.clear();
     }
     else {
-      QMutexLocker lock(&_fromm);
+      QWriteLocker lock(&_fromm);
       _from.clear();
     }
     if (!_failover.isNull() && !_failover->isRunning() && !_should_exit)
@@ -351,7 +358,7 @@ void failover::set_endpoint(QSharedPointer<io::endpoint> endp) {
 void failover::set_failover(QSharedPointer<failover> fo) {
   _failover = fo;
   if (!fo.isNull() && _is_out) { // failover object will act as input for output threads.
-    QMutexLocker lock(&_fromm);
+    QWriteLocker lock(&_fromm);
     _from = _failover;
   }
   return ;

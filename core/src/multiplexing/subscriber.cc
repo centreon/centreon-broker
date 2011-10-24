@@ -99,7 +99,13 @@ subscriber::subscriber() {
  */
 subscriber::~subscriber() {
   clean();
-  process(false, false);
+  QMutexLocker lock(&gl_subscribersm);
+  for (QVector<subscriber*>::iterator it = gl_subscribers.begin();
+       it != gl_subscribers.end();)
+    if (*it == this)
+      it = gl_subscribers.erase(it);
+    else
+      ++it;
 }
 
 /**
@@ -110,17 +116,10 @@ subscriber::~subscriber() {
  */
 void subscriber::process(bool in, bool out) {
   // Lock mutexes.
-  QMutexLocker lock1(&gl_subscribersm);
-  QMutexLocker lock2(&_mutex);
+  QMutexLocker lock(&_mutex);
 
   // Unregister.
   if ((!in || !out) && _registered) {
-    for (QVector<subscriber*>::iterator it = gl_subscribers.begin();
-         it != gl_subscribers.end();)
-      if (*it == this)
-        it = gl_subscribers.erase(it);
-      else
-        ++it;
     _registered = false;
     _cv.wakeAll();
     // Log message.
@@ -130,7 +129,6 @@ void subscriber::process(bool in, bool out) {
   }
   // Re-register.
   else if (in && out && !_registered) {
-    gl_subscribers.push_back(this);
     _registered = true;
     // Log message.
     logging::debug(logging::low) << "multiplexing: "
@@ -197,12 +195,7 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
  */
 void subscriber::write(QSharedPointer<io::data> event) {
   QMutexLocker lock(&_mutex);
-  if (_registered) {
-    _events.enqueue(event);
-    _cv.wakeOne();
-  }
-  else
-    throw (io::exceptions::shutdown(true, true) << "subscriber "
-             << this << " is shutdown, cannot write");
+  _events.enqueue(event);
+  _cv.wakeOne();
   return ;
 }
