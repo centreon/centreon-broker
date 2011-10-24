@@ -76,7 +76,7 @@ failover::failover(failover const& f)
     _from = f._from;
   }
   {
-    QMutexLocker lock(&f._tom);
+    QWriteLocker lock(&f._tom);
     _to = f._to;
   }
 }
@@ -108,7 +108,7 @@ failover& failover::operator=(failover const& f) {
       _from = f._from;
     }
     {
-      QMutexLocker lock(&f._tom);
+      QWriteLocker lock(&f._tom);
       _to = f._to;
     }
   }
@@ -138,11 +138,12 @@ void failover::process(bool in, bool out) {
       _from->process(in, out);
   }
   {
-    QMutexLocker lock(&_tom);
+    QReadLocker lock(&_tom);
     if (!_to.isNull())
       _to->process(in, out);
   }
   if (!in || !out) {
+    _endpoint->close();
     exit();
     _feeder.exit();
   }
@@ -163,7 +164,7 @@ QSharedPointer<io::data> failover::read() {
     bool caught(false);
     try {
       {
-        QMutexLocker lock(&_tom);
+        QReadLocker lock(&_tom);
         if (!_to.isNull())
           data = _to->read();
       }
@@ -195,7 +196,7 @@ QSharedPointer<io::data> failover::read() {
 
       this->wait();
       {
-        QMutexLocker lock(&_tom);
+        QWriteLocker lock(&_tom);
         _to.clear();
       }
       data = this->read();
@@ -267,23 +268,23 @@ void failover::run() {
     try {
       // Close previous endpoint if any and then open it.
       logging::debug(logging::medium) << "failover: opening endpoint";
+      QReadWriteLock* rwl;
+      QSharedPointer<io::stream>* s;
       if (_is_out) {
-        QMutexLocker lock(&_tom);
-        emit initial_lock();
-        _to.clear();
-        _to = _endpoint->open();
-        if (_to.isNull()) { // Retry connection.
-          logging::debug(logging::medium)
-            << "failover: resulting stream is nul, retrying";
-          continue ;
-        }
+        rwl = &_tom;
+        s = &_to;
       }
       else {
-        QWriteLocker lock(&_fromm);
+        rwl = &_fromm;
+        s = &_from;
+      }
+      {
         emit initial_lock();
-        _from.clear();
-        _from = _endpoint->open();
-        if (_from.isNull()) { // Retry connection.
+        s->clear();
+        QSharedPointer<io::stream> tmp(_endpoint->open());
+        QWriteLocker lock(rwl);
+        *s = tmp;
+        if (s->isNull()) { // Retry connection.
           logging::debug(logging::medium)
             << "failover: resulting stream is nul, retrying";
           continue ;
@@ -294,7 +295,7 @@ void failover::run() {
       logging::debug(logging::medium) << "failover: launching feeder";
       {
         QReadLocker lock1(&_fromm);
-        QMutexLocker lock2(&_tom);
+        QReadLocker lock2(&_tom);
         _feeder.prepare(_from, _to);
       }
       _feeder.run(); // Yes run(), we do not want to start another thread.
@@ -321,7 +322,7 @@ void failover::run() {
     }
     emit exception_caught();
     if (_is_out) {
-      QMutexLocker lock(&_tom);
+      QWriteLocker lock(&_tom);
       _to.clear();
     }
     else {

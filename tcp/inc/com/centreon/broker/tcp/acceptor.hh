@@ -20,6 +20,7 @@
 #ifndef CCB_TCP_ACCEPTOR_HH_
 # define CCB_TCP_ACCEPTOR_HH_
 
+# include <QMutex>
 # include <QScopedPointer>
 # include <QTcpServer>
 # include "com/centreon/broker/io/endpoint.hh"
@@ -37,6 +38,7 @@ namespace          tcp {
   class            acceptor : public io::endpoint {
    private:
     QString        _ca;
+    QMutex         _mutex;
     unsigned short _port;
     QString        _private;
     QString        _public;

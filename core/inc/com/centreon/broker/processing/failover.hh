@@ -55,7 +55,7 @@ namespace                com {
           bool           _is_out;
           time_t         _retry_interval;
           volatile bool  _should_exit;
-          mutable QMutex _tom;
+          mutable QReadWriteLock _tom;
 
          public:
                          failover(bool is_out);

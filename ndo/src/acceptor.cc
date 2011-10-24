@@ -74,6 +74,8 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *  Close the acceptor.
  */
 void acceptor::close() {
+  if (!_from.isNull())
+    _from->close();
   return ;
 }
 

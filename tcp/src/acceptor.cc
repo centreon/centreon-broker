@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
 #include <QScopedPointer>
+#include <QWaitCondition>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -99,10 +101,9 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *  Close the acceptor.
  */
 void acceptor::close() {
-  if (!_socket.isNull()) {
+  QMutexLocker lock(&_mutex);
+  if (!_socket.isNull())
     _socket->close();
-    _socket.reset();
-  }
   return ;
 }
 
@@ -122,6 +123,7 @@ void acceptor::listen_on(unsigned short port) {
  */
 QSharedPointer<io::stream> acceptor::open() {
   // Listen on port.
+  QMutexLocker lock(&_mutex);
   if (_socket.isNull()) {
     _socket.reset(_tls ? new tls_server(_private, _public, _ca)
                        : new QTcpServer);
@@ -135,8 +137,16 @@ QSharedPointer<io::stream> acceptor::open() {
   }
 
   // Wait for incoming connections.
-  logging::debug << logging::MEDIUM << "TCP: waiting for new connection";
-  if (!_socket->waitForNewConnection(-1))
+  logging::debug(logging::medium) << "TCP: waiting for new connection";
+  bool timedout(false);
+  bool ret(_socket->waitForNewConnection(200, &timedout));
+  while (!ret && timedout) {
+    QWaitCondition cv;
+    cv.wait(&_mutex, 10);
+    timedout = false;
+    ret = _socket->waitForNewConnection(200, &timedout);
+  }
+  if (!ret)
     throw (exceptions::msg() << "TCP: error while waiting for " \
              "client: " << _socket->errorString());
 
