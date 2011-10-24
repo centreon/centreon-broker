@@ -194,7 +194,7 @@ QSharedPointer<io::data> failover::read() {
       else
         _feeder.exit();
 
-      this->wait();
+      this->QThread::wait();
       {
         QWriteLocker lock(&_tom);
         _to.clear();
