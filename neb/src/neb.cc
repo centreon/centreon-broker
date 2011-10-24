@@ -17,6 +17,7 @@
 */
 
 #include <QCoreApplication>
+#include <QTimer>
 #include <stddef.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -37,6 +38,11 @@ using namespace com::centreon::broker;
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
+
+// Centreon Engine/Nagios function.
+extern "C" {
+  extern int schedule_new_event(int, int, time_t, int, unsigned long, void*, int, void*, void*, int);
+}
 
 /**************************************
 *                                     *
@@ -96,6 +102,19 @@ static void deregister_callbacks() {
         gl_callbacks[i].callback);
       gl_callbacks[i].registered = false;
     }
+  return ;
+}
+
+/**
+ *  Process Qt events.
+ *
+ *  @param[in] arg Unused.
+ */
+static void process_qcore(void* arg) {
+  (void)arg;
+  QCoreApplication* app(QCoreApplication::instance());
+  QTimer::singleShot(0, app, SLOT(quit()));
+  app->exec();
   return ;
 }
 
@@ -191,8 +210,20 @@ extern "C" {
       "cb2db.");
 
     // Initialize Qt if not already done by parent process.
-    if (!QCoreApplication::instance())
+    if (!QCoreApplication::instance()) {
       new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
+      schedule_new_event(
+        99,
+        1,
+        time(NULL) + 1,
+        1,
+        1,
+        NULL,
+        1,
+        (void*)process_qcore,
+        NULL,
+        0);
+    }
 
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);
