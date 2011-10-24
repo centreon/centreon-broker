@@ -54,5 +54,15 @@ int main() {
       rrd::lib::max_metric_length);
   }
 
+  // #3.
+  {
+    QString normalized(rrd::lib::normalize_metric_name(".{}[]-"));
+    retval |= (normalized.size() > rrd::lib::max_metric_length);
+    retval |= strncmp(
+      qPrintable(normalized),
+      "x-----",
+      rrd::lib::max_metric_length);
+  }
+
   return (retval);
 }
