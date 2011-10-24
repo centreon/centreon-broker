@@ -64,5 +64,5 @@ int main(int argc, char* argv[]) {
   f.wait();
 
   // The number of stream is the number of retry.
-  return (se->opened_streams() != 4);
+  return ((se->opened_streams() != 4) || (f.get_retry_interval() != 1));
 }

@@ -584,6 +584,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reread events from failover first.
+  set(TEST_NAME "core_processing_failover_reread_first")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/reread_first.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # cbd tests.

@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   f.start();
 
   // Wait some time.
-  QTimer::singleShot(3000, &app, SLOT(quit()));
+  QTimer::singleShot(2000, &app, SLOT(quit()));
   app.exec();
 
   // Quit feeder thread.

@@ -24,15 +24,18 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/logger.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/file.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
+#define MSG "some random message for Centreon Broker"
+
 /**
- *  Check that the failover class behave correctly if an intermediate
- *  failover fails.
+ *  Check that failover events are read before normal events.
  *
  *  @param[in] argc Argument count.
  *  @param[in] argv Argument values.
@@ -42,6 +45,7 @@ using namespace com::centreon::broker;
 int main(int argc, char* argv[]) {
   // Initialization.
   config::applier::init();
+  multiplexing::engine::instance().start();
 
   // Application object.
   QCoreApplication app(argc, argv);
@@ -64,45 +68,77 @@ int main(int argc, char* argv[]) {
   // First failover.
   QSharedPointer<setable_endpoint> endp1(new setable_endpoint);
   endp1->set(true);
+  endp1->save_streams(true);
   QSharedPointer<processing::failover> fo1(
     new processing::failover(true));
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
-  // Second failover (intermediate).
+  // Second failover.
   QSharedPointer<setable_endpoint> endp2(new setable_endpoint);
-  endp2->set(false);
+  endp2->set(true);
+  endp2->set_initial_store_events(true);
+  endp2->save_streams(true);
   QSharedPointer<processing::failover> fo2(
     new processing::failover(true));
   fo2->set_endpoint(endp2.staticCast<io::endpoint>());
   fo2->set_failover(fo1);
-  fo2->set_retry_interval(1);
 
-  // Last failover.
-  QSharedPointer<setable_endpoint> endp3(new setable_endpoint);
-  endp3->set(false);
-  QSharedPointer<processing::failover> fo3(
-    new processing::failover(true));
-  fo3->set_endpoint(endp3.staticCast<io::endpoint>());
-  fo3->set_failover(fo2);
-  fo3->set_retry_interval(1);
+  // Publish an event that should be the last event processed by fo1.
+  {
+    QSharedPointer<io::raw> r(new io::raw);
+    r->append(MSG);
+    multiplexing::engine::instance().publish(r.staticCast<io::data>());
+  }
 
   // Launch processing.
-  fo3->start();
+  fo2->start();
 
-  // Wait a while to get fo1 and fo2 launched because of failing
-  // endpoints #2 and #3.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  // Some processing.
+  QTimer::singleShot(1000, &app, SLOT(quit()));
   app.exec();
 
-  // Enable endpoint #3.
-  endp3->set(true);
+  // Failover thread #1 has finished processing.
+  endp1->set(false);
 
-  // Wait fo3 to reenable endpoint #3 and cancel fo2.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  // Some additionnal processing.
+  QTimer::singleShot(500, &app, SLOT(quit()));
+  app.exec();
 
   // Exit threads.
-  fo3->process(false, true);
-  fo3->wait();
+  fo2->process(false, true);
+  fo2->wait();
 
-  return (0);
+  // Check stream content.
+  int retval(0);
+  if (endp1->streams().isEmpty() || endp2->streams().isEmpty())
+    retval = 1;
+  else {
+    // Check automatically generated events.
+    QSharedPointer<setable_stream> ss1(*endp1->streams().begin());
+    QSharedPointer<setable_stream> ss2(*endp2->streams().begin());
+    unsigned int count(ss1->count());
+    unsigned int i(0);
+    for (QList<QSharedPointer<io::data> >::const_iterator
+           it = ss2->events().begin(),
+           end = ss2->events().end();
+         (i < count) && (it != end);
+         ++it) {
+      if ((*it)->type() != "com::centreon::broker::io::raw")
+        retval |= 1;
+      else {
+        QSharedPointer<io::raw> raw(it->staticCast<io::raw>());
+        unsigned int val;
+        memcpy(&val, raw->QByteArray::data(), sizeof(val));
+        retval |= (val != ++i);
+      }
+    }
+    retval |= (i != count);
+
+    // Check event list size.
+    retval |= (ss2->events().size() != (count + 1));
+
+    // Check first published event.
+  }
+
+  return (retval);
 }

@@ -48,6 +48,7 @@ class             setable_stream : public com::centreon::broker::io::stream {
                   ~setable_stream();
   setable_stream& operator=(setable_stream const& ss);
   unsigned int    count() const;
+  void            count(unsigned int cnt);
   QList<QSharedPointer<com::centreon::broker::io::data> > const&
                   events() const;
   void            process(bool in = false, bool out = true);

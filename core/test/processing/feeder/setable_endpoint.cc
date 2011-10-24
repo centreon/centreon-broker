@@ -35,6 +35,8 @@ using namespace com::centreon::broker;
  *  @param[in] se Object to copy.
  */
 void setable_endpoint::_internal_copy(setable_endpoint const& se) {
+  _initial_count = se._initial_count;
+  _initial_store_events = se._initial_store_events;
   _opened_streams = se._opened_streams;
   _save_streams = se._save_streams;
   _should_succeed = se._should_succeed;
@@ -53,6 +55,8 @@ void setable_endpoint::_internal_copy(setable_endpoint const& se) {
  */
 setable_endpoint::setable_endpoint()
   : io::endpoint(false),
+    _initial_count(0),
+    _initial_store_events(false),
     _opened_streams(0),
     _save_streams(false),
     _should_succeed(new volatile bool) {}
@@ -105,15 +109,13 @@ QSharedPointer<com::centreon::broker::io::stream> setable_endpoint::open() {
   if (!*_should_succeed)
     throw (exceptions::msg() << "setable endpoint should not succeed");
   QSharedPointer<com::centreon::broker::io::stream> s;
-  if (_save_streams) {
-    QSharedPointer<setable_stream> ss(
-      new setable_stream(_should_succeed));
+  QSharedPointer<setable_stream> ss(
+    new setable_stream(_should_succeed));
+  ss->count(_initial_count);
+  ss->store_events(_initial_store_events);
+  s = ss.staticCast<com::centreon::broker::io::stream>();
+  if (_save_streams)
     _streams.push_back(ss);
-    s = ss.staticCast<com::centreon::broker::io::stream>();
-  }
-  else
-    s = QSharedPointer<com::centreon::broker::io::stream>(
-          new setable_stream(_should_succeed));
   return (s);
 }
 
@@ -144,6 +146,26 @@ void setable_endpoint::save_streams(bool save) {
  */
 void setable_endpoint::set(bool should_succeed) {
   *_should_succeed = should_succeed;
+  return ;
+}
+
+/**
+ *  Set initial stream count.
+ *
+ *  @param[in] cnt Initial count.
+ */
+void setable_endpoint::set_initial_count(unsigned int cnt) {
+  _initial_count = cnt;
+  return ;
+}
+
+/**
+ *  Set initial store events feature.
+ *
+ *  @param[in] store true to make streams store events.
+ */
+void setable_endpoint::set_initial_store_events(bool store) {
+  _initial_store_events = store;
   return ;
 }
 

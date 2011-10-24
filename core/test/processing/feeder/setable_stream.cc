@@ -100,6 +100,16 @@ unsigned int setable_stream::count() const {
 }
 
 /**
+ *  Set current count value.
+ *
+ *  @param[in] cnt New count value.
+ */
+void setable_stream::count(unsigned int cnt) {
+  _count = cnt;
+  return ;
+}
+
+/**
  *  Get retained events.
  *
  *  @return Events.
