@@ -1073,6 +1073,7 @@ void correlator::update() {
  */
 void correlator::write(QSharedPointer<io::data> e) {
   try {
+    // Process event.
     if ("com::centreon::broker::neb::host" == e->type())
       _correlate_host_status(e);
     else if ("com::centreon::broker::neb::host_status" == e->type())
@@ -1085,6 +1086,14 @@ void correlator::write(QSharedPointer<io::data> e) {
       _correlate_log(e);
     else if ("com::centreon::broker::neb::acknowledgement" == e->type())
       _correlate_acknowledgement(e);
+
+    // Dump retention file.
+    static time_t next_dump(0);
+    time_t now(time(NULL));
+    if (now > next_dump) {
+      _write_issues();
+      next_dump = now + 60;
+    }
   }
   catch (exceptions::msg const& e) {
     logging::error << logging::HIGH << e.what();
