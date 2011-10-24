@@ -95,10 +95,15 @@ stream::stream(QString const& filename, QIODevice::OpenMode mode)
  *  Destructor.
  */
 stream::~stream() {
-  logging::debug << logging::MEDIUM << "file: closing '"
+  logging::debug(logging::medium) << "file: closing '"
     << _file.fileName() << "'";
   _file.flush();
   _file.close();
+  if (_woffset == _roffset) {
+    logging::info(logging::high) << "file: end of file '"
+      << _file.fileName() << "' reached, erasing file";
+    QFile::remove(_file.fileName());
+  }
 }
 
 /**
