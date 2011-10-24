@@ -22,6 +22,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -180,7 +181,8 @@ QSharedPointer<io::data> failover::read() {
       _should_exit = true;
       if (_is_out && _failover.isNull()) {
         QMutexLocker lock(&_fromm);
-        _from->process(false, true);
+        if (!_from.isNull())
+          _from->write(QSharedPointer<io::data>(new io::raw));
       }
       exit();
       _feeder.exit();
