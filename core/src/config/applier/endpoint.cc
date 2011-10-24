@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -170,7 +171,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
     while (it != end) {
       if ((it.value().osi_from == level)
           && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
-        QSharedPointer<io::endpoint> current(it.value().endpntfactry->new_endpoint(cfg, !is_output, is_output, is_acceptor));
+        QSharedPointer<io::endpoint> current(it.value().endpntfactry->new_endpoint(cfg, is_input, is_output, is_acceptor));
         current->from(endp);
         endp = current;
         level = it.value().osi_to;
