@@ -143,8 +143,9 @@ QSharedPointer<io::data> stream::read() {
   // Read data.
   QSharedPointer<io::data> retval;
   qint64 rb(_file.read(data->QByteArray::data(), data->size()));
-  if (!rb)
-    ; // Do nothing.
+  if (!rb) // XXX : io::exceptions::error
+    throw (io::exceptions::shutdown(true, !_process_out)
+             << "file does not have any more data");
   else if (rb < 0) {
     exceptions::msg e;
     e << "file: could not read data from '"
@@ -154,6 +155,7 @@ QSharedPointer<io::data> stream::read() {
     throw (e);
   }
   else {
+    data->resize(rb);
     _roffset += rb;
     _coffset = _roffset;
     retval = QSharedPointer<io::data>(data.take());

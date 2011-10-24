@@ -55,6 +55,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/stream/read.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Mixed reads/writes.
+  set(TEST_NAME "file_stream_mixed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/stream/mixed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.

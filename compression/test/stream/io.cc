@@ -22,6 +22,7 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
@@ -117,7 +118,13 @@ int main() {
       }
     }
     // EOF must be reached.
-    retval |= !cs.read().isNull();
+    try {
+      cs.read();
+      retval |= 1;
+    }
+    catch (io::exceptions::shutdown const& s) {
+      (void)s;
+    }
   }
 
   // Remove temporary file.

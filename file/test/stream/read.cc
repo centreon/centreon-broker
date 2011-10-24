@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -21,6 +22,7 @@
 #include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
@@ -104,12 +106,18 @@ int main() {
         bufferc = 0;
       }
       rawc += cb;
-      if (rawc == raw->size())
+      if (static_cast<int>(rawc) == raw->size())
         raw.clear();
     }
   }
   // EOF must be reached.
-  retval |= !fs.read().isNull();
+  try {
+    fs.read();
+    retval |= 1;
+  }
+  catch (io::exceptions::shutdown const& s) {
+    (void)s;
+  }
 
   // Remove temporary file.
   QFile::remove(filename);
