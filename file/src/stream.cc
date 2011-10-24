@@ -104,6 +104,10 @@ stream::~stream() {
       << _file.fileName() << "' reached, erasing file";
     QFile::remove(_file.fileName());
   }
+  else
+    logging::debug(logging::medium) << "file: not erasing '"
+      << _file.fileName() << "' write offset is " << _woffset
+      << " whereas read offset is " << _roffset;
 }
 
 /**
