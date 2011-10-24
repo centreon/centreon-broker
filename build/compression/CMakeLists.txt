@@ -37,6 +37,7 @@ add_library("${COMPRESSION}" SHARED
   "${INC_DIR}/com/centreon/broker/compression/opener.hh"
   "${INC_DIR}/com/centreon/broker/compression/stream.hh"
 )
+target_link_libraries("${COMPRESSION}" ${QT_LIBRARIES})
 set_target_properties("${COMPRESSION}" PROPERTIES PREFIX "")
 
 if (WITH_TESTING)

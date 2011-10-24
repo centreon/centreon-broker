@@ -25,7 +25,7 @@ include_directories("${INC_DIR}")
 # Local sockets module.
 set(LOCAL "50-local")
 set(LOCAL "${LOCAL}" PARENT_SCOPE)
-add_library("${LOCAL}" MODULE
+add_library("${LOCAL}" SHARED
   # Sources.
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
@@ -38,6 +38,7 @@ add_library("${LOCAL}" MODULE
   "${INC_DIR}/com/centreon/broker/local/factory.hh"
   "${INC_DIR}/com/centreon/broker/local/stream.hh"
 )
+target_link_libraries("${LOCAL}" ${QT_LIBRARIES})
 set_target_properties("${LOCAL}" PROPERTIES PREFIX "")
 
 # Install rule.

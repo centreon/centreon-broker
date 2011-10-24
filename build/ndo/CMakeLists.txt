@@ -49,6 +49,7 @@ add_library("${NDO}" SHARED
   "${INC_DIR}/com/centreon/broker/ndo/output.hh"
   "${INC_DIR}/com/centreon/broker/ndo/stream.hh"
 )
+target_link_libraries("${NDO}" ${QT_LIBRARIES})
 set_target_properties("${NDO}" PROPERTIES PREFIX "")
 
 # Install rule.

@@ -57,6 +57,7 @@ add_library("${CORRELATION}" SHARED
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )
+target_link_libraries("${CORRELATION}" ${QT_LIBRARIES})
 set_target_properties("${CORRELATION}" PROPERTIES PREFIX "")
 
 # Testing.

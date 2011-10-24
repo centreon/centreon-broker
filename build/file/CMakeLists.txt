@@ -37,6 +37,7 @@ add_library("${FILE}" SHARED
   "${INC_DIR}/com/centreon/broker/file/opener.hh"
   "${INC_DIR}/com/centreon/broker/file/stream.hh"
 )
+target_link_libraries("${FILE}" ${QT_LIBRARIES})
 set_target_properties("${FILE}" PROPERTIES PREFIX "")
 
 if (WITH_TESTING)

@@ -47,6 +47,7 @@ add_library("${TCP}" SHARED
   "${INC_DIR}/com/centreon/broker/tcp/stream.hh"
   "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
 )
+target_link_libraries("${TCP}" ${QT_LIBRARIES})
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
 # Install rule.

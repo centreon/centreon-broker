@@ -41,6 +41,7 @@ add_library("${SQL}" SHARED
   "${INC_DIR}/com/centreon/broker/sql/internal.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
 )
+target_link_libraries("${SQL}" ${QT_LIBRARIES})
 set_target_properties("${SQL}" PROPERTIES PREFIX "")
 
 # Install rule.

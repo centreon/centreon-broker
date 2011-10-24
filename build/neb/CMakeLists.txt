@@ -105,6 +105,7 @@ add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
 )
+target_link_libraries("${NEB}" ${QT_LIBRARIES})
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
 install(TARGETS "${NEB}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"

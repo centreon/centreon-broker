@@ -49,6 +49,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/com/centreon/broker/storage/status.hh"
   "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
+target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 
 if (WITH_TESTING)
