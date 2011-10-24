@@ -28,57 +28,55 @@
 # include "com/centreon/broker/io/stream.hh"
 # include "com/centreon/broker/processing/feeder.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         processing {
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          processing {
         /**
          *  @class failover failover.hh "com/centreon/broker/processing/failover.hh"
          *  @brief Failover thread.
          *
          *  Thread that provide failover on inputs or outputs.
          */
-        class           failover : public QThread, public io::stream {
+        class            failover : public QThread, public io::stream {
           Q_OBJECT
 
          private:
           QSharedPointer<io::data>
-                        _data;
-          QSharedPointer<io::stream>
-                        _destination;
+                         _data;
+          mutable QMutex _datam;
           QSharedPointer<io::endpoint>
-                        _endpoint;
+                         _endpoint;
           QSharedPointer<failover>
-                        _failover;
-          feeder        _feeder;
-          bool          _is_out;
-          time_t        _retry_interval;
-          volatile bool _should_exit;
-          QSharedPointer<io::stream>
-                        _source;
-          QSharedPointer<io::stream>
-                        _stream;
-          QMutex        _streamm;
+                         _failover;
+          feeder         _feeder;
+          mutable QMutex _fromm;
+          bool           _is_out;
+          time_t         _retry_interval;
+          volatile bool  _should_exit;
+          mutable QMutex _tom;
 
          public:
-                        failover(bool is_out);
-                        failover(failover const& f);
-                        ~failover();
-          failover&     operator=(failover const& f);
-          time_t        get_retry_interval() const throw ();
-          void          process(bool in = false, bool out = false);
+                         failover(bool is_out);
+                         failover(failover const& f);
+                         ~failover();
+          failover&      operator=(failover const& f);
+          time_t         get_retry_interval() const throw ();
+          void           process(bool in = false, bool out = false);
           QSharedPointer<io::data>
-                        read();
-          void          run();
-          void          set_endpoint(QSharedPointer<io::endpoint> endp);
-          void          set_failover(QSharedPointer<processing::failover> fo);
-          void          set_retry_interval(time_t retry_interval);
-          void          wait();
-          void          write(QSharedPointer<io::data> d);
+                         read();
+          void           run();
+          void           set_endpoint(
+                           QSharedPointer<io::endpoint> endp);
+          void           set_failover(
+                           QSharedPointer<processing::failover> fo);
+          void           set_retry_interval(time_t retry_interval);
+          void           wait();
+          void           write(QSharedPointer<io::data> d);
 
          signals:
-          void          exception_caught();
-          void          initial_lock();
+          void           exception_caught();
+          void           initial_lock();
         };
       }
     }

@@ -19,9 +19,11 @@
 
 #include <QMutex>
 #include <QWaitCondition>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "setable_stream.hh"
+#include "test/processing/feeder/setable_stream.hh"
+
+using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
@@ -36,10 +38,13 @@
  */
 void setable_stream::_internal_copy(setable_stream const& ss) {
   _count = ss._count;
-  _events = ss._events;
-  _should_succeed = ss._should_succeed;
+  _process_in = ss._process_in;
+  _process_out = ss._process_out;
+  _replay_events = ss._replay_events;
+  _replay = ss._replay;
   _sleep_time = ss._sleep_time;
   _store_events = ss._store_events;
+  _stored_events = ss._stored_events;
   return ;
 }
 
@@ -51,13 +56,13 @@ void setable_stream::_internal_copy(setable_stream const& ss) {
 
 /**
  *  Constructor.
- *
- *  @param[in] should_succeed Success flag.
  */
-setable_stream::setable_stream(QSharedPointer<volatile bool> ptr)
+setable_stream::setable_stream()
   : _count(0),
-    _should_succeed(ptr),
-    _sleep_time(0),
+    _process_in(true),
+    _process_out(true),
+    _replay_events(false),
+    _sleep_time(10),
     _store_events(false) {}
 
 /**
@@ -95,18 +100,8 @@ setable_stream& setable_stream::operator=(setable_stream const& ss) {
  *
  *  @return Count value.
  */
-unsigned int setable_stream::count() const {
+unsigned int setable_stream::get_count() const {
   return (_count);
-}
-
-/**
- *  Set current count value.
- *
- *  @param[in] cnt New count value.
- */
-void setable_stream::count(unsigned int cnt) {
-  _count = cnt;
-  return ;
 }
 
 /**
@@ -114,14 +109,20 @@ void setable_stream::count(unsigned int cnt) {
  *
  *  @return Events.
  */
-QList<QSharedPointer<com::centreon::broker::io::data> > const& setable_stream::events() const {
-  return (_events);
+QList<QSharedPointer<io::data> > const& setable_stream::get_stored_events() const {
+  return (_stored_events);
 }
 
 /**
- *  XXX
+ *  Enable or disable event processing.
+ *
+ *  @param[in] in  Set to true to enable input event processing.
+ *  @param[in] out Set to true to enable output event processing.
  */
 void setable_stream::process(bool in, bool out) {
+  _process_in = in;
+  _process_out = out;
+  return ;
 }
 
 /**
@@ -129,19 +130,51 @@ void setable_stream::process(bool in, bool out) {
  *
  *  @return Some data.
  */
-QSharedPointer<com::centreon::broker::io::data> setable_stream::read() {
-  QMutex mx;
-  QWaitCondition wc;
-  mx.lock();
-  wc.wait(&mx, _sleep_time);
-  QSharedPointer<com::centreon::broker::io::raw> data;
-  if (*_should_succeed) {
-    data = QSharedPointer<com::centreon::broker::io::raw>(
-      new com::centreon::broker::io::raw);
+QSharedPointer<io::data> setable_stream::read() {
+  // Sleep a while.
+  QMutex m;
+  QWaitCondition cv;
+  cv.wait(&m, _sleep_time);
+
+  // Do we generate an event ?
+  QSharedPointer<io::data> data;
+  if (_process_in) {
+    QSharedPointer<io::raw> raw(new io::raw);
     ++_count;
-    data->append((char*)&_count, sizeof(_count));
+    raw->append((char*)&_count, sizeof(_count));
+    data = raw.staticCast<io::data>();
   }
-  return (data.staticCast<com::centreon::broker::io::data>());
+  // Provide retained event.
+  else if (_replay_events && !_replay.isEmpty()) {
+    data = _replay.front();
+    _replay.pop_front();
+  }
+  // No processing possible.
+  else
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "setable stream is shutdown");
+  return (data);
+}
+
+/**
+ *  Set current count value.
+ *
+ *  @param[in] cnt New count value.
+ */
+void setable_stream::set_count(unsigned int cnt) {
+  _count = cnt;
+  return ;
+}
+
+/**
+ *  Set replay events.
+ *
+ *  @param[in] replay Set to true to replay events that have been
+ *                    written to this stream.
+ */
+void setable_stream::set_replay_events(bool replay) {
+  _replay_events = replay;
+  return ;
 }
 
 /**
@@ -156,21 +189,11 @@ void setable_stream::set_sleep_time(unsigned int ms) {
 }
 
 /**
- *  Set if stream should succeed or not.
- *
- *  @param[in] succeed true to make stream succeed.
- */
-void setable_stream::set_succeed(bool succeed) {
-  *_should_succeed = succeed;
-  return ;
-}
-
-/**
  *  Set whether or not events should be stored when written.
  *
  *  @param[in] store true to store events.
  */
-void setable_stream::store_events(bool store) {
+void setable_stream::set_store_events(bool store) {
   _store_events = store;
   return ;
 }
@@ -180,10 +203,13 @@ void setable_stream::store_events(bool store) {
  *
  *  @param[in] d Data to write.
  */
-void setable_stream::write(QSharedPointer<com::centreon::broker::io::data> d) {
-  if (!*_should_succeed)
-    throw (com::centreon::broker::exceptions::msg() << "test: error");
+void setable_stream::write(QSharedPointer<io::data> d) {
+  if (!_process_out)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+             << "setable stream is shutdown");
+  if (_replay_events)
+    _replay.push_back(d);
   if (_store_events)
-    _events.push_back(d);
+    _stored_events.push_back(d);
   return ;
 }

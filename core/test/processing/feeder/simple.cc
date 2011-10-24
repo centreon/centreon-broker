@@ -45,9 +45,9 @@ int main(int argc, char* argv[]) {
   // Streams.
   QSharedPointer<setable_stream> ss1(new setable_stream);
   QSharedPointer<setable_stream> ss2(new setable_stream);
-  ss1->set_succeed(true);
-  ss2->set_succeed(true);
-  ss2->store_events(true);
+  ss1->process(true, true);
+  ss2->process(true, true);
+  ss2->set_store_events(true);
 
   // Feeder object.
   processing::feeder f;
@@ -68,11 +68,11 @@ int main(int argc, char* argv[]) {
 
   // Check output content.
   int retval(0);
-  unsigned int count(ss1->count());
+  unsigned int count(ss1->get_count());
   unsigned int i(0);
   for (QList<QSharedPointer<io::data> >::const_iterator
-         it = ss2->events().begin(),
-         end = ss2->events().end();
+         it = ss2->get_stored_events().begin(),
+         end = ss2->get_stored_events().end();
        it != end;
        ++it)
     if ((*it)->type() != "com::centreon::broker::io::raw")

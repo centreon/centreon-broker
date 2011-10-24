@@ -47,8 +47,7 @@ int main(int argc, char* argv[]) {
 
   // Endpoint.
   QSharedPointer<setable_endpoint> se(new setable_endpoint);
-  se->save_streams(true);
-  se->set(true);
+  se->set_succeed(true);
 
   // Subscriber.
   multiplexing::subscriber s;
@@ -75,7 +74,7 @@ int main(int argc, char* argv[]) {
   int retval(se->streams().isEmpty());
   if (!retval) {
     QSharedPointer<setable_stream> ss(*se->streams().begin());
-    unsigned int count(ss->count());
+    unsigned int count(ss->get_count());
     unsigned int i(0);
     QSharedPointer<io::data> event(s.read(0));
     while (!event.isNull()) {

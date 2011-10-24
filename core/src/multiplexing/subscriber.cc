@@ -129,7 +129,7 @@ void subscriber::process(bool in, bool out) {
       << " subscribers are registered after deletion";
   }
   // Re-register.
-  else if ((in || out) && !_registered) {
+  else if (in && out && !_registered) {
     gl_subscribers.push_back(this);
     _registered = true;
     // Log message.

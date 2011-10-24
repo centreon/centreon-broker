@@ -24,6 +24,7 @@
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/processing/feeder.hh"
+#include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 #include "test/processing/feeder/setable_stream.hh"
 
@@ -74,7 +75,7 @@ class wrapper : public QThread {
       f.run();
     }
     catch (exceptions::with_pointer const& e) {
-      _out->set_succeed(true);
+      _out->process(true, true);
       _out->write(e.ptr());
       _triggered = true;
     }
@@ -97,12 +98,15 @@ int main(int argc, char* argv[]) {
   // Qt core application.
   QCoreApplication app(argc, argv);
 
+  // Enable logging.
+  log_on_stderr();
+
   // Streams.
   QSharedPointer<setable_stream> ss1(new setable_stream);
   QSharedPointer<setable_stream> ss2(new setable_stream);
-  ss1->set_succeed(true);
-  ss2->set_succeed(true);
-  ss2->store_events(true);
+  ss1->process(true, true);
+  ss2->process(true, true);
+  ss2->set_store_events(true);
 
   // Wrapping object.
   wrapper w(ss1, ss2);
@@ -115,18 +119,18 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Set failing flag.
-  ss2->set_succeed(false);
+  ss2->process(false, false);
 
   // Wait for thread termination.
   w.wait();
 
   // Check output content.
   int retval(0);
-  unsigned int count(ss1->count());
+  unsigned int count(ss1->get_count());
   unsigned int i(0);
   for (QList<QSharedPointer<io::data> >::const_iterator
-         it = ss2->events().begin(),
-         end = ss2->events().end();
+         it = ss2->get_stored_events().begin(),
+         end = ss2->get_stored_events().end();
        it != end;
        ++it)
     if ((*it)->type() != "com::centreon::broker::io::raw")

@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCE_SETABLE_ENDPOINT_HH_
-# define CCE_SETABLE_ENDPOINT_HH_
+#ifndef CCB_SETABLE_ENDPOINT_HH_
+# define CCB_SETABLE_ENDPOINT_HH_
 
 # include <QList>
 # include <QSharedPointer>
@@ -34,11 +34,10 @@
 class               setable_endpoint : public com::centreon::broker::io::endpoint {
  private:
   unsigned int      _initial_count;
+  bool              _initial_replay_events;
   bool              _initial_store_events;
   unsigned int      _opened_streams;
-  bool              _save_streams;
-  QSharedPointer<volatile bool>
-                    _should_succeed;
+  bool              _should_succeed;
   QList<QSharedPointer<setable_stream> >
                     _streams;
   void              _internal_copy(setable_endpoint const& se);
@@ -52,12 +51,13 @@ class               setable_endpoint : public com::centreon::broker::io::endpoin
   QSharedPointer<com::centreon::broker::io::stream>
                     open();
   unsigned int      opened_streams() const;
-  void              save_streams(bool save);
-  void              set(bool should_succeed);
   void              set_initial_count(unsigned int cnt);
+  void              set_initial_replay_events(bool replay);
   void              set_initial_store_events(bool store);
+  void              set_process(bool in, bool out);
+  void              set_succeed(bool succeed);
   QList<QSharedPointer<setable_stream> >&
                     streams();
 };
 
-#endif /* !CCE_SETABLE_ENDPOINT_HH_ */
+#endif /* !CCB_SETABLE_ENDPOINT_HH_ */

@@ -42,8 +42,7 @@ int main(int argc, char* argv[]) {
 
   // Endpoint.
   QSharedPointer<setable_endpoint> se(new setable_endpoint);
-  se->save_streams(true);
-  se->set(false);
+  se->set_succeed(false);
 
   // Failover object.
   processing::failover f(false);

@@ -33,30 +33,32 @@
 class             setable_stream : public com::centreon::broker::io::stream {
  private:
   unsigned int    _count;
+  bool            _process_in;
+  bool            _process_out;
+  bool            _replay_events;
   QList<QSharedPointer<com::centreon::broker::io::data> >
-                  _events;
-  QSharedPointer<volatile bool>
-                  _should_succeed;
+                  _replay;
   unsigned int    _sleep_time;
   bool            _store_events;
+  QList<QSharedPointer<com::centreon::broker::io::data> >
+                  _stored_events;
   void            _internal_copy(setable_stream const& ss);
 
  public:
-                  setable_stream(
-                    QSharedPointer<volatile bool> ptr = QSharedPointer<volatile bool>(new volatile bool));
+                  setable_stream();
                   setable_stream(setable_stream const& ss);
                   ~setable_stream();
   setable_stream& operator=(setable_stream const& ss);
-  unsigned int    count() const;
-  void            count(unsigned int cnt);
+  unsigned int    get_count() const;
   QList<QSharedPointer<com::centreon::broker::io::data> > const&
-                  events() const;
+                  get_stored_events() const;
   void            process(bool in = false, bool out = true);
   QSharedPointer<com::centreon::broker::io::data>
                   read();
+  void            set_count(unsigned int cnt);
+  void            set_replay_events(bool replay);
   void            set_sleep_time(unsigned int ms);
-  void            set_succeed(bool succeed);
-  void            store_events(bool store);
+  void            set_store_events(bool store);
   void            write(QSharedPointer<com::centreon::broker::io::data> d);
 };
 

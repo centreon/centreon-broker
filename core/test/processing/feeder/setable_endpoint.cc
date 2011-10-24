@@ -36,9 +36,9 @@ using namespace com::centreon::broker;
  */
 void setable_endpoint::_internal_copy(setable_endpoint const& se) {
   _initial_count = se._initial_count;
+  _initial_replay_events = se._initial_replay_events;
   _initial_store_events = se._initial_store_events;
   _opened_streams = se._opened_streams;
-  _save_streams = se._save_streams;
   _should_succeed = se._should_succeed;
   _streams = se._streams;
   return ;
@@ -56,10 +56,10 @@ void setable_endpoint::_internal_copy(setable_endpoint const& se) {
 setable_endpoint::setable_endpoint()
   : io::endpoint(false),
     _initial_count(0),
+    _initial_replay_events(false),
     _initial_store_events(false),
     _opened_streams(0),
-    _save_streams(false),
-    _should_succeed(new volatile bool) {}
+    _should_succeed(true) {}
 
 /**
  *  Copy constructor.
@@ -67,14 +67,16 @@ setable_endpoint::setable_endpoint()
  *  @param[in] se Object to copy.
  */
 setable_endpoint::setable_endpoint(setable_endpoint const& se)
-  : com::centreon::broker::io::endpoint(se) {
+  : io::endpoint(se) {
   _internal_copy(se);
 }
 
 /**
  *  Destructor.
  */
-setable_endpoint::~setable_endpoint() {}
+setable_endpoint::~setable_endpoint() {
+  this->close();
+}
 
 /**
  *  Assignment operator.
@@ -95,7 +97,7 @@ setable_endpoint& setable_endpoint::operator=(setable_endpoint const& se) {
  *  Close endpoint.
  */
 void setable_endpoint::close() {
-  *_should_succeed = false;
+  set_process(false, false);
   return ;
 }
 
@@ -104,19 +106,22 @@ void setable_endpoint::close() {
  *
  *  @return New setable_stream.
  */
-QSharedPointer<com::centreon::broker::io::stream> setable_endpoint::open() {
+QSharedPointer<io::stream> setable_endpoint::open() {
+  // Increment open attempts.
   ++_opened_streams;
-  if (!*_should_succeed)
+
+  // Check if open should succeed.
+  if (!_should_succeed)
     throw (exceptions::msg() << "setable endpoint should not succeed");
-  QSharedPointer<com::centreon::broker::io::stream> s;
+
+  // Open stream.
   QSharedPointer<setable_stream> ss(
-    new setable_stream(_should_succeed));
-  ss->count(_initial_count);
-  ss->store_events(_initial_store_events);
-  s = ss.staticCast<com::centreon::broker::io::stream>();
-  if (_save_streams)
-    _streams.push_back(ss);
-  return (s);
+    new setable_stream);
+  ss->set_count(_initial_count);
+  ss->set_replay_events(_initial_replay_events);
+  ss->set_store_events(_initial_store_events);
+  _streams.push_back(ss);
+  return (ss.staticCast<io::stream>());
 }
 
 /**
@@ -126,27 +131,6 @@ QSharedPointer<com::centreon::broker::io::stream> setable_endpoint::open() {
  */
 unsigned int setable_endpoint::opened_streams() const {
   return (_opened_streams);
-}
-
-/**
- *  Enable or disable stream save.
- *
- *  @param[in] save Set to true to save streams.
- */
-void setable_endpoint::save_streams(bool save) {
-  _save_streams = save;
-  return ;
-}
-
-/**
- *  Set whether or not the endpoint should fail.
- *
- *  @param[in] should_succeed Set to true if endpoint should succeed,
- *                            false otherwise.
- */
-void setable_endpoint::set(bool should_succeed) {
-  *_should_succeed = should_succeed;
-  return ;
 }
 
 /**
@@ -160,12 +144,51 @@ void setable_endpoint::set_initial_count(unsigned int cnt) {
 }
 
 /**
+ *  Set initial replay events feature.
+ *
+ *  @param[in] replay true to make streams replay events.
+ */
+void setable_endpoint::set_initial_replay_events(bool replay) {
+  _initial_replay_events = replay;
+  return ;
+}
+
+/**
  *  Set initial store events feature.
  *
  *  @param[in] store true to make streams store events.
  */
 void setable_endpoint::set_initial_store_events(bool store) {
   _initial_store_events = store;
+  return ;
+}
+
+/**
+ *  Set process.
+ *
+ *  @param[in] in  Set to true to enable streams to process input
+ *                 events.
+ *  @param[in] out Set to true to enable streams to process output
+ *                 events.
+ */
+void setable_endpoint::set_process(bool in, bool out) {
+  for (QList<QSharedPointer<setable_stream> >::iterator
+         it = _streams.begin(),
+         end = _streams.end();
+       it != end;
+       ++it)
+    (*it)->process(in, out);
+  return ;
+}
+
+/**
+ *  Set whether or not the endpoint should fail.
+ *
+ *  @param[in] should_succeed Set to true if endpoint should succeed,
+ *                            false otherwise.
+ */
+void setable_endpoint::set_succeed(bool succeed) {
+  _should_succeed = succeed;
   return ;
 }
 

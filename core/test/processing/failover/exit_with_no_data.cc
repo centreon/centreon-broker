@@ -20,9 +20,8 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
-#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -43,23 +42,11 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Enable logging.
-  logging::file::with_thread_id(true);
-  logging::file::with_timestamp(true);
-  config::logger log_obj;
-  log_obj.config(true);
-  log_obj.debug(true);
-  log_obj.error(true);
-  log_obj.info(true);
-  log_obj.level(logging::low);
-  log_obj.type(config::logger::standard);
-  log_obj.name("stderr");
-  QList<config::logger> loggers;
-  loggers.push_back(log_obj);
-  config::applier::logger::instance().apply(loggers);
+  log_on_stderr();
 
   // Endpoint.
   QSharedPointer<setable_endpoint> se1(new setable_endpoint);
-  se1->set(true);
+  se1->set_succeed(true);
 
   // Failover object.
   processing::failover f1(true);
@@ -80,11 +67,11 @@ int main(int argc, char* argv[]) {
 
   // Failover thread.
   QSharedPointer<setable_endpoint> se2(new setable_endpoint);
-  se2->set(true);
+  se2->set_succeed(true);
   QSharedPointer<processing::failover>
     f2(new processing::failover(true));
   f2->set_endpoint(se2);
-  se1->set(true);
+  se1->set_succeed(true);
   f1.process(true, true);
   f1.set_failover(f2);
   f1.start();
@@ -94,7 +81,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Failover thread #2 has finished processing.
-  se2->set(false);
+  se2->set_succeed(false);
 
   // Some additionnal processing.
   QTimer::singleShot(1000, &app, SLOT(quit()));

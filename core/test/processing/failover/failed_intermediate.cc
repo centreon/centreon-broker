@@ -22,10 +22,8 @@
 #include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
-#include "com/centreon/broker/config/logger.hh"
-#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -47,30 +45,18 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Enable logging.
-  logging::file::with_thread_id(true);
-  logging::file::with_timestamp(true);
-  config::logger log_obj;
-  log_obj.config(true);
-  log_obj.debug(true);
-  log_obj.error(true);
-  log_obj.info(true);
-  log_obj.level(logging::low);
-  log_obj.type(config::logger::standard);
-  log_obj.name("stderr");
-  QList<config::logger> loggers;
-  loggers.push_back(log_obj);
-  config::applier::logger::instance().apply(loggers);
+  log_on_stderr();
 
   // First failover.
   QSharedPointer<setable_endpoint> endp1(new setable_endpoint);
-  endp1->set(true);
+  endp1->set_succeed(true);
   QSharedPointer<processing::failover> fo1(
     new processing::failover(true));
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
   // Second failover (intermediate).
   QSharedPointer<setable_endpoint> endp2(new setable_endpoint);
-  endp2->set(false);
+  endp2->set_succeed(false);
   QSharedPointer<processing::failover> fo2(
     new processing::failover(true));
   fo2->set_endpoint(endp2.staticCast<io::endpoint>());
@@ -79,7 +65,7 @@ int main(int argc, char* argv[]) {
 
   // Last failover.
   QSharedPointer<setable_endpoint> endp3(new setable_endpoint);
-  endp3->set(false);
+  endp3->set_succeed(false);
   QSharedPointer<processing::failover> fo3(
     new processing::failover(true));
   fo3->set_endpoint(endp3.staticCast<io::endpoint>());
@@ -95,7 +81,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Enable endpoint #3.
-  endp3->set(true);
+  endp3->set_succeed(true);
 
   // Wait fo3 to reenable endpoint #3 and cancel fo2.
   QTimer::singleShot(2000, &app, SLOT(quit()));

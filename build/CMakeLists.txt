@@ -544,6 +544,7 @@ if (WITH_TESTING)
   # processing namespace tests.
   # processing::feeder tests.
   add_library("ccb_core_processing_feeder" STATIC
+    "${TEST_DIR}/processing/feeder/common.cc"
     "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
     "${TEST_DIR}/processing/feeder/setable_stream.cc")
   set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")

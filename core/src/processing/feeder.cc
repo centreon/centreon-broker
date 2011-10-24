@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -70,7 +71,7 @@ feeder& feeder::operator=(feeder const& f) {
 void feeder::exit() {
   _should_exit = true;
   if (!_in.isNull())
-    _in->write(QSharedPointer<io::data>(new io::raw()));
+    _in->process(false, true);
   return ;
 }
 
