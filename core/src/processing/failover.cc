@@ -416,8 +416,34 @@ void failover::run() {
     // Relock thread lock.
     exit_lock.relock();
 
-    if (!_failover.isNull() && !_failover->isRunning() && !_should_exit)
+    if (!_failover.isNull() && !_failover->isRunning() && !_should_exit) {
+      connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
+      connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
+      connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
+      connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
       _failover->start();
+      exec();
+      disconnect(
+        &*_failover,
+        SIGNAL(exception_caught()),
+        this,
+        SLOT(quit()));
+      disconnect(
+        &*_failover,
+        SIGNAL(initial_lock()),
+        this,
+        SLOT(quit()));
+      disconnect(
+        &*_failover,
+        SIGNAL(finished()),
+        this,
+        SLOT(quit()));
+      disconnect(
+        &*_failover,
+        SIGNAL(terminated()),
+        this,
+        SLOT(quit()));
+    }
     if (!_should_exit) {
       // Unlock thread lock.
       exit_lock.unlock();
