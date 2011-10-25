@@ -40,6 +40,7 @@ namespace        tcp {
     bool         _process_out;
     QSharedPointer<QTcpSocket>
                  _socket;
+    int          _timeout;
                  stream(stream const& s);
     stream&      operator=(stream const& s);
 
@@ -49,6 +50,7 @@ namespace        tcp {
     void         process(bool in = false, bool out = true);
     QSharedPointer<io::data>
                  read();
+    void         set_timeout(int msecs);
     void         write(QSharedPointer<io::data> d);
   };
 }

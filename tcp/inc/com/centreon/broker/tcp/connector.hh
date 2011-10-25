@@ -44,6 +44,7 @@ namespace          tcp {
     QString        _public;
     QSharedPointer<QTcpSocket>
                    _socket;
+    int            _timeout;
     bool           _tls;
     void           _internal_copy(connector const& c);
 
@@ -56,6 +57,7 @@ namespace          tcp {
     void           connect_to(QString const& host, unsigned short port);
     QSharedPointer<io::stream>
                    open();
+    void           set_timeout(int msecs);
     void           set_tls(
                      bool enable,
                      QString const& private_key = QString(),

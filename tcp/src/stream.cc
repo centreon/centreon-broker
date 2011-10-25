@@ -75,7 +75,8 @@ stream& stream::operator=(stream const& s) {
 stream::stream(QSharedPointer<QTcpSocket> sock)
   : _process_in(true),
     _process_out(true),
-    _socket(sock) {}
+    _socket(sock),
+    _timeout(-1) {}
 
 /**
  *  Destructor.
@@ -103,10 +104,9 @@ void stream::process(bool in, bool out) {
  *  @return Data read.
  */
 QSharedPointer<io::data> stream::read() {
-  if (!_process_in)
+  if (!_process_in || !_socket->waitForReadyRead(_timeout))
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
-  _socket->waitForReadyRead(-1);
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
@@ -115,6 +115,16 @@ QSharedPointer<io::data> stream::read() {
   QSharedPointer<io::raw> data(new io::raw);
   data->append(buffer, rb);
   return (data.staticCast<io::data>());
+}
+
+/**
+ *  Set connection timeout.
+ *
+ *  @param[in] msecs Timeout in ms.
+ */
+void stream::set_timeout(int msecs) {
+  _timeout = msecs;
+  return ;
 }
 
 /**

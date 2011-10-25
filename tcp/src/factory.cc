@@ -103,9 +103,6 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
                                     bool is_input,
                                     bool is_output,
                                     bool& is_acceptor) const {
-  (void)is_input;
-  (void)is_output;
-
   // Find host (if exist).
   QString host;
   {
@@ -171,6 +168,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     is_acceptor = false;
     QScopedPointer<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
+    c->set_timeout(is_input && is_output ? 30 : -1);
     c->set_tls(tls, private_key, public_cert, ca_cert);
     endp.reset(c.take());
   }

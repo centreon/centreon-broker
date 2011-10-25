@@ -44,6 +44,7 @@ void connector::_internal_copy(connector const& c) {
   _private = c._private;
   _public = c._public;
   _socket = c._socket;
+  _timeout = c._timeout;
   _tls = c._tls;
   return ;
 }
@@ -57,7 +58,8 @@ void connector::_internal_copy(connector const& c) {
 /**
  *  Default constructor.
  */
-connector::connector() : io::endpoint(false), _port(0), _tls(false) {}
+connector::connector()
+  : io::endpoint(false), _port(0), _timeout(-1), _tls(false) {}
 
 /**
  *  Copy constructor.
@@ -160,7 +162,19 @@ QSharedPointer<io::stream> connector::open() {
     << _host << ":" << _port;
 
   // Return stream.
-  return (QSharedPointer<io::stream>(new stream(_socket)));
+  QSharedPointer<stream> s(new stream(_socket));
+  s->set_timeout(_timeout);
+  return (s.staticCast<io::stream>());
+}
+
+/**
+ *  Set connection timeout.
+ *
+ *  @param[in] msecs Timeout in ms.
+ */
+void connector::set_timeout(int msecs) {
+  _timeout = msecs;
+  return ;
 }
 
 /**
