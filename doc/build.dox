@@ -9,7 +9,7 @@
  *    - a C++ compilation environment
  *    - @b CMake, a cross-platform build system
  *    - the @b Qt framework with QtCore, QtSql and QtXml modules
- *    - RRDTool development files (for the RRD module)
+ *    - @b RRDTool development files (for the RRD module)
  *
  *  Centreon Broker is compatible only with Unix-like platforms (Linux,
  *  FreeBSD, Solaris, ...).
@@ -66,6 +66,40 @@
  *  </tr>
  *  </table>
  *
+ *
+ *  With Debian or Ubuntu
+ *
+ *  You need to run :
+ *  <code>$> apt-get install build-essential cmake libqt4-dev librrd-dev</code>
+ *
+ *
+ *  With CentOS 5 or Red Hat Enterprise 5
+ *
+ *  CMake and Qt library have old packages, and RRDTool-devel is not present.
+ *
+ *  You find RRDTool-devel <a href="http://repoforge.org/use">here</a> and install it with :
+ *  <code>
+ *  $> wget http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.2-2.el5.rf.i386.rpm
+ *  $> rpm -ivh rpmforge-release-0.5.2-2.el5.rf.i386.rpm
+ *  $> yum update rrdtool-devel
+ *  $> yum install rrdtool-devel
+ *  </code>
+ *
+ *  You find CMake (>= 2.8) <a href="http://www.cmake.org/cmake/resources/software.html">here</a>.
+ *  <code>
+ *  $> wget http://www.cmake.org/files/v2.8/cmake-2.8.6-Linux-i386.sh
+ *  $> sh cmake-2.8.6-Linux-i386.sh
+ *  $> y
+ *  $> y
+ *  $> mv cmake-2.8.6-Linux-i386 /usr/local/cmake
+ *  $> export PATH="$PATH:/usr/local/cmake/bin"
+ *  </code>
+ *
+ *  For Qt (>= 4.5) you find a how to <a href="http://joseph.freivald.com/linux/2010/06/09/qt-4-6-3-and-qt-creator-1-3-1-1-updates-for-centos-5-5">here</a>.
+ *  After that, don't forget to add Qt binary path in PATH environment variable.
+ *  <code>$> export PATH="$PATH:$(dirname $(locate /bin/qmake))"</code>
+ *
+ *
  *  @subsection source From sources
  *
  *  If your OS does not provide the required packages in a binary form,
@@ -79,19 +113,41 @@
  *  <tr>
  *    <td>Qt (> 4.5)</td><td>http://doc.qt.nokia.com/4.7/installation.html</td>
  *  </tr>
+ *  <tr>
+ *    <td>CMake (>= 2.8)</td><td>http://www.cmake.org/cmake/help/install.html</td>
+ *  </tr>
+ *  <tr>
+ *    <td>RRDTool</td><td>http://oss.oetiker.ch/rrdtool/doc/rrdbuild.en.html</td>
+ *  </tr>
+ *  </table>
+ *
+ *  <table>
+ *  <tr>
+ *    <td><b>Software</b></td><td><b>Download sources</b></td>
+ *  </tr>
+ *  <tr>
+ *    <td>Qt (> 4.5)</td><td>https://qt.nokia.com/downloads/downloads#qt-lib</td>
+ *  </tr>
+ *  <tr>
+ *    <td>CMake (>= 2.8)</td><td>http://www.cmake.org/cmake/resources/software.html</td>
+ *  </tr>
+ *  <tr>
+ *    <td>RRDTool</td><td>http://oss.oetiker.ch/rrdtool/download.en.html</td>
+ *  </tr>
  *  </table>
  *
  *
  *  @section configuration Compilation configuration
  *
  *  At the root of the project directory you'll find a @p build
- *  directory which holds build scripts.Generate the @p Makefile by
+ *  directory which holds build scripts. Generate the @p Makefile by
  *  running the following command :
  *
  *  <code>cmake .</code>
  *
  *  CMake will check for all necessary dependencies and indicates if
  *  they could not be found.
+ *
  *
  *  @subsection variables Variables
  *
@@ -107,9 +163,6 @@
  *  <table>
  *  <tr>
  *    <td><b>Variable</b></td><td><b>Description</b></td>
- *  </tr>
- *  <tr>
- *    <td>WITH_DEBUG</td><td>Enable or disable debug messages.</td>
  *  </tr>
  *  <tr>
  *    <td>WITH_PREFIX</td><td>Base directory for Centreon Broker installation. If other prefixes are expressed as relative paths, they are relative to this path.</td>
@@ -128,6 +181,8 @@
  *  </tr>
  *  </table>
  *
+ *  @b Example
+ *  <code>$> cmake -DWITH_PREFIX=/usr/local/centreon-broker -DWITH_PREFIX_LIBRARY=/usr/lib/nagios .</code>
  *
  *  @section compilation Compilation
  *
