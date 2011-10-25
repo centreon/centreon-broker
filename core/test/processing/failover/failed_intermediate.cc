@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   QTimer::singleShot(2000, &app, SLOT(quit()));
 
   // Exit threads.
-  fo3->process(false, true);
+  fo3->process(false, false);
   fo3->wait();
 
   return (0);

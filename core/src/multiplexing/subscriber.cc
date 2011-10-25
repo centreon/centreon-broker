@@ -87,8 +87,9 @@ subscriber::subscriber() {
   // Register self in subscriber list.
   QMutexLocker lock1(&gl_subscribersm);
   QMutexLocker lock2(&_mutex);
+  _process_in = true;
+  _process_out = true;
   gl_subscribers.push_back(this);
-  _registered = true;
   logging::debug << logging::LOW << "multiplexing: "
     << gl_subscribers.size()
     << " subscribers are registered after insertion";
@@ -115,12 +116,15 @@ subscriber::~subscriber() {
  *  @param[in] out Process output events.
  */
 void subscriber::process(bool in, bool out) {
-  // Lock mutexes.
+  // Lock mutex.
   QMutexLocker lock(&_mutex);
 
+  // Set data.
+  _process_in = in;
+  _process_out = out;
+
   // Unregister.
-  if ((!in || !out) && _registered) {
-    _registered = false;
+  if (!in || !out) {
     _cv.wakeAll();
     // Log message.
     logging::debug(logging::low) << "multiplexing: "
@@ -128,8 +132,7 @@ void subscriber::process(bool in, bool out) {
       << " subscribers are registered after deletion";
   }
   // Re-register.
-  else if (in && out && !_registered) {
-    _registered = true;
+  else if (in && out) {
     // Log message.
     logging::debug(logging::low) << "multiplexing: "
       << gl_subscribers.size()
@@ -163,7 +166,7 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
   // No data is directly available.
   if (_events.empty()) {
     // Wait a while if subscriber was not shutdown.
-    if (_registered) {
+    if (_process_in && _process_out) {
       if (-1 == deadline)
         _cv.wait(&_mutex);
       else
@@ -181,6 +184,9 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
   }
   // Data is available, no need to wait.
   else {
+    if (!_process_in && _process_out)
+      throw (io::exceptions::shutdown(true, false) << "subscriber "
+             << this << " is shutdown, cannot read");
     event = _events.dequeue();
     logging::debug(logging::low) << "multiplexing: " << _events.size()
       << " events remaining in subscriber";

@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit failover thread.
-  f1.process(false, true);
+  f1.process(false, false);
 
   // Wait for thread termination.
   f1.wait();
@@ -72,7 +72,6 @@ int main(int argc, char* argv[]) {
     f2(new processing::failover(true));
   f2->set_endpoint(se2);
   se1->set_succeed(true);
-  f1.process(true, true);
   f1.set_failover(f2);
   f1.start();
 
@@ -88,7 +87,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Exit threads.
-  f1.process(false, true);
+  f1.process(false, false);
   f1.wait();
 
   // Return check result.

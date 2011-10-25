@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit feeder thread.
-  f.process(false, true);
+  f.process(false, false);
 
   // Wait for thread termination.
   f.wait();

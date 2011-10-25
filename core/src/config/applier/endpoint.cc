@@ -224,7 +224,7 @@ void endpoint::_diff_endpoints(QMap<config::endpoint, processing::failover*> & c
     // Send only termination request, object will be destroyed by event
     // loop on termination. But wait for threads because they hold
     // resources that might be used by other endpoints.
-    (*it)->process(false, true);
+    (*it)->process(false, false);
     (*it)->wait();
   }
 
@@ -407,7 +407,7 @@ void endpoint::unload() {
            end = _inputs.end();
          it != end;
          ++it)
-      (*it)->process(false, true);
+      (*it)->process(false, false);
 
     // Wait for threads.
     while (!_inputs.empty()) {
@@ -437,7 +437,7 @@ void endpoint::unload() {
            end = _outputs.end();
          it != end;
          ++it)
-      (*it)->process(false, true);
+      (*it)->process(false, false);
 
     // Wait for threads.
     while (!_outputs.empty()) {

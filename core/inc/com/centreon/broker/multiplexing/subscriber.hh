@@ -48,7 +48,8 @@ namespace          multiplexing {
     QQueue<QSharedPointer<io::data> >
                    _events;
     QMutex         _mutex;
-    bool           _registered;
+    bool           _process_in;
+    bool           _process_out;
                    subscriber(subscriber const& s);
     subscriber&    operator=(subscriber const& s);
     void           clean();

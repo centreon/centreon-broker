@@ -45,9 +45,11 @@ using namespace com::centreon::broker::processing;
  *  @param[in] is_out true if the failover thread is an output thread.
  */
 failover::failover(bool is_out)
-  : _is_out(is_out),
+  : _initial(true),
+    _is_out(is_out),
     _retry_interval(30),
-    _should_exit(false) {
+    _should_exit(false),
+    _should_exitm(QMutex::Recursive) {
   if (_is_out)
     _from = QSharedPointer<io::stream>(new multiplexing::subscriber);
   else
@@ -64,9 +66,11 @@ failover::failover(failover const& f)
      io::stream(),
      _endpoint(f._endpoint),
      _failover(f._failover),
+     _initial(true),
      _is_out(f._is_out),
      _retry_interval(f._retry_interval),
-     _should_exit(false) {
+     _should_exit(false),
+     _should_exitm(QMutex::Recursive) {
   {
     QMutexLocker lock(&f._datam);
     _data = f._data;
@@ -131,22 +135,65 @@ time_t failover::get_retry_interval() const throw () {
  *  @param[in] out true to process outputs.
  */
 void failover::process(bool in, bool out) {
+  // Set exit flag.
+  QMutexLocker lock(&_should_exitm);
   _should_exit = (!in || !out);
-  {
+
+  // Full delayed shutdown.
+  if (!in && !out) {
+    _endpoint->close();
+    bool tweaked_out(_failover.isNull());
     QReadLocker lock(&_fromm);
     if (!_from.isNull())
-      _from->process(in, out);
+      _from->process(false, tweaked_out);
   }
-  {
-    QReadLocker lock(&_tom);
-    if (!_to.isNull())
-      _to->process(in, out);
-  }
-  if (!in || !out) {
+  // Single delayed shutdown.
+  else if (in && !out) {
     _endpoint->close();
-    exit();
-    _feeder.exit();
+    QReadLocker lock(&_fromm);
+    if (!_from.isNull())
+      _from->process(true, false);
   }
+  // Immediate shutdown.
+  else if (!in && out) {
+    _endpoint->close();
+    QList<QSharedPointer<QMutexLocker> > locks;
+    bool all_failover_not_running(true);
+    failover* last(this);
+    for (QSharedPointer<failover> fo = _failover;
+         !fo.isNull();
+         fo = fo->_failover) {
+      QSharedPointer<QMutexLocker>
+        lock(new QMutexLocker(&fo->_should_exitm));
+      all_failover_not_running
+        = all_failover_not_running && !fo->isRunning();
+      locks.push_back(lock);
+      last = fo.data();
+    }
+
+    // Shutdown subscriber.
+    if (all_failover_not_running) {
+      QReadLocker rl(&last->_fromm);
+      if (!last->_from.isNull())
+        last->_from->process(false, true);
+    }
+
+    // Wait for thread to terminate.
+    locks.clear();
+    lock.unlock();
+    QThread::wait();
+    process(true, true);
+  }
+  // Reinitialization.
+  else {
+    QReadLocker rl(&_fromm);
+    if (!_from.isNull())
+      _from->process(true, true);
+  }
+
+  // Quit event loop.
+  quit();
+
   return ;
 }
 
@@ -157,64 +204,66 @@ void failover::process(bool in, bool out) {
  *  @param[out] type Data type.
  */
 QSharedPointer<io::data> failover::read() {
+  // Read retained data.
   QSharedPointer<io::data> data;
+  QMutexLocker exit_lock(&_should_exitm);
   if (isRunning() && QThread::currentThread() != this) {
+    // Release thread lock.
+    exit_lock.unlock();
+
+    // Read data from destination.
     logging::debug(logging::low)
-      << "failover: reading event from a different thread";
+      << "failover: reading retained data from failover thread";
     bool caught(false);
+    QReadLocker tom(&_tom);
     try {
-      {
-        QReadLocker lock(&_tom);
-        if (!_to.isNull())
-          data = _to->read();
-      }
+      if (!_to.isNull())
+        data = _to->read();
       logging::debug(logging::low)
-        << "failover: got event from remote thread";
+        << "failover: got retained event from failover thread";
     }
     catch (...) {
       caught = true;
     }
+
+    // End of destination is reached, shutdown this thread.
     if (caught || data.isNull()) {
       logging::debug(logging::low)
-        << "failover: could not get event from remote thread";
+        << "failover: could not get event from failover thread";
       logging::info(logging::medium)
         << "failover: requesting failover thread termination";
 
-      // Exit this thread.
-      _should_exit = true;
-      exit();
-      if (_is_out && _failover.isNull()) {
-        QReadLocker lock(&_fromm);
-        _feeder.exit();
-        if (!_from.isNull()) {
-          _from->process(true, true);
-          _from->write(QSharedPointer<io::data>(new io::raw));
-        }
-      }
-      else
-        _feeder.exit();
+      // Reset lock.
+      _to.clear();
+      _tom.unlock();
 
-      this->QThread::wait();
-      {
-        QWriteLocker lock(&_tom);
-        _to.clear();
-      }
+      // Exit this thread immediately.
+      process(false, true);
+
+      // Recursive data reading.
       data = this->read();
     }
   }
+  // Fetch next available event.
   else {
+    // Release thread lock.
+    exit_lock.unlock();
+
+    // Try the one retained event.
     QMutexLocker lock(&_datam);
     if (!_data.isNull()) {
       data = _data;
       _data.clear();
       lock.unlock();
     }
+    // Read from source.
     else {
-      QReadLocker lock(&_fromm);
+      lock.unlock();
+      QReadLocker fromm(&_fromm);
       data = _from->read();
     }
     logging::debug(logging::low)
-      << "failover: got event from thread source";
+      << "failover: got event from normal source";
   }
   return (data);
 }
@@ -231,7 +280,7 @@ void failover::run() {
   }
 
   // Launch subfailover to fetch retained data.
-  if (!_failover.isNull()) {
+  if (_initial && !_failover.isNull()) {
     connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
     connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
     connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
@@ -258,13 +307,16 @@ void failover::run() {
       SIGNAL(terminated()),
       this,
       SLOT(quit()));
+    _initial = false;
   }
 
   // Failover should continue as long as not exit request was received.
   logging::debug(logging::medium) << "failover: launching loop";
+  QMutexLocker exit_lock(&_should_exitm);
   _should_exit = false;
 
   while (!_should_exit) {
+    exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
       logging::debug(logging::medium) << "failover: opening endpoint";
@@ -279,26 +331,57 @@ void failover::run() {
         s = &_from;
       }
       {
-        emit initial_lock();
+        QWriteLocker wl(rwl);
         s->clear();
+        wl.unlock();
         QSharedPointer<io::stream> tmp(_endpoint->open());
-        QWriteLocker lock(rwl);
+        wl.relock();
+        emit initial_lock();
         *s = tmp;
         if (s->isNull()) { // Retry connection.
           logging::debug(logging::medium)
             << "failover: resulting stream is nul, retrying";
+          exit_lock.relock();
           continue ;
         }
       }
 
       // Process input and output.
-      logging::debug(logging::medium) << "failover: launching feeder";
-      {
-        QReadLocker lock1(&_fromm);
-        QReadLocker lock2(&_tom);
-        _feeder.prepare(_from, _to);
+      logging::debug(logging::medium) << "failover: launching feeding";
+      QSharedPointer<io::data> data;
+      exit_lock.relock();
+      while (!_should_exit) {
+        exit_lock.unlock();
+        try {
+          {
+            QReadLocker lock(&_fromm);
+            if (!_from.isNull())
+              data = _from->read();
+          }
+          if (data.isNull()) {
+            exit_lock.relock();
+            _should_exit = true;
+            exit_lock.unlock();
+          }
+          else {
+            QWriteLocker lock(&_tom);
+            if (!_to.isNull())
+              _to->write(data);
+          }
+        }
+        catch (exceptions::msg const& e) {
+          try {
+            throw (exceptions::with_pointer(e, data));
+          }
+          catch (exceptions::with_pointer const& e) {
+            throw ;
+          }
+          catch (...) {}
+          throw ;
+        }
+        data.clear();
+        exit_lock.relock();
       }
-      _feeder.run(); // Yes run(), we do not want to start another thread.
     }
     catch (exceptions::with_pointer const& e) {
       logging::error(logging::high) << e.what();
@@ -329,13 +412,21 @@ void failover::run() {
       QWriteLocker lock(&_fromm);
       _from.clear();
     }
+
+    // Relock thread lock.
+    exit_lock.relock();
+
     if (!_failover.isNull() && !_failover->isRunning() && !_should_exit)
       _failover->start();
     if (!_should_exit) {
+      // Unlock thread lock.
+      exit_lock.unlock();
       logging::info(logging::medium) << "failover: sleeping "
         << _retry_interval << " seconds before reconnection";
       QTimer::singleShot(_retry_interval * 1000, this, SLOT(quit()));
       exec();
+      // Relock thread lock.
+      exit_lock.relock();
     }
   }
   return ;

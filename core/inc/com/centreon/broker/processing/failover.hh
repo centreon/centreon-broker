@@ -43,18 +43,26 @@ namespace                com {
           Q_OBJECT
 
          private:
-          QSharedPointer<io::data>
-                         _data;
-          mutable QMutex _datam;
+          // Data that doesn't require locking.
           QSharedPointer<io::endpoint>
                          _endpoint;
           QSharedPointer<failover>
                          _failover;
-          feeder         _feeder;
-          mutable QReadWriteLock _fromm;
+          bool           _initial;
           bool           _is_out;
-          time_t         _retry_interval;
+          volatile time_t _retry_interval;
+
+          // Retained data.
+          QSharedPointer<io::data>
+                         _data;
+          mutable QMutex _datam;
+
+          // Exit flag.
           volatile bool  _should_exit;
+          mutable QMutex _should_exitm;
+
+          // Stream locking.
+          mutable QReadWriteLock _fromm;
           mutable QReadWriteLock _tom;
 
          public:

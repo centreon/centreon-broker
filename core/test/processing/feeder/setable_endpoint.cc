@@ -97,7 +97,7 @@ setable_endpoint& setable_endpoint::operator=(setable_endpoint const& se) {
  *  Close endpoint.
  */
 void setable_endpoint::close() {
-  set_process(false, false);
+  //set_process(false, false);
   return ;
 }
 

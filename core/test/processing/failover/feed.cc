@@ -25,6 +25,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -45,6 +46,9 @@ int main(int argc, char* argv[]) {
   // Qt core application.
   QCoreApplication app(argc, argv);
 
+  // Log messages.
+  log_on_stderr();
+
   // Endpoint.
   QSharedPointer<setable_endpoint> se(new setable_endpoint);
   se->set_succeed(true);
@@ -64,7 +68,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit feeder thread.
-  f.process(false, true);
+  f.process(false, false);
 
   // Wait for thread termination.
   f.wait();
