@@ -142,10 +142,10 @@ void failover::process(bool in, bool out) {
   // Full delayed shutdown.
   if (!in && !out) {
     _endpoint->close();
-    bool tweaked_out(_failover.isNull());
+    bool tweaked_in(_failover.isNull());
     QReadLocker lock(&_fromm);
     if (!_from.isNull())
-      _from->process(false, tweaked_out);
+      _from->process(tweaked_in, false);
   }
   // Single delayed shutdown.
   else if (in && !out) {
