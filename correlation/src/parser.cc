@@ -87,7 +87,8 @@ bool parser::startElement(QString const& uri,
   if (!_in_root)
     _in_root = true;
   else {
-    char const* value(localname.toStdString().c_str());
+    std::string localname_str(localname.toStdString());
+    char const* value(localname_str.c_str());
     if (!strcmp(value, "dependency")) {
       if (!_is_retention) {
         QString hi1;
