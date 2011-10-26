@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <QMutexLocker>
 #include <QReadLocker>
 #include <QTimer>
@@ -139,6 +140,12 @@ void failover::process(bool in, bool out) {
   QMutexLocker lock(&_should_exitm);
   _should_exit = (!in || !out);
 
+  // Quit event loop.
+  if ((!in || !out) && isRunning()) {
+    QTimer::singleShot(0, this, SLOT(quit()));
+    QCoreApplication::processEvents();
+  }
+
   // Full delayed shutdown.
   if (!in && !out) {
     _endpoint->close();
@@ -190,9 +197,6 @@ void failover::process(bool in, bool out) {
     if (!_from.isNull())
       _from->process(true, true);
   }
-
-  // Quit event loop.
-  quit();
 
   return ;
 }

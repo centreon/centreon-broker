@@ -21,6 +21,7 @@
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -39,6 +40,9 @@ int main(int argc, char* argv[]) {
 
   // Qt core application.
   QCoreApplication app(argc, argv);
+
+  // Enable logging.
+  log_on_stderr();
 
   // Endpoint.
   QSharedPointer<setable_endpoint> se(new setable_endpoint);
