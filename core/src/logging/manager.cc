@@ -87,7 +87,7 @@ void manager::_compute_optimizations() {
          end = _backends.end();
        it != end;
        ++it)
-    for (unsigned int i = 1; i <= it->l; ++i)
+    for (unsigned int i = 1; i <= static_cast<unsigned int>(it->l); ++i)
       _limits[i] |= it->types;
   return ;
 }
@@ -206,7 +206,9 @@ void manager::log_on(backend& b,
     p.l = min_priority;
     p.types = types;
     _backends.push_back(p);
-    for (unsigned int i = 1; i <= min_priority; ++i)
+    for (unsigned int i = 1;
+         i <= static_cast<unsigned int>(min_priority);
+         ++i)
       _limits[i] |= types;
     connect(
       &b,
