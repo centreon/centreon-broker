@@ -133,8 +133,7 @@ unsigned int stream::_find_index_id(unsigned int host_id,
     q.bindValue(":service_description", service_desc);
 
     // Execute query.
-    q.exec();
-    if (q.lastError().isValid())
+    if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "index (" << host_id << ", " << service_id
                << ") failed: " << q.lastError().text());
@@ -149,8 +148,7 @@ unsigned int stream::_find_index_id(unsigned int host_id,
               " WHERE host_id=" << host_id
            << " AND service_id=" << service_id;
       QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-      q2.exec();
-      if (q2.lastError().isValid() || !q2.next())
+      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " index_id of newly inserted index (" << host_id
                  << ", " << service_id << "): "
@@ -203,8 +201,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
 
     // Execute query.
     QSqlQuery q(oss.str().c_str(), *_storage_db);
-    q.exec();
-    if (q.lastError().isValid())
+    if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "metric '" << metric_name << "' of index " << index_id
                << " failed: " << q.lastError().text());
@@ -219,8 +216,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
               " WHERE index_id=" << index_id
            << " AND metric_name=" << escaped_metric_name;
       QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-      q2.exec();
-      if (q2.lastError().isValid() || !q2.next())
+      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " metric_id of newly inserted metric '"
                  << metric_name << "' of index " << index_id << ": "
@@ -248,8 +244,7 @@ void stream::_prepare() {
     QSqlQuery q("SELECT id, host_id, service_id" \
                 " FROM index_data",
                 *_storage_db);
-    q.exec();
-    if (q.lastError().isValid())
+    if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \
                   "index list from data DB: "
                << q.lastError().text());
@@ -267,8 +262,7 @@ void stream::_prepare() {
     QSqlQuery q("SELECT metric_id, index_id, metric_name" \
                 " FROM metrics",
                 *_storage_db);
-    q.exec();
-    if (q.lastError().isValid())
+    if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \
                   "metric list from data DB: "
                << q.lastError().text());
@@ -464,8 +458,8 @@ void stream::write(QSharedPointer<io::data> data) {
 
   // Process service status events.
   if (data->type() == "com::centreon::broker::neb::service_status") {
-    logging::debug << logging::HIGH << "storage: processing service " \
-      "status event";
+    logging::debug(logging::high)
+      << "storage: processing service status event";
     QSharedPointer<neb::service_status> ss(data.staticCast<neb::service_status>());
 
     if (!ss->perf_data.isEmpty()) {
@@ -477,7 +471,7 @@ void stream::write(QSharedPointer<io::data> data) {
         ss->service_description));
 
       // Generate status event.
-      logging::debug << logging::LOW
+      logging::debug(logging::low)
         << "storage: generating status event";
       QSharedPointer<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
@@ -495,9 +489,9 @@ void stream::write(QSharedPointer<io::data> data) {
         p.parse_perfdata(ss->perf_data, pds);
       }
       catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-        logging::error << logging::MEDIUM
-          << "storage: error while parsing performance data of service "
-          << ss->service_id << ": " << e.what();
+        logging::error(logging::medium)
+          << "storage: error while parsing perfdata of service ("
+          << ss->host_id << ", " << ss->service_id << "): " << e.what();
         return ;
       }
 
@@ -518,7 +512,12 @@ void stream::write(QSharedPointer<io::data> data) {
         _update_metrics->bindValue(":max", check_double(pd.max()));
         _update_metrics->bindValue(":index_id", index_id);
         _update_metrics->bindValue(":metric_name", pd.name());
-        _update_metrics->exec();
+        if (!_update_metrics->exec()
+            || _update_metrics->lastError().isValid())
+          throw (broker::exceptions::msg() << "storage: could not " \
+                      "update metric (index_id " << index_id
+                   << ", metric " << pd.name() << "): "
+                   << _update_metrics->lastError().text());
 
         if (_store_in_db) {
           // Insert perfdata in data_bin.
@@ -526,11 +525,16 @@ void stream::write(QSharedPointer<io::data> data) {
           _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->last_check));
           _insert_data_bin->bindValue(":value", pd.value());
           _insert_data_bin->bindValue(":status", ss->current_state + 1);
-          _insert_data_bin->exec();
+          if (!_insert_data_bin->exec() || _insert_data_bin->lastError().isValid())
+            throw (broker::exceptions::msg() << "storage: could not " \
+                        "insert data in data_bin (metric " << metric_id
+                     << ", ctime "
+                     << static_cast<unsigned long long>(ss->last_check)
+                     << "): " << _insert_data_bin->lastError().text());
         }
 
         // Send perfdata event to processing.
-        logging::debug << logging::HIGH
+        logging::debug(logging::high)
           << "storage: generating perfdata event";
         QSharedPointer<storage::metric> perf(new storage::metric);
         perf->ctime = ss->last_check;
@@ -546,7 +550,7 @@ void stream::write(QSharedPointer<io::data> data) {
   }
   // Process service definition events.
   else if (data->type() == "com::centreon::broker::neb::service") {
-    logging::debug << logging::HIGH << "storage: processing service " \
+    logging::debug(logging::high) << "storage: processing service " \
       "definition event";
     QSharedPointer<neb::service> s(data.staticCast<neb::service>());
     // Update index_data table.
@@ -560,7 +564,13 @@ void stream::write(QSharedPointer<io::data> data) {
     q.prepare(oss.str().c_str());
     q.bindValue(":host_name", s->host_name);
     q.bindValue(":service_description", s->service_description);
-    q.exec();
+    if (!q.exec() || q.lastError().isValid())
+      throw (broker::exceptions::msg() << "storage: could not update " \
+                  "service information in index_data (host_id "
+               << s->host_id << ", service_id " << s->service_id
+               << ", host_name " << s->host_name
+               << ", service_description " << s->service_description
+               << "): " << q.lastError().text());
   }
   return ;
 }
