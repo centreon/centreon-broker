@@ -1483,14 +1483,13 @@ stream::stream(QString const& type,
     _unprepare();
 
     // Close database if open.
+    QMutexLocker lock(&delayed_connections.mutex);
     if (_db->isOpen()) {
-      QMutexLocker lock(&delayed_connections.mutex);
       _db->close();
       _db.reset();
     }
 
     // Add this connection to the connections to be deleted.
-    QMutexLocker lock(&delayed_connections.mutex);
     delayed_connections.streams[QThread::currentThread()].push_back(id);
     lock.unlock();
 
@@ -1538,14 +1537,13 @@ stream::stream(stream const& s) : io::stream(s) {
     _unprepare();
 
     // Close database if open.
+    QMutexLocker lock(&delayed_connections.mutex);
     if (_db->isOpen()) {
-      QMutexLocker lock(&delayed_connections.mutex);
       _db->close();
       _db.reset();
     }
 
     // Add this connection to the connections to be deleted.
-    QMutexLocker lock(&delayed_connections.mutex);
     delayed_connections.streams[QThread::currentThread()].push_back(id);
     lock.unlock();
 

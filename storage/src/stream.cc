@@ -471,6 +471,7 @@ stream::stream(stream const& s) : io::stream(s) {
 
     // Add this connection to the connections to be deleted.
     delayed_connections.streams[QThread::currentThread()].push_back(storage_id);
+    lock.unlock();
 
     throw ;
   }
