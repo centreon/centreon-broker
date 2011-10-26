@@ -70,6 +70,9 @@ int main() {
                   MSG,
                   sizeof(MSG) - 1));
 
+  // Subscriber should throw.
+  s.process(false, true);
+
   // Try reading again.
   try {
     s.read(0);
