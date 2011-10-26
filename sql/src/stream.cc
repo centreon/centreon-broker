@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <QPair>
 #include <QSqlError>
+#include <QThread>
 #include <QVariant>
 #include <QVector>
 #include <sstream>
@@ -42,6 +43,43 @@ using namespace com::centreon::broker::sql;
 
 // Processing table.
 QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
+
+// Delayed connections deletion.
+stream::qt_mysql_sucks stream::delayed_connections;
+
+/**
+ *  Remove all delayed connections.
+ */
+stream::qt_mysql_sucks::~qt_mysql_sucks() {
+  QMutexLocker lock(&mutex);
+  for (QMap<QThread*, QList<QString> >::iterator
+         it1 = streams.begin(),
+         end1 = streams.end();
+       it1 != end1;
+       ++it1)
+    for (QList<QString>::iterator
+           it2 = it1->begin(),
+           end2 = it1->end();
+         it2 != end2;
+         ++it2)
+      QSqlDatabase::removeDatabase(*it2);
+}
+
+/**
+ *  Remove delayed connections.
+ *
+ *  @param[in] current Current connection name.
+ */
+void stream::qt_mysql_sucks::remove_delayed(QString const& current) {
+  QMutexLocker lock(&delayed_connections.mutex);
+  QThread* thr(QThread::currentThread());
+  while (!streams[thr].isEmpty()) {
+    if (streams[thr].front() != current)
+      QSqlDatabase::removeDatabase(streams[thr].front());
+    streams[thr].pop_front();
+  }
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -1426,18 +1464,36 @@ stream::stream(QString const& type,
     _db->setUserName(user);
     _db->setPassword(password);
     _db->setDatabaseName(db);
+    QMutexLocker lock(&delayed_connections.mutex);
     if (!_db->open())
       throw (exceptions::msg() << "SQL: could not open SQL database");
+    lock.unlock();
 
     // Prepare queries.
     _prepare();
+
+    // Remove previous connections.
+    delayed_connections.remove_delayed(id);
   }
   catch (...) {
+    // Remove previous connections.
+    delayed_connections.remove_delayed(id);
+
+    // Unprepare queries.
     _unprepare();
-    if (_db->isOpen())
+
+    // Close database if open.
+    if (_db->isOpen()) {
+      QMutexLocker lock(&delayed_connections.mutex);
       _db->close();
-    _db.reset();
-    QSqlDatabase::removeDatabase(id);
+      _db.reset();
+    }
+
+    // Add this connection to the connections to be deleted.
+    QMutexLocker lock(&delayed_connections.mutex);
+    delayed_connections.streams[QThread::currentThread()].push_back(id);
+    lock.unlock();
+
     throw ;
   }
 }
@@ -1463,18 +1519,36 @@ stream::stream(stream const& s) : io::stream(s) {
 
   try {
     // Open database.
+    QMutexLocker lock(&delayed_connections.mutex);
     if (!_db->open())
       throw (exceptions::msg() << "SQL: could not open SQL database");
+    lock.unlock();
 
     // Prepare queries.
     _prepare();
+
+    // Remove previous connections.
+    delayed_connections.remove_delayed(id);
   }
   catch (...) {
+    // Remove previous connections.
+    delayed_connections.remove_delayed(id);
+
+    // Unprepare queries.
     _unprepare();
-    if (_db->isOpen())
+
+    // Close database if open.
+    if (_db->isOpen()) {
+      QMutexLocker lock(&delayed_connections.mutex);
       _db->close();
-    _db.reset();
-    QSqlDatabase::removeDatabase(id);
+      _db.reset();
+    }
+
+    // Add this connection to the connections to be deleted.
+    QMutexLocker lock(&delayed_connections.mutex);
+    delayed_connections.streams[QThread::currentThread()].push_back(id);
+    lock.unlock();
+
     throw ;
   }
 }
@@ -1491,11 +1565,12 @@ stream::~stream() {
   _unprepare();
 
   // Close database.
+  QMutexLocker lock(&delayed_connections.mutex);
   _db->close();
   _db.reset();
 
-  // Remove database connection.
-  QSqlDatabase::removeDatabase(id);
+  // Add this connection to the connections to be deleted.
+  delayed_connections.streams[QThread::currentThread()].push_back(id);
 }
 
 /**
