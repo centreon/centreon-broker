@@ -21,6 +21,9 @@
 # define CCB_STORAGE_STREAM_HH_
 
 # include <map>
+# include <QList>
+# include <QMap>
+# include <QMutex>
 # include <QScopedPointer>
 # include <QSharedPointer>
 # include <QSqlDatabase>
@@ -31,7 +34,7 @@
 
 CCB_BEGIN()
 
-namespace        storage {
+namespace         storage {
   /**
    *  @class stream stream.hh "com/centreon/broker/storage/stream.hh"
    *  @brief Storage stream.
@@ -39,8 +42,15 @@ namespace        storage {
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centstorage DB.
    */
-  class          stream : public io::stream {
+  class           stream : public io::stream {
    private:
+    static struct qt_mysql_sucks {
+      QMutex      mutex;
+      QMap<QThread*, QList<QString> >
+                  streams;
+      void        remove_delayed(QString const& current);
+                  ~qt_mysql_sucks();
+    }             delayed_connections;
     std::map<std::pair<unsigned int, unsigned int>, unsigned int>
                  _index_cache;
     QScopedPointer<QSqlQuery>
