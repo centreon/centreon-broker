@@ -499,12 +499,13 @@ void failover::set_retry_interval(time_t retry_interval) {
 
 /**
  *  Wait for this thread to terminate along with other failovers.
+ *
+ *  @param[in] time Maximum time to wait for thread termination.
  */
-void failover::wait() {
+bool failover::wait(unsigned long time) {
   if (!_failover.isNull())
-    _failover->wait();
-  this->QThread::wait();
-  return ;
+    _failover->wait(time);
+  return (this->QThread::wait(time));
 }
 
 /**

@@ -20,6 +20,7 @@
 #ifndef CCB_PROCESSING_FAILOVER_HH_
 # define CCB_PROCESSING_FAILOVER_HH_
 
+# include <limits.h>
 # include <QMutex>
 # include <QReadWriteLock>
 # include <QSharedPointer>
@@ -80,7 +81,7 @@ namespace                com {
           void           set_failover(
                            QSharedPointer<processing::failover> fo);
           void           set_retry_interval(time_t retry_interval);
-          void           wait();
+          bool           wait(unsigned long time = ULONG_MAX);
           void           write(QSharedPointer<io::data> d);
 
          signals:
