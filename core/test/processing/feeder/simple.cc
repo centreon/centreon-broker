@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -54,10 +55,14 @@ int main(int argc, char* argv[]) {
   f.prepare(ss1, ss2);
 
   // Launch feeder.
+  QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(terminated()), &app, SLOT(quit()));
   f.start();
 
   // Wait some time.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  app.exec();
+  QTimer::singleShot(200, &app, SLOT(quit()));
   app.exec();
 
   // Quit feeder thread.

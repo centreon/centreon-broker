@@ -61,10 +61,14 @@ int main(int argc, char* argv[]) {
   f.set_endpoint(se);
 
   // Launch thread.
+  QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(terminated()), &app, SLOT(quit()));
   f.start();
+  app.exec();
 
   // Wait some time.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  QTimer::singleShot(1000, &app, SLOT(quit()));
   app.exec();
 
   // Quit feeder thread.

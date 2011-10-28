@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QThread>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -112,10 +113,14 @@ int main(int argc, char* argv[]) {
   wrapper w(ss1, ss2);
 
   // Launch check thread.
+  QObject::connect(&w, SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(&w, SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(&w, SIGNAL(terminated()), &app, SLOT(quit()));
   w.start();
 
   // Wait some time.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  app.exec();
+  QTimer::singleShot(200, &app, SLOT(quit()));
   app.exec();
 
   // Set failing flag.

@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QSharedPointer>
 #include <QTimer>
 #include <unistd.h>
@@ -76,7 +77,11 @@ int main(int argc, char* argv[]) {
   }
 
   // Launch processing.
+  QObject::connect(fo2.data(), SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(fo2.data(), SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(fo2.data(), SIGNAL(terminated()), &app, SLOT(quit()));
   fo2->start();
+  app.exec();
 
   // Some processing.
   QTimer::singleShot(1000, &app, SLOT(quit()));

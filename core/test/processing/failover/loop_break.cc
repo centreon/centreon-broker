@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
@@ -54,10 +55,14 @@ int main(int argc, char* argv[]) {
   f.set_retry_interval(20);
 
   // Launch thread.
+  QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(&f, SIGNAL(terminated()), &app, SLOT(quit()));
   f.start();
+  app.exec();
 
   // Wait some time.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  QTimer::singleShot(1500, &app, SLOT(quit()));
   app.exec();
 
   // Thread should be in Qt event loop, waiting its timeout to elapse.

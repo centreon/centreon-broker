@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QSharedPointer>
 #include <QTimer>
 #include <unistd.h>
@@ -73,7 +74,11 @@ int main(int argc, char* argv[]) {
   fo3->set_retry_interval(1);
 
   // Launch processing.
+  QObject::connect(fo3.data(), SIGNAL(finished()), &app, SLOT(quit()));
+  QObject::connect(fo3.data(), SIGNAL(started()), &app, SLOT(quit()));
+  QObject::connect(fo3.data(), SIGNAL(terminated()), &app, SLOT(quit()));
   fo3->start();
+  app.exec();
 
   // Wait a while to get fo1 and fo2 launched because of failing
   // endpoints #2 and #3.
