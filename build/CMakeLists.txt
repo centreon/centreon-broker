@@ -579,6 +579,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/failed_intermediate.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Event loop break.
+  set(TEST_NAME "core_processing_failover_loop_break")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/loop_break.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Exit while no data is available.
   set(TEST_NAME "core_processing_failover_exit_with_no_data")
   add_executable("${TEST_NAME}"

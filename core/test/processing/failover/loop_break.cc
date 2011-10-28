@@ -27,7 +27,7 @@
 using namespace com::centreon::broker;
 
 /**
- *  Check that failover thread exits even if no data is available.
+ *  Check that Qt event loop break properly.
  *
  *  @param[in] argc Arguments count.
  *  @param[in] argv Arguments values.
@@ -45,51 +45,35 @@ int main(int argc, char* argv[]) {
   log_on_stderr();
 
   // Endpoint.
-  QSharedPointer<setable_endpoint> se1(new setable_endpoint);
-  se1->set_succeed(true);
+  QSharedPointer<setable_endpoint> se(new setable_endpoint);
+  se->set_succeed(false);
 
   // Failover object.
-  processing::failover f1(true);
-  f1.set_endpoint(se1);
+  processing::failover f(true);
+  f.set_endpoint(se);
+  f.set_retry_interval(20);
 
   // Launch thread.
-  f1.start();
+  f.start();
 
   // Wait some time.
-  QTimer::singleShot(1000, &app, SLOT(quit()));
+  QTimer::singleShot(2000, &app, SLOT(quit()));
   app.exec();
 
-  // Quit failover thread.
-  f1.process(false, false);
+  // Thread should be in Qt event loop, waiting its timeout to elapse.
+  // This should break it.
+  f.process(false, false);
 
-  // Wait for thread termination.
-  f1.wait();
-
-  // Failover thread.
-  QSharedPointer<setable_endpoint> se2(new setable_endpoint);
-  se2->set_succeed(true);
-  QSharedPointer<processing::failover>
-    f2(new processing::failover(true));
-  f2->set_endpoint(se2);
-  se1->set_succeed(true);
-  f1.set_failover(f2);
-  f1.start();
-
-  // Some processing.
-  QTimer::singleShot(1000, &app, SLOT(quit()));
-  app.exec();
-
-  // Failover thread #2 has finished processing.
-  se2->set_succeed(false);
-
-  // Some additionnal processing.
-  QTimer::singleShot(1000, &app, SLOT(quit()));
-  app.exec();
-
-  // Exit threads.
-  f1.process(false, false);
-  f1.wait();
+  // Wait for quick thread termination.
+  int retval;
+  if (f.wait(3))
+    retval = 0;
+  else {
+    // No quick exit, wait thread.
+    retval = 1;
+    f.wait();
+  }
 
   // Return check result.
-  return (0);
+  return (retval);
 }
