@@ -494,10 +494,10 @@ void correlator::_correlate_service_status(QSharedPointer<io::data> e) {
  */
 issue* correlator::_find_related_issue(node& n) {
   issue* isu;
-
   if (n.state && !n.my_issue.isNull())
     isu = n.my_issue.data();
   else {
+    isu = NULL;
     for (QList<node*>::const_iterator
            it = n.depends_on().begin(),
            end = n.depends_on().end();
