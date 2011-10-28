@@ -85,6 +85,18 @@ stream::~stream() {
 }
 
 /**
+ *  Enable or disable event processing.
+ *
+ *  @param[in] in  Set to true to enable input event processing.
+ *  @param[in] out Set to true to enable output event processing.
+ */
+void stream::process(bool in, bool out) {
+  _process_in = in;
+  _process_out = out;
+  return ;
+}
+
+/**
  *  Read data from the socket.
  *
  *  @return Data packet.
