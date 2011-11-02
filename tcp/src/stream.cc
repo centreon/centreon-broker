@@ -104,7 +104,9 @@ void stream::process(bool in, bool out) {
  *  @return Data read.
  */
 QSharedPointer<io::data> stream::read() {
-  if (!_process_in || !_socket->waitForReadyRead(_timeout))
+  if (!_process_in
+      || (!_socket->waitForReadyRead(_timeout)
+          && _socket->state() != QAbstractSocket::UnconnectedState))
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
   char buffer[2048];
