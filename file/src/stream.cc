@@ -119,7 +119,7 @@ stream::~stream() {
 void stream::process(bool in, bool out) {
   QMutexLocker lock(&_mutex);
   _process_in = in;
-  _process_out = out;
+  _process_out = in || !out;
   return ;
 }
 

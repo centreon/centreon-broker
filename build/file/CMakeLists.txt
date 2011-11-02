@@ -62,6 +62,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/stream/mixed.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   I/O processing.
+  set(TEST_NAME "file_stream_process")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/stream/process.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.
