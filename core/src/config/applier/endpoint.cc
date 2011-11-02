@@ -450,7 +450,7 @@ void endpoint::unload() {
       } while (time(NULL) <= now);
       lock.relock();
     }
-    logging::debug << logging::MEDIUM << "endpoint applier :all " \
+    logging::debug << logging::MEDIUM << "endpoint applier: all " \
       "output threads are terminated";
     _outputs.clear();
   }
