@@ -1647,8 +1647,7 @@ void stream::initialize() {
  *  @param[in] out Set to true to enable output event processing.
  */
 void stream::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
+  _process_out = in || !out; // Only for immediate shutdown.
   return ;
 }
 
