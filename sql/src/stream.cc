@@ -25,6 +25,7 @@
 #include <QVector>
 #include <sstream>
 #include <stdlib.h>
+#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -646,25 +647,29 @@ void stream::_process_downtime(io::data const& e) {
  *  @param[in] e Uncasted correlation engine event.
  */
 void stream::_process_engine(io::data const& e) {
-  (void)e;
-
   // Log message.
   logging::info << logging::MEDIUM
     << "SQL: processing correlation engine event";
 
+  // Cast event.
+  correlation::engine_state const&
+    es(*static_cast<correlation::engine_state const*>(&e));
+
   // Close issues.
-  time_t now(time(NULL));
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues SET end_time=" << now
-       << " WHERE end_time=0 OR end_time IS NULL";
-    _execute(ss.str().c_str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "UPDATE issues_issues_parents SET end_time=" << now
-       << " WHERE end_time=0 OR end_time IS NULL";
-    _execute(ss.str().c_str());
+  if (es.started) {
+    time_t now(time(NULL));
+    {
+      std::ostringstream ss;
+      ss << "UPDATE issues SET end_time=" << now
+         << " WHERE end_time=0 OR end_time IS NULL";
+      _execute(ss.str().c_str());
+    }
+    {
+      std::ostringstream ss;
+      ss << "UPDATE issues_issues_parents SET end_time=" << now
+         << " WHERE end_time=0 OR end_time IS NULL";
+      _execute(ss.str().c_str());
+    }
   }
 
   return ;
