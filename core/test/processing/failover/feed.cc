@@ -47,7 +47,8 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Log messages.
-  log_on_stderr();
+  if (argc > 1)
+    log_on_stderr();
 
   // Endpoint.
   QSharedPointer<setable_endpoint> se(new setable_endpoint);

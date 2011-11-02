@@ -100,7 +100,8 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Enable logging.
-  log_on_stderr();
+  if (argc > 1)
+    log_on_stderr();
 
   // Streams.
   QSharedPointer<setable_stream> ss1(new setable_stream);
