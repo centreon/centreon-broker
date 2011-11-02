@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <string.h>
@@ -93,9 +94,15 @@ static int write_some(file::stream& f, unsigned int count) {
 /**
  *  Check that file stream can be properly written to.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0 on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   config::applier::init();
 

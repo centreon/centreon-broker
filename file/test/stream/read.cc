@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <string.h>
@@ -32,9 +33,15 @@ using namespace com::centreon::broker;
 /**
  *  Check that file stream can be properly written to.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0 on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   config::applier::init();
 

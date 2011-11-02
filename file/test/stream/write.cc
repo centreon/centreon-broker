@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -29,9 +31,15 @@ using namespace com::centreon::broker;
 /**
  *  Check that file stream can be properly written to.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0 on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   config::applier::init();
 
