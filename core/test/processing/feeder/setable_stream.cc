@@ -138,7 +138,7 @@ QSharedPointer<io::data> setable_stream::read() {
 
   // Do we generate an event ?
   QSharedPointer<io::data> data;
-  if (_process_in) {
+  if (_process_in && _process_out) {
     QSharedPointer<io::raw> raw(new io::raw);
     ++_count;
     raw->append((char*)&_count, sizeof(_count));

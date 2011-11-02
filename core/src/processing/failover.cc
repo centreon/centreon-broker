@@ -49,6 +49,7 @@ failover::failover(bool is_out)
   : _initial(true),
     _is_out(is_out),
     _retry_interval(30),
+    _immediate(true),
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
   if (_is_out)
@@ -70,6 +71,7 @@ failover::failover(failover const& f)
      _initial(true),
      _is_out(f._is_out),
      _retry_interval(f._retry_interval),
+     _immediate(true),
      _should_exit(false),
      _should_exitm(QMutex::Recursive) {
   {
@@ -138,6 +140,7 @@ time_t failover::get_retry_interval() const throw () {
 void failover::process(bool in, bool out) {
   // Set exit flag.
   QMutexLocker lock(&_should_exitm);
+  _immediate = (!in && out);
   _should_exit = (!in || !out);
 
   // Quit event loop.
@@ -354,7 +357,7 @@ void failover::run() {
       logging::debug(logging::medium) << "failover: launching feeding";
       QSharedPointer<io::data> data;
       exit_lock.relock();
-      while (!_should_exit) {
+      while (!_should_exit || !_immediate) {
         exit_lock.unlock();
         try {
           {
@@ -364,6 +367,7 @@ void failover::run() {
           }
           if (data.isNull()) {
             exit_lock.relock();
+            _immediate = true;
             _should_exit = true;
             exit_lock.unlock();
           }

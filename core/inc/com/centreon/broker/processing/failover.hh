@@ -59,6 +59,7 @@ namespace                com {
           mutable QMutex _datam;
 
           // Exit flag.
+          volatile bool  _immediate;
           volatile bool  _should_exit;
           mutable QMutex _should_exitm;
 
