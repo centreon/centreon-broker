@@ -44,12 +44,11 @@ namespace        sql {
   class          stream : public io::stream {
    private:
     static struct    qt_mysql_sucks {
-      QMutex         mutex;
       QMap<QThread*, QList<QString> >
                      streams;
       void           remove_delayed(QString const& current);
                      ~qt_mysql_sucks();
-    }                delayed_connections;
+    }                *delayed_connections;
     static QHash<QString, void (stream::*)(io::data const&)>
                                  _processing_table;
     QScopedPointer<QSqlQuery>    _acknowledgement_insert;

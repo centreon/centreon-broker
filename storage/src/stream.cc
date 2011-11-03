@@ -62,13 +62,14 @@ static inline QVariant check_double(double f) {
 }
 
 // Delayed connections deletion.
-stream::qt_mysql_sucks stream::delayed_connections;
+stream::qt_mysql_sucks* stream::delayed_connections = NULL;
+static QMutex           stream_mutex;
+static unsigned int     stream_instance = 0;
 
 /**
  *  Remove all delayed connections.
  */
 stream::qt_mysql_sucks::~qt_mysql_sucks() {
-  QMutexLocker lock(&mutex);
   for (QMap<QThread*, QList<QString> >::iterator
          it1 = streams.begin(),
          end1 = streams.end();
@@ -88,7 +89,6 @@ stream::qt_mysql_sucks::~qt_mysql_sucks() {
  *  @param[in] current Current connection name.
  */
 void stream::qt_mysql_sucks::remove_delayed(QString const& current) {
-  QMutexLocker lock(&delayed_connections.mutex);
   QThread* thr(QThread::currentThread());
   while (!streams[thr].isEmpty()) {
     if (streams[thr].front() != current)
@@ -392,31 +392,36 @@ stream::stream(QString const& storage_type,
   _storage_db->setDatabaseName(storage_db);
 
   try {
-    // Open database.
-    QMutexLocker lock(&delayed_connections.mutex);
-    if (!_storage_db->open()) {
-      _clear_qsql();
-      throw (broker::exceptions::msg() << "storage: could not connect " \
+    {
+      QMutexLocker lock(&stream_mutex);
+      if (stream_instance++ == 0)
+        delayed_connections = new qt_mysql_sucks;
+      // Open database.
+      if (!_storage_db->open()) {
+        _clear_qsql();
+        throw (broker::exceptions::msg() << "storage: could not connect " \
                "to Centreon Storage database");
+      }
     }
-    lock.unlock();
 
     // Prepare queries.
     _prepare();
 
     // Remove previous connections.
-    delayed_connections.remove_delayed(storage_id);
+    QMutexLocker lock(&stream_mutex);
+    delayed_connections->remove_delayed(storage_id);
   }
   catch (...) {
+    QMutexLocker lock(&stream_mutex);
+
     // Remove previous connections.
-    delayed_connections.remove_delayed(storage_id);
+    delayed_connections->remove_delayed(storage_id);
 
     // Delete statements.
-    QMutexLocker lock(&delayed_connections.mutex);
     _clear_qsql();
 
     // Add this connection to the connections to be deleted.
-    delayed_connections.streams[QThread::currentThread()].push_back(storage_id);
+    delayed_connections->streams[QThread::currentThread()].push_back(storage_id);
     lock.unlock();
 
     throw ;
@@ -447,30 +452,34 @@ stream::stream(stream const& s) : io::stream(s) {
   _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._storage_db, storage_id)));
 
   try {
-    // Open database.
-    QMutexLocker lock(&delayed_connections.mutex);
-    if (!_storage_db->open()) {
-      _clear_qsql();
-      throw (broker::exceptions::msg() << "storage: could not connect " \
+    {
+      QMutexLocker lock(&stream_mutex);
+      ++stream_instance;
+      // Open database.
+      if (!_storage_db->open()) {
+        _clear_qsql();
+        throw (broker::exceptions::msg() << "storage: could not connect " \
                "to Centreon Storage database");
+      }
     }
 
     // Prepare queries.
     _prepare();
 
+    QMutexLocker lock(&stream_mutex);
     // Remove previous connections.
-    delayed_connections.remove_delayed(storage_id);
+    delayed_connections->remove_delayed(storage_id);
   }
   catch (...) {
+    QMutexLocker lock(&stream_mutex);
     // Remove previous connections.
-    delayed_connections.remove_delayed(storage_id);
+    delayed_connections->remove_delayed(storage_id);
 
     // Delete statements.
-    QMutexLocker lock(&delayed_connections.mutex);
     _clear_qsql();
 
     // Add this connection to the connections to be deleted.
-    delayed_connections.streams[QThread::currentThread()].push_back(storage_id);
+    delayed_connections->streams[QThread::currentThread()].push_back(storage_id);
     lock.unlock();
 
     throw ;
@@ -490,11 +499,15 @@ stream::~stream() {
   storage_id.setNum((qulonglong)this, 16);
 
   // Reset statements.
-  QMutexLocker lock(&delayed_connections.mutex);
+  QMutexLocker lock(&stream_mutex);
   _clear_qsql();
 
   // Add this connection to the connections to be deleted.
-  delayed_connections.streams[QThread::currentThread()].push_back(storage_id);
+  delayed_connections->streams[QThread::currentThread()].push_back(storage_id);
+  if (--stream_instance == 0) {
+    delete delayed_connections;
+    delayed_connections = NULL;
+  }
 }
 
 /**

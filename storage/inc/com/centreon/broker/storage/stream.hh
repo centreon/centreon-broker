@@ -45,12 +45,11 @@ namespace         storage {
   class           stream : public io::stream {
    private:
     static struct qt_mysql_sucks {
-      QMutex      mutex;
       QMap<QThread*, QList<QString> >
                   streams;
       void        remove_delayed(QString const& current);
                   ~qt_mysql_sucks();
-    }             delayed_connections;
+    }             *delayed_connections;
     std::map<std::pair<unsigned int, unsigned int>, unsigned int>
                  _index_cache;
     QScopedPointer<QSqlQuery>
