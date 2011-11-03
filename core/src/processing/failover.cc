@@ -192,7 +192,9 @@ void failover::process(bool in, bool out) {
     locks.clear();
     lock.unlock();
     QThread::wait();
-    process(true, true);
+    lock.relock();
+    process(true, !_should_exit);
+    lock.unlock();
   }
   // Reinitialization.
   else {
@@ -248,7 +250,13 @@ QSharedPointer<io::data> failover::read() {
       process(false, true);
 
       // Recursive data reading.
-      data = this->read();
+      exit_lock.relock();
+      if (!_should_exit) {
+	exit_lock.unlock();
+	data = this->read();
+      }
+      else
+	exit_lock.unlock();
     }
   }
   // Fetch next available event.
