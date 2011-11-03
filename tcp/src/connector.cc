@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
 #include <QSslSocket>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -94,6 +95,7 @@ connector& connector::operator=(connector const& c) {
  *  Close the connector socket.
  */
 void connector::close() {
+  QMutexLocker lock(&*_mutex);
   _socket->close();
   return ;
 }
@@ -114,6 +116,7 @@ void connector::connect_to(QString const& host, unsigned short port) {
  *  Connect to the remote host.
  */
 QSharedPointer<io::stream> connector::open() {
+  QMutexLocker lock(&*_mutex);
   // Is TLS enabled ?
   if (_tls) {
     // Create socket object.
@@ -162,7 +165,7 @@ QSharedPointer<io::stream> connector::open() {
     << _host << ":" << _port;
 
   // Return stream.
-  QSharedPointer<stream> s(new stream(_socket));
+  QSharedPointer<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
   return (s.staticCast<io::stream>());
 }

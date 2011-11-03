@@ -22,6 +22,7 @@
 
 # include <QSharedPointer>
 # include <QTcpSocket>
+# include <QMutex>
 # include "com/centreon/broker/io/stream.hh"
 # include "com/centreon/broker/namespace.hh"
 
@@ -40,12 +41,16 @@ namespace        tcp {
     bool         _process_out;
     QSharedPointer<QTcpSocket>
                  _socket;
+    QSharedPointer<QMutex>
+                 _mutex;
     int          _timeout;
                  stream(stream const& s);
     stream&      operator=(stream const& s);
 
    public:
                  stream(QSharedPointer<QTcpSocket> sock);
+                 stream(QSharedPointer<QTcpSocket> sock,
+			QSharedPointer<QMutex> mutex);
                  ~stream();
     void         process(bool in = false, bool out = true);
     QSharedPointer<io::data>

@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
+#include <QWaitCondition>
 #include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -76,12 +78,28 @@ stream::stream(QSharedPointer<QTcpSocket> sock)
   : _process_in(true),
     _process_out(true),
     _socket(sock),
+    _mutex(QSharedPointer<QMutex>(new QMutex())),
+    _timeout(-1) {}
+
+/**
+ *  Constructor.
+ *
+ *  @param[in] sock  Socket used by this stream.
+ *  @param[in] mutex Mutex used by this stream.
+ */
+stream::stream(QSharedPointer<QTcpSocket> sock,
+	       QSharedPointer<QMutex> mutex)
+  : _process_in(true),
+    _process_out(true),
+    _socket(sock),
+    _mutex(mutex),
     _timeout(-1) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {
+  QMutexLocker lock(&*_mutex);
   if (!_socket.isNull())
     _socket->close();
 }
@@ -104,11 +122,18 @@ void stream::process(bool in, bool out) {
  *  @return Data read.
  */
 QSharedPointer<io::data> stream::read() {
-  if (!_process_in
-      || (!_socket->waitForReadyRead(_timeout)
-          && _socket->state() != QAbstractSocket::UnconnectedState))
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+  QMutexLocker lock(&*_mutex);
+  bool ret;
+  do {
+    QWaitCondition cv;
+    cv.wait(&*_mutex, 10);
+    if (!_process_in
+	|| (!(ret = _socket->waitForReadyRead(_timeout == -1 ? 200 : _timeout))
+	    && _socket->state() != QAbstractSocket::UnconnectedState))
+      throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
+  } while (!ret && _socket->error() == QAbstractSocket::SocketTimeoutError);
+
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
@@ -140,6 +165,7 @@ void stream::write(QSharedPointer<io::data> d) {
              << "TCP stream is shutdown");
   if (d->type() == "com::centreon::broker::io::raw") {
     QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+    QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                              r->size()));
     if (wb < 0)

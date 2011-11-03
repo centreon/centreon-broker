@@ -23,6 +23,7 @@
 # include <QSharedPointer>
 # include <QString>
 # include <QTcpSocket>
+# include <QMutex>
 # include "com/centreon/broker/io/endpoint.hh"
 # include "com/centreon/broker/namespace.hh"
 
@@ -44,6 +45,8 @@ namespace          tcp {
     QString        _public;
     QSharedPointer<QTcpSocket>
                    _socket;
+    QSharedPointer<QMutex>
+                   _mutex;
     int            _timeout;
     bool           _tls;
     void           _internal_copy(connector const& c);
