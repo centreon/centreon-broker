@@ -86,7 +86,7 @@ class                  name_match_failover {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() : QObject() {}
+endpoint::endpoint() : QObject(), _outputsm(QMutex::Recursive) {}
 
 /**
  *  @brief Copy constructor.
@@ -95,7 +95,8 @@ endpoint::endpoint() : QObject() {}
  *
  *  @param[in] e Object to copy.
  */
-endpoint::endpoint(endpoint const& e) : QObject() {
+endpoint::endpoint(endpoint const& e)
+  : QObject(), _outputsm(QMutex::Recursive) {
   (void)e;
   assert(false);
   abort();
