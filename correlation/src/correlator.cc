@@ -961,7 +961,7 @@ void correlator::stopping() {
   _write_issues();
 
   // Close issues and issues parenting.
-  time_t now(time(NULL));
+  /*time_t now(time(NULL));
   for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
          it = _nodes.begin(),
          end = _nodes.end();
@@ -1023,6 +1023,7 @@ void correlator::stopping() {
       i->end_time = now;
       _events.push_back(i.staticCast<io::data>());
     }
+  */
 
   // Send engine state.
   QSharedPointer<engine_state> es(new engine_state);

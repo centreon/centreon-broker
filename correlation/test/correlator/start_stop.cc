@@ -67,9 +67,9 @@ int main() {
   // Check correlation content.
   QList<QSharedPointer<io::data> > content;
   add_engine_state(content, true);
-  add_issue_parent(content, 42, 24, 1, 1, 77, 56, 1, 1);
+  /*add_issue_parent(content, 42, 24, 1, 1, 77, 56, 1, 1);
   add_issue(content, 0, 1, 42, 24, 1);
   add_issue(content, 0, 1, 77, 56, 1);
-  add_engine_state(content, false);
+  add_engine_state(content, false);*/
   return (!check_content(c, content));
 }
