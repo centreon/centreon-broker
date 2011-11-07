@@ -127,6 +127,8 @@ stream& stream::operator=(stream const& s) {
 void stream::_clear_qsql() {
   _insert_data_bin.reset();
   _update_metrics.reset();
+  if (!_storage_db.isNull() && _storage_db->isOpen())
+    _storage_db->close();
   _storage_db.reset();
   return ;
 }
@@ -517,8 +519,7 @@ stream::~stream() {
  *  @param[in] out Set to true to enable output event processing.
  */
 void stream::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
+  _process_out = in || !out; // Only for immediate shutdown.
   return ;
 }
 

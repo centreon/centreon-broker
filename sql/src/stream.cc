@@ -46,7 +46,7 @@ using namespace com::centreon::broker::sql;
 QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
 
 // Delayed connections deletion.
-stream::qt_mysql_sucks* stream::delayed_connections;
+stream::qt_mysql_sucks* stream::delayed_connections = NULL;
 static QMutex           stream_mutex;
 static unsigned int     stream_instance = 0;
 
