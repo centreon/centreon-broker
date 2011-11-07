@@ -140,6 +140,7 @@ time_t failover::get_retry_interval() const throw () {
 void failover::process(bool in, bool out) {
   // Set exit flag.
   QMutexLocker lock(&_should_exitm);
+  bool should_exit = _should_exit;
   _immediate = (!in && out);
   _should_exit = (!in || !out);
 
@@ -193,7 +194,7 @@ void failover::process(bool in, bool out) {
     lock.unlock();
     QThread::wait();
     lock.relock();
-    process(true, !_should_exit);
+    process(true, !should_exit);
     lock.unlock();
   }
   // Reinitialization.
@@ -246,17 +247,17 @@ QSharedPointer<io::data> failover::read() {
       _to.clear();
       _tom.unlock();
 
+      // Reread should exit.
+      exit_lock.relock();
+      bool should_exit(_should_exit);
+      exit_lock.unlock();
+
       // Exit this thread immediately.
       process(false, true);
 
       // Recursive data reading.
-      exit_lock.relock();
-      if (!_should_exit) {
-	exit_lock.unlock();
+      if (!should_exit)
 	data = this->read();
-      }
-      else
-	exit_lock.unlock();
     }
   }
   // Fetch next available event.
@@ -331,6 +332,7 @@ void failover::run() {
   _should_exit = false;
 
   while (!_should_exit) {
+    QSharedPointer<io::stream> copy_handler;
     exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
@@ -359,6 +361,7 @@ void failover::run() {
           exit_lock.relock();
           continue ;
         }
+        copy_handler = *s;
       }
 
       // Process input and output.

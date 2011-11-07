@@ -597,6 +597,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/reread_first.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Recovery.
+  set(TEST_NAME "core_processing_failover_recovery")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/recovery.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # cbd tests.
