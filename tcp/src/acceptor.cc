@@ -75,7 +75,9 @@ acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+acceptor::~acceptor() {
+  this->close();
+}
 
 /**
  *  @brief Assignment operator.
@@ -102,8 +104,10 @@ acceptor& acceptor::operator=(acceptor const& a) {
  */
 void acceptor::close() {
   QMutexLocker lock(&_mutex);
-  if (!_socket.isNull())
+  if (!_socket.isNull()) {
     _socket->close();
+    _socket.reset();
+  }
   return ;
 }
 
@@ -144,18 +148,21 @@ QSharedPointer<io::stream> acceptor::open() {
     QWaitCondition cv;
     cv.wait(&_mutex, 10);
     timedout = false;
-    ret = _socket->waitForNewConnection(200, &timedout);
+    ret = !_socket.isNull()
+      && _socket->waitForNewConnection(200, &timedout);
   }
   if (!ret)
-    throw (exceptions::msg() << "TCP: error while waiting for " \
-             "client: " << _socket->errorString());
+    throw (exceptions::msg() << "TCP: error while waiting client: "
+             << (_socket.isNull()
+                 ? "socket was deleted"
+                 : _socket->errorString()));
 
   // Accept client.
   QSharedPointer<QTcpSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
     throw (exceptions::msg() << "TCP: could not accept client: "
              << _socket->errorString());
-  logging::info << logging::MEDIUM << "TCP: new client connected";
+  logging::info(logging::medium) << "TCP: new client connected";
 
   // Return object.
   return (QSharedPointer<io::stream>(new stream(incoming)));
