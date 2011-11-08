@@ -18,6 +18,7 @@
 */
 
 #include <iostream>
+#include <QCoreApplication>
 #include <QDir>
 #include <QTime>
 #include <stdlib.h>
@@ -37,9 +38,15 @@ using namespace com::centreon::broker;
 /**
  *  Check logging performance (informational).
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   logging::manager::load();
 

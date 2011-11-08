@@ -19,6 +19,7 @@
 
 #include <exception>
 #include <iostream>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include "com/centreon/broker/logging/file.hh"
@@ -29,9 +30,15 @@ using namespace com::centreon::broker;
 /**
  *  Check that file logging works properly.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0 on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Return value.
   int retval(0);
 

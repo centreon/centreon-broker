@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QRegExp>
 #include <QString>
@@ -45,9 +46,15 @@ static void log_messages() {
 /**
  *  Check that logging is thread-safe.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return 0 on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
+  // Qt core object.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   logging::manager::load();
 
