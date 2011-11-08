@@ -21,6 +21,7 @@
 # define CCB_LOCAL_ACCEPTOR_HH_
 
 # include <QLocalServer>
+# include <QMutex>
 # include <QScopedPointer>
 # include <QString>
 # include "com/centreon/broker/io/endpoint.hh"
@@ -37,6 +38,7 @@ namespace                        local {
    */
   class                          acceptor : public io::endpoint {
    private:
+    QMutex                       _mutex;
     QString                      _name;
     QScopedPointer<QLocalServer> _socket;
 

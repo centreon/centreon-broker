@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QWaitCondition>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/local/acceptor.hh"
 #include "com/centreon/broker/local/stream.hh"
@@ -66,9 +67,11 @@ acceptor::~acceptor() {
  *  @return This object.
  */
 acceptor& acceptor::operator=(acceptor const& a) {
-  this->close();
-  io::endpoint::operator=(a);
-  _name = a._name;
+  if (this != &a) {
+    this->close();
+    io::endpoint::operator=(a);
+    _name = a._name;
+  }
   return (*this);
 }
 
@@ -76,6 +79,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
  *  Close the socket.
  */
 void acceptor::close() {
+  QMutexLocker lock(&_mutex);
   if (!_socket.isNull()) {
     _socket->close();
     _socket.reset();
@@ -89,6 +93,7 @@ void acceptor::close() {
  *  @param[in] name Local socket name.
  */
 void acceptor::listen_on(QString const& name) {
+  this->close();
   _name = name;
   return ;
 }
@@ -100,6 +105,7 @@ void acceptor::listen_on(QString const& name) {
  */
 QSharedPointer<io::stream> acceptor::open() {
   // Listen.
+  QMutexLocker lock(&_mutex);
   if (_socket.isNull()) {
     _socket.reset(new QLocalServer);
     if (!_socket->listen(_name)) {
@@ -112,19 +118,29 @@ QSharedPointer<io::stream> acceptor::open() {
   }
 
   // Wait for incoming connections.
-  logging::debug << logging::MEDIUM
+  logging::debug(logging::medium)
     << "local: waiting for new connection";
-  if (!_socket->waitForNewConnection(-1))
-    throw (exceptions::msg() << "local: error while waiting for new " \
-             "client: " << _socket->errorString());
+  bool timedout(false);
+  bool ret(_socket->waitForNewConnection(200, &timedout));
+  while (!ret && timedout) {
+    QWaitCondition cv;
+    cv.wait(&_mutex, 10);
+    timedout = false;
+    ret = !_socket.isNull()
+      && _socket->waitForNewConnection(200, &timedout);
+  }
+  if (!ret)
+    throw (exceptions::msg() << "local: error while waiting client: "
+             << (_socket.isNull()
+                 ? "socket was deleted"
+                 : _socket->errorString()));
 
   // Accept client.
   QSharedPointer<QLocalSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
-    throw (exceptions::msg() << "local: could not accept incoming " \
-             "client: " << _socket->errorString());
-  logging::info << logging::MEDIUM
-    << "local: new client successfully connected";
+    throw (exceptions::msg() << "local: could not accept client: "
+             << _socket->errorString());
+  logging::info(logging::medium) << "local: new client connected";
 
   // Return object.
   return (QSharedPointer<io::stream>(new stream(incoming)));
