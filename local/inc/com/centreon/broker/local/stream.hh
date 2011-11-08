@@ -20,36 +20,44 @@
 #ifndef CCB_LOCAL_STREAM_HH_
 # define CCB_LOCAL_STREAM_HH_
 
-# include <QSharedPointer>
 # include <QLocalSocket>
+# include <QMutex>
+# include <QSharedPointer>
 # include "com/centreon/broker/io/stream.hh"
 # include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        local {
+namespace   local {
   /**
    *  @class stream stream.hh "com/centreon/broker/local/stream.hh"
    *  @brief Local socket stream.
    *
    *  Local socket stream.
    */
-  class                          stream : public io::stream {
+  class     stream : public io::stream {
    private:
-    bool                         _process_in;
-    bool                         _process_out;
-    QSharedPointer<QLocalSocket> _socket;
-                                 stream(stream const& s);
-    stream&                      operator=(stream const& s);
+    QSharedPointer<QMutex>
+            _mutex;
+    bool    _process_in;
+    bool    _process_out;
+    QSharedPointer<QLocalSocket>
+            _socket;
+    int     _timeout;
+            stream(stream const& s);
+    stream& operator=(stream const& s);
 
    public:
-                                 stream(QSharedPointer<QLocalSocket> sock);
-                                 ~stream();
-    void                         process(
-                                   bool in = false,
-                                   bool out = true);
-    QSharedPointer<io::data>     read();
-    void                         write(QSharedPointer<io::data> d);
+            stream(QSharedPointer<QLocalSocket> sock);
+            stream(
+              QSharedPointer<QLocalSocket> sock,
+              QSharedPointer<QMutex> mutex);
+            ~stream();
+    void    process(bool in = false, bool out = true);
+    QSharedPointer<io::data>
+            read();
+    void    set_timeout(int msecs);
+    void    write(QSharedPointer<io::data> d);
   };
 }
 

@@ -18,6 +18,8 @@
 */
 
 #include <assert.h>
+#include <QMutexLocker>
+#include <QWaitCondition>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -73,15 +75,33 @@ stream& stream::operator=(stream const& s) {
  *  @param[in] sock Local socket object.
  */
 stream::stream(QSharedPointer<QLocalSocket> sock)
-  : _process_in(true),
+  : _mutex(new QMutex),
+    _process_in(true),
     _process_out(true),
-    _socket(sock) {}
+    _socket(sock),
+    _timeout(-1) {}
+
+/**
+ *  Constructor.
+ *
+ *  @param[in] sock  Local socket object.
+ *  @param[in] mutex Mutex used by this stream.
+ */
+stream::stream(QSharedPointer<QLocalSocket> sock,
+               QSharedPointer<QMutex> mutex)
+  : _mutex(mutex),
+    _process_in(true),
+    _process_out(true),
+    _socket(sock),
+    _timeout(-1) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {
-  _socket->close();
+  QMutexLocker lock(&*_mutex);
+  if (!_socket.isNull())
+    _socket->close();
 }
 
 /**
@@ -102,10 +122,22 @@ void stream::process(bool in, bool out) {
  *  @return Data packet.
  */
 QSharedPointer<io::data> stream::read() {
-  if (!_process_in)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "local stream is shutdown");
-  _socket->waitForReadyRead(-1);
+  QMutexLocker lock(&*_mutex);
+  bool ret;
+  do {
+    QWaitCondition cv;
+    cv.wait(&*_mutex, 10);
+    if (!_process_in
+        || (!(ret = _socket->waitForReadyRead(
+                (_timeout == -1)
+                ? 200
+                : _timeout))
+            && _socket->state() != QLocalSocket::UnconnectedState))
+      throw (io::exceptions::shutdown(!_process_in, !_process_out)
+               << "local stream is shutdown");
+  } while (!ret
+           && _socket->error() == QLocalSocket::SocketTimeoutError);
+
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
@@ -114,6 +146,16 @@ QSharedPointer<io::data> stream::read() {
   QSharedPointer<io::raw> data(new io::raw);
   data->append(buffer, rb);
   return (data.staticCast<io::data>());
+}
+
+/**
+ *  Set connection timeout.
+ *
+ *  @param[in] msecs Timeout in ms.
+ */
+void stream::set_timeout(int msecs) {
+  _timeout = msecs;
+  return ;
 }
 
 /**
@@ -127,8 +169,9 @@ void stream::write(QSharedPointer<io::data> d) {
              << "local stream is shutdown");
   if (d->type() == "com::centreon::broker::io::raw") {
     QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+    QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
-                                                r->size()));
+                             r->size()));
     if (wb < 0)
       throw (exceptions::msg() << "local: write error: "
                << _socket->errorString());

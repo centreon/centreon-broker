@@ -60,7 +60,11 @@ void connector::_internal_copy(connector const& c) {
  *  Default constructor.
  */
 connector::connector()
-  : io::endpoint(false), _port(0), _timeout(-1), _tls(false) {}
+  : io::endpoint(false),
+    _mutex(new QMutex),
+    _port(0),
+    _timeout(-1),
+    _tls(false) {}
 
 /**
  *  Copy constructor.
@@ -74,7 +78,9 @@ connector::connector(connector const& c) : io::endpoint(c) {
 /**
  *  Destructor.
  */
-connector::~connector() {}
+connector::~connector() {
+  this->close();
+}
 
 /**
  *  Assignment operator.
@@ -85,6 +91,7 @@ connector::~connector() {}
  */
 connector& connector::operator=(connector const& c) {
   if (this != &c) {
+    this->close();
     io::endpoint::operator=(c);
     _internal_copy(c);
   }
@@ -96,7 +103,10 @@ connector& connector::operator=(connector const& c) {
  */
 void connector::close() {
   QMutexLocker lock(&*_mutex);
-  _socket->close();
+  if (!_socket.isNull()) {
+    _socket->close();
+    _socket.clear();
+  }
   return ;
 }
 
@@ -107,6 +117,7 @@ void connector::close() {
  *  @param[in] port Port to connect to.
  */
 void connector::connect_to(QString const& host, unsigned short port) {
+  this->close();
   _host = host;
   _port = port;
   return ;
@@ -116,7 +127,12 @@ void connector::connect_to(QString const& host, unsigned short port) {
  *  Connect to the remote host.
  */
 QSharedPointer<io::stream> connector::open() {
+  // Close previous connection.
+  this->close();
+
+  // Lock mutex.
   QMutexLocker lock(&*_mutex);
+
   // Is TLS enabled ?
   if (_tls) {
     // Create socket object.
@@ -145,7 +161,7 @@ QSharedPointer<io::stream> connector::open() {
     ssl_socket->connectToHostEncrypted(_host, _port);
 
     // Wait for connection result.
-    if (!ssl_socket->waitForEncrypted(-1))
+    if (!ssl_socket->waitForEncrypted())
       throw (exceptions::msg() << "TCP: could not connect to "
                << _host << ":" << _port << ": "
                << _socket->errorString());
@@ -156,12 +172,12 @@ QSharedPointer<io::stream> connector::open() {
     _socket->connectToHost(_host, _port);
 
     // Wait for connection result.
-    if (!_socket->waitForConnected(-1))
+    if (!_socket->waitForConnected())
       throw (exceptions::msg() << "TCP: could not connect to "
                << _host << ":" << _port << ": "
                << _socket->errorString());
   }
-  logging::info << logging::MEDIUM << "TCP: successfully connected to "
+  logging::info(logging::medium) << "TCP: successfully connected to "
     << _host << ":" << _port;
 
   // Return stream.

@@ -28,35 +28,36 @@
 
 CCB_BEGIN()
 
-namespace        tcp {
+namespace   tcp {
   /**
    *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
    *  @brief TCP stream.
    *
    *  TCP stream.
    */
-  class          stream : public io::stream {
+  class     stream : public io::stream {
    private:
-    bool         _process_in;
-    bool         _process_out;
-    QSharedPointer<QTcpSocket>
-                 _socket;
     QSharedPointer<QMutex>
-                 _mutex;
-    int          _timeout;
-                 stream(stream const& s);
-    stream&      operator=(stream const& s);
+            _mutex;
+    bool    _process_in;
+    bool    _process_out;
+    QSharedPointer<QTcpSocket>
+            _socket;
+    int     _timeout;
+            stream(stream const& s);
+    stream& operator=(stream const& s);
 
    public:
-                 stream(QSharedPointer<QTcpSocket> sock);
-                 stream(QSharedPointer<QTcpSocket> sock,
-			QSharedPointer<QMutex> mutex);
-                 ~stream();
-    void         process(bool in = false, bool out = true);
+            stream(QSharedPointer<QTcpSocket> sock);
+            stream(
+              QSharedPointer<QTcpSocket> sock,
+              QSharedPointer<QMutex> mutex);
+            ~stream();
+    void    process(bool in = false, bool out = true);
     QSharedPointer<io::data>
-                 read();
-    void         set_timeout(int msecs);
-    void         write(QSharedPointer<io::data> d);
+            read();
+    void    set_timeout(int msecs);
+    void    write(QSharedPointer<io::data> d);
   };
 }
 

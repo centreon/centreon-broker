@@ -21,6 +21,7 @@
 # define CCB_LOCAL_CONNECTOR_HH_
 
 # include <QLocalSocket>
+# include <QMutex>
 # include <QSharedPointer>
 # include "com/centreon/broker/io/endpoint.hh"
 # include "com/centreon/broker/namespace.hh"
@@ -36,8 +37,11 @@ namespace                        local {
    */
   class                          connector : public io::endpoint {
    private:
+    QSharedPointer<QMutex>       _mutex;
     QString                      _name;
     QSharedPointer<QLocalSocket> _socket;
+    int                          _timeout;
+    void                         _internal_copy(connector const& c);
 
    public:
                                  connector();
@@ -47,6 +51,7 @@ namespace                        local {
     void                         close();
     void                         connect_to(QString const& name);
     QSharedPointer<io::stream>   open();
+    void                         set_timeout(int msecs);
   };
 }
 

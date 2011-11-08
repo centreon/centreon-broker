@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <assert.h>
 #include <QMutexLocker>
 #include <QWaitCondition>
-#include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -75,10 +75,10 @@ stream& stream::operator=(stream const& s) {
  *  @param[in] sock Socket used by this stream.
  */
 stream::stream(QSharedPointer<QTcpSocket> sock)
-  : _process_in(true),
+  : _mutex(new QMutex),
+    _process_in(true),
     _process_out(true),
     _socket(sock),
-    _mutex(QSharedPointer<QMutex>(new QMutex())),
     _timeout(-1) {}
 
 /**
@@ -88,11 +88,11 @@ stream::stream(QSharedPointer<QTcpSocket> sock)
  *  @param[in] mutex Mutex used by this stream.
  */
 stream::stream(QSharedPointer<QTcpSocket> sock,
-	       QSharedPointer<QMutex> mutex)
-  : _process_in(true),
+               QSharedPointer<QMutex> mutex)
+  : _mutex(mutex),
+    _process_in(true),
     _process_out(true),
     _socket(sock),
-    _mutex(mutex),
     _timeout(-1) {}
 
 /**
@@ -128,11 +128,15 @@ QSharedPointer<io::data> stream::read() {
     QWaitCondition cv;
     cv.wait(&*_mutex, 10);
     if (!_process_in
-	|| (!(ret = _socket->waitForReadyRead(_timeout == -1 ? 200 : _timeout))
-	    && _socket->state() != QAbstractSocket::UnconnectedState))
+        || (!(ret = _socket->waitForReadyRead(
+                (_timeout == -1)
+                ? 200
+                : _timeout))
+            && _socket->state() != QAbstractSocket::UnconnectedState))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "TCP stream is shutdown");
-  } while (!ret && _socket->error() == QAbstractSocket::SocketTimeoutError);
+               << "TCP stream is shutdown");
+  } while (!ret
+           && _socket->error() == QAbstractSocket::SocketTimeoutError);
 
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));

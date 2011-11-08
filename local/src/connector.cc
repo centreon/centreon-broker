@@ -27,6 +27,24 @@ using namespace com::centreon::broker::local;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] c Object to copy.
+ */
+void connector::_internal_copy(connector const& c) {
+  _name = c._name;
+  _socket = c._socket;
+  _timeout = c._timeout;
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -34,7 +52,10 @@ using namespace com::centreon::broker::local;
 /**
  *  Default constructor.
  */
-connector::connector() : io::endpoint(false) {}
+connector::connector()
+  : io::endpoint(false),
+    _mutex(new QMutex),
+    _timeout(-1) {}
 
 /**
  *  @brief Copy constructor.
@@ -45,7 +66,7 @@ connector::connector() : io::endpoint(false) {}
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c) : io::endpoint(c) {
-  _name = c._name;
+  _internal_copy(c);
 }
 
 /**
@@ -67,9 +88,11 @@ connector::~connector() {
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  this->close();
-  io::endpoint::operator=(c);
-  _name = c._name;
+  if (this != &c) {
+    this->close();
+    io::endpoint::operator=(c);
+    _internal_copy(c);
+  }
   return (*this);
 }
 
@@ -77,9 +100,9 @@ connector& connector::operator=(connector const& c) {
  *  Close the socket.
  */
 void connector::close() {
+  QMutexLocker lock(&*_mutex);
   if (!_socket.isNull()) {
-    _socket->disconnectFromServer();
-    _socket->waitForDisconnected(-1);
+    _socket->close();
     _socket.clear();
   }
   return ;
@@ -105,21 +128,36 @@ QSharedPointer<io::stream> connector::open() {
   // Close previous connection.
   this->close();
 
+  // Lock mutex.
+  QMutexLocker lock(&*_mutex);
+
   // Launch connection process.
   _socket = QSharedPointer<QLocalSocket>(new QLocalSocket);
   _socket->connectToServer(_name);
 
   // Wait for connection result.
-  if (!_socket->waitForConnected(-1)) {
+  if (!_socket->waitForConnected()) {
     exceptions::msg e;
     e << "local: could not connect to '" << _name
       << "': " << _socket->errorString();
     _socket.clear();
     throw (e);
   }
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "local: successfully connected to '" << _name << "'";
 
   // Return stream.
-  return (QSharedPointer<io::stream>(new stream(_socket)));
+  QSharedPointer<stream> s(new stream(_socket, _mutex));
+  s->set_timeout(_timeout);
+  return (s.staticCast<io::stream>());
+}
+
+/**
+ *  Set connection timeout.
+ *
+ *  @param[in] msecs Timeout in ms.
+ */
+void connector::set_timeout(int msecs) {
+  _timeout = msecs;
+  return ;
 }

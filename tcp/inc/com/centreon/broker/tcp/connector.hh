@@ -40,13 +40,13 @@ namespace          tcp {
    private:
     QString        _ca;
     QString        _host;
+    QSharedPointer<QMutex>
+                   _mutex;
     unsigned short _port;
     QString        _private;
     QString        _public;
     QSharedPointer<QTcpSocket>
                    _socket;
-    QSharedPointer<QMutex>
-                   _mutex;
     int            _timeout;
     bool           _tls;
     void           _internal_copy(connector const& c);
