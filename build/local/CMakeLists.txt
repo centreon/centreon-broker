@@ -20,6 +20,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/local/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/local/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/local/test")
 include_directories("${INC_DIR}")
 
 # Local sockets module.
@@ -40,6 +41,27 @@ add_library("${LOCAL}" SHARED
 )
 target_link_libraries("${LOCAL}" ${QT_LIBRARIES})
 set_target_properties("${LOCAL}" PROPERTIES PREFIX "")
+
+# Testing.
+if (WITH_TESTING)
+  include_directories("${PROJECT_SOURCE_DIR}/local")
+  set(TEST_LIBRARIES "${LOCAL}" "roker")
+
+  # Acceptor tests.
+  #   Concurrent close.
+  set(TEST_NAME "local_acceptor_close_concurrent")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acceptor/close_concurrent.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Connector tests.
+  #   Concurrent close.
+  set(TEST_NAME "local_connector_close_concurrent")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/connector/close_concurrent.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${LOCAL}"
