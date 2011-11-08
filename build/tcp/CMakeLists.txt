@@ -20,6 +20,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/tcp/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/tcp/test")
 include_directories("${INC_DIR}")
 
 # Some files must be processed by Qt's moc.
@@ -49,6 +50,20 @@ add_library("${TCP}" SHARED
 )
 target_link_libraries("${TCP}" ${QT_LIBRARIES})
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
+
+# Testing.
+if (WITH_TESTING)
+  include_directories("${PROJECT_SOURCE_DIR}/tcp")
+  add_library("ccb_tcp" STATIC "${TEST_DIR}/common.cc")
+  set(TEST_LIBRARIES "ccb_tcp" "${TCP}" "roker")
+
+  # Acceptor tests.
+  set(TEST_NAME "tcp_acceptor_close_concurrent")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acceptor/close_concurrent.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${TCP}"
