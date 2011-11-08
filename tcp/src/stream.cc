@@ -132,7 +132,8 @@ QSharedPointer<io::data> stream::read() {
                 (_timeout == -1)
                 ? 200
                 : _timeout))
-            && _socket->state() != QAbstractSocket::UnconnectedState))
+            && (_timeout != -1)
+            && (_socket->state() != QAbstractSocket::UnconnectedState)))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
                << "TCP stream is shutdown");
   } while (!ret

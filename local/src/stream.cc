@@ -132,7 +132,8 @@ QSharedPointer<io::data> stream::read() {
                 (_timeout == -1)
                 ? 200
                 : _timeout))
-            && _socket->state() != QLocalSocket::UnconnectedState))
+            && (_timeout != -1)
+            && (_socket->state() != QLocalSocket::UnconnectedState)))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
                << "local stream is shutdown");
   } while (!ret
