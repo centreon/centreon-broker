@@ -16,8 +16,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QSqlDatabase>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/storage/factory.hh"
+#include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -30,9 +32,23 @@ extern "C" {
    */
   void broker_module_deinit() {
     // Decrement instance number.
-    if (!--instances)
+    if (!--instances) {
       // Deregister storage layer.
       io::protocols::instance().unreg("storage");
+
+      // Remove the workaround connection.
+      if (QSqlDatabase::contains()) {
+        // It is impossible to remove database if the database is
+        // already used. So this scope is use to get the connection
+        // name and destroy database to remove it after.
+        QString connection_name;
+        {
+          QSqlDatabase db(QSqlDatabase::database());
+          connection_name = db.connectionName();
+        }
+        QSqlDatabase::removeDatabase(connection_name);
+      }
+    }
     return ;
   }
 
@@ -45,12 +61,17 @@ extern "C" {
     (void)arg;
 
     // Increment instance number.
-    if (!instances++)
+    if (!instances++) {
+      // This is a workaround to keep a mysql driver open.
+      if (!QSqlDatabase::contains())
+        QSqlDatabase::addDatabase("QMYSQL");
+
       // Register storage layer.
       io::protocols::instance().reg("storage",
         storage::factory(),
         1,
         7);
+    }
     return ;
   }
 }

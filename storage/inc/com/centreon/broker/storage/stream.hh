@@ -23,7 +23,6 @@
 # include <map>
 # include <QList>
 # include <QMap>
-# include <QMutex>
 # include <QScopedPointer>
 # include <QSharedPointer>
 # include <QSqlDatabase>
@@ -44,56 +43,50 @@ namespace         storage {
    */
   class           stream : public io::stream {
    private:
-    static struct qt_mysql_sucks {
-      QMap<QThread*, QList<QString> >
-                  streams;
-      void        remove_delayed(QString const& current);
-                  ~qt_mysql_sucks();
-    }             *delayed_connections;
     std::map<std::pair<unsigned int, unsigned int>, unsigned int>
-                 _index_cache;
+                  _index_cache;
     QScopedPointer<QSqlQuery>
-                 _insert_data_bin;
-    time_t       _interval_length;
+                  _insert_data_bin;
+    time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, unsigned int>
-                 _metric_cache;
-    QString      _metrics_path;
-    bool         _process_out;
-    unsigned int _rrd_len;
-    bool         _store_in_db;
+                  _metric_cache;
+    QString       _metrics_path;
+    bool          _process_out;
+    unsigned int  _rrd_len;
+    bool          _store_in_db;
     QScopedPointer<QSqlQuery>
-                 _update_metrics;
+                  _update_metrics;
     QScopedPointer<QSqlDatabase>
-                 _storage_db;
-    void         _clear_qsql();
-    unsigned int _find_index_id(
-                   unsigned int host_id,
-                   unsigned int service_id,
-                   QString const& host_name,
-                   QString const& service_desc);
-    unsigned int _find_metric_id(
-                   unsigned int index_id,
-                   QString const& metric_name);
-    void         _prepare();
-    stream&      operator=(stream const& s);
+                  _storage_db;
+    void          _clear_qsql();
+    unsigned int  _find_index_id(
+                    unsigned int host_id,
+                    unsigned int service_id,
+                    QString const& host_name,
+                    QString const& service_desc);
+    unsigned int  _find_metric_id(
+                    unsigned int index_id,
+                    QString const& metric_name);
+    void          _prepare();
+    stream&       operator=(stream const& s);
 
    public:
-                 stream(
-                   QString const& storage_type,
-                   QString const& storage_host,
-                   unsigned short storage_port,
-                   QString const& storage_user,
-                   QString const& storage_password,
-                   QString const& storage_db,
-                   unsigned int rrd_len,
-                   time_t interval_length,
-                   bool store_in_db = true);
-                 stream(stream const& s);
-                 ~stream();
-    void         process(bool in = false, bool out = true);
+                  stream(
+                    QString const& storage_type,
+                    QString const& storage_host,
+                    unsigned short storage_port,
+                    QString const& storage_user,
+                    QString const& storage_password,
+                    QString const& storage_db,
+                    unsigned int rrd_len,
+                    time_t interval_length,
+                    bool store_in_db = true);
+                  stream(stream const& s);
+                  ~stream();
+    void          process(bool in = false, bool out = true);
     QSharedPointer<io::data>
-                 read();
-    void         write(QSharedPointer<io::data> d);
+                  read();
+    void          write(QSharedPointer<io::data> d);
   };
 }
 

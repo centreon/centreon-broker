@@ -77,6 +77,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc" #
   "${SRC_DIR}/mapping/source.cc" #
   "${SRC_DIR}/misc/stringifier.cc"
+  "${SRC_DIR}/misc/global_lock.cc"
   "${SRC_DIR}/modules/handle.cc" #
   "${SRC_DIR}/modules/loader.cc" #
   "${SRC_DIR}/multiplexing/engine.cc"
@@ -118,6 +119,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/property.hh"
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/stringifier.hh"
+  "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"
