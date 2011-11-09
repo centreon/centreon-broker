@@ -239,9 +239,11 @@ QSharedPointer<io::data> failover::read() {
     // End of destination is reached, shutdown this thread.
     if (caught || data.isNull()) {
       logging::debug(logging::low)
-        << "failover: could not get event from failover thread";
+        << "failover: could not get event from failover thread "
+        << this;
       logging::info(logging::medium)
-        << "failover: requesting failover thread termination";
+        << "failover: requesting failover thread " << this
+        << " termination";
 
       // Reset lock.
       _to.clear();

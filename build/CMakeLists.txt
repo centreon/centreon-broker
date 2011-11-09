@@ -235,6 +235,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/misc/stringifier/ulong_long.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Pointer insertion.
+  set(TEST_NAME "core_misc_stringifier_pointer")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/misc/stringifier/pointer.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Mixed insertions.
   set(TEST_NAME "core_misc_stringifier_mixed")
   add_executable("${TEST_NAME}"

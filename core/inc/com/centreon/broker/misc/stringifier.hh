@@ -64,6 +64,7 @@ namespace                     misc {
     stringifier&              operator<<(unsigned long l) throw ();
     stringifier&              operator<<(unsigned long long l) throw ();
     stringifier&              operator<<(char const* str) throw ();
+    stringifier&              operator<<(void const* p) throw ();
     char const*               data() const throw ();
     void                      reset() throw ();
   };

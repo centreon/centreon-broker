@@ -33,6 +33,7 @@ using namespace com::centreon::broker::config;
  */
 void state::_internal_copy(state const& s) {
   _inputs = s._inputs;
+  _log_thread_id = s._log_thread_id;
   _loggers = s._loggers;
   _module_dir = s._module_dir;
   _outputs = s._outputs;
@@ -49,7 +50,7 @@ void state::_internal_copy(state const& s) {
 /**
  *  Default constructor.
  */
-state::state() {
+state::state() : _log_thread_id(false) {
   clear();
 }
 
@@ -84,6 +85,7 @@ state& state::operator=(state const& s) {
  */
 void state::clear() {
   _inputs.clear();
+  _log_thread_id = false;
   _loggers.clear();
   _module_dir.clear();
   _outputs.clear();
@@ -116,6 +118,25 @@ QList<endpoint> const& state::inputs() const {
  */
 QList<logger>& state::loggers() {
   return (_loggers);
+}
+
+/**
+ *  Set whether or not to log thread IDs.
+ *
+ *  @param[in] log_id true to log thread IDs.
+ */
+void state::log_thread_id(bool log_id) {
+  _log_thread_id = log_id;
+  return ;
+}
+
+/**
+ *  Get whether or not to log thread IDs.
+ *
+ *  @return true if thread IDs must be logged.
+ */
+bool state::log_thread_id() const {
+  return (_log_thread_id);
 }
 
 /**

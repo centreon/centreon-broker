@@ -40,6 +40,7 @@ namespace                               com {
         class                           state {
          private:
           QList<endpoint>               _inputs;
+          bool                          _log_thread_id;
           QList<logger>                 _loggers;
           QString                       _module_dir;
           QList<endpoint>               _outputs;
@@ -54,6 +55,8 @@ namespace                               com {
           void                          clear();
           QList<endpoint>&              inputs();
           QList<endpoint> const&        inputs() const;
+          void                          log_thread_id(bool log_id);
+          bool                          log_thread_id() const;
           QList<logger>&                loggers();
           QList<logger> const&          loggers() const;
           QString const&                module_directory() const;

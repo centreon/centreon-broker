@@ -27,6 +27,7 @@
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -131,7 +132,7 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
                                                  bool is_output,
                                                  QList<config::endpoint> const& l) {
   // Debug message.
-  logging::config << logging::MEDIUM
+  logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
 
   // Check that failover is configured.
@@ -252,11 +253,10 @@ endpoint::~endpoint() {}
 void endpoint::apply(QList<config::endpoint> const& inputs,
                      QList<config::endpoint> const& outputs) {
   // Log messages.
-  logging::config << logging::HIGH
+  logging::config(logging::high)
     << "endpoint applier: loading configuration";
-  logging::debug << logging::HIGH << "endpoint applier: "
-    << inputs.size() << " inputs and "
-    << outputs.size() << " outputs to apply";
+  logging::debug(logging::high) << "endpoint applier: " << inputs.size()
+    << " inputs and " << outputs.size() << " outputs to apply";
 
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
@@ -273,7 +273,7 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
   }
 
   // Debug message.
-  logging::debug << logging::HIGH << "endpoint applier: "
+  logging::debug(logging::high) << "endpoint applier: "
     << in_to_create.size() << " inputs to create, "
     << out_to_create.size() << " outputs to create";
 
@@ -299,10 +299,8 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       }
 
       // Run thread.
-      logging::debug << logging::MEDIUM
-        << "endpoint applier: output thread 0x"
-       << QString().setNum((qulonglong)static_cast<QObject*>(endp.data()), 16)
-        << " is registered and ready to run";
+      logging::debug(logging::medium) << "endpoint applier: output " \
+        "thread " << endp.data() << " is registered and ready to run";
       endp.take()->start();
     }
 
@@ -328,9 +326,8 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
       }
 
       // Run thread.
-      logging::debug << logging::MEDIUM
-        << "endpoint applier: input thread 0x"
-        << QString().setNum((qulonglong)static_cast<QObject*>(endp.data()), 16)
+      logging::debug(logging::medium)
+        << "endpoint applier: input thread " << endp.data()
         << " is registered and ready to run";
       endp.take()->start();
     }    
@@ -353,10 +350,8 @@ endpoint& endpoint::instance() {
  */
 void endpoint::terminated_input() {
   QObject* sendr(QObject::sender());
-  logging::debug << logging::MEDIUM
-    << "endpoint applier: input thread 0x"
-    << QString().setNum((qulonglong)sendr, 16)
-    << " terminated";
+  logging::debug(logging::medium) << "endpoint applier: input thread "
+    << sendr << " terminated";
   QMutexLocker lock(&_inputsm);
   QList<config::endpoint> keys(_inputs.keys(
     static_cast<processing::failover*>(sendr)));
@@ -374,10 +369,8 @@ void endpoint::terminated_input() {
  */
 void endpoint::terminated_output() {
   QObject* sendr(QObject::sender());
-  logging::debug << logging::MEDIUM
-    << "endpoint applier: output thread 0x"
-    << QString().setNum((qulonglong)sendr, 16)
-    << " terminated";
+  logging::debug(logging::medium) << "endpoint applier: output thread "
+    << sendr << " terminated";
   QMutexLocker lock(&_outputsm);
   QList<config::endpoint> keys(_outputs.keys(
     static_cast<processing::failover*>(sendr)));
@@ -394,11 +387,11 @@ void endpoint::terminated_output() {
  *  Unload the singleton.
  */
 void endpoint::unload() {
-  logging::debug << logging::HIGH << "endpoint applier: destruction";
+  logging::debug(logging::high) << "endpoint applier: destruction";
 
   // Exit input threads.
   {
-    logging::debug << logging::MEDIUM << "endpoint applier: " \
+    logging::debug(logging::medium) << "endpoint applier: " \
       "requesting input threads termination";
     QMutexLocker lock(&_inputsm);
 
@@ -412,7 +405,7 @@ void endpoint::unload() {
 
     // Wait for threads.
     while (!_inputs.empty()) {
-      logging::debug << logging::LOW << "endpoint applier: "
+      logging::debug(logging::low) << "endpoint applier: "
         << _inputs.size() << " input threads remaining";
       lock.unlock();
       time_t now(time(NULL));
@@ -421,14 +414,14 @@ void endpoint::unload() {
       } while (time(NULL) <= now);
       lock.relock();
     }
-    logging::debug << logging::MEDIUM << "endpoint applier: all " \
+    logging::debug(logging::medium) << "endpoint applier: all " \
       "input threads are terminated";
     _inputs.clear();
   }
 
   // Exit output threads.
   {
-    logging::debug << logging::MEDIUM << "endpoint applier: " \
+    logging::debug(logging::medium) << "endpoint applier: " \
       "requesting output threads termination";
     QMutexLocker lock(&_outputsm);
 
@@ -442,8 +435,17 @@ void endpoint::unload() {
 
     // Wait for threads.
     while (!_outputs.empty()) {
-      logging::debug << logging::LOW << "endpoint applier: "
-        << _outputs.size() << " output threads remaining";
+      misc::stringifier thread_list;
+      thread_list << *_outputs.begin();
+      for (QMap<config::endpoint, processing::failover*>::iterator
+             it = ++_outputs.begin(),
+             end = _outputs.end();
+           it != end;
+           ++it)
+        thread_list << ", " << *it;
+      logging::debug(logging::low) << "endpoint applier: "
+        << _outputs.size() << " output threads remaining: "
+        << thread_list.data();
       lock.unlock();
       time_t now(time(NULL));
       do {
@@ -451,8 +453,8 @@ void endpoint::unload() {
       } while (time(NULL) <= now);
       lock.relock();
     }
-    logging::debug << logging::MEDIUM << "endpoint applier: all " \
-      "output threads are terminated";
+    logging::debug(logging::medium) << "endpoint applier: all output " \
+      "threads are terminated";
     _outputs.clear();
   }
 }

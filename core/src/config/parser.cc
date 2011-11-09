@@ -238,6 +238,10 @@ void parser::parse(QString const& file, state& s) {
         _parse_logger(elem, logr);
         s.loggers().push_back(logr);
       }
+      else if (name == "log_thread_id") {
+        QString val(elem.text());
+        s.log_thread_id((val == "yes") || val.toInt());
+      }
       else if (name == "module_directory")
         s.module_directory(elem.text());
       else if (name == "output") {

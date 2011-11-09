@@ -27,6 +27,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker::config::applier;
@@ -92,6 +93,10 @@ void state::apply(com::centreon::broker::config::state const& s,
                   bool run_mux) {
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
+
+  // Enable or not thread ID logging.
+  com::centreon::broker::logging::file::with_thread_id(
+    s.log_thread_id());
 
   // Apply modules configuration.
   modules::instance().apply(s.module_directory(), &s);

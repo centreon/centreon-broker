@@ -230,6 +230,17 @@ stringifier& stringifier::operator<<(char const* str) throw () {
 }
 
 /**
+ *  Append a pointer to the internal buffer.
+ *
+ *  @param[in] p Pointer to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(void const* p) throw () {
+  return (_numeric_conversion("%p", p));
+}
+
+/**
  *  Get the string buffer.
  *
  *  @return String buffer.
