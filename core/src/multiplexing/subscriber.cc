@@ -116,6 +116,10 @@ subscriber::~subscriber() {
  *  @param[in] out Process output events.
  */
 void subscriber::process(bool in, bool out) {
+  // Debug message.
+  logging::debug(logging::low) << "multiplexing: subscriber " \
+    "processing request in=" << in << ", out=" << out;
+
   // Lock mutex.
   QMutexLocker lock(&_mutex);
 
