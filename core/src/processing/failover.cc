@@ -462,7 +462,7 @@ void failover::run() {
         logging::info(logging::medium)
           << "failover: buffering data before launching failover";
         time_t diff(buffering - now);
-        if (diff > _retry_interval)
+        if (diff < _retry_interval)
           QTimer::singleShot(diff * 1000, this, SLOT(quit()));
         else
           QTimer::singleShot(_retry_interval * 1000, this, SLOT(quit()));
