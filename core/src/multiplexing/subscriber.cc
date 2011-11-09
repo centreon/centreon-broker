@@ -125,7 +125,7 @@ void subscriber::process(bool in, bool out) {
 
   // Set data.
   _process_in = in;
-  _process_out = out;
+  _process_out = (_process_out && out);
 
   // Unregister.
   if (!in || !out) {

@@ -193,6 +193,8 @@ void failover::process(bool in, bool out) {
     locks.clear();
     lock.unlock();
     QThread::wait();
+    logging::debug(logging::medium) << "failover: thread "
+      << this << " terminated";
     lock.relock();
     process(true, !should_exit);
     lock.unlock();
