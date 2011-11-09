@@ -37,17 +37,8 @@ extern "C" {
       io::protocols::instance().unreg("storage");
 
       // Remove the workaround connection.
-      if (QSqlDatabase::contains()) {
-        // It is impossible to remove database if the database is
-        // already used. So this scope is use to get the connection
-        // name and destroy database to remove it after.
-        QString connection_name;
-        {
-          QSqlDatabase db(QSqlDatabase::database());
-          connection_name = db.connectionName();
-        }
-        QSqlDatabase::removeDatabase(connection_name);
-      }
+      if (QSqlDatabase::contains())
+        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     }
     return ;
   }
