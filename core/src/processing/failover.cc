@@ -22,6 +22,7 @@
 #include <QReadLocker>
 #include <QTimer>
 #include <QWriteLocker>
+#include <time.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -46,7 +47,8 @@ using namespace com::centreon::broker::processing;
  *  @param[in] is_out true if the failover thread is an output thread.
  */
 failover::failover(bool is_out)
-  : _initial(true),
+  : _buffering_timeout(0),
+    _initial(true),
     _is_out(is_out),
     _retry_interval(30),
     _immediate(true),
@@ -66,6 +68,7 @@ failover::failover(bool is_out)
 failover::failover(failover const& f)
   :  QThread(),
      io::stream(),
+     _buffering_timeout(f._buffering_timeout),
      _endpoint(f._endpoint),
      _failover(f._failover),
      _initial(true),
@@ -120,6 +123,15 @@ failover& failover::operator=(failover const& f) {
     }
   }
   return (*this);
+}
+
+/**
+ *  Get buffering timeout.
+ *
+ *  @return Failover thread buffering timeout.
+ */
+time_t failover::get_buffering_timeout() const throw () {
+  return (_buffering_timeout);
 }
 
 /**
@@ -335,6 +347,7 @@ void failover::run() {
   QMutexLocker exit_lock(&_should_exitm);
   _should_exit = false;
 
+  time_t buffering(0);
   while (!_should_exit) {
     QSharedPointer<io::stream> copy_handler;
     exit_lock.unlock();
@@ -356,6 +369,7 @@ void failover::run() {
         s->clear();
         wl.unlock();
         QSharedPointer<io::stream> tmp(_endpoint->open());
+        buffering = 0;
         wl.relock();
         emit initial_lock();
         *s = tmp;
@@ -439,6 +453,61 @@ void failover::run() {
     // Relock thread lock.
     exit_lock.relock();
 
+    // Buffering.
+    time_t now(time(NULL));
+    if (!buffering)
+      buffering = now + _buffering_timeout;
+    if (buffering > now) {
+      if (!_should_exit) {
+        logging::info(logging::medium)
+          << "failover: buffering data before launching failover";
+        time_t diff(buffering - now);
+        if (diff > _retry_interval)
+          QTimer::singleShot(diff * 1000, this, SLOT(quit()));
+        else
+          QTimer::singleShot(_retry_interval * 1000, this, SLOT(quit()));
+        exit_lock.unlock();
+        exec();
+        exit_lock.relock();
+        continue ;
+      }
+      else {
+        if (!_failover.isNull() && !_failover->isRunning()) {
+          logging::debug(logging::high)
+            << "failover: buffering is not possible, exit request " \
+               "received, launching failover";
+          connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
+          connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
+          connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
+          connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
+          _failover->start();
+          exec();
+          disconnect(
+            &*_failover,
+            SIGNAL(exception_caught()),
+            this,
+            SLOT(quit()));
+          disconnect(
+            &*_failover,
+            SIGNAL(initial_lock()),
+            this,
+            SLOT(quit()));
+          disconnect(
+            &*_failover,
+            SIGNAL(finished()),
+            this,
+            SLOT(quit()));
+          disconnect(
+            &*_failover,
+            SIGNAL(terminated()),
+            this,
+            SLOT(quit()));
+          _failover->process(false, false);
+          _failover->wait();
+        }
+      }
+    }
+
     if (!_failover.isNull() && !_failover->isRunning() && !_should_exit) {
       connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
       connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
@@ -478,6 +547,16 @@ void failover::run() {
       exit_lock.relock();
     }
   }
+  return ;
+}
+
+/**
+ *  Set buffering timeout.
+ *
+ *  @param[in] secs Buffering timeout in seconds.
+ */
+void failover::set_buffering_timeout(time_t secs) {
+  _buffering_timeout = secs;
   return ;
 }
 

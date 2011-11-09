@@ -45,6 +45,7 @@ namespace                com {
 
          private:
           // Data that doesn't require locking.
+          volatile time_t _buffering_timeout;
           QSharedPointer<io::endpoint>
                          _endpoint;
           QSharedPointer<failover>
@@ -72,11 +73,13 @@ namespace                com {
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);
+          time_t         get_buffering_timeout() const throw ();
           time_t         get_retry_interval() const throw ();
           void           process(bool in = false, bool out = false);
           QSharedPointer<io::data>
                          read();
           void           run();
+          void           set_buffering_timeout(time_t secs);
           void           set_endpoint(
                            QSharedPointer<io::endpoint> endp);
           void           set_failover(

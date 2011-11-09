@@ -36,6 +36,7 @@ using namespace com::centreon::broker::config;
  *  @param[in] e Object to copy.
  */
 void endpoint::_internal_copy(endpoint const& e) {
+  buffering_timeout = e.buffering_timeout;
   failover = e.failover;
   if (!e.failover_config.isNull())
     failover_config.reset(new endpoint(*e.failover_config));
@@ -57,7 +58,7 @@ void endpoint::_internal_copy(endpoint const& e) {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() : retry_interval(30) {}
+endpoint::endpoint() : buffering_timeout(0), retry_interval(30) {}
 
 /**
  *  Copy constructor.
@@ -94,6 +95,7 @@ endpoint& endpoint::operator=(endpoint const& e) {
  */
 bool endpoint::operator==(endpoint const& e) const {
   return ((type == e.type)
+          && (buffering_timeout == e.buffering_timeout)
           && (retry_interval == e.retry_interval)
           && (name == e.name)
           && (failover == e.failover)
@@ -124,6 +126,8 @@ bool endpoint::operator<(endpoint const& e) const {
   // Check properties that can directly be checked.
   if (type != e.type)
     return (type < e.type);
+  else if (buffering_timeout != e.buffering_timeout)
+    return (buffering_timeout < e.buffering_timeout);
   else if (retry_interval != e.retry_interval)
     return (retry_interval < e.retry_interval);
   else if (name != e.name)

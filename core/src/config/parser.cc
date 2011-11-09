@@ -44,7 +44,9 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
     QDomElement entry(nlist.item(i).toElement());
     if (!entry.isNull()) {
       QString name(entry.tagName());
-      if (name == "failover")
+      if (name == "buffering_timeout")
+        e.buffering_timeout = entry.text().toUInt();
+      else if (name == "failover")
         e.failover = entry.text();
       else if (name == "name")
         e.name = entry.text();

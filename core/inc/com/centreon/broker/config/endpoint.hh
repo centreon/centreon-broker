@@ -41,6 +41,7 @@ namespace                          com {
           void                     _internal_copy(endpoint const& e);
 
          public:
+          time_t                   buffering_timeout;
           QString                  failover;          
           QScopedPointer<endpoint> failover_config;
           QString                  name;
