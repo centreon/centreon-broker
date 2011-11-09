@@ -91,7 +91,7 @@ failover::failover(failover const& f)
 /**
  *  Destructor.
  */
-failover::~failover() {}
+failover::~failover() { QThread::wait(); }
 
 /**
  *  Assignment operator.
