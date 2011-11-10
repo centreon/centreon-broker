@@ -20,50 +20,63 @@
 #ifndef CCB_TCP_ACCEPTOR_HH_
 # define CCB_TCP_ACCEPTOR_HH_
 
+# include <QMap>
 # include <QMutex>
+# include <QObject>
 # include <QScopedPointer>
+# include <QSharedPointer>
 # include <QTcpServer>
+# include <QTcpSocket>
 # include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
 
-CCB_BEGIN()
+namespace                com {
+  namespace              centreon {
+    namespace            broker {
+      namespace          tcp {
+        /**
+         *  @class acceptor acceptor.hh "com/centreon/broker/tcp/acceptor.hh"
+         *  @brief TCP acceptor.
+         *
+         *  Accept TCP connections.
+         */
+        class            acceptor : public QObject, public io::endpoint {
+          Q_OBJECT
 
-namespace          tcp {
-  /**
-   *  @class acceptor acceptor.hh "com/centreon/broker/tcp/acceptor.hh"
-   *  @brief TCP acceptor.
-   *
-   *  Accept TCP connections.
-   */
-  class            acceptor : public io::endpoint {
-   private:
-    QString        _ca;
-    QMutex         _mutex;
-    unsigned short _port;
-    QString        _private;
-    QString        _public;
-    QScopedPointer<QTcpServer>
-                   _socket;
-    bool           _tls;
-    void           _internal_copy(acceptor const& a);
+         private:
+          QString        _ca;
+          QMap<QTcpSocket*, QSharedPointer<QMutex> >
+                         _children;
+          QMutex         _childrenm;
+          QMutex         _mutex;
+          unsigned short _port;
+          QString        _private;
+          QString        _public;
+          QScopedPointer<QTcpServer>
+                         _socket;
+          bool           _tls;
+          void           _internal_copy(acceptor const& a);
 
-   public:
-                   acceptor();
-                   acceptor(acceptor const& a);
-                   ~acceptor();
-    acceptor&      operator=(acceptor const& a);
-    void           close();
-    void           listen_on(unsigned short port);
-    QSharedPointer<io::stream>
-                   open();
-    void           set_tls(
-                     bool enable,
-                     QString const& private_key = QString(),
-                     QString const& public_cert = QString(),
-                     QString const& ca_cert = QString());
-  };
+         private slots:
+          void           _on_stream_destroy();
+
+         public:
+                         acceptor();
+                         acceptor(acceptor const& a);
+                         ~acceptor();
+          acceptor&      operator=(acceptor const& a);
+          void           close();
+          void           listen_on(unsigned short port);
+          QSharedPointer<io::stream>
+                         open();
+          void           set_tls(
+                           bool enable,
+                           QString const& private_key = QString(),
+                           QString const& public_cert = QString(),
+                           QString const& ca_cert = QString());
+        };
+      }
+    }
+  }
 }
-
-CCB_END()
 
 #endif /* !CCB_TCP_ACCEPTOR_HH_ */

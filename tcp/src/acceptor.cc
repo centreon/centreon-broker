@@ -49,6 +49,16 @@ void acceptor::_internal_copy(acceptor const& a) {
   return ;
 }
 
+/**
+ *  Called when a child TCP socket is destroyed.
+ */
+void acceptor::_on_stream_destroy() {
+  QTcpSocket* sock(static_cast<QTcpSocket*>(sender()));
+  QMutexLocker lock(&_childrenm);
+  _children.remove(sock);
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -68,7 +78,7 @@ acceptor::acceptor() : io::endpoint(true), _port(0), _tls(false) {}
  *
  *  @param[in] a Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
+acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _internal_copy(a);
 }
 
@@ -105,8 +115,20 @@ acceptor& acceptor::operator=(acceptor const& a) {
 void acceptor::close() {
   QMutexLocker lock(&_mutex);
   if (!_socket.isNull()) {
+    {
+      QMutexLocker childrenm(&_childrenm);
+      for (QMap<QTcpSocket*, QSharedPointer<QMutex> >::iterator
+             it = _children.begin(),
+             end = _children.end();
+           it != end;
+           ++it) {
+        QMutexLocker l(it->data());
+        it.key()->close();
+      }
+    }
     _socket->close();
-    _socket.reset();
+    _socket->deleteLater();
+    _socket.take();
   }
   return ;
 }
@@ -164,8 +186,20 @@ QSharedPointer<io::stream> acceptor::open() {
              << _socket->errorString());
   logging::info(logging::medium) << "TCP: new client connected";
 
+  // Create child objects.
+  QSharedPointer<QMutex> mutex(new QMutex);
+  connect(
+    incoming.data(),
+    SIGNAL(destroyed()),
+    this,
+    SLOT(_on_stream_destroy()));
+  {
+    QMutexLocker lock(&_childrenm);
+    _children[incoming.data()] = mutex;
+  }
+
   // Return object.
-  return (QSharedPointer<io::stream>(new stream(incoming)));
+  return (QSharedPointer<io::stream>(new stream(incoming, mutex)));
 }
 
 /**

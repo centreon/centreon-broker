@@ -26,6 +26,7 @@ include_directories("${INC_DIR}")
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/com/centreon/broker/tcp/acceptor.hh"
   "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
 )
 
