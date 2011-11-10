@@ -64,6 +64,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/acceptor/close_concurrent.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Close with open stream.
+  set(TEST_NAME "tcp_acceptor_close_with_open_stream")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acceptor/close_with_open_stream.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Connector tests.
   #   Concurrent close.
   set(TEST_NAME "tcp_connector_close_concurrent")
