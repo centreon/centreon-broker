@@ -454,11 +454,11 @@ void failover::run() {
     exit_lock.relock();
 
     // Buffering.
-    time_t now(time(NULL));
-    if (!buffering)
-      buffering = now + _buffering_timeout;
-    if (buffering > now) {
-      if (!_should_exit) {
+    if (!_should_exit) {
+      time_t now(time(NULL));
+      if (!buffering)
+        buffering = now + _buffering_timeout;
+      if (buffering > now) {
         logging::info(logging::medium)
           << "failover: buffering data before launching failover";
         time_t diff(buffering - now);
@@ -470,41 +470,6 @@ void failover::run() {
         exec();
         exit_lock.relock();
         continue ;
-      }
-      else {
-        if (!_failover.isNull() && !_failover->isRunning()) {
-          logging::debug(logging::high)
-            << "failover: buffering is not possible, exit request " \
-               "received, launching failover";
-          connect(&*_failover, SIGNAL(exception_caught()), SLOT(quit()));
-          connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
-          connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
-          connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
-          _failover->start();
-          exec();
-          disconnect(
-            &*_failover,
-            SIGNAL(exception_caught()),
-            this,
-            SLOT(quit()));
-          disconnect(
-            &*_failover,
-            SIGNAL(initial_lock()),
-            this,
-            SLOT(quit()));
-          disconnect(
-            &*_failover,
-            SIGNAL(finished()),
-            this,
-            SLOT(quit()));
-          disconnect(
-            &*_failover,
-            SIGNAL(terminated()),
-            this,
-            SLOT(quit()));
-          _failover->process(false, false);
-          _failover->wait();
-        }
       }
     }
 
