@@ -23,6 +23,7 @@
 #include <QSqlError>
 #include <QSqlField>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QThread>
 #include <QVariant>
 #include <QMutexLocker>
@@ -370,6 +371,40 @@ stream::stream(QString const& storage_type,
       }
     }
 
+    // Check that replication is OK.
+    {
+      logging::debug(logging::medium)
+        << "storage: checking replication status";
+      QSqlQuery q(*_storage_db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "storage: could not check replication status";
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "storage: database is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field = record.fieldName(i);
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (broker::exceptions::msg() << "storage: " \
+                          "replication is not complete: " << field
+                       << "=" << q.value(i).toString());
+          logging::info(logging::medium)
+            << "storage: database replication is complete, " \
+               "connection granted";
+        }
+      }
+    }
+
     // Prepare queries.
     _prepare();
   }
@@ -417,6 +452,40 @@ stream::stream(stream const& s) : io::stream(s) {
         _clear_qsql();
         throw (broker::exceptions::msg() << "storage: could not connect " \
                "to Centreon Storage database");
+      }
+    }
+
+    // Check that replication is OK.
+    {
+      logging::debug(logging::medium)
+        << "storage: checking replication status";
+      QSqlQuery q(*_storage_db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "storage: could not check replication status";
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "storage: database is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field = record.fieldName(i);
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (broker::exceptions::msg() << "storage: " \
+                          "replication is not complete: " << field
+                       << "=" << q.value(i).toString());
+          logging::info(logging::medium)
+            << "storage: database replication is complete, " \
+               "connection granted";
+        }
       }
     }
 

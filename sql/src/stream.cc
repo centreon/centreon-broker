@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <QPair>
 #include <QSqlError>
+#include <QSqlRecord>
 #include <QThread>
 #include <QVariant>
 #include <QVector>
@@ -1442,6 +1443,40 @@ stream::stream(QString const& type,
         throw (exceptions::msg() << "SQL: could not open SQL database");
     }
 
+    // Check that replication is OK.
+    {
+      logging::debug(logging::medium)
+        << "SQL: checking replication status";
+      QSqlQuery q(*_db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "SQL: could not check replication status";
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "SQL: database is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field = record.fieldName(i);
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (exceptions::msg() << "SQL: replication is not " \
+                          "complete: " << field << "="
+                       << q.value(i).toString());
+          logging::info(logging::medium)
+            << "SQL: database replication is complete, " \
+               "connection granted";
+        }
+      }
+    }
+
     // Prepare queries.
     _prepare();
   }
@@ -1487,6 +1522,40 @@ stream::stream(stream const& s) : io::stream(s) {
       // Open database.
       if (!_db->open())
         throw (exceptions::msg() << "SQL: could not open SQL database");
+    }
+
+    // Check that replication is OK.
+    {
+      logging::debug(logging::medium)
+        << "SQL: checking replication status";
+      QSqlQuery q(*_db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "SQL: could not check replication status";
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "SQL: database is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field = record.fieldName(i);
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (exceptions::msg() << "SQL: replication is not " \
+                          "complete: " << field << "="
+                       << q.value(i).toString());
+          logging::info(logging::medium)
+            << "SQL: database replication is complete, " \
+               "connection granted";
+        }
+      }
     }
 
     // Prepare queries.
