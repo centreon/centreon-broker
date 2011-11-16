@@ -52,10 +52,21 @@ void acceptor::_internal_copy(acceptor const& a) {
 /**
  *  Called when a child TCP socket is destroyed.
  */
-void acceptor::_on_stream_destroy() {
-  QTcpSocket* sock(static_cast<QTcpSocket*>(sender()));
+void acceptor::_on_stream_destroy(QObject* obj) {
+  if (!obj)
+    return ;
+
+  QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
+
   QMutexLocker lock(&_childrenm);
-  _children.remove(sock);
+  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
+         it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    if (it->first.data() == sock) {
+      _children.erase(it);
+      break ;
+    }
   return ;
 }
 
@@ -117,13 +128,15 @@ void acceptor::close() {
   if (!_socket.isNull()) {
     {
       QMutexLocker childrenm(&_childrenm);
-      for (QMap<QTcpSocket*, QSharedPointer<QMutex> >::iterator
+      for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
              it = _children.begin(),
              end = _children.end();
            it != end;
            ++it) {
-        QMutexLocker l(it->data());
-        it.key()->close();
+        QMutexLocker l(it->second.data());
+        QSharedPointer<QTcpSocket> sock = it->first.toStrongRef();
+        if (sock)
+          sock->close();
       }
     }
     _socket->close();
@@ -190,12 +203,13 @@ QSharedPointer<io::stream> acceptor::open() {
   QSharedPointer<QMutex> mutex(new QMutex);
   connect(
     incoming.data(),
-    SIGNAL(destroyed()),
+    SIGNAL(destroyed(QObject*)),
     this,
-    SLOT(_on_stream_destroy()));
+    SLOT(_on_stream_destroy(QObject*)));
   {
     QMutexLocker lock(&_childrenm);
-    _children[incoming.data()] = mutex;
+    QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > tmp(incoming, mutex);
+    _children.push_back(tmp);
   }
 
   // Return object.

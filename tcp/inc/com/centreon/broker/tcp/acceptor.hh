@@ -25,6 +25,7 @@
 # include <QObject>
 # include <QScopedPointer>
 # include <QSharedPointer>
+# include <QWeakPointer>
 # include <QTcpServer>
 # include <QTcpSocket>
 # include "com/centreon/broker/io/endpoint.hh"
@@ -44,7 +45,7 @@ namespace                com {
 
          private:
           QString        _ca;
-          QMap<QTcpSocket*, QSharedPointer<QMutex> >
+          QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >
                          _children;
           QMutex         _childrenm;
           QMutex         _mutex;
@@ -57,7 +58,7 @@ namespace                com {
           void           _internal_copy(acceptor const& a);
 
          private slots:
-          void           _on_stream_destroy();
+          void           _on_stream_destroy(QObject* obj);
 
          public:
                          acceptor();
