@@ -150,6 +150,7 @@ QSharedPointer<io::data> stream::read() {
   data->resize(4096);
 
   // Read data.
+  qint64 old_roffset(_roffset);
   QSharedPointer<io::data> retval;
   qint64 rb(_file.read(data->QByteArray::data(), data->size()));
   if (!rb) // XXX : io::exceptions::error
@@ -164,10 +165,32 @@ QSharedPointer<io::data> stream::read() {
     throw (e);
   }
   else {
+    // Process data.
     data->resize(rb);
     _roffset += rb;
     _coffset = _roffset;
     retval = QSharedPointer<io::data>(data.take());
+
+    // Erase read data.
+    if (!_file.seek(old_roffset))
+      logging::error(logging::medium) << "file: erase seek failed in '"
+        << _file.fileName() << "'";
+    else {
+      QByteArray eraser;
+      eraser.fill('\n', rb);
+      while (!eraser.isEmpty()) {
+        rb = _file.write(eraser.data(), eraser.size());
+        if (rb <= 0) {
+          logging::error(logging::medium)
+            << "file: erasing request failed in '" << _file.fileName()
+            << "'";
+          _coffset -= eraser.size();
+          break ;
+        }
+        else
+          eraser.resize(eraser.size() - rb);
+      }
+    }
   }
   return (retval);
 }
