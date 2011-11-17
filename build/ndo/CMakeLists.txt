@@ -20,6 +20,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/ndo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/ndo/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/ndo/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
@@ -51,6 +52,21 @@ add_library("${NDO}" SHARED
 )
 target_link_libraries("${NDO}" ${QT_LIBRARIES})
 set_target_properties("${NDO}" PROPERTIES PREFIX "")
+
+# Testing.
+if (WITH_TESTING)
+  include_directories("${PROJECT_SOURCE_DIR}/file/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+  set(TEST_LIBRARIES "${NDO}" "${STORAGE}" "${NEB}" "${CORRELATION}" "roker")
+
+  # stream tests.
+  #   Parse erased input.
+  set(TEST_NAME "ndo_stream_erased_input")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/stream/erased_input.cc")
+  target_link_libraries("${TEST_NAME}" "${FILE}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${NDO}"

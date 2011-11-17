@@ -667,9 +667,6 @@ add_subdirectory("correlation")
 # Local sockets module.
 add_subdirectory("local")
 
-# NDO module.
-add_subdirectory("ndo")
-
 # RRD module.
 add_subdirectory("rrd")
 
@@ -681,6 +678,9 @@ add_subdirectory("storage")
 
 # TCP module.
 add_subdirectory("tcp")
+
+# NDO module.
+add_subdirectory("ndo")
 
 # Print installation summary.
 message(STATUS "")
