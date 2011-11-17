@@ -80,11 +80,11 @@ void opener::close() {
  *  @return Opened stream.
  */
 QSharedPointer<io::stream> opener::open() {
-  QIODevice::OpenMode mode(QIODevice::Append);
+  QIODevice::OpenMode mode;
   if (_is_in)
-    mode |= (_is_out ? QIODevice::ReadWrite : QIODevice::ReadOnly);
+    mode = (_is_out ? QIODevice::ReadWrite : QIODevice::ReadOnly);
   else if (_is_out)
-    mode |= QIODevice::WriteOnly;
+    mode = QIODevice::WriteOnly;
   else
     throw (exceptions::msg()
              << "file: attempt to open a file with invalid flags");

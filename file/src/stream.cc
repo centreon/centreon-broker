@@ -81,12 +81,12 @@ stream::stream(QString const& filename, QIODevice::OpenMode mode)
   if (!_file.open(mode))
     throw (exceptions::msg() << "file: could not open '"
              << filename << "': " << _file.errorString());
-  _woffset = _file.pos();
   if (!_file.reset())
     throw (exceptions::msg() << "file: could not reset in '"
              << filename << "': " << _file.errorString());
   _roffset = _file.pos();
   _coffset = _roffset;
+  _woffset = _roffset + _file.size();
   _process_in = (mode & QIODevice::ReadOnly);
   _process_out = (mode & QIODevice::WriteOnly);
 }
