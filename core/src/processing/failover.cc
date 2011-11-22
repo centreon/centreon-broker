@@ -272,8 +272,14 @@ QSharedPointer<io::data> failover::read() {
       process(false, true);
 
       // Recursive data reading.
-      if (!should_exit)
+      if (!should_exit) {
+        QTimer::singleShot(
+          _buffering_timeout * 1000,
+          this,
+          SLOT(quit()));
+        exec();
 	data = this->read();
+      }
     }
   }
   // Fetch next available event.
