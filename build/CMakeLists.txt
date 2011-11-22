@@ -27,6 +27,12 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
+# Version.
+set(BROKER_MAJOR "2")
+set(BROKER_MINOR "0")
+set(BROKER_PATCH "0")
+set(BROKER_VERSION "${BROKER_MAJOR}.${BROKER_MINOR}.${BROKER_PATCH}")
+
 # Find Qt.
 find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
@@ -651,6 +657,15 @@ install(TARGETS "roker"
 install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BINARY}"
 )
+
+# Configure files.
+configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
+  "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
+configure_file("${PROJECT_SOURCE_DIR}/build/doc/header.tex.in"
+  "${PROJECT_SOURCE_DIR}/build/doc/header.tex")
+
+# Documentation.
+add_subdirectory("doc")
 
 # NEB module.
 add_subdirectory("neb")
