@@ -28,6 +28,7 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -419,6 +420,9 @@ void endpoint::unload() {
       "input threads are terminated";
     _inputs.clear();
   }
+
+  // Stop multiplexing.
+  multiplexing::engine::instance().stop();
 
   // Exit output threads.
   {

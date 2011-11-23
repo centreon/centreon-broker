@@ -28,7 +28,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "nagios/common.h"
@@ -144,9 +143,6 @@ extern "C" {
     try {
       // Deregister callbacks.
       deregister_callbacks();
-
-      // Stop multiplexing.
-      multiplexing::engine::instance().stop();
 
       // Unload singletons.
       config::applier::endpoint::instance().unload();

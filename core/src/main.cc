@@ -32,7 +32,6 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 
@@ -227,9 +226,6 @@ int main(int argc, char* argv[]) {
       << "main: unknown error, aborting execution";
     retval = 1;
   }
-
-  // Stop multiplexing.
-  multiplexing::engine::instance().stop();
 
   // Unload endpoints.
   config::applier::endpoint::instance().unload();
