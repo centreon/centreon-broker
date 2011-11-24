@@ -167,6 +167,8 @@ unsigned int stream::_find_index_id(unsigned int host_id,
     }
 
     // Insert index in cache.
+    logging::debug(logging::low) << "storage: new index " << retval
+      << " (" << host_id << ", " << service_id << ")";
     _index_cache[std::make_pair(host_id, service_id)] = retval;
   }
 
@@ -207,8 +209,8 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
       " VALUES (" << index_id << ", " << escaped_metric_name << ")";
 
     // Execute query.
-    QSqlQuery q(oss.str().c_str(), *_storage_db);
-    if (!q.exec() || q.lastError().isValid())
+    QSqlQuery q(*_storage_db);
+    if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "metric '" << metric_name << "' of index " << index_id
                << " failed: " << q.lastError().text());
@@ -235,6 +237,8 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     }
 
     // Insert metric in cache.
+    logging::debug(logging::low) << "storage: new metric "
+      << retval << " (" << index_id << ", " << metric_name << ")";
     _metric_cache[std::make_pair(index_id, metric_name)] = retval;
   }
 
@@ -257,10 +261,14 @@ void stream::_prepare() {
                << q.lastError().text());
 
     // Loop through result set.
-    while (q.next())
-      _index_cache[std::make_pair(q.value(1).toUInt(),
-        q.value(2).toUInt())]
-        = q.value(0).toUInt();
+    while (q.next()) {
+      unsigned int id(q.value(0).toUInt());
+      unsigned int host_id(q.value(1).toUInt());
+      unsigned int service_id(q.value(2).toUInt());
+      logging::debug(logging::low) << "storage: new index "
+        << id << " (" << host_id << ", " << service_id << ")";
+      _index_cache[std::make_pair(host_id, service_id)] = id;
+    }
   }
 
   // Fill metric cache.
@@ -275,10 +283,14 @@ void stream::_prepare() {
                << q.lastError().text());
 
     // Loop through result set.
-    while (q.next())
-      _metric_cache[std::make_pair(q.value(1).toUInt(),
-        q.value(2).toString())]
-          = q.value(0).toUInt();
+    while (q.next()) {
+      unsigned int metric_id(q.value(0).toUInt());
+      unsigned int index_id(q.value(1).toUInt());
+      QString name(q.value(2).toString());
+      logging::debug(logging::low) << "storage: new metric "
+        << metric_id << " (" << index_id << ", " << name << ")";
+      _metric_cache[std::make_pair(index_id, name)] = metric_id;
+    }
   }
 
   // Prepare metrics update query.
