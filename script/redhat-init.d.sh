@@ -84,6 +84,18 @@ prog=cbd-${DAEMON_NAME}
 pidfile=${PID_PATH}/${DAEMON_NAME}.pid
 
 start() {
+  if [ -f ${pidfile} ]; then
+      is_running=$(ps -edf | grep "$CBD ${CONFIG_PATH}/${DAEMON_NAME}.xml" | grep -v grep | wc -l )
+      if [ $is_running = 0 ]; then
+	  rm -f $pidfile
+      else
+          echo -n "$prog ${DAEMON_NAME} already running"
+          failure "cbd startup"
+          echo
+	  return 1
+      fi
+  fi
+
   echo -n $"Starting $prog ${DAEMON_NAME}: "
   ${CBD} ${CONFIG_PATH}/${DAEMON_NAME}.xml >/dev/null 2>&1 &
   RETVAL=$?
