@@ -274,6 +274,8 @@ QSharedPointer<io::data> failover::read() {
       // Recursive data reading.
       if (!should_exit) {
         failover* th(static_cast<failover*>(QThread::currentThread()));
+        logging::info(logging::medium) << "failover: buffering data " \
+             "before recursive read (" << _buffering_timeout << "s)";
         QTimer::singleShot(
           _buffering_timeout * 1000,
           th,
@@ -466,13 +468,13 @@ void failover::run() {
       if (!buffering)
         buffering = now + _buffering_timeout;
       if (buffering > now) {
-        logging::info(logging::medium)
-          << "failover: buffering data before launching failover";
         time_t diff(buffering - now);
-        if (diff < _retry_interval)
-          QTimer::singleShot(diff * 1000, this, SLOT(quit()));
-        else
-          QTimer::singleShot(_retry_interval * 1000, this, SLOT(quit()));
+        if (diff > _retry_interval)
+          diff = _retry_interval;
+        logging::info(logging::medium)
+          << "failover: buffering data before launching failover ("
+          << diff << "s)";
+        QTimer::singleShot(diff * 1000, this, SLOT(quit()));
         exit_lock.unlock();
         exec();
         exit_lock.relock();
