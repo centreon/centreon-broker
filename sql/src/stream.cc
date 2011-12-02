@@ -688,7 +688,7 @@ void stream::_process_host(io::data const& e) {
   neb::host const& h(*static_cast<neb::host const*>(&e));
 
   // Log message.
-  logging::info << logging::MEDIUM << "SQL: processing host event (id: "
+  logging::info(logging::medium) << "SQL: processing host event (id: "
     << h.host_id << ", name: " << h.host_name << ", instance: "
     << h.instance_id << ")";
 
@@ -696,7 +696,7 @@ void stream::_process_host(io::data const& e) {
   if (h.host_id)
     _update_on_none_insert(*_host_insert, *_host_update, h);
   else
-    logging::error << logging::HIGH << "SQL: host '"
+    logging::error(logging::high) << "SQL: host '"
       << h.host_name << "' has no ID";
 
   return ;
@@ -848,17 +848,20 @@ void stream::_process_host_state(io::data const& e) {
  *  @param[in] e Uncasted host status.
  */
 void stream::_process_host_status(io::data const& e) {
+  // Processed object.
+  neb::host_status const&
+    hs(*static_cast<neb::host_status const*>(&e));
+
   // Log message.
-  logging::info << logging::MEDIUM
-    << "SQL: processing host status event";
+  logging::info(logging::medium)
+    << "SQL: processing host status event (id: " << hs.host_id
+    << ", state (" << hs.current_state << ", " << hs.state_type << "))";
 
   // Processing.
-  neb::host_status const& hs(
-    *static_cast<neb::host_status const*>(&e));
   *_host_status_update << hs;
   _execute(*_host_status_update);
   if (_host_status_update->numRowsAffected() != 1)
-    logging::error << logging::MEDIUM << "SQL: host could not be " \
+    logging::error(logging::medium) << "SQL: host could not be " \
          "updated because host " << hs.host_id
       << " was not found in database";
 
@@ -872,7 +875,7 @@ void stream::_process_host_status(io::data const& e) {
  */
 void stream::_process_instance(io::data const& e) {
   // Log message.
-  logging::info << logging::MEDIUM << "SQL: processing instance event";
+  logging::info(logging::medium) << "SQL: processing instance event";
 
   // Clean tables.
   neb::instance const& i(*static_cast<neb::instance const*>(&e));
@@ -913,14 +916,19 @@ void stream::_process_instance_status(io::data const& e) {
  *  @param[in] e Uncasted issue.
  */
 void stream::_process_issue(io::data const& e) {
+  // Issue object.
+  correlation::issue const&
+    i(*static_cast<correlation::issue const*>(&e));
+
   // Log message.
-  logging::info << logging::MEDIUM
-    << "SQL: processing issue event";
+  logging::info(logging::medium)
+    << "SQL: processing issue event (node: (" << i.host_id << ", "
+    << i.service_id << "), start time: " << i.start_time
+    << ", end_time: " << i.end_time << ", ack time: " << i.ack_time
+    << ")";
 
   // Processing.
-  _update_on_none_insert(*_issue_insert,
-    *_issue_update,
-    *static_cast<correlation::issue const*>(&e));
+  _update_on_none_insert(*_issue_insert, *_issue_update, i);
 
   return ;
 }
@@ -931,13 +939,19 @@ void stream::_process_issue(io::data const& e) {
  *  @param[in] e Uncasted issue parent.
  */
 void stream::_process_issue_parent(io::data const& e) {
-  // Log message.
-  logging::info << logging::MEDIUM
-    << "SQL: processing issue parent event";
+  // Issue parent object.
+  correlation::issue_parent const&
+    ip(*static_cast<correlation::issue_parent const*>(&e));
 
-  // Fetch proper structure.
-  correlation::issue_parent const& ip(
-    *static_cast<correlation::issue_parent const*>(&e));
+  // Log message.
+  logging::info(logging::medium) << "SQL: processing issue parent " \
+       "event (child: (" << ip.child_host_id << ", "
+    << ip.child_service_id << ", " << ip.child_start_time
+    << "), parent: (" << ip.parent_host_id << ", "
+    << ip.parent_service_id << ", " << ip.parent_start_time
+    << "), start time: " << ip.start_time << ", end time: "
+    << ip.end_time << ")";
+
   int child_id;
   int parent_id;
 
@@ -1147,18 +1161,22 @@ void stream::_process_notification(io::data const& e) {
  *  @param[in] e Uncasted service.
  */
 void stream::_process_service(io::data const& e) {
+  // Processed object.
+  neb::service const& s(*static_cast<neb::service const*>(&e));
+
   // Log message.
-  logging::info << logging::MEDIUM << "SQL: processing service event";
+  logging::info(logging::medium) << "SQL: processing service event " \
+       "(host id: " << s.host_id << ", service_id: " << s.service_id
+    << ", description: " << s.service_description << ")";
 
   // Processing.
-  neb::service const& s(*static_cast<neb::service const*>(&e));
   if (s.host_id && s.service_id) {
     _update_on_none_insert(*_service_insert,
       *_service_update,
       s);
   }
   else
-    logging::error << logging::HIGH << "SQL: service '"
+    logging::error(logging::high) << "SQL: service '"
       << s.service_description << "' has no host ID or no service ID";
 
   return ;
@@ -1295,17 +1313,21 @@ void stream::_process_service_state(io::data const& e) {
  *  @param[in] e Uncasted service status.
  */
 void stream::_process_service_status(io::data const& e) {
+  // Processed object.
+  neb::service_status const&
+    ss(*static_cast<neb::service_status const*>(&e));
+
   // Log message.
-  logging::info << logging::MEDIUM
-    << "SQL: processing service status event";
+  logging::info(logging::medium)
+    << "SQL: processing service status event (host id: "
+    << ss.host_id << ", service id: " << ss.service_id << ", state ("
+    << ss.current_state << ", " << ss.state_type << "))";
 
   // Processing.
-  neb::service_status const& ss(
-    *static_cast<neb::service_status const*>(&e));
   *_service_status_update << ss;
   _execute(*_service_status_update);
   if (_service_status_update->numRowsAffected() != 1)
-    logging::error << logging::MEDIUM << "SQL: service could not be " \
+    logging::error(logging::medium) << "SQL: service could not be " \
          "updated because service (" << ss.host_id << ", "
       << ss.service_id << ") was not found in database";
 

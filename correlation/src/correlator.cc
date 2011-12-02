@@ -79,15 +79,15 @@ static bool should_be_unknown(node const& n) {
 
   // Debug message.
   if (all_parents_down && one_dependency_down)
-    logging::debug << logging::MEDIUM
+    logging::debug(logging::medium)
       << "correlation: unknown state of node (" << n.host_id << ", "
       << n.service_id << ") is triggered by parenting AND dependencies";
   else if (all_parents_down)
-    logging::debug << logging::MEDIUM
+    logging::debug(logging::medium)
       << "correlation: unknown state of node (" << n.host_id << ", "
       << n.service_id << ") is triggered by parenting";
   else if (one_dependency_down)
-    logging::debug << logging::MEDIUM
+    logging::debug(logging::medium)
       << "correlation: unknown state of node (" << n.host_id << ", "
       << n.service_id << ") is triggered by dependencies";
 
@@ -183,7 +183,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
 
   // Process only hard status.
   if (hss.state_type != 1) {
-    logging::debug << logging::LOW
+    logging::debug(logging::low)
       << "correlation: not processing non-hard host / service status";
     return ;
   }
@@ -212,22 +212,21 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
   if (hss.current_state
       && (hss.current_state != unknown_state(*n))
       && should_be_unknown(*n)) {
-    logging::debug << logging::MEDIUM
-      << "correlation: retagging node (" << n->host_id << ", "
-      << n->service_id << ") to unknown";
+    logging::debug(logging::medium) << "correlation: retagging node ("
+      << n->host_id << ", " << n->service_id << ") to unknown";
     hss.current_state = unknown_state(*n);
   }
 
   time_t now(time(NULL));
+  unsigned short old_state(n->state);
   bool state_changed(n->state != hss.current_state);
   if (state_changed
       || (n->in_downtime && !hss.scheduled_downtime_depth)
       || (!n->in_downtime && hss.scheduled_downtime_depth)) {
 
     // Update states.
-    logging::debug << logging::MEDIUM
-      << "correlation: node (" << n->host_id << ", "
-      << n->service_id << ") has new state event";
+    logging::debug(logging::medium) << "correlation: node ("
+      << n->host_id << ", " << n->service_id << ") has new state event";
     {
       // Old state.
       {
@@ -278,15 +277,14 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
   }
 
   if (state_changed) {
-    logging::debug << logging::MEDIUM
-      << "correlation: node (" << n->host_id << ", " << n->service_id
-      << ") changed status from " << n->state
-      << " to " << hss.current_state;
+    logging::info(logging::medium) << "correlation: node ("
+      << n->host_id << ", " << n->service_id << ") changed status from "
+      << old_state << " to " << hss.current_state;
     if (n->my_issue) {
       // Issue is over.
       if (!n->state) {
         // Debug message.
-        logging::debug << logging::MEDIUM
+        logging::info(logging::medium)
           << "correlation: issue on node (" << n->host_id
           << ", " << n->service_id << ") is over";
         
@@ -297,7 +295,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
              it != end;
              ++it)
           if ((*it)->my_issue) {
-            logging::debug << logging::LOW << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting " \
                  "issue parenting between dependent node ("
               << n->host_id << ", " << n->service_id << ") and node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -320,7 +318,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
              it != end;
              ++it)
           if ((*it)->my_issue) {
-            logging::debug << logging::LOW << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting " \
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and dependent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -351,7 +349,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  end = n->parents().end();
                it != end;
                ++it) {
-            logging::debug << logging::LOW << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting " \
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and parent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -388,7 +386,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                      end2 = (*it)->parents().end();
                    it2 != end2;
                    ++it2) {
-                logging::debug << logging::LOW << "correlation: " \
+                logging::debug(logging::low) << "correlation: " \
                      "deleting issue parenting between node ("
                   << (*it)->host_id << ", " << (*it)->service_id
                   << ") and parent node (" << (*it2)->host_id << ", "
@@ -431,7 +429,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     }
   }
   else
-    logging::debug << logging::LOW
+    logging::debug(logging::low)
       << "correlation: nothing changed since last time on node ("
       << n->host_id << ", " << n->service_id << ")";
   return ;
@@ -443,7 +441,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
  *  @param[in] e Event to process.
  */
 void correlator::_correlate_host_status(QSharedPointer<io::data> e) {
-  logging::debug << logging::MEDIUM
+  logging::debug(logging::medium)
     << "correlation: processing host status";
   _correlate_host_service_status(e, true);
   return ;
@@ -478,7 +476,7 @@ void correlator::_correlate_log(QSharedPointer<io::data> e) {
  *  @param[in] e Event to process.
  */
 void correlator::_correlate_service_status(QSharedPointer<io::data> e) {
-  logging::debug << logging::MEDIUM
+  logging::debug(logging::medium)
     << "correlation: processing service status";
   _correlate_host_service_status(e, false);
   return ;
@@ -550,7 +548,7 @@ void correlator::_issue_parenting(node* n, bool full) {
          it != end;
          ++it)
       if ((*it)->my_issue) {
-        logging::debug << logging::LOW << "correlation: creating " \
+        logging::debug(logging::low) << "correlation: creating " \
              "issue parenting between dependent node ("
           << n->host_id << ", " << n->service_id << ") and node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -579,7 +577,7 @@ void correlator::_issue_parenting(node* n, bool full) {
              end = n->parents().end();
            it != end;
            ++it) {
-        logging::debug << logging::LOW << "correlation: creating "      \
+        logging::debug(logging::low) << "correlation: creating " \
              "issue parenting between node (" << n->host_id << ", "
           << n->service_id << ") and parent node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -603,7 +601,7 @@ void correlator::_issue_parenting(node* n, bool full) {
        it != end;
        ++it)
     if (!(*it)->my_issue.isNull()) {
-      logging::debug << logging::LOW << "correlation: creating " \
+      logging::debug(logging::low) << "correlation: creating " \
            "issue parenting between node (" << n->host_id << ", "
         << n->service_id << ") and dependent node ("
         << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -639,7 +637,7 @@ void correlator::_issue_parenting(node* n, bool full) {
                end2 = (*it)->parents().end();
              it2 != end2;
              ++it2) {
-          logging::debug << logging::LOW << "correlation: " \
+          logging::debug(logging::low) << "correlation: " \
                "creating issue parenting between node ("
             << (*it)->host_id << ", " << (*it)->service_id
             << ") and parent node (" << (*it2)->host_id << ", "
@@ -833,7 +831,7 @@ void correlator::load(QString const& correlation_file,
 
   // Load configuration file.
   {
-    logging::debug(logging::medium)
+    logging::config(logging::medium)
       << "correlation: loading configuration file";
     parser p;
     p.parse(_correlation_file, false, _nodes);
@@ -841,7 +839,7 @@ void correlator::load(QString const& correlation_file,
 
   // Load retention file.
   if (!_retention_file.isEmpty() && QFile::exists(_retention_file)) {
-    logging::debug(logging::medium)
+    logging::config(logging::medium)
       << "correlation: loading retention file";
     parser p;
     p.parse(_retention_file, true, _nodes);
@@ -854,9 +852,9 @@ void correlator::load(QString const& correlation_file,
        it != end;
        ++it)
     if (!it->my_issue.isNull()) {
-      logging::debug(logging::medium)
-        << "correlation: reopening issue of node ("
-        << it->host_id << ", " << it->service_id << ")";
+      logging::info(logging::medium)
+        << "correlation: reopening issue of node (" << it->host_id
+        << ", " << it->service_id << "), state " << it->state;
       _events.push_back(
         QSharedPointer<io::data>(new issue(*(it->my_issue))));
     }
@@ -943,7 +941,7 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
  */
 void correlator::starting() {
   // Send engine state.
-  logging::debug << logging::MEDIUM << "correlation: engine starting";
+  logging::info(logging::medium) << "correlation: engine starting";
   QSharedPointer<engine_state> es(new engine_state);
   es->started = true;
   _events.push_front(es.staticCast<io::data>());
@@ -954,7 +952,7 @@ void correlator::starting() {
  *  Stop event correlation.
  */
 void correlator::stopping() {
-  logging::debug << logging::MEDIUM
+  logging::info(logging::medium)
     << "correlation: engine shutting down";
 
   // Dump correlation state.
@@ -1052,7 +1050,7 @@ void correlator::update() {
        new_it != new_end;
        ++new_it) {
     if ((old_it == old_end) || (new_it.key() < old_it.key())) {
-      logging::debug(logging::low) << "correlation: adding new node ("
+      logging::info(logging::low) << "correlation: adding new node ("
         << new_it->host_id << ", " << new_it->service_id << ")";
       _nodes[new_it.key()] = *new_it;
     }
@@ -1097,7 +1095,7 @@ void correlator::write(QSharedPointer<io::data> e) {
     }
   }
   catch (exceptions::msg const& e) {
-    logging::error << logging::HIGH << e.what();
+    logging::error(logging::high) << e.what();
   }
   return ;
 }
