@@ -20,33 +20,43 @@
 #ifndef CCB_NDO_ACCEPTOR_HH_
 # define CCB_NDO_ACCEPTOR_HH_
 
+# include <QThread>
+# include <QVector>
 # include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
 
-CCB_BEGIN()
+namespace           com {
+  namespace         centreon {
+    namespace       broker {
+      namespace     ndo {
+        /**
+         *  @class acceptor acceptor.hh "com/centreon/broker/ndo/acceptor.hh"
+         *  @brief NDO acceptor.
+         *
+         *  Accept incoming NDO connections.
+         */
+        class       acceptor : public QObject, public io::endpoint {
+          Q_OBJECT
 
-namespace     ndo {
-  /**
-   *  @class acceptor acceptor.hh "com/centreon/broker/ndo/acceptor.hh"
-   *  @brief NDO acceptor.
-   *
-   *  Accept incoming NDO connections.
-   */
-  class       acceptor : public io::endpoint {
-   private:
-    bool      _is_out;
+         private:
+          bool      _is_out;
+          QVector<QThread*>
+                    _threads;
 
-   public:
-              acceptor(bool is_out);
-              acceptor(acceptor const& a);
-              ~acceptor();
-    acceptor& operator=(acceptor const& a);
-    void      close();
-    QSharedPointer<io::stream>
-              open();
-  };
+         private slots:
+          void      _on_thread_termination();
+
+         public:
+                    acceptor(bool is_out);
+                    acceptor(acceptor const& a);
+                    ~acceptor();
+          acceptor& operator=(acceptor const& a);
+          void      close();
+          QSharedPointer<io::stream>
+                    open();
+        };
+      }
+    }
+  }
 }
-
-CCB_END()
 
 #endif /* !CCB_NDO_ACCEPTOR_HH_ */

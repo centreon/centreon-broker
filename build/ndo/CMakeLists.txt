@@ -26,6 +26,11 @@ include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
+# Some files must be processed by Qt's moc.
+unset(QT_WRAPPED_SOURCES)
+qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/com/centreon/broker/ndo/acceptor.hh")
+
 # NDO module.
 set(NDO "80-ndo")
 set(NDO "${NDO}" PARENT_SCOPE)
@@ -41,6 +46,7 @@ add_library("${NDO}" SHARED
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/temp_mapping.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
+  ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/com/centreon/broker/ndo/acceptor.hh"
   "${INC_DIR}/com/centreon/broker/ndo/connector.hh"

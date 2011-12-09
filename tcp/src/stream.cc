@@ -133,11 +133,13 @@ QSharedPointer<io::data> stream::read() {
                 ? 200
                 : _timeout))
             && (_timeout != -1)
-            && (_socket->state() != QAbstractSocket::UnconnectedState)))
+            && ((_socket->state() != QAbstractSocket::UnconnectedState)
+                || (_socket->bytesAvailable() <= 0))))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
                << "TCP stream is shutdown");
   } while (!ret
-           && _socket->error() == QAbstractSocket::SocketTimeoutError);
+           && (_socket->error()
+               == QAbstractSocket::SocketTimeoutError));
 
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));

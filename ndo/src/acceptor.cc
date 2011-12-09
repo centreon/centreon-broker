@@ -30,6 +30,29 @@ using namespace com::centreon::broker::ndo;
 
 /**************************************
 *                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Called when a thread terminates.
+ */
+void acceptor::_on_thread_termination() {
+  QThread* th(static_cast<QThread*>(QObject::sender()));
+  for (QVector<QThread*>::iterator
+         it = _threads.begin(),
+         end = _threads.end();
+       it != end;
+       ++it)
+    if (th == *it) {
+      _threads.erase(it);
+      break ;
+    }
+  return ;
+}
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -53,7 +76,15 @@ acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+acceptor::~acceptor() {
+  _from.clear();
+  for (QVector<QThread*>::iterator
+         it = _threads.begin(),
+         end = _threads.end();
+       it != end;
+       ++it)
+    (*it)->wait();
+}
 
 /**
  *  Assignment operator.
@@ -109,7 +140,17 @@ QSharedPointer<io::stream> acceptor::open() {
       // Feeder thread.
       QScopedPointer<processing::feeder> feedr(new processing::feeder);
       feedr->prepare(in, out);
-      QObject::connect(feedr.data(), SIGNAL(finished()), feedr.data(), SLOT(deleteLater()));
+      QObject::connect(
+        feedr.data(),
+        SIGNAL(finished()),
+        this,
+        SLOT(_on_thread_termination()));
+      _threads.push_back(feedr.data());
+      QObject::connect(
+        feedr.data(),
+        SIGNAL(finished()),
+        feedr.data(),
+        SLOT(deleteLater()));
       processing::feeder* f(feedr.take());
       f->start();
     }
