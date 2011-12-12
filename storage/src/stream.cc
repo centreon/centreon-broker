@@ -47,6 +47,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::storage;
 
+#define BAM_NAME "_Module_"
+
 /**************************************
 *                                     *
 *           Static Objects            *
@@ -131,13 +133,22 @@ unsigned int stream::_find_index_id(unsigned int host_id,
     std::ostringstream oss;
     oss << "INSERT INTO index_data (" \
            "  host_id, host_name," \
-           "  service_id, service_description, must_be_rebuild)" \
+           "  service_id, service_description, " \
+           "  must_be_rebuild, special)" \
            " VALUES (" << host_id << ", :host_name, " << service_id
-        << ", :service_description, 1)";
+        << ", :service_description, 1, :special)";
     QSqlQuery q(*_storage_db);
     q.prepare(oss.str().c_str());
     q.bindValue(":host_name", host_name);
     q.bindValue(":service_description", service_desc);
+    q.bindValue(
+      ":special",
+      !strncmp(
+        host_name.toStdString().c_str(),
+        BAM_NAME,
+        sizeof(BAM_NAME) - 1)
+      ? 2
+      : 1);
 
     // Execute query.
     if (!q.exec() || q.lastError().isValid())
@@ -673,13 +684,22 @@ void stream::write(QSharedPointer<io::data> data) {
     std::ostringstream oss;
     oss << "UPDATE index_data" \
            " SET host_name=:host_name," \
-           "     service_description=:service_description" \
+           "     service_description=:service_description," \
+           "     special=:special" \
            " WHERE host_id=" << s->host_id
         << " AND service_id=" << s->service_id;
     QSqlQuery q(*_storage_db);
     q.prepare(oss.str().c_str());
     q.bindValue(":host_name", s->host_name);
     q.bindValue(":service_description", s->service_description);
+    q.bindValue(
+      ":special",
+      !strncmp(
+        s->host_name.toStdString().c_str(),
+        BAM_NAME,
+        sizeof(BAM_NAME) - 1)
+      ? 2
+      : 1);
     if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not update " \
                   "service information in index_data (host_id "
