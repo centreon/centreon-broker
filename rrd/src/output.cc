@@ -185,7 +185,7 @@ void output::write(QSharedPointer<io::data> d) {
       _backend->update(e->ctime, oss2.str().c_str());
     }
     catch (exceptions::update const& b) {
-      logging::error << logging::MEDIUM << b.what() << " (ignored)";
+      logging::error(logging::low) << b.what() << " (ignored)";
     }
   }
   else if (d->type() == "com::centreon::broker::storage::status") {
