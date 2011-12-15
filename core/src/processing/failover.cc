@@ -326,6 +326,8 @@ void failover::run() {
     connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
     connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
     connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
+    logging::info(logging::medium) << "failover: launching failover " \
+      "thread " << _failover.data();
     _failover->start();
     exec();
     disconnect(
@@ -487,6 +489,8 @@ void failover::run() {
       connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
       connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
       connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
+      logging::info(logging::medium) << "failover: launching " \
+        "failover thread " << _failover.data();
       _failover->start();
       exec();
       disconnect(

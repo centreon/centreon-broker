@@ -168,6 +168,8 @@ QSharedPointer<io::stream> connector::open() {
   }
   else {
     // Launch connection process.
+    logging::info(logging::medium) << "TCP: connecting to "
+      << _host << ":" << _port;
     _socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
     _socket->connectToHost(_host, _port);
 
