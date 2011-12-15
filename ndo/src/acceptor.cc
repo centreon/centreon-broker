@@ -69,7 +69,7 @@ acceptor::acceptor(bool is_out) : io::endpoint(true), _is_out(is_out) {}
  *
  *  @param[in] a Object to copy.
  */
-acceptor::acceptor(acceptor const& a) : io::endpoint(a) {
+acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _is_out = a._is_out;
 }
 
