@@ -34,8 +34,13 @@ set(BROKER_PATCH "0")
 set(BROKER_VERSION "${BROKER_MAJOR}.${BROKER_MINOR}.${BROKER_PATCH}")
 
 # Find Qt.
-find_package(Qt4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+find_package(Qt4 4.5.0 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
+set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
+    OR ("${QT_VERSION}" VERSION_EQUAL "4.7.1"))
+  message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
+endif ()
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
@@ -706,6 +711,10 @@ message(STATUS "      - Version             ${CMAKE_SYSTEM_VERSION}")
 message(STATUS "      - Processor           ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "    Compiler                ${CMAKE_CXX_COMPILER}")
 message(STATUS "      - Flags               ${CMAKE_CXX_FLAGS}")
+message(STATUS "    Centreon Broker")
+message(STATUS "      - Version             ${BROKER_VERSION}")
+message(STATUS "    Qt")
+message(STATUS "      - Version             ${QT_VERSION}")
 message(STATUS "    Installation Directory  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "      - Archive Directory   ${PREFIX_ARCHIVE}")
 message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
