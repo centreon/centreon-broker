@@ -52,6 +52,7 @@ namespace                com {
                          _failover;
           bool           _initial;
           bool           _is_out;
+          QString        _name;
           volatile time_t _retry_interval;
 
           // Retained data.
@@ -84,6 +85,7 @@ namespace                com {
                            QSharedPointer<io::endpoint> endp);
           void           set_failover(
                            QSharedPointer<processing::failover> fo);
+          void           set_name(QString const& name);
           void           set_retry_interval(time_t retry_interval);
           bool           wait(unsigned long time = ULONG_MAX);
           void           write(QSharedPointer<io::data> d);
