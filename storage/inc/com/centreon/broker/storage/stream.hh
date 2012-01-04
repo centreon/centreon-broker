@@ -29,6 +29,7 @@
 # include <QString>
 # include <utility>
 # include "com/centreon/broker/io/stream.hh"
+# include "com/centreon/broker/multiplexing/hooker.hh"
 # include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -41,7 +42,7 @@ namespace         storage {
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centstorage DB.
    */
-  class           stream : public io::stream {
+  class           stream : public multiplexing::hooker {
    private:
     std::map<std::pair<unsigned int, unsigned int>, unsigned int>
                   _index_cache;
@@ -86,6 +87,8 @@ namespace         storage {
     void          process(bool in = false, bool out = true);
     QSharedPointer<io::data>
                   read();
+    void          starting();
+    void          stopping();
     void          write(QSharedPointer<io::data> d);
   };
 }

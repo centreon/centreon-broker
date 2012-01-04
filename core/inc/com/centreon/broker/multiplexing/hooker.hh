@@ -44,7 +44,7 @@ namespace              com {
                        hooker(hooker const& h);
           virtual      ~hooker();
           hooker&      operator=(hooker const &h);
-          void         process(bool in = false, bool out = true);
+          virtual void process(bool in = false, bool out = true);
           virtual void starting() = 0;
           virtual void stopping() = 0;
         };

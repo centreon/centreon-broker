@@ -33,6 +33,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -364,6 +365,9 @@ stream::stream(QString const& storage_type,
   // Process events.
   _process_out = true;
 
+  // Register with multiplexer.
+  multiplexing::engine::instance().hook(*this);
+
   // Store in DB.
   _store_in_db = store_in_db;
 
@@ -453,9 +457,12 @@ stream::stream(QString const& storage_type,
  *
  *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) : io::stream(s) {
+stream::stream(stream const& s) : multiplexing::hooker(s) {
   // Processing.
   _process_out = s._process_out;
+
+  // Register with multiplexer.
+  multiplexing::engine::instance().hook(*this);  
 
   // Store in DB.
   _store_in_db = s._store_in_db;
@@ -536,6 +543,9 @@ stream::stream(stream const& s) : io::stream(s) {
  *  Destructor.
  */
 stream::~stream() {
+  // Unregister from multiplexer.
+  multiplexing::engine::instance().unhook(*this);
+
   // Connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
@@ -570,6 +580,21 @@ QSharedPointer<io::data> stream::read() {
   throw (broker::exceptions::msg() << "storage: attempt to read from " \
            "a storage stream (software bug)");
   return (QSharedPointer<io::data>());
+}
+
+/**
+ *  Multiplexing starts.
+ */
+void stream::starting() {
+  return ;
+}
+
+/**
+ *  Multiplexing stopped.
+ */
+void stream::stopping() {
+  _process_out = false;
+  return ;
 }
 
 /**
