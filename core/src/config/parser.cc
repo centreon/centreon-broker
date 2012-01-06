@@ -135,10 +135,10 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
           l.level(com::centreon::broker::logging::LOW);
         else if ((val == 2) || (val_str == "medium"))
           l.level(com::centreon::broker::logging::MEDIUM);
-        else if ((val == 0) || (val_str == "none"))
-          l.level(com::centreon::broker::logging::NONE);
-        else
+        else if ((val == 1) || (val_str == "low"))
           l.level(com::centreon::broker::logging::HIGH);
+        else
+          l.level(com::centreon::broker::logging::NONE);
       }
       else if (name == "name")
         l.name(entry.text());
