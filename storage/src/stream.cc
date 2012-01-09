@@ -365,9 +365,6 @@ stream::stream(QString const& storage_type,
   // Process events.
   _process_out = true;
 
-  // Register with multiplexer.
-  multiplexing::engine::instance().hook(*this);
-
   // Store in DB.
   _store_in_db = store_in_db;
 
@@ -434,6 +431,9 @@ stream::stream(QString const& storage_type,
 
     // Prepare queries.
     _prepare();
+
+    // Register with multiplexer.
+    multiplexing::engine::instance().hook(*this);
   }
   catch (...) {
     {
@@ -460,9 +460,6 @@ stream::stream(QString const& storage_type,
 stream::stream(stream const& s) : multiplexing::hooker(s) {
   // Processing.
   _process_out = s._process_out;
-
-  // Register with multiplexer.
-  multiplexing::engine::instance().hook(*this);  
 
   // Store in DB.
   _store_in_db = s._store_in_db;
@@ -521,6 +518,9 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
 
     // Prepare queries.
     _prepare();
+
+    // Register with multiplexer.
+    multiplexing::engine::instance().hook(*this);  
   }
   catch (...) {
     {
