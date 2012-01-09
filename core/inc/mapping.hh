@@ -92,8 +92,9 @@ namespace              com {
 
                        mapped_data(QString T::* S,
                          unsigned int i,
-                         char const* n)
-          : id(i), name(n), null_on_zero(false), type(STRING)
+                         char const* n,
+                         bool noz = false)
+          : id(i), name(n), null_on_zero(noz), type(STRING)
         { member.S = S; }
 
                        mapped_data(time_t T::* t,

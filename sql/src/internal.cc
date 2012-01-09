@@ -117,7 +117,26 @@ static void get_string(T const& t,
                        QSqlQuery& q) {
   std::string field(":");
   field.append(name);
-  q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
+  q.bindValue(field.c_str(), QVariant(t.*(member.S)));
+  return ;
+}
+
+/**
+ *  Get a string that might be null from an object.
+ */
+template <typename T>
+static void get_string_might_be_null(T const& t,
+                                     std::string const& name,
+                                     data_member<T> const& member,
+                                     QSqlQuery& q) {
+  std::string field(":");
+  field.append(name);
+  // Not-NULL.
+  if (!(t.*(member.S)).isEmpty())
+    q.bindValue(field.c_str(), QVariant(t.*(member.S)));
+  // NULL.
+  else
+    q.bindValue(field.c_str(), QVariant(QVariant::String));
   return ;
 }
 
@@ -209,7 +228,10 @@ static void static_init() {
         gs.getter = &get_short<T>;
         break ;
        case mapped_data<T>::STRING:
-        gs.getter = &get_string<T>;
+        if (mapped_type<T>::members[i].null_on_zero)
+          gs.getter = &get_string_might_be_null<T>;
+        else
+          gs.getter = &get_string<T>;
         break ;
        case mapped_data<T>::TIME_T:
         if (mapped_type<T>::members[i].null_on_zero)

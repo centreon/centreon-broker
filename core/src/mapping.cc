@@ -1324,7 +1324,8 @@ static mapped_data<log_entry> log_mapping[] = {
   mapped_data<log_entry>(
     &log_entry::service_description,
     NDO_DATA_SERVICEDESCRIPTION,
-    "service_description"),
+    "service_description",
+    true),
   mapped_data<log_entry>(
     &log_entry::service_id,
     NDO_DATA_SERVICEID,
