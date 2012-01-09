@@ -577,8 +577,6 @@ void stream::process(bool in, bool out) {
  *  @return Does not return, throw an exception.
  */
 QSharedPointer<io::data> stream::read() {
-  throw (broker::exceptions::msg() << "storage: attempt to read from " \
-           "a storage stream (software bug)");
   return (QSharedPointer<io::data>());
 }
 
