@@ -117,7 +117,7 @@ static void get_string(T const& t,
                        QSqlQuery& q) {
   std::string field(":");
   field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.S)));
+  q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
   return ;
 }
 
@@ -133,7 +133,7 @@ static void get_string_might_be_null(T const& t,
   field.append(name);
   // Not-NULL.
   if (!(t.*(member.S)).isEmpty())
-    q.bindValue(field.c_str(), QVariant(t.*(member.S)));
+    q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
   // NULL.
   else
     q.bindValue(field.c_str(), QVariant(QVariant::String));
