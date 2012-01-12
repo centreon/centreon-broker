@@ -433,7 +433,7 @@ stream::stream(QString const& storage_type,
     _prepare();
 
     // Register with multiplexer.
-    multiplexing::engine::instance().hook(*this);
+    multiplexing::engine::instance().hook(*this, false);
   }
   catch (...) {
     {
@@ -520,7 +520,7 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
     _prepare();
 
     // Register with multiplexer.
-    multiplexing::engine::instance().hook(*this);  
+    multiplexing::engine::instance().hook(*this, false);
   }
   catch (...) {
     {

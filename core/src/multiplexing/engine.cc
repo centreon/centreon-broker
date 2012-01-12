@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,7 @@
 #include <QScopedPointer>
 #include <QVector>
 #include <stdlib.h>
+#include <utility>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -39,7 +40,7 @@ using namespace com::centreon::broker::multiplexing;
 **************************************/
 
 // Hooks.
-static QVector<hooker*> _hooks;
+static QVector<std::pair<hooker*, bool> > _hooks;
 
 // Pointer.
 QScopedPointer<engine> engine::_instance;
@@ -76,10 +77,10 @@ void engine::_nop(QSharedPointer<io::data> d) {
  */
 void engine::_on_hook_destroy(QObject* obj) {
   QMutexLocker lock(&_mutex);
-  for (QVector<hooker*>::iterator
+  for (QVector<std::pair<hooker*, bool> >::iterator
          it = _hooks.begin();
        it != _hooks.end();)
-    if (*it == obj)
+    if (it->first == obj)
       it = _hooks.erase(it);
     else
       ++it;
@@ -117,18 +118,19 @@ void engine::_write(QSharedPointer<io::data> e) {
 
     try {
       // Send object to every hook.
-      for (QVector<hooker*>::iterator
+      for (QVector<std::pair<hooker*, bool> >::iterator
              it = _hooks.begin(),
              end = _hooks.end();
            it != end;
-           ++it) {
-        (*it)->write(e);
-        QSharedPointer<io::data> d((*it)->read());
-        while (!d.isNull()) {
-          _kiew.enqueue(d);
-          d = (*it)->read();
+           ++it)
+        if (it->second) {
+          it->first->write(e);
+          QSharedPointer<io::data> d(it->first->read());
+          while (!d.isNull()) {
+            _kiew.enqueue(d);
+            d = it->first->read();
+          }
         }
-      }
 
       // Send events to subscribers.
       _send_to_subscribers();
@@ -194,11 +196,12 @@ engine::~engine() {}
 /**
  *  Set a hook.
  *
- *  @param[in] h Hook.
+ *  @param[in] h    Hook.
+ *  @param[in] data Write data to hook.
  */
-void engine::hook(hooker& h) {
+void engine::hook(hooker& h, bool data) {
   QMutexLocker lock(&_mutex);
-  _hooks.push_back(&h);
+  _hooks.push_back(std::make_pair(&h, data));
   return ;
 }
 
@@ -252,18 +255,18 @@ void engine::start() {
     _kiew.clear();
 
     // Notify hooks of multiplexing loop start.
-    for (QVector<hooker*>::iterator
+    for (QVector<std::pair<hooker*, bool> >::iterator
            it = _hooks.begin(),
            end = _hooks.end();
          it != end;
          ++it) {
-      (*it)->starting();
+      it->first->starting();
 
       // Read events from hook.
-      QSharedPointer<io::data> d((*it)->read());
+      QSharedPointer<io::data> d(it->first->read());
       while (!d.isNull()) {
         _kiew.enqueue(d);
-        d = (*it)->read();
+        d = it->first->read();
       }
     }
 
@@ -287,18 +290,18 @@ void engine::stop() {
     // Notify hooks of multiplexing loop end.
     logging::debug << logging::HIGH << "multiplexing: stopping";
     QMutexLocker lock(&_mutex);
-    for (QVector<hooker*>::iterator
+    for (QVector<std::pair<hooker*, bool> >::iterator
            it = _hooks.begin(),
            end = _hooks.end();
          it != end;
          ++it) {
-      (*it)->stopping();
+      it->first->stopping();
 
       // Read events from hook.
-      QSharedPointer<io::data> d((*it)->read());
+      QSharedPointer<io::data> d(it->first->read());
       while (!d.isNull()) {
         _kiew.enqueue(d);
-        d = (*it)->read();
+        d = it->first->read();
       }
     }
 
@@ -318,9 +321,9 @@ void engine::stop() {
  */
 void engine::unhook(hooker& h) {
   QMutexLocker lock(&_mutex);
-  for (QVector<hooker*>::iterator it = _hooks.begin();
+  for (QVector<std::pair<hooker*, bool> >::iterator it = _hooks.begin();
        it != _hooks.end();)
-    if (*it == &h)
+    if (it->first == &h)
       it = _hooks.erase(it);
     else
       ++it;

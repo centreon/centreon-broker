@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,7 +56,7 @@ namespace                 com {
 
          public:
                           ~engine();
-          void            hook(hooker& h);
+          void            hook(hooker& h, bool data = true);
           static engine&  instance();
           static void     load();
           void            publish(QSharedPointer<io::data> d);
