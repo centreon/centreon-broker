@@ -85,7 +85,7 @@ void stream::_clean_tables(int instance_id) {
   {
     std::ostringstream ss;
     ss << "UPDATE " << mapped_type<neb::host>::table
-       << " JOIN " << mapped_type<neb::service>::table << " ON "
+       << " LEFT JOIN " << mapped_type<neb::service>::table << " ON "
        << mapped_type<neb::host>::table << ".host_id="
        << mapped_type<neb::service>::table << ".host_id SET "
        << mapped_type<neb::host>::table << ".enabled=0, "
