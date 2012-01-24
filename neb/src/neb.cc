@@ -31,6 +31,7 @@
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "nagios/common.h"
+#include "nagios/nagios.h"
 #include "nagios/nebcallbacks.h"
 
 using namespace com::centreon::broker;
@@ -40,7 +41,8 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 // Centreon Engine/Nagios function.
 extern "C" {
-  extern int schedule_new_event(int, int, time_t, int, unsigned long, void*, int, void*, void*, int);
+  extern timed_event* event_list_high;
+  extern timed_event* event_list_high_tail;
 }
 
 /**************************************
@@ -149,8 +151,19 @@ extern "C" {
       config::applier::modules::instance().unload();
 
       // Deregister Qt application object.
-      if (gl_initialized_qt)
+      if (gl_initialized_qt) {
+        timed_event* te(NULL);
+        for (timed_event* current = event_list_high;
+             current != event_list_high_tail;
+             current = current->next)
+          if (current->event_data == (void*)process_qcore) {
+            te = current;
+            break ;
+          }
+        if (te)
+          remove_event(te, &event_list_high, &event_list_high_tail);
         delete [] QCoreApplication::instance();
+      }
     }
     // Avoid exception propagation in C code.
     catch (...) {}
@@ -206,20 +219,8 @@ extern "C" {
       "cb2db.");
 
     // Initialize Qt if not already done by parent process.
-    if (!QCoreApplication::instance()) {
+    if (!QCoreApplication::instance())
       new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
-      schedule_new_event(
-        99,
-        1,
-        time(NULL) + 1,
-        1,
-        1,
-        NULL,
-        1,
-        (void*)process_qcore,
-        NULL,
-        0);
-    }
 
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);
@@ -263,6 +264,18 @@ extern "C" {
       }
       else
         gl_callbacks[i].registered = true;
+
+    schedule_new_event(
+      99,
+      1,
+      time(NULL) + 1,
+      1,
+      1,
+      NULL,
+      1,
+      (void*)process_qcore,
+      NULL,
+      0);
 
     return (0);
   }
