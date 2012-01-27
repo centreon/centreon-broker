@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -43,6 +43,7 @@ namespace                  com {
           short            acknowledgement_type;
           QString          author;
           QString          comment;
+          time_t           deletion_time;
           time_t           entry_time;
           unsigned int     host_id;
           unsigned int     instance_id;

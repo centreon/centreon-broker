@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -44,6 +44,7 @@ void acknowledgement::_internal_copy(acknowledgement const& ack) {
   acknowledgement_type = ack.acknowledgement_type;
   author = ack.author;
   comment = ack.comment;
+  deletion_time = ack.deletion_time;
   entry_time = ack.entry_time;
   host_id = ack.host_id;
   instance_id = ack.instance_id;
@@ -69,6 +70,7 @@ void acknowledgement::_internal_copy(acknowledgement const& ack) {
  */
 acknowledgement::acknowledgement()
   : acknowledgement_type(0),
+    deletion_time(0),
     entry_time(0),
     host_id(0),
     instance_id(0),

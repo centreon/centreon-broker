@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -42,6 +42,7 @@ using namespace com::centreon::broker::neb;
 void downtime::_internal_copy(downtime const& d) {
   author = d.author;
   comment = d.comment;
+  deletion_time = d.deletion_time;
   downtime_type = d.downtime_type;
   duration = d.duration;
   end_time = d.end_time;
@@ -70,7 +71,8 @@ void downtime::_internal_copy(downtime const& d) {
  *  Set all members to their default value (0, NULL or equivalent).
  */
 downtime::downtime()
-  : downtime_type(0),
+  : deletion_time(0),
+    downtime_type(0),
     duration(0),
     end_time(0),
     entry_time(0),
