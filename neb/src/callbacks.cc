@@ -200,6 +200,8 @@ int neb::callback_comment(int callback_type, void* data) {
   return (0);
 }
 
+// Private structure.
+struct private_downtime_params { time_t deletion_time; bool started; };
 /**
  *  @brief Function that process downtime data.
  *
@@ -213,10 +215,10 @@ int neb::callback_comment(int callback_type, void* data) {
  */
 int neb::callback_downtime(int callback_type, void* data) {
   // Unstarted downtimes.
-  std::set<unsigned int> unstarted;
+  static std::map<unsigned int, private_downtime_params> downtimes;
 
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating downtime event";
   (void)callback_type;
 
@@ -257,25 +259,22 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->triggered_by = downtime_data->triggered_by;
     if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
         || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
-      downtime->was_started = true;
-      unstarted.insert(downtime_data->downtime_id);
+      downtimes[downtime->internal_id].deletion_time = 0;
+      downtimes[downtime->internal_id].started = false;
     }
-    if ((NEBTYPE_DOWNTIME_START == downtime_data->type)
-       || (NEBTYPE_DOWNTIME_STOP == downtime_data->type)) {
-      downtime->was_started = true;
-      unstarted.erase(downtime_data->downtime_id);
+    else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
+      downtimes[downtime->internal_id].started = true;
     }
-    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type) {
-      downtime->was_cancelled = true;
-      std::set<unsigned int>::iterator it;
-      it = unstarted.find(downtime_data->downtime_id);
-      if (it != unstarted.end()) {
-        downtime->was_started = false;
-        unstarted.erase(it);
-      }
-      else
-        downtime->was_started = true;
+    else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
+      if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
+        downtimes[downtime->internal_id].deletion_time = time(NULL);
     }
+    downtime->deletion_time
+      = downtimes[downtime->internal_id].deletion_time;
+    downtime->was_cancelled = (downtime->deletion_time != 0);
+    downtime->was_started = downtimes[downtime->internal_id].started;
+    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
+      downtimes.erase(downtime->internal_id);
 
     // Send event.
     gl_publisher.write(downtime.staticCast<io::data>());
