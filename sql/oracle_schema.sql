@@ -449,6 +449,7 @@ CREATE TABLE acknowledgements (
 
   author varchar(64) default NULL,
   comment_data varchar(255) default NULL,
+  deletion_time int default NULL,
   instance_id int default NULL,
   notify_contacts char(1) default NULL,
   persistent_comment char(1) default NULL,
@@ -557,6 +558,7 @@ CREATE TABLE downtimes (
   author varchar(64) default NULL,
   cancelled char(1) default NULL,
   comment_data clob default NULL,
+  deletion_time int default NULL,
   duration int default NULL,
   end_time int default NULL,
   fixed char(1) default NULL,
