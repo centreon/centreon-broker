@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -43,6 +43,9 @@
 
 using namespace com::centreon::broker;
 
+// Acknowledgement list.
+static std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+acknowledgements;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
@@ -87,7 +90,7 @@ static QString extract_xml_text(QString const& str) {
  */
 int neb::callback_acknowledgement(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating acknowledgement event";
   (void)callback_type;
 
@@ -124,6 +127,8 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack->notify_contacts = ack_data->notify_contacts;
     ack->persistent_comment = ack_data->persistent_comment;
     ack->state = ack_data->state;
+    acknowledgements[std::make_pair(ack->host_id, ack->service_id)]
+      = *ack;
 
     // Send event.
     gl_publisher.write(ack.staticCast<io::data>());
@@ -579,7 +584,7 @@ int neb::callback_host_check(int callback_type, void* data) {
  */
 int neb::callback_host_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating host status event";
   (void)callback_type;
 
@@ -654,13 +659,28 @@ int neb::callback_host_status(int callback_type, void* data) {
                                ? h->state_type
                                : HARD_STATE);
 
-    // Send event.
-    if (host_status->host_id)
+    // Send event(s).
+    if (host_status->host_id) {
       gl_publisher.write(host_status.staticCast<io::data>());
+      // Acknowledgement event.
+      std::map<
+        std::pair<unsigned int, unsigned int>,
+        neb::acknowledgement>::iterator
+        it(acknowledgements.find(
+             std::make_pair(host_status->host_id, 0u)));
+      if ((it != acknowledgements.end())
+          && !host_status->problem_has_been_acknowledged) {
+        QSharedPointer<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        acknowledgements.erase(it);
+        gl_publisher.write(ack.staticCast<io::data>());
+      }
+    }
     else
-      logging::info << logging::MEDIUM
+      logging::error(logging::low)
         << "callbacks: host '" << (h->name ? h->name : "(unknown)")
-        << "' has no ID";
+        << "' has no ID so status is not generated";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -958,7 +978,7 @@ int neb::callback_service_check(int callback_type, void* data) {
  */
 int neb::callback_service_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating service status event";
   (void)callback_type;
 
@@ -1043,16 +1063,34 @@ int neb::callback_service_status(int callback_type, void* data) {
                                   ? s->state_type
                                   : HARD_STATE);
 
-    // Send event.
-    if (service_status->host_id && service_status->service_id)
+    // Send event(s).
+    if (service_status->host_id && service_status->service_id) {
       gl_publisher.write(service_status.staticCast<io::data>());
+      // Acknowledgement event.
+      std::map<
+        std::pair<unsigned int, unsigned int>,
+        neb::acknowledgement>::iterator
+        it(acknowledgements.find(std::make_pair(
+                                        service_status->host_id,
+                                        service_status->service_id)));
+      if ((it != acknowledgements.end())
+          && !service_status->problem_has_been_acknowledged) {
+        QSharedPointer<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        acknowledgements.erase(it);
+        gl_publisher.write(ack.staticCast<io::data>());
+      }
+    }
     else
-      logging::info << logging::MEDIUM
-        << "callbacks: service with no host ID or no service ID (host '"
+      logging::info(logging::low)
+        << "callbacks: service ('"
         << ((s->host_ptr && s->host_ptr->name)
-              ? s->host_ptr->name : "(unknown)")
-        << "', service '"
-        << (s->description ? s->description : "(unknown)") << "')";
+            ? s->host_ptr->name
+            : "(unknown)")
+        << "', '"
+        << (s->description ? s->description : "(unknown)")
+        << "') has missing ID so status is not generated";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
