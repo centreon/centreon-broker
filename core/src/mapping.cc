@@ -45,6 +45,11 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     NDO_DATA_COMMENT,
     "comment_data"),
   mapped_data<acknowledgement>(
+    &acknowledgement::deletion_time,
+    NDO_DATA_EXPIRATIONTIME,
+    "deletion_time",
+    true),
+  mapped_data<acknowledgement>(
     &acknowledgement::entry_time,
     NDO_DATA_TIMESTAMP,
     "entry_time"),
@@ -226,6 +231,11 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::downtime_type,
     NDO_DATA_DOWNTIMETYPE,
     "type"),
+  mapped_data<downtime>(
+    &downtime::deletion_time,
+    NDO_DATA_EXPIRATIONTIME,
+    "deletion_time",
+    true),
   mapped_data<downtime>(
     &downtime::duration,
     NDO_DATA_DURATION,
