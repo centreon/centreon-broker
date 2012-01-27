@@ -107,20 +107,25 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     if (ack_data->comment_data)
       ack->comment = ack_data->comment_data;
     ack->entry_time = time(NULL);
-    if (ack_data->host_name) {
-      std::map<std::string, int>::const_iterator it1;
-      it1 = gl_hosts.find(ack_data->host_name);
-      if (it1 != gl_hosts.end()) {
-        ack->host_id = it1->second;
-        if (ack_data->service_description) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator it2;
-          it2 = gl_services.find(std::make_pair(ack_data->host_name,
-            ack_data->service_description));
-          if (it2 != gl_services.end())
-            ack->service_id = it2->second.second;
-        }
-      }
+    if (!ack_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    std::map<std::string, int>::const_iterator it1;
+    it1 = gl_hosts.find(ack_data->host_name);
+    if (it1 == gl_hosts.end())
+      throw (exceptions::msg() << "could not find ID of host '"
+             << ack_data->host_name << "'");
+    ack->host_id = it1->second;
+    if (ack_data->service_description) {
+      std::map<std::pair<std::string, std::string>,
+               std::pair<int, int> >::const_iterator it2;
+      it2 = gl_services.find(std::make_pair(
+                                    ack_data->host_name,
+                                    ack_data->service_description));
+      if (it2 == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << ack_data->host_name << "', '"
+               << ack_data->service_description << "')");
+      ack->service_id = it2->second.second;
     }
     ack->instance_id = instance_id;
     ack->is_sticky = ack_data->is_sticky;
@@ -132,6 +137,10 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
 
     // Send event.
     gl_publisher.write(ack.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating acknowledgement event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -151,7 +160,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
  */
 int neb::callback_comment(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating comment event";
   (void)callback_type;
 
@@ -173,20 +182,25 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->entry_type = comment_data->entry_type;
     comment->expire_time = comment_data->expire_time;
     comment->expires = comment_data->expires;
-    if (comment_data->host_name) {
-      std::map<std::string, int>::const_iterator it1;
-      it1 = gl_hosts.find(comment_data->host_name);
-      if (it1 != gl_hosts.end()) {
-        comment->host_id = it1->second;
-        if (comment_data->service_description) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator it2;
-          it2 = gl_services.find(std::make_pair(comment_data->host_name,
-            comment_data->service_description));
-          if (it2 != gl_services.end())
-            comment->service_id = it2->second.second;
-        }
-      }
+    if (!comment_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    std::map<std::string, int>::const_iterator it1;
+    it1 = gl_hosts.find(comment_data->host_name);
+    if (it1 == gl_hosts.end())
+      throw (exceptions::msg() << "could not find ID of host '"
+             << comment_data->host_name << "'");
+    comment->host_id = it1->second;
+    if (comment_data->service_description) {
+      std::map<std::pair<std::string, std::string>,
+               std::pair<int, int> >::const_iterator it2;
+      it2 = gl_services.find(std::make_pair(
+                                    comment_data->host_name,
+                                    comment_data->service_description));
+      if (it2 == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << comment_data->host_name << "', '"
+               << comment_data->service_description << "')");
+      comment->service_id = it2->second.second;
     }
     comment->instance_id = instance_id;
     comment->internal_id = comment_data->comment_id;
@@ -194,11 +208,11 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->source = comment_data->source;
 
     // Send event.
-    if (comment->host_id)
-      gl_publisher.write(comment.staticCast<io::data>());
-    else
-      logging::error << logging::LOW << "callbacks: discarding " \
-        "comment because attached host could not be found";
+    gl_publisher.write(comment.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating comment event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -243,20 +257,25 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->end_time = downtime_data->end_time;
     downtime->entry_time = downtime_data->entry_time;
     downtime->fixed = downtime_data->fixed;
-    if (downtime_data->host_name) {
-      std::map<std::string, int>::const_iterator it1;
-      it1 = gl_hosts.find(downtime_data->host_name);
-      if (it1 != gl_hosts.end()) {
-        downtime->host_id = it1->second;
-        if (downtime_data->service_description) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator it2;
-          it2 = gl_services.find(std::make_pair(downtime_data->host_name,
-            downtime_data->service_description));
-          if (it2 != gl_services.end())
-            downtime->service_id = it2->second.second;
-        }
-      }
+    if (!downtime_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    std::map<std::string, int>::const_iterator it1;
+    it1 = gl_hosts.find(downtime_data->host_name);
+    if (it1 == gl_hosts.end())
+      throw (exceptions::msg() << "could not find ID of host '"
+             << downtime_data->host_name << "'");
+    downtime->host_id = it1->second;
+    if (downtime_data->service_description) {
+      std::map<std::pair<std::string, std::string>,
+               std::pair<int, int> >::const_iterator it2;
+      it2 = gl_services.find(std::make_pair(
+              downtime_data->host_name,
+              downtime_data->service_description));
+      if (it2 == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << downtime_data->host_name << "', '"
+               << downtime_data->service_description << "')");
+      downtime->service_id = it2->second.second;
     }
     downtime->instance_id = instance_id;
     downtime->internal_id = downtime_data->downtime_id;
@@ -284,6 +303,10 @@ int neb::callback_downtime(int callback_type, void* data) {
     // Send event.
     gl_publisher.write(downtime.staticCast<io::data>());
   }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      "generating downtime event: " << e.what();
+  }
   // Avoid exception propagation in C code.
   catch (...) {}
   return (0);
@@ -304,7 +327,7 @@ int neb::callback_downtime(int callback_type, void* data) {
  */
 int neb::callback_event_handler(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating event handler event";
   (void)callback_type;
 
@@ -322,20 +345,25 @@ int neb::callback_event_handler(int callback_type, void* data) {
     event_handler->early_timeout = event_handler_data->early_timeout;
     event_handler->end_time = event_handler_data->end_time.tv_sec;
     event_handler->execution_time = event_handler_data->execution_time;
-    if (event_handler_data->host_name) {
-      std::map<std::string, int>::const_iterator it1;
-      it1 = gl_hosts.find(event_handler_data->host_name);
-      if (it1 != gl_hosts.end()) {
-        event_handler->host_id = it1->second;
-        if (event_handler_data->service_description) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator it2;
-          it2 = gl_services.find(std::make_pair(event_handler_data->host_name,
-                                                event_handler_data->service_description));
-          if (it2 != gl_services.end())
-            event_handler->service_id = it2->second.second;
-        }
-      }
+    if (!event_handler_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    std::map<std::string, int>::const_iterator it1;
+    it1 = gl_hosts.find(event_handler_data->host_name);
+    if (it1 == gl_hosts.end())
+      throw (exceptions::msg() << "could not find ID of host '"
+             << event_handler_data->host_name << "'");
+    event_handler->host_id = it1->second;
+    if (event_handler_data->service_description) {
+      std::map<std::pair<std::string, std::string>,
+               std::pair<int, int> >::const_iterator it2;
+      it2 = gl_services.find(std::make_pair(
+              event_handler_data->host_name,
+              event_handler_data->service_description));
+      if (it2 == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << event_handler_data->host_name << "', '"
+               << event_handler_data->service_description << "')");
+      event_handler->service_id = it2->second.second;
     }
     if (event_handler_data->output)
       event_handler->output = event_handler_data->output;
@@ -348,6 +376,10 @@ int neb::callback_event_handler(int callback_type, void* data) {
 
     // Send event.
     gl_publisher.write(event_handler.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating event handler event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -369,8 +401,7 @@ int neb::callback_event_handler(int callback_type, void* data) {
  */
 int neb::callback_external_command(int callback_type, void* data) {
   // Log message.
-  logging::debug << logging::LOW
-    << "callbacks: external command data";
+  logging::debug(logging::low) << "callbacks: external command data";
   (void)callback_type;
 
   nebstruct_external_command_data* necd(
@@ -378,14 +409,14 @@ int neb::callback_external_command(int callback_type, void* data) {
   if (necd && (necd->type == NEBTYPE_EXTERNALCOMMAND_START)) {
     try {
       if (necd->command_type == CMD_CHANGE_CUSTOM_HOST_VAR) {
-        logging::info << logging::MEDIUM
+        logging::info(logging::medium)
           << "callbacks: generating host custom variable update event";
 
         // Split argument string.
         if (necd->command_args) {
           QStringList l(QString(necd->command_args).split(';'));
           if (l.size() != 3)
-            logging::error << logging::MEDIUM
+            logging::error(logging::medium)
               << "callbacks: invalid host custom variable command";
           else {
             QStringList::iterator it(l.begin());
@@ -398,8 +429,8 @@ int neb::callback_external_command(int callback_type, void* data) {
             id = gl_hosts.find(host.toStdString());
             if (id != gl_hosts.end()) {
               // Fill custom variable.
-              QSharedPointer<neb::custom_variable_status> cvs(
-                new neb::custom_variable_status);
+              QSharedPointer<neb::custom_variable_status>
+                cvs(new neb::custom_variable_status);
               cvs->host_id = id->second;
               cvs->modified = true;
               cvs->name = var_name;
@@ -414,14 +445,14 @@ int neb::callback_external_command(int callback_type, void* data) {
         }
       }
       else if (necd->command_type == CMD_CHANGE_CUSTOM_SVC_VAR) {
-        logging::info << logging::MEDIUM
+        logging::info(logging::medium)
           << "callbacks: generating service custom variable update event";
 
         // Split argument string.
         if (necd->command_args) {
           QStringList l(QString(necd->command_args).split(';'));
           if (l.size() != 4)
-            logging::error << logging::MEDIUM
+            logging::error(logging::medium)
               << "callbacks: invalid service custom variable command";
           else {
             QStringList::iterator it(l.begin());
@@ -474,7 +505,7 @@ int neb::callback_external_command(int callback_type, void* data) {
  */
 int neb::callback_flapping_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating flapping event";
   (void)callback_type;
 
@@ -488,30 +519,35 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->event_time = flapping_data->timestamp.tv_sec;
     flapping_status->event_type = flapping_data->type;
     flapping_status->high_threshold = flapping_data->high_threshold;
-    if (flapping_data->host_name) {
-      std::map<std::string, int>::const_iterator it1;
-      it1 = gl_hosts.find(flapping_data->host_name);
-      if (it1 != gl_hosts.end()) {
-        flapping_status->host_id = it1->second;
-        if (flapping_data->service_description) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator it2;
-          it2 = gl_services.find(std::make_pair(flapping_data->host_name,
-                                                flapping_data->service_description));
-          if (it2 != gl_services.end())
-            flapping_status->service_id = it2->second.second;
+    if (!flapping_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    std::map<std::string, int>::const_iterator it1;
+    it1 = gl_hosts.find(flapping_data->host_name);
+    if (it1 == gl_hosts.end())
+      throw (exceptions::msg() << "could not find ID of host '"
+             << flapping_data->host_name << "'");
+    flapping_status->host_id = it1->second;
+    if (flapping_data->service_description) {
+      std::map<std::pair<std::string, std::string>,
+               std::pair<int, int> >::const_iterator it2;
+      it2 = gl_services.find(std::make_pair(
+              flapping_data->host_name,
+              flapping_data->service_description));
+      if (it2 == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << flapping_data->host_name << "', '"
+               << flapping_data->service_description << "')");
+      flapping_status->service_id = it2->second.second;
 
-          // Set comment time.
-          ::comment* com = find_service_comment(flapping_data->comment_id);
-          if (com)
-            flapping_status->comment_time = com->entry_time;
-        }
-        else {
-          ::comment* com = find_host_comment(flapping_data->comment_id);
-          if (com)
-            flapping_status->comment_time = com->entry_time;
-        }
-      }
+      // Set comment time.
+      ::comment* com = find_service_comment(flapping_data->comment_id);
+      if (com)
+        flapping_status->comment_time = com->entry_time;
+    }
+    else {
+      ::comment* com = find_host_comment(flapping_data->comment_id);
+      if (com)
+        flapping_status->comment_time = com->entry_time;
     }
     flapping_status->internal_comment_id = flapping_data->comment_id;
     flapping_status->low_threshold = flapping_data->low_threshold;
@@ -521,6 +557,10 @@ int neb::callback_flapping_status(int callback_type, void* data) {
 
     // Send event.
     gl_publisher.write(flapping_status.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      "generating flapping event: " << e.what();
   }
   // Avoid exception propagation to C code.
   catch (...) {}
@@ -541,7 +581,7 @@ int neb::callback_flapping_status(int callback_type, void* data) {
  */
 int neb::callback_host_check(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating host check event";
   (void)callback_type;
 
@@ -554,16 +594,22 @@ int neb::callback_host_check(int callback_type, void* data) {
     hcdata = static_cast<nebstruct_host_check_data*>(data);
     if (hcdata->command_line) {
       host_check->command_line = hcdata->command_line;
-      if (hcdata->host_name) {
-        std::map<std::string, int>::const_iterator it;
-        it = gl_hosts.find(hcdata->host_name);
-        if (it != gl_hosts.end())
-          host_check->host_id = it->second;
-      }
+      if (!hcdata->host_name)
+        throw (exceptions::msg() << "unnamed host");
+      std::map<std::string, int>::const_iterator it;
+      it = gl_hosts.find(hcdata->host_name);
+      if (it == gl_hosts.end())
+        throw (exceptions::msg() << "could not find ID of host '"
+               << hcdata->host_name << "'");
+      host_check->host_id = it->second;
 
       // Send event.
       gl_publisher.write(host_check.staticCast<io::data>());
     }
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating host check event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -617,11 +663,15 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->failure_prediction_enabled = h->failure_prediction_enabled;
     host_status->flap_detection_enabled = h->flap_detection_enabled;
     host_status->has_been_checked = h->has_been_checked;
-    if (h->name) {
+    if (!h->name)
+      throw (exceptions::msg() << "unnamed host");
+    {
       std::map<std::string, int>::const_iterator it;
       it = gl_hosts.find(h->name);
-      if (it != gl_hosts.end())
-        host_status->host_id = it->second;
+      if (it == gl_hosts.end())
+        throw (exceptions::msg() << "could not find ID of host '"
+               << h->name << "'");
+      host_status->host_id = it->second;
     }
     host_status->is_flapping = h->is_flapping;
     host_status->last_check = h->last_check;
@@ -660,27 +710,25 @@ int neb::callback_host_status(int callback_type, void* data) {
                                : HARD_STATE);
 
     // Send event(s).
-    if (host_status->host_id) {
-      gl_publisher.write(host_status.staticCast<io::data>());
-      // Acknowledgement event.
-      std::map<
-        std::pair<unsigned int, unsigned int>,
-        neb::acknowledgement>::iterator
-        it(acknowledgements.find(
-             std::make_pair(host_status->host_id, 0u)));
-      if ((it != acknowledgements.end())
-          && !host_status->problem_has_been_acknowledged) {
-        QSharedPointer<neb::acknowledgement>
-          ack(new neb::acknowledgement(it->second));
-        ack->deletion_time = time(NULL);
-        acknowledgements.erase(it);
-        gl_publisher.write(ack.staticCast<io::data>());
-      }
+    gl_publisher.write(host_status.staticCast<io::data>());
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(acknowledgements.find(
+           std::make_pair(host_status->host_id, 0u)));
+    if ((it != acknowledgements.end())
+        && !host_status->problem_has_been_acknowledged) {
+      QSharedPointer<neb::acknowledgement>
+        ack(new neb::acknowledgement(it->second));
+      ack->deletion_time = time(NULL);
+      acknowledgements.erase(it);
+      gl_publisher.write(ack.staticCast<io::data>());
     }
-    else
-      logging::error(logging::low)
-        << "callbacks: host '" << (h->name ? h->name : "(unknown)")
-        << "' has no ID so status is not generated";
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating host status event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -700,7 +748,7 @@ int neb::callback_host_status(int callback_type, void* data) {
  */
 int neb::callback_log(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM << "callbacks: generating log event";
+  logging::info(logging::medium) << "callbacks: generating log event";
   (void)callback_type;
 
   try {
@@ -739,7 +787,7 @@ int neb::callback_log(int callback_type, void* data) {
  */
 int neb::callback_process(int callback_type, void *data) {
   // Log message.
-  logging::debug << logging::LOW << "callbacks: process event callback";
+  logging::debug(logging::low) << "callbacks: process event callback";
   (void)callback_type;
 
   try {
@@ -750,7 +798,7 @@ int neb::callback_process(int callback_type, void *data) {
     // Check process event type.
     process_data = static_cast<nebstruct_process_data*>(data);
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
-      logging::info << logging::MEDIUM
+      logging::info(logging::medium)
         << "callbacks: generating process start event";
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);
@@ -774,7 +822,7 @@ int neb::callback_process(int callback_type, void *data) {
           instance_name = extract_xml_text(it.value());
       }
       catch (exceptions::msg const& e) {
-        logging::config << logging::HIGH << e.what();
+        logging::config(logging::high) << e.what();
         return (0);
       }
 
@@ -814,7 +862,8 @@ int neb::callback_process(int callback_type, void *data) {
         }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
-      logging::info << logging::MEDIUM << "generating process end event";
+      logging::info(logging::medium)
+        << "callbacks: generating process end event";
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);
 
@@ -856,7 +905,7 @@ int neb::callback_process(int callback_type, void *data) {
  */
 int neb::callback_program_status(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating instance status event";
   (void)callback_type;
 
@@ -930,7 +979,7 @@ int neb::callback_program_status(int callback_type, void* data) {
  */
 int neb::callback_service_check(int callback_type, void* data) {
   // Log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "callbacks: generating service check event";
   (void)callback_type;
 
@@ -944,19 +993,28 @@ int neb::callback_service_check(int callback_type, void* data) {
     scdata = static_cast<nebstruct_service_check_data*>(data);
     if (scdata->command_line) {
       service_check->command_line = scdata->command_line;
-      if (scdata->host_name && scdata->service_description) {
-        std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-        it = gl_services.find(std::make_pair(scdata->host_name,
-                                             scdata->service_description));
-        if (it != gl_services.end()) {
-          service_check->host_id = it->second.first;
-          service_check->service_id = it->second.second;
-        }
-      }
+      if (!scdata->host_name)
+        throw (exceptions::msg() << "unnamed host");
+      if (!scdata->service_description)
+        throw (exceptions::msg() << "unnamed service");
+      std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
+      it = gl_services.find(std::make_pair(
+                                   scdata->host_name,
+                                   scdata->service_description));
+      if (it == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << scdata->host_name << "', '"
+               << scdata->service_description << "')");
+      service_check->host_id = it->second.first;
+      service_check->service_id = it->second.second;
 
       // Send event.
       gl_publisher.write(service_check.staticCast<io::data>());
     }
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating service check event";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
@@ -1046,17 +1104,23 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->process_performance_data = s->process_performance_data;
     service_status->retry_interval = s->retry_interval;
     service_status->scheduled_downtime_depth = s->scheduled_downtime_depth;
-    if (s->host_name && s->description) {
-      service_status->host_name = s->host_name;
-      service_status->service_description = s->description;
+    if (!s->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    if (!s->description)
+      throw (exceptions::msg() << "unnamed service");
+    service_status->host_name = s->host_name;
+    service_status->service_description = s->description;
+    {
       std::map<std::pair<std::string, std::string>,
                std::pair<int, int> >::const_iterator it;
-      it = gl_services.find(std::make_pair(s->host_name,
-                                           s->description));
-      if (it != gl_services.end()) {
-        service_status->host_id = it->second.first;
-        service_status->service_id = it->second.second;
-      }
+      it = gl_services.find(std::make_pair(
+                                   s->host_name,
+                                   s->description));
+      if (it == gl_services.end())
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << s->host_name << "', '" << s->description << "')");
+      service_status->host_id = it->second.first;
+      service_status->service_id = it->second.second;
     }
     service_status->should_be_scheduled = s->should_be_scheduled;
     service_status->state_type = (s->has_been_checked
@@ -1064,33 +1128,26 @@ int neb::callback_service_status(int callback_type, void* data) {
                                   : HARD_STATE);
 
     // Send event(s).
-    if (service_status->host_id && service_status->service_id) {
-      gl_publisher.write(service_status.staticCast<io::data>());
-      // Acknowledgement event.
-      std::map<
-        std::pair<unsigned int, unsigned int>,
-        neb::acknowledgement>::iterator
-        it(acknowledgements.find(std::make_pair(
-                                        service_status->host_id,
-                                        service_status->service_id)));
-      if ((it != acknowledgements.end())
-          && !service_status->problem_has_been_acknowledged) {
-        QSharedPointer<neb::acknowledgement>
-          ack(new neb::acknowledgement(it->second));
-        ack->deletion_time = time(NULL);
-        acknowledgements.erase(it);
-        gl_publisher.write(ack.staticCast<io::data>());
-      }
+    gl_publisher.write(service_status.staticCast<io::data>());
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(acknowledgements.find(std::make_pair(
+                                      service_status->host_id,
+                                      service_status->service_id)));
+    if ((it != acknowledgements.end())
+        && !service_status->problem_has_been_acknowledged) {
+      QSharedPointer<neb::acknowledgement>
+        ack(new neb::acknowledgement(it->second));
+      ack->deletion_time = time(NULL);
+      acknowledgements.erase(it);
+      gl_publisher.write(ack.staticCast<io::data>());
     }
-    else
-      logging::info(logging::low)
-        << "callbacks: service ('"
-        << ((s->host_ptr && s->host_ptr->name)
-            ? s->host_ptr->name
-            : "(unknown)")
-        << "', '"
-        << (s->description ? s->description : "(unknown)")
-        << "') has missing ID so status is not generated";
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating service status event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}
