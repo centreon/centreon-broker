@@ -719,11 +719,15 @@ int neb::callback_host_status(int callback_type, void* data) {
            std::make_pair(host_status->host_id, 0u)));
     if ((it != acknowledgements.end())
         && !host_status->problem_has_been_acknowledged) {
-      QSharedPointer<neb::acknowledgement>
-        ack(new neb::acknowledgement(it->second));
-      ack->deletion_time = time(NULL);
+      if (!(!host_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (host_status->current_state != it->second.state)))) {
+        QSharedPointer<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack.staticCast<io::data>());
+      }
       acknowledgements.erase(it);
-      gl_publisher.write(ack.staticCast<io::data>());
     }
   }
   catch (std::exception const& e) {
@@ -1138,11 +1142,16 @@ int neb::callback_service_status(int callback_type, void* data) {
                                       service_status->service_id)));
     if ((it != acknowledgements.end())
         && !service_status->problem_has_been_acknowledged) {
-      QSharedPointer<neb::acknowledgement>
-        ack(new neb::acknowledgement(it->second));
-      ack->deletion_time = time(NULL);
+      if (!(!service_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (service_status->current_state
+                    != it->second.state)))) {
+        QSharedPointer<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack.staticCast<io::data>());
+      }
       acknowledgements.erase(it);
-      gl_publisher.write(ack.staticCast<io::data>());
     }
   }
   catch (std::exception const& e) {
