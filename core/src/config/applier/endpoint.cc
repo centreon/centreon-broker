@@ -208,17 +208,50 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
 void endpoint::_diff_endpoints(QMap<config::endpoint, processing::failover*> & current,
                                QList<config::endpoint> const& new_endpoints,
                                QList<config::endpoint>& to_create) {
-  // Find which endpoints will be kept, created and deleted.
+  // Copy some lists that we will modify.
+  QList<config::endpoint> new_ep(new_endpoints);
   QMap<config::endpoint, processing::failover*> to_delete(current);
-  for (QList<config::endpoint>::const_iterator it = new_endpoints.begin(),
-         end = new_endpoints.end();
-       it != end;
-       ++it) {
-    QMap<config::endpoint, processing::failover*>::iterator endp(to_delete.find(*it));
-    if (endp != to_delete.end())
-      to_delete.erase(endp);
+
+  // Loop through new configuration.
+  while (!new_ep.isEmpty()) {
+    // Find a root entry.
+    QList<config::endpoint>::iterator list_it(new_ep.begin());
+    while ((list_it != new_ep.end())
+           && !list_it->name.isEmpty()
+           && (std::find_if(
+                      new_ep.begin(),
+                      new_ep.end(),
+                      name_match_failover(list_it->name))
+               != new_ep.end()))
+      ++list_it;
+    if (list_it == new_ep.end())
+      throw (exceptions::msg() << "endpoint applier: error while " \
+                                  "diff'ing new and old configuration");
+    QList<config::endpoint> entries;
+    entries.push_back(*list_it);
+    new_ep.erase(list_it);
+
+    // Find all subentries.
+    while (!entries.last().failover.isEmpty()) {
+      list_it = std::find_if(
+                       new_ep.begin(),
+                       new_ep.end(),
+                       failover_match_name(entries.last().failover));
+      if (list_it == new_ep.end())
+        throw (exceptions::msg() << "endpoint applier: could not find "\
+               "failover '" << entries.last().failover
+               << "' for endpoint '" << entries.last().name << "'");
+      entries.push_back(*list_it);
+      new_ep.erase(list_it);
+    }
+
+    // Try to find entry and subentries in the endpoints already running.
+    QMap<config::endpoint, processing::failover*>::iterator
+      map_it(to_delete.find(entries.first()));
+    if (map_it == to_delete.end())
+      to_create.append(entries);
     else
-      to_create.push_back(*it);
+      to_delete.erase(map_it);
   }
 
   // Remove old endpoints.
