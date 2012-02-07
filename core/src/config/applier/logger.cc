@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,7 +18,7 @@
 
 #include <assert.h>
 #include <iostream>
-#include <QScopedPointer>
+#include <memory>
 #include <stdlib.h>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -85,9 +85,9 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       if (cfg.name().isEmpty())
         throw (exceptions::msg()
                  << "log applier: attempt to log on an empty file");
-      QScopedPointer<logging::file> file(new logging::file(cfg.name()));
-      back = QSharedPointer<logging::backend>(file.data());
-      file.take();
+      std::auto_ptr<logging::file> file(new logging::file(cfg.name()));
+      back = QSharedPointer<logging::backend>(file.get());
+      file.release();
     }
     break ;
    case config::logger::standard:

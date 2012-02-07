@@ -50,7 +50,7 @@ with_pointer::with_pointer(msg const& base,
  */
 with_pointer::with_pointer(with_pointer const& e)
   : msg(e), _ptr(e._ptr) {
-  if (!e._base.isNull()) {
+  if (e._base.get()) {
     try {
       _base.reset(e._base->clone());
     }
@@ -73,7 +73,7 @@ with_pointer::~with_pointer() throw () {}
  *  @return This object.
  */
 with_pointer& with_pointer::operator=(with_pointer const& wp) {
-  if (wp._base.isNull())
+  if (!wp._base.get())
     _base.reset();
   else {
     try {
@@ -119,7 +119,7 @@ void with_pointer::rethrow() {
  *  @return Exception message.
  */
 char const* with_pointer::what() const throw () {
-  return (_base.isNull()
+  return (!_base.get()
             ? "generic: unknown chained exception"
             : _base->what());
 }

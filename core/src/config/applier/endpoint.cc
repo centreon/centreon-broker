@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <memory>
 #include <QCoreApplication>
 #include <QMutexLocker>
 #include <stdlib.h>
@@ -189,13 +190,13 @@ processing::failover* endpoint::_create_endpoint(config::endpoint const& cfg,
   }
 
   // Return failover thread.
-  QScopedPointer<processing::failover> fo(new processing::failover(is_output));
+  std::auto_ptr<processing::failover> fo(new processing::failover(is_output));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_name(cfg.name);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_endpoint(endp);
   fo->set_failover(failovr);
-  return (fo.take());
+  return (fo.release());
 }
 
 /**
@@ -325,19 +326,19 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
               name_match_failover(it->name))
             == out_to_create.end())) {
       // Create endpoint.
-      QScopedPointer<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
-      connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_output()));
-      connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_output()));
-      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
+      std::auto_ptr<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
+      connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_output()));
+      connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_output()));
+      connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
       {
         QMutexLocker lock(&_outputsm);
-        _outputs[*it] = endp.data();
+        _outputs[*it] = endp.get();
       }
 
       // Run thread.
       logging::debug(logging::medium) << "endpoint applier: output " \
-        "thread " << endp.data() << " is registered and ready to run";
-      endp.take()->start();
+        "thread " << endp.get() << " is registered and ready to run";
+      endp.release()->start();
     }
 
   // Create new inputs.
@@ -352,20 +353,20 @@ void endpoint::apply(QList<config::endpoint> const& inputs,
               name_match_failover(it->name))
             == in_to_create.end())) {
       // Create endpoint.
-      QScopedPointer<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
-      connect(endp.data(), SIGNAL(finished()), this, SLOT(terminated_input()));
-      connect(endp.data(), SIGNAL(terminated()), this, SLOT(terminated_input()));
-      connect(endp.data(), SIGNAL(finished()), endp.data(), SLOT(deleteLater()));
+      std::auto_ptr<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
+      connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_input()));
+      connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_input()));
+      connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
       {
         QMutexLocker lock(&_inputsm);
-        _inputs[*it] = endp.data();
+        _inputs[*it] = endp.get();
       }
 
       // Run thread.
       logging::debug(logging::medium)
-        << "endpoint applier: input thread " << endp.data()
+        << "endpoint applier: input thread " << endp.get()
         << " is registered and ready to run";
-      endp.take()->start();
+      endp.release()->start();
     }    
 
   return ;

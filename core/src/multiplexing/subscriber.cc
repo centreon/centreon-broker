@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,7 +19,6 @@
 
 #include <assert.h>
 #include <QMutexLocker>
-#include <QScopedPointer>
 #include <stdlib.h>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"

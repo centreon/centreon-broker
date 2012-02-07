@@ -18,9 +18,9 @@
 */
 
 #include <assert.h>
+#include <memory>
 #include <QMutexLocker>
 #include <QQueue>
-#include <QScopedPointer>
 #include <QVector>
 #include <stdlib.h>
 #include <utility>
@@ -43,7 +43,7 @@ using namespace com::centreon::broker::multiplexing;
 static QVector<std::pair<hooker*, bool> > _hooks;
 
 // Pointer.
-QScopedPointer<engine> engine::_instance;
+std::auto_ptr<engine> engine::_instance;
 
 // Data queue.
 static QQueue<QSharedPointer<io::data> > _kiew;

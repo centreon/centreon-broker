@@ -20,8 +20,8 @@
 #ifndef CCB_MULTIPLEXING_ENGINE_HH_
 # define CCB_MULTIPLEXING_ENGINE_HH_
 
+# include <memory>
 # include <QObject>
-# include <QScopedPointer>
 # include "com/centreon/broker/multiplexing/hooker.hh"
 
 namespace                 com {
@@ -41,7 +41,7 @@ namespace                 com {
           Q_OBJECT
 
          private:
-          static QScopedPointer<engine>
+          static std::auto_ptr<engine>
                           _instance;
           void (engine::* _write_func)(QSharedPointer<io::data>);
           void            _nop(QSharedPointer<io::data> d);

@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include <string.h>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 
@@ -34,10 +34,10 @@ int main() {
   s << "foo" << 42 << 77454654249841ull << -1 << "bar";
 
   // Clone object.
-  QScopedPointer<exceptions::msg> clone(s.clone());
+  std::auto_ptr<exceptions::msg> clone(s.clone());
 
   // Check that clone was properly constructed.
-  int retval(clone.isNull());
+  int retval(!clone.get());
 
   // Check that this is really a shutdown exception object.
   if (!retval) {

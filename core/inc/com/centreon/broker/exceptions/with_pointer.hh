@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +19,7 @@
 #ifndef CCB_EXCEPTIONS_WITH_POINTER_HH_
 # define CCB_EXCEPTIONS_WITH_POINTER_HH_
 
+# include <memory>
 # include <QSharedPointer>
 # include "com/centreon/broker/exceptions/msg.hh"
 # include "com/centreon/broker/io/data.hh"
@@ -36,7 +37,7 @@ namespace                          com {
          */
         class                      with_pointer : public msg {
          private:
-          mutable QScopedPointer<msg>
+          mutable std::auto_ptr<msg>
                                    _base;
           mutable QSharedPointer<io::data>
                                    _ptr;

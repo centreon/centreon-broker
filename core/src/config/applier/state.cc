@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,6 @@
 #include <QCoreApplication>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QScopedPointer>
 #include <stdlib.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/logger.hh"

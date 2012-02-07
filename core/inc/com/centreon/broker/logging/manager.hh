@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,9 +20,9 @@
 #ifndef CCB_LOGGING_MANAGER_HH_
 # define CCB_LOGGING_MANAGER_HH_
 
+# include <memory>
 # include <QObject>
 # include <QReadWriteLock>
-# include <QScopedPointer>
 # include <QVector>
 # include "com/centreon/broker/logging/backend.hh"
 # include "com/centreon/broker/logging/defines.hh"
@@ -51,7 +51,7 @@ namespace                 com {
           QVector<manager_backend>
                           _backends;
           QReadWriteLock  _backendsm;
-          static QScopedPointer<manager>
+          static std::auto_ptr<manager>
                           _instance;
           unsigned int    _limits[4];
                           manager();

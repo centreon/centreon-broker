@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,8 +19,8 @@
 #ifndef CCB_CONFIG_ENDPOINT_HH_
 # define CCB_CONFIG_ENDPOINT_HH_
 
+# include <memory>
 # include <QMap>
-# include <QScopedPointer>
 # include <QString>
 # include <time.h>
 
@@ -43,7 +43,7 @@ namespace                          com {
          public:
           time_t                   buffering_timeout;
           QString                  failover;          
-          QScopedPointer<endpoint> failover_config;
+          std::auto_ptr<endpoint>  failover_config;
           QString                  name;
           QMap<QString, QString>   params;
           time_t                   retry_interval;

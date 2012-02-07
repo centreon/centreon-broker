@@ -33,7 +33,7 @@ using namespace com::centreon::broker::logging;
 **************************************/
 
 // Class instance.
-QScopedPointer<manager> manager::_instance;
+std::auto_ptr<manager> manager::_instance;
 
 /**************************************
 *                                     *
