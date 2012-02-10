@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -107,20 +107,17 @@ void lib::commit() {
  *  @return Normalized metric name.
  */
 QString lib::normalize_metric_name(QString const& metric) {
-  QString normalized(metric);
-  if (normalized.isEmpty())
-    normalized = "x";
-  normalized.replace('.', '-');
-  normalized.replace(':', '-');
-  normalized.replace(',', '-');
-  normalized.replace('{', '-');
-  normalized.replace('}', '-');
-  normalized.replace('[', '-');
-  normalized.replace(']', '-');
-  normalized.replace(' ', '-');
+  QString normalized(metric.toLatin1());
   normalized.replace("/", "_slash");
   normalized.replace("\\", "_bslash");
-  if (normalized.size() > max_metric_length)
+  for (unsigned int i(0), size(normalized.size()); i < size; ++i) {
+    char current(normalized.at(i).toAscii());
+    if (!isalnum(current) && (current != '-') && (current != '_'))
+      normalized.replace(i, 1, '-');
+  }
+  if (normalized.isEmpty())
+    normalized = "x";
+  else if (normalized.size() > max_metric_length)
     normalized.resize(max_metric_length);
   if (!isalnum(normalized.at(0).toLatin1()))
     normalized.replace(0, 1, 'x');
