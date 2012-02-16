@@ -269,7 +269,7 @@ void lib::update(time_t t, QString const& value) {
   else {
     try {
       // Set lock.
-      flock fl;
+      struct flock fl;
       memset(&fl, 0, sizeof(fl));
       fl.l_type = F_WRLCK;
       fl.l_whence = SEEK_SET;
