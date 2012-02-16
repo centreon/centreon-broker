@@ -219,8 +219,10 @@ extern "C" {
       "cb2db.");
 
     // Initialize Qt if not already done by parent process.
-    if (!QCoreApplication::instance())
+    if (!QCoreApplication::instance()) {
+      gl_initialized_qt = true;
       new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
+    }
 
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);
@@ -265,17 +267,19 @@ extern "C" {
       else
         gl_callbacks[i].registered = true;
 
-    schedule_new_event(
-      99,
-      1,
-      time(NULL) + 1,
-      1,
-      1,
-      NULL,
-      1,
-      (void*)process_qcore,
-      NULL,
-      0);
+    // Process Qt events if necessary.
+    if (gl_initialized_qt)
+      schedule_new_event(
+        99,
+        1,
+        time(NULL) + 1,
+        1,
+        1,
+        NULL,
+        1,
+        (void*)process_qcore,
+        NULL,
+        0);
 
     return (0);
   }
