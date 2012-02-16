@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,5 +64,15 @@ int main() {
       rrd::lib::max_metric_length);
   }
 
-  return (retval);
+  // #4.
+  {
+    QString normalized(rrd::lib::normalize_metric_name("Cette phrase a été intégralement écrite en français."));
+    retval |= (normalized.size() > rrd::lib::max_metric_length);
+    retval |= strncmp(
+      qPrintable(normalized),
+      "Cette-phrase-a---t---int--gralement---crite-en-fran-ais.",
+      rrd::lib::max_metric_length);
+  }
+
+  return (!!retval);
 }
