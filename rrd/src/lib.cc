@@ -108,8 +108,12 @@ void lib::commit() {
  */
 QString lib::normalize_metric_name(QString const& metric) {
   QString normalized(metric.toLatin1());
-  normalized.replace("/", "_slash");
-  normalized.replace("\\", "_bslash");
+  normalized.replace("/", "slash_");
+  normalized.replace("#S#", "slash_");
+  normalized.replace("\\", "bslash_");
+  normalized.replace("#BS#", "bslash_");
+  normalized.replace("%", "pct_");
+  normalized.replace("#P#", "pct_");
   for (unsigned int i(0), size(normalized.size()); i < size; ++i) {
     char current(normalized.at(i).toAscii());
     if (!isalnum(current) && (current != '-') && (current != '_'))

@@ -50,7 +50,7 @@ int main() {
     retval |= (normalized.size() > rrd::lib::max_metric_length);
     retval |= strncmp(
       qPrintable(normalized),
-      "C-_bslash-Used-Space",
+      "C-bslash_-Used-Space",
       rrd::lib::max_metric_length);
   }
 
