@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2012 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -26,10 +26,22 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # Find librrd.
 include(FindPkgConfig)
-if (NOT PKG_CONFIG_FOUND)
-  message(FATAL_ERROR "Could not find pkg-config.")
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(LIBRRD REQUIRED "librrd")
+else ()
+  # Find rrd.h
+  find_path(LIBRRD_INCLUDE_DIR "rrd.h")
+  if (NOT LIBRRD_INCLUDE_DIR)
+    message(FATAL_ERROR "Could not find librrd's headers.")
+  endif ()
+  include_directories("${LIBRRD_INCLUDE_DIR}")
+
+  # Find librrd.
+  find_library(LIBRRD_LDFLAGS "rrd")
+  if (NOT LIBRRD_LDFLAGS)
+    message(FATAL_ERROR "Could not find librrd's library.")
+  endif ()
 endif ()
-pkg_check_modules(LIBRRD REQUIRED "librrd")
 
 # RRD module.
 set(RRD "70-rrd")
