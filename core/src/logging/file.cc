@@ -18,6 +18,7 @@
 */
 
 #include <assert.h>
+#include <limits.h>
 #include <QThread>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -74,8 +75,11 @@ file::file(QString const& path, unsigned long long max)
   if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
     throw (exceptions::msg() << "log: could not open file '" << path
              << "': " << _file.errorString());
-  _max = ((max < 1000000) ? 1000000 : max)
-         - sizeof(LOG_ROTATION_STR) + 1;
+  if (!max)
+    _max = ULLONG_MAX;
+  else
+    _max = ((max < 1000000) ? 1000000 : max)
+           - sizeof(LOG_ROTATION_STR) + 1;
   _write(LOG_OPEN_STR);
   _file.flush();
   _written = _file.size();
