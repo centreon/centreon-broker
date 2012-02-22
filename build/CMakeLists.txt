@@ -572,6 +572,13 @@ if (WITH_TESTING)
     "${TEST_DIR}/logging/file/common.hh")
   target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Logging with maximum file size.
+  set(TEST_NAME "core_logging_file_log_with_max_size")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/logging/file/log_with_max_size.cc"
+    "${TEST_DIR}/logging/file/common.hh")
+  target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # logging::manager tests.
   #   Simple logging.
   set(TEST_NAME "core_logging_manager_simple")
