@@ -233,7 +233,11 @@ void parser::parse(QString const& file, state& s) {
     // Process only element nodes.
     if (!elem.isNull()) {
       QString name(elem.tagName());
-      if (name == "input") {
+      if (name == "flush_logs") {
+        QString val(elem.text());
+        s.flush_logs(!((val == "no") || (val == "0")));
+      }
+      else if (name == "input") {
         endpoint in;
         _parse_endpoint(elem, in);
         s.inputs().push_back(in);
