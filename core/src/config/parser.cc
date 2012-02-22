@@ -133,13 +133,13 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         QString val_str(entry.text());
         int val(val_str.toInt());
         if ((val == 3) || (val_str == "high"))
-          l.level(com::centreon::broker::logging::LOW);
+          l.level(com::centreon::broker::logging::low);
         else if ((val == 2) || (val_str == "medium"))
-          l.level(com::centreon::broker::logging::MEDIUM);
+          l.level(com::centreon::broker::logging::medium);
         else if ((val == 1) || (val_str == "low"))
-          l.level(com::centreon::broker::logging::HIGH);
+          l.level(com::centreon::broker::logging::high);
         else
-          l.level(com::centreon::broker::logging::NONE);
+          l.level(com::centreon::broker::logging::none);
       }
       else if (name == "max_size")
         l.max_size(entry.text().toUInt());
@@ -149,13 +149,16 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         QString val(entry.text());
         if (val == "file")
           l.type(logger::file);
+        else if (val == "monitoring")
+          l.type(logger::monitoring);
         else if (val == "standard")
           l.type(logger::standard);
         else if (val == "syslog")
           l.type(logger::syslog);
         else
-          throw (exceptions::msg() << "config parser: unknown logger " \
-                   "type '" << val << "'");
+          throw (exceptions::msg()
+                 << "config parser: unknown logger type '"
+                 << val << "'");
       }
     }
   }

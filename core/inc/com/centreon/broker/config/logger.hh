@@ -39,6 +39,7 @@ namespace              config {
     enum               logger_type {
       unknown = 0,
       file,
+      monitoring,
       standard,
       syslog
     };

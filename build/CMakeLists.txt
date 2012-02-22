@@ -157,7 +157,6 @@ set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/init.cc"
-  "${SRC_DIR}/config/applier/logger.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
   "${SRC_DIR}/config/endpoint.cc"
@@ -241,21 +240,25 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/processing/feeder.hh"
 )
 
-# Static library.
-add_library("roker" STATIC ${LIBROKER_SOURCES})
-if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"))
-  get_target_property(ROKER_CXXFLAGS "roker" COMPILE_FLAGS)
+# Static libraries.
+add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
+if (COMPILER_HAS_FPIC)
+  get_property(ROKER_CXXFLAGS
+    TARGET "rokerbase"
+    PROPERTY COMPILE_FLAGS)
   if (ROKER_CXXFLAGS)
-    set_target_properties("roker" PROPERTIES
-      COMPILE_FLAGS "${ROKER_CXXFLAGS} -fPIC")
+    set(ROKER_CXXFLAGS "${ROKER_CXXFLAGS} -fPIC")
   else ()
-    set_target_properties("roker" PROPERTIES
-      COMPILE_FLAGS "-fPIC")
+    set(ROKER_CXXFLAGS "-fPIC")
   endif ()
+  set_property(TARGET "rokerbase"
+    PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("roker" ${QT_LIBRARIES})
+target_link_libraries("rokerbase" ${QT_LIBRARIES})
+add_library("roker" STATIC "${SRC_DIR}/config/applier/logger.cc")
+target_link_libraries("roker" "rokerbase")
 
 # Standalone binary.
 set(DAEMON "cbd")

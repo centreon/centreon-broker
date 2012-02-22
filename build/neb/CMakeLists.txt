@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2011 Merethis
+## Copyright 2009-2012 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -96,15 +96,37 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/status.hh"
 )
 
+# Static library.
+add_library("nebbase" STATIC ${NEB_SOURCES})
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
+if (COMPILER_HAS_FPIC)
+  get_property(NEBBASE_CXXFLAGS
+    TARGET "nebbase"
+    PROPERTY COMPILE_FLAGS)
+  if (NEBBASE_CXXFLAGS)
+    set(NEBBASE_CXXFLAGS "${NEBBASE_CXXFLAGS} -fPIC")
+  else ()
+    set(NEBBASE_CXXFLAGS "-fPIC")
+  endif ()
+  set_property(TARGET "nebbase"
+    PROPERTY COMPILE_FLAGS "${NEBBASE_CXXFLAGS}")
+endif ()
+
 # Centreon Broker module.
 set(NEB "10-neb")
 set(NEB "${NEB}" PARENT_SCOPE)
 add_library("${NEB}" SHARED
-  # Event sources.
-  ${NEB_SOURCES}
   # Main source.
   "${SRC_DIR}/broker.cc"
 )
+if (CMAKE_COMPILER_IS_GNUCXX)
+  # Flags needed to include all symbols in binary.
+  target_link_libraries("${NEB}"
+    "-Wl,--whole-archive" "nebbase" "-Wl,--no-whole-archive")
+else ()
+  target_link_libraries("${NEB}" "nebbase")
+endif ()
 target_link_libraries("${NEB}" ${QT_LIBRARIES})
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
 install(TARGETS "${NEB}"
@@ -114,9 +136,8 @@ install(TARGETS "${NEB}"
 # Centreon Engine/Nagios module.
 set(CBMOD "cbmod")
 add_library("${CBMOD}" SHARED
-  # Event sources.
-  ${NEB_SOURCES}
   # Sources.
+  "${PROJECT_SOURCE_DIR}/core/src/config/applier/logger.cc"
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
   "${SRC_DIR}/internal.cc"
@@ -128,12 +149,18 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
   "${INC_DIR}/com/centreon/broker/neb/set_log_data.hh"
 )
+get_property(CBMOD_DEFINES
+  TARGET "${CBMOD}"
+  PROPERTY COMPILE_DEFINITIONS)
+list(APPEND CBMOD_DEFINES CBMOD)
+set_property(TARGET "${CBMOD}"
+  PROPERTY COMPILE_DEFINITIONS "${CBMOD_DEFINES}")
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in shared library.
   target_link_libraries("${CBMOD}"
-    "-Wl,--whole-archive" "roker" "-Wl,--no-whole-archive")
+    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive")
 else ()
-  target_link_libraries("${CBMOD}" "roker")
+  target_link_libraries("${CBMOD}" "nebbase" "rokerbase")
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
@@ -143,7 +170,6 @@ if (WITH_TESTING)
   #   set_log_data library.
   add_library("ccb_neb_set_log_data" STATIC
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc")
   set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "roker")
   #   Host alert.
@@ -156,7 +182,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_service_alert")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/service_alert.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -165,7 +190,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_host_notification")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/host_notification.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -174,7 +198,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_service_notification")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/service_notification.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -183,16 +206,14 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_initial_host_state")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/initial_host_state.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Initial service state.
   set(TEST_NAME "neb_set_log_data_initial_service_state")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/initial_service_state.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -201,7 +222,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_current_host_state")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/current_host_state.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -210,7 +230,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_current_service_state")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/current_service_state.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -219,7 +238,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_external_acknowledge_host")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/external_acknowledge_host.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
@@ -228,7 +246,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_set_log_data_external_acknowledge_service")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/log_entry.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/external_acknowledge_service.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
