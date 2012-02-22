@@ -26,96 +26,13 @@
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#ifdef CBMOD
+#  include "com/centreon/broker/neb/monitoring_logger.hh"
+#endif // CBMOD
 #include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Default constructor.
- */
-logger::logger() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] l Object to copy.
- */
-logger::logger(logger const& l) {
-  (void)l;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] l Object to copy.
- *
- *  @return This object.
- */
-logger& logger::operator=(logger const& l) {
-  (void)l;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**
- *  Create a backend object from its configuration.
- *
- *  @param[in] cfg Logging backend configuration.
- *
- *  @return New logging backend.
- */
-QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg) {
-  QSharedPointer<logging::backend> back;
-  switch (cfg.type()) {
-   case config::logger::file:
-    {
-      if (cfg.name().isEmpty())
-        throw (exceptions::msg()
-                 << "log applier: attempt to log on an empty file");
-      std::auto_ptr<logging::file>
-        file(new logging::file(cfg.name(), cfg.max_size()));
-      back = QSharedPointer<logging::backend>(file.get());
-      file.release();
-    }
-    break ;
-   case config::logger::standard:
-    {
-      FILE* out;
-      if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
-        out = stderr;
-      else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
-        out = stdout;
-      else
-        throw (exceptions::msg() << "log applier: attempt to log on " \
-                 "an undefined output object");
-      back = QSharedPointer<logging::backend>(new logging::file(out));
-    }
-    break ;
-   case config::logger::syslog:
-    back = QSharedPointer<logging::backend>(
-      new logging::syslogger(cfg.facility()));
-    break ;
-   default:
-    throw (exceptions::msg() << "log applier: attempt to create a " \
-             "logging object of unknown type");
-  }
-
-  return (back);
-}
 
 /**************************************
 *                                     *
@@ -127,7 +44,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
  *  Destructor.
  */
 logger::~logger() {
-  logging::debug << logging::HIGH << "log applier: destruction";
+  logging::debug(logging::high) << "log applier: destruction";
 }
 
 /**
@@ -137,7 +54,7 @@ logger::~logger() {
  */
 void logger::apply(QList<config::logger> const& loggers) {
   // Log message.
-  logging::config << logging::HIGH << "log applier: applying "
+  logging::config(logging::high) << "log applier: applying "
     << loggers.size() << " logging objects";
 
   // Find which loggers are already created,
@@ -178,7 +95,7 @@ void logger::apply(QList<config::logger> const& loggers) {
          end = to_create.end();
        it != end;
        ++it) {
-    logging::config << logging::medium
+    logging::config(logging::medium)
       << "log applier: creating new logger";
     QSharedPointer<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
@@ -199,4 +116,114 @@ void logger::apply(QList<config::logger> const& loggers) {
 logger& logger::instance() {
   static logger gl_logger;
   return (gl_logger);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Default constructor.
+ */
+logger::logger() {}
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] l Object to copy.
+ */
+logger::logger(logger const& l) {
+  (void)l;
+  _internal_copy(l);
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] l Object to copy.
+ *
+ *  @return This object.
+ */
+logger& logger::operator=(logger const& l) {
+  _internal_copy(l);
+  return (*this);
+}
+
+/**
+ *  @brief Copy internal data members.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] l Unused.
+ */
+void logger::_internal_copy(logger const& l) {
+  (void)l;
+  assert(!"logger applier is not copyable");
+  abort();
+  return ;
+}
+
+/**
+ *  Create a backend object from its configuration.
+ *
+ *  @param[in] cfg Logging backend configuration.
+ *
+ *  @return New logging backend.
+ */
+QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg) {
+  QSharedPointer<logging::backend> back;
+  switch (cfg.type()) {
+  case config::logger::file:
+    {
+      if (cfg.name().isEmpty())
+        throw (exceptions::msg()
+               << "log applier: attempt to log on an empty file");
+      std::auto_ptr<logging::file>
+        file(new logging::file(cfg.name(), cfg.max_size()));
+      back = QSharedPointer<logging::backend>(file.get());
+      file.release();
+    }
+    break ;
+  case config::logger::monitoring:
+    {
+#ifdef CBMOD
+      std::auto_ptr<neb::monitoring_logger>
+        monitoring(new neb::monitoring_logger);
+      back = QSharedPointer<logging::backend>(monitoring.get());
+      monitoring.release();
+#else
+      logging::info(logging::high) << "log applier: monitoring"
+        " logger type is not supported in standalone mode";
+#endif // CBMOD
+    }
+    break ;
+  case config::logger::standard:
+    {
+      FILE* out;
+      if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
+        out = stderr;
+      else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
+        out = stdout;
+      else
+        throw (exceptions::msg() << "log applier: attempt to log on " \
+                 "an undefined output object");
+      back = QSharedPointer<logging::backend>(new logging::file(out));
+    }
+    break ;
+  case config::logger::syslog:
+    back = QSharedPointer<logging::backend>(
+      new logging::syslogger(cfg.facility()));
+    break ;
+  default:
+    throw (exceptions::msg() << "log applier: attempt to create a " \
+             "logging object of unknown type");
+  }
+
+  return (back);
 }

@@ -34,13 +34,14 @@ namespace              logging {
    *  Log messages to a file.
    */
   class                file : public backend {
-   public:
+  public:
                        file(
                          QString const& path,
                          unsigned long long max = 100000000000ull);
                        file(FILE* special);
                        ~file();
-    void               log_msg(char const* msg,
+    void               log_msg(
+                         char const* msg,
                          unsigned int len,
                          type log_type,
                          level l) throw ();
@@ -51,7 +52,7 @@ namespace              logging {
     static bool        with_timestamp() throw ();
     static void        with_timestamp(bool enable) throw ();
 
-   private:
+  private:
                        file(file const& f);
     file&              operator=(file const& f);
     void               _internal_copy(file const& f);

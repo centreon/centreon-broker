@@ -141,12 +141,14 @@ add_library("${CBMOD}" SHARED
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
   "${SRC_DIR}/internal.cc"
+  "${SRC_DIR}/monitoring_logger.cc"
   "${SRC_DIR}/neb.cc"
   "${SRC_DIR}/set_log_data.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/neb/callbacks.hh"
   "${INC_DIR}/com/centreon/broker/neb/initial.hh"
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
+  "${INC_DIR}/com/centreon/broker/neb/monitoring_logger.hh"
   "${INC_DIR}/com/centreon/broker/neb/set_log_data.hh"
 )
 get_property(CBMOD_DEFINES

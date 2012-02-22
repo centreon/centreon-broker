@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,46 +17,47 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_APPLIER_LOGGER_HH_
-# define CCB_CONFIG_APPLIER_LOGGER_HH_
+#ifndef CCB_CONFIG_APPLIER_LOGGER_HH
+#  define CCB_CONFIG_APPLIER_LOGGER_HH
 
-# include <QList>
-# include <QMap>
-# include <QSharedPointer>
-# include "com/centreon/broker/config/logger.hh"
-# include "com/centreon/broker/logging/backend.hh"
+#  include <QList>
+#  include <QMap>
+#  include <QSharedPointer>
+#  include "com/centreon/broker/config/logger.hh"
+#  include "com/centreon/broker/logging/backend.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            config {
-        namespace          applier {
-          /**
-           *  @class logger logger.hh "com/centreon/broker/config/applier/logger.hh"
-           *  @brief Open and close loggers.
-           *
-           *  According to some configuration, open and close logging
-           *  objects as requested.
-           */
-          class            logger {
-           private:
-            QMap<config::logger, QSharedPointer<logging::backend> >
-                           _backends;
-                           logger();
-                           logger(logger const& l);
-            logger&        operator=(logger const& l);
-            QSharedPointer<logging::backend>
-                           _new_backend(config::logger const& cfg);
+CCB_BEGIN()
 
-           public:
-                           ~logger();
-            void           apply(QList<config::logger> const& loggers);
-            static logger& instance();
-          };
-        }
-      }
-    }
+namespace            config {
+  namespace          applier {
+    /**
+     *  @class logger logger.hh "com/centreon/broker/config/applier/logger.hh"
+     *  @brief Open and close loggers.
+     *
+     *  According to some configuration, open and close logging objects
+     *  as requested.
+     */
+    class            logger {
+    public:
+                     ~logger();
+      void           apply(QList<config::logger> const& loggers);
+      static logger& instance();
+
+    private:
+                     logger();
+                     logger(logger const& l);
+      logger&        operator=(logger const& l);
+      void           _internal_copy(logger const& l);
+      QSharedPointer<logging::backend>
+                     _new_backend(config::logger const& cfg);
+
+      QMap<config::logger, QSharedPointer<logging::backend> >
+                     _backends;
+    };
   }
 }
 
-#endif /* !CCB_CONFIG_APPLIER_LOGGER_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_APPLIER_LOGGER_HH

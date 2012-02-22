@@ -206,10 +206,10 @@ extern "C" {
       "Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_COPYRIGHT,
-      "Copyright 2009-2011 Merethis");
+      "Copyright 2009-2012 Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_VERSION,
-      "2.0.0");
+      "2.2.0");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_LICENSE,
       "GPL version 2");
@@ -242,6 +242,20 @@ extern "C" {
         throw (exceptions::msg()
                  << "main: no configuration file provided");
 
+      // Default logging object.
+      {
+        config::logger default_log;
+        default_log.type(config::logger::monitoring);
+        default_log.config(true);
+        default_log.debug(false);
+        default_log.error(true);
+        default_log.info(false);
+        default_log.level(logging::high);
+        QList<config::logger> default_logs;
+        default_logs.push_back(default_log);
+        config::applier::logger::instance().apply(default_logs);
+      }
+
       // Try configuration parsing.
       config::parser p;
       config::state s;
@@ -251,12 +265,12 @@ extern "C" {
       config::applier::logger::instance().apply(s.loggers());
     }
     catch (std::exception const& e) {
-      logging::config << logging::HIGH << e.what();
+      logging::error(logging::high) << e.what();
       return (-1);
     }
     catch (...) {
-      logging::config << logging::HIGH
-                      << "main: configuration file parsing failed";
+      logging::error(logging::high)
+        << "main: configuration file parsing failed";
       return (-1);
     }
 
