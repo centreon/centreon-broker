@@ -269,7 +269,7 @@ add_executable("${DAEMON}"
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
   target_link_libraries("${DAEMON}"
-    "-Wl,--whole-archive" "roker" "-Wl,--no-whole-archive")
+    "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive")
 else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
