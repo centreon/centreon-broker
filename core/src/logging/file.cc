@@ -31,6 +31,8 @@ using namespace com::centreon::broker::logging;
 #define LOG_OPEN_STR "Centreon Broker log file opened\n"
 #define LOG_ROTATION_STR "Centreon Broker log file rotation\n"
 
+// Should file flush output at each log entry.
+bool file::_with_flush(true);
 // Should thread ID be printed ?
 bool file::_with_thread_id(false);
 // Should timestamp be printed ?
@@ -161,8 +163,28 @@ void file::log_msg(char const* msg,
     }
     _write(prefix);
     _write(msg);
-    _file.flush();
+    if (_with_flush)
+      _file.flush();
   }
+  return ;
+}
+
+/**
+ *  Check if files should be flushed at each entry.
+ *
+ *  @return true if files should be flushed.
+ */
+bool file::with_flush() throw () {
+  return (_with_flush);
+}
+
+/**
+ *  Set if files should be flushed at each entry.
+ *
+ *  @param[in] enable true to enable file flushing.
+ */
+void file::with_flush(bool enable) throw () {
+  _with_flush = enable;
   return ;
 }
 
@@ -171,7 +193,7 @@ void file::log_msg(char const* msg,
  *
  *  @return true if thread ID should be printed.
  */
-bool file::with_thread_id() {
+bool file::with_thread_id() throw () {
   return (_with_thread_id);
 }
 
@@ -180,7 +202,7 @@ bool file::with_thread_id() {
  *
  *  @param[in] enable true to enable thread ID printing.
  */
-void file::with_thread_id(bool enable) {
+void file::with_thread_id(bool enable) throw () {
   _with_thread_id = enable;
   return ;
 }
@@ -190,7 +212,7 @@ void file::with_thread_id(bool enable) {
  *
  *  @return true if timestamp should be printed.
  */
-bool file::with_timestamp() {
+bool file::with_timestamp() throw () {
   return (_with_timestamp);
 }
 
@@ -199,7 +221,7 @@ bool file::with_timestamp() {
  *
  *  @param[in] enable true to enable timestamp printing.
  */
-void file::with_timestamp(bool enable) {
+void file::with_timestamp(bool enable) throw () {
   _with_timestamp = enable;
   return ;
 }

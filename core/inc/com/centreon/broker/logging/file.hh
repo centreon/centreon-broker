@@ -44,10 +44,12 @@ namespace              logging {
                          unsigned int len,
                          type log_type,
                          level l) throw ();
-    static bool        with_thread_id();
-    static void        with_thread_id(bool enable);
-    static bool        with_timestamp();
-    static void        with_timestamp(bool enable);
+    static bool        with_flush() throw ();
+    static void        with_flush(bool enable) throw ();
+    static bool        with_thread_id() throw ();
+    static void        with_thread_id(bool enable) throw ();
+    static bool        with_timestamp() throw ();
+    static void        with_timestamp(bool enable) throw ();
 
    private:
                        file(file const& f);
@@ -58,6 +60,7 @@ namespace              logging {
     QFile              _file;
     unsigned long long _max;
     bool               _special;
+    static bool        _with_flush;
     static bool        _with_timestamp;
     static bool        _with_thread_id;
     unsigned long long _written;
