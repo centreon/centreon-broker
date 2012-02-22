@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -24,26 +25,6 @@ using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members to this object.
- *
- *  @param[in] l Object to copy from.
- */
-void logger::_internal_copy(logger const& l) {
-  _facility = l._facility;
-  _level = l._level;
-  _name = l._name;
-  _type = l._type;
-  _types = l._types;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -54,6 +35,7 @@ void logger::_internal_copy(logger const& l) {
 logger::logger()
   : _facility(LOG_LOCAL0),
     _level(logging::high),
+    _max_size(10000000000ull),
     _type(unknown),
     _types(logging::config_type | logging::error_type) {}
 
@@ -94,6 +76,7 @@ bool logger::operator==(logger const& l) const {
   bool ret;
   ret = ((_facility == l._facility)
          && (_level == l._level)
+         && (_max_size == l._max_size)
          && (_type == l._type)
          && (_types == l._types));
   if (ret && ((file == _type) || (standard == _type)))
@@ -125,6 +108,8 @@ bool logger::operator<(logger const& l) const {
     ret = (_facility < l._facility);
   else if (_level != l._level)
     ret = (_level < l._level);
+  else if (_max_size != l._max_size)
+    ret = (_max_size < l._max_size);
   else if (_type != l._type)
     ret = (_type < l._type);
   else if (_types != l._types)
@@ -142,7 +127,7 @@ bool logger::operator<(logger const& l) const {
  *
  *  @param[in] c New value.
  */
-void logger::config(bool c) {
+void logger::config(bool c) throw () {
   if (c)
     _types = (_types | logging::config_type);
   else
@@ -155,7 +140,7 @@ void logger::config(bool c) {
  *
  *  @return Current value.
  */
-bool logger::config() const {
+bool logger::config() const throw () {
   return (_types & logging::config_type);
 }
 
@@ -164,7 +149,7 @@ bool logger::config() const {
  *
  *  @param[in] d New value.
  */
-void logger::debug(bool d) {
+void logger::debug(bool d) throw () {
   if (d)
     _types = (_types | logging::debug_type);
   else
@@ -177,7 +162,7 @@ void logger::debug(bool d) {
  *
  *  @return Current value.
  */
-bool logger::debug() const {
+bool logger::debug() const throw () {
   return (_types & logging::debug_type);
 }
 
@@ -186,7 +171,7 @@ bool logger::debug() const {
  *
  *  @param[in] e New value.
  */
-void logger::error(bool e) {
+void logger::error(bool e) throw () {
   if (e)
     _types = (_types | logging::error_type);
   else
@@ -199,7 +184,7 @@ void logger::error(bool e) {
  *
  *  @return Current value.
  */
-bool logger::error() const {
+bool logger::error() const throw () {
   return (_types & logging::error_type);
 }
 
@@ -208,7 +193,7 @@ bool logger::error() const {
  *
  *  @param[in] f Facility.
  */
-void logger::facility(int f) {
+void logger::facility(int f) throw () {
   _facility = f;
   return ;
 }
@@ -218,7 +203,7 @@ void logger::facility(int f) {
  *
  *  @return Current value.
  */
-int logger::facility() const {
+int logger::facility() const throw () {
   return (_facility);
 }
 
@@ -227,7 +212,7 @@ int logger::facility() const {
  *
  *  @param[in] i New value.
  */
-void logger::info(bool i) {
+void logger::info(bool i) throw () {
   if (i)
     _types = (_types | logging::info_type);
   else
@@ -240,7 +225,7 @@ void logger::info(bool i) {
  *
  *  @return Current value.
  */
-bool logger::info() const {
+bool logger::info() const throw () {
   return (_types & logging::info_type);
 }
 
@@ -249,7 +234,7 @@ bool logger::info() const {
  *
  *  @param[in] l New value.
  */
-void logger::level(logging::level l) {
+void logger::level(logging::level l) throw () {
   _level = l;
   return ;
 }
@@ -259,8 +244,27 @@ void logger::level(logging::level l) {
  *
  *  @return Current value.
  */
-com::centreon::broker::logging::level logger::level() const {
+com::centreon::broker::logging::level logger::level() const throw () {
   return (_level);
+}
+
+/**
+ *  Set the maximum file size.
+ *
+ *  @param[in] max Maximum file size in bytes.
+ */
+void logger::max_size(unsigned long long max) throw () {
+  _max_size = max;
+  return ;
+}
+
+/**
+ *  Get the maximum file size.
+ *
+ *  @return Maximum file size.
+ */
+unsigned long long logger::max_size() const throw () {
+  return (_max_size);
 }
 
 /**
@@ -278,7 +282,7 @@ void logger::name(QString const& n) {
  *
  *  @return Current value.
  */
-QString const& logger::name() const {
+QString const& logger::name() const throw () {
   return (_name);
 }
 
@@ -287,7 +291,7 @@ QString const& logger::name() const {
  *
  *  @param[in] lt New value.
  */
-void logger::type(logger::logger_type lt) {
+void logger::type(logger::logger_type lt) throw () {
   _type = lt;
   return ;
 }
@@ -297,7 +301,7 @@ void logger::type(logger::logger_type lt) {
  *
  *  @return Current value.
  */
-logger::logger_type logger::type() const {
+logger::logger_type logger::type() const throw () {
   return (_type);
 }
 
@@ -306,7 +310,7 @@ logger::logger_type logger::type() const {
  *
  *  @param[in] t New value.
  */
-void logger::types(unsigned int t) {
+void logger::types(unsigned int t) throw () {
   _types = t;
   return ;
 }
@@ -316,6 +320,27 @@ void logger::types(unsigned int t) {
  *
  *  @return Current value.
  */
-unsigned int logger::types() const {
+unsigned int logger::types() const throw () {
   return (_types);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members to this object.
+ *
+ *  @param[in] l Object to copy from.
+ */
+void logger::_internal_copy(logger const& l) {
+  _facility = l._facility;
+  _level = l._level;
+  _max_size = l._max_size;
+  _name = l._name;
+  _type = l._type;
+  _types = l._types;
+  return ;
 }

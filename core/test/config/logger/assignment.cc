@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -32,7 +33,8 @@ int main() {
   l1.debug(true);
   l1.error(true);
   l1.info(false);
-  l1.level(logging::MEDIUM);
+  l1.level(logging::medium);
+  l1.max_size(1456354874ull);
   l1.name("FooBar");
   l1.type(config::logger::file);
 
@@ -42,7 +44,8 @@ int main() {
   l2.debug(true);
   l2.error(true);
   l2.info(true);
-  l2.level(logging::NONE);
+  l2.level(logging::none);
+  l2.max_size(8485798487ull);
   l2.name("BazQux");
   l2.type(config::logger::syslog);
 
@@ -54,7 +57,8 @@ int main() {
   l1.debug(false);
   l1.error(false);
   l1.info(true);
-  l1.level(logging::LOW);
+  l1.level(logging::low);
+  l1.max_size(484587188ull);
   l1.name("BazQux");
   l1.type(config::logger::standard);
 
@@ -63,14 +67,16 @@ int main() {
           || (l1.debug())
           || (l1.error())
           || (!l1.info())
-          || (l1.level() != logging::LOW)
+          || (l1.level() != logging::low)
+          || (l1.max_size() != 484587188ull)
           || (l1.name() != "BazQux")
           || (l1.type() != config::logger::standard)
           || (l2.config())
           || (!l2.debug())
           || (!l2.error())
           || (l2.info())
-          || (l2.level() != logging::MEDIUM)
+          || (l2.level() != logging::medium)
+          || (l2.max_size() != 1456354874ull)
           || (l2.name() != "FooBar")
           || (l2.type() != config::logger::file));
 }

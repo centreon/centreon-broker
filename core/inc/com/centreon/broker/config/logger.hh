@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,70 +17,72 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_LOGGER_HH_
-# define CCB_CONFIG_LOGGER_HH_
+#ifndef CCB_CONFIG_LOGGER_HH
+#  define CCB_CONFIG_LOGGER_HH
 
-# include <QString>
-# include "com/centreon/broker/logging/defines.hh"
+#  include <QString>
+#  include "com/centreon/broker/logging/defines.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          config {
-        /**
-         *  @class logger logger.hh "com/centreon/broker/config/logger.hh"
-         *  @brief Parameters of a logger object.
-         *
-         *  The logger class reflects parameters of logging objects of the logging
-         *  namespace.
-         */
-        class            logger {
-         public:
-          enum           logger_type {
-            unknown = 0,
-            file,
-            standard,
-            syslog
-          };
+CCB_BEGIN()
 
-         private:
-          int            _facility;
-          logging::level _level;
-          QString        _name;
-          logger_type    _type;
-          unsigned int   _types;
-          void           _internal_copy(logger const& l);
+namespace              config {
+  /**
+   *  @class logger logger.hh "com/centreon/broker/config/logger.hh"
+   *  @brief Parameters of a logger object.
+   *
+   *  The logger class reflects parameters of logging objects of the
+   *  logging namespace.
+   */
+  class                logger {
+  public:
+    enum               logger_type {
+      unknown = 0,
+      file,
+      standard,
+      syslog
+    };
 
-         public:
-                         logger();
-                         logger(logger const& l);
-                         ~logger();
-          logger&        operator=(logger const& l);
-          bool           operator==(logger const& l) const;
-          bool           operator!=(logger const& l) const;
-          bool           operator<(logger const& l) const;
-          void           config(bool c);
-          bool           config() const;
-          void           debug(bool d);
-          bool           debug() const;
-          void           error(bool e);
-          bool           error() const;
-          void           facility(int f);
-          int            facility() const;
-          void           info(bool i);
-          bool           info() const;
-          void           level(logging::level l);
-          logging::level level() const;
-          void           name(QString const& s);
-          QString const& name() const;
-          void           type(logger_type lt);
-          logger_type    type() const;
-          void           types(unsigned int t);
-          unsigned int   types() const;
-        };
-      }
-    }
-  }
+                       logger();
+                       logger(logger const& l);
+                       ~logger();
+    logger&            operator=(logger const& l);
+    bool               operator==(logger const& l) const;
+    bool               operator!=(logger const& l) const;
+    bool               operator<(logger const& l) const;
+    void               config(bool c) throw ();
+    bool               config() const throw ();
+    void               debug(bool d) throw ();
+    bool               debug() const throw ();
+    void               error(bool e) throw ();
+    bool               error() const throw ();
+    void               facility(int f) throw ();
+    int                facility() const throw ();
+    void               info(bool i) throw ();
+    bool               info() const throw ();
+    void               level(logging::level l) throw ();
+    logging::level     level() const throw ();
+    void               max_size(unsigned long long max) throw ();
+    unsigned long long max_size() const throw ();
+    void               name(QString const& s);
+    QString const&     name() const throw ();
+    void               type(logger_type lt) throw ();
+    logger_type        type() const throw ();
+    void               types(unsigned int t) throw ();
+    unsigned int       types() const throw ();
+
+  private:
+    void               _internal_copy(logger const& l);
+
+    int                _facility;
+    logging::level     _level;
+    unsigned long long _max_size;
+    QString            _name;
+    logger_type        _type;
+    unsigned int       _types;
+  };
 }
 
-#endif /* !CCB_CONFIG_LOGGER_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_LOGGER_HH

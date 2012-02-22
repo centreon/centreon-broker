@@ -85,7 +85,8 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       if (cfg.name().isEmpty())
         throw (exceptions::msg()
                  << "log applier: attempt to log on an empty file");
-      std::auto_ptr<logging::file> file(new logging::file(cfg.name()));
+      std::auto_ptr<logging::file>
+        file(new logging::file(cfg.name(), cfg.max_size()));
       back = QSharedPointer<logging::backend>(file.get());
       file.release();
     }

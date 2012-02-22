@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -140,6 +141,8 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         else
           l.level(com::centreon::broker::logging::NONE);
       }
+      else if (name == "max_size")
+        l.max_size(entry.text().toUInt());
       else if (name == "name")
         l.name(entry.text());
       else if (name == "type") {

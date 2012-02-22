@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -32,7 +33,8 @@ int main() {
   l1.debug(true);
   l1.error(true);
   l1.info(true);
-  l1.level(logging::HIGH);
+  l1.level(logging::high);
+  l1.max_size(98784818758745ull);
   l1.name("FooBar");
   l1.type(config::logger::standard);
 

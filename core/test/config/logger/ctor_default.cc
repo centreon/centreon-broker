@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -36,6 +37,7 @@ int main () {
           || (!cfg.error())
           || (cfg.info())
           || (cfg.level() != logging::high)
+          || (cfg.max_size() != 10000000000ull)
           || (!cfg.name().isEmpty())
           || (cfg.type() != config::logger::unknown));
 }
