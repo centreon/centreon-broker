@@ -17,7 +17,11 @@
 ## <http://www.gnu.org/licenses/>.
 ##
 
-# Global options.
+#
+# Global settings.
+#
+
+# Set necessary settings.
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
@@ -28,10 +32,14 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
 # Version.
-set(BROKER_MAJOR "2")
-set(BROKER_MINOR "1")
-set(BROKER_PATCH "1")
-set(BROKER_VERSION "${BROKER_MAJOR}.${BROKER_MINOR}.${BROKER_PATCH}")
+set(CENTREON_BROKER_MAJOR 2)
+set(CENTREON_BROKER_MINOR 1)
+set(CENTREON_BROKER_PATCH 1)
+set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
+
+#
+# Check and/or find required components.
+#
 
 # Find Qt.
 find_package(Qt4 4.5.0 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
@@ -41,6 +49,97 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
     OR ("${QT_VERSION}" VERSION_EQUAL "4.7.1"))
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
+
+
+#
+# Options.
+#
+
+# Main directory.
+if (WITH_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "${WITH_PREFIX}")
+endif ()
+
+# Executable directory.
+if (WITH_PREFIX_BINARY)
+  set(PREFIX_BINARY "${WITH_PREFIX_BINARY}")
+else ()
+  set(PREFIX_BINARY "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+# Configuration directory.
+if (WITH_PREFIX_CONFIG)
+  set(PREFIX_CONFIG "${WITH_PREFIX_CONFIG}")
+else ()
+  set(PREFIX_CONFIG "${CMAKE_INSTALL_PREFIX}/etc")
+endif ()
+
+# Archive directory.
+if (WITH_PREFIX_ARCHIVE)
+  set(PREFIX_ARCHIVE "${WITH_PREFIX_ARCHIVE}")
+else ()
+  set(PREFIX_ARCHIVE "${CMAKE_INSTALL_PREFIX}/lib")
+endif ()
+
+# Library directory.
+if (WITH_PREFIX_LIBRARY)
+  set(PREFIX_LIBRARY "${WITH_PREFIX_LIBRARY}")
+else ()
+  set(PREFIX_LIBRARY "${CMAKE_INSTALL_PREFIX}/lib")
+endif ()
+
+# Modules directory.
+if (WITH_PREFIX_MODULES)
+  set(PREFIX_MODULES "${WITH_PREFIX_MODULES}")
+else ()
+  set(PREFIX_MODULES "${PREFIX_LIB}/centreon-broker")
+endif ()
+
+# Development headers directory.
+if (WITH_PREFIX_INCLUDE)
+  set(PREFIX_INCLUDE "${WITH_PREFIX_INCLUDE}")
+else ()
+  set(PREFIX_INCLUDE "${CMAKE_INSTALL_PREFIX}/include/centreon-broker")
+endif ()
+
+# Var directory.
+if (WITH_PREFIX_VAR)
+  set(PREFIX_VAR "${WITH_PREFIX_VAR}")
+else ()
+  set(PREFIX_VAR "${CMAKE_INSTALL_PREFIX}/var")
+endif ()
+
+# Unit tests.
+option(WITH_TESTING "Build unit tests." OFF)
+if (WITH_TESTING)
+  include(CTest)
+  enable_testing()
+  include_directories("${PROJECT_SOURCE_DIR}/core")
+endif ()
+
+# User.
+if (WITH_USER)
+  set(USER "${WITH_USER}")
+else ()
+  set(USER "root")
+endif ()
+
+# Group.
+if (WITH_GROUP)
+  set(GROUP "${WITH_GROUP}")
+else ()
+  set(GROUP "root")
+endif ()
+
+# Configure files.
+configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
+  "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
+configure_file("${PROJECT_SOURCE_DIR}/build/doc/header.tex.in"
+  "${PROJECT_SOURCE_DIR}/build/doc/header.tex")
+
+#
+# Targets.
+#
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
@@ -56,25 +155,25 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
- "${SRC_DIR}/config/applier/endpoint.cc" #
+  "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/init.cc"
-  "${SRC_DIR}/config/applier/logger.cc" #
-  "${SRC_DIR}/config/applier/modules.cc" #
-  "${SRC_DIR}/config/applier/state.cc" #
-  "${SRC_DIR}/config/endpoint.cc" #
+  "${SRC_DIR}/config/applier/logger.cc"
+  "${SRC_DIR}/config/applier/modules.cc"
+  "${SRC_DIR}/config/applier/state.cc"
+  "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/config/logger.cc"
-  "${SRC_DIR}/config/parser.cc" #
-  "${SRC_DIR}/config/state.cc" #
+  "${SRC_DIR}/config/parser.cc"
+  "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
-  "${SRC_DIR}/exceptions/with_pointer.cc" #
+  "${SRC_DIR}/exceptions/with_pointer.cc"
 # #	../src/interface/xml/destination.cc
 # #	../src/interface/xml/internal.cc
 # #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
   "${SRC_DIR}/io/exceptions/shutdown.cc"
-  "${SRC_DIR}/io/factory.cc" #
-  "${SRC_DIR}/io/protocols.cc" #
+  "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
 # #	../src/io/split.cc
@@ -85,21 +184,21 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/manager.cc"
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
-  "${SRC_DIR}/mapping/entry.cc" #
-  "${SRC_DIR}/mapping/source.cc" #
+  "${SRC_DIR}/mapping/entry.cc"
+  "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/misc/global_lock.cc"
-  "${SRC_DIR}/modules/handle.cc" #
-  "${SRC_DIR}/modules/loader.cc" #
+  "${SRC_DIR}/modules/handle.cc"
+  "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/engine.cc"
   "${SRC_DIR}/multiplexing/hooker.cc"
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
-  "${SRC_DIR}/processing/failover.cc" #
-  "${SRC_DIR}/processing/feeder.cc" #
-  "${QT_WRAPPED_SOURCES}"
-#   # Headers.
+  "${SRC_DIR}/processing/failover.cc"
+  "${SRC_DIR}/processing/feeder.cc"
+  ${QT_WRAPPED_SOURCES}
+  # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
   "${INC_DIR}/config/applier/logger.hh"
@@ -172,12 +271,100 @@ else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
 
+# Documentation.
+add_subdirectory("doc")
+
+# NEB module.
+add_subdirectory("neb")
+
+# File module.
+add_subdirectory("file")
+
+# Compression module.
+add_subdirectory("compression")
+
+# Correlation module.
+add_subdirectory("correlation")
+
+# Local sockets module.
+add_subdirectory("local")
+
+# RRD module.
+add_subdirectory("rrd")
+
+# SQL module.
+add_subdirectory("sql")
+
+# Storage module.
+add_subdirectory("storage")
+
+# TCP module.
+add_subdirectory("tcp")
+
+# NDO module.
+add_subdirectory("ndo")
+
+#
+# Install stuff.
+#
+
+# Create directories.
+install(CODE "
+  function(mkdir_chown user group path)
+    if (APPLE OR (UNIX AND NOT CYGWIN))
+      if (NOT EXISTS \"\${path}\")
+        file(MAKE_DIRECTORY \"\${path}\")
+        execute_process(COMMAND \"chown\" \"\${user}:\${group}\" \"\${path}\")
+      endif ()
+    else()
+      file(MAKE_DIRECTORY \"\${path}\")
+    endif ()
+  endfunction()
+
+  function(touch_chown user group file)
+    if (APPLE OR (UNIX AND NOT CYGWIN))
+      if (NOT EXISTS \"\${file}\")
+        file(WRITE \"\${file}\" \"\")
+        execute_process(COMMAND \"chown\" \"\${user}:\${group}\" \"\${file}\")
+      endif ()
+    else()
+      file(WRITE \"{file}\" \"\")
+    endif ()
+  endfunction()
+
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${CMAKE_INSTALL_PREFIX}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_BINARY}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_LIBRARY}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_MODULES}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_ARCHIVE}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INCLUDE}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONFIG}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_VAR}\")
+")
+
+# Install rule.
+install(TARGETS "roker"
+  ARCHIVE DESTINATION "${PREFIX_ARCHIVE}"
+)
+
+# Install rule.
+install(TARGETS "${DAEMON}"
+  RUNTIME DESTINATION "${PREFIX_BINARY}"
+)
+
+#
+# Packaging.
+#
+
+include("package.cmake")
+
+#
+# Unit tests.
+#
+
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
-  enable_testing()
-  include_directories("${PROJECT_SOURCE_DIR}/core")
-
   # misc namespace tests.
   # misc::stringifier tests.
   #   Default construction.
@@ -628,106 +815,49 @@ if (WITH_TESTING)
   add_test("cbd_help" "cbd" "-h")
 endif ()
 
-# Install directories.
-if (WITH_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "${WITH_PREFIX}")
-endif ()
-if (WITH_PREFIX_ARCHIVE)
-  set(PREFIX_ARCHIVE "${WITH_PREFIX_ARCHIVE}")
-else ()
-  set(PREFIX_ARCHIVE "lib")
-endif ()
-if (WITH_PREFIX_BINARY)
-  set(PREFIX_BINARY "${WITH_PREFIX_BINARY}")
-else ()
-  set(PREFIX_BINARY "bin")
-endif ()
-if (WITH_PREFIX_LIBRARY)
-  set(PREFIX_LIBRARY "${WITH_PREFIX_LIBRARY}")
-else ()
-  set(PREFIX_LIBRARY "lib")
-endif ()
-if (WITH_PREFIX_MODULES)
-  set(PREFIX_MODULES "${WITH_PREFIX_MODULES}")
-else ()
-  set(PREFIX_MODULES "lib/centreon-broker")
-endif ()
+#
+# Print summary.
+#
 
-# Install rule.
-install(TARGETS "roker"
-  ARCHIVE DESTINATION "${PREFIX_ARCHIVE}"
-)
-
-# Install rule.
-install(TARGETS "${DAEMON}"
-  RUNTIME DESTINATION "${PREFIX_BINARY}"
-)
-
-# Configure files.
-configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
-  "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
-configure_file("${PROJECT_SOURCE_DIR}/build/doc/header.tex.in"
-  "${PROJECT_SOURCE_DIR}/build/doc/header.tex")
-
-# Documentation.
-add_subdirectory("doc")
-
-# NEB module.
-add_subdirectory("neb")
-
-# File module.
-add_subdirectory("file")
-
-# Compression module.
-add_subdirectory("compression")
-
-# Correlation module.
-add_subdirectory("correlation")
-
-# Local sockets module.
-add_subdirectory("local")
-
-# RRD module.
-add_subdirectory("rrd")
-
-# SQL module.
-add_subdirectory("sql")
-
-# Storage module.
-add_subdirectory("storage")
-
-# TCP module.
-add_subdirectory("tcp")
-
-# NDO module.
-add_subdirectory("ndo")
-
-# Print installation summary.
 message(STATUS "")
-message(STATUS "  Centreon Broker Installation Summary")
 message(STATUS "")
-message(STATUS "    System                  ${CMAKE_SYSTEM_NAME}")
-message(STATUS "      - Version             ${CMAKE_SYSTEM_VERSION}")
-message(STATUS "      - Processor           ${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "    Compiler                ${CMAKE_CXX_COMPILER}")
-message(STATUS "      - Flags               ${CMAKE_CXX_FLAGS}")
-message(STATUS "    Centreon Broker")
-message(STATUS "      - Version             ${BROKER_VERSION}")
-message(STATUS "    Qt")
-message(STATUS "      - Version             ${QT_VERSION}")
-message(STATUS "    Installation Directory  ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "      - Archive Directory   ${PREFIX_ARCHIVE}")
-message(STATUS "      - Binary Directory    ${PREFIX_BINARY}")
-message(STATUS "      - Library Directory   ${PREFIX_LIBRARY}")
-message(STATUS "      - Modules Directory   ${PREFIX_MODULES}")
+message(STATUS "Configuration Summary")
+message(STATUS "---------------------")
+message(STATUS "")
+message(STATUS "  Project")
+message(STATUS "    - Name                       Centreon Broker")
+message(STATUS "    - Version                    ${CENTREON_BROKER_VERSION}")
+message(STATUS "")
+message(STATUS "  System")
+message(STATUS "    - Name                       ${CMAKE_SYSTEM_NAME}")
+message(STATUS "    - Version                    ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "    - Processor                  ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "")
+message(STATUS "  Build")
+message(STATUS "    - Compiler                   ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
+message(STATUS "    - Extra compilation flags    ${CMAKE_CXX_FLAGS}")
+message(STATUS "    - Qt                         ${QT_VERSION}")
 if (WITH_TESTING)
-  message(STATUS "    Unit tests              enabled")
+  message(STATUS "    - Unit tests                 enabled")
 else ()
-  message(STATUS "    Unit tests              disabled")
+  message(STATUS "    - Unit tests                 disabled")
 endif ()
 if (WITH_DOCUMENTATION)
-  message(STATUS "    Documentation           enabled")
+  message(STATUS "    - Documentation              enabled")
 else ()
-  message(STATUS "    Documentation           disabled")
+  message(STATUS "    - Documentation              disabled")
 endif ()
+message(STATUS "")
+message(STATUS "  Install")
+message(STATUS "    - Prefix                     ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "    - Binary prefix              ${PREFIX_BINARY}")
+message(STATUS "    - Library prefix             ${PREFIX_LIBRARY}")
+message(STATUS "    - Modules prefix             ${PREFIX_MODULES}")
+message(STATUS "    - Archive prefix             ${PREFIX_ARCHIVE}")
+message(STATUS "    - Include prefix             ${PREFIX_INCLUDE}")
+message(STATUS "    - Configuration prefix       ${PREFIX_CONFIG}")
+message(STATUS "    - Var prefix                 ${PREFIX_VAR}")
+message(STATUS "    - User                       ${USER}")
+message(STATUS "    - Group                      ${GROUP}")
+message(STATUS "    - Package                    ${PACKAGE_LIST}")
 message(STATUS "")
