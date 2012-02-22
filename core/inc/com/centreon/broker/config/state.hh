@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,59 +17,62 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_STATE_HH_
-# define CCB_CONFIG_STATE_HH_
+#ifndef CCB_CONFIG_STATE_HH
+#  define CCB_CONFIG_STATE_HH
 
-# include <QList>
-# include <QMap>
-# include <QString>
-# include "com/centreon/broker/config/endpoint.hh"
-# include "com/centreon/broker/config/logger.hh"
+#  include <QList>
+#  include <QMap>
+#  include <QString>
+#  include "com/centreon/broker/config/endpoint.hh"
+#  include "com/centreon/broker/config/logger.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                               com {
-  namespace                             centreon {
-    namespace                           broker {
-      namespace                         config {
-        /**
-         *  @class state state.hh "com/centreon/broker/config/state.hh"
-         *  @brief Full configuration state.
-         *
-         *  A fully parsed configuration is represented within this
-         *  class which holds mandatory parameters as well as optional
-         *  parameters, along with object definitions.
-         */
-        class                           state {
-         private:
-          QList<endpoint>               _inputs;
-          bool                          _log_thread_id;
-          QList<logger>                 _loggers;
-          QString                       _module_dir;
-          QList<endpoint>               _outputs;
-          QMap<QString, QString>        _params;
-          void                          _internal_copy(state const& s);
+CCB_BEGIN()
 
-         public:
-                                        state();
-                                        state(state const& s);
-                                        ~state();
-          state&                        operator=(state const& s);
-          void                          clear();
-          QList<endpoint>&              inputs();
-          QList<endpoint> const&        inputs() const;
-          void                          log_thread_id(bool log_id);
-          bool                          log_thread_id() const;
-          QList<logger>&                loggers();
-          QList<logger> const&          loggers() const;
-          QString const&                module_directory() const;
-          void                          module_directory(QString const& dir);
-          QList<endpoint>&              outputs();
-          QList<endpoint> const&        outputs() const;
-          QMap<QString, QString>&       params();
-          QMap<QString, QString> const& params() const;
-        };
-      }
-    }
-  }
+namespace                         config {
+  /**
+   *  @class state state.hh "com/centreon/broker/config/state.hh"
+   *  @brief Full configuration state.
+   *
+   *  A fully parsed configuration is represented within this class
+   *  which holds mandatory parameters as well as optional parameters,
+   *  along with object definitions.
+   */
+  class                           state {
+  public:
+                                  state();
+                                  state(state const& s);
+                                  ~state();
+    state&                        operator=(state const& s);
+    void                          clear();
+    void                          flush_logs(bool flush) throw ();
+    bool                          flush_logs() const throw ();
+    QList<endpoint>&              inputs() throw ();
+    QList<endpoint> const&        inputs() const throw ();
+    void                          log_thread_id(bool log_id) throw ();
+    bool                          log_thread_id() const throw ();
+    QList<logger>&                loggers() throw ();
+    QList<logger> const&          loggers() const throw ();
+    QString const&                module_directory() const throw ();
+    void                          module_directory(QString const& dir);
+    QList<endpoint>&              outputs() throw ();
+    QList<endpoint> const&        outputs() const throw ();
+    QMap<QString, QString>&       params() throw ();
+    QMap<QString, QString> const& params() const throw ();
+
+  private:
+    void                          _internal_copy(state const& s);
+
+    bool                          _flush_logs;
+    QList<endpoint>               _inputs;
+    bool                          _log_thread_id;
+    QList<logger>                 _loggers;
+    QString                       _module_dir;
+    QList<endpoint>               _outputs;
+    QMap<QString, QString>        _params;
+  };
 }
 
-#endif /* !CCB_CONFIG_STATE_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_STATE_HH

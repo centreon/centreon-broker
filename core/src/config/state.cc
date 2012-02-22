@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,27 +23,6 @@ using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] s Object to copy.
- */
-void state::_internal_copy(state const& s) {
-  _inputs = s._inputs;
-  _log_thread_id = s._log_thread_id;
-  _loggers = s._loggers;
-  _module_dir = s._module_dir;
-  _outputs = s._outputs;
-  _params = s._params;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -50,7 +30,7 @@ void state::_internal_copy(state const& s) {
 /**
  *  Default constructor.
  */
-state::state() : _log_thread_id(false) {
+state::state() {
   clear();
 }
 
@@ -84,6 +64,7 @@ state& state::operator=(state const& s) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _flush_logs = true;
   _inputs.clear();
   _log_thread_id = false;
   _loggers.clear();
@@ -94,11 +75,30 @@ void state::clear() {
 }
 
 /**
+ *  Set if logs must be flushed.
+ *
+ *  @param[in] flush true to automatically flush log files.
+ */
+void state::flush_logs(bool flush) throw () {
+  _flush_logs = flush;
+  return ;
+}
+
+/**
+ *  Check if logs must be flushed.
+ *
+ *  @return true if logs must be automatically flushed.
+ */
+bool state::flush_logs() const throw () {
+  return (_flush_logs);
+}
+
+/**
  *  Get the list of inputs.
  *
  *  @return Input list.
  */
-QList<endpoint>& state::inputs() {
+QList<endpoint>& state::inputs() throw () {
   return (_inputs);
 }
 
@@ -107,7 +107,7 @@ QList<endpoint>& state::inputs() {
  *
  *  @return Input list.
  */
-QList<endpoint> const& state::inputs() const {
+QList<endpoint> const& state::inputs() const throw () {
   return (_inputs);
 }
 
@@ -116,7 +116,7 @@ QList<endpoint> const& state::inputs() const {
  *
  *  @return Logger list.
  */
-QList<logger>& state::loggers() {
+QList<logger>& state::loggers() throw () {
   return (_loggers);
 }
 
@@ -125,7 +125,7 @@ QList<logger>& state::loggers() {
  *
  *  @param[in] log_id true to log thread IDs.
  */
-void state::log_thread_id(bool log_id) {
+void state::log_thread_id(bool log_id) throw () {
   _log_thread_id = log_id;
   return ;
 }
@@ -135,7 +135,7 @@ void state::log_thread_id(bool log_id) {
  *
  *  @return true if thread IDs must be logged.
  */
-bool state::log_thread_id() const {
+bool state::log_thread_id() const throw () {
   return (_log_thread_id);
 }
 
@@ -144,7 +144,7 @@ bool state::log_thread_id() const {
  *
  *  @return Logger list.
  */
-QList<logger> const& state::loggers() const {
+QList<logger> const& state::loggers() const throw () {
   return (_loggers);
 }
 
@@ -153,7 +153,7 @@ QList<logger> const& state::loggers() const {
  *
  *  @return Module directory.
  */
-QString const& state::module_directory() const {
+QString const& state::module_directory() const throw () {
   return (_module_dir);
 }
 
@@ -172,7 +172,7 @@ void state::module_directory(QString const& dir) {
  *
  *  @return Output list.
  */
-QList<endpoint>& state::outputs() {
+QList<endpoint>& state::outputs() throw () {
   return (_outputs);
 }
 
@@ -181,7 +181,7 @@ QList<endpoint>& state::outputs() {
  *
  *  @return Output list.
  */
-QList<endpoint> const& state::outputs() const {
+QList<endpoint> const& state::outputs() const throw () {
   return (_outputs);
 }
 
@@ -190,7 +190,7 @@ QList<endpoint> const& state::outputs() const {
  *
  *  @return Additional parameters list.
  */
-QMap<QString, QString>& state::params() {
+QMap<QString, QString>& state::params() throw () {
   return (_params);
 }
 
@@ -199,6 +199,27 @@ QMap<QString, QString>& state::params() {
  *
  *  @return Additional parameters list.
  */
-QMap<QString, QString> const& state::params() const {
+QMap<QString, QString> const& state::params() const throw () {
   return (_params);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] s Object to copy.
+ */
+void state::_internal_copy(state const& s) {
+  _inputs = s._inputs;
+  _log_thread_id = s._log_thread_id;
+  _loggers = s._loggers;
+  _module_dir = s._module_dir;
+  _outputs = s._outputs;
+  _params = s._params;
+  return ;
 }

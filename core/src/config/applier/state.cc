@@ -93,6 +93,10 @@ void state::apply(com::centreon::broker::config::state const& s,
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
+  // Flush logs or not.
+  com::centreon::broker::logging::file::with_flush(
+    s.flush_logs());
+
   // Enable or not thread ID logging.
   com::centreon::broker::logging::file::with_thread_id(
     s.log_thread_id());
