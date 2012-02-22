@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include <stddef.h>
+#include <string.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -229,8 +231,13 @@ extern "C" {
 
     try {
       // Set configuration file.
-      if (args)
+      if (args) {
+        char const* config_file("config_file=");
+        size_t config_file_size(strlen(config_file));
+        if (!strncmp(args, config_file, config_file_size))
+          args += config_file_size;
         neb::gl_configuration_file = args;
+      }
       else
         throw (exceptions::msg()
                  << "main: no configuration file provided");
