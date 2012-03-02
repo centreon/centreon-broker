@@ -48,15 +48,11 @@ int main() {
   // Check that subscriber is empty.
   retval |= !s.read(0).isNull();
 
-  // Publish data.
-  QSharedPointer<io::raw> data(new io::raw);
-  data->append(MSG);
-  multiplexing::engine::instance().publish(data.staticCast<io::data>());
-
   // Close subscriber.
   s.process(false, false);
 
   // Publish data.
+  QSharedPointer<io::raw> data(new io::raw);
   data = QSharedPointer<io::raw>(new io::raw);
   data->append(MSG);
   multiplexing::engine::instance().publish(data.staticCast<io::data>());
