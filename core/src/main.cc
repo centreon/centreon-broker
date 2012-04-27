@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -164,22 +164,26 @@ int main(int argc, char* argv[]) {
     }
     else {
       app.setApplicationName("Centreon Broker");
-      app.setApplicationVersion("2");
+      app.setApplicationVersion(CENTREON_BROKER_VERSION);
       app.setOrganizationDomain("merethis.com");
       app.setOrganizationName("Merethis");
-      logging::info << logging::MEDIUM << "Centreon Broker v2";
-      logging::info << logging::MEDIUM << "Copyright 2009-2011 Merethis";
-      logging::info << logging::MEDIUM << "License GPLv2: GNU GPL " \
+      logging::info(logging::medium)
+        << "Centreon Broker " << CENTREON_BROKER_VERSION;
+      logging::info(logging::medium) << "Copyright 2009-2012 Merethis";
+      logging::info(logging::medium) << "License GPLv2: GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
-      logging::info << logging::LOW << "PID: " << app.applicationPid();
-      logging::info << logging::MEDIUM << "Qt version " << QT_VERSION_STR;
-      logging::info << logging::MEDIUM << "  Build Date: "
+      logging::info(logging::low) << "PID: " << app.applicationPid();
+      logging::info(logging::medium)
+        << "Qt compilation version " << QT_VERSION_STR;
+      logging::info(logging::medium)
+        << "Qt runtime version " << qVersion();
+      logging::info(logging::medium) << "  Build Date: "
         << QLibraryInfo::buildDate().toString();
-      logging::info << logging::MEDIUM << "  Build Key: "
+      logging::info(logging::medium) << "  Build Key: "
         << QLibraryInfo::buildKey();
-      logging::info << logging::MEDIUM << "  Licensee: "
+      logging::info(logging::medium) << "  Licensee: "
         << QLibraryInfo::licensee();
-      logging::info << logging::MEDIUM << "  Licensed Products: "
+      logging::info(logging::medium) << "  Licensed Products: "
         << QLibraryInfo::licensedProducts();
 
       // Reset locale.
