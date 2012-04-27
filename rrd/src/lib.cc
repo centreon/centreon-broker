@@ -123,8 +123,6 @@ QString lib::normalize_metric_name(QString const& metric) {
     normalized = "x";
   else if (normalized.size() > max_metric_length)
     normalized.resize(max_metric_length);
-  if (!isalnum(normalized.at(0).toLatin1()))
-    normalized.replace(0, 1, 'x');
   return (normalized);
 }
 
