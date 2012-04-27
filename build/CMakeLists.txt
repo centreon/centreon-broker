@@ -30,7 +30,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 # Version.
 set(BROKER_MAJOR "2")
 set(BROKER_MINOR "1")
-set(BROKER_PATCH "1")
+set(BROKER_PATCH "2")
 set(BROKER_VERSION "${BROKER_MAJOR}.${BROKER_MINOR}.${BROKER_PATCH}")
 
 # Find Qt.

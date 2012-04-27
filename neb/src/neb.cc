@@ -204,10 +204,10 @@ extern "C" {
       "Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_COPYRIGHT,
-      "Copyright 2009-2011 Merethis");
+      "Copyright 2009-2012 Merethis");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_VERSION,
-      "2.0.0");
+      "2.1.2");
     neb_set_module_info(gl_mod_handle,
       NEBMODULE_MODINFO_LICENSE,
       "GPL version 2");
@@ -216,7 +216,7 @@ extern "C" {
       "cbmod is part of CentreonBroker and is designed to " \
       "convert internal Nagios events to a proper data "    \
       "stream that can then be parsed by CentreonBroker's " \
-      "cb2db.");
+      "cbd.");
 
     // Initialize Qt if not already done by parent process.
     if (!QCoreApplication::instance()) {
