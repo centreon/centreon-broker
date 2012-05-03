@@ -49,6 +49,7 @@ using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::storage;
 
 #define BAM_NAME "_Module_"
+#define EPSILON 0.0001
 
 /**************************************
 *                                     *
@@ -68,270 +69,16 @@ static inline QVariant check_double(double f) {
   return (isnan(f) ? QVariant(QVariant::Double) : QVariant(f));
 }
 
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
 /**
- *  @brief Assignment operator.
+ *  Check that two double are equal.
  *
- *  Should not be used. Any call to this method will result in a call to
- *  abort().
+ *  @param[in] d1 First double.
+ *  @param[in] d2 Second double.
  *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
+ *  @return true if d1 and d2 are equal.
  */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**
- *  Clear QtSql objects.
- */
-void stream::_clear_qsql() {
-  _insert_data_bin.reset();
-  _update_metrics.reset();
-  if (!_storage_db.isNull() && _storage_db->isOpen())
-    _storage_db->close();
-  _storage_db.reset();
-  return ;
-}
-
-/**
- *  @brief Find index ID.
- *
- *  Look through the index cache for the specified index. If it cannot
- *  be found, insert an entry in the database.
- *
- *  @param[in] host_id      Host ID associated to the index.
- *  @param[in] service_id   Service ID associated to the index.
- *  @param[in] host_name    Host name associated to the index.
- *  @param[in] service_desc Service description associated to the index.
- *
- *  @return Index ID matching host and service ID.
- */
-unsigned int stream::_find_index_id(unsigned int host_id,
-                                    unsigned int service_id,
-                                    QString const& host_name,
-                                    QString const& service_desc) {
-  unsigned int retval;
-
-  // Look in the cache.
-  std::map<std::pair<unsigned int, unsigned int>, unsigned int>::const_iterator it(
-    _index_cache.find(std::make_pair(host_id, service_id)));
-  if (it != _index_cache.end())
-    retval = it->second;
-
-  // Can't find in cache, insert in DB.
-  else {
-    // Build query.
-    std::ostringstream oss;
-    oss << "INSERT INTO index_data (" \
-           "  host_id, host_name," \
-           "  service_id, service_description, " \
-           "  must_be_rebuild, special)" \
-           " VALUES (" << host_id << ", :host_name, " << service_id
-        << ", :service_description, 1, :special)";
-    QSqlQuery q(*_storage_db);
-    q.prepare(oss.str().c_str());
-    q.bindValue(":host_name", host_name);
-    q.bindValue(":service_description", service_desc);
-    q.bindValue(
-      ":special",
-      !strncmp(
-        host_name.toStdString().c_str(),
-        BAM_NAME,
-        sizeof(BAM_NAME) - 1)
-      ? 2
-      : 1);
-
-    // Execute query.
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "index (" << host_id << ", " << service_id
-               << ") failed: " << q.lastError().text());
-
-    // Fetch insert ID with query if possible.
-    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
-        || !(retval = q.lastInsertId().toUInt())) {
-      q.finish();
-      std::ostringstream oss2;
-      oss2 << "SELECT id" \
-              " FROM index_data" \
-              " WHERE host_id=" << host_id
-           << " AND service_id=" << service_id;
-      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
-        throw (broker::exceptions::msg() << "storage: could not fetch" \
-                    " index_id of newly inserted index (" << host_id
-                 << ", " << service_id << "): "
-                 << q2.lastError().text());
-      retval = q2.value(0).toUInt();
-      if (!retval)
-        throw (broker::exceptions::msg() << "storage: index_data " \
-                 "table is corrupted: got 0 as index_id");
-    }
-
-    // Insert index in cache.
-    logging::debug(logging::low) << "storage: new index " << retval
-      << " (" << host_id << ", " << service_id << ")";
-    _index_cache[std::make_pair(host_id, service_id)] = retval;
-  }
-
-  return (retval);
-}
-
-/**
- *  @brief Find metric ID.
- *
- *  Look through the metric cache for the specified metric. If it cannot
- *  be found, insert an entry in the database.
- *
- *  @param[in] index_id    Index ID of the metric.
- *  @param[in] metric_name Name of the metric.
- *
- *  @return Metric ID requested, 0 if it could not be found not
- *          inserted.
- */
-unsigned int stream::_find_metric_id(unsigned int index_id,
-                                     QString const& metric_name) {
-  unsigned int retval;
-
-  // Look in the cache.
-  std::map<std::pair<unsigned int, QString>, unsigned int>::const_iterator it
-    = _metric_cache.find(std::make_pair(index_id, metric_name));
-  if (it != _metric_cache.end())
-    retval = it->second;
-
-  // Can't find in cache, insert in DB.
-  else {
-    // Build query.
-    std::ostringstream oss;
-    QSqlField field("metric_name", QVariant::String);
-    field.setValue(metric_name.toStdString().c_str());
-    std::string escaped_metric_name(
-      _storage_db->driver()->formatValue(field, true).toStdString());
-    oss << "INSERT INTO metrics (index_id, metric_name)" \
-      " VALUES (" << index_id << ", " << escaped_metric_name << ")";
-
-    // Execute query.
-    QSqlQuery q(*_storage_db);
-    if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "metric '" << metric_name << "' of index " << index_id
-               << " failed: " << q.lastError().text());
-
-    // Fetch insert ID with query if possible.
-    if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
-        || !(retval = q.lastInsertId().toUInt())) {
-      q.finish();
-      std::ostringstream oss2;
-      oss2 << "SELECT metric_id" \
-              " FROM metrics" \
-              " WHERE index_id=" << index_id
-           << " AND metric_name=" << escaped_metric_name;
-      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
-        throw (broker::exceptions::msg() << "storage: could not fetch" \
-                    " metric_id of newly inserted metric '"
-                 << metric_name << "' of index " << index_id << ": "
-                 << q2.lastError().text());
-      retval = q2.value(0).toUInt();
-      if (!retval)
-        throw (broker::exceptions::msg() << "storage: metrics table " \
-                 "is corrupted: got 0 as metric_id");
-    }
-
-    // Insert metric in cache.
-    logging::debug(logging::low) << "storage: new metric "
-      << retval << " (" << index_id << ", " << metric_name << ")";
-    _metric_cache[std::make_pair(index_id, metric_name)] = retval;
-  }
-
-  return (retval);
-}
-
-/**
- *  Prepare queries.
- */
-void stream::_prepare() {
-  // Fill index cache.
-  {
-    // Execute query.
-    QSqlQuery q("SELECT id, host_id, service_id" \
-                " FROM index_data",
-                *_storage_db);
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not fetch " \
-                  "index list from data DB: "
-               << q.lastError().text());
-
-    // Loop through result set.
-    while (q.next()) {
-      unsigned int id(q.value(0).toUInt());
-      unsigned int host_id(q.value(1).toUInt());
-      unsigned int service_id(q.value(2).toUInt());
-      logging::debug(logging::low) << "storage: new index "
-        << id << " (" << host_id << ", " << service_id << ")";
-      _index_cache[std::make_pair(host_id, service_id)] = id;
-    }
-  }
-
-  // Fill metric cache.
-  {
-    // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name" \
-                " FROM metrics",
-                *_storage_db);
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not fetch " \
-                  "metric list from data DB: "
-               << q.lastError().text());
-
-    // Loop through result set.
-    while (q.next()) {
-      unsigned int metric_id(q.value(0).toUInt());
-      unsigned int index_id(q.value(1).toUInt());
-      QString name(q.value(2).toString());
-      logging::debug(logging::low) << "storage: new metric "
-        << metric_id << " (" << index_id << ", " << name << ")";
-      _metric_cache[std::make_pair(index_id, name)] = metric_id;
-    }
-  }
-
-  // Prepare metrics update query.
-  _update_metrics.reset(new QSqlQuery(*_storage_db));
-  if (!_update_metrics->prepare("UPDATE metrics" \
-                                " SET unit_name=:unit_name," \
-                                " warn=:warn," \
-                                " crit=:crit," \
-                                " min=:min," \
-                                " max=:max" \
-                                " WHERE index_id=:index_id" \
-                                " AND metric_name=:metric_name"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "metrics update query: "
-             << _update_metrics->lastError().text());
-
-  // Prepare data_bind insert query.
-  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
-  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
-                                 " id_metric, ctime, value, status)" \
-                                 " VALUES (:id_metric," \
-                                 " :ctime," \
-                                 " :value," \
-                                 " :status)"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "data_bin insert query: "
-             << _insert_data_bin->lastError().text());
-
-  return ;
+static inline bool double_equal(double d1, double d2) {
+  return (fabs(d1 - d2) < EPSILON);
 }
 
 /**************************************
@@ -353,15 +100,16 @@ void stream::_prepare() {
  *  @param[in] interval_length   Interval length.
  *  @param[in] store_in_db       Should we insert data in data_bin ?
  */
-stream::stream(QString const& storage_type,
-               QString const& storage_host,
-               unsigned short storage_port,
-               QString const& storage_user,
-               QString const& storage_password,
-               QString const& storage_db,
-               unsigned int rrd_len,
-               time_t interval_length,
-               bool store_in_db) {
+stream::stream(
+          QString const& storage_type,
+          QString const& storage_host,
+          unsigned short storage_port,
+          QString const& storage_user,
+          QString const& storage_password,
+          QString const& storage_db,
+          unsigned int rrd_len,
+          time_t interval_length,
+          bool store_in_db) {
   // Process events.
   _process_out = true;
 
@@ -469,7 +217,9 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
   storage_id.setNum((qulonglong)this, 16);
 
   // Clone Storage database.
-  _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._storage_db, storage_id)));
+  _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(
+                                                     *s._storage_db,
+                                                     storage_id)));
 
   try {
     {
@@ -610,7 +360,8 @@ void stream::write(QSharedPointer<io::data> data) {
   if (data->type() == "com::centreon::broker::neb::service_status") {
     logging::debug(logging::high)
       << "storage: processing service status event";
-    QSharedPointer<neb::service_status> ss(data.staticCast<neb::service_status>());
+    QSharedPointer<neb::service_status>
+      ss(data.staticCast<neb::service_status>());
 
     if (!ss->perf_data.isEmpty()) {
       // Find index_id.
@@ -626,8 +377,8 @@ void stream::write(QSharedPointer<io::data> data) {
       QSharedPointer<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
-      status->interval = static_cast<time_t>(ss->check_interval
-                                             * _interval_length);
+      status->interval = static_cast<time_t>(
+                           ss->check_interval * _interval_length);
       status->rrd_len = _rrd_len;
       status->state = ss->last_hard_state;
       multiplexing::publisher().write(status.staticCast<io::data>());
@@ -652,25 +403,21 @@ void stream::write(QSharedPointer<io::data> data) {
         perfdata& pd(*it);
 
         // Find metric_id.
-        unsigned int metric_id(_find_metric_id(index_id, pd.name()));
-
-        // Update metrics table.
-        _update_metrics->bindValue(":unit_name", pd.unit());
-        _update_metrics->bindValue(":warn", check_double(pd.warning()));
-        _update_metrics->bindValue(":crit", check_double(pd.critical()));
-        _update_metrics->bindValue(":min", check_double(pd.min()));
-        _update_metrics->bindValue(":max", check_double(pd.max()));
-        _update_metrics->bindValue(":index_id", index_id);
-        _update_metrics->bindValue(":metric_name", pd.name());
-        if (!_update_metrics->exec()
-            || _update_metrics->lastError().isValid())
-          throw (broker::exceptions::msg() << "storage: could not " \
-                      "update metric (index_id " << index_id
-                   << ", metric " << pd.name() << "): "
-                   << _update_metrics->lastError().text());
+        unsigned int metric_id(_find_metric_id(
+                                 index_id,
+                                 pd.name(),
+                                 pd.unit(),
+                                 pd.warning(),
+                                 pd.critical(),
+                                 pd.min(),
+                                 pd.max()));
 
         if (_store_in_db) {
           // Insert perfdata in data_bin.
+          logging::debug(logging::high)
+            << "storage: inserting perfdata in data_bin (metric: "
+            << metric_id << ", ctime: " << ss->last_check << ", value: "
+            << pd.value() << ", status: " << ss->current_state << ")";
           _insert_data_bin->bindValue(":id_metric", metric_id);
           _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->last_check));
           _insert_data_bin->bindValue(":value", pd.value());
@@ -698,38 +445,398 @@ void stream::write(QSharedPointer<io::data> data) {
       }
     }
   }
-  // Process service definition events.
-  else if (data->type() == "com::centreon::broker::neb::service") {
-    logging::debug(logging::high) << "storage: processing service " \
-      "definition event";
-    QSharedPointer<neb::service> s(data.staticCast<neb::service>());
-    // Update index_data table.
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Should not be used. Any call to this method will result in a call to
+ *  abort().
+ *
+ *  @param[in] s Object to copy.
+ *
+ *  @return This object.
+ */
+stream& stream::operator=(stream const& s) {
+  (void)s;
+  assert(false);
+  abort();
+  return (*this);
+}
+
+/**
+ *  Clear QtSql objects.
+ */
+void stream::_clear_qsql() {
+  _insert_data_bin.reset();
+  _update_metrics.reset();
+  if (!_storage_db.isNull() && _storage_db->isOpen())
+    _storage_db->close();
+  _storage_db.reset();
+  return ;
+}
+
+/**
+ *  @brief Find index ID.
+ *
+ *  Look through the index cache for the specified index. If it cannot
+ *  be found, insert an entry in the database.
+ *
+ *  @param[in] host_id      Host ID associated to the index.
+ *  @param[in] service_id   Service ID associated to the index.
+ *  @param[in] host_name    Host name associated to the index.
+ *  @param[in] service_desc Service description associated to the index.
+ *
+ *  @return Index ID matching host and service ID.
+ */
+unsigned int stream::_find_index_id(
+                       unsigned int host_id,
+                       unsigned int service_id,
+                       QString const& host_name,
+                       QString const& service_desc) {
+  unsigned int retval;
+
+  // Look in the cache.
+  std::map<
+         std::pair<unsigned int, unsigned int>,
+         index_info>::iterator
+    it(_index_cache.find(std::make_pair(host_id, service_id)));
+
+  // Special.
+  bool special(!strncmp(
+                  host_name.toStdString().c_str(),
+                  BAM_NAME,
+                  sizeof(BAM_NAME) - 1));
+
+  // Found in cache.
+  if (it != _index_cache.end()) {
+    logging::debug(logging::high) << "storage: found index "
+      << it->second.index_id << "of (" << host_id << ", "
+      << service_id << ") in cache";
+    // Should we update index_data ?
+    if ((it->second.host_name != host_name)
+        || (it->second.service_description != service_desc)
+        || (it->second.special != special)) {
+      logging::info(logging::medium) << "storage: updating index "
+        << it->second.index_id << " of (" << host_id << ", "
+        << service_id << ") (host: " << host_name << ", service: "
+        << service_desc << ", special: " << special << ")";
+      // Update index_data table.
+      std::ostringstream oss;
+      oss << "UPDATE index_data" \
+             " SET host_name=:host_name," \
+             "     service_description=:service_description," \
+             "     special=:special" \
+             " WHERE host_id=" << host_id
+          << " AND service_id=" << service_id;
+      QSqlQuery q(*_storage_db);
+      q.prepare(oss.str().c_str());
+      q.bindValue(":host_name", host_name);
+      q.bindValue(":service_description", service_desc);
+      q.bindValue(":special", (special ? 2 : 1));
+      if (!q.exec() || q.lastError().isValid())
+        throw (broker::exceptions::msg() << "storage: could not update "
+                  "service information in index_data (host_id "
+               << host_id << ", service_id " << service_id
+               << ", host_name " << host_name
+               << ", service_description " << service_desc
+               << "): " << q.lastError().text());
+
+      // Update cache entry.
+      it->second.host_name = host_name;
+      it->second.service_description = service_desc;
+      it->second.special = special;
+
+      // Anyway, we found index ID.
+      retval = it->second.index_id;
+    }
+  }
+  // Can't find in cache, insert in DB.
+  else {
+    logging::debug(logging::high) << "storage: creating new index for ("
+      << host_id << ", " << service_id << ")";
+    // Build query.
     std::ostringstream oss;
-    oss << "UPDATE index_data" \
-           " SET host_name=:host_name," \
-           "     service_description=:service_description," \
-           "     special=:special" \
-           " WHERE host_id=" << s->host_id
-        << " AND service_id=" << s->service_id;
+    oss << "INSERT INTO index_data (" \
+           "  host_id, host_name," \
+           "  service_id, service_description, " \
+           "  must_be_rebuild, special)" \
+           " VALUES (" << host_id << ", :host_name, " << service_id
+        << ", :service_description, 1, :special)";
     QSqlQuery q(*_storage_db);
     q.prepare(oss.str().c_str());
-    q.bindValue(":host_name", s->host_name);
-    q.bindValue(":service_description", s->service_description);
-    q.bindValue(
-      ":special",
-      !strncmp(
-        s->host_name.toStdString().c_str(),
-        BAM_NAME,
-        sizeof(BAM_NAME) - 1)
-      ? 2
-      : 1);
+    q.bindValue(":host_name", host_name);
+    q.bindValue(":service_description", service_desc);
+    q.bindValue(":special", (special ? 2 : 1));
+
+    // Execute query.
     if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not update " \
-                  "service information in index_data (host_id "
-               << s->host_id << ", service_id " << s->service_id
-               << ", host_name " << s->host_name
-               << ", service_description " << s->service_description
-               << "): " << q.lastError().text());
+      throw (broker::exceptions::msg() << "storage: insertion of " \
+                  "index (" << host_id << ", " << service_id
+               << ") failed: " << q.lastError().text());
+
+    // Fetch insert ID with query if possible.
+    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
+        || !(retval = q.lastInsertId().toUInt())) {
+      q.finish();
+      std::ostringstream oss2;
+      oss2 << "SELECT id" \
+              " FROM index_data" \
+              " WHERE host_id=" << host_id
+           << " AND service_id=" << service_id;
+      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
+        throw (broker::exceptions::msg() << "storage: could not fetch" \
+                    " index_id of newly inserted index (" << host_id
+                 << ", " << service_id << "): "
+                 << q2.lastError().text());
+      retval = q2.value(0).toUInt();
+      if (!retval)
+        throw (broker::exceptions::msg() << "storage: index_data " \
+                 "table is corrupted: got 0 as index_id");
+    }
+
+    // Insert index in cache.
+    logging::info(logging::medium) << "storage: new index " << retval
+      << " for (" << host_id << ", " << service_id << ")";
+    index_info info;
+    info.host_name = host_name;
+    info.index_id = retval;
+    info.service_description = service_desc;
+    info.special = special;
+    _index_cache[std::make_pair(host_id, service_id)] = info;
   }
+
+  return (retval);
+}
+
+/**
+ *  @brief Find metric ID.
+ *
+ *  Look through the metric cache for the specified metric. If it cannot
+ *  be found, insert an entry in the database.
+ *
+ *  @param[in] index_id    Index ID of the metric.
+ *  @param[in] metric_name Name of the metric.
+ *
+ *  @return Metric ID requested, 0 if it could not be found not
+ *          inserted.
+ */
+unsigned int stream::_find_metric_id(
+                       unsigned int index_id,
+                       QString const& metric_name,
+                       QString const& unit_name,
+                       double warn,
+                       double crit,
+                       double min,
+                       double max) {
+  unsigned int retval;
+
+  // Look in the cache.
+  std::map<std::pair<unsigned int, QString>, metric_info>::iterator
+    it(_metric_cache.find(std::make_pair(index_id, metric_name)));
+  if (it != _metric_cache.end()) {
+    logging::debug(logging::high) << "storage: found metric "
+      << it->second.metric_id << " of (" << index_id << ", "
+      << metric_name << ") in cache";
+    // Should we update metrics ?
+    if ((unit_name != it->second.unit_name)
+        || !double_equal(crit, it->second.crit)
+        || !double_equal(max, it->second.max)
+        || !double_equal(min, it->second.min)
+        || !double_equal(warn, it->second.warn)) {
+      logging::info(logging::medium) << "storage: updating metric "
+        << it->second.metric_id << " of (" << index_id << ", "
+        << metric_name << ") (unit: " << unit_name << ", warning: "
+        << warn << ", critical: " << crit << ", min: " << min
+        << ", max: " << max << ")";
+      // Update metrics table.
+      _update_metrics->bindValue(":unit_name", unit_name);
+      _update_metrics->bindValue(":warn", check_double(warn));
+      _update_metrics->bindValue(":crit", check_double(crit));
+      _update_metrics->bindValue(":min", check_double(min));
+      _update_metrics->bindValue(":max", check_double(max));
+      _update_metrics->bindValue(":index_id", index_id);
+      _update_metrics->bindValue(":metric_name", metric_name);
+      if (!_update_metrics->exec()
+          || _update_metrics->lastError().isValid())
+        throw (broker::exceptions::msg() << "storage: could not " \
+                    "update metric (index_id " << index_id
+                 << ", metric " << metric_name << "): "
+                 << _update_metrics->lastError().text());
+
+      // Update cache entry.
+      it->second.crit = crit;
+      it->second.max = max;
+      it->second.min = min;
+      it->second.unit_name = unit_name;
+      it->second.warn = warn;
+    }
+
+    // Anyway, we found the metric ID.
+    retval = it->second.metric_id;
+  }
+
+  // Can't find in cache, insert in DB.
+  else {
+    logging::debug(logging::high)
+      << "storage: creating new metric for (" << index_id
+      << ", " << metric_name << ")";
+    // Build query.
+    std::ostringstream oss;
+    std::string escaped_metric_name;
+    {
+      QSqlField field("metric_name", QVariant::String);
+      field.setValue(metric_name.toStdString().c_str());
+      escaped_metric_name
+        = _storage_db->driver()->formatValue(field, true).toStdString();
+    }
+    std::string escaped_unit_name;
+    {
+      QSqlField field("unit_name", QVariant::String);
+      field.setValue(unit_name.toStdString().c_str());
+      escaped_unit_name
+        = _storage_db->driver()->formatValue(field, true).toStdString();
+    }
+    oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max)" \
+      " VALUES (" << index_id << ", " << escaped_metric_name << ", "
+        << escaped_unit_name << ", " << std::fixed << warn << ", "
+        << crit << ", " << min << ", " << max << ")";
+
+    // Execute query.
+    QSqlQuery q(*_storage_db);
+    if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+      throw (broker::exceptions::msg() << "storage: insertion of " \
+                  "metric '" << metric_name << "' of index " << index_id
+               << " failed: " << q.lastError().text());
+
+    // Fetch insert ID with query if possible.
+    if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
+        || !(retval = q.lastInsertId().toUInt())) {
+      q.finish();
+      std::ostringstream oss2;
+      oss2 << "SELECT metric_id" \
+              " FROM metrics" \
+              " WHERE index_id=" << index_id
+           << " AND metric_name=" << escaped_metric_name;
+      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
+        throw (broker::exceptions::msg() << "storage: could not fetch" \
+                    " metric_id of newly inserted metric '"
+                 << metric_name << "' of index " << index_id << ": "
+                 << q2.lastError().text());
+      retval = q2.value(0).toUInt();
+      if (!retval)
+        throw (broker::exceptions::msg() << "storage: metrics table " \
+                 "is corrupted: got 0 as metric_id");
+    }
+
+    // Insert metric in cache.
+    logging::info(logging::medium) << "storage: new metric "
+      << retval << " for (" << index_id << ", " << metric_name << ")";
+    metric_info info;
+    info.crit = crit;
+    info.max = max;
+    info.metric_id = retval;
+    info.min = min;
+    info.unit_name = unit_name;
+    _metric_cache[std::make_pair(index_id, metric_name)] = info;
+  }
+
+  return (retval);
+}
+
+/**
+ *  Prepare queries.
+ */
+void stream::_prepare() {
+  // Fill index cache.
+  {
+    // Execute query.
+    QSqlQuery q("SELECT id, host_id, service_id, host_name, service_description, special" \
+                " FROM index_data",
+                *_storage_db);
+    if (!q.exec() || q.lastError().isValid())
+      throw (broker::exceptions::msg() << "storage: could not fetch " \
+                  "index list from data DB: "
+               << q.lastError().text());
+
+    // Loop through result set.
+    while (q.next()) {
+      index_info info;
+      info.index_id = q.value(0).toUInt();
+      unsigned int host_id(q.value(1).toUInt());
+      unsigned int service_id(q.value(2).toUInt());
+      info.host_name = q.value(3).toString();
+      info.service_description = q.value(4).toString();
+      info.special = (q.value(5).toUInt() == 2);
+      logging::debug(logging::low) << "storage: loaded index "
+        << info.index_id << " of (" << host_id << ", "
+        << service_id << ")";
+      _index_cache[std::make_pair(host_id, service_id)] = info;
+    }
+  }
+
+  // Fill metric cache.
+  {
+    // Execute query.
+    QSqlQuery q("SELECT metric_id, index_id, metric_name, unit_name, warn, crit, min, max" \
+                " FROM metrics",
+                *_storage_db);
+    if (!q.exec() || q.lastError().isValid())
+      throw (broker::exceptions::msg() << "storage: could not fetch " \
+                  "metric list from data DB: "
+               << q.lastError().text());
+
+    // Loop through result set.
+    while (q.next()) {
+      metric_info info;
+      info.metric_id = q.value(0).toUInt();
+      unsigned int index_id(q.value(1).toUInt());
+      QString name(q.value(2).toString());
+      info.unit_name = q.value(3).toString();
+      info.warn = q.value(4).toDouble();
+      info.crit = q.value(5).toDouble();
+      info.min = q.value(6).toDouble();
+      info.max = q.value(7).toDouble();
+      logging::debug(logging::low) << "storage: loaded metric "
+        << info.metric_id << " of (" << index_id << ", " << name << ")";
+      _metric_cache[std::make_pair(index_id, name)] = info;
+    }
+  }
+
+  // Prepare metrics update query.
+  _update_metrics.reset(new QSqlQuery(*_storage_db));
+  if (!_update_metrics->prepare("UPDATE metrics" \
+                                " SET unit_name=:unit_name," \
+                                " warn=:warn," \
+                                " crit=:crit," \
+                                " min=:min," \
+                                " max=:max" \
+                                " WHERE index_id=:index_id" \
+                                " AND metric_name=:metric_name"))
+    throw (broker::exceptions::msg() << "storage: could not prepare " \
+                "metrics update query: "
+             << _update_metrics->lastError().text());
+
+  // Prepare data_bind insert query.
+  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
+  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
+                                 " id_metric, ctime, value, status)" \
+                                 " VALUES (:id_metric," \
+                                 " :ctime," \
+                                 " :value," \
+                                 " :status)"))
+    throw (broker::exceptions::msg() << "storage: could not prepare " \
+                "data_bin insert query: "
+             << _insert_data_bin->lastError().text());
+
   return ;
 }
