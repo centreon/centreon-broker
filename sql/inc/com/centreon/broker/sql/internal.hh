@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,45 +17,51 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_SQL_INTERNAL_HH_
-# define CCB_SQL_INTERNAL_HH_
+#ifndef CCB_SQL_INTERNAL_HH
+#  define CCB_SQL_INTERNAL_HH
 
-# include <QSqlQuery>
-# include <list>
-# include <string>
-# include <utility>
-# include "com/centreon/broker/correlation/host_state.hh"
-# include "com/centreon/broker/correlation/issue.hh"
-# include "com/centreon/broker/correlation/issue_parent.hh"
-# include "com/centreon/broker/correlation/service_state.hh"
-# include "com/centreon/broker/neb/events.hh"
-# include "mapping.hh"
+#  include <QSqlQuery>
+#  include <string>
+#  include <utility>
+#  include <vector>
+#  include "com/centreon/broker/correlation/host_state.hh"
+#  include "com/centreon/broker/correlation/issue.hh"
+#  include "com/centreon/broker/correlation/issue_parent.hh"
+#  include "com/centreon/broker/correlation/service_state.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/events.hh"
+#  include "mapping.hh"
 
-namespace                       com {
-  namespace                     centreon {
-    namespace                   broker {
-      namespace                 sql {
-        template                <typename T>
-        struct                  getter_setter {
-          data_member<T> const* member;
-          void                  (* getter)(T const&,
-                                  std::string const&,
-                                  data_member<T> const&,
-                                  QSqlQuery&);
-        };
+CCB_BEGIN()
 
-        // DB mappings.
-        template               <typename T>
-        struct                 db_mapped_type {
-          static std::list<std::pair<std::string, getter_setter<T> > > list;
-        };
+namespace                 sql {
+  template                <typename T>
+  struct                  getter_setter {
+    data_member<T> const* member;
+    void (*               getter)(
+                            T const&,
+                            QString const&,
+                            data_member<T> const&,
+                            QSqlQuery&);
+  };
 
-        // Mapping initialization routine.
-        void initialize();
-      }
-    }
-  }
+  // DB mappings.
+  template               <typename T>
+  struct                 db_mapped_entry {
+    QString              field;
+    getter_setter<T>     gs;
+    QString              name;
+  };
+  template               <typename T>
+  struct                 db_mapped_type {
+    static std::vector<db_mapped_entry<T> > list;
+  };
+
+  // Mapping initialization routine.
+  void                   initialize();
 }
+
+CCB_END()
 
 // ORM operators.
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::acknowledgement const& a);
@@ -86,4 +93,4 @@ QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::host_sta
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::issue const& i);
 QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::service_state const& ss);
 
-#endif /* !CCB_SQL_INTERNAL_HH_ */
+#endif // !CCB_SQL_INTERNAL_HH

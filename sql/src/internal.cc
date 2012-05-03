@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -35,13 +36,12 @@ using namespace com::centreon::broker::sql;
  *  Get a boolean from an object.
  */
 template <typename T>
-static void get_boolean(T const& t,
-                        std::string const& name,
-                        data_member<T> const& member,
-                        QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.b)));
+static void get_boolean(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant(t.*(member.b)));
   return ;
 }
 
@@ -49,13 +49,12 @@ static void get_boolean(T const& t,
  *  Get a double from an object.
  */
 template <typename T>
-static void get_double(T const& t,
-                       std::string const& name,
-                       data_member<T> const& member,
-                       QSqlQuery& q) {
-  std::string field (":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.d)));
+static void get_double(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant(t.*(member.d)));
   return ;
 }
 
@@ -63,13 +62,12 @@ static void get_double(T const& t,
  *  Get an integer from an object.
  */
 template <typename T>
-static void get_integer(T const& t,
-                        std::string const& name,
-                        data_member<T> const& member,
-                        QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.i)));
+static void get_integer(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant(t.*(member.i)));
   return ;
 }
 
@@ -77,19 +75,18 @@ static void get_integer(T const& t,
  *  Get an integer that might be null from an object.
  */
 template <typename T>
-static void get_integer_might_be_null(T const& t,
-                                      std::string const& name,
-                                      data_member<T> const& member,
-                                      QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
+static void get_integer_might_be_null(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
   int val(t.*(member.i));
   // Not-NULL.
   if (val)
-    q.bindValue(field.c_str(), QVariant(val));
+    q.bindValue(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field.c_str(), QVariant(QVariant::Int));
+    q.bindValue(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -97,13 +94,12 @@ static void get_integer_might_be_null(T const& t,
  *  Get a short from an object.
  */
 template <typename T>
-static void get_short(T const& t,
-                      std::string const& name,
-                      data_member<T> const& member,
-                      QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*(member.s)));
+static void get_short(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant(t.*(member.s)));
   return ;
 }
 
@@ -111,13 +107,12 @@ static void get_short(T const& t,
  *  Get a string from an object.
  */
 template <typename T>
-static void get_string(T const& t,
-                       std::string const& name,
-                       data_member<T> const& member,
-                       QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
+static void get_string(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant((t.*(member.S)).toStdString().c_str()));
   return ;
 }
 
@@ -125,18 +120,17 @@ static void get_string(T const& t,
  *  Get a string that might be null from an object.
  */
 template <typename T>
-static void get_string_might_be_null(T const& t,
-                                     std::string const& name,
-                                     data_member<T> const& member,
-                                     QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
+static void get_string_might_be_null(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
   // Not-NULL.
   if (!(t.*(member.S)).isEmpty())
-    q.bindValue(field.c_str(), QVariant((t.*(member.S)).toStdString().c_str()));
+    q.bindValue(field, QVariant((t.*(member.S)).toStdString().c_str()));
   // NULL.
   else
-    q.bindValue(field.c_str(), QVariant(QVariant::String));
+    q.bindValue(field, QVariant(QVariant::String));
   return ;
 }
 
@@ -144,11 +138,12 @@ static void get_string_might_be_null(T const& t,
  *  Get a time_t from an object.
  */
 template <typename T>
-static void get_timet(T const& t,
-                      std::string const& name,
-                      data_member<T> const& member,
-                      QSqlQuery& q) {
-  get_integer<T>(t, name, member, q);
+static void get_timet(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  get_integer<T>(t, field, member, q);
   return ;
 }
 
@@ -156,11 +151,12 @@ static void get_timet(T const& t,
  *  Get a time_t that might be null from an object.
  */
 template <typename T>
-static void get_timet_might_be_null(T const& t,
-                                    std::string const& name,
-                                    data_member<T> const& member,
-                                    QSqlQuery& q) {
-  get_integer_might_be_null<T>(t, name, member, q);
+static void get_timet_might_be_null(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  get_integer_might_be_null<T>(t, field, member, q);
   return ;
 }
 
@@ -168,13 +164,12 @@ static void get_timet_might_be_null(T const& t,
  *  Get an unsigned int from an object.
  */
 template <typename T>
-static void get_uint(T const& t,
-                     std::string const& name,
-                     data_member<T> const& member,
-                     QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
-  q.bindValue(field.c_str(), QVariant(t.*member.u));
+static void get_uint(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  q.bindValue(field, QVariant(t.*member.u));
   return ;
 }
 
@@ -182,19 +177,18 @@ static void get_uint(T const& t,
  *  Get an unsigned int that might be null from an object.
  */
 template <typename T>
-static void get_uint_might_be_null(T const& t,
-                                   std::string const& name,
-                                   data_member<T> const& member,
-                                   QSqlQuery& q) {
-  std::string field(":");
-  field.append(name);
+static void get_uint_might_be_null(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
   unsigned int val(t.*(member.u));
   // Not-NULL.
   if (val)
-    q.bindValue(field.c_str(), QVariant(val));
+    q.bindValue(field, QVariant(val));
   // NULL
   else
-    q.bindValue(field.c_str(), QVariant(QVariant::Int));
+    q.bindValue(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -205,47 +199,50 @@ template <typename T>
 static void static_init() {
   for (unsigned int i = 0; mapped_type<T>::members[i].type; ++i)
     if (mapped_type<T>::members[i].name) {
-      db_mapped_type<T>::list.push_back(
-        std::make_pair(mapped_type<T>::members[i].name,
-          getter_setter<T>()));
-      getter_setter<T>& gs(db_mapped_type<T>::list.back().second);
-      gs.member = &mapped_type<T>::members[i].member;
+      db_mapped_type<T>::list.push_back(db_mapped_entry<T>());
+      db_mapped_entry<T>& entry(db_mapped_type<T>::list.back());
+      entry.name = mapped_type<T>::members[i].name;
+      entry.name.squeeze();
+      entry.field = ":";
+      entry.field.append(entry.name);
+      entry.field.squeeze();
+      entry.gs.member = &mapped_type<T>::members[i].member;
       // XXX : setters are not set.
       switch (mapped_type<T>::members[i].type) {
-       case mapped_data<T>::BOOL:
-        gs.getter = &get_boolean<T>;
+      case mapped_data<T>::BOOL:
+        entry.gs.getter = &get_boolean<T>;
         break ;
-       case mapped_data<T>::DOUBLE:
-        gs.getter = &get_double<T>;
+      case mapped_data<T>::DOUBLE:
+        entry.gs.getter = &get_double<T>;
         break ;
-       case mapped_data<T>::INT:
+      case mapped_data<T>::INT:
         if (mapped_type<T>::members[i].null_on_zero)
-          gs.getter = &get_integer_might_be_null<T>;
+          entry.gs.getter = &get_integer_might_be_null<T>;
         else
-          gs.getter = &get_integer<T>;
+          entry.gs.getter = &get_integer<T>;
         break ;
-       case mapped_data<T>::SHORT:
-        gs.getter = &get_short<T>;
+      case mapped_data<T>::SHORT:
+        entry.gs.getter = &get_short<T>;
         break ;
-       case mapped_data<T>::STRING:
+      case mapped_data<T>::STRING:
         if (mapped_type<T>::members[i].null_on_zero)
-          gs.getter = &get_string_might_be_null<T>;
+          entry.gs.getter = &get_string_might_be_null<T>;
         else
-          gs.getter = &get_string<T>;
+          entry.gs.getter = &get_string<T>;
         break ;
-       case mapped_data<T>::TIME_T:
+      case mapped_data<T>::TIME_T:
         if (mapped_type<T>::members[i].null_on_zero)
-          gs.getter = &get_timet_might_be_null<T>;
+          entry.gs.getter = &get_timet_might_be_null<T>;
         else
-          gs.getter = &get_timet<T>;
+          entry.gs.getter = &get_timet<T>;
         break ;
-       case mapped_data<T>::UINT:
+      case mapped_data<T>::UINT:
         if (mapped_type<T>::members[i].null_on_zero)
-          gs.getter = &get_uint_might_be_null<T>;
+          entry.gs.getter = &get_uint_might_be_null<T>;
         else
-          gs.getter = &get_uint<T>;
+          entry.gs.getter = &get_uint<T>;
         break ;
-       default: // Error in one of the mappings.
+      default: // Error in one of the mappings.
         assert(false);
         abort();
       }
@@ -258,12 +255,12 @@ static void static_init() {
  */
 template <typename T>
 static void to_base(QSqlQuery& q, T const& t) {
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
        ++it)
-    (it->second.getter)(t, it->first, *it->second.member, q);
+    (it->gs.getter)(t, it->field, *it->gs.member, q);
   return ;
 }
 
@@ -277,90 +274,90 @@ namespace       com {
   namespace     centreon {
     namespace   broker {
       namespace sql {
-        template <> std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >
+        template <> std::vector<db_mapped_entry<neb::acknowledgement> >
           db_mapped_type<neb::acknowledgement>::list =
-            std::list<std::pair<std::string, getter_setter<neb::acknowledgement> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::comment> > >
+            std::vector<db_mapped_entry<neb::acknowledgement> >();
+        template <> std::vector<db_mapped_entry<neb::comment> >
           db_mapped_type<neb::comment>::list =
-            std::list<std::pair<std::string, getter_setter<neb::comment> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >
+            std::vector<db_mapped_entry<neb::comment> >();
+        template <> std::vector<db_mapped_entry<neb::custom_variable> >
           db_mapped_type<neb::custom_variable>::list =
-            std::list<std::pair<std::string, getter_setter<neb::custom_variable> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >
+            std::vector<db_mapped_entry<neb::custom_variable> >();
+        template <> std::vector<db_mapped_entry<neb::custom_variable_status> >
           db_mapped_type<neb::custom_variable_status>::list =
-            std::list<std::pair<std::string, getter_setter<neb::custom_variable_status> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::downtime> > >
+            std::vector<db_mapped_entry<neb::custom_variable_status> >();
+        template <> std::vector<db_mapped_entry<neb::downtime> >
           db_mapped_type<neb::downtime>::list =
-            std::list<std::pair<std::string, getter_setter<neb::downtime> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::event_handler> > >
+            std::vector<db_mapped_entry<neb::downtime> >();
+        template <> std::vector<db_mapped_entry<neb::event_handler> >
           db_mapped_type<neb::event_handler>::list =
-            std::list<std::pair<std::string, getter_setter<neb::event_handler> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >
+            std::vector<db_mapped_entry<neb::event_handler> >();
+        template <> std::vector<db_mapped_entry<neb::flapping_status> >
           db_mapped_type<neb::flapping_status>::list =
-            std::list<std::pair<std::string, getter_setter<neb::flapping_status> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host> > >
+            std::vector<db_mapped_entry<neb::flapping_status> >();
+        template <> std::vector<db_mapped_entry<neb::host> >
           db_mapped_type<neb::host>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_check> > >
+            std::vector<db_mapped_entry<neb::host> >();
+        template <> std::vector<db_mapped_entry<neb::host_check> >
           db_mapped_type<neb::host_check>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_check> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >
+            std::vector<db_mapped_entry<neb::host_check> >();
+        template <> std::vector<db_mapped_entry<neb::host_dependency> >
           db_mapped_type<neb::host_dependency>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_dependency> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_group> > >
+            std::vector<db_mapped_entry<neb::host_dependency> >();
+        template <> std::vector<db_mapped_entry<neb::host_group> >
           db_mapped_type<neb::host_group>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_group> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >
+            std::vector<db_mapped_entry<neb::host_group> >();
+        template <> std::vector<db_mapped_entry<neb::host_group_member> >
           db_mapped_type<neb::host_group_member>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_group_member> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_parent> > >
+            std::vector<db_mapped_entry<neb::host_group_member> >();
+        template <> std::vector<db_mapped_entry<neb::host_parent> >
           db_mapped_type<neb::host_parent>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_parent> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::host_status> > >
+            std::vector<db_mapped_entry<neb::host_parent> >();
+        template <> std::vector<db_mapped_entry<neb::host_status> >
           db_mapped_type<neb::host_status>::list =
-            std::list<std::pair<std::string, getter_setter<neb::host_status> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::instance> > >
+            std::vector<db_mapped_entry<neb::host_status> >();
+        template <> std::vector<db_mapped_entry<neb::instance> >
           db_mapped_type<neb::instance>::list =
-            std::list<std::pair<std::string, getter_setter<neb::instance> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::instance_status> > >
+            std::vector<db_mapped_entry<neb::instance> >();
+        template <> std::vector<db_mapped_entry<neb::instance_status> >
           db_mapped_type<neb::instance_status>::list =
-            std::list<std::pair<std::string, getter_setter<neb::instance_status> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::log_entry> > >
+            std::vector<db_mapped_entry<neb::instance_status> >();
+        template <> std::vector<db_mapped_entry<neb::log_entry> >
           db_mapped_type<neb::log_entry>::list =
-            std::list<std::pair<std::string, getter_setter<neb::log_entry> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::module> > >
+            std::vector<db_mapped_entry<neb::log_entry> >();
+        template <> std::vector<db_mapped_entry<neb::module> >
           db_mapped_type<neb::module>::list =
-            std::list<std::pair<std::string, getter_setter<neb::module> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::notification> > >
+            std::vector<db_mapped_entry<neb::module> >();
+        template <> std::vector<db_mapped_entry<neb::notification> >
           db_mapped_type<neb::notification>::list =
-            std::list<std::pair<std::string, getter_setter<neb::notification> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service> > >
+            std::vector<db_mapped_entry<neb::notification> >();
+        template <> std::vector<db_mapped_entry<neb::service> >
           db_mapped_type<neb::service>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service_check> > >
+            std::vector<db_mapped_entry<neb::service> >();
+        template <> std::vector<db_mapped_entry<neb::service_check> >
           db_mapped_type<neb::service_check>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service_check> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >
+            std::vector<db_mapped_entry<neb::service_check> >();
+        template <> std::vector<db_mapped_entry<neb::service_dependency> >
           db_mapped_type<neb::service_dependency>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service_dependency> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service_group> > >
+            std::vector<db_mapped_entry<neb::service_dependency> >();
+        template <> std::vector<db_mapped_entry<neb::service_group> >
           db_mapped_type<neb::service_group>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service_group> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >
+            std::vector<db_mapped_entry<neb::service_group> >();
+        template <> std::vector<db_mapped_entry<neb::service_group_member> >
           db_mapped_type<neb::service_group_member>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service_group_member> > >();
-        template <> std::list<std::pair<std::string, getter_setter<neb::service_status> > >
+            std::vector<db_mapped_entry<neb::service_group_member> >();
+        template <> std::vector<db_mapped_entry<neb::service_status> >
           db_mapped_type<neb::service_status>::list =
-            std::list<std::pair<std::string, getter_setter<neb::service_status> > >();
-        template <> std::list<std::pair<std::string, getter_setter<correlation::host_state> > >
+            std::vector<db_mapped_entry<neb::service_status> >();
+        template <> std::vector<db_mapped_entry<correlation::host_state> >
           db_mapped_type<correlation::host_state>::list =
-            std::list<std::pair<std::string, getter_setter<correlation::host_state> > >();
-        template <> std::list<std::pair<std::string, getter_setter<correlation::issue> > >
+            std::vector<db_mapped_entry<correlation::host_state> >();
+        template <> std::vector<db_mapped_entry<correlation::issue> >
           db_mapped_type<correlation::issue>::list =
-            std::list<std::pair<std::string, getter_setter<correlation::issue> > >();
-        template <> std::list<std::pair<std::string, getter_setter<correlation::service_state> > >
+            std::vector<db_mapped_entry<correlation::issue> >();
+        template <> std::vector<db_mapped_entry<correlation::service_state> >
           db_mapped_type<correlation::service_state>::list =
-            std::list<std::pair<std::string, getter_setter<correlation::service_state> > >();
+            std::vector<db_mapped_entry<correlation::service_state> >();
      }
     }
   }

@@ -218,27 +218,26 @@ void stream::_execute(QSqlQuery& query) {
 template <typename T>
 bool stream::_insert(T const& t) {
   // Build query string.
-  std::string query;
+  QString query;
   query = "INSERT INTO ";
   query.append(mapped_type<T>::table);
   query.append(" (");
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
-    query.append(it->first);
+    query.append(it->name);
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
-    query.append(":");
-    query.append(it->first);
+    query.append(it->field);
     query.append(", ");
   }
   query.resize(query.size() - 2);
@@ -246,7 +245,7 @@ bool stream::_insert(T const& t) {
 
   // Execute query.
   QSqlQuery q(*_db);
-  bool ret(q.prepare(query.c_str()));
+  bool ret(q.prepare(query));
   if (ret) {
     q << t;
     ret = q.exec();
@@ -413,37 +412,36 @@ void stream::_prepare() {
 template <typename T>
 bool stream::_prepare_insert(QScopedPointer<QSqlQuery>& st) {
   // Build query string.
-  std::string query;
+  QString query;
   query = "INSERT INTO ";
   query.append(mapped_type<T>::table);
   query.append(" (");
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
-    query.append(it->first);
+    query.append(it->name);
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
        ++it) {
-    query.append(":");
-    query.append(it->first);
+    query.append(it->field);
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(")");
   logging::info(logging::low)
-    << "preparing statement: " << query.c_str();
+    << "preparing statement: " << query;
 
   // Prepare statement.
   st.reset(new QSqlQuery(*_db));
-  return (st->prepare(query.c_str()));
+  return (st->prepare(query));
 }
 
 /**
@@ -457,11 +455,11 @@ template <typename T>
 bool stream::_prepare_update(QScopedPointer<QSqlQuery>& st,
                              QVector<QPair<QString, bool> > const& id) {
   // Build query string.
-  std::string query;
+  QString query;
   query = "UPDATE ";
   query.append(mapped_type<T>::table);
   query.append(" SET ");
-  for (typename std::list<std::pair<std::string, getter_setter<T> > >::const_iterator
+  for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
        it != end;
@@ -471,12 +469,12 @@ bool stream::_prepare_update(QScopedPointer<QSqlQuery>& st,
            it2 = id.begin(), end2 = id.end();
          it2 != end2;
          ++it2)
-      if (it->first == it2->first.toStdString())
+      if (it->name == it2->first)
         found = true;
     if (!found) {
-      query.append(it->first);
-      query.append("=:");
-      query.append(it->first);
+      query.append(it->name);
+      query.append("=");
+      query.append(it->field);
       query.append(", ");
     }
   }
@@ -488,25 +486,25 @@ bool stream::_prepare_update(QScopedPointer<QSqlQuery>& st,
        ++it) {
     if (it->second) {
       query.append("COALESCE(");
-      query.append(it->first.toStdString());
+      query.append(it->first);
       query.append(", -1)=COALESCE(:");
-      query.append(it->first.toStdString());
+      query.append(it->first);
       query.append(", -1)");
     }
     else {
-      query.append(it->first.toStdString());
+      query.append(it->first);
       query.append("=:");
-      query.append(it->first.toStdString());
+      query.append(it->first);
     }
     query.append(" AND ");
   }
   query.resize(query.size() - 5);
   logging::info(logging::low)
-    << "SQL: preparing statement: " << query.c_str();
+    << "SQL: preparing statement: " << query;
 
   // Prepare statement.
   st.reset(new QSqlQuery(*_db));
-  return (st->prepare(query.c_str()));
+  return (st->prepare(query));
 }
 
 /**
@@ -1134,27 +1132,26 @@ void stream::_process_log(io::data const& e) {
 
   // Build insertion query.
   char const* field("issue_id");
-  std::string query;
+  QString query;
   query = "INSERT INTO ";
   query.append(mapped_type<neb::log_entry>::table);
   query.append("(");
-  for (std::list<std::pair<std::string, getter_setter<neb::log_entry> > >::const_iterator
+  for (std::vector<db_mapped_entry<neb::log_entry> >::const_iterator
          it = db_mapped_type<neb::log_entry>::list.begin(),
          end = db_mapped_type<neb::log_entry>::list.end();
        it != end;
        ++it) {
-    query.append(it->first);
+    query.append(it->name);
     query.append(", ");
   }
   query.append(field);
   query.append(") VALUES(");
-  for (std::list<std::pair<std::string, getter_setter<neb::log_entry> > >::const_iterator
+  for (std::vector<db_mapped_entry<neb::log_entry> >::const_iterator
          it = db_mapped_type<neb::log_entry>::list.begin(),
          end = db_mapped_type<neb::log_entry>::list.end();
        it != end;
        ++it) {
-    query.append(":");
-    query.append(it->first);
+    query.append(it->field);
     query.append(", ");
   }
   query.append(":");
@@ -1163,9 +1160,9 @@ void stream::_process_log(io::data const& e) {
 
   // Execute query.
   logging::info(logging::low)
-    << "SQL: executing query: " << query.c_str();
+    << "SQL: executing query: " << query;
   QSqlQuery q(*_db);
-  q.prepare(query.c_str());
+  q.prepare(query);
   q << le;
   q.bindValue(field, issue);
   _execute(q);
