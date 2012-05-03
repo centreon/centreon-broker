@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,7 +49,7 @@ using namespace com::centreon::broker;
  */
 static void send_custom_variables_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: beginning custom variables dump";
   time_t now(time(NULL));
 
@@ -73,8 +73,8 @@ static void send_custom_variables_list() {
             c->value = cv->variable_value;
 
           // Send custom variable event.
-          logging::debug << logging::LOW
-            << "init:  new custom variable '" << c->name << "'";
+          logging::info(logging::low) << "init:  new custom variable '"
+            << c->name << "' on host " << host_id;
           neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
@@ -106,15 +106,16 @@ static void send_custom_variables_list() {
             c->value = cv->variable_value;
 
           // Send custom variable event.
-          logging::debug << logging::LOW
-            << "init:  new custom variable '" << c->name << "'";
+          logging::info(logging::low) << "init:  new custom variable '"
+            << c->name << "' on service (" << host_id
+            << ", " << service_id << ")";
           neb::gl_publisher.write(c.staticCast<io::data>());
         }
     }
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: end of custom variables dump";
 
   return ;
@@ -125,7 +126,7 @@ static void send_custom_variables_list() {
  */
 static void send_host_dependencies_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: beginning host dependencies dump";
 
   // Loop through all dependencies.
@@ -150,11 +151,14 @@ static void send_host_dependencies_list() {
     }
 
     // Send host dependency event.
+    logging::info(logging::low) << "init:  host "
+      << host_dependency->dependent_host_id << " depends on host "
+      << host_dependency->host_id;
     neb::gl_publisher.write(host_dependency.staticCast<io::data>());
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: end of host dependencies dump";
 
   return ;
@@ -165,7 +169,7 @@ static void send_host_dependencies_list() {
  */
 static void send_host_group_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: beginning host group dump";
 
   // Loop through all host groups.
@@ -199,12 +203,16 @@ static void send_host_group_list() {
       }
 
       // Send host group member event.
+      logging::info(logging::low) << "init:  host "
+        << host_group_member->host_id << " is a member of group '"
+        << host_group_member->group << "' on instance "
+        << host_group_member->instance_id;
       neb::gl_publisher.write(host_group_member.staticCast<io::data>());
     }
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: end of host group dump";
 
   return ;
@@ -215,8 +223,7 @@ static void send_host_group_list() {
  */
 static void send_host_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
-    << "init: beginning host dump";
+  logging::info(logging::medium) << "init: beginning host dump";
 
   // Loop through all hosts.
   for (host* h = host_list; h; h = h->next) {
@@ -338,16 +345,19 @@ static void send_host_list() {
       }
 
     // Send host event.
-    if (my_host->host_id)
+    if (my_host->host_id) {
+      logging::info(logging::low) << "init:  new host "
+        << my_host->host_id << "('" << my_host->host_name
+        << "') on instance " << my_host->instance_id;
       neb::gl_publisher.write(my_host.staticCast<io::data>());
+    }
     else
-      logging::error << logging::MEDIUM << "init: host '"
+      logging::error(logging::medium) << "init: host '"
         << (h->name ? h->name : "(unknown)") << "' has no ID defined";
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
-    << "init: end of host dump";
+  logging::info(logging::medium) << "init: end of host dump";
 
   return ;
 }
@@ -357,8 +367,7 @@ static void send_host_list() {
  */
 static void send_host_parents_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
-    << "init: beginning host parents dump";
+  logging::info(logging::medium) << "init: beginning host parents dump";
 
   // Loop through all hosts.
   int host_id;
@@ -389,13 +398,14 @@ static void send_host_parents_list() {
       }
 
       // Send host parent event.
+      logging::info(logging::low) << "init:  host " << hp->parent_id
+        << " is parent of host " << hp->host_id;
       neb::gl_publisher.write(hp.staticCast<io::data>());
     }
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
-    << "init: end of host parents dump";
+  logging::info(logging::medium) << "init: end of host parents dump";
 
   return ;
 }
@@ -406,7 +416,7 @@ static void send_host_parents_list() {
  */
 static void send_service_dependencies_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: beginning service dependencies dump";
 
   // Loop through all dependencies.
@@ -437,11 +447,16 @@ static void send_service_dependencies_list() {
     }
 
     // Send service dependency event.
+    logging::info(logging::low) << "init:  service ("
+      << service_dependency->dependent_host_id << ", "
+      << service_dependency->dependent_service_id
+      << ") depends on service (" << service_dependency->host_id
+      << ", " << service_dependency->service_id << ")";
     neb::gl_publisher.write(service_dependency.staticCast<io::data>());
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: end of service dependencies dump";
 
   return ;
@@ -452,7 +467,7 @@ static void send_service_dependencies_list() {
  */
 static void send_service_group_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
+  logging::info(logging::medium)
     << "init: beginning service group dump";
 
   // Loop through all service groups.
@@ -491,13 +506,17 @@ static void send_service_group_list() {
       }
 
       // Send service group event.
+      logging::info(logging::low) << "init:  service ("
+        << service_group_member->host_id << ", "
+        << service_group_member->service_id
+        << ") is a member of group '" << service_group_member->group
+        << "' on instance " << service_group_member->instance_id;
       neb::gl_publisher.write(service_group_member.staticCast<io::data>());
     }
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
-    << "init: end of service groups dump";
+  logging::info(logging::medium) << "init: end of service groups dump";
 
   return ;
 }
@@ -507,8 +526,7 @@ static void send_service_group_list() {
  */
 static void send_service_list() {
   // Start log message.
-  logging::info << logging::MEDIUM
-    << "init: beginning service dump";
+  logging::info(logging::medium) << "init: beginning service dump";
 
   // Loop through all services.
   for (service* s = service_list; s; s = s->next) {
@@ -643,10 +661,15 @@ static void send_service_list() {
       }
 
     // Send service event.
-    if (my_service->host_id && my_service->service_id)
+    if (my_service->host_id && my_service->service_id) {
+      logging::info(logging::low) << "init:  new service "
+        << my_service->service_id << "('"
+        << my_service->service_description
+        << "') on host " << my_service->host_id;
       neb::gl_publisher.write(my_service.staticCast<io::data>());
+    }
     else
-      logging::error << logging::HIGH
+      logging::error(logging::high)
         << "init: service has no host ID or no service ID (host '"
         << ((s->host_ptr && s->host_ptr->name)
               ? s->host_ptr->name : "(unknown)")
@@ -656,8 +679,7 @@ static void send_service_list() {
   }
 
   // End log message.
-  logging::info << logging::MEDIUM
-    << "init: end of services dump";
+  logging::info(logging::medium) << "init: end of services dump";
 
   return ;
 }

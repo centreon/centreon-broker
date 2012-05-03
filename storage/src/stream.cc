@@ -414,7 +414,7 @@ void stream::write(QSharedPointer<io::data> data) {
 
         if (_store_in_db) {
           // Insert perfdata in data_bin.
-          logging::debug(logging::high)
+          logging::debug(logging::low)
             << "storage: inserting perfdata in data_bin (metric: "
             << metric_id << ", ctime: " << ss->last_check << ", value: "
             << pd.value() << ", status: " << ss->current_state << ")";
@@ -517,7 +517,7 @@ unsigned int stream::_find_index_id(
 
   // Found in cache.
   if (it != _index_cache.end()) {
-    logging::debug(logging::high) << "storage: found index "
+    logging::debug(logging::low) << "storage: found index "
       << it->second.index_id << "of (" << host_id << ", "
       << service_id << ") in cache";
     // Should we update index_data ?
@@ -643,7 +643,7 @@ unsigned int stream::_find_metric_id(
   std::map<std::pair<unsigned int, QString>, metric_info>::iterator
     it(_metric_cache.find(std::make_pair(index_id, metric_name)));
   if (it != _metric_cache.end()) {
-    logging::debug(logging::high) << "storage: found metric "
+    logging::debug(logging::low) << "storage: found metric "
       << it->second.metric_id << " of (" << index_id << ", "
       << metric_name << ") in cache";
     // Should we update metrics ?
@@ -686,7 +686,7 @@ unsigned int stream::_find_metric_id(
 
   // Can't find in cache, insert in DB.
   else {
-    logging::debug(logging::high)
+    logging::debug(logging::low)
       << "storage: creating new metric for (" << index_id
       << ", " << metric_name << ")";
     // Build query.
@@ -777,7 +777,7 @@ void stream::_prepare() {
       info.host_name = q.value(3).toString();
       info.service_description = q.value(4).toString();
       info.special = (q.value(5).toUInt() == 2);
-      logging::debug(logging::low) << "storage: loaded index "
+      logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
       _index_cache[std::make_pair(host_id, service_id)] = info;
@@ -806,7 +806,7 @@ void stream::_prepare() {
       info.crit = q.value(5).toDouble();
       info.min = q.value(6).toDouble();
       info.max = q.value(7).toDouble();
-      logging::debug(logging::low) << "storage: loaded metric "
+      logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name << ")";
       _metric_cache[std::make_pair(index_id, name)] = info;
     }
