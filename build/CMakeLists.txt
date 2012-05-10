@@ -278,6 +278,9 @@ endif ()
 # Documentation.
 add_subdirectory("doc")
 
+# Stats module.
+add_subdirectory("stats")
+
 # NEB module.
 add_subdirectory("neb")
 
