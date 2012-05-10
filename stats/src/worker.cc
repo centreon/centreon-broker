@@ -222,7 +222,7 @@ void worker::_generate_stats_for_endpoint(
     std::ostringstream oss;
     oss << "last event at=" << fo->get_last_event() << "\n"
         << "event processing speed=" << std::fixed
-        << std::setprecision(2) << fo->get_event_processing_speed()
+        << std::setprecision(1) << fo->get_event_processing_speed()
         << " events/s\n";
     buffer.append(oss.str());
   }
