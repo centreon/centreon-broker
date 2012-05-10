@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,22 +17,27 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_PROCESSING_FAILOVER_HH_
-# define CCB_PROCESSING_FAILOVER_HH_
+#ifndef CCB_PROCESSING_FAILOVER_HH
+#  define CCB_PROCESSING_FAILOVER_HH
 
-# include <limits.h>
-# include <QMutex>
-# include <QReadWriteLock>
-# include <QSharedPointer>
-# include <QThread>
-# include <time.h>
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/processing/feeder.hh"
+#  include <limits.h>
+#  include <QMutex>
+#  include <QReadWriteLock>
+#  include <QSharedPointer>
+#  include <QThread>
+#  include <time.h>
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/processing/feeder.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
+      // Forward declaration.
+      namespace          stats {
+        class            worker;
+      }
+
       namespace          processing {
         /**
          *  @class failover failover.hh "com/centreon/broker/processing/failover.hh"
@@ -42,32 +47,7 @@ namespace                com {
          */
         class            failover : public QThread, public io::stream {
           Q_OBJECT
-
-         private:
-          // Data that doesn't require locking.
-          volatile time_t _buffering_timeout;
-          QSharedPointer<io::endpoint>
-                         _endpoint;
-          QSharedPointer<failover>
-                         _failover;
-          bool           _initial;
-          bool           _is_out;
-          QString        _name;
-          volatile time_t _retry_interval;
-
-          // Retained data.
-          QSharedPointer<io::data>
-                         _data;
-          mutable QMutex _datam;
-
-          // Exit flag.
-          volatile bool  _immediate;
-          volatile bool  _should_exit;
-          mutable QMutex _should_exitm;
-
-          // Stream locking.
-          mutable QReadWriteLock _fromm;
-          mutable QReadWriteLock _tom;
+          friend class   stats::worker;
 
          public:
                          failover(bool is_out);
@@ -93,10 +73,37 @@ namespace                com {
          signals:
           void           exception_caught();
           void           initial_lock();
+
+         private:
+          // Data that doesn't require locking.
+          volatile time_t _buffering_timeout;
+          QSharedPointer<io::endpoint>
+                         _endpoint;
+          QSharedPointer<failover>
+                         _failover;
+          bool           _initial;
+          bool           _is_out;
+          QString        _last_error;
+          QString        _name;
+          volatile time_t _retry_interval;
+
+          // Retained data.
+          QSharedPointer<io::data>
+                         _data;
+          mutable QMutex _datam;
+
+          // Exit flag.
+          volatile bool  _immediate;
+          volatile bool  _should_exit;
+          mutable QMutex _should_exitm;
+
+          // Stream locking.
+          mutable QReadWriteLock _fromm;
+          mutable QReadWriteLock _tom;
         };
       }
     }
   }
 }
 
-#endif /* !CCB_PROCESSING_FAILOVER_HH_ */
+#endif // !CCB_PROCESSING_FAILOVER_HH

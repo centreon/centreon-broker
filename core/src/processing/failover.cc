@@ -447,6 +447,7 @@ void failover::run() {
     }
     catch (exceptions::with_pointer const& e) {
       logging::error(logging::high) << e.what();
+      _last_error = e.what();
       if (!e.ptr().isNull() && !_failover.isNull() && !_failover->isRunning())
         _failover->write(e.ptr());
     }
@@ -454,19 +455,23 @@ void failover::run() {
       logging::info(logging::medium)
         << "failover: a stream has shutdown in "
         << _name << ": " << e.what();
+      _last_error = e.what();
     }
     catch (exceptions::msg const& e) {
       logging::error(logging::high) << e.what();
+      _last_error = e.what();
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
         << "failover: standard library error in "
         << _name << ": " << e.what();
+      _last_error = e.what();
     }
     catch (...) {
       logging::error(logging::high)
         << "failover: unknown error caught in processing thread "
         << _name;
+      _last_error = "(unknown)";
     }
     emit exception_caught();
     if (_is_out) {

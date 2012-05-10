@@ -20,10 +20,12 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <QMutexLocker>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/worker.hh"
@@ -65,9 +67,6 @@ void worker::run(QString const& fifo_file) {
 
   // Set FIFO file.
   _fifo = fifo_file;
-
-  // Open FIFO.
-  _open();
 
   // Set exit flag.
   _should_exit = false;
@@ -117,6 +116,111 @@ void worker::_close() {
 }
 
 /**
+ *  Generate statistics.
+ */
+void worker::_generate_stats() {
+  // Endpoint applier.
+  config::applier::endpoint&
+    endp_applier(config::applier::endpoint::instance());
+
+  // Print input endpoints.
+  {
+    QMutexLocker lock(&endp_applier.input_mutex());
+    for (config::applier::endpoint::iterator
+           it = endp_applier.input_begin(),
+           end = endp_applier.input_end();
+         it != end;
+         ++it) {
+      _generate_stats_for_endpoint(*it, _buffer, false);
+      _buffer.append("\n");
+    }
+  }
+
+  // Separator.
+  if (!_buffer.empty())
+    _buffer.append("\n");
+
+  // Print output endpoints.
+  {
+    QMutexLocker lock(&endp_applier.output_mutex());
+    for (config::applier::endpoint::iterator
+           it = endp_applier.output_begin(),
+           end = endp_applier.output_end();
+         it != end;
+         ++it) {
+      _generate_stats_for_endpoint(*it, _buffer, true);
+      _buffer.append("\n");
+    }
+  }
+
+  return ;
+}
+
+/**
+ *  Generate statistics for an endpoint.
+ *
+ *  @param[in]  fo     Failover thread of the endpoint.
+ *  @param[out] buffer Buffer in which data will be printed.
+ *  @param[in]  is_out true if fo manage an output endpoint.
+ */
+void worker::_generate_stats_for_endpoint(
+               processing::failover* fo,
+               std::string& buffer,
+               bool is_out) {
+  // Header.
+  buffer.append(is_out ? "output " : "input ");
+  buffer.append(fo->_name.toStdString());
+  buffer.append("\n");
+
+  // Choose stream we will work on.
+  QReadWriteLock* rwl;
+  QSharedPointer<io::stream>* s;
+  if (is_out) {
+    rwl = &fo->_tom;
+    s = &fo->_to;
+  }
+  else {
+    rwl = &fo->_fromm;
+    s = &fo->_from;
+  }
+
+  {
+    // Get state.
+    buffer.append("state=");
+    QReadLocker rl(rwl);
+    if (s->isNull()) {
+      buffer.append("disconnected (");
+      buffer.append(fo->_last_error.toStdString());
+      buffer.append(")\n");
+    }
+    else if (!fo->_failover.isNull() && fo->_failover->isRunning())
+      buffer.append("replaying\n");
+    else
+      buffer.append("connected\n");
+  }
+
+  // Failover.
+  if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
+    buffer.append("failover\n");
+    std::string subbuffer;
+    _generate_stats_for_endpoint(
+      fo->_failover.data(),
+      subbuffer,
+      is_out);
+    subbuffer.insert(0, "  ");
+    size_t pos(subbuffer.find('\n'));
+    while ((pos != subbuffer.size() - 1)
+           && (pos != std::string::npos)) {
+      subbuffer.replace(pos, 1, "\n  ");
+      pos = subbuffer.find('\n', pos + 3);
+    }
+    buffer.append(subbuffer);
+  }
+
+  return ;
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.
@@ -145,6 +249,9 @@ void worker::_open() {
  */
 void worker::run() {
   try {
+    // Initial FIFO open.
+    _open();
+
     while (!_should_exit) {
       // FD sets.
       fd_set e;
@@ -177,8 +284,7 @@ void worker::run() {
       else if (FD_ISSET(_fd, &w)) {
         if (_buffer.empty())
           // Generate statistics.
-          // XXX
-          _buffer = "foo bar 42\n";
+          _generate_stats();
 
         // Write data.
         ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));

@@ -26,6 +26,11 @@
 namespace               com {
   namespace             centreon {
     namespace           broker {
+      // Forward declaration.
+      namespace         processing {
+        class           failover;
+      }
+
       namespace         stats {
         /**
          *  @class worker worker.hh "com/centreon/broker/stats/worker.hh"
@@ -47,6 +52,11 @@ namespace               com {
                         worker(worker const& righ);
           worker&       operator=(worker const& right);
           void          _close();
+          void          _generate_stats();
+          void          _generate_stats_for_endpoint(
+                          processing::failover* fo,
+                          std::string& buffer,
+                          bool is_out);
           void          _internal_copy(worker const& right);
           void          _open();
           void          run();
