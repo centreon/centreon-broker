@@ -83,6 +83,7 @@ extern "C" {
           }
         }
 
+        // File exists, load it.
         if (!correlation_file.isEmpty()) {
           // Create and register correlation object.
           QSharedPointer<correlation::correlator>
@@ -94,17 +95,17 @@ extern "C" {
             loaded = true;
           }
           catch (std::exception const& e) {
-            logging::config << logging::HIGH << "correlation: "         \
+            logging::config(logging::high) << "correlation: " \
               "configuration loading error: " << e.what();
           }
           catch (...) {
-            logging::config << logging::HIGH << "correlation: " \
+            logging::config(logging::high) << "correlation: " \
               "configuration loading error";
           }
         }
       }
       if (!loaded)
-        logging::config << logging::HIGH << "correlation: invalid " \
+        logging::config(logging::high) << "correlation: invalid " \
           "correlation configuration, correlation engine is NOT loaded";
     }
     return ;
