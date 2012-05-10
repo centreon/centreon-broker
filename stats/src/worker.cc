@@ -153,10 +153,6 @@ void worker::_generate_stats() {
     }
   }
 
-  // Separator.
-  if (!_buffer.empty())
-    _buffer.append("\n");
-
   // Print output endpoints.
   {
     QMutexLocker lock(&endp_applier.output_mutex());
