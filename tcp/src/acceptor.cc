@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,7 @@
 #include <QMutexLocker>
 #include <QScopedPointer>
 #include <QWaitCondition>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -28,47 +29,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] a Object to copy.
- */
-void acceptor::_internal_copy(acceptor const& a) {
-  _ca = a._ca;
-  _port = a._port;
-  _private = a._private;
-  _public = a._public;
-  _tls = a._tls;
-  return ;
-}
-
-/**
- *  Called when a child TCP socket is destroyed.
- */
-void acceptor::_on_stream_destroy(QObject* obj) {
-  if (!obj)
-    return ;
-
-  QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
-
-  QMutexLocker lock(&_childrenm);
-  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-         it = _children.begin(), end = _children.end();
-       it != end;
-       ++it)
-    if (it->first.data() == sock) {
-      _children.erase(it);
-      break ;
-    }
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -233,5 +193,69 @@ void acceptor::set_tls(bool enable,
   _private = private_key;
   _public = public_cert;
   _tls = enable;
+  return ;
+}
+
+/**
+ *  Get statistics about this TCP acceptor.
+ *
+ *  @param[out] buffer Buffer in which statistics will be written.
+ */
+void acceptor::stats(std::string& buffer) {
+  QMutexLocker children_lock(&_childrenm);
+  std::ostringstream oss;
+  oss << "peers=" << _children.size() << "\n";
+  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
+         it = _children.begin(),
+         end = _children.end();
+       it != end;
+       ++it) {
+    QMutexLocker lock(it->second.data());
+    if (!it->first.isNull())
+      oss << "  " << it->first.toStrongRef()->peerAddress().toString().toStdString()
+          << ":" << it->first.toStrongRef()->peerPort() << "\n";
+  }
+  buffer.append(oss.str());
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] a Object to copy.
+ */
+void acceptor::_internal_copy(acceptor const& a) {
+  _ca = a._ca;
+  _port = a._port;
+  _private = a._private;
+  _public = a._public;
+  _tls = a._tls;
+  return ;
+}
+
+/**
+ *  Called when a child TCP socket is destroyed.
+ */
+void acceptor::_on_stream_destroy(QObject* obj) {
+  if (!obj)
+    return ;
+
+  QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
+
+  QMutexLocker lock(&_childrenm);
+  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
+         it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    if (it->first.data() == sock) {
+      _children.erase(it);
+      break ;
+    }
   return ;
 }

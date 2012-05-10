@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,7 @@
 #include <QReadLocker>
 #include <QTimer>
 #include <QWriteLocker>
+#include <string.h>
 #include <time.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
@@ -50,6 +51,9 @@ failover::failover(bool is_out)
   : _buffering_timeout(0),
     _initial(true),
     _is_out(is_out),
+    _last_connect_attempt(0),
+    _last_connect_success(0),
+    _last_event(0),
     _name("(unknown)"),
     _retry_interval(30),
     _immediate(true),
@@ -74,11 +78,15 @@ failover::failover(failover const& f)
      _failover(f._failover),
      _initial(true),
      _is_out(f._is_out),
+     _last_connect_attempt(f._last_connect_attempt),
+     _last_connect_success(f._last_connect_success),
+     _last_event(f._last_event),
      _name(f._name),
      _retry_interval(f._retry_interval),
      _immediate(true),
      _should_exit(false),
      _should_exitm(QMutex::Recursive) {
+  memcpy(_events, f._events, sizeof(_events));
   {
     QMutexLocker lock(&f._datam);
     _data = f._data;
@@ -135,6 +143,27 @@ failover& failover::operator=(failover const& f) {
  */
 time_t failover::get_buffering_timeout() const throw () {
   return (_buffering_timeout);
+}
+
+/**
+ *  Get event processing speed.
+ *
+ *  @return Number of events processed per second.
+ */
+double failover::get_event_processing_speed() const throw () {
+  unsigned int events(0);
+  for (int i = 0; i < event_window_length - time(NULL) + _last_event; ++i)
+    events += _events[i];
+  return (static_cast<double>(events) / event_window_length);
+}
+
+/**
+ *  Get the time at which the last event was processed.
+ *
+ *  @return Time at which the last event was processed.
+ */
+time_t failover::get_last_event() const throw () {
+  return (_last_event);
 }
 
 /**
@@ -333,6 +362,8 @@ void failover::run() {
   // Log message.
   logging::info(logging::high) << "failover: " << _name
     << " is starting";
+  memset(_events, 0, sizeof(_events));
+  _last_event = 0;
 
   // Launch subfailover to fetch retained data.
   if (_initial && !_failover.isNull()) {
@@ -393,6 +424,7 @@ void failover::run() {
         QWriteLocker wl(rwl);
         s->clear();
         wl.unlock();
+        _last_connect_attempt = time(NULL);
         QSharedPointer<io::stream> tmp(_endpoint->open());
         buffering = 0;
         wl.relock();
@@ -405,6 +437,7 @@ void failover::run() {
           continue ;
         }
         copy_handler = *s;
+        _last_connect_success = time(NULL);
       }
 
       // Process input and output.
@@ -427,8 +460,22 @@ void failover::run() {
           }
           else {
             QWriteLocker lock(&_tom);
-            if (!_to.isNull())
+            if (!_to.isNull()) {
               _to->write(data);
+              time_t now(time(NULL));
+              if (now > _last_event) {
+                unsigned int limit(now - _last_event);
+                if (limit > event_window_length)
+                  limit = event_window_length;
+                memmove(
+                  _events + limit,
+                  _events,
+                  (event_window_length - limit) * sizeof(*_events));
+                memset(_events, 0, limit * sizeof(*_events));
+                _last_event = now;
+              }
+              ++_events[0];
+            }
           }
         }
         catch (exceptions::msg const& e) {

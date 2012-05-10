@@ -55,6 +55,8 @@ namespace                com {
                          ~failover();
           failover&      operator=(failover const& f);
           time_t         get_buffering_timeout() const throw ();
+          double         get_event_processing_speed() const throw ();
+          time_t         get_last_event() const throw ();
           time_t         get_retry_interval() const throw ();
           void           process(bool in = false, bool out = false);
           QSharedPointer<io::data>
@@ -70,6 +72,9 @@ namespace                com {
           bool           wait(unsigned long time = ULONG_MAX);
           void           write(QSharedPointer<io::data> d);
 
+          static time_t const
+                         event_window_length = 30;
+
          signals:
           void           exception_caught();
           void           initial_lock();
@@ -79,11 +84,15 @@ namespace                com {
           volatile time_t _buffering_timeout;
           QSharedPointer<io::endpoint>
                          _endpoint;
+          unsigned int   _events[event_window_length];
           QSharedPointer<failover>
                          _failover;
           bool           _initial;
           bool           _is_out;
+          time_t         _last_connect_attempt;
+          time_t         _last_connect_success;
           QString        _last_error;
+          time_t         _last_event;
           QString        _name;
           volatile time_t _retry_interval;
 

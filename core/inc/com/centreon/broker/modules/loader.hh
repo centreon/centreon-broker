@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,44 +17,50 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULES_LOADER_HH_
-# define CCB_MODULES_LOADER_HH_
+#ifndef CCB_MODULES_LOADER_HH
+#  define CCB_MODULES_LOADER_HH
 
-# include <QHash>
-# include <QSharedPointer>
-# include <QString>
-# include "com/centreon/broker/modules/handle.hh"
+#  include <QHash>
+#  include <QSharedPointer>
+#  include <QString>
+#  include "com/centreon/broker/modules/handle.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   modules {
-        /**
-         *  @class loader loader.hh "com/centreon/broker/modules/loader.hh"
-         *  @brief Load Centreon Broker plugins.
-         *
-         *  This class is used to load Centreon Broker plugins and hold
-         *  reference to them as long as they exist.
-         */
-        class     loader {
-         private:
-          QHash<QString, QSharedPointer<handle> >
-                  _handles;
+CCB_BEGIN()
 
-         public:
-                  loader();
-                  loader(loader const& l);
-                  ~loader();
-          loader& operator=(loader const& l);
-          void    load_dir(QString const& dirname,
-                    void const* arg = NULL);
-          void    load_file(QString const& filename,
-                    void const* arg = NULL);
-          void    unload();
-        };
-      }
-    }
-  }
+namespace    modules {
+  /**
+   *  @class loader loader.hh "com/centreon/broker/modules/loader.hh"
+   *  @brief Load Centreon Broker plugins.
+   *
+   *  This class is used to load Centreon Broker plugins and hold
+   *  reference to them as long as they exist.
+   */
+  class      loader {
+  public:
+    typedef QHash<QString, QSharedPointer<handle> >::iterator
+             iterator;
+
+             loader();
+             loader(loader const& l);
+             ~loader();
+    loader&  operator=(loader const& l);
+    iterator begin();
+    iterator end();
+    void     load_dir(
+               QString const& dirname,
+               void const* arg = NULL);
+    void     load_file(
+               QString const& filename,
+               void const* arg = NULL);
+    void     unload();
+
+  private:
+    QHash<QString, QSharedPointer<handle> >
+             _handles;
+  };
 }
 
-#endif /* !CCB_MODULES_LOADER_HH_ */
+CCB_END()
+
+#endif // !CCB_MODULES_LOADER_HH

@@ -20,12 +20,15 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <iomanip>
 #include <QMutexLocker>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/worker.hh"
@@ -119,6 +122,20 @@ void worker::_close() {
  *  Generate statistics.
  */
 void worker::_generate_stats() {
+  // Modules.
+  config::applier::modules&
+    mod_applier(config::applier::modules::instance());
+  for (config::applier::modules::iterator
+         it = mod_applier.begin(),
+         end = mod_applier.end();
+       it != end;
+       ++it) {
+    _buffer.append("module ");
+    _buffer.append(it.key().toStdString());
+    _buffer.append("\nstate=loaded\n");
+    _buffer.append("\n");
+  }
+
   // Endpoint applier.
   config::applier::endpoint&
     endp_applier(config::applier::endpoint::instance());
@@ -189,14 +206,42 @@ void worker::_generate_stats_for_endpoint(
     buffer.append("state=");
     QReadLocker rl(rwl);
     if (s->isNull()) {
-      buffer.append("disconnected (");
-      buffer.append(fo->_last_error.toStdString());
-      buffer.append(")\n");
+      if (!fo->_last_error.isEmpty()) {
+        buffer.append("disconnected");
+        buffer.append(" (");
+        buffer.append(fo->_last_error.toStdString());
+        buffer.append(")\n");
+      }
+      else
+        buffer.append("listening\n");
     }
     else if (!fo->_failover.isNull() && fo->_failover->isRunning())
       buffer.append("replaying\n");
     else
       buffer.append("connected\n");
+  }
+
+  {
+    // Event processing stats.
+    std::ostringstream oss;
+    oss << "last event at=" << fo->get_last_event() << "\n"
+        << "event processing speed=" << std::fixed
+        << std::setprecision(2) << fo->get_event_processing_speed()
+        << " events/s\n";
+    buffer.append(oss.str());
+  }
+
+  // Endpoint stats.
+  if (!fo->_endpoint.isNull())
+    fo->_endpoint->stats(buffer);
+
+  {
+    // Last connection times.
+    std::ostringstream oss;
+    oss << "last connection attempt=" << fo->_last_connect_attempt
+        << "\n" << "last connection success="
+        << fo->_last_connect_success << "\n";
+    buffer.append(oss.str());
   }
 
   // Failover.

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_IO_ENDPOINT_HH_
-# define CCB_IO_ENDPOINT_HH_
+#ifndef CCB_IO_ENDPOINT_HH
+#  define CCB_IO_ENDPOINT_HH
 
-# include <QSharedPointer>
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QSharedPointer>
+#  include <string>
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -36,11 +37,6 @@ namespace                          io {
    *  (that initiate connections).
    */
   class                            endpoint {
-   protected:
-    QSharedPointer<endpoint>       _from;
-    bool                           _is_acceptor;
-    void                           _internal_copy(endpoint const& e);
-
    public:
                                    endpoint(bool is_accptr);
                                    endpoint(endpoint const& e);
@@ -51,6 +47,12 @@ namespace                          io {
     bool                           is_acceptor() const throw ();
     bool                           is_connector() const throw ();
     virtual QSharedPointer<stream> open() = 0;
+    virtual void                   stats(std::string& buffer);
+
+   protected:
+    QSharedPointer<endpoint>       _from;
+    bool                           _is_acceptor;
+    void                           _internal_copy(endpoint const& e);
   };
 }
 

@@ -22,23 +22,6 @@ using namespace com::centreon::broker::io;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] e Object to copy.
- */
-void endpoint::_internal_copy(endpoint const& e) {
-  _from = e._from;
-  _is_acceptor = e._is_acceptor;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -103,4 +86,32 @@ bool endpoint::is_acceptor() const throw () {
  */
 bool endpoint::is_connector() const throw () {
   return (!_is_acceptor);
+}
+
+/**
+ *  Generate statistics about the endpoint.
+ *
+ *  @param[out] buffer Unused.
+ */
+void endpoint::stats(std::string& buffer) {
+  if (!_from.isNull())
+    _from->stats(buffer);
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] e Object to copy.
+ */
+void endpoint::_internal_copy(endpoint const& e) {
+  _from = e._from;
+  _is_acceptor = e._is_acceptor;
+  return ;
 }

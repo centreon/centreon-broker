@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,41 +17,48 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_APPLIER_MODULES_HH_
-# define CCB_CONFIG_APPLIER_MODULES_HH_
+#ifndef CCB_CONFIG_APPLIER_MODULES_HH
+#  define CCB_CONFIG_APPLIER_MODULES_HH
 
-# include <QString>
-# include "com/centreon/broker/modules/loader.hh"
+#  include <QString>
+#  include "com/centreon/broker/modules/loader.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                           com {
-  namespace                         centreon {
-    namespace                       broker {
-      namespace                     config {
-        namespace                   applier {
-          /**
-           *  @class modules modules.hh "com/centreon/broker/config/applier/modules.hh"
-           *  @brief Load necessary modules.
-           *
-           *  Load modules as per the configuration.
-           */
-          class                     modules {
-           private:
-            broker::modules::loader _loader;
-                                    modules();
-                                    modules(modules const& m);
-            modules&                operator=(modules const& m);
+CCB_BEGIN()
 
-           public:
-                                    ~modules();
-            void                    apply(QString const& module_dir,
-                                      void const* arg = NULL);
-            static modules&         instance();
-            void                    unload();
-          };
-        }
-      }
-    }
+namespace                     config {
+  namespace                   applier {
+    /**
+     *  @class modules modules.hh "com/centreon/broker/config/applier/modules.hh"
+     *  @brief Load necessary modules.
+     *
+     *  Load modules as per the configuration.
+     */
+    class                     modules {
+    public:
+      typedef                 broker::modules::loader::iterator
+                              iterator;
+
+                              ~modules();
+      void                    apply(
+                                QString const& module_dir,
+                                void const* arg = NULL);
+      iterator                begin();
+      iterator                end();
+      static modules&         instance();
+      void                    unload();
+
+    private:
+                              modules();
+                              modules(modules const& m);
+      modules&                operator=(modules const& m);
+      void                    _internal_copy(modules const& m);
+
+      broker::modules::loader _loader;
+    };
   }
 }
 
-#endif /* !CCB_CONFIG_APPLIER_MODULES_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_APPLIER_MODULES_HH

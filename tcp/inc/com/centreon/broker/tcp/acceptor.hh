@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,18 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_TCP_ACCEPTOR_HH_
-# define CCB_TCP_ACCEPTOR_HH_
+#ifndef CCB_TCP_ACCEPTOR_HH
+#  define CCB_TCP_ACCEPTOR_HH
 
-# include <QMap>
-# include <QMutex>
-# include <QObject>
-# include <QScopedPointer>
-# include <QSharedPointer>
-# include <QWeakPointer>
-# include <QTcpServer>
-# include <QTcpSocket>
-# include "com/centreon/broker/io/endpoint.hh"
+#  include <QMap>
+#  include <QMutex>
+#  include <QObject>
+#  include <QScopedPointer>
+#  include <QSharedPointer>
+#  include <QWeakPointer>
+#  include <QTcpServer>
+#  include <QTcpSocket>
+#  include "com/centreon/broker/io/endpoint.hh"
 
 namespace                com {
   namespace              centreon {
@@ -42,23 +42,6 @@ namespace                com {
          */
         class            acceptor : public QObject, public io::endpoint {
           Q_OBJECT
-
-         private:
-          QString        _ca;
-          QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >
-                         _children;
-          QMutex         _childrenm;
-          QMutex         _mutex;
-          unsigned short _port;
-          QString        _private;
-          QString        _public;
-          QScopedPointer<QTcpServer>
-                         _socket;
-          bool           _tls;
-          void           _internal_copy(acceptor const& a);
-
-         private slots:
-          void           _on_stream_destroy(QObject* obj);
 
          public:
                          acceptor();
@@ -74,10 +57,29 @@ namespace                com {
                            QString const& private_key = QString(),
                            QString const& public_cert = QString(),
                            QString const& ca_cert = QString());
+          void           stats(std::string& buffer);
+
+         private:
+          void           _internal_copy(acceptor const& a);
+
+          QString        _ca;
+          QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >
+                         _children;
+          QMutex         _childrenm;
+          QMutex         _mutex;
+          unsigned short _port;
+          QString        _private;
+          QString        _public;
+          QScopedPointer<QTcpServer>
+                         _socket;
+          bool           _tls;
+
+         private slots:
+          void           _on_stream_destroy(QObject* obj);
         };
       }
     }
   }
 }
 
-#endif /* !CCB_TCP_ACCEPTOR_HH_ */
+#endif // !CCB_TCP_ACCEPTOR_HH

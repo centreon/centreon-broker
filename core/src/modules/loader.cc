@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -62,6 +63,24 @@ loader& loader::operator=(loader const& l) {
 }
 
 /**
+ *  Get iterator to the first module.
+ *
+ *  @return Iterator to the first module.
+ */
+loader::iterator loader::begin() {
+  return (_handles.begin());
+}
+
+/**
+ *  Get last iterator of the module list.
+ *
+ *  @return Last iterator of the module list.
+ */
+loader::iterator loader::end() {
+  return (_handles.end());
+}
+
+/**
  *  Load a directory containing plugins.
  *
  *  @param[in] dirname Directory name.
@@ -69,7 +88,7 @@ loader& loader::operator=(loader const& l) {
  */
 void loader::load_dir(QString const& dirname, void const* arg) {
   // Debug message.
-  logging::debug << logging::MEDIUM
+  logging::debug(logging::medium)
     << "modules: loading directory '" << dirname << "'";
 
   // Set directory browsing parameters.
@@ -99,7 +118,7 @@ void loader::load_dir(QString const& dirname, void const* arg) {
   }
 
   // Ending log message.
-  logging::debug << logging::MEDIUM
+  logging::debug(logging::medium)
     << "modules: finished loading directory '" << dirname << "'";
 
   return ;
@@ -113,14 +132,14 @@ void loader::load_dir(QString const& dirname, void const* arg) {
  */
 void loader::load_file(QString const& filename, void const* arg) {
   if (_handles.find(filename) == _handles.end()) {
-    logging::debug << logging::LOW << "modules: loading '"
+    logging::debug(logging::low) << "modules: loading '"
       << filename << "' which is NOT already loaded";
     QSharedPointer<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
   }
   else
-    logging::info << logging::LOW << "modules: attempt to load file '"
+    logging::info(logging::low) << "modules: attempt to load file '"
       << filename << "' which is already loaded";
   return ;
 }
