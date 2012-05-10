@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,15 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_APPLIER_ENDPOINT_HH_
-# define CCB_CONFIG_APPLIER_ENDPOINT_HH_
+#ifndef CCB_CONFIG_APPLIER_ENDPOINT_HH
+#  define CCB_CONFIG_APPLIER_ENDPOINT_HH
 
-# include <QList>
-# include <QMap>
-# include <QMutex>
-# include <QObject>
-# include "com/centreon/broker/config/endpoint.hh"
-# include "com/centreon/broker/processing/failover.hh"
+#  include <QList>
+#  include <QMap>
+#  include <QMutex>
+#  include <QObject>
+#  include "com/centreon/broker/config/endpoint.hh"
+#  include "com/centreon/broker/processing/failover.hh"
 
 namespace                    com {
   namespace                  centreon {
@@ -40,36 +41,49 @@ namespace                    com {
           class              endpoint : public QObject {
             Q_OBJECT
 
+           public:
+            typedef          QMap<config::endpoint, processing::failover*>::iterator
+                             iterator;
+
+                             ~endpoint();
+            void             apply(
+                               QList<config::endpoint> const& inputs,
+                               QList<config::endpoint> const& outputs);
+            iterator         input_begin();
+            iterator         input_end();
+            QMutex&          input_mutex();
+            static endpoint& instance();
+            iterator         output_begin();
+            iterator         output_end();
+            QMutex&          output_mutex();
+            void             unload();
+
+           public slots:
+            void             terminated_input();
+            void             terminated_output();
+
            private:
+                             endpoint();
+                             endpoint(endpoint const& e);
+            endpoint&        operator=(endpoint const& e);
+            processing::failover*
+                             _create_endpoint(
+                               config::endpoint const& cfg,
+                               bool is_input,
+                               bool is_output,
+                               QList<config::endpoint> const& l);
+            void             _diff_endpoints(
+                               QMap<config::endpoint,
+                               processing::failover*>& current,
+                               QList<config::endpoint> const& new_endpoints,
+                               QList<config::endpoint>& to_create);
+
             QMap<config::endpoint, processing::failover*>
                              _inputs;
             QMutex           _inputsm;
             QMap<config::endpoint, processing::failover*>
                              _outputs;
             QMutex           _outputsm;
-                             endpoint();
-                             endpoint(endpoint const& e);
-            endpoint&        operator=(endpoint const& e);
-            processing::failover*
-                             _create_endpoint(config::endpoint const& cfg,
-                               bool is_input,
-                               bool is_output,
-                               QList<config::endpoint> const& l);
-            void             _diff_endpoints(QMap<config::endpoint,
-                               processing::failover*>& current,
-                               QList<config::endpoint> const& new_endpoints,
-                               QList<config::endpoint>& to_create);
-
-           public:
-                             ~endpoint();
-            void             apply(QList<config::endpoint> const& inputs,
-                               QList<config::endpoint> const& outputs);
-            static endpoint& instance();
-            void             unload();
-
-           public slots:
-            void             terminated_input();
-            void             terminated_output();
           };
         }
       }
@@ -77,4 +91,4 @@ namespace                    com {
   }
 }
 
-#endif /* !CCB_CONFIG_APPLIER_ENDPOINT_HH_ */
+#endif // !CCB_CONFIG_APPLIER_ENDPOINT_HH
