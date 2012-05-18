@@ -195,7 +195,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
       hs_it(_nodes.find(qMakePair(hs.host_id, 0u)));
     if (hs_it == _nodes.end())
       throw (exceptions::msg() << "correlation: invalid host status " \
-               "provided (" << hs.host_id);
+               "provided (" << hs.host_id << ")");
     n = &*hs_it;
   }
   else {
