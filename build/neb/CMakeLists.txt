@@ -138,6 +138,7 @@ set(CBMOD "cbmod")
 add_library("${CBMOD}" SHARED
   # Sources.
   "${PROJECT_SOURCE_DIR}/core/src/config/applier/logger.cc"
+  "${SRC_DIR}/callback.cc"
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
   "${SRC_DIR}/internal.cc"
@@ -145,6 +146,7 @@ add_library("${CBMOD}" SHARED
   "${SRC_DIR}/neb.cc"
   "${SRC_DIR}/set_log_data.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/neb/callback.hh"
   "${INC_DIR}/com/centreon/broker/neb/callbacks.hh"
   "${INC_DIR}/com/centreon/broker/neb/initial.hh"
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
