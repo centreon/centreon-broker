@@ -53,30 +53,6 @@ extern "C" {
 *                                     *
 **************************************/
 
-// List of callbacks
-static struct {
-  unsigned int macro;
-  int (* callback)(int, void*);
-  bool registered;
-} gl_callbacks[] = {
-  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement, false },
-  { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment, false },
-  { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime, false },
-  { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler, false },
-  { NEBCALLBACK_EXTERNAL_COMMAND_DATA, &neb::callback_external_command, false },
-  { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status, false },
-  { NEBCALLBACK_HOST_CHECK_DATA, &neb::callback_host_check, false },
-  { NEBCALLBACK_HOST_STATUS_DATA, &neb::callback_host_status, false },
-  { NEBCALLBACK_LOG_DATA, &neb::callback_log, false },
-  { NEBCALLBACK_PROCESS_DATA, &neb::callback_process, false },
-  { NEBCALLBACK_PROGRAM_STATUS_DATA, &neb::callback_program_status, false },
-  { NEBCALLBACK_SERVICE_CHECK_DATA, &neb::callback_service_check, false },
-  { NEBCALLBACK_SERVICE_STATUS_DATA, &neb::callback_service_status, false }
-};
-
-// Module handle
-static void*       gl_mod_handle = NULL;
-
 // Qt initialization flag.
 static bool        gl_initialized_qt(false);
 static int         gl_qt_argc;
@@ -90,23 +66,6 @@ static char const* gl_qt_argv[2] = {
 *          Static Functions           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Deregister callbacks.
- *
- *  Deregister all callbacks previously registered.
- */
-static void deregister_callbacks() {
-  for (unsigned int i = 0;
-       i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
-       ++i)
-    if (gl_callbacks[i].registered) {
-      neb_deregister_callback(gl_callbacks[i].macro,
-        gl_callbacks[i].callback);
-      gl_callbacks[i].registered = false;
-    }
-  return ;
-}
 
 /**
  *  Process Qt events.
@@ -145,8 +104,8 @@ extern "C" {
     (void)reason;
 
     try {
-      // Deregister callbacks.
-      deregister_callbacks();
+      // Unregister callbacks.
+      neb::unregister_callbacks();
 
       // Unload singletons.
       config::applier::endpoint::instance().unload();
@@ -195,25 +154,31 @@ extern "C" {
     config::applier::init();
 
     // Save module handle for future use.
-    gl_mod_handle = handle;
+    neb::gl_mod_handle = handle;
 
     // Set module informations.
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_TITLE,
       "CentreonBroker's cbmod");
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_AUTHOR,
       "Merethis");
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_COPYRIGHT,
       "Copyright 2009-2012 Merethis");
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_VERSION,
       CENTREON_BROKER_VERSION);
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_LICENSE,
       "GPL version 2");
-    neb_set_module_info(gl_mod_handle,
+    neb_set_module_info(
+      neb::gl_mod_handle,
       NEBMODULE_MODINFO_DESC,
       "cbmod is part of CentreonBroker and is designed to " \
       "convert internal Nagios events to a proper data "    \
@@ -274,19 +239,13 @@ extern "C" {
       return (-1);
     }
 
-    // Register callbacks.
-    for (unsigned int i = 0;
-         i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
-         ++i)
-      if (neb_register_callback(gl_callbacks[i].macro,
-            gl_mod_handle,
-            0,
-            gl_callbacks[i].callback) != NDO_OK) {
-        deregister_callbacks();
-        return (-1);
-      }
-      else
-        gl_callbacks[i].registered = true;
+    // Register process callback.
+    if (neb_register_callback(
+          NEBCALLBACK_PROCESS_DATA,
+          neb::gl_mod_handle,
+          0,
+          &neb::callback_process) != NDO_OK)
+      return (-1);
 
     // Process Qt events if necessary.
     if (gl_initialized_qt)

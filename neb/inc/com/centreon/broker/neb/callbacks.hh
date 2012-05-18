@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,29 +17,33 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_CALLBACKS_HH_
-# define CCB_NEB_CALLBACKS_HH_
+#ifndef CCB_NEB_CALLBACKS_HH
+#  define CCB_NEB_CALLBACKS_HH
 
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace neb {
-        int     callback_acknowledgement(int callback_type, void* data);
-        int     callback_comment(int callback_type, void* data);
-        int     callback_downtime(int callback_type, void* data);
-        int     callback_event_handler(int callback_type, void* data);
-        int     callback_external_command(int callback_type, void* data);
-        int     callback_flapping_status(int callback_type, void* data);
-        int     callback_host_check(int callback_type, void* data);
-        int     callback_host_status(int callback_type, void* data);
-        int     callback_log(int callback_type, void* data);
-        int     callback_process(int callback_type, void* data);
-        int     callback_program_status(int callback_type, void* data);
-        int     callback_service_check(int callback_type, void* data);
-        int     callback_service_status(int callback_type, void* data);
-      }
-    }
-  }
+#  include "com/centreon/broker/namespace.hh"
+
+CCB_BEGIN()
+
+namespace neb {
+  extern void*
+          gl_mod_handle;
+
+  int     callback_acknowledgement(int callback_type, void* data);
+  int     callback_comment(int callback_type, void* data);
+  int     callback_downtime(int callback_type, void* data);
+  int     callback_event_handler(int callback_type, void* data);
+  int     callback_external_command(int callback_type, void* data);
+  int     callback_flapping_status(int callback_type, void* data);
+  int     callback_host_check(int callback_type, void* data);
+  int     callback_host_status(int callback_type, void* data);
+  int     callback_log(int callback_type, void* data);
+  int     callback_process(int callback_type, void* data);
+  int     callback_program_status(int callback_type, void* data);
+  int     callback_service_check(int callback_type, void* data);
+  int     callback_service_status(int callback_type, void* data);
+  void    unregister_callbacks();
 }
 
-#endif /* !CCB_NEB_CALLBACKS_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_CALLBACKS_HH */

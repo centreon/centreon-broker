@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -29,6 +30,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/callback.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/initial.hh"
@@ -37,6 +39,7 @@
 #include "nagios/broker.h"
 #include "nagios/comments.h"
 #include "nagios/common.h"
+#include "nagios/nebcallbacks.h"
 #include "nagios/nebmodules.h"
 #include "nagios/nebstructs.h"
 #include "nagios/objects.h"
@@ -48,6 +51,31 @@ static std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
 acknowledgements;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
+
+// Module handle.
+void* neb::gl_mod_handle(NULL);
+
+// List of callbacks
+static struct {
+  unsigned int macro;
+  int (* callback)(int, void*);
+} const gl_callbacks[] = {
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement },
+  { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment },
+  { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime },
+  { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler },
+  { NEBCALLBACK_EXTERNAL_COMMAND_DATA, &neb::callback_external_command },
+  { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status },
+  { NEBCALLBACK_HOST_CHECK_DATA, &neb::callback_host_check },
+  { NEBCALLBACK_HOST_STATUS_DATA, &neb::callback_host_status },
+  { NEBCALLBACK_LOG_DATA, &neb::callback_log },
+  { NEBCALLBACK_PROGRAM_STATUS_DATA, &neb::callback_program_status },
+  { NEBCALLBACK_SERVICE_CHECK_DATA, &neb::callback_service_check },
+  { NEBCALLBACK_SERVICE_STATUS_DATA, &neb::callback_service_status }
+};
+
+// Registered callbacks.
+std::list<QSharedPointer<neb::callback> > gl_registered_callbacks;
 
 // External function to get program version.
 extern "C" {
@@ -804,6 +832,19 @@ int neb::callback_process(int callback_type, void *data) {
     if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       logging::info(logging::medium)
         << "callbacks: generating process start event";
+
+      // Register callbacks.
+      logging::debug(logging::high)
+        << "callbacks: registering callbacks";
+      for (unsigned int i(0);
+           i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
+           ++i)
+        gl_registered_callbacks.push_back(
+          QSharedPointer<callback>(new neb::callback(
+                                         gl_callbacks[i].macro,
+                                         gl_mod_handle,
+                                         gl_callbacks[i].callback)));
+
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);
 
@@ -890,7 +931,9 @@ int neb::callback_process(int callback_type, void *data) {
     }
   }
   // Avoid exception propagation in C code.
-  catch (...) {}
+  catch (...) {
+    unregister_callbacks();
+  }
   return (0);
 }
 
@@ -1161,4 +1204,12 @@ int neb::callback_service_status(int callback_type, void* data) {
   // Avoid exception propagation in C code.
   catch (...) {}
   return (0);
+}
+
+/**
+ *  Unregister callbacks.
+ */
+void neb::unregister_callbacks() {
+  gl_registered_callbacks.clear();
+  return ;
 }
