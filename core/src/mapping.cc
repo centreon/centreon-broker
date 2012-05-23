@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -811,6 +811,10 @@ static mapped_data<host_group> const host_group_mapping[] = {
     &host_group::alias,
     NDO_DATA_HOSTGROUPALIAS,
     "alias"),
+  mapped_data<host_group>(
+    &host_group::enabled,
+    NDO_DATA_FIXED,
+    "enabled"),
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
@@ -1866,6 +1870,10 @@ static mapped_data<service_group> const service_group_mapping[] = {
     &service_group::alias,
     NDO_DATA_SERVICEGROUPALIAS,
     "alias"),
+  mapped_data<service_group>(
+    &service_group::enabled,
+    NDO_DATA_FIXED,
+    "enabled"),
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,

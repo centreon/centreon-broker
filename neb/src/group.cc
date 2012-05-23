@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,36 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal members of the given object to the current
- *         instance.
- *
- *  This internal method is used to copy data defined inside the group
- *  class from an object to the current instance. This means that no
- *  superclass data are copied. This method is used in the copy
- *  constructor and in the assignment operator.
- *
- *  @param[in] g Object to copy.
- *
- *  @see group(group const&)
- *  @see operator=(group const&)
- */
-void group::_internal_copy(group const& g) {
-  action_url = g.action_url;
-  alias = g.alias;
-  instance_id = g.instance_id;
-  name = g.name;
-  notes = g.notes;
-  notes_url = g.notes_url;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -61,7 +32,7 @@ void group::_internal_copy(group const& g) {
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-group::group() : instance_id(0) {}
+group::group() : enabled(true), instance_id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -92,4 +63,35 @@ group& group::operator=(group const& g) {
   io::data::operator=(g);
   _internal_copy(g);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal members of the given object to the current
+ *         instance.
+ *
+ *  This internal method is used to copy data defined inside the group
+ *  class from an object to the current instance. This means that no
+ *  superclass data are copied. This method is used in the copy
+ *  constructor and in the assignment operator.
+ *
+ *  @param[in] g Object to copy.
+ *
+ *  @see group(group const&)
+ *  @see operator=(group const&)
+ */
+void group::_internal_copy(group const& g) {
+  action_url = g.action_url;
+  alias = g.alias;
+  enabled = g.enabled;
+  instance_id = g.instance_id;
+  name = g.name;
+  notes = g.notes;
+  notes_url = g.notes_url;
+  return ;
 }

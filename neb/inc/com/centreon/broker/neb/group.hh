@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,45 +17,46 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_GROUP_HH_
-# define CCB_NEB_GROUP_HH_
+#ifndef CCB_NEB_GROUP_HH
+#  define CCB_NEB_GROUP_HH
 
-# include <QString>
-# include "com/centreon/broker/io/data.hh"
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        neb {
-        /**
-         *  @class group group.hh "com/centreon/broker/neb/group.hh"
-         *  @brief Base of host and service group classes.
-         *
-         *  The scheduling engine handles group. This can be service
-         *  groups or host groups for example.
-         *
-         *  @see host_group
-         *  @see service_group
-         */
-        class          group : public io::data {
-         private:
-          void         _internal_copy(group const& g);
+CCB_BEGIN()
 
-         public:
-          QString      action_url;
-          QString      alias;
-          unsigned int instance_id;
-          QString      name;
-          QString      notes;
-          QString      notes_url;
-                       group();
-                       group(group const& g);
-          virtual      ~group();
-          group&       operator=(group const& g);
-        };
-      }
-    }
-  }
+namespace        neb {
+  /**
+   *  @class group group.hh "com/centreon/broker/neb/group.hh"
+   *  @brief Base of host and service group classes.
+   *
+   *  The scheduling engine handles group. This can be service groups
+   *  or host groups for example.
+   *
+   *  @see host_group
+   *  @see service_group
+   */
+  class          group : public io::data {
+  public:
+                 group();
+                 group(group const& g);
+    virtual      ~group();
+    group&       operator=(group const& g);
+
+    QString      action_url;
+    QString      alias;
+    bool         enabled;
+    unsigned int instance_id;
+    QString      name;
+    QString      notes;
+    QString      notes_url;
+
+  private:
+    void         _internal_copy(group const& g);
+  };
 }
 
-#endif /* !CCB_NEB_GROUP_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_GROUP_HH */
