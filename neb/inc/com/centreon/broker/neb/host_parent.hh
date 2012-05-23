@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,34 +17,35 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_PARENT_HH_
-# define CCB_NEB_HOST_PARENT_HH_
+#ifndef CCB_NEB_HOST_PARENT_HH
+#  define CCB_NEB_HOST_PARENT_HH
 
-# include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class host_parent host_parent.hh "com/centreon/broker/neb/host_parent.hh"
-         *  @brief Define a parent of a host.
-         *
-         *  Define a certain host to be the parent of another host.
-         */
-        class            host_parent : public io::data {
-         public:
-          unsigned int   host_id;
-          unsigned int   parent_id;
-                         host_parent();
-                         host_parent(host_parent const& hp);
-                         ~host_parent();
-          host_parent&   operator=(host_parent const& hp);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          neb {
+  /**
+   *  @class host_parent host_parent.hh "com/centreon/broker/neb/host_parent.hh"
+   *  @brief Define a parent of a host.
+   *
+   *  Define a certain host to be the parent of another host.
+   */
+  class            host_parent : public io::data {
+  public:
+                   host_parent();
+                   host_parent(host_parent const& hp);
+                   ~host_parent();
+    host_parent&   operator=(host_parent const& hp);
+    QString const& type() const;
+
+    bool           enabled;
+    unsigned int   host_id;
+    unsigned int   parent_id;
+  };
 }
 
-#endif /* !CCB_NEB_HOST_PARENT_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_HOST_PARENT_HH */

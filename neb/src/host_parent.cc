@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -29,7 +30,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-host_parent::host_parent() : host_id(0), parent_id(0) {}
+host_parent::host_parent() : enabled(true), host_id(0), parent_id(0) {}
 
 /**
  *  Copy constructor.
@@ -37,7 +38,10 @@ host_parent::host_parent() : host_id(0), parent_id(0) {}
  *  @param[in] hp Object to copy.
  */
 host_parent::host_parent(host_parent const& hp)
-  : io::data(hp), host_id(hp.host_id), parent_id(hp.parent_id) {}
+  : io::data(hp),
+    enabled(hp.enabled),
+    host_id(hp.host_id),
+    parent_id(hp.parent_id) {}
 
 /**
  *  Destructor.
@@ -53,6 +57,7 @@ host_parent::~host_parent() {}
  */
 host_parent& host_parent::operator=(host_parent const& hp) {
   io::data::operator=(hp);
+  enabled = hp.enabled;
   host_id = hp.host_id;
   parent_id = hp.parent_id;
   return (*this);

@@ -838,13 +838,17 @@ static mapped_data<host_group> const host_group_mapping[] = {
 // host_group_member members mapping.
 static mapped_data<host_group_member> const host_group_member_mapping[] = {
   mapped_data<host_group_member>(
+    &host_group_member::enabled,
+    NDO_DATA_FIXED,
+    NULL),
+  mapped_data<host_group_member>(
     &host_group_member::group, // XXX : should be replaced by hostgroup_id
     NDO_DATA_HOSTGROUPNAME,
-    NULL),
+    "group"),
   mapped_data<host_group_member>(
     &host_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    NULL),
+    "instance_id"),
   mapped_data<host_group_member>(
     &host_group_member::host_id,
     NDO_DATA_HOSTGROUPMEMBER,
@@ -855,6 +859,10 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
 
 // host_parent members mapping.
 static mapped_data<host_parent> const host_parent_mapping[] = {
+  mapped_data<host_parent>(
+    &host_parent::enabled,
+    NDO_DATA_FIXED,
+    NULL),
   mapped_data<host_parent>(
     &host_parent::host_id,
     NDO_DATA_HOST,
@@ -1901,9 +1909,13 @@ static mapped_data<service_group> const service_group_mapping[] = {
 // service_group_member members mapping.
 static mapped_data<service_group_member> const service_group_member_mapping[] = {
   mapped_data<service_group_member>(
+    &service_group_member::enabled,
+    NDO_DATA_FIXED,
+    NULL),
+  mapped_data<service_group_member>(
     &service_group_member::group, // XXX : should be replaced by servicegroup_id
     NDO_DATA_SERVICEGROUPNAME,
-    NULL),
+    "group"),
   mapped_data<service_group_member>(
     &service_group_member::host_id,
     NDO_DATA_HOST,
@@ -1912,7 +1924,7 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    NULL),
+    "instance_id"),
   mapped_data<service_group_member>(
     &service_group_member::service_id,
     NDO_DATA_SERVICEGROUPMEMBER,

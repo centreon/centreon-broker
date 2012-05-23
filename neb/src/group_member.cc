@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,27 +23,6 @@ using namespace com::centreon::broker;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy data members.
- *
- *  This method is used by the copy constructor and the assignment
- *  operator.
- *
- *  @param[in] gm Object to copy.
- */
-void neb::group_member::_internal_copy(group_member const& gm) {
-  group = gm.group;
-  host_id = gm.host_id;
-  instance_id = gm.instance_id;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -50,7 +30,8 @@ void neb::group_member::_internal_copy(group_member const& gm) {
 /**
  *  Default constructor.
  */
-neb::group_member::group_member() : host_id(0), instance_id(0) {}
+neb::group_member::group_member()
+  : enabled(true), host_id(0), instance_id(0) {}
 
 /**
  *  Copy constructor.
@@ -78,4 +59,26 @@ neb::group_member& neb::group_member::operator=(group_member const& gm) {
   io::data::operator=(gm);
   _internal_copy(gm);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy data members.
+ *
+ *  This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  @param[in] gm Object to copy.
+ */
+void neb::group_member::_internal_copy(group_member const& gm) {
+  enabled = gm.enabled;
+  group = gm.group;
+  host_id = gm.host_id;
+  instance_id = gm.instance_id;
+  return ;
 }

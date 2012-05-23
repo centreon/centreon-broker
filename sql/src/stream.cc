@@ -266,9 +266,11 @@ void stream::_prepare() {
   _prepare_insert<neb::event_handler>(_event_handler_insert);
   _prepare_insert<neb::flapping_status>(_flapping_status_insert);
   _prepare_insert<neb::host>(_host_insert);
+  _prepare_insert<neb::host_group>(_host_group_insert);
   _prepare_insert<neb::instance>(_instance_insert);
   _prepare_insert<neb::notification>(_notification_insert);
   _prepare_insert<neb::service>(_service_insert);
+  _prepare_insert<neb::service_group>(_service_group_insert);
   _prepare_insert<correlation::host_state>(_host_state_insert);
   _prepare_insert<correlation::issue>(_issue_insert);
   _prepare_insert<correlation::service_state>(_service_state_insert);
@@ -338,6 +340,11 @@ void stream::_prepare() {
   _prepare_update<neb::host_check>(_host_check_update, id);
 
   id.clear();
+  id.push_back(qMakePair(QString("instance_id"), false));
+  id.push_back(qMakePair(QString("name"), false));
+  _prepare_update<neb::host_group>(_host_group_update, id);
+
+  id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
   _prepare_update<neb::host_status>(_host_status_update, id);
 
@@ -364,6 +371,11 @@ void stream::_prepare() {
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
   _prepare_update<neb::service_check>(_service_check_update, id);
+
+  id.clear();
+  id.push_back(qMakePair(QString("instance_id"), false));
+  id.push_back(qMakePair(QString("name"), false));
+  _prepare_update<neb::service_group>(_service_group_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));
@@ -786,13 +798,29 @@ void stream::_process_host_group(io::data const& e) {
   neb::host_group const&
     hg(*static_cast<neb::host_group const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing host group event (name: "
-    << hg.name << ", instance: " << hg.instance_id << ")";
-
-  // Processing (errors are silently ignored).
-  _insert(hg);
+  // Insert/Update.
+  if (hg.enabled) {
+    logging::info(logging::medium) << "SQL: enabling host group '"
+      << hg.name << "' of instance " << hg.instance_id;
+    _update_on_none_insert(
+      *_host_group_insert,
+      *_host_group_update,
+      hg);
+  }
+  // Delete.
+  else {
+    logging::info(logging::medium)
+      << "SQL: removing host group '" << hg.name
+      << "' on instance " << hg.instance_id;
+    QSqlQuery q(*_db);
+    q.prepare(
+        "DELETE FROM hostgroups "
+        "WHERE instance_id=:instance_id"
+        "  AND name=:name");
+    q.bindValue(":instance_id", hg.instance_id);
+    q.bindValue(":name", hg.name);
+    _execute(q);
+  }
 
   return ;
 }
@@ -807,43 +835,70 @@ void stream::_process_host_group_member(io::data const& e) {
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing host group member event (group: "
-    << hgm.group << ", instance: " << hgm.instance_id
-    << ", host: " << hgm.host_id << ")";
+  // Insert.
+  if (hgm.enabled) {
+    // Log message.
+    logging::info(logging::medium)
+      << "SQL: enabling host group member (group: "
+      << hgm.group << ", instance: " << hgm.instance_id
+      << ", host: " << hgm.host_id << ")";
 
-  // Fetch host group ID.
-  std::ostringstream ss;
-  ss << "SELECT hostgroup_id FROM "
-     << mapped_type<neb::host_group>::table
-     << " WHERE instance_id=" << hgm.instance_id
-     << " AND name=\"" << hgm.group.toStdString() << "\"";
-  QSqlQuery q(*_db);
-  logging::info(logging::low)
-    << "SQL: host group member: " << ss.str().c_str();
-  if (q.exec(ss.str().c_str()) && q.next()) {
-    // Fetch hostgroup ID.
-    int hostgroup_id(q.value(0).toInt());
-    logging::debug(logging::medium)
-      << "SQL: fetch hostgroup of id " << hostgroup_id;
+    // Fetch host group ID.
+    std::ostringstream ss;
+    ss << "SELECT hostgroup_id FROM "
+       << mapped_type<neb::host_group>::table
+       << " WHERE instance_id=" << hgm.instance_id
+       << " AND name=\"" << hgm.group.toStdString() << "\"";
+    QSqlQuery q(*_db);
+    logging::info(logging::low)
+      << "SQL: host group member: " << ss.str().c_str();
+    if (q.exec(ss.str().c_str()) && q.next()) {
+      // Fetch hostgroup ID.
+      int hostgroup_id(q.value(0).toInt());
+      logging::debug(logging::medium)
+        << "SQL: fetch hostgroup of id " << hostgroup_id;
 
-    // Insert hostgroup membership.
-    std::ostringstream oss;
-    oss << "INSERT INTO "
-        << mapped_type<neb::host_group_member>::table
-        << " (host_id, hostgroup_id) VALUES("
-        << hgm.host_id << ", "
-        << hostgroup_id << ")";
-    logging::info(logging::low) << "SQL: executing query: "
-      << oss.str().c_str();
-    _db->exec(oss.str().c_str());
+      // Insert hostgroup membership.
+      std::ostringstream oss;
+      oss << "INSERT INTO "
+          << mapped_type<neb::host_group_member>::table
+          << " (host_id, hostgroup_id) VALUES("
+          << hgm.host_id << ", "
+          << hostgroup_id << ")";
+      logging::info(logging::low) << "SQL: executing query: "
+        << oss.str().c_str();
+      _db->exec(oss.str().c_str());
+    }
+    else
+      logging::info(logging::high)
+        << "SQL: discarding membership between host " << hgm.host_id
+        << " and hostgroup (" << hgm.instance_id << ", " << hgm.group
+        << ")";
   }
-  else
-    logging::info(logging::high)
-      << "SQL: discarding membership between host " << hgm.host_id
-      << " and hostgroup (" << hgm.instance_id << ", " << hgm.group
-      << ")";
+  // Delete.
+  else {
+    // Log message.
+    logging::info(logging::medium)
+      << "SQL: removing host group member (group: "
+      << hgm.group << ", instance: " << hgm.instance_id
+      << ", host: " << hgm.host_id << ")";
+
+    // Build query.
+    std::ostringstream oss;
+    oss << "DELETE " << mapped_type<neb::host_group_member>::table
+        << "  FROM " << mapped_type<neb::host_group_member>::table << " hgm "
+        << "  INNER JOIN " << mapped_type<neb::host_group>::table << " hg "
+        << "  ON hgm.hostgroup_id=hg.hostgroup_id "
+        << "  WHERE hg.instance_id=:instance_id "
+        << "    AND hg.name=:group"
+        << "    AND hgm.host_id=:host_id";
+
+    // Execute query.
+    QSqlQuery q(*_db);
+    q.prepare(oss.str().c_str());
+    q << hgm;
+    _execute(q);
+  }
 
   return ;
 }
@@ -1300,13 +1355,29 @@ void stream::_process_service_group(io::data const& e) {
   neb::service_group const&
     sg(*static_cast<neb::service_group const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing service group event (name: "
-    << sg.name << ", instance: " << sg.instance_id << ")";
-
-  // Processing (errors are silently ignored).
-  _insert(sg);
+  // Insert/Update.
+  if (sg.enabled) {
+    logging::info(logging::medium) << "SQL: enabling service group '"
+      << sg.name << "' of instance: " << sg.instance_id;
+    _update_on_none_insert(
+      *_service_group_insert,
+      *_service_group_update,
+      sg);
+  }
+  // Delete.
+  else {
+    logging::info(logging::medium)
+      << "SQL: removing service group '" << sg.name
+      << "' on instance " << sg.instance_id;
+    QSqlQuery q(*_db);
+    q.prepare(
+        "DELETE FROM servicegroups "
+        "WHERE instance_id=:instance_id"
+        "  AND name=:name");
+    q.bindValue(":instance_id", sg.instance_id);
+    q.bindValue(":name", sg.name);
+    _execute(q);
+  }
 
   return ;
 }
@@ -1321,44 +1392,72 @@ void stream::_process_service_group_member(io::data const& e) {
   neb::service_group_member const&
     sgm(*static_cast<neb::service_group_member const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing service group member event (group: "
-    << sgm.group << ", instance: " << sgm.instance_id << ", host: "
-    << sgm.host_id << ", service: " << sgm.service_id << ")";
+  // Insert.
+  if (sgm.enabled) {
+    // Log message.
+    logging::info(logging::medium)
+      << "SQL: enabling service group member (group: "
+      << sgm.group << ", instance: " << sgm.instance_id << ", host: "
+      << sgm.host_id << ", service: " << sgm.service_id << ")";
 
-  // Fetch service group ID.
-  std::ostringstream ss;
-  ss << "SELECT servicegroup_id FROM "
-     << mapped_type<neb::service_group>::table
-     << " WHERE instance_id=" << sgm.instance_id
-     << " AND name=\"" << sgm.group.toStdString() << "\"";
-  QSqlQuery q(*_db);
-  logging::info(logging::low) << "SQL: executing query: "
-    << ss.str().c_str();
-  if (q.exec(ss.str().c_str()) && q.next()) {
-    // Fetch servicegroup ID.
-    int servicegroup_id(q.value(0).toInt());
-    logging::debug(logging::medium)
-      << "SQL: fetch servicegroup of id " << servicegroup_id;
-
-    // Insert servicegroup membership.
-    std::ostringstream oss;
-    oss << "INSERT INTO "
-        << mapped_type<neb::service_group_member>::table
-        << " (host_id, service_id, servicegroup_id) VALUES("
-        << sgm.host_id << ", "
-        << sgm.service_id << ", "
-        << servicegroup_id << ")";
+    // Fetch service group ID.
+    std::ostringstream ss;
+    ss << "SELECT servicegroup_id FROM "
+       << mapped_type<neb::service_group>::table
+       << " WHERE instance_id=" << sgm.instance_id
+       << " AND name=\"" << sgm.group.toStdString() << "\"";
+    QSqlQuery q(*_db);
     logging::info(logging::low) << "SQL: executing query: "
-      << oss.str().c_str();
-    _db->exec(oss.str().c_str());
+      << ss.str().c_str();
+    if (q.exec(ss.str().c_str()) && q.next()) {
+      // Fetch servicegroup ID.
+      int servicegroup_id(q.value(0).toInt());
+      logging::debug(logging::medium)
+        << "SQL: fetch servicegroup of id " << servicegroup_id;
+
+      // Insert servicegroup membership.
+      std::ostringstream oss;
+      oss << "INSERT INTO "
+          << mapped_type<neb::service_group_member>::table
+          << " (host_id, service_id, servicegroup_id) VALUES("
+          << sgm.host_id << ", "
+          << sgm.service_id << ", "
+          << servicegroup_id << ")";
+      logging::info(logging::low) << "SQL: executing query: "
+        << oss.str().c_str();
+      _db->exec(oss.str().c_str());
+    }
+    else
+      logging::info(logging::high)
+        << "SQL: discarding membership between service ("
+        << sgm.host_id << ", " << sgm.service_id << ") and servicegroup ("
+        << sgm.instance_id << ", " << sgm.group << ")";
   }
-  else
-    logging::info(logging::high)
-      << "SQL: discarding membership between service ("
-      << sgm.host_id << ", " << sgm.service_id << ") and servicegroup ("
-      << sgm.instance_id << ", " << sgm.group << ")";
+  // Delete.
+  else {
+    // Log message.
+    logging::info(logging::medium)
+      << "SQL: removing service group member (group: "
+      << sgm.group << ", instance: " << sgm.instance_id << ", host: "
+      << sgm.host_id << ", service: " << sgm.service_id << ")";
+
+    // Build query.
+    std::ostringstream oss;
+    oss << "DELETE " << mapped_type<neb::service_group_member>::table
+        << "  FROM " << mapped_type<neb::service_group_member>::table << " sgm "
+        << "  INNER JOIN " << mapped_type<neb::service_group>::table << " sg "
+        << "  ON sgm.servicegroup_id=sg.servicegroup_id "
+        << "  WHERE sg.instance_id=:instance_id "
+        << "    AND sg.name=:group "
+        << "    AND sgm.host_id=:host_id "
+        << "    AND sgm.service_id=:service_id";
+
+    // Execute query.
+    QSqlQuery q(*_db);
+    q.prepare(oss.str().c_str());
+    q << sgm;
+    _execute(q);
+  }
 
   return ;
 }
@@ -1430,6 +1529,8 @@ void stream::_unprepare() {
   _host_insert.reset();
   _host_update.reset();
   _host_check_update.reset();
+  _host_group_insert.reset();
+  _host_group_update.reset();
   _host_state_insert.reset();
   _host_state_update.reset();
   _host_status_update.reset();
@@ -1443,6 +1544,8 @@ void stream::_unprepare() {
   _service_insert.reset();
   _service_update.reset();
   _service_check_update.reset();
+  _service_group_insert.reset();
+  _service_group_update.reset();
   _service_state_insert.reset();
   _service_state_update.reset();
   _service_status_update.reset();

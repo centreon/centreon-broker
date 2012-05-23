@@ -61,68 +61,46 @@ static void send_custom_variables_list() {
   // Start log message.
   logging::info(logging::medium)
     << "init: beginning custom variables dump";
-  time_t now(time(NULL));
 
   // Iterate through all hosts.
-  for (host* h = host_list; h; h = h->next) {
-    if (h->name) {
-      // Find host ID first.
-      unsigned int host_id(neb::gl_hosts[h->name]);
+  for (host* h(host_list); h; h = h->next)
+    // Send all custom variables.
+    for (customvariablesmember* cv(h->custom_variables);
+         cv;
+         cv = cv->next) {
+      // Fill callback struct.
+      nebstruct_custom_variable_data nscvd;
+      memset(&nscvd, 0, sizeof(nscvd));
+      nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
+      nscvd.var_name = cv->variable_name;
+      nscvd.var_value = cv->variable_value;
+      nscvd.object_ptr = h;
 
-      // Send all custom variables.
-      for (customvariablesmember* cv = h->custom_variables; cv; cv = cv->next)
-        if (cv->variable_name && strcmp(cv->variable_name, "HOST_ID")) {
-          QSharedPointer<neb::custom_variable> c(new neb::custom_variable);
-          c->host_id = host_id;
-          c->modified = false;
-          // c->type = XXX;
-          if (cv->variable_name)
-            c->name = cv->variable_name;
-          c->update_time = now;
-          if (cv->variable_value)
-            c->value = cv->variable_value;
-
-          // Send custom variable event.
-          logging::info(logging::low) << "init:  new custom variable '"
-            << c->name << "' on host " << host_id;
-          neb::gl_publisher.write(c.staticCast<io::data>());
-        }
+      // Callback.
+      neb::callback_custom_variable(
+             NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+             &nscvd);
     }
-  }
 
   // Iterate through all services.
-  for (service* s = service_list; s; s = s->next) {
-    if (s->host_name && s->description) {
-      // Find host ID and service ID first.
-      std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator it
-        = neb::gl_services.find(std::make_pair(s->host_name, s->description));
-      unsigned int host_id(it->second.first);
-      unsigned int service_id(it->second.second);
+  for (service* s(service_list); s; s = s->next)
+    // Send all custom variables.
+    for (customvariablesmember* cv(s->custom_variables);
+         cv;
+         cv = cv->next) {
+      // Fill callback struct.
+      nebstruct_custom_variable_data nscvd;
+      memset(&nscvd, 0, sizeof(nscvd));
+      nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
+      nscvd.var_name = cv->variable_name;
+      nscvd.var_value = cv->variable_value;
+      nscvd.object_ptr = s;
 
-      // Send all custom variables.
-      for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next)
-        if (cv->variable_name
-            && strcmp(cv->variable_name, "HOST_ID")
-            && strcmp(cv->variable_name, "SERVICE_ID")) {
-          QSharedPointer<neb::custom_variable> c(new neb::custom_variable);
-          c->host_id = host_id;
-          c->modified = false;
-          c->service_id = service_id;
-          // c->type = XXX;
-          if (cv->variable_name)
-            c->name = cv->variable_name;
-          c->update_time = now;
-          if (cv->variable_value)
-            c->value = cv->variable_value;
-
-          // Send custom variable event.
-          logging::info(logging::low) << "init:  new custom variable '"
-            << c->name << "' on service (" << host_id
-            << ", " << service_id << ")";
-          neb::gl_publisher.write(c.staticCast<io::data>());
-        }
+      // Callback.
+      neb::callback_custom_variable(
+             NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+             &nscvd);
     }
-  }
 
   // End log message.
   logging::info(logging::medium)
@@ -448,13 +426,13 @@ static void send_service_list() {
  */
 void neb::send_initial_configuration() {
   send_host_list();
-  send_host_parents_list();
   send_service_list();
+  send_custom_variables_list();
+  send_host_parents_list();
   send_host_group_list();
   send_service_group_list();
   send_host_dependencies_list();
   send_service_dependencies_list();
-  send_custom_variables_list();
   send_module_list();
   return ;
 }

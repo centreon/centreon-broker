@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,6 +60,8 @@ namespace        sql {
     QScopedPointer<QSqlQuery>    _host_insert;
     QScopedPointer<QSqlQuery>    _host_update;
     QScopedPointer<QSqlQuery>    _host_check_update;
+    QScopedPointer<QSqlQuery>    _host_group_insert;
+    QScopedPointer<QSqlQuery>    _host_group_update;
     QScopedPointer<QSqlQuery>    _host_state_insert;
     QScopedPointer<QSqlQuery>    _host_state_update;
     QScopedPointer<QSqlQuery>    _host_status_update;
@@ -75,6 +77,8 @@ namespace        sql {
     QScopedPointer<QSqlQuery>    _service_insert;
     QScopedPointer<QSqlQuery>    _service_update;
     QScopedPointer<QSqlQuery>    _service_check_update;
+    QScopedPointer<QSqlQuery>    _service_group_insert;
+    QScopedPointer<QSqlQuery>    _service_group_update;
     QScopedPointer<QSqlQuery>    _service_state_insert;
     QScopedPointer<QSqlQuery>    _service_state_update;
     QScopedPointer<QSqlQuery>    _service_status_update;

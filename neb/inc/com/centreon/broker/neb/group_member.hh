@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,41 +17,42 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_GROUP_MEMBER_HH_
-# define CCB_NEB_GROUP_MEMBER_HH_
+#ifndef CCB_NEB_GROUP_MEMBER_HH
+#  define CCB_NEB_GROUP_MEMBER_HH
 
-# include <QString>
-# include "com/centreon/broker/io/data.hh"
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         neb {
-        /**
-         *  @class group_member group_member.h "com/centreon/broker/neb/group_member.hh"
-         *  @brief Member of a group.
-         *
-         *  Base class defining that a member is part of a group.
-         *
-         *  @see host_group_member
-         *  @see service_group_member
-         */
-        class           group_member : public io::data {
-         private:
-          void          _internal_copy(group_member const& gm);
+CCB_BEGIN()
 
-         public:
-          QString       group;
-          unsigned int  host_id;
-          unsigned int  instance_id;
-                        group_member();
-                        group_member(group_member const& gm);
-          virtual       ~group_member();
-          group_member& operator=(group_member const& gm);
-        };
-      }
-    }
-  }
+namespace         neb {
+  /**
+   *  @class group_member group_member.h "com/centreon/broker/neb/group_member.hh"
+   *  @brief Member of a group.
+   *
+   *  Base class defining that a member is part of a group.
+   *
+   *  @see host_group_member
+   *  @see service_group_member
+   */
+  class           group_member : public io::data {
+  public:
+                  group_member();
+                  group_member(group_member const& gm);
+    virtual       ~group_member();
+    group_member& operator=(group_member const& gm);
+
+    bool          enabled;
+    QString       group;
+    unsigned int  host_id;
+    unsigned int  instance_id;
+
+  private:
+    void          _internal_copy(group_member const& gm);
+  };
 }
 
-#endif /* !CCB_NEB_GROUP_MEMBER_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_GROUP_MEMBER_HH */

@@ -202,6 +202,7 @@
 /* Dependencies. */
 #  define NEBTYPE_DEPENDENCY_ADD                   2400
 #  define NEBTYPE_DEPENDENCY_DELETE                2401
+#  define NEBTYPE_DEPENDENCY_UPDATE                2402
 
 /* Hosts. */
 #  define NEBTYPE_HOST_ADD                         2500
