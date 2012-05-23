@@ -94,8 +94,8 @@ extern "C" {
    *  It will deregister all previously registered callbacks and perform
    *  some shutdown stuff.
    *
-   *  @param[in] flags  XXX
-   *  @param[in] reason XXX
+   *  @param[in] flags  Informational flags.
+   *  @param[in] reason Unload reason.
    *
    *  @return 0 on success, any other value on failure.
    */
@@ -140,7 +140,7 @@ extern "C" {
    *  initialization stuff like config file parsing, thread creation,
    *  ...
    *
-   *  @param[in] flags  XXX
+   *  @param[in] flags  Informational flags.
    *  @param[in] args   The argument string of the module (shall contain the
    *                    configuration file name).
    *  @param[in] handle The module handle.
@@ -148,12 +148,11 @@ extern "C" {
    *  @return 0 on success, any other value on failure.
    */
   int nebmodule_init(int flags, char const* args, void* handle) {
-    (void)flags;
-
     // Initialization.
     config::applier::init();
 
-    // Save module handle for future use.
+    // Save module handle and flags for future use.
+    neb::gl_flags = flags;
     neb::gl_mod_handle = handle;
 
     // Set module informations.

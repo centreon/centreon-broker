@@ -49,10 +49,13 @@ acknowledgements;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
+// Load flags.
+int neb::gl_mod_flags(0);
+
 // Module handle.
 void* neb::gl_mod_handle(NULL);
 
-// List of callbacks
+// List of common callbacks.
 static struct {
   unsigned int macro;
   int (* callback)(int, void*);
@@ -69,6 +72,20 @@ static struct {
   { NEBCALLBACK_PROGRAM_STATUS_DATA, &neb::callback_program_status },
   { NEBCALLBACK_SERVICE_CHECK_DATA, &neb::callback_service_check },
   { NEBCALLBACK_SERVICE_STATUS_DATA, &neb::callback_service_status }
+};
+
+// List of Engine-specific callbacks.
+static struct {
+  unsigned int macro;
+  int (* callback)(int, void*);
+} const gl_engine_callbacks[] = {
+  { NEBCALLBACK_ADAPTIVE_HOST_DATA, &neb::callback_host },
+  { NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &neb::callback_service },
+  { NEBCALLBACK_CUSTOM_VARIABLE_DATA, &neb::callback_custom_variable },
+  { NEBCALLBACK_GROUP_DATA, &neb::callback_group },
+  { NEBCALLBACK_GROUP_MEMBER_DATA, &neb::callback_group_member },
+  { NEBCALLBACK_MODULE_DATA, &neb::callback_module },
+  { NEBCALLBACK_RELATION_DATA, &neb::callback_relation }
 };
 
 // Registered callbacks.
@@ -841,6 +858,18 @@ int neb::callback_process(int callback_type, void *data) {
                                          gl_callbacks[i].macro,
                                          gl_mod_handle,
                                          gl_callbacks[i].callback)));
+
+      // Register Engine-specific callbacks.
+      if (gl_mod_flags & NEBMODULE_ENGINE) {
+        for (unsigned int i(0);
+             i < sizeof(gl_engine_callbacks) / sizeof(*gl_engine_callbacks);
+             ++i)
+          gl_registered_callbacks.push_back(
+            QSharedPointer<callback>(new neb::callback(
+                                           gl_engine_callbacks[i].macro,
+                                           gl_mod_handle,
+                                           gl_engine_callbacks[i].callback)));
+      }
 
       // Output variable.
       QSharedPointer<neb::instance> instance(new neb::instance);

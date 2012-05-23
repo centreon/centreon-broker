@@ -25,6 +25,8 @@
 CCB_BEGIN()
 
 namespace neb {
+  extern int
+          gl_mod_flags;
   extern void*
           gl_mod_handle;
 
