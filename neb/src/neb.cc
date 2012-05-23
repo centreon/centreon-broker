@@ -32,9 +32,9 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "nagios/common.h"
-#include "nagios/nagios.h"
-#include "nagios/nebcallbacks.h"
+#include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/globals.hh"
+#include "com/centreon/engine/nebcallbacks.hh"
 
 using namespace com::centreon::broker;
 
@@ -244,7 +244,7 @@ extern "C" {
           NEBCALLBACK_PROCESS_DATA,
           neb::gl_mod_handle,
           0,
-          &neb::callback_process) != NDO_OK)
+          &neb::callback_process) != OK)
       return (-1);
 
     // Process Qt events if necessary.

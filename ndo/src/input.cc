@@ -33,8 +33,8 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
-#include "nagios/protoapi.h"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::ndo;

@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/callback.hh"
-#include "nagios/common.h"
-#include "nagios/nebcallbacks.h"
+#include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/nebcallbacks.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -41,7 +41,7 @@ using namespace com::centreon::broker::neb;
  */
 callback::callback(int id, void* handle, int (* function)(int, void*))
   : _function(function), _id(id) {
-  if (neb_register_callback(_id, handle, 0, _function) != NDO_OK)
+  if (neb_register_callback(_id, handle, 0, _function) != OK)
     throw (exceptions::msg() << "callbacks: registration of callback "
            << id << " failed");
 }

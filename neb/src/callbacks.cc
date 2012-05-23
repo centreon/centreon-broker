@@ -36,13 +36,10 @@
 #include "com/centreon/broker/neb/initial.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/set_log_data.hh"
-#include "nagios/broker.h"
-#include "nagios/comments.h"
-#include "nagios/common.h"
-#include "nagios/nebcallbacks.h"
-#include "nagios/nebmodules.h"
-#include "nagios/nebstructs.h"
-#include "nagios/objects.h"
+#include "com/centreon/engine/broker.hh"
+#include "com/centreon/engine/comments.hh"
+#include "com/centreon/engine/nebcallbacks.hh"
+#include "com/centreon/engine/nebstructs.hh"
 
 using namespace com::centreon::broker;
 

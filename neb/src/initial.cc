@@ -24,7 +24,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/initial.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "nagios/objects.h"
+#include "com/centreon/engine/objects.hh"
 
 // Internal Nagios host list.
 extern "C" {

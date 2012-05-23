@@ -18,7 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/monitoring_logger.hh"
-#include "nagios/nagios.h"
+#include "com/centreon/engine/logging.hh"
 
 using namespace com::centreon::broker::neb;
 
