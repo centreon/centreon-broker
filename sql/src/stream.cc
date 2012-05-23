@@ -266,10 +266,12 @@ void stream::_prepare() {
   _prepare_insert<neb::event_handler>(_event_handler_insert);
   _prepare_insert<neb::flapping_status>(_flapping_status_insert);
   _prepare_insert<neb::host>(_host_insert);
+  _prepare_insert<neb::host_dependency>(_host_dependency_insert);
   _prepare_insert<neb::host_group>(_host_group_insert);
   _prepare_insert<neb::instance>(_instance_insert);
   _prepare_insert<neb::notification>(_notification_insert);
   _prepare_insert<neb::service>(_service_insert);
+  _prepare_insert<neb::service_dependency>(_service_dependency_insert);
   _prepare_insert<neb::service_group>(_service_group_insert);
   _prepare_insert<correlation::host_state>(_host_state_insert);
   _prepare_insert<correlation::issue>(_issue_insert);
@@ -340,6 +342,11 @@ void stream::_prepare() {
   _prepare_update<neb::host_check>(_host_check_update, id);
 
   id.clear();
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("dependent_host_id"), false));
+  _prepare_update<neb::host_dependency>(_host_dependency_update, id);
+
+  id.clear();
   id.push_back(qMakePair(QString("instance_id"), false));
   id.push_back(qMakePair(QString("name"), false));
   _prepare_update<neb::host_group>(_host_group_update, id);
@@ -371,6 +378,13 @@ void stream::_prepare() {
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), false));
   _prepare_update<neb::service_check>(_service_check_update, id);
+
+  id.clear();
+  id.push_back(qMakePair(QString("dependent_host_id"), false));
+  id.push_back(qMakePair(QString("dependent_service_id"), false));
+  id.push_back(qMakePair(QString("host_id"), false));
+  id.push_back(qMakePair(QString("service_id"), false));
+  _prepare_update<neb::service_dependency>(_service_dependency_update, id);
 
   id.clear();
   id.push_back(qMakePair(QString("instance_id"), false));
@@ -778,12 +792,33 @@ void stream::_process_host_check(io::data const& e) {
  *  @param[in] e Uncasted host dependency.
  */
 void stream::_process_host_dependency(io::data const& e) {
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing host dependency event";
+  // Cast object.
+  neb::host_dependency const&
+    hd(*static_cast<neb::host_dependency const*>(&e));
 
-  // Processing (errors are silently ignored).
-  _insert(*static_cast<neb::host_dependency const*>(&e));
+  // Insert/Update.
+  if (hd.enabled) {
+    logging::info(logging::medium)
+      << "SQL: enabling host dependency of " << hd.dependent_host_id
+      << " on " << hd.host_id;
+    _update_on_none_insert(
+      *_host_dependency_insert,
+      *_host_dependency_update,
+      hd);
+  }
+  // Delete.
+  else {
+    logging::info(logging::medium)
+      << "SQL: removing host dependency of " << hd.dependent_host_id
+      << " on " << hd.host_id;
+    QSqlQuery q(*_db);
+    q.prepare(
+        "DELETE FROM hosts_hosts_dependencies "
+        "WHERE dependent_host_id=:dependent_host_id"
+        "  AND host_id=:host_id");
+    q << hd;
+    _execute(q);
+  }
 
   return ;
 }
@@ -1335,12 +1370,37 @@ void stream::_process_service_check(io::data const& e) {
  *  @param[in] e Uncasted service dependency.
  */
 void stream::_process_service_dependency(io::data const& e) {
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing service dependency event";
+  // Cast object.
+  neb::service_dependency const&
+    sd(*static_cast<neb::service_dependency const*>(&e));
 
-  // Processing (errors are silently ignored).
-  _insert(*static_cast<neb::service_dependency const*>(&e));
+  // Insert/Update.
+  if (sd.enabled) {
+    logging::info(logging::medium)
+      << "SQL: enabling service dependency of (" << sd.dependent_host_id
+      << ", " << sd.dependent_service_id << ") on (" << sd.host_id
+      << ", " << sd.service_id << ")";
+    _update_on_none_insert(
+      *_service_dependency_insert,
+      *_service_dependency_update,
+      sd);
+  }
+  // Delete.
+  else {
+    logging::info(logging::medium)
+      << "SQL: removing service dependency of (" << sd.dependent_host_id
+      << ", " << sd.dependent_service_id << ") on (" << sd.host_id
+      << ", " << sd.service_id << ")";
+    QSqlQuery q(*_db);
+    q.prepare(
+        "DELETE FROM services_services_dependencies "
+        "WHERE dependent_host_id=:dependent_host_id"
+        "  AND dependent_service_id=:dependent_service_id"
+        "  AND host_id=:host_id"
+        "  AND service_id=:service_id");
+    q << sd;
+    _execute(q);
+  }
 
   return ;
 }
@@ -1529,6 +1589,8 @@ void stream::_unprepare() {
   _host_insert.reset();
   _host_update.reset();
   _host_check_update.reset();
+  _host_dependency_insert.reset();
+  _host_dependency_update.reset();
   _host_group_insert.reset();
   _host_group_update.reset();
   _host_state_insert.reset();
@@ -1544,6 +1606,8 @@ void stream::_unprepare() {
   _service_insert.reset();
   _service_update.reset();
   _service_check_update.reset();
+  _service_dependency_insert.reset();
+  _service_dependency_update.reset();
   _service_group_insert.reset();
   _service_group_update.reset();
   _service_state_insert.reset();

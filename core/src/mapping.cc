@@ -782,6 +782,10 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
     "dependent_host_id",
     true),
   mapped_data<host_dependency>(
+    &host_dependency::enabled,
+    NDO_DATA_FIXED,
+    NULL),
+  mapped_data<host_dependency>(
     &host_dependency::execution_failure_options,
     NDO_DATA_HOSTFAILUREPREDICTIONOPTIONS,
     "execution_failure_options"),
@@ -1847,6 +1851,10 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
     NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
     "dependent_service_id",
     true),
+  mapped_data<service_dependency>(
+    &service_dependency::enabled,
+    NDO_DATA_FIXED,
+    NULL),
   mapped_data<service_dependency>(
     &service_dependency::execution_failure_options,
     NDO_DATA_SERVICEFAILUREPREDICTIONOPTIONS,

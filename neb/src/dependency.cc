@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,29 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data members.
- *
- *  This method is used by the copy constructor and the assignment operator.
- *
- *  @param[in] dep Object to copy.
- */
-void dependency::_internal_copy(dependency const& dep) {
-  dependency_period = dep.dependency_period;
-  dependent_host_id = dep.dependent_host_id;
-  execution_failure_options = dep.execution_failure_options;
-  host_id = dep.host_id;
-  inherits_parent = dep.inherits_parent;
-  notification_failure_options = dep.notification_failure_options;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -53,7 +31,10 @@ void dependency::_internal_copy(dependency const& dep) {
  *  Default constructor.
  */
 dependency::dependency()
-  : dependent_host_id(0), host_id(0), inherits_parent(false) {}
+  : dependent_host_id(0),
+    enabled(true),
+    host_id(0),
+    inherits_parent(false) {}
 
 /**
  *  Copy constructor.
@@ -80,4 +61,28 @@ dependency& dependency::operator=(dependency const& dep) {
   io::data::operator=(dep);
   _internal_copy(dep);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data members.
+ *
+ *  This method is used by the copy constructor and the assignment operator.
+ *
+ *  @param[in] dep Object to copy.
+ */
+void dependency::_internal_copy(dependency const& dep) {
+  dependency_period = dep.dependency_period;
+  dependent_host_id = dep.dependent_host_id;
+  enabled = dep.enabled;
+  execution_failure_options = dep.execution_failure_options;
+  host_id = dep.host_id;
+  inherits_parent = dep.inherits_parent;
+  notification_failure_options = dep.notification_failure_options;
+  return ;
 }

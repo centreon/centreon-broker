@@ -60,6 +60,8 @@ namespace        sql {
     QScopedPointer<QSqlQuery>    _host_insert;
     QScopedPointer<QSqlQuery>    _host_update;
     QScopedPointer<QSqlQuery>    _host_check_update;
+    QScopedPointer<QSqlQuery>    _host_dependency_insert;
+    QScopedPointer<QSqlQuery>    _host_dependency_update;
     QScopedPointer<QSqlQuery>    _host_group_insert;
     QScopedPointer<QSqlQuery>    _host_group_update;
     QScopedPointer<QSqlQuery>    _host_state_insert;
@@ -77,6 +79,8 @@ namespace        sql {
     QScopedPointer<QSqlQuery>    _service_insert;
     QScopedPointer<QSqlQuery>    _service_update;
     QScopedPointer<QSqlQuery>    _service_check_update;
+    QScopedPointer<QSqlQuery>    _service_dependency_insert;
+    QScopedPointer<QSqlQuery>    _service_dependency_update;
     QScopedPointer<QSqlQuery>    _service_group_insert;
     QScopedPointer<QSqlQuery>    _service_group_update;
     QScopedPointer<QSqlQuery>    _service_state_insert;

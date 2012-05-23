@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,44 +17,45 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_DEPENDENCY_HH_
-# define CCB_NEB_DEPENDENCY_HH_
+#ifndef CCB_NEB_DEPENDENCY_HH
+#  define CCB_NEB_DEPENDENCY_HH
 
-# include <QString>
-# include "com/centreon/broker/io/data.hh"
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        neb {
-        /**
-         *  @class dependency dependency.hh "com/centreon/broker/neb/dependency.hh"
-         *  @brief Dependency relationship.
-         *
-         *  Defines a dependency between two objects.
-         *
-         *  @see host_dependency
-         *  @see service_dependency
-         */
-        class          dependency : public io::data {
-         private:
-          void         _internal_copy(dependency const& dep);
+CCB_BEGIN()
 
-         public:
-          QString      dependency_period;
-          unsigned int dependent_host_id;
-          QString      execution_failure_options;
-          unsigned int host_id;
-          bool         inherits_parent;
-          QString      notification_failure_options;
-                       dependency();
-                       dependency(dependency const& dep);
-          virtual      ~dependency();
-          dependency&  operator=(dependency const& dep);
-        };
-      }
-    }
-  }
+namespace        neb {
+  /**
+   *  @class dependency dependency.hh "com/centreon/broker/neb/dependency.hh"
+   *  @brief Dependency relationship.
+   *
+   *  Defines a dependency between two objects.
+   *
+   *  @see host_dependency
+   *  @see service_dependency
+   */
+  class          dependency : public io::data {
+  public:
+                 dependency();
+                 dependency(dependency const& dep);
+    virtual      ~dependency();
+    dependency&  operator=(dependency const& dep);
+
+    QString      dependency_period;
+    unsigned int dependent_host_id;
+    bool         enabled;
+    QString      execution_failure_options;
+    unsigned int host_id;
+    bool         inherits_parent;
+    QString      notification_failure_options;
+
+  private:
+    void         _internal_copy(dependency const& dep);
+  };
 }
 
-#endif /* !CCB_NEB_DEPENDENCY_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_DEPENDENCY_HH */
