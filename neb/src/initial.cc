@@ -347,7 +347,7 @@ static void send_host_list() {
     // Send host event.
     if (my_host->host_id) {
       logging::info(logging::low) << "init:  new host "
-        << my_host->host_id << "('" << my_host->host_name
+        << my_host->host_id << " ('" << my_host->host_name
         << "') on instance " << my_host->instance_id;
       neb::gl_publisher.write(my_host.staticCast<io::data>());
     }
@@ -663,7 +663,7 @@ static void send_service_list() {
     // Send service event.
     if (my_service->host_id && my_service->service_id) {
       logging::info(logging::low) << "init:  new service "
-        << my_service->service_id << "('"
+        << my_service->service_id << " ('"
         << my_service->service_description
         << "') on host " << my_service->host_id;
       neb::gl_publisher.write(my_service.staticCast<io::data>());

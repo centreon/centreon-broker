@@ -721,7 +721,7 @@ void stream::_process_host(io::data const& e) {
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing host event"
-    << " (instance: " << h.instance_id << "id: "
+    << " (instance: " << h.instance_id << ", id: "
     << h.host_id << ", name: " << h.host_name << ")";
 
   // Processing
