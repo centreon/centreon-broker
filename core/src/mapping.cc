@@ -814,7 +814,7 @@ static mapped_data<host_group> const host_group_mapping[] = {
   mapped_data<host_group>(
     &host_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
@@ -1363,6 +1363,10 @@ static mapped_data<module> const module_mapping[] = {
     1,
     "args"),
   mapped_data<module>(
+    &module::enabled,
+    6,
+    NULL),
+  mapped_data<module>(
     &module::filename,
     2,
     "filename"),
@@ -1873,7 +1877,7 @@ static mapped_data<service_group> const service_group_mapping[] = {
   mapped_data<service_group>(
     &service_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,

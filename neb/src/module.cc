@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,26 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy data members.
- *
- *  @param[in] m Object to copy.
- */
-void module::_internal_copy(module const& m) {
-  args = m.args;
-  filename = m.filename;
-  instance_id = m.instance_id;
-  loaded = m.loaded;
-  should_be_loaded = m.should_be_loaded;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -50,7 +31,10 @@ void module::_internal_copy(module const& m) {
  *  Default constructor.
  */
 module::module()
-  : instance_id(0), loaded(false), should_be_loaded(false) {}
+  : enabled(true),
+    instance_id(0),
+    loaded(false),
+    should_be_loaded(false) {}
 
 /**
  *  Copy constructor.
@@ -87,4 +71,25 @@ module& module::operator=(module const& m) {
 QString const& module::type() const {
   static QString const module_type("com::centreon::broker::neb::module");
   return (module_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy data members.
+ *
+ *  @param[in] m Object to copy.
+ */
+void module::_internal_copy(module const& m) {
+  args = m.args;
+  enabled = m.enabled;
+  filename = m.filename;
+  instance_id = m.instance_id;
+  loaded = m.loaded;
+  should_be_loaded = m.should_be_loaded;
+  return ;
 }

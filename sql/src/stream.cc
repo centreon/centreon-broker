@@ -1186,7 +1186,18 @@ void stream::_process_module(io::data const& e) {
     << (m.loaded ? "yes" : "no") << ")";
 
   // Processing.
-  _insert(m);
+  if (m.enabled)
+    _insert(m);
+  else {
+    QSqlQuery q(*_db);
+    q.prepare(
+      "DELETE FROM modules "
+      "WHERE instance_id=:instance_id"
+      "  AND filename=:filename");
+    q.bindValue(":instance_id", m.instance_id);
+    q.bindValue(":filename", m.filename);
+    _execute(q);
+  }
 
   return ;
 }
