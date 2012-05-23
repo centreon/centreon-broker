@@ -152,7 +152,7 @@ extern "C" {
     config::applier::init();
 
     // Save module handle and flags for future use.
-    neb::gl_flags = flags;
+    neb::gl_mod_flags = flags;
     neb::gl_mod_handle = handle;
 
     // Set module informations.

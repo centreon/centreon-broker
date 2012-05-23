@@ -610,6 +610,323 @@ int neb::callback_flapping_status(int callback_type, void* data) {
 }
 
 /**
+ *  @brief Function that process group data.
+ *
+ *  This function is called by Engine when some group data is available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_GROUP_DATA).
+ *  @param[in] data          Pointer to a nebstruct_group_data
+ *                           containing the group data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_group(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating group event";
+  (void)callback_type;
+
+  try {
+    // Input variable.
+    nebstruct_group_data const*
+      group_data(static_cast<nebstruct_group_data*>(data));
+
+    // Host group.
+    if (group_data->type == NEBTYPE_HOSTGROUP_ADD) {
+      ::hostgroup const*
+        host_group(static_cast< ::hostgroup*>(group_data->object_ptr));
+      if (host_group->group_name) {
+        QSharedPointer<neb::host_group> new_hg(new neb::host_group);
+        if (host_group->alias)
+          new_hg->alias = host_group->alias;
+        new_hg->instance_id = neb::instance_id;
+        new_hg->name = host_group->group_name;
+
+        // Send host group event.
+        logging::info(logging::low) << "callbacks: new host group '"
+          << new_hg->name << " (instance " << new_hg->instance_id
+          << ")";
+        neb::gl_publisher.write(new_hg.staticCast<io::data>());
+      }
+    }
+    // Service group.
+    else if (group_data->type == NEBTYPE_SERVICEGROUP_ADD) {
+      ::servicegroup const*
+        service_group(static_cast< ::servicegroup*>(group_data->object_ptr));
+      if (service_group->group_name) {
+        QSharedPointer<neb::service_group>
+          new_sg(new neb::service_group);
+        if (service_group->alias)
+          new_sg->alias = service_group->alias;
+        new_sg->instance_id = neb::instance_id;
+        new_sg->name = service_group->group_name;
+
+        // Send service group event.
+        logging::info(logging::low) << "callbacks:: new service group '"
+          << new_sg->name << " (instance " << new_sg->instance_id
+          << ")";
+        neb::gl_publisher.write(new_sg.staticCast<io::data>());
+      }
+    }
+  }
+  // Avoid exception propagation to C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process group membership.
+ *
+ *  This function is called by Engine when some group membership data is
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_GROUPMEMBER_DATA).
+ *  @param[in] data          Pointer to a nebstruct_group_member_data
+ *                           containing membership data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_group_member(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating group member event";
+  (void)callback_type;
+
+  try {
+    // Input variable.
+    nebstruct_group_member_data const*
+      member_data(static_cast<nebstruct_group_member_data*>(data));
+
+    // Host group member.
+    if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_ADD) {
+      ::host const*
+        hst(static_cast< ::host*>(member_data->object_ptr));
+      ::hostgroup const*
+        hg(static_cast< ::hostgroup*>(member_data->group_ptr));
+      if (hst->name && hg->group_name) {
+        // Output variable.
+        QSharedPointer<neb::host_group_member>
+          hgm(new neb::host_group_member);
+        hgm->group = hg->group_name;
+        hgm->instance_id = neb::instance_id;
+        std::map<std::string, int>::const_iterator it;
+        it = neb::gl_hosts.find(hst->name);
+        if (it != neb::gl_hosts.end())
+          hgm->host_id = it->second;
+
+        // Send host group member event.
+        if (hgm->host_id) {
+          logging::info(logging::low) << "callbacks: host "
+            << hgm->host_id << " is a member of group '" << hgm->group
+            << "' on instance " << hgm->instance_id;
+          neb::gl_publisher.write(hgm.staticCast<io::data>());
+        }
+      }
+    }
+    // Service group member.
+    else if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_ADD) {
+      ::service const*
+        svc(static_cast< ::service*>(member_data->object_ptr));
+      ::servicegroup const*
+        sg(static_cast< ::servicegroup*>(member_data->group_ptr));
+      if (svc->description
+          && sg->group_name
+          && svc->host_ptr
+          && svc->host_ptr->name) {
+        // Output variable.
+        QSharedPointer<neb::service_group_member>
+          sgm(new neb::service_group_member);
+        sgm->group = sg->group_name;
+        sgm->instance_id = neb::instance_id;
+        std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator it;
+        it = neb::gl_services.find(std::make_pair<std::string, std::string>(
+                                     svc->host_ptr->name,
+                                     svc->description));
+        if (it != neb::gl_services.end()) {
+          sgm->host_id = it->second.first;
+          sgm->service_id = it->second.second;
+        }
+
+        // Send service group member event.
+        if (sgm->host_id && sgm->service_id) {
+          logging::info(logging::low) << "callbacks: service ("
+            << sgm->host_id << ", " << sgm->service_id
+            << ") is a member of group '" << sgm->group
+            << "' on instance " << sgm->instance_id;
+          neb::gl_publisher.write(sgm.staticCast<io::data>());
+        }
+      }
+    }
+  }
+  // Avoid exception propagation to C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process host data.
+ *
+ *  This function is called by Engine when some host data is available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_HOST_DATA).
+ *  @param[in] data          A pointer to a nebstruct_host_data
+ *                           containing a host data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_host(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating host event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    ::host const*
+      h(static_cast< ::host*>(static_cast<nebstruct_adaptive_host_data*>(data)->object_ptr));
+    QSharedPointer<neb::host> my_host(new neb::host);
+
+    // Set host parameters.
+    my_host->acknowledgement_type = h->acknowledgement_type;
+    if (h->action_url)
+      my_host->action_url = h->action_url;
+    my_host->active_checks_enabled = h->checks_enabled;
+    if (h->address)
+      my_host->address = h->address;
+    if (h->alias)
+      my_host->alias = h->alias;
+    my_host->check_freshness = h->check_freshness;
+    if (h->host_check_command)
+      my_host->check_command = h->host_check_command;
+    my_host->check_interval = h->check_interval;
+    if (h->check_period)
+      my_host->check_period = h->check_period;
+    my_host->check_type = h->check_type;
+    my_host->current_check_attempt = h->current_attempt;
+    my_host->current_notification_number
+      = h->current_notification_number;
+    my_host->current_state = (h->has_been_checked
+                              ? h->current_state
+                              : 4); // Pending state.
+    my_host->default_active_checks_enabled = h->checks_enabled;
+    my_host->default_event_handler_enabled = h->event_handler_enabled;
+    my_host->default_failure_prediction = h->failure_prediction_enabled;
+    my_host->default_flap_detection_enabled = h->flap_detection_enabled;
+    my_host->default_notifications_enabled = h->notifications_enabled;
+    my_host->default_passive_checks_enabled
+      = h->accept_passive_host_checks;
+    my_host->default_process_perf_data = h->process_performance_data;
+    if (h->display_name)
+      my_host->display_name = h->display_name;
+    if (h->event_handler)
+      my_host->event_handler = h->event_handler;
+    my_host->event_handler_enabled = h->event_handler_enabled;
+    my_host->execution_time = h->execution_time;
+    my_host->failure_prediction_enabled = h->failure_prediction_enabled;
+    my_host->first_notification_delay = h->first_notification_delay;
+    my_host->flap_detection_enabled = h->flap_detection_enabled;
+    my_host->flap_detection_on_down = h->flap_detection_on_down;
+    my_host->flap_detection_on_unreachable
+      = h->flap_detection_on_unreachable;
+    my_host->flap_detection_on_up = h->flap_detection_on_up;
+    my_host->freshness_threshold = h->freshness_threshold;
+    my_host->has_been_checked = h->has_been_checked;
+    my_host->high_flap_threshold = h->high_flap_threshold;
+    if (h->name)
+      my_host->host_name = h->name;
+    if (h->icon_image)
+      my_host->icon_image = h->icon_image;
+    if (h->icon_image_alt)
+      my_host->icon_image_alt = h->icon_image_alt;
+    my_host->instance_id = neb::instance_id;
+    my_host->is_flapping = h->is_flapping;
+    my_host->last_check = h->last_check;
+    my_host->last_hard_state = h->last_hard_state;
+    my_host->last_hard_state_change = h->last_hard_state_change;
+    my_host->last_notification = h->last_host_notification;
+    my_host->last_state_change = h->last_state_change;
+    my_host->last_time_down = h->last_time_down;
+    my_host->last_time_unreachable = h->last_time_unreachable;
+    my_host->last_time_up = h->last_time_up;
+    my_host->last_update = h->last_state_history_update;
+    my_host->latency = h->latency;
+    my_host->low_flap_threshold = h->low_flap_threshold;
+    my_host->max_check_attempts = h->max_attempts;
+    my_host->modified_attributes = h->modified_attributes;
+    my_host->next_check = h->next_check;
+    my_host->next_notification = h->next_host_notification;
+    my_host->no_more_notifications = h->no_more_notifications;
+    if (h->notes)
+      my_host->notes = h->notes;
+    if (h->notes_url)
+      my_host->notes_url = h->notes_url;
+    my_host->notification_interval = h->notification_interval;
+    if (h->notification_period)
+      my_host->notification_period = h->notification_period;
+    my_host->notifications_enabled = h->notifications_enabled;
+    my_host->notify_on_down = h->notify_on_down;
+    my_host->notify_on_downtime = h->notify_on_downtime;
+    my_host->notify_on_flapping = h->notify_on_flapping;
+    my_host->notify_on_recovery = h->notify_on_recovery;
+    my_host->notify_on_unreachable = h->notify_on_unreachable;
+    my_host->obsess_over = h->obsess_over_host;
+    if (h->plugin_output)
+      my_host->output = h->plugin_output;
+    if (h->long_plugin_output)
+        my_host->output.append(h->long_plugin_output);
+    my_host->passive_checks_enabled = h->accept_passive_host_checks;
+    my_host->percent_state_change = h->percent_state_change;
+    if (h->perf_data)
+      my_host->perf_data = h->perf_data;
+    my_host->problem_has_been_acknowledged
+      = h->problem_has_been_acknowledged;
+    my_host->process_performance_data = h->process_performance_data;
+    my_host->retain_nonstatus_information
+      = h->retain_nonstatus_information;
+    my_host->retain_status_information = h->retain_status_information;
+    my_host->retry_interval = h->retry_interval;
+    my_host->scheduled_downtime_depth = h->scheduled_downtime_depth;
+    my_host->should_be_scheduled = h->should_be_scheduled;
+    my_host->stalk_on_down = h->stalk_on_down;
+    my_host->stalk_on_unreachable = h->stalk_on_unreachable;
+    my_host->stalk_on_up = h->stalk_on_up;
+    my_host->state_type = (h->has_been_checked
+                           ? h->state_type
+                           : HARD_STATE);
+    if (h->statusmap_image)
+      my_host->statusmap_image = h->statusmap_image;
+
+    // Search host_id through customvars.
+    for (customvariablesmember* cv(h->custom_variables);
+         cv;
+         cv = cv->next)
+      if (cv->variable_name
+          && cv->variable_value
+          && !strcmp(cv->variable_name, "HOST_ID")) {
+        my_host->host_id = strtol(cv->variable_value, NULL, 0);
+        neb::gl_hosts[my_host->host_name.toStdString()] = my_host->host_id;
+      }
+
+    // Send host event.
+    if (my_host->host_id) {
+      logging::info(logging::low) << "callbacks:  new host "
+        << my_host->host_id << " ('" << my_host->host_name
+        << "') on instance " << my_host->instance_id;
+      neb::gl_publisher.write(my_host.staticCast<io::data>());
+    }
+    else
+      logging::error(logging::medium) << "callbacks: host '"
+        << (h->name ? h->name : "(unknown)") << "' has no ID defined";
+  }
+  // Avoid exception propagation to C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
  *  @brief Function that process host check data.
  *
  *  This function is called by Nagios when some host check data are available.
@@ -821,6 +1138,48 @@ int neb::callback_log(int callback_type, void* data) {
 }
 
 /**
+ *  @brief Function that process module data.
+ *
+ *  This function is called by Engine when some module data is
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_MODULE_DATA).
+ *  @param[in] data          A pointer to a nebstruct_module_data
+ *                           containing the module data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_module(int callback_type, void* data) {
+  // Log message.
+  logging::debug(logging::low) << "callbacks: module event callback";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_module_data const* module_data;
+    QSharedPointer<neb::module> me(new neb::module);
+
+    // Fill output var.
+    module_data = static_cast<nebstruct_module_data*>(data);
+    if (module_data->module) {
+      me->filename = module_data->module;
+      if (module_data->args)
+        me->args = module_data->args;
+      me->instance_id = instance_id;
+      me->loaded = !(module_data->type == NEBTYPE_MODULE_DELETE);
+      me->should_be_loaded = true;
+
+      // Send events.
+      gl_publisher.write(me.staticCast<io::data>());
+    }
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
  *  @brief Function that process process data.
  *
  *  This function is called by Nagios when some process data is available.
@@ -913,24 +1272,6 @@ int neb::callback_process(int callback_type, void *data) {
       // Send initial event and then configuration.
       gl_publisher.write(instance.staticCast<io::data>());
       send_initial_configuration();
-
-      // Generate module list.
-      for (nebmodule* nm = neb_module_list; nm; nm = nm->next)
-        if (nm->filename) {
-          // Output variable.
-          QSharedPointer<neb::module> module(new neb::module);
-
-          // Fill output var.
-          if (nm->args)
-            module->args = nm->args;
-          module->filename = nm->filename;
-          module->instance_id = instance_id;
-          module->loaded = nm->is_currently_loaded;
-          module->should_be_loaded = nm->should_be_loaded;
-
-          // Send events.
-          gl_publisher.write(module.staticCast<io::data>());
-        }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info(logging::medium)
@@ -1031,6 +1372,182 @@ int neb::callback_program_status(int callback_type, void* data) {
 
     // Send event.
     gl_publisher.write(is.staticCast<io::data>());
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process service data.
+ *
+ *  This function is called by Engine when some service data is
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_ADAPTIVE_SERVICE_DATA).
+ *  @param[in] data          A pointer to a
+ *                           nebstruct_adaptive_service_data containing
+ *                           the service data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_service(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating service event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    ::service const*
+      s(static_cast< ::service*>(static_cast<nebstruct_adaptive_service_data*>(data)->object_ptr));
+    QSharedPointer<neb::service> my_service(new neb::service);
+
+    // Fill output var.
+    my_service->acknowledgement_type = s->acknowledgement_type;
+    if (s->action_url)
+      my_service->action_url = s->action_url;
+    my_service->active_checks_enabled = s->checks_enabled;
+    if (s->service_check_command)
+      my_service->check_command = s->service_check_command;
+    my_service->check_freshness = s->check_freshness;
+    my_service->check_interval = s->check_interval;
+    if (s->check_period)
+      my_service->check_period = s->check_period;
+    my_service->check_type = s->check_type;
+    my_service->current_check_attempt = s->current_attempt;
+    my_service->current_notification_number = s->current_notification_number;
+    my_service->current_state = (s->has_been_checked
+                                 ? s->current_state
+                                 : 4); // Pending state.
+    my_service->default_active_checks_enabled = s->checks_enabled;
+    my_service->default_event_handler_enabled = s->event_handler_enabled;
+    my_service->default_failure_prediction = s->failure_prediction_enabled;
+    my_service->default_flap_detection_enabled = s->flap_detection_enabled;
+    my_service->default_notifications_enabled = s->notifications_enabled;
+    my_service->default_passive_checks_enabled
+      = s->accept_passive_service_checks;
+    my_service->default_process_perf_data
+      = s->process_performance_data;
+    if (s->display_name)
+      my_service->display_name = s->display_name;
+    if (s->event_handler)
+      my_service->event_handler = s->event_handler;
+    my_service->event_handler_enabled = s->event_handler_enabled;
+    my_service->execution_time = s->execution_time;
+    my_service->failure_prediction_enabled = s->failure_prediction_enabled;
+    if (s->failure_prediction_options)
+      my_service->failure_prediction_options = s->failure_prediction_options;
+    my_service->first_notification_delay = s->first_notification_delay;
+    my_service->flap_detection_enabled = s->flap_detection_enabled;
+    my_service->flap_detection_on_critical = s->flap_detection_on_critical;
+    my_service->flap_detection_on_ok = s->flap_detection_on_ok;
+    my_service->flap_detection_on_unknown = s->flap_detection_on_unknown;
+    my_service->flap_detection_on_warning = s->flap_detection_on_warning;
+    my_service->freshness_threshold = s->freshness_threshold;
+    my_service->has_been_checked = s->has_been_checked;
+    my_service->high_flap_threshold = s->high_flap_threshold;
+    if (s->host_name) { // Redonduncy with custom var browsing.
+      my_service->host_name = s->host_name;
+      std::map<std::string, int>::const_iterator it;
+      it = neb::gl_hosts.find(s->host_name);
+      if (it != neb::gl_hosts.end())
+        my_service->host_id = it->second;
+    }
+    if (s->icon_image)
+      my_service->icon_image = s->icon_image;
+    if (s->icon_image_alt)
+      my_service->icon_image_alt = s->icon_image_alt;
+    my_service->is_flapping = s->is_flapping;
+    my_service->is_volatile = s->is_volatile;
+    my_service->last_check = s->last_check;
+    my_service->last_hard_state = s->last_hard_state;
+    my_service->last_hard_state_change = s->last_hard_state_change;
+    my_service->last_notification = s->last_notification;
+    my_service->last_state_change = s->last_state_change;
+    my_service->last_time_critical = s->last_time_critical;
+    my_service->last_time_ok = s->last_time_ok;
+    my_service->last_time_unknown = s->last_time_unknown;
+    my_service->last_time_warning = s->last_time_warning;
+    my_service->last_update = time(NULL); // XXX
+    my_service->latency = s->latency;
+    my_service->low_flap_threshold = s->low_flap_threshold;
+    my_service->max_check_attempts = s->max_attempts;
+    my_service->modified_attributes = s->modified_attributes;
+    my_service->next_check = s->next_check;
+    my_service->next_notification = s->next_notification;
+    my_service->no_more_notifications = s->no_more_notifications;
+    if (s->notes)
+      my_service->notes = s->notes;
+    if (s->notes_url)
+      my_service->notes_url = s->notes_url;
+    my_service->notification_interval = s->notification_interval;
+    if (s->notification_period)
+      my_service->notification_period = s->notification_period;
+    my_service->notifications_enabled = s->notifications_enabled;
+    my_service->notify_on_critical = s->notify_on_critical;
+    my_service->notify_on_downtime = s->notify_on_downtime;
+    my_service->notify_on_flapping = s->notify_on_flapping;
+    my_service->notify_on_recovery = s->notify_on_recovery;
+    my_service->notify_on_unknown = s->notify_on_unknown;
+    my_service->notify_on_warning = s->notify_on_warning;
+    my_service->obsess_over = s->obsess_over_service;
+    if (s->plugin_output)
+      my_service->output = s->plugin_output;
+    if (s->long_plugin_output)
+      my_service->output.append(s->long_plugin_output);
+    my_service->passive_checks_enabled = s->accept_passive_service_checks;
+    my_service->percent_state_change = s->percent_state_change;
+    if (s->perf_data)
+      my_service->perf_data = s->perf_data;
+    my_service->problem_has_been_acknowledged = s->problem_has_been_acknowledged;
+    my_service->process_performance_data = s->process_performance_data;
+    my_service->retain_nonstatus_information
+      = s->retain_nonstatus_information;
+    my_service->retain_status_information = s->retain_status_information;
+    my_service->retry_interval = s->retry_interval;
+    my_service->scheduled_downtime_depth = s->scheduled_downtime_depth;
+    if (s->description)
+      my_service->service_description = s->description;
+    my_service->should_be_scheduled = s->should_be_scheduled;
+    my_service->stalk_on_critical = s->stalk_on_critical;
+    my_service->stalk_on_ok = s->stalk_on_ok;
+    my_service->stalk_on_unknown = s->stalk_on_unknown;
+    my_service->stalk_on_warning = s->stalk_on_warning;
+    my_service->state_type = (s->has_been_checked
+                              ? s->state_type
+                              : HARD_STATE);
+
+    // Search host_id and service_id through customvars.
+    for (customvariablesmember* cv = s->custom_variables; cv; cv = cv->next)
+      if (cv->variable_name && cv->variable_value) {
+        if (!strcmp(cv->variable_name, "HOST_ID"))
+          my_service->host_id = strtol(cv->variable_value, NULL, 0);
+        else if (!strcmp(cv->variable_name, "SERVICE_ID")) {
+          my_service->service_id = strtol(cv->variable_value, NULL, 0);
+          neb::gl_services[std::make_pair((s->host_name ? s->host_name : ""),
+                                     my_service->service_description.toStdString())]
+            = std::make_pair(my_service->host_id, my_service->service_id);
+        }
+      }
+
+    // Send service event.
+    if (my_service->host_id && my_service->service_id) {
+      logging::info(logging::low) << "callbacks:  new service "
+        << my_service->service_id << " ('"
+        << my_service->service_description
+        << "') on host " << my_service->host_id;
+      neb::gl_publisher.write(my_service.staticCast<io::data>());
+    }
+    else
+      logging::error(logging::high)
+        << "callbacks: service has no host ID or no service ID (host '"
+        << ((s->host_ptr && s->host_ptr->name)
+              ? s->host_ptr->name : "(unknown)")
+        << "', service '"
+        << (s->description ? s->description : "(unknown)")
+        << "')";
   }
   // Avoid exception propagation in C code.
   catch (...) {}
