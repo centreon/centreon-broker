@@ -23,6 +23,7 @@
 #include <QString>
 #include <QStringList>
 #include <set>
+#include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/state.hh"
