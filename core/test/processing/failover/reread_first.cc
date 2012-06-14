@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,7 +19,6 @@
 
 #include <QCoreApplication>
 #include <QObject>
-#include <QSharedPointer>
 #include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -54,25 +53,25 @@ int main(int argc, char* argv[]) {
     log_on_stderr();
 
   // First failover.
-  QSharedPointer<setable_endpoint> endp1(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
   endp1->set_initial_replay_events(true);
-  QSharedPointer<processing::failover> fo1(
-    new processing::failover(true));
+  misc::shared_ptr<processing::failover>
+    fo1(new processing::failover(true));
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
   // Second failover.
-  QSharedPointer<setable_endpoint> endp2(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(true);
   endp2->set_initial_store_events(true);
-  QSharedPointer<processing::failover> fo2(
-    new processing::failover(true));
+  misc::shared_ptr<processing::failover>
+    fo2(new processing::failover(true));
   fo2->set_endpoint(endp2.staticCast<io::endpoint>());
   fo2->set_failover(fo1);
 
   // Publish an event that should be the last event processed by fo1.
   {
-    QSharedPointer<io::raw> r(new io::raw);
+    misc::shared_ptr<io::raw> r(new io::raw);
     r->append(MSG);
     multiplexing::engine::instance().publish(r.staticCast<io::data>());
   }
@@ -105,19 +104,19 @@ int main(int argc, char* argv[]) {
     retval = 1;
   else {
     // Check automatically generated events.
-    QSharedPointer<setable_stream> ss1(*endp1->streams().begin());
-    QSharedPointer<setable_stream> ss2(*endp2->streams().begin());
+    misc::shared_ptr<setable_stream> ss1(*endp1->streams().begin());
+    misc::shared_ptr<setable_stream> ss2(*endp2->streams().begin());
     unsigned int count(ss1->get_count());
     unsigned int i(0);
-    for (QList<QSharedPointer<io::data> >::const_iterator
-           it = ss2->get_stored_events().begin(),
-           end = ss2->get_stored_events().end();
+    for (QList<misc::shared_ptr<io::data> >::const_iterator
+           it(ss2->get_stored_events().begin()),
+           end(ss2->get_stored_events().end());
          (i < count) && (it != end);
          ++it) {
       if ((*it)->type() != "com::centreon::broker::io::raw")
         retval |= 1;
       else {
-        QSharedPointer<io::raw> raw(it->staticCast<io::raw>());
+        misc::shared_ptr<io::raw> raw(it->staticCast<io::raw>());
         unsigned int val;
         memcpy(&val, raw->QByteArray::data(), sizeof(val));
         retval |= (val != ++i);
@@ -130,11 +129,11 @@ int main(int argc, char* argv[]) {
                != static_cast<int>(count + 1));
 
     // Check first published event.
-    QSharedPointer<io::data> d(ss2->get_stored_events().last());
+    misc::shared_ptr<io::data> d(ss2->get_stored_events().last());
     if (d->type() != "com::centreon::broker::io::raw")
       retval |= 1;
     else {
-      QSharedPointer<io::raw> raw(d.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         MSG,

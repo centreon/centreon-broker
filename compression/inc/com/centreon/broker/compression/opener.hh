@@ -17,38 +17,38 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMPRESSION_OPENER_HH_
-# define CCB_COMPRESSION_OPENER_HH_
+#ifndef CCB_COMPRESSION_OPENER_HH
+#  define CCB_COMPRESSION_OPENER_HH
 
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                      compression {
+namespace                        compression {
   /**
    *  @class opener opener.hh "com/centreon/broker/compression/opener.hh"
    *  @brief Open a compression stream.
    *
    *  Open a compression stream.
    */
-  class                        opener : public io::endpoint {
-   private:
-    int                        _level;
-    unsigned int               _size;
+  class                          opener : public io::endpoint {
+  public:
+                                 opener();
+                                 opener(opener const& o);
+                                 ~opener();
+    opener&                      operator=(opener const& o);
+    void                         close();
+    misc::shared_ptr<io::stream> open();
+    void                         set_level(int level = -1);
+    void                         set_size(unsigned int size = 0);
 
-   public:
-                               opener();
-                               opener(opener const& o);
-                               ~opener();
-    opener&                    operator=(opener const& o);
-    void                       close();
-    QSharedPointer<io::stream> open();
-    void                       set_level(int level = -1);
-    void                       set_size(unsigned int size = 0);
+  private:
+    int                          _level;
+    unsigned int                 _size;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_COMPRESSION_OPENER_HH_ */
+#endif // !CCB_COMPRESSION_OPENER_HH

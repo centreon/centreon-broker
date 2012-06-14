@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,13 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_CONNECTOR_HH_
-# define CCB_STORAGE_CONNECTOR_HH_
+#ifndef CCB_STORAGE_CONNECTOR_HH
+#  define CCB_STORAGE_CONNECTOR_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QString>
+#  include <time.h>
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -35,18 +35,7 @@ namespace          storage {
    *  Send perfdata in a Centreon Storage database.
    */
   class            connector : public io::endpoint {
-   private:
-    time_t         _interval_length;
-    unsigned int   _rrd_len;
-    QString        _storage_db;
-    QString        _storage_host;
-    QString        _storage_password;
-    unsigned short _storage_port;
-    QString        _storage_user;
-    QString        _storage_type;
-    void           _internal_copy(connector const& c);
-
-   public:
+  public:
                    connector();
                    connector(connector const& c);
                    ~connector();
@@ -61,11 +50,23 @@ namespace          storage {
                      QString const& storage_db,
                      unsigned int rrd_len,
                      time_t interval_length);
-    QSharedPointer<io::stream>
+    misc::shared_ptr<io::stream>
                    open();
+
+   private:
+    void           _internal_copy(connector const& c);
+
+    time_t         _interval_length;
+    unsigned int   _rrd_len;
+    QString        _storage_db;
+    QString        _storage_host;
+    QString        _storage_password;
+    unsigned short _storage_port;
+    QString        _storage_user;
+    QString        _storage_type;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_STORAGE_CONNECTOR_HH_ */
+#endif // !CCB_STORAGE_CONNECTOR_HH

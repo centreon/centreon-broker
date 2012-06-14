@@ -61,13 +61,13 @@ void logger::apply(QList<config::logger> const& loggers) {
   // which should be created
   // and which should be deleted.
   QList<config::logger> to_create;
-  QMap<config::logger, QSharedPointer<logging::backend> > to_delete(_backends);
-  QMap<config::logger, QSharedPointer<logging::backend> > to_keep;
+  QMap<config::logger, misc::shared_ptr<logging::backend> > to_delete(_backends);
+  QMap<config::logger, misc::shared_ptr<logging::backend> > to_keep;
   for (QList<config::logger>::const_iterator it = loggers.begin(),
          end = loggers.end();
        it != end;
        ++it) {
-    QMap<config::logger, QSharedPointer<logging::backend> >::iterator backend(to_delete.find(*it));
+    QMap<config::logger, misc::shared_ptr<logging::backend> >::iterator backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
       to_keep.insert(backend.key(), backend.value());
       to_delete.erase(backend);
@@ -80,7 +80,7 @@ void logger::apply(QList<config::logger> const& loggers) {
   _backends = to_keep;
 
   // Remove loggers that do not exist anymore.
-  for (QMap<config::logger, QSharedPointer<logging::backend> >::const_iterator it = to_delete.begin(),
+  for (QMap<config::logger, misc::shared_ptr<logging::backend> >::const_iterator it = to_delete.begin(),
          end = to_delete.end();
        it != end;
        ++it)
@@ -97,7 +97,7 @@ void logger::apply(QList<config::logger> const& loggers) {
        ++it) {
     logging::config(logging::medium)
       << "log applier: creating new logger";
-    QSharedPointer<logging::backend> backend(_new_backend(*it));
+    misc::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
     logging::manager::instance().log_on(
       *backend,
@@ -176,8 +176,8 @@ void logger::_internal_copy(logger const& l) {
  *
  *  @return New logging backend.
  */
-QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg) {
-  QSharedPointer<logging::backend> back;
+misc::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg) {
+  misc::shared_ptr<logging::backend> back;
   switch (cfg.type()) {
   case config::logger::file:
     {
@@ -186,7 +186,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
                << "log applier: attempt to log on an empty file");
       std::auto_ptr<logging::file>
         file(new logging::file(cfg.name(), cfg.max_size()));
-      back = QSharedPointer<logging::backend>(file.get());
+      back = misc::shared_ptr<logging::backend>(file.get());
       file.release();
     }
     break ;
@@ -195,7 +195,7 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
 #ifdef CBMOD
       std::auto_ptr<neb::monitoring_logger>
         monitoring(new neb::monitoring_logger);
-      back = QSharedPointer<logging::backend>(monitoring.get());
+      back = misc::shared_ptr<logging::backend>(monitoring.get());
       monitoring.release();
 #else
       logging::info(logging::high) << "log applier: monitoring"
@@ -213,12 +213,12 @@ QSharedPointer<logging::backend> logger::_new_backend(config::logger const& cfg)
       else
         throw (exceptions::msg() << "log applier: attempt to log on " \
                  "an undefined output object");
-      back = QSharedPointer<logging::backend>(new logging::file(out));
+      back = misc::shared_ptr<logging::backend>(new logging::file(out));
     }
     break ;
   case config::logger::syslog:
-    back = QSharedPointer<logging::backend>(
-      new logging::syslogger(cfg.facility()));
+    back = misc::shared_ptr<logging::backend>(
+                   new logging::syslogger(cfg.facility()));
     break ;
   default:
     throw (exceptions::msg() << "log applier: attempt to create a " \

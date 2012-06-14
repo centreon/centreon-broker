@@ -23,11 +23,11 @@
 #  include <limits.h>
 #  include <QMutex>
 #  include <QReadWriteLock>
-#  include <QSharedPointer>
 #  include <QThread>
 #  include <time.h>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/processing/feeder.hh"
 
 namespace                com {
@@ -59,18 +59,18 @@ namespace                com {
           time_t         get_last_event() const throw ();
           time_t         get_retry_interval() const throw ();
           void           process(bool in = false, bool out = false);
-          QSharedPointer<io::data>
+          misc::shared_ptr<io::data>
                          read();
           void           run();
           void           set_buffering_timeout(time_t secs);
           void           set_endpoint(
-                           QSharedPointer<io::endpoint> endp);
+                           misc::shared_ptr<io::endpoint> endp);
           void           set_failover(
-                           QSharedPointer<processing::failover> fo);
+                           misc::shared_ptr<processing::failover> fo);
           void           set_name(QString const& name);
           void           set_retry_interval(time_t retry_interval);
           bool           wait(unsigned long time = ULONG_MAX);
-          void           write(QSharedPointer<io::data> d);
+          void           write(misc::shared_ptr<io::data> d);
 
           static time_t const
                          event_window_length = 30;
@@ -82,10 +82,10 @@ namespace                com {
          private:
           // Data that doesn't require locking.
           volatile time_t _buffering_timeout;
-          QSharedPointer<io::endpoint>
+          misc::shared_ptr<io::endpoint>
                          _endpoint;
           unsigned int   _events[event_window_length];
-          QSharedPointer<failover>
+          misc::shared_ptr<failover>
                          _failover;
           bool           _initial;
           bool           _is_out;
@@ -97,7 +97,7 @@ namespace                com {
           volatile time_t _retry_interval;
 
           // Retained data.
-          QSharedPointer<io::data>
+          misc::shared_ptr<io::data>
                          _data;
           mutable QMutex _datam;
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,29 +24,6 @@
 #include "test/processing/feeder/setable_stream.hh"
 
 using namespace com::centreon::broker;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] ss Object to copy.
- */
-void setable_stream::_internal_copy(setable_stream const& ss) {
-  _count = ss._count;
-  _process_in = ss._process_in;
-  _process_out = ss._process_out;
-  _replay_events = ss._replay_events;
-  _replay = ss._replay;
-  _sleep_time = ss._sleep_time;
-  _store_events = ss._store_events;
-  _stored_events = ss._stored_events;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -109,7 +86,7 @@ unsigned int setable_stream::get_count() const {
  *
  *  @return Events.
  */
-QList<QSharedPointer<io::data> > const& setable_stream::get_stored_events() const {
+QList<misc::shared_ptr<io::data> > const& setable_stream::get_stored_events() const {
   return (_stored_events);
 }
 
@@ -130,16 +107,16 @@ void setable_stream::process(bool in, bool out) {
  *
  *  @return Some data.
  */
-QSharedPointer<io::data> setable_stream::read() {
+misc::shared_ptr<io::data> setable_stream::read() {
   // Sleep a while.
   QMutex m;
   QWaitCondition cv;
   cv.wait(&m, _sleep_time);
 
   // Do we generate an event ?
-  QSharedPointer<io::data> data;
+  misc::shared_ptr<io::data> data;
   if (_process_in && _process_out) {
-    QSharedPointer<io::raw> raw(new io::raw);
+    misc::shared_ptr<io::raw> raw(new io::raw);
     ++_count;
     raw->append((char*)&_count, sizeof(_count));
     data = raw.staticCast<io::data>();
@@ -203,13 +180,36 @@ void setable_stream::set_store_events(bool store) {
  *
  *  @param[in] d Data to write.
  */
-void setable_stream::write(QSharedPointer<io::data> d) {
+void setable_stream::write(misc::shared_ptr<io::data> d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "setable stream is shutdown");
+           << "setable stream is shutdown");
   if (_replay_events)
     _replay.push_back(d);
   if (_store_events)
     _stored_events.push_back(d);
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] ss Object to copy.
+ */
+void setable_stream::_internal_copy(setable_stream const& ss) {
+  _count = ss._count;
+  _process_in = ss._process_in;
+  _process_out = ss._process_out;
+  _replay_events = ss._replay_events;
+  _replay = ss._replay;
+  _sleep_time = ss._sleep_time;
+  _store_events = ss._store_events;
+  _stored_events = ss._stored_events;
   return ;
 }

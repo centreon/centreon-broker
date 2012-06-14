@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -78,7 +78,7 @@ void stream::process(bool in, bool out) {
  *
  *  @return Next available data.
  */
-QSharedPointer<io::data> stream::read() {
+misc::shared_ptr<io::data> stream::read() {
   return (input::read());
 }
 
@@ -87,7 +87,7 @@ QSharedPointer<io::data> stream::read() {
  *
  *  @param[in] d Data to send.
  */
-void stream::write(QSharedPointer<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> d) {
   output::write(d);
   return ;
 }

@@ -423,18 +423,23 @@ processing::failover* endpoint::_create_endpoint(
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
 
   // Check that failover is configured.
-  QSharedPointer<processing::failover> failovr;
+  misc::shared_ptr<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
     QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
     if (it == l.end())
       throw (exceptions::msg() << "endpoint applier: could not find " \
                   "failover '" << cfg.failover << "' for endpoint '"
                << cfg.name << "'");
-    failovr = QSharedPointer<processing::failover>(_create_endpoint(*it, is_input || is_output, is_output, l));
+    failovr = misc::shared_ptr<processing::failover>(
+                      _create_endpoint(
+                        *it,
+                        is_input || is_output,
+                        is_output,
+                        l));
   }
   
   // Create endpoint object.
-  QSharedPointer<io::endpoint> endp;
+  misc::shared_ptr<io::endpoint> endp;
   bool is_acceptor(false);
   int level(0);
   for (QMap<QString, io::protocols::protocol>::const_iterator it = io::protocols::instance().begin(),
@@ -443,7 +448,12 @@ processing::failover* endpoint::_create_endpoint(
        ++it) {
     if ((it.value().osi_from == 1)
         && it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output)) {
-      endp = QSharedPointer<io::endpoint>(it.value().endpntfactry->new_endpoint(cfg, is_input, is_output, is_acceptor));
+      endp = misc::shared_ptr<io::endpoint>(
+                     it.value().endpntfactry->new_endpoint(
+                                                cfg,
+                                                is_input,
+                                                is_output,
+                                                is_acceptor));
       level = it.value().osi_to + 1;
       break ;
     }
@@ -460,7 +470,12 @@ processing::failover* endpoint::_create_endpoint(
     while (it != end) {
       if ((it.value().osi_from == level)
           && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
-        QSharedPointer<io::endpoint> current(it.value().endpntfactry->new_endpoint(cfg, is_input, is_output, is_acceptor));
+        misc::shared_ptr<io::endpoint>
+          current(it.value().endpntfactry->new_endpoint(
+                                             cfg,
+                                             is_input,
+                                             is_output,
+                                             is_acceptor));
         current->from(endp);
         endp = current;
         level = it.value().osi_to;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,8 +18,8 @@
 */
 
 #include <assert.h>
+#include <memory>
 #include <QMutexLocker>
-#include <QScopedPointer>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
@@ -128,7 +128,7 @@ void stream::process(bool in, bool out) {
  *
  *  @return Bunch of data.
  */
-QSharedPointer<io::data> stream::read() {
+misc::shared_ptr<io::data> stream::read() {
   // Lock mutex.
   QMutexLocker lock(&_mutex);
 
@@ -146,12 +146,12 @@ QSharedPointer<io::data> stream::read() {
   }
 
   // Build data array.
-  QScopedPointer<io::raw> data(new io::raw);
+  std::auto_ptr<io::raw> data(new io::raw);
   data->resize(4096);
 
   // Read data.
   qint64 old_roffset(_roffset);
-  QSharedPointer<io::data> retval;
+  misc::shared_ptr<io::data> retval;
   qint64 rb(_file.read(data->QByteArray::data(), data->size()));
   if (!rb) // XXX : io::exceptions::error
     throw (io::exceptions::shutdown(true, !_process_out)
@@ -169,7 +169,7 @@ QSharedPointer<io::data> stream::read() {
     data->resize(rb);
     _roffset += rb;
     _coffset = _roffset;
-    retval = QSharedPointer<io::data>(data.take());
+    retval = misc::shared_ptr<io::data>(data.release());
 
     // Erase read data.
     if (!_file.seek(old_roffset))
@@ -200,7 +200,7 @@ QSharedPointer<io::data> stream::read() {
  *
  *  @param[in] d Data to write.
  */
-void stream::write(QSharedPointer<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> d) {
   // Check that writing should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)

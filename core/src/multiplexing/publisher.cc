@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -82,11 +82,11 @@ void publisher::process(bool in, bool out) {
  *
  *  @return Empty data pointer.
  */
-QSharedPointer<io::data> publisher::read() {
+misc::shared_ptr<io::data> publisher::read() {
   // XXX : use io::exceptions::read_error
   throw (exceptions::msg()
            << "multiplexing: attempt to read from publisher");
-  return (QSharedPointer<io::data>());
+  return (misc::shared_ptr<io::data>());
 }
 
 /**
@@ -96,7 +96,7 @@ QSharedPointer<io::data> publisher::read() {
  *
  *  @param[in] d Multiplexed data.
  */
-void publisher::write(QSharedPointer<io::data> d) {
+void publisher::write(misc::shared_ptr<io::data> d) {
   if (_process)
     engine::instance().publish(d);
   else

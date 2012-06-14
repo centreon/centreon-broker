@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,7 +18,7 @@
 */
 
 #include <algorithm>
-#include <QScopedPointer>
+#include <memory>
 #include <stdlib.h>
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
@@ -51,11 +51,11 @@ using namespace com::centreon::broker::ndo;
 char const* input::_get_line() {
   size_t it;
   while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
-    QSharedPointer<io::data> data(_from->read());
+    misc::shared_ptr<io::data> data(_from->read());
     if (data.isNull())
       break ;
     if (data->type() == "com::centreon::broker::io::raw") {
-      QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
       _buffer.append(static_cast<char*>(
         raw->QByteArray::data()),
         raw->size());
@@ -74,7 +74,7 @@ char const* input::_get_line() {
  */
 template <typename T>
 T* input::_handle_event() {
-  QScopedPointer<T> event(new T);
+  std::auto_ptr<T> event(new T);
   int key;
   char const* key_str;
   char const* value_str;
@@ -85,22 +85,27 @@ T* input::_handle_event() {
       typename std::map<int, getter_setter<T> >::const_iterator it;
       key = strtol(key_str, NULL, 10);
       if (NDO_API_ENDDATA == key) {
-        logging::debug << logging::MEDIUM << "NDO: new event successfully generated";
+        logging::debug(logging::medium)
+          << "NDO: new event successfully generated";
         break ;
       }
       value_str = strchr(key_str, '=');
       value_str = (value_str ? value_str + 1 : "");
       it = ndo_mapped_type<T>::map.find(key);
       if (it != ndo_mapped_type<T>::map.end())
-        (*it->second.setter)(*event.data(), *it->second.member, value_str);
+        (*it->second.setter)(
+                       *event.get(),
+                       *it->second.member,
+                       value_str);
     }
     else {
-      logging::debug << logging::MEDIUM << "NDO: could not build a complete event";
+      logging::debug(logging::medium)
+        << "NDO: could not build a complete event";
       event.reset();
       break ;
     }
   }
-  return (event.take());
+  return (event.release());
 }
 
 /**************************************
@@ -162,12 +167,12 @@ void input::process(bool in, bool out) {
  *
  *  @return Next available event, NULL if stream is closed.
  */
-QSharedPointer<io::data> input::read() {
+misc::shared_ptr<io::data> input::read() {
   // Return value.
-  QScopedPointer<io::data> e;
+  std::auto_ptr<io::data> e;
 
   // Get the next non-empty line.
-  logging::debug << logging::MEDIUM << "NDO: reading event";
+  logging::debug(logging::medium) << "NDO: reading event";
   char const* line;
   do {
     line = _get_line();
@@ -285,7 +290,7 @@ QSharedPointer<io::data> input::read() {
         return (this->read());
     }
   }
-  return (QSharedPointer<io::data>((io::data*)(e.take())));
+  return (misc::shared_ptr<io::data>((io::data*)(e.release())));
 }
 
 /**
@@ -293,7 +298,7 @@ QSharedPointer<io::data> input::read() {
  *
  *  @param[in] d Object to copy.
  */
-void input::write(QSharedPointer<io::data> d) {
+void input::write(misc::shared_ptr<io::data> d) {
   (void)d;
   throw (exceptions::msg() << "NDO: attempt to write to an input " \
            "object");

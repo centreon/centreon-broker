@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/connector.hh"
 #include "com/centreon/broker/rrd/factory.hh"
@@ -149,7 +151,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   port = find_param(cfg, "port", false, "0").toUShort();
 
   // Create endpoint.
-  QScopedPointer<rrd::connector> endp(new rrd::connector);
+  std::auto_ptr<rrd::connector> endp(new rrd::connector);
   endp->set_metrics_path(metrics_path);
   endp->set_status_path(status_path);
   if (!path.isEmpty())
@@ -157,5 +159,5 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   else if (port)
     endp->set_cached_net(port);
   is_acceptor = false;
-  return (endp.take());
+  return (endp.release());
 }

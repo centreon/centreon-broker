@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,10 +44,10 @@ int main() {
   // Send events through engine.
   char const* messages[] = { MSG1, MSG2, NULL };
   for (unsigned int i = 0; messages[i]; ++i) {
-    QSharedPointer<io::raw> data(new io::raw);
+    misc::shared_ptr<io::raw> data(new io::raw);
     data->append(messages[i]);
     multiplexing::engine::instance().publish(
-      data.staticCast<io::raw>());
+      data.staticCast<io::data>());
   }
 
   // Should read no events from subscriber.
@@ -59,12 +59,12 @@ int main() {
 
   // Read retained events.
   for (unsigned int i = 0; messages[i]; ++i) {
-    QSharedPointer<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data(s.read(0));
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;
     else {
-      QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         messages[i],
@@ -74,7 +74,7 @@ int main() {
 
   // Publish a new event.
   {
-    QSharedPointer<io::raw> data(new io::raw);
+    misc::shared_ptr<io::raw> data(new io::raw);
     data->append(MSG3);
     multiplexing::engine::instance().publish(
       data.staticCast<io::data>());
@@ -82,12 +82,12 @@ int main() {
 
   // Read event.
   {
-    QSharedPointer<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data(s.read(0));
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;
     else {
-      QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         MSG3,
@@ -100,7 +100,7 @@ int main() {
 
   // Publish a new event.
   {
-    QSharedPointer<io::raw> data(new io::raw);
+    misc::shared_ptr<io::raw> data(new io::raw);
     data->append(MSG4);
     multiplexing::engine::instance().publish(
       data.staticCast<io::data>());

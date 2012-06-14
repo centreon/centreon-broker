@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     log_on_stderr();
 
   // Endpoint.
-  QSharedPointer<setable_endpoint> se(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> se(new setable_endpoint);
   se->set_succeed(true);
 
   // Subscriber.
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
   // Failover object.
   processing::failover f(false);
-  f.set_endpoint(se);
+  f.set_endpoint(se.staticCast<io::endpoint>());
 
   // Launch thread.
   QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
@@ -82,15 +82,15 @@ int main(int argc, char* argv[]) {
   s.process(false, false);
   int retval(se->streams().isEmpty());
   if (!retval) {
-    QSharedPointer<setable_stream> ss(*se->streams().begin());
+    misc::shared_ptr<setable_stream> ss(*se->streams().begin());
     unsigned int count(ss->get_count());
     unsigned int i(0);
-    QSharedPointer<io::data> event(s.read(0));
+    misc::shared_ptr<io::data> event(s.read(0));
     while (!event.isNull()) {
       if (event->type() != "com::centreon::broker::io::raw")
         retval |= 1;
       else {
-        QSharedPointer<io::raw> raw(event.staticCast<io::raw>());
+        misc::shared_ptr<io::raw> raw(event.staticCast<io::raw>());
         unsigned int val;
         memcpy(&val, raw->QByteArray::data(), sizeof(val));
         retval |= (val != ++i);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,7 +112,8 @@ static int unknown_state(node const& n) {
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
+void correlator::_correlate_acknowledgement(
+                   misc::shared_ptr<io::data> e) {
   // Cast event.
   neb::acknowledgement& ack(
     *static_cast<neb::acknowledgement*>(&*e));
@@ -136,7 +137,7 @@ void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
 
     // Old state.
     {
-      QSharedPointer<state> state_update(
+      misc::shared_ptr<state> state_update(
         ack.service_id ? static_cast<state*>(new service_state)
                        : static_cast<state*>(new host_state));
       state_update->current_state = it->state;
@@ -150,7 +151,7 @@ void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
 
     // New state.
     {
-      QSharedPointer<state> state_update(
+      misc::shared_ptr<state> state_update(
         ack.service_id ? static_cast<state*>(new service_state)
                        : static_cast<state*>(new host_state));
       state_update->ack_time = ack.entry_time;
@@ -163,7 +164,7 @@ void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
     }
 
     // Send updated issue.
-    _events.push_back(QSharedPointer<io::data>(
+    _events.push_back(misc::shared_ptr<io::data>(
       new issue(*it->my_issue)));
   }
   return ;
@@ -175,8 +176,9 @@ void correlator::_correlate_acknowledgement(QSharedPointer<io::data> e) {
  *  @param[in] e       Event to process.
  *  @param[in] is_host true if the event is a host_status.
  */
-void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
-                                                bool is_host) {
+void correlator::_correlate_host_service_status(
+                   misc::shared_ptr<io::data> e,
+                   bool is_host) {
   neb::host_service_status& hss(
     *static_cast<neb::host_service_status*>(&*e));
   node* n;
@@ -230,7 +232,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
     {
       // Old state.
       {
-        QSharedPointer<state> state_update(
+        misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
         state_update->ack_time =
@@ -259,7 +261,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
 
       // New state.
       {
-        QSharedPointer<state> state_update(
+        misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
         state_update->ack_time =
@@ -299,7 +301,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  "issue parenting between dependent node ("
               << n->host_id << ", " << n->service_id << ") and node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
-            QSharedPointer<issue_parent> p(new issue_parent);
+            misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
@@ -322,7 +324,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and dependent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
-            QSharedPointer<issue_parent> p(new issue_parent);
+            misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = (*it)->host_id;
             p->child_service_id = (*it)->service_id;
             p->child_start_time = (*it)->my_issue->start_time;
@@ -353,7 +355,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and parent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
-            QSharedPointer<issue_parent> p(new issue_parent);
+            misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
@@ -391,7 +393,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
                   << (*it)->host_id << ", " << (*it)->service_id
                   << ") and parent node (" << (*it2)->host_id << ", "
                   << (*it2)->service_id << ")";
-                QSharedPointer<issue_parent> p(new issue_parent);
+                misc::shared_ptr<issue_parent> p(new issue_parent);
                 p->child_host_id = (*it)->host_id;
                 p->child_service_id = (*it)->service_id;
                 p->child_start_time = (*it)->my_issue->start_time;
@@ -409,7 +411,8 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
 
         // Terminate issue.
         n->my_issue->end_time = now;
-        _events.push_back(QSharedPointer<io::data>(n->my_issue.data()));
+        _events.push_back(
+                  misc::shared_ptr<io::data>(n->my_issue.data()));
         n->my_issue.take();
       }
     }
@@ -421,7 +424,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
       n->my_issue->start_time = now;
 
       // Store issue.
-      _events.push_back(QSharedPointer<io::data>(
+      _events.push_back(misc::shared_ptr<io::data>(
         new issue(*(n->my_issue))));
 
       // Declare parenting.
@@ -440,7 +443,7 @@ void correlator::_correlate_host_service_status(QSharedPointer<io::data> e,
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_host_status(QSharedPointer<io::data> e) {
+void correlator::_correlate_host_status(misc::shared_ptr<io::data> e) {
   logging::debug(logging::medium)
     << "correlation: processing host status";
   _correlate_host_service_status(e, true);
@@ -452,7 +455,7 @@ void correlator::_correlate_host_status(QSharedPointer<io::data> e) {
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_log(QSharedPointer<io::data> e) {
+void correlator::_correlate_log(misc::shared_ptr<io::data> e) {
   neb::log_entry* l(static_cast<neb::log_entry*>(&*e));
   node* n;
 
@@ -475,7 +478,8 @@ void correlator::_correlate_log(QSharedPointer<io::data> e) {
  *
  *  @param[in] e Event to process.
  */
-void correlator::_correlate_service_status(QSharedPointer<io::data> e) {
+void correlator::_correlate_service_status(
+                   misc::shared_ptr<io::data> e) {
   logging::debug(logging::medium)
     << "correlation: processing service status";
   _correlate_host_service_status(e, false);
@@ -552,7 +556,7 @@ void correlator::_issue_parenting(node* n, bool full) {
              "issue parenting between dependent node ("
           << n->host_id << ", " << n->service_id << ") and node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
-        QSharedPointer<issue_parent> parenting(new issue_parent);
+        misc::shared_ptr<issue_parent> parenting(new issue_parent);
         parenting->child_host_id = n->host_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
@@ -581,7 +585,7 @@ void correlator::_issue_parenting(node* n, bool full) {
              "issue parenting between node (" << n->host_id << ", "
           << n->service_id << ") and parent node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
-        QSharedPointer<issue_parent> parenting(new issue_parent);
+        misc::shared_ptr<issue_parent> parenting(new issue_parent);
         parenting->child_host_id = n->host_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
@@ -605,7 +609,7 @@ void correlator::_issue_parenting(node* n, bool full) {
            "issue parenting between node (" << n->host_id << ", "
         << n->service_id << ") and dependent node ("
         << (*it)->host_id << ", " << (*it)->service_id << ")";
-      QSharedPointer<issue_parent> parenting(new issue_parent);
+      misc::shared_ptr<issue_parent> parenting(new issue_parent);
       parenting->child_host_id = (*it)->host_id;
       parenting->child_service_id = (*it)->service_id;
       parenting->child_start_time = (*it)->my_issue->start_time;
@@ -642,7 +646,7 @@ void correlator::_issue_parenting(node* n, bool full) {
             << (*it)->host_id << ", " << (*it)->service_id
             << ") and parent node (" << (*it2)->host_id << ", "
             << (*it2)->service_id << ")";
-          QSharedPointer<issue_parent> parenting(new issue_parent);
+          misc::shared_ptr<issue_parent> parenting(new issue_parent);
           parenting->child_host_id = (*it)->host_id;
           parenting->child_service_id = (*it)->service_id;
           parenting->child_start_time = (*it)->my_issue->start_time;
@@ -665,7 +669,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     << "correlation: submitting OK status for node ("
     << it->host_id << ", " << it->service_id << ") before deletion";
   if (it->service_id) {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->current_state = 0;
     ss->state_type = 1;
     ss->host_id = it->host_id;
@@ -673,7 +677,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     _correlate_service_status(ss.staticCast<io::data>());
   }
   else {
-    QSharedPointer<neb::host_status> hs(new neb::host_status);
+    misc::shared_ptr<neb::host_status> hs(new neb::host_status);
     hs->current_state = 0;
     hs->state_type = 1;
     hs->host_id = it->host_id;
@@ -856,7 +860,7 @@ void correlator::load(QString const& correlation_file,
         << "correlation: reopening issue of node (" << it->host_id
         << ", " << it->service_id << "), state " << it->state;
       _events.push_back(
-        QSharedPointer<io::data>(new issue(*(it->my_issue))));
+                misc::shared_ptr<io::data>(new issue(*(it->my_issue))));
     }
 
   // Re-link issues.
@@ -876,8 +880,8 @@ void correlator::load(QString const& correlation_file,
  *
  *  @return The next available correlated event.
  */
-QSharedPointer<io::data> correlator::read() {
-  QSharedPointer<io::data> e;
+misc::shared_ptr<io::data> correlator::read() {
+  misc::shared_ptr<io::data> e;
   if (!_events.empty()) {
     e = _events.front();
     _events.pop_front();
@@ -942,7 +946,7 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
 void correlator::starting() {
   // Send engine state.
   logging::info(logging::medium) << "correlation: engine starting";
-  QSharedPointer<engine_state> es(new engine_state);
+  misc::shared_ptr<engine_state> es(new engine_state);
   es->started = true;
   _events.push_front(es.staticCast<io::data>());
   return ;
@@ -973,7 +977,7 @@ void correlator::stopping() {
            it2 != end2;
            ++it2)
         if (!(*it2)->my_issue.isNull()) {
-          QSharedPointer<issue_parent> p(new issue_parent);
+          misc::shared_ptr<issue_parent> p(new issue_parent);
           p->child_host_id = it->host_id;
           p->child_service_id = it->service_id;
           p->child_start_time = it->my_issue->start_time;
@@ -999,7 +1003,7 @@ void correlator::stopping() {
                end2 = it->parents().end();
              it2 != end2;
              ++it2) {
-          QSharedPointer<issue_parent> p(new issue_parent);
+          misc::shared_ptr<issue_parent> p(new issue_parent);
           p->child_host_id = it->host_id;
           p->child_service_id = it->service_id;
           p->child_start_time = it->my_issue->start_time;
@@ -1017,14 +1021,14 @@ void correlator::stopping() {
       // XXX : missing state closing
 
       // Close issue itself.
-      QSharedPointer<issue> i(new issue(*it->my_issue));
+      misc::shared_ptr<issue> i(new issue(*it->my_issue));
       i->end_time = now;
       _events.push_back(i.staticCast<io::data>());
     }
   */
 
   // Send engine state.
-  QSharedPointer<engine_state> es(new engine_state);
+  misc::shared_ptr<engine_state> es(new engine_state);
   es->started = false;
   _events.push_back(es.staticCast<io::data>());
 
@@ -1070,7 +1074,7 @@ void correlator::update() {
  *
  *  @param[inout] e Event to process.
  */
-void correlator::write(QSharedPointer<io::data> e) {
+void correlator::write(misc::shared_ptr<io::data> e) {
   try {
     // Process event.
     if ("com::centreon::broker::neb::host" == e->type())

@@ -21,8 +21,8 @@
 #  define CCB_MODULES_LOADER_HH
 
 #  include <QHash>
-#  include <QSharedPointer>
 #  include <QString>
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/modules/handle.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -38,7 +38,7 @@ namespace    modules {
    */
   class      loader {
   public:
-    typedef QHash<QString, QSharedPointer<handle> >::iterator
+    typedef QHash<QString, misc::shared_ptr<handle> >::iterator
              iterator;
 
              loader();
@@ -56,7 +56,7 @@ namespace    modules {
     void     unload();
 
   private:
-    QHash<QString, QSharedPointer<handle> >
+    QHash<QString, misc::shared_ptr<handle> >
              _handles;
   };
 }

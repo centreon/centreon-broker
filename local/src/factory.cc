@@ -116,20 +116,20 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   }
 
   // Connector.
-  QScopedPointer<io::endpoint> endp;
+  std::auto_ptr<io::endpoint> endp;
   if ((cfg.type == "local_client") || (cfg.type == "unix_client")) {
     is_acceptor = false;
-    QScopedPointer<local::connector> c(new local::connector);
+    std::auto_ptr<local::connector> c(new local::connector);
     c->connect_to(name);
-    endp.reset(c.take());
+    endp.reset(c.release());
   }
   // Acceptor.
   else {
     is_acceptor = true;
-    QScopedPointer<local::acceptor> a(new local::acceptor);
+    std::auto_ptr<local::acceptor> a(new local::acceptor);
     a->listen_on(name);
-    endp.reset(a.take());
+    endp.reset(a.release());
   }
 
-  return (endp.take());
+  return (endp.release());
 }

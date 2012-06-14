@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -65,7 +66,7 @@ endpoint& endpoint::operator=(endpoint const& e) {
  *
  *  @param[in] endp Lower layer endpoint object.
  */
-void endpoint::from(QSharedPointer<endpoint> endp) {
+void endpoint::from(misc::shared_ptr<endpoint> endp) {
   _from = endp;
   return ;
 }

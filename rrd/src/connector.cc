@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -79,19 +79,22 @@ void connector::close() {
  *
  *  @return Stream object.
  */
-QSharedPointer<io::stream> connector::open() {
-  QSharedPointer<io::stream> retval;
+misc::shared_ptr<io::stream> connector::open() {
+  misc::shared_ptr<io::stream> retval;
   if (!_cached_local.isEmpty())
-    retval = QSharedPointer<io::stream>(new output(_metrics_path,
-                                                   _status_path,
-                                                   _cached_local));
+    retval = misc::shared_ptr<io::stream>(new output(
+                                                _metrics_path,
+                                                _status_path,
+                                                _cached_local));
   else if (_cached_port)
-    retval = QSharedPointer<io::stream>(new output(_metrics_path,
-                                                   _status_path,
-                                                   _cached_port));
+    retval = misc::shared_ptr<io::stream>(new output(
+                                                _metrics_path,
+                                                _status_path,
+                                                _cached_port));
   else
-    retval = QSharedPointer<io::stream>(new output(_metrics_path,
-                                                   _status_path));
+    retval = misc::shared_ptr<io::stream>(new output(
+                                                _metrics_path,
+                                                _status_path));
   return (retval);
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,46 +17,49 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_FILE_STREAM_HH_
-# define CCB_FILE_STREAM_HH_
+#ifndef CCB_FILE_STREAM_HH
+#  define CCB_FILE_STREAM_HH
 
-# include <QFile>
-# include <QMutex>
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QFile>
+#  include <QMutex>
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                    file {
+namespace                      file {
   /**
    *  @class stream stream.hh "com/centreon/broker/file/stream.hh"
    *  @brief File stream.
    *
    *  Read and write data to a stream.
    */
-  class                      stream : public io::stream {
-   private:
-    qint64                   _coffset;
-    QFile                    _file;
-    QMutex                   _mutex;
-    bool                     _process_in;
-    bool                     _process_out;
-    qint64                   _roffset;
-    qint64                   _woffset;
-                             stream(stream const& s);
-    stream&                  operator=(stream const& s);
+  class                        stream : public io::stream {
+  public:
+                               stream(
+                                 QString const& filename,
+                                 QIODevice::OpenMode mode);
+                               ~stream();
+    void                       process(
+                                 bool in = false,
+                                 bool out = false);
+    misc::shared_ptr<io::data> read();
+    void                       write(misc::shared_ptr<io::data> d);
 
-   public:
-                             stream(
-                               QString const& filename,
-                               QIODevice::OpenMode mode);
-                             ~stream();
-    void                     process(bool in = false, bool out = false);
-    QSharedPointer<io::data> read();
-    void                     write(QSharedPointer<io::data> d);
+  private:
+                               stream(stream const& s);
+    stream&                    operator=(stream const& s);
+
+    qint64                     _coffset;
+    QFile                      _file;
+    QMutex                     _mutex;
+    bool                       _process_in;
+    bool                       _process_out;
+    qint64                     _roffset;
+    qint64                     _woffset;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_FILE_STREAM_HH_ */
+#endif // !CCB_FILE_STREAM_HH

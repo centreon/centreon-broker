@@ -187,7 +187,7 @@ void worker::_generate_stats_for_endpoint(
 
   // Choose stream we will work on.
   QReadWriteLock* rwl;
-  QSharedPointer<io::stream>* s;
+  misc::shared_ptr<io::stream>* s;
   if (is_out) {
     rwl = &fo->_tom;
     s = &fo->_to;

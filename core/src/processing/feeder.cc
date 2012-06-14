@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -81,8 +81,9 @@ void feeder::exit() {
  *  @param[in] in  Input object.
  *  @param[in] out Output object.
  */
-void feeder::prepare(QSharedPointer<io::stream> in,
-                     QSharedPointer<io::stream> out) {
+void feeder::prepare(
+               misc::shared_ptr<io::stream> in,
+               misc::shared_ptr<io::stream> out) {
   _in = in;
   _out = out;
   return ;
@@ -101,7 +102,7 @@ void feeder::run() {
       throw (exceptions::msg()
                << "feeder: could not feed with empty output");
     while (!_should_exit) {
-      QSharedPointer<io::data> data;
+      misc::shared_ptr<io::data> data;
       data = _in->read();
       if (data.isNull())
         break ;

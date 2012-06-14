@@ -20,12 +20,10 @@
 #ifndef CCB_TCP_ACCEPTOR_HH
 #  define CCB_TCP_ACCEPTOR_HH
 
+#  include <memory>
 #  include <QMap>
 #  include <QMutex>
 #  include <QObject>
-#  include <QScopedPointer>
-#  include <QSharedPointer>
-#  include <QWeakPointer>
 #  include <QTcpServer>
 #  include <QTcpSocket>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -50,7 +48,7 @@ namespace                com {
           acceptor&      operator=(acceptor const& a);
           void           close();
           void           listen_on(unsigned short port);
-          QSharedPointer<io::stream>
+          misc::shared_ptr<io::stream>
                          open();
           void           set_tls(
                            bool enable,
@@ -63,14 +61,14 @@ namespace                com {
           void           _internal_copy(acceptor const& a);
 
           QString        _ca;
-          QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >
+          QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >
                          _children;
           QMutex         _childrenm;
           QMutex         _mutex;
           unsigned short _port;
           QString        _private;
           QString        _public;
-          QScopedPointer<QTcpServer>
+          std::auto_ptr<QTcpServer>
                          _socket;
           bool           _tls;
 

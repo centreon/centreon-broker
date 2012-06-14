@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -80,7 +80,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
  */
 void acceptor::close() {
   QMutexLocker lock(&_mutex);
-  if (!_socket.isNull()) {
+  if (_socket.get()) {
     _socket->close();
     _socket.reset();
   }
@@ -103,10 +103,10 @@ void acceptor::listen_on(QString const& name) {
  *
  *  @return A new stream.
  */
-QSharedPointer<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open() {
   // Listen.
   QMutexLocker lock(&_mutex);
-  if (_socket.isNull()) {
+  if (!_socket.get()) {
     _socket.reset(new QLocalServer);
     if (!_socket->listen(_name)) {
       exceptions::msg e;
@@ -126,22 +126,23 @@ QSharedPointer<io::stream> acceptor::open() {
     QWaitCondition cv;
     cv.wait(&_mutex, 10);
     timedout = false;
-    ret = !_socket.isNull()
+    ret = _socket.get()
       && _socket->waitForNewConnection(200, &timedout);
   }
   if (!ret)
     throw (exceptions::msg() << "local: error while waiting client: "
-             << (_socket.isNull()
-                 ? "socket was deleted"
-                 : _socket->errorString()));
+           << (!_socket.get()
+               ? "socket was deleted"
+               : _socket->errorString()));
 
   // Accept client.
-  QSharedPointer<QLocalSocket> incoming(_socket->nextPendingConnection());
+  misc::shared_ptr<QLocalSocket>
+    incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
     throw (exceptions::msg() << "local: could not accept client: "
              << _socket->errorString());
   logging::info(logging::medium) << "local: new client connected";
 
   // Return object.
-  return (QSharedPointer<io::stream>(new stream(incoming)));
+  return (misc::shared_ptr<io::stream>(new stream(incoming)));
 }

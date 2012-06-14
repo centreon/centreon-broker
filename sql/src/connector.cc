@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,12 +112,13 @@ void connector::connect_to(QString const& type,
  *
  *  @return SQL connection object.
  */
-QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new stream(_type,
-            _host,
-            _port,
-            _user,
-            _password,
-            _db,
-            _with_state_events)));
+misc::shared_ptr<io::stream> connector::open() {
+  return (misc::shared_ptr<io::stream>(new stream(
+                                             _type,
+                                             _host,
+                                             _port,
+                                             _user,
+                                             _password,
+                                             _db,
+                                             _with_state_events)));
 }

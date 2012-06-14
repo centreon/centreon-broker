@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,14 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_TCP_STREAM_HH_
-# define CCB_TCP_STREAM_HH_
+#ifndef CCB_TCP_STREAM_HH
+#  define CCB_TCP_STREAM_HH
 
-# include <QSharedPointer>
-# include <QTcpSocket>
-# include <QMutex>
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QTcpSocket>
+#  include <QMutex>
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -36,31 +35,32 @@ namespace   tcp {
    *  TCP stream.
    */
   class     stream : public io::stream {
-   private:
-    QSharedPointer<QMutex>
-            _mutex;
-    bool    _process_in;
-    bool    _process_out;
-    QSharedPointer<QTcpSocket>
-            _socket;
-    int     _timeout;
+  public:
+            stream(misc::shared_ptr<QTcpSocket> sock);
+            stream(
+              misc::shared_ptr<QTcpSocket> sock,
+              misc::shared_ptr<QMutex> mutex);
+            ~stream();
+    void    process(bool in = false, bool out = true);
+    misc::shared_ptr<io::data>
+            read();
+    void    set_timeout(int msecs);
+    void    write(misc::shared_ptr<io::data> d);
+
+  private:
             stream(stream const& s);
     stream& operator=(stream const& s);
 
-   public:
-            stream(QSharedPointer<QTcpSocket> sock);
-            stream(
-              QSharedPointer<QTcpSocket> sock,
-              QSharedPointer<QMutex> mutex);
-            ~stream();
-    void    process(bool in = false, bool out = true);
-    QSharedPointer<io::data>
-            read();
-    void    set_timeout(int msecs);
-    void    write(QSharedPointer<io::data> d);
+    misc::shared_ptr<QMutex>
+            _mutex;
+    bool    _process_in;
+    bool    _process_out;
+    misc::shared_ptr<QTcpSocket>
+            _socket;
+    int     _timeout;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_TCP_STREAM_HH_ */
+#endif // !CCB_TCP_STREAM_HH

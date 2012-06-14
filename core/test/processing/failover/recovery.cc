@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,14 +45,14 @@ int main(int argc, char* argv[]) {
     log_on_stderr();
 
   // First failover.
-  QSharedPointer<setable_endpoint> endp1(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
-  QSharedPointer<processing::failover> fo1(
-    new processing::failover(true));
+  misc::shared_ptr<processing::failover>
+    fo1(new processing::failover(true));
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
   // Second failover.
-  QSharedPointer<setable_endpoint> endp2(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(true);
   processing::failover fo2(true);
   fo2.set_endpoint(endp2.staticCast<io::endpoint>());

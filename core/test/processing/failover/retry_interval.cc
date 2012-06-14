@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,12 +47,12 @@ int main(int argc, char* argv[]) {
     log_on_stderr();
 
   // Endpoint.
-  QSharedPointer<setable_endpoint> se(new setable_endpoint);
+  misc::shared_ptr<setable_endpoint> se(new setable_endpoint);
   se->set_succeed(false);
 
   // Failover object.
   processing::failover f(false);
-  f.set_endpoint(se);
+  f.set_endpoint(se.staticCast<io::endpoint>());
   f.set_retry_interval(1);
 
   // Launch thread.

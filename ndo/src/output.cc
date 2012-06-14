@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -116,10 +116,10 @@ void output::process(bool in, bool out) {
 /**
  *  Read data.
  */
-QSharedPointer<io::data> output::read() {
+misc::shared_ptr<io::data> output::read() {
   throw (exceptions::msg() << "NDO: attempt to read from an " \
            "output object");
-  return (QSharedPointer<io::data>());
+  return (misc::shared_ptr<io::data>());
 }
 
 /**
@@ -127,11 +127,11 @@ QSharedPointer<io::data> output::read() {
  *
  *  @param[in] e Event to send.
  */
-void output::write(QSharedPointer<io::data> e) {
+void output::write(misc::shared_ptr<io::data> e) {
   if (!_process_out)
     throw (io::exceptions::shutdown(true, !_process_out)
              << "NDO output stream is shutdown");
-  logging::debug << logging::MEDIUM << "NDO: writing data ("
+  logging::debug(logging::medium) << "NDO: writing data ("
     << e->type() << ")";
   std::stringstream buffer;
   if (e->type() == "com::centreon::broker::neb::acknowledgement") {
@@ -361,10 +361,10 @@ void output::write(QSharedPointer<io::data> e) {
   buffer << "\n";
 
   // Send data.
-  QSharedPointer<io::raw> data(new io::raw);
+  misc::shared_ptr<io::raw> data(new io::raw);
   data->append(buffer.str().c_str());
   _to->write(data.staticCast<io::data>());
-  logging::debug << logging::MEDIUM << "NDO: data successfully sent";
+  logging::debug(logging::medium) << "NDO: data successfully sent";
 
   return ;
 }

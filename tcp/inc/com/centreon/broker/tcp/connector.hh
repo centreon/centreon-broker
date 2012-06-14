@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_TCP_CONNECTOR_HH_
-# define CCB_TCP_CONNECTOR_HH_
+#ifndef CCB_TCP_CONNECTOR_HH
+#  define CCB_TCP_CONNECTOR_HH
 
-# include <QSharedPointer>
-# include <QString>
-# include <QTcpSocket>
-# include <QMutex>
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QString>
+#  include <QTcpSocket>
+#  include <QMutex>
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -37,28 +36,14 @@ namespace          tcp {
    *  Connect to some remote TCP host.
    */
   class            connector : public io::endpoint {
-   private:
-    QString        _ca;
-    QString        _host;
-    QSharedPointer<QMutex>
-                   _mutex;
-    unsigned short _port;
-    QString        _private;
-    QString        _public;
-    QSharedPointer<QTcpSocket>
-                   _socket;
-    int            _timeout;
-    bool           _tls;
-    void           _internal_copy(connector const& c);
-
-   public:
+  public:
                    connector();
                    connector(connector const& c);
                    ~connector();
     connector&     operator=(connector const& c);
     void           close();
     void           connect_to(QString const& host, unsigned short port);
-    QSharedPointer<io::stream>
+    misc::shared_ptr<io::stream>
                    open();
     void           set_timeout(int msecs);
     void           set_tls(
@@ -66,9 +51,24 @@ namespace          tcp {
                      QString const& private_key = QString(),
                      QString const& public_cert = QString(),
                      QString const& ca_cert = QString());
+
+  private:
+    void           _internal_copy(connector const& c);
+
+    QString        _ca;
+    QString        _host;
+    misc::shared_ptr<QMutex>
+                   _mutex;
+    unsigned short _port;
+    QString        _private;
+    QString        _public;
+    misc::shared_ptr<QTcpSocket>
+                   _socket;
+    int            _timeout;
+    bool           _tls;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_TCP_CONNECTOR_HH_ */
+#endif // !CCB_TCP_CONNECTOR_HH

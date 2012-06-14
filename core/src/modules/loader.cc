@@ -134,7 +134,7 @@ void loader::load_file(QString const& filename, void const* arg) {
   if (_handles.find(filename) == _handles.end()) {
     logging::debug(logging::low) << "modules: loading '"
       << filename << "' which is NOT already loaded";
-    QSharedPointer<handle> handl(new handle);
+    misc::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
   }
@@ -150,10 +150,10 @@ void loader::load_file(QString const& filename, void const* arg) {
 void loader::unload() {
   QString key;
   while (!_handles.empty()) {
-    QHash<QString, QSharedPointer<handle> >::iterator
+    QHash<QString, misc::shared_ptr<handle> >::iterator
       it(_handles.begin());
     key = it.key();
-    QHash<QString, QSharedPointer<handle> >::iterator
+    QHash<QString, misc::shared_ptr<handle> >::iterator
       end(_handles.end());
     while (++it != end)
       if (it.key() > key)

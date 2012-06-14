@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace                    multiplexing {
+namespace                      multiplexing {
   /**
    *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
    *  @brief Publish events to the multiplexing engine.
@@ -35,18 +35,20 @@ namespace                    multiplexing {
    *
    *  @see engine
    */
-  class                      publisher : public io::stream {
-   private:
-    bool                     _process;
+  class                        publisher : public io::stream {
+  public:
+                               publisher();
+                               publisher(publisher const& p);
+                               ~publisher();
+    publisher&                 operator=(publisher const& p);
+    void                       process(
+                                 bool in = false,
+                                 bool out = true);
+    misc::shared_ptr<io::data> read();
+    void                       write(misc::shared_ptr<io::data> d);
 
-   public:
-                             publisher();
-                             publisher(publisher const& p);
-                             ~publisher();
-    publisher&               operator=(publisher const& p);
-    void                     process(bool in = false, bool out = true);
-    QSharedPointer<io::data> read();
-    void                     write(QSharedPointer<io::data> d);
+  private:
+    bool                       _process;
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QSharedPointer>
 #include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -46,12 +45,12 @@ int main() {
   retval |= !s.read(0).isNull();
 
   // Write data to subscriber.
-  QSharedPointer<io::raw> data(new io::raw);
+  misc::shared_ptr<io::raw> data(new io::raw);
   data->append(MSG);
   s.write(data.staticCast<io::data>());
 
   // Fetch event.
-  QSharedPointer<io::data> event(s.read(0));
+  misc::shared_ptr<io::data> event(s.read(0));
   retval |= (event.isNull()
              || (event->type() != "com::centreon::broker::io::raw")
              || strncmp(

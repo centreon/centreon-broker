@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,42 +17,44 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_IO_STREAM_HH_
-# define CCB_IO_STREAM_HH_
+#ifndef CCB_IO_STREAM_HH
+#  define CCB_IO_STREAM_HH
 
-# include <QSharedPointer>
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        io {
+namespace                          io {
   /**
    *  @class stream stream.hh "com/centreon/broker/io/stream.hh"
    *  @brief Class used to exchange data.
    *
    *  Interface to exchange data.
    */
-  class                          stream {
-   protected:
-    QSharedPointer<stream>       _from;
-    QSharedPointer<stream>       _to;
+  class                            stream {
+  public:
+                                   stream();
+                                   stream(stream const& s);
+    virtual                        ~stream();
+    stream&                        operator=(stream const& s);
+    virtual void                   process(
+                                     bool in = false,
+                                     bool out = true) = 0;
+    virtual misc::shared_ptr<data> read() = 0;
+    void                           read_from(
+                                     misc::shared_ptr<stream> from);
+    virtual void                   write(misc::shared_ptr<data> d) = 0;
+    void                           write_to(
+                                     misc::shared_ptr<stream> to);
 
-   public:
-                                 stream();
-                                 stream(stream const& s);
-    virtual                      ~stream();
-    stream&                      operator=(stream const& s);
-    virtual void                 process(
-                                   bool in = false,
-                                   bool out = true) = 0;
-    virtual QSharedPointer<data> read() = 0;
-    void                         read_from(QSharedPointer<stream> from);
-    virtual void                 write(QSharedPointer<data> d) = 0;
-    void                         write_to(QSharedPointer<stream> to);
+  protected:
+    misc::shared_ptr<stream>       _from;
+    misc::shared_ptr<stream>       _to;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_IO_STREAM_HH_ */
+#endif // !CCB_IO_STREAM_HH

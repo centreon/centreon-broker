@@ -326,8 +326,8 @@ void stream::process(bool in, bool out) {
  *
  *  @return Does not return, throw an exception.
  */
-QSharedPointer<io::data> stream::read() {
-  return (QSharedPointer<io::data>());
+misc::shared_ptr<io::data> stream::read() {
+  return (misc::shared_ptr<io::data>());
 }
 
 /**
@@ -350,7 +350,7 @@ void stream::stopping() {
  *
  *  @param[in] data Event pointer.
  */
-void stream::write(QSharedPointer<io::data> data) {
+void stream::write(misc::shared_ptr<io::data> data) {
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -360,7 +360,7 @@ void stream::write(QSharedPointer<io::data> data) {
   if (data->type() == "com::centreon::broker::neb::service_status") {
     logging::debug(logging::high)
       << "storage: processing service status event";
-    QSharedPointer<neb::service_status>
+    misc::shared_ptr<neb::service_status>
       ss(data.staticCast<neb::service_status>());
 
     if (!ss->perf_data.isEmpty()) {
@@ -374,7 +374,7 @@ void stream::write(QSharedPointer<io::data> data) {
       // Generate status event.
       logging::debug(logging::low)
         << "storage: generating status event";
-      QSharedPointer<storage::status> status(new storage::status);
+      misc::shared_ptr<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
       status->interval = static_cast<time_t>(
@@ -433,7 +433,7 @@ void stream::write(QSharedPointer<io::data> data) {
         // Send perfdata event to processing.
         logging::debug(logging::high)
           << "storage: generating perfdata event";
-        QSharedPointer<storage::metric> perf(new storage::metric);
+        misc::shared_ptr<storage::metric> perf(new storage::metric);
         perf->ctime = ss->last_check;
         perf->interval = static_cast<time_t>(ss->check_interval
                                              * _interval_length);
@@ -477,7 +477,7 @@ stream& stream::operator=(stream const& s) {
 void stream::_clear_qsql() {
   _insert_data_bin.reset();
   _update_metrics.reset();
-  if (!_storage_db.isNull() && _storage_db->isOpen())
+  if (_storage_db.get() && _storage_db->isOpen())
     _storage_db->close();
   _storage_db.reset();
   return ;
@@ -553,10 +553,9 @@ unsigned int stream::_find_index_id(
       it->second.host_name = host_name;
       it->second.service_description = service_desc;
       it->second.special = special;
-
-      // Anyway, we found index ID.
-      retval = it->second.index_id;
     }
+    // Anyway, we found index ID.
+    retval = it->second.index_id;
   }
   // Can't find in cache, insert in DB.
   else {

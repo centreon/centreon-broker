@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,40 +36,6 @@ using namespace com::centreon::broker::rrd;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] o Object to copy.
- */
-output::output(output const& o) : io::stream(o) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] o Object to copy.
- *
- *  @return This object.
- */
-output& output::operator=(output const& o) {
-  (void)o;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -101,9 +67,9 @@ output::output(QString const& metrics_path,
   : _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path) {
-  QScopedPointer<cached> rrdcached(new cached);
+  std::auto_ptr<cached> rrdcached(new cached);
   rrdcached->connect_local(local);
-  _backend.reset(rrdcached.take());
+  _backend.reset(rrdcached.release());
 }
 
 /**
@@ -119,9 +85,9 @@ output::output(QString const& metrics_path,
   : _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path) {
-  QScopedPointer<cached> rrdcached(new cached);
+  std::auto_ptr<cached> rrdcached(new cached);
   rrdcached->connect_remote("localhost", port);
-  _backend.reset(rrdcached.take());
+  _backend.reset(rrdcached.release());
 }
 
 /**
@@ -146,10 +112,10 @@ void output::process(bool in, bool out) {
  *
  *  @return Does not return, throw an exception.
  */
-QSharedPointer<io::data> output::read() {
+misc::shared_ptr<io::data> output::read() {
   throw (broker::exceptions::msg()
            << "RRD: attempt to read data from an output endpoint");
-  return (QSharedPointer<io::data>());
+  return (misc::shared_ptr<io::data>());
 }
 
 /**
@@ -157,14 +123,15 @@ QSharedPointer<io::data> output::read() {
  *
  *  @param[in] d Data to write.
  */
-void output::write(QSharedPointer<io::data> d) {
+void output::write(misc::shared_ptr<io::data> d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "RRD output is shutdown");
   if (d->type() == "com::centreon::broker::storage::metric") {
     // Debug message.
-    logging::debug << logging::MEDIUM << "RRD: new metric data";
-    QSharedPointer<storage::metric> e(d.staticCast<storage::metric>());
+    logging::debug(logging::medium) << "RRD: new metric data";
+    misc::shared_ptr<storage::metric>
+      e(d.staticCast<storage::metric>());
 
     // Write metrics RRD.
     std::ostringstream oss1;
@@ -190,8 +157,9 @@ void output::write(QSharedPointer<io::data> d) {
   }
   else if (d->type() == "com::centreon::broker::storage::status") {
     // Debug message.
-    logging::debug << logging::MEDIUM << "RRD: new status data";
-    QSharedPointer<storage::status> e(d.staticCast<storage::status>());
+    logging::debug(logging::medium) << "RRD: new status data";
+    misc::shared_ptr<storage::status>
+      e(d.staticCast<storage::status>());
 
     // Write status RRD.
     std::ostringstream oss1;
@@ -221,4 +189,38 @@ void output::write(QSharedPointer<io::data> d) {
     }
   }
   return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] o Object to copy.
+ */
+output::output(output const& o) : io::stream(o) {
+  assert(!"RRD output is not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] o Object to copy.
+ *
+ *  @return This object.
+ */
+output& output::operator=(output const& o) {
+  (void)o;
+  assert(!"RRD output is not copyable");
+  abort();
+  return (*this);
 }

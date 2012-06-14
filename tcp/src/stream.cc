@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,40 +31,6 @@ using namespace com::centreon::broker::tcp;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : io::stream(s) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -74,7 +40,7 @@ stream& stream::operator=(stream const& s) {
  *
  *  @param[in] sock Socket used by this stream.
  */
-stream::stream(QSharedPointer<QTcpSocket> sock)
+stream::stream(misc::shared_ptr<QTcpSocket> sock)
   : _mutex(new QMutex),
     _process_in(true),
     _process_out(true),
@@ -87,8 +53,9 @@ stream::stream(QSharedPointer<QTcpSocket> sock)
  *  @param[in] sock  Socket used by this stream.
  *  @param[in] mutex Mutex used by this stream.
  */
-stream::stream(QSharedPointer<QTcpSocket> sock,
-               QSharedPointer<QMutex> mutex)
+stream::stream(
+          misc::shared_ptr<QTcpSocket> sock,
+          misc::shared_ptr<QMutex> mutex)
   : _mutex(mutex),
     _process_in(true),
     _process_out(true),
@@ -121,7 +88,7 @@ void stream::process(bool in, bool out) {
  *
  *  @return Data read.
  */
-QSharedPointer<io::data> stream::read() {
+misc::shared_ptr<io::data> stream::read() {
   QMutexLocker lock(&*_mutex);
   bool ret;
   do {
@@ -150,7 +117,7 @@ QSharedPointer<io::data> stream::read() {
   if (rb < 0)
     throw (exceptions::msg() << "TCP: error while reading: "
              << _socket->errorString());
-  QSharedPointer<io::raw> data(new io::raw);
+  misc::shared_ptr<io::raw> data(new io::raw);
   data->append(buffer, rb);
   return (data.staticCast<io::data>());
 }
@@ -170,12 +137,12 @@ void stream::set_timeout(int msecs) {
  *
  *  @param[in] d Data to write.
  */
-void stream::write(QSharedPointer<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
   if (d->type() == "com::centreon::broker::io::raw") {
-    QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                              r->size()));
@@ -185,4 +152,38 @@ void stream::write(QSharedPointer<io::data> d) {
     _socket->waitForBytesWritten(-1);
   }
   return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ */
+stream::stream(stream const& s) : io::stream(s) {
+  assert(!"TCP stream is not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ *
+ *  @return This object.
+ */
+stream& stream::operator=(stream const& s) {
+  (void)s;
+  assert(!"TCP stream is not copyable");
+  abort();
+  return (*this);
 }

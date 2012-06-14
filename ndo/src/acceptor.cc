@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QSharedPointer>
+#include <memory>
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/ndo/acceptor.hh"
@@ -113,48 +113,48 @@ void acceptor::close() {
 /**
  *  Open the acceptor.
  */
-QSharedPointer<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
-    QSharedPointer<io::stream> base(_from->open());
+    misc::shared_ptr<io::stream> base(_from->open());
 
     if (!base.isNull()) {
       // In and out objects.
-      QSharedPointer<io::stream> in;
-      QSharedPointer<io::stream> out;
+      misc::shared_ptr<io::stream> in;
+      misc::shared_ptr<io::stream> out;
 
       // Create input and output objects.
       if (!_is_out) {
-        in = QSharedPointer<io::stream>(new ndo::input);
+        in = misc::shared_ptr<io::stream>(new ndo::input);
         in->read_from(base);
         in->write_to(base);
-        out = QSharedPointer<io::stream>(new multiplexing::publisher);
+        out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
       }
       else {
-        in = QSharedPointer<io::stream>(new multiplexing::subscriber);
-        out = QSharedPointer<io::stream>(new ndo::output);
+        in = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
+        out = misc::shared_ptr<io::stream>(new ndo::output);
         out->read_from(base);
         out->write_to(base);
       }
 
       // Feeder thread.
-      QScopedPointer<processing::feeder> feedr(new processing::feeder);
+      std::auto_ptr<processing::feeder> feedr(new processing::feeder);
       feedr->prepare(in, out);
       QObject::connect(
-        feedr.data(),
+        feedr.get(),
         SIGNAL(finished()),
         this,
         SLOT(_on_thread_termination()));
-      _threads.push_back(feedr.data());
+      _threads.push_back(feedr.get());
       QObject::connect(
-        feedr.data(),
+        feedr.get(),
         SIGNAL(finished()),
-        feedr.data(),
+        feedr.get(),
         SLOT(deleteLater()));
-      processing::feeder* f(feedr.take());
+      processing::feeder* f(feedr.release());
       f->start();
     }
   }
 
-  return (QSharedPointer<io::stream>());
+  return (misc::shared_ptr<io::stream>());
 }

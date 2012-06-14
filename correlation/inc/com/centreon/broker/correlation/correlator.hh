@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,18 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_CORRELATOR_HH_
-# define CCB_CORRELATION_CORRELATOR_HH_
+#ifndef CCB_CORRELATION_CORRELATOR_HH
+#  define CCB_CORRELATION_CORRELATOR_HH
 
-# include <QList>
-# include <QMap>
-# include <QPair>
-# include <QSharedPointer>
-# include <QString>
-# include "com/centreon/broker/correlation/node.hh"
-# include "com/centreon/broker/multiplexing/hooker.hh"
-# include "com/centreon/broker/neb/host_status.hh"
-# include "com/centreon/broker/neb/log_entry.hh"
+#  include <QList>
+#  include <QMap>
+#  include <QPair>
+#  include <QString>
+#  include "com/centreon/broker/correlation/node.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/multiplexing/hooker.hh"
+#  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/log_entry.hh"
 
 namespace                          com {
   namespace                        centreon {
@@ -45,23 +45,23 @@ namespace                          com {
           Q_OBJECT
 
          private:
-          QList<QSharedPointer<io::data> >
+          QList<misc::shared_ptr<io::data> >
                                    _events;
           QString                  _correlation_file;
           QMap<QPair<unsigned int, unsigned int>, node>
                                    _nodes;
           QString                  _retention_file;
           void                     _correlate_acknowledgement(
-                                     QSharedPointer<io::data> e);
+                                     misc::shared_ptr<io::data> e);
           void                     _correlate_host_service_status(
-                                     QSharedPointer<io::data> e,
+                                     misc::shared_ptr<io::data> e,
                                      bool is_host);
           void                     _correlate_host_status(
-                                     QSharedPointer<io::data> e);
+                                     misc::shared_ptr<io::data> e);
           void                     _correlate_log(
-                                     QSharedPointer<io::data> e);
+                                     misc::shared_ptr<io::data> e);
           void                     _correlate_service_status(
-                                     QSharedPointer<io::data> e);
+                                     misc::shared_ptr<io::data> e);
           issue*                   _find_related_issue(node& n);
           void                     _internal_copy(correlator const& c);
           void                     _issue_parenting(node* n, bool full);
@@ -80,12 +80,12 @@ namespace                          com {
           void                     load(
                                      QString const& correlation_file,
                                      QString const& retention_file);
-          QSharedPointer<io::data> read();
+          misc::shared_ptr<io::data> read();
           void                     set_state(
                                      QMap<QPair<unsigned int, unsigned int>, node> const& state);
           void                     starting();
           void                     stopping();
-          void                     write(QSharedPointer<io::data> e);
+          void                     write(misc::shared_ptr<io::data> e);
 
          public slots:
           void                     update();

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,7 +67,7 @@ stream& stream::operator=(stream const& s) {
  *
  *  @param[in] from Stream to read from.
  */
-void stream::read_from(QSharedPointer<stream> from) {
+void stream::read_from(misc::shared_ptr<stream> from) {
   _from = from;
   return ;
 }
@@ -77,7 +77,7 @@ void stream::read_from(QSharedPointer<stream> from) {
  *
  *  @param[in] to Stream to write to.
  */
-void stream::write_to(QSharedPointer<stream> to) {
+void stream::write_to(misc::shared_ptr<stream> to) {
   _to = to;
   return ;
 }

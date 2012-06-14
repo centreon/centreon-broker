@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOOKER_HH_
-# define HOOKER_HH_
+#ifndef HOOKER_HH
+#  define HOOKER_HH
 
-# include <QQueue>
-# include "com/centreon/broker/multiplexing/hooker.hh"
+#  include <QQueue>
+#  include "com/centreon/broker/multiplexing/hooker.hh"
 
-# define HOOKMSG1 "my first hooking message (when engine is started)"
-# define HOOKMSG2 "my second hooking message (when multiplexing events)"
-# define HOOKMSG3 "my third hooking message (when engine is stopped)"
+#  define HOOKMSG1 "my first hooking message (when engine is started)"
+#  define HOOKMSG2 "my second hooking message (when multiplexing events)"
+#  define HOOKMSG3 "my third hooking message (when engine is stopped)"
+
+using namespace com::centreon::broker;
 
 /**
  *  @class hooker hooker.hh "test/multiplexing/engine/hooker.hh"
@@ -33,20 +35,21 @@
  *
  *  Simple class that hook events from the multiplexing engine.
  */
-class     hooker : public com::centreon::broker::multiplexing::hooker {
- private:
-  QQueue<QSharedPointer<com::centreon::broker::io::data> >
-          _queue;
- public:
+class     hooker : public multiplexing::hooker {
+public:
           hooker();
           hooker(hooker const& h);
           ~hooker();
   hooker& operator=(hooker const& h);
-  QSharedPointer<com::centreon::broker::io::data>
+  misc::shared_ptr<io::data>
           read();
   void    starting();
   void    stopping();
-  void    write(QSharedPointer<com::centreon::broker::io::data> d);
+  void    write(misc::shared_ptr<io::data> d);
+
+private:
+  QQueue<misc::shared_ptr<io::data> >
+          _queue;
 };
 
-#endif /* !HOOKER_HH_ */
+#endif // !HOOKER_HH

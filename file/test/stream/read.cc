@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,7 +28,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE_NAME "centreon_broker_unit_test"
+#define TEMP_FILE_NAME "broker_file_stream_read.tmp"
 
 /**
  *  Check that file stream can be properly written to.
@@ -82,12 +82,12 @@ int main(int argc, char* argv[]) {
 
   // Read data.
   unsigned int bufferc(0);
-  QSharedPointer<io::raw> raw;
+  misc::shared_ptr<io::raw> raw;
   unsigned int rawc(0);
   for (unsigned int count = 0; !retval && (count < 10000);) {
     // Read data.
     if (raw.isNull()) {
-      QSharedPointer<io::data> d(fs.read());
+      misc::shared_ptr<io::data> d(fs.read());
       if (d.isNull() || ("com::centreon::broker::io::raw" != d->type()))
         retval |= 1;
       else {

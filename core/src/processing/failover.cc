@@ -60,9 +60,9 @@ failover::failover(bool is_out)
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
   if (_is_out)
-    _from = QSharedPointer<io::stream>(new multiplexing::subscriber);
+    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
   else
-    _to = QSharedPointer<io::stream>(new multiplexing::publisher);
+    _to = misc::shared_ptr<io::stream>(new multiplexing::publisher);
 }
 
 /**
@@ -218,13 +218,13 @@ void failover::process(bool in, bool out) {
     logging::info(logging::low) << "failover: " << _name
       << " is performing an immediate shutdown";
     _endpoint->close();
-    QList<QSharedPointer<QMutexLocker> > locks;
+    QList<misc::shared_ptr<QMutexLocker> > locks;
     bool all_failover_not_running(true);
     failover* last(this);
-    for (QSharedPointer<failover> fo = _failover;
+    for (misc::shared_ptr<failover> fo = _failover;
          !fo.isNull();
          fo = fo->_failover) {
-      QSharedPointer<QMutexLocker>
+      misc::shared_ptr<QMutexLocker>
         lock(new QMutexLocker(&fo->_should_exitm));
       all_failover_not_running
         = all_failover_not_running && !fo->isRunning();
@@ -265,9 +265,9 @@ void failover::process(bool in, bool out) {
  *  @param[out] data Data buffer.
  *  @param[out] type Data type.
  */
-QSharedPointer<io::data> failover::read() {
+misc::shared_ptr<io::data> failover::read() {
   // Read retained data.
-  QSharedPointer<io::data> data;
+  misc::shared_ptr<io::data> data;
   QMutexLocker exit_lock(&_should_exitm);
   if (isRunning() && QThread::currentThread() != this) {
     // Release thread lock.
@@ -405,13 +405,13 @@ void failover::run() {
 
   time_t buffering(0);
   while (!_should_exit) {
-    QSharedPointer<io::stream> copy_handler;
+    misc::shared_ptr<io::stream> copy_handler;
     exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
       logging::debug(logging::medium) << "failover: opening endpoint";
       QReadWriteLock* rwl;
-      QSharedPointer<io::stream>* s;
+      misc::shared_ptr<io::stream>* s;
       if (_is_out) {
         rwl = &_tom;
         s = &_to;
@@ -425,7 +425,7 @@ void failover::run() {
         s->clear();
         wl.unlock();
         _last_connect_attempt = time(NULL);
-        QSharedPointer<io::stream> tmp(_endpoint->open());
+        misc::shared_ptr<io::stream> tmp(_endpoint->open());
         buffering = 0;
         wl.relock();
         emit initial_lock();
@@ -442,7 +442,7 @@ void failover::run() {
 
       // Process input and output.
       logging::debug(logging::medium) << "failover: launching feeding";
-      QSharedPointer<io::data> data;
+      misc::shared_ptr<io::data> data;
       exit_lock.relock();
       while (!_should_exit || !_immediate) {
         exit_lock.unlock();
@@ -615,7 +615,7 @@ void failover::set_buffering_timeout(time_t secs) {
  *
  *  @param[in] endp Thread endpoint.
  */
-void failover::set_endpoint(QSharedPointer<io::endpoint> endp) {
+void failover::set_endpoint(misc::shared_ptr<io::endpoint> endp) {
   _endpoint = endp;
   return ;
 }
@@ -625,11 +625,11 @@ void failover::set_endpoint(QSharedPointer<io::endpoint> endp) {
  *
  *  @param[in] fo Thread's failover.
  */
-void failover::set_failover(QSharedPointer<failover> fo) {
+void failover::set_failover(misc::shared_ptr<failover> fo) {
   _failover = fo;
   if (!fo.isNull() && _is_out) { // failover object will act as input for output threads.
     QWriteLocker lock(&_fromm);
-    _from = _failover;
+    _from = _failover.staticCast<io::stream>();
   }
   return ;
 }
@@ -673,7 +673,7 @@ bool failover::wait(unsigned long time) {
  *
  *  @return Does not return, throw an exception.
  */
-void failover::write(QSharedPointer<io::data> d) {
+void failover::write(misc::shared_ptr<io::data> d) {
   QMutexLocker lock(&_datam);
   _data = d;
   return ;

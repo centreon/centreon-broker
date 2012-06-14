@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,29 +26,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] c Object to copy.
- */
-void connector::_internal_copy(connector const& c) {
-  _ca = c._ca;
-  _host = c._host;
-  _port = c._port;
-  _private = c._private;
-  _public = c._public;
-  _socket = c._socket;
-  _timeout = c._timeout;
-  _tls = c._tls;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -126,7 +103,7 @@ void connector::connect_to(QString const& host, unsigned short port) {
 /**
  *  Connect to the remote host.
  */
-QSharedPointer<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open() {
   // Close previous connection.
   this->close();
 
@@ -136,7 +113,7 @@ QSharedPointer<io::stream> connector::open() {
   // Is TLS enabled ?
   if (_tls) {
     // Create socket object.
-    QSharedPointer<QSslSocket> ssl_socket(new QSslSocket);
+    misc::shared_ptr<QSslSocket> ssl_socket(new QSslSocket);
     _socket = ssl_socket.staticCast<QTcpSocket>();
 
     // Use only TLS protocol.
@@ -170,7 +147,7 @@ QSharedPointer<io::stream> connector::open() {
     // Launch connection process.
     logging::info(logging::medium) << "TCP: connecting to "
       << _host << ":" << _port;
-    _socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
+    _socket = misc::shared_ptr<QTcpSocket>(new QTcpSocket);
     _socket->connectToHost(_host, _port);
 
     // Wait for connection result.
@@ -183,7 +160,7 @@ QSharedPointer<io::stream> connector::open() {
     << _host << ":" << _port;
 
   // Return stream.
-  QSharedPointer<stream> s(new stream(_socket, _mutex));
+  misc::shared_ptr<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
   return (s.staticCast<io::stream>());
 }
@@ -207,13 +184,37 @@ void connector::set_timeout(int msecs) {
  *  @param[in] ca_cert     Trusted CA's certificate, used to
  *                         authenticate peers.
  */
-void connector::set_tls(bool enable,
-                        QString const& private_key,
-                        QString const& public_cert,
-                        QString const& ca_cert) {
+void connector::set_tls(
+                  bool enable,
+                  QString const& private_key,
+                  QString const& public_cert,
+                  QString const& ca_cert) {
   _ca = ca_cert;
   _private = private_key;
   _public = public_cert;
   _tls = enable;
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] c Object to copy.
+ */
+void connector::_internal_copy(connector const& c) {
+  _ca = c._ca;
+  _host = c._host;
+  _port = c._port;
+  _private = c._private;
+  _public = c._public;
+  _socket = c._socket;
+  _timeout = c._timeout;
+  _tls = c._tls;
   return ;
 }

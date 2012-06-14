@@ -436,7 +436,7 @@ void stream::_prepare() {
  *  @param[in]  t  Object that will be bound to the statement.
  */
 template <typename T>
-bool stream::_prepare_insert(QScopedPointer<QSqlQuery>& st) {
+bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
   // Build query string.
   QString query;
   query = "INSERT INTO ";
@@ -478,8 +478,9 @@ bool stream::_prepare_insert(QScopedPointer<QSqlQuery>& st) {
  *  @param[in]  id List of fields that form an UNIQUE.
  */
 template <typename T>
-bool stream::_prepare_update(QScopedPointer<QSqlQuery>& st,
-                             QVector<QPair<QString, bool> > const& id) {
+bool stream::_prepare_update(
+               std::auto_ptr<QSqlQuery>& st,
+               QVector<QPair<QString, bool> > const& id) {
   // Build query string.
   QString query;
   query = "UPDATE ";
@@ -1952,10 +1953,10 @@ void stream::process(bool in, bool out) {
  *
  *  @return Does not return, throw an exception.
  */
-QSharedPointer<io::data> stream::read() {
+misc::shared_ptr<io::data> stream::read() {
   throw (exceptions::msg()
            << "SQL: attempt to read from a SQL stream (software bug)");
-  return (QSharedPointer<io::data>());
+  return (misc::shared_ptr<io::data>());
 }
 
 /**
@@ -1963,7 +1964,7 @@ QSharedPointer<io::data> stream::read() {
  *
  *  @param[in] data Event pointer.
  */
-void stream::write(QSharedPointer<io::data> data) {
+void stream::write(misc::shared_ptr<io::data> data) {
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "SQL stream is shutdown");

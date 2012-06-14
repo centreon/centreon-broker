@@ -1,5 +1,6 @@
 /*
 ** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,46 +17,45 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EXCEPTIONS_WITH_POINTER_HH_
-# define CCB_EXCEPTIONS_WITH_POINTER_HH_
+#ifndef CCB_EXCEPTIONS_WITH_POINTER_HH
+#  define CCB_EXCEPTIONS_WITH_POINTER_HH
 
-# include <memory>
-# include <QSharedPointer>
-# include "com/centreon/broker/exceptions/msg.hh"
-# include "com/centreon/broker/io/data.hh"
+#  include <memory>
+#  include "com/centreon/broker/exceptions/msg.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    exceptions {
-        /**
-         *  @class with_pointer with_pointer.hh "com/centreon/broker/exceptions/with_pointer.hh"
-         *  @brief Exception with data pointer attached.
-         *
-         *  This class is used to provide exception chaining when it is
-         *  necessary to attach a data pointer to the exception.
-         */
-        class                      with_pointer : public msg {
-         private:
-          mutable std::auto_ptr<msg>
-                                   _base;
-          mutable QSharedPointer<io::data>
-                                   _ptr;
+CCB_BEGIN()
 
-         public:
-                                   with_pointer(msg const& base,
-                                     QSharedPointer<io::data> ptr);
-                                   with_pointer(with_pointer const& wp);
-          virtual                  ~with_pointer() throw ();
-          with_pointer&            operator=(with_pointer const& wp);
-          virtual msg*             clone() const;
-          QSharedPointer<io::data> ptr() const;
-          virtual void             rethrow();
-          char const*              what() const throw ();
-        };
-      }
-    }
-  }
+namespace                      exceptions {
+  /**
+   *  @class with_pointer with_pointer.hh "com/centreon/broker/exceptions/with_pointer.hh"
+   *  @brief Exception with data pointer attached.
+   *
+   *  This class is used to provide exception chaining when it is
+   *  necessary to attach a data pointer to the exception.
+   */
+  class                        with_pointer : public msg {
+  public:
+                               with_pointer(
+                                 msg const& base,
+                                 misc::shared_ptr<io::data> ptr);
+                               with_pointer(with_pointer const& wp);
+    virtual                    ~with_pointer() throw ();
+    with_pointer&              operator=(with_pointer const& wp);
+    virtual msg*               clone() const;
+    misc::shared_ptr<io::data> ptr() const;
+    virtual void               rethrow();
+    char const*                what() const throw ();
+
+  private:
+    mutable std::auto_ptr<msg> _base;
+    mutable misc::shared_ptr<io::data>
+                               _ptr;
+  };
 }
 
-#endif /* !CCB_EXCEPTIONS_WITH_POINTER_HH_ */
+CCB_END()
+
+#endif // !CCB_EXCEPTIONS_WITH_POINTER_HH

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,7 +19,6 @@
 
 #include <QDomDocument>
 #include <QDomElement>
-#include <QSharedPointer>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -31,7 +30,7 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Correlation object.
-static QSharedPointer<multiplexing::hooker> obj;
+static misc::shared_ptr<multiplexing::hooker> obj;
 
 extern "C" {
   /**
@@ -86,7 +85,7 @@ extern "C" {
         // File exists, load it.
         if (!correlation_file.isEmpty()) {
           // Create and register correlation object.
-          QSharedPointer<correlation::correlator>
+          misc::shared_ptr<correlation::correlator>
             crltr(new correlation::correlator);
           try {
             crltr->load(correlation_file, retention_file);

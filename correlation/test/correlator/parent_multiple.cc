@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,72 +67,72 @@ int main() {
 
   // Send node status.
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 56;
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 2;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 90;
     ss->service_id = 42;
     ss->state_type = 1;
     ss->current_state = 2;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 42;
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 213;
     ss->service_id = 8;
     ss->state_type = 1;
     ss->current_state = 2;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 56;
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 0;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 42;
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 90;
     ss->service_id = 42;
     ss->state_type = 1;
     ss->current_state = 0;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 213;
     ss->service_id = 8;
     ss->state_type = 1;
     ss->current_state = 0;
-    c.write(ss);
+    c.write(ss.staticCast<io::data>());
   }
 
   // Check correlation content.
-  QList<QSharedPointer<io::data> > content;
+  QList<misc::shared_ptr<io::data> > content;
   add_issue(content, 0, 0, 56, 13, 1);
   add_issue(content, 0, 0, 90, 42, 1);
   add_issue(content, 0, 0, 42, 24, 1);

@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -33,8 +34,9 @@ using namespace com::centreon::broker::exceptions;
  *  @param[in] base Base exception.
  *  @param[in] ptr  Data pointer.
  */
-with_pointer::with_pointer(msg const& base,
-                           QSharedPointer<io::data> ptr) : _ptr(ptr) {
+with_pointer::with_pointer(
+                msg const& base,
+                misc::shared_ptr<io::data> ptr) : _ptr(ptr) {
   try {
     _base.reset(base.clone());
   }
@@ -101,7 +103,7 @@ msg* with_pointer::clone() const {
  *
  *  @return Pointer associated with this exception.
  */
-QSharedPointer<io::data> with_pointer::ptr() const {
+misc::shared_ptr<io::data> with_pointer::ptr() const {
   return (_ptr);
 }
 
@@ -120,6 +122,6 @@ void with_pointer::rethrow() {
  */
 char const* with_pointer::what() const throw () {
   return (!_base.get()
-            ? "generic: unknown chained exception"
-            : _base->what());
+          ? "generic: unknown chained exception"
+          : _base->what());
 }

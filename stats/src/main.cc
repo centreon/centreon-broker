@@ -18,9 +18,9 @@
 */
 
 #include <errno.h>
+#include <memory>
 #include <QDomDocument>
 #include <QDomElement>
-#include <QSharedPointer>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Worker.
-static QSharedPointer<stats::worker> obj;
+static std::auto_ptr<stats::worker> obj;
 
 extern "C" {
   /**
@@ -43,7 +43,7 @@ extern "C" {
    */
   void broker_module_deinit() {
     // Decrement instance number.
-    if (!--instances && obj.data()) {
+    if (!--instances && obj.get()) {
       // Terminate thread.
       obj->exit();
       obj->wait();
@@ -109,7 +109,7 @@ extern "C" {
                      << "' exists but is not a FIFO");
 
             // Create thread.
-            obj = QSharedPointer<stats::worker>(new stats::worker);
+            obj.reset(new stats::worker);
             obj->run(fifo_file);
           }
           catch (std::exception const& e) {

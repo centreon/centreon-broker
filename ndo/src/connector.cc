@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -79,20 +79,20 @@ void connector::close() {
 /**
  *  Open the connector.
  */
-QSharedPointer<io::stream> connector::open() {
-  QSharedPointer<io::stream> retval;
+misc::shared_ptr<io::stream> connector::open() {
+  misc::shared_ptr<io::stream> retval;
   if (!_from.isNull()) {
     retval = _from->open();
-    QSharedPointer<io::stream> ndo_stream;
+    misc::shared_ptr<io::stream> ndo_stream;
     if (!retval.isNull()) {
       if (_is_in) {
         if (_is_out)
-          ndo_stream = QSharedPointer<io::stream>(new ndo::stream);
+          ndo_stream = misc::shared_ptr<io::stream>(new ndo::stream);
         else
-          ndo_stream = QSharedPointer<io::stream>(new ndo::input);
+          ndo_stream = misc::shared_ptr<io::stream>(new ndo::input);
       }
       else
-        ndo_stream = QSharedPointer<io::stream>(new ndo::output);
+        ndo_stream = misc::shared_ptr<io::stream>(new ndo::output);
       ndo_stream->read_from(retval);
       ndo_stream->write_to(retval);
     }

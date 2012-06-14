@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_SUBSCRIBER_HH_
-# define CCB_MULTIPLEXING_SUBSCRIBER_HH_
+#ifndef CCB_MULTIPLEXING_SUBSCRIBER_HH
+#  define CCB_MULTIPLEXING_SUBSCRIBER_HH
 
-# include <QMutex>
-# include <QQueue>
-# include <QWaitCondition>
-# include <time.h>
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QMutex>
+#  include <QQueue>
+#  include <QWaitCondition>
+#  include <time.h>
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -43,29 +43,30 @@ namespace          multiplexing {
    *  @see publisher
    */
   class            subscriber : public io::stream {
-   private:
-    QWaitCondition _cv;
-    QQueue<QSharedPointer<io::data> >
-                   _events;
-    QMutex         _mutex;
-    bool           _process_in;
-    bool           _process_out;
+  public:
+                   subscriber();
+                   ~subscriber();
+    void           process(bool in = false, bool out = true);
+    misc::shared_ptr<io::data>
+                   read();
+    misc::shared_ptr<io::data>
+                   read(time_t deadline);
+    void           write(misc::shared_ptr<io::data> d);
+
+  private:
                    subscriber(subscriber const& s);
     subscriber&    operator=(subscriber const& s);
     void           clean();
 
-   public:
-                   subscriber();
-                   ~subscriber();
-    void           process(bool in = false, bool out = true);
-    QSharedPointer<io::data>
-                   read();
-    QSharedPointer<io::data>
-                   read(time_t deadline);
-    void           write(QSharedPointer<io::data> d);
+    QWaitCondition _cv;
+    QQueue<misc::shared_ptr<io::data> >
+                   _events;
+    QMutex         _mutex;
+    bool           _process_in;
+    bool           _process_out;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_MULTIPLEXING_SUBSCRIBER_HH_ */
+#endif // !CCB_MULTIPLEXING_SUBSCRIBER_HH

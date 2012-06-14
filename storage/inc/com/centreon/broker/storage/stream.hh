@@ -21,10 +21,9 @@
 #  define CCB_STORAGE_STREAM_HH
 
 #  include <map>
+#  include <memory>
 #  include <QList>
 #  include <QMap>
-#  include <QScopedPointer>
-#  include <QSharedPointer>
 #  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
@@ -43,7 +42,7 @@ namespace         storage {
    *  metrics table of a centstorage DB.
    */
   class           stream : public multiplexing::hooker {
-   public:
+  public:
                   stream(
                     QString const& storage_type,
                     QString const& storage_host,
@@ -57,13 +56,13 @@ namespace         storage {
                   stream(stream const& s);
                   ~stream();
     void          process(bool in = false, bool out = true);
-    QSharedPointer<io::data>
+    misc::shared_ptr<io::data>
                   read();
     void          starting();
     void          stopping();
-    void          write(QSharedPointer<io::data> d);
+    void          write(misc::shared_ptr<io::data> d);
 
-   private:
+  private:
     struct         index_info {
       QString      host_name;
       unsigned int index_id;
@@ -74,7 +73,7 @@ namespace         storage {
       double       crit;
       double       max;
       unsigned int metric_id;
-      double        min;
+      double       min;
       QString      unit_name;
       double       warn;
     };
@@ -98,7 +97,7 @@ namespace         storage {
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                   _index_cache;
-    QScopedPointer<QSqlQuery>
+    std::auto_ptr<QSqlQuery>
                   _insert_data_bin;
     time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
@@ -107,9 +106,9 @@ namespace         storage {
     bool          _process_out;
     unsigned int  _rrd_len;
     bool          _store_in_db;
-    QScopedPointer<QSqlQuery>
+    std::auto_ptr<QSqlQuery>
                   _update_metrics;
-    QScopedPointer<QSqlDatabase>
+    std::auto_ptr<QSqlDatabase>
                   _storage_db;
   };
 }

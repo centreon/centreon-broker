@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,9 +33,10 @@ using namespace com::centreon::broker;
  *  @param[in]  started true if correlation engine is started, false
  *                      otherwise.
  */
-void add_engine_state(QList<QSharedPointer<io::data> >& content,
-                      bool started) {
-  QSharedPointer<correlation::engine_state>
+void add_engine_state(
+       QList<misc::shared_ptr<io::data> >& content,
+       bool started) {
+  misc::shared_ptr<correlation::engine_state>
     es(new correlation::engine_state);
   es->started = started;
   content.push_back(es.staticCast<io::data>());
@@ -52,13 +53,14 @@ void add_engine_state(QList<QSharedPointer<io::data> >& content,
  *  @param[in]  service_id Issue service ID.
  *  @param[in]  start_time Issue start time.
  */
-void add_issue(QList<QSharedPointer<io::data> >& content,
-               time_t ack_time,
-               time_t end_time,
-               unsigned int host_id,
-               unsigned int service_id,
-               time_t start_time) {
-  QSharedPointer<correlation::issue> i(new correlation::issue);
+void add_issue(
+       QList<misc::shared_ptr<io::data> >& content,
+       time_t ack_time,
+       time_t end_time,
+       unsigned int host_id,
+       unsigned int service_id,
+       time_t start_time) {
+  misc::shared_ptr<correlation::issue> i(new correlation::issue);
   i->ack_time = ack_time;
   i->end_time = end_time;
   i->host_id = host_id;
@@ -81,16 +83,17 @@ void add_issue(QList<QSharedPointer<io::data> >& content,
  *  @param[in]  parent_start_time Parent start time.
  *  @param[in]  start_time        Parenting start time.
  */
-void add_issue_parent(QList<QSharedPointer<io::data> >& content,
-                      unsigned int child_host_id,
-                      unsigned int child_service_id,
-                      time_t child_start_time,
-                      time_t end_time,
-                      unsigned int parent_host_id,
-                      unsigned int parent_service_id,
-                      time_t parent_start_time,
-                      time_t start_time) {
-  QSharedPointer<correlation::issue_parent>
+void add_issue_parent(
+       QList<misc::shared_ptr<io::data> >& content,
+       unsigned int child_host_id,
+       unsigned int child_service_id,
+       time_t child_start_time,
+       time_t end_time,
+       unsigned int parent_host_id,
+       unsigned int parent_service_id,
+       time_t parent_start_time,
+       time_t start_time) {
+  misc::shared_ptr<correlation::issue_parent>
     ip(new correlation::issue_parent);
   ip->child_host_id = child_host_id;
   ip->child_service_id = child_service_id;
@@ -115,14 +118,15 @@ void add_issue_parent(QList<QSharedPointer<io::data> >& content,
  *  @param[in]  in_downtime   Is in downtime ?
  *  @param[in]  start_time    State start time.
  */
-void add_state_host(QList<QSharedPointer<io::data> >& content,
-                    time_t ack_time,
-                    int current_state,
-                    time_t end_time,
-                    unsigned int host_id,
-                    bool in_downtime,
-                    time_t start_time) {
-  QSharedPointer<correlation::host_state>
+void add_state_host(
+       QList<misc::shared_ptr<io::data> >& content,
+       time_t ack_time,
+       int current_state,
+       time_t end_time,
+       unsigned int host_id,
+       bool in_downtime,
+       time_t start_time) {
+  misc::shared_ptr<correlation::host_state>
     s(new correlation::host_state);
   s->ack_time = ack_time;
   s->current_state = current_state;
@@ -146,15 +150,16 @@ void add_state_host(QList<QSharedPointer<io::data> >& content,
  *  @param[in]  service_id    Service ID.
  *  @param[in]  start_time    State start time.
  */
-void add_state_service(QList<QSharedPointer<io::data> >& content,
-                       time_t ack_time,
-                       int current_state,
-                       time_t end_time,
-                       unsigned int host_id,
-                       bool in_downtime,
-                       unsigned int service_id,
-                       time_t start_time) {
-  QSharedPointer<correlation::service_state>
+void add_state_service(
+       QList<misc::shared_ptr<io::data> >& content,
+       time_t ack_time,
+       int current_state,
+       time_t end_time,
+       unsigned int host_id,
+       bool in_downtime,
+       unsigned int service_id,
+       time_t start_time) {
+  misc::shared_ptr<correlation::service_state>
     s(new correlation::service_state);
   s->ack_time = ack_time;
   s->current_state = current_state;
@@ -175,28 +180,29 @@ void add_state_service(QList<QSharedPointer<io::data> >& content,
  *
  *  @return true if all content was found.
  */
-bool check_content(io::stream& s,
-                   QList<QSharedPointer<io::data> > const& content) {
+bool check_content(
+       io::stream& s,
+       QList<misc::shared_ptr<io::data> > const& content) {
   bool retval(true);
-  for (QList<QSharedPointer<io::data> >::const_iterator
-         it = content.begin(),
-         end = content.end();
+  for (QList<misc::shared_ptr<io::data> >::const_iterator
+         it(content.begin()),
+         end(content.end());
        retval && (it != end);) {
-    QSharedPointer<io::data> d(s.read());
+    misc::shared_ptr<io::data> d(s.read());
     if (d.isNull())
       retval = false;
     else if (d->type() == (*it)->type()) {
       if (d->type() == "com::centreon::broker::correlation::engine_state") {
-        QSharedPointer<correlation::engine_state>
+        misc::shared_ptr<correlation::engine_state>
           es1(d.staticCast<correlation::engine_state>());
-        QSharedPointer<correlation::engine_state>
+        misc::shared_ptr<correlation::engine_state>
           es2(it->staticCast<correlation::engine_state>());
         retval = (es1->started == es2->started);
       }
       else if (d->type() == "com::centreon::broker::correlation::issue") {
-        QSharedPointer<correlation::issue>
+        misc::shared_ptr<correlation::issue>
           i1(d.staticCast<correlation::issue>());
-        QSharedPointer<correlation::issue>
+        misc::shared_ptr<correlation::issue>
           i2(it->staticCast<correlation::issue>());
         retval = ((i1->ack_time == i2->ack_time)
                   && ((i1->end_time && i2->end_time)
@@ -208,9 +214,9 @@ bool check_content(io::stream& s,
       }
       else if (d->type()
                == "com::centreon::broker::correlation::issue_parent") {
-        QSharedPointer<correlation::issue_parent>
+        misc::shared_ptr<correlation::issue_parent>
           ip1(d.staticCast<correlation::issue_parent>());
-        QSharedPointer<correlation::issue_parent>
+        misc::shared_ptr<correlation::issue_parent>
           ip2(it->staticCast<correlation::issue_parent>());
         retval = ((ip1->child_host_id == ip2->child_host_id)
                   && (ip1->child_service_id == ip2->child_service_id)
@@ -229,9 +235,9 @@ bool check_content(io::stream& s,
       }
       else if (d->type()
                == "com::centreon::broker::correlation::host_state") {
-        QSharedPointer<correlation::host_state>
+        misc::shared_ptr<correlation::host_state>
           s1(d.staticCast<correlation::host_state>());
-        QSharedPointer<correlation::host_state>
+        misc::shared_ptr<correlation::host_state>
           s2(it->staticCast<correlation::host_state>());
         retval = ((s1->ack_time == s2->ack_time)
                   && (s1->current_state == s2->current_state)
@@ -244,9 +250,9 @@ bool check_content(io::stream& s,
       }
       else if (d->type()
                == "com::centreon::broker::correlation::service_state") {
-        QSharedPointer<correlation::service_state>
+        misc::shared_ptr<correlation::service_state>
           s1(d.staticCast<correlation::service_state>());
-        QSharedPointer<correlation::service_state>
+        misc::shared_ptr<correlation::service_state>
           s2(it->staticCast<correlation::service_state>());
         retval = ((s1->ack_time == s2->ack_time)
                   && (s1->current_state == s2->current_state)

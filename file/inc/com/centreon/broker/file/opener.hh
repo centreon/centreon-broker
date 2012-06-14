@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,27 +25,27 @@
 
 CCB_BEGIN()
 
-namespace                      file {
+namespace                        file {
   /**
    *  @class opener opener.hh "com/centreon/broker/file/opener.hh"
    *  @brief Open a file stream.
    *
    *  Open a file stream.
    */
-  class                        opener : public io::endpoint {
+  class                          opener : public io::endpoint {
    private:
-    QString                    _filename;
-    bool                       _is_in;
-    bool                       _is_out;
+    QString                      _filename;
+    bool                         _is_in;
+    bool                         _is_out;
 
    public:
-                               opener(bool is_in, bool is_out);
-                               opener(opener const& o);
-                               ~opener();
-    opener&                    operator=(opener const& o);
-    void                       close();
-    QSharedPointer<io::stream> open();
-    void                       set_filename(QString const& filename);
+                                 opener(bool is_in, bool is_out);
+                                 opener(opener const& o);
+                                 ~opener();
+    opener&                      operator=(opener const& o);
+    void                         close();
+    misc::shared_ptr<io::stream> open();
+    void                         set_filename(QString const& filename);
   };
 }
 

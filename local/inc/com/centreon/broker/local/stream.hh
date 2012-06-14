@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,14 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOCAL_STREAM_HH_
-# define CCB_LOCAL_STREAM_HH_
+#ifndef CCB_LOCAL_STREAM_HH
+#  define CCB_LOCAL_STREAM_HH
 
-# include <QLocalSocket>
-# include <QMutex>
-# include <QSharedPointer>
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QLocalSocket>
+#  include <QMutex>
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -36,31 +35,32 @@ namespace   local {
    *  Local socket stream.
    */
   class     stream : public io::stream {
+  public:
+            stream(misc::shared_ptr<QLocalSocket> sock);
+            stream(
+              misc::shared_ptr<QLocalSocket> sock,
+              misc::shared_ptr<QMutex> mutex);
+            ~stream();
+    void    process(bool in = false, bool out = true);
+    misc::shared_ptr<io::data>
+            read();
+    void    set_timeout(int msecs);
+    void    write(misc::shared_ptr<io::data> d);
+
    private:
-    QSharedPointer<QMutex>
-            _mutex;
-    bool    _process_in;
-    bool    _process_out;
-    QSharedPointer<QLocalSocket>
-            _socket;
-    int     _timeout;
             stream(stream const& s);
     stream& operator=(stream const& s);
 
-   public:
-            stream(QSharedPointer<QLocalSocket> sock);
-            stream(
-              QSharedPointer<QLocalSocket> sock,
-              QSharedPointer<QMutex> mutex);
-            ~stream();
-    void    process(bool in = false, bool out = true);
-    QSharedPointer<io::data>
-            read();
-    void    set_timeout(int msecs);
-    void    write(QSharedPointer<io::data> d);
+    misc::shared_ptr<QMutex>
+            _mutex;
+    bool    _process_in;
+    bool    _process_out;
+    misc::shared_ptr<QLocalSocket>
+            _socket;
+    int     _timeout;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_LOCAL_STREAM_HH_ */
+#endif // !CCB_LOCAL_STREAM_HH

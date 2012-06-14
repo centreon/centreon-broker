@@ -18,7 +18,6 @@
 */
 
 #include <QMutexLocker>
-#include <QScopedPointer>
 #include <QWaitCondition>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -85,23 +84,20 @@ acceptor& acceptor::operator=(acceptor const& a) {
  */
 void acceptor::close() {
   QMutexLocker lock(&_mutex);
-  if (!_socket.isNull()) {
+  if (_socket.get()) {
     {
       QMutexLocker childrenm(&_childrenm);
-      for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-             it = _children.begin(),
-             end = _children.end();
-           it != end;
-           ++it) {
-        QMutexLocker l(it->second.data());
-        QSharedPointer<QTcpSocket> sock = it->first.toStrongRef();
-        if (sock)
-          sock->close();
+      while (!_children.isEmpty()) {
+        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >&
+          p(_children.front());
+        QMutexLocker l(p.second.data());
+        p.first->close();
+        _children.pop_front();
       }
     }
     _socket->close();
     _socket->deleteLater();
-    _socket.take();
+    _socket.release();
   }
   return ;
 }
@@ -120,10 +116,10 @@ void acceptor::listen_on(unsigned short port) {
 /**
  *  Start connection acception.
  */
-QSharedPointer<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   QMutexLocker lock(&_mutex);
-  if (_socket.isNull()) {
+  if (!_socket.get()) {
     _socket.reset(_tls ? new tls_server(_private, _public, _ca)
                        : new QTcpServer);
     if (!_socket->listen(QHostAddress::Any, _port)) {
@@ -143,37 +139,48 @@ QSharedPointer<io::stream> acceptor::open() {
     QWaitCondition cv;
     cv.wait(&_mutex, 10);
     timedout = false;
-    ret = !_socket.isNull()
+    ret = _socket.get()
       && _socket->waitForNewConnection(200, &timedout);
   }
   if (!ret)
     throw (exceptions::msg() << "TCP: error while waiting client: "
-             << (_socket.isNull()
+             << (!_socket.get()
                  ? "socket was deleted"
                  : _socket->errorString()));
 
   // Accept client.
-  QSharedPointer<QTcpSocket> incoming(_socket->nextPendingConnection());
+  misc::shared_ptr<QTcpSocket> incoming(_socket->nextPendingConnection());
   if (incoming.isNull())
     throw (exceptions::msg() << "TCP: could not accept client: "
              << _socket->errorString());
   logging::info(logging::medium) << "TCP: new client connected";
 
   // Create child objects.
-  QSharedPointer<QMutex> mutex(new QMutex);
+  misc::shared_ptr<QMutex> mutex(new QMutex);
   connect(
     incoming.data(),
     SIGNAL(destroyed(QObject*)),
     this,
     SLOT(_on_stream_destroy(QObject*)));
+  connect(
+    incoming.data(),
+    SIGNAL(disconnected(QObject*)),
+    this,
+    SLOT(_on_stream_destroy(QObject*)));
+  connect(
+    incoming.data(),
+    SIGNAL(error(QObject*)),
+    this,
+    SLOT(_on_stream_destroy(QObject*)));
   {
     QMutexLocker lock(&_childrenm);
-    QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > tmp(incoming, mutex);
+    QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
+      tmp(incoming, mutex);
     _children.push_back(tmp);
   }
 
   // Return object.
-  return (QSharedPointer<io::stream>(new stream(incoming, mutex)));
+  return (misc::shared_ptr<io::stream>(new stream(incoming, mutex)));
 }
 
 /**
@@ -205,15 +212,15 @@ void acceptor::stats(std::string& buffer) {
   QMutexLocker children_lock(&_childrenm);
   std::ostringstream oss;
   oss << "peers=" << _children.size() << "\n";
-  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-         it = _children.begin(),
-         end = _children.end();
+  for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
+         it(_children.begin()),
+         end(_children.end());
        it != end;
        ++it) {
     QMutexLocker lock(it->second.data());
     if (!it->first.isNull())
-      oss << "  " << it->first.toStrongRef()->peerAddress().toString().toStdString()
-          << ":" << it->first.toStrongRef()->peerPort() << "\n";
+      oss << "  " << it->first->peerAddress().toString().toStdString()
+          << ":" << it->first->peerPort() << "\n";
   }
   buffer.append(oss.str());
   return ;
@@ -243,16 +250,20 @@ void acceptor::_internal_copy(acceptor const& a) {
  *  Called when a child TCP socket is destroyed.
  */
 void acceptor::_on_stream_destroy(QObject* obj) {
+  // No object, no processing.
   if (!obj)
     return ;
 
+  // Retrieve QTcpSocket object.
   QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
 
+  // Find and remove matching entry.
   QMutexLocker lock(&_childrenm);
-  for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-         it = _children.begin(), end = _children.end();
+  for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
+         it(_children.begin()),
+         end(_children.end());
        it != end;
-       ++it)
+         ++it)
     if (it->first.data() == sock) {
       _children.erase(it);
       break ;

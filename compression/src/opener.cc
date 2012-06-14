@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -77,8 +77,8 @@ void opener::close() {
  *
  *  @return New compression object.
  */
-QSharedPointer<io::stream> opener::open() {
-  return (QSharedPointer<io::stream>(new stream(_level, _size)));
+misc::shared_ptr<io::stream> opener::open() {
+  return (misc::shared_ptr<io::stream>(new stream(_level, _size)));
 }
 
 /**

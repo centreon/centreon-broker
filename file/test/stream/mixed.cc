@@ -44,14 +44,14 @@ static int read_some(file::stream& f, unsigned int count) {
 
   // Find all numbers.
   int retval(0);
-  for (unsigned int i = 0; i < count; ++i) {
+  for (unsigned int i(0); i < count; ++i) {
     // Find carriage return.
     int index(buffer.indexOf('\n'));
     while (-1 == index) {
-      QSharedPointer<io::data> d(f.read());
+      misc::shared_ptr<io::data> d(f.read());
       if (d->type() != "com::centreon::broker::io::raw")
         return (1);
-      QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       buffer.append(*r);
       index = buffer.indexOf('\n');
     }
@@ -84,9 +84,9 @@ static int write_some(file::stream& f, unsigned int count) {
     char buffer[32];
     ++written;
     snprintf(buffer, sizeof(buffer) - 1, "%u\n", written);
-    QSharedPointer<io::raw> data(new io::raw);
+    misc::shared_ptr<io::raw> data(new io::raw);
     data->append(buffer);
-    f.write(data);
+    f.write(data.staticCast<io::data>());
   }
   return (0);
 }

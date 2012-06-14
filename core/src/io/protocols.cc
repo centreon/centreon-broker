@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -25,48 +26,6 @@ using namespace com::centreon::broker::io;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Default constructor.
- */
-protocols::protocols() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Should not be used. Any attempt to use this constructor will result
- *  in a call to abort().
- *
- *  @param[in] p Unused.
- */
-protocols::protocols(protocols const& p) {
-  (void)p;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Should not be used. Any attempt to use this method will result in a
- *  call to abort().
- *
- *  @param[in] p Unused.
- *
- *  @return This object.
- */
-protocols& protocols::operator=(protocols const& p) {
-  (void)p;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -75,7 +34,7 @@ protocols& protocols::operator=(protocols const& p) {
  *  Destructor.
  */
 protocols::~protocols() {
-  logging::info << logging::LOW << "protocols: destruction ("
+  logging::info(logging::low) << "protocols: destruction ("
     << _protocols.size() << " protocols still registered)";
 }
 
@@ -116,13 +75,14 @@ protocols& protocols::instance() {
  *  @param[in] osi_from     OSI layer this protocol supports.
  *  @param[in] osi_to       OSI layer this protocol supports.
  */
-void protocols::reg(QString const& name,
-                    factory const& fac,
-                    unsigned short osi_from,
-                    unsigned short osi_to) {
+void protocols::reg(
+                  QString const& name,
+                  factory const& fac,
+                  unsigned short osi_from,
+                  unsigned short osi_to) {
   // Set protocol structure.
   protocol p;
-  p.endpntfactry = QSharedPointer<factory>(fac.clone());
+  p.endpntfactry = misc::shared_ptr<factory>(fac.clone());
   p.osi_from = osi_from;
   p.osi_to = osi_to;
 
@@ -140,4 +100,46 @@ void protocols::reg(QString const& name,
 void protocols::unreg(QString const& name) {
   _protocols.remove(name);
   return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Default constructor.
+ */
+protocols::protocols() {}
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Should not be used. Any attempt to use this constructor will result
+ *  in a call to abort().
+ *
+ *  @param[in] p Unused.
+ */
+protocols::protocols(protocols const& p) {
+  (void)p;
+  assert(!"protocols are not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Should not be used. Any attempt to use this method will result in a
+ *  call to abort().
+ *
+ *  @param[in] p Unused.
+ *
+ *  @return This object.
+ */
+protocols& protocols::operator=(protocols const& p) {
+  (void)p;
+  assert(!"protocols are not copyable");
+  abort();
+  return (*this);
 }

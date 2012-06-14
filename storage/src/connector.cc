@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -59,29 +59,6 @@ static void to_qt_sql_type(QString const& type, QString& out) {
     out = "QTDS";
   else
     out = type;
-  return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] c Object to copy.
- */
-void connector::_internal_copy(connector const& c) {
-  _interval_length = c._interval_length;
-  _rrd_len = c._rrd_len;
-  _storage_db = c._storage_db;
-  _storage_host = c._storage_host;
-  _storage_password = c._storage_password;
-  _storage_port = c._storage_port;
-  _storage_user = c._storage_user;
-  _storage_type = c._storage_type;
   return ;
 }
 
@@ -169,13 +146,37 @@ void connector::connect_to(QString const& storage_type,
  *
  *  @return Storage connection object.
  */
-QSharedPointer<io::stream> connector::open() {
-  return (QSharedPointer<io::stream>(new stream(_storage_type,
-            _storage_host,
-            _storage_port,
-            _storage_user,
-            _storage_password,
-            _storage_db,
-            _rrd_len,
-            _interval_length)));
+misc::shared_ptr<io::stream> connector::open() {
+  return (misc::shared_ptr<io::stream>(new stream(
+                                             _storage_type,
+                                             _storage_host,
+                                             _storage_port,
+                                             _storage_user,
+                                             _storage_password,
+                                             _storage_db,
+                                             _rrd_len,
+                                             _interval_length)));
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] c Object to copy.
+ */
+void connector::_internal_copy(connector const& c) {
+  _interval_length = c._interval_length;
+  _rrd_len = c._rrd_len;
+  _storage_db = c._storage_db;
+  _storage_host = c._storage_host;
+  _storage_password = c._storage_password;
+  _storage_port = c._storage_port;
+  _storage_user = c._storage_user;
+  _storage_type = c._storage_type;
+  return ;
 }

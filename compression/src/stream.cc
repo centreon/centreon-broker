@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,84 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QSharedPointer>
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Flush data accumulated in write buffer.
- */
-void stream::_flush() {
-  if (_wbuffer.size() > 0) {
-    // Compress data.
-    QSharedPointer<io::raw> compressed(new io::raw);
-    compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
-    _wbuffer.clear();
-
-    // Add compressed data size.
-    char buffer[4];
-    unsigned int size(compressed->size());
-    buffer[0] = (size >> 24) & 0xFF;
-    buffer[1] = (size >> 16) & 0xFF;
-    buffer[2] = (size >> 8) & 0xFF;
-    buffer[3] = size & 0xFF;
-    compressed->prepend(buffer, sizeof(buffer));
-
-    // Send compressed data.
-    _to->write(compressed);
-  }
-
-  return ;
-}
-
-/**
- *  Get data with a fixed size.
- *
- *  @param[in] size Data size to get.
- */
-bool stream::_get_data(unsigned int size) {
-  bool retval;
-  if (static_cast<unsigned int>(_rbuffer.size()) < size) {
-    QSharedPointer<io::data> d(_from->read());
-    if (d.isNull())
-      retval = false;
-    else {
-      if (d->type() == "com::centreon::broker::io::raw") {
-        QSharedPointer<io::raw> r(d.staticCast<io::raw>());
-        _rbuffer.append(*r);
-      }
-      retval = _get_data(size);
-    }
-  }
-  else
-    retval = true;
-  return (retval);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] s Object to copy.
- */
-void stream::_internal_copy(stream const& s) {
-  _level = s._level;
-  _process_in = s._process_in;
-  _process_out = s._process_out;
-  _rbuffer = s._rbuffer;
-  _size = s._size;
-  _wbuffer = s._wbuffer;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -157,9 +85,9 @@ void stream::process(bool in, bool out) {
  *
  *  @return Data packet.
  */
-QSharedPointer<io::data> stream::read() {
+misc::shared_ptr<io::data> stream::read() {
   // Return value.
-  QSharedPointer<io::data> data;
+  misc::shared_ptr<io::data> data;
 
   // Check that data should be processed.
   if (!_process_in)
@@ -179,7 +107,7 @@ QSharedPointer<io::data> stream::read() {
 
     // Get compressed data.
     if (_get_data(size + 4)) {
-      QSharedPointer<io::raw> r(new io::raw);
+      misc::shared_ptr<io::raw> r(new io::raw);
       r->QByteArray::operator=(qUncompress(static_cast<uchar*>(
                                  static_cast<void*>((_rbuffer.data()
                                    + 4))),
@@ -202,7 +130,7 @@ QSharedPointer<io::data> stream::read() {
  *
  *  @param[in] d Data to send.
  */
-void stream::write(QSharedPointer<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> d) {
   // Check that data should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -211,12 +139,83 @@ void stream::write(QSharedPointer<io::data> d) {
   // Process raw data only.
   if (d->type() == "com::centreon::broker::io::raw") {
     // Append data to write buffer.
-    QSharedPointer<io::raw> r(d.staticCast<io::raw>());
+    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     _wbuffer.append(*r);
 
     // Send compressed data if size limit is reached.
     if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
       _flush();
   }
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Flush data accumulated in write buffer.
+ */
+void stream::_flush() {
+  if (_wbuffer.size() > 0) {
+    // Compress data.
+    misc::shared_ptr<io::raw> compressed(new io::raw);
+    compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
+    _wbuffer.clear();
+
+    // Add compressed data size.
+    char buffer[4];
+    unsigned int size(compressed->size());
+    buffer[0] = (size >> 24) & 0xFF;
+    buffer[1] = (size >> 16) & 0xFF;
+    buffer[2] = (size >> 8) & 0xFF;
+    buffer[3] = size & 0xFF;
+    compressed->prepend(buffer, sizeof(buffer));
+
+    // Send compressed data.
+    _to->write(compressed.staticCast<io::data>());
+  }
+
+  return ;
+}
+
+/**
+ *  Get data with a fixed size.
+ *
+ *  @param[in] size Data size to get.
+ */
+bool stream::_get_data(unsigned int size) {
+  bool retval;
+  if (static_cast<unsigned int>(_rbuffer.size()) < size) {
+    misc::shared_ptr<io::data> d(_from->read());
+    if (d.isNull())
+      retval = false;
+    else {
+      if (d->type() == "com::centreon::broker::io::raw") {
+        misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+        _rbuffer.append(*r);
+      }
+      retval = _get_data(size);
+    }
+  }
+  else
+    retval = true;
+  return (retval);
+}
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] s Object to copy.
+ */
+void stream::_internal_copy(stream const& s) {
+  _level = s._level;
+  _process_in = s._process_in;
+  _process_out = s._process_out;
+  _rbuffer = s._rbuffer;
+  _size = s._size;
+  _wbuffer = s._wbuffer;
   return ;
 }

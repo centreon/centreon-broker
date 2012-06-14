@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,24 +24,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::local;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] c Object to copy.
- */
-void connector::_internal_copy(connector const& c) {
-  _name = c._name;
-  _socket = c._socket;
-  _timeout = c._timeout;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -124,7 +106,7 @@ void connector::connect_to(QString const& name) {
  *
  *  @return A new connection object.
  */
-QSharedPointer<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open() {
   // Close previous connection.
   this->close();
 
@@ -132,7 +114,7 @@ QSharedPointer<io::stream> connector::open() {
   QMutexLocker lock(&*_mutex);
 
   // Launch connection process.
-  _socket = QSharedPointer<QLocalSocket>(new QLocalSocket);
+  _socket = misc::shared_ptr<QLocalSocket>(new QLocalSocket);
   _socket->connectToServer(_name);
 
   // Wait for connection result.
@@ -147,7 +129,7 @@ QSharedPointer<io::stream> connector::open() {
     << "local: successfully connected to '" << _name << "'";
 
   // Return stream.
-  QSharedPointer<stream> s(new stream(_socket, _mutex));
+  misc::shared_ptr<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
   return (s.staticCast<io::stream>());
 }
@@ -159,5 +141,23 @@ QSharedPointer<io::stream> connector::open() {
  */
 void connector::set_timeout(int msecs) {
   _timeout = msecs;
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] c Object to copy.
+ */
+void connector::_internal_copy(connector const& c) {
+  _name = c._name;
+  _socket = c._socket;
+  _timeout = c._timeout;
   return ;
 }

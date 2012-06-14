@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -76,7 +76,7 @@ class               concurrent : public QThread {
 
     // Will throw when socket is closed.
     try {
-      QSharedPointer<io::stream> s(_conn->open());
+      misc::shared_ptr<io::stream> s(_conn->open());
       while (true)
         s->read();
     }
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 
   {
     // Wait for connection.
-    QSharedPointer<io::stream> s(a.open());
+    misc::shared_ptr<io::stream> s(a.open());
 
     // Concurrently close connector.
     c.close();

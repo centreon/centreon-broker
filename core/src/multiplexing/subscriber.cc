@@ -30,51 +30,6 @@ using namespace com::centreon::broker::multiplexing;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  subscriber is not copyable. Any attempt to use the copy constructor
- *  will result in a call to abort().
- *
- *  @param[in] s Unused.
- */
-subscriber::subscriber(subscriber const& s) : io::stream(s) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  subscriber is not copyable. Any attempt to use the assignment
- *  operator will result in a call to abort().
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-subscriber& subscriber::operator=(subscriber const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
-
-/**
- *  Release all events stored within the internal list.
- */
-void subscriber::clean() {
-  QMutexLocker lock(&_mutex);
-  _events.clear();
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -150,7 +105,7 @@ void subscriber::process(bool in, bool out) {
  *
  *  @return Next available event.
  */
-QSharedPointer<io::data> subscriber::read() {
+misc::shared_ptr<io::data> subscriber::read() {
   return (this->read(-1));
 }
 
@@ -162,8 +117,8 @@ QSharedPointer<io::data> subscriber::read() {
  *
  *  @return Next available event, NULL if timeout occured.
  */
-QSharedPointer<io::data> subscriber::read(time_t deadline) {
-  QSharedPointer<io::data> event;
+misc::shared_ptr<io::data> subscriber::read(time_t deadline) {
+  misc::shared_ptr<io::data> event;
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
@@ -202,9 +157,54 @@ QSharedPointer<io::data> subscriber::read(time_t deadline) {
  *
  *  @param[in] event Event to add.
  */
-void subscriber::write(QSharedPointer<io::data> event) {
+void subscriber::write(misc::shared_ptr<io::data> event) {
   QMutexLocker lock(&_mutex);
   _events.enqueue(event);
   _cv.wakeOne();
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  subscriber is not copyable. Any attempt to use the copy constructor
+ *  will result in a call to abort().
+ *
+ *  @param[in] s Unused.
+ */
+subscriber::subscriber(subscriber const& s) : io::stream(s) {
+  assert(!"subscriber is not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  subscriber is not copyable. Any attempt to use the assignment
+ *  operator will result in a call to abort().
+ *
+ *  @param[in] s Unused.
+ *
+ *  @return This object.
+ */
+subscriber& subscriber::operator=(subscriber const& s) {
+  (void)s;
+  assert(!"subscriber is not copyable");
+  abort();
+  return (*this);
+}
+
+/**
+ *  Release all events stored within the internal list.
+ */
+void subscriber::clean() {
+  QMutexLocker lock(&_mutex);
+  _events.clear();
   return ;
 }

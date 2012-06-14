@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -79,7 +79,7 @@ void opener::close() {
  *
  *  @return Opened stream.
  */
-QSharedPointer<io::stream> opener::open() {
+misc::shared_ptr<io::stream> opener::open() {
   QIODevice::OpenMode mode;
   if (_is_in)
     mode = QIODevice::ReadWrite;
@@ -88,7 +88,7 @@ QSharedPointer<io::stream> opener::open() {
   else
     throw (exceptions::msg()
              << "file: attempt to open a file with invalid flags");
-  return (QSharedPointer<io::stream>(new stream(_filename, mode)));
+  return (misc::shared_ptr<io::stream>(new stream(_filename, mode)));
 }
 
 /**

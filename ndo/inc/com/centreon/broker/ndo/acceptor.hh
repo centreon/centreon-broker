@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NDO_ACCEPTOR_HH_
-# define CCB_NDO_ACCEPTOR_HH_
+#ifndef CCB_NDO_ACCEPTOR_HH
+#  define CCB_NDO_ACCEPTOR_HH
 
-# include <QThread>
-# include <QVector>
-# include "com/centreon/broker/io/endpoint.hh"
+#  include <QThread>
+#  include <QVector>
+#  include "com/centreon/broker/io/endpoint.hh"
 
 namespace           com {
   namespace         centreon {
@@ -37,6 +37,15 @@ namespace           com {
         class       acceptor : public QObject, public io::endpoint {
           Q_OBJECT
 
+         public:
+                    acceptor(bool is_out);
+                    acceptor(acceptor const& a);
+                    ~acceptor();
+          acceptor& operator=(acceptor const& a);
+          void      close();
+          misc::shared_ptr<io::stream>
+                    open();
+
          private:
           bool      _is_out;
           QVector<QThread*>
@@ -44,19 +53,10 @@ namespace           com {
 
          private slots:
           void      _on_thread_termination();
-
-         public:
-                    acceptor(bool is_out);
-                    acceptor(acceptor const& a);
-                    ~acceptor();
-          acceptor& operator=(acceptor const& a);
-          void      close();
-          QSharedPointer<io::stream>
-                    open();
         };
       }
     }
   }
 }
 
-#endif /* !CCB_NDO_ACCEPTOR_HH_ */
+#endif // !CCB_NDO_ACCEPTOR_HH

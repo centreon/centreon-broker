@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOCAL_ACCEPTOR_HH_
-# define CCB_LOCAL_ACCEPTOR_HH_
+#ifndef CCB_LOCAL_ACCEPTOR_HH
+#  define CCB_LOCAL_ACCEPTOR_HH
 
-# include <QLocalServer>
-# include <QMutex>
-# include <QScopedPointer>
-# include <QString>
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <memory>
+#  include <QLocalServer>
+#  include <QMutex>
+#  include <QString>
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -37,22 +37,22 @@ namespace                        local {
    *  Accept local connections.
    */
   class                          acceptor : public io::endpoint {
-   private:
-    QMutex                       _mutex;
-    QString                      _name;
-    QScopedPointer<QLocalServer> _socket;
-
-   public:
+  public:
                                  acceptor();
                                  acceptor(acceptor const& a);
                                  ~acceptor();
     acceptor&                    operator=(acceptor const& a);
     void                         close();
     void                         listen_on(QString const& name);
-    QSharedPointer<io::stream>   open();
+    misc::shared_ptr<io::stream> open();
+
+  private:
+    QMutex                       _mutex;
+    QString                      _name;
+    std::auto_ptr<QLocalServer>  _socket;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_LOCAL_ACCEPTOR_HH_ */
+#endif // !CCB_LOCAL_ACCEPTOR_HH

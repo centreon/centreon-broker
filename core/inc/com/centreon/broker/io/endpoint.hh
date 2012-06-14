@@ -20,14 +20,14 @@
 #ifndef CCB_IO_ENDPOINT_HH
 #  define CCB_IO_ENDPOINT_HH
 
-#  include <QSharedPointer>
 #  include <string>
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                          io {
+namespace                            io {
   /**
    *  @class endpoint endpoint.hh "com/centreon/broker/io/endpoint.hh"
    *  @brief Base class of connectors and acceptors.
@@ -36,26 +36,28 @@ namespace                          io {
    *  acceptors (which wait for incoming connections) or connectors
    *  (that initiate connections).
    */
-  class                            endpoint {
+  class                              endpoint {
    public:
-                                   endpoint(bool is_accptr);
-                                   endpoint(endpoint const& e);
-    virtual                        ~endpoint();
-    endpoint&                      operator=(endpoint const& e);
-    virtual void                   close() = 0;
-    void                           from(QSharedPointer<endpoint> endp);
-    bool                           is_acceptor() const throw ();
-    bool                           is_connector() const throw ();
-    virtual QSharedPointer<stream> open() = 0;
-    virtual void                   stats(std::string& buffer);
+                                     endpoint(bool is_accptr);
+                                     endpoint(endpoint const& e);
+    virtual                          ~endpoint();
+    endpoint&                        operator=(endpoint const& e);
+    virtual void                     close() = 0;
+    void                             from(
+                                       misc::shared_ptr<endpoint> endp);
+    bool                             is_acceptor() const throw ();
+    bool                             is_connector() const throw ();
+    virtual misc::shared_ptr<stream> open() = 0;
+    virtual void                     stats(std::string& buffer);
 
    protected:
-    QSharedPointer<endpoint>       _from;
-    bool                           _is_acceptor;
-    void                           _internal_copy(endpoint const& e);
+    void                             _internal_copy(endpoint const& e);
+
+    misc::shared_ptr<endpoint>       _from;
+    bool                             _is_acceptor;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_IO_ENDPOINT_HH_ */
+#endif // !CCB_IO_ENDPOINT_HH

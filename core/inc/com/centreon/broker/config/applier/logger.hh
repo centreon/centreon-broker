@@ -22,9 +22,9 @@
 
 #  include <QList>
 #  include <QMap>
-#  include <QSharedPointer>
 #  include "com/centreon/broker/config/logger.hh"
 #  include "com/centreon/broker/logging/backend.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -49,10 +49,10 @@ namespace            config {
                      logger(logger const& l);
       logger&        operator=(logger const& l);
       void           _internal_copy(logger const& l);
-      QSharedPointer<logging::backend>
+      misc::shared_ptr<logging::backend>
                      _new_backend(config::logger const& cfg);
 
-      QMap<config::logger, QSharedPointer<logging::backend> >
+      QMap<config::logger, misc::shared_ptr<logging::backend> >
                      _backends;
     };
   }

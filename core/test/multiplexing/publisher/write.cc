@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,7 +46,7 @@ int main() {
 
   // Publish event.
   {
-    QSharedPointer<io::raw> raw(new io::raw);
+    misc::shared_ptr<io::raw> raw(new io::raw);
     raw->append(MSG1);
     p.write(raw.staticCast<io::data>());
   }
@@ -56,7 +56,7 @@ int main() {
 
   // Publish another event.
   {
-    QSharedPointer<io::raw> raw(new io::raw);
+    misc::shared_ptr<io::raw> raw(new io::raw);
     raw->append(MSG2);
     p.write(raw.staticCast<io::data>());
   }
@@ -65,12 +65,12 @@ int main() {
   int retval(0);
   char const* messages[] = { MSG1, MSG2, NULL };
   for (unsigned int i = 0; messages[i]; ++i) {
-    QSharedPointer<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data(s.read(0));
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;
     else {
-      QSharedPointer<io::raw> raw(data.staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         messages[i],

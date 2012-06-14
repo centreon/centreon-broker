@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,8 +67,8 @@ hooker& hooker::operator=(hooker const& h) {
  *
  *  @return Event.
  */
-QSharedPointer<io::data> hooker::read() {
-  QSharedPointer<io::data> d;
+misc::shared_ptr<io::data> hooker::read() {
+  misc::shared_ptr<io::data> d;
   if (!_queue.isEmpty()) {
     d = _queue.head();
     _queue.dequeue();
@@ -83,9 +83,9 @@ QSharedPointer<io::data> hooker::read() {
  *  Multiplexing engine is starting.
  */
 void hooker::starting() {
-  QSharedPointer<io::raw> raw(new io::raw);
+  misc::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG1);
-  _queue.enqueue(raw);
+  _queue.enqueue(raw.staticCast<io::data>());
   return ;
 }
 
@@ -93,9 +93,9 @@ void hooker::starting() {
  *  Multiplexing engine is stopping.
  */
 void hooker::stopping() {
-  QSharedPointer<io::raw> raw(new io::raw);
+  misc::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG3);
-  _queue.enqueue(raw);
+  _queue.enqueue(raw.staticCast<io::data>());
   return ;
 }
 
@@ -104,15 +104,15 @@ void hooker::stopping() {
  *
  *  @param[in] d Ignored.
  */
-void hooker::write(QSharedPointer<io::data> d) {
+void hooker::write(misc::shared_ptr<io::data> d) {
   (void)d;
   if (_registered) {
-    QSharedPointer<io::raw> raw(new io::raw);
+    misc::shared_ptr<io::raw> raw(new io::raw);
     raw->append(HOOKMSG2);
-    _queue.enqueue(raw);
+    _queue.enqueue(raw.staticCast<io::data>());
   }
   else
     throw (io::exceptions::shutdown(true, true)
-             << "hooker test object is shutdown");
+           << "hooker test object is shutdown");
   return ;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,12 +54,12 @@ int main(int argc, char* argv[]) {
   QFile::remove(path);
 
   // File stream.
-  QSharedPointer<file::stream>
+  misc::shared_ptr<file::stream>
     fs(new file::stream(path, QIODevice::ReadWrite));
 
   {
     // Buffer that will be written.
-    QSharedPointer<io::raw> buffer(new io::raw);
+    misc::shared_ptr<io::raw> buffer(new io::raw);
     buffer->fill('\n', 8000);
     buffer->append(
       "42=21\n" \
@@ -68,16 +68,16 @@ int main(int argc, char* argv[]) {
       "\n");
 
     // Write buffer to file.
-    fs->write(buffer);
+    fs->write(buffer.staticCast<io::data>());
   }
 
   // NDO stream.
   ndo::stream ns;
-  ns.read_from(fs);
-  ns.write_to(fs);
+  ns.read_from(fs.staticCast<io::stream>());
+  ns.write_to(fs.staticCast<io::stream>());
 
   // Sample object.
-  QSharedPointer<neb::acknowledgement> ack(new neb::acknowledgement);
+  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
   ack->acknowledgement_type = 1;
   ack->author = "Matthieu Kermagoret";
   ack->comment = "This is a comment.";
@@ -91,15 +91,15 @@ int main(int argc, char* argv[]) {
   ack->state = 2;
 
   // Write to NDO stream.
-  ns.write(ack);
+  ns.write(ack.staticCast<io::data>());
 
   // Now the check begins.
   int retval(0);
-  QSharedPointer<io::data> d(ns.read());
+  misc::shared_ptr<io::data> d(ns.read());
   if (d.isNull() || (d->type() != ack->type()))
     retval = 1;
   else {
-    QSharedPointer<neb::acknowledgement>
+    misc::shared_ptr<neb::acknowledgement>
       readack(d.staticCast<neb::acknowledgement>());
     retval = ((ack->acknowledgement_type
                != readack->acknowledgement_type)
@@ -117,8 +117,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Erase temporary file.
-  ns.read_from(QSharedPointer<io::stream>());
-  ns.write_to(QSharedPointer<io::stream>());
+  ns.read_from(misc::shared_ptr<io::stream>());
+  ns.write_to(misc::shared_ptr<io::stream>());
   fs.clear();
   QFile::remove(path);
 

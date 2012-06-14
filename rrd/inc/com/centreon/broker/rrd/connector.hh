@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_CONNECTOR_HH_
-# define CCB_RRD_CONNECTOR_HH_
+#ifndef CCB_RRD_CONNECTOR_HH
+#  define CCB_RRD_CONNECTOR_HH
 
-# include <QString>
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QString>
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -34,27 +34,27 @@ namespace          rrd {
    *  Generate an RRD stream that will write files.
    */
   class            connector : public io::endpoint {
-   private:
-    QString        _cached_local;
-    unsigned short _cached_port;
-    QString        _metrics_path;
-    QString        _status_path;
-
-   public:
+  public:
                    connector();
                    connector(connector const& c);
                    ~connector();
     connector&     operator=(connector const& c);
     void           close();
-    QSharedPointer<io::stream>
+    misc::shared_ptr<io::stream>
                    open();
     void           set_cached_local(QString const& local_socket);
     void           set_cached_net(unsigned short port);
     void           set_metrics_path(QString const& metrics_path);
     void           set_status_path(QString const& status_path);
+
+   private:
+    QString        _cached_local;
+    unsigned short _cached_port;
+    QString        _metrics_path;
+    QString        _status_path;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_RRD_CONNECTOR_HH_ */
+#endif // !CCB_RRD_CONNECTOR_HH

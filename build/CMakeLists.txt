@@ -43,7 +43,7 @@ add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 #
 
 # Find Qt.
-find_package(Qt4 4.5.0 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+find_package(Qt4 4.2.0 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
@@ -230,6 +230,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/stringifier.hh"
   "${INC_DIR}/misc/global_lock.hh"
+  "${INC_DIR}/misc/shared_ptr.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"

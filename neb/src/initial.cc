@@ -119,7 +119,7 @@ static void send_host_dependencies_list() {
 
   // Loop through all dependencies.
   for (hostdependency* hd = hostdependency_list; hd; hd = hd->next) {
-    QSharedPointer<neb::host_dependency> host_dependency(
+    misc::shared_ptr<neb::host_dependency> host_dependency(
       new neb::host_dependency);
     std::map<std::string, int>::const_iterator it;
 
@@ -245,7 +245,7 @@ static void send_host_parents_list() {
 
     // Loop through all dependencies.
     for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next) {
-      QSharedPointer<neb::host_parent> hp(new neb::host_parent);
+      misc::shared_ptr<neb::host_parent> hp(new neb::host_parent);
       std::map<std::string, int>::const_iterator it;
 
       hp->host_id = host_id;
@@ -308,8 +308,8 @@ static void send_service_dependencies_list() {
   // Loop through all dependencies.
   for (servicedependency* sd = servicedependency_list; sd; sd = sd->next) {
     std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-    QSharedPointer<neb::service_dependency> service_dependency(
-      new neb::service_dependency);
+    misc::shared_ptr<neb::service_dependency>
+      service_dependency(new neb::service_dependency);
 
     // Search IDs.
     if (sd->dependent_host_name && sd->dependent_service_description) {

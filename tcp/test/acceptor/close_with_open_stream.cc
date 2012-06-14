@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,7 +63,7 @@ class            concurrent : public QThread {
     _acceptor = new tcp::acceptor;
     _acceptor->listen_on(_port);
     try {
-      QSharedPointer<io::stream> s(_acceptor->open());
+      misc::shared_ptr<io::stream> s(_acceptor->open());
       if (!s.isNull())
         s->read();
     }

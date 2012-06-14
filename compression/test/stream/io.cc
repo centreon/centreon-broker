@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -27,8 +28,8 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE_NAME "centreon_broker_unit_test.tmp"
-
+#define TEMP_FILE_NAME "broker_compression_stream_io.tmp"
+#include <iostream>
 /**
  *  Check that compression works properly.
  *
@@ -46,18 +47,20 @@ int main() {
   QFile::remove(filename);
 
   // Generate data packet.
-  QSharedPointer<io::raw> data(new io::raw);
+  misc::shared_ptr<io::raw> data(new io::raw);
   data->append("0123456789abcdefghijklmnopqrstuvwxyz");
 
   {
     // Open file for writing.
-    QSharedPointer<file::stream> fs(new file::stream(filename,
-      QIODevice::WriteOnly));
+    misc::shared_ptr<file::stream>
+      fs(new file::stream(
+                     filename,
+                     QIODevice::WriteOnly));
     compression::stream cs(-1, 1000);
     cs.write_to(fs.staticCast<io::stream>());
 
     // Write data in file.
-    for (unsigned int i = 0; i < 10000; ++i)
+    for (unsigned int i(0); i < 10000; ++i)
       cs.write(data.staticCast<io::data>());
   }
 
@@ -73,8 +76,10 @@ int main() {
 
   {
     // Open file for reading.
-    QSharedPointer<file::stream> fs(new file::stream(filename,
-      QIODevice::ReadOnly));
+    misc::shared_ptr<file::stream>
+      fs(new file::stream(
+                     filename,
+                     QIODevice::ReadWrite));
     compression::stream cs(-1);
     cs.read_from(fs.staticCast<io::stream>());
 
@@ -83,10 +88,10 @@ int main() {
     char const buffer[] = "0123456789abcdefghijklmnopqrstuvwxyz";
     data.clear();
     unsigned int datac(0);
-    for (unsigned int count = 0; !retval && (count < 10000);) {
+    for (unsigned int count(0); !retval && (count < 10000);) {
       // Read data.
       if (data.isNull()) {
-        QSharedPointer<io::data> d(cs.read());
+        misc::shared_ptr<io::data> d(cs.read());
         if (d.isNull()
             || ("com::centreon::broker::io::raw" != d->type()))
           retval |= 1;

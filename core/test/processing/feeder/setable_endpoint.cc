@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,27 +22,6 @@
 #include "setable_stream.hh"
 
 using namespace com::centreon::broker;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] se Object to copy.
- */
-void setable_endpoint::_internal_copy(setable_endpoint const& se) {
-  _initial_count = se._initial_count;
-  _initial_replay_events = se._initial_replay_events;
-  _initial_store_events = se._initial_store_events;
-  _opened_streams = se._opened_streams;
-  _should_succeed = se._should_succeed;
-  _streams = se._streams;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -106,7 +85,7 @@ void setable_endpoint::close() {
  *
  *  @return New setable_stream.
  */
-QSharedPointer<io::stream> setable_endpoint::open() {
+misc::shared_ptr<io::stream> setable_endpoint::open() {
   // Increment open attempts.
   ++_opened_streams;
 
@@ -115,8 +94,8 @@ QSharedPointer<io::stream> setable_endpoint::open() {
     throw (exceptions::msg() << "setable endpoint should not succeed");
 
   // Open stream.
-  QSharedPointer<setable_stream> ss(
-    new setable_stream);
+  misc::shared_ptr<setable_stream>
+    ss(new setable_stream);
   ss->set_count(_initial_count);
   ss->set_replay_events(_initial_replay_events);
   ss->set_store_events(_initial_store_events);
@@ -172,7 +151,7 @@ void setable_endpoint::set_initial_store_events(bool store) {
  *                 events.
  */
 void setable_endpoint::set_process(bool in, bool out) {
-  for (QList<QSharedPointer<setable_stream> >::iterator
+  for (QList<misc::shared_ptr<setable_stream> >::iterator
          it = _streams.begin(),
          end = _streams.end();
        it != end;
@@ -197,6 +176,27 @@ void setable_endpoint::set_succeed(bool succeed) {
  *
  *  @return Opened streams.
  */
-QList<QSharedPointer<setable_stream> >& setable_endpoint::streams() {
+QList<misc::shared_ptr<setable_stream> >& setable_endpoint::streams() {
   return (_streams);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] se Object to copy.
+ */
+void setable_endpoint::_internal_copy(setable_endpoint const& se) {
+  _initial_count = se._initial_count;
+  _initial_replay_events = se._initial_replay_events;
+  _initial_store_events = se._initial_store_events;
+  _opened_streams = se._opened_streams;
+  _should_succeed = se._should_succeed;
+  _streams = se._streams;
+  return ;
 }

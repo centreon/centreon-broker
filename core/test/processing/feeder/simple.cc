@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,15 +44,15 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Streams.
-  QSharedPointer<setable_stream> ss1(new setable_stream);
-  QSharedPointer<setable_stream> ss2(new setable_stream);
+  misc::shared_ptr<setable_stream> ss1(new setable_stream);
+  misc::shared_ptr<setable_stream> ss2(new setable_stream);
   ss1->process(true, true);
   ss2->process(true, true);
   ss2->set_store_events(true);
 
   // Feeder object.
   processing::feeder f;
-  f.prepare(ss1, ss2);
+  f.prepare(ss1.staticCast<io::stream>(), ss2.staticCast<io::stream>());
 
   // Launch feeder.
   QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
@@ -75,15 +75,15 @@ int main(int argc, char* argv[]) {
   int retval(0);
   unsigned int count(ss1->get_count());
   unsigned int i(0);
-  for (QList<QSharedPointer<io::data> >::const_iterator
-         it = ss2->get_stored_events().begin(),
-         end = ss2->get_stored_events().end();
+  for (QList<misc::shared_ptr<io::data> >::const_iterator
+         it(ss2->get_stored_events().begin()),
+         end(ss2->get_stored_events().end());
        it != end;
        ++it)
     if ((*it)->type() != "com::centreon::broker::io::raw")
       retval |= 1;
     else {
-      QSharedPointer<io::raw> raw(it->staticCast<io::raw>());
+      misc::shared_ptr<io::raw> raw(it->staticCast<io::raw>());
       unsigned int val;
       memcpy(&val, raw->QByteArray::data(), sizeof(val));
       retval |= (val != ++i);

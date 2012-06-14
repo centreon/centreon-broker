@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -78,7 +78,7 @@ int main() {
 
   // Submit state change.
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 13;
     ss->service_id = 21;
     ss->state_type = 1;
@@ -86,14 +86,14 @@ int main() {
     c.write(ss.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::host_status> hs(new neb::host_status);
+    misc::shared_ptr<neb::host_status> hs(new neb::host_status);
     hs->host_id = 42;
     hs->state_type = 1;
     hs->current_state = 2;
     c.write(hs.staticCast<io::data>());
   }
   {
-    QSharedPointer<neb::service_status> ss(new neb::service_status);
+    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 42;
     ss->service_id = 12;
     ss->state_type = 1;

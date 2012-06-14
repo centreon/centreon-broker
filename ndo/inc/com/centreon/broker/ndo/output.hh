@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NDO_OUTPUT_HH_
-# define CCB_NDO_OUTPUT_HH_
+#ifndef CCB_NDO_OUTPUT_HH
+#  define CCB_NDO_OUTPUT_HH
 
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -34,21 +34,21 @@ namespace        ndo {
    *  version of the NDO protocol.
    */
   class          output : virtual public io::stream {
-   private:
-    bool         _process_out;
-
-   public:
+  public:
                  output();
                  output(output const& o);
     virtual      ~output();
     output&      operator=(output const& o);
     void         process(bool in = false, bool out = false);
-    virtual QSharedPointer<io::data>
+    virtual misc::shared_ptr<io::data>
                  read();
-    virtual void write(QSharedPointer<io::data> e);
+    virtual void write(misc::shared_ptr<io::data> e);
+
+  private:
+    bool         _process_out;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_NDO_OUTPUT_HH_ */
+#endif // !CCB_NDO_OUTPUT_HH

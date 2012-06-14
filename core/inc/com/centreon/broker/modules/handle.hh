@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,45 +17,44 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MODULES_HANDLE_HH_
-# define CCB_MODULES_HANDLE_HH_
+#ifndef CCB_MODULES_HANDLE_HH
+#  define CCB_MODULES_HANDLE_HH
 
-# include <QLibrary>
-# include <QSharedPointer>
+#  include <QLibrary>
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                    com {
-  namespace                  centreon {
-    namespace                broker {
-      namespace              modules {
-        /**
-         *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
-         *  @brief Plugin library handle.
-         *
-         *  Centreon Broker can load plugins. This class represents such
-         *  plugins.
-         */
-        class                handle {
-         public:
-          static char const* deinitialization;
-          static char const* initialization;
+CCB_BEGIN()
 
-         private:
-          QLibrary           _handle;
-          void               _init(void const* arg = NULL);
+namespace              modules {
+  /**
+   *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
+   *  @brief Plugin library handle.
+   *
+   *  Centreon Broker can load plugins. This class represents such
+   *  plugins.
+   */
+  class                handle {
+  public:
+                       handle();
+                       handle(handle const& h);
+                       ~handle();
+    handle&            operator=(handle const& h);
+    void               close();
+    bool               is_open() const;
+    void               open(
+                         QString const& filename,
+                         void const* arg = NULL);
 
-         public:
-                             handle();
-                             handle(handle const& h);
-                             ~handle();
-          handle&            operator=(handle const& h);
-          void               close();
-          bool               is_open() const;
-          void               open(QString const& filename,
-                               void const* arg = NULL);
-        };
-      }
-    }
-  }
+    static char const* deinitialization;
+    static char const* initialization;
+
+  private:
+    void               _init(void const* arg = NULL);
+
+    QLibrary           _handle;
+  };
 }
 
-#endif /* !CCB_MODULES_HANDLE_HH_ */
+CCB_END()
+
+#endif // !CCB_MODULES_HANDLE_HH

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMON_HH_
-# define CCB_COMMON_HH_
+#ifndef CCB_COMMON_HH
+#  define CCB_COMMON_HH
 
 void log_on_stderr();
 
-#endif /* !CCB_COMMON_HH_ */
+#endif // !CCB_COMMON_HH

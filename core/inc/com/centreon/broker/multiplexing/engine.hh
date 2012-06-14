@@ -17,12 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_ENGINE_HH_
-# define CCB_MULTIPLEXING_ENGINE_HH_
+#ifndef CCB_MULTIPLEXING_ENGINE_HH
+#  define CCB_MULTIPLEXING_ENGINE_HH
 
-# include <memory>
-# include <QObject>
-# include "com/centreon/broker/multiplexing/hooker.hh"
+#  include <memory>
+#  include <QObject>
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/multiplexing/hooker.hh"
 
 namespace                 com {
   namespace               centreon {
@@ -40,34 +41,35 @@ namespace                 com {
         class             engine : public QObject {
           Q_OBJECT
 
-         private:
-          static std::auto_ptr<engine>
-                          _instance;
-          void (engine::* _write_func)(QSharedPointer<io::data>);
-          void            _nop(QSharedPointer<io::data> d);
-          void            _send_to_subscribers();
-          void            _write(QSharedPointer<io::data> d);
-                          engine();
-                          engine(engine const& e);
-          engine&         operator=(engine const& e);
-
-         private slots:
-          void            _on_hook_destroy(QObject* obj);
-
          public:
                           ~engine();
           void            hook(hooker& h, bool data = true);
           static engine&  instance();
           static void     load();
-          void            publish(QSharedPointer<io::data> d);
+          void            publish(misc::shared_ptr<io::data> d);
           void            start();
           void            stop();
           void            unhook(hooker& h);
           static void     unload();
+
+         private:
+                          engine();
+                          engine(engine const& e);
+          engine&         operator=(engine const& e);
+          void            _nop(misc::shared_ptr<io::data> d);
+          void            _send_to_subscribers();
+          void            _write(misc::shared_ptr<io::data> d);
+
+          static std::auto_ptr<engine>
+                          _instance;
+          void (engine::* _write_func)(misc::shared_ptr<io::data>);
+
+         private slots:
+          void            _on_hook_destroy(QObject* obj);
         };
       }
     }
   }
 }
 
-#endif /* !CCB_MULTIPLEXING_ENGINE_HH_ */
+#endif // !CCB_MULTIPLEXING_ENGINE_HH
