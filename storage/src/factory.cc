@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/connector.hh"
 #include "com/centreon/broker/storage/factory.hh"
@@ -38,12 +39,13 @@ using namespace com::centreon::broker::storage;
  *
  *  @return Property value.
  */
-static QString const& find_param(config::endpoint const& cfg,
-                                 QString const& key) {
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     throw (exceptions::msg() << "storage: no '" << key
-	   << "' defined for endpoint '" << cfg.name << "'");
+           << "' defined for endpoint '" << cfg.name << "'");
   return (it.value());
 }
 
@@ -117,10 +119,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return Endpoint matching the given configuration.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint const& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
 
@@ -137,7 +140,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   QString name(find_param(cfg, "db_name"));
 
   // Connector.
-  QScopedPointer<storage::connector> c(new storage::connector);
+  std::auto_ptr<storage::connector> c(new storage::connector);
   c->connect_to(type,
     host,
     port,
@@ -147,5 +150,5 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     rrd_length,
     interval_length);
   is_acceptor = false;
-  return (c.take());
+  return (c.release());
 }

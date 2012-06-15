@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/file/opener.hh"
@@ -108,7 +109,7 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
              "endpoint '" << cfg.name << "'");
 
   // Generate opener.
-  QScopedPointer<opener> openr(new opener(is_input, is_output));
+  std::auto_ptr<opener> openr(new opener(is_input, is_output));
   openr->set_filename(it.value());
-  return (openr.take());
+  return (openr.release());
 }

@@ -18,7 +18,9 @@
 */
 
 #include <QMutexLocker>
-#include <QSslSocket>
+#if QT_VERSION >= 0x040300
+#  include <QSslSocket>
+#endif // Qt >= 4.3.0
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/connector.hh"
@@ -110,6 +112,7 @@ misc::shared_ptr<io::stream> connector::open() {
   // Lock mutex.
   QMutexLocker lock(&*_mutex);
 
+#if QT_VERSION >= 0x040300
   // Is TLS enabled ?
   if (_tls) {
     // Create socket object.
@@ -143,7 +146,9 @@ misc::shared_ptr<io::stream> connector::open() {
                << _host << ":" << _port << ": "
                << _socket->errorString());
   }
-  else {
+  else
+#endif // Qt >= 4.3.0
+  {
     // Launch connection process.
     logging::info(logging::medium) << "TCP: connecting to "
       << _host << ":" << _port;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -65,7 +65,7 @@ int main() {
   // Check copy construction.
   return ((bn.host_id != 23)
           || bn.in_downtime
-          || !bn.my_issue.isNull()
+          || bn.my_issue.get()
           || (bn.service_id != 2347)
           || (bn.since != 553445)
           || (bn.state != 1)
@@ -75,7 +75,7 @@ int main() {
           || (bn.parents().size() != 1)
           || (cn.host_id != 42)
           || !cn.in_downtime
-          || cn.my_issue.isNull()
+          || !cn.my_issue.get()
           || (cn.my_issue->end_time != 234)
           || (cn.my_issue->start_time != 7678353)
           || (cn.service_id != 765334)

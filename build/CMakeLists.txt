@@ -295,7 +295,9 @@ add_subdirectory("compression")
 add_subdirectory("correlation")
 
 # Local sockets module.
-add_subdirectory("local")
+if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
+  add_subdirectory("local")
+endif ()
 
 # RRD module.
 add_subdirectory("rrd")

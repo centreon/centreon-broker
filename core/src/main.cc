@@ -164,7 +164,9 @@ int main(int argc, char* argv[]) {
     }
     else {
       app.setApplicationName("Centreon Broker");
+#if QT_VERSION >= 0x040400
       app.setApplicationVersion(CENTREON_BROKER_VERSION);
+#endif // Qt >= 4.4.0
       app.setOrganizationDomain("merethis.com");
       app.setOrganizationName("Merethis");
       logging::info(logging::medium)
@@ -172,13 +174,13 @@ int main(int argc, char* argv[]) {
       logging::info(logging::medium) << "Copyright 2009-2012 Merethis";
       logging::info(logging::medium) << "License GPLv2: GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
+#if QT_VERSION >= 0x040400
       logging::info(logging::low) << "PID: " << app.applicationPid();
+#endif // Qt >= 4.4.0
       logging::info(logging::medium)
         << "Qt compilation version " << QT_VERSION_STR;
       logging::info(logging::medium)
         << "Qt runtime version " << qVersion();
-      logging::info(logging::medium) << "  Build Date: "
-        << QLibraryInfo::buildDate().toString();
       logging::info(logging::medium) << "  Build Key: "
         << QLibraryInfo::buildKey();
       logging::info(logging::medium) << "  Licensee: "

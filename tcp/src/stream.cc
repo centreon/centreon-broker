@@ -118,7 +118,11 @@ misc::shared_ptr<io::data> stream::read() {
     throw (exceptions::msg() << "TCP: error while reading: "
              << _socket->errorString());
   misc::shared_ptr<io::raw> data(new io::raw);
+#if QT_VERSION >= 0x040500
   data->append(buffer, rb);
+#else
+  data->append(QByteArray(buffer, rb));
+#endif // Qt version
   return (data.staticCast<io::data>());
 }
 

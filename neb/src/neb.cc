@@ -36,6 +36,7 @@
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
+using namespace com::centreon;
 using namespace com::centreon::broker;
 
 // Specify the event broker API version.
@@ -108,8 +109,8 @@ extern "C" {
       neb::unregister_callbacks();
 
       // Unload singletons.
-      config::applier::endpoint::instance().unload();
-      config::applier::modules::instance().unload();
+      broker::config::applier::endpoint::instance().unload();
+      broker::config::applier::modules::instance().unload();
 
       // Deregister Qt application object.
       if (gl_initialized_qt) {
@@ -149,7 +150,7 @@ extern "C" {
    */
   int nebmodule_init(int flags, char const* args, void* handle) {
     // Initialization.
-    config::applier::init();
+    broker::config::applier::init();
 
     // Save module handle and flags for future use.
     neb::gl_mod_flags = flags;
@@ -208,25 +209,25 @@ extern "C" {
 
       // Default logging object.
       {
-        config::logger default_log;
-        default_log.type(config::logger::monitoring);
+        broker::config::logger default_log;
+        default_log.type(broker::config::logger::monitoring);
         default_log.config(true);
         default_log.debug(false);
         default_log.error(true);
         default_log.info(false);
         default_log.level(logging::high);
-        QList<config::logger> default_logs;
+        QList<broker::config::logger> default_logs;
         default_logs.push_back(default_log);
-        config::applier::logger::instance().apply(default_logs);
+        broker::config::applier::logger::instance().apply(default_logs);
       }
 
       // Try configuration parsing.
-      config::parser p;
-      config::state s;
+      broker::config::parser p;
+      broker::config::state s;
       p.parse(neb::gl_configuration_file, s);
 
       // Apply loggers.
-      config::applier::logger::instance().apply(s.loggers());
+      broker::config::applier::logger::instance().apply(s.loggers());
     }
     catch (std::exception const& e) {
       logging::error(logging::high) << e.what();

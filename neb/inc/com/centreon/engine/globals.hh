@@ -23,6 +23,7 @@
 #  define CCE_GLOBALS_HH
 
 #  include <QHash>
+#  include <QPair>
 #  include <QString>
 #  include <stdio.h>
 #  include "com/centreon/engine/checks.hh"

@@ -18,36 +18,54 @@
 ##
 
 # Global options.
-set(INC_DIR "${PROJECT_SOURCE_DIR}/tcp/inc")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/tcp/inc/com/centreon/broker/tcp")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/tcp/test")
-include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/tcp/inc")
 
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
-qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/com/centreon/broker/tcp/acceptor.hh"
-  "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
-)
+if ("${QT_VERSION}" VERSION_GREATER "4.3.0")
+  qt4_wrap_cpp(QT_WRAPPED_SOURCES
+    "${INC_DIR}/acceptor.hh"
+    "${INC_DIR}/tls_server.hh")
+else ()
+  qt4_wrap_cpp(QT_WRAPPED_SOURCES
+    "${INC_DIR}/acceptor.hh")
+endif ()
 
-# TCP module.
-set(TCP "50-tcp")
-set(TCP "${TCP}" PARENT_SCOPE)
-add_library("${TCP}" SHARED
-  # Sources.
+# Sources.
+set(SOURCES
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/tls_server.cc"
+)
+# Headers.
+set(HEADERS
+  "${INC_DIR}/acceptor.hh"
+  "${INC_DIR}/connector.hh"
+  "${INC_DIR}/factory.hh"
+  "${INC_DIR}/stream.hh"
+)
+# SSL addons (from Qt 4.3.0).
+if ("${QT_VERSION}" VERSION_GREATER "4.3.0")
+  set(SOURCES
+    ${SOURCES}
+    "${SRC_DIR}/tls_server.cc")
+  set(HEADERS
+    ${HEADERS}
+    "${INC_DIR}/tls_server.hh")
+endif ()
+
+# TCP module.
+set(TCP "50-tcp")
+set(TCP "${TCP}" PARENT_SCOPE)
+add_library("${TCP}" SHARED
+  ${SOURCES}
+  ${HEADERS}
   ${QT_WRAPPED_SOURCES}
-  # Headers.
-  "${INC_DIR}/com/centreon/broker/tcp/acceptor.hh"
-  "${INC_DIR}/com/centreon/broker/tcp/connector.hh"
-  "${INC_DIR}/com/centreon/broker/tcp/factory.hh"
-  "${INC_DIR}/com/centreon/broker/tcp/stream.hh"
-  "${INC_DIR}/com/centreon/broker/tcp/tls_server.hh"
 )
 target_link_libraries("${TCP}" ${QT_LIBRARIES})
 set_target_properties("${TCP}" PROPERTIES PREFIX "")

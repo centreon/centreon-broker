@@ -61,15 +61,22 @@ output::output(QString const& metrics_path, QString const& status_path)
  *  @param[in] status_path  See standard constructor.
  *  @param[in] local        Local socket connection parameters.
  */
-output::output(QString const& metrics_path,
-               QString const& status_path,
-               QString const& local)
+output::output(
+          QString const& metrics_path,
+          QString const& status_path,
+          QString const& local)
   : _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path) {
+#if QT_VERSION >= 0x040400
   std::auto_ptr<cached> rrdcached(new cached);
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
+#else
+  throw (broker::exceptions::msg()
+         << "RRD: local connection is not supported on Qt "
+         << QT_VERSION_STR);
+#endif // Qt version
 }
 
 /**

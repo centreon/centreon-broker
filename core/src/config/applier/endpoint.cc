@@ -551,7 +551,12 @@ void endpoint::_diff_endpoints(
     QMap<config::endpoint, processing::failover*>::iterator
       map_it(to_delete.find(entries.first()));
     if (map_it == to_delete.end())
-      to_create.append(entries);
+      for (QList<config::endpoint>::iterator
+             it(entries.begin()),
+             end(entries.end());
+           it != end;
+           ++it)
+        to_create.append(*it);
     else
       to_delete.erase(map_it);
   }

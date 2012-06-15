@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <memory>
 #include <QString>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -155,23 +157,23 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   }
 
   // Acceptor.
-  QScopedPointer<io::endpoint> endp;
+  std::auto_ptr<io::endpoint> endp;
   if (host.isEmpty()) {
     is_acceptor = true;
-    QScopedPointer<tcp::acceptor> a(new tcp::acceptor);
+    std::auto_ptr<tcp::acceptor> a(new tcp::acceptor);
     a->listen_on(port);
     a->set_tls(tls, private_key, public_cert, ca_cert);
-    endp.reset(a.take());
+    endp.reset(a.release());
   }
   // Connector.
   else {
     is_acceptor = false;
-    QScopedPointer<tcp::connector> c(new tcp::connector);
+    std::auto_ptr<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
     c->set_timeout(is_input && is_output ? 30 : -1);
     c->set_tls(tls, private_key, public_cert, ca_cert);
-    endp.reset(c.take());
+    endp.reset(c.release());
   }
   
-  return (endp.take());
+  return (endp.release());
 }

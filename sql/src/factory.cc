@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
 #include "com/centreon/broker/sql/factory.hh"
@@ -150,8 +151,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     wse = true;
 
   // Connector.
-  QScopedPointer<sql::connector> c(new sql::connector);
+  std::auto_ptr<sql::connector> c(new sql::connector);
   c->connect_to(type, host, port, user, password, name, wse);
   is_acceptor = false;
-  return (c.take());
+  return (c.release());
 }

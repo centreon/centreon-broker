@@ -188,7 +188,7 @@ bool parser::startElement(QString const& uri,
              "issue of node (" << host_attr.toUInt() << ", "
           << service_attr.toUInt() << ") due to non-existent node";
       else {
-        if (it->my_issue.isNull()) {
+        if (!it->my_issue.get()) {
           it->my_issue.reset(new issue);
           it->my_issue->host_id = it->host_id;
           it->my_issue->service_id = it->service_id;

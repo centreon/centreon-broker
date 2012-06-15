@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,65 +22,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal members.
- *
- *  This method is used by the copy constructor and the assignment
- *  operator.
- *
- *  @param[in] n Object to copy.
- */
-void node::_internal_copy(node const& n) {
-  QList<node*>::iterator it, end;
-
-  // Copy childrens.
-  _children = n._children;
-  for (it = _children.begin(), end = _children.end();
-       it != end;
-       ++it)
-    (*it)->_parents.push_back(this);
-
-  // Copy nodes depending on copied node.
-  _depended_by = n._depended_by;
-  for (it = _depended_by.begin(), end = _depended_by.end();
-       it != end;
-       ++it)
-    (*it)->_depends_on.push_back(this);
-
-  // Copy nodes on which the copied node depends.
-  _depends_on = n._depends_on;
-  for (it = _depends_on.begin(), end = _depends_on.end();
-       it != end;
-       ++it)
-    (*it)->_depended_by.push_back(this);
-
-  // Copy parents.
-  _parents = n._parents;
-  for (it = _parents.begin(), end = _parents.end();
-       it != end;
-       ++it)
-    (*it)->_children.push_back(this);
-
-  // Copy other members.
-  host_id = n.host_id;
-  in_downtime = n.in_downtime;
-  if (!n.my_issue.isNull())
-    my_issue.reset(new issue(*(n.my_issue)));
-  else
-    my_issue.reset();
-  service_id = n.service_id;
-  since = n.since;
-  state = n.state;
-
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -167,9 +108,9 @@ bool node::operator==(node const& n) const {
            && (service_id == n.service_id)
            && (since == n.since)
            && (state == n.state)
-           && ((my_issue.isNull() && n.my_issue.isNull())
-               || (!my_issue.isNull()
-                   && !n.my_issue.isNull()
+           && ((!my_issue.get() && !n.my_issue.get())
+               || (my_issue.get()
+                   && n.my_issue.get()
                    && (*my_issue == *n.my_issue)))
            && (_children.size() == n._children.size())
            && (_depended_by.size() == n._depended_by.size())
@@ -370,5 +311,64 @@ void node::remove_dependency(node* n) {
 void node::remove_parent(node* n) {
   _parents.removeAll(n);
   n->_children.removeAll(this);
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal members.
+ *
+ *  This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  @param[in] n Object to copy.
+ */
+void node::_internal_copy(node const& n) {
+  QList<node*>::iterator it, end;
+
+  // Copy childrens.
+  _children = n._children;
+  for (it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    (*it)->_parents.push_back(this);
+
+  // Copy nodes depending on copied node.
+  _depended_by = n._depended_by;
+  for (it = _depended_by.begin(), end = _depended_by.end();
+       it != end;
+       ++it)
+    (*it)->_depends_on.push_back(this);
+
+  // Copy nodes on which the copied node depends.
+  _depends_on = n._depends_on;
+  for (it = _depends_on.begin(), end = _depends_on.end();
+       it != end;
+       ++it)
+    (*it)->_depended_by.push_back(this);
+
+  // Copy parents.
+  _parents = n._parents;
+  for (it = _parents.begin(), end = _parents.end();
+       it != end;
+       ++it)
+    (*it)->_children.push_back(this);
+
+  // Copy other members.
+  host_id = n.host_id;
+  in_downtime = n.in_downtime;
+  if (n.my_issue.get())
+    my_issue.reset(new issue(*(n.my_issue)));
+  else
+    my_issue.reset();
+  service_id = n.service_id;
+  since = n.since;
+  state = n.state;
+
   return ;
 }

@@ -172,7 +172,8 @@ void stream::_flush() {
     buffer[1] = (size >> 16) & 0xFF;
     buffer[2] = (size >> 8) & 0xFF;
     buffer[3] = size & 0xFF;
-    compressed->prepend(buffer, sizeof(buffer));
+    for (size_t i(0); i < sizeof(buffer); ++i)
+      compressed->prepend(buffer[i]);
 
     // Send compressed data.
     _to->write(compressed.staticCast<io::data>());

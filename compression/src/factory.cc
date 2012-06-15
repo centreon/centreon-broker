@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/opener.hh"
 
@@ -120,9 +121,8 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
     size = it.value().toUInt();
 
   // Create compression object.
-  QScopedPointer<compression::opener> openr(new compression::opener);
+  std::auto_ptr<compression::opener> openr(new compression::opener);
   openr->set_level(level);
   openr->set_size(size);
-
-  return (openr.take());
+  return (openr.release());
 }

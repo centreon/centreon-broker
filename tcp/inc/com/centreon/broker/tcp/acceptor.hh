@@ -24,6 +24,7 @@
 #  include <QMap>
 #  include <QMutex>
 #  include <QObject>
+#  include <QPair>
 #  include <QTcpServer>
 #  include <QTcpSocket>
 #  include "com/centreon/broker/io/endpoint.hh"

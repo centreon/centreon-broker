@@ -584,7 +584,9 @@ unsigned int stream::_find_index_id(
     // Fetch insert ID with query if possible.
     if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.lastInsertId().toUInt())) {
+#if QT_VERSION >= 0x040302
       q.finish();
+#endif // Qt >= 4.3.2
       std::ostringstream oss2;
       oss2 << "SELECT id" \
               " FROM index_data" \
@@ -719,7 +721,9 @@ unsigned int stream::_find_metric_id(
     // Fetch insert ID with query if possible.
     if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.lastInsertId().toUInt())) {
+#if QT_VERSION >= 0x040302
       q.finish();
+#endif // Qt >= 4.3.2
       std::ostringstream oss2;
       oss2 << "SELECT metric_id" \
               " FROM metrics" \

@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,62 +17,68 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_CACHED_HH_
-# define CCB_RRD_CACHED_HH_
+#ifndef CCB_RRD_CACHED_HH
+#  define CCB_RRD_CACHED_HH
 
-# include <QIODevice>
-# include <QScopedPointer>
-# include <QString>
-# include "com/centreon/broker/rrd/backend.hh"
+#  include <memory>
+#  include <QIODevice>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/rrd/backend.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   rrd {
-        /**
-         *  @class cached cached.hh "com/centreon/broker/rrd/cached.hh"
-         *  @brief Handle RRD file access through rrdcached.
-         *
-         *  Handle creation, deletion, tuning and update of an RRD file with
-         *  rrdcached. The advantage of rrdcached is to have a batch mode that
-         *  allows bulk operations.
-         *
-         *  @see begin()
-         *  @see commit()
-         */
-        class     cached : public backend {
-         private:
-          bool    _batch;
-          QString _filename;
-          QString _metric;
-          QScopedPointer<QIODevice>
-                  _socket;
-                  cached(cached const& c);
-          cached& operator=(cached const& c);
-          void    _send_to_cached(char const* command,
-                    unsigned int size = 0);
+CCB_BEGIN()
 
-         public:
-                  cached();
-                  ~cached();
-          void    begin();
-          void    close();
-          void    commit();
-          void    connect_local(QString const& name);
-          void    connect_remote(QString const& address,
-                    unsigned short port);
-          void    open(QString const& filename,
-                    QString const& metric);
-          void    open(QString const& filename,
-                    QString const& metric,
-                    unsigned int length,
-                    time_t from,
-                    time_t interval);
-          void    update(time_t t, QString const& value);
-        };
-      }
-    }
-  }
+namespace   rrd {
+  /**
+   *  @class cached cached.hh "com/centreon/broker/rrd/cached.hh"
+   *  @brief Handle RRD file access through rrdcached.
+   *
+   *  Handle creation, deletion, tuning and update of an RRD file with
+   *  rrdcached. The advantage of rrdcached is to have a batch mode that
+   *  allows bulk operations.
+   *
+   *  @see begin()
+   *  @see commit()
+   */
+  class     cached : public backend {
+  public:
+            cached();
+            ~cached();
+    void    begin();
+    void    close();
+    void    commit();
+#  if QT_VERSION >= 0x040400
+    void    connect_local(QString const& name);
+#  endif // Qt >= 4.4.0
+    void    connect_remote(
+              QString const& address,
+              unsigned short port);
+    void    open(
+              QString const& filename,
+              QString const& metric);
+    void    open(
+              QString const& filename,
+              QString const& metric,
+              unsigned int length,
+              time_t from,
+              time_t interval);
+    void    update(time_t t, QString const& value);
+
+  private:
+            cached(cached const& c);
+    cached& operator=(cached const& c);
+    void    _send_to_cached(
+              char const* command,
+              unsigned int size = 0);
+
+    bool    _batch;
+    QString _filename;
+    QString _metric;
+    std::auto_ptr<QIODevice>
+            _socket;
+  };
 }
 
-#endif /* !CCB_RRD_CACHED_HH_ */
+CCB_END()
+
+#endif // !CCB_RRD_CACHED_HH
