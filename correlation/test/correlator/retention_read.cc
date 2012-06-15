@@ -54,7 +54,7 @@ int main() {
     "              host=\"13\" />\n"
     "</centreonbroker>\n";
   QString config_path(QDir::tempPath());
-  config_path.append("/centreon_broker_unit_test1");
+  config_path.append("/broker_correlation_correlator_retention_read1");
   QFile::remove(config_path);
   {
     QFile f(config_path);
@@ -78,7 +78,7 @@ int main() {
     "  <issue host=\"13\" service=\"33\" ack_time=\"0\" start_time=\"234\" />\n"
     "</centreonbroker>\n";
   QString retention_path(QDir::tempPath());
-  retention_path.append("/centreon_broker_unit_test2");
+  retention_path.append("/broker_correlation_correlator_retention_read2");
   QFile::remove(retention_path);
   {
     QFile f(retention_path);

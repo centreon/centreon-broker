@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,7 +26,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE "centreon_broker_unit_test"
+#define TEMP_FILE "broker_rrd_lib_create"
 
 /**
  *  Check RRD file creation.

@@ -118,7 +118,11 @@ misc::shared_ptr<io::data> setable_stream::read() {
   if (_process_in && _process_out) {
     misc::shared_ptr<io::raw> raw(new io::raw);
     ++_count;
+#if QT_VERSION >= 0x040500
     raw->append((char*)&_count, sizeof(_count));
+#else
+    raw->append(QByteArray((char*)&_count, sizeof(_count)));
+#endif // Qt version.
     data = raw.staticCast<io::data>();
   }
   // Provide retained event.

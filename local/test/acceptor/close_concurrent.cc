@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QThread>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -25,7 +26,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE "/tmp/centreon_broker_unit_test"
+#define TEMP_FILE "broker_local_acceptor_close_concurrent"
 
 /**
  *  Thread that will listen on a port.
@@ -96,8 +97,10 @@ int main(int argc, char* argv[]) {
   config::applier::init();
 
   // Thread that will listen on a port.
+  QString file_path(QDir::tempPath());
+  file_path.append("/" TEMP_FILE);
   concurrent c;
-  c.set_path(TEMP_FILE);
+  c.set_path(file_path);
   QObject::connect(&c, SIGNAL(finished()), &app, SLOT(quit()));
   QObject::connect(&c, SIGNAL(started()), &app, SLOT(quit()));
   QObject::connect(&c, SIGNAL(terminated()), &app, SLOT(quit()));

@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,48 +18,13 @@
 */
 
 #include <assert.h>
-#include <QScopedPointer>
+#include <memory>
 #include <QSslSocket>
 #include <stdlib.h>
 #include "com/centreon/broker/tcp/tls_server.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] ts Object to copy.
- */
-tls_server::tls_server(tls_server const& ts) : QTcpServer() {
-  (void)ts;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] ts Object to copy.
- *
- *  @return This object.
- */
-tls_server& tls_server::operator=(tls_server const& ts) {
-  (void)ts;
-  assert(false);
-  abort();
-  return (*this);
-}
 
 /**************************************
 *                                     *
@@ -74,9 +40,10 @@ tls_server& tls_server::operator=(tls_server const& ts) {
  *  @param[in] ca_cert     Trusted CA's certificate used to authenticate
  *                         incoming clients.
  */
-tls_server::tls_server(QString const& private_key,
-                       QString const& public_cert,
-                       QString const& ca_cert)
+tls_server::tls_server(
+              QString const& private_key,
+              QString const& public_cert,
+              QString const& ca_cert)
   : _ca(ca_cert),
     _private(private_key),
     _public(public_cert) {}
@@ -125,7 +92,7 @@ void tls_server::incomingConnection(int socketDescriptor) {
     _pending.enqueue(ssl_socket.data());
 #else
     addPendingConnection(ssl_socket.data());
-#endif /* QT_VERSION < 4.7 */
+#endif // Qt < 4.7.0
     ssl_socket.take();
     emit newConnection();
   }
@@ -151,4 +118,39 @@ bool tls_server::hasPendingConnections() const {
 QTcpSocket* tls_server::nextPendingConnection() {
   return (_pending.isEmpty() ? NULL : _pending.dequeue());
 }
-#endif /* QT_VERSION < 4.7 */
+#endif // Qt < 4.7.0
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] ts Object to copy.
+ */
+tls_server::tls_server(tls_server const& ts) : QTcpServer() {
+  (void)ts;
+  assert(!"TLS server object is not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] ts Object to copy.
+ *
+ *  @return This object.
+ */
+tls_server& tls_server::operator=(tls_server const& ts) {
+  (void)ts;
+  assert(!"TLS server object is not copyable");
+  abort();
+  return (*this);
+}

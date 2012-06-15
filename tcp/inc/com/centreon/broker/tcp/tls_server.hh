@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_TCP_TLS_SERVER_HH_
-# define CCB_TCP_TLS_SERVER_HH_
+#ifndef CCB_TCP_TLS_SERVER_HH
+#  define CCB_TCP_TLS_SERVER_HH
 
-# include <QString>
-# include <QTcpServer>
-# if QT_VERSION < 0x040700
-#  include <QQueue>
-# endif /* QT_VERSION < 4.7 */
+#  include <QString>
+#  include <QTcpServer>
+#  if QT_VERSION < 0x040700
+#    include <QQueue>
+#  endif // Qt < 4.7.0
 
 namespace             com {
   namespace           centreon {
@@ -38,33 +39,35 @@ namespace             com {
         class         tls_server : public QTcpServer {
           Q_OBJECT
 
-         private:
-          QString     _ca;
-          QString     _private;
-          QString     _public;
-                      tls_server(tls_server const& ts);
-          tls_server& operator=(tls_server const& ts);
-
-         public:
-                      tls_server(QString const& private_key = QString(),
+        public:
+                      tls_server(
+                        QString const& private_key = QString(),
                         QString const& public_cert = QString(),
                         QString const& ca_cert = QString());
                       ~tls_server();
           void        incomingConnection(int socketDescriptor);
 
-#if QT_VERSION < 0x040700
-         private:
-          QQueue<QTcpSocket*>
-                      _pending;
+        private:
+                      tls_server(tls_server const& ts);
+          tls_server& operator=(tls_server const& ts);
 
-         public:
+          QString     _ca;
+          QString     _private;
+          QString     _public;
+
+#if QT_VERSION < 0x040700
+        public:
           bool        hasPendingConnections() const;
           QTcpSocket* nextPendingConnection();
-#endif /* QT_VERSION < 4.7 */
+
+        private:
+          QQueue<QTcpSocket*>
+                      _pending;
+#endif // Qt < 4.7.0
         };
       }
     }
   }
 }
 
-#endif /* !CCB_TCP_TLS_SERVER_HH_ */
+#endif // !CCB_TCP_TLS_SERVER_HH

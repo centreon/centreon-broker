@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,7 +56,7 @@ int main() {
     "              host=\"13\" />\n"
     "</centreonbroker>\n";
   QString file_path(QDir::tempPath());
-  file_path.append("/centreon_broker_unit_test");
+  file_path.append("/broker_correlation_parser_parse_retention");
   QFile::remove(file_path);
   QFile f(file_path);
   if (!f.open(QIODevice::WriteOnly))

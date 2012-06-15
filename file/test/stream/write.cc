@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,7 +26,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE_NAME "centreon_broker_unit_test.tmp"
+#define TEMP_FILE_NAME "broker_file_stream_write"
 
 /**
  *  Check that file stream can be properly written to.

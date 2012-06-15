@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -101,7 +101,7 @@ QString temp_file_path(QString const& suffix) {
   QString file_path;
   file_path.append(QDir::tempPath());
   file_path.append("/");
-  file_path.append("centreon_broker_unit_test");
+  file_path.append("broker_logging_file");
   file_path.append(suffix);
   return (file_path);
 }

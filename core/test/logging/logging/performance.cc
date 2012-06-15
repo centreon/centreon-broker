@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,9 +31,9 @@ using namespace com::centreon::broker;
 
 #define MESSAGE "0123456789abcdefghijklmnopqrstuvwxyz"
 #define MESSAGE_COUNT 100000
-#define TEMP_FILE1 "centreon_broker_unit_test1"
-#define TEMP_FILE2 "centreon_broker_unit_test2"
-#define TEMP_FILE3 "centreon_broker_unit_test3"
+#define TEMP_FILE1 "broker_logging_logging_performance1"
+#define TEMP_FILE2 "broker_logging_logging_performance2"
+#define TEMP_FILE3 "broker_logging_logging_performance3"
 
 /**
  *  Check logging performance (informational).

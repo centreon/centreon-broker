@@ -24,7 +24,9 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
-#include "com/centreon/broker/tcp/tls_server.hh"
+#if QT_VERSION >= 0x040300
+#  include "com/centreon/broker/tcp/tls_server.hh"
+#endif // Qt >= 4.3.0
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -120,8 +122,12 @@ misc::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   QMutexLocker lock(&_mutex);
   if (!_socket.get()) {
-    _socket.reset(_tls ? new tls_server(_private, _public, _ca)
-                       : new QTcpServer);
+#if QT_VERSION >= 0x040300
+    if (_tls)
+      _socket.reset(new tls_server(_private, _public, _ca));
+    else
+#endif // Qt >= 4.3.0
+      _socket.reset(new QTcpServer);
     if (!_socket->listen(QHostAddress::Any, _port)) {
       exceptions::msg e;
       e << "TCP: could not listen on port " << _port

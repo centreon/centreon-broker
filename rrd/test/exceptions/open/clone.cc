@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QScopedPointer>
+#include <memory>
 #include <string.h>
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 
@@ -33,10 +34,10 @@ int main() {
   e << "foo" << 42 << 77454654249841ull << -1 << "bar";
 
   // Clone object.
-  QScopedPointer<exceptions::msg> clone(e.clone());
+  std::auto_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone object was properly constructed.
-  int retval(clone.isNull()
+  int retval(!clone.get()
              || strcmp("foo4277454654249841-1bar", clone->what()));
 
   // Check that this is really an open error.

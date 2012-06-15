@@ -29,7 +29,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE "centreon_broker_unit_test"
+#define TEMP_FILE "broker_ndo_stream_erased_input"
 
 /**
  *  Check that NDO layer works properly with erased input.

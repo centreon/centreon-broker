@@ -18,6 +18,7 @@
 */
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
@@ -27,7 +28,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE "/tmp/centreon_broker_unit_test"
+#define TEMP_FILE "broker_local_connector_close_concurrent"
 
 /**
  *  Thread that will connect local stream.
@@ -110,13 +111,17 @@ int main(int argc, char* argv[]) {
   // Initialization.
   config::applier::init();
 
+  // Temporary file.
+  QString temp_file(QDir::tempPath());
+  temp_file.append("/" TEMP_FILE);
+
   // Listener.
   local::acceptor a;
-  a.listen_on(TEMP_FILE);
+  a.listen_on(temp_file);
 
   // Thread that will connect to local acceptor.
   concurrent c;
-  c.set_path(TEMP_FILE);
+  c.set_path(temp_file);
   c.start();
 
   {

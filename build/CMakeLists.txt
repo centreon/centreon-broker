@@ -648,12 +648,14 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Global tests.
-  #   Concurrent logging.
-  set(TEST_NAME "core_logging_logging_concurrent")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/logging/logging/concurrent.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
+    #   Concurrent logging.
+    set(TEST_NAME "core_logging_logging_concurrent")
+    add_executable("${TEST_NAME}"
+      "${TEST_DIR}/logging/logging/concurrent.cc")
+    target_link_libraries("${TEST_NAME}" "roker")
+    add_test("${TEST_NAME}" "${TEST_NAME}")
+  endif ()
   #   Performance testing.
   set(TEST_NAME "core_logging_logging_performance")
   add_executable("${TEST_NAME}"

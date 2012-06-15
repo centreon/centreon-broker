@@ -56,7 +56,7 @@ int main() {
     "              host=\"13\" />\n"
     "</centreonbroker>\n";
   QString config_path(QDir::tempPath());
-  config_path.append("/centreon_broker_unit_test1");
+  config_path.append("/broker_correlation_correlator_retention_write1");
   QFile::remove(config_path);
   QFile f(config_path);
   if (!f.open(QIODevice::WriteOnly))
@@ -69,7 +69,7 @@ int main() {
   }
   f.close();
   QString retention_path(QDir::tempPath());
-  retention_path.append("/centreon_broker_unit_test2");
+  retention_path.append("/broker_correlation_correlator_retention_write2");
   QFile::remove(retention_path);
 
   // Correlator.
