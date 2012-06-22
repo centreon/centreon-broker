@@ -764,6 +764,10 @@ static mapped_data<host_check> const host_check_mapping[] = {
     "host_id",
     true),
   mapped_data<host_check>(
+    &host_check::next_check,
+    NDO_DATA_NEXTHOSTCHECK,
+    NULL),
+  mapped_data<host_check>(
     &host_check::command_line,
     NDO_DATA_COMMANDLINE,
     "command_line"),
@@ -1819,19 +1823,23 @@ static mapped_data<service> const service_mapping[] = {
 // service_check members mapping.
 static mapped_data<service_check> const service_check_mapping[] = {
   mapped_data<service_check>(
-    &service_check::command_line,
-    NDO_DATA_COMMANDLINE,
-    "command_line"),
-  mapped_data<service_check>(
     &service_check::host_id,
     NDO_DATA_HOST,
     "host_id",
     true),
   mapped_data<service_check>(
+    &service_check::next_check,
+    NDO_DATA_NEXTSERVICECHECK,
+    NULL),
+  mapped_data<service_check>(
     &service_check::service_id,
     NDO_DATA_SERVICE,
     "service_id",
     true),
+  mapped_data<service_check>(
+    &service_check::command_line,
+    NDO_DATA_COMMANDLINE,
+    "command_line"),
   mapped_data<service_check>()
 };
 

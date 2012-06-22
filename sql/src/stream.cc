@@ -771,18 +771,25 @@ void stream::_process_host_check(io::data const& e) {
   neb::host_check const&
     hc(*static_cast<neb::host_check const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing host check event (host: " << hc.host_id
-    << ", command: " << hc.command_line << ")";
+  if (hc.next_check && (hc.next_check >= time(NULL))) {
+    // Apply to DB.
+    logging::info(logging::medium)
+      << "SQL: processing host check event (host: " << hc.host_id
+      << ", command: " << hc.command_line << ")";
 
-  // Processing.
-  *_host_check_update << hc;
-  _execute(*_host_check_update);
-  if (_host_check_update->numRowsAffected() != 1)
-    logging::error(logging::medium) << "SQL: host check could not " \
-         "be updated because host " << hc.host_id
-      << " was not found in database";
+    // Processing.
+    *_host_check_update << hc;
+    _execute(*_host_check_update);
+    if (_host_check_update->numRowsAffected() != 1)
+      logging::error(logging::medium) << "SQL: host check could not " \
+           "be updated because host " << hc.host_id
+        << " was not found in database";
+  }
+  else
+    // Do nothing.
+    logging::info(logging::medium)
+      << "SQL: not processing host check event (host: " << hc.host_id
+      << ", command: " << hc.command_line << ")";
 
   return ;
 }
@@ -985,18 +992,26 @@ void stream::_process_host_status(io::data const& e) {
   neb::host_status const&
     hs(*static_cast<neb::host_status const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing host status event (id: " << hs.host_id
-    << ", state (" << hs.current_state << ", " << hs.state_type << "))";
+  if (hs.next_check && (hs.next_check >= time(NULL))) {
+    // Apply to DB.
+    logging::info(logging::medium)
+      << "SQL: processing host status event (id: " << hs.host_id
+      << ", state (" << hs.current_state << ", " << hs.state_type << "))";
 
-  // Processing.
-  *_host_status_update << hs;
-  _execute(*_host_status_update);
-  if (_host_status_update->numRowsAffected() != 1)
-    logging::error(logging::medium) << "SQL: host could not be " \
-         "updated because host " << hs.host_id
-      << " was not found in database";
+    // Processing.
+    *_host_status_update << hs;
+    _execute(*_host_status_update);
+    if (_host_status_update->numRowsAffected() != 1)
+      logging::error(logging::medium) << "SQL: host could not be " \
+           "updated because host " << hs.host_id
+        << " was not found in database";
+  }
+  else
+    // Do nothing.
+    logging::info(logging::medium)
+      << "SQL: not processing host status event (id: " << hs.host_id
+      << ", state (" << hs.current_state << ", " << hs.state_type
+      << ")";
 
   return ;
 }
@@ -1348,19 +1363,27 @@ void stream::_process_service_check(io::data const& e) {
   neb::service_check const&
     sc(*static_cast<neb::service_check const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing service check event (host: " << sc.host_id
-    << ", service: " << sc.service_id << ", command: "
-    << sc.command_line << ")";
+  if (sc.next_check && (sc.next_check >= time(NULL))) {
+    // Apply to DB.
+    logging::info(logging::medium)
+      << "SQL: processing service check event (host: " << sc.host_id
+      << ", service: " << sc.service_id << ", command: "
+      << sc.command_line << ")";
 
-  // Processing.
-  *_service_check_update << sc;
-  _execute(*_service_check_update);
-  if (_service_check_update->numRowsAffected() != 1)
-    logging::error(logging::medium) << "SQL: service check could "      \
-         "not be updated because service (" << sc.host_id << ", "
-      << sc.service_id << ") was not found in database";
+    // Processing.
+    *_service_check_update << sc;
+    _execute(*_service_check_update);
+    if (_service_check_update->numRowsAffected() != 1)
+      logging::error(logging::medium) << "SQL: service check could " \
+           "not be updated because service (" << sc.host_id << ", "
+        << sc.service_id << ") was not found in database";
+  }
+  else
+    // Do nothing.
+    logging::info(logging::medium)
+      << "SQL: not processing service check event (host: " << sc.host_id
+      << ", service: " << sc.service_id << ", command: "
+      << sc.command_line << ")";
 
   return ;
 }
@@ -1553,19 +1576,27 @@ void stream::_process_service_status(io::data const& e) {
   neb::service_status const&
     ss(*static_cast<neb::service_status const*>(&e));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing service status event (host id: "
-    << ss.host_id << ", service id: " << ss.service_id << ", state ("
-    << ss.current_state << ", " << ss.state_type << "))";
+  if (ss.next_check && (ss.next_check >= time(NULL))) {
+    // Apply to DB.
+    logging::info(logging::medium)
+      << "SQL: processing service status event (host: "
+      << ss.host_id << ", service: " << ss.service_id << ", state ("
+      << ss.current_state << ", " << ss.state_type << "))";
 
-  // Processing.
-  *_service_status_update << ss;
-  _execute(*_service_status_update);
-  if (_service_status_update->numRowsAffected() != 1)
-    logging::error(logging::medium) << "SQL: service could not be " \
-         "updated because service (" << ss.host_id << ", "
-      << ss.service_id << ") was not found in database";
+    // Processing.
+    *_service_status_update << ss;
+    _execute(*_service_status_update);
+    if (_service_status_update->numRowsAffected() != 1)
+      logging::error(logging::medium) << "SQL: service could not be " \
+           "updated because service (" << ss.host_id << ", "
+        << ss.service_id << ") was not found in database";
+  }
+  else
+    // Do nothing.
+    logging::info(logging::medium)
+      << "SQL: not processing service status event (host: "
+      << ss.host_id << ", service: " << ss.service_id << ", state ("
+      << ss.current_state << ", " << ss.state_type << "))";
 
   return ;
 }

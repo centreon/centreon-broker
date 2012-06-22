@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,23 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data of the given object to the current instance.
- *
- *  @param[in] c Object to copy from.
- */
-void check::_internal_copy(check const& c) {
-  command_line = c.command_line;
-  host_id = c.host_id;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -46,7 +30,7 @@ void check::_internal_copy(check const& c) {
 /**
  *  Default constructor.
  */
-check::check() : host_id(0) {}
+check::check() : host_id(0), next_check(0) {}
 
 /**
  *  Copy constructor.
@@ -70,7 +54,27 @@ check::~check() {}
  *  @return This object.
  */
 check& check::operator=(check const& c) {
-  io::data::operator=(c);
-  _internal_copy(c);
+  if (&c != this) {
+    io::data::operator=(c);
+    _internal_copy(c);
+  }
   return (*this);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data of the given object to the current instance.
+ *
+ *  @param[in] c Object to copy from.
+ */
+void check::_internal_copy(check const& c) {
+  command_line = c.command_line;
+  host_id = c.host_id;
+  next_check = c.next_check;
+  return ;
 }

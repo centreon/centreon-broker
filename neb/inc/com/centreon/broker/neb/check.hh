@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,41 +17,43 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_CHECK_HH_
-# define CCB_NEB_CHECK_HH_
+#ifndef CCB_NEB_CHECK_HH
+#  define CCB_NEB_CHECK_HH
 
-# include <QString>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   neb {
-        /**
-         *  @class check check.hh "com/centreon/broker/neb/check.hh"
-         *  @brief Check that has been executed.
-         *
-         *  Once a check has been executed (the check itself, not
-         *  deduced information), this kind of event is sent.
-         *
-         *  @see host_check
-         *  @see service_check
-         */
-        class          check : public io::data {
-         private:
-          void         _internal_copy(check const& c);
+CCB_BEGIN()
 
-         public:
-          QString      command_line;
-          unsigned int host_id;
-                       check();
-                       check(check const& c);
-          virtual      ~check();
-          check&       operator=(check const& c);
-        };
-      }
-    }
-  }
+namespace   neb {
+  /**
+   *  @class check check.hh "com/centreon/broker/neb/check.hh"
+   *  @brief Check that has been executed.
+   *
+   *  Once a check has been executed (the check itself, not
+   *  deduced information), this kind of event is sent.
+   *
+   *  @see host_check
+   *  @see service_check
+   */
+  class          check : public io::data {
+  public:
+                 check();
+                 check(check const& c);
+    virtual      ~check();
+    check&       operator=(check const& c);
+
+    QString      command_line;
+    unsigned int host_id;
+    time_t       next_check;
+
+  private:
+    void         _internal_copy(check const& c);
+  };
 }
 
-#endif /* !CCB_NEB_CHECK_HH_ */
+CCB_END()
+
+#endif /* !CCB_NEB_CHECK_HH */

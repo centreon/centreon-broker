@@ -1111,6 +1111,8 @@ int neb::callback_host_check(int callback_type, void* data) {
         throw (exceptions::msg() << "could not find ID of host '"
                << hcdata->host_name << "'");
       host_check->host_id = it->second;
+      host_check->next_check
+        = static_cast<host*>(hcdata->object_ptr)->next_check;
 
       // Send event.
       gl_publisher.write(host_check.staticCast<io::data>());
@@ -1915,6 +1917,8 @@ int neb::callback_service_check(int callback_type, void* data) {
                << scdata->host_name << "', '"
                << scdata->service_description << "')");
       service_check->host_id = it->second.first;
+      service_check->next_check
+        = static_cast<service*>(scdata->object_ptr)->next_check;
       service_check->service_id = it->second.second;
 
       // Send event.
