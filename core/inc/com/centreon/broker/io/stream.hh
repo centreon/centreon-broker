@@ -44,7 +44,9 @@ namespace                          io {
                                      bool in = false,
                                      bool out = true) = 0;
     virtual misc::shared_ptr<data> read() = 0;
-    virtual misc::shared_ptr<data> read(time_t timeout);
+    virtual misc::shared_ptr<data> read(
+                                     time_t timeout,
+                                     bool* timed_out = NULL);
     void                           read_from(
                                      misc::shared_ptr<stream> from);
     virtual void                   write(misc::shared_ptr<data> d) = 0;

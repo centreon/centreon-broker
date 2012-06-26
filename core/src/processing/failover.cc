@@ -287,13 +287,18 @@ misc::shared_ptr<io::data> failover::read() {
 /**
  *  Read data.
  *
- *  @param[in] timeout Read timeout.
+ *  @param[in]  timeout   Read timeout.
+ *  @param[out] timed_out Set to true if read timed out.
  *
  *  @return Data.
  */
-misc::shared_ptr<io::data> failover::read(time_t timeout) {
+misc::shared_ptr<io::data> failover::read(
+                                       time_t timeout,
+                                       bool* timed_out) {
   // Read retained data.
   misc::shared_ptr<io::data> data;
+  if (timed_out)
+    *timed_out = false;
   QMutexLocker exit_lock(&_should_exitm);
   if (isRunning() && QThread::currentThread() != this) {
     // Release thread lock.
@@ -306,7 +311,7 @@ misc::shared_ptr<io::data> failover::read(time_t timeout) {
     QReadLocker tom(&_tom);
     try {
       if (!_to.isNull())
-        data = _to->read(timeout);
+        data = _to->read(timeout, timed_out);
       logging::debug(logging::low)
         << "failover: got retained event from failover thread";
     }
@@ -346,7 +351,7 @@ misc::shared_ptr<io::data> failover::read(time_t timeout) {
           th,
           SLOT(quit()));
         th->exec();
-        data = this->read(timeout);
+        data = this->read(timeout, timed_out);
       }
     }
   }
@@ -366,7 +371,7 @@ misc::shared_ptr<io::data> failover::read(time_t timeout) {
     else {
       lock.unlock();
       QReadLocker fromm(&_fromm);
-      data = _from->read(timeout);
+      data = _from->read(timeout, timed_out);
     }
     logging::debug(logging::low)
       << "failover: got event from normal source";
@@ -476,13 +481,14 @@ void failover::run() {
       exit_lock.relock();
       while (!_should_exit || !_immediate) {
         exit_lock.unlock();
+        bool timed_out(false);
         try {
           {
             QReadLocker lock(&_fromm);
             if (!_from.isNull())
-              data = _from->read(_read_timeout);
+              data = _from->read(_read_timeout, &timed_out);
           }
-          if (data.isNull()) {
+          if (data.isNull() && !timed_out) {
             logging::info(logging::medium) << "failover: " << _name
               << " read no data, shutdown engaged";
             exit_lock.relock();

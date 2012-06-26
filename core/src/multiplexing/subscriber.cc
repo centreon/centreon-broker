@@ -110,14 +110,16 @@ misc::shared_ptr<io::data> subscriber::read() {
 }
 
 /**
- *  Get the next available event without waiting after deadline.
+ *  Get the next available event without waiting more than timeout.
  *
- *  @param[in] deadline Date that shouldn't be exceeded while waiting
- *                      for a new event.
+ *  @param[in]  timeout   Maximum time to wait in seconds.
+ *  @param[out] timed_out Set to true if read timed out.
  *
  *  @return Next available event, NULL if timeout occured.
  */
-misc::shared_ptr<io::data> subscriber::read(time_t deadline) {
+misc::shared_ptr<io::data> subscriber::read(
+                                         time_t timeout,
+                                         bool* timed_out) {
   misc::shared_ptr<io::data> event;
   QMutexLocker lock(&_mutex);
 
@@ -125,10 +127,13 @@ misc::shared_ptr<io::data> subscriber::read(time_t deadline) {
   if (_events.empty()) {
     // Wait a while if subscriber was not shutdown.
     if (_process_in && _process_out) {
-      if (-1 == deadline)
+      if (-1 == timeout)
         _cv.wait(&_mutex);
-      else
-        _cv.wait(&_mutex, deadline);
+      else {
+        bool timedout(!_cv.wait(&_mutex, timeout * 1000));
+        if (timed_out)
+          *timed_out = timedout;
+      }
       if (!_events.isEmpty()) {
         event = _events.dequeue();
         logging::debug(logging::low) << "multiplexing: "

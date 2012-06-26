@@ -63,7 +63,7 @@ namespace                com {
           misc::shared_ptr<io::data>
                          read();
           misc::shared_ptr<io::data>
-                         read(time_t timeout);
+                         read(time_t timeout, bool* timed_out = NULL);
           void           run();
           void           set_buffering_timeout(time_t secs);
           void           set_endpoint(

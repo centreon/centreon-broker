@@ -20,10 +20,10 @@
 #ifndef CCB_MULTIPLEXING_SUBSCRIBER_HH
 #  define CCB_MULTIPLEXING_SUBSCRIBER_HH
 
+#  include <ctime>
 #  include <QMutex>
 #  include <QQueue>
 #  include <QWaitCondition>
-#  include <time.h>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -50,7 +50,7 @@ namespace          multiplexing {
     misc::shared_ptr<io::data>
                    read();
     misc::shared_ptr<io::data>
-                   read(time_t deadline);
+                   read(time_t timeout, bool* timed_out = NULL);
     void           write(misc::shared_ptr<io::data> d);
 
   private:
