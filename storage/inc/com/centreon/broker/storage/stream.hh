@@ -50,6 +50,7 @@ namespace         storage {
                     QString const& storage_user,
                     QString const& storage_password,
                     QString const& storage_db,
+                    unsigned queries_per_transaction,
                     unsigned int rrd_len,
                     time_t interval_length,
                     bool store_in_db = true);
@@ -104,8 +105,10 @@ namespace         storage {
                   _metric_cache;
     QString       _metrics_path;
     bool          _process_out;
+    unsigned int  _queries_per_transaction;
     unsigned int  _rrd_len;
     bool          _store_in_db;
+    unsigned int  _transaction_queries;
     std::auto_ptr<QSqlQuery>
                   _update_metrics;
     std::auto_ptr<QSqlDatabase>

@@ -113,23 +113,27 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] storage_type      Storage DB type.
- *  @param[in] storage_host      Storage DB host.
- *  @param[in] storage_port      Storage DB port.
- *  @param[in] storage_user      Storage DB user.
- *  @param[in] storage_password  Storage DB password.
- *  @param[in] storage_db        Storage DB name.
- *  @param[in] rrd_len           RRD storage length.
- *  @param[in] interval_length   Interval length.
+ *  @param[in] storage_type            Storage DB type.
+ *  @param[in] storage_host            Storage DB host.
+ *  @param[in] storage_port            Storage DB port.
+ *  @param[in] storage_user            Storage DB user.
+ *  @param[in] storage_password        Storage DB password.
+ *  @param[in] storage_db              Storage DB name.
+ *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] rrd_len                 RRD storage length.
+ *  @param[in] interval_length         Interval length.
  */
-void connector::connect_to(QString const& storage_type,
-                           QString const& storage_host,
-                           unsigned short storage_port,
-                           QString const& storage_user,
-                           QString const& storage_password,
-                           QString const& storage_db,
-                           unsigned int rrd_len,
-                           time_t interval_length) {
+void connector::connect_to(
+                  QString const& storage_type,
+                  QString const& storage_host,
+                  unsigned short storage_port,
+                  QString const& storage_user,
+                  QString const& storage_password,
+                  QString const& storage_db,
+                  unsigned int queries_per_transaction,
+                  unsigned int rrd_len,
+                  time_t interval_length) {
+  _queries_per_transaction = queries_per_transaction;
   _storage_db = storage_db;
   _storage_host = storage_host;
   _storage_password = storage_password;
@@ -147,15 +151,17 @@ void connector::connect_to(QString const& storage_type,
  *  @return Storage connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(new stream(
-                                             _storage_type,
-                                             _storage_host,
-                                             _storage_port,
-                                             _storage_user,
-                                             _storage_password,
-                                             _storage_db,
-                                             _rrd_len,
-                                             _interval_length)));
+  return (misc::shared_ptr<io::stream>(
+            new stream(
+                  _storage_type,
+                  _storage_host,
+                  _storage_port,
+                  _storage_user,
+                  _storage_password,
+                  _storage_db,
+                  _queries_per_transaction,
+                  _rrd_len,
+                  _interval_length)));
 }
 
 /**************************************
@@ -171,6 +177,7 @@ misc::shared_ptr<io::stream> connector::open() {
  */
 void connector::_internal_copy(connector const& c) {
   _interval_length = c._interval_length;
+  _queries_per_transaction = c._queries_per_transaction;
   _rrd_len = c._rrd_len;
   _storage_db = c._storage_db;
   _storage_host = c._storage_host;

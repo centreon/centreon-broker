@@ -139,16 +139,27 @@ io::endpoint* factory::new_endpoint(
   QString password(find_param(cfg, "db_password"));
   QString name(find_param(cfg, "db_name"));
 
+  // Transaction timeout.
+  unsigned int queries_per_transaction(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("queries_per_transaction"));
+    if (it != cfg.params.end())
+      queries_per_transaction = it.value().toUInt();
+  }
+
   // Connector.
   std::auto_ptr<storage::connector> c(new storage::connector);
-  c->connect_to(type,
-    host,
-    port,
-    user,
-    password,
-    name,
-    rrd_length,
-    interval_length);
+  c->connect_to(
+       type,
+       host,
+       port,
+       user,
+       password,
+       name,
+       queries_per_transaction,
+       rrd_length,
+       interval_length);
   is_acceptor = false;
   return (c.release());
 }

@@ -17,8 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlField>
@@ -28,7 +29,6 @@
 #include <QVariant>
 #include <QMutexLocker>
 #include <sstream>
-#include <stdlib.h>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -90,15 +90,17 @@ static inline bool double_equal(double d1, double d2) {
 /**
  *  Constructor.
  *
- *  @param[in] storage_type      Storage DB type.
- *  @param[in] storage_host      Storage DB host.
- *  @param[in] storage_port      Storage DB port.
- *  @param[in] storage_user      Storage DB user.
- *  @param[in] storage_password  Storage DB password.
- *  @param[in] storage_db        Storage DB name.
- *  @param[in] rrd_len           RRD length.
- *  @param[in] interval_length   Interval length.
- *  @param[in] store_in_db       Should we insert data in data_bin ?
+ *  @param[in] storage_type            Storage DB type.
+ *  @param[in] storage_host            Storage DB host.
+ *  @param[in] storage_port            Storage DB port.
+ *  @param[in] storage_user            Storage DB user.
+ *  @param[in] storage_password        Storage DB password.
+ *  @param[in] storage_db              Storage DB name.
+ *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] rrd_len                 RRD length.
+ *  @param[in] interval_length         Interval length.
+ *  @param[in] store_in_db             Should we insert data in
+ *                                     data_bin ?
  */
 stream::stream(
           QString const& storage_type,
@@ -107,11 +109,18 @@ stream::stream(
           QString const& storage_user,
           QString const& storage_password,
           QString const& storage_db,
+          unsigned int queries_per_transaction,
           unsigned int rrd_len,
           time_t interval_length,
           bool store_in_db) {
   // Process events.
   _process_out = true;
+
+  // Queries per transaction.
+  _queries_per_transaction = ((queries_per_transaction >= 2)
+                              ? queries_per_transaction
+                              : 1);
+  _transaction_queries = 0;
 
   // Store in DB.
   _store_in_db = store_in_db;
@@ -180,6 +189,10 @@ stream::stream(
     // Prepare queries.
     _prepare();
 
+    // Initial transaction.
+    if (_queries_per_transaction > 1)
+      _storage_db->transaction();
+
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
   }
@@ -208,6 +221,10 @@ stream::stream(
 stream::stream(stream const& s) : multiplexing::hooker(s) {
   // Processing.
   _process_out = s._process_out;
+
+  // Queries per transaction.
+  _queries_per_transaction = s._queries_per_transaction;
+  _transaction_queries = 0;
 
   // Store in DB.
   _store_in_db = s._store_in_db;
@@ -268,6 +285,10 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
 
     // Prepare queries.
     _prepare();
+
+    // Initial transaction.
+    if (_queries_per_transaction > 1)
+      _storage_db->transaction();
 
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
@@ -351,102 +372,126 @@ void stream::stopping() {
  *  @param[in] data Event pointer.
  */
 void stream::write(misc::shared_ptr<io::data> data) {
-  // Check that processing is enabled and data exists.
+  // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "storage stream is shutdown");
-  if (data.isNull())
-    return ;
 
   // Process service status events.
-  if (data->type() == "com::centreon::broker::neb::service_status") {
-    logging::debug(logging::high)
-      << "storage: processing service status event";
-    misc::shared_ptr<neb::service_status>
-      ss(data.staticCast<neb::service_status>());
+  if (!data.isNull()) {
+    if (data->type() == "com::centreon::broker::neb::service_status") {
+      logging::debug(logging::high)
+        << "storage: processing service status event";
+      misc::shared_ptr<neb::service_status>
+        ss(data.staticCast<neb::service_status>());
 
-    if (!ss->perf_data.isEmpty()) {
-      // Find index_id.
-      unsigned int index_id(_find_index_id(
-        ss->host_id,
-        ss->service_id,
-        ss->host_name,
-        ss->service_description));
+      if (!ss->perf_data.isEmpty()) {
+        // Find index_id.
+        unsigned int index_id(_find_index_id(
+                                ss->host_id,
+                                ss->service_id,
+                                ss->host_name,
+                                ss->service_description));
 
-      // Generate status event.
-      logging::debug(logging::low)
-        << "storage: generating status event";
-      misc::shared_ptr<storage::status> status(new storage::status);
-      status->ctime = ss->last_check;
-      status->index_id = index_id;
-      status->interval = static_cast<time_t>(
-                           ss->check_interval * _interval_length);
-      status->rrd_len = _rrd_len;
-      status->state = ss->last_hard_state;
-      multiplexing::publisher().write(status.staticCast<io::data>());
+        // Generate status event.
+        logging::debug(logging::low)
+          << "storage: generating status event";
+        misc::shared_ptr<storage::status> status(new storage::status);
+        status->ctime = ss->last_check;
+        status->index_id = index_id;
+        status->interval = static_cast<time_t>(
+                             ss->check_interval * _interval_length);
+        status->rrd_len = _rrd_len;
+        status->state = ss->last_hard_state;
+        multiplexing::publisher().write(status.staticCast<io::data>());
 
-      // Parse perfdata.
-      QList<perfdata> pds;
-      parser p;
-      try {
-        p.parse_perfdata(ss->perf_data, pds);
-      }
-      catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-        logging::error(logging::medium)
-          << "storage: error while parsing perfdata of service ("
-          << ss->host_id << ", " << ss->service_id << "): " << e.what();
-        return ;
-      }
+        // Parse perfdata.
+        QList<perfdata> pds;
+        parser p;
+        try {
+          p.parse_perfdata(ss->perf_data, pds);
+        }
+        catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+          logging::error(logging::medium)
+            << "storage: error while parsing perfdata of service ("
+            << ss->host_id << ", " << ss->service_id << "): "
+            << e.what();
+          return ;
+        }
 
-      // Loop through all metrics.
-      for (QList<perfdata>::iterator it = pds.begin(), end = pds.end();
-           it != end;
-           ++it) {
-        perfdata& pd(*it);
+        // Loop through all metrics.
+        for (QList<perfdata>::iterator it(pds.begin()), end(pds.end());
+             it != end;
+             ++it) {
+          perfdata& pd(*it);
 
-        // Find metric_id.
-        unsigned int metric_id(_find_metric_id(
-                                 index_id,
-                                 pd.name(),
-                                 pd.unit(),
-                                 pd.warning(),
-                                 pd.critical(),
-                                 pd.min(),
-                                 pd.max()));
+          // Find metric_id.
+          unsigned int metric_id(_find_metric_id(
+                                   index_id,
+                                   pd.name(),
+                                   pd.unit(),
+                                   pd.warning(),
+                                   pd.critical(),
+                                   pd.min(),
+                                   pd.max()));
 
-        if (_store_in_db) {
-          // Insert perfdata in data_bin.
-          logging::debug(logging::low)
-            << "storage: inserting perfdata in data_bin (metric: "
-            << metric_id << ", ctime: " << ss->last_check << ", value: "
-            << pd.value() << ", status: " << ss->current_state << ")";
-          _insert_data_bin->bindValue(":id_metric", metric_id);
-          _insert_data_bin->bindValue(":ctime", static_cast<unsigned int>(ss->last_check));
-          _insert_data_bin->bindValue(":value", pd.value());
-          _insert_data_bin->bindValue(":status", ss->current_state + 1);
-          if (!_insert_data_bin->exec() || _insert_data_bin->lastError().isValid())
-            throw (broker::exceptions::msg() << "storage: could not " \
+          if (_store_in_db) {
+            // Insert perfdata in data_bin.
+            logging::debug(logging::low)
+              << "storage: inserting perfdata in data_bin (metric: "
+              << metric_id << ", ctime: " << ss->last_check
+              << ", value: " << pd.value() << ", status: "
+              << ss->current_state << ")";
+            _insert_data_bin->bindValue(":id_metric", metric_id);
+            _insert_data_bin->bindValue(
+                                ":ctime",
+                                static_cast<unsigned int>(ss->last_check));
+            _insert_data_bin->bindValue(":value", pd.value());
+            _insert_data_bin->bindValue(
+                                ":status",
+                                ss->current_state + 1);
+            if (!_insert_data_bin->exec()
+                || _insert_data_bin->lastError().isValid())
+              throw (broker::exceptions::msg() << "storage: could not " \
                         "insert data in data_bin (metric " << metric_id
                      << ", ctime "
                      << static_cast<unsigned long long>(ss->last_check)
                      << "): " << _insert_data_bin->lastError().text());
-        }
+          }
 
-        // Send perfdata event to processing.
-        logging::debug(logging::high)
-          << "storage: generating perfdata event";
-        misc::shared_ptr<storage::metric> perf(new storage::metric);
-        perf->ctime = ss->last_check;
-        perf->interval = static_cast<time_t>(ss->check_interval
-                                             * _interval_length);
-        perf->metric_id = metric_id;
-        perf->name = pd.name();
-        perf->rrd_len = _rrd_len;
-        perf->value = pd.value();
-        multiplexing::publisher().write(perf.staticCast<io::data>());
+          // Send perfdata event to processing.
+          logging::debug(logging::high)
+            << "storage: generating perfdata event";
+          misc::shared_ptr<storage::metric> perf(new storage::metric);
+          perf->ctime = ss->last_check;
+          perf->interval = static_cast<time_t>(ss->check_interval
+                                               * _interval_length);
+          perf->metric_id = metric_id;
+          perf->name = pd.name();
+          perf->rrd_len = _rrd_len;
+          perf->value = pd.value();
+          multiplexing::publisher().write(perf.staticCast<io::data>());
+        }
       }
     }
   }
+
+  // Commit transaction.
+  if (_queries_per_transaction > 1) {
+    ++_transaction_queries;
+    logging::debug(logging::low) << "storage: current transaction has "
+      << _transaction_queries << " pending queries";
+    if (_storage_db->isOpen()
+        && ((_transaction_queries >= _queries_per_transaction)
+            || data.isNull())) {
+      logging::info(logging::medium)
+        << "storage: committing transaction";
+      _storage_db->commit();
+      _storage_db->transaction();
+      _transaction_queries = 0;
+    }
+  }
+
   return ;
 }
 
@@ -479,8 +524,11 @@ stream& stream::operator=(stream const& s) {
 void stream::_clear_qsql() {
   _insert_data_bin.reset();
   _update_metrics.reset();
-  if (_storage_db.get() && _storage_db->isOpen())
+  if (_storage_db.get() && _storage_db->isOpen()) {
+    if (_queries_per_transaction > 1)
+      _storage_db->commit();
     _storage_db->close();
+  }
   _storage_db.reset();
   return ;
 }

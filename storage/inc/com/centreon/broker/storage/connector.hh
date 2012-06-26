@@ -20,8 +20,8 @@
 #ifndef CCB_STORAGE_CONNECTOR_HH
 #  define CCB_STORAGE_CONNECTOR_HH
 
+#  include <ctime>
 #  include <QString>
-#  include <time.h>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -48,6 +48,7 @@ namespace          storage {
                      QString const& storage_user,
                      QString const& storage_password,
                      QString const& storage_db,
+                     unsigned int queries_per_transaction,
                      unsigned int rrd_len,
                      time_t interval_length);
     misc::shared_ptr<io::stream>
@@ -57,6 +58,7 @@ namespace          storage {
     void           _internal_copy(connector const& c);
 
     time_t         _interval_length;
+    unsigned int   _queries_per_transaction;
     unsigned int   _rrd_len;
     QString        _storage_db;
     QString        _storage_host;

@@ -1694,6 +1694,7 @@ stream::stream(
           bool wse)
   : _process_out(true),
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
+    _transaction_queries(0),
     _with_state_events(wse) {
   // Get the driver ID.
   QString t;
@@ -1780,6 +1781,10 @@ stream::stream(
 
     // Prepare queries.
     _prepare();
+
+    // First transaction.
+    if (_queries_per_transaction > 1)
+      _db->transaction();
   }
   catch (...) {
     // Unprepare queries.
@@ -1810,6 +1815,7 @@ stream::stream(stream const& s) : io::stream(s) {
 
   // Queries per transaction.
   _queries_per_transaction = s._queries_per_transaction;
+  _transaction_queries = 0;
 
   // Process state events.
   _with_state_events = s._with_state_events;
@@ -1864,6 +1870,10 @@ stream::stream(stream const& s) : io::stream(s) {
 
     // Prepare queries.
     _prepare();
+
+    // First transaction.
+    if (_queries_per_transaction > 1)
+      _db->transaction();
   }
   catch (...) {
     // Unprepare queries.
@@ -1897,8 +1907,11 @@ stream::~stream() {
   {
     QMutexLocker lock(&global_lock);
     // Close database.
-    if (_db->isOpen())
+    if (_db->isOpen()) {
+      if (_queries_per_transaction > 1)
+        _db->commit();
       _db->close();
+    }
     _db.reset();
   }
 
@@ -2003,12 +2016,33 @@ misc::shared_ptr<io::data> stream::read() {
  *  @param[in] data Event pointer.
  */
 void stream::write(misc::shared_ptr<io::data> data) {
+  // Check that data can be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
-             << "SQL stream is shutdown");
-  QHash<QString, void (stream::*)(io::data const&)>::const_iterator it;
-  it = _processing_table.find(data->type());
-  if (it != _processing_table.end())
-    (this->*(it.value()))(*data);
+           << "SQL stream is shutdown");
+
+  // Check that data exists.
+  if (!data.isNull()) {
+    QHash<QString, void (stream::*)(io::data const&)>::const_iterator
+      it(_processing_table.find(data->type()));
+    if (it != _processing_table.end())
+      (this->*(it.value()))(*data);
+  }
+
+  // Commit transaction.
+  if (_queries_per_transaction > 1) {
+    ++_transaction_queries;
+    logging::debug(logging::low) << "SQL: current transaction has "
+      << _transaction_queries << " pending queries";
+    if (_db->isOpen()
+        && ((_transaction_queries >= _queries_per_transaction)
+            || data.isNull())) {
+      logging::info(logging::medium) << "SQL: committing transaction";
+      _db->commit();
+      _db->transaction();
+      _transaction_queries = 0;
+    }
+  }
+
   return ;
 }

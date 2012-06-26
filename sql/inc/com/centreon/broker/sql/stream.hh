@@ -157,6 +157,7 @@ namespace        sql {
     std::auto_ptr<QSqlDatabase> _db;
     bool                        _process_out;
     unsigned int                _queries_per_transaction;
+    unsigned int                _transaction_queries;
     bool                        _with_state_events;
   };
 }
