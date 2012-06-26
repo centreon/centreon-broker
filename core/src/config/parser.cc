@@ -46,13 +46,16 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
     if (!entry.isNull()) {
       QString name(entry.tagName());
       if (name == "buffering_timeout")
-        e.buffering_timeout = entry.text().toUInt();
+        e.buffering_timeout
+          = static_cast<time_t>(entry.text().toUInt());
       else if (name == "failover")
         e.failover = entry.text();
       else if (name == "name")
         e.name = entry.text();
+      else if (name == "read_timeout")
+        e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
-        e.retry_interval = entry.text().toUInt();
+        e.retry_interval = static_cast<time_t>(entry.text().toUInt());
       else if (name == "type")
         e.type = entry.text();
       else

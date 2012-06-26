@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,35 +23,6 @@ using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy data members.
- *
- *  Copy all data members from the given object to the current instance.
- *  This method is used by the copy constructor and the assignment
- *  operator.
- *
- *  @param[in] e Object to copy.
- */
-void endpoint::_internal_copy(endpoint const& e) {
-  buffering_timeout = e.buffering_timeout;
-  failover = e.failover;
-  if (e.failover_config.get())
-    failover_config.reset(new endpoint(*e.failover_config));
-  else
-    failover_config.reset();
-  name = e.name;
-  params = e.params;
-  retry_interval = e.retry_interval;
-  type = e.type;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -58,7 +30,10 @@ void endpoint::_internal_copy(endpoint const& e) {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() : buffering_timeout(0), retry_interval(30) {}
+endpoint::endpoint()
+  : buffering_timeout(0),
+    read_timeout((time_t)-1),
+    retry_interval(30) {}
 
 /**
  *  Copy constructor.
@@ -96,6 +71,7 @@ endpoint& endpoint::operator=(endpoint const& e) {
 bool endpoint::operator==(endpoint const& e) const {
   return ((type == e.type)
           && (buffering_timeout == e.buffering_timeout)
+          && (read_timeout == e.read_timeout)
           && (retry_interval == e.retry_interval)
           && (name == e.name)
           && (failover == e.failover)
@@ -128,6 +104,8 @@ bool endpoint::operator<(endpoint const& e) const {
     return (type < e.type);
   else if (buffering_timeout != e.buffering_timeout)
     return (buffering_timeout < e.buffering_timeout);
+  else if (read_timeout != e.read_timeout)
+    return (read_timeout < e.read_timeout);
   else if (retry_interval != e.retry_interval)
     return (retry_interval < e.retry_interval);
   else if (name != e.name)
@@ -153,4 +131,34 @@ bool endpoint::operator<(endpoint const& e) const {
     ++it2;
   }
   return ((it1 == end1) && (it2 != end2));
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy data members.
+ *
+ *  Copy all data members from the given object to the current instance.
+ *  This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  @param[in] e Object to copy.
+ */
+void endpoint::_internal_copy(endpoint const& e) {
+  buffering_timeout = e.buffering_timeout;
+  failover = e.failover;
+  if (e.failover_config.get())
+    failover_config.reset(new endpoint(*e.failover_config));
+  else
+    failover_config.reset();
+  name = e.name;
+  params = e.params;
+  read_timeout = e.read_timeout;
+  retry_interval = e.retry_interval;
+  type = e.type;
+  return ;
 }

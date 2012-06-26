@@ -18,11 +18,11 @@
 */
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <QCoreApplication>
 #include <QMutexLocker>
-#include <stdlib.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
@@ -44,10 +44,7 @@ using namespace com::centreon::broker::config::applier;
  *  Comparison classes.
  */
 class                  failover_match_name {
- private:
-  QString              _failover;
-
- public:
+public:
                        failover_match_name(QString const& fo)
     : _failover(fo) {}
                        failover_match_name(failover_match_name const& fmn)
@@ -60,12 +57,12 @@ class                  failover_match_name {
   bool                 operator()(config::endpoint const& endp) const {
     return (_failover == endp.name);
   }
+
+private:
+  QString              _failover;
 };
 class                  name_match_failover {
- private:
-  QString              _name;
-
- public:
+public:
                        name_match_failover(QString const& name)
     : _name(name) {}
                        name_match_failover(name_match_failover const& nmf)
@@ -78,6 +75,9 @@ class                  name_match_failover {
   bool                 operator()(config::endpoint const& endp) const {
     return (_name == endp.failover);
   }
+
+private:
+  QString              _name;
 };
 
 /**************************************
@@ -493,6 +493,7 @@ processing::failover* endpoint::_create_endpoint(
   std::auto_ptr<processing::failover> fo(new processing::failover(is_output));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_name(cfg.name);
+  fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_endpoint(endp);
   fo->set_failover(failovr);

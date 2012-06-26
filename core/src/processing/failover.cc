@@ -627,7 +627,6 @@ void failover::run() {
       exit_lock.relock();
     }
   }
-  logging::info(logging::high) << "exit: " << _should_exit << ", immediate: " << _immediate;
   logging::info(logging::high) << "failover: "
     << _name << " is exiting";
   return ;
