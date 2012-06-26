@@ -385,6 +385,9 @@ void stream::write(misc::shared_ptr<io::data> data) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
 
+      // Increase event count.
+      ++_transaction_queries;
+
       if (!ss->perf_data.isEmpty()) {
         // Find index_id.
         unsigned int index_id(_find_index_id(
@@ -478,7 +481,6 @@ void stream::write(misc::shared_ptr<io::data> data) {
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {
-    ++_transaction_queries;
     logging::debug(logging::low) << "storage: current transaction has "
       << _transaction_queries << " pending queries";
     if (_storage_db->isOpen()

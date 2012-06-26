@@ -2025,13 +2025,14 @@ void stream::write(misc::shared_ptr<io::data> data) {
   if (!data.isNull()) {
     QHash<QString, void (stream::*)(io::data const&)>::const_iterator
       it(_processing_table.find(data->type()));
-    if (it != _processing_table.end())
+    if (it != _processing_table.end()) {
       (this->*(it.value()))(*data);
+      ++_transaction_queries;
+    }
   }
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {
-    ++_transaction_queries;
     logging::debug(logging::low) << "SQL: current transaction has "
       << _transaction_queries << " pending queries";
     if (_db->isOpen()
