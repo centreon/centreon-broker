@@ -20,6 +20,7 @@
 #ifndef CCB_IO_STREAM_HH
 #  define CCB_IO_STREAM_HH
 
+#  include <ctime>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -43,6 +44,7 @@ namespace                          io {
                                      bool in = false,
                                      bool out = true) = 0;
     virtual misc::shared_ptr<data> read() = 0;
+    virtual misc::shared_ptr<data> read(time_t timeout);
     void                           read_from(
                                      misc::shared_ptr<stream> from);
     virtual void                   write(misc::shared_ptr<data> d) = 0;

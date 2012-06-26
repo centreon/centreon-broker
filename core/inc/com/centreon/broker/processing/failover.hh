@@ -57,10 +57,13 @@ namespace                com {
           time_t         get_buffering_timeout() const throw ();
           double         get_event_processing_speed() const throw ();
           time_t         get_last_event() const throw ();
+          time_t         get_read_timeout() const throw ();
           time_t         get_retry_interval() const throw ();
           void           process(bool in = false, bool out = false);
           misc::shared_ptr<io::data>
                          read();
+          misc::shared_ptr<io::data>
+                         read(time_t timeout);
           void           run();
           void           set_buffering_timeout(time_t secs);
           void           set_endpoint(
@@ -68,6 +71,7 @@ namespace                com {
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
           void           set_name(QString const& name);
+          void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
           bool           wait(unsigned long time = ULONG_MAX);
           void           write(misc::shared_ptr<io::data> d);
@@ -94,6 +98,7 @@ namespace                com {
           QString        _last_error;
           time_t         _last_event;
           QString        _name;
+          time_t         _read_timeout;
           volatile time_t _retry_interval;
 
           // Retained data.

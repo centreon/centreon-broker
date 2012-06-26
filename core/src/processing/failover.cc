@@ -17,13 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
+#include <ctime>
 #include <QCoreApplication>
 #include <QMutexLocker>
 #include <QReadLocker>
 #include <QTimer>
 #include <QWriteLocker>
-#include <string.h>
-#include <time.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -55,6 +55,7 @@ failover::failover(bool is_out)
     _last_connect_success(0),
     _last_event(0),
     _name("(unknown)"),
+    _read_timeout((time_t)-1),
     _retry_interval(30),
     _immediate(true),
     _should_exit(false),
@@ -82,6 +83,7 @@ failover::failover(failover const& f)
      _last_connect_success(f._last_connect_success),
      _last_event(f._last_event),
      _name(f._name),
+     _read_timeout(f._read_timeout),
      _retry_interval(f._retry_interval),
      _immediate(true),
      _should_exit(false),
@@ -119,6 +121,7 @@ failover& failover::operator=(failover const& f) {
     _failover = f._failover;
     _is_out = f._is_out;
     _name = f._name;
+    _read_timeout = f._read_timeout;
     _retry_interval = f._retry_interval;
     {
       QMutexLocker lock(&f._datam);
@@ -152,7 +155,9 @@ time_t failover::get_buffering_timeout() const throw () {
  */
 double failover::get_event_processing_speed() const throw () {
   unsigned int events(0);
-  for (int i = 0; i < event_window_length - time(NULL) + _last_event; ++i)
+  for (int i(0);
+       i < event_window_length - time(NULL) + _last_event;
+       ++i)
     events += _events[i];
   return (static_cast<double>(events) / event_window_length);
 }
@@ -164,6 +169,15 @@ double failover::get_event_processing_speed() const throw () {
  */
 time_t failover::get_last_event() const throw () {
   return (_last_event);
+}
+
+/**
+ *  Get read timeout.
+ *
+ *  @return Failover thread read timeout.
+ */
+time_t failover::get_read_timeout() const throw () {
+  return (_read_timeout);
 }
 
 /**
@@ -251,6 +265,8 @@ void failover::process(bool in, bool out) {
   }
   // Reinitialization.
   else {
+    logging::info(logging::low) << "failover: " << _name
+      << " is restoring processing";
     QReadLocker rl(&_fromm);
     if (!_from.isNull())
       _from->process(true, true);
@@ -262,10 +278,20 @@ void failover::process(bool in, bool out) {
 /**
  *  Read data.
  *
- *  @param[out] data Data buffer.
- *  @param[out] type Data type.
+ *  @return Data.
  */
 misc::shared_ptr<io::data> failover::read() {
+  return (this->read((time_t)-1));
+}
+
+/**
+ *  Read data.
+ *
+ *  @param[in] timeout Read timeout.
+ *
+ *  @return Data.
+ */
+misc::shared_ptr<io::data> failover::read(time_t timeout) {
   // Read retained data.
   misc::shared_ptr<io::data> data;
   QMutexLocker exit_lock(&_should_exitm);
@@ -280,7 +306,7 @@ misc::shared_ptr<io::data> failover::read() {
     QReadLocker tom(&_tom);
     try {
       if (!_to.isNull())
-        data = _to->read();
+        data = _to->read(timeout);
       logging::debug(logging::low)
         << "failover: got retained event from failover thread";
     }
@@ -320,7 +346,7 @@ misc::shared_ptr<io::data> failover::read() {
           th,
           SLOT(quit()));
         th->exec();
-	data = this->read();
+        data = this->read(timeout);
       }
     }
   }
@@ -340,7 +366,7 @@ misc::shared_ptr<io::data> failover::read() {
     else {
       lock.unlock();
       QReadLocker fromm(&_fromm);
-      data = _from->read();
+      data = _from->read(timeout);
     }
     logging::debug(logging::low)
       << "failover: got event from normal source";
@@ -354,8 +380,8 @@ misc::shared_ptr<io::data> failover::read() {
 void failover::run() {
   // Check endpoint.
   if (_endpoint.isNull()) {
-    logging::error(logging::high) << "failover: attempt to run a " \
-      "thread with a non-existent endpoint";
+    logging::error(logging::high) << "failover: attempt to run "
+      << _name << " with a non-existent endpoint";
     return ;
   }
 
@@ -371,8 +397,8 @@ void failover::run() {
     connect(&*_failover, SIGNAL(initial_lock()), SLOT(quit()));
     connect(&*_failover, SIGNAL(finished()), SLOT(quit()));
     connect(&*_failover, SIGNAL(terminated()), SLOT(quit()));
-    logging::info(logging::medium) << "failover: launching failover " \
-      "thread " << _failover->_name;
+    logging::info(logging::medium) << "failover: launching failover "
+      << _failover->_name;
     _failover->start();
     exec();
     disconnect(
@@ -399,7 +425,8 @@ void failover::run() {
   }
 
   // Failover should continue as long as not exit request was received.
-  logging::debug(logging::medium) << "failover: launching loop";
+  logging::debug(logging::medium) << "failover: "
+    << _name << " is launching loop";
   QMutexLocker exit_lock(&_should_exitm);
   _should_exit = false;
 
@@ -409,7 +436,8 @@ void failover::run() {
     exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
-      logging::debug(logging::medium) << "failover: opening endpoint";
+      logging::debug(logging::medium) << "failover: "
+        << _name << " is opening its endpoint";
       QReadWriteLock* rwl;
       misc::shared_ptr<io::stream>* s;
       if (_is_out) {
@@ -432,7 +460,8 @@ void failover::run() {
         *s = tmp;
         if (s->isNull()) { // Retry connection.
           logging::debug(logging::medium)
-            << "failover: resulting stream is nul, retrying";
+            << "failover: resulting stream for "
+            << _name << " is nul, retrying";
           exit_lock.relock();
           continue ;
         }
@@ -441,7 +470,8 @@ void failover::run() {
       }
 
       // Process input and output.
-      logging::debug(logging::medium) << "failover: launching feeding";
+      logging::debug(logging::medium) << "failover: "
+        << _name << " is launching feeding";
       misc::shared_ptr<io::data> data;
       exit_lock.relock();
       while (!_should_exit || !_immediate) {
@@ -450,9 +480,11 @@ void failover::run() {
           {
             QReadLocker lock(&_fromm);
             if (!_from.isNull())
-              data = _from->read();
+              data = _from->read(_read_timeout);
           }
           if (data.isNull()) {
+            logging::info(logging::medium) << "failover: " << _name
+              << " read no data, shutdown engaged";
             exit_lock.relock();
             _immediate = true;
             _should_exit = true;
@@ -595,6 +627,7 @@ void failover::run() {
       exit_lock.relock();
     }
   }
+  logging::info(logging::high) << "exit: " << _should_exit << ", immediate: " << _immediate;
   logging::info(logging::high) << "failover: "
     << _name << " is exiting";
   return ;
@@ -641,6 +674,16 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
  */
 void failover::set_name(QString const& name) {
   _name = name;
+  return ;
+}
+
+/**
+ *  Set the read timeout.
+ *
+ *  @param[in] read_timeout Read timeout.
+ */
+void failover::set_read_timeout(time_t read_timeout) {
+  _read_timeout = read_timeout;
   return ;
 }
 

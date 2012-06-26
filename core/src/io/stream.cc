@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/io/stream.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
 /**************************************
@@ -60,6 +61,20 @@ stream& stream::operator=(stream const& s) {
     _to = s._to;
   }
   return (*this);
+}
+
+/**
+ *  @brief Read with timeout.
+ *
+ *  Default implementation calls read with no timeout.
+ *
+ *  @param[in] timeout Read timeout (unused in default implementation).
+ *
+ *  @return Same as read().
+ */
+misc::shared_ptr<data> stream::read(time_t timeout) {
+  (void)timeout;
+  return (this->read());
 }
 
 /**

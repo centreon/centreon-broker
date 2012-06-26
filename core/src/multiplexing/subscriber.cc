@@ -106,7 +106,7 @@ void subscriber::process(bool in, bool out) {
  *  @return Next available event.
  */
 misc::shared_ptr<io::data> subscriber::read() {
-  return (this->read(-1));
+  return (this->read((time_t)-1));
 }
 
 /**
