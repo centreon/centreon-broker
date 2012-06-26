@@ -201,10 +201,12 @@ misc::shared_ptr<io::data> stream::read() {
  *  @param[in] d Data to write.
  */
 void stream::write(misc::shared_ptr<io::data> d) {
-  // Check that writing should be processed.
+  // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "file stream is shutdown");
+  if (d.isNull())
+    return ;
 
   if (d->type() == "com::centreon::broker::io::raw") {
     // Lock mutex.

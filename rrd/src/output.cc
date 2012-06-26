@@ -131,9 +131,13 @@ misc::shared_ptr<io::data> output::read() {
  *  @param[in] d Data to write.
  */
 void output::write(misc::shared_ptr<io::data> d) {
+  // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "RRD output is shutdown");
+  if (d.isNull())
+    return ;
+
   if (d->type() == "com::centreon::broker::storage::metric") {
     // Debug message.
     logging::debug(logging::medium) << "RRD: new metric data";

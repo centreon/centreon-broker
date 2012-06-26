@@ -128,9 +128,13 @@ misc::shared_ptr<io::data> output::read() {
  *  @param[in] e Event to send.
  */
 void output::write(misc::shared_ptr<io::data> e) {
+  // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, !_process_out)
-             << "NDO output stream is shutdown");
+           << "NDO output stream is shutdown");
+  if (e.isNull())
+    return ;
+
   logging::debug(logging::medium) << "NDO: writing data ("
     << e->type() << ")";
   std::stringstream buffer;

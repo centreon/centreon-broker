@@ -351,10 +351,12 @@ void stream::stopping() {
  *  @param[in] data Event pointer.
  */
 void stream::write(misc::shared_ptr<io::data> data) {
-  // Check that processing is enabled.
+  // Check that processing is enabled and data exists.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "storage stream is shutdown");
+  if (data.isNull())
+    return ;
 
   // Process service status events.
   if (data->type() == "com::centreon::broker::neb::service_status") {

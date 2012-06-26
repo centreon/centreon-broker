@@ -131,10 +131,12 @@ misc::shared_ptr<io::data> stream::read() {
  *  @param[in] d Data to send.
  */
 void stream::write(misc::shared_ptr<io::data> d) {
-  // Check that data should be processed.
+  // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "compression stream is shutdown");
+  if (d.isNull())
+    return ;
 
   // Process raw data only.
   if (d->type() == "com::centreon::broker::io::raw") {

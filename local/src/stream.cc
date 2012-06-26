@@ -132,9 +132,13 @@ void stream::set_timeout(int msecs) {
  *  @param[in] d Data to write.
  */
 void stream::write(misc::shared_ptr<io::data> d) {
+  // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "local stream is shutdown");
+  if (d.isNull())
+    return ;
+
   if (d->type() == "com::centreon::broker::io::raw") {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
