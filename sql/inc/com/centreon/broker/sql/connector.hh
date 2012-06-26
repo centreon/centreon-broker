@@ -47,6 +47,7 @@ namespace                        sql {
                                    QString const& user,
                                    QString const& password,
                                    QString const& db,
+                                   unsigned int queries_per_transaction = 1,
                                    bool with_state_events = false);
     misc::shared_ptr<io::stream> open();
 
@@ -55,6 +56,7 @@ namespace                        sql {
     QString                      _host;
     QString                      _password;
     unsigned short               _port;
+    unsigned int                 _queries_per_transaction;
     QString                      _type;
     QString                      _user;
     bool                         _with_state_events;

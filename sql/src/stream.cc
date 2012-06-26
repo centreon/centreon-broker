@@ -17,7 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <QPair>
 #include <QSqlError>
 #include <QSqlRecord>
@@ -26,7 +27,6 @@
 #include <QVector>
 #include <QMutexLocker>
 #include <sstream>
-#include <stdlib.h>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -1680,16 +1680,20 @@ void stream::_update_on_none_insert(QSqlQuery& ins,
  *  @param[in] user     User.
  *  @param[in] password Password.
  *  @param[in] db       Database name.
+ *  @param[in] qpt      Queries per transaction.
  *  @param[in] wse      With state events.
  */
-stream::stream(QString const& type,
-               QString const& host,
-               unsigned short port,
-               QString const& user,
-               QString const& password,
-               QString const& db,
-               bool wse)
+stream::stream(
+          QString const& type,
+          QString const& host,
+          unsigned short port,
+          QString const& user,
+          QString const& password,
+          QString const& db,
+          unsigned int qpt,
+          bool wse)
   : _process_out(true),
+    _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _with_state_events(wse) {
   // Get the driver ID.
   QString t;
@@ -1803,6 +1807,9 @@ stream::stream(QString const& type,
 stream::stream(stream const& s) : io::stream(s) {
   // Output processing.
   _process_out = s._process_out;
+
+  // Queries per transaction.
+  _queries_per_transaction = s._queries_per_transaction;
 
   // Process state events.
   _with_state_events = s._with_state_events;

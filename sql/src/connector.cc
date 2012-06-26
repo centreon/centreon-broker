@@ -45,6 +45,7 @@ connector::connector(connector const& c)
     _host(c._host),
     _password(c._password),
     _port(c._port),
+    _queries_per_transaction(0),
     _type(c._type),
     _user(c._user),
     _with_state_events(c._with_state_events) {}
@@ -67,6 +68,7 @@ connector& connector::operator=(connector const& c) {
   _host = c._host;
   _password = c._password;
   _port = c._port;
+  _queries_per_transaction = c._queries_per_transaction;
   _type = c._type;
   _user = c._user;
   _with_state_events = c._with_state_events;
@@ -83,24 +85,29 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] type     Database type.
- *  @param[in] host     Database host.
- *  @param[in] port     Database port.
- *  @param[in] user     User.
- *  @param[in] password Password.
- *  @param[in] db       Database name.
+ *  @param[in] type                    Database type.
+ *  @param[in] host                    Database host.
+ *  @param[in] port                    Database port.
+ *  @param[in] user                    User.
+ *  @param[in] password                Password.
+ *  @param[in] db                      Database name.
+ *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] with_state_events       Enable state events ?
  */
-void connector::connect_to(QString const& type,
-                           QString const& host,
-                           unsigned short port,
-                           QString const& user,
-                           QString const& password,
-                           QString const& db,
-                           bool with_state_events) {
+void connector::connect_to(
+                  QString const& type,
+                  QString const& host,
+                  unsigned short port,
+                  QString const& user,
+                  QString const& password,
+                  QString const& db,
+                  unsigned int queries_per_transaction,
+                  bool with_state_events) {
   _db = db;
   _host = host;
   _password = password;
   _port = port;
+  _queries_per_transaction = queries_per_transaction;
   _type = type;
   _user = user;
   _with_state_events = with_state_events;
@@ -120,5 +127,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _user,
                                              _password,
                                              _db,
+                                             _queries_per_transaction,
                                              _with_state_events)));
 }

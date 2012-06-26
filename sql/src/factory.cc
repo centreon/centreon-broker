@@ -143,16 +143,35 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find DB name.
   QString name(find_param(cfg, "db_name"));
 
+  // Transaction timeout.
+  unsigned int queries_per_transaction(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("queries_per_transaction"));
+    if (it != cfg.params.end())
+      queries_per_transaction = it.value().toUInt();
+  }
+
   // Use state events ?
   bool wse(false);
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("with_state_events"));
-  if (it != cfg.params.end())
-    wse = true;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("with_state_events"));
+    if (it != cfg.params.end())
+      wse = true;
+  }
 
   // Connector.
   std::auto_ptr<sql::connector> c(new sql::connector);
-  c->connect_to(type, host, port, user, password, name, wse);
+  c->connect_to(
+       type,
+       host,
+       port,
+       user,
+       password,
+       name,
+       queries_per_transaction,
+       wse);
   is_acceptor = false;
   return (c.release());
 }

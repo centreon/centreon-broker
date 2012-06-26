@@ -49,6 +49,7 @@ namespace        sql {
                    QString const& user,
                    QString const& password,
                    QString const& db,
+                   unsigned int queries_per_transaction,
                    bool with_state_events);
                  stream(stream const& s);
                  ~stream();
@@ -155,6 +156,7 @@ namespace        sql {
     std::auto_ptr<QSqlQuery>    _service_status_update;
     std::auto_ptr<QSqlDatabase> _db;
     bool                        _process_out;
+    unsigned int                _queries_per_transaction;
     bool                        _with_state_events;
   };
 }
