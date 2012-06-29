@@ -996,7 +996,8 @@ void stream::_process_host_status(io::data const& e) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host status event (id: " << hs.host_id
-      << ", state (" << hs.current_state << ", " << hs.state_type << "))";
+      << ", last check: " << hs.last_check << ", state ("
+      << hs.current_state << ", " << hs.state_type << "))";
 
     // Processing.
     *_host_status_update << hs;
@@ -1010,8 +1011,8 @@ void stream::_process_host_status(io::data const& e) {
     // Do nothing.
     logging::info(logging::medium)
       << "SQL: not processing host status event (id: " << hs.host_id
-      << ", state (" << hs.current_state << ", " << hs.state_type
-      << ")";
+      << ", last check: " << hs.last_check << ", state ("
+      << hs.current_state << ", " << hs.state_type  << "))";
 
   return ;
 }
@@ -1209,12 +1210,13 @@ void stream::_process_issue_parent(io::data const& e) {
  *  @param[in] e Uncasted log.
  */
 void stream::_process_log(io::data const& e) {
-  // Log message.
-  logging::info(logging::medium) << "SQL: processing log event";
-
   // Fetch proper structure.
   neb::log_entry const& le(
     *static_cast<neb::log_entry const*>(&e));
+
+  // Log message.
+  logging::info(logging::medium) << "SQL: processing log event (ctime: "
+    << le.c_time << ")";
 
   // Fetch issue ID (if any).
   int issue;
@@ -1580,7 +1582,8 @@ void stream::_process_service_status(io::data const& e) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing service status event (host: "
-      << ss.host_id << ", service: " << ss.service_id << ", state ("
+      << ss.host_id << ", service: " << ss.service_id
+      << ", last check: " << ss.last_check << ", state ("
       << ss.current_state << ", " << ss.state_type << "))";
 
     // Processing.
@@ -1595,7 +1598,8 @@ void stream::_process_service_status(io::data const& e) {
     // Do nothing.
     logging::info(logging::medium)
       << "SQL: not processing service status event (host: "
-      << ss.host_id << ", service: " << ss.service_id << ", state ("
+      << ss.host_id << ", service: " << ss.service_id
+      << ", last check: " << ss.last_check << ", state ("
       << ss.current_state << ", " << ss.state_type << "))";
 
   return ;
