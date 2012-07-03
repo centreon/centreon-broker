@@ -27,36 +27,36 @@
 
 CCB_BEGIN()
 
-namespace                      file {
+namespace   file {
   /**
    *  @class stream stream.hh "com/centreon/broker/file/stream.hh"
    *  @brief File stream.
    *
    *  Read and write data to a stream.
    */
-  class                        stream : public io::stream {
+  class     stream : public io::stream {
   public:
-                               stream(
-                                 QString const& filename,
-                                 QIODevice::OpenMode mode);
-                               ~stream();
-    void                       process(
-                                 bool in = false,
-                                 bool out = false);
-    misc::shared_ptr<io::data> read();
-    void                       write(misc::shared_ptr<io::data> d);
+            stream(
+              QString const& filename,
+              QIODevice::OpenMode mode);
+            ~stream();
+    void    process(
+              bool in = false,
+              bool out = false);
+    void    read(misc::shared_ptr<io::data>& d);
+    void    write(misc::shared_ptr<io::data> const& d);
 
   private:
-                               stream(stream const& s);
-    stream&                    operator=(stream const& s);
+            stream(stream const& s);
+    stream& operator=(stream const& s);
 
-    qint64                     _coffset;
-    QFile                      _file;
-    QMutex                     _mutex;
-    bool                       _process_in;
-    bool                       _process_out;
-    qint64                     _roffset;
-    qint64                     _woffset;
+    qint64  _coffset;
+    QFile   _file;
+    QMutex  _mutex;
+    bool    _process_in;
+    bool    _process_out;
+    qint64  _roffset;
+    qint64  _woffset;
   };
 }
 

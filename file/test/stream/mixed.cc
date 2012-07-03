@@ -48,7 +48,8 @@ static int read_some(file::stream& f, unsigned int count) {
     // Find carriage return.
     int index(buffer.indexOf('\n'));
     while (-1 == index) {
-      misc::shared_ptr<io::data> d(f.read());
+      misc::shared_ptr<io::data> d;
+      f.read(d);
       if (d->type() != "com::centreon::broker::io::raw")
         return (1);
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
@@ -132,7 +133,8 @@ int main(int argc, char* argv[]) {
 
   // No more data is available.
   try {
-    fs.read();
+    misc::shared_ptr<io::data> d;
+    fs.read(d);
     retval |= 1;
   }
   catch (io::exceptions::shutdown const& s) {

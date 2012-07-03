@@ -70,7 +70,8 @@ int main(int argc, char* argv[]) {
     fs.write(data.staticCast<io::data>());
 
     // Read data from file.
-    fs.read();
+    misc::shared_ptr<io::data> d;
+    fs.read(d);
   }
 
   // I = false / O = true
@@ -95,7 +96,8 @@ int main(int argc, char* argv[]) {
 
     // Read data from file.
     try {
-      fs.read();
+      misc::shared_ptr<io::data> d;
+      fs.read(d);
       retval |= 1;
     }
     catch (io::exceptions::shutdown const& e) {
@@ -115,7 +117,8 @@ int main(int argc, char* argv[]) {
     fs.write(data.staticCast<io::data>());
 
     // Read data from file.
-    fs.read();
+    misc::shared_ptr<io::data> d;
+    fs.read(d);
   }
 
   // I = false / O = false.
@@ -131,7 +134,8 @@ int main(int argc, char* argv[]) {
 
     // Read data from file.
     try {
-      fs.read();
+      misc::shared_ptr<io::data> d;
+      fs.read(d);
       retval |= 1;
     }
     catch (io::exceptions::shutdown const& e) {

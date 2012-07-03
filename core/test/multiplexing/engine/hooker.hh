@@ -41,11 +41,10 @@ public:
           hooker(hooker const& h);
           ~hooker();
   hooker& operator=(hooker const& h);
-  misc::shared_ptr<io::data>
-          read();
+  void    read(misc::shared_ptr<io::data>& d);
   void    starting();
   void    stopping();
-  void    write(misc::shared_ptr<io::data> d);
+  void    write(misc::shared_ptr<io::data> const& d);
 
 private:
   QQueue<misc::shared_ptr<io::data> >

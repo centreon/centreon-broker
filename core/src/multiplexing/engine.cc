@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <QMutexLocker>
 #include <QQueue>
 #include <QVector>
-#include <stdlib.h>
 #include <utility>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -99,7 +99,7 @@ void engine::load() {
  *
  *  @param[in] e Event to publish.
  */
-void engine::publish(misc::shared_ptr<io::data> e) {
+void engine::publish(misc::shared_ptr<io::data> const& e) {
   // Lock mutex.
   QMutexLocker lock(&_mutex);
 
@@ -135,10 +135,11 @@ void engine::start() {
       it->first->starting();
 
       // Read events from hook.
-      misc::shared_ptr<io::data> d(it->first->read());
+      misc::shared_ptr<io::data> d;
+      it->first->read(d);
       while (!d.isNull()) {
         _kiew.enqueue(d);
-        d = it->first->read();
+        it->first->read(d);
       }
     }
 
@@ -160,7 +161,7 @@ void engine::start() {
 void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
-    logging::debug << logging::HIGH << "multiplexing: stopping";
+    logging::debug(logging::high) << "multiplexing: stopping";
     QMutexLocker lock(&_mutex);
     for (QVector<std::pair<hooker*, bool> >::iterator
            it = _hooks.begin(),
@@ -170,10 +171,11 @@ void engine::stop() {
       it->first->stopping();
 
       // Read events from hook.
-      misc::shared_ptr<io::data> d(it->first->read());
+      misc::shared_ptr<io::data> d;
+      it->first->read(d);
       while (!d.isNull()) {
         _kiew.enqueue(d);
-        d = it->first->read();
+        it->first->read(d);
       }
     }
 
@@ -255,7 +257,7 @@ engine& engine::operator=(engine const& p) {
  *
  *  @param[in] d Unused.
  */
-void engine::_nop(misc::shared_ptr<io::data> d) {
+void engine::_nop(misc::shared_ptr<io::data> const& d) {
   (void)d;
   return ;
 }
@@ -301,7 +303,7 @@ void engine::_send_to_subscribers() {
  *
  *  @param[in] d Data to publish.
  */
-void engine::_write(misc::shared_ptr<io::data> e) {
+void engine::_write(misc::shared_ptr<io::data> const& e) {
   if (!_processing) {
     // Set processing flag.
     _processing = true;
@@ -315,10 +317,11 @@ void engine::_write(misc::shared_ptr<io::data> e) {
            ++it)
         if (it->second) {
           it->first->write(e);
-          misc::shared_ptr<io::data> d(it->first->read());
+          misc::shared_ptr<io::data> d;
+          it->first->read(d);
           while (!d.isNull()) {
             _kiew.enqueue(d);
-            d = it->first->read();
+            it->first->read(d);
           }
         }
 

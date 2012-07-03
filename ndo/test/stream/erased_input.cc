@@ -95,7 +95,8 @@ int main(int argc, char* argv[]) {
 
   // Now the check begins.
   int retval(0);
-  misc::shared_ptr<io::data> d(ns.read());
+  misc::shared_ptr<io::data> d;
+  ns.read(d);
   if (d.isNull() || (d->type() != ack->type()))
     retval = 1;
   else {

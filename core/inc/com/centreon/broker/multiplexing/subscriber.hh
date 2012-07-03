@@ -47,11 +47,12 @@ namespace          multiplexing {
                    subscriber();
                    ~subscriber();
     void           process(bool in = false, bool out = true);
-    misc::shared_ptr<io::data>
-                   read();
-    misc::shared_ptr<io::data>
-                   read(time_t timeout, bool* timed_out = NULL);
-    void           write(misc::shared_ptr<io::data> d);
+    void           read(misc::shared_ptr<io::data>& d);
+    void           read(
+                     misc::shared_ptr<io::data>& d,
+                     time_t timeout,
+                     bool* timed_out = NULL);
+    void           write(misc::shared_ptr<io::data> const& d);
 
   private:
                    subscriber(subscriber const& s);

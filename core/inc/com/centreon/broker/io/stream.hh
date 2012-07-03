@@ -27,35 +27,34 @@
 
 CCB_BEGIN()
 
-namespace                          io {
+namespace                    io {
   /**
    *  @class stream stream.hh "com/centreon/broker/io/stream.hh"
    *  @brief Class used to exchange data.
    *
    *  Interface to exchange data.
    */
-  class                            stream {
+  class                      stream {
   public:
-                                   stream();
-                                   stream(stream const& s);
-    virtual                        ~stream();
-    stream&                        operator=(stream const& s);
-    virtual void                   process(
-                                     bool in = false,
-                                     bool out = true) = 0;
-    virtual misc::shared_ptr<data> read() = 0;
-    virtual misc::shared_ptr<data> read(
-                                     time_t timeout,
-                                     bool* timed_out = NULL);
-    void                           read_from(
-                                     misc::shared_ptr<stream> from);
-    virtual void                   write(misc::shared_ptr<data> d) = 0;
-    void                           write_to(
-                                     misc::shared_ptr<stream> to);
+                             stream();
+                             stream(stream const& s);
+    virtual                  ~stream();
+    stream&                  operator=(stream const& s);
+    virtual void             process(
+                               bool in = false,
+                               bool out = true) = 0;
+    virtual void             read(misc::shared_ptr<io::data>& d) = 0;
+    virtual void             read(
+                               misc::shared_ptr<io::data>& d,
+                               time_t timeout,
+                               bool* timed_out = NULL);
+    void                     read_from(misc::shared_ptr<stream> from);
+    virtual void             write(misc::shared_ptr<data> const& d) = 0;
+    void                     write_to(misc::shared_ptr<stream> to);
 
   protected:
-    misc::shared_ptr<stream>       _from;
-    misc::shared_ptr<stream>       _to;
+    misc::shared_ptr<stream> _from;
+    misc::shared_ptr<stream> _to;
   };
 }
 

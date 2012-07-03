@@ -59,7 +59,11 @@ int main() {
 
   // Should read no events from subscriber.
   int retval(0);
-  retval |= !s.read(0).isNull();
+  {
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
+    retval |= !data.isNull();
+  }
 
   // Start multiplexing engine.
   multiplexing::engine::instance().start();
@@ -88,7 +92,8 @@ int main() {
     char const* messages[] =
       { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
     for (unsigned int i = 0; messages[i]; ++i) {
-      misc::shared_ptr<io::data> d(s.read(0));
+      misc::shared_ptr<io::data> d;
+      s.read(d, 0);
       if (d.isNull()
           || (d->type() != "com::centreon::broker::io::raw"))
         retval |= 1;
@@ -100,7 +105,9 @@ int main() {
           strlen(messages[i]));
       }
     }
-    retval |= !s.read(0).isNull();
+    misc::shared_ptr<io::data> d;
+    s.read(d, 0);
+    retval |= !d.isNull();
   }
 
   // Return.

@@ -2006,12 +2006,13 @@ void stream::process(bool in, bool out) {
 /**
  *  Read from the database.
  *
- *  @return Does not return, throw an exception.
+ *  @param[out] d Cleared.
  */
-misc::shared_ptr<io::data> stream::read() {
+void stream::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   throw (exceptions::msg()
            << "SQL: attempt to read from a SQL stream (software bug)");
-  return (misc::shared_ptr<io::data>());
+  return ;
 }
 
 /**
@@ -2019,7 +2020,7 @@ misc::shared_ptr<io::data> stream::read() {
  *
  *  @param[in] data Event pointer.
  */
-void stream::write(misc::shared_ptr<io::data> data) {
+void stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data can be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)

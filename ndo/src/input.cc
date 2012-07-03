@@ -51,7 +51,8 @@ using namespace com::centreon::broker::ndo;
 char const* input::_get_line() {
   size_t it;
   while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
-    misc::shared_ptr<io::data> data(_from->read());
+    misc::shared_ptr<io::data> data;
+    _from->read(data);
     if (data.isNull())
       break ;
     if (data->type() == "com::centreon::broker::io::raw") {
@@ -165,11 +166,12 @@ void input::process(bool in, bool out) {
  *  Extract the next available event on the input stream, NULL if the
  *  stream is closed.
  *
- *  @return Next available event, NULL if stream is closed.
+ *  @param[out] d Next available event, NULL if stream is closed.
  */
-misc::shared_ptr<io::data> input::read() {
+void input::read(misc::shared_ptr<io::data>& d) {
   // Return value.
   std::auto_ptr<io::data> e;
+  d.clear();
 
   // Get the next non-empty line.
   logging::debug(logging::medium) << "NDO: reading event";
@@ -286,11 +288,15 @@ misc::shared_ptr<io::data> input::read() {
         else
           break ;
       }
-      if (line)
-        return (this->read());
+      if (line) {
+        this->read(d);
+        return ;
+      }
     }
   }
-  return (misc::shared_ptr<io::data>((io::data*)(e.release())));
+  d = misc::shared_ptr<io::data>(e.get());
+  e.release();
+  return ;
 }
 
 /**
@@ -298,7 +304,7 @@ misc::shared_ptr<io::data> input::read() {
  *
  *  @param[in] d Object to copy.
  */
-void input::write(misc::shared_ptr<io::data> d) {
+void input::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   throw (exceptions::msg() << "NDO: attempt to write to an input " \
            "object");

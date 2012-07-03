@@ -117,12 +117,13 @@ void output::process(bool in, bool out) {
 /**
  *  Read data.
  *
- *  @return Does not return, throw an exception.
+ *  @param[out] d Cleared.
  */
-misc::shared_ptr<io::data> output::read() {
+void output::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   throw (broker::exceptions::msg()
            << "RRD: attempt to read data from an output endpoint");
-  return (misc::shared_ptr<io::data>());
+  return ;
 }
 
 /**
@@ -130,7 +131,7 @@ misc::shared_ptr<io::data> output::read() {
  *
  *  @param[in] d Data to write.
  */
-void output::write(misc::shared_ptr<io::data> d) {
+void output::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)

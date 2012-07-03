@@ -39,14 +39,14 @@ public:
   QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
                   get_stored_events() const;
   void            process(bool in = false, bool out = true);
-  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>
-                  read();
+  void            read(
+                    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d);
   void            set_count(unsigned int cnt);
   void            set_replay_events(bool replay);
   void            set_sleep_time(unsigned int ms);
   void            set_store_events(bool store);
   void            write(
-                    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> d);
+                    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
 
 private:
   void            _internal_copy(setable_stream const& ss);

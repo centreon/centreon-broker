@@ -65,10 +65,10 @@ hooker& hooker::operator=(hooker const& h) {
 /**
  *  Read events from the hook.
  *
- *  @return Event.
+ *  @param[out] d Event.
  */
-misc::shared_ptr<io::data> hooker::read() {
-  misc::shared_ptr<io::data> d;
+void hooker::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   if (!_queue.isEmpty()) {
     d = _queue.head();
     _queue.dequeue();
@@ -76,7 +76,7 @@ misc::shared_ptr<io::data> hooker::read() {
   else if (!_registered)
     throw (io::exceptions::shutdown(true, true)
              << "hooker test object is shutdown");
-  return (d);
+  return ;
 }
 
 /**
@@ -104,7 +104,7 @@ void hooker::stopping() {
  *
  *  @param[in] d Ignored.
  */
-void hooker::write(misc::shared_ptr<io::data> d) {
+void hooker::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
     misc::shared_ptr<io::raw> raw(new io::raw);

@@ -83,11 +83,11 @@ void stream::process(bool in, bool out) {
 /**
  *  Read data.
  *
- *  @return Data packet.
+ *  @param[out] data Data packet.
  */
-misc::shared_ptr<io::data> stream::read() {
-  // Return value.
-  misc::shared_ptr<io::data> data;
+void stream::read(misc::shared_ptr<io::data>& data) {
+  // Clear existing content.
+  data.clear();
 
   // Check that data should be processed.
   if (!_process_in)
@@ -120,7 +120,7 @@ misc::shared_ptr<io::data> stream::read() {
   }
   else
     _rbuffer.clear();
-  return (data);
+  return ;
 }
 
 /**
@@ -130,7 +130,7 @@ misc::shared_ptr<io::data> stream::read() {
  *
  *  @param[in] d Data to send.
  */
-void stream::write(misc::shared_ptr<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -192,7 +192,8 @@ void stream::_flush() {
 bool stream::_get_data(unsigned int size) {
   bool retval;
   if (static_cast<unsigned int>(_rbuffer.size()) < size) {
-    misc::shared_ptr<io::data> d(_from->read());
+    misc::shared_ptr<io::data> d;
+    _from->read(d);
     if (d.isNull())
       retval = false;
     else {

@@ -40,9 +40,8 @@ namespace        ndo {
     virtual      ~output();
     output&      operator=(output const& o);
     void         process(bool in = false, bool out = false);
-    virtual misc::shared_ptr<io::data>
-                 read();
-    virtual void write(misc::shared_ptr<io::data> e);
+    virtual void read(misc::shared_ptr<io::data>& e);
+    virtual void write(misc::shared_ptr<io::data> const& e);
 
   private:
     bool         _process_out;

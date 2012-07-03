@@ -65,7 +65,8 @@ int main() {
   int retval(0);
   char const* messages[] = { MSG1, MSG2, NULL };
   for (unsigned int i = 0; messages[i]; ++i) {
-    misc::shared_ptr<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;

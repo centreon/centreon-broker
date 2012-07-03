@@ -278,25 +278,26 @@ void failover::process(bool in, bool out) {
 /**
  *  Read data.
  *
- *  @return Data.
+ *  @param[out] d Data.
  */
-misc::shared_ptr<io::data> failover::read() {
-  return (this->read((time_t)-1));
+void failover::read(misc::shared_ptr<io::data>& d) {
+  this->read(d, (time_t)-1);
+  return ;
 }
 
 /**
  *  Read data.
  *
+ *  @param[out] data      Data.
  *  @param[in]  timeout   Read timeout.
  *  @param[out] timed_out Set to true if read timed out.
- *
- *  @return Data.
  */
-misc::shared_ptr<io::data> failover::read(
-                                       time_t timeout,
-                                       bool* timed_out) {
+void failover::read(
+                 misc::shared_ptr<io::data>& data,
+                 time_t timeout,
+                 bool* timed_out) {
   // Read retained data.
-  misc::shared_ptr<io::data> data;
+  data.clear();
   if (timed_out)
     *timed_out = false;
   QMutexLocker exit_lock(&_should_exitm);
@@ -311,7 +312,7 @@ misc::shared_ptr<io::data> failover::read(
     QReadLocker tom(&_tom);
     try {
       if (!_to.isNull())
-        data = _to->read(timeout, timed_out);
+        _to->read(data, timeout, timed_out);
       logging::debug(logging::low)
         << "failover: got retained event from failover thread";
     }
@@ -351,7 +352,7 @@ misc::shared_ptr<io::data> failover::read(
           th,
           SLOT(quit()));
         th->exec();
-        data = this->read(timeout, timed_out);
+        this->read(data, timeout, timed_out);
       }
     }
   }
@@ -371,12 +372,12 @@ misc::shared_ptr<io::data> failover::read(
     else {
       lock.unlock();
       QReadLocker fromm(&_fromm);
-      data = _from->read(timeout, timed_out);
+      _from->read(data, timeout, timed_out);
     }
     logging::debug(logging::low)
       << "failover: got event from normal source";
   }
-  return (data);
+  return ;
 }
 
 /**
@@ -486,7 +487,7 @@ void failover::run() {
           {
             QReadLocker lock(&_fromm);
             if (!_from.isNull())
-              data = _from->read(_read_timeout, &timed_out);
+              _from->read(data, _read_timeout, &timed_out);
           }
           if (data.isNull() && !timed_out) {
             logging::info(logging::medium) << "failover: " << _name
@@ -721,7 +722,7 @@ bool failover::wait(unsigned long time) {
  *
  *  @return Does not return, throw an exception.
  */
-void failover::write(misc::shared_ptr<io::data> d) {
+void failover::write(misc::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_datam);
   _data = d;
   return ;

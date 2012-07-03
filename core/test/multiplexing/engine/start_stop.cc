@@ -52,14 +52,19 @@ int main() {
 
   // Should read no events from subscriber.
   int retval(0);
-  retval |= !s.read(0).isNull();
+  {
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
+    retval |= !data.isNull();
+  }
 
   // Start multiplexing engine.
   multiplexing::engine::instance().start();
 
   // Read retained events.
   for (unsigned int i = 0; messages[i]; ++i) {
-    misc::shared_ptr<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;
@@ -82,7 +87,8 @@ int main() {
 
   // Read event.
   {
-    misc::shared_ptr<io::data> data(s.read(0));
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
     if (data.isNull()
         || (data->type() != "com::centreon::broker::io::raw"))
       retval |= 1;
@@ -107,7 +113,11 @@ int main() {
   }
 
   // Read no event.
-  retval |= !s.read(0).isNull();
+  {
+    misc::shared_ptr<io::data> data;
+    s.read(data, 0);
+    retval |= !data.isNull();
+  }
 
   // Return.
   return (retval);

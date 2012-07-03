@@ -55,9 +55,8 @@ namespace        sql {
                  ~stream();
     static void  initialize();
     void         process(bool in = false, bool out = false);
-    misc::shared_ptr<io::data>
-                 read();
-    void         write(misc::shared_ptr<io::data> d);
+    void         read(misc::shared_ptr<io::data>& d);
+    void         write(misc::shared_ptr<io::data> const& d);
 
   private:
     stream&      operator=(stream const& s);

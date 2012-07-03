@@ -57,11 +57,10 @@ namespace         storage {
                   stream(stream const& s);
                   ~stream();
     void          process(bool in = false, bool out = true);
-    misc::shared_ptr<io::data>
-                  read();
+    void          read(misc::shared_ptr<io::data>& d);
     void          starting();
     void          stopping();
-    void          write(misc::shared_ptr<io::data> d);
+    void          write(misc::shared_ptr<io::data> const& d);
 
   private:
     struct         index_info {

@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <QMutexLocker>
-#include <stdlib.h>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
@@ -44,7 +44,7 @@ subscriber::subscriber() {
   _process_in = true;
   _process_out = true;
   gl_subscribers.push_back(this);
-  logging::debug << logging::LOW << "multiplexing: "
+  logging::debug(logging::low) << "multiplexing: "
     << gl_subscribers.size()
     << " subscribers are registered after insertion";
 }
@@ -55,7 +55,7 @@ subscriber::subscriber() {
 subscriber::~subscriber() {
   clean();
   QMutexLocker lock(&gl_subscribersm);
-  for (QVector<subscriber*>::iterator it = gl_subscribers.begin();
+  for (QVector<subscriber*>::iterator it(gl_subscribers.begin());
        it != gl_subscribers.end();)
     if (*it == this)
       it = gl_subscribers.erase(it);
@@ -103,24 +103,25 @@ void subscriber::process(bool in, bool out) {
 /**
  *  Get the next available event.
  *
- *  @return Next available event.
+ *  @param[out] d Next available event.
  */
-misc::shared_ptr<io::data> subscriber::read() {
-  return (this->read((time_t)-1));
+void subscriber::read(misc::shared_ptr<io::data>& d) {
+  this->read(d, (time_t)-1);
+  return ;
 }
 
 /**
  *  Get the next available event without waiting more than timeout.
  *
+ *  @param[out] event     Next available event.
  *  @param[in]  timeout   Maximum time to wait in seconds.
  *  @param[out] timed_out Set to true if read timed out.
- *
- *  @return Next available event, NULL if timeout occured.
  */
-misc::shared_ptr<io::data> subscriber::read(
-                                         time_t timeout,
-                                         bool* timed_out) {
-  misc::shared_ptr<io::data> event;
+void subscriber::read(
+                   misc::shared_ptr<io::data>& event,
+                   time_t timeout,
+                   bool* timed_out) {
+  event.clear();
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
@@ -154,7 +155,7 @@ misc::shared_ptr<io::data> subscriber::read(
     logging::debug(logging::low) << "multiplexing: " << _events.size()
       << " events remaining in subscriber";
   }
-  return (event);
+  return ;
 }
 
 /**
@@ -162,7 +163,7 @@ misc::shared_ptr<io::data> subscriber::read(
  *
  *  @param[in] event Event to add.
  */
-void subscriber::write(misc::shared_ptr<io::data> event) {
+void subscriber::write(misc::shared_ptr<io::data> const& event) {
   QMutexLocker lock(&_mutex);
   _events.enqueue(event);
   _cv.wakeOne();

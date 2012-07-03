@@ -47,7 +47,7 @@ publisher::publisher(publisher const& p)
 /**
  *  Destructor.
  */
-publisher::~publisher() {}
+publisher::~publisher() throw () {}
 
 /**
  *  Assignment operator.
@@ -80,13 +80,14 @@ void publisher::process(bool in, bool out) {
  *  Reading is not available from publisher. Therefore this method will
  *  throw an exception.
  *
- *  @return Empty data pointer.
+ *  @param[out] d Unused.
  */
-misc::shared_ptr<io::data> publisher::read() {
+void publisher::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   // XXX : use io::exceptions::read_error
   throw (exceptions::msg()
            << "multiplexing: attempt to read from publisher");
-  return (misc::shared_ptr<io::data>());
+  return ;
 }
 
 /**
@@ -96,7 +97,7 @@ misc::shared_ptr<io::data> publisher::read() {
  *
  *  @param[in] d Multiplexed data.
  */
-void publisher::write(misc::shared_ptr<io::data> d) {
+void publisher::write(misc::shared_ptr<io::data> const& d) {
   if (_process)
     engine::instance().publish(d);
   else

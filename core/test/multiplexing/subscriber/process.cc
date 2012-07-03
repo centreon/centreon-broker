@@ -45,7 +45,9 @@ int main() {
   int retval(0);
 
   // Check that subscriber is empty.
-  retval |= !s.read(0).isNull();
+  misc::shared_ptr<io::data> event;
+  s.read(event, 0);
+  retval |= !event.isNull();
 
   // Close subscriber.
   s.process(false, false);
@@ -57,7 +59,7 @@ int main() {
   multiplexing::engine::instance().publish(data.staticCast<io::data>());
 
   // Fetch event.
-  misc::shared_ptr<io::data> event(s.read(0));
+  s.read(event, 0);
   retval |= (event.isNull()
              || (event->type() != "com::centreon::broker::io::raw")
              || strncmp(
@@ -70,7 +72,7 @@ int main() {
 
   // Try reading again.
   try {
-    s.read(0);
+    s.read(event, 0);
     retval |= 1;
   }
   catch (io::exceptions::shutdown const& s) {

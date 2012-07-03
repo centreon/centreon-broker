@@ -91,7 +91,8 @@ int main() {
     for (unsigned int count(0); !retval && (count < 10000);) {
       // Read data.
       if (data.isNull()) {
-        misc::shared_ptr<io::data> d(cs.read());
+        misc::shared_ptr<io::data> d;
+        cs.read(d);
         if (d.isNull()
             || ("com::centreon::broker::io::raw" != d->type()))
           retval |= 1;
@@ -124,7 +125,8 @@ int main() {
     }
     // EOF must be reached.
     try {
-      cs.read();
+      misc::shared_ptr<io::data> d;
+      cs.read(d);
       retval |= 1;
     }
     catch (io::exceptions::shutdown const& s) {

@@ -46,7 +46,7 @@ namespace                 com {
           void            hook(hooker& h, bool data = true);
           static engine&  instance();
           static void     load();
-          void            publish(misc::shared_ptr<io::data> d);
+          void            publish(misc::shared_ptr<io::data> const& d);
           void            start();
           void            stop();
           void            unhook(hooker& h);
@@ -56,13 +56,14 @@ namespace                 com {
                           engine();
                           engine(engine const& e);
           engine&         operator=(engine const& e);
-          void            _nop(misc::shared_ptr<io::data> d);
+          void            _nop(misc::shared_ptr<io::data> const& d);
           void            _send_to_subscribers();
-          void            _write(misc::shared_ptr<io::data> d);
+          void            _write(misc::shared_ptr<io::data> const& d);
 
           static std::auto_ptr<engine>
                           _instance;
-          void (engine::* _write_func)(misc::shared_ptr<io::data>);
+          void (engine::* _write_func)(
+                            misc::shared_ptr<io::data> const&);
 
          private slots:
           void            _on_hook_destroy(QObject* obj);

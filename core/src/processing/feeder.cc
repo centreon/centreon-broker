@@ -103,7 +103,7 @@ void feeder::run() {
                << "feeder: could not feed with empty output");
     while (!_should_exit) {
       misc::shared_ptr<io::data> data;
-      data = _in->read();
+      _in->read(data);
       if (data.isNull())
         break ;
       try {

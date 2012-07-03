@@ -42,10 +42,9 @@ namespace   local {
               misc::shared_ptr<QMutex> mutex);
             ~stream();
     void    process(bool in = false, bool out = true);
-    misc::shared_ptr<io::data>
-            read();
+    void    read(misc::shared_ptr<io::data>& d);
     void    set_timeout(int msecs);
-    void    write(misc::shared_ptr<io::data> d);
+    void    write(misc::shared_ptr<io::data> const& d);
 
    private:
             stream(stream const& s);

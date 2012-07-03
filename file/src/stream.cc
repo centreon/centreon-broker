@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <QMutexLocker>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -29,40 +29,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will lead to a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : io::stream(s) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will lead to a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
 
 /**************************************
 *                                     *
@@ -126,10 +92,11 @@ void stream::process(bool in, bool out) {
 /**
  *  Read data from the file.
  *
- *  @return Bunch of data.
+ *  @param[out] d Bunch of data.
  */
-misc::shared_ptr<io::data> stream::read() {
+void stream::read(misc::shared_ptr<io::data>& d) {
   // Lock mutex.
+  d.clear();
   QMutexLocker lock(&_mutex);
 
   // Check that read should be done.
@@ -151,7 +118,6 @@ misc::shared_ptr<io::data> stream::read() {
 
   // Read data.
   qint64 old_roffset(_roffset);
-  misc::shared_ptr<io::data> retval;
   qint64 rb(_file.read(data->QByteArray::data(), data->size()));
   if (!rb) // XXX : io::exceptions::error
     throw (io::exceptions::shutdown(true, !_process_out)
@@ -169,7 +135,7 @@ misc::shared_ptr<io::data> stream::read() {
     data->resize(rb);
     _roffset += rb;
     _coffset = _roffset;
-    retval = misc::shared_ptr<io::data>(data.release());
+    d = misc::shared_ptr<io::data>(data.release());
 
     // Erase read data.
     if (!_file.seek(old_roffset))
@@ -192,7 +158,7 @@ misc::shared_ptr<io::data> stream::read() {
       }
     }
   }
-  return (retval);
+  return ;
 }
 
 /**
@@ -200,7 +166,7 @@ misc::shared_ptr<io::data> stream::read() {
  *
  *  @param[in] d Data to write.
  */
-void stream::write(misc::shared_ptr<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -254,4 +220,38 @@ void stream::write(misc::shared_ptr<io::data> d) {
     logging::info(logging::low) << "file: write request with "	\
       "invalid data (" << d->type() << ")";
   return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will lead to a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ */
+stream::stream(stream const& s) : io::stream(s) {
+  assert(!"file stream is not copyable");
+  abort();
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will lead to a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ *
+ *  @return This object.
+ */
+stream& stream::operator=(stream const& s) {
+  (void)s;
+  assert(!"file stream is not copyable");
+  abort();
+  return (*this);
 }

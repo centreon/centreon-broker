@@ -45,21 +45,21 @@ namespace             misc {
      */
                       shared_ptr(T* ptr = NULL) {
       if (ptr) {
-        _refs_mtx = new QMutex;
+        _mtx = new QMutex;
         try {
           _refs = new unsigned int;
         }
         catch (...) {
-          delete _refs_mtx;
+          delete _mtx;
           throw ;
         }
         *_refs = 1;
         _ptr = ptr;
       }
       else {
+        _mtx = NULL;
         _ptr = NULL;
         _refs = NULL;
-        _refs_mtx = NULL;
       }
     }
 
@@ -70,12 +70,11 @@ namespace             misc {
      */
                       shared_ptr(shared_ptr<T> const& right) {
       // Copy data.
-      QMutexLocker lock(&right._mtx);
       _internal_copy(right);
 
       // Increase reference count.
       if (_ptr) {
-        QMutexLocker ref_lock(_refs_mtx);
+        QMutexLocker ref_lock(_mtx);
         ++*_refs;
       }
     }
@@ -103,13 +102,11 @@ namespace             misc {
         clear();
 
         // Copy shared pointer.
-        QMutexLocker left_lock(&_mtx);
-        QMutexLocker right_lock(&right._mtx);
         _internal_copy(right);
 
         // Increase reference count.
         if (_ptr) {
-          QMutexLocker ref_lock(_refs_mtx);
+          QMutexLocker ref_lock(_mtx);
           ++*_refs;
         }
       }
@@ -158,25 +155,23 @@ namespace             misc {
      *  Clear current pointer.
      */
     void              clear() {
-      QMutexLocker lock(&_mtx);
-
       // Decrease reference count.
       if (_ptr) {
-        QMutexLocker ref_lock(_refs_mtx);
+        QMutexLocker ref_lock(_mtx);
         --*_refs;
 
         // No more reference, destroy everything.
         if (_refs <= 0) {
           ref_lock.unlock();
+          delete _mtx;
           delete _ptr;
           delete _refs;
-          delete _refs_mtx;
         }
 
         // Reset pointers.
+        _mtx = NULL;
         _ptr = NULL;
         _refs = NULL;
-        _refs_mtx = NULL;
       }
       return ;
     }
@@ -208,15 +203,14 @@ namespace             misc {
     template          <typename U>
     shared_ptr<U>     staticCast() const {
       shared_ptr<U> retval;
-      QMutexLocker lock(&_mtx);
       if (_ptr) {
         // Copy data.
+        retval._mtx = _mtx;
         retval._ptr = static_cast<U*>(_ptr);
         retval._refs = _refs;
-        retval._refs_mtx = _refs_mtx;
 
         // Increase reference count.
-        QMutexLocker refs_lock(retval._refs_mtx);
+        QMutexLocker refs_lock(retval._mtx);
         ++*retval._refs;
       }
       return (retval);
@@ -229,16 +223,15 @@ namespace             misc {
      *  @param[in] right Object to copy.
      */
     void              _internal_copy(shared_ptr<T> const& right) {
+      _mtx = right._mtx;
       _ptr = right._ptr;
       _refs = right._refs;
-      _refs_mtx = right._refs_mtx;
       return ;
     }
 
-    mutable QMutex    _mtx;
+    QMutex*           _mtx;
     T*                _ptr;
     unsigned int*     _refs;
-    QMutex*           _refs_mtx;
   };
 }
 

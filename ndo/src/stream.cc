@@ -76,10 +76,11 @@ void stream::process(bool in, bool out) {
 /**
  *  Read data from stream.
  *
- *  @return Next available data.
+ *  @param[out] d Next available data.
  */
-misc::shared_ptr<io::data> stream::read() {
-  return (input::read());
+void stream::read(misc::shared_ptr<io::data>& d) {
+  input::read(d);
+  return ;
 }
 
 /**
@@ -87,7 +88,7 @@ misc::shared_ptr<io::data> stream::read() {
  *
  *  @param[in] d Data to send.
  */
-void stream::write(misc::shared_ptr<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> const& d) {
   output::write(d);
   return ;
 }

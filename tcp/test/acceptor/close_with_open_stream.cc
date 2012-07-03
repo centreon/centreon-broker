@@ -64,8 +64,10 @@ class            concurrent : public QThread {
     _acceptor->listen_on(_port);
     try {
       misc::shared_ptr<io::stream> s(_acceptor->open());
-      if (!s.isNull())
-        s->read();
+      if (!s.isNull()) {
+        misc::shared_ptr<io::data> d;
+        s->read(d);
+      }
     }
     catch (...) {}
     return ;

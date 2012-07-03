@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace                      multiplexing {
+namespace      multiplexing {
   /**
    *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
    *  @brief Publish events to the multiplexing engine.
@@ -35,20 +35,18 @@ namespace                      multiplexing {
    *
    *  @see engine
    */
-  class                        publisher : public io::stream {
+  class        publisher : public io::stream {
   public:
-                               publisher();
-                               publisher(publisher const& p);
-                               ~publisher();
-    publisher&                 operator=(publisher const& p);
-    void                       process(
-                                 bool in = false,
-                                 bool out = true);
-    misc::shared_ptr<io::data> read();
-    void                       write(misc::shared_ptr<io::data> d);
+               publisher();
+               publisher(publisher const& p);
+               ~publisher() throw ();
+    publisher& operator=(publisher const& p);
+    void       process(bool in = false, bool out = true);
+    void       read(misc::shared_ptr<io::data>& d);
+    void       write(misc::shared_ptr<io::data> const& d);
 
   private:
-    bool                       _process;
+    bool       _process;
   };
 }
 

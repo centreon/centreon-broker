@@ -39,7 +39,8 @@ int main() {
 
   // Read from publisher.
   try {
-    p.read();
+    misc::shared_ptr<io::data> d;
+    p.read(d);
     retval = 1;
   }
   catch (...) {}

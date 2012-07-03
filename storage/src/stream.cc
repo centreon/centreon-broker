@@ -345,10 +345,11 @@ void stream::process(bool in, bool out) {
 /**
  *  Read from the datbase.
  *
- *  @return Does not return, throw an exception.
+ *  @param[out] d Cleared.
  */
-misc::shared_ptr<io::data> stream::read() {
-  return (misc::shared_ptr<io::data>());
+void stream::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
+  return ;
 }
 
 /**
@@ -371,7 +372,7 @@ void stream::stopping() {
  *
  *  @param[in] data Event pointer.
  */
-void stream::write(misc::shared_ptr<io::data> data) {
+void stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)

@@ -85,7 +85,8 @@ int main(int argc, char* argv[]) {
     misc::shared_ptr<setable_stream> ss(*se->streams().begin());
     unsigned int count(ss->get_count());
     unsigned int i(0);
-    misc::shared_ptr<io::data> event(s.read(0));
+    misc::shared_ptr<io::data> event;
+    s.read(event, 0);
     while (!event.isNull()) {
       if (event->type() != "com::centreon::broker::io::raw")
         retval |= 1;
@@ -96,7 +97,7 @@ int main(int argc, char* argv[]) {
         retval |= (val != ++i);
       }
       try {
-        event = s.read(0);
+        s.read(event, 0);
       }
       catch (io::exceptions::shutdown const& e) {
 	event.clear();

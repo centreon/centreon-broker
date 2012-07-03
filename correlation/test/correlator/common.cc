@@ -188,7 +188,8 @@ bool check_content(
          it(content.begin()),
          end(content.end());
        retval && (it != end);) {
-    misc::shared_ptr<io::data> d(s.read());
+    misc::shared_ptr<io::data> d;
+    s.read(d);
     if (d.isNull())
       retval = false;
     else if (d->type() == (*it)->type()) {

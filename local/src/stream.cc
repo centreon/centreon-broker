@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <QMutexLocker>
 #include <QWaitCondition>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -86,9 +86,10 @@ void stream::process(bool in, bool out) {
 /**
  *  Read data from the socket.
  *
- *  @return Data packet.
+ *  @param[out] d Data packet.
  */
-misc::shared_ptr<io::data> stream::read() {
+void stream::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   QMutexLocker lock(&*_mutex);
   bool ret;
   do {
@@ -113,7 +114,8 @@ misc::shared_ptr<io::data> stream::read() {
              << _socket->errorString());
   misc::shared_ptr<io::raw> data(new io::raw);
   data->append(buffer, rb);
-  return (data.staticCast<io::data>());
+  d = data.staticCast<io::data>();
+  return ;
 }
 
 /**
@@ -131,7 +133,7 @@ void stream::set_timeout(int msecs) {
  *
  *  @param[in] d Data to write.
  */
-void stream::write(misc::shared_ptr<io::data> d) {
+void stream::write(misc::shared_ptr<io::data> const& d) {
   // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)

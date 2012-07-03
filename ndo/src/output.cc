@@ -115,11 +115,14 @@ void output::process(bool in, bool out) {
 
 /**
  *  Read data.
+ *
+ *  @param[out] d Cleared.
  */
-misc::shared_ptr<io::data> output::read() {
+void output::read(misc::shared_ptr<io::data>& d) {
+  d.clear();
   throw (exceptions::msg() << "NDO: attempt to read from an " \
            "output object");
-  return (misc::shared_ptr<io::data>());
+  return ;
 }
 
 /**
@@ -127,7 +130,7 @@ misc::shared_ptr<io::data> output::read() {
  *
  *  @param[in] e Event to send.
  */
-void output::write(misc::shared_ptr<io::data> e) {
+void output::write(misc::shared_ptr<io::data> const& e) {
   // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, !_process_out)

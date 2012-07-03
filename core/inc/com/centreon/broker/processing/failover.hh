@@ -20,11 +20,11 @@
 #ifndef CCB_PROCESSING_FAILOVER_HH
 #  define CCB_PROCESSING_FAILOVER_HH
 
-#  include <limits.h>
+#  include <climits>
+#  include <ctime>
 #  include <QMutex>
 #  include <QReadWriteLock>
 #  include <QThread>
-#  include <time.h>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -60,10 +60,11 @@ namespace                com {
           time_t         get_read_timeout() const throw ();
           time_t         get_retry_interval() const throw ();
           void           process(bool in = false, bool out = false);
-          misc::shared_ptr<io::data>
-                         read();
-          misc::shared_ptr<io::data>
-                         read(time_t timeout, bool* timed_out = NULL);
+          void           read(misc::shared_ptr<io::data>& d);
+          void           read(
+                           misc::shared_ptr<io::data>& d,
+                           time_t timeout,
+                           bool* timed_out = NULL);
           void           run();
           void           set_buffering_timeout(time_t secs);
           void           set_endpoint(
@@ -74,7 +75,7 @@ namespace                com {
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
           bool           wait(unsigned long time = ULONG_MAX);
-          void           write(misc::shared_ptr<io::data> d);
+          void           write(misc::shared_ptr<io::data> const& d);
 
           static time_t const
                          event_window_length = 30;

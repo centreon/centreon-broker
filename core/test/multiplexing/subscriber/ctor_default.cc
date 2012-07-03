@@ -42,7 +42,9 @@ int main() {
   int retval(0);
 
   // Check that subscriber is empty.
-  retval |= !s.read(0).isNull();
+  misc::shared_ptr<io::data> event;
+  s.read(event, 0);
+  retval |= !event.isNull();
 
   // Write data to subscriber.
   misc::shared_ptr<io::raw> data(new io::raw);
@@ -50,7 +52,7 @@ int main() {
   s.write(data.staticCast<io::data>());
 
   // Fetch event.
-  misc::shared_ptr<io::data> event(s.read(0));
+  s.read(event, 0);
   retval |= (event.isNull()
              || (event->type() != "com::centreon::broker::io::raw")
              || strncmp(
@@ -59,7 +61,8 @@ int main() {
                   sizeof(MSG) - 1));
 
   // Try reading again.
-  retval |= !s.read(0).isNull();
+  s.read(event, 0);
+  retval |= !event.isNull();
 
   // Return.
   return (retval);

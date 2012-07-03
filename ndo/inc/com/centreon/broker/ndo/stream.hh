@@ -26,23 +26,23 @@
 
 CCB_BEGIN()
 
-namespace                      ndo {
+namespace   ndo {
   /**
    *  @class stream stream.hh "com/centreon/broker/ndo/stream.hh"
    *  @brief NDO stream.
    *
    *  The class converts data to neb events back and forth.
    */
-  class                        stream : public input,
-                                        public output {
+  class     stream : public input,
+                     public output {
   public:
-                               stream();
-                               stream(stream const& s);
-                               ~stream();
-    stream&                    operator=(stream const& s);
-    void                       process(bool in = false, bool out = true);
-    misc::shared_ptr<io::data> read();
-    void                       write(misc::shared_ptr<io::data> d);
+            stream();
+            stream(stream const& s);
+            ~stream();
+    stream& operator=(stream const& s);
+    void    process(bool in = false, bool out = true);
+    void    read(misc::shared_ptr<io::data>& d);
+    void    write(misc::shared_ptr<io::data> const& d);
   };
 }
 

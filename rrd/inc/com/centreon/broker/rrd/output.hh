@@ -52,8 +52,9 @@ namespace                    rrd {
     void                       process(
                                  bool in = false,
                                  bool out = true);
-    misc::shared_ptr<io::data> read();
-    void                       write(misc::shared_ptr<io::data> d);
+    void                       read(misc::shared_ptr<io::data>& d);
+    void                       write(
+                                 misc::shared_ptr<io::data> const& d);
 
   private:
                                output(output const& o);

@@ -208,15 +208,15 @@ void correlator::load(QString const& correlation_file,
 /**
  *  Get the next available correlated event.
  *
- *  @return The next available correlated event.
+ *  @param[out] e The next available correlated event.
  */
-misc::shared_ptr<io::data> correlator::read() {
-  misc::shared_ptr<io::data> e;
+void correlator::read(misc::shared_ptr<io::data>& e) {
+  e.clear();
   if (!_events.empty()) {
     e = _events.front();
     _events.pop_front();
   }
-  return (e);
+  return ;
 }
 
 /**
@@ -404,7 +404,7 @@ void correlator::update() {
  *
  *  @param[inout] e Event to process.
  */
-void correlator::write(misc::shared_ptr<io::data> e) {
+void correlator::write(misc::shared_ptr<io::data> const& e) {
   try {
     // Process event.
     if ("com::centreon::broker::neb::host" == e->type())

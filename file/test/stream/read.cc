@@ -87,7 +87,8 @@ int main(int argc, char* argv[]) {
   for (unsigned int count = 0; !retval && (count < 10000);) {
     // Read data.
     if (raw.isNull()) {
-      misc::shared_ptr<io::data> d(fs.read());
+      misc::shared_ptr<io::data> d;
+      fs.read(d);
       if (d.isNull() || ("com::centreon::broker::io::raw" != d->type()))
         retval |= 1;
       else {
@@ -119,7 +120,8 @@ int main(int argc, char* argv[]) {
   }
   // EOF must be reached.
   try {
-    fs.read();
+    misc::shared_ptr<io::data> d;
+    fs.read(d);
     retval |= 1;
   }
   catch (io::exceptions::shutdown const& s) {

@@ -41,9 +41,8 @@ namespace        ndo {
     virtual      ~input();
     input&       operator=(input const& i);
     void         process(bool in = false, bool out = false);
-    virtual misc::shared_ptr<io::data>
-                 read();
-    virtual void write(misc::shared_ptr<io::data> d);
+    virtual void read(misc::shared_ptr<io::data>& d);
+    virtual void write(misc::shared_ptr<io::data> const& d);
 
   private:
     char const*  _get_line();

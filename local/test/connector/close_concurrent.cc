@@ -78,8 +78,10 @@ class               concurrent : public QThread {
     // Will throw when socket is closed.
     try {
       misc::shared_ptr<io::stream> s(_conn->open());
-      while (true)
-        s->read();
+      while (true) {
+        misc::shared_ptr<io::data> d;
+        s->read(d);
+      }
     }
     catch (...) {}
     return ;

@@ -105,16 +105,18 @@ void setable_stream::process(bool in, bool out) {
 /**
  *  Read some data.
  *
- *  @return Some data.
+ *  @param[out] data Some data.
  */
-misc::shared_ptr<io::data> setable_stream::read() {
+void setable_stream::read(misc::shared_ptr<io::data>& data) {
+  // Reset pointer.
+  data.clear();
+
   // Sleep a while.
   QMutex m;
   QWaitCondition cv;
   cv.wait(&m, _sleep_time);
 
   // Do we generate an event ?
-  misc::shared_ptr<io::data> data;
   if (_process_in && _process_out) {
     misc::shared_ptr<io::raw> raw(new io::raw);
     ++_count;
@@ -134,7 +136,7 @@ misc::shared_ptr<io::data> setable_stream::read() {
   else
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "setable stream is shutdown");
-  return (data);
+  return ;
 }
 
 /**
@@ -184,7 +186,7 @@ void setable_stream::set_store_events(bool store) {
  *
  *  @param[in] d Data to write.
  */
-void setable_stream::write(misc::shared_ptr<io::data> d) {
+void setable_stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
            << "setable stream is shutdown");

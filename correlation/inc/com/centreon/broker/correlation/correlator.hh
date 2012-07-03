@@ -80,12 +80,13 @@ namespace                          com {
           void                     load(
                                      QString const& correlation_file,
                                      QString const& retention_file);
-          misc::shared_ptr<io::data> read();
+          void                     read(misc::shared_ptr<io::data>& d);
           void                     set_state(
                                      QMap<QPair<unsigned int, unsigned int>, node> const& state);
           void                     starting();
           void                     stopping();
-          void                     write(misc::shared_ptr<io::data> e);
+          void                     write(
+                                     misc::shared_ptr<io::data> const& e);
 
          public slots:
           void                     update();

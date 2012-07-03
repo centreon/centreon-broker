@@ -68,18 +68,21 @@ stream& stream::operator=(stream const& s) {
  *
  *  Default implementation calls read with no timeout.
  *
+ *  @param[out] d         Data.
  *  @param[in]  deadline  Read timeout (unused in default
  *                        implementation).
  *  @param[out] timed_out Set to true if reading timed out, false
  *                        otherwise.
- *
- *  @return Same as read().
  */
-misc::shared_ptr<data> stream::read(time_t deadline, bool* timed_out) {
+void stream::read(
+               misc::shared_ptr<data>& d,
+               time_t deadline,
+               bool* timed_out) {
   (void)deadline;
   if (timed_out)
     *timed_out = false;
-  return (this->read());
+  this->read(d);
+  return ;
 }
 
 /**
