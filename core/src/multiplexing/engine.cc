@@ -40,7 +40,9 @@ using namespace com::centreon::broker::multiplexing;
 **************************************/
 
 // Hooks.
-static QVector<std::pair<hooker*, bool> > _hooks;
+static QVector<std::pair<hooker*, bool> >           _hooks;
+static QVector<std::pair<hooker*, bool> >::iterator _hooks_begin;
+static QVector<std::pair<hooker*, bool> >::iterator _hooks_end;
 
 // Pointer.
 std::auto_ptr<engine> engine::_instance;
@@ -74,6 +76,8 @@ engine::~engine() {}
 void engine::hook(hooker& h, bool data) {
   QMutexLocker lock(&_mutex);
   _hooks.push_back(std::make_pair(&h, data));
+  _hooks_begin = _hooks.begin();
+  _hooks_end = _hooks.end();
   return ;
 }
 
@@ -128,8 +132,8 @@ void engine::start() {
 
     // Notify hooks of multiplexing loop start.
     for (QVector<std::pair<hooker*, bool> >::iterator
-           it = _hooks.begin(),
-           end = _hooks.end();
+           it(_hooks_begin),
+           end(_hooks_end);
          it != end;
          ++it) {
       it->first->starting();
@@ -164,8 +168,8 @@ void engine::stop() {
     logging::debug(logging::high) << "multiplexing: stopping";
     QMutexLocker lock(&_mutex);
     for (QVector<std::pair<hooker*, bool> >::iterator
-           it = _hooks.begin(),
-           end = _hooks.end();
+           it(_hooks_begin),
+           end(_hooks_end);
          it != end;
          ++it) {
       it->first->stopping();
@@ -195,7 +199,8 @@ void engine::stop() {
  */
 void engine::unhook(hooker& h) {
   QMutexLocker lock(&_mutex);
-  for (QVector<std::pair<hooker*, bool> >::iterator it = _hooks.begin();
+  for (QVector<std::pair<hooker*, bool> >::iterator
+         it(_hooks_begin);
        it != _hooks.end();)
     if (it->first == &h)
       it = _hooks.erase(it);
@@ -221,7 +226,11 @@ void engine::unload() {
 /**
  *  Default constructor.
  */
-engine::engine() : _write_func(&engine::_nop) {}
+engine::engine() : _write_func(&engine::_nop) {
+  // Initialize hook iterators.
+  _hooks_begin = _hooks.begin();
+  _hooks_end = _hooks.end();
+}
 
 /**
  *  @brief Copy constructor.
@@ -311,8 +320,8 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
     try {
       // Send object to every hook.
       for (QVector<std::pair<hooker*, bool> >::iterator
-             it = _hooks.begin(),
-             end = _hooks.end();
+             it(_hooks_begin),
+             end(_hooks_end);
            it != end;
            ++it)
         if (it->second) {

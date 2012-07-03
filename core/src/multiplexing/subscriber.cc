@@ -121,7 +121,6 @@ void subscriber::read(
                    misc::shared_ptr<io::data>& event,
                    time_t timeout,
                    bool* timed_out) {
-  event.clear();
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
@@ -140,6 +139,8 @@ void subscriber::read(
         logging::debug(logging::low) << "multiplexing: "
           << _events.size() << " events remaining in subcriber";
       }
+      else
+        event.clear();
     }
     // If subscriber is shutdown, notify caller.
     else
@@ -164,8 +165,10 @@ void subscriber::read(
  *  @param[in] event Event to add.
  */
 void subscriber::write(misc::shared_ptr<io::data> const& event) {
-  QMutexLocker lock(&_mutex);
-  _events.enqueue(event);
+  {
+    QMutexLocker lock(&_mutex);
+    _events.enqueue(event);
+  }
   _cv.wakeOne();
   return ;
 }

@@ -18,8 +18,8 @@
 */
 
 #include <algorithm>
+#include <cstdlib>
 #include <memory>
-#include <stdlib.h>
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
@@ -56,7 +56,7 @@ char const* input::_get_line() {
     if (data.isNull())
       break ;
     if (data->type() == "com::centreon::broker::io::raw") {
-      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+      io::raw* raw(static_cast<io::raw*>(data.data()));
       _buffer.append(static_cast<char*>(
         raw->QByteArray::data()),
         raw->size());
