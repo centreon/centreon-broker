@@ -49,13 +49,14 @@ using namespace com::centreon::broker::ndo;
  *  Read a line of input.
  */
 char const* input::_get_line() {
+  static QString const io_raw_type("com::centreon::broker::io::raw");
   size_t it;
   while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
     misc::shared_ptr<io::data> data;
     _from->read(data);
     if (data.isNull())
       break ;
-    if (data->type() == "com::centreon::broker::io::raw") {
+    if (data->type() == io_raw_type) {
       io::raw* raw(static_cast<io::raw*>(data.data()));
       _buffer.append(static_cast<char*>(
         raw->QByteArray::data()),

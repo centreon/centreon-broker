@@ -136,6 +136,7 @@ void subscriber::read(
       }
       if (!_events.isEmpty()) {
         event = _events.dequeue();
+        lock.unlock();
         logging::debug(logging::low) << "multiplexing: "
           << _events.size() << " events remaining in subcriber";
       }
@@ -153,6 +154,7 @@ void subscriber::read(
       throw (io::exceptions::shutdown(true, false) << "subscriber "
              << this << " is shutdown, cannot read");
     event = _events.dequeue();
+    lock.unlock();
     logging::debug(logging::low) << "multiplexing: " << _events.size()
       << " events remaining in subscriber";
   }

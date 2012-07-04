@@ -167,6 +167,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  @param[in] d Data to write.
  */
 void stream::write(misc::shared_ptr<io::data> const& d) {
+  static QString const io_raw_type("com::centreon::broker::io::raw");
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -174,7 +175,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return ;
 
-  if (d->type() == "com::centreon::broker::io::raw") {
+  if (d->type() == io_raw_type) {
     // Lock mutex.
     QMutexLocker lock(&_mutex);
 
