@@ -19,7 +19,6 @@
 
 #include <cassert>
 #include <QMutexLocker>
-#include <QWaitCondition>
 #include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -93,8 +92,6 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   QMutexLocker lock(&*_mutex);
   bool ret;
   do {
-    QWaitCondition cv;
-    cv.wait(&*_mutex, 10);
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)
