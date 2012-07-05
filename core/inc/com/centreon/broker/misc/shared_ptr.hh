@@ -161,7 +161,7 @@ namespace             misc {
         --*_refs;
 
         // No more reference, destroy everything.
-        if (_refs <= 0) {
+        if (*_refs <= 0) {
           ref_lock.unlock();
           delete _mtx;
           delete _ptr;
