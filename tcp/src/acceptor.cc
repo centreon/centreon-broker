@@ -170,14 +170,14 @@ misc::shared_ptr<io::stream> acceptor::open() {
     SLOT(_on_stream_destroy(QObject*)));
   connect(
     incoming.data(),
-    SIGNAL(disconnected(QObject*)),
+    SIGNAL(disconnected()),
     this,
-    SLOT(_on_stream_destroy(QObject*)));
+    SLOT(_on_stream_disconnected()));
   connect(
     incoming.data(),
-    SIGNAL(error(QObject*)),
+    SIGNAL(error(QAbstractSocket::SocketError)),
     this,
-    SLOT(_on_stream_destroy(QObject*)));
+    SLOT(_on_stream_error(QAbstractSocket::SocketError)));
   {
     QMutexLocker lock(&_childrenm);
     QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
@@ -274,5 +274,22 @@ void acceptor::_on_stream_destroy(QObject* obj) {
       _children.erase(it);
       break ;
     }
+  return ;
+}
+
+/**
+ *  Called when a child TCP socket is disconnected.
+ */
+void acceptor::_on_stream_disconnected() {
+  _on_stream_destroy(QObject::sender());
+  return ;
+}
+
+/**
+ *  Called when a child TCP socket has an error.
+ */
+void acceptor::_on_stream_error(QAbstractSocket::SocketError e) {
+  (void)e;
+  _on_stream_destroy(QObject::sender());
   return ;
 }
