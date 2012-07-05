@@ -58,7 +58,7 @@ namespace               com {
                           std::string& buffer,
                           bool is_out);
           void          _internal_copy(worker const& right);
-          void          _open();
+          bool          _open();
           void          run();
 
           std::string   _buffer;

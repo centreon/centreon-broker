@@ -275,14 +275,23 @@ void worker::_internal_copy(worker const& right) {
 
 /**
  *  Open FIFO.
+ *
+ *  @return true on success.
  */
-void worker::_open() {
-  _fd = open(qPrintable(_fifo), O_WRONLY);
+bool worker::_open() {
+  bool retval;
+  _fd = open(qPrintable(_fifo), O_WRONLY | O_NONBLOCK);
   if (_fd < 0) {
-    char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot open FIFO file: " << msg);
+    if (errno != ENXIO) {
+      char const* msg(strerror(errno));
+      throw (exceptions::msg() << "cannot open FIFO file: " << msg);
+    }
+    else
+      retval = false;
   }
-  return ;
+  else
+    retval = true;
+  return (retval);
 }
 
 /**
@@ -290,10 +299,15 @@ void worker::_open() {
  */
 void worker::run() {
   try {
-    // Initial FIFO open.
-    _open();
-
     while (!_should_exit) {
+      // Check file opening.
+      if (_buffer.empty()) {
+        _close();
+        usleep(500);
+        if (!_open())
+          continue ;
+      }
+
       // FD sets.
       fd_set e;
       fd_set w;
@@ -331,13 +345,6 @@ void worker::run() {
         ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));
         if (wb > 0)
           _buffer.erase(0, wb);
-
-        // Buffer empty, reopen FIFO.
-        if (_buffer.empty()) {
-          _close();
-          usleep(500);
-          _open();
-        }
       }
     }
   }

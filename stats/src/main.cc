@@ -47,6 +47,7 @@ extern "C" {
       // Terminate thread.
       obj->exit();
       obj->wait();
+      obj.reset();
     }
     return ;
   }
