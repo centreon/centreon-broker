@@ -17,12 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
+#include <memory>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::io;
+
+// Class instance.
+static std::auto_ptr<protocols> gl_protocols;
 
 /**************************************
 *                                     *
@@ -62,8 +66,16 @@ QMap<QString, protocols::protocol>::const_iterator protocols::end() const {
  *  @return Class instance.
  */
 protocols& protocols::instance() {
-  static protocols gl_protocols;
-  return (gl_protocols);
+  return (*gl_protocols);
+}
+
+/**
+ *  Load singleton.
+ */
+void protocols::load() {
+  if (!gl_protocols.get())
+    gl_protocols.reset(new protocols);
+  return ;
 }
 
 /**
@@ -89,6 +101,14 @@ void protocols::reg(
   // Register protocol in protocol list.
   _protocols[name] = p;
 
+  return ;
+}
+
+/**
+ *  Unload the singleton.
+ */
+void protocols::unload() {
+  gl_protocols.reset();
   return ;
 }
 

@@ -45,8 +45,10 @@ namespace                     config {
                                 void const* arg = NULL);
       iterator                begin();
       iterator                end();
+      void                    discard();
       static modules&         instance();
-      void                    unload();
+      static void             load();
+      static void             unload();
 
     private:
                               modules();

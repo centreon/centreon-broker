@@ -18,8 +18,9 @@
 */
 
 #include <cassert>
-#include <QMutexLocker>
 #include <cstdlib>
+#include <QMutexLocker>
+#include <QWaitCondition>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -91,7 +92,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   QMutexLocker lock(&*_mutex);
   bool ret;
-  do {
+  while (1) {
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)
@@ -105,10 +106,15 @@ void stream::read(misc::shared_ptr<io::data>& d) {
                     && (_socket->bytesAvailable() <= 0)))))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
                << "TCP stream is shutdown");
-  } while (!ret
-           && (_socket->error()
-               == QAbstractSocket::SocketTimeoutError)
-           && (_socket->bytesAvailable() <= 0));
+    if (ret
+        || (_socket->error() != QAbstractSocket::SocketTimeoutError)
+        || (_socket->bytesAvailable() > 0))
+      break ;
+    else {
+      QWaitCondition cv;
+      cv.wait(&*_mutex, 1);
+    }
+  }
 
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));

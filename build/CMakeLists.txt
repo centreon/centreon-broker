@@ -157,7 +157,6 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/config/applier/endpoint.cc"
-  "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
   "${SRC_DIR}/config/endpoint.cc"
@@ -259,7 +258,9 @@ if (COMPILER_HAS_FPIC)
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
 target_link_libraries("rokerbase" ${QT_LIBRARIES})
-add_library("roker" STATIC "${SRC_DIR}/config/applier/logger.cc")
+add_library("roker" STATIC
+  "${SRC_DIR}/config/applier/init.cc"
+  "${SRC_DIR}/config/applier/logger.cc")
 target_link_libraries("roker" "rokerbase")
 
 # Standalone binary.

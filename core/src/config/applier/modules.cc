@@ -17,12 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
+#include <memory>
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::config::applier;
+
+// Class instance.
+static std::auto_ptr<modules> gl_modules;
 
 /**************************************
 *                                     *
@@ -65,6 +69,14 @@ modules::iterator modules::begin() {
 }
 
 /**
+ *  Unload modules.
+ */
+void modules::discard() {
+  _loader.unload();
+  return ;
+}
+
+/**
  *  Get last iterator of the module list.
  *
  *  @return Last iterator of the module list.
@@ -79,15 +91,23 @@ modules::iterator modules::end() {
  *  @return Class instance.
  */
 modules& modules::instance() {
-  static modules gl_modules;
-  return (gl_modules);
+  return (*gl_modules);
 }
 
 /**
- *  Unload modules.
+ *  Load the singleton.
+ */
+void modules::load() {
+  if (!gl_modules.get())
+    gl_modules.reset(new modules);
+  return ;
+}
+
+/**
+ *  Unload the singleton.
  */
 void modules::unload() {
-  _loader.unload();
+  gl_modules.reset();
   return ;
 }
 

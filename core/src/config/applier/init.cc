@@ -18,12 +18,22 @@
 */
 
 #include <cstdlib>
+#include <memory>
 #include <QAbstractSocket>
+#include <QtCore>
+#include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
+
+// Declare type.
+Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
 
 /**************************************
 *                                     *
@@ -35,6 +45,11 @@ using namespace com::centreon::broker;
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
+  config::applier::state::unload();
+  config::applier::endpoint::unload();
+  config::applier::logger::unload();
+  config::applier::modules::unload();
+  io::protocols::unload();
   multiplexing::engine::unload();
   logging::manager::unload();
   return ;
@@ -47,7 +62,11 @@ void config::applier::init() {
   // Load singletons.
   logging::manager::load();
   multiplexing::engine::load();
-  atexit(&deinit);
+  io::protocols::load();
+  config::applier::modules::load();
+  config::applier::logger::load();
+  config::applier::endpoint::load();
+  config::applier::state::load();
 
   // Register Qt type.
   qRegisterMetaType<QAbstractSocket::SocketError>(

@@ -17,11 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <memory>
 #include <QCoreApplication>
 #include <QMutex>
 #include <QMutexLocker>
-#include <stdlib.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -31,45 +32,8 @@
 
 using namespace com::centreon::broker::config::applier;
 
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Default constructor.
- */
-state::state() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-state::state(state const& s) {
-  (void)s;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-state& state::operator=(state const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
+// Class instance.
+static std::auto_ptr<state> gl_state;
 
 /**************************************
 *                                     *
@@ -120,6 +84,72 @@ void state::apply(com::centreon::broker::config::state const& s,
  *  @return Class instance.
  */
 state& state::instance() {
-  static state gl_state;
-  return (gl_state);
+  return (*gl_state);
+}
+
+/**
+ *  Load singleton.
+ */
+void state::load() {
+  if (!gl_state.get())
+    gl_state.reset(new state);
+  return ;
+}
+
+/**
+ *  Unload singleton.
+ */
+void state::unload() {
+  gl_state.reset();
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Default constructor.
+ */
+state::state() {}
+
+/**
+ *  @brief Copy constructor.
+ *
+ *  Any call to this constructor will result in a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ */
+state::state(state const& s) {
+  (void)s;
+  _internal_copy(s);
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Any call to this method will result in a call to abort().
+ *
+ *  @param[in] s Object to copy.
+ *
+ *  @return This object.
+ */
+state& state::operator=(state const& s) {
+  (void)s;
+  _internal_copy(s);
+  return (*this);
+}
+
+/**
+ *  Calls abort().
+ *
+ *  @param[in] s Unused.
+ */
+void state::_internal_copy(state const& s) {
+  (void)s;
+  assert(!"state configuration applier is not copyable");
+  abort();
+  return ;
 }

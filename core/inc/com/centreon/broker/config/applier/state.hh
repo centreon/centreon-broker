@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,38 +17,41 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_APPLIER_STATE_HH_
-# define CCB_CONFIG_APPLIER_STATE_HH_
+#ifndef CCB_CONFIG_APPLIER_STATE_HH
+#  define CCB_CONFIG_APPLIER_STATE_HH
 
-# include "com/centreon/broker/config/state.hh"
+#  include "com/centreon/broker/config/state.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                 com {
-  namespace               centreon {
-    namespace             broker {
-      namespace           config {
-        namespace         applier {
-          /**
-           *  @class state state.hh "com/centreon/broker/config/applier/state.hh"
-           *  @brief Apply a configuration.
-           *
-           *  Apply some configuration state.
-           */
-          class           state {
-           private:
-                          state();
-                          state(state const& s);
-            state&        operator=(state const& s);
+CCB_BEGIN()
 
-           public:
-                          ~state();
-            void          apply(config::state const& s,
-                            bool run_mux = true);
-            static state& instance();
-          };
-        }
-      }
-    }
+namespace           config {
+  namespace         applier {
+    /**
+     *  @class state state.hh "com/centreon/broker/config/applier/state.hh"
+     *  @brief Apply a configuration.
+     *
+     *  Apply some configuration state.
+     */
+    class           state {
+    public:
+                    ~state();
+      void          apply(
+                      config::state const& s,
+                      bool run_mux = true);
+      static state& instance();
+      static void   load();
+      static void   unload();
+
+    private:
+                    state();
+                    state(state const& s);
+      state&        operator=(state const& s);
+      void          _internal_copy(state const& s);
+    };
   }
 }
 
-#endif /* !CCB_CONFIG_APPLIER_STATE_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_APPLIER_STATE_HH

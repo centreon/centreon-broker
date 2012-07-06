@@ -50,8 +50,8 @@ namespace        ndo {
     T*           _handle_event();
 
     std::string  _buffer;
+    size_t       _old;
     bool         _process_in;
-    std::string  _old;
   };
 }
 

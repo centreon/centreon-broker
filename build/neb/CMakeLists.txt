@@ -137,6 +137,7 @@ install(TARGETS "${NEB}"
 set(CBMOD "cbmod")
 add_library("${CBMOD}" SHARED
   # Sources.
+  "${PROJECT_SOURCE_DIR}/core/src/config/applier/init.cc"
   "${PROJECT_SOURCE_DIR}/core/src/config/applier/logger.cc"
   "${SRC_DIR}/callback.cc"
   "${SRC_DIR}/callbacks.cc"

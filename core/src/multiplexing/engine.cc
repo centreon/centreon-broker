@@ -206,6 +206,8 @@ void engine::unhook(hooker& h) {
       it = _hooks.erase(it);
     else
       ++it;
+  _hooks_begin = _hooks.begin();
+  _hooks_end = _hooks.end();
   return ;
 }
 

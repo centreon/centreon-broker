@@ -49,7 +49,14 @@ using namespace com::centreon::broker::ndo;
  *  Read a line of input.
  */
 char const* input::_get_line() {
+  // Static type.
   static QString const io_raw_type("com::centreon::broker::io::raw");
+
+  // Remove old data.
+  _buffer.erase(0, _old);
+  _old = 0;
+
+  // Find a line.
   size_t it;
   while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
     misc::shared_ptr<io::data> data;
@@ -63,12 +70,19 @@ char const* input::_get_line() {
         raw->size());
     }
   }
-  _old = _buffer.substr(0, it);
-  if (it != std::string::npos)
-    _buffer.erase(0, it + 1);
-  else
-    _buffer.erase(0, it);
-  return (_old.c_str());
+
+  // \n found.
+  if (it != std::string::npos) {
+    _buffer[it] = '\0';
+    _old = it + 1;
+  }
+  // \n not found.
+  else {
+    _buffer.append('\0');
+    _old = std::string::npos;
+  }
+
+  return (_buffer.c_str());
 }
 
 /**
@@ -119,7 +133,7 @@ T* input::_handle_event() {
 /**
  *  Default constructor.
  */
-input::input() : _process_in(true) {}
+input::input() : _old(0), _process_in(true) {}
 
 /**
  *  Copy constructor.

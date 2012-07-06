@@ -34,6 +34,9 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
+// Class instance.
+static std::auto_ptr<config::applier::endpoint> gl_endpoint;
+
 /**************************************
 *                                     *
 *            Local Objects            *
@@ -184,111 +187,9 @@ void endpoint::apply(
 }
 
 /**
- *  Get iterator to the beginning of input endpoints.
- *
- *  @return Iterator to the first input endpoint.
+ *  Discard applied configuration.
  */
-endpoint::iterator endpoint::input_begin() {
-  return (_inputs.begin());
-}
-
-/**
- *  Get last iterator of input endpoints.
- *
- *  @return Last iterator of input endpoints.
- */
-endpoint::iterator endpoint::input_end() {
-  return (_inputs.end());
-}
-
-/**
- *  Get input endpoints mutex.
- *
- *  @return Input endpoints mutex.
- */
-QMutex& endpoint::input_mutex() {
-  return (_inputsm);
-}
-
-/**
- *  Get the class instance.
- *
- *  @return Class instance.
- */
-endpoint& endpoint::instance() {
-  static endpoint gl_endpoint;
-  return (gl_endpoint);
-}
-
-/**
- *  Get iterator to the beginning of output endpoints.
- *
- *  @return Iterator to the first output endpoint.
- */
-endpoint::iterator endpoint::output_begin() {
-  return (_outputs.begin());
-}
-
-/**
- *  Get last iterator of output endpoints.
- *
- *  @return Last iterator of output endpoints.
- */
-endpoint::iterator endpoint::output_end() {
-  return (_outputs.end());
-}
-
-/**
- *  Get output endpoints mutex.
- *
- *  @return Output endpoints mutex.
- */
-QMutex& endpoint::output_mutex() {
-  return (_outputsm);
-}
-
-/**
- *  An input thread finished executing.
- */
-void endpoint::terminated_input() {
-  QObject* sendr(QObject::sender());
-  logging::debug(logging::medium) << "endpoint applier: input thread "
-    << sendr << " terminated";
-  QMutexLocker lock(&_inputsm);
-  QList<config::endpoint> keys(_inputs.keys(
-    static_cast<processing::failover*>(sendr)));
-  for (QList<config::endpoint>::iterator
-         it = keys.begin(),
-         end = keys.end();
-       it != end;
-       ++it)
-    _inputs.remove(*it);
-  return ;
-}
-
-/**
- *  An output thread finished executing.
- */
-void endpoint::terminated_output() {
-  QObject* sendr(QObject::sender());
-  logging::debug(logging::medium) << "endpoint applier: output thread "
-    << sendr << " terminated";
-  QMutexLocker lock(&_outputsm);
-  QList<config::endpoint> keys(_outputs.keys(
-    static_cast<processing::failover*>(sendr)));
-  for (QList<config::endpoint>::iterator
-         it = keys.begin(),
-         end = keys.end();
-       it != end;
-       ++it)
-    _outputs.remove(*it);
-  return ;
-}
-
-/**
- *  Unload the singleton.
- */
-void endpoint::unload() {
+void endpoint::discard() {
   logging::debug(logging::high) << "endpoint applier: destruction";
 
   // Exit input threads.
@@ -362,6 +263,124 @@ void endpoint::unload() {
       "threads are terminated";
     _outputs.clear();
   }
+}
+
+/**
+ *  Get iterator to the beginning of input endpoints.
+ *
+ *  @return Iterator to the first input endpoint.
+ */
+endpoint::iterator endpoint::input_begin() {
+  return (_inputs.begin());
+}
+
+/**
+ *  Get last iterator of input endpoints.
+ *
+ *  @return Last iterator of input endpoints.
+ */
+endpoint::iterator endpoint::input_end() {
+  return (_inputs.end());
+}
+
+/**
+ *  Get input endpoints mutex.
+ *
+ *  @return Input endpoints mutex.
+ */
+QMutex& endpoint::input_mutex() {
+  return (_inputsm);
+}
+
+/**
+ *  Get the class instance.
+ *
+ *  @return Class instance.
+ */
+endpoint& endpoint::instance() {
+  return (*gl_endpoint);
+}
+
+/**
+ *  Load singleton.
+ */
+void endpoint::load() {
+  if (!gl_endpoint.get())
+    gl_endpoint.reset(new endpoint);
+  return ;
+}
+
+/**
+ *  Get iterator to the beginning of output endpoints.
+ *
+ *  @return Iterator to the first output endpoint.
+ */
+endpoint::iterator endpoint::output_begin() {
+  return (_outputs.begin());
+}
+
+/**
+ *  Get last iterator of output endpoints.
+ *
+ *  @return Last iterator of output endpoints.
+ */
+endpoint::iterator endpoint::output_end() {
+  return (_outputs.end());
+}
+
+/**
+ *  Get output endpoints mutex.
+ *
+ *  @return Output endpoints mutex.
+ */
+QMutex& endpoint::output_mutex() {
+  return (_outputsm);
+}
+
+/**
+ *  An input thread finished executing.
+ */
+void endpoint::terminated_input() {
+  QObject* sendr(QObject::sender());
+  logging::debug(logging::medium) << "endpoint applier: input thread "
+    << sendr << " terminated";
+  QMutexLocker lock(&_inputsm);
+  QList<config::endpoint> keys(_inputs.keys(
+    static_cast<processing::failover*>(sendr)));
+  for (QList<config::endpoint>::iterator
+         it = keys.begin(),
+         end = keys.end();
+       it != end;
+       ++it)
+    _inputs.remove(*it);
+  return ;
+}
+
+/**
+ *  An output thread finished executing.
+ */
+void endpoint::terminated_output() {
+  QObject* sendr(QObject::sender());
+  logging::debug(logging::medium) << "endpoint applier: output thread "
+    << sendr << " terminated";
+  QMutexLocker lock(&_outputsm);
+  QList<config::endpoint> keys(_outputs.keys(
+    static_cast<processing::failover*>(sendr)));
+  for (QList<config::endpoint>::iterator
+         it = keys.begin(),
+         end = keys.end();
+       it != end;
+       ++it)
+    _outputs.remove(*it);
+  return ;
+}
+
+/**
+ *  Unload singleton.
+ */
+void endpoint::unload() {
+  gl_endpoint.reset();
+  return ;
 }
 
 /**************************************

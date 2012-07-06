@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <stdlib.h>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
@@ -33,6 +33,9 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
+
+// Class instance.
+static std::auto_ptr<config::applier::logger> gl_logger;
 
 /**************************************
 *                                     *
@@ -114,8 +117,24 @@ void logger::apply(QList<config::logger> const& loggers) {
  *  @return logger instance.
  */
 logger& logger::instance() {
-  static logger gl_logger;
-  return (gl_logger);
+  return (*gl_logger);
+}
+
+/**
+ *  Load the singleton.
+ */
+void logger::load() {
+  if (!gl_logger.get())
+    gl_logger.reset(new logger);
+  return ;
+}
+
+/**
+ *  Unload the singleton.
+ */
+void logger::unload() {
+  gl_logger.reset();
+  return ;
 }
 
 /**************************************

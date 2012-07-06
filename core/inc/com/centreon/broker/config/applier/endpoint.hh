@@ -49,14 +49,16 @@ namespace                    com {
             void             apply(
                                QList<config::endpoint> const& inputs,
                                QList<config::endpoint> const& outputs);
+            void             discard();
             iterator         input_begin();
             iterator         input_end();
             QMutex&          input_mutex();
             static endpoint& instance();
+            static void      load();
             iterator         output_begin();
             iterator         output_end();
             QMutex&          output_mutex();
-            void             unload();
+            static void      unload();
 
            public slots:
             void             terminated_input();

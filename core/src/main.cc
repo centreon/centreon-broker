@@ -234,8 +234,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Unload endpoints.
-  config::applier::endpoint::instance().unload();
-  config::applier::modules::instance().unload();
+  config::applier::deinit();
 
   return (retval);
 }

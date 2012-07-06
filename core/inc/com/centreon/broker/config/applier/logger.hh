@@ -43,6 +43,8 @@ namespace            config {
                      ~logger();
       void           apply(QList<config::logger> const& loggers);
       static logger& instance();
+      static void    load();
+      static void    unload();
 
     private:
                      logger();

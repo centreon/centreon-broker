@@ -90,11 +90,13 @@ void acceptor::close() {
     {
       QMutexLocker childrenm(&_childrenm);
       while (!_children.isEmpty()) {
-        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >&
+        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
           p(_children.front());
+        _children.pop_front();
+        childrenm.unlock();
         QMutexLocker l(p.second.data());
         p.first->close();
-        _children.pop_front();
+        childrenm.relock();
       }
     }
     _socket->close();

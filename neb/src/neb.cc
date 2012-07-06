@@ -109,8 +109,7 @@ extern "C" {
       neb::unregister_callbacks();
 
       // Unload singletons.
-      broker::config::applier::endpoint::instance().unload();
-      broker::config::applier::modules::instance().unload();
+      broker::config::applier::deinit();
 
       // Deregister Qt application object.
       if (gl_initialized_qt) {
