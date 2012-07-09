@@ -1408,11 +1408,10 @@ int neb::callback_process(int callback_type, void *data) {
         return (0);
       }
 
-#ifdef PROGRAM_NAME
-      instance->engine = PROGRAM_NAME;
-#else
-      instance->engine = "Nagios";
-#endif /* PROGRAM_NAME */
+      if (neb::gl_mod_flags & NEBMODULE_ENGINE)
+        instance->engine = "Centreon Engine";
+      else
+        instance->engine = "Nagios / Centreon Engine (< 1.3.0)";
       instance->id = instance_id;
       instance->is_running = true;
       instance->name = instance_name;
@@ -1432,11 +1431,10 @@ int neb::callback_process(int callback_type, void *data) {
       misc::shared_ptr<neb::instance> instance(new neb::instance);
 
       // Fill output var.
-#ifdef PROGRAM_NAME
-      instance->engine = PROGRAM_NAME;
-#else
-      instance->engine = "Nagios";
-#endif /* PROGRAM_NAME */
+      if (neb::gl_mod_flags & NEBMODULE_ENGINE)
+        instance->engine = "Centreon Engine";
+      else
+        instance->engine = "Nagios / Centreon Engine (< 1.3.0)";
       instance->id = instance_id;
       instance->is_running = false;
       instance->name = instance_name;
