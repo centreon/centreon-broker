@@ -30,8 +30,10 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
@@ -159,7 +161,7 @@ extern "C" {
     neb_set_module_info(
       neb::gl_mod_handle,
       NEBMODULE_MODINFO_TITLE,
-      "CentreonBroker's cbmod");
+      "Centreon Broker's cbmod");
     neb_set_module_info(
       neb::gl_mod_handle,
       NEBMODULE_MODINFO_AUTHOR,
@@ -193,7 +195,38 @@ extern "C" {
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);
 
+    // Default logging object.
+    neb::monitoring_logger monlog;
+
     try {
+      // Default logging object.
+      {
+        // Debug ?
+        bool debug;
+        char const* dbg_flag("-d ");
+        if (args && !strncmp(args, dbg_flag, strlen(dbg_flag))) {
+          debug = true;
+          args += strlen(dbg_flag);
+        }
+        else
+          debug = false;
+
+        // Add log.
+        logging::manager::instance().log_on(
+                                       monlog,
+                                       (debug
+                                        ? logging::config_type
+                                        | logging::debug_type
+                                        | logging::error_type
+                                        | logging::info_type
+                                        : logging::config_type
+                                        | logging::error_type
+                                        | logging::info_type),
+                                       (debug ?
+                                        logging::low
+                                        : logging::high));
+      }
+
       // Set configuration file.
       if (args) {
         char const* config_file("config_file=");
@@ -206,20 +239,6 @@ extern "C" {
         throw (exceptions::msg()
                  << "main: no configuration file provided");
 
-      // Default logging object.
-      {
-        broker::config::logger default_log;
-        default_log.type(broker::config::logger::monitoring);
-        default_log.config(true);
-        default_log.debug(false);
-        default_log.error(true);
-        default_log.info(false);
-        default_log.level(logging::high);
-        QList<broker::config::logger> default_logs;
-        default_logs.push_back(default_log);
-        broker::config::applier::logger::instance().apply(default_logs);
-      }
-
       // Try configuration parsing.
       broker::config::parser p;
       broker::config::state s;
@@ -227,16 +246,24 @@ extern "C" {
 
       // Apply loggers.
       broker::config::applier::logger::instance().apply(s.loggers());
+
+      // Remove monitoring log.
+      logging::manager::instance().log_on(monlog, 0);
     }
     catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
+      logging::manager::instance().log_on(monlog, 0);
       return (-1);
     }
     catch (...) {
       logging::error(logging::high)
         << "main: configuration file parsing failed";
+      logging::manager::instance().log_on(monlog, 0);
       return (-1);
     }
+
+    // Remove old monitoring object.
+    logging::manager::instance().log_on(monlog, 0);
 
     // Register process callback.
     if (neb_register_callback(

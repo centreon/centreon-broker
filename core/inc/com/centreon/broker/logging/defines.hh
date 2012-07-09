@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOGGING_DEFINES_HH_
-# define CCB_LOGGING_DEFINES_HH_
+#ifndef CCB_LOGGING_DEFINES_HH
+#  define CCB_LOGGING_DEFINES_HH
 
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -48,4 +48,4 @@ namespace logging {
 
 CCB_END()
 
-#endif /* !CCB_LOGGING_DEFINES_HH_ */
+#endif // !CCB_LOGGING_DEFINES_HH
