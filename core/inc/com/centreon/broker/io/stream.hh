@@ -33,6 +33,13 @@ namespace                    io {
    *  @brief Class used to exchange data.
    *
    *  Interface to exchange data.
+   *
+   *  The read() method is used to get data while waiting for it. It
+   *  should work as follow :
+   *    - has data :        shared pointer is properly set
+   *    - spurious wake :   null shared pointer
+   *    - known shutdown :  throw io::exceptions::shutdown
+   *    - error :           any exception
    */
   class                      stream {
   public:
