@@ -34,6 +34,7 @@ using namespace com::centreon::broker;
 
 // Declare type.
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
+Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 
 /**************************************
 *                                     *
@@ -68,9 +69,11 @@ void config::applier::init() {
   config::applier::endpoint::load();
   config::applier::state::load();
 
-  // Register Qt type.
+  // Register Qt types.
   qRegisterMetaType<QAbstractSocket::SocketError>(
     "QAbstractSocket::SocketError");
+  qRegisterMetaType<QAbstractSocket::SocketState>(
+    "QAbstractSocket::SocketState");
 
   return ;
 }

@@ -147,6 +147,9 @@ void stream::set_timeout(int msecs) {
  *  @param[in] d Data to write.
  */
 void stream::write(misc::shared_ptr<io::data> const& d) {
+  // Raw type.
+  static QString const raw_type("com::centreon::broker::io::raw");
+
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -154,7 +157,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return ;
 
-  if (d->type() == "com::centreon::broker::io::raw") {
+  if (d->type() == raw_type) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),

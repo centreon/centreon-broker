@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
@@ -58,6 +59,7 @@ int main(int argc, char* argv[]) {
   endp1->set_initial_replay_events(true);
   misc::shared_ptr<processing::failover>
     fo1(new processing::failover(true));
+  fo1->set_name("failover1");
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
   // Second failover.
@@ -66,6 +68,7 @@ int main(int argc, char* argv[]) {
   endp2->set_initial_store_events(true);
   misc::shared_ptr<processing::failover>
     fo2(new processing::failover(true));
+  fo1->set_name("failover2");
   fo2->set_endpoint(endp2.staticCast<io::endpoint>());
   fo2->set_failover(fo1);
 
@@ -100,46 +103,75 @@ int main(int argc, char* argv[]) {
 
   // Check stream content.
   int retval(0);
-  if (endp1->streams().isEmpty() || endp2->streams().isEmpty())
+  if (endp1->streams().isEmpty() || endp2->streams().isEmpty()) {
+    logging::error(logging::high) << "test: no stream for one endpoint";
     retval = 1;
+  }
   else {
     // Check automatically generated events.
     misc::shared_ptr<setable_stream> ss1(*endp1->streams().begin());
     misc::shared_ptr<setable_stream> ss2(*endp2->streams().begin());
     unsigned int count(ss1->get_count());
     unsigned int i(0);
+    logging::info(logging::high) << "test: stream1 has " << count
+      << " events, stream2 has " << ss2->get_stored_events().size()
+      << " events";
     for (QList<misc::shared_ptr<io::data> >::const_iterator
            it(ss2->get_stored_events().begin()),
            end(ss2->get_stored_events().end());
          (i < count) && (it != end);
          ++it) {
-      if ((*it)->type() != "com::centreon::broker::io::raw")
+      if ((*it)->type() != "com::centreon::broker::io::raw") {
+        logging::error(logging::high)
+          << "test: read data which is not raw";
         retval |= 1;
+      }
       else {
         misc::shared_ptr<io::raw> raw(it->staticCast<io::raw>());
         unsigned int val;
         memcpy(&val, raw->QByteArray::data(), sizeof(val));
         retval |= (val != ++i);
+        if (retval)
+          logging::error(logging::high)
+            << "test: read data that does not match expectations";
       }
     }
     retval |= (i != count);
+    if (retval)
+      logging::error(logging::high) << "test: invalid event count (got "
+        << i << ", expected " << count << ")";
 
     // Check event list size.
     retval |= (ss2->get_stored_events().size()
                != static_cast<int>(count + 1));
+    if (retval)
+      logging::error(logging::high)
+        << "test: invalid stored event size (got "
+        << ss2->get_stored_events().size()
+        << ", expected " << (count + 1) << ")";
 
     // Check first published event.
     misc::shared_ptr<io::data> d(ss2->get_stored_events().last());
-    if (d->type() != "com::centreon::broker::io::raw")
+    if (d.isNull()
+        || (d->type() != "com::centreon::broker::io::raw")) {
+      logging::error(logging::high)
+        << "test: null or invalid last item";
       retval |= 1;
+    }
     else {
       misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         MSG,
         sizeof(MSG) - 1);
+      if (retval)
+        logging::error(logging::high)
+          << "test: invalid last event's content";
     }
   }
+
+  // Cleanup.
+  config::applier::deinit();
 
   return (retval);
 }

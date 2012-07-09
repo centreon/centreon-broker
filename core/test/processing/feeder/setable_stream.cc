@@ -21,6 +21,7 @@
 #include <QWaitCondition>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "test/processing/feeder/setable_stream.hh"
 
 using namespace com::centreon::broker;
@@ -126,16 +127,20 @@ void setable_stream::read(misc::shared_ptr<io::data>& data) {
     raw->append(QByteArray((char*)&_count, sizeof(_count)));
 #endif // Qt version.
     data = raw.staticCast<io::data>();
+    logging::debug(logging::high) << "test: generating event #"
+      << _count << " on test stream " << this;
   }
   // Provide retained event.
   else if (_replay_events && !_replay.isEmpty()) {
     data = _replay.front();
     _replay.pop_front();
+    logging::debug(logging::high)
+      << "test: reading replay event on test stream " << this;
   }
   // No processing possible.
   else
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "setable stream is shutdown");
+           << "setable stream " << this << " is shutdown");
   return ;
 }
 
@@ -189,11 +194,21 @@ void setable_stream::set_store_events(bool store) {
 void setable_stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "setable stream is shutdown");
-  if (_replay_events)
-    _replay.push_back(d);
-  if (_store_events)
-    _stored_events.push_back(d);
+           << "setable stream " << this << " is shutdown");
+  if (!d.isNull()) {
+    if (_replay_events) {
+      _replay.push_back(d);
+      logging::debug(logging::high)
+        << "test: storing replay event in test stream " << this
+        << " which has now " << _replay.size() << " events";
+    }
+    if (_store_events) {
+      _stored_events.push_back(d);
+      logging::debug(logging::high)
+        << "test: storing event in test stream " << this
+        << " which has now " << _stored_events.size() << " events";
+    }
+  }
   return ;
 }
 

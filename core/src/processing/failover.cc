@@ -321,10 +321,10 @@ void failover::read(
     }
 
     // End of destination is reached, shutdown this thread.
-    if (caught || data.isNull()) {
+    if (caught) {
       logging::debug(logging::low)
         << "failover: could not get event from failover thread "
-        << _name << "(" << this << ")";
+        << _name << " (" << this << ")";
       logging::info(logging::medium)
         << "failover: requesting failover thread " << _name
         << " termination";
@@ -489,33 +489,26 @@ void failover::run() {
             if (!_from.isNull())
               _from->read(data, _read_timeout, &timed_out);
           }
-          if (data.isNull() && !timed_out) {
-            logging::info(logging::medium) << "failover: " << _name
-              << " read no data, shutdown engaged";
-            exit_lock.relock();
-            _immediate = true;
-            _should_exit = true;
-            exit_lock.unlock();
-          }
-          else {
-            QWriteLocker lock(&_tom);
-            if (!_to.isNull()) {
-              _to->write(data);
-              time_t now(time(NULL));
-              if (now > _last_event) {
-                unsigned int limit(now - _last_event);
-                if (limit > event_window_length)
-                  limit = event_window_length;
-                memmove(
-                  _events + limit,
-                  _events,
-                  (event_window_length - limit) * sizeof(*_events));
-                memset(_events, 0, limit * sizeof(*_events));
-                _last_event = now;
-              }
-              ++_events[0];
+          QWriteLocker lock(&_tom);
+          if (!_to.isNull()) {
+            _to->write(data);
+            time_t now(time(NULL));
+            if (now > _last_event) {
+              unsigned int limit(now - _last_event);
+              if (limit > event_window_length)
+                limit = event_window_length;
+              memmove(
+                _events + limit,
+                _events,
+                (event_window_length - limit) * sizeof(*_events));
+              memset(_events, 0, limit * sizeof(*_events));
+              _last_event = now;
             }
+            ++_events[0];
           }
+        }
+        catch (io::exceptions::shutdown const& e) {
+          throw ;
         }
         catch (exceptions::msg const& e) {
           try {
@@ -541,7 +534,11 @@ void failover::run() {
       logging::info(logging::medium)
         << "failover: a stream has shutdown in "
         << _name << ": " << e.what();
+      exit_lock.relock();
+      _immediate = true;
       _last_error = e.what();
+      _should_exit = true;
+      exit_lock.unlock();
     }
     catch (exceptions::msg const& e) {
       logging::error(logging::high) << e.what();

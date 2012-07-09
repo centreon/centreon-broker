@@ -92,9 +92,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   QMutexLocker lock(&*_mutex);
   bool ret;
-  do {
-    QWaitCondition cv;
-    cv.wait(&*_mutex, 10);
+  while (1) {
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)
@@ -104,8 +102,14 @@ void stream::read(misc::shared_ptr<io::data>& d) {
             && (_socket->state() != QLocalSocket::UnconnectedState)))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
                << "local stream is shutdown");
-  } while (!ret
-           && _socket->error() == QLocalSocket::SocketTimeoutError);
+    if (ret
+        || (_socket->error() != QLocalSocket::SocketTimeoutError))
+      break ;
+    else {
+      QWaitCondition cv;
+      cv.wait(&*_mutex, 1);
+    }
+  }
 
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
@@ -113,7 +117,11 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     throw (exceptions::msg() << "local: socket read error: "
              << _socket->errorString());
   misc::shared_ptr<io::raw> data(new io::raw);
+#if QT_VERSION >= 0x040500
   data->append(buffer, rb);
+#else
+  data->append(QByteArray(buffer, rb));
+#endif // Qt version
   d = data.staticCast<io::data>();
   return ;
 }
@@ -134,6 +142,9 @@ void stream::set_timeout(int msecs) {
  *  @param[in] d Data to write.
  */
 void stream::write(misc::shared_ptr<io::data> const& d) {
+  // Raw type.
+  static QString const raw_type("com::centreon::broker::io::raw");
+
   // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -141,7 +152,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return ;
 
-  if (d->type() == "com::centreon::broker::io::raw") {
+  if (d->type() == raw_type) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
