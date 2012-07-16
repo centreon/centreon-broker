@@ -154,7 +154,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     catch (exceptions::open const& b) {
       _backend->open(oss1.str().c_str(),
         e->name,
-        e->rrd_len / e->interval + 1,
+        e->rrd_len / (e->interval ? e->interval : 60) + 1,
         0,
         e->interval);
     }
@@ -182,7 +182,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     catch (exceptions::open const& b) {
       _backend->open(oss1.str().c_str(),
         "status",
-        e->rrd_len / e->interval,
+        e->rrd_len / (e->interval ? e->interval : 60),
         0,
         e->interval);
     }
