@@ -259,5 +259,5 @@ endif ()
 
 # Install rules.
 install(TARGETS "${CBMOD}"
-  LIBRARY DESTINATION "${PREFIX_LIBRARY}"
+  LIBRARY DESTINATION "${PREFIX_LIB}"
 )

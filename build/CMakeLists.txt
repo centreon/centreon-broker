@@ -62,31 +62,24 @@ if (WITH_PREFIX)
 endif ()
 
 # Executable directory.
-if (WITH_PREFIX_BINARY)
-  set(PREFIX_BINARY "${WITH_PREFIX_BINARY}")
+if (WITH_PREFIX_BIN)
+  set(PREFIX_BIN "${WITH_PREFIX_BIN}")
 else ()
-  set(PREFIX_BINARY "${CMAKE_INSTALL_PREFIX}/bin")
+  set(PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/bin")
 endif ()
 
 # Configuration directory.
-if (WITH_PREFIX_CONFIG)
-  set(PREFIX_CONFIG "${WITH_PREFIX_CONFIG}")
+if (WITH_PREFIX_CONF)
+  set(PREFIX_CONF "${WITH_PREFIX_CONF}")
 else ()
-  set(PREFIX_CONFIG "${CMAKE_INSTALL_PREFIX}/etc")
-endif ()
-
-# Archive directory.
-if (WITH_PREFIX_ARCHIVE)
-  set(PREFIX_ARCHIVE "${WITH_PREFIX_ARCHIVE}")
-else ()
-  set(PREFIX_ARCHIVE "${CMAKE_INSTALL_PREFIX}/lib")
+  set(PREFIX_CONF "${CMAKE_INSTALL_PREFIX}/etc")
 endif ()
 
 # Library directory.
-if (WITH_PREFIX_LIBRARY)
-  set(PREFIX_LIBRARY "${WITH_PREFIX_LIBRARY}")
+if (WITH_PREFIX_LIB)
+  set(PREFIX_LIB "${WITH_PREFIX_LIB}")
 else ()
-  set(PREFIX_LIBRARY "${CMAKE_INSTALL_PREFIX}/lib")
+  set(PREFIX_LIB "${CMAKE_INSTALL_PREFIX}/lib")
 endif ()
 
 # Modules directory.
@@ -97,17 +90,10 @@ else ()
 endif ()
 
 # Development headers directory.
-if (WITH_PREFIX_INCLUDE)
-  set(PREFIX_INCLUDE "${WITH_PREFIX_INCLUDE}")
+if (WITH_PREFIX_INC)
+  set(PREFIX_INC "${WITH_PREFIX_INC}")
 else ()
-  set(PREFIX_INCLUDE "${CMAKE_INSTALL_PREFIX}/include/centreon-broker")
-endif ()
-
-# Var directory.
-if (WITH_PREFIX_VAR)
-  set(PREFIX_VAR "${WITH_PREFIX_VAR}")
-else ()
-  set(PREFIX_VAR "${CMAKE_INSTALL_PREFIX}/var")
+  set(PREFIX_INC "${CMAKE_INSTALL_PREFIX}/include/centreon-broker")
 endif ()
 
 # Unit tests.
@@ -137,6 +123,13 @@ configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
   "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
 configure_file("${PROJECT_SOURCE_DIR}/build/doc/header.tex.in"
   "${PROJECT_SOURCE_DIR}/build/doc/header.tex")
+if (DAEMONS)
+  foreach (DAEMON_NAME IN LISTS DAEMONS)
+    configure_file("${PROJECT_SOURCE_DIR}/script/sysv_init_script.sh.in"
+      "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
+      @ONLY)
+  endforeach ()
+endif ()
 
 #
 # Targets.
@@ -345,22 +338,20 @@ install(CODE "
 
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${CMAKE_INSTALL_PREFIX}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_BINARY}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_LIBRARY}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_LIB}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_MODULES}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_ARCHIVE}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INCLUDE}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONFIG}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_VAR}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INC}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONF}\")
 ")
 
 # Install rule.
 install(TARGETS "roker"
-  ARCHIVE DESTINATION "${PREFIX_ARCHIVE}"
+  ARCHIVE DESTINATION "${PREFIX_LIB}"
 )
 
 # Install rule.
 install(TARGETS "${DAEMON}"
-  RUNTIME DESTINATION "${PREFIX_BINARY}"
+  RUNTIME DESTINATION "${PREFIX_BIN}"
 )
 
 #
@@ -870,13 +861,11 @@ endif ()
 message(STATUS "")
 message(STATUS "  Install")
 message(STATUS "    - Prefix                     ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "    - Binary prefix              ${PREFIX_BINARY}")
-message(STATUS "    - Library prefix             ${PREFIX_LIBRARY}")
+message(STATUS "    - Binary prefix              ${PREFIX_BIN}")
+message(STATUS "    - Library prefix             ${PREFIX_LIB}")
 message(STATUS "    - Modules prefix             ${PREFIX_MODULES}")
-message(STATUS "    - Archive prefix             ${PREFIX_ARCHIVE}")
-message(STATUS "    - Include prefix             ${PREFIX_INCLUDE}")
-message(STATUS "    - Configuration prefix       ${PREFIX_CONFIG}")
-message(STATUS "    - Var prefix                 ${PREFIX_VAR}")
+message(STATUS "    - Include prefix             ${PREFIX_INC}")
+message(STATUS "    - Configuration prefix       ${PREFIX_CONF}")
 message(STATUS "    - User                       ${USER}")
 message(STATUS "    - Group                      ${GROUP}")
 message(STATUS "    - Package                    ${PACKAGE_LIST}")
