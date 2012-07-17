@@ -45,6 +45,9 @@ int main() {
   }
   catch (...) {}
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return.
   return (retval);
 }

@@ -79,6 +79,9 @@ int main() {
     }
   }
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return.
   return (retval);
 }

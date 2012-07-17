@@ -106,6 +106,9 @@ int main(int argc, char* argv[]) {
     retval |= (i != count);
   }
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return check result.
   return (retval);
 }

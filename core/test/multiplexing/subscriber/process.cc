@@ -82,6 +82,9 @@ int main() {
     retval |= 1;
   }
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return.
   return (retval);
 }

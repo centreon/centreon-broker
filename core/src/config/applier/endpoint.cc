@@ -92,7 +92,9 @@ private:
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
+endpoint::~endpoint() {
+  discard();
+}
 
 /**
  *  Apply the endpoint configuration.

@@ -119,6 +119,9 @@ int main() {
     retval |= !data.isNull();
   }
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return.
   return (retval);
 }
