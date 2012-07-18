@@ -106,7 +106,7 @@ void endpoint::apply(
                  QList<config::endpoint> const& inputs,
                  QList<config::endpoint> const& outputs) {
   // Log messages.
-  logging::config(logging::high)
+  logging::config(logging::medium)
     << "endpoint applier: loading configuration";
   logging::debug(logging::high) << "endpoint applier: " << inputs.size()
     << " inputs and " << outputs.size() << " outputs to apply";

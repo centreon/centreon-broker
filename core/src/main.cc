@@ -121,12 +121,15 @@ int main(int argc, char* argv[]) {
     // Check the command line.
     bool debug(false);
     bool help(false);
+    bool version(false);
     if (argc >= 2) {
-      for (int i = 1; i < argc; ++i)
+      for (int i(1); i < argc; ++i)
         if (!strcmp(argv[i], "-d"))
           debug = true;
         else if (!strcmp(argv[i], "-h"))
           help = true;
+        else if (!strcmp(argv[i], "-v"))
+          version = true;
         else
           gl_mainconfigfile = argv[i];
     }
@@ -139,7 +142,7 @@ int main(int argc, char* argv[]) {
       default_log.debug(debug);
       default_log.error(!help);
       default_log.info(true);
-      default_log.level(debug ? logging::LOW : logging::HIGH);
+      default_log.level(debug ? logging::low : logging::high);
       default_log.name("stderr");
       default_log.type(config::logger::standard);
 
@@ -153,13 +156,23 @@ int main(int argc, char* argv[]) {
 
     // Check parameters requirements.
     if (help) {
-      logging::info << logging::HIGH << "USAGE: " << argv[0]
-        << " [-d] [-h] [<configfile>]";
+      logging::info(logging::high) << "USAGE: " << argv[0]
+        << " [-d] [-h] [-v] [<configfile>]";
+      logging::info(logging::high) << "Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+      logging::info(logging::high) << "Copyright 2009-2012 Merethis";
+      logging::info(logging::high) << "License GNU GPL " \
+        "version 2 <http://gnu.org/licenses/gpl.html>";
+      retval = 0;
+    }
+    else if (version) {
+      logging::info(logging::high) << "Centreon Broker "
+        << CENTREON_BROKER_VERSION;
       retval = 0;
     }
     else if (gl_mainconfigfile.isEmpty()) {
-      logging::error << logging::HIGH << "USAGE: " << argv[0]
-        << " [-d] [-h] [<configfile>]";
+      logging::error(logging::high) << "USAGE: " << argv[0]
+        << " [-d] [-h] [-v] [<configfile>]";
       retval = 1;
     }
     else {
@@ -172,7 +185,7 @@ int main(int argc, char* argv[]) {
       logging::info(logging::medium)
         << "Centreon Broker " << CENTREON_BROKER_VERSION;
       logging::info(logging::medium) << "Copyright 2009-2012 Merethis";
-      logging::info(logging::medium) << "License GPLv2: GNU GPL " \
+      logging::info(logging::medium) << "License GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
 #if QT_VERSION >= 0x040400
       logging::info(logging::low) << "PID: " << app.applicationPid();
