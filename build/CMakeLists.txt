@@ -118,6 +118,23 @@ else ()
   set(GROUP "root")
 endif ()
 
+# Set startup script to auto if not defined.
+if (NOT WITH_STARTUP_SCRIPT)
+  set(WITH_STARTUP_SCRIPT "auto")
+endif ()
+
+# Check which startup script to use.
+if (WITH_STARTUP_SCRIPT STREQUAL "auto")
+  if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(WITH_STARTUP_SCRIPT "sysv")
+  else ()
+    message(STATUS "Centreon Broker does not provide startup script for ${CMAKE_SYSTEM_NAME}.")
+    set(WITH_STARTUP_SCRIPT "no")
+  endif ()
+else ()
+  set(WITH_STARTUP_SCRIPT "no")
+endif ()
+
 # Configure files.
 configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
   "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
@@ -129,6 +146,23 @@ if (DAEMONS)
       "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
       @ONLY)
   endforeach ()
+endif ()
+
+# Startup dir.
+if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+  # Set destination directory.
+  if (WITH_STARTUP_DIR)
+    set(STARTUP_DIR "${WITH_STARTUP_DIR}")
+  else ()
+    set(STARTUP_DIR "/etc/init.d")
+  endif ()
+
+  # Install scripts.
+  foreach (DAEMON_NAME IN LISTS DAEMONS)
+    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
+      DESTINATION "${STARTUP_DIR}"
+      RENAME "cbd-${DAEMON_NAME}")
+  endforeach()
 endif ()
 
 #
@@ -858,6 +892,11 @@ if (WITH_DOCUMENTATION)
 else ()
   message(STATUS "    - Documentation              disabled")
 endif ()
+if (WITH_STARTUP_SCRIPT STREQUAL "no")
+  message(STATUS "    - Startup script             disabled")
+else ()
+  message(STATUS "    - Startup script             ${WITH_STARTUP_SCRIPT}")
+endif ()
 message(STATUS "")
 message(STATUS "  Install")
 message(STATUS "    - Prefix                     ${CMAKE_INSTALL_PREFIX}")
@@ -866,6 +905,9 @@ message(STATUS "    - Library prefix             ${PREFIX_LIB}")
 message(STATUS "    - Modules prefix             ${PREFIX_MODULES}")
 message(STATUS "    - Include prefix             ${PREFIX_INC}")
 message(STATUS "    - Configuration prefix       ${PREFIX_CONF}")
+if (NOT WITH_STARTUP_SCRIPT STREQUAL "no")
+  message(STATUS "    - Startup dir                ${STARTUP_DIR}")
+endif ()
 message(STATUS "    - User                       ${USER}")
 message(STATUS "    - Group                      ${GROUP}")
 message(STATUS "    - Package                    ${PACKAGE_LIST}")
