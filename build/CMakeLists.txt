@@ -375,9 +375,9 @@ install(CODE "
 ")
 
 # Install rule.
-install(TARGETS "roker"
-  ARCHIVE DESTINATION "${PREFIX_LIB}"
-)
+#install(TARGETS "roker"
+#  ARCHIVE DESTINATION "${PREFIX_LIB}"
+#)
 
 # Install rule.
 install(TARGETS "${DAEMON}"
