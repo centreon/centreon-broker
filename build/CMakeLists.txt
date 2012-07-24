@@ -156,13 +156,6 @@ if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
   else ()
     set(STARTUP_DIR "/etc/init.d")
   endif ()
-
-  # Install scripts.
-  foreach (DAEMON_NAME IN LISTS DAEMONS)
-    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
-      DESTINATION "${STARTUP_DIR}"
-      RENAME "cbd-${DAEMON_NAME}")
-  endforeach()
 endif ()
 
 #
@@ -371,11 +364,14 @@ install(CODE "
   endfunction()
 
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${CMAKE_INSTALL_PREFIX}\")
-  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_BINARY}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_BIN}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_LIB}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_MODULES}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INC}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONF}\")
+  if (WITH_STARTUP_SCRIPT STREQUAL \"sysv\")
+    mkdir_chown(\"${USER}\" \"${GROUP}\" \"${STARTUP_DIR}\")
+  endif ()
 ")
 
 # Install rule.
@@ -387,6 +383,15 @@ install(TARGETS "roker"
 install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BIN}"
 )
+
+# Install scripts.
+if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+  foreach (DAEMON_NAME IN LISTS DAEMONS)
+    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
+      DESTINATION "${STARTUP_DIR}"
+      RENAME "cbd-${DAEMON_NAME}")
+  endforeach()
+endif ()
 
 #
 # Packaging.
