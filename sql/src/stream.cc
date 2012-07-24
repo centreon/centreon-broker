@@ -463,7 +463,7 @@ bool stream::_prepare_insert(std::auto_ptr<QSqlQuery>& st) {
   query.resize(query.size() - 2);
   query.append(")");
   logging::info(logging::low)
-    << "preparing statement: " << query;
+    << "SQL: preparing statement: " << query;
 
   // Prepare statement.
   st.reset(new QSqlQuery(*_db));
