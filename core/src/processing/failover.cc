@@ -55,6 +55,7 @@ failover::failover(bool is_out)
     _last_connect_success(0),
     _last_event(0),
     _name("(unknown)"),
+    _next_timeout(0),
     _read_timeout((time_t)-1),
     _retry_interval(30),
     _immediate(true),
@@ -83,6 +84,7 @@ failover::failover(failover const& f)
      _last_connect_success(f._last_connect_success),
      _last_event(f._last_event),
      _name(f._name),
+     _next_timeout(f._next_timeout),
      _read_timeout(f._read_timeout),
      _retry_interval(f._retry_interval),
      _immediate(true),
@@ -121,6 +123,7 @@ failover& failover::operator=(failover const& f) {
     _failover = f._failover;
     _is_out = f._is_out;
     _name = f._name;
+    _next_timeout = f._next_timeout;
     _read_timeout = f._read_timeout;
     _retry_interval = f._retry_interval;
     {
@@ -486,8 +489,11 @@ void failover::run() {
         try {
           {
             QReadLocker lock(&_fromm);
-            if (!_from.isNull())
-              _from->read(data, _read_timeout, &timed_out);
+            if (!_from.isNull()) {
+              _from->read(data, _next_timeout, &timed_out);
+              if (timed_out)
+                _next_timeout = time(NULL) + _read_timeout;
+            }
           }
           QWriteLocker lock(&_tom);
           if (!_to.isNull()) {
@@ -687,6 +693,7 @@ void failover::set_name(QString const& name) {
  */
 void failover::set_read_timeout(time_t read_timeout) {
   _read_timeout = read_timeout;
+  _next_timeout = time(NULL) + _read_timeout;
   return ;
 }
 

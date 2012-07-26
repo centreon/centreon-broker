@@ -99,6 +99,7 @@ namespace                com {
           QString        _last_error;
           time_t         _last_event;
           QString        _name;
+          time_t         _next_timeout;
           time_t         _read_timeout;
           volatile time_t _retry_interval;
 

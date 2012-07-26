@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <ctime>
 #include <QMutexLocker>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -114,7 +115,7 @@ void subscriber::read(misc::shared_ptr<io::data>& d) {
  *  Get the next available event without waiting more than timeout.
  *
  *  @param[out] event     Next available event.
- *  @param[in]  timeout   Maximum time to wait in seconds.
+ *  @param[in]  timeout   Date limit.
  *  @param[out] timed_out Set to true if read timed out.
  */
 void subscriber::read(
@@ -130,9 +131,14 @@ void subscriber::read(
       if (-1 == timeout)
         _cv.wait(&_mutex);
       else {
-        bool timedout(!_cv.wait(&_mutex, timeout * 1000));
-        if (timed_out)
-          *timed_out = timedout;
+        time_t now(time(NULL));
+        if (now < timeout) {
+          bool timedout(!_cv.wait(&_mutex, (timeout - now) * 1000));
+          if (timed_out)
+            *timed_out = timedout;
+        }
+        else if (timed_out)
+          *timed_out = true;
       }
       if (!_events.isEmpty()) {
         event = _events.dequeue();
