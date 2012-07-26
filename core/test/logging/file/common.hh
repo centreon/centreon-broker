@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,31 +17,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef COMMON_HH_
-# define COMMON_HH_
+#ifndef COMMON_HH
+#  define COMMON_HH
 
-# include <QString>
-# include <stddef.h>
-# include "com/centreon/broker/logging/backend.hh"
+#  include <cstddef>
+#  include <QString>
+#  include "com/centreon/broker/logging/backend.hh"
 
 // Log messages.
-#define MSG1 "my first normal message"
-#define MSG2 "my second foobar longer message"
-#define MSG3 "my third message is even longer than the second"
-#define MSG4 "my fourth messages is finally the longest of all bazqux"
-#define MSG5 "my fifth message is shorter"
-#define MSG6 "i'm tired of writing message, this is number 6"
-#define MSG7 "my seventh message"
-#define MSG8 "finally this is the last message for real"
+#  define MSG1 "my first normal message"
+#  define MSG2 "my second foobar longer message"
+#  define MSG3 "my third message is even longer than the second"
+#  define MSG4 "my fourth messages is finally the longest of all bazqux"
+#  define MSG5 "my fifth message is shorter"
+#  define MSG6 "i'm tired of writing message, this is number 6"
+#  define MSG7 "my seventh message"
+#  define MSG8 "finally this is the last message for real"
 
 bool    check_content(
           QString const& path,
           QString const& pattern,
           unsigned int msg_nb = 4,
           char const* const* lines = NULL);
-QString temp_file_path(QString const& suffix = "");
+QString temp_file_path();
 void    write_log_messages(
           com::centreon::broker::logging::backend* b,
           unsigned int msg_nb = 4);
 
-#endif /* !COMMON_HH_ */
+#endif // !COMMON_HH

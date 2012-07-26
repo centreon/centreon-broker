@@ -45,8 +45,8 @@ int main (int argc, char* argv[]) {
   int retval(0);
 
   // Log file path.
-  QString file_path1(temp_file_path("1"));
-  QString file_path2(temp_file_path("2"));
+  QString file_path1(temp_file_path());
+  QString file_path2(temp_file_path());
   QFile::remove(file_path1);
   QFile::remove(file_path2);
 

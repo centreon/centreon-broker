@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QDir>
 #include <QRegExp>
 #include <QString>
+#include <QTemporaryFile>
 #include "test/logging/file/common.hh"
 
 using namespace com::centreon::broker;
@@ -93,16 +93,14 @@ bool check_content(QString const& path,
 /**
  *  Get a temporary file path.
  *
- *  @param[in] suffix File suffix.
- *
  *  @return Temporary file path.
  */
-QString temp_file_path(QString const& suffix) {
-  QString file_path;
-  file_path.append(QDir::tempPath());
-  file_path.append("/");
-  file_path.append("broker_logging_file");
-  file_path.append(suffix);
+QString temp_file_path() {
+  QTemporaryFile f;
+  f.setAutoRemove(false);
+  f.open();
+  QString file_path(f.fileName());
+  f.close();
   return (file_path);
 }
 
