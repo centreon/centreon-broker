@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,54 +17,63 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_PERFDATA_HH_
-# define CCB_STORAGE_PERFDATA_HH_
+#ifndef CCB_STORAGE_PERFDATA_HH
+#  define CCB_STORAGE_PERFDATA_HH
 
-# include <QString>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          storage {
-        /**
-         *  @class perfdata perfdata.hh "com/centreon/broker/storage/perfdata.hh"
-         *  @brief Store perfdata values.
-         *
-         *  Store perfdata values.
-         */
-        class            perfdata {
-         private:
-          double         _critical;
-          double         _max;
-          double         _min;
-          QString        _name;
-          QString        _unit;
-          double         _value;
-          double         _warning;
+CCB_BEGIN()
 
-         public:
-                         perfdata();
-                         perfdata(perfdata const& pd);
-                         ~perfdata();
-          perfdata&      operator=(perfdata const& pd);
-          double         critical() const throw ();
-          void           critical(double c);
-          double         max() const throw ();
-          void           max(double m);
-          double         min() const throw ();
-          void           min(double m);
-          QString const& name() const throw ();
-          void           name(QString const& n);
-          QString const& unit() const throw ();
-          void           unit(QString const& u);
-          double         value() const throw ();
-          void           value(double v);
-          double         warning() const throw ();
-          void           warning(double w);
-        };
-      }
-    }
-  }
+namespace          storage {
+  /**
+   *  @class perfdata perfdata.hh "com/centreon/broker/storage/perfdata.hh"
+   *  @brief Store perfdata values.
+   *
+   *  Store perfdata values.
+   */
+  class            perfdata {
+  public:
+    enum           data_type {
+      absolute = 0,
+      counter,
+      derive,
+      gauge
+    };
+
+                   perfdata();
+                   perfdata(perfdata const& pd);
+                   ~perfdata() throw ();
+    perfdata&      operator=(perfdata const& pd);
+    double         critical() const throw ();
+    void           critical(double c) throw ();
+    double         max() const throw ();
+    void           max(double m) throw ();
+    double         min() const throw ();
+    void           min(double m) throw ();
+    QString const& name() const throw ();
+    void           name(QString const& n);
+    QString const& unit() const throw ();
+    void           unit(QString const& u);
+    double         value() const throw ();
+    void           value(double v) throw ();
+    data_type      value_type() const throw ();
+    void           value_type(data_type t) throw ();
+    double         warning() const throw ();
+    void           warning(double w) throw ();
+
+  private:
+    double         _critical;
+    double         _max;
+    double         _min;
+    QString        _name;
+    QString        _unit;
+    double         _value;
+    data_type      _value_type;
+    double         _warning;
+  };
 }
 
-#endif /* !CCB_STORAGE_PERFDATA_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_PERFDATA_HH

@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,6 +19,7 @@
 
 #include <math.h>
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
 
@@ -37,5 +39,6 @@ int main() {
           || !m.name.isEmpty()
           || (m.rrd_len != 0)
           || !isnan(m.value)
+          || (m.value_type != storage::perfdata::gauge)
           || (m.type() != "com::centreon::broker::storage::metric"));
 }

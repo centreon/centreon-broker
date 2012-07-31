@@ -52,6 +52,10 @@ static mapped_data<metric> const metric_mapping[] = {
     &metric::value,
     7,
     "value"),
+  mapped_data<metric>(
+    &metric::value_type,
+    8,
+    "value_type"),
   mapped_data<metric>()
 };
 

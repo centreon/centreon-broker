@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
@@ -35,6 +36,7 @@ perfdata::perfdata()
     _max(NAN),
     _min(NAN),
     _value(NAN),
+    _value_type(gauge),
     _warning(NAN) {}
 
 /**
@@ -49,7 +51,7 @@ perfdata::perfdata(perfdata const& pd) {
 /**
  *  Destructor.
  */
-perfdata::~perfdata() {}
+perfdata::~perfdata() throw () {}
 
 /**
  *  Assignment operator.
@@ -65,6 +67,7 @@ perfdata& perfdata::operator=(perfdata const& pd) {
   _name = pd._name;
   _unit = pd._unit;
   _value = pd._value;
+  _value_type = pd._value_type;
   _warning = pd._warning;
   return (*this);
 }
@@ -83,7 +86,7 @@ double perfdata::critical() const throw () {
  *
  *  @param[in] c New critical value.
  */
-void perfdata::critical(double c) {
+void perfdata::critical(double c) throw () {
   _critical = c;
   return ;
 }
@@ -102,7 +105,7 @@ double perfdata::max() const throw () {
  *
  *  @param[in] m New maximum value.
  */
-void perfdata::max(double m) {
+void perfdata::max(double m) throw () {
   _max = m;
   return ;
 }
@@ -121,7 +124,7 @@ double perfdata::min() const throw () {
  *
  *  @param[in] m New minimum value.
  */
-void perfdata::min(double m) {
+void perfdata::min(double m) throw () {
   _min = m;
   return ;
 }
@@ -178,8 +181,27 @@ double perfdata::value() const throw () {
  *
  *  @param[in] v New value.
  */
-void perfdata::value(double v) {
+void perfdata::value(double v) throw () {
   _value = v;
+  return ;
+}
+
+/**
+ *  Get the type of the value.
+ *
+ *  @return Type of the value.
+ */
+perfdata::data_type perfdata::value_type() const throw () {
+  return (_value_type);
+}
+
+/**
+ *  Set the type of the value.
+ *
+ *  @param[in] t New type.
+ */
+void perfdata::value_type(perfdata::data_type t) throw () {
+  _value_type = t;
   return ;
 }
 
@@ -197,7 +219,7 @@ double perfdata::warning() const throw () {
  *
  *  @param[in] v New warning value.
  */
-void perfdata::warning(double w) {
+void perfdata::warning(double w) throw () {
   _warning = w;
   return ;
 }

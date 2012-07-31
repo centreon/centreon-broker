@@ -474,6 +474,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perf->name = pd.name();
           perf->rrd_len = _rrd_len;
           perf->value = pd.value();
+          perf->value_type = pd.value_type();
           multiplexing::publisher().write(perf.staticCast<io::data>());
         }
       }

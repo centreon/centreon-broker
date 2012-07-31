@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
@@ -35,6 +36,7 @@ int main() {
   m1.name = "foobar";
   m1.rrd_len = 180;
   m1.value = 4242.0;
+  m1.value_type = 3;
 
   // Second object.
   storage::metric m2(m1);
@@ -46,6 +48,7 @@ int main() {
   m1.name = "bazqux";
   m1.rrd_len = 900;
   m1.value = 1234.0;
+  m1.value_type = 2;
 
   // Check objects properties values.
   return ((m1.ctime != 741258)
@@ -54,10 +57,12 @@ int main() {
           || (m1.name != "bazqux")
           || (m1.rrd_len != 900)
           || (fabs(m1.value - 1234.0) > 0.00001)
+          || (m1.value_type != 2)
           || (m2.ctime != 123456789)
           || (m2.interval != 42)
           || (m2.metric_id != 24)
           || (m2.name != "foobar")
           || (m2.rrd_len != 180)
-          || (fabs(m2.value - 4242.0) > 0.00001));
+          || (fabs(m2.value - 4242.0) > 0.00001)
+          || (m2.value_type != 3));
 }

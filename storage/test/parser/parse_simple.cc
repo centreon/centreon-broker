@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include <QList>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/parser.hh"
@@ -52,6 +53,7 @@ int main() {
     || (pd.name() != "time")
     || (pd.unit() != "s")
     || (fabs(pd.value() - 2.45698) > 0.000001)
+    || (pd.value_type() != perfdata::gauge)
     || (fabs(pd.warning() - 2.0) > 0.000001));
   return (retval);
 }

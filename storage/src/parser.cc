@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <ctype.h>
-#include <math.h>
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <QByteArray>
-#include <stdlib.h>
-#include <string.h>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
@@ -42,8 +43,9 @@ using namespace com::centreon::broker::storage;
  *
  *  @return Extracted real value if successful, NaN otherwise.
  */
-static inline double extract_double(char const** str,
-                                    bool skip = true) {
+static inline double extract_double(
+                       char const** str,
+                       bool skip = true) {
   double retval;
   char* tmp;
   retval = strtod(*str, &tmp);
@@ -100,8 +102,9 @@ parser& parser::operator=(parser const& pp) {
  *  @param[in]  str Raw perfdata string.
  *  @param[out] pd  List of parsed metrics.
  */
-void parser::parse_perfdata(QString const& str,
-                            QList<perfdata>& pd) {
+void parser::parse_perfdata(
+               QString const& str,
+               QList<perfdata>& pd) {
   // Extract metrics strings.
   QByteArray buf(qPrintable(str));
   buf.replace(',', '.');
@@ -135,6 +138,24 @@ void parser::parse_perfdata(QString const& str,
     while (t != std::string::npos) {
       s.erase(t, 1);
       t = s.find_first_of('\'', t + 1); // Skip one char, so '' becomes '.
+    }
+    if ((s.size() > 0) && (*s.rbegin() == ']')) {
+      if (!s.compare(0, 2, "a[")) {
+        s = s.substr(2, s.size() - 3);
+        p.value_type(perfdata::absolute);
+      }
+      else if (!s.compare(0, 2, "c[")) {
+        s = s.substr(2, s.size() - 3);
+        p.value_type(perfdata::counter);
+      }
+      else if (!s.compare(0, 2, "d[")) {
+        s = s.substr(2, s.size() - 3);
+        p.value_type(perfdata::derive);
+      }
+      else if (!s.compare(0, 2, "g[")) {
+        s = s.substr(2, s.size() - 3);
+        p.value_type(perfdata::gauge);
+      }
     }
     p.name(s.c_str());
 

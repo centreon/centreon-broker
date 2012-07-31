@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
@@ -35,6 +36,7 @@ int main() {
   p1.name("foo");
   p1.unit("bar");
   p1.value(52189.912);
+  p1.value_type(storage::perfdata::counter);
   p1.warning(4548.0);
 
   // Second object.
@@ -45,6 +47,7 @@ int main() {
   p2.name("merethis");
   p2.unit("centreon");
   p2.value(8374598345.234);
+  p2.value_type(storage::perfdata::absolute);
   p2.warning(0.823745784);
 
   // Assignment.
@@ -57,6 +60,7 @@ int main() {
   p1.name("baz");
   p1.unit("qux");
   p1.value(3485.9);
+  p1.value_type(storage::perfdata::derive);
   p1.warning(3612.0);
 
   // Check objects properties values.
@@ -66,5 +70,14 @@ int main() {
           || (p1.name() != "baz")
           || (p1.unit() != "qux")
           || (fabs(p1.value() - 3485.9) > 0.00001)
-          || (fabs(p1.warning() - 3612.0) > 0.00001));
+          || (p1.value_type() != storage::perfdata::derive)
+          || (fabs(p1.warning() - 3612.0) > 0.00001)
+          || (fabs(p2.critical() - 42.0) > 0.00001)
+          || (fabs(p2.max() - 76.3) > 0.00001)
+          || (fabs(p2.min() - 567.2) > 0.00001)
+          || (p2.name() != "foo")
+          || (p2.unit() != "bar")
+          || (fabs(p2.value() - 52189.912) > 0.00001)
+          || (p2.value_type() != storage::perfdata::counter)
+          || (fabs(p2.warning() - 4548.0) > 0.00001));
 }

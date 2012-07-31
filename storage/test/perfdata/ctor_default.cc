@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
@@ -37,5 +38,6 @@ int main() {
           || !p.name().isEmpty()
           || !p.unit().isEmpty()
           || !isnan(p.value())
+          || (p.value_type() != storage::perfdata::gauge)
           || !isnan(p.warning()));
 }

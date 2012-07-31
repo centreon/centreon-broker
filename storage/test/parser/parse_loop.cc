@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include <QList>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/parser.hh"
@@ -44,7 +45,7 @@ int main() {
     // Parse perfdata string.
     list.clear();
     p.parse_perfdata(
-      "time=2.45698s;2.000000;5.000000;0.000000;10.000000",
+      "c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000",
       list);
 
     // Check parsing.
@@ -56,6 +57,7 @@ int main() {
       || (pd.name() != "time")
       || (pd.unit() != "s")
       || (fabs(pd.value() - 2.45698) > 0.000001)
+      || (pd.value_type() != perfdata::counter)
       || (fabs(pd.warning() - 2.0) > 0.000001));
   }
   return (retval);

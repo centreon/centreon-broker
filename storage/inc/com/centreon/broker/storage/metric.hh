@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,43 +17,44 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_METRIC_HH_
-# define CCB_STORAGE_METRIC_HH_
+#ifndef CCB_STORAGE_METRIC_HH
+#  define CCB_STORAGE_METRIC_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          storage {
-        /**
-         *  @class metric metric.hh "com/centreon/broker/storage/metric.hh"
-         *  @brief Metric information.
-         *
-         *  Metric information, mainly used to update RRD files.
-         */
-        class            metric : public io::data {
-         private:
-          void           _internal_copy(metric const& m);
+CCB_BEGIN()
 
-         public:
-          time_t         ctime;
-          time_t         interval;
-          unsigned int   metric_id;
-          QString        name;
-          int            rrd_len;
-          double         value;
-                         metric();
-                         metric(metric const& m);
-                         ~metric();
-          metric&        operator=(metric const& m);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          storage {
+  /**
+   *  @class metric metric.hh "com/centreon/broker/storage/metric.hh"
+   *  @brief Metric information.
+   *
+   *  Metric information, mainly used to update RRD files.
+   */
+  class            metric : public io::data {
+  public:
+                   metric();
+                   metric(metric const& m);
+                   ~metric();
+    metric&        operator=(metric const& m);
+    QString const& type() const;
+
+    time_t         ctime;
+    time_t         interval;
+    unsigned int   metric_id;
+    QString        name;
+    int            rrd_len;
+    double         value;
+    short          value_type;
+
+  private:
+    void           _internal_copy(metric const& m);
+  };
 }
 
-#endif /* !CCB_STORAGE_METRIC_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_METRIC_HH
