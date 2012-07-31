@@ -112,7 +112,7 @@ void parser::parse_perfdata(QString const& str,
     ++ptr;
   while (*ptr) {
     // Debug message.
-    logging::debug << logging::MEDIUM
+    logging::debug(logging::medium)
       << "storage: parsing perfdata string '" << ptr << "'";
 
     // Perfdata object.
@@ -169,7 +169,7 @@ void parser::parse_perfdata(QString const& str,
     p.max(extract_double(&ptr));
 
     // Log new perfdata.
-    logging::debug << logging::LOW << "storage: got new perfdata (name="
+    logging::debug(logging::low) << "storage: got new perfdata (name="
       << p.name() << ", value=" << p.value() << ", unit=" << p.unit()
       << ", warning=" << p.warning() << ", critical=" << p.critical()
       << ", min=" << p.min() << ", max=" << p.max() << ")";

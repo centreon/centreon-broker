@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <cstring>
 #include <QtXml>
-#include <stdlib.h>
-#include <string.h>
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -49,7 +49,7 @@ void parser::_auto_services_dependencies() {
         throw (exceptions::msg() << "could not find host "
                  << it.key().first << " for service "
                  << it.key().second);
-      logging::config << logging::MEDIUM << "correlation: service "
+      logging::config(logging::medium) << "correlation: service "
         << it.key().second << " automatically depends on host "
         << it.key().first;
       it->add_dependency(&*it2);
@@ -115,7 +115,7 @@ bool parser::startElement(QString const& uri,
           qPrintable(hi2),
           (si2.size() ? qPrintable(si2) : NULL));
         if (n1 && n2) {
-          logging::config << logging::MEDIUM << "correlation: node ("
+          logging::config(logging::medium) << "correlation: node ("
             << n1->host_id << ", " << n1->service_id
             << ") depends on node (" << n2->host_id << ", "
             << n2->service_id << ")";
@@ -216,7 +216,7 @@ bool parser::startElement(QString const& uri,
         it1 = (*_nodes).find(qMakePair(host_attr.toUInt(), 0u));
         it2 = (*_nodes).find(qMakePair(parent_attr.toUInt(), 0u));
         if ((it1 != (*_nodes).end()) && (it2 != (*_nodes).end())) {
-          logging::config << logging::MEDIUM << "correlation: host "
+          logging::config(logging::medium) << "correlation: host "
             << it2->host_id << " is parent of host "
             << it1->host_id;
           it1->add_parent(&*it2);

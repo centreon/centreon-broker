@@ -54,7 +54,7 @@ static void hup_handler(int signum) {
   (void)signum;
 
   // Log message.
-  logging::config << logging::HIGH
+  logging::config(logging::high)
     << "main: configuration update requested";
 
   // Parse configuration file.
@@ -78,7 +78,7 @@ static void term_handler(int signum) {
   (void)signum;
 
   // Log message.
-  logging::info << logging::HIGH
+  logging::info(logging::high)
     << "main: termination request received";
 
   // Reset original signal handler.
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
       // Set configuration update handler.
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
         char const* err(strerror(errno));
-        logging::info << logging::HIGH
+        logging::info(logging::high)
           << "main: could not register configuration update handler: "
           << err;
       }
@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
       // Set termination handler.
       if (signal(SIGTERM, term_handler) == SIG_ERR) {
         char const* err(strerror(errno));
-        logging::info << logging::HIGH
+        logging::info(logging::high)
           << "main: could not register termination handler: "
           << err;
       }
@@ -236,12 +236,12 @@ int main(int argc, char* argv[]) {
   }
   // Standard exception.
   catch (std::exception const& e) {
-    logging::error << logging::HIGH << e.what();
+    logging::error(logging::high) << e.what();
     retval = 1;
   }
   // Unknown exception.
   catch (...) {
-    logging::error << logging::HIGH
+    logging::error(logging::high)
       << "main: unknown error, aborting execution";
     retval = 1;
   }

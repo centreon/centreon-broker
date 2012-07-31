@@ -30,11 +30,7 @@ namespace logging {
     none = 0,
     high,
     medium,
-    low,
-    NONE = none,
-    HIGH = high,
-    MEDIUM = medium,
-    LOW = low
+    low
   };
 
   // Log types.

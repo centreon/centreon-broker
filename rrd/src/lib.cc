@@ -201,7 +201,7 @@ void lib::open(QString const& filename,
   argv[3] = NULL;
 
   // Debug message.
-  logging::debug << logging::HIGH << "RRD: opening file '" << filename
+  logging::debug(logging::high) << "RRD: opening file '" << filename
     << "' (" << argv[0] << ", " << argv[1] << ", " << argv[2]
     << ", interval " << interval << ", from " << from << ")";
 
@@ -231,7 +231,7 @@ void lib::open(QString const& filename,
 
   // Tune file.
   if (rrd_tune(4, (char**)argv))
-    logging::error << logging::MEDIUM << "RRD: could not tune "\
+    logging::error(logging::medium) << "RRD: could not tune " \
       "heartbeat of file '" << _filename << "'";
 
   return ;
@@ -258,14 +258,14 @@ void lib::update(time_t t, QString const& value) {
   argv[1] = NULL;
 
   // Debug message.
-  logging::debug << logging::HIGH << "RRD: updating file '"
+  logging::debug(logging::high) << "RRD: updating file '"
     << _filename << "' (metric '" << _metric << "', " << argv[0] << ")";
 
   // Update RRD file.
   int fd(::open(_filename.toStdString().c_str(), O_WRONLY));
   if (fd < 0) {
     char const* msg(strerror(errno));
-    logging::error << logging::MEDIUM << "RRD: could not open file '"
+    logging::error(logging::medium) << "RRD: could not open file '"
       << _filename << "': " << msg;
   }
   else {
@@ -277,7 +277,7 @@ void lib::update(time_t t, QString const& value) {
       fl.l_whence = SEEK_SET;
       if (-1 == fcntl(fd, F_SETLK, &fl)) {
         char const* msg(strerror(errno));
-        logging::error << logging::MEDIUM << "RRD: could not lock file '"
+        logging::error(logging::medium) << "RRD: could not lock file '"
           << _filename << "': " << msg;
       }
       else {

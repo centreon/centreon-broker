@@ -17,47 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 #include "com/centreon/broker/logging/logger.hh"
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Logger objects cannot be copied.
- *
- *  @param[in] l Unused.
- */
-logger::logger(logger const& l) {
-  (void)l;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Logger objects cannot be copied.
- *
- *  @param[in] l Unused.
- *
- *  @return This object.
- */
-logger& logger::operator=(logger const& l) {
-  (void)l;
-  assert(false);
-  abort();
-  return (*this);
-}
 
 /**************************************
 *                                     *
@@ -82,17 +47,49 @@ logger::~logger() {}
  *
  *  @return Temporary logging object.
  */
-temp_logger logger::operator<<(level l) throw () {
+temp_logger logger::operator()(level l) throw () {
   return (manager::instance().get_temp_logger(_type, l));
 }
 
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
 /**
- *  Get temporary logging object.
+ *  @brief Copy constructor.
  *
- *  @param[in] l Log level.
+ *  Logger objects cannot be copied.
  *
- *  @return Temporary logging object.
+ *  @param[in] l Unused.
  */
-temp_logger logger::operator()(level l) throw () {
-  return (manager::instance().get_temp_logger(_type, l));
+logger::logger(logger const& l) {
+  _internal_copy(l);
+}
+
+/**
+ *  @brief Assignment operator.
+ *
+ *  Logger objects cannot be copied.
+ *
+ *  @param[in] l Unused.
+ *
+ *  @return This object.
+ */
+logger& logger::operator=(logger const& l) {
+  _internal_copy(l);
+  return (*this);
+}
+
+/**
+ *  Calls abort().
+ *
+ *  @param[in] l Unused.
+ */
+void logger::_internal_copy(logger const& l) {
+  (void)l;
+  assert(!"logger is not copyable");
+  abort();
+  return ;
 }

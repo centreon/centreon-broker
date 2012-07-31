@@ -113,7 +113,7 @@ void loader::load_dir(QString const& dirname, void const* arg) {
       load_file(file, arg);
     }
     catch (exceptions::msg const& e) {
-      logging::error << logging::HIGH << e.what();
+      logging::error(logging::high) << e.what();
     }
   }
 

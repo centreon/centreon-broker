@@ -122,7 +122,7 @@ void engine::publish(misc::shared_ptr<io::data> const& e) {
 void engine::start() {
   if (_write_func != &engine::_write) {
     // Set writing method.
-    logging::debug << logging::HIGH << "multiplexing: starting";
+    logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
 
     // Copy event queue.

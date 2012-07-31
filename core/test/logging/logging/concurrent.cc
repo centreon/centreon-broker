@@ -39,7 +39,7 @@ using namespace com::centreon::broker;
  */
 static void log_messages() {
   for (unsigned int i = 0; i < WRITE_COUNT; ++i)
-    logging::error << logging::HIGH << MESSAGE;
+    logging::error(logging::high) << MESSAGE;
   return ;
 }
 

@@ -197,7 +197,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
       _backend->update(e->ctime, oss2.str().c_str());
     }
     catch (exceptions::update const& b) {
-      logging::error << logging::MEDIUM << b.what() << " (ignored)";
+      logging::error(logging::medium) << b.what() << " (ignored)";
     }
   }
   return ;

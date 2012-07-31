@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOGGING_LOGGER_HH_
-# define CCB_LOGGING_LOGGER_HH_
+#ifndef CCB_LOGGING_LOGGER_HH
+#  define CCB_LOGGING_LOGGER_HH
 
-# include "com/centreon/broker/logging/defines.hh"
-# include "com/centreon/broker/logging/temp_logger.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/logging/defines.hh"
+#  include "com/centreon/broker/logging/temp_logger.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -35,19 +35,20 @@ namespace       logging {
    *  facilities like syslog, files or standard output.
    */
   class         logger {
-   private:
-    type        _type;
-                logger(logger const& l);
-    logger&     operator=(logger const& l);
-
-   public:
+  public:
                 logger(type log_type);
                 ~logger();
-    temp_logger operator<<(level l) throw (); // XXX : remove
     temp_logger operator()(level l) throw ();
+
+  private:
+                logger(logger const& l);
+    logger&     operator=(logger const& l);
+    void        _internal_copy(logger const& l);
+
+    type        _type;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_LOGGING_LOGGER_HH_ */
+#endif // !CCB_LOGGING_LOGGER_HH
