@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,47 +17,49 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_BACKEND_HH_
-# define CCB_RRD_BACKEND_HH_
+#ifndef CCB_RRD_BACKEND_HH
+#  define CCB_RRD_BACKEND_HH
 
-# include <QString>
-# include <time.h>
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        rrd {
-        /**
-         *  @class backend backend.hh "com/centreon/broker/rrd/backend.hh"
-         *  @brief Generic access to RRD files.
-         *
-         *  Provide a unified access to RRD files. Files can be accessed
-         *  either through librrd or with rrdcached.
-         *
-         *  @see rrd::lib
-         *  @see rrd::cached
-         */
-        class          backend {
-         public:
-                       backend();
-                       backend(backend const& b);
-          virtual      ~backend();
-          backend&     operator=(backend const& b);
-          virtual void begin() = 0;
-          virtual void close() = 0;
-          virtual void commit() = 0;
-          virtual void open(QString const& filename,
-                         QString const& metric) = 0;
-          virtual void open(QString const& filename,
-                         QString const& metric,
-                         unsigned int length,
-                         time_t from,
-                         time_t interval) = 0;
-          virtual void update(time_t t, QString const& value) = 0;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace        rrd {
+  /**
+   *  @class backend backend.hh "com/centreon/broker/rrd/backend.hh"
+   *  @brief Generic access to RRD files.
+   *
+   *  Provide a unified access to RRD files. Files can be accessed
+   *  either through librrd or with rrdcached.
+   *
+   *  @see rrd::lib
+   *  @see rrd::cached
+   */
+  class          backend {
+  public:
+                 backend();
+                 backend(backend const& b);
+    virtual      ~backend();
+    backend&     operator=(backend const& b);
+    virtual void begin() = 0;
+    virtual void close() = 0;
+    virtual void commit() = 0;
+    virtual void open(
+                   QString const& filename,
+                   QString const& metric) = 0;
+    virtual void open(
+                   QString const& filename,
+                   QString const& metric,
+                   unsigned int length,
+                   time_t from,
+                   time_t interval,
+                   short value_type = 0) = 0;
+    virtual void update(time_t t, QString const& value) = 0;
+  };
 }
 
-#endif /* !CCB_RRD_BACKEND_HH_ */
+CCB_END()
+
+#endif // !CCB_RRD_BACKEND_HH

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_RRD_LIB_HH_
-# define CCB_RRD_LIB_HH_
+#ifndef CCB_RRD_LIB_HH
+#  define CCB_RRD_LIB_HH
 
-# include <QString>
-# include "com/centreon/broker/namespace.hh"
-# include "com/centreon/broker/rrd/backend.hh"
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/rrd/backend.hh"
 
 CCB_BEGIN()
 
@@ -35,11 +35,7 @@ namespace            rrd {
    *  librrd.
    */
   class              lib : public backend {
-   private:
-    QString          _filename;
-    QString          _metric; // XXX : is it necessary ?
-
-   public:
+  public:
     static int const max_metric_length = 19;
                      lib();
                      lib(lib const& l);
@@ -57,13 +53,18 @@ namespace            rrd {
                        QString const& metric,
                        unsigned int length,
                        time_t from,
-                       time_t interval);
+                       time_t interval,
+                       short value_type = 0);
     void             update(
                        time_t t,
                        QString const& value);
+
+   private:
+    QString          _filename;
+    QString          _metric;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_RRD_LIB_HH_ */
+#endif // !CCB_RRD_LIB_HH

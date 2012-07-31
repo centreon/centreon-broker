@@ -156,7 +156,8 @@ void output::write(misc::shared_ptr<io::data> const& d) {
         e->name,
         e->rrd_len / (e->interval ? e->interval : 60) + 1,
         0,
-        e->interval);
+        e->interval,
+        e->value_type);
     }
     std::ostringstream oss2;
     oss2 << e->value;

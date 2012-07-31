@@ -61,7 +61,8 @@ namespace   rrd {
               QString const& metric,
               unsigned int length,
               time_t from,
-              time_t interval);
+              time_t interval,
+              short value_type = 0);
     void    update(time_t t, QString const& value);
 
   private:

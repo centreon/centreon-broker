@@ -17,19 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <ctype.h>
-#include <errno.h>
+#include <cctype>
+#include <cerrno>
+#include <cstring>
 #include <fcntl.h>
 #include <QFile>
 #include <rrd.h>
 #include <sstream>
-#include <string.h>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
@@ -132,8 +133,9 @@ QString lib::normalize_metric_name(QString const& metric) {
  *  @param[in] filename Path to the RRD file.
  *  @param[in] metric   Metric name.
  */
-void lib::open(QString const& filename,
-               QString const& metric) {
+void lib::open(
+            QString const& filename,
+            QString const& metric) {
   // Close previous file.
   this->close();
 
@@ -152,17 +154,20 @@ void lib::open(QString const& filename,
 /**
  *  Open a RRD file and create it if it does not exists.
  *
- *  @param[in] filename Path to the RRD file.
- *  @param[in] metric   Metric name.
- *  @param[in] length   Number of recording in the RRD file.
- *  @param[in] from     Timestamp of the first record.
- *  @param[in] interval Time interval between each record.
+ *  @param[in] filename   Path to the RRD file.
+ *  @param[in] metric     Metric name.
+ *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] from       Timestamp of the first record.
+ *  @param[in] interval   Time interval between each record.
+ *  @param[in] value_type Type of the metric.
  */
-void lib::open(QString const& filename,
-               QString const& metric,
-               unsigned int length,
-               time_t from,
-               time_t interval) {
+void lib::open(
+            QString const& filename,
+            QString const& metric,
+            unsigned int length,
+            time_t from,
+            time_t interval,
+            short value_type) {
   // Close previous file.
   this->close();
 
@@ -188,7 +193,21 @@ void lib::open(QString const& filename,
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;
-  ds_oss << "DS:" << _metric.toStdString() << ":GAUGE:" << interval << ":U:U";
+  ds_oss << "DS:" << _metric.toStdString() << ":";
+  switch (value_type) {
+  case storage::perfdata::absolute:
+    ds_oss << "ABSOLUTE";
+    break ;
+  case storage::perfdata::counter:
+    ds_oss << "COUNTER";
+    break ;
+  case storage::perfdata::derive:
+    ds_oss << "DERIVE";
+    break ;
+  default:
+    ds_oss << "GAUGE";
+  };
+  ds_oss << ":"<< interval << ":U:U";
   rra1_oss << "RRA:AVERAGE:0.5:1:" << length;
   rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12;
   std::string ds(ds_oss.str());

@@ -17,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <QFile>
 #if QT_VERSION >= 0x040400
 #  include <QLocalSocket>
 #endif // Qt >= 4.4.0
 #include <QTcpSocket>
 #include <sstream>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
@@ -141,8 +141,9 @@ void cached::connect_remote(
  *  @param[in] filename Path to the RRD file.
  *  @param[in] metric   Metric name.
  */
-void cached::open(QString const& filename,
-                  QString const& metric) {
+void cached::open(
+               QString const& filename,
+               QString const& metric) {
   // Close previous file.
   this->close();
 
@@ -161,17 +162,20 @@ void cached::open(QString const& filename,
 /**
  *  Open a RRD file and create it if it does not exists.
  *
- *  @param[in] filename Path to the RRD file.
- *  @param[in] metric   Metric name.
- *  @param[in] length   Number of recording in the RRD file.
- *  @param[in] from     Timestamp of the first record.
- *  @param[in] interval Time interval between each record.
+ *  @param[in] filename   Path to the RRD file.
+ *  @param[in] metric     Metric name.
+ *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] from       Timestamp of the first record.
+ *  @param[in] interval   Time interval between each record.
+ *  @param[in] value_type Type of the metric.
  */
-void cached::open(QString const& filename,
-                  QString const& metric,
-                  unsigned int length,
-                  time_t from,
-                  time_t interval) {
+void cached::open(
+               QString const& filename,
+               QString const& metric,
+               unsigned int length,
+               time_t from,
+               time_t interval,
+               short value_type) {
   // Close previous file.
   this->close();
 
@@ -183,7 +187,7 @@ void cached::open(QString const& filename,
   ** rrdcached does not support RRD file creation.
   */
   lib rrdf;
-  rrdf.open(filename, metric, length, from, interval);
+  rrdf.open(filename, metric, length, from, interval, value_type);
 
   return ;
 }
