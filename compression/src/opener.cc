@@ -78,7 +78,16 @@ void opener::close() {
  *  @return New compression object.
  */
 misc::shared_ptr<io::stream> opener::open() {
-  return (misc::shared_ptr<io::stream>(new stream(_level, _size)));
+  misc::shared_ptr<io::stream> retval;
+  if (!_from.isNull()) {
+    misc::shared_ptr<io::stream> base(_from->open());
+    if (!base.isNull()) {
+      retval = misc::shared_ptr<io::stream>(new stream(_level, _size));
+      retval->read_from(base);
+      retval->write_to(base);
+    }
+  }
+  return (retval);
 }
 
 /**

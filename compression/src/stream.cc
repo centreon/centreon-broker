@@ -139,19 +139,23 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "compression stream is shutdown");
+
+  // Forced commit.
   if (d.isNull())
-    return ;
+    _flush();
+  else {
+    // Process raw data only.
+    if (d->type() == "com::centreon::broker::io::raw") {
+      // Append data to write buffer.
+      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+      _wbuffer.append(*r);
 
-  // Process raw data only.
-  if (d->type() == "com::centreon::broker::io::raw") {
-    // Append data to write buffer.
-    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-    _wbuffer.append(*r);
-
-    // Send compressed data if size limit is reached.
-    if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
-      _flush();
+      // Send compressed data if size limit is reached.
+      if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
+        _flush();
+    }
   }
+
   return ;
 }
 
