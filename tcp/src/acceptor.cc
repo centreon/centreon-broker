@@ -291,7 +291,7 @@ void acceptor::_on_stream_disconnected() {
  *  Called when a child TCP socket has an error.
  */
 void acceptor::_on_stream_error(QAbstractSocket::SocketError e) {
-  (void)e;
-  _on_stream_destroy(QObject::sender());
+  if (e != QAbstractSocket::SocketTimeoutError)
+    _on_stream_destroy(QObject::sender());
   return ;
 }
