@@ -128,7 +128,7 @@ void subscriber::read(
   if (_events.empty()) {
     // Wait a while if subscriber was not shutdown.
     if (_process_in && _process_out) {
-      if (-1 == timeout)
+      if ((time_t)-1 == timeout)
         _cv.wait(&_mutex);
       else {
         time_t now(time(NULL));
