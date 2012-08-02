@@ -243,6 +243,10 @@ void parser::parse(QString const& file, state& s) {
         QString val(elem.text());
         s.flush_logs(!((val == "no") || (val == "0")));
       }
+      else if (name == "include") {
+        QString included_file(elem.text());
+        parse(included_file, s);
+      }
       else if (name == "input") {
         endpoint in;
         _parse_endpoint(elem, in);

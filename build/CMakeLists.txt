@@ -578,6 +578,13 @@ if (WITH_TESTING)
     "${TEST_DIR}/config/logger/inequality.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Parser tests.
+  #   'include' keyword.
+  set(TEST_NAME "core_config_parser_include")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/parser/include.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # logging namespace tests.
