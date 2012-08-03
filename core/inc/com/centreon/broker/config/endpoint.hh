@@ -21,7 +21,6 @@
 #  define CCB_CONFIG_ENDPOINT_HH
 
 #  include <ctime>
-#  include <memory>
 #  include <QMap>
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
@@ -49,7 +48,6 @@ namespace                    config {
 
     time_t                   buffering_timeout;
     QString                  failover;          
-    std::auto_ptr<endpoint>  failover_config;
     QString                  name;
     QMap<QString, QString>   params;
     time_t                   read_timeout;

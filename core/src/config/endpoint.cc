@@ -75,8 +75,6 @@ bool endpoint::operator==(endpoint const& e) const {
           && (retry_interval == e.retry_interval)
           && (name == e.name)
           && (failover == e.failover)
-          && ((!failover_config.get() && !e.failover_config.get())
-              || (*failover_config == *e.failover_config))
           && (params == e.params));
 }
 
@@ -112,10 +110,6 @@ bool endpoint::operator<(endpoint const& e) const {
     return (name < e.name);
   else if (failover != e.failover)
     return (failover < e.failover);
-  else if (!failover_config.get() && e.failover_config.get())
-    return (true);
-  else if (failover_config.get() && !e.failover_config.get())
-    return (false);
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
@@ -151,10 +145,6 @@ bool endpoint::operator<(endpoint const& e) const {
 void endpoint::_internal_copy(endpoint const& e) {
   buffering_timeout = e.buffering_timeout;
   failover = e.failover;
-  if (e.failover_config.get())
-    failover_config.reset(new endpoint(*e.failover_config));
-  else
-    failover_config.reset();
   name = e.name;
   params = e.params;
   read_timeout = e.read_timeout;
