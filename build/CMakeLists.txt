@@ -579,6 +579,12 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Parser tests.
+  #   'logger' keyword.
+  set(TEST_NAME "core_config_parser_logger")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/config/parser/logger.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   'include' keyword.
   set(TEST_NAME "core_config_parser_include")
   add_executable("${TEST_NAME}"
