@@ -316,6 +316,9 @@ void failover::read(
     try {
       if (!_to.isNull())
         _to->read(data, timeout, timed_out);
+      else
+        throw (io::exceptions::shutdown(true, true) << "destination of "
+               << _name << " is not currently open");
       logging::debug(logging::low)
         << "failover: got retained event from failover thread";
     }
