@@ -39,10 +39,11 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] thrw Should throw if value is not found.
  *  @param[in] def  Default value.
  */
-static QString const& find_param(config::endpoint const& cfg,
-                                 QString const& key,
-                                 bool thrw = true,
-                                 QString const& def = QString()) {
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key,
+                        bool thrw = true,
+                        QString const& def = QString()) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it) {
     if (thrw)
@@ -107,9 +108,10 @@ io::factory* factory::clone() const {
  *
  *  @return true if the configuration matches the RRD layer.
  */
-bool factory::has_endpoint(config::endpoint const& cfg, 
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg, 
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   (void)is_output;
   return (cfg.type == "rrd");
@@ -125,10 +127,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return Endpoint matching the given configuration.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   (void)is_acceptor;
   (void)is_output;
 

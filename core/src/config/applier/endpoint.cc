@@ -435,10 +435,10 @@ endpoint& endpoint::operator=(endpoint const& e) {
  *  @param[in] l         List of endpoints.
  */
 processing::failover* endpoint::_create_endpoint(
-                                  config::endpoint const& cfg,
+                                  config::endpoint& cfg,
                                   bool is_input,
                                   bool is_output,
-                                  QList<config::endpoint> const& l) {
+                                  QList<config::endpoint>& l) {
   // Debug message.
   logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
@@ -446,7 +446,7 @@ processing::failover* endpoint::_create_endpoint(
   // Check that failover is configured.
   misc::shared_ptr<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
-    QList<config::endpoint>::const_iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
+    QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
     if (it == l.end())
       throw (exceptions::msg() << "endpoint applier: could not find " \
                   "failover '" << cfg.failover << "' for endpoint '"
@@ -463,8 +463,9 @@ processing::failover* endpoint::_create_endpoint(
   misc::shared_ptr<io::endpoint> endp;
   bool is_acceptor(false);
   int level(0);
-  for (QMap<QString, io::protocols::protocol>::const_iterator it = io::protocols::instance().begin(),
-         end = io::protocols::instance().end();
+  for (QMap<QString, io::protocols::protocol>::const_iterator
+         it(io::protocols::instance().begin()),
+         end(io::protocols::instance().end());
        it != end;
        ++it) {
     if ((it.value().osi_from == 1)

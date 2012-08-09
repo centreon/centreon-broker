@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,39 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_FACTORY_HH_
-# define CCB_STORAGE_FACTORY_HH_
+#ifndef CCB_STORAGE_FACTORY_HH
+#  define CCB_STORAGE_FACTORY_HH
 
-# include "com/centreon/broker/io/factory.hh"
+#  include "com/centreon/broker/io/factory.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         storage {
-        /**
-         *  @class factory factory.hh "com/centreon/broker/storage/factory.hh"
-         *  @brief Storage layer factory.
-         *
-         *  Build storage layer objects.
-         */
-        class           factory : public io::factory {
-         public:
-                        factory();
-                        factory(factory const& f);
-                        ~factory();
-          factory&      operator=(factory const& f);
-          io::factory*  clone() const;
-          bool          has_endpoint(config::endpoint const& cfg,
-                          bool is_input,
-                          bool is_output) const;
-          io::endpoint* new_endpoint(config::endpoint const& cfg,
-                          bool is_input,
-                          bool is_output,
-                          bool& is_acceptor) const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace         storage {
+  /**
+   *  @class factory factory.hh "com/centreon/broker/storage/factory.hh"
+   *  @brief Storage layer factory.
+   *
+   *  Build storage layer objects.
+   */
+  class           factory : public io::factory {
+  public:
+                  factory();
+                  factory(factory const& f);
+                  ~factory();
+    factory&      operator=(factory const& f);
+    io::factory*  clone() const;
+    bool          has_endpoint(
+                    config::endpoint const& cfg,
+                    bool is_input,
+                    bool is_output) const;
+    io::endpoint* new_endpoint(
+                    config::endpoint& cfg,
+                    bool is_input,
+                    bool is_output,
+                    bool& is_acceptor) const;
+  };
 }
 
-#endif /* !CCB_STORAGE_FACTORY_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_FACTORY_HH

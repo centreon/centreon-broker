@@ -102,7 +102,7 @@ bool factory::has_endpoint(
  *  @return New endpoint object.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint const& cfg,
+                         config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
                          bool& is_acceptor) const {

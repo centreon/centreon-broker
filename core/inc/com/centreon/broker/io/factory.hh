@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,40 +17,41 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_IO_FACTORY_HH_
-# define CCB_IO_FACTORY_HH_
+#ifndef CCB_IO_FACTORY_HH
+#  define CCB_IO_FACTORY_HH
 
-# include "com/centreon/broker/config/endpoint.hh"
-# include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/config/endpoint.hh"
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                   com {
-  namespace                 centreon {
-    namespace               broker {
-      namespace             io {
-        /**
-         *  @class factory factory.hh "com/centreon/broker/io/factory.hh"
-         *  @brief Endpoint factory.
-         *
-         *  Build endpoint according to some configuration.
-         */
-        class               factory {
-         public:
-                            factory();
-                            factory(factory const& f);
-          virtual           ~factory();
-          factory&          operator=(factory const& f);
-          virtual factory*  clone() const = 0;
-          virtual bool      has_endpoint(com::centreon::broker::config::endpoint const& cfg,
-                              bool is_input,
-                              bool is_output) const = 0;
-          virtual endpoint* new_endpoint(com::centreon::broker::config::endpoint const& cfg,
-                              bool is_input,
-                              bool is_output,
-                              bool& is_acceptor) const = 0;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace             io {
+  /**
+   *  @class factory factory.hh "com/centreon/broker/io/factory.hh"
+   *  @brief Endpoint factory.
+   *
+   *  Build endpoint according to some configuration.
+   */
+  class               factory {
+  public:
+                      factory();
+                      factory(factory const& f);
+    virtual           ~factory();
+    factory&          operator=(factory const& f);
+    virtual factory*  clone() const = 0;
+    virtual bool      has_endpoint(
+                        com::centreon::broker::config::endpoint const& cfg,
+                        bool is_input,
+                        bool is_output) const = 0;
+    virtual endpoint* new_endpoint(
+                        com::centreon::broker::config::endpoint& cfg,
+                        bool is_input,
+                        bool is_output,
+                        bool& is_acceptor) const = 0;
+  };
 }
 
-#endif /* !CCB_IO_FACTORY_HH_ */
+CCB_END()
+
+#endif // !CCB_IO_FACTORY_HH

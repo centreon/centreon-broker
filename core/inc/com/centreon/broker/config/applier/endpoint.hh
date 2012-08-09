@@ -70,10 +70,10 @@ namespace                    com {
             endpoint&        operator=(endpoint const& e);
             processing::failover*
                              _create_endpoint(
-                               config::endpoint const& cfg,
+                               config::endpoint& cfg,
                                bool is_input,
                                bool is_output,
-                               QList<config::endpoint> const& l);
+                               QList<config::endpoint>& l);
             void             _diff_endpoints(
                                QMap<config::endpoint,
                                processing::failover*>& current,

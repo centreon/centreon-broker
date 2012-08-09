@@ -58,8 +58,7 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
       else if (name == "type")
         e.type = entry.text();
-      else
-        e.params[name] = entry.text();
+      e.params[name] = entry.text();
     }
   }
   return ;

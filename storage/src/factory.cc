@@ -102,9 +102,10 @@ io::factory* factory::clone() const {
  *
  *  @return true if the configuration matches the storage layer.
  */
-bool factory::has_endpoint(config::endpoint const& cfg, 
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg, 
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   return (is_output && (cfg.type == "storage"));
 }
@@ -120,7 +121,7 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint const& cfg,
+                         config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
                          bool& is_acceptor) const {
@@ -139,14 +140,20 @@ io::endpoint* factory::new_endpoint(
   QString password(find_param(cfg, "db_password"));
   QString name(find_param(cfg, "db_name"));
 
-  // Transaction timeout.
+  // Transaction size.
   unsigned int queries_per_transaction(0);
   {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("queries_per_transaction"));
     if (it != cfg.params.end())
       queries_per_transaction = it.value().toUInt();
+    else
+      queries_per_transaction = 1000;
   }
+
+  // Transaction timeout.
+  if (cfg.params.find("read_timeout") == cfg.params.end())
+    cfg.read_timeout = 2;
 
   // Connector.
   std::auto_ptr<storage::connector> c(new storage::connector);

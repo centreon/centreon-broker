@@ -78,9 +78,10 @@ io::factory* factory::clone() const {
  *
  *  @return true if configuration matches the file layer.
  */
-bool factory::has_endpoint(config::endpoint const& cfg,
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   (void)is_output;
   return (cfg.type == "file");
@@ -96,10 +97,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return Acceptor matching configuration.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   (void)is_acceptor;
 
   // Find path to the file.

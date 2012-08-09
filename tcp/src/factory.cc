@@ -80,9 +80,10 @@ io::factory* factory::clone() const {
  *
  *  @return true if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint const& cfg,
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   (void)is_output;
   return ((cfg.type == "ip")
@@ -101,10 +102,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return Endpoint matching configuration.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   // Find host (if exist).
   QString host;
   {

@@ -39,12 +39,13 @@ using namespace com::centreon::broker::sql;
  *
  *  @return Property value.
  */
-static QString const& find_param(config::endpoint const& cfg,
-                                 QString const& key) {
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     throw (exceptions::msg() << "SQL: no '" << key
-             << "' defined for endpoint '" << cfg.name << "'");
+           << "' defined for endpoint '" << cfg.name << "'");
   return (it.value());
 }
 
@@ -101,9 +102,10 @@ io::factory* factory::clone() const {
  *
  *  @return true if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint const& cfg,
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   (void)is_output;
   return (!cfg.type.compare("sql", Qt::CaseInsensitive));
@@ -118,10 +120,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return New endpoint.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
 
@@ -143,14 +146,20 @@ io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
   // Find DB name.
   QString name(find_param(cfg, "db_name"));
 
-  // Transaction timeout.
+  // Transaction size.
   unsigned int queries_per_transaction(0);
   {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("queries_per_transaction"));
     if (it != cfg.params.end())
       queries_per_transaction = it.value().toUInt();
+    else
+      queries_per_transaction = 1000;
   }
+
+  // Transaction timeout.
+  if (cfg.params.find("read_timeout") == cfg.params.end())
+    cfg.read_timeout = 2;
 
   // Use state events ?
   bool wse(false);
