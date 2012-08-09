@@ -252,6 +252,25 @@ if (WITH_TESTING)
     "${TEST_DIR}/custom_variable_status/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Downtime tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_downtime_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/downtime/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_downtime_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/downtime/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_downtime_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/downtime/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # set_log_data tests.
   #   set_log_data library.
   add_library("ccb_neb_set_log_data" STATIC

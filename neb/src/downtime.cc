@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,45 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data of the given object to the current object.
- *
- *  This internal method is used to copy data defined inside the
- *  downtime class from an object to the current instance. This means
- *  that no superclass data are copied. This method is used in downtime
- *  copy constructor and in the assignment operator.
- *
- *  @param[in] d Object to copy.
- *
- *  @see downtime(downtime const&)
- *  @see operator=(downtime const&)
- */
-void downtime::_internal_copy(downtime const& d) {
-  author = d.author;
-  comment = d.comment;
-  deletion_time = d.deletion_time;
-  downtime_type = d.downtime_type;
-  duration = d.duration;
-  end_time = d.end_time;
-  entry_time = d.entry_time;
-  fixed = d.fixed;
-  host_id = d.host_id;
-  instance_id = d.instance_id;
-  internal_id = d.internal_id;
-  service_id = d.service_id;
-  start_time = d.start_time;
-  triggered_by = d.triggered_by;
-  was_cancelled = d.was_cancelled;
-  was_started = d.was_started;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -76,7 +38,7 @@ downtime::downtime()
     duration(0),
     end_time(0),
     entry_time(0),
-    fixed(false),
+    fixed(true),
     host_id(0),
     instance_id(0),
     internal_id(0),
@@ -125,4 +87,43 @@ downtime& downtime::operator=(downtime const& d) {
 QString const& downtime::type() const {
   static QString const downtime_type("com::centreon::broker::neb::downtime");
   return (downtime_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data of the given object to the current object.
+ *
+ *  This internal method is used to copy data defined inside the
+ *  downtime class from an object to the current instance. This means
+ *  that no superclass data are copied. This method is used in downtime
+ *  copy constructor and in the assignment operator.
+ *
+ *  @param[in] d Object to copy.
+ *
+ *  @see downtime(downtime const&)
+ *  @see operator=(downtime const&)
+ */
+void downtime::_internal_copy(downtime const& d) {
+  author = d.author;
+  comment = d.comment;
+  deletion_time = d.deletion_time;
+  downtime_type = d.downtime_type;
+  duration = d.duration;
+  end_time = d.end_time;
+  entry_time = d.entry_time;
+  fixed = d.fixed;
+  host_id = d.host_id;
+  instance_id = d.instance_id;
+  internal_id = d.internal_id;
+  service_id = d.service_id;
+  start_time = d.start_time;
+  triggered_by = d.triggered_by;
+  was_cancelled = d.was_cancelled;
+  was_started = d.was_started;
+  return ;
 }
