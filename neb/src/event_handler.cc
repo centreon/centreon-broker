@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,35 +20,6 @@
 #include "com/centreon/broker/neb/event_handler.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] eh Object to copy.
- */
-void event_handler::_internal_copy(event_handler const& eh) {
-  command_args = eh.command_args;
-  command_line = eh.command_line;
-  early_timeout = eh.early_timeout;
-  end_time = eh.end_time;
-  execution_time = eh.execution_time;
-  handler_type = eh.handler_type;
-  host_id = eh.host_id;
-  output = eh.output;
-  return_code = eh.return_code;
-  service_id = eh.service_id;
-  start_time = eh.start_time;
-  state = eh.state;
-  state_type = eh.state_type;
-  timeout = eh.timeout;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -106,4 +78,33 @@ event_handler& event_handler::operator=(event_handler const& eh) {
 QString const& event_handler::type() const {
   static QString const eh_type("com::centreon::broker::neb::event_handler");
   return (eh_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] eh Object to copy.
+ */
+void event_handler::_internal_copy(event_handler const& eh) {
+  command_args = eh.command_args;
+  command_line = eh.command_line;
+  early_timeout = eh.early_timeout;
+  end_time = eh.end_time;
+  execution_time = eh.execution_time;
+  handler_type = eh.handler_type;
+  host_id = eh.host_id;
+  output = eh.output;
+  return_code = eh.return_code;
+  service_id = eh.service_id;
+  start_time = eh.start_time;
+  state = eh.state;
+  state_type = eh.state_type;
+  timeout = eh.timeout;
+  return ;
 }
