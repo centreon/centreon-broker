@@ -1,5 +1,6 @@
 /*
 ** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,51 +17,51 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_ACKNOWLEDGEMENT_HH_
-# define CCB_NEB_ACKNOWLEDGEMENT_HH_
+#ifndef CCB_NEB_ACKNOWLEDGEMENT_HH
+#  define CCB_NEB_ACKNOWLEDGEMENT_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            neb {
-        /**
-         *  @class acknowledgement acknowledgement.hh "com/centreon/broker/neb/acknowledgement.hh"
-         *  @brief Represents an acknowledgement inside Nagios.
-         *
-         *  When some service or host is critical, Nagios will emit
-         *  notifications according to its configuration. To stop the
-         *  notification process, a user can acknowledge the problem.
-         */
-        class              acknowledgement : public io::data {
-         private:
-          void             _internal_copy(acknowledgement const& ack);
+CCB_BEGIN()
 
-         public:
-          short            acknowledgement_type;
-          QString          author;
-          QString          comment;
-          time_t           deletion_time;
-          time_t           entry_time;
-          unsigned int     host_id;
-          unsigned int     instance_id;
-          bool             is_sticky;
-          bool             notify_contacts;
-          bool             persistent_comment;
-          unsigned int     service_id;
-          short            state;
-                           acknowledgement();
-                           acknowledgement(acknowledgement const& ack);
-                           ~acknowledgement();
-          acknowledgement& operator=(acknowledgement const& ack);
-          QString const&   type() const;
-        };
-      }
-    }
-  }
+namespace            neb {
+  /**
+   *  @class acknowledgement acknowledgement.hh "com/centreon/broker/neb/acknowledgement.hh"
+   *  @brief Represents an acknowledgement inside Nagios.
+   *
+   *  When some service or host is critical, Nagios will emit
+   *  notifications according to its configuration. To stop the
+   *  notification process, a user can acknowledge the problem.
+   */
+  class              acknowledgement : public io::data {
+  public:
+                     acknowledgement();
+                     acknowledgement(acknowledgement const& ack);
+                     ~acknowledgement();
+    acknowledgement& operator=(acknowledgement const& ack);
+    QString const&   type() const;
+
+    short            acknowledgement_type;
+    QString          author;
+    QString          comment;
+    time_t           deletion_time;
+    time_t           entry_time;
+    unsigned int     host_id;
+    unsigned int     instance_id;
+    bool             is_sticky;
+    bool             notify_contacts;
+    bool             persistent_comment;
+    unsigned int     service_id;
+    short            state;
+
+  private:
+    void             _internal_copy(acknowledgement const& ack);
+  };
 }
 
-#endif /* !CCB_NEB_ACKNOWLEDGEMENT_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_ACKNOWLEDGEMENT_HH

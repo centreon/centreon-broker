@@ -171,6 +171,30 @@ set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
 # Unit tests.
 if (WITH_TESTING)
+  include_directories("${PROJECT_SOURCE_DIR}/neb")
+  include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+  add_library("neb_mapping"
+    "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
+  set(TEST_LIBRARIES "${NEB}" "neb_mapping" "roker")
+  # Acknowledgement tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_acknowledgement_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acknowledgement/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_acknowledgement_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acknowledgement/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_acknowledgement_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/acknowledgement/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # set_log_data tests.
   #   set_log_data library.
   add_library("ccb_neb_set_log_data" STATIC
