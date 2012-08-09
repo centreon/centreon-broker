@@ -21,6 +21,7 @@
 #include <QWaitCondition>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
@@ -150,11 +151,14 @@ misc::shared_ptr<io::stream> acceptor::open() {
     ret = _socket.get()
       && _socket->waitForNewConnection(200, &timedout);
   }
-  if (!ret)
-    throw (exceptions::msg() << "TCP: error while waiting client: "
-             << (!_socket.get()
-                 ? "socket was deleted"
-                 : _socket->errorString()));
+  if (!ret) {
+    if (!_socket.get())
+      throw (io::exceptions::shutdown(true, true)
+             << "TCP: shutdown requested");
+    else
+      throw (exceptions::msg() << "TCP: error while waiting client: "
+             << _socket->errorString());
+  }
 
   // Accept client.
   misc::shared_ptr<QTcpSocket> incoming(_socket->nextPendingConnection());

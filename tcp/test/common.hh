@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TCP_COMMON_HH_
-# define TCP_COMMON_HH_
+#ifndef TCP_COMMON_HH
+#  define TCP_COMMON_HH
 
-# define MIN_PORT 42424
-# define MAX_PORT 42424
+#  define MIN_PORT 24242
+#  define MAX_PORT 42424
 
 unsigned short random_port();
 
-#endif /* !TCP_COMMON_HH_ */
+#endif // !TCP_COMMON_HH

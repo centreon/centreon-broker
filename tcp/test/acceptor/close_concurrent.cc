@@ -22,6 +22,9 @@
 #include <QCoreApplication>
 #include <QThread>
 #include <QTimer>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif // !_WIN32
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -41,7 +44,8 @@ public:
   /**
    *  Default constructor.
    */
-                 concurrent_acceptor() : _acceptor(NULL) {}
+                 concurrent_acceptor()
+    : _acceptor(NULL), _failure(false) {}
 
   /**
    *  Destructor.
@@ -59,6 +63,15 @@ public:
   }
 
   /**
+   *  Check if thread failed.
+   *
+   *  @return true if thread encountered a failure.
+   */
+  bool           failure() const {
+    return (_failure);
+  }
+
+  /**
    *  Thread entry point.
    */
   void           run() {
@@ -73,7 +86,7 @@ public:
     }
     catch (std::exception const& e) {
       std::cerr << e.what() << std::endl;
-      exit(EXIT_FAILURE);
+      _failure = true;
     }
     return ;
   }
@@ -90,6 +103,7 @@ public:
 
 private:
   tcp::acceptor* _acceptor;
+  bool           _failure;
   unsigned short _port;
 };
 
@@ -101,13 +115,23 @@ public:
   /**
    *  Default constructor.
    */
-                  concurrent_connector() : _connector(NULL) {}
+                  concurrent_connector()
+    : _connector(NULL), _failure(false) {}
 
   /**
    *  Destructor.
    */
                   ~concurrent_connector() {
     delete _connector;
+  }
+
+  /**
+   *  Check if thread encountered a failure.
+   *
+   *  @return true if a failure occured.
+   */
+  bool            failure() const {
+    return (_failure);
   }
 
   /**
@@ -118,20 +142,27 @@ public:
     _connector->connect_to("localhost", _port);
     misc::shared_ptr<io::stream> s;
     try {
-      while (!s.data())
+      while (!s.data() && !should_exit)
         s = _connector->open();
     }
     catch (std::exception const& e) {
       std::cerr << e.what() << std::endl;
-      exit(EXIT_FAILURE);
+      _failure = true;
     }
-    try {
-      while (1) {
-        misc::shared_ptr<io::data> d;
-        s->read(d);
+    if (s.data()) {
+      try {
+        while (1) {
+          misc::shared_ptr<io::data> d;
+          s->read(d);
+        }
       }
+      catch (...) {}
     }
-    catch (...) {}
+    else {
+      std::cerr << "connector " << this
+                << " could not open connection" << std::endl;
+      _failure = true;
+    }
     return ;
   }
 
@@ -147,6 +178,7 @@ public:
 
 private:
   tcp::connector* _connector;
+  bool            _failure;
   unsigned short  _port;
 };
 
@@ -156,7 +188,7 @@ private:
  *  @param[in] argc Argument count.
  *  @param[in] argv Argument values.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main(int argc, char* argv[]) {
   // Qt core object.
@@ -164,9 +196,13 @@ int main(int argc, char* argv[]) {
 
   // Initialization.
   config::applier::init();
+#ifndef _WIN32
+  srand(getpid());
+#endif // !_WIN32
 
   // Random port.
   unsigned short port(random_port());
+  std::cerr << "PORT " << port << std::endl;
 
   // Thread that will listen on a port.
   concurrent_acceptor accptr;
@@ -189,7 +225,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Wait for threads to connect.
-  QTimer::singleShot(500, &app, SLOT(quit()));
+  QTimer::singleShot(1000, &app, SLOT(quit()));
+  app.exec();
 
   // Concurrently close acceptor.
   should_exit = true;
@@ -197,11 +234,14 @@ int main(int argc, char* argv[]) {
 
   // For for connecting threads to finish.
   int retval(0);
-  for (unsigned int i(0); i < sizeof(cnnctrs) / sizeof(*cnnctrs); ++i)
+  for (unsigned int i(0); i < sizeof(cnnctrs) / sizeof(*cnnctrs); ++i) {
     retval |= !cnnctrs[i].wait(1000);
+    retval |= cnnctrs[i].failure();
+  }
 
   // Wait for acceptor thread to finish.
   retval |= !accptr.wait(2000);
+  retval |= accptr.failure();
 
-  return (retval);
+  return (retval ? EXIT_FAILURE : EXIT_SUCCESS);
 }

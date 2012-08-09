@@ -17,10 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <QCoreApplication>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif // !_WIN32
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/connector.hh"
@@ -110,6 +114,9 @@ int main(int argc, char* argv[]) {
 
   // Initialization.
   config::applier::init();
+#ifndef _WIN32
+  srand(getpid());
+#endif // !_WIN32
 
   // Port.
   unsigned short port(random_port());
