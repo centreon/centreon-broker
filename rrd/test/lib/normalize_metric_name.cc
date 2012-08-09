@@ -17,8 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include <QString>
-#include <string.h>
 #include "com/centreon/broker/rrd/lib.hh"
 
 using namespace com::centreon::broker;
@@ -26,7 +28,7 @@ using namespace com::centreon::broker;
 /**
  *  Check metric name normalization.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Return value.
@@ -41,6 +43,8 @@ int main() {
       qPrintable(normalized),
       "mymetric01234",
       rrd::lib::max_metric_length);
+    std::cout << "#1: " << normalized.toStdString()
+              << " " << retval << "\n";
   }
 
   // #2.
@@ -52,6 +56,8 @@ int main() {
       qPrintable(normalized),
       "C-bslash_-Used-Space",
       rrd::lib::max_metric_length);
+    std::cout << "#2: " << normalized.toStdString()
+              << " " << retval << "\n";
   }
 
   // #3.
@@ -60,8 +66,10 @@ int main() {
     retval |= (normalized.size() > rrd::lib::max_metric_length);
     retval |= strncmp(
       qPrintable(normalized),
-      "x-----",
+      "------",
       rrd::lib::max_metric_length);
+    std::cout << "#3: " << normalized.toStdString()
+              << " " << retval << "\n";
   }
 
   // #4.
@@ -72,7 +80,9 @@ int main() {
       qPrintable(normalized),
       "Cette-phrase-a---t---int--gralement---crite-en-fran-ais.",
       rrd::lib::max_metric_length);
+    std::cout << "#4: " << normalized.toStdString()
+              << " " << retval << std::endl;
   }
 
-  return (!!retval);
+  return (retval ? EXIT_FAILURE : EXIT_SUCCESS);
 }
