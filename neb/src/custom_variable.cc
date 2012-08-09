@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,22 +20,6 @@
 #include "com/centreon/broker/neb/custom_variable.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] cv Object to copy.
- */
-void custom_variable::_internal_copy(custom_variable const& cv) {
-  var_type = cv.var_type;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -72,8 +57,10 @@ custom_variable::~custom_variable() {}
  *  @return This object.
  */
 custom_variable& custom_variable::operator=(custom_variable const& cv) {
-  custom_variable_status::operator=(cv);
-  _internal_copy(cv);
+  if (this != &cv) {
+    custom_variable_status::operator=(cv);
+    _internal_copy(cv);
+  }
   return (*this);
 }
 
@@ -85,4 +72,20 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
 QString const& custom_variable::type() const {
   static QString const cv_type("com::centreon::broker::neb::custom_variable");
   return (cv_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] cv Object to copy.
+ */
+void custom_variable::_internal_copy(custom_variable const& cv) {
+  var_type = cv.var_type;
+  return ;
 }

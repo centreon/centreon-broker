@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,27 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] cvs Object to copy.
- */
-void custom_variable_status::_internal_copy(custom_variable_status const& cvs) {
-  host_id = cvs.host_id;
-  modified = cvs.modified;
-  name = cvs.name;
-  service_id = cvs.service_id;
-  update_time = cvs.update_time;
-  value = cvs.value;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -54,7 +34,7 @@ custom_variable_status::custom_variable_status()
   : host_id(0),
     modified(true),
     service_id(0),
-    update_time(time(NULL)) {}
+    update_time(0) {}
 
 /**
  *  Copy constructor.
@@ -92,4 +72,25 @@ custom_variable_status& custom_variable_status::operator=(custom_variable_status
 QString const& custom_variable_status::type() const {
   static QString const cvs_type("com::centreon::broker::neb::custom_variable_status");
   return (cvs_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] cvs Object to copy.
+ */
+void custom_variable_status::_internal_copy(custom_variable_status const& cvs) {
+  host_id = cvs.host_id;
+  modified = cvs.modified;
+  name = cvs.name;
+  service_id = cvs.service_id;
+  update_time = cvs.update_time;
+  value = cvs.value;
+  return ;
 }

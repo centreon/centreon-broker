@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,43 +17,44 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_CUSTOM_VARIABLE_STATUS_HH_
-# define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH_
+#ifndef CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
+#  define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                         com {
-  namespace                       centreon {
-    namespace                     broker {
-      namespace                   neb {
-        /**
-         *  @class custom_variable_status custom_variable_status.hh "com/centreon/broker/neb/custom_variable_status.hh"
-         *  @brief Custom variable update.
-         *
-         *  The value of a custom variable has changed.
-         */
-        class                     custom_variable_status : public io::data {
-         private:
-          void                    _internal_copy(custom_variable_status const& cvs);
+CCB_BEGIN()
 
-         public:
-          unsigned int            host_id;
-          bool                    modified;
-          QString                 name;
-          unsigned int            service_id;
-          time_t                  update_time;
-          QString                 value;
-                                  custom_variable_status();
-                                  custom_variable_status(custom_variable_status const& cvs);
-          virtual                 ~custom_variable_status();
-          custom_variable_status& operator=(custom_variable_status const& cvs);
-          virtual QString const&  type() const;
-        };
-      }
-    }
-  }
+namespace                   neb {
+  /**
+   *  @class custom_variable_status custom_variable_status.hh "com/centreon/broker/neb/custom_variable_status.hh"
+   *  @brief Custom variable update.
+   *
+   *  The value of a custom variable has changed.
+   */
+  class                     custom_variable_status : public io::data {
+  public:
+                            custom_variable_status();
+                            custom_variable_status(
+                              custom_variable_status const& cvs);
+    virtual                 ~custom_variable_status();
+    custom_variable_status& operator=(custom_variable_status const& cvs);
+    virtual QString const&  type() const;
+
+    unsigned int            host_id;
+    bool                    modified;
+    QString                 name;
+    unsigned int            service_id;
+    time_t                  update_time;
+    QString                 value;
+
+  private:
+    void                    _internal_copy(custom_variable_status const& cvs);
+  };
 }
 
-#endif /* !CCB_NEB_CUSTOM_VARIABLE_STATUS_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
