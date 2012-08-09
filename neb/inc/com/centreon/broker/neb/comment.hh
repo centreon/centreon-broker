@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,51 +17,51 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_COMMENT_HH_
-# define CCB_NEB_COMMENT_HH_
+#ifndef CCB_NEB_COMMENT_HH
+#  define CCB_NEB_COMMENT_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class comment comment.hh "com/centreon/broker/neb/comment.hh"
-         *  @brief Represents a comment inside Nagios.
-         *
-         *  Some user can make a comment on whatever objects he wants.
-         */
-        class            comment : public io::data {
-         private:
-          void           _internal_copy(comment const& c);
+CCB_BEGIN()
 
-         public:
-          QString        author;
-          short          comment_type;
-          QString        data;
-          time_t         deletion_time;
-          time_t         entry_time;
-          short          entry_type;
-          time_t         expire_time;
-          bool           expires;
-          unsigned int   host_id;
-          unsigned int   instance_id;
-          unsigned int   internal_id;
-          bool           persistent;
-          unsigned int   service_id;
-          short          source;
-                         comment();
-                         comment(comment const& c);
-                         ~comment();
-          comment&       operator=(comment const& c);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          neb {
+  /**
+   *  @class comment comment.hh "com/centreon/broker/neb/comment.hh"
+   *  @brief Represents a comment inside Nagios.
+   *
+   *  Some user can make a comment on whatever objects he wants.
+   */
+  class            comment : public io::data {
+  public:
+                   comment();
+                   comment(comment const& c);
+                   ~comment();
+    comment&       operator=(comment const& c);
+    QString const& type() const;
+
+    QString        author;
+    short          comment_type;
+    QString        data;
+    time_t         deletion_time;
+    time_t         entry_time;
+    short          entry_type;
+    time_t         expire_time;
+    bool           expires;
+    unsigned int   host_id;
+    unsigned int   instance_id;
+    unsigned int   internal_id;
+    bool           persistent;
+    unsigned int   service_id;
+    short          source;
+
+  private:
+    void           _internal_copy(comment const& c);
+  };
 }
 
-#endif /* !CCB_NEB_COMMENT_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_COMMENT_HH

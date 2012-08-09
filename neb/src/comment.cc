@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,44 +20,6 @@
 #include "com/centreon/broker/neb/comment.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data of the given object to the current
- *         instance.
- *
- *  This internal method is used to copy data defined inside the comment
- *  class from an object to the current instance. This means that no
- *  superclass data are copied. This method is used in comment copy
- *  constructor and in the assignment operator.
- *
- *  @param[in] c Object to copy.
- *
- *  @see comment(comment const&)
- *  @see operator=(comment const&)
- */
-void comment::_internal_copy(comment const& c) {
-  author = c.author;
-  comment_type = c.comment_type;
-  data = c.data;
-  deletion_time = c.deletion_time;
-  entry_time = c.entry_time;
-  entry_type = c.entry_type;
-  expire_time = c.expire_time;
-  expires = c.expires;
-  host_id = c.host_id;
-  instance_id = c.instance_id;
-  internal_id = c.internal_id;
-  persistent = c.persistent;
-  service_id = c.service_id;
-  source = c.source;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -122,4 +85,42 @@ comment& comment::operator=(comment const& c) {
 QString const& comment::type() const {
   static QString const comment_type("com::centreon::broker::neb::comment");
   return (comment_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data of the given object to the current
+ *         instance.
+ *
+ *  This internal method is used to copy data defined inside the comment
+ *  class from an object to the current instance. This means that no
+ *  superclass data are copied. This method is used in comment copy
+ *  constructor and in the assignment operator.
+ *
+ *  @param[in] c Object to copy.
+ *
+ *  @see comment(comment const&)
+ *  @see operator=(comment const&)
+ */
+void comment::_internal_copy(comment const& c) {
+  author = c.author;
+  comment_type = c.comment_type;
+  data = c.data;
+  deletion_time = c.deletion_time;
+  entry_time = c.entry_time;
+  entry_type = c.entry_type;
+  expire_time = c.expire_time;
+  expires = c.expires;
+  host_id = c.host_id;
+  instance_id = c.instance_id;
+  internal_id = c.internal_id;
+  persistent = c.persistent;
+  service_id = c.service_id;
+  source = c.source;
+  return ;
 }
