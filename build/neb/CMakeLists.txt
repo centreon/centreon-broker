@@ -423,6 +423,25 @@ if (WITH_TESTING)
     "${TEST_DIR}/service_check/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Service Dependency Tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_service_dependency_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/service_dependency/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_service_dependency_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/service_dependency/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_service_dependency_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/service_dependency/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # set_log_data tests.
   #   set_log_data library.
   add_library("ccb_neb_set_log_data" STATIC

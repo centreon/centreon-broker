@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,23 +20,6 @@
 #include "com/centreon/broker/neb/service_dependency.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal members from the given object.
- *
- *  @param[in] sd Object to copy.
- */
-void service_dependency::_internal_copy(service_dependency const& sd) {
-  dependent_service_id = sd.dependent_service_id;
-  service_id = sd.service_id;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -72,9 +56,11 @@ service_dependency::~service_dependency() {}
  *  @return This object.
  */
 service_dependency& service_dependency::operator=(
-  service_dependency const& sd) {
-  dependency::operator=(sd);
-  _internal_copy(sd);
+                                          service_dependency const& sd) {
+  if (this != &sd) {
+    dependency::operator=(sd);
+    _internal_copy(sd);
+  }
   return (*this);
 }
 
@@ -86,4 +72,21 @@ service_dependency& service_dependency::operator=(
 QString const& service_dependency::type() const {
   static QString const sd_type("com::centreon::broker::neb::service_dependency");
   return (sd_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal members from the given object.
+ *
+ *  @param[in] sd Object to copy.
+ */
+void service_dependency::_internal_copy(service_dependency const& sd) {
+  dependent_service_id = sd.dependent_service_id;
+  service_id = sd.service_id;
+  return ;
 }
