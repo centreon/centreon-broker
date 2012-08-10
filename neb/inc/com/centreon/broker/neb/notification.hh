@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,52 +17,52 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_NOTIFICATION_HH_
-# define CCB_NEB_NOTIFICATION_HH_
+#ifndef CCB_NEB_NOTIFICATION_HH
+#  define CCB_NEB_NOTIFICATION_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class notification notification.hh "com/centreon/broker/neb/notification.hh"
-         *  @brief Represents a notification.
-         *
-         *  Notifications are sent by the scheduling engine to notify
-         *  users of an issue in their monitored IT infrastructure.
-         */
-        class            notification : public io::data {
-         private:
-          void           _internal_copy(notification const& n);
+CCB_BEGIN()
 
-         public:
-          QString        ack_author;
-          QString        ack_data;
-          QString        command_name;
-          QString        contact_name;
-          bool           contacts_notified;
-          time_t         end_time;
-          bool           escalated;
-          unsigned int   host_id;
-          int            notification_type;
-          QString        output;
-          int            reason_type;
-          unsigned int   service_id;
-          time_t         start_time;
-          int            state;
-                         notification();
-                         notification(notification const& n);
-                         ~notification();
-          notification&  operator=(notification const& n);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          neb {
+  /**
+   *  @class notification notification.hh "com/centreon/broker/neb/notification.hh"
+   *  @brief Represents a notification.
+   *
+   *  Notifications are sent by the scheduling engine to notify
+   *  users of an issue in their monitored IT infrastructure.
+   */
+  class            notification : public io::data {
+  public:
+                   notification();
+                   notification(notification const& n);
+                   ~notification();
+    notification&  operator=(notification const& n);
+    QString const& type() const;
+
+    QString        ack_author;
+    QString        ack_data;
+    QString        command_name;
+    QString        contact_name;
+    bool           contacts_notified;
+    time_t         end_time;
+    bool           escalated;
+    unsigned int   host_id;
+    int            notification_type;
+    QString        output;
+    int            reason_type;
+    unsigned int   service_id;
+    time_t         start_time;
+    int            state;
+
+  private:
+    void           _internal_copy(notification const& n);
+  };
 }
 
-#endif /* !CCB_NEB_NOTIFICATION_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_NOTIFICATION_HH

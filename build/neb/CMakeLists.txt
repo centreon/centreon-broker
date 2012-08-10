@@ -480,6 +480,25 @@ if (WITH_TESTING)
     "${TEST_DIR}/module/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Notification Tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_notification_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/notification/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_notification_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/notification/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_notification_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/notification/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Service Check Tests.
   #   Default constructor.
   set(TEST_NAME "neb_service_check_ctor_default")

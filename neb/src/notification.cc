@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,35 +20,6 @@
 #include "com/centreon/broker/neb/notification.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] n Object to copy.
- */
-void notification::_internal_copy(notification const& n) {
-  ack_author = n.ack_author;
-  ack_data = n.ack_data;
-  command_name = n.command_name;
-  contact_name = n.contact_name;
-  contacts_notified = n.contacts_notified;
-  end_time = n.end_time;
-  escalated = n.escalated;
-  host_id = n.host_id;
-  notification_type = n.notification_type;
-  output = n.output;
-  reason_type = n.reason_type;
-  service_id = n.service_id;
-  start_time = n.start_time;
-  state = n.state;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -104,4 +76,33 @@ notification& notification::operator=(notification const& n) {
 QString const& notification::type() const {
   static QString const notification_type("com::centreon::broker::neb::notification");
   return (notification_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] n Object to copy.
+ */
+void notification::_internal_copy(notification const& n) {
+  ack_author = n.ack_author;
+  ack_data = n.ack_data;
+  command_name = n.command_name;
+  contact_name = n.contact_name;
+  contacts_notified = n.contacts_notified;
+  end_time = n.end_time;
+  escalated = n.escalated;
+  host_id = n.host_id;
+  notification_type = n.notification_type;
+  output = n.output;
+  reason_type = n.reason_type;
+  service_id = n.service_id;
+  start_time = n.start_time;
+  state = n.state;
+  return ;
 }
