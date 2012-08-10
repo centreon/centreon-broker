@@ -58,30 +58,40 @@ void     randomize(
     randval r;
     switch (members[i].type) {
     case 'b':
+      if (i && (members[i - 1].member.b == members[i].member.b))
+        continue ;
       {
         r.b = ((rand() % 2) ? true : false);
         (t.*members[i].member.b) = r.b;
       }
       break ;
     case 'd':
+      if (i && (members[i - 1].member.d == members[i].member.d))
+        continue ;
       {
         r.d = rand() + (rand() / 100000.0);
         (t.*members[i].member.d) = r.d;
       }
       break ;
     case 'i':
+      if (i && (members[i - 1].member.i == members[i].member.i))
+        continue ;
       {
         r.i = rand();
         (t.*members[i].member.i) = r.i;
       }
       break ;
     case 's':
+      if (i && (members[i - 1].member.s == members[i].member.s))
+        continue ;
       {
         r.s = rand();
         (t.*members[i].member.s) = r.s;
       }
       break ;
     case 'S':
+      if (i && (members[i - 1].member.S == members[i].member.S))
+        continue ;
       {
         char buffer[1024];
         snprintf(buffer, sizeof(buffer), "%d", rand());
@@ -92,12 +102,16 @@ void     randomize(
       }
       break ;
     case 't':
+      if (i && (members[i - 1].member.t == members[i].member.t))
+        continue ;
       {
         r.t = rand();
         (t.*members[i].member.t) = r.t;
       }
       break ;
     case 'u':
+      if (i && (members[i - 1].member.u == members[i].member.u))
+        continue ;
       {
         r.u = rand();
         (t.*members[i].member.u) = r.u;
@@ -143,24 +157,52 @@ bool     operator==(
   for (unsigned int i(0); retval && members[i].type; ++i, ++it) {
     switch (members[i].type) {
     case 'b':
+      if (i && (members[i - 1].member.b == members[i].member.b)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.b == it->b);
       break ;
     case 'd':
+      if (i && (members[i - 1].member.d == members[i].member.d)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.d == it->d);
       break ;
     case 'i':
+      if (i && (members[i - 1].member.i == members[i].member.i)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.i == it->i);
       break ;
     case 's':
+      if (i && (members[i - 1].member.s == members[i].member.s)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.s == it->s);
       break ;
     case 'S':
+      if (i && (members[i - 1].member.S == members[i].member.S)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.S == it->S);
       break ;
     case 't':
+      if (i && (members[i - 1].member.t == members[i].member.t)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.t == it->t);
       break ;
     case 'u':
+      if (i && (members[i - 1].member.u == members[i].member.u)) {
+        --it;
+        continue ;
+      }
       retval = (t.*members[i].member.u == it->u);
       break ;
     }
