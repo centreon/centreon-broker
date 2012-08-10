@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,34 +17,34 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_SERVICE_CHECK_HH_
-# define CCB_NEB_SERVICE_CHECK_HH_
+#ifndef CCB_NEB_SERVICE_CHECK_HH
+#  define CCB_NEB_SERVICE_CHECK_HH
 
-# include "com/centreon/broker/neb/check.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/check.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class service_check service_check.hh "com/centreon/broker/neb/service_check.hh"
-         *  @brief Check that has been executed on a service.
-         *
-         *  Once a check has been executed on a service, an object of
-         *  this class is sent.
-         */
-        class            service_check : public check {
-         public:
-          unsigned int   service_id;
-                         service_check();
-                         service_check(service_check const& sc);
-          virtual        ~service_check();
-          service_check& operator=(service_check const& sc);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          neb {
+  /**
+   *  @class service_check service_check.hh "com/centreon/broker/neb/service_check.hh"
+   *  @brief Check that has been executed on a service.
+   *
+   *  Once a check has been executed on a service, an object of
+   *  this class is sent.
+   */
+  class            service_check : public check {
+  public:
+                   service_check();
+                   service_check(service_check const& sc);
+    virtual        ~service_check();
+    service_check& operator=(service_check const& sc);
+    QString const& type() const;
+
+    unsigned int   service_id;
+  };
 }
 
-#endif /* !CCB_NEB_SERVICE_CHECK_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_SERVICE_CHECK_HH
