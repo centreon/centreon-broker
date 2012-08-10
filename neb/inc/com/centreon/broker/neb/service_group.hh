@@ -16,32 +16,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_SERVICE_GROUP_HH_
-# define CCB_NEB_SERVICE_GROUP_HH_
+#ifndef CCB_NEB_SERVICE_GROUP_HH
+#  define CCB_NEB_SERVICE_GROUP_HH
 
-# include "com/centreon/broker/neb/group.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/group.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class service_group service_group.hh "com/centreon/broker/neb/service_group.hh"
-         *  @brief Represents a group of services.
-         *
-         *  Group of services within the scheduling engine.
-         */
-        class            service_group : public group {
-         public:
-                         service_group();
-                         service_group(service_group const& sg);
-                         ~service_group();
-          service_group& operator=(service_group const& sg);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          neb {
+  /**
+   *  @class service_group service_group.hh "com/centreon/broker/neb/service_group.hh"
+   *  @brief Represents a group of services.
+   *
+   *  Group of services within the scheduling engine.
+   */
+  class            service_group : public group {
+  public:
+                   service_group();
+                   service_group(service_group const& sg);
+                   ~service_group();
+    service_group& operator=(service_group const& sg);
+    QString const& type() const;
+  };
 }
 
-#endif /* !CCB_NEB_SERVICE_GROUP_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_SERVICE_GROUP_HH
