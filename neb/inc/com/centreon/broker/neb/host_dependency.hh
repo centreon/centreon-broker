@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,32 +17,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_DEPENDENCY_HH_
-# define CCB_NEB_HOST_DEPENDENCY_HH_
+#ifndef CCB_NEB_HOST_DEPENDENCY_HH
+#  define CCB_NEB_HOST_DEPENDENCY_HH
 
-# include "com/centreon/broker/neb/dependency.hh"
+#  include "com/centreon/broker/neb/dependency.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            neb {
-        /**
-         *  @class host_dependency host_dependency.hh "com/centreon/broker/neb/host_dependency.hh"
-         *  @brief Host dependency relationship.
-         *
-         *  Defines a dependency between two hosts.
-         */
-        class              host_dependency : public dependency {
-         public:
-                           host_dependency();
-                           host_dependency(host_dependency const& hd);
-                           ~host_dependency();
-          host_dependency& operator=(host_dependency const& hd);
-          QString const&   type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace            neb {
+  /**
+   *  @class host_dependency host_dependency.hh "com/centreon/broker/neb/host_dependency.hh"
+   *  @brief Host dependency relationship.
+   *
+   *  Defines a dependency between two hosts.
+   */
+  class              host_dependency : public dependency {
+  public:
+                     host_dependency();
+                     host_dependency(host_dependency const& hd);
+                     ~host_dependency();
+    host_dependency& operator=(host_dependency const& hd);
+    QString const&   type() const;
+  };
 }
 
-#endif /* !CCB_NEB_HOST_DEPENDENCY_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_HOST_DEPENDENCY_HH

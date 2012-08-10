@@ -58,4 +58,4 @@ namespace        neb {
 
 CCB_END()
 
-#endif /* !CCB_NEB_DEPENDENCY_HH */
+#endif // !CCB_NEB_DEPENDENCY_HH
