@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,32 +20,6 @@
 #include "com/centreon/broker/neb/flapping_status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] fs Object to copy.
- */
-void flapping_status::_internal_copy(flapping_status const& fs) {
-  comment_time = fs.comment_time;
-  event_time = fs.event_time;
-  event_type = fs.event_type;
-  flapping_type = fs.flapping_type;
-  high_threshold = fs.high_threshold;
-  host_id = fs.host_id;
-  internal_comment_id = fs.internal_comment_id;
-  low_threshold = fs.low_threshold;
-  percent_state_change = fs.percent_state_change;
-  reason_type = fs.reason_type;
-  service_id = fs.service_id;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -104,4 +79,30 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
 QString const& flapping_status::type() const {
   static QString const fs_type("com::centreon::broker::neb::flapping_status");
   return (fs_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] fs Object to copy.
+ */
+void flapping_status::_internal_copy(flapping_status const& fs) {
+  comment_time = fs.comment_time;
+  event_time = fs.event_time;
+  event_type = fs.event_type;
+  flapping_type = fs.flapping_type;
+  high_threshold = fs.high_threshold;
+  host_id = fs.host_id;
+  internal_comment_id = fs.internal_comment_id;
+  low_threshold = fs.low_threshold;
+  percent_state_change = fs.percent_state_change;
+  reason_type = fs.reason_type;
+  service_id = fs.service_id;
+  return ;
 }
