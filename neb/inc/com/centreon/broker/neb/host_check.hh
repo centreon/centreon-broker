@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,33 +17,32 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_CHECK_HH_
-# define CCB_NEB_HOST_CHECK_HH_
+#ifndef CCB_NEB_HOST_CHECK_HH
+#  define CCB_NEB_HOST_CHECK_HH
 
-# include "com/centreon/broker/neb/check.hh"
+#  include "com/centreon/broker/neb/check.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class host_check host_check.hh "com/centreon/broker/neb/host_check.hh"
-         *  @brief Check that has been executed on a host.
-         *
-         *  Once a check has been executed on a host, an object of this class
-         *  is sent.
-         */
-        class            host_check : public check {
-         public:
-                         host_check();
-                         host_check(host_check const& hc);
-          virtual        ~host_check();
-          host_check&    operator=(host_check const& hc);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          neb {
+  /**
+   *  @class host_check host_check.hh "com/centreon/broker/neb/host_check.hh"
+   *  @brief Check that has been executed on a host.
+   *
+   *  Once a check has been executed on a host, an object of this class
+   *  is sent.
+   */
+  class            host_check : public check {
+  public:
+                   host_check();
+                   host_check(host_check const& hc);
+    virtual        ~host_check();
+    host_check&    operator=(host_check const& hc);
+    QString const& type() const;
+  };
 }
 
-#endif /* !CCB_NEB_HOST_CHECK_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_HOST_CHECK_HH
