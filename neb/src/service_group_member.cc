@@ -60,7 +60,8 @@ service_group_member& service_group_member::operator=(service_group_member const
 /**
  *  Get the type of this event.
  *
- *  @return event::SERVICEGROUPMEMBER
+ *  @return The string
+ *          "com::centreon::broker::neb::service_group_member".
  */
 QString const& service_group_member::type() const {
   static QString const sgm_type("com::centreon::broker::neb::service_group_member");
