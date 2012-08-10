@@ -48,4 +48,4 @@ namespace          neb {
 
 CCB_END()
 
-#endif /* !CCB_NEB_HOST_PARENT_HH */
+#endif // !CCB_NEB_HOST_PARENT_HH
