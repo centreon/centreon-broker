@@ -56,4 +56,4 @@ namespace          neb {
 
 CCB_END()
 
-#endif /* !CCB_NEB_MODULE_HH */
+#endif // !CCB_NEB_MODULE_HH
