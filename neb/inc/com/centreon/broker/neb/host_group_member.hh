@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,35 +17,34 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_GROUP_MEMBER_HH_
-# define CCB_NEB_HOST_GROUP_MEMBER_HH_
+#ifndef CCB_NEB_HOST_GROUP_MEMBER_HH
+#  define CCB_NEB_HOST_GROUP_MEMBER_HH
 
-# include "com/centreon/broker/neb/group_member.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/group_member.hh"
 
-namespace                    com {
-  namespace                  centreon {
-    namespace                broker {
-      namespace              neb {
-        /**
-         *  @class host_group_member host_group_member.hh "com/centreon/broker/neb/host_group_member.hh"
-         *  @brief Member of a host group.
-         *
-         *  Base class defining that an host is part of a host group.
-         *
-         *  @see host
-         *  @see host_group
-         */
-        class                host_group_member : public group_member {
-         public:
-                             host_group_member();
-                             host_group_member(host_group_member const& hgm);
-          virtual            ~host_group_member();
-          host_group_member& operator=(host_group_member const& hgm);
-          QString const&     type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace              neb {
+  /**
+   *  @class host_group_member host_group_member.hh "com/centreon/broker/neb/host_group_member.hh"
+   *  @brief Member of a host group.
+   *
+   *  Base class defining that an host is part of a host group.
+   *
+   *  @see host
+   *  @see host_group
+   */
+  class                host_group_member : public group_member {
+  public:
+                       host_group_member();
+                       host_group_member(host_group_member const& hgm);
+    virtual            ~host_group_member();
+    host_group_member& operator=(host_group_member const& hgm);
+    QString const&     type() const;
+  };
 }
 
-#endif /* !CCB_NEB_HOST_GROUP_MEMBER_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_HOST_GROUP_MEMBER_HH

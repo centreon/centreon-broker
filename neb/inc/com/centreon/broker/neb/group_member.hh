@@ -55,4 +55,4 @@ namespace         neb {
 
 CCB_END()
 
-#endif /* !CCB_NEB_GROUP_MEMBER_HH */
+#endif // !CCB_NEB_GROUP_MEMBER_HH
