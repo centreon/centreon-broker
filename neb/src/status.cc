@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,30 +20,6 @@
 #include "com/centreon/broker/neb/status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy members of the given Status object to the current
- *         instance.
- *
- *  Copy all members defined within the status class. This method is
- *  used by the copy constructor and the assignment operator.
- *
- *  @param[in] s Object to copy.
- */
-void status::_internal_copy(status const& s) {
-  event_handler_enabled = s.event_handler_enabled;
-  failure_prediction_enabled = s.failure_prediction_enabled;
-  flap_detection_enabled = s.flap_detection_enabled;
-  notifications_enabled = s.notifications_enabled;
-  process_performance_data = s.process_performance_data;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -91,4 +68,28 @@ status& status::operator=(status const& s) {
   io::data::operator=(s);
   _internal_copy(s);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy members of the given Status object to the current
+ *         instance.
+ *
+ *  Copy all members defined within the status class. This method is
+ *  used by the copy constructor and the assignment operator.
+ *
+ *  @param[in] s Object to copy.
+ */
+void status::_internal_copy(status const& s) {
+  event_handler_enabled = s.event_handler_enabled;
+  failure_prediction_enabled = s.failure_prediction_enabled;
+  flap_detection_enabled = s.flap_detection_enabled;
+  notifications_enabled = s.notifications_enabled;
+  process_performance_data = s.process_performance_data;
+  return ;
 }

@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,44 +20,6 @@
 #include "com/centreon/broker/neb/instance_status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data of the instance_status object to the
- *         current instance.
- *
- *  Copy data defined within the instance_status class. This method is
- *  used by the copy constructor and the assignment operator.
- *
- *  @param[in] is Object to copy.
- */
-void instance_status::_internal_copy(instance_status const& is) {
-  active_host_checks_enabled = is.active_host_checks_enabled;
-  active_service_checks_enabled = is.active_service_checks_enabled;
-  address = is.address;
-  check_hosts_freshness = is.check_hosts_freshness;
-  check_services_freshness = is.check_services_freshness;
-  daemon_mode = is.daemon_mode;
-  description = is.description;
-  global_host_event_handler = is.global_host_event_handler;
-  global_service_event_handler = is.global_service_event_handler;
-  id = is.id;
-  last_alive = is.last_alive;
-  last_command_check = is.last_command_check;
-  last_log_rotation = is.last_log_rotation;
-  modified_host_attributes = is.modified_host_attributes;
-  modified_service_attributes = is.modified_service_attributes;
-  obsess_over_hosts = is.obsess_over_hosts;
-  obsess_over_services = is.obsess_over_services;
-  passive_host_checks_enabled = is.passive_host_checks_enabled;
-  passive_service_checks_enabled = is.passive_service_checks_enabled;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -123,4 +86,42 @@ instance_status& instance_status::operator=(instance_status const& is) {
 QString const& instance_status::type() const {
   static QString const is_type("com::centreon::broker::neb::instance_status");
   return (is_type);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data of the instance_status object to the
+ *         current instance.
+ *
+ *  Copy data defined within the instance_status class. This method is
+ *  used by the copy constructor and the assignment operator.
+ *
+ *  @param[in] is Object to copy.
+ */
+void instance_status::_internal_copy(instance_status const& is) {
+  active_host_checks_enabled = is.active_host_checks_enabled;
+  active_service_checks_enabled = is.active_service_checks_enabled;
+  address = is.address;
+  check_hosts_freshness = is.check_hosts_freshness;
+  check_services_freshness = is.check_services_freshness;
+  daemon_mode = is.daemon_mode;
+  description = is.description;
+  global_host_event_handler = is.global_host_event_handler;
+  global_service_event_handler = is.global_service_event_handler;
+  id = is.id;
+  last_alive = is.last_alive;
+  last_command_check = is.last_command_check;
+  last_log_rotation = is.last_log_rotation;
+  modified_host_attributes = is.modified_host_attributes;
+  modified_service_attributes = is.modified_service_attributes;
+  obsess_over_hosts = is.obsess_over_hosts;
+  obsess_over_services = is.obsess_over_services;
+  passive_host_checks_enabled = is.passive_host_checks_enabled;
+  passive_service_checks_enabled = is.passive_service_checks_enabled;
+  return ;
 }

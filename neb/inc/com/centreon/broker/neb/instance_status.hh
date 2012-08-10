@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,58 +17,58 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EVENTS_INSTANCE_STATUS_HH_
-# define CCB_EVENTS_INSTANCE_STATUS_HH_
+#ifndef CCB_EVENTS_INSTANCE_STATUS_HH
+#  define CCB_EVENTS_INSTANCE_STATUS_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/neb/status.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/status.hh"
 
-namespace                  com {
-  namespace                centreon {
-    namespace              broker {
-      namespace            neb {
-        /**
-         *  @class instance_status instance_status.hh "com/centreon/broker/neb/instance_status.hh"
-         *  @brief Information about Nagios process.
-         *
-         *  instance_status holds information about a scheduling
-         *  process, like whether it is running or not, in daemon mode
-         *  or not, ...
-         */
-        class              instance_status : public status {
-         private:
-          void             _internal_copy(instance_status const& is);
+CCB_BEGIN()
 
-         public:
-          bool             active_host_checks_enabled;
-          bool             active_service_checks_enabled;
-          QString          address;
-          bool             check_hosts_freshness;
-          bool             check_services_freshness;
-          bool             daemon_mode;
-          QString          description;
-          QString          global_host_event_handler;
-          QString          global_service_event_handler;
-          unsigned int     id;
-          time_t           last_alive;
-          time_t           last_command_check;
-          time_t           last_log_rotation;
-          int              modified_host_attributes;
-          int              modified_service_attributes;
-          bool             obsess_over_hosts;
-          bool             obsess_over_services;
-          bool             passive_host_checks_enabled;
-          bool             passive_service_checks_enabled;
-                           instance_status();
-                           instance_status(instance_status const& is);
-                           ~instance_status();
-          instance_status& operator=(instance_status const& is);
-          QString const&   type() const;
-        };
-      }
-    }
-  }
+namespace            neb {
+  /**
+   *  @class instance_status instance_status.hh "com/centreon/broker/neb/instance_status.hh"
+   *  @brief Information about Nagios process.
+   *
+   *  instance_status holds information about a scheduling
+   *  process, like whether it is running or not, in daemon mode
+   *  or not, ...
+   */
+  class              instance_status : public status {
+  public:
+                     instance_status();
+                     instance_status(instance_status const& is);
+                     ~instance_status();
+    instance_status& operator=(instance_status const& is);
+    QString const&   type() const;
+
+    bool             active_host_checks_enabled;
+    bool             active_service_checks_enabled;
+    QString          address;
+    bool             check_hosts_freshness;
+    bool             check_services_freshness;
+    bool             daemon_mode;
+    QString          description;
+    QString          global_host_event_handler;
+    QString          global_service_event_handler;
+    unsigned int     id;
+    time_t           last_alive;
+    time_t           last_command_check;
+    time_t           last_log_rotation;
+    int              modified_host_attributes;
+    int              modified_service_attributes;
+    bool             obsess_over_hosts;
+    bool             obsess_over_services;
+    bool             passive_host_checks_enabled;
+    bool             passive_service_checks_enabled;
+
+  private:
+    void             _internal_copy(instance_status const& is);
+  };
 }
 
-#endif /* !CCB_EVENTS_INSTANCE_STATUS_HH_ */
+CCB_END()
+
+#endif // !CCB_EVENTS_INSTANCE_STATUS_HH
