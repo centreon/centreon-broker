@@ -404,6 +404,25 @@ if (WITH_TESTING)
     "${TEST_DIR}/host_parent/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Instance Tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_instance_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/instance/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_instance_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/instance/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_instance_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/instance/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Service Check Tests.
   #   Default constructor.
   set(TEST_NAME "neb_service_check_ctor_default")

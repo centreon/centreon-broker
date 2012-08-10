@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -22,33 +23,6 @@ using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data of the instance object to the current
- *         instance.
- *
- *  Copy data defined within the instance class. This method is used by
- *  the copy constructor and the assignment operator.
- *
- *  @param[in] i Object to copy.
- */
-void instance::_internal_copy(instance const& i) {
-  engine = i.engine;
-  id = i.id;
-  is_running = i.is_running;
-  name = i.name;
-  pid = i.pid;
-  program_end = i.program_end;
-  program_start = i.program_start;
-  version = i.version;
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -60,7 +34,7 @@ void instance::_internal_copy(instance const& i) {
  */
 instance::instance()
   : id(0),
-    is_running(false),
+    is_running(true),
     pid(0),
     program_end(0),
     program_start(0) {}
@@ -102,4 +76,31 @@ instance& instance::operator=(instance const& i) {
 QString const& instance::type() const {
   static QString const instance_type("com::centreon::broker::neb::instance");
   return (instance_type);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data of the instance object to the current
+ *         instance.
+ *
+ *  Copy data defined within the instance class. This method is used by
+ *  the copy constructor and the assignment operator.
+ *
+ *  @param[in] i Object to copy.
+ */
+void instance::_internal_copy(instance const& i) {
+  engine = i.engine;
+  id = i.id;
+  is_running = i.is_running;
+  name = i.name;
+  pid = i.pid;
+  program_end = i.program_end;
+  program_start = i.program_start;
+  version = i.version;
+  return ;
 }

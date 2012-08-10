@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,46 +17,46 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_INSTANCE_HH_
-# define CCB_NEB_INSTANCE_HH_
+#ifndef CCB_NEB_INSTANCE_HH
+#  define CCB_NEB_INSTANCE_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class instance instance.hh "com/centreon/broker/neb/instance.hh"
-         *  @brief Information about Nagios process.
-         *
-         *  This class holds information about a Nagios process, like whether
-         *  it is running or not, in daemon mode or not, ...
-         */
-        class            instance : public io::data {
-         private:
-          void           _internal_copy(instance const& i);
+CCB_BEGIN()
 
-         public:
-          QString        engine;
-          unsigned int   id;
-          bool           is_running;
-          QString        name;
-          unsigned int   pid;
-          time_t         program_end;
-          time_t         program_start;
-          QString        version;
-                         instance();
-                         instance(instance const& i);
-                         ~instance();
-          instance&      operator=(instance const& i);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          neb {
+  /**
+   *  @class instance instance.hh "com/centreon/broker/neb/instance.hh"
+   *  @brief Information about Nagios process.
+   *
+   *  This class holds information about a Nagios process, like whether
+   *  it is running or not, in daemon mode or not, ...
+   */
+  class            instance : public io::data {
+  public:
+                   instance();
+                   instance(instance const& i);
+                   ~instance();
+    instance&      operator=(instance const& i);
+    QString const& type() const;
+
+    QString        engine;
+    unsigned int   id;
+    bool           is_running;
+    QString        name;
+    unsigned int   pid;
+    time_t         program_end;
+    time_t         program_start;
+    QString        version;
+
+  private:
+    void           _internal_copy(instance const& i);
+  };
 }
 
-#endif /* !CCB_NEB_INSTANCE_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_INSTANCE_HH
