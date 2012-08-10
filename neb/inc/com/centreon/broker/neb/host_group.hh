@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,32 +17,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_GROUP_HH_
-# define CCB_NEB_HOST_GROUP_HH_
+#ifndef CCB_NEB_HOST_GROUP_HH
+#  define CCB_NEB_HOST_GROUP_HH
 
-# include "com/centreon/broker/neb/group.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/group.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class host_group host_group.hh "com/centreon/broker/neb/host_group.hh"
-         *  @brief Represents a group of hosts.
-         *
-         *  A group of hosts within the scheduling engine.
-         */
-        class            host_group : public group {
-         public:
-                         host_group();
-                         host_group(host_group const& hg);
-                         ~host_group();
-          host_group&    operator=(host_group const& hg);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace          neb {
+  /**
+   *  @class host_group host_group.hh "com/centreon/broker/neb/host_group.hh"
+   *  @brief Represents a group of hosts.
+   *
+   *  A group of hosts within the scheduling engine.
+   */
+  class            host_group : public group {
+  public:
+                   host_group();
+                   host_group(host_group const& hg);
+                   ~host_group();
+    host_group&    operator=(host_group const& hg);
+    QString const& type() const;
+  };
 }
 
-#endif /* !CCB_NEB_HOST_GROUP_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_HOST_GROUP_HH
