@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,39 +20,6 @@
 #include "com/centreon/broker/neb/log_entry.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy all internal data of the given object to the current
- *         instance.
- *
- *  Make a copy of all data defined within the log_entry class. This
- *  method is used by the copy constructor and the assignment operator.
- *
- *  @param[in] le Object to copy.
- */
-void log_entry::_internal_copy(log_entry const& le) {
-  c_time = le.c_time;
-  host_id = le.host_id;
-  host_name = le.host_name;
-  instance_name = le.instance_name;
-  issue_start_time = le.issue_start_time;
-  log_type = le.log_type;
-  msg_type = le.msg_type;
-  notification_cmd = le.notification_cmd;
-  notification_contact = le.notification_contact;
-  output = le.output;
-  retry = le.retry;
-  service_description = le.service_description;
-  service_id = le.service_id;
-  status = le.status;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -113,4 +81,37 @@ log_entry& log_entry::operator=(log_entry const& le) {
 QString const& log_entry::type() const {
   static QString const le_type("com::centreon::broker::neb::log_entry");
   return (le_type);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy all internal data of the given object to the current
+ *         instance.
+ *
+ *  Make a copy of all data defined within the log_entry class. This
+ *  method is used by the copy constructor and the assignment operator.
+ *
+ *  @param[in] le Object to copy.
+ */
+void log_entry::_internal_copy(log_entry const& le) {
+  c_time = le.c_time;
+  host_id = le.host_id;
+  host_name = le.host_name;
+  instance_name = le.instance_name;
+  issue_start_time = le.issue_start_time;
+  log_type = le.log_type;
+  msg_type = le.msg_type;
+  notification_cmd = le.notification_cmd;
+  notification_contact = le.notification_contact;
+  output = le.output;
+  retry = le.retry;
+  service_description = le.service_description;
+  service_id = le.service_id;
+  status = le.status;
+  return ;
 }
