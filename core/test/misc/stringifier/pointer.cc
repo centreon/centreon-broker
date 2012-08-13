@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker;
@@ -33,5 +33,7 @@ int main() {
   s << &s;
 
   // Check content.
-  return ((unsigned long long)&s != strtoull(s.data(), NULL, 0));
+  return ((&s != (void*)strtoull(s.data(), NULL, 0))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }
