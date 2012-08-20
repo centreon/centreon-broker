@@ -82,7 +82,7 @@ void opener::close() {
 QSharedPointer<io::stream> opener::open() {
   QIODevice::OpenMode mode;
   if (_is_in)
-    mode = (_is_out ? QIODevice::ReadWrite : QIODevice::ReadOnly);
+    mode = QIODevice::ReadWrite;
   else if (_is_out)
     mode = QIODevice::WriteOnly;
   else
