@@ -59,6 +59,9 @@ namespace                com {
 
          private slots:
           void           _on_stream_destroy(QObject* obj);
+          void           _on_stream_disconnected();
+          void           _on_stream_error(
+                           QAbstractSocket::SocketError e);
 
          public:
                          acceptor();

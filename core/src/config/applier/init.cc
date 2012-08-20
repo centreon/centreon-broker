@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <QAbstractSocket>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -43,8 +44,14 @@ void config::applier::deinit() {
  *  Load necessary structures.
  */
 void config::applier::init() {
+  // Load singletons.
   logging::manager::load();
   multiplexing::engine::load();
   atexit(&deinit);
+
+  // Register Qt type.
+  qRegisterMetaType<QAbstractSocket::SocketError>(
+    "QAbstractSocket::SocketError");
+
   return ;
 }
