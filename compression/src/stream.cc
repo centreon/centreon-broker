@@ -46,7 +46,7 @@ void stream::_flush() {
     _wbuffer.clear();
 
     // Add compressed data size.
-    char buffer[4];
+    unsigned char buffer[4];
     unsigned int size(compressed->size());
     buffer[0] = size & 0xFF;
     buffer[1] = (size >> 8) & 0xFF;
@@ -175,7 +175,7 @@ QSharedPointer<io::data> stream::read() {
   if (_get_data(sizeof(qint32))) {
     int size;
     {
-      char* buff(_rbuffer.data());
+      unsigned char* buff((unsigned char*)_rbuffer.data());
       size = (buff[0] << 24)
              | (buff[1] << 16)
              | (buff[2] << 8)

@@ -70,11 +70,11 @@ int main() {
     // Open file for writing.
     QSharedPointer<file::stream> fs(new file::stream(filename,
       QIODevice::WriteOnly));
-    compression::stream cs(-1, 1000);
+    compression::stream cs(-1, 40000);
     cs.write_to(fs.staticCast<io::stream>());
 
     // Write data in file.
-    for (unsigned int i = 0; i < 10000; ++i)
+    for (unsigned int i(0); i < 1000000; ++i)
       cs.write(data.staticCast<io::data>());
   }
 
@@ -85,7 +85,7 @@ int main() {
   {
     QFile f(filename);
     qint64 size(f.size());
-    retval = ((size <= 0) || (size >= 360000));
+    retval = ((size <= 0) || (size >= 1000000 * data->size()));
   }
 
   {
@@ -100,7 +100,7 @@ int main() {
     char const buffer[] = "0123456789abcdefghijklmnopqrstuvwxyz";
     data.clear();
     unsigned int datac(0);
-    for (unsigned int count = 0; !retval && (count < 10000);) {
+    for (unsigned int count(0); !retval && (count < 1000000);) {
       // Read data.
       if (data.isNull()) {
         QSharedPointer<io::data> d(cs.read());
