@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <QAbstractSocket>
+#include <QtCore>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
