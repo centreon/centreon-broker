@@ -125,19 +125,20 @@ QSharedPointer<io::data> stream::read() {
   QMutexLocker lock(&*_mutex);
   bool ret;
   while (1) {
-    if (!_process_in
-        || (!(ret = _socket->waitForReadyRead(
-                (_timeout == -1)
-                ? 200
-                : _timeout))
-                // Standalone socket.
-            && ((_timeout != -1)
-                // Disconnected socket with no data.
-                || ((_socket->state()
-                     == QAbstractSocket::UnconnectedState)
-                    && (_socket->bytesAvailable() <= 0)))))
+    if (!_process_in)
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
+    if (!(ret = _socket->waitForReadyRead(
+                  (_timeout == -1)
+                  ? 200
+                  : _timeout))
+            // Standalone socket.
+        && ((_timeout != -1)
+            // Disconnected socket with no data.
+            || ((_socket->state()
+                 == QAbstractSocket::UnconnectedState)
+                && (_socket->bytesAvailable() <= 0))))
+      throw (exceptions::msg() << "TCP stream is disconnected");
     if (ret
         || (_socket->error()
             == QAbstractSocket::SocketTimeoutError)
