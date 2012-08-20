@@ -21,6 +21,7 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
@@ -39,16 +40,20 @@ void stream::_flush() {
     // Compress data.
     QSharedPointer<io::raw> compressed(new io::raw);
     compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
+    logging::debug(logging::low) << "compression: " << this
+      << " compressed " << _wbuffer.size() << " bytes to "
+      << compressed->size() << " bytes (level " << _level << ")";
     _wbuffer.clear();
 
     // Add compressed data size.
     char buffer[4];
     unsigned int size(compressed->size());
-    buffer[0] = (size >> 24) & 0xFF;
-    buffer[1] = (size >> 16) & 0xFF;
-    buffer[2] = (size >> 8) & 0xFF;
-    buffer[3] = size & 0xFF;
-    compressed->prepend(buffer, sizeof(buffer));
+    buffer[0] = size & 0xFF;
+    buffer[1] = (size >> 8) & 0xFF;
+    buffer[2] = (size >> 16) & 0xFF;
+    buffer[3] = (size >> 24) & 0xFF;
+    for (size_t i(0); i < sizeof(buffer); ++i)
+      compressed->prepend(buffer[i]);
 
     // Send compressed data.
     _to->write(compressed);
@@ -184,6 +189,9 @@ QSharedPointer<io::data> stream::read() {
                                  static_cast<void*>((_rbuffer.data()
                                    + 4))),
                                size));
+      logging::debug(logging::low) << "compression: " << this
+        << " uncompressed " << size + 4 << " bytes to " << r->size()
+        << " bytes";
       data = r.staticCast<io::data>();
       _rbuffer.remove(0, size + 4);
     }
