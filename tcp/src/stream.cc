@@ -125,8 +125,6 @@ QSharedPointer<io::data> stream::read() {
   QMutexLocker lock(&*_mutex);
   bool ret;
   do {
-    QWaitCondition cv;
-    cv.wait(&*_mutex, 10);
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)
