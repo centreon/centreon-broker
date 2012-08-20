@@ -124,7 +124,7 @@ void stream::process(bool in, bool out) {
 QSharedPointer<io::data> stream::read() {
   QMutexLocker lock(&*_mutex);
   bool ret;
-  do {
+  while (1) {
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)
@@ -137,11 +137,17 @@ QSharedPointer<io::data> stream::read() {
                      == QAbstractSocket::UnconnectedState)
                     && (_socket->bytesAvailable() <= 0)))))
       throw (io::exceptions::shutdown(!_process_in, !_process_out)
-               << "TCP stream is shutdown");
-  } while (!ret
-           && (_socket->error()
-               == QAbstractSocket::SocketTimeoutError)
-           && (_socket->bytesAvailable() <= 0));
+             << "TCP stream is shutdown");
+    if (ret
+        || (_socket->error()
+            == QAbstractSocket::SocketTimeoutError)
+        || (_socket->bytesAvailable() > 0))
+      break ;
+    else {
+      QWaitCondition cv;
+      cv.wait(&*_mutex, 1);
+    }
+  }
 
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));

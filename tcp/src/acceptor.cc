@@ -53,20 +53,41 @@ void acceptor::_internal_copy(acceptor const& a) {
  *  Called when a child TCP socket is destroyed.
  */
 void acceptor::_on_stream_destroy(QObject* obj) {
+  // No object, no processing.
   if (!obj)
     return ;
 
+  // Retrieve QTcpSocket object.
   QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
 
+  // Find and remove matching entry.
   QMutexLocker lock(&_childrenm);
   for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-         it = _children.begin(), end = _children.end();
+         it(_children.begin()),
+         end(_children.end());
        it != end;
        ++it)
     if (it->first.data() == sock) {
       _children.erase(it);
       break ;
     }
+  return ;
+}
+
+/**
+ *  Called when a child TCP socket is disconnected.
+ */
+void acceptor::_on_stream_disconnected() {
+  _on_stream_destroy(QObject::sender());
+  return ;
+}
+
+/**
+ *  Called when a child TCP socket has an error.
+ */
+void acceptor::_on_stream_error(QAbstractSocket::SocketError e) {
+  (void)e;
+  _on_stream_destroy(QObject::sender());
   return ;
 }
 
@@ -243,67 +264,5 @@ void acceptor::set_tls(bool enable,
   _private = private_key;
   _public = public_cert;
   _tls = enable;
-  return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] a Object to copy.
- */
-void acceptor::_internal_copy(acceptor const& a) {
-  _ca = a._ca;
-  _port = a._port;
-  _private = a._private;
-  _public = a._public;
-  _tls = a._tls;
-  return ;
-}
-
-/**
- *  Called when a child TCP socket is destroyed.
- */
-void acceptor::_on_stream_destroy(QObject* obj) {
-  // No object, no processing.
-  if (!obj)
-    return ;
-
-  // Retrieve QTcpSocket object.
-  QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
-
-  // Find and remove matching entry.
-  QMutexLocker lock(&_childrenm);
-  for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
-         it(_children.begin()),
-         end(_children.end());
-       it != end;
-         ++it)
-    if (it->first.data() == sock) {
-      _children.erase(it);
-      break ;
-    }
-  return ;
-}
-
-/**
- *  Called when a child TCP socket is disconnected.
- */
-void acceptor::_on_stream_disconnected() {
-  _on_stream_destroy(QObject::sender());
-  return ;
-}
-
-/**
- *  Called when a child TCP socket has an error.
- */
-void acceptor::_on_stream_error(QAbstractSocket::SocketError e) {
-  (void)e;
-  _on_stream_destroy(QObject::sender());
   return ;
 }
