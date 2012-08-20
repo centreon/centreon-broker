@@ -223,7 +223,7 @@ void stream::write(QSharedPointer<io::data> d) {
     // Process raw data only.
     if (d->type() == "com::centreon::broker::io::raw") {
       // Append data to write buffer.
-      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+      QSharedPointer<io::raw> r(d.staticCast<io::raw>());
       _wbuffer.append(*r);
 
       // Send compressed data if size limit is reached.
