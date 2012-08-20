@@ -76,12 +76,14 @@ io::factory* factory::clone() const {
  *
  *  @return true if the configuration matches the compression layer.
  */
-bool factory::has_endpoint(config::endpoint const& cfg,
-                           bool is_input,
-                           bool is_output) const {
+bool factory::has_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
   (void)is_input;
   (void)is_output;
-  QMap<QString, QString>::const_iterator it(cfg.params.end());
+  QMap<QString, QString>::const_iterator
+    it(cfg.params.find("compression"));
   return ((cfg.params.end() != it)
           && (!it.value().compare("yes", Qt::CaseInsensitive)
               || !it.value().compare("enabled", Qt::CaseInsensitive)
@@ -98,10 +100,11 @@ bool factory::has_endpoint(config::endpoint const& cfg,
  *
  *  @return New endpoint object.
  */
-io::endpoint* factory::new_endpoint(config::endpoint const& cfg,
-                                    bool is_input,
-                                    bool is_output,
-                                    bool& is_acceptor) const {
+io::endpoint* factory::new_endpoint(
+                         config::endpoint const& cfg,
+                         bool is_input,
+                         bool is_output,
+                         bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
   (void)is_acceptor;
