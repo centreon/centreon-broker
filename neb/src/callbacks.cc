@@ -178,7 +178,7 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->comment_type = comment_data->type;
     if (NEBTYPE_COMMENT_DELETE == comment_data->type)
       comment->deletion_time = time(NULL);
-    comment->entry_time = time(NULL);
+    comment->entry_time = comment_data->entry_time;
     comment->entry_type = comment_data->entry_type;
     comment->expire_time = comment_data->expire_time;
     comment->expires = comment_data->expires;
