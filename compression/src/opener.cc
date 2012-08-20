@@ -78,7 +78,16 @@ void opener::close() {
  *  @return New compression object.
  */
 QSharedPointer<io::stream> opener::open() {
-  return (QSharedPointer<io::stream>(new stream(_level, _size)));
+  QSharedPointer<io::stream> retval;
+  if (!_from.isNull()) {
+    QSharedPointer<io::stream> base(_from->open());
+    if (!base.isNull()) {
+      retval = QSharedPointer<io::stream>(new stream(_level, _size));
+      retval->read_from(base);
+      retval->write_to(base);
+    }
+  }
+  return (retval);
 }
 
 /**
