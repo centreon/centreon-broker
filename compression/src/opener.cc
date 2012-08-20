@@ -69,6 +69,8 @@ opener& opener::operator=(opener const& o) {
  *  Close the opener.
  */
 void opener::close() {
+  if (!_from.isNull())
+    _from->close();
   return ;
 }
 
