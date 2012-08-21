@@ -149,15 +149,16 @@ void acceptor::close() {
   if (!_socket.isNull()) {
     {
       QMutexLocker childrenm(&_childrenm);
-      for (QList<QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> > >::iterator
-             it = _children.begin(),
-             end = _children.end();
-           it != end;
-           ++it) {
-        QMutexLocker l(it->second.data());
-        QSharedPointer<QTcpSocket> sock = it->first.toStrongRef();
+      while (!_children.isEmpty()) {
+        QPair<QWeakPointer<QTcpSocket>, QSharedPointer<QMutex> >
+          p(_children.front());
+        _children.pop_front();
+        childrenm.unlock();
+        QMutexLocker l(p.second.data());
+        QSharedPointer<QTcpSocket> sock(p.first.toStrongRef());
         if (sock)
           sock->close();
+        childrenm.relock();
       }
     }
     _socket->close();

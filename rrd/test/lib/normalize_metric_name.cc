@@ -60,7 +60,7 @@ int main() {
     retval |= (normalized.size() > rrd::lib::max_metric_length);
     retval |= strncmp(
       qPrintable(normalized),
-      "x-----",
+      "------",
       rrd::lib::max_metric_length);
   }
 

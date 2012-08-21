@@ -141,7 +141,7 @@ QSharedPointer<io::data> stream::read() {
       throw (exceptions::msg() << "TCP stream is disconnected");
     if (ret
         || (_socket->error()
-            == QAbstractSocket::SocketTimeoutError)
+            != QAbstractSocket::SocketTimeoutError)
         || (_socket->bytesAvailable() > 0))
       break ;
     else {
