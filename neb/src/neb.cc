@@ -125,7 +125,7 @@ extern "C" {
           }
         if (te)
           remove_event(te, &event_list_high, &event_list_high_tail);
-        delete [] QCoreApplication::instance();
+        delete QCoreApplication::instance();
       }
     }
     // Avoid exception propagation in C code.
