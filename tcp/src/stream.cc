@@ -184,7 +184,7 @@ void stream::write(QSharedPointer<io::data> d) {
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                              r->size()));
-    if (wb < 0)
+    if ((wb < 0) || (_socket->state() != QAbstractSocket::UnconnectedState))
       throw (exceptions::msg() << "TCP: error while writing: "
                << _socket->errorString());
     _socket->waitForBytesWritten(-1);
