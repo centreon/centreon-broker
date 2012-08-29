@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <csignal>
+#include <cstring>
 #include <QCoreApplication>
 #include <QTimer>
-#include <stddef.h>
-#include <string.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -190,6 +190,7 @@ extern "C" {
     if (!QCoreApplication::instance()) {
       gl_initialized_qt = true;
       new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
+      signal(SIGCHLD, SIG_DFL);
     }
 
     // Disable timestamp printing in logs (cause starvation when forking).
