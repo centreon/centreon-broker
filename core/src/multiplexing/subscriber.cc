@@ -151,14 +151,14 @@ void subscriber::read(
     }
     // If subscriber is shutdown, notify caller.
     else
-      throw (io::exceptions::shutdown(true, true) << "subscriber "
-               << this << " is shutdown, cannot read");
+      throw (io::exceptions::shutdown(true, true)
+             << "thread is shutdown, cannot get any further event");
   }
   // Data is available, no need to wait.
   else {
     if (!_process_in && _process_out)
-      throw (io::exceptions::shutdown(true, false) << "subscriber "
-             << this << " is shutdown, cannot read");
+      throw (io::exceptions::shutdown(true, false)
+             << "thread is shutdown, cannot get any further event");
     event = _events.dequeue();
     lock.unlock();
     logging::debug(logging::low) << "multiplexing: " << _events.size()
