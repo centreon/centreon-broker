@@ -202,7 +202,7 @@ void cached::update(time_t t, QString const& value) {
   // Build rrdcached command.
   std::ostringstream oss;
   oss << "UPDATE " << _filename.toStdString() << " " << t
-      << ":" << value.toStdString();
+      << ":" << value.toStdString() << "\n";
 
   // Send command.
   _send_to_cached(oss.str().c_str());
