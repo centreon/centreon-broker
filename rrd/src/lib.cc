@@ -262,41 +262,15 @@ void lib::update(time_t t, QString const& value) {
     << _filename << "' (metric '" << _metric << "', " << argv[0] << ")";
 
   // Update RRD file.
-  int fd(::open(_filename.toStdString().c_str(), O_WRONLY));
-  if (fd < 0) {
-    char const* msg(strerror(errno));
-    logging::error << logging::MEDIUM << "RRD: could not open file '"
-      << _filename << "': " << msg;
-  }
-  else {
-    try {
-      // Set lock.
-      struct flock fl;
-      memset(&fl, 0, sizeof(fl));
-      fl.l_type = F_WRLCK;
-      fl.l_whence = SEEK_SET;
-      if (-1 == fcntl(fd, F_SETLK, &fl)) {
-        char const* msg(strerror(errno));
-        logging::error << logging::MEDIUM << "RRD: could not lock file '"
-          << _filename << "': " << msg;
-      }
-      else {
-        rrd_clear_error();
-        if (rrd_update_r(_filename.toStdString().c_str(),
-              _metric.toStdString().c_str(),
-              sizeof(argv) / sizeof(*argv) - 1,
-              argv))
-          throw (exceptions::update()
-                   << "RRD: failed to update value for metric "
-                   << _metric << ": " << rrd_get_error());
-      }
-    }
-    catch (...) {
-      ::close(fd);
-      throw ;
-    }
-    ::close(fd);
-  }
+  rrd_clear_error();
+  if (rrd_update_r(
+        _filename.toStdString().c_str(),
+        _metric.toStdString().c_str(),
+        sizeof(argv) / sizeof(*argv) - 1,
+        argv))
+    throw (exceptions::update()
+           << "RRD: failed to update value for metric "
+           << _metric << ": " << rrd_get_error());
 
   return ;
 }
