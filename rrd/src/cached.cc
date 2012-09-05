@@ -55,9 +55,9 @@ cached::~cached() {}
  */
 void cached::begin() {
   // Send BATCH command to rrdcached.
-  char buffer[] = "BATCH\n";
-  _send_to_cached(buffer, sizeof(buffer) - 1);
   _batch = true;
+  char const buffer[] = "BATCH\n";
+  _send_to_cached(buffer, sizeof(buffer) - 1);
   return ;
 }
 
@@ -269,6 +269,7 @@ void cached::_send_to_cached(
 
   // Read response.
   if (!_batch) {
+    _socket->waitForBytesWritten(-1);
     char line[1024];
     if (_socket->readLine(line, sizeof(line)) < 0)
       throw (broker::exceptions::msg() << "RRD: error while getting " \
