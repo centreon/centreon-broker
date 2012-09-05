@@ -271,16 +271,24 @@ void cached::_send_to_cached(
   if (!_batch) {
     _socket->waitForBytesWritten(-1);
     char line[1024];
+    _socket->waitForReadyRead(-1);
     if (_socket->readLine(line, sizeof(line)) < 0)
       throw (broker::exceptions::msg() << "RRD: error while getting " \
                "response from rrdcached: " << _socket->errorString());
-    unsigned int lines;
-    lines = strtoul(line, NULL, 10);
-    while (lines > 0)
+    int lines;
+    lines = strtol(line, NULL, 10);
+    if (lines < 0)
+      throw (broker::exceptions::msg()
+             << "RRD: rrdcached query failed (" << command << "): "
+             << line);
+    while (lines > 0) {
+      _socket->waitForReadyRead(-1);
       if (_socket->readLine(line, sizeof(line)) < 0)
         throw (broker::exceptions::msg() << "RRD: error while getting" \
                     " response from rrdcached: "
                  << _socket->errorString());
+      --lines;
+    }
   }
 
   return ;
