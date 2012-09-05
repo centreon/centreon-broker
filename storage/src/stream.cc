@@ -216,7 +216,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     QSqlField field("metric_name", QVariant::String);
     field.setValue(metric_name.toStdString().c_str());
     std::string escaped_metric_name(
-      _storage_db->driver()->formatValue(field, true).toStdString());
+      _storage_db->driver()->formatValue(field).toStdString());
     oss << "INSERT INTO metrics (index_id, metric_name)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ")";
 
