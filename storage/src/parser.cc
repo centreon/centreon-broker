@@ -136,7 +136,7 @@ void parser::parse_perfdata(QString const& str,
       s.erase(t, 1);
       t = s.find_first_of('\'', t + 1); // Skip one char, so '' becomes '.
     }
-    p.name(s.c_str());
+    p.name(QString(s.c_str()).trimmed().toLower());
 
     // Check format.
     if (*ptr != '=')
