@@ -693,13 +693,22 @@ unsigned int stream::_find_metric_id(
                        double max) {
   unsigned int retval;
 
+  // Apply restrictive collation rules to the metric_name. This prevents
+  // fucking SQL engines that are PADSPACE or case insensitive to mess
+  // with our cache coherency.
+  QString collated_metric_name(metric_name.trimmed().toLower());
+  logging::debug(logging::low) << "storage: metric '" << metric_name
+    << "' was collated as '" << collated_metric_name << "'";
+
   // Look in the cache.
   std::map<std::pair<unsigned int, QString>, metric_info>::iterator
-    it(_metric_cache.find(std::make_pair(index_id, metric_name)));
+    it(_metric_cache.find(std::make_pair(
+                                 index_id,
+                                 collated_metric_name)));
   if (it != _metric_cache.end()) {
     logging::debug(logging::low) << "storage: found metric "
       << it->second.metric_id << " of (" << index_id << ", "
-      << metric_name << ") in cache";
+      << collated_metric_name << ") in cache";
     // Should we update metrics ?
     if ((unit_name != it->second.unit_name)
         || !double_equal(crit, it->second.crit)
@@ -708,9 +717,9 @@ unsigned int stream::_find_metric_id(
         || !double_equal(warn, it->second.warn)) {
       logging::info(logging::medium) << "storage: updating metric "
         << it->second.metric_id << " of (" << index_id << ", "
-        << metric_name << ") (unit: " << unit_name << ", warning: "
-        << warn << ", critical: " << crit << ", min: " << min
-        << ", max: " << max << ")";
+        << collated_metric_name << ") (unit: " << unit_name
+        << ", warning: " << warn << ", critical: " << crit << ", min: "
+        << min << ", max: " << max << ")";
       // Update metrics table.
       _update_metrics->bindValue(":unit_name", unit_name);
       _update_metrics->bindValue(":warn", check_double(warn));
@@ -718,12 +727,12 @@ unsigned int stream::_find_metric_id(
       _update_metrics->bindValue(":min", check_double(min));
       _update_metrics->bindValue(":max", check_double(max));
       _update_metrics->bindValue(":index_id", index_id);
-      _update_metrics->bindValue(":metric_name", metric_name);
+      _update_metrics->bindValue(":metric_name", collated_metric_name);
       if (!_update_metrics->exec()
           || _update_metrics->lastError().isValid())
         throw (broker::exceptions::msg() << "storage: could not " \
                     "update metric (index_id " << index_id
-                 << ", metric " << metric_name << "): "
+                 << ", metric " << collated_metric_name << "): "
                  << _update_metrics->lastError().text());
 
       // Update cache entry.
@@ -742,13 +751,13 @@ unsigned int stream::_find_metric_id(
   else {
     logging::debug(logging::low)
       << "storage: creating new metric for (" << index_id
-      << ", " << metric_name << ")";
+      << ", " << collated_metric_name << ")";
     // Build query.
     std::ostringstream oss;
     std::string escaped_metric_name;
     {
       QSqlField field("metric_name", QVariant::String);
-      field.setValue(metric_name.toStdString().c_str());
+      field.setValue(collated_metric_name.toStdString().c_str());
       escaped_metric_name
         = _storage_db->driver()->formatValue(field).toStdString();
     }
@@ -768,8 +777,8 @@ unsigned int stream::_find_metric_id(
     QSqlQuery q(*_storage_db);
     if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "metric '" << metric_name << "' of index " << index_id
-               << " failed: " << q.lastError().text());
+                  "metric '" << collated_metric_name << "' of index "
+               << index_id << " failed: " << q.lastError().text());
 
     // Fetch insert ID with query if possible.
     if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
@@ -786,8 +795,8 @@ unsigned int stream::_find_metric_id(
       if (!q2.exec() || q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " metric_id of newly inserted metric '"
-                 << metric_name << "' of index " << index_id << ": "
-                 << q2.lastError().text());
+                 << collated_metric_name << "' of index " << index_id
+                 << ": " << q2.lastError().text());
       retval = q2.value(0).toUInt();
       if (!retval)
         throw (broker::exceptions::msg() << "storage: metrics table " \
@@ -795,15 +804,15 @@ unsigned int stream::_find_metric_id(
     }
 
     // Insert metric in cache.
-    logging::info(logging::medium) << "storage: new metric "
-      << retval << " for (" << index_id << ", " << metric_name << ")";
+    logging::info(logging::medium) << "storage: new metric " << retval
+      << " for (" << index_id << ", " << collated_metric_name << ")";
     metric_info info;
     info.crit = crit;
     info.max = max;
     info.metric_id = retval;
     info.min = min;
     info.unit_name = unit_name;
-    _metric_cache[std::make_pair(index_id, metric_name)] = info;
+    _metric_cache[std::make_pair(index_id, collated_metric_name)] = info;
   }
 
   return (retval);
@@ -856,7 +865,7 @@ void stream::_prepare() {
       metric_info info;
       info.metric_id = q.value(0).toUInt();
       unsigned int index_id(q.value(1).toUInt());
-      QString name(q.value(2).toString());
+      QString name(q.value(2).toString().trimmed().toLower());
       info.unit_name = q.value(3).toString();
       info.warn = q.value(4).toDouble();
       info.crit = q.value(5).toDouble();
