@@ -203,9 +203,18 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
                                      QString const& metric_name) {
   unsigned int retval;
 
+  // Apply restrictive collation rules to the metric_name. This prevents
+  // fucking SQL engines that are PADSPACE or case insensitive to mess
+  // with our cache coherency.
+  QString collated_metric_name(metric_name.trimmed().toLower());
+  logging::debug(logging::low) << "storage: metric '" << metric_name
+    << "' was collated as '" << collated_metric_name << "'";
+
   // Look in the cache.
-  std::map<std::pair<unsigned int, QString>, unsigned int>::const_iterator it
-    = _metric_cache.find(std::make_pair(index_id, metric_name));
+  std::map<std::pair<unsigned int, QString>, unsigned int>::const_iterator
+    it(_metric_cache.find(std::make_pair(
+                                 index_id,
+                                 collated_metric_name)));
   if (it != _metric_cache.end())
     retval = it->second;
 
@@ -214,7 +223,7 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     // Build query.
     std::ostringstream oss;
     QSqlField field("metric_name", QVariant::String);
-    field.setValue(metric_name.toStdString().c_str());
+    field.setValue(collated_metric_name.toStdString().c_str());
     std::string escaped_metric_name(
       _storage_db->driver()->formatValue(field).toStdString());
     oss << "INSERT INTO metrics (index_id, metric_name)" \
@@ -224,8 +233,8 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     QSqlQuery q(*_storage_db);
     if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "metric '" << metric_name << "' of index " << index_id
-               << " failed: " << q.lastError().text());
+                  "metric '" << collated_metric_name << "' of index "
+               << index_id << " failed: " << q.lastError().text());
 
     // Fetch insert ID with query if possible.
     if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
@@ -240,8 +249,8 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
       if (!q2.exec() || q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " metric_id of newly inserted metric '"
-                 << metric_name << "' of index " << index_id << ": "
-                 << q2.lastError().text());
+                 << collated_metric_name << "' of index " << index_id
+                 << ": " << q2.lastError().text());
       retval = q2.value(0).toUInt();
       if (!retval)
         throw (broker::exceptions::msg() << "storage: metrics table " \
@@ -249,9 +258,10 @@ unsigned int stream::_find_metric_id(unsigned int index_id,
     }
 
     // Insert metric in cache.
-    logging::debug(logging::low) << "storage: new metric "
-      << retval << " (" << index_id << ", " << metric_name << ")";
-    _metric_cache[std::make_pair(index_id, metric_name)] = retval;
+    logging::debug(logging::low) << "storage: new metric " << retval
+      << " (" << index_id << ", " << collated_metric_name << ")";
+    _metric_cache[std::make_pair(index_id, collated_metric_name)]
+      = retval;
   }
 
   return (retval);
@@ -650,6 +660,7 @@ void stream::write(QSharedPointer<io::data> data) {
            it != end;
            ++it) {
         perfdata& pd(*it);
+        pd.name(pd.name().trimmed().toLower());
 
         // Find metric_id.
         unsigned int metric_id(_find_metric_id(index_id, pd.name()));
