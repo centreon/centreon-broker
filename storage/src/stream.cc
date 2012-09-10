@@ -685,13 +685,16 @@ unsigned int stream::_find_index_id(
  */
 unsigned int stream::_find_metric_id(
                        unsigned int index_id,
-                       QString const& metric_name,
+                       QString metric_name,
                        QString const& unit_name,
                        double warn,
                        double crit,
                        double min,
                        double max) {
   unsigned int retval;
+
+  // Trim metric_name.
+  metric_name = metric_name.trimmed();
 
   // Look in the cache.
   std::map<std::pair<unsigned int, QString>, metric_info>::iterator
