@@ -157,7 +157,7 @@ void parser::parse_perfdata(
         p.value_type(perfdata::gauge);
       }
     }
-    p.name(QString(s.c_str()).trimmed().toLower());
+    p.name(s.c_str());
 
     // Check format.
     if (*ptr != '=')
