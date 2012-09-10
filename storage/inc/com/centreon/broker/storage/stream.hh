@@ -87,7 +87,7 @@ namespace         storage {
                     QString const& service_desc);
     unsigned int  _find_metric_id(
                     unsigned int index_id,
-                    QString const& metric_name,
+                    QString metric_name,
 		    QString const& unit_name,
 		    double warn,
 		    double crit,
