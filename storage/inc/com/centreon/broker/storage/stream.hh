@@ -67,7 +67,7 @@ namespace         storage {
                     QString const& service_desc);
     unsigned int  _find_metric_id(
                     unsigned int index_id,
-                    QString const& metric_name);
+                    QString metric_name);
     void          _prepare();
     stream&       operator=(stream const& s);
 
