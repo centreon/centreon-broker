@@ -751,14 +751,14 @@ unsigned int stream::_find_metric_id(
       QSqlField field("metric_name", QVariant::String);
       field.setValue(metric_name.toStdString().c_str());
       escaped_metric_name
-        = _storage_db->driver()->formatValue(field).toStdString();
+        = _storage_db->driver()->formatValue(field, true).toStdString();
     }
     std::string escaped_unit_name;
     {
       QSqlField field("unit_name", QVariant::String);
       field.setValue(unit_name.toStdString().c_str());
       escaped_unit_name
-        = _storage_db->driver()->formatValue(field).toStdString();
+        = _storage_db->driver()->formatValue(field, true).toStdString();
     }
     oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ", "
