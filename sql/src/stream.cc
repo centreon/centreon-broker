@@ -1004,7 +1004,7 @@ void stream::_process_host_status(io::data const& e) {
   neb::host_status const&
     hs(*static_cast<neb::host_status const*>(&e));
 
-  if (hs.next_check && (hs.next_check >= time(NULL))) {
+  if (hs.check_type && (hs.next_check >= time(NULL))) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host status event (id: " << hs.host_id
@@ -1590,7 +1590,7 @@ void stream::_process_service_status(io::data const& e) {
   neb::service_status const&
     ss(*static_cast<neb::service_status const*>(&e));
 
-  if (ss.next_check && (ss.next_check >= time(NULL))) {
+  if (ss.check_type || (ss.next_check >= time(NULL))) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing service status event (host: "
