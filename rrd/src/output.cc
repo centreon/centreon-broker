@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <iomanip>
 #include <sstream>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -29,6 +30,7 @@
 #include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/rrd/output.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -160,7 +162,10 @@ void output::write(misc::shared_ptr<io::data> const& d) {
         e->value_type);
     }
     std::ostringstream oss2;
-    oss2 << e->value;
+    if (e->value_type != storage::perfdata::gauge)
+      oss2 << static_cast<long long>(e->value);
+    else
+      oss2 << std::fixed << e->value;
     try {
       _backend->update(e->ctime, oss2.str().c_str());
     }
