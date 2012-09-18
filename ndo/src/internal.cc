@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <iomanip>
 #include <sstream>
-#include <stdlib.h>
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/issue.hh"
@@ -57,7 +58,7 @@ template <typename T>
 static void get_double(T const& t,
                        data_member<T> const& member,
                        std::stringstream& buffer) {
-  buffer << t.*(member.d);
+  buffer << std::fixed << t.*(member.d);
   return ;
 }
 
