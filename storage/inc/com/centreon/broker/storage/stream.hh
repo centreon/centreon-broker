@@ -74,6 +74,7 @@ namespace         storage {
       double       max;
       unsigned int metric_id;
       double       min;
+      unsigned int type;
       QString      unit_name;
       double       warn;
     };
@@ -92,7 +93,8 @@ namespace         storage {
 		    double warn,
 		    double crit,
 		    double min,
-		    double max);
+		    double max,
+                    unsigned int* type = NULL);
     void          _prepare();
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>

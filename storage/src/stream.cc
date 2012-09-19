@@ -430,6 +430,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perfdata& pd(*it);
 
           // Find metric_id.
+          unsigned int metric_type(perfdata::automatic);
           unsigned int metric_id(_find_metric_id(
                                    index_id,
                                    pd.name(),
@@ -437,7 +438,8 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
                                    pd.warning(),
                                    pd.critical(),
                                    pd.min(),
-                                   pd.max()));
+                                   pd.max(),
+                                   &metric_type));
 
           if (_store_in_db) {
             // Insert perfdata in data_bin.
@@ -474,7 +476,10 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perf->name = pd.name();
           perf->rrd_len = _rrd_len;
           perf->value = pd.value();
-          perf->value_type = pd.value_type();
+          perf->value_type = ((metric_type == perfdata::automatic)
+                              ? static_cast<unsigned int>(
+                                  pd.value_type())
+                              : metric_type);
           multiplexing::publisher().write(perf.staticCast<io::data>());
         }
       }
@@ -678,8 +683,14 @@ unsigned int stream::_find_index_id(
  *  Look through the metric cache for the specified metric. If it cannot
  *  be found, insert an entry in the database.
  *
- *  @param[in] index_id    Index ID of the metric.
- *  @param[in] metric_name Name of the metric.
+ *  @param[in]  index_id    Index ID of the metric.
+ *  @param[in]  metric_name Name of the metric.
+ *  @param[in]  unit_name   Metric unit.
+ *  @param[in]  warn        Warning threshold.
+ *  @param[in]  crit        Critical threshold.
+ *  @param[in]  min         Minimal metric value.
+ *  @param[in]  max         Maximal metric value.
+ *  @param[out] type        If not null, set to the metric type.
  *
  *  @return Metric ID requested, 0 if it could not be found not
  *          inserted.
@@ -691,7 +702,8 @@ unsigned int stream::_find_metric_id(
                        double warn,
                        double crit,
                        double min,
-                       double max) {
+                       double max,
+                       unsigned int* type) {
   unsigned int retval;
 
   // Trim metric_name.
@@ -740,6 +752,8 @@ unsigned int stream::_find_metric_id(
 
     // Anyway, we found the metric ID.
     retval = it->second.metric_id;
+    if (type)
+      *type = it->second.type;
   }
 
   // Can't find in cache, insert in DB.
@@ -806,8 +820,13 @@ unsigned int stream::_find_metric_id(
     info.max = max;
     info.metric_id = retval;
     info.min = min;
+    info.type = perfdata::automatic;
     info.unit_name = unit_name;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
+
+    // Fetch metric type.
+    if (type)
+      *type = info.type;
   }
 
   return (retval);
@@ -847,7 +866,7 @@ void stream::_prepare() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name, unit_name, warn, crit, min, max" \
+    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, crit, min, max" \
                 " FROM metrics",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -861,11 +880,14 @@ void stream::_prepare() {
       info.metric_id = q.value(0).toUInt();
       unsigned int index_id(q.value(1).toUInt());
       QString name(q.value(2).toString());
-      info.unit_name = q.value(3).toString();
-      info.warn = q.value(4).toDouble();
-      info.crit = q.value(5).toDouble();
-      info.min = q.value(6).toDouble();
-      info.max = q.value(7).toDouble();
+      info.type = (q.value(3).isNull()
+                   ? static_cast<unsigned int>(perfdata::automatic)
+                   : q.value(3).toUInt());
+      info.unit_name = q.value(4).toString();
+      info.warn = q.value(5).toDouble();
+      info.crit = q.value(6).toDouble();
+      info.min = q.value(7).toDouble();
+      info.max = q.value(8).toDouble();
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name << ")";
       _metric_cache[std::make_pair(index_id, name)] = info;

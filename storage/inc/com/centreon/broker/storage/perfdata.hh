@@ -35,10 +35,11 @@ namespace          storage {
   class            perfdata {
   public:
     enum           data_type {
-      absolute = 1,
+      automatic = 0,
+      gauge,
       counter,
       derive,
-      gauge
+      absolute
     };
 
                    perfdata();
