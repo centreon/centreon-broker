@@ -1796,6 +1796,9 @@ stream::stream(
         }
       }
     }
+    else
+      logging::debug(logging::medium)
+        << "SQL: NOT checking replication status";
 
     // Prepare queries.
     _prepare();

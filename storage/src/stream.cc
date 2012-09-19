@@ -187,6 +187,9 @@ stream::stream(
         }
       }
     }
+    else
+      logging::debug(logging::medium)
+        << "storage: NOT checking replication status";
 
     // Prepare queries.
     _prepare();
