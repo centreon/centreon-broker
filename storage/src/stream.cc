@@ -889,7 +889,8 @@ void stream::_prepare() {
       info.min = q.value(7).toDouble();
       info.max = q.value(8).toDouble();
       logging::debug(logging::high) << "storage: loaded metric "
-        << info.metric_id << " of (" << index_id << ", " << name << ")";
+        << info.metric_id << " of (" << index_id << ", " << name
+        << "), type " << info.type;
       _metric_cache[std::make_pair(index_id, name)] = info;
     }
   }
