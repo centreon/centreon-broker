@@ -50,13 +50,15 @@ namespace          storage {
                      QString const& storage_db,
                      unsigned int queries_per_transaction,
                      unsigned int rrd_len,
-                     time_t interval_length);
+                     time_t interval_length,
+                     bool check_replication);
     misc::shared_ptr<io::stream>
                    open();
 
    private:
     void           _internal_copy(connector const& c);
 
+    bool           _check_replication;
     time_t         _interval_length;
     unsigned int   _queries_per_transaction;
     unsigned int   _rrd_len;

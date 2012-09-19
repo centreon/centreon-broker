@@ -132,7 +132,8 @@ void connector::connect_to(
                   QString const& storage_db,
                   unsigned int queries_per_transaction,
                   unsigned int rrd_len,
-                  time_t interval_length) {
+                  time_t interval_length,
+                  bool check_replication) {
   _queries_per_transaction = queries_per_transaction;
   _storage_db = storage_db;
   _storage_host = storage_host;
@@ -142,6 +143,7 @@ void connector::connect_to(
   to_qt_sql_type(storage_type, _storage_type);
   _rrd_len = rrd_len;
   _interval_length = interval_length;
+  _check_replication = check_replication;
   return ;
 }
 
@@ -161,7 +163,9 @@ misc::shared_ptr<io::stream> connector::open() {
                   _storage_db,
                   _queries_per_transaction,
                   _rrd_len,
-                  _interval_length)));
+                  _interval_length,
+                  true,
+                  _check_replication)));
 }
 
 /**************************************
@@ -176,6 +180,7 @@ misc::shared_ptr<io::stream> connector::open() {
  *  @param[in] c Object to copy.
  */
 void connector::_internal_copy(connector const& c) {
+  _check_replication = c._check_replication;
   _interval_length = c._interval_length;
   _queries_per_transaction = c._queries_per_transaction;
   _rrd_len = c._rrd_len;

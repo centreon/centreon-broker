@@ -50,6 +50,7 @@ namespace        sql {
                    QString const& password,
                    QString const& db,
                    unsigned int queries_per_transaction,
+                   bool check_replication,
                    bool with_state_events);
                  stream(stream const& s);
                  ~stream();

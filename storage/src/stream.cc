@@ -101,6 +101,7 @@ static inline bool double_equal(double d1, double d2) {
  *  @param[in] interval_length         Interval length.
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
+ *  @param[in] check_replication       true to check replication status.
  */
 stream::stream(
           QString const& storage_type,
@@ -112,7 +113,8 @@ stream::stream(
           unsigned int queries_per_transaction,
           unsigned int rrd_len,
           time_t interval_length,
-          bool store_in_db) {
+          bool store_in_db,
+          bool check_replication) {
   // Process events.
   _process_out = true;
 
@@ -153,7 +155,7 @@ stream::stream(
     }
 
     // Check that replication is OK.
-    {
+    if (check_replication) {
       logging::debug(logging::medium)
         << "storage: checking replication status";
       QSqlQuery q(*_storage_db);
@@ -246,40 +248,6 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
         _clear_qsql();
         throw (broker::exceptions::msg() << "storage: could not connect " \
                "to Centreon Storage database");
-      }
-    }
-
-    // Check that replication is OK.
-    {
-      logging::debug(logging::medium)
-        << "storage: checking replication status";
-      QSqlQuery q(*_storage_db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "storage: could not check replication status";
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "storage: database is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field = record.fieldName(i);
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (broker::exceptions::msg() << "storage: " \
-                          "replication is not complete: " << field
-                       << "=" << q.value(i).toString());
-          logging::info(logging::medium)
-            << "storage: database replication is complete, " \
-               "connection granted";
-        }
       }
     }
 

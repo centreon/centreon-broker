@@ -155,6 +155,15 @@ io::endpoint* factory::new_endpoint(
   if (cfg.params.find("read_timeout") == cfg.params.end())
     cfg.read_timeout = 2;
 
+  // Check replication status ?
+  bool check_replication(true);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("check_replication"));
+    if (it != cfg.params.end())
+      check_replication = it.value().toUInt();
+  }
+
   // Connector.
   std::auto_ptr<storage::connector> c(new storage::connector);
   c->connect_to(
@@ -166,7 +175,8 @@ io::endpoint* factory::new_endpoint(
        name,
        queries_per_transaction,
        rrd_length,
-       interval_length);
+       interval_length,
+       check_replication);
   is_acceptor = false;
   return (c.release());
 }

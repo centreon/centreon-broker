@@ -1690,14 +1690,15 @@ void stream::_update_on_none_insert(QSqlQuery& ins,
 /**
  *  Constructor.
  *
- *  @param[in] type     Database type.
- *  @param[in] host     Database host.
- *  @param[in] port     Database port.
- *  @param[in] user     User.
- *  @param[in] password Password.
- *  @param[in] db       Database name.
- *  @param[in] qpt      Queries per transaction.
- *  @param[in] wse      With state events.
+ *  @param[in] type              Database type.
+ *  @param[in] host              Database host.
+ *  @param[in] port              Database port.
+ *  @param[in] user              User.
+ *  @param[in] password          Password.
+ *  @param[in] db                Database name.
+ *  @param[in] qpt               Queries per transaction.
+ *  @param[in] check_replication true to check replication status.
+ *  @param[in] wse               With state events.
  */
 stream::stream(
           QString const& type,
@@ -1707,6 +1708,7 @@ stream::stream(
           QString const& password,
           QString const& db,
           unsigned int qpt,
+          bool check_replication,
           bool wse)
   : _process_out(true),
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
@@ -1762,7 +1764,7 @@ stream::stream(
     }
 
     // Check that replication is OK.
-    {
+    if (check_replication) {
       logging::debug(logging::medium)
         << "SQL: checking replication status";
       QSqlQuery q(*_db);
@@ -1848,40 +1850,6 @@ stream::stream(stream const& s) : io::stream(s) {
       // Open database.
       if (!_db->open())
         throw (exceptions::msg() << "SQL: could not open SQL database");
-    }
-
-    // Check that replication is OK.
-    {
-      logging::debug(logging::medium)
-        << "SQL: checking replication status";
-      QSqlQuery q(*_db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "SQL: could not check replication status";
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "SQL: database is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field = record.fieldName(i);
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg() << "SQL: replication is not " \
-                          "complete: " << field << "="
-                       << q.value(i).toString());
-          logging::info(logging::medium)
-            << "SQL: database replication is complete, " \
-               "connection granted";
-        }
-      }
     }
 
     // Prepare queries.

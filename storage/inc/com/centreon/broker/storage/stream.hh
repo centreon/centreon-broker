@@ -53,7 +53,8 @@ namespace         storage {
                     unsigned queries_per_transaction,
                     unsigned int rrd_len,
                     time_t interval_length,
-                    bool store_in_db = true);
+                    bool store_in_db = true,
+                    bool check_replication = true);
                   stream(stream const& s);
                   ~stream();
     void          process(bool in = false, bool out = true);

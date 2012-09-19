@@ -41,6 +41,7 @@ connector::connector() : io::endpoint(false) {}
  */
 connector::connector(connector const& c)
   : io::endpoint(c),
+    _check_replication(c._check_replication),
     _db(c._db),
     _host(c._host),
     _password(c._password),
@@ -63,15 +64,18 @@ connector::~connector() {}
  *  @return This object.
  */
 connector& connector::operator=(connector const& c) {
-  io::endpoint::operator=(c);
-  _db = c._db;
-  _host = c._host;
-  _password = c._password;
-  _port = c._port;
-  _queries_per_transaction = c._queries_per_transaction;
-  _type = c._type;
-  _user = c._user;
-  _with_state_events = c._with_state_events;
+  if (this != &c) {
+    io::endpoint::operator=(c);
+    _check_replication = c._check_replication;
+    _db = c._db;
+    _host = c._host;
+    _password = c._password;
+    _port = c._port;
+    _queries_per_transaction = c._queries_per_transaction;
+    _type = c._type;
+    _user = c._user;
+    _with_state_events = c._with_state_events;
+  }
   return (*this);
 }
 
@@ -92,6 +96,7 @@ void connector::close() {
  *  @param[in] password                Password.
  *  @param[in] db                      Database name.
  *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] check_replication       true to check replication status.
  *  @param[in] with_state_events       Enable state events ?
  */
 void connector::connect_to(
@@ -102,7 +107,9 @@ void connector::connect_to(
                   QString const& password,
                   QString const& db,
                   unsigned int queries_per_transaction,
+                  bool check_replication,
                   bool with_state_events) {
+  _check_replication = check_replication;
   _db = db;
   _host = host;
   _password = password;
@@ -128,5 +135,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _password,
                                              _db,
                                              _queries_per_transaction,
+                                             _check_replication,
                                              _with_state_events)));
 }
