@@ -1994,7 +1994,7 @@ void stream::process(bool in, bool out) {
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (exceptions::msg()
-           << "SQL: attempt to read from a SQL stream (software bug)");
+         << "SQL: attempt to read from a SQL stream (not supported yet)");
   return ;
 }
 

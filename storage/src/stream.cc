@@ -320,6 +320,8 @@ void stream::process(bool in, bool out) {
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
+  throw (com::centreon::broker::exceptions::msg()
+         << "storage: attempt to read from a storage stream (not supported yet)");
   return ;
 }
 
