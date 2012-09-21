@@ -429,7 +429,7 @@ void correlator::write(misc::shared_ptr<io::data> const& e) {
     }
   }
   catch (exceptions::msg const& e) {
-    logging::error(logging::high) << e.what();
+    logging::error(logging::high) << e.what() << " (ignored)";
   }
   return ;
 }
