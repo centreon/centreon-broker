@@ -155,6 +155,17 @@ io::endpoint* factory::new_endpoint(
   if (cfg.params.find("read_timeout") == cfg.params.end())
     cfg.read_timeout = 2;
 
+  // Rebuild check interval.
+  unsigned int rebuild_check_interval(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("rebuild_check_interval"));
+    if (it != cfg.params.end())
+      rebuild_check_interval = it.value().toUInt();
+    else
+      rebuild_check_interval = 300;
+  }
+
   // Check replication status ?
   bool check_replication(true);
   {
@@ -176,6 +187,7 @@ io::endpoint* factory::new_endpoint(
        queries_per_transaction,
        rrd_length,
        interval_length,
+       rebuild_check_interval,
        check_replication);
   is_acceptor = false;
   return (c.release());

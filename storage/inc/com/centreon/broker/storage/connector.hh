@@ -51,6 +51,7 @@ namespace          storage {
                      unsigned int queries_per_transaction,
                      unsigned int rrd_len,
                      time_t interval_length,
+                     unsigned int rebuild_check_interval,
                      bool check_replication);
     misc::shared_ptr<io::stream>
                    open();
@@ -61,6 +62,7 @@ namespace          storage {
     bool           _check_replication;
     time_t         _interval_length;
     unsigned int   _queries_per_transaction;
+    unsigned int   _rebuild_check_interval;
     unsigned int   _rrd_len;
     QString        _storage_db;
     QString        _storage_host;

@@ -53,6 +53,7 @@ namespace         storage {
                     unsigned queries_per_transaction,
                     unsigned int rrd_len,
                     time_t interval_length,
+                    unsigned int rebuild_check_interval,
                     bool store_in_db = true,
                     bool check_replication = true);
                   stream(stream const& s);
@@ -108,6 +109,7 @@ namespace         storage {
     QString       _metrics_path;
     bool          _process_out;
     unsigned int  _queries_per_transaction;
+    unsigned int  _rebuild_check_interval;
     unsigned int  _rrd_len;
     bool          _store_in_db;
     unsigned int  _transaction_queries;

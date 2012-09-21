@@ -121,6 +121,8 @@ void connector::close() {
  *  @param[in] storage_db              Storage DB name.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] rrd_len                 RRD storage length.
+ *  @param[in] rebuild_check_interval  How often the storage endpoint
+ *                                     must check for graph rebuild.
  *  @param[in] interval_length         Interval length.
  */
 void connector::connect_to(
@@ -133,6 +135,7 @@ void connector::connect_to(
                   unsigned int queries_per_transaction,
                   unsigned int rrd_len,
                   time_t interval_length,
+                  unsigned int rebuild_check_interval,
                   bool check_replication) {
   _queries_per_transaction = queries_per_transaction;
   _storage_db = storage_db;
@@ -143,6 +146,7 @@ void connector::connect_to(
   to_qt_sql_type(storage_type, _storage_type);
   _rrd_len = rrd_len;
   _interval_length = interval_length;
+  _rebuild_check_interval = rebuild_check_interval;
   _check_replication = check_replication;
   return ;
 }
@@ -164,6 +168,7 @@ misc::shared_ptr<io::stream> connector::open() {
                   _queries_per_transaction,
                   _rrd_len,
                   _interval_length,
+                  _rebuild_check_interval,
                   true,
                   _check_replication)));
 }
@@ -183,6 +188,7 @@ void connector::_internal_copy(connector const& c) {
   _check_replication = c._check_replication;
   _interval_length = c._interval_length;
   _queries_per_transaction = c._queries_per_transaction;
+  _rebuild_check_interval = c._rebuild_check_interval;
   _rrd_len = c._rrd_len;
   _storage_db = c._storage_db;
   _storage_host = c._storage_host;

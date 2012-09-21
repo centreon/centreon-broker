@@ -99,6 +99,8 @@ static inline bool double_equal(double d1, double d2) {
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] rrd_len                 RRD length.
  *  @param[in] interval_length         Interval length.
+ *  @param[in] rebuild_check_interval  How often the stream must check
+ *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
  *  @param[in] check_replication       true to check replication status.
@@ -113,6 +115,7 @@ stream::stream(
           unsigned int queries_per_transaction,
           unsigned int rrd_len,
           time_t interval_length,
+          unsigned int rebuild_check_interval,
           bool store_in_db,
           bool check_replication) {
   // Process events.
@@ -123,6 +126,9 @@ stream::stream(
                               ? queries_per_transaction
                               : 1);
   _transaction_queries = 0;
+
+  // Rebuild interval.
+  _rebuild_check_interval = rebuild_check_interval;
 
   // Store in DB.
   _store_in_db = store_in_db;
