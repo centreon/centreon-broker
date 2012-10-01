@@ -188,8 +188,9 @@ void stream::_clean_tables(int instance_id) {
        << " JOIN " << mapped_type<neb::host>::table << " AS h"
        << " ON c.host_id=h.host_id"
        << " SET c.deletion_time=" << time(NULL)
-       << " WHERE c.persistent=0"
-       << " AND h.instance_id=" << instance_id;
+       << " WHERE h.instance_id=" << instance_id
+       << " AND c.persistent=0"
+       << " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     _execute(ss.str().c_str());
   }
 
