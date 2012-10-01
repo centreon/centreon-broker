@@ -136,8 +136,8 @@ else ()
 endif ()
 
 # Configure files.
-if (DAEMONS)
-  foreach (DAEMON_NAME IN LISTS DAEMONS)
+if (WITH_DAEMONS)
+  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
     configure_file("${PROJECT_SOURCE_DIR}/script/sysv_init_script.sh.in"
       "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
       @ONLY)
@@ -379,7 +379,7 @@ install(TARGETS "${DAEMON}"
 
 # Install scripts.
 if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
-  foreach (DAEMON_NAME IN LISTS DAEMONS)
+  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
     install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
       DESTINATION "${STARTUP_DIR}"
       RENAME "cbd-${DAEMON_NAME}")
