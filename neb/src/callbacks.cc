@@ -1065,6 +1065,23 @@ int neb::callback_host(int callback_type, void* data) {
         << my_host->host_id << " ('" << my_host->host_name
         << "') on instance " << my_host->instance_id;
       neb::gl_publisher.write(my_host.staticCast<io::data>());
+
+      // Generate existing custom variables.
+      for (customvariablesmember* cvar(h->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        if (cvar->variable_name
+            && strcmp(cvar->variable_name, "HOST_ID")) {
+          nebstruct_custom_variable_data data;
+          memset(&data, 0, sizeof(data));
+          data.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
+          data.var_name = cvar->variable_name;
+          data.var_value = cvar->variable_value;
+          data.object_ptr = host_data->object_ptr;
+          callback_custom_variable(
+            NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+            &data);
+        }
     }
     else
       logging::error(logging::medium) << "callbacks: host '"
@@ -1860,6 +1877,24 @@ int neb::callback_service(int callback_type, void* data) {
         << my_service->service_description
         << "') on host " << my_service->host_id;
       neb::gl_publisher.write(my_service.staticCast<io::data>());
+
+      // Generate existing custom variables.
+      for (customvariablesmember* cvar(s->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        if (cvar->variable_name
+            && strcmp(cvar->variable_name, "HOST_ID")
+            && strcmp(cvar->variable_name, "SERVICE_ID")) {
+          nebstruct_custom_variable_data data;
+          memset(&data, 0, sizeof(data));
+          data.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
+          data.var_name = cvar->variable_name;
+          data.var_value = cvar->variable_value;
+          data.object_ptr = service_data->object_ptr;
+          callback_custom_variable(
+            NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+            &data);
+        }
     }
     else
       logging::error(logging::medium)
