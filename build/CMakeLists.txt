@@ -297,9 +297,6 @@ else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
 
-# Documentation.
-add_subdirectory("doc")
-
 # Stats module.
 add_subdirectory("stats")
 
@@ -910,11 +907,6 @@ if (WITH_TESTING)
   message(STATUS "    - Unit tests                 enabled")
 else ()
   message(STATUS "    - Unit tests                 disabled")
-endif ()
-if (WITH_DOCUMENTATION)
-  message(STATUS "    - Documentation              enabled")
-else ()
-  message(STATUS "    - Documentation              disabled")
 endif ()
 if (WITH_STARTUP_SCRIPT STREQUAL "no")
   message(STATUS "    - Startup script             disabled")
