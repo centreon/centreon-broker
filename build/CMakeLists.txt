@@ -136,10 +136,6 @@ else ()
 endif ()
 
 # Configure files.
-configure_file("${PROJECT_SOURCE_DIR}/build/doc/Doxyfile.in"
-  "${PROJECT_SOURCE_DIR}/build/doc/Doxyfile")
-configure_file("${PROJECT_SOURCE_DIR}/build/doc/header.tex.in"
-  "${PROJECT_SOURCE_DIR}/build/doc/header.tex")
 if (DAEMONS)
   foreach (DAEMON_NAME IN LISTS DAEMONS)
     configure_file("${PROJECT_SOURCE_DIR}/script/sysv_init_script.sh.in"
