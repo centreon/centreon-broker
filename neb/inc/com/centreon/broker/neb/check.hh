@@ -45,6 +45,7 @@ namespace   neb {
     virtual      ~check();
     check&       operator=(check const& c);
 
+    short        check_type;
     QString      command_line;
     unsigned int host_id;
     time_t       next_check;

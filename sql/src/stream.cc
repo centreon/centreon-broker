@@ -783,7 +783,7 @@ void stream::_process_host_check(io::data const& e) {
   neb::host_check const&
     hc(*static_cast<neb::host_check const*>(&e));
 
-  if (hc.next_check && (hc.next_check >= time(NULL))) {
+  if (hc.check_type || (hc.next_check >= time(NULL))) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
@@ -1004,7 +1004,7 @@ void stream::_process_host_status(io::data const& e) {
   neb::host_status const&
     hs(*static_cast<neb::host_status const*>(&e));
 
-  if (hs.check_type && (hs.next_check >= time(NULL))) {
+  if (hs.check_type || (hs.next_check >= time(NULL))) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host status event (id: " << hs.host_id
@@ -1377,7 +1377,7 @@ void stream::_process_service_check(io::data const& e) {
   neb::service_check const&
     sc(*static_cast<neb::service_check const*>(&e));
 
-  if (sc.next_check && (sc.next_check >= time(NULL))) {
+  if (sc.check_type || (sc.next_check >= time(NULL))) {
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing service check event (host: " << sc.host_id
