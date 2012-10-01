@@ -30,7 +30,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-check::check() : host_id(0), next_check(0) {}
+check::check() : check_type(0), host_id(0), next_check(0) {}
 
 /**
  *  Copy constructor.
@@ -73,6 +73,7 @@ check& check::operator=(check const& c) {
  *  @param[in] c Object to copy from.
  */
 void check::_internal_copy(check const& c) {
+  check_type = c.check_type;
   command_line = c.command_line;
   host_id = c.host_id;
   next_check = c.next_check;

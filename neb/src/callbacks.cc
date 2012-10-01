@@ -1102,6 +1102,7 @@ int neb::callback_host_check(int callback_type, void* data) {
     // Fill output var.
     hcdata = static_cast<nebstruct_host_check_data*>(data);
     if (hcdata->command_line) {
+      host_check->check_type = hcdata->check_type;
       host_check->command_line = hcdata->command_line;
       if (!hcdata->host_name)
         throw (exceptions::msg() << "unnamed host");
@@ -1901,6 +1902,7 @@ int neb::callback_service_check(int callback_type, void* data) {
     // Fill output var.
     scdata = static_cast<nebstruct_service_check_data*>(data);
     if (scdata->command_line) {
+      service_check->check_type = scdata->check_type;
       service_check->command_line = scdata->command_line;
       if (!scdata->host_name)
         throw (exceptions::msg() << "unnamed host");
