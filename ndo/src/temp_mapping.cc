@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,6 +18,7 @@
 */
 
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 
@@ -59,6 +61,18 @@ static mapped_data<metric> const metric_mapping[] = {
   mapped_data<metric>()
 };
 
+static mapped_data<rebuild> const rebuild_mapping[] = {
+  mapped_data<rebuild>(
+    &rebuild::end,
+    1,
+    "end"),
+  mapped_data<rebuild>(
+    &rebuild::metric_id,
+    2,
+    "metric_id"),
+  mapped_data<rebuild>()
+};
+
 static mapped_data<status> const status_mapping[] = {
   mapped_data<status>(
     &status::ctime,
@@ -90,6 +104,11 @@ namespace     com {
         mapped_type<storage::metric>::members(metric_mapping);
       template <> char const*
         mapped_type<storage::metric>::table("data_bin");
+
+      template <> const mapped_data<storage::rebuild>*
+        mapped_type<storage::rebuild>::members(rebuild_mapping);
+      template <> char const*
+        mapped_type<storage::rebuild>::table("metrics");
 
       template <> const mapped_data<storage::status>*
         mapped_type<storage::status>::members(status_mapping);
