@@ -71,3 +71,20 @@ QString const& rebuild::type() const {
     rebuild_type("com::centreon::broker::storage::rebuild");
   return (rebuild_type);
 }
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] right Object to copy.
+ */
+void rebuild::_internal_copy(rebuild const& right) {
+  end = right.end;
+  metric_id = right.metric_id;
+  return ;
+}
