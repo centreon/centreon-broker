@@ -57,6 +57,8 @@ rebuilder& rebuilder::operator=(rebuilder const& right) {
   if (this != &right) {
     if (_db.isOpen())
       _db.close();
+    if (!_db.connectionName().isEmpty())
+      QSqlDatabase::removeDatabase(_db.connectionName());
     _internal_copy(right);
   }
   return (*this);
@@ -91,7 +93,16 @@ void rebuilder::run() {
  *  @param[in] db DB object to copy.
  */
 void rebuilder::set_db(QSqlDatabase const& db) {
-  _db = db;
+  // Connection ID.
+  QString id;
+  id.setNum((qulonglong)this, 16);
+
+  // Remove old DB.
+  QSqlDatabase::removeDatabase(id);
+
+  // Clone database.
+  _db = QSqlDatabase::cloneDatabase(db, id);
+
   return ;
 }
 
@@ -117,7 +128,13 @@ void rebuilder::set_interval(unsigned int interval) throw () {
  *  @param[in] right Object to copy.
  */
 void rebuilder::_internal_copy(rebuilder const& right) {
-  _db = right._db;
+  // Copy DB.
+  QString id;
+  id.setNum((qulonglong)this, 16);
+  _db = QSqlDatabase::cloneDatabase(right._db, id);
+
+  // Copy interval.
   _interval = right._interval;
+
   return ;
 }

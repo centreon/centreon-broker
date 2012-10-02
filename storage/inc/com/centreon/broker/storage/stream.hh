@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/storage/rebuilder.hh"
 
 CCB_BEGIN()
 
@@ -109,7 +110,7 @@ namespace         storage {
     QString       _metrics_path;
     bool          _process_out;
     unsigned int  _queries_per_transaction;
-    unsigned int  _rebuild_check_interval;
+    rebuilder     _rebuild_thread;
     unsigned int  _rrd_len;
     bool          _store_in_db;
     unsigned int  _transaction_queries;

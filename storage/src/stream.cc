@@ -127,9 +127,6 @@ stream::stream(
                               : 1);
   _transaction_queries = 0;
 
-  // Rebuild interval.
-  _rebuild_check_interval = rebuild_check_interval;
-
   // Store in DB.
   _store_in_db = store_in_db;
 
@@ -204,6 +201,11 @@ stream::stream(
     if (_queries_per_transaction > 1)
       _storage_db->transaction();
 
+    // Run rebuild thread.
+    _rebuild_thread.set_interval(rebuild_check_interval);
+    _rebuild_thread.set_db(*_storage_db);
+    _rebuild_thread.run();
+
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
   }
@@ -249,6 +251,9 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
                                                      *s._storage_db,
                                                      storage_id)));
 
+  // Copy rebuild thread.
+  _rebuild_thread = s._rebuild_thread;
+
   try {
     {
       QMutexLocker lock(&global_lock);
@@ -266,6 +271,9 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
     // Initial transaction.
     if (_queries_per_transaction > 1)
       _storage_db->transaction();
+
+    // Run rebuild thread.
+    _rebuild_thread.run();
 
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
@@ -291,6 +299,10 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
  *  Destructor.
  */
 stream::~stream() {
+  // Stop rebuild thread.
+  _rebuild_thread.exit();
+  _rebuild_thread.wait(-1);
+
   // Unregister from multiplexer.
   multiplexing::engine::instance().unhook(*this);
 
@@ -501,7 +513,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
  */
 stream& stream::operator=(stream const& s) {
   (void)s;
-  assert(false);
+  assert(!"storage stream is not copyable");
   abort();
   return (*this);
 }
