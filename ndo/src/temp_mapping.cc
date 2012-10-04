@@ -67,9 +67,13 @@ static mapped_data<rebuild> const rebuild_mapping[] = {
     1,
     "end"),
   mapped_data<rebuild>(
-    &rebuild::metric_id,
+    &rebuild::id,
     2,
-    "metric_id"),
+    "id"),
+  mapped_data<rebuild>(
+    &rebuild::is_index,
+    3,
+    "is_index"),
   mapped_data<rebuild>()
 };
 

@@ -31,5 +31,5 @@ int main() {
   storage::rebuild r;
 
   // Check properties values.
-  return (!r.end || (r.metric_id != 0));
+  return (!r.end || (r.id != 0) || r.is_index);
 }

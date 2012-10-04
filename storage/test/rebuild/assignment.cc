@@ -30,23 +30,28 @@ int main() {
   // Base object.
   storage::rebuild r1;
   r1.end = true;
-  r1.metric_id = 42;
+  r1.id = 42;
+  r1.is_index = false;
 
   // Second object.
   storage::rebuild r2;
   r2.end = false;
-  r2.metric_id = 234573485;
+  r2.id = 234573485;
+  r2.is_index = true;
 
   // Assignment.
   r2 = r1;
 
   // Reset base object.
   r1.end = false;
-  r1.metric_id = 36;
+  r1.id = 36;
+  r1.is_index = true;
 
   // Check.
   return (r1.end
-          || (r1.metric_id != 36)
+          || (r1.id != 36)
+          || !r1.is_index
           || !r2.end
-          || (r2.metric_id != 42));
+          || (r2.id != 42)
+          || r2.is_index);
 }

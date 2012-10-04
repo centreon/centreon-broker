@@ -30,7 +30,7 @@ using namespace com::centreon::broker::storage;
 /**
  *  Default constructor.
  */
-rebuild::rebuild() : end(true), metric_id(0) {}
+rebuild::rebuild() : end(true), id(0), is_index(false) {}
 
 /**
  *  Copy constructor.
@@ -85,6 +85,7 @@ QString const& rebuild::type() const {
  */
 void rebuild::_internal_copy(rebuild const& right) {
   end = right.end;
-  metric_id = right.metric_id;
+  id = right.id;
+  is_index = right.is_index;
   return ;
 }

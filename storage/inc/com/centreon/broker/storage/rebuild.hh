@@ -41,7 +41,8 @@ namespace          storage {
     QString const& type() const;
 
     bool           end;
-    unsigned int   metric_id;
+    unsigned int   id;
+    bool           is_index;
 
   private:
     void           _internal_copy(rebuild const& right);
