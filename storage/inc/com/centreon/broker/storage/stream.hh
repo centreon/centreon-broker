@@ -107,7 +107,6 @@ namespace         storage {
     time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                   _metric_cache;
-    QString       _metrics_path;
     bool          _process_out;
     unsigned int  _queries_per_transaction;
     rebuilder     _rebuild_thread;
