@@ -403,7 +403,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perfdata& pd(*it);
 
           // Find metric_id.
-          unsigned int metric_type(perfdata::automatic);
+          unsigned int metric_type(pd.value_type());
           unsigned int metric_id(_find_metric_id(
                                    index_id,
                                    pd.name(),
@@ -449,10 +449,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perf->name = pd.name();
           perf->rrd_len = _rrd_len;
           perf->value = pd.value();
-          perf->value_type = ((metric_type == perfdata::automatic)
-                              ? static_cast<unsigned int>(
-                                  pd.value_type())
-                              : metric_type);
+          perf->value_type = metric_type;
           multiplexing::publisher().write(perf.staticCast<io::data>());
         }
       }
@@ -656,14 +653,14 @@ unsigned int stream::_find_index_id(
  *  Look through the metric cache for the specified metric. If it cannot
  *  be found, insert an entry in the database.
  *
- *  @param[in]  index_id    Index ID of the metric.
- *  @param[in]  metric_name Name of the metric.
- *  @param[in]  unit_name   Metric unit.
- *  @param[in]  warn        Warning threshold.
- *  @param[in]  crit        Critical threshold.
- *  @param[in]  min         Minimal metric value.
- *  @param[in]  max         Maximal metric value.
- *  @param[out] type        If not null, set to the metric type.
+ *  @param[in]     index_id    Index ID of the metric.
+ *  @param[in]     metric_name Name of the metric.
+ *  @param[in]     unit_name   Metric unit.
+ *  @param[in]     warn        Warning threshold.
+ *  @param[in]     crit        Critical threshold.
+ *  @param[in]     min         Minimal metric value.
+ *  @param[in]     max         Maximal metric value.
+ *  @param[in,out] type        If not null, set to the metric type.
  *
  *  @return Metric ID requested, 0 if it could not be found not
  *          inserted.
@@ -725,7 +722,7 @@ unsigned int stream::_find_metric_id(
 
     // Anyway, we found the metric ID.
     retval = it->second.metric_id;
-    if (type)
+    if (it->second.type != perfdata::automatic)
       *type = it->second.type;
   }
 
@@ -750,10 +747,13 @@ unsigned int stream::_find_metric_id(
       escaped_unit_name
         = _storage_db->driver()->formatValue(field, true).toStdString();
     }
-    oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max)" \
+    if (*type == perfdata::automatic)
+      *type = perfdata::gauge;
+    oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max, data_source_type)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ", "
         << escaped_unit_name << ", " << std::fixed << warn << ", "
-        << crit << ", " << min << ", " << max << ")";
+        << crit << ", " << min << ", " << max << ", "
+        << *type + 1 << ")";
 
     // Execute query.
     QSqlQuery q(*_storage_db);
@@ -793,13 +793,9 @@ unsigned int stream::_find_metric_id(
     info.max = max;
     info.metric_id = retval;
     info.min = min;
-    info.type = perfdata::automatic;
+    info.type = *type;
     info.unit_name = unit_name;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
-
-    // Fetch metric type.
-    if (type)
-      *type = info.type;
   }
 
   return (retval);
