@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,26 +20,6 @@
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker::storage;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] s Object to copy.
- */
-void status::_internal_copy(status const& s) {
-  ctime = s.ctime;
-  index_id = s.index_id;
-  interval = s.interval;
-  rrd_len = s.rrd_len;
-  state = s.state;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -92,4 +73,24 @@ QString const& status::type() const {
   static QString const status_type(
     "com::centreon::broker::storage::status");
   return (status_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] s Object to copy.
+ */
+void status::_internal_copy(status const& s) {
+  ctime = s.ctime;
+  index_id = s.index_id;
+  interval = s.interval;
+  rrd_len = s.rrd_len;
+  state = s.state;
+  return ;
 }

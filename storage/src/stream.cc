@@ -203,6 +203,8 @@ stream::stream(
 
     // Run rebuild thread.
     _rebuild_thread.set_interval(rebuild_check_interval);
+    _rebuild_thread.set_interval_length(interval_length);
+    _rebuild_thread.set_rrd_length(rrd_len);
     _rebuild_thread.set_db(*_storage_db);
     _rebuild_thread.run();
 

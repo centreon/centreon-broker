@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,41 +17,41 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_STATUS_HH_
-# define CCB_STORAGE_STATUS_HH_
+#ifndef CCB_STORAGE_STATUS_HH
+#  define CCB_STORAGE_STATUS_HH
 
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
+#  include <ctime>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          storage {
-        /**
-         *  @class status status.hh "com/centreon/broker/storage/status.hh"
-         *  @brief Status data used to generate status graphs.
-         *
-         *  Status data event, mainly used to generate status graphs.
-         */
-        class            status : public io::data {
-         private:
-          void           _internal_copy(status const& s);
+CCB_BEGIN()
 
-         public:
-          time_t         ctime;
-          unsigned int   index_id;
-          time_t         interval;
-          time_t         rrd_len;
-          short          state;
-                         status();
-                         status(status const& s);
-                         ~status();
-          status&        operator=(status const& s);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          storage {
+  /**
+   *  @class status status.hh "com/centreon/broker/storage/status.hh"
+   *  @brief Status data used to generate status graphs.
+   *
+   *  Status data event, mainly used to generate status graphs.
+   */
+  class            status : public io::data {
+  public:
+                   status();
+                   status(status const& s);
+                   ~status();
+    status&        operator=(status const& s);
+    QString const& type() const;
+
+    time_t         ctime;
+    unsigned int   index_id;
+    time_t         interval;
+    time_t         rrd_len;
+    short          state;
+
+  private:
+    void           _internal_copy(status const& s);
+  };
 }
 
-#endif /* !CCB_STORAGE_STATUS_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_STATUS_HH

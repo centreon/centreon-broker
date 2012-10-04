@@ -20,6 +20,7 @@
 #ifndef CCB_STORAGE_REBUILDER_HH
 #  define CCB_STORAGE_REBUILDER_HH
 
+#  include <ctime>
 #  include <memory>
 #  include <QSqlDatabase>
 #  include <QThread>
@@ -42,15 +43,36 @@ namespace         storage {
     rebuilder&    operator=(rebuilder const& right);
     void          exit() throw ();
     unsigned int  get_interval() const throw ();
+    time_t        get_interval_length() const throw ();
+    unsigned int  get_rrd_length() const throw ();
     void          run();
     void          set_db(QSqlDatabase const& db);
     void          set_interval(unsigned int interval) throw ();
+    void          set_interval_length(time_t interval_length) throw ();
+    void          set_rrd_length(unsigned int rrd_length) throw ();
 
   private:
     void          _internal_copy(rebuilder const& right);
+    void          _rebuild_metric(
+                    unsigned int metric_id,
+                    QString const& metric_name,
+                    short metric_type,
+                    unsigned int interval);
+    void          _rebuild_status(
+                     unsigned int index_id,
+                     unsigned int interval);
+    void          _send_rebuild_event(
+                    bool end,
+                    unsigned int id,
+                    bool is_index);
+    void          _set_index_rebuild(
+                    unsigned int index_id,
+                    short state);
 
     QSqlDatabase  _db;
     unsigned int  _interval;
+    time_t        _interval_length;
+    unsigned int  _rrd_len;
     volatile bool _should_exit;
   };
 }
