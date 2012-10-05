@@ -32,6 +32,7 @@
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -275,6 +276,9 @@ void input::read(misc::shared_ptr<io::data>& d) {
       break ;
      case NDO_API_STORAGEMETRIC:
       e.reset(_handle_event<storage::metric>());
+      break ;
+     case NDO_API_STORAGEREBUILD:
+      e.reset(_handle_event<storage::rebuild>());
       break ;
      case NDO_API_STORAGESTATUS:
       e.reset(_handle_event<storage::status>());

@@ -30,6 +30,7 @@
 #include "com/centreon/broker/ndo/output.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -158,6 +159,7 @@ void output::write(misc::shared_ptr<io::data> const& e) {
   static QString const neb_service_group_member_type("com::centreon::broker::neb::service_group_member");
   static QString const neb_service_status_type("com::centreon::broker::neb::service_status");
   static QString const storage_metric_type("com::centreon::broker::storage::metric");
+  static QString const storage_rebuild_type("com::centreon::broker::storage::rebuild");
   static QString const storage_status_type("com::centreon::broker::storage::status");
   static QString const correlation_engine_state_type("com::centreon::broker::correlation::engine_state");
   static QString const correlation_host_state_type("com::centreon::broker::correlation::host_state");
@@ -354,6 +356,13 @@ void output::write(misc::shared_ptr<io::data> const& e) {
     buffer << NDO_API_STORAGEMETRIC << ":\n";
     handle_event<storage::metric>(
       *static_cast<storage::metric*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == storage_rebuild_type) {
+    buffer << NDO_API_STORAGEREBUILD << ":\n";
+    handle_event<storage::rebuild>(
+      *static_cast<storage::rebuild*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
