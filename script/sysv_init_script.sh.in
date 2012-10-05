@@ -41,10 +41,10 @@
 . /etc/rc.d/init.d/functions
 
 # Configuration parameters.
-CONFIG_FILE="@PREFIX_CONF@/${DAEMON_NAME}.xml"
 DAEMON_NAME="cbd-@DAEMON_NAME@"
+CONFIG_FILE="@PREFIX_CONF@/${DAEMON_NAME}.xml"
 CBD="@PREFIX_BIN@/cbd"
-PID_PATH=/var/run/
+PID_PATH=/var/run
 STOP_TIMEOUT=10
 user="@USER@"
 
@@ -71,7 +71,7 @@ pidfile=${PID_PATH}/${DAEMON_NAME}.pid
 start() {
   # Check for running.
   if [ -f ${pidfile} ]; then
-    is_running=$(ps -edf | grep "${CBD} ${CONFIG_FILE}.xml" | grep -v grep | wc -l )
+    is_running=$(ps -edf | grep "${CBD} ${CONFIG_FILE}" | grep -v grep | wc -l )
     if [ $is_running = 0 ]; then
       rm -f $pidfile
     else
@@ -84,9 +84,8 @@ start() {
 
   # Start cbd.
   echo -n $"Starting ${DAEMON_NAME}: "
-  su - "${user}" -c "${CBD} ${CONFIG_FILE} >/dev/null 2>&1 &"
+  PID=`su - "${user}" -c "${CBD} ${CONFIG_FILE} >/dev/null 2>&1 & echo \\$!"`
   RETVAL=$?
-  PID=$!
   if [ ${RETVAL} = 0 ]; then
     echo ${PID} > ${pidfile}
     success $"cbd startup"
