@@ -141,6 +141,26 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Remove graph event tests.
+  #   Default construction.
+  set(TEST_NAME "storage_remove_graph_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/remove_graph/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy construction.
+  set(TEST_NAME "storage_remove_graph_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/remove_graph/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "storage_remove_graph_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/remove_graph/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Status event tests.
   #   Default construction.
   set(TEST_NAME "storage_status_ctor_default")
