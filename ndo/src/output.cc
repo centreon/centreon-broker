@@ -31,6 +31,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -160,6 +161,7 @@ void output::write(misc::shared_ptr<io::data> const& e) {
   static QString const neb_service_status_type("com::centreon::broker::neb::service_status");
   static QString const storage_metric_type("com::centreon::broker::storage::metric");
   static QString const storage_rebuild_type("com::centreon::broker::storage::rebuild");
+  static QString const storage_remove_graph_type("com::centreon::broker::storage::remove_graph");
   static QString const storage_status_type("com::centreon::broker::storage::status");
   static QString const correlation_engine_state_type("com::centreon::broker::correlation::engine_state");
   static QString const correlation_host_state_type("com::centreon::broker::correlation::host_state");
@@ -363,6 +365,13 @@ void output::write(misc::shared_ptr<io::data> const& e) {
     buffer << NDO_API_STORAGEREBUILD << ":\n";
     handle_event<storage::rebuild>(
       *static_cast<storage::rebuild*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == storage_remove_graph_type) {
+    buffer << NDO_API_STORAGEREMOVEGRAPH << ":\n";
+    handle_event<storage::remove_graph>(
+      *static_cast<storage::remove_graph*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

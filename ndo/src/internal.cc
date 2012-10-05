@@ -30,6 +30,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -347,6 +348,9 @@ namespace       com {
         template <> std::map<int, getter_setter<storage::rebuild> >
           ndo_mapped_type<storage::rebuild>::map =
             std::map<int, getter_setter<storage::rebuild> >();
+        template <> std::map<int, getter_setter<storage::remove_graph> >
+          ndo_mapped_type<storage::remove_graph>::map =
+            std::map<int, getter_setter<storage::remove_graph> >();
         template <> std::map<int, getter_setter<storage::status> >
           ndo_mapped_type<storage::status>::map =
             std::map<int, getter_setter<storage::status> >();
@@ -394,6 +398,7 @@ void ndo::initialize() {
   static_init<neb::service_status>();
   static_init<storage::metric>();
   static_init<storage::rebuild>();
+  static_init<storage::remove_graph>();
   static_init<storage::status>();
   static_init<correlation::engine_state>();
   static_init<correlation::host_state>();

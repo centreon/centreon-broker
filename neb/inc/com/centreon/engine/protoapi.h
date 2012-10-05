@@ -114,6 +114,7 @@
 #define NDO_API_CORRELATIONSERVICESTATE              505
 #define NDO_API_CORRELATIONENGINESTATE               506
 #define NDO_API_STORAGEREBUILD                       507
+#define NDO_API_STORAGEREMOVEGRAPH                   508
 
 
 /************** COMMON DATA ATTRIBUTES **************/

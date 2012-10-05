@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "mapping.hh"
 
@@ -77,6 +78,18 @@ static mapped_data<rebuild> const rebuild_mapping[] = {
   mapped_data<rebuild>()
 };
 
+static mapped_data<remove_graph> const remove_graph_mapping[] = {
+  mapped_data<remove_graph>(
+    &remove_graph::id,
+    1,
+    "id"),
+  mapped_data<remove_graph>(
+    &remove_graph::is_index,
+    2,
+    "is_end"),
+  mapped_data<remove_graph>()
+};
+
 static mapped_data<status> const status_mapping[] = {
   mapped_data<status>(
     &status::ctime,
@@ -113,6 +126,11 @@ namespace     com {
         mapped_type<storage::rebuild>::members(rebuild_mapping);
       template <> char const*
         mapped_type<storage::rebuild>::table("metrics");
+
+      template <> const mapped_data<storage::remove_graph>*
+        mapped_type<storage::remove_graph>::members(remove_graph_mapping);
+      template <> char const*
+        mapped_type<storage::remove_graph>::table("index_data");
 
       template <> const mapped_data<storage::status>*
         mapped_type<storage::status>::members(status_mapping);

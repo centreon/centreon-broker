@@ -39,6 +39,7 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/perfdata.cc"
   "${SRC_DIR}/rebuild.cc"
   "${SRC_DIR}/rebuilder.cc"
+  "${SRC_DIR}/remove_graph.cc"
   "${SRC_DIR}/status.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
@@ -50,6 +51,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/com/centreon/broker/storage/perfdata.hh"
   "${INC_DIR}/com/centreon/broker/storage/rebuild.hh"
   "${INC_DIR}/com/centreon/broker/storage/rebuilder.hh"
+  "${INC_DIR}/com/centreon/broker/storage/remove_graph.hh"
   "${INC_DIR}/com/centreon/broker/storage/status.hh"
   "${INC_DIR}/com/centreon/broker/storage/stream.hh"
 )
