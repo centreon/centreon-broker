@@ -206,7 +206,7 @@ stream::stream(
     _rebuild_thread.set_interval_length(interval_length);
     _rebuild_thread.set_rrd_length(rrd_len);
     _rebuild_thread.set_db(*_storage_db);
-    _rebuild_thread.run();
+    _rebuild_thread.start();
 
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
@@ -275,7 +275,7 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
       _storage_db->transaction();
 
     // Run rebuild thread.
-    _rebuild_thread.run();
+    _rebuild_thread.start();
 
     // Register with multiplexer.
     multiplexing::engine::instance().hook(*this, false);
