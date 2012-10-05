@@ -31,6 +31,7 @@
 #include "com/centreon/broker/rrd/output.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -143,69 +144,155 @@ void output::write(misc::shared_ptr<io::data> const& d) {
 
   if (d->type() == "com::centreon::broker::storage::metric") {
     // Debug message.
-    logging::debug(logging::medium) << "RRD: new metric data";
     misc::shared_ptr<storage::metric>
       e(d.staticCast<storage::metric>());
+    logging::debug(logging::medium) << "RRD: new data for metric "
+      << e->metric_id << " (time " << e->ctime << ")";
 
-    // Write metrics RRD.
-    std::ostringstream oss1;
-    oss1 << _metrics_path.toStdString() << "/" << e->metric_id << ".rrd";
-    try {
-      _backend->open(oss1.str().c_str(), e->name);
+    // Metric path.
+    QString metric_path;
+    {
+      std::ostringstream oss;
+      oss << _metrics_path.toStdString()
+          << "/" << e->metric_id << ".rrd";
+      metric_path = oss.str().c_str();
     }
-    catch (exceptions::open const& b) {
-      _backend->open(oss1.str().c_str(),
-        e->name,
-        e->rrd_len / (e->interval ? e->interval : 60) + 1,
-        0,
-        e->interval,
-        e->value_type);
+
+    // Check that metric is not being rebuild.
+    rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
+    if (it == _metrics_rebuild.end()) {
+      // Write metrics RRD.
+      try {
+        _backend->open(metric_path, e->name);
+      }
+      catch (exceptions::open const& b) {
+        _backend->open(
+          metric_path,
+          e->name,
+          e->rrd_len / (e->interval ? e->interval : 60) + 1,
+          0,
+          e->interval,
+          e->value_type);
+      }
+      std::ostringstream oss;
+      if (e->value_type != storage::perfdata::gauge)
+        oss << static_cast<long long>(e->value);
+      else
+        oss << std::fixed << e->value;
+      try {
+        _backend->update(e->ctime, oss.str().c_str());
+      }
+      catch (exceptions::update const& b) {
+        logging::error(logging::low) << b.what() << " (ignored)";
+      }
     }
-    std::ostringstream oss2;
-    if (e->value_type != storage::perfdata::gauge)
-      oss2 << static_cast<long long>(e->value);
     else
-      oss2 << std::fixed << e->value;
-    try {
-      _backend->update(e->ctime, oss2.str().c_str());
-    }
-    catch (exceptions::update const& b) {
-      logging::error(logging::low) << b.what() << " (ignored)";
-    }
+      // Cache value.
+      it->push_back(d);
   }
   else if (d->type() == "com::centreon::broker::storage::status") {
     // Debug message.
-    logging::debug(logging::medium) << "RRD: new status data";
     misc::shared_ptr<storage::status>
       e(d.staticCast<storage::status>());
+    logging::debug(logging::medium) << "RRD: new status data for index"
+      << e->index_id << " (" << e->state << ")";
 
-    // Write status RRD.
-    std::ostringstream oss1;
-    oss1 << _status_path.toStdString() << "/" << e->index_id << ".rrd";
-    try {
-      _backend->open(oss1.str().c_str(), "status");
+    // Status path.
+    QString status_path;
+    {
+      std::ostringstream oss;
+      oss << _status_path.toStdString()
+          << "/" << e->index_id << ".rrd";
+      status_path = oss.str().c_str();
     }
-    catch (exceptions::open const& b) {
-      _backend->open(oss1.str().c_str(),
-        "status",
-        e->rrd_len / (e->interval ? e->interval : 60),
-        0,
-        e->interval);
+
+    // Check that status is not begin rebuild.
+    rebuild_cache::iterator it(_status_rebuild.find(status_path));
+    if (it != _status_rebuild.end()) {
+      // Write status RRD.
+      try {
+        _backend->open(status_path, "status");
+      }
+      catch (exceptions::open const& b) {
+        _backend->open(
+          status_path,
+          "status",
+          e->rrd_len / (e->interval ? e->interval : 60),
+          0,
+          e->interval);
+      }
+      std::ostringstream oss;
+      if (e->state == 0)
+        oss << 100;
+      else if (e->state == 1)
+        oss << 75;
+      else if (e->state == 2)
+        oss << 0;
+      try {
+        _backend->update(e->ctime, oss.str().c_str());
+      }
+      catch (exceptions::update const& b) {
+        logging::error(logging::medium) << b.what() << " (ignored)";
+      }
     }
-    std::ostringstream oss2;
-    if (e->state == 0)
-      oss2 << 100;
-    else if (e->state == 1)
-      oss2 << 75;
-    else if (e->state == 2)
-      oss2 << 0;
-    try {
-      _backend->update(e->ctime, oss2.str().c_str());
+    else
+      // Cache value.
+      it->push_back(d);
+  }
+  else if (d->type() == "com::centreon::broker::storage::rebuild") {
+    // Debug message.
+    misc::shared_ptr<storage::rebuild>
+      e(d.staticCast<storage::rebuild>());
+    logging::debug(logging::medium) << "RRD: rebuild request for "
+      << (e->is_index ? "index " : "metric ") << e->id
+      << (e->end ? "(end)" : "(start)");
+
+    // Generate path.
+    QString path;
+    {
+      std::ostringstream oss;
+      oss << (e->is_index ? _status_path : _metrics_path).toStdString()
+          << "/" << e->id << ".rrd";
+      path = oss.str().c_str();
     }
-    catch (exceptions::update const& b) {
-      logging::error(logging::medium) << b.what() << " (ignored)";
+
+    // Rebuild is starting.
+    if (!e->end) {
+      if (e->is_index)
+        _status_rebuild[path];
+      else
+        _metrics_rebuild[path];
+    }
+    // Rebuild is ending.
+    else {
+      // Find cache.
+      std::list<misc::shared_ptr<io::data> > l;
+      {
+        rebuild_cache::iterator it;
+        if (e->is_index) {
+          it = _status_rebuild.find(path);
+          if (it != _status_rebuild.end()) {
+            l = *it;
+            _status_rebuild.erase(it);
+          }
+        }
+        else {
+          it = _metrics_rebuild.find(path);
+          if (it != _metrics_rebuild.end()) {
+            l = *it;
+            _metrics_rebuild.erase(it);
+          }
+        }
+      }
+
+      // Resend cache data.
+      while (!l.empty()) {
+        write(l.front());
+        l.pop_front();
+      }
     }
   }
+
   return ;
 }
 

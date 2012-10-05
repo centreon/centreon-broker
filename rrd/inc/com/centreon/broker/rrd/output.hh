@@ -20,7 +20,9 @@
 #ifndef CCB_RRD_OUTPUT_HH
 #  define CCB_RRD_OUTPUT_HH
 
+#  include <list>
 #  include <memory>
+#  include <QHash>
 #  include <QString>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -37,6 +39,11 @@ namespace                    rrd {
    */
   class                        output : public io::stream {
   public:
+    typedef                    QHash<
+                                 QString,
+                                 std::list<misc::shared_ptr<io::data> > >
+                               rebuild_cache;
+
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path);
@@ -62,8 +69,10 @@ namespace                    rrd {
 
     std::auto_ptr<backend>     _backend;
     QString                    _metrics_path;
+    rebuild_cache              _metrics_rebuild;
     bool                       _process_out;
     QString                    _status_path;
+    rebuild_cache              _status_rebuild;
   };
 }
 
