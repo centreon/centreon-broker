@@ -41,8 +41,8 @@
 . /etc/rc.d/init.d/functions
 
 # Configuration parameters.
+CONFIG_FILE="@PREFIX_CONF@/@DAEMON_NAME@.xml"
 DAEMON_NAME="cbd-@DAEMON_NAME@"
-CONFIG_FILE="@PREFIX_CONF@/${DAEMON_NAME}.xml"
 CBD="@PREFIX_BIN@/cbd"
 PID_PATH=/var/run
 STOP_TIMEOUT=10
