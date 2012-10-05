@@ -175,12 +175,15 @@ void engine::stop() {
       it->first->stopping();
 
       // Read events from hook.
-      misc::shared_ptr<io::data> d;
-      it->first->read(d);
-      while (!d.isNull()) {
-        _kiew.enqueue(d);
+      try {
+        misc::shared_ptr<io::data> d;
         it->first->read(d);
+        while (!d.isNull()) {
+          _kiew.enqueue(d);
+          it->first->read(d);
+        }
       }
+      catch (...) {}
     }
 
     // Process events from hooks.
