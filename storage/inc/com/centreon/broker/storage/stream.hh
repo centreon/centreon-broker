@@ -83,6 +83,7 @@ namespace         storage {
     };
 
     stream&       operator=(stream const& s);
+    void          _check_deleted_index();
     void          _clear_qsql();
     unsigned int  _find_index_id(
                     unsigned int host_id,

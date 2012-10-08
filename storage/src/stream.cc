@@ -41,6 +41,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
@@ -518,6 +519,109 @@ stream& stream::operator=(stream const& s) {
 }
 
 /**
+ *  Check for deleted index.
+ */
+void stream::_check_deleted_index() {
+  // List of IDs to delete.
+  std::list<unsigned int> index_to_delete;
+  std::list<unsigned int> metrics_to_delete;
+
+  // Fetch index to delete.
+  {
+    QSqlQuery q(*_storage_db);
+    if (!q.exec("SELECT id FROM index_data WHERE trashed=1")
+        || q.lastError().isValid())
+      throw (broker::exceptions::msg()
+             << "storage: could not get the list of index to delete");
+    while (q.next())
+      index_to_delete.push_back(q.value(0).toUInt());
+  }
+
+  // Browse index to delete.
+  for (std::list<unsigned int>::iterator
+         it(index_to_delete.begin()),
+         end(index_to_delete.end());
+       it != end;
+       ++it) {
+    // Current index.
+    unsigned int index_id(*it);
+
+    // Get associated metrics.
+    {
+      std::ostringstream oss;
+      oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
+      QSqlQuery q(*_storage_db);
+      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+        throw (broker::exceptions::msg()
+               << "storage: could not get metrics of index "
+               << index_id);
+      while (q.next())
+        metrics_to_delete.push_back(q.value(0).toUInt());
+    }
+  }
+
+  // Delete metrics.
+  while (!metrics_to_delete.empty()) {
+    // Current metric.
+    unsigned int metric_id(metrics_to_delete.front());
+    metrics_to_delete.pop_front();
+
+    // Delete associated data.
+    {
+      std::ostringstream oss;
+      oss << "DELETE FROM data_bin WHERE id_metric=" << metric_id;
+      QSqlQuery q(*_storage_db);
+      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+        logging::error(logging::low)
+          << "storage: cannot remove data of metric " << metric_id
+          << ": " << q.lastError().text();
+    }
+
+    // Delete from DB.
+    {
+      std::ostringstream oss;
+      oss << "DELETE FROM metrics WHERE metric_id=" << metric_id;
+      QSqlQuery q(*_storage_db);
+      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+        logging::error(logging::low)
+          << "storage: cannot remove metric " << metric_id << ": "
+          << q.lastError().text();
+    }
+
+    // Remove associated graph.
+    misc::shared_ptr<remove_graph> rg(new remove_graph);
+    rg->id = metric_id;
+    rg->is_index = false;
+    multiplexing::publisher().write(rg.staticCast<io::data>());
+  }
+
+  // Delete index.
+  while (!index_to_delete.empty()) {
+    // Current index.
+    unsigned int index_id(index_to_delete.front());
+    index_to_delete.pop_front();
+
+    // Delete from DB.
+    {
+      std::ostringstream oss;
+      oss << "DELETE FROM index_data WHERE id=" << index_id;
+      QSqlQuery q(*_storage_db);
+      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+        logging::error(logging::low) << "storage: cannot delete index "
+          << index_id << ": " << q.lastError().text();
+    }
+
+    // Remove associated graph.
+    misc::shared_ptr<remove_graph> rg(new remove_graph);
+    rg->id = index_id;
+    rg->is_index = true;
+    multiplexing::publisher().write(rg.staticCast<io::data>());
+  }
+
+  return ;
+}
+
+/**
  *  Clear QtSql objects.
  */
 void stream::_clear_qsql() {
@@ -825,6 +929,9 @@ unsigned int stream::_find_metric_id(
  *  Prepare queries.
  */
 void stream::_prepare() {
+  // Check for deleted index.
+  _check_deleted_index();
+
   // Fill index cache.
   {
     // Execute query.
