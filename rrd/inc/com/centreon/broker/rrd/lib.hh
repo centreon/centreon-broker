@@ -55,6 +55,7 @@ namespace            rrd {
                        time_t from,
                        time_t interval,
                        short value_type = 0);
+    void             remove(QString const& filename);
     void             update(
                        time_t t,
                        QString const& value);

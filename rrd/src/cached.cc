@@ -18,6 +18,7 @@
 */
 
 #include <cassert>
+#include <cerrno>
 #include <cstdlib>
 #include <QFile>
 #if QT_VERSION >= 0x040400
@@ -26,6 +27,7 @@
 #include <QTcpSocket>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
@@ -189,6 +191,31 @@ void cached::open(
   lib rrdf;
   rrdf.open(filename, metric, length, from, interval, value_type);
 
+  return ;
+}
+
+/**
+ *  Remove the RRD file.
+ *
+ *  @param[in] filename Path to the RRD file.
+ */
+void cached::remove(QString const& filename) {
+  // Build rrdcached command.
+  std::ostringstream oss;
+  oss << "FLUSH " << filename.toStdString() << "\n";
+
+  try {
+    _send_to_cached(oss.str().c_str());
+  }
+  catch (broker::exceptions::msg const& e) {
+    logging::error(logging::medium) << e.what();
+  }
+
+  if (::remove(filename.toStdString().c_str())) {
+    char const* msg(strerror(errno));
+    logging::error(logging::high) << "RRD: could not remove file '"
+      << filename << "': " << msg;
+  }
   return ;
 }
 

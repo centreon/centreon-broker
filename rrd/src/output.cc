@@ -32,6 +32,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -291,6 +292,32 @@ void output::write(misc::shared_ptr<io::data> const& d) {
         l.pop_front();
       }
     }
+  }
+  else if (d->type() == "com::centreon::broker::storage::remove_graph") {
+    // Debug message.
+    misc::shared_ptr<storage::remove_graph>
+      e(d.staticCast<storage::remove_graph>());
+    logging::debug(logging::medium) << "RRD: remove graph request for "
+      << (e->is_index ? "index " : "metric ") << e->id;
+
+    // Generate path.
+    QString path;
+    {
+      std::ostringstream oss;
+      oss << (e->is_index ? _status_path : _metrics_path).toStdString()
+          << "/" << e->id << ".rrd";
+      path = oss.str().c_str();
+    }
+
+    // Remove data from cache.
+    rebuild_cache&
+      cache(e->is_index ? _status_rebuild : _metrics_rebuild);
+    rebuild_cache::iterator it(cache.find(path));
+    if (it != cache.end())
+      cache.erase(it);
+
+    // Remove file.
+    _backend->remove(path);
   }
 
   return ;

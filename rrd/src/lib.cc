@@ -19,6 +19,7 @@
 
 #include <cctype>
 #include <cerrno>
+#include <cstdio>
 #include <cstring>
 #include <fcntl.h>
 #include <QFile>
@@ -253,6 +254,20 @@ void lib::open(
     logging::error(logging::medium) << "RRD: could not tune " \
       "heartbeat of file '" << _filename << "'";
 
+  return ;
+}
+
+/**
+ *  Remove the RRD file.
+ *
+ *  @param[in] filename Path to the RRD file.
+ */
+void lib::remove(QString const& filename) {
+  if (::remove(filename.toStdString().c_str())) {
+    char const* msg(strerror(errno));
+    logging::error(logging::high) << "RRD: could not remove file '"
+      << filename << "': " << msg;
+  }
   return ;
 }
 
