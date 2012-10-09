@@ -63,6 +63,7 @@ namespace         storage {
     void          read(misc::shared_ptr<io::data>& d);
     void          starting();
     void          stopping();
+    void          update();
     void          write(misc::shared_ptr<io::data> const& d);
 
   private:
@@ -100,6 +101,7 @@ namespace         storage {
 		    double max,
                     unsigned int* type = NULL);
     void          _prepare();
+    void          _rebuild_cache();
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                   _index_cache;

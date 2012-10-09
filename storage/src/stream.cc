@@ -362,6 +362,15 @@ void stream::stopping() {
 }
 
 /**
+ *  Rebuild index and metrics cache.
+ */
+void stream::update() {
+  _check_deleted_index();
+  _rebuild_cache();
+  return ;
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
@@ -932,6 +941,46 @@ void stream::_prepare() {
   // Check for deleted index.
   _check_deleted_index();
 
+  // Build cache.
+  _rebuild_cache();
+
+  // Prepare metrics update query.
+  _update_metrics.reset(new QSqlQuery(*_storage_db));
+  if (!_update_metrics->prepare("UPDATE metrics" \
+                                " SET unit_name=:unit_name," \
+                                " warn=:warn," \
+                                " crit=:crit," \
+                                " min=:min," \
+                                " max=:max" \
+                                " WHERE index_id=:index_id" \
+                                " AND metric_name=:metric_name"))
+    throw (broker::exceptions::msg() << "storage: could not prepare " \
+                "metrics update query: "
+             << _update_metrics->lastError().text());
+
+  // Prepare data_bind insert query.
+  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
+  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
+                                 " id_metric, ctime, value, status)" \
+                                 " VALUES (:id_metric," \
+                                 " :ctime," \
+                                 " :value," \
+                                 " :status)"))
+    throw (broker::exceptions::msg() << "storage: could not prepare " \
+                "data_bin insert query: "
+             << _insert_data_bin->lastError().text());
+
+  return ;
+}
+
+/**
+ *  Rebuild cache.
+ */
+void stream::_rebuild_cache() {
+  // Delete old cache.
+  _index_cache.clear();
+  _metric_cache.clear();
+
   // Fill index cache.
   {
     // Execute query.
@@ -990,32 +1039,6 @@ void stream::_prepare() {
       _metric_cache[std::make_pair(index_id, name)] = info;
     }
   }
-
-  // Prepare metrics update query.
-  _update_metrics.reset(new QSqlQuery(*_storage_db));
-  if (!_update_metrics->prepare("UPDATE metrics" \
-                                " SET unit_name=:unit_name," \
-                                " warn=:warn," \
-                                " crit=:crit," \
-                                " min=:min," \
-                                " max=:max" \
-                                " WHERE index_id=:index_id" \
-                                " AND metric_name=:metric_name"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "metrics update query: "
-             << _update_metrics->lastError().text());
-
-  // Prepare data_bind insert query.
-  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
-  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
-                                 " id_metric, ctime, value, status)" \
-                                 " VALUES (:id_metric," \
-                                 " :ctime," \
-                                 " :value," \
-                                 " :status)"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "data_bin insert query: "
-             << _insert_data_bin->lastError().text());
 
   return ;
 }
