@@ -195,7 +195,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     // Debug message.
     misc::shared_ptr<storage::status>
       e(d.staticCast<storage::status>());
-    logging::debug(logging::medium) << "RRD: new status data for index"
+    logging::debug(logging::medium) << "RRD: new status data for index "
       << e->index_id << " (" << e->state << ")";
 
     // Status path.
