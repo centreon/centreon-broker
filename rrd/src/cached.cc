@@ -202,7 +202,7 @@ void cached::open(
 void cached::remove(QString const& filename) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "FLUSH " << filename.toStdString() << "\n";
+  oss << "FORGET " << filename.toStdString() << "\n";
 
   try {
     _send_to_cached(oss.str().c_str());
