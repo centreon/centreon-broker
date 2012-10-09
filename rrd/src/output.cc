@@ -263,6 +263,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
         _status_rebuild[path];
       else
         _metrics_rebuild[path];
+      _backend->remove(path);
     }
     // Rebuild is ending.
     else {
