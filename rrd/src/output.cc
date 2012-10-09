@@ -209,7 +209,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
 
     // Check that status is not begin rebuild.
     rebuild_cache::iterator it(_status_rebuild.find(status_path));
-    if (it != _status_rebuild.end()) {
+    if (it == _status_rebuild.end()) {
       // Write status RRD.
       try {
         _backend->open(status_path, "status");
