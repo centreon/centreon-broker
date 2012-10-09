@@ -538,7 +538,7 @@ void stream::_check_deleted_index() {
   // Fetch index to delete.
   {
     QSqlQuery q(*_storage_db);
-    if (!q.exec("SELECT id FROM index_data WHERE trashed=1")
+    if (!q.exec("SELECT id FROM index_data WHERE trashed='1'")
         || q.lastError().isValid())
       throw (broker::exceptions::msg()
              << "storage: could not get the list of index to delete");
