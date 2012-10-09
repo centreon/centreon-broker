@@ -125,6 +125,22 @@ void endpoint::apply(
     _diff_endpoints(_outputs, outputs, out_to_create);
   }
 
+  // Update existing endpoints.
+  for (QMap<config::endpoint, processing::failover*>::iterator
+         it(_outputs.begin()),
+         end(_outputs.end());
+       it != end;
+       ++it)
+    if (*it)
+      (*it)->update();
+  for (QMap<config::endpoint, processing::failover*>::iterator
+         it(_inputs.begin()),
+         end(_inputs.end());
+       it != end;
+       ++it)
+    if (*it)
+      (*it)->update();
+
   // Debug message.
   logging::debug(logging::high) << "endpoint applier: "
     << in_to_create.size() << " inputs to create, "
