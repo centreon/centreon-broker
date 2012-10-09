@@ -74,6 +74,7 @@ namespace                com {
           void           set_name(QString const& name);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
+          void           update();
           bool           wait(unsigned long time = ULONG_MAX);
           void           write(misc::shared_ptr<io::data> const& d);
 
@@ -102,6 +103,7 @@ namespace                com {
           time_t         _next_timeout;
           time_t         _read_timeout;
           volatile time_t _retry_interval;
+          volatile bool  _update;
 
           // Retained data.
           misc::shared_ptr<io::data>

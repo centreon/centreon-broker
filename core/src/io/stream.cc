@@ -96,6 +96,13 @@ void stream::read_from(misc::shared_ptr<stream> from) {
 }
 
 /**
+ *  Configuration update.
+ */
+void stream::update() {
+  return ;
+}
+
+/**
  *  Write to another stream.
  *
  *  @param[in] to Stream to write to.

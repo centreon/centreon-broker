@@ -56,6 +56,7 @@ namespace                    io {
                                time_t timeout,
                                bool* timed_out = NULL);
     void                     read_from(misc::shared_ptr<stream> from);
+    virtual void             update();
     virtual void             write(misc::shared_ptr<data> const& d) = 0;
     void                     write_to(misc::shared_ptr<stream> to);
 

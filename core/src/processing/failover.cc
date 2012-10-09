@@ -60,7 +60,8 @@ failover::failover(bool is_out)
     _retry_interval(30),
     _immediate(true),
     _should_exit(false),
-    _should_exitm(QMutex::Recursive) {
+    _should_exitm(QMutex::Recursive),
+    _update(false) {
   if (_is_out)
     _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
   else
@@ -89,7 +90,8 @@ failover::failover(failover const& f)
      _retry_interval(f._retry_interval),
      _immediate(true),
      _should_exit(false),
-     _should_exitm(QMutex::Recursive) {
+     _should_exitm(QMutex::Recursive),
+     _update(false) {
   memcpy(_events, f._events, sizeof(_events));
   {
     QMutexLocker lock(&f._datam);
@@ -465,6 +467,7 @@ void failover::run() {
         s->clear();
         wl.unlock();
         _last_connect_attempt = time(NULL);
+        _update = false;
         misc::shared_ptr<io::stream> tmp(_endpoint->open());
         buffering = 0;
         wl.relock();
@@ -711,6 +714,14 @@ void failover::set_read_timeout(time_t read_timeout) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
+  return ;
+}
+
+/**
+ *  Configuration update request.
+ */
+void failover::update() {
+  _update = true;
   return ;
 }
 
