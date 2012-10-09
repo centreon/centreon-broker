@@ -44,6 +44,7 @@ namespace          storage {
 
     time_t         ctime;
     time_t         interval;
+    bool           is_for_rebuild;
     unsigned int   metric_id;
     QString        name;
     int            rrd_len;

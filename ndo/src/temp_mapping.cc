@@ -44,10 +44,6 @@ static mapped_data<metric> const metric_mapping[] = {
     4,
     "name"),
   mapped_data<metric>(
-    &metric::name,
-    5,
-    "name"),
-  mapped_data<metric>(
     &metric::rrd_len,
     6,
     "rrd_len"),
@@ -59,6 +55,10 @@ static mapped_data<metric> const metric_mapping[] = {
     &metric::value_type,
     8,
     "value_type"),
+  mapped_data<metric>(
+    &metric::is_for_rebuild,
+    9,
+    "is_for_rebuild"),
   mapped_data<metric>()
 };
 
@@ -111,6 +111,10 @@ static mapped_data<status> const status_mapping[] = {
     &status::state,
     5,
     "state"),
+  mapped_data<status>(
+    &status::is_for_rebuild,
+    6,
+    "is_for_rebuild"),
   mapped_data<status>()
 };
 

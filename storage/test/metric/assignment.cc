@@ -32,6 +32,7 @@ int main() {
   storage::metric m1;
   m1.ctime = 123456789;
   m1.interval = 42;
+  m1.is_for_rebuild = true;
   m1.metric_id = 24;
   m1.name = "foo";
   m1.rrd_len = 180;
@@ -42,6 +43,7 @@ int main() {
   storage::metric m2;
   m2.ctime = 654123;
   m2.interval = 78;
+  m2.is_for_rebuild = false;
   m2.metric_id = 33;
   m2.name = "bar";
   m2.rrd_len = 666;
@@ -54,6 +56,7 @@ int main() {
   // Change first object.
   m1.ctime = 741258;
   m1.interval = 36;
+  m1.is_for_rebuild = false;
   m1.metric_id = 12;
   m1.name = "baz";
   m1.rrd_len = 900;
@@ -63,6 +66,7 @@ int main() {
   // Check objects properties values.
   return ((m1.ctime != 741258)
           || (m1.interval != 36)
+          || (m1.is_for_rebuild != false)
           || (m1.metric_id != 12)
           || (m1.name != "baz")
           || (m1.rrd_len != 900)
@@ -70,6 +74,7 @@ int main() {
           || (m1.value_type != 2)
           || (m2.ctime != 123456789)
           || (m2.interval != 42)
+          || (m2.is_for_rebuild != true)
           || (m2.metric_id != 24)
           || (m2.name != "foo")
           || (m2.rrd_len != 180)

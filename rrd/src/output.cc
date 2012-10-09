@@ -148,7 +148,8 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     misc::shared_ptr<storage::metric>
       e(d.staticCast<storage::metric>());
     logging::debug(logging::medium) << "RRD: new data for metric "
-      << e->metric_id << " (time " << e->ctime << ")";
+      << e->metric_id << " (time " << e->ctime << ") "
+      << (e->is_for_rebuild ? "for rebuild" : "");
 
     // Metric path.
     QString metric_path;
@@ -161,7 +162,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
 
     // Check that metric is not being rebuild.
     rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
-    if (it == _metrics_rebuild.end()) {
+    if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
       // Write metrics RRD.
       try {
         _backend->open(metric_path, e->name);
@@ -196,7 +197,8 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     misc::shared_ptr<storage::status>
       e(d.staticCast<storage::status>());
     logging::debug(logging::medium) << "RRD: new status data for index "
-      << e->index_id << " (" << e->state << ")";
+      << e->index_id << " (" << e->state << ") "
+      << (e->is_for_rebuild ? "for rebuild" : "");
 
     // Status path.
     QString status_path;
@@ -209,7 +211,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
 
     // Check that status is not begin rebuild.
     rebuild_cache::iterator it(_status_rebuild.find(status_path));
-    if (it == _status_rebuild.end()) {
+    if (e->is_for_rebuild || it == _status_rebuild.end()) {
       // Write status RRD.
       try {
         _backend->open(status_path, "status");

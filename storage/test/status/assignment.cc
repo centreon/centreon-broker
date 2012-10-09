@@ -31,6 +31,7 @@ int main() {
   s1.ctime = 123456789;
   s1.index_id = 6774;
   s1.interval = 42;
+  s1.is_for_rebuild = true;
   s1.rrd_len = 180;
   s1.state = 3;
 
@@ -39,6 +40,7 @@ int main() {
   s2.ctime = 654123;
   s2.index_id = 33;
   s2.interval = 78;
+  s2.is_for_rebuild = false;
   s2.rrd_len = 666;
   s2.state = 1;
 
@@ -49,6 +51,7 @@ int main() {
   s1.ctime = 741258;
   s1.index_id = 12;
   s1.interval = 36;
+  s1.is_for_rebuild = false;
   s1.rrd_len = 900;
   s1.state = 2;
 
@@ -56,11 +59,13 @@ int main() {
   return ((s1.ctime != 741258)
           || (s1.index_id != 12)
           || (s1.interval != 36)
+          || (s1.is_for_rebuild != false)
           || (s1.rrd_len != 900)
           || (s1.state != 2)
           || (s2.ctime != 123456789)
           || (s2.index_id != 6774)
           || (s2.interval != 42)
+          || (s2.is_for_rebuild != true)
           || (s2.rrd_len != 180)
           || (s2.state != 3));
 }

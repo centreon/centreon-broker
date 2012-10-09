@@ -408,6 +408,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
         status->index_id = index_id;
         status->interval = static_cast<time_t>(
                              ss->check_interval * _interval_length);
+        status->is_for_rebuild = false;
         status->rrd_len = _rrd_len;
         status->state = ss->last_hard_state;
         multiplexing::publisher().write(status.staticCast<io::data>());
@@ -475,6 +476,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perf->ctime = ss->last_check;
           perf->interval = static_cast<time_t>(ss->check_interval
                                                * _interval_length);
+          perf->is_for_rebuild = false;
           perf->metric_id = metric_id;
           perf->name = pd.name();
           perf->rrd_len = _rrd_len;

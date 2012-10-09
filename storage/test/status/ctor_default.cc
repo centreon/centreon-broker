@@ -33,6 +33,7 @@ int main() {
   return ((s.ctime != 0)
           || (s.index_id != 0)
           || (s.interval != 0)
+          || (s.is_for_rebuild != false)
           || (s.rrd_len != 0)
           || (s.state != 0)
           || (s.type() != "com::centreon::broker::storage::status"));

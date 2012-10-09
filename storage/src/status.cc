@@ -34,6 +34,7 @@ status::status()
   : ctime(0),
     index_id(0),
     interval(0),
+    is_for_rebuild(false),
     rrd_len(0),
     state(0) {}
 
@@ -90,6 +91,7 @@ void status::_internal_copy(status const& s) {
   ctime = s.ctime;
   index_id = s.index_id;
   interval = s.interval;
+  is_for_rebuild = s.is_for_rebuild;
   rrd_len = s.rrd_len;
   state = s.state;
   return ;

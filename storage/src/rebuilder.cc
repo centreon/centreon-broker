@@ -382,6 +382,7 @@ void rebuilder::_rebuild_metric(
         misc::shared_ptr<storage::metric> entry(new storage::metric);
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->interval = interval;
+        entry->is_for_rebuild = true;
         entry->metric_id = metric_id;
         entry->name = metric_name;
         entry->rrd_len = _rrd_len;
@@ -441,6 +442,7 @@ void rebuilder::_rebuild_status(
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->index_id = index_id;
         entry->interval = interval;
+        entry->is_for_rebuild = true;
         entry->rrd_len = _rrd_len;
         entry->state = data_bin_query.value(1).toInt();
         multiplexing::publisher().write(entry.staticCast<io::data>());

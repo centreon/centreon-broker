@@ -44,6 +44,7 @@ namespace          storage {
     time_t         ctime;
     unsigned int   index_id;
     time_t         interval;
+    bool           is_for_rebuild;
     time_t         rrd_len;
     short          state;
 

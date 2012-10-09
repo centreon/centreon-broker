@@ -35,6 +35,7 @@ int main() {
   // Check properties values.
   return ((m.ctime != 0)
           || (m.interval != 0)
+          || (m.is_for_rebuild != false)
           || (m.metric_id != 0)
           || !m.name.isEmpty()
           || (m.rrd_len != 0)

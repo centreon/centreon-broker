@@ -35,6 +35,7 @@ using namespace com::centreon::broker::storage;
 metric::metric()
   : ctime(0),
     interval(0),
+    is_for_rebuild(false),
     metric_id(0),
     rrd_len(0),
     value(NAN),
@@ -91,6 +92,7 @@ QString const& metric::type() const {
 void metric::_internal_copy(metric const& m) {
   ctime = m.ctime;
   interval = m.interval;
+  is_for_rebuild = m.is_for_rebuild;
   metric_id = m.metric_id;
   name = m.name;
   rrd_len = m.rrd_len;
