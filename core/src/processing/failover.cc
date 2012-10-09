@@ -58,10 +58,10 @@ failover::failover(bool is_out)
     _next_timeout((time_t)-1),
     _read_timeout((time_t)-1),
     _retry_interval(30),
+    _update(false),
     _immediate(true),
     _should_exit(false),
-    _should_exitm(QMutex::Recursive),
-    _update(false) {
+    _should_exitm(QMutex::Recursive) {
   if (_is_out)
     _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
   else
@@ -88,10 +88,10 @@ failover::failover(failover const& f)
      _next_timeout(f._next_timeout),
      _read_timeout(f._read_timeout),
      _retry_interval(f._retry_interval),
+     _update(false),
      _immediate(true),
      _should_exit(false),
-     _should_exitm(QMutex::Recursive),
-     _update(false) {
+     _should_exitm(QMutex::Recursive) {
   memcpy(_events, f._events, sizeof(_events));
   {
     QMutexLocker lock(&f._datam);
@@ -496,6 +496,10 @@ void failover::run() {
           {
             QReadLocker lock(&_fromm);
             if (!_from.isNull()) {
+              if (_update && !_is_out) {
+                _update = false;
+                _from->update();
+              }
               _from->read(data, _next_timeout, &timed_out);
               if (timed_out && (_read_timeout != (time_t)-1))
                 _next_timeout = time(NULL) + _read_timeout;
@@ -503,6 +507,10 @@ void failover::run() {
           }
           QWriteLocker lock(&_tom);
           if (!_to.isNull()) {
+            if (_update && _is_out) {
+              _update = false;
+              _to->update();
+            }
             _to->write(data);
             time_t now(time(NULL));
             if (now > _last_event) {
