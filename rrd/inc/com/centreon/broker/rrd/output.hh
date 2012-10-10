@@ -46,15 +46,21 @@ namespace                    rrd {
 
                                output(
                                  QString const& metrics_path,
-                                 QString const& status_path);
+                                 QString const& status_path,
+                                 bool write_metrics = true,
+                                 bool write_status = true);
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
-                                 QString const& local);
+                                 QString const& local,
+                                 bool write_metrics = true,
+                                 bool write_status = true);
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
-                                 unsigned short port);
+                                 unsigned short port,
+                                 bool write_metrics = true,
+                                 bool write_status = true);
                                ~output();
     void                       process(
                                  bool in = false,
@@ -73,6 +79,8 @@ namespace                    rrd {
     bool                       _process_out;
     QString                    _status_path;
     rebuild_cache              _status_rebuild;
+    bool                       _write_metrics;
+    bool                       _write_status;
   };
 }
 

@@ -32,19 +32,21 @@ using namespace com::centreon::broker::rrd;
 /**
  *  Default constructor.
  */
-connector::connector() : io::endpoint(false), _cached_port(0) {}
+connector::connector()
+  : io::endpoint(false),
+    _cached_port(0),
+    _write_metrics(true),
+    _write_status(true) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] right Object to copy.
  */
-connector::connector(connector const& c)
-  : io::endpoint(c),
-    _cached_local(c._cached_local),
-    _cached_port(c._cached_port),
-    _metrics_path(c._metrics_path),
-    _status_path(c._status_path) {}
+connector::connector(connector const& right)
+  : io::endpoint(right) {
+  _internal_copy(right);
+}
 
 /**
  *  Destructor.
@@ -54,16 +56,15 @@ connector::~connector() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] right Object to copy.
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& c) {
-  io::endpoint::operator=(c);
-  _cached_local = c._cached_local;
-  _cached_port = c._cached_port;
-  _metrics_path = c._metrics_path;
-  _status_path = c._status_path;
+connector& connector::operator=(connector const& right) {
+  if (this != &right) {
+    io::endpoint::operator=(right);
+    _internal_copy(right);
+  }
   return (*this);
 }
 
@@ -85,16 +86,22 @@ misc::shared_ptr<io::stream> connector::open() {
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
-                                                _cached_local));
+                                                _cached_local,
+                                                _write_metrics,
+                                                _write_status));
   else if (_cached_port)
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
-                                                _cached_port));
+                                                _cached_port,
+                                                _write_metrics,
+                                                _write_status));
   else
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
-                                                _status_path));
+                                                _status_path,
+                                                _write_metrics,
+                                                _write_status));
   return (retval);
 }
 
@@ -113,7 +120,7 @@ void connector::set_cached_local(QString const& local_socket) {
  *
  *  @param[in] port rrdcached port.
  */
-void connector::set_cached_net(unsigned short port) {
+void connector::set_cached_net(unsigned short port) throw () {
   _cached_port = port;
   return ;
 }
@@ -135,5 +142,46 @@ void connector::set_metrics_path(QString const& metrics_path) {
  */
 void connector::set_status_path(QString const& status_path) {
   _status_path = status_path;
+  return ;
+}
+
+/**
+ *  Set whether or not metrics should be written.
+ *
+ *  @param[in] write_metrics true if metrics must be written.
+ */
+void connector::set_write_metrics(bool write_metrics) throw () {
+  _write_metrics = write_metrics;
+  return ;
+}
+
+/**
+ *  Set whether or not status should be written.
+ *
+ *  @param[in] write_status true if status must be written.
+ */
+void connector::set_write_status(bool write_status) throw () {
+  _write_status = write_status;
+  return ;
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] right Object to copy.
+ */
+void connector::_internal_copy(connector const& right) {
+  _cached_local = right._cached_local;
+  _cached_port = right._cached_port;
+  _metrics_path = right._metrics_path;
+  _status_path = right._status_path;
+  _write_metrics = right._write_metrics;
+  _write_status = right._write_status;
   return ;
 }

@@ -153,6 +153,28 @@ io::endpoint* factory::new_endpoint(
   unsigned short port;
   port = find_param(cfg, "port", false, "0").toUShort();
 
+  // Should metrics be written ?
+  bool write_metrics;
+  {
+    QMap<QString, QString>::iterator
+      it(cfg.params.find("write_metrics"));
+    if (it != cfg.params.end())
+      write_metrics = it->toUInt();
+    else
+      write_metrics = true;
+  }
+
+  // Should status be written ?
+  bool write_status;
+  {
+    QMap<QString, QString>::iterator
+      it(cfg.params.find("write_status"));
+    if (it != cfg.params.end())
+      write_status = it->toUInt();
+    else
+      write_status = true;
+  }
+
   // Create endpoint.
   std::auto_ptr<rrd::connector> endp(new rrd::connector);
   endp->set_metrics_path(metrics_path);
@@ -161,6 +183,8 @@ io::endpoint* factory::new_endpoint(
     endp->set_cached_local(path);
   else if (port)
     endp->set_cached_net(port);
+  endp->set_write_metrics(write_metrics);
+  endp->set_write_status(write_status);
   is_acceptor = false;
   return (endp.release());
 }

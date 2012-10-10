@@ -36,22 +36,28 @@ namespace          rrd {
   class            connector : public io::endpoint {
   public:
                    connector();
-                   connector(connector const& c);
+                   connector(connector const& right);
                    ~connector();
-    connector&     operator=(connector const& c);
+    connector&     operator=(connector const& right);
     void           close();
     misc::shared_ptr<io::stream>
                    open();
     void           set_cached_local(QString const& local_socket);
-    void           set_cached_net(unsigned short port);
+    void           set_cached_net(unsigned short port) throw ();
     void           set_metrics_path(QString const& metrics_path);
     void           set_status_path(QString const& status_path);
+    void           set_write_metrics(bool write_metrics) throw ();
+    void           set_write_status(bool write_status) throw ();
 
-   private:
+  private:
+    void           _internal_copy(connector const& right);
+
     QString        _cached_local;
     unsigned short _cached_port;
     QString        _metrics_path;
     QString        _status_path;
+    bool           _write_metrics;
+    bool           _write_status;
   };
 }
 

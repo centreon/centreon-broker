@@ -47,31 +47,49 @@ using namespace com::centreon::broker::rrd;
 /**
  *  Standard constructor.
  *
- *  @param[in] metrics_path Path in which metrics RRD files should be
- *                          written.
- *  @param[in] status_path  Path in which status RRD files should be
- *                          written.
- */
-output::output(QString const& metrics_path, QString const& status_path)
-  : _backend(new lib),
-    _metrics_path(metrics_path),
-    _process_out(true),
-    _status_path(status_path) {}
-
-/**
- *  Local socket constructor.
- *
- *  @param[in] metrics_path See standard constructor.
- *  @param[in] status_path  See standard constructor.
- *  @param[in] local        Local socket connection parameters.
+ *  @param[in] metrics_path  Path in which metrics RRD files should be
+ *                           written.
+ *  @param[in] status_path   Path in which status RRD files should be
+ *                           written.
+ *  @param[in] write_metrics Set to true if metrics graph must be
+ *                           written.
+ *  @param[in] write_status  Set to true if status graph must be
+ *                           written.
  */
 output::output(
           QString const& metrics_path,
           QString const& status_path,
-          QString const& local)
+          bool write_metrics,
+          bool write_status)
+  : _backend(new lib),
+    _metrics_path(metrics_path),
+    _process_out(true),
+    _status_path(status_path),
+    _write_metrics(write_metrics),
+    _write_status(write_status) {}
+
+/**
+ *  Local socket constructor.
+ *
+ *  @param[in] metrics_path  See standard constructor.
+ *  @param[in] status_path   See standard constructor.
+ *  @param[in] local         Local socket connection parameters.
+ *  @param[in] write_metrics Set to true if metrics graph must be
+ *                           written.
+ *  @param[in] write_status  Set to true if status graph must be
+ *                           written.
+ */
+output::output(
+          QString const& metrics_path,
+          QString const& status_path,
+          QString const& local,
+          bool write_metrics,
+          bool write_status)
   : _metrics_path(metrics_path),
     _process_out(true),
-    _status_path(status_path) {
+    _status_path(status_path),
+    _write_metrics(write_metrics),
+    _write_status(write_status) {
 #if QT_VERSION >= 0x040400
   std::auto_ptr<cached> rrdcached(new cached);
   rrdcached->connect_local(local);
@@ -86,16 +104,25 @@ output::output(
 /**
  *  Network socket constructor.
  *
- *  @param[in] metrics_path See standard constructor.
- *  @param[in] status_path  See standard constructor.
- *  @param[in] port         rrdcached listening port.
+ *  @param[in] metrics_path  See standard constructor.
+ *  @param[in] status_path   See standard constructor.
+ *  @param[in] port          rrdcached listening port.
+ *  @param[in] write_metrics Set to true if metrics graph must be
+ *                           written.
+ *  @param[in] write_status  Set to true if status graph must be
+ *                           written.
  */
-output::output(QString const& metrics_path,
-               QString const& status_path,
-               unsigned short port)
+output::output(
+          QString const& metrics_path,
+          QString const& status_path,
+          unsigned short port,
+          bool write_metrics,
+          bool write_status)
   : _metrics_path(metrics_path),
     _process_out(true),
-    _status_path(status_path) {
+    _status_path(status_path),
+    _write_metrics(write_metrics),
+    _write_status(write_status) {
   std::auto_ptr<cached> rrdcached(new cached);
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
@@ -144,103 +171,107 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     return ;
 
   if (d->type() == "com::centreon::broker::storage::metric") {
-    // Debug message.
-    misc::shared_ptr<storage::metric>
-      e(d.staticCast<storage::metric>());
-    logging::debug(logging::medium) << "RRD: new data for metric "
-      << e->metric_id << " (time " << e->ctime << ") "
-      << (e->is_for_rebuild ? "for rebuild" : "");
+    if (_write_metrics) {
+      // Debug message.
+      misc::shared_ptr<storage::metric>
+        e(d.staticCast<storage::metric>());
+      logging::debug(logging::medium) << "RRD: new data for metric "
+        << e->metric_id << " (time " << e->ctime << ") "
+        << (e->is_for_rebuild ? "for rebuild" : "");
 
-    // Metric path.
-    QString metric_path;
-    {
-      std::ostringstream oss;
-      oss << _metrics_path.toStdString()
-          << "/" << e->metric_id << ".rrd";
-      metric_path = oss.str().c_str();
-    }
+      // Metric path.
+      QString metric_path;
+      {
+        std::ostringstream oss;
+        oss << _metrics_path.toStdString()
+            << "/" << e->metric_id << ".rrd";
+        metric_path = oss.str().c_str();
+      }
 
-    // Check that metric is not being rebuild.
-    rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
-    if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
-      // Write metrics RRD.
-      try {
-        _backend->open(metric_path, e->name);
+      // Check that metric is not being rebuild.
+      rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
+      if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
+        // Write metrics RRD.
+        try {
+          _backend->open(metric_path, e->name);
+        }
+        catch (exceptions::open const& b) {
+          _backend->open(
+            metric_path,
+            e->name,
+            e->rrd_len / (e->interval ? e->interval : 60) + 1,
+            0,
+            e->interval,
+            e->value_type);
+        }
+        std::ostringstream oss;
+        if (e->value_type != storage::perfdata::gauge)
+          oss << static_cast<long long>(e->value);
+        else
+          oss << std::fixed << e->value;
+        try {
+          _backend->update(e->ctime, oss.str().c_str());
+        }
+        catch (exceptions::update const& b) {
+          logging::error(logging::low) << b.what() << " (ignored)";
+        }
       }
-      catch (exceptions::open const& b) {
-        _backend->open(
-          metric_path,
-          e->name,
-          e->rrd_len / (e->interval ? e->interval : 60) + 1,
-          0,
-          e->interval,
-          e->value_type);
-      }
-      std::ostringstream oss;
-      if (e->value_type != storage::perfdata::gauge)
-        oss << static_cast<long long>(e->value);
       else
-        oss << std::fixed << e->value;
-      try {
-        _backend->update(e->ctime, oss.str().c_str());
-      }
-      catch (exceptions::update const& b) {
-        logging::error(logging::low) << b.what() << " (ignored)";
-      }
+        // Cache value.
+        it->push_back(d);
     }
-    else
-      // Cache value.
-      it->push_back(d);
   }
   else if (d->type() == "com::centreon::broker::storage::status") {
-    // Debug message.
-    misc::shared_ptr<storage::status>
-      e(d.staticCast<storage::status>());
-    logging::debug(logging::medium) << "RRD: new status data for index "
-      << e->index_id << " (" << e->state << ") "
-      << (e->is_for_rebuild ? "for rebuild" : "");
+    if (_write_status) {
+      // Debug message.
+      misc::shared_ptr<storage::status>
+        e(d.staticCast<storage::status>());
+      logging::debug(logging::medium)
+        << "RRD: new status data for index " << e->index_id << " ("
+        << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
 
-    // Status path.
-    QString status_path;
-    {
-      std::ostringstream oss;
-      oss << _status_path.toStdString()
-          << "/" << e->index_id << ".rrd";
-      status_path = oss.str().c_str();
-    }
+      // Status path.
+      QString status_path;
+      {
+        std::ostringstream oss;
+        oss << _status_path.toStdString()
+            << "/" << e->index_id << ".rrd";
+        status_path = oss.str().c_str();
+      }
 
-    // Check that status is not begin rebuild.
-    rebuild_cache::iterator it(_status_rebuild.find(status_path));
-    if (e->is_for_rebuild || it == _status_rebuild.end()) {
-      // Write status RRD.
-      try {
-        _backend->open(status_path, "status");
+      // Check that status is not begin rebuild.
+      rebuild_cache::iterator it(_status_rebuild.find(status_path));
+      if (e->is_for_rebuild || it == _status_rebuild.end()) {
+        // Write status RRD.
+        try {
+          _backend->open(status_path, "status");
+        }
+        catch (exceptions::open const& b) {
+          _backend->open(
+            status_path,
+            "status",
+            e->rrd_len / (e->interval ? e->interval : 60),
+            0,
+            e->interval);
+        }
+        std::ostringstream oss;
+        if (e->state == 0)
+          oss << 100;
+        else if (e->state == 1)
+          oss << 75;
+        else if (e->state == 2)
+          oss << 0;
+        try {
+          _backend->update(e->ctime, oss.str().c_str());
+        }
+        catch (exceptions::update const& b) {
+          logging::error(logging::medium) << b.what() << " (ignored)";
+        }
       }
-      catch (exceptions::open const& b) {
-        _backend->open(
-          status_path,
-          "status",
-          e->rrd_len / (e->interval ? e->interval : 60),
-          0,
-          e->interval);
-      }
-      std::ostringstream oss;
-      if (e->state == 0)
-        oss << 100;
-      else if (e->state == 1)
-        oss << 75;
-      else if (e->state == 2)
-        oss << 0;
-      try {
-        _backend->update(e->ctime, oss.str().c_str());
-      }
-      catch (exceptions::update const& b) {
-        logging::error(logging::medium) << b.what() << " (ignored)";
-      }
+      else
+        // Cache value.
+        it->push_back(d);
     }
-    else
-      // Cache value.
-      it->push_back(d);
   }
   else if (d->type() == "com::centreon::broker::storage::rebuild") {
     // Debug message.
