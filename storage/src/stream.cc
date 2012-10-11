@@ -82,6 +82,21 @@ static inline bool double_equal(double d1, double d2) {
   return (fabs(d1 - d2) < EPSILON);
 }
 
+/**
+ *  Dump a double as a SQL value.
+ *
+ *  @param[out] s Stream on which data will be dumped.
+ *  @param[in]  d Target double.
+ */
+static void dump_sql_double(std::ostream& s, double d) {
+  using namespace std;
+  if (isfinite(d))
+    s << d;
+  else
+    s << "NULL";
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -886,9 +901,15 @@ unsigned int stream::_find_metric_id(
       *type = perfdata::gauge;
     oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max, data_source_type)" \
       " VALUES (" << index_id << ", " << escaped_metric_name << ", "
-        << escaped_unit_name << ", " << std::fixed << warn << ", "
-        << crit << ", " << min << ", " << max << ", "
-        << *type + 1 << ")";
+        << escaped_unit_name << ", " << std::fixed;
+    dump_sql_double(oss, warn);
+    oss << ", ";
+    dump_sql_double(oss, crit);
+    oss << ", ";
+    dump_sql_double(oss, min);
+    oss << ", ";
+    dump_sql_double(oss, max);
+    oss << ", " << *type + 1 << ")";
 
     // Execute query.
     QSqlQuery q(*_storage_db);
