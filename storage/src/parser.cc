@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <QByteArray>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
@@ -106,9 +106,9 @@ void parser::parse_perfdata(
                QString const& str,
                QList<perfdata>& pd) {
   // Extract metrics strings.
-  QByteArray buf(qPrintable(str));
-  buf.replace(',', '.');
-  char const* ptr(buf.constData());
+  std::string buf(str.toStdString());
+  std::replace(buf.begin(), buf.end(), ',', '.');
+  char const* ptr(buf.c_str());
 
   // Skip initial whitespaces.
   while (isblank(*ptr))
