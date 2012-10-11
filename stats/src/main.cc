@@ -99,7 +99,7 @@ extern "C" {
               // Create FIFO.
               if (mkfifo(
                     qPrintable(fifo_file),
-                    S_IRUSR | S_IWUSR | S_IRGRP) != 0) {
+                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != 0) {
                 char const* msg(strerror(errno));
                 throw (exceptions::msg() << "cannot create FIFO '"
                        << fifo_file << "': " << msg);
