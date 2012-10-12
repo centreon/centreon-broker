@@ -49,6 +49,8 @@ static inline double extract_double(
   double retval;
   char* tmp;
   retval = strtod(*str, &tmp);
+  if (*str == tmp)
+    retval = NAN;
   *str = tmp;
   if (skip && (**str == ';'))
     ++*str;

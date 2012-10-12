@@ -188,6 +188,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/parser/parse_simple.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Complex perfdata parsing.
+  set(TEST_NAME "storage_parser_parse_complex")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/parser/parse_complex.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Loop perfdata parsing.
   set(TEST_NAME "storage_parser_parse_loop")
   add_executable("${TEST_NAME}"
