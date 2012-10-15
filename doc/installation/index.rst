@@ -83,17 +83,20 @@ CMake **(>= 2.8)**          cmake             Read the build script and
                                               prepare sources for compilation.
 Qt **(>= 4.5)**             qt4-devel         Centreon Broker require Qt
                                               core framework.
+                            qt4-mysql         MySQL drivers for Qt. Useful if
+                                              you're using DB output (with
+                                              Centreon for example).
 RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
 =========================== ================= ================================
 
 #. Get and install cmake form official website::
 
-    $ wget http://www.cmake.org/files/v2.8/cmake-2.8.6-Linux-i386.sh
-    $ sh cmake-2.8.6-Linux-i386.sh
+    $ wget http://www.cmake.org/files/v2.8/cmake-2.8.9-Linux-i386.sh
+    $ sh cmake-2.8.9-Linux-i386.sh
     $ y
     $ y
-    $ mv cmake-2.8.6-Linux-i386 /usr/local/cmake
+    $ mv cmake-2.8.9-Linux-i386 /usr/local/cmake
 
 #. Add cmake directory into the PATH environment variable::
 
@@ -139,6 +142,9 @@ CMake **(>= 2.8)**          cmake            Read the build script and
                                              prepare sources for compilation.
 Qt **(>= 4.5)**             libqt4-dev       Centreon Broker require Qt
                                              core framework.
+                            libqt4-sql-mysql MySQL drivers for Qt. Useful if
+                                             you're using DB output (with
+                                             Centreon for example).
 RRDTool                     librrd-dev       Development files for RRD file
                                              (graph) creation and update.
 =========================== ================ ================================
