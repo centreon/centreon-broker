@@ -41,13 +41,15 @@ int main() {
 
   // Parse perfdata string.
   p.parse_perfdata(
-      "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf;",
+      "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; infotraffic=18x;;;;",
       list);
 
   // Check parsing.
-  int retval(list.size() != 2);
-  perfdata& pd1(list.front());
-  perfdata& pd2(*(++list.begin()));
+  int retval(list.size() != 3);
+  QList<perfdata>::iterator it(list.begin());
+  perfdata& pd1(*(it++));
+  perfdata& pd2(*(it++));
+  perfdata& pd3(*(it++));
   retval |= (!isnan(pd1.critical())
              || !isinf(pd1.max())
              || !isnan(pd1.min())
@@ -63,6 +65,14 @@ int main() {
              || (pd2.unit() != "B/s")
              || (fabs(pd2.value() - 239765) > 0.000001)
              || (pd2.value_type() != perfdata::derive)
-             || (pd2.warning() != 5));
+             || (pd2.warning() != 5)
+             || !isnan(pd3.critical())
+             || !isnan(pd3.max())
+             || !isnan(pd3.min())
+             || (pd3.name() != "infotraffic")
+             || (pd3.unit() != "x")
+             || (fabs(pd3.value() - 18) > 0.000001)
+             || (pd3.value_type() != perfdata::gauge)
+             || !isnan(pd3.warning()));
   return (retval);
 }
