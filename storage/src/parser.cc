@@ -48,10 +48,16 @@ static inline double extract_double(
                        bool skip = true) {
   double retval;
   char* tmp;
-  retval = strtod(*str, &tmp);
-  *str = tmp;
-  if (skip && (**str == ';'))
-    ++*str;
+  if (isspace(**str))
+    retval = NAN;
+  else {
+    retval = strtod(*str, &tmp);
+    if (*str == tmp)
+      retval = NAN;
+    *str = tmp;
+    if (skip && (**str == ';'))
+      ++*str;
+  }
   return (retval);
 }
 
