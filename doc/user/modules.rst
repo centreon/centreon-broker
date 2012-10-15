@@ -116,17 +116,21 @@ intelligence on what to update and when is not done here.
 Configuration
 -------------
 
-============ ===========================================================
-Tag          Description
-============ ===========================================================
-metrics_path Path to where the metrics graphs should be written.
-status_path  Path to where the status graphs should be written.
-path         If using *rrdcached* software with local socket connection,
-             path to this socket.
-port         If using *rrdcached* software with a network connection,
-             port on which rrdcached listens. The RRD module onlys
-             supports connection with localhost *rrdcached*.
-============ ===========================================================
+============= ===========================================================
+Tag           Description
+============= ===========================================================
+metrics_path  Path to where the metrics graphs should be written.
+status_path   Path to where the status graphs should be written.
+path          If using *rrdcached* software with local socket connection,
+              path to this socket.
+port          If using *rrdcached* software with a network connection,
+              port on which rrdcached listens. The RRD module onlys
+              supports connection with localhost *rrdcached*.
+write_metrics Enable or disable metrics graph creation and update.
+              Enabled by default.
+write_status  Enable or disable status graph creation and update. Enabled
+              by default.
+============= ===========================================================
 
 Example
 -------
@@ -166,16 +170,26 @@ Insert data in Centreon Broker database.
 Configuration
 -------------
 
-=========== ======================================================
-Tag         Description
-=========== ======================================================
-db_type     Type of the database (mysql, postgresql, oracle, ...).
-db_host     Database host.
-db_port     Database port.
-db_user     Database user.
-db_password Password associated with *db_user*.
-db_name     Database name.
-=========== ======================================================
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_type                 Type of the database (mysql, postgresql,
+                        oracle, ...).
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+======================= ===============================================
 
 Example
 -------
@@ -211,20 +225,31 @@ insert them in a database. It also generate events for use by the
 Configuration
 -------------
 
-=========== ============================================================
-Tag         Description
-=========== ============================================================
-interval    Monitoring engine base interval (usually 60 seconds).
-length RRD  file length in seconds (ie. how much data your RRD file will
-            contain). For 180 days (recommanded), 15552000.
-db_type     Database type. One of db2, ibase, mysql, oracle, odbc,
-            postgresql, sqlite, tds.
-db_host     Database host.
-db_port     Database port.
-db_user     Database user.
-db_password Database password.
-db_name     Database name.
-=========== ============================================================
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+interval                Monitoring engine base interval (usually 60
+                        seconds).
+length RRD              file length in seconds (ie. how much data your
+                        RRD file will contain). For 180 days
+                        (recommanded), 15552000.
+db_type                 Database type. One of db2, ibase, mysql,
+                        oracle, odbc, postgresql, sqlite, tds.
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Database password.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+======================= ===============================================
 
 Example
 -------
