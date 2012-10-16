@@ -28,6 +28,7 @@
 #include <QThread>
 #include <QVariant>
 #include <QMutexLocker>
+#include <set>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -550,12 +551,12 @@ stream& stream::operator=(stream const& s) {
 void stream::_check_deleted_index() {
   // List of IDs to delete.
   std::list<unsigned int> index_to_delete;
-  std::list<unsigned int> metrics_to_delete;
+  std::set<unsigned int> metrics_to_delete;
 
   // Fetch index to delete.
   {
     QSqlQuery q(*_storage_db);
-    if (!q.exec("SELECT id FROM index_data WHERE trashed='1'")
+    if (!q.exec("SELECT id FROM index_data WHERE to_delete=1")
         || q.lastError().isValid())
       throw (broker::exceptions::msg()
              << "storage: could not get the list of index to delete");
@@ -582,15 +583,26 @@ void stream::_check_deleted_index() {
                << "storage: could not get metrics of index "
                << index_id);
       while (q.next())
-        metrics_to_delete.push_back(q.value(0).toUInt());
+        metrics_to_delete.insert(q.value(0).toUInt());
     }
+  }
+
+  // Search metrics to delete.
+  {
+    QSqlQuery q(*_storage_db);
+    if (!q.exec("SELECT metric_id FROM metrics WHERE to_delete=1")
+        || q.lastError().isValid())
+      throw (broker::exceptions::msg()
+             << "storage: could not get the list of metrics to delete");
+    while (q.next())
+      metrics_to_delete.insert(q.value(0).toUInt());
   }
 
   // Delete metrics.
   while (!metrics_to_delete.empty()) {
     // Current metric.
-    unsigned int metric_id(metrics_to_delete.front());
-    metrics_to_delete.pop_front();
+    unsigned int metric_id(*metrics_to_delete.begin());
+    metrics_to_delete.erase(metrics_to_delete.begin());
 
     // Delete associated data.
     {
