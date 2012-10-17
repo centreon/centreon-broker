@@ -129,6 +129,10 @@ else ()
 endif ()
 target_link_libraries("${NEB}" ${QT_LIBRARIES})
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
+get_property(NEB_MODULE_PATH
+  TARGET "${NEB}"
+  PROPERTY LOCATION)
+set(NEB_MODULE_PATH "${NEB_MODULE_PATH}" PARENT_SCOPE)
 install(TARGETS "${NEB}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )
@@ -168,6 +172,10 @@ else ()
   target_link_libraries("${CBMOD}" "nebbase" "rokerbase")
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
+get_property(CBMOD_PATH
+  TARGET "${CBMOD}"
+  PROPERTY LOCATION)
+set(CBMOD_PATH "${CBMOD_PATH}" PARENT_SCOPE)
 
 # Unit tests.
 if (WITH_TESTING)

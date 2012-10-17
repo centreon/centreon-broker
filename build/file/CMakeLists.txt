@@ -39,6 +39,10 @@ add_library("${FILE}" SHARED
 )
 target_link_libraries("${FILE}" ${QT_LIBRARIES})
 set_target_properties("${FILE}" PROPERTIES PREFIX "")
+get_property(FILE_MODULE_PATH
+  TARGET "${FILE}"
+  PROPERTY LOCATION)
+set(FILE_MODULE_PATH "${FILE_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
   set(TEST_LIBRARIES "${FILE}" "roker")

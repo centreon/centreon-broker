@@ -58,6 +58,10 @@ add_library("${NDO}" SHARED
 )
 target_link_libraries("${NDO}" ${QT_LIBRARIES})
 set_target_properties("${NDO}" PROPERTIES PREFIX "")
+get_property(NDO_MODULE_PATH
+  TARGET "${NDO}"
+  PROPERTY LOCATION)
+set(NDO_MODULE_PATH "${NDO_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)

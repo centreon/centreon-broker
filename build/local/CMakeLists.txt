@@ -41,6 +41,10 @@ add_library("${LOCAL}" SHARED
 )
 target_link_libraries("${LOCAL}" ${QT_LIBRARIES})
 set_target_properties("${LOCAL}" PROPERTIES PREFIX "")
+get_property(LOCAL_MODULE_PATH
+  TARGET "${LOCAL}"
+  PROPERTY LOCATION)
+set(LOCAL_MODULE_PATH "${LOCAL_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)

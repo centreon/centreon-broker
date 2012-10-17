@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,19 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NAMESPACE_HH
-#  define CCB_NAMESPACE_HH
+#ifndef TEST_GENERATE_HH
+#  define TEST_GENERATE_HH
 
-#  ifdef CCB_BEGIN
-#    undef CCB_BEGIN
-#  endif // CCB_BEGIN
-#  define CCB_BEGIN() namespace com { \
-                        namespace centreon { \
-                          namespace broker {
+#  include <list>
+#  include "com/centreon/engine/objects.hh"
 
-#  ifdef CCB_END
-#    undef CCB_END
-#  endif // CCB_END
-#  define CCB_END() } } }
+void free_hosts(std::list<host>& hosts);
+void free_services(std::list<service>& services);
+void generate_hosts(
+       std::list<host>& hosts,
+       unsigned int count);
+void generate_services(
+       std::list<service>& services,
+       std::list<host>& hosts,
+       unsigned int services_per_host);
 
-#endif // !CCB_NAMESPACE_HH
+#endif // !TEST_GENERATE_HH

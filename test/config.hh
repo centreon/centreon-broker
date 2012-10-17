@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,19 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NAMESPACE_HH
-#  define CCB_NAMESPACE_HH
+#ifndef TEST_CONFIG_HH
+#  define TEST_CONFIG_HH
 
-#  ifdef CCB_BEGIN
-#    undef CCB_BEGIN
-#  endif // CCB_BEGIN
-#  define CCB_BEGIN() namespace com { \
-                        namespace centreon { \
-                          namespace broker {
+#  include <list>
+#  include <QSqlDatabase>
+#  include "com/centreon/engine/objects.hh"
 
-#  ifdef CCB_END
-#    undef CCB_END
-#  endif // CCB_END
-#  define CCB_END() } } }
+void         config_db_close(char const* db_name);
+QSqlDatabase config_db_open(char const* db_name);
+void         config_remove(char const* path);
+void         config_write(
+               char const* path,
+               char const* more_directives = NULL,
+               std::list<host>* hosts = NULL,
+               std::list<service>* services = NULL);
 
-#endif // !CCB_NAMESPACE_HH
+#endif // !TEST_CONFIG_HH

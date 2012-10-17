@@ -39,6 +39,10 @@ add_library("${COMPRESSION}" SHARED
 )
 target_link_libraries("${COMPRESSION}" ${QT_LIBRARIES})
 set_target_properties("${COMPRESSION}" PROPERTIES PREFIX "")
+get_property(COMPRESSION_MODULE_PATH
+  TARGET "${COMPRESSION}"
+  PROPERTY LOCATION)
+set(COMPRESSION_MODULE_PATH "${COMPRESSION_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/file/inc")

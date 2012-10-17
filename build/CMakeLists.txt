@@ -154,6 +154,36 @@ if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
   endif ()
 endif ()
 
+# Monitoring engine (for testing).
+if (WITH_MONITORING_ENGINE)
+  set(MONITORING_ENGINE "${WITH_MONITORING_ENGINE}")
+endif ()
+
+# DB parameters.
+if (WITH_DB_TYPE)
+  set(DB_TYPE "${WITH_DB_TYPE}")
+  if (WITH_DB_HOST)
+    set(DB_HOST "${WITH_DB_HOST}")
+  else ()
+    set(DB_HOST "localhost")
+  endif ()
+  if (WITH_DB_PORT)
+    set(DB_PORT "${WITH_DB_PORT}")
+  else ()
+    set(DB_PORT "3306")
+  endif ()
+  if (WITH_DB_USER)
+    set(DB_USER "${WITH_DB_USER}")
+  else ()
+    message(FATAL_ERROR "WITH_DB_USER is not specified.")
+  endif ()
+  if (WITH_DB_PASSWORD)
+    set(DB_PASSWORD "${WITH_DB_PASSWORD}")
+  else ()
+    set(DB_PASSWORD "")
+  endif ()
+endif ()
+
 #
 # Targets.
 #
@@ -327,6 +357,38 @@ add_subdirectory("tcp")
 
 # NDO module.
 add_subdirectory("ndo")
+
+# Configure files.
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/engine_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/engine_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
+  "${PROJECT_SOURCE_DIR}/test/vars.hh")
+
+# Test library.
+include_directories("${PROJECT_SOURCE_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc/")
+set(TEST_LIB "brokertest")
+add_library("${TEST_LIB}" STATIC
+  # Sources.
+  "${PROJECT_SOURCE_DIR}/test/config.cc"
+  "${PROJECT_SOURCE_DIR}/test/generate.cc"
+  # Headers.
+  "${PROJECT_SOURCE_DIR}/test/config.hh"
+  "${PROJECT_SOURCE_DIR}/test/generate.hh"
+)
+target_link_libraries("${TEST_LIB}" "roker")
+
+# Functional tests.
+if (DB_TYPE AND MONITORING_ENGINE)
+  # Engine to SQL.
+  set(TEST_NAME "running_engine_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/engine_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 #
 # Install stuff.

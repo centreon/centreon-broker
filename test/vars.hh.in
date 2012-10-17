@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,19 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NAMESPACE_HH
-#  define CCB_NAMESPACE_HH
+#ifndef TEST_VARS_HH
+#  define TEST_VARS_HH
 
-#  ifdef CCB_BEGIN
-#    undef CCB_BEGIN
-#  endif // CCB_BEGIN
-#  define CCB_BEGIN() namespace com { \
-                        namespace centreon { \
-                          namespace broker {
+// Paths.
+#  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
+#  define CBMOD_PATH "@CBMOD_PATH@"
 
-#  ifdef CCB_END
-#    undef CCB_END
-#  endif // CCB_END
-#  define CCB_END() } } }
+// DB info.
+#  define DB_TYPE "@DB_TYPE@"
+#  define DB_HOST "@DB_HOST@"
+#  define DB_PORT "@DB_PORT@"
+#  define DB_USER "@DB_USER@"
+#  define DB_PASSWORD "@DB_PASSWORD@"
 
-#endif // !CCB_NAMESPACE_HH
+#endif // !TEST_VARS_HH

@@ -69,6 +69,10 @@ add_library("${RRD}" SHARED
 )
 target_link_libraries("${RRD}" ${QT_LIBRARIES})
 set_target_properties("${RRD}" PROPERTIES PREFIX "")
+get_property(RRD_MODULE_PATH
+  TARGET "${RRD}"
+  PROPERTY LOCATION)
+set(RRD_MODULE_PATH "${RRD_MODULE_PATH}" PARENT_SCOPE)
 
 # Compile with librrd flags.
 if (LIBRRD_CFLAGS)
