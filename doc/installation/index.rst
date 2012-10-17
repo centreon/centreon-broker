@@ -262,6 +262,12 @@ At this step, the software will check for existence and usability of the
 rerequisites. If one cannot be found, an appropriate error message will
 be printed. Otherwise an installation summary will be printed.
 
+.. NOTE::
+  If you need to change the options you used to compile your software,
+  you might want to remove the *CMakeLists.txt* file that is in the
+  *build* directory. This will remove cache entries that might have been
+  computed during the last configuration step.
+
 Compilation
 -----------
 
