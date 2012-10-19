@@ -33,7 +33,7 @@
 
 using namespace com::centreon::broker;
 
-#define DB_NAME "broker_engine_to_sql"
+#define DB_NAME "broker_monitoring_to_sql"
 
 /**
  *  Check that monitoring is properly inserted in SQL database.
@@ -61,7 +61,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/engine_to_sql.xml\n";
+          << PROJECT_SOURCE_DIR << "/test/cfg/monitoring_to_sql.xml\n";
       cbmod_loading = oss.str();
     }
 

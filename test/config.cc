@@ -229,6 +229,9 @@ void config_write(
       << "cfg_file=" << services_file << "\n"
       << "cfg_file=" << misc_file << "\n";
 
+  // Additional configuration.
+  ofs << MONITORING_ENGINE_ADDITIONAL;
+
   // Additional directives.
   if (more_directives)
     ofs << more_directives << "\n";

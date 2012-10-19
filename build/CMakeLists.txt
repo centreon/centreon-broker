@@ -156,7 +156,14 @@ endif ()
 
 # Monitoring engine (for testing).
 if (WITH_MONITORING_ENGINE)
+  set(MONITORING_ENGINE_ADDITIONAL "")
   set(MONITORING_ENGINE "${WITH_MONITORING_ENGINE}")
+  if (WITH_MONITORING_ENGINE_MODULES)
+    foreach (MODULE IN LISTS WITH_MONITORING_ENGINE_MODULES)
+      set(MONITORING_ENGINE_ADDITIONAL
+          "${MONITORING_ENGINE_ADDITIONAL}broker_module=${MODULE}\\n")
+    endforeach ()
+  endif ()
 endif ()
 
 # DB parameters.
@@ -361,8 +368,10 @@ add_subdirectory("ndo")
 # Configure files.
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/engine_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/engine_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
   "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
@@ -374,20 +383,28 @@ add_library("${TEST_LIB}" STATIC
   # Sources.
   "${PROJECT_SOURCE_DIR}/test/config.cc"
   "${PROJECT_SOURCE_DIR}/test/engine.cc"
+  "${PROJECT_SOURCE_DIR}/test/external_command.cc"
   "${PROJECT_SOURCE_DIR}/test/generate.cc"
   # Headers.
   "${PROJECT_SOURCE_DIR}/test/config.hh"
   "${PROJECT_SOURCE_DIR}/test/engine.hh"
+  "${PROJECT_SOURCE_DIR}/test/external_command.hh"
   "${PROJECT_SOURCE_DIR}/test/generate.hh"
 )
 target_link_libraries("${TEST_LIB}" "roker")
 
 # Functional tests.
-if (DB_TYPE AND MONITORING_ENGINE)
-  # Engine to SQL.
-  set(TEST_NAME "running_engine_to_sql")
+if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
+  # Monitoring to SQL.
+  set(TEST_NAME "running_monitoring_to_sql")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/engine_to_sql.cc")
+    "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Comments to SQL.
+  set(TEST_NAME "running_comments_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/comments_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()

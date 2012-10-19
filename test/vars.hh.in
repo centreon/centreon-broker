@@ -23,7 +23,10 @@
 // Paths.
 #  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
 #  define CBMOD_PATH "@CBMOD_PATH@"
+
+// Monitoring engine.
 #  define MONITORING_ENGINE "@MONITORING_ENGINE@"
+#  define MONITORING_ENGINE_ADDITIONAL "@MONITORING_ENGINE_ADDITIONAL@"
 
 // DB info.
 #  define DB_TYPE "@DB_TYPE@"

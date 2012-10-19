@@ -1761,7 +1761,8 @@ stream::stream(
     {
       QMutexLocker lock(&global_lock);
       if (!_db->open())
-        throw (exceptions::msg() << "SQL: could not open SQL database");
+        throw (exceptions::msg() << "SQL: could not open SQL database: "
+               << _db->lastError().text());
     }
 
     // Check that replication is OK.
@@ -1853,7 +1854,8 @@ stream::stream(stream const& s) : io::stream(s) {
       QMutexLocker lock(&global_lock);
       // Open database.
       if (!_db->open())
-        throw (exceptions::msg() << "SQL: could not open SQL database");
+        throw (exceptions::msg() << "SQL: could not open SQL database: "
+               << _db->lastError().text());
     }
 
     // Prepare queries.

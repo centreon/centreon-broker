@@ -22,6 +22,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_engine_to_sql</db_name>
+    <db_name>broker_comments_to_sql</db_name>
+    <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>
