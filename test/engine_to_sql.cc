@@ -18,12 +18,20 @@
 */
 
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
+#include <QSqlError>
+#include <QSqlQuery>
 #include <QTemporaryFile>
+#include <QVariant>
+#include <sstream>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/generate.hh"
 #include "test/vars.hh"
+
+using namespace com::centreon::broker;
 
 #define DB_NAME "broker_engine_to_sql"
 
@@ -70,6 +78,74 @@ int main() {
     daemon.set_config_file(engine_config_file);
     daemon.start();
     sleep(20);
+
+    // Base time.
+    time_t now(time(NULL));
+
+    // Check 'instances' table.
+    {
+      std::ostringstream query;
+      query << "SELECT last_alive, name"
+            << "  FROM instances"
+            << "  WHERE instance_id=42";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg() << "cannot read instances from DB: "
+               << q.lastError().text().toStdString().c_str());
+      if (!q.next()
+          || (q.value(0).toUInt() + 30 < now)
+          || (q.value(1).toString() != "MyBroker")
+          || q.next())
+        throw (exceptions::msg() << "invalid entry in 'instances'");
+    }
+
+    // Check 'hosts' table.
+    {
+      std::ostringstream query;
+      query << "SELECT host_id, name, last_check"
+            << "  FROM hosts"
+            << "  ORDER BY host_id ASC";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg() << "cannot read hosts from DB: "
+               << q.lastError().text().toStdString().c_str());
+      for (unsigned int i(1); i <= 10; ++i) {
+        if (!q.next()
+            || (q.value(0).toUInt() != i)
+            || (q.value(1).toUInt() != i)
+            || (q.value(2).toUInt() + 30 < now))
+          throw (exceptions::msg() << "invalid entry in 'hosts' ("
+                 << i << ")");
+      }
+      if (q.next())
+        throw (exceptions::msg() << "too much entries in 'hosts'");
+    }
+
+    // Check 'services' table.
+    {
+      std::ostringstream query;
+      query << "SELECT host_id, service_id, description, last_check"
+            << "  FROM services"
+            << "  ORDER BY host_id ASC, service_id ASC";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg() << "cannot read services from DB: "
+               << q.lastError().text().toStdString().c_str());
+      for (unsigned int i(1); i <= 10 * 5; ++i) {
+        if (!q.next()
+            || (q.value(0).toUInt() != ((i - 1) / 5 + 1))
+            || (q.value(1).toUInt() != i)
+            || (q.value(2).toUInt() != i)
+            || (q.value(3).toUInt() + 30 < now))
+          throw (exceptions::msg() << "invalid entry in 'services' ("
+                 << i << ")");
+      }
+      if (q.next())
+        throw (exceptions::msg() << "too much entries in 'services'");
+    }
+
+    // Success.
+    retval = EXIT_SUCCESS;
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
@@ -80,8 +156,8 @@ int main() {
 
   // Cleanup.
   daemon.stop();
-  //config_remove(engine_config_path.c_str());
-  //config_db_close(DB_NAME);
+  config_remove(engine_config_path.c_str());
+  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

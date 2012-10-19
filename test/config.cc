@@ -248,6 +248,7 @@ void config_write(
       << "  host_name default_host\n"
       << "  alias default_host\n"
       << "  address localhost\n"
+      << "  check_command default_command\n"
       << "  max_check_attempts 5\n"
       << "  check_period default_timeperiod\n"
       << "  contacts default_contact\n"
@@ -264,6 +265,9 @@ void config_write(
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
+          << "  check_command " << (it->host_check_command
+                                    ? it->host_check_command
+                                    : "default_command") << "\n"
           << "  max_check_attempts " << ((it->max_attempts > 0)
                                          ? it->max_attempts
                                          : 5) << "\n"

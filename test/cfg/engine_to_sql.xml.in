@@ -2,6 +2,18 @@
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
+  <instance_name>MyBroker</instance_name>
+  <!--
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
   <output>
     <name>EngineToSQLUnitTest</name>
     <type>sql</type>
