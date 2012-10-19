@@ -373,9 +373,11 @@ set(TEST_LIB "brokertest")
 add_library("${TEST_LIB}" STATIC
   # Sources.
   "${PROJECT_SOURCE_DIR}/test/config.cc"
+  "${PROJECT_SOURCE_DIR}/test/engine.cc"
   "${PROJECT_SOURCE_DIR}/test/generate.cc"
   # Headers.
   "${PROJECT_SOURCE_DIR}/test/config.hh"
+  "${PROJECT_SOURCE_DIR}/test/engine.hh"
   "${PROJECT_SOURCE_DIR}/test/generate.hh"
 )
 target_link_libraries("${TEST_LIB}" "roker")

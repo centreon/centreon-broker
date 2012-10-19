@@ -55,6 +55,8 @@ namespace                         config {
     QList<logger> const&          loggers() const throw ();
     QString const&                module_directory() const throw ();
     void                          module_directory(QString const& dir);
+    QList<QString>&               module_list() throw ();
+    QList<QString> const&         module_list() const throw ();
     QList<endpoint>&              outputs() throw ();
     QList<endpoint> const&        outputs() const throw ();
     QMap<QString, QString>&       params() throw ();
@@ -68,6 +70,7 @@ namespace                         config {
     bool                          _log_thread_id;
     QList<logger>                 _loggers;
     QString                       _module_dir;
+    QList<QString>                _module_list;
     QList<endpoint>               _outputs;
     QMap<QString, QString>        _params;
   };

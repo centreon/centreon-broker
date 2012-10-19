@@ -17,19 +17,32 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TEST_VARS_HH
-#  define TEST_VARS_HH
+#ifndef TEST_ENGINE_HH
+#  define TEST_ENGINE_HH
 
-// Paths.
-#  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
-#  define CBMOD_PATH "@CBMOD_PATH@"
-#  define MONITORING_ENGINE "@MONITORING_ENGINE@"
+#  include <QProcess>
+#  include <string>
 
-// DB info.
-#  define DB_TYPE "@DB_TYPE@"
-#  define DB_HOST "@DB_HOST@"
-#  define DB_PORT "@DB_PORT@"
-#  define DB_USER "@DB_USER@"
-#  define DB_PASSWORD "@DB_PASSWORD@"
+/**
+ *  @class engine engine.hh "test/engine.hh"
+ *  @brief Monitoring engine.
+ *
+ *  Some Nagios-compatible monitoring engine such as Centreon Engine.
+ */
+class         engine {
+public:
+              engine();
+              ~engine();
+  void        set_config_file(std::string const& config_file);
+  void        start();
+  void        stop();
 
-#endif // !TEST_VARS_HH
+private:
+              engine(engine const& right);
+  engine&     operator=(engine const& right);
+
+  std::string _config_file;
+  QProcess    _engine;
+};
+
+#endif // !TEST_ENGINE_HH

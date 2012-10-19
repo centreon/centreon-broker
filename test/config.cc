@@ -160,6 +160,13 @@ void config_remove(char const* path) {
     ::remove(oss.str().c_str());
   }
 
+  // Misc file.
+  {
+    std::ostringstream oss;
+    oss << path << "/misc.cfg";
+    ::remove(oss.str().c_str());
+  }
+
   // Remove directory.
   rmdir(path);
 
@@ -194,6 +201,10 @@ void config_write(
       throw (exceptions::msg() << "cannot open configuration file '"
              << path << "'");
   }
+
+  // Base configuration.
+  ofs << "interval_length=1\n"
+      << "log_file=monitoring_engine.log\n";
 
   // Subconfiguration files.
   std::string hosts_file;
@@ -249,6 +260,7 @@ void config_write(
          ++it) {
       ofs << "define host{\n"
           << "  host_name " << it->name << "\n"
+          << "  _HOST_ID " << it->name << "\n"
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
@@ -309,6 +321,7 @@ void config_write(
          ++it) {
       ofs << "define service{\n"
           << "  service_description " << it->description << "\n"
+          << "  _SERVICE_ID " << it->description << "\n"
           << "  host_name " << it->host_name << "\n"
           << "  check_command "
           << (it->service_check_command

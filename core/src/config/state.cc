@@ -56,7 +56,8 @@ state::~state() {}
  *  @return This object.
  */
 state& state::operator=(state const& s) {
-  _internal_copy(s);
+  if (this != &s)
+    _internal_copy(s);
   return (*this);
 }
 
@@ -69,6 +70,7 @@ void state::clear() {
   _log_thread_id = false;
   _loggers.clear();
   _module_dir.clear();
+  _module_list.clear();
   _outputs.clear();
   _params.clear();
   return ;
@@ -168,6 +170,24 @@ void state::module_directory(QString const& dir) {
 }
 
 /**
+ *  Get the module list.
+ *
+ *  @return Modifiable module list.
+ */
+QList<QString>& state::module_list() throw () {
+  return (_module_list);
+}
+
+/**
+ *  Get the module list.
+ *
+ *  @return Const module list.
+ */
+QList<QString> const& state::module_list() const throw () {
+  return (_module_list);
+}
+
+/**
  *  Get the list of outputs.
  *
  *  @return Output list.
@@ -219,6 +239,7 @@ void state::_internal_copy(state const& s) {
   _log_thread_id = s._log_thread_id;
   _loggers = s._loggers;
   _module_dir = s._module_dir;
+  _module_list = s._module_list;
   _outputs = s._outputs;
   _params = s._params;
   return ;

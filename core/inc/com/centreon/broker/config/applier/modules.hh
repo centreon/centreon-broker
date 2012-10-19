@@ -20,6 +20,7 @@
 #ifndef CCB_CONFIG_APPLIER_MODULES_HH
 #  define CCB_CONFIG_APPLIER_MODULES_HH
 
+#  include <QList>
 #  include <QString>
 #  include "com/centreon/broker/modules/loader.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -41,6 +42,7 @@ namespace                     config {
 
                               ~modules();
       void                    apply(
+                                QList<QString> const& module_list,
                                 QString const& module_dir,
                                 void const* arg = NULL);
       iterator                begin();

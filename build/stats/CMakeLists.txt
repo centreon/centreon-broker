@@ -41,6 +41,10 @@ add_library("${STATS}" SHARED
 )
 target_link_libraries("${STATS}" ${QT_LIBRARIES})
 set_target_properties("${STATS}" PROPERTIES PREFIX "")
+get_property(STATS_MODULE_PATH
+  TARGET "${STATS}"
+  PROPERTY LOCATION)
+set(STATS_MODULE_PATH "${STATS_MODULE_PATH}" PARENT_SCOPE)
 
 # Install rule.
 install(TARGETS "${STATS}"

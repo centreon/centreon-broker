@@ -21,6 +21,7 @@
 #include <iostream>
 #include <QTemporaryFile>
 #include "test/config.hh"
+#include "test/engine.hh"
 #include "test/generate.hh"
 #include "test/vars.hh"
 
@@ -38,7 +39,8 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
-  std::string engine_config_file(tmpnam(NULL));
+  std::string engine_config_path(tmpnam(NULL));
+  engine daemon;
 
   try {
     // Prepare database.
@@ -57,10 +59,17 @@ int main() {
 
     // Generate monitoring engine configuration files.
     config_write(
-      engine_config_file.c_str(),
+      engine_config_path.c_str(),
       cbmod_loading.c_str(),
       &hosts,
       &services);
+
+    // Start monitoring engine.
+    std::string engine_config_file(engine_config_path);
+    engine_config_file.append("/nagios.cfg");
+    daemon.set_config_file(engine_config_file);
+    daemon.start();
+    sleep(20);
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
@@ -70,8 +79,9 @@ int main() {
   }
 
   // Cleanup.
-  config_db_close(DB_NAME);
-  //::remove(engine_config_file.c_str());
+  daemon.stop();
+  //config_remove(engine_config_path.c_str());
+  //config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

@@ -44,10 +44,23 @@ modules::~modules() {
 /**
  *  Apply a module configuration.
  *
- *  @param[in] module_dir Module directory.
- *  @param[in] arg        Module argument.
+ *  @param[in] module_list Module list.
+ *  @param[in] module_dir  Module directory.
+ *  @param[in] arg         Module argument.
  */
-void modules::apply(QString const& module_dir, void const* arg) {
+void modules::apply(
+                QList<QString> const& module_list,
+                QString const& module_dir,
+                void const* arg) {
+  for (QList<QString>::const_iterator
+         it(module_list.begin()),
+         end(module_list.end());
+       it != end;
+       ++it) {
+    logging::config(logging::high)
+      << "module applier: loading module '" << *it << "'";
+    _loader.load_file(*it, arg);
+  }
   if (!module_dir.isEmpty()) {
     logging::config(logging::high)
       << "module applier: loading directory '" << module_dir << "'";

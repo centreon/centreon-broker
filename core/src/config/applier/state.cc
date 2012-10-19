@@ -66,7 +66,10 @@ void state::apply(com::centreon::broker::config::state const& s,
     s.log_thread_id());
 
   // Apply modules configuration.
-  modules::instance().apply(s.module_directory(), &s);
+  modules::instance().apply(
+                        s.module_list(),
+                        s.module_directory(),
+                        &s);
 
   // Apply input and output configuration.
   endpoint::instance().apply(s.inputs(), s.outputs());
