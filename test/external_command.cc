@@ -77,7 +77,7 @@ void external_command::execute(std::string const& query) {
   if (ofs.fail())
     throw (exceptions::msg() << "cannot open command file '"
            << _file.c_str() << "'");
-  ofs << query << "\n";
+  ofs << "[" << time(NULL) << "] " << query << "\n";
   ofs.close();
   return ;
 }

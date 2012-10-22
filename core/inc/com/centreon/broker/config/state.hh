@@ -51,6 +51,8 @@ namespace                         config {
     QList<endpoint> const&        inputs() const throw ();
     void                          log_thread_id(bool log_id) throw ();
     bool                          log_thread_id() const throw ();
+    void                          log_timestamp(bool log_time) throw ();
+    bool                          log_timestamp() const throw ();
     QList<logger>&                loggers() throw ();
     QList<logger> const&          loggers() const throw ();
     QString const&                module_directory() const throw ();
@@ -68,6 +70,7 @@ namespace                         config {
     bool                          _flush_logs;
     QList<endpoint>               _inputs;
     bool                          _log_thread_id;
+    bool                          _log_timestamp;
     QList<logger>                 _loggers;
     QString                       _module_dir;
     QList<QString>                _module_list;

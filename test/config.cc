@@ -203,8 +203,13 @@ void config_write(
   }
 
   // Base configuration.
-  ofs << "interval_length=1\n"
-      << "log_file=monitoring_engine.log\n";
+  ofs << "check_result_reaper_frequency=1\n"
+      << "interval_length=1\n"
+      << "log_file=monitoring_engine.log\n"
+      << "max_service_check_spread=1\n"
+      << "max_concurrent_checks=200\n"
+      << "service_inter_check_delay_method=s\n"
+      << "sleep_time=0.01\n";
 
   // Subconfiguration files.
   std::string hosts_file;

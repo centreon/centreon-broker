@@ -260,6 +260,10 @@ void parser::parse(QString const& file, state& s) {
         QString val(elem.text());
         s.log_thread_id((val == "yes") || val.toInt());
       }
+      else if (name == "log_timestamp") {
+        QString val(elem.text());
+        s.log_timestamp((val == "yes") || val.toInt());
+      }
       else if (name == "module")
         s.module_list().push_back(elem.text());
       else if (name == "module_directory")

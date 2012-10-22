@@ -77,7 +77,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(20);
+    sleep(50);
 
     // Base time.
     time_t now(time(NULL));

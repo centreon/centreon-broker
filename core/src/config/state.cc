@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::config;
 
@@ -68,6 +69,8 @@ void state::clear() {
   _flush_logs = true;
   _inputs.clear();
   _log_thread_id = false;
+  _log_timestamp
+    = com::centreon::broker::logging::file::with_timestamp();
   _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
@@ -139,6 +142,25 @@ void state::log_thread_id(bool log_id) throw () {
  */
 bool state::log_thread_id() const throw () {
   return (_log_thread_id);
+}
+
+/**
+ *  Set whether or not timestamp logging should be enabled.
+ *
+ *  @param[in] log_time true to log timestamp.
+ */
+void state::log_timestamp(bool log_time) throw () {
+  _log_timestamp = log_time;
+  return ;
+}
+
+/**
+ *  Get whether or not to log timestamp.
+ *
+ *  @return true if timestamp must be logged.
+ */
+bool state::log_timestamp() const throw () {
+  return (_log_timestamp);
 }
 
 /**
@@ -237,6 +259,7 @@ QMap<QString, QString> const& state::params() const throw () {
 void state::_internal_copy(state const& s) {
   _inputs = s._inputs;
   _log_thread_id = s._log_thread_id;
+  _log_timestamp = s._log_timestamp;
   _loggers = s._loggers;
   _module_dir = s._module_dir;
   _module_list = s._module_list;

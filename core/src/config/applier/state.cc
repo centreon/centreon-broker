@@ -52,8 +52,9 @@ state::~state() {}
  *  @param[in] s       State to apply.
  *  @param[in] run_mux Set to true if multiplexing must be run.
  */
-void state::apply(com::centreon::broker::config::state const& s,
-                  bool run_mux) {
+void state::apply(
+              com::centreon::broker::config::state const& s,
+              bool run_mux) {
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
@@ -64,6 +65,10 @@ void state::apply(com::centreon::broker::config::state const& s,
   // Enable or not thread ID logging.
   com::centreon::broker::logging::file::with_thread_id(
     s.log_thread_id());
+
+  // Enable or not timestamp logging.
+  com::centreon::broker::logging::file::with_timestamp(
+    s.log_timestamp());
 
   // Apply modules configuration.
   modules::instance().apply(
