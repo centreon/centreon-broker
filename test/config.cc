@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <QSqlError>
