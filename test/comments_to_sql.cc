@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QTemporaryFile>
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"

@@ -372,6 +372,8 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
   "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
@@ -405,6 +407,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_comments_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/comments_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Downtimes to SQL.
+  set(TEST_NAME "running_downtimes_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/downtimes_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
