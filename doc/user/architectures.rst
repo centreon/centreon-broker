@@ -20,8 +20,8 @@ Centreon Broker Configuration
 In this setup, Centreon Broker only needs to be configured on the single
 central poller.
 
-In Centreon Web, go to "Configuration" -> "Centreon" ->
-"Centreon Broker" -> Configuration.
+In Centreon Web, go to *Configuration -> Centreon ->
+Centreon Broker -> Configuration*.
 Click the add button and enter the following informations:
 
 ==================== ==================
@@ -49,7 +49,7 @@ the following characteristics:
 Engine Configuration
 --------------------
 
-In Centreon Web, go to *Configuration -> Nagios -> nagios.cfg* and enter
+In Centreon Web, go to *Configuration -> Nagios -> main.cfg* and enter
 the main configuration file. In the *Data* tab, change the
 *Multiple Broker Module* line to
 ``/path/to/your/cbmod.so /path/to/your/central-module.xml``.
@@ -126,9 +126,7 @@ Click the add button and enter the following information:
 **Requeste**         Central
 ==================== ==================
 
-
 .. note::
-
    if using startup scripts (SysV or Upstart), you should check
    that the config file name you entered above match the
    script. Otherwise, strange behavior might occur.
@@ -177,4 +175,5 @@ Application
 -----------
 
 Save the file, export configuration files and restart your poller
-through Centreon Web interface (*Configuration -> Nagios* menu).
+through Centreon Web interface (*Configuration ->
+Monitoring Engine* menu).

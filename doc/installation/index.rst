@@ -53,8 +53,8 @@ To build Centreon Broker, you will need the following external
 dependencies:
 
 * a C++ compilation environment.
-* CMake **(>=2.8)**, a cross-platform build system.
-* the Qt **(>=4.5)** framework with QtCore, QtSql and QtXml modules.
+* CMake **(>= 2.8)**, a cross-platform build system.
+* the Qt **(>= 4.5)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
 
 This program is compatible only with Unix-like platforms (Linux,
@@ -220,27 +220,27 @@ CMake's variable system. Variables can be set like this::
 
 Here's the list of variables available and their description:
 
-=================== ==================================================== ======================================
+=================== ==================================================== ============================================
 Variable            Description                                          Default value
-=================== ==================================================== ======================================
+=================== ==================================================== ============================================
 WITH_DAEMONS        Set a list of Centreon Broker sysv start up script.  OFF
 WITH_GROUP          Set the group for Centreon Broker installation.      root
-WITH_PREFIX         Base directory for Centreon Broker installation. If  ${WITH_PREFIX}/bin
+WITH_PREFIX         Base directory for Centreon Broker installation. If  ``${WITH_PREFIX}/bin``
                     other prefixes are expressed as relative paths, they
                     are relative to this path. /usr/local
-WITH_PREFIX_BIN     Path in which binaries will be installed.            ${WITH_PREFIX}/etc
+WITH_PREFIX_BIN     Path in which binaries will be installed.            ``${WITH_PREFIX}/etc``
 WITH_PREFIX_CONF    Define specific directory for Centreon Engine
                     configuration.
-WITH_PREFIX_INC     Define specific directory for Centreon Broker        ${WITH_PREFIX}/include/centreon-broker
+WITH_PREFIX_INC     Define specific directory for Centreon Broker        ``${WITH_PREFIX}/include/centreon-broker``
                     headers.
-WITH_PREFIX_LIB     Where shared objects (like cbmod.so) will be         ${WITH_PREFIX}/lib
+WITH_PREFIX_LIB     Where shared objects (like cbmod.so) will be         ``${WITH_PREFIX}/lib``
                     installed.
-WITH_PREFIX_MODULES Where Centreon Broker modules will be installed.     ${WITH_PREFIX_LIB}/centreon-broker
-WITH_STARTUP_DIR    Define the startup directory.                        Generaly in /etc/init.d or /etc/init
+WITH_PREFIX_MODULES Where Centreon Broker modules will be installed.     ``${WITH_PREFIX_LIB}/centreon-broker``
+WITH_STARTUP_DIR    Define the startup directory.                        Generaly in ``/etc/init.d`` or ``/etc/init``
 WITH_STARTUP_SCRIPT Generate and install startup script.                 auto detection
 WITH_TESTING        Enable build of unit tests. Disabled by default.     OFF
 WITH_USER           Set the user for Centreon Broker installation.       root
-=================== ==================================================== ======================================
+=================== ==================================================== ============================================
 
 Example::
 
@@ -262,7 +262,7 @@ At this step, the software will check for existence and usability of the
 rerequisites. If one cannot be found, an appropriate error message will
 be printed. Otherwise an installation summary will be printed.
 
-.. NOTE::
+.. note::
   If you need to change the options you used to compile your software,
   you might want to remove the *CMakeLists.txt* file that is in the
   *build* directory. This will remove cache entries that might have been
@@ -293,19 +293,19 @@ Check-Up
 After a successful installation, you should check for the existence of
 some of the following files.
 
-======================================== ===========================
-File                                     Description
-======================================== ===========================
-${WITH_PREFIX_BIN}/cbd                   Centreon Broker daemon.
-${WITH_PREFIX_LIB}/cbmod.so              Centreon Broker NEB module.
-${WITH_PREFIX_MODULES}/10-neb.so         NEB module.
-${WITH_PREFIX_MODULES}/20-correlation.so Correlation module.
-${WITH_PREFIX_MODULES}/20-storage.so     Storage module.
-${WITH_PREFIX_MODULES}/50-file.so        File module.
-${WITH_PREFIX_MODULES}/50-local.so       Local module.
-${WITH_PREFIX_MODULES}/50-tcp.so         TCP module.
-${WITH_PREFIX_MODULES}/60-compression.so Compression module.
-${WITH_PREFIX_MODULES}/70-rrd.so         RRD module.
-${WITH_PREFIX_MODULES}/80-ndo.so         NDO module.
-${WITH_PREFIX_MODULES}/80-sql.so         SQL module.
-======================================== ===========================
+============================================ ===========================
+File                                         Description
+============================================ ===========================
+``${WITH_PREFIX_BIN}/cbd``                   Centreon Broker daemon.
+``${WITH_PREFIX_LIB}/cbmod.so``              Centreon Broker NEB module.
+``${WITH_PREFIX_MODULES}/10-neb.so``         NEB module.
+``${WITH_PREFIX_MODULES}/20-correlation.so`` Correlation module.
+``${WITH_PREFIX_MODULES}/20-storage.so``     Storage module.
+``${WITH_PREFIX_MODULES}/50-file.so``        File module.
+``${WITH_PREFIX_MODULES}/50-local.so``       Local module.
+``${WITH_PREFIX_MODULES}/50-tcp.so``         TCP module.
+``${WITH_PREFIX_MODULES}/60-compression.so`` Compression module.
+``${WITH_PREFIX_MODULES}/70-rrd.so``         RRD module.
+``${WITH_PREFIX_MODULES}/80-ndo.so``         NDO module.
+``${WITH_PREFIX_MODULES}/80-sql.so``         SQL module.
+============================================ ===========================
