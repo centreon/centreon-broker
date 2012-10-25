@@ -405,19 +405,26 @@ void correlator::update() {
  *  @param[inout] e Event to process.
  */
 void correlator::write(misc::shared_ptr<io::data> const& e) {
+  static QString const ack_type("com::centreon::broker::neb::acknowledgement");
+  static QString const host_type("com::centreon::broker::neb::host");
+  static QString const host_status_type("com::centreon::broker::neb::host_status");
+  static QString const log_entry_type("com::centreon::broker::neb::log_entry");
+  static QString const service_type("com::centreon::broker::neb::service");
+  static QString const service_status_type("com::centreon::broker::neb::service_status");
+
   try {
     // Process event.
-    if ("com::centreon::broker::neb::host" == e->type())
+    if (e->type() == host_type)
       _correlate_host_status(e);
-    else if ("com::centreon::broker::neb::host_status" == e->type())
+    else if (e->type() == host_status_type)
       _correlate_host_status(e);
-    else if ("com::centreon::broker::neb::service" == e->type())
+    else if (e->type() == service_type)
       _correlate_service_status(e);
-    else if ("com::centreon::broker::neb::service_status" == e->type())
+    else if (e->type() == service_status_type)
       _correlate_service_status(e);
-    else if ("com::centreon::broker::neb::log_entry" == e->type())
+    else if (e->type() == log_entry_type)
       _correlate_log(e);
-    else if ("com::centreon::broker::neb::acknowledgement" == e->type())
+    else if (e->type() == ack_type)
       _correlate_acknowledgement(e);
 
     // Dump retention file.
