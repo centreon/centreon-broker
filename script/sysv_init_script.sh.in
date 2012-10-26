@@ -105,7 +105,6 @@ start() {
     else
       echo -n "${DAEMON_NAME} already running"
       broker_log_failure "cbd startup"
-      echo
       return 1
     fi
   fi
@@ -120,7 +119,6 @@ start() {
   else
     broker_log_failure "cbd startup"
   fi
-  echo
   return ${RETVAL}
 }
 
@@ -129,9 +127,11 @@ stop() {
   echo -n "Stopping ${DAEMON_NAME}: "
   killproc -p "${pidfile}" -d ${STOP_TIMEOUT} "$CBD"
   RETVAL=$?
-  echo
   if [ ${RETVAL} = 0 ] ; then
     rm -f "${pidfile}"
+    broker_log_success "cbd shutdown"
+  else
+    broker_log_failure "cbd shutdown"
   fi
 }
 
