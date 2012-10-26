@@ -125,7 +125,11 @@ start() {
 # Stop cbd.
 stop() {
   echo -n "Stopping ${DAEMON_NAME}: "
-  killproc -p "${pidfile}" -d ${STOP_TIMEOUT} "$CBD"
+  if [ "$distribution" = "redhat" ] ; then
+    killproc -p "${pidfile}" -d ${STOP_TIMEOUT} "$CBD"
+  else
+    killproc -p "${pidfile}" "$CBD"
+  fi
   RETVAL=$?
   if [ ${RETVAL} = 0 ] ; then
     rm -f "${pidfile}"
