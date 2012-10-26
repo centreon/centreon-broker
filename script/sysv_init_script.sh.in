@@ -38,7 +38,33 @@
 # pidfile: TO_CHANGE
 ### END INIT INFO
 
-. /etc/rc.d/init.d/functions
+# Select distribution type.
+if [ -f "/lib/lsb/init-functions" ] ; then
+  distribution="lsb"
+  . "/lib/lsb/init-functions"
+elif [ -f "/etc/rc.d/init.d/functions" ] ; then
+  distribution="redhat"
+  . "/etc/rc.d/init.d/functions"
+else
+  echo "Unknown distribution type."
+  exit 1
+fi
+
+# Logging functions.
+broker_log_failure() {
+  if [ "$distribution" = "redhat" ] ; then
+    failure $@
+  else
+    log_failure_msg $@
+  fi
+}
+broker_log_success() {
+  if [ "$distribution" = "redhat" ] ; then
+    success $@
+  else
+    log_success_msg $@
+  fi
+}
 
 # Configuration parameters.
 CONFIG_FILE="@PREFIX_CONF@/@DAEMON_NAME@.xml"
@@ -49,48 +75,50 @@ STOP_TIMEOUT=10
 user="@USER@"
 
 # Daemon name must be set.
-if [ -z "${DAEMON_NAME}" ]; then
-  echo "The cbd name isn't set"
+if [ -z "${DAEMON_NAME}" ] ; then
+  echo "The cbd name isn't set."
   exit 1
 fi
 
 # Check that cbd is executable.
-if [ ! -x "${CBD}" ]; then
+if [ ! -x "${CBD}" ] ; then
   echo "The cbd binary can't be run."
   exit 1
 fi
 
-if [ ! -e "${CONFIG_FILE}" ]; then
-  echo "The configuration file isn't found"
+# Check that configuration file exists.
+if [ ! -e "${CONFIG_FILE}" ] ; then
+  echo "The configuration file isn't found."
   exit 1
 fi
 
-pidfile=${PID_PATH}/${DAEMON_NAME}.pid
+# PID file.
+pidfile="${PID_PATH}/${DAEMON_NAME}.pid"
 
 # Start cbd.
 start() {
   # Check for running.
-  if [ -f ${pidfile} ]; then
+  if [ -f "${pidfile}" ] ; then
     is_running=$(ps -edf | grep "${CBD} ${CONFIG_FILE}" | grep -v grep | wc -l )
-    if [ $is_running = 0 ]; then
-      rm -f $pidfile
+    if [ $is_running = 0 ] ; then
+      rm -f "$pidfile"
     else
       echo -n "${DAEMON_NAME} already running"
-      failure "cbd startup"
+      broker_log_failure "cbd startup"
       echo
       return 1
     fi
   fi
 
   # Start cbd.
-  echo -n $"Starting ${DAEMON_NAME}: "
+  echo -n "Starting ${DAEMON_NAME}: "
   PID=`su - "${user}" -c "${CBD} ${CONFIG_FILE} >/dev/null 2>&1 & echo \\$!"`
   RETVAL=$?
   if [ ${RETVAL} = 0 ]; then
-    echo ${PID} > ${pidfile}
-    success $"cbd startup"
+    echo ${PID} > "${pidfile}"
+    broker_log_success "cbd startup"
   else
-    failure $"cbd startup"
+    broker_log_failure "cbd startup"
   fi
   echo
   return ${RETVAL}
@@ -98,11 +126,13 @@ start() {
 
 # Stop cbd.
 stop() {
-  echo -n $"Stopping ${DAEMON_NAME}: "
-  killproc -p ${pidfile} -d ${STOP_TIMEOUT} "$CBD"
+  echo -n "Stopping ${DAEMON_NAME}: "
+  killproc -p "${pidfile}" -d ${STOP_TIMEOUT} "$CBD"
   RETVAL=$?
   echo
-  [ ${RETVAL} = 0 ] && rm -f ${pidfile}
+  if [ ${RETVAL} = 0 ] ; then
+    rm -f "${pidfile}"
+  fi
 }
 
 # Switch case.
@@ -122,7 +152,7 @@ case "$1" in
     RETVAL=$?
     ;;
   *)
-    echo $"Usage: ${DAEMON_NAME} {start|stop|restart|status}"
+    echo "Usage: ${DAEMON_NAME} {start|stop|restart|status}"
     exit 1
 esac
 
