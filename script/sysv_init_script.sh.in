@@ -144,6 +144,7 @@ stop() {
 status() {
   if [ ! -f "${pidfile}" ] ; then
     RETVAL=3
+    echo "$CBD is not running."
   else
     pid=`head -n 1 "${pidfile}"`
     kill -0 "${pid}"
@@ -151,6 +152,9 @@ status() {
     # LSB-compliant return code.
     if [ ${RETVAL} -ne 0 ] ; then
       RETVAL=1
+      echo "$CBD is dead and PID file exists."
+    else
+      echo "$CBD is running."
     fi
   fi
   return ${RETVAL}
