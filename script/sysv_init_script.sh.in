@@ -137,6 +137,23 @@ stop() {
   else
     broker_log_failure "cbd shutdown"
   fi
+  return ${RETVAL}
+}
+
+# Get cbd status.
+status() {
+  if [ ! -f "${pidfile}" ] ; then
+    RETVAL=3
+  else
+    pid=`head -n 1 "${pidfile}"`
+    kill -0 "${pid}"
+    RETVAL=$?
+    # LSB-compliant return code.
+    if [ ${RETVAL} -ne 0 ] ; then
+      RETVAL=1
+    fi
+  fi
+  return ${RETVAL}
 }
 
 # Switch case.
@@ -152,7 +169,7 @@ case "$1" in
     start
     ;;
   status)
-    status -p ${pidfile} ${cbd}
+    status
     RETVAL=$?
     ;;
   *)
