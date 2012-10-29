@@ -1,0 +1,2 @@
+## This file define the Centreon Broker daemons to start
+# daemon_name	daemon_config	running		reload

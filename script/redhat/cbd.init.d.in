@@ -1,0 +1,173 @@
+#!/bin/sh
+##
+## Copyright 2009-2012 Merethis
+##
+## This file is part of Centreon Broker.
+##
+## Centreon Broker is free software: you can redistribute it and/or
+## modify it under the terms of the GNU General Public License version 2
+## as published by the Free Software Foundation.
+##
+## Centreon Broker is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Centreon Broker. If not, see
+## <http://www.gnu.org/licenses/>.
+##
+
+#
+# Script init
+#
+### BEGIN INIT INFO Redhat
+# chkconfig: - 71 31
+# description: Centreon Broker
+# processname: cbd
+# config: TO_CHANGE
+# pidfile: TO_CHANGE
+### END INIT INFO
+
+# Select distribution type.
+. /etc/init.d/functions
+
+# Configuration parameters.
+master_file="@PREFIX_CONF@/master.run"
+config_dir="@PREFIX_CONF@"
+cbd="@PREFIX_BIN@/cbd"
+pid_path=/var/run
+stop_timeout=10
+user="@USER@"
+
+# Check that cbd is executable.
+if [ ! -x "${cbd}" ] ; then
+  echo "The cbd binary can't be run."
+  exit 1
+fi
+
+# Check that configuration file exists.
+if [ ! -e "${master_file}" ] ; then
+  echo "The master file isn't found."
+  exit 1
+fi
+
+# Start cbd.
+start() {
+  global_retval=0
+  cat ${master_file} | grep -v '^#'| while read line; do
+    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+    running="$(echo ${line} | awk '{ print $3 }')"
+    pidfile="${pid_path}/${daemon_name}.pid"
+    if [ "${running}" = "y" ]; then
+      if [ -f "${pidfile}" ] ; then
+        is_running=$(ps -edf | grep "${cbd} ${daemon_config}" | grep -v grep | wc -l )
+        if [ $is_running = 0 ] ; then
+          rm -f "$pidfile"
+        else
+          echo -n "${daemon_name} already running"
+          failure "cbd startup"
+          return 1
+        fi
+      fi
+  
+      # Start cbd.
+      echo -n "Starting ${daemon_name}: "
+      PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
+      RETVAL=$?
+      if [ ${RETVAL} = 0 ]; then
+        echo ${PID} > "${pidfile}"
+        success "cbd startup"
+      else
+        ${global_retval} = ${RETVAL}
+        failure "cbd startup"
+      fi
+      echo
+    fi
+  done
+  return ${global_retval}
+}
+
+# Stop cbd.
+stop() {
+  cat ${master_file} | grep -v '^#'| while read line; do
+    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+    running="$(echo ${line} | awk '{ print $3 }')"
+    pidfile="${pid_path}/${daemon_name}.pid"
+    if [ "${running}" = "y" ]; then
+      echo -n "Stopping ${daemon_name}: "
+      killproc -p "${pidfile}" -d ${stop_timeout} "$cbd"
+      RETVAL=$?
+      if [ ${RETVAL} = 0 ] ; then
+        rm -f "${pidfile}"
+        success "cbd shutdown"
+      else
+        failure "cbd shutdown"
+      fi
+      echo
+    fi
+  done
+}
+
+# Send kill HUP
+reload() {
+  cat ${master_file} | grep -v '^#'| while read line; do
+    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+    running="$(echo ${line} | awk '{ print $3 }')"
+    reload="$(echo ${line} | awk '{ print $4 }')"
+    pidfile="${pid_path}/${daemon_name}.pid"
+    if [ "${running}" = "y" -a "${reload}" = "y" ]; then
+      echo -n "Reloading ${daemon_name}: "
+      killproc -p "${pidfile}" "${cbd}" -HUP
+      RETVAL=$?
+      if [ ${RETVAL} = 0 ]; then
+        success "cbd reload"
+      else
+        failure "cbd reload"
+      fi
+      echo
+    fi
+  done
+}
+
+# Status
+status_all() {
+  cat ${master_file} | grep -v '^#'| while read line; do
+    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+    running="$(echo ${line} | awk '{ print $3 }')"
+    pidfile="${pid_path}/${daemon_name}.pid"
+    if [ "${running}" = "y" ]; then
+      status -p ${pidfile} ${cbd}
+    fi
+  done
+}
+
+# Switch case.
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  reload)
+    reload
+    ;;
+  status)
+    status_all
+    RETVAL=$?
+    ;;
+  *)
+    echo "Usage: ${daemon_name} {start|stop|restart|status}"
+    exit 1
+esac
+
+exit ${RETVAL}

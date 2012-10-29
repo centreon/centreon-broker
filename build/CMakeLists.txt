@@ -51,6 +51,25 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
 
+#
+# Get distributions name
+#
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  message(STATUS "Attempting to determine OS distributor.")
+  execute_process(COMMAND "lsb_release" "--short" "--id"
+    RESULT_VARIABLE RETCODE
+    OUTPUT_VARIABLE OS_DISTRIBUTOR
+    ERROR_QUIET)
+  if (RETCODE EQUAL 0)
+    string(REGEX REPLACE "\n$" "" OS_DISTRIBUTOR "${OS_DISTRIBUTOR}")
+  else ()
+    message(WARNING "lsb_release in not installed")
+    set(OS_DISTRIBUTOR "${CMAKE_SYSTEM_NAME}")
+  endif ()
+elseif ()
+  set(OS_DISTRIBUTOR "${CMAKE_SYSTEM_NAME}")
+endif ()
+
 
 #
 # Options.
@@ -137,11 +156,36 @@ endif ()
 
 # Configure files.
 if (WITH_DAEMONS)
-  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
-    configure_file("${PROJECT_SOURCE_DIR}/script/sysv_init_script.sh.in"
-      "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
+  if (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
+    configure_file("${PROJECT_SOURCE_DIR}/script/redhat/cbd.init.d.in"
+      "${PROJECT_SOURCE_DIR}/script/cdb.init"
       @ONLY)
+  elseif (OS_DISTRIBUTOR STREQUAL "Debian" OR OS_DISTRIBUTOR STREQUAL "Ubuntu")
+    configure_file("${PROJECT_SOURCE_DIR}/script/debian/cbd.init.d.in"
+      "${PROJECT_SOURCE_DIR}/script/cdb.init"
+      @ONLY)
+    configure_file("${PROJECT_SOURCE_DIR}/script/debian/cbd.default.in"
+      "${PROJECT_SOURCE_DIR}/script/cdb.default"
+      @ONLY)
+    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.default"
+      DESTINATION "/etc/default"
+      RENAME "cbd")
+  else ()
+    configure_file("${PROJECT_SOURCE_DIR}/script/other/cbd.init.d.in"
+      "${PROJECT_SOURCE_DIR}/script/cdb.init"
+      @ONLY)
+  endif ()
+  install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.init"
+    DESTINATION "${STARTUP_DIR}"
+    RENAME "cbd")
+  configure_file("${PROJECT_SOURCE_DIR}/script/master.run.in"
+    "${PROJECT_SOURCE_DIR}/script/master.run"
+    @ONLY)
+  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
+    execute_process(COMMAND "echo" "${DAEMON_NAME}\t${DAEMON_NAME}.xml\ty\ty" ">>" "${PROJECT_SOURCE_DIR}/master.run")
   endforeach ()
+  install(FILES "${PROJECT_SOURCE_DIR}/script/master.run"
+    DESTINATION "${PREFIX_CONF}")
 endif ()
 
 # Startup dir.
@@ -467,13 +511,13 @@ install(TARGETS "${DAEMON}"
 )
 
 # Install scripts.
-if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
-  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
-    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
-      DESTINATION "${STARTUP_DIR}"
-      RENAME "cbd-${DAEMON_NAME}")
-  endforeach()
-endif ()
+#if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+#  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
+#    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
+#      DESTINATION "${STARTUP_DIR}"
+#      RENAME "cbd-${DAEMON_NAME}")
+#  endforeach()
+#endif ()
 
 #
 # Packaging.
