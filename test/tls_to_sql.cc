@@ -34,10 +34,10 @@
 
 using namespace com::centreon::broker;
 
-#define DB_NAME "broker_compression_to_sql"
+#define DB_NAME "broker_tls_to_sql"
 
 /**
- *  Check that compression on Broker stream work.
+ *  Check that encryption works on Broker stream.
  *
  *  @return EXIT_SUCCESS on success.
  */
@@ -63,7 +63,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/compression_to_sql_1.xml\n";
+          << PROJECT_SOURCE_DIR << "/test/cfg/tls_to_sql_1.xml\n";
       cbmod_loading = oss.str();
     }
 
@@ -76,7 +76,7 @@ int main() {
 
     // Start Broker daemon.
     broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/compression_to_sql_2.xml");
+      PROJECT_SOURCE_DIR "/test/cfg/tls_to_sql_2.xml");
     broker.start();
 
     // Start engine.
