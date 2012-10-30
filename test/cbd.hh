@@ -17,23 +17,32 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TEST_VARS_HH
-#  define TEST_VARS_HH
+#ifndef TEST_CBD_HH
+#  define TEST_CBD_HH
 
-// Paths.
-#  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
-#  define CBD_PATH "@CBD_PATH@"
-#  define CBMOD_PATH "@CBMOD_PATH@"
+#  include <QProcess>
+#  include <string>
 
-// Monitoring engine.
-#  define MONITORING_ENGINE "@MONITORING_ENGINE@"
-#  define MONITORING_ENGINE_ADDITIONAL "@MONITORING_ENGINE_ADDITIONAL@"
+/**
+ *  @class cbd cbd.hh "test/cbd.hh"
+ *  @brief Centreon Broker daemon.
+ *
+ *  Centreon Broker daemon.
+ */
+class         cbd {
+public:
+              cbd();
+              ~cbd();
+  void        set_config_file(std::string const& config_file);
+  void        start();
+  void        stop();
 
-// DB info.
-#  define DB_TYPE "@DB_TYPE@"
-#  define DB_HOST "@DB_HOST@"
-#  define DB_PORT "@DB_PORT@"
-#  define DB_USER "@DB_USER@"
-#  define DB_PASSWORD "@DB_PASSWORD@"
+private:
+              cbd(cbd const& right);
+  cbd&        operator=(cbd const& right);
 
-#endif // !TEST_VARS_HH
+  std::string _config_file;
+  QProcess    _cbd;
+};
+
+#endif // !TEST_CBD_HH

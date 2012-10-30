@@ -373,6 +373,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
+get_property(CBD_PATH
+  TARGET "cbd"
+  PROPERTY LOCATION)
 
 # Stats module.
 add_subdirectory("stats")
@@ -420,6 +423,10 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
   "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
@@ -429,11 +436,13 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc/")
 set(TEST_LIB "brokertest")
 add_library("${TEST_LIB}" STATIC
   # Sources.
+  "${PROJECT_SOURCE_DIR}/test/cbd.cc"
   "${PROJECT_SOURCE_DIR}/test/config.cc"
   "${PROJECT_SOURCE_DIR}/test/engine.cc"
   "${PROJECT_SOURCE_DIR}/test/external_command.cc"
   "${PROJECT_SOURCE_DIR}/test/generate.cc"
   # Headers.
+  "${PROJECT_SOURCE_DIR}/test/cbd.hh"
   "${PROJECT_SOURCE_DIR}/test/config.hh"
   "${PROJECT_SOURCE_DIR}/test/engine.hh"
   "${PROJECT_SOURCE_DIR}/test/external_command.hh"
@@ -465,6 +474,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_downtimes_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/downtimes_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Compression.
+  set(TEST_NAME "running_compression_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()

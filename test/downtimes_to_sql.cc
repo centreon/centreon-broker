@@ -283,7 +283,7 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  //config_db_close(DB_NAME);
+  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 
