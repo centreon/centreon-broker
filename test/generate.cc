@@ -49,6 +49,7 @@ void free_hosts(std::list<host>& hosts) {
        it != end;
        ++it) {
     delete [] it->name;
+    delete [] it->host_check_command;
   }
   return ;
 }
@@ -66,6 +67,7 @@ void free_services(std::list<service>& services) {
        ++it) {
     delete [] it->description;
     delete [] it->host_name;
+    delete [] it->service_check_command;
   }
   return ;
 }

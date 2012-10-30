@@ -81,7 +81,6 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(50);
 
     // Let the daemon initialize.
     sleep(10);

@@ -414,6 +414,8 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
@@ -445,6 +447,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_monitoring_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Acknowledgements to SQL.
+  set(TEST_NAME "running_acknowledgements_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/acknowledgements_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Comments to SQL.

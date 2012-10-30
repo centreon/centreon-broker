@@ -273,7 +273,7 @@ void config_write(
       << "  alias default_host\n"
       << "  address localhost\n"
       << "  check_command default_command\n"
-      << "  max_check_attempts 5\n"
+      << "  max_check_attempts 3\n"
       << "  check_period default_timeperiod\n"
       << "  contacts default_contact\n"
       << "}\n\n";
@@ -294,7 +294,7 @@ void config_write(
                                     : "default_command") << "\n"
           << "  max_check_attempts " << ((it->max_attempts > 0)
                                          ? it->max_attempts
-                                         : 5) << "\n"
+                                         : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
@@ -333,7 +333,7 @@ void config_write(
       << "  service_description default_service\n"
       << "  host_name default_host\n"
       << "  check_command default_command\n"
-      << "  max_check_attempts 5\n"
+      << "  max_check_attempts 3\n"
       << "  check_interval 5\n"
       << "  retry_interval 3\n"
       << "  check_period default_timeperiod\n"
@@ -356,7 +356,7 @@ void config_write(
               ? it->service_check_command
               : "default_command") << "\n"
           << "  max_check_attempts "
-          << ((it->max_attempts > 0) ? it->max_attempts : 5) << "\n"
+          << ((it->max_attempts > 0) ? it->max_attempts : 3) << "\n"
           << "  check_interval "
           << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
@@ -411,6 +411,7 @@ void config_write(
           << (it->command_line ? it->command_line : "/bin/true") << "\n"
           << "}\n\n";
     }
+  ofs.close();
 
   // Misc.
   ofs.open(
