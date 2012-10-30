@@ -23,6 +23,23 @@
 #include "test/generate.hh"
 
 /**
+ *  Free the command list.
+ *
+ *  @param[in,out] commands Commands to free.
+ */
+void free_commands(std::list<command>& commands) {
+  for (std::list<command>::iterator
+         it(commands.begin()),
+         end(commands.end());
+       it != end;
+       ++it) {
+    delete [] it->name;
+    delete [] it->command_line;
+  }
+  return ;
+}
+
+/**
  *  Free the host list.
  *
  *  @param[in,out] hosts Hosts to free.
@@ -50,6 +67,41 @@ void free_services(std::list<service>& services) {
     delete [] it->description;
     delete [] it->host_name;
   }
+  return ;
+}
+
+/**
+ *  Generate a command list.
+ *
+ *  @param[out] commands Generated command list.
+ *  @param[in]  count    Number of commands to generate.
+ */
+void generate_commands(
+        std::list<command>& commands,
+        unsigned int count) {
+  static unsigned int id(0);
+
+  for (unsigned int i(0); i < count; ++i) {
+    // Create new command.
+    command new_command;
+    memset(&new_command, 0, sizeof(new_command));
+
+    // Generate name.
+    std::string name;
+    {
+      std::ostringstream oss;
+      oss << ++id;
+      name = oss.str();
+    }
+
+    // Set command name.
+    new_command.name = new char[name.size() + 1];
+    strcpy(new_command.name, name.c_str());
+
+    // Add to list.
+    commands.push_back(new_command);
+  }
+
   return ;
 }
 

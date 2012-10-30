@@ -31,6 +31,7 @@ void         config_write(
                char const* path,
                char const* more_directives = NULL,
                std::list<host>* hosts = NULL,
-               std::list<service>* services = NULL);
+               std::list<service>* services = NULL,
+               std::list<command>* commands = NULL);
 
 #endif // !TEST_CONFIG_HH

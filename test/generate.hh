@@ -23,8 +23,12 @@
 #  include <list>
 #  include "com/centreon/engine/objects.hh"
 
+void free_commands(std::list<command>& commands);
 void free_hosts(std::list<host>& hosts);
 void free_services(std::list<service>& services);
+void generate_commands(
+       std::list<command>& commands,
+       unsigned int count);
 void generate_hosts(
        std::list<host>& hosts,
        unsigned int count);

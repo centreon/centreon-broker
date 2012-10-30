@@ -161,6 +161,13 @@ void config_remove(char const* path) {
     ::remove(oss.str().c_str());
   }
 
+  // Commands file.
+  {
+    std::ostringstream oss;
+    oss << path << "/commands.cfg";
+    ::remove(oss.str().c_str());
+  }
+
   // Misc file.
   {
     std::ostringstream oss;
@@ -186,7 +193,8 @@ void config_write(
        char const* path,
        char const* more_directives,
        std::list<host>* hosts,
-       std::list<service>* services) {
+       std::list<service>* services,
+       std::list<command>* commands) {
   // Create base directory.
   mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 
@@ -225,6 +233,12 @@ void config_write(
     oss << path << "/services.cfg";
     services_file = oss.str();
   }
+  std::string commands_file;
+  {
+    std::ostringstream oss;
+    oss << path << "/commands.cfg";
+    commands_file = oss.str();
+  }
   std::string misc_file;
   {
     std::ostringstream oss;
@@ -233,6 +247,7 @@ void config_write(
   }
   ofs << "cfg_file=" << hosts_file << "\n"
       << "cfg_file=" << services_file << "\n"
+      << "cfg_file=" << commands_file << "\n"
       << "cfg_file=" << misc_file << "\n";
 
   // Additional configuration.
@@ -372,6 +387,31 @@ void config_write(
     }
   ofs.close();
 
+  // Commands.
+  ofs.open(
+        commands_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open commands configuration file in '"
+           << path << "'");
+  ofs << "define command{\n"
+      << "  command_name default_command\n"
+      << "  command_line /bin/true\n"
+      << "}\n\n";
+  if (commands)
+    for (std::list<command>::iterator
+           it(commands->begin()),
+           end(commands->end());
+         it != end;
+         ++it) {
+      ofs << "define command{\n"
+          << "  command_name " << it->name << "\n"
+          << "  command_line "
+          << (it->command_line ? it->command_line : "/bin/true") << "\n"
+          << "}\n\n";
+    }
+
   // Misc.
   ofs.open(
         misc_file.c_str(),
@@ -380,12 +420,7 @@ void config_write(
     throw (exceptions::msg()
            << "cannot open misc configuration file in '"
            << path << "'");
-  ofs << "define command{\n"
-      << "  command_name default_command\n"
-      << "  command_line /bin/true\n"
-      << "}\n"
-      << "\n"
-      << "define timeperiod{\n"
+  ofs << "define timeperiod{\n"
       << "  timeperiod_name default_timeperiod\n"
       << "  alias MyTimePeriod\n"
       << "  monday 00:00-24:00\n"
