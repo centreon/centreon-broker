@@ -154,25 +154,35 @@ else ()
   set(WITH_STARTUP_SCRIPT "no")
 endif ()
 
+# Startup dir.
+if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+  # Set destination directory.
+  if (WITH_STARTUP_DIR)
+    set(STARTUP_DIR "${WITH_STARTUP_DIR}")
+  else ()
+    set(STARTUP_DIR "/etc/init.d")
+  endif ()
+endif ()
+
 # Configure files.
 if (WITH_DAEMONS)
   if (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
     configure_file("${PROJECT_SOURCE_DIR}/script/redhat/cbd.init.d.in"
-      "${PROJECT_SOURCE_DIR}/script/cdb.init"
+      "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
   elseif (OS_DISTRIBUTOR STREQUAL "Debian" OR OS_DISTRIBUTOR STREQUAL "Ubuntu")
     configure_file("${PROJECT_SOURCE_DIR}/script/debian/cbd.init.d.in"
-      "${PROJECT_SOURCE_DIR}/script/cdb.init"
+      "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
     configure_file("${PROJECT_SOURCE_DIR}/script/debian/cbd.default.in"
-      "${PROJECT_SOURCE_DIR}/script/cdb.default"
+      "${PROJECT_SOURCE_DIR}/script/cbd.default"
       @ONLY)
     install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.default"
       DESTINATION "/etc/default"
       RENAME "cbd")
   else ()
     configure_file("${PROJECT_SOURCE_DIR}/script/other/cbd.init.d.in"
-      "${PROJECT_SOURCE_DIR}/script/cdb.init"
+      "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
   endif ()
   install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.init"
@@ -186,16 +196,6 @@ if (WITH_DAEMONS)
   endforeach ()
   install(FILES "${PROJECT_SOURCE_DIR}/script/master.run"
     DESTINATION "${PREFIX_CONF}")
-endif ()
-
-# Startup dir.
-if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
-  # Set destination directory.
-  if (WITH_STARTUP_DIR)
-    set(STARTUP_DIR "${WITH_STARTUP_DIR}")
-  else ()
-    set(STARTUP_DIR "/etc/init.d")
-  endif ()
 endif ()
 
 # Monitoring engine (for testing).
