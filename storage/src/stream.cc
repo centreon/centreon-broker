@@ -709,7 +709,7 @@ unsigned int stream::_find_index_id(
   // Found in cache.
   if (it != _index_cache.end()) {
     logging::debug(logging::low) << "storage: found index "
-      << it->second.index_id << "of (" << host_id << ", "
+      << it->second.index_id << " of (" << host_id << ", "
       << service_id << ") in cache";
     // Should we update index_data ?
     if ((it->second.host_name != host_name)
