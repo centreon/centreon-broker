@@ -23,6 +23,7 @@
 #include <QMutexLocker>
 #include <QQueue>
 #include <QVector>
+#include <unistd.h>
 #include <utility>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -186,8 +187,15 @@ void engine::stop() {
       catch (...) {}
     }
 
-    // Process events from hooks.
-    _send_to_subscribers();
+    do {
+      // Process events from hooks.
+      _send_to_subscribers();
+
+      // Make sur that no more data is available.
+      lock.unlock();
+      usleep(200000);
+      lock.relock();
+    } while (!_kiew.empty());
 
     // Set writing method.
     _write_func = &engine::_nop;
