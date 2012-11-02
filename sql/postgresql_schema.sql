@@ -7,6 +7,7 @@
 -- acknowledgements
 -- comments
 -- customvariables
+-- data_bin
 -- downtimes
 -- eventhandlers
 -- flappingstatuses
@@ -16,10 +17,12 @@
 -- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- hoststateevents
+-- index_data
 -- instances
 -- issues
 -- issues_issues_parents
 -- logs
+-- metrics
 -- notifications
 -- schemaversion
 -- services
@@ -728,4 +731,72 @@ CREATE TABLE servicestateevents (
   UNIQUE (host_id, service_id, start_time),
   FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
     ON DELETE CASCADE
+);
+
+--
+--  Base performance data index.
+--
+CREATE TABLE index_data (
+  id serial,
+  host_id int NOT NULL,
+  service_id int default NULL,
+
+  check_interval int default NULL,
+  hidden enum('0', '1') NOT NULL default '0',
+  host_name varchar(255) default NULL,
+  locked enum('0', '1') NOT NULL default '0',
+  must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
+  service_description varchar(255) default NULL,
+  special enum('0', '1') NOT NULL default '0',
+  storage_type enum('0', '1', '2') NOT NULL default '2',
+  trashed enum('0', '1') NOT NULL default '0',
+
+  PRIMARY KEY (id),
+  UNIQUE (host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  INDEX (host_id),
+  INDEX (host_name),
+  INDEX (must_be_rebuild),
+  INDEX (service_description),
+  INDEX (service_id),
+  INDEX (trashed)
+);
+
+--
+--  Metrics.
+--
+CREATE TABLE metrics (
+  metric_id serial,
+  index_id int NOT NULL,
+  metric_name varchar(255) NOT NULL,
+
+  crit double default NULL,
+  data_source_type enum('0', '1', '2', '3') NOT NULL default '0',
+  hidden enum('0', '1') NOT NULL default '0',
+  locked enum('0', '1') NOT NULL default '0',
+  min double default NULL,
+  max double default NULL,
+  unit_name varchar(32) default NULL,
+  warn double default NULL,
+
+  PRIMARY KEY (metric_id),
+  UNIQUE KEY (index_id, metric_name),
+  FOREIGN KEY (index_id) REFERENCES index_data (id)
+    ON DELETE CASCADE,
+  INDEX (index_id)
+);
+
+--
+--  Performance data.
+--
+CREATE TABLE data_bin (
+  id_metric int NOT NULL,
+  ctime int NOT NULL,
+  status double default NULL,
+  value enum('0', '1', '2', '3', '4') NOT NULL default '3',
+
+  FOREIGN KEY (id_metric) REFERENCES metrics (metric_id)
+    ON DELETE CASCADE,
+  INDEX (id_metric)
 );
