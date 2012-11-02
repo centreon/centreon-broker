@@ -754,8 +754,6 @@ CREATE TABLE index_data (
 
   PRIMARY KEY (id),
   UNIQUE (host_id, service_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
   INDEX (host_id),
   INDEX (host_name),
   INDEX (must_be_rebuild),
