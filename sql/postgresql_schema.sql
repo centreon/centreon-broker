@@ -749,6 +749,7 @@ CREATE TABLE index_data (
   service_description varchar(255) default NULL,
   special enum('0', '1') NOT NULL default '0',
   storage_type enum('0', '1', '2') NOT NULL default '2',
+  to_delete int NOT NULL default 0,
   trashed enum('0', '1') NOT NULL default '0',
 
   PRIMARY KEY (id),
@@ -775,6 +776,7 @@ CREATE TABLE metrics (
   locked enum('0', '1') NOT NULL default '0',
   min double default NULL,
   max double default NULL,
+  to_delete int NOT NULL default 0,
   unit_name varchar(32) default NULL,
   warn double default NULL,
 
