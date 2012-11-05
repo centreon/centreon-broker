@@ -54,24 +54,30 @@ char const* input::_get_line() {
   // Static type.
   static QString const io_raw_type("com::centreon::broker::io::raw");
 
-  // Remove old data.
-  _buffer.erase(0, _old);
-  _old = 0;
+  // Find new line.
+  size_t it(_buffer.find_first_of('\n', _old));
+  if (it == std::string::npos) {
+    // Remove old data.
+    _buffer.erase(0, _old);
+    _old = 0;
 
-  // Find a line.
-  size_t it;
-  while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
-    misc::shared_ptr<io::data> data;
-    _from->read(data);
-    if (data.isNull())
-      break ;
-    if (data->type() == io_raw_type) {
-      io::raw* raw(static_cast<io::raw*>(data.data()));
-      _buffer.append(static_cast<char*>(
-        raw->QByteArray::data()),
-        raw->size());
+    // Find a line.
+    while ((it = _buffer.find_first_of('\n')) == std::string::npos) {
+      misc::shared_ptr<io::data> data;
+      _from->read(data);
+      if (data.isNull())
+        break ;
+      if (data->type() == io_raw_type) {
+        io::raw* raw(static_cast<io::raw*>(data.data()));
+        _buffer.append(static_cast<char*>(
+          raw->QByteArray::data()),
+          raw->size());
+      }
     }
   }
+
+  // New base.
+  size_t old(_old);
 
   // \n found.
   if (it != std::string::npos) {
@@ -84,7 +90,7 @@ char const* input::_get_line() {
     _old = std::string::npos;
   }
 
-  return (_buffer.c_str());
+  return (_buffer.c_str() + old);
 }
 
 /**
