@@ -19,6 +19,7 @@
 
 #include <csignal>
 #include <cstring>
+#include <locale.h>
 #include <QCoreApplication>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/endpoint.hh"
@@ -192,6 +193,9 @@ extern "C" {
       new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
       signal(SIGCHLD, SIG_DFL);
     }
+
+    // Reset locale.
+    setlocale(LC_NUMERIC, "C");
 
     // Disable timestamp printing in logs (cause starvation when forking).
     logging::file::with_timestamp(false);
