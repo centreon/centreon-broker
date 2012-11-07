@@ -501,6 +501,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/tls_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Monitoring to RRD graphs.
+  set(TEST_NAME "running_monitoring_to_rrd")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 #

@@ -408,17 +408,18 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       // Increase event count.
       ++_transaction_queries;
 
-      if (!ss->perf_data.isEmpty()) {
-        // Find index_id.
-        unsigned int index_id(_find_index_id(
-                                ss->host_id,
-                                ss->service_id,
-                                ss->host_name,
-                                ss->service_description));
-
+      unsigned int index_id(0);
+      if (!ss->perf_data.isEmpty()
+          && ((index_id = _find_index_id(
+                            ss->host_id,
+                            ss->service_id,
+                            ss->host_name,
+                            ss->service_description))
+              != 0)) {
         // Generate status event.
         logging::debug(logging::low)
-          << "storage: generating status event";
+          << "storage: generating status event for (" << ss->host_id
+          << ", " << ss->service_id << ") of index " << index_id;
         misc::shared_ptr<storage::status> status(new storage::status);
         status->ctime = ss->last_check;
         status->index_id = index_id;
@@ -750,60 +751,9 @@ unsigned int stream::_find_index_id(
   }
   // Can't find in cache, insert in DB.
   else {
-    logging::debug(logging::high) << "storage: creating new index for ("
+    logging::info(logging::medium) << "storage: index not found for ("
       << host_id << ", " << service_id << ")";
-    // Build query.
-    std::ostringstream oss;
-    oss << "INSERT INTO index_data (" \
-           "  host_id, host_name," \
-           "  service_id, service_description, " \
-           "  must_be_rebuild, special)" \
-           " VALUES (" << host_id << ", :host_name, " << service_id
-        << ", :service_description, 1, :special)";
-    QSqlQuery q(*_storage_db);
-    q.prepare(oss.str().c_str());
-    q.bindValue(":host_name", host_name);
-    q.bindValue(":service_description", service_desc);
-    q.bindValue(":special", (special ? 2 : 1));
-
-    // Execute query.
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "index (" << host_id << ", " << service_id
-               << ") failed: " << q.lastError().text());
-
-    // Fetch insert ID with query if possible.
-    if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
-        || !(retval = q.lastInsertId().toUInt())) {
-#if QT_VERSION >= 0x040302
-      q.finish();
-#endif // Qt >= 4.3.2
-      std::ostringstream oss2;
-      oss2 << "SELECT id" \
-              " FROM index_data" \
-              " WHERE host_id=" << host_id
-           << " AND service_id=" << service_id;
-      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
-        throw (broker::exceptions::msg() << "storage: could not fetch" \
-                    " index_id of newly inserted index (" << host_id
-                 << ", " << service_id << "): "
-                 << q2.lastError().text());
-      retval = q2.value(0).toUInt();
-      if (!retval)
-        throw (broker::exceptions::msg() << "storage: index_data " \
-                 "table is corrupted: got 0 as index_id");
-    }
-
-    // Insert index in cache.
-    logging::info(logging::medium) << "storage: new index " << retval
-      << " for (" << host_id << ", " << service_id << ")";
-    index_info info;
-    info.host_name = host_name;
-    info.index_id = retval;
-    info.service_description = service_desc;
-    info.special = special;
-    _index_cache[std::make_pair(host_id, service_id)] = info;
+    retval = 0;
   }
 
   return (retval);
