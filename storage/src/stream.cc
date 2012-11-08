@@ -560,7 +560,8 @@ void stream::_check_deleted_index() {
     if (!q.exec("SELECT id FROM index_data WHERE to_delete=1")
         || q.lastError().isValid())
       throw (broker::exceptions::msg()
-             << "storage: could not get the list of index to delete");
+             << "storage: could not get the list of index to delete: "
+             << q.lastError().text());
     while (q.next())
       index_to_delete.push_back(q.value(0).toUInt());
   }
