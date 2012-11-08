@@ -2,4 +2,5 @@
 | Great thanks to the people below who contributed to Centreon Broker |
 -----------------------------------------------------------------------
 
+Kevin Defives
 Raphael Troiano
