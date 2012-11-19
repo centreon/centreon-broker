@@ -245,7 +245,7 @@ void rebuilder::run() {
 
           // Set index as rebuilt.
           if (!_should_exit)
-            _set_index_rebuild(index_id, 0);
+            _set_index_rebuild(index_id, 1);
         }
 
         // Close DB.
@@ -378,7 +378,7 @@ void rebuilder::_rebuild_metric(
         << " ORDER BY ctime ASC";
     QSqlQuery data_bin_query(_db);
     if (data_bin_query.exec(oss.str().c_str()))
-      while (data_bin_query.next()) {
+      while (!_should_exit && data_bin_query.next()) {
         misc::shared_ptr<storage::metric> entry(new storage::metric);
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->interval = interval;
@@ -437,7 +437,7 @@ void rebuilder::_rebuild_status(
         << " ORDER BY d.ctime ASC";
     QSqlQuery data_bin_query(_db);
     if (data_bin_query.exec(oss.str().c_str()))
-      while (data_bin_query.next()) {
+      while (!_should_exit && data_bin_query.next()) {
         misc::shared_ptr<storage::status> entry(new storage::status);
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->index_id = index_id;
