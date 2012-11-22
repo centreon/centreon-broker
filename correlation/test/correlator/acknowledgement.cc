@@ -56,6 +56,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456789;
     c.write(ss.staticCast<io::data>());
   }
   { // #2
@@ -63,7 +64,7 @@ int main() {
       ack(new neb::acknowledgement);
     ack->host_id = 42;
     ack->service_id = 24;
-    ack->entry_time = 33;
+    ack->entry_time = 123456790;
     c.write(ack.staticCast<io::data>());
   }
   { // #3
@@ -72,6 +73,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 1;
+    ss->last_check = 123456791;
     c.write(ss.staticCast<io::data>());
   }
   { // #4
@@ -79,7 +81,7 @@ int main() {
       ack(new neb::acknowledgement);
     ack->host_id = 42;
     ack->service_id = 24;
-    ack->entry_time = 78;
+    ack->entry_time = 123456792;
     c.write(ack.staticCast<io::data>());
   }
   { // #5
@@ -88,6 +90,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456793;
     c.write(ss.staticCast<io::data>());
   }
   { // #6
@@ -95,7 +98,7 @@ int main() {
       ack(new neb::acknowledgement);
     ack->host_id = 42;
     ack->service_id = 24;
-    ack->entry_time = 112;
+    ack->entry_time = 123456794;
     c.write(ack.staticCast<io::data>());
   }
   { // #7
@@ -104,30 +107,48 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 1;
+    ss->last_check = 123456795;
     c.write(ss.staticCast<io::data>());
   }
 
   // Check correlation content.
   QList<misc::shared_ptr<io::data> > content;
   // #1
-  add_state_service(content, 0, 0, 1, 42, false, 24, 0);
-  add_state_service(content, 0, 2, 0, 42, false, 24, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
+  add_state_service(content, 0, 0, 123456789, 42, false, 24, 0);
+  add_state_service(content, 0, 2, 0, 42, false, 24, 123456789);
+  add_issue(content, 0, 0, 42, 24, 123456789);
   // #2
-  add_state_service(content, 0, 2, 1, 42, false, 24, 1);
-  add_state_service(content, 33, 2, 0, 42, false, 24, 1);
+  add_state_service(content, 0, 2, 123456790, 42, false, 24, 123456789);
+  add_state_service(content, 123456790, 2, 0, 42, false, 24, 123456790);
+  add_issue(content, 123456790, 0, 42, 24, 123456789);
   // #3
-  add_state_service(content, 33, 2, 1, 42, false, 24, 1);
-  add_state_service(content, 33, 1, 0, 42, false, 24, 1);
+  add_state_service(
+    content,
+    123456790,
+    2,
+    123456791,
+    42,
+    false,
+    24,
+    123456790);
+  add_state_service(content, 123456790, 1, 0, 42, false, 24, 123456791);
   // #4 should not change anything.
   // #5
-  add_state_service(content, 33, 1, 1, 42, false, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, false, 24, 1);
-  add_issue(content, 33, 1, 42, 24, 1);
+  add_state_service(
+    content,
+    123456790,
+    1,
+    123456793,
+    42,
+    false,
+    24,
+    123456791);
+  add_state_service(content, 0, 0, 0, 42, false, 24, 123456793);
+  add_issue(content, 123456790, 123456793, 42, 24, 123456789);
   // #6 should not change anything.
   // #7
-  add_state_service(content, 0, 0, 1, 42, false, 24, 1);
-  add_state_service(content, 0, 1, 0, 42, false, 24, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
+  add_state_service(content, 0, 0, 123456795, 42, false, 24, 123456793);
+  add_state_service(content, 0, 1, 0, 42, false, 24, 123456795);
+  add_issue(content, 0, 0, 42, 24, 123456795);
   return (!check_content(c, content));
 }

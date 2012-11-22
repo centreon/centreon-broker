@@ -55,6 +55,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456789;
     c.write(ss.staticCast<io::data>());
   }
   { // #2
@@ -63,6 +64,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456790;
     ss->scheduled_downtime_depth = 1;
     c.write(ss.staticCast<io::data>());
   }
@@ -72,6 +74,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456791;
     c.write(ss.staticCast<io::data>());
   }
   { // #4
@@ -80,6 +83,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456792;
     ss->scheduled_downtime_depth = 1;
     c.write(ss.staticCast<io::data>());
   }
@@ -89,6 +93,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456793;
     ss->scheduled_downtime_depth = 1;
     c.write(ss.staticCast<io::data>());
   }
@@ -98,6 +103,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456794;
     ss->scheduled_downtime_depth = 1;
     c.write(ss.staticCast<io::data>());
   }
@@ -107,6 +113,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456795;
     ss->scheduled_downtime_depth = 0;
     c.write(ss.staticCast<io::data>());
   }
@@ -114,29 +121,29 @@ int main() {
   // Check correlation content.
   QList<misc::shared_ptr<io::data> > content;
   // #1
-  add_state_service(content, 0, 0, 1, 42, false, 24, 0);
-  add_state_service(content, 0, 2, 0, 42, false, 24, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
+  add_state_service(content, 0, 0, 123456789, 42, false, 24, 0);
+  add_state_service(content, 0, 2, 0, 42, false, 24, 123456789);
+  add_issue(content, 0, 0, 42, 24, 123456789);
   // #2
-  add_state_service(content, 0, 2, 1, 42, false, 24, 1);
-  add_state_service(content, 0, 2, 0, 42, true, 24, 1);
+  add_state_service(content, 0, 2, 123456790, 42, false, 24, 123456789);
+  add_state_service(content, 0, 2, 0, 42, true, 24, 123456790);
   // #3
-  add_state_service(content, 0, 2, 1, 42, true, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, false, 24, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
+  add_state_service(content, 0, 2, 123456791, 42, true, 24, 123456790);
+  add_state_service(content, 0, 0, 0, 42, false, 24, 123456791);
+  add_issue(content, 0, 123456791, 42, 24, 123456789);
   // #4
-  add_state_service(content, 0, 0, 1, 42, false, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, true, 24, 1);
+  add_state_service(content, 0, 0, 123456792, 42, false, 24, 123456791);
+  add_state_service(content, 0, 0, 0, 42, true, 24, 123456792);
   // #5
-  add_state_service(content, 0, 0, 1, 42, true, 24, 1);
-  add_state_service(content, 0, 2, 0, 42, true, 24, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
+  add_state_service(content, 0, 0, 123456793, 42, true, 24, 123456792);
+  add_state_service(content, 0, 2, 0, 42, true, 24, 123456793);
+  add_issue(content, 0, 0, 42, 24, 123456793);
   // #6
-  add_state_service(content, 0, 2, 1, 42, true, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, true, 24, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
+  add_state_service(content, 0, 2, 123456794, 42, true, 24, 123456793);
+  add_state_service(content, 0, 0, 0, 42, true, 24, 123456794);
+  add_issue(content, 0, 123456794, 42, 24, 123456793);
   // #7
-  add_state_service(content, 0, 0, 1, 42, true, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, false, 24, 1);
+  add_state_service(content, 0, 0, 123456795, 42, true, 24, 123456794);
+  add_state_service(content, 0, 0, 0, 42, false, 24, 123456795);
   return (!check_content(c, content));
 }

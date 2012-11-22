@@ -473,7 +473,7 @@ void correlator::_correlate_acknowledgement(
       << static_cast<unsigned long long>(ack.entry_time);
     it->my_issue->ack_time = ack.entry_time;
 
-    time_t now(time(NULL));
+    time_t now(ack.entry_time);
 
     // Old state.
     {
@@ -559,7 +559,7 @@ void correlator::_correlate_host_service_status(
     hss.current_state = unknown_state(*n);
   }
 
-  time_t now(time(NULL));
+  time_t now(hss.last_check);
   unsigned short old_state(n->state);
   bool state_changed(n->state != hss.current_state);
   if (state_changed

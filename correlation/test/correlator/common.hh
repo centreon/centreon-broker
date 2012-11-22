@@ -20,8 +20,8 @@
 #ifndef PARSER_COMMON_HH
 #  define PARSER_COMMON_HH
 
+#  include <ctime>
 #  include <QList>
-#  include <time.h>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
 
