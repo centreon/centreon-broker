@@ -35,7 +35,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static std::auto_ptr<config::applier::logger> gl_logger;
+static config::applier::logger* gl_logger = NULL;
 
 /**************************************
 *                                     *
@@ -124,8 +124,8 @@ logger& logger::instance() {
  *  Load the singleton.
  */
 void logger::load() {
-  if (!gl_logger.get())
-    gl_logger.reset(new logger);
+  if (!gl_logger)
+    gl_logger = new logger;
   return ;
 }
 
@@ -133,7 +133,8 @@ void logger::load() {
  *  Unload the singleton.
  */
 void logger::unload() {
-  gl_logger.reset();
+  delete gl_logger;
+  gl_logger = NULL;
   return ;
 }
 

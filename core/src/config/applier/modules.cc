@@ -26,7 +26,7 @@
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static std::auto_ptr<modules> gl_modules;
+static modules* gl_modules = NULL;
 
 /**************************************
 *                                     *
@@ -111,8 +111,8 @@ modules& modules::instance() {
  *  Load the singleton.
  */
 void modules::load() {
-  if (!gl_modules.get())
-    gl_modules.reset(new modules);
+  if (!gl_modules)
+    gl_modules = new modules;
   return ;
 }
 
@@ -120,7 +120,8 @@ void modules::load() {
  *  Unload the singleton.
  */
 void modules::unload() {
-  gl_modules.reset();
+  delete gl_modules;
+  gl_modules = NULL;
   return ;
 }
 

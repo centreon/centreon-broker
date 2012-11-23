@@ -26,7 +26,7 @@
 using namespace com::centreon::broker::io;
 
 // Class instance.
-static std::auto_ptr<protocols> gl_protocols;
+static protocols* gl_protocols = NULL;
 
 /**************************************
 *                                     *
@@ -73,8 +73,8 @@ protocols& protocols::instance() {
  *  Load singleton.
  */
 void protocols::load() {
-  if (!gl_protocols.get())
-    gl_protocols.reset(new protocols);
+  if (!gl_protocols)
+    gl_protocols = new protocols;
   return ;
 }
 
@@ -108,7 +108,8 @@ void protocols::reg(
  *  Unload the singleton.
  */
 void protocols::unload() {
-  gl_protocols.reset();
+  delete gl_protocols;
+  gl_protocols = NULL;
   return ;
 }
 

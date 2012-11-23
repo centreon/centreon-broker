@@ -34,7 +34,7 @@
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static std::auto_ptr<state> gl_state;
+static state* gl_state = NULL;
 
 /**************************************
 *                                     *
@@ -102,8 +102,8 @@ state& state::instance() {
  *  Load singleton.
  */
 void state::load() {
-  if (!gl_state.get())
-    gl_state.reset(new state);
+  if (!gl_state)
+    gl_state = new state;
   return ;
 }
 
@@ -111,7 +111,8 @@ void state::load() {
  *  Unload singleton.
  */
 void state::unload() {
-  gl_state.reset();
+  delete gl_state;
+  gl_state = NULL;
   return ;
 }
 

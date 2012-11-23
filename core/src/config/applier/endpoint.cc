@@ -35,7 +35,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static std::auto_ptr<config::applier::endpoint> gl_endpoint;
+static config::applier::endpoint* gl_endpoint = NULL;
 
 /**************************************
 *                                     *
@@ -356,8 +356,8 @@ endpoint& endpoint::instance() {
  *  Load singleton.
  */
 void endpoint::load() {
-  if (!gl_endpoint.get())
-    gl_endpoint.reset(new endpoint);
+  if (!gl_endpoint)
+    gl_endpoint = new endpoint;
   return ;
 }
 
@@ -430,7 +430,8 @@ void endpoint::terminated_output() {
  *  Unload singleton.
  */
 void endpoint::unload() {
-  gl_endpoint.reset();
+  delete gl_endpoint;
+  gl_endpoint = NULL;
   return ;
 }
 
