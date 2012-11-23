@@ -70,7 +70,7 @@ logger           Start a :ref:`logger definition
                                                                               <level>medium</level>
                                                                             </logger>
 input            Start an :ref:`input stream definition
-                 <user_configuration_input_output>`.                      ::
+                 <user_configuration_input_output_temporary>`.            ::
 
                                                                             <input>
                                                                               <type>tcp</type>
@@ -78,7 +78,7 @@ input            Start an :ref:`input stream definition
                                                                               <protocol>ndo</protocol>
                                                                             </input>
 output           Start an :ref:`output stream definition
-                 <user_configuration_input_output>`.                      ::
+                 <user_configuration_input_output_temporary>`.            ::
 
                                                                             <output>
                                                                               <type>sql</type>
@@ -89,6 +89,14 @@ output           Start an :ref:`output stream definition
                                                                               <db_password>noertnec</db_password>
                                                                               <db_name>centreon_storage</db_name>
                                                                             </output>
+temporary        Start an :ref:`temporary stream definition
+                 <user_configuration_input_output_temporary>`.            ::
+
+                                                                            <temporary>
+                                                                              <type>file</type>
+									      <path>/tmp/brokertemp</path>
+									      <protocol>ndo</protocol>
+                                                                            </temporary>
 ================ ======================================================== =============================================
 
 .. _user_configuration_logger:
@@ -134,11 +142,11 @@ name   For file loggers, path to the log file. For standard loggers,
        one of stdout or stderr.
 ====== ==============================================================
 
-.. _user_configuration_input_output:
+.. _user_configuration_input_output_temporary:
 
-****************
-Input and Output
-****************
+****************************
+Input,  Output and Temporary
+****************************
 
 Streams and Layers
 ==================
@@ -150,6 +158,9 @@ an input or output stream is, is handled by :ref:`modules <user_modules>`.
 Centreon Broker only directly knows that input streams can be **read from**
 whereas output streams can be **written to** and that multiple protocols
 can be stacked together to create input streams.
+
+Temporary object alows to dump event into a stream when the event queue
+limit as reach.
 
 Protocols
 =========

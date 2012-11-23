@@ -40,6 +40,7 @@ namespace                          local {
                                    connector(connector const& c);
                                    ~connector();
     connector&                     operator=(connector const& c);
+    io::endpoint*                  clone() const;
     void                           close();
     void                           connect_to(QString const& name);
     misc::shared_ptr<io::stream>   open();

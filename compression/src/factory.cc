@@ -94,10 +94,13 @@ bool factory::has_endpoint(
 /**
  *  Create an endpoint matching the configuration object.
  *
- *  @param[in] cfg       Configuration object.
- *  @param[in] is_input  true if the endpoint should be an input object.
- *  @param[in] is_output true if the endpoint should be an output
- *                       object.
+ *  @param[in]  cfg         Configuration object.
+ *  @param[in]  is_input    true if the endpoint should be an input
+                            object.
+ *  @param[in]  is_output   true if the endpoint should be an output
+ *                          object.
+ *  @param[in]  temporary   Unused.
+ *  @param[out] is_acceptor Will be set to false.
  *
  *  @return New endpoint object.
  */
@@ -105,10 +108,12 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
+                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
   (void)is_acceptor;
+  (void)temporary;
 
   // Get compression level.
   int level(-1);

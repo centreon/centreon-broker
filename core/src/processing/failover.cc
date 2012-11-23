@@ -45,9 +45,12 @@ using namespace com::centreon::broker::processing;
 /**
  *  Constructor.
  *
- *  @param[in] is_out true if the failover thread is an output thread.
+ *  @param[in] is_out    true if the failover thread is an output
+ *                       thread.
+ *  @param[in] temporary Temporary stream to write data when memory
+ *                       queue is full.
  */
-failover::failover(bool is_out)
+failover::failover(bool is_out, io::endpoint const* temporary)
   : _buffering_timeout(0),
     _initial(true),
     _is_out(is_out),
@@ -63,7 +66,7 @@ failover::failover(bool is_out)
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
   if (_is_out)
-    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
+    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber(temporary));
   else
     _to = misc::shared_ptr<io::stream>(new multiplexing::publisher);
 }

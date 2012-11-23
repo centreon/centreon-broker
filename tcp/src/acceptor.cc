@@ -83,6 +83,15 @@ acceptor& acceptor::operator=(acceptor const& a) {
 }
 
 /**
+ *  Clone the acceptor.
+ *
+ *  @return This object.
+ */
+io::endpoint* acceptor::clone() const {
+  return (new acceptor(*this));
+}
+
+/**
  *  Close the acceptor.
  */
 void acceptor::close() {

@@ -44,9 +44,10 @@ namespace         file {
                     bool is_input,
                     bool is_output) const;
     io::endpoint* new_endpoint(
-                    config::endpoint& cfg, 
+                    config::endpoint& cfg,
                     bool is_input,
                     bool is_output,
+                    io::endpoint const* temporary,
                     bool& is_acceptor) const;
   };
 }

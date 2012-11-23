@@ -25,26 +25,27 @@
 
 CCB_BEGIN()
 
-namespace      ndo {
+namespace         ndo {
   /**
    *  @class connector connector.hh "com/centreon/broker/ndo/connector.hh"
    *  @brief NDO connector.
    *
    *  Initiate NDO connections.
    */
-  class        connector : public io::endpoint {
+  class           connector : public io::endpoint {
   public:
-               connector(bool is_in, bool is_out);
-               connector(connector const& c);
-               ~connector();
-    connector& operator=(connector const& c);
-    void       close();
+                  connector(bool is_in, bool is_out);
+                  connector(connector const& c);
+                  ~connector();
+    connector&    operator=(connector const& c);
+    io::endpoint* clone() const;
+    void          close();
     misc::shared_ptr<io::stream>
-               open();
+                  open();
 
   private:
-    bool       _is_in;
-    bool       _is_out;
+    bool          _is_in;
+    bool          _is_out;
   };
 }
 

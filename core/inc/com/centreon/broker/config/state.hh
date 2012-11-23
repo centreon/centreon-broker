@@ -45,6 +45,9 @@ namespace                         config {
                                   ~state();
     state&                        operator=(state const& s);
     void                          clear();
+    void                          event_queue_max_size(
+                                    unsigned int val) throw ();
+    unsigned int                  event_queue_max_size() const throw ();
     void                          flush_logs(bool flush) throw ();
     bool                          flush_logs() const throw ();
     QList<endpoint>&              inputs() throw ();
@@ -63,10 +66,13 @@ namespace                         config {
     QList<endpoint> const&        outputs() const throw ();
     QMap<QString, QString>&       params() throw ();
     QMap<QString, QString> const& params() const throw ();
+    endpoint&                     temporary() throw ();
+    endpoint const&               temporary() const throw ();
 
   private:
     void                          _internal_copy(state const& s);
 
+    unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     QList<endpoint>               _inputs;
     bool                          _log_thread_id;
@@ -76,6 +82,7 @@ namespace                         config {
     QList<QString>                _module_list;
     QList<endpoint>               _outputs;
     QMap<QString, QString>        _params;
+    endpoint                      _temporary;
   };
 }
 

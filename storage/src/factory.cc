@@ -116,6 +116,7 @@ bool factory::has_endpoint(
  *  @param[in]  cfg         Endpoint configuration.
  *  @param[in]  is_input    true if endpoint should act as input.
  *  @param[in]  is_output   true if endpoint should act as output.
+ *  @param[in]  temporary   Unused.
  *  @param[out] is_acceptor Will be set to false.
  *
  *  @return Endpoint matching the given configuration.
@@ -124,9 +125,11 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
+                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
+  (void)temporary;
 
   // Find lengths.
   unsigned int interval_length(find_param(cfg, "interval").toUInt());

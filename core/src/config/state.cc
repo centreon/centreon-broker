@@ -66,6 +66,7 @@ state& state::operator=(state const& s) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
   _log_thread_id = false;
@@ -76,7 +77,26 @@ void state::clear() {
   _module_list.clear();
   _outputs.clear();
   _params.clear();
+  _temporary = endpoint();
   return ;
+}
+
+/**
+ *  Set the maximum limit size of the event queue.
+ *
+ *  @param[in] val Size limit.
+ */
+void state::event_queue_max_size(unsigned int val) throw () {
+  _event_queue_max_size = val;
+}
+
+/**
+ *  Get the maximum limit size of the event queue.
+ *
+ *  @return The size limit.
+ */
+unsigned int state::event_queue_max_size() const throw () {
+  return (_event_queue_max_size);
 }
 
 /**
@@ -245,6 +265,24 @@ QMap<QString, QString> const& state::params() const throw () {
   return (_params);
 }
 
+/**
+ *  Get temporary.
+ *
+ *  @return Temporary object.
+ */
+endpoint& state::temporary() throw () {
+  return (_temporary);
+}
+
+/**
+ *  Get temporary.
+ *
+ *  @return Temporary object.
+ */
+endpoint const& state::temporary() const throw () {
+  return (_temporary);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -257,6 +295,7 @@ QMap<QString, QString> const& state::params() const throw () {
  *  @param[in] s Object to copy.
  */
 void state::_internal_copy(state const& s) {
+  _event_queue_max_size = s._event_queue_max_size;
   _inputs = s._inputs;
   _log_thread_id = s._log_thread_id;
   _log_timestamp = s._log_timestamp;
@@ -265,5 +304,6 @@ void state::_internal_copy(state const& s) {
   _module_list = s._module_list;
   _outputs = s._outputs;
   _params = s._params;
+  _temporary = s._temporary;
   return ;
 }

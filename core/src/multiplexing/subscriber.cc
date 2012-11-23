@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
+#include <limits>
 #include <QMutexLocker>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -29,6 +30,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
+unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned int>::max();
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -36,14 +39,19 @@ using namespace com::centreon::broker::multiplexing;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] temporary Temporary stream to write data when memory
+ *                       queue is full.
  */
-subscriber::subscriber() {
+subscriber::subscriber(io::endpoint const* temporary) {
   // Register self in subscriber list.
   QMutexLocker lock1(&gl_subscribersm);
   QMutexLocker lock2(&_mutex);
   _process_in = true;
   _process_out = true;
+  if (temporary)
+    _temporary = std::auto_ptr<io::endpoint>(temporary->clone());
   gl_subscribers.push_back(this);
   logging::debug(logging::low) << "multiplexing: "
     << gl_subscribers.size()
@@ -62,6 +70,26 @@ subscriber::~subscriber() {
       it = gl_subscribers.erase(it);
     else
       ++it;
+}
+
+/**
+ *  Set the maximume event queue size.
+ *
+ *  @param[in] max The size limit.
+ */
+void subscriber::event_queue_max_size(unsigned int max) throw () {
+  if (!max)
+    max = std::numeric_limits<unsigned int>::max();
+  _event_queue_max_size = max;
+}
+
+/**
+ *  Get the maximum event queue size.
+ *
+ *  @return The size limit.
+ */
+unsigned int subscriber::event_queue_max_size() throw () {
+  return (_event_queue_max_size);
 }
 
 /**

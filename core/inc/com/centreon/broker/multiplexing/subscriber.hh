@@ -21,15 +21,17 @@
 #  define CCB_MULTIPLEXING_SUBSCRIBER_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <QMutex>
 #  include <QQueue>
 #  include <QWaitCondition>
+#  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          multiplexing {
+namespace               multiplexing {
   /**
    *  @class subscriber subscriber.hh "com/centreon/broker/multiplexing/subscriber.hh"
    *  @brief Receive events from publishers and make them
@@ -42,29 +44,35 @@ namespace          multiplexing {
    *
    *  @see publisher
    */
-  class            subscriber : public io::stream {
+  class                 subscriber : public io::stream {
   public:
-                   subscriber();
-                   ~subscriber();
-    void           process(bool in = false, bool out = true);
-    void           read(misc::shared_ptr<io::data>& d);
-    void           read(
-                     misc::shared_ptr<io::data>& d,
-                     time_t timeout,
-                     bool* timed_out = NULL);
-    void           write(misc::shared_ptr<io::data> const& d);
+                        subscriber(
+                          io::endpoint const* temporary = NULL);
+                        ~subscriber();
+    static void         event_queue_max_size(unsigned int max) throw ();
+    static unsigned int event_queue_max_size() throw ();
+    void                process(bool in = false, bool out = true);
+    void                read(misc::shared_ptr<io::data>& d);
+    void                read(
+                          misc::shared_ptr<io::data>& d,
+                          time_t timeout,
+                          bool* timed_out = NULL);
+    void                write(misc::shared_ptr<io::data> const& d);
 
   private:
-                   subscriber(subscriber const& s);
-    subscriber&    operator=(subscriber const& s);
-    void           clean();
+                        subscriber(subscriber const& s);
+    subscriber&         operator=(subscriber const& s);
+    void                clean();
 
-    QWaitCondition _cv;
+    QWaitCondition      _cv;
     QQueue<misc::shared_ptr<io::data> >
-                   _events;
-    QMutex         _mutex;
-    bool           _process_in;
-    bool           _process_out;
+                        _events;
+    static unsigned int _event_queue_max_size;
+    QMutex              _mutex;
+    bool                _process_in;
+    bool                _process_out;
+    std::auto_ptr<io::endpoint>
+                        _temporary;
   };
 }
 

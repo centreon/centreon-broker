@@ -47,6 +47,7 @@ namespace                com {
                          acceptor(acceptor const& a);
                          ~acceptor();
           acceptor&      operator=(acceptor const& a);
+          io::endpoint*  clone() const;
           void           close();
           void           listen_on(unsigned short port);
           misc::shared_ptr<io::stream>

@@ -36,6 +36,8 @@ public:
                     setable_endpoint(setable_endpoint const& se);
                     ~setable_endpoint();
   setable_endpoint& operator=(setable_endpoint const& se);
+  com::centreon::broker::io::endpoint*
+                    clone() const;
   void              close();
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::stream>
                     open();

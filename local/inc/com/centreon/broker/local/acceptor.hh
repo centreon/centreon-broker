@@ -42,6 +42,7 @@ namespace                        local {
                                  acceptor(acceptor const& a);
                                  ~acceptor();
     acceptor&                    operator=(acceptor const& a);
+    io::endpoint*                clone() const;
     void                         close();
     void                         listen_on(QString const& name);
     misc::shared_ptr<io::stream> open();

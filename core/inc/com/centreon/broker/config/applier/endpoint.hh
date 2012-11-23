@@ -48,7 +48,8 @@ namespace                    com {
                              ~endpoint();
             void             apply(
                                QList<config::endpoint> const& inputs,
-                               QList<config::endpoint> const& outputs);
+                               QList<config::endpoint> const& outputs,
+                               config::endpoint temporary);
             void             discard();
             iterator         input_begin();
             iterator         input_end();
@@ -73,11 +74,14 @@ namespace                    com {
                                config::endpoint& cfg,
                                bool is_input,
                                bool is_output,
+                               io::endpoint const* temporary,
                                QList<config::endpoint>& l);
+            io::endpoint*    _create_temporary(config::endpoint& cfg);
             void             _diff_endpoints(
                                QMap<config::endpoint,
                                processing::failover*>& current,
                                QList<config::endpoint> const& new_endpoints,
+                               bool temporary_has_change,
                                QList<config::endpoint>& to_create);
 
             QMap<config::endpoint, processing::failover*>
@@ -86,6 +90,8 @@ namespace                    com {
             QMap<config::endpoint, processing::failover*>
                              _outputs;
             QMutex           _outputsm;
+            config::endpoint _temporary;
+            QMutex           _temporarym;
           };
         }
       }

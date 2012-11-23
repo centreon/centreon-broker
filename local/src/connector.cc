@@ -79,6 +79,15 @@ connector& connector::operator=(connector const& c) {
 }
 
 /**
+ *  Clone the connector.
+ *
+ *  @return This object.
+ */
+io::endpoint* connector::clone() const {
+  return (new connector(*this));
+}
+
+/**
  *  Close the socket.
  */
 void connector::close() {

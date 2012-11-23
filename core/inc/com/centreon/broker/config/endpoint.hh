@@ -47,7 +47,7 @@ namespace                    config {
     bool                     operator<(endpoint const& e) const;
 
     time_t                   buffering_timeout;
-    QString                  failover;          
+    QString                  failover;
     QString                  name;
     QMap<QString, QString>   params;
     time_t                   read_timeout;

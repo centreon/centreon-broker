@@ -99,30 +99,53 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] inputs  Inputs configuration.
- *  @param[in] outputs Outputs configuration.
+ *  @param[in] inputs    Inputs configuration.
+ *  @param[in] outputs   Outputs configuration.
+ *  @param[in] temporary Temporary configuration.
  */
 void endpoint::apply(
                  QList<config::endpoint> const& inputs,
-                 QList<config::endpoint> const& outputs) {
+                 QList<config::endpoint> const& outputs,
+                 config::endpoint temporary) {
   // Log messages.
   logging::config(logging::medium)
     << "endpoint applier: loading configuration";
   logging::debug(logging::high) << "endpoint applier: " << inputs.size()
     << " inputs and " << outputs.size() << " outputs to apply";
 
+  bool temporary_has_change(false);
+  std::auto_ptr<io::endpoint> endp_temporary;
+  {
+    QMutexLocker lock(&_temporarym);
+    if (_temporary != temporary) {
+      temporary_has_change = true;
+      _temporary = temporary;
+    }
+    // Create temporary endpoint with temporary configuration.
+    endp_temporary
+      = std::auto_ptr<io::endpoint>(_create_temporary(temporary));
+  }
+
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
   {
     QMutexLocker lock(&_inputsm);
-    _diff_endpoints(_inputs, inputs, in_to_create);
+    _diff_endpoints(
+      _inputs,
+      inputs,
+      temporary_has_change,
+      in_to_create);
   }
 
   // Remove old outputs and generate outputs to create.
   QList<config::endpoint> out_to_create;
   {
     QMutexLocker lock(&_outputsm);
-    _diff_endpoints(_outputs, outputs, out_to_create);
+    _diff_endpoints(
+      _outputs,
+      outputs,
+      temporary_has_change,
+      out_to_create);
   }
 
   // Update existing endpoints.
@@ -158,7 +181,12 @@ void endpoint::apply(
               name_match_failover(it->name))
             == out_to_create.end())) {
       // Create endpoint.
-      std::auto_ptr<processing::failover> endp(_create_endpoint(*it, false, true, out_to_create));
+      std::auto_ptr<processing::failover> endp(_create_endpoint(
+                                                 *it,
+                                                 false,
+                                                 true,
+                                                 endp_temporary.get(),
+                                                 out_to_create));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -185,7 +213,12 @@ void endpoint::apply(
               name_match_failover(it->name))
             == in_to_create.end())) {
       // Create endpoint.
-      std::auto_ptr<processing::failover> endp(_create_endpoint(*it, true, false, in_to_create));
+      std::auto_ptr<processing::failover> endp(_create_endpoint(
+                                                 *it,
+                                                 true,
+                                                 false,
+                                                 endp_temporary.get(),
+                                                 in_to_create));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -199,7 +232,7 @@ void endpoint::apply(
         << "endpoint applier: input thread " << endp.get()
         << " is registered and ready to run";
       endp.release()->start();
-    }    
+    }
 
   return ;
 }
@@ -448,12 +481,14 @@ endpoint& endpoint::operator=(endpoint const& e) {
  *  @param[in] cfg       Endpoint configuration.
  *  @param[in] is_input  true if the endpoint will act as input.
  *  @param[in] is_output true if the endpoint will act as output.
+ *  @param[in] temporary Temporary endpoint.
  *  @param[in] l         List of endpoints.
  */
 processing::failover* endpoint::_create_endpoint(
                                   config::endpoint& cfg,
                                   bool is_input,
                                   bool is_output,
+                                  io::endpoint const* temporary,
                                   QList<config::endpoint>& l) {
   // Debug message.
   logging::config(logging::medium)
@@ -472,9 +507,10 @@ processing::failover* endpoint::_create_endpoint(
                         *it,
                         is_input || is_output,
                         is_output,
+                        temporary,
                         l));
   }
-  
+
   // Create endpoint object.
   misc::shared_ptr<io::endpoint> endp;
   bool is_acceptor(false);
@@ -491,6 +527,7 @@ processing::failover* endpoint::_create_endpoint(
                                                 cfg,
                                                 is_input,
                                                 is_output,
+                                                temporary,
                                                 is_acceptor));
       level = it.value().osi_to + 1;
       break ;
@@ -513,6 +550,7 @@ processing::failover* endpoint::_create_endpoint(
                                              cfg,
                                              is_input,
                                              is_output,
+                                             temporary,
                                              is_acceptor));
         current->from(endp);
         endp = current;
@@ -528,7 +566,8 @@ processing::failover* endpoint::_create_endpoint(
   }
 
   // Return failover thread.
-  std::auto_ptr<processing::failover> fo(new processing::failover(is_output));
+  std::auto_ptr<processing::failover>
+    fo(new processing::failover(is_output, temporary));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_name(cfg.name);
   fo->set_read_timeout(cfg.read_timeout);
@@ -536,6 +575,47 @@ processing::failover* endpoint::_create_endpoint(
   fo->set_endpoint(endp);
   fo->set_failover(failovr);
   return (fo.release());
+}
+
+/**
+ *  Create and register an temporary according to configuration.
+ *
+ *  @param[in] cfg       Endpoint configuration.
+ */
+io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
+  // Debug message.
+  logging::config(logging::medium)
+    << "endpoint applier: creating new temporary '" << cfg.name << "'";
+
+  // Check that failover is configured.
+  if (!cfg.failover.isEmpty())
+    throw (exceptions::msg() << "endpoint applier: find failover into "
+           "temporary '" << cfg.name << "'");
+
+  // Create endpoint object.
+  std::auto_ptr<io::endpoint> endp;
+  bool is_acceptor(false);
+  for (QMap<QString, io::protocols::protocol>::const_iterator
+         it(io::protocols::instance().begin()),
+         end(io::protocols::instance().end());
+       it != end;
+       ++it) {
+    if ((it.value().osi_from == 1)
+        && it.value().endpntfactry->has_endpoint(cfg, false, true)) {
+      endp = std::auto_ptr<io::endpoint>(
+                     it.value().endpntfactry->new_endpoint(
+                                                cfg,
+                                                false,
+                                                true,
+                                                NULL,
+                                                is_acceptor));
+      break ;
+    }
+  }
+  if (!endp.get())
+    throw (exceptions::msg() << "endpoint applier: no matching " \
+             "protocol found for temporary '" << cfg.name << "'");
+  return (endp.release());
 }
 
 /**
@@ -548,6 +628,7 @@ processing::failover* endpoint::_create_endpoint(
 void endpoint::_diff_endpoints(
                  QMap<config::endpoint, processing::failover*> & current,
                  QList<config::endpoint> const& new_endpoints,
+                 bool temporary_has_change,
                  QList<config::endpoint>& to_create) {
   // Copy some lists that we will modify.
   QList<config::endpoint> new_ep(new_endpoints);
@@ -589,7 +670,7 @@ void endpoint::_diff_endpoints(
     // Try to find entry and subentries in the endpoints already running.
     QMap<config::endpoint, processing::failover*>::iterator
       map_it(to_delete.find(entries.first()));
-    if (map_it == to_delete.end())
+    if (map_it == to_delete.end() || temporary_has_change)
       for (QList<config::endpoint>::iterator
              it(entries.begin()),
              end(entries.end());

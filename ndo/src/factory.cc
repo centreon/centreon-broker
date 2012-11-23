@@ -94,6 +94,8 @@ bool factory::has_endpoint(
  *  @param[in]  cfg Endpoint configuration.
  *  @param[in]  is_input    true if endpoint must act as event source.
  *  @param[in]  is_output   true if endpoint must act as event destination.
+ *  @param[in]  temporary   Temporary stream to write data when memory
+ *                          queue is full.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *
  *  @return Endpoint matching configuration.
@@ -102,11 +104,12 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
+                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)cfg;
   io::endpoint* retval(NULL);
   if (is_acceptor)
-    retval = new ndo::acceptor(is_output);
+    retval = new ndo::acceptor(is_output, temporary);
   else
     retval = new ndo::connector(is_input, is_output);
   return (retval);

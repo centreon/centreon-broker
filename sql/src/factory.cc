@@ -114,9 +114,11 @@ bool factory::has_endpoint(
 /**
  *  Create an endpoint.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the endpoint should be an input.
- *  @param[in] is_output true if the endpoint should be an output.
+ *  @param[in]  cfg         Endpoint configuration.
+ *  @param[in]  is_input    true if the endpoint should be an input.
+ *  @param[in]  is_output   true if the endpoint should be an output.
+ *  @param[in]  temporary   Unused.
+ *  @param[out] is_acceptor Will be set to false.
  *
  *  @return New endpoint.
  */
@@ -124,9 +126,11 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
+                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
+  (void)temporary;
 
   // Find DB type.
   QString type(find_param(cfg, "db_type"));

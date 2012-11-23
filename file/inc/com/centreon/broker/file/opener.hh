@@ -43,6 +43,7 @@ namespace                        file {
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
+    io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_filename(QString const& filename);

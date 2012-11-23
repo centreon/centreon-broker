@@ -76,6 +76,15 @@ acceptor& acceptor::operator=(acceptor const& a) {
 }
 
 /**
+ *  Clone the socket.
+ *
+ *  @return This object.
+ */
+io::endpoint* acceptor::clone() const {
+  return (new acceptor(*this));
+}
+
+/**
  *  Close the socket.
  */
 void acceptor::close() {

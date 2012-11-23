@@ -230,6 +230,9 @@ void parser::parse(QString const& file, state& s) {
   // Clear state.
   s.clear();
 
+  // Check if temporary object is already define.
+  bool has_temprorary(false);
+
   // Browse first-level elements.
   QDomElement root(d.documentElement());
   QDomNodeList level1(root.childNodes());
@@ -264,6 +267,10 @@ void parser::parse(QString const& file, state& s) {
         QString val(elem.text());
         s.log_timestamp((val == "yes") || val.toInt());
       }
+      else if (name == "event_queue_max_size") {
+        unsigned int val(elem.text().toUInt());
+        s.event_queue_max_size(val);
+      }
       else if (name == "module")
         s.module_list().push_back(elem.text());
       else if (name == "module_directory")
@@ -272,6 +279,15 @@ void parser::parse(QString const& file, state& s) {
         endpoint out;
         _parse_endpoint(elem, out);
         s.outputs().push_back(out);
+      }
+      else if (name == "temporary") {
+        if (has_temprorary)
+          throw (exceptions::msg() << "config parser: one temporary "
+                 "object is already define");
+        endpoint temp;
+        _parse_endpoint(elem, temp);
+        s.temporary() = temp;
+        has_temprorary = true;
       }
       else {
         QDomDocument subdoc;

@@ -22,6 +22,7 @@
 
 #  include <climits>
 #  include <ctime>
+#  include <memory>
 #  include <QMutex>
 #  include <QReadWriteLock>
 #  include <QThread>
@@ -50,7 +51,9 @@ namespace                com {
           friend class   stats::worker;
 
          public:
-                         failover(bool is_out);
+                         failover(
+                           bool is_out,
+                           io::endpoint const* temporary = NULL);
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);

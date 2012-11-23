@@ -73,6 +73,13 @@ setable_endpoint& setable_endpoint::operator=(setable_endpoint const& se) {
 }
 
 /**
+ *  Clone endpoint.
+ */
+com::centreon::broker::io::endpoint* setable_endpoint::clone() const {
+  return (new setable_endpoint(*this));
+}
+
+/**
  *  Close endpoint.
  */
 void setable_endpoint::close() {

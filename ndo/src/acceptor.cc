@@ -60,9 +60,15 @@ void acceptor::_on_thread_termination() {
 /**
  *  Constructor.
  *
- *  @param[in] is_out true if the acceptor is an output acceptor.
+ *  @param[in] is_out    true if the acceptor is an output acceptor.
+ *  @param[in] temporary XXX: todo.
  */
-acceptor::acceptor(bool is_out) : io::endpoint(true), _is_out(is_out) {}
+acceptor::acceptor(bool is_out, io::endpoint const* temporary)
+  : io::endpoint(true),
+    _is_out(is_out) {
+  if (is_out && temporary)
+    _temporary = std::auto_ptr<io::endpoint>(temporary->clone());
+}
 
 /**
  *  Copy constructor.
@@ -71,6 +77,8 @@ acceptor::acceptor(bool is_out) : io::endpoint(true), _is_out(is_out) {}
  */
 acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _is_out = a._is_out;
+  if (a._is_out && a._temporary.get())
+    _temporary = std::auto_ptr<io::endpoint>(a._temporary->clone());
 }
 
 /**
@@ -97,8 +105,19 @@ acceptor& acceptor::operator=(acceptor const& a) {
   if (this != &a) {
     io::endpoint::operator=(a);
     _is_out = a._is_out;
+    if (a._is_out && a._temporary.get())
+      _temporary = std::auto_ptr<io::endpoint>(a._temporary->clone());
   }
   return (*this);
+}
+
+/**
+ *  Clone the acceptor.
+ *
+ *  @return This object.
+ */
+io::endpoint* acceptor::clone() const {
+  return (new acceptor(*this));
 }
 
 /**
@@ -131,7 +150,8 @@ misc::shared_ptr<io::stream> acceptor::open() {
         out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
       }
       else {
-        in = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
+        in = misc::shared_ptr<io::stream>(
+               new multiplexing::subscriber(_temporary.get()));
         out = misc::shared_ptr<io::stream>(new ndo::output);
         out->read_from(base);
         out->write_to(base);
