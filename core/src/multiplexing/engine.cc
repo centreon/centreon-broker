@@ -108,11 +108,13 @@ void engine::publish(misc::shared_ptr<io::data> const& e) {
   // Lock mutex.
   QMutexLocker lock(&_mutex);
 
-  // Store object for further processing.
-  _kiew.enqueue(e);
+  if (!_stopped) {
+    // Store object for further processing.
+    _kiew.enqueue(e);
 
-  // Processing function.
-  (this->*_write_func)(e);
+    // Processing function.
+    (this->*_write_func)(e);
+  }
 
   return ;
 }
@@ -199,6 +201,9 @@ void engine::stop() {
 
     // Set writing method.
     _write_func = &engine::_nop;
+
+    // Mark engine as stopped.
+    _stopped = true;
   }
   return ;
 }
@@ -239,7 +244,7 @@ void engine::unload() {
 /**
  *  Default constructor.
  */
-engine::engine() : _write_func(&engine::_nop) {
+engine::engine() : _stopped(false), _write_func(&engine::_nop) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();

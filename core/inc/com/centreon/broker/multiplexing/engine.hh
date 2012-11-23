@@ -62,6 +62,7 @@ namespace                 com {
 
           static std::auto_ptr<engine>
                           _instance;
+          bool            _stopped;
           void (engine::* _write_func)(
                             misc::shared_ptr<io::data> const&);
 
