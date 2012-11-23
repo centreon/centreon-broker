@@ -54,6 +54,7 @@ int main() {
       data =
         "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
         "<centreonbroker>\n"
+        "  <event_queue_max_size>42</event_queue_max_size>\n"
         "  <flush_logs>0</flush_logs>\n"
         "  <log_thread_id>1</log_thread_id>\n"
         "</centreonbroker>\n";
@@ -80,6 +81,7 @@ int main() {
       data =
         "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
         "<centreonbroker>\n"
+        "  <event_queue_max_size>24</event_queue_max_size>\n"
         "  <flush_logs>1</flush_logs>\n"
         "  <log_thread_id>0</log_thread_id>\n"
         "  <include>";
@@ -104,7 +106,8 @@ int main() {
 
     // Check against expected result.
     if ((s.flush_logs() != 0)
-        || (s.log_thread_id() != 1))
+        || (s.log_thread_id() != 1)
+        || (s.event_queue_max_size() != 42))
       throw (exceptions::msg() << "invalid parsing");
 
     // Success !
