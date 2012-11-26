@@ -63,15 +63,20 @@ namespace               multiplexing {
                         subscriber(subscriber const& s);
     subscriber&         operator=(subscriber const& s);
     void                clean();
+    void                _get_last_event(
+                          misc::shared_ptr<io::data>& event);
 
     QWaitCondition      _cv;
+    std::auto_ptr<io::endpoint>
+                        _endp_temporary;
     QQueue<misc::shared_ptr<io::data> >
                         _events;
     static unsigned int _event_queue_max_size;
     QMutex              _mutex;
     bool                _process_in;
     bool                _process_out;
-    std::auto_ptr<io::endpoint>
+    unsigned int        _total_events;
+    misc::shared_ptr<io::stream>
                         _temporary;
   };
 }

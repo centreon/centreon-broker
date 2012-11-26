@@ -44,14 +44,17 @@ unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned in
  *  @param[in] temporary Temporary stream to write data when memory
  *                       queue is full.
  */
-subscriber::subscriber(io::endpoint const* temporary) {
+subscriber::subscriber(io::endpoint const* temporary)
+  : _total_events(0) {
   // Register self in subscriber list.
   QMutexLocker lock1(&gl_subscribersm);
   QMutexLocker lock2(&_mutex);
   _process_in = true;
   _process_out = true;
-  if (temporary)
-    _temporary = std::auto_ptr<io::endpoint>(temporary->clone());
+  if (temporary) {
+    _endp_temporary = std::auto_ptr<io::endpoint>(temporary->clone());
+    _temporary = _endp_temporary->open();
+  }
   gl_subscribers.push_back(this);
   logging::debug(logging::low) << "multiplexing: "
     << gl_subscribers.size()
@@ -153,7 +156,7 @@ void subscriber::read(
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
-  if (_events.empty()) {
+  if (!_total_events) {
     // Wait a while if subscriber was not shutdown.
     if (_process_in && _process_out) {
       if ((time_t)-1 == timeout)
@@ -168,11 +171,11 @@ void subscriber::read(
         else if (timed_out)
           *timed_out = true;
       }
-      if (!_events.isEmpty()) {
-        event = _events.dequeue();
+      if (_total_events) {
+        _get_last_event(event);
         lock.unlock();
         logging::debug(logging::low) << "multiplexing: "
-          << _events.size() << " events remaining in subcriber";
+          << _total_events << " events remaining in subcriber";
       }
       else
         event.clear();
@@ -187,9 +190,9 @@ void subscriber::read(
     if (!_process_in && _process_out)
       throw (io::exceptions::shutdown(true, false)
              << "thread is shutdown, cannot get any further event");
-    event = _events.dequeue();
+    _get_last_event(event);
     lock.unlock();
-    logging::debug(logging::low) << "multiplexing: " << _events.size()
+    logging::debug(logging::low) << "multiplexing: " << _total_events
       << " events remaining in subscriber";
   }
   return ;
@@ -203,7 +206,11 @@ void subscriber::read(
 void subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
-    _events.enqueue(event);
+    if (++_total_events > event_queue_max_size()
+        && !_temporary.isNull())
+      _temporary->write(event);
+    else
+      _events.enqueue(event);
   }
   _cv.wakeOne();
   return ;
@@ -250,6 +257,25 @@ subscriber& subscriber::operator=(subscriber const& s) {
  */
 void subscriber::clean() {
   QMutexLocker lock(&_mutex);
+  if (_endp_temporary.get())
+    _temporary = _endp_temporary->open();
   _events.clear();
+  _total_events = 0;
   return ;
+}
+
+/**
+ *  Get the last event available from the internal queue. Warning, lock
+ *  _mutex before use this function.
+ *
+ *  @param[out] event Last event available.
+ */
+void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
+  if (_total_events > event_queue_max_size()
+      && !_temporary.isNull()) {
+    _temporary->read(event);
+    _events.enqueue(event);
+  }
+  event = _events.dequeue();
+  --_total_events;
 }
