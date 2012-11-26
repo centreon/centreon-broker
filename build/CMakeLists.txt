@@ -939,6 +939,11 @@ if (WITH_TESTING)
 
   # multiplexing namespace tests.
   # multiplexing::subscriber tests.
+  add_library("ccb_core_multiplexing_subscriber" STATIC
+    "${TEST_DIR}/multiplexing/subscriber/temporary_endpoint.cc"
+    "${TEST_DIR}/multiplexing/subscriber/temporary_stream.cc")
+  set(TEST_LIBRARIES "ccb_core_multiplexing_subscriber" "roker")
+
   #   Default constructor.
   set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
   add_executable("${TEST_NAME}"
@@ -950,6 +955,12 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/subscriber/process.cc")
   target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Process with temporary.
+  set(TEST_NAME "core_multiplexing_subscriber_process_with_temporary")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/subscriber/process_with_temporary.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
   add_library("ccb_core_multiplexing_engine" STATIC
