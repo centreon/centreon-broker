@@ -581,9 +581,13 @@ processing::failover* endpoint::_create_endpoint(
 /**
  *  Create and register an temporary according to configuration.
  *
- *  @param[in] cfg       Endpoint configuration.
+ *  @param[in] cfg Endpoint configuration.
  */
 io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
+  // No temporary is define into the configuration.
+  if (cfg.params.empty())
+    return (NULL);
+
   // Debug message.
   logging::config(logging::medium)
     << "endpoint applier: creating new temporary '" << cfg.name << "'";
