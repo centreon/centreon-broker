@@ -83,7 +83,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep(10);
+    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Add comments on two hosts.
     commander.execute(
@@ -98,7 +98,7 @@ int main() {
                 "ADD_SVC_COMMENT;1;1;0;FooBar;Baz    Qux");
 
     // Let the monitoring engine run a while.
-    sleep(10);
+    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));

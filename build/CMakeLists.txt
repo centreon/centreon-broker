@@ -208,6 +208,11 @@ if (WITH_MONITORING_ENGINE)
           "${MONITORING_ENGINE_ADDITIONAL}broker_module=${MODULE}\\n")
     endforeach ()
   endif ()
+  if (WITH_MONITORING_ENGINE_INTERVAL_LENGTH)
+    set(MONITORING_ENGINE_INTERVAL_LENGTH "${WITH_MONITORING_ENGINE_INTERVAL_LENGTH}")
+  else ()
+    set(MONITORING_ENGINE_INTERVAL_LENGTH 1)
+  endif ()
 endif ()
 
 # DB parameters.

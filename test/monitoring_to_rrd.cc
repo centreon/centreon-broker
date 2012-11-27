@@ -107,7 +107,7 @@ int main() {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>60</interval>\n"
+          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>2592000</length>\n"
           << "  </output>\n"
           << "  <output>\n"
@@ -230,7 +230,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(60);
+    sleep(60 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check metrics table.
     std::list<unsigned int> metrics;
@@ -372,7 +372,7 @@ int main() {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  //config_db_close(DB_NAME);
+  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   QStringList metrics_entries(QDir(metrics_path.c_str()).entryList());

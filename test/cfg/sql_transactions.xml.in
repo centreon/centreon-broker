@@ -22,7 +22,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_monitoring_to_sql</db_name>
+    <db_name>broker_sql_transactions</db_name>
     <queries_per_transaction>10</queries_per_transaction>
     <read_timeout>10</read_timeout>
   </output>

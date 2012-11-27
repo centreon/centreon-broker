@@ -83,7 +83,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep(10);
+    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
@@ -119,7 +119,7 @@ int main() {
     }
 
     // Let the monitoring engine run a while.
-    sleep(40);
+    sleep(40 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // New time.
     time_t t1(now);
@@ -224,7 +224,7 @@ int main() {
     commander.execute("DEL_HOST_DOWNTIME;1");
 
     // Run a while.
-    sleep(10);
+    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Update time.
     time_t t2(now);
