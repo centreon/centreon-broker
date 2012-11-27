@@ -1118,7 +1118,9 @@ int neb::callback_host_check(int callback_type, void* data) {
 
     // Fill output var.
     hcdata = static_cast<nebstruct_host_check_data*>(data);
+    ::host* h(static_cast< ::host*>(hcdata->object_ptr));
     if (hcdata->command_line) {
+      host_check->active_checks_enabled = h->checks_enabled;
       host_check->check_type = hcdata->check_type;
       host_check->command_line = hcdata->command_line;
       if (!hcdata->host_name)
@@ -1129,8 +1131,7 @@ int neb::callback_host_check(int callback_type, void* data) {
         throw (exceptions::msg() << "could not find ID of host '"
                << hcdata->host_name << "'");
       host_check->host_id = it->second;
-      host_check->next_check
-        = static_cast<host*>(hcdata->object_ptr)->next_check;
+      host_check->next_check = h->next_check;
 
       // Send event.
       gl_publisher.write(host_check.staticCast<io::data>());
@@ -1936,7 +1937,9 @@ int neb::callback_service_check(int callback_type, void* data) {
 
     // Fill output var.
     scdata = static_cast<nebstruct_service_check_data*>(data);
+    ::service* s(static_cast< ::service*>(scdata->object_ptr));
     if (scdata->command_line) {
+      service_check->active_checks_enabled = s->checks_enabled;
       service_check->check_type = scdata->check_type;
       service_check->command_line = scdata->command_line;
       if (!scdata->host_name)
@@ -1952,8 +1955,7 @@ int neb::callback_service_check(int callback_type, void* data) {
                << scdata->host_name << "', '"
                << scdata->service_description << "')");
       service_check->host_id = it->second.first;
-      service_check->next_check
-        = static_cast<service*>(scdata->object_ptr)->next_check;
+      service_check->next_check = s->next_check;
       service_check->service_id = it->second.second;
 
       // Send event.

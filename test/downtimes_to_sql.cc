@@ -35,6 +35,8 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_downtimes_to_sql"
+#define FALSE_COMMAND_LINE "/bin/false"
+#define FALSE_COMMAND "1"
 
 /**
  *  Check that downtimes are properly inserted in SQL database.
@@ -48,6 +50,7 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
+  std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
@@ -57,8 +60,31 @@ int main() {
     QSqlDatabase db(config_db_open(DB_NAME));
 
     // Prepare monitoring engine configuration parameters.
+    generate_commands(commands, 1);
+    commands.front().command_line
+      = new char[sizeof(FALSE_COMMAND_LINE)];
+    strcpy(commands.front().command_line, FALSE_COMMAND_LINE);
     generate_hosts(hosts, 10);
+    for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
+         it != end;
+         ++it)
+      if (!strcmp(it->name, "2")) {
+        it->host_check_command = new char[sizeof(FALSE_COMMAND)];
+        strcpy(it->host_check_command, FALSE_COMMAND);
+        break ;
+      }
     generate_services(services, hosts, 5);
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it)
+      if (!strcmp(it->host_name, "7")
+          && !strcmp(it->description, "31")) {
+        it->service_check_command = new char[sizeof(FALSE_COMMAND)];
+        strcpy(it->service_check_command, FALSE_COMMAND);
+        break ;
+      }
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
@@ -74,7 +100,8 @@ int main() {
       engine_config_path.c_str(),
       additional_config.c_str(),
       &hosts,
-      &services);
+      &services,
+      &commands);
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
@@ -84,6 +111,15 @@ int main() {
 
     // Let the daemon initialize.
     sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Set soon-to-be-in-downtime service as passive.
+    {
+      commander.execute("ENABLE_PASSIVE_SVC_CHECKS;7;31");
+      commander.execute("DISABLE_SVC_CHECK;7;31");
+    }
+
+    // Run a little while.
+    sleep(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
@@ -119,7 +155,7 @@ int main() {
     }
 
     // Let the monitoring engine run a while.
-    sleep(40 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // New time.
     time_t t1(now);
@@ -190,8 +226,7 @@ int main() {
           || (q.value(9).toUInt() != t1 + 8638)
           || q.value(10).toUInt()
           || (q.value(11).toUInt() != t1)
-          // XXX : downtime will start if service command returns non-OK
-          || q.value(12).toUInt()
+          || !q.value(12).toUInt()
           || !(q.value(13).isNull() || !q.value(13).toUInt())
           || (q.value(14).toUInt() != 1)
           // Service downtime #2.
@@ -215,6 +250,44 @@ int main() {
           // EOF
           || q.next())
         throw (exceptions::msg() << "invalid downtime entry in DB");
+    }
+
+    // Check hosts.
+    {
+      std::ostringstream query;
+      query << "SELECT COUNT(*)"
+            << "  FROM hosts"
+            << "  WHERE scheduled_downtime_depth=0";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg()
+               << "cannot get host status from DB: "
+               << qPrintable(q.lastError().text()));
+
+      if (!q.next()
+          || (q.value(0).toUInt() != (10 - 1))
+          || q.next())
+        throw (exceptions::msg()
+               << "invalid host status during downtime");
+    }
+
+    // Check services.
+    {
+      std::ostringstream query;
+      query << "SELECT COUNT(*)"
+            << "  FROM services"
+            << "  WHERE scheduled_downtime_depth=0";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg()
+               << "cannot get service status from DB: "
+               << qPrintable(q.lastError().text()));
+
+      if (!q.next()
+          || (q.value(0).toUInt() != (10 * 5 - 1))
+          || q.next())
+        throw (exceptions::msg()
+               << "invalid service status during downtime");
     }
 
     // Delete downtimes.

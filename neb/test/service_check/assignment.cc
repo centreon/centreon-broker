@@ -44,7 +44,7 @@ int main() {
   schk2 = schk1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(schk1, &randvals2);
 
   // Compare objects with expected results.

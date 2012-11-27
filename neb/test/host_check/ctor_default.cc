@@ -31,7 +31,8 @@ int main() {
   neb::host_check hchk;
 
   // Check.
-  return ((hchk.command_line != "")
+  return (hchk.active_checks_enabled
+          || (hchk.command_line != "")
           || (hchk.host_id != 0)
           || (hchk.next_check != 0)
           || (hchk.type()
