@@ -39,7 +39,8 @@ namespace        file {
   public:
                  stream(
                    std::string const& path,
-                   unsigned long long max_size = (unsigned long long)-1);
+                   unsigned long long max_size = (unsigned long long)-1,
+                   bool is_temporary = false);
                  ~stream();
     void         process(
                    bool in = false,

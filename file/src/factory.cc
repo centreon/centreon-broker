@@ -112,7 +112,7 @@ io::endpoint* factory::new_endpoint(
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "file: no 'path' defined for file "   \
+      throw (exceptions::msg() << "file: no 'path' defined for file "
              "endpoint '" << cfg.name << "'");
     filename = *it;
   }

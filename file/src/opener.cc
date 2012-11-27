@@ -89,8 +89,13 @@ void opener::close() {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open() {
+  // Check if is temporary endpoint.
+  bool is_temporary(!_is_in && !_is_out);
   return (misc::shared_ptr<io::stream>(
-            new stream(qPrintable(_filename), _max_size)));
+            new stream(
+                  qPrintable(_filename),
+                  _max_size,
+                  is_temporary)));
 }
 
 /**

@@ -22,6 +22,7 @@
 #include <climits>
 #include <cstdlib>
 #include <memory>
+#include <QCoreApplication>
 #include <QDir>
 #include <QMutexLocker>
 #include <sstream>
@@ -43,14 +44,24 @@ using namespace com::centreon::broker::file;
 /**
  *  Constructor.
  *
- *  @param[in] filename Filename.
- *  @param[in] mode     Open mode.
+ *  @param[in] filename     Filename.
+ *  @param[in] mode         Open mode.
+ *  @param[in] is_temporary Create temporary path base on the filename.
  */
-stream::stream(std::string const& path, unsigned long long max_size)
+stream::stream(
+          std::string const& path,
+          unsigned long long max_size,
+          bool is_temporary)
   : _max_size(max_size),
     _path(path),
     _process_in(true),
     _process_out(true) {
+  if (is_temporary) {
+    // Create unique file.
+    std::ostringstream oss;
+    oss << "-" << QCoreApplication::applicationPid() << this;
+    _path += oss.str();
+  }
   _open_first_write();
   _open_first_read();
 }
