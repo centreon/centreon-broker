@@ -185,7 +185,7 @@ Build
 Get sources
 -----------
 
-Centreon Broker can be checked out from Merethis's git server at
+Centreon Broker can be checked out from Merethis's subversion server at
 http://svn.modules.centreon.com/centreon-broker. On a Linux box with git
 installed this is just a matter of::
 
