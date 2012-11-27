@@ -607,7 +607,7 @@ io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
        it != end;
        ++it) {
     if ((it.value().osi_from == 1)
-        && it.value().endpntfactry->has_endpoint(cfg, false, true)) {
+        && it.value().endpntfactry->has_endpoint(cfg, true, true)) {
       endp = std::auto_ptr<io::endpoint>(
                      it.value().endpntfactry->new_endpoint(
                                                 cfg,
@@ -630,11 +630,11 @@ io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
     QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
     while (it != end) {
       if ((it.value().osi_from == level)
-          && (it.value().endpntfactry->has_endpoint(cfg, false, true))) {
+          && (it.value().endpntfactry->has_endpoint(cfg, true, true))) {
         std::auto_ptr<io::endpoint>
           current(it.value().endpntfactry->new_endpoint(
                                              cfg,
-                                             false,
+                                             true,
                                              true,
                                              NULL,
                                              is_acceptor));
