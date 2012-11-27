@@ -600,6 +600,7 @@ io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
   // Create endpoint object.
   std::auto_ptr<io::endpoint> endp;
   bool is_acceptor(false);
+  int level(0);
   for (QMap<QString, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
          end(io::protocols::instance().end());
@@ -614,12 +615,41 @@ io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
                                                 false,
                                                 NULL,
                                                 is_acceptor));
+      level = it.value().osi_to + 1;
       break ;
     }
   }
   if (!endp.get())
     throw (exceptions::msg() << "endpoint applier: no matching " \
              "protocol found for temporary '" << cfg.name << "'");
+
+  // Create remaining objects.
+  while (level <= 7) {
+    // Browse protocol list.
+    QMap<QString, io::protocols::protocol>::const_iterator it(io::protocols::instance().begin());
+    QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
+    while (it != end) {
+      if ((it.value().osi_from == level)
+          && (it.value().endpntfactry->has_endpoint(cfg, false, true))) {
+        std::auto_ptr<io::endpoint>
+          current(it.value().endpntfactry->new_endpoint(
+                                             cfg,
+                                             false,
+                                             true,
+                                             NULL,
+                                             is_acceptor));
+        current->from(misc::shared_ptr<io::endpoint>(endp.release()));
+        endp = current;
+        level = it.value().osi_to;
+        break ;
+      }
+      ++it;
+    }
+    if ((7 == level) && (it == end))
+      throw (exceptions::msg() << "endpoint applier: no matching " \
+               "protocol found for temporary '" << cfg.name << "'");
+    ++level;
+  }
   return (endp.release());
 }
 
