@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
   // I = true / O = true
   {
     // Open file stream.
-    file::stream fs(filename, QIODevice::ReadWrite | QIODevice::Append);
+    file::stream fs(filename.toStdString());
 
     // Checked method.
     fs.process(true, true);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
   // I = false / O = true
   {
     // Open file stream.
-    file::stream fs(filename, QIODevice::ReadWrite | QIODevice::Append);
+    file::stream fs(filename.toStdString());
 
     // Write data to file.
     fs.write(data.staticCast<io::data>());
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
   // I = true / O = false.
   {
     // Open file stream.
-    file::stream fs(filename, QIODevice::ReadWrite | QIODevice::Append);
+    file::stream fs(filename.toStdString());
 
     // Checked method.
     fs.process(true, false);
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
   // I = false / O = false.
   {
     // Open file stream.
-    file::stream fs(filename, QIODevice::ReadWrite | QIODevice::Append);
+    file::stream fs(filename.toStdString());
 
     // Checked method.
     fs.process(false, false);

@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_FILE_OPENER_HH_
-# define CCB_FILE_OPENER_HH_
+#ifndef CCB_FILE_OPENER_HH
+#  define CCB_FILE_OPENER_HH
 
-# include "com/centreon/broker/io/endpoint.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,12 +33,7 @@ namespace                        file {
    *  Open a file stream.
    */
   class                          opener : public io::endpoint {
-   private:
-    QString                      _filename;
-    bool                         _is_in;
-    bool                         _is_out;
-
-   public:
+  public:
                                  opener(bool is_in, bool is_out);
                                  opener(opener const& o);
                                  ~opener();
@@ -47,6 +42,13 @@ namespace                        file {
     void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_filename(QString const& filename);
+    void                         set_max_size(unsigned long long max);
+
+   private:
+    QString                      _filename;
+    bool                         _is_in;
+    bool                         _is_out;
+    unsigned long long           _max_size;
   };
 }
 

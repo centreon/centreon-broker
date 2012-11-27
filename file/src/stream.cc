@@ -17,10 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <arpa/inet.h>
 #include <cassert>
+#include <climits>
 #include <cstdlib>
 #include <memory>
+#include <QDir>
 #include <QMutexLocker>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -42,39 +46,19 @@ using namespace com::centreon::broker::file;
  *  @param[in] filename Filename.
  *  @param[in] mode     Open mode.
  */
-stream::stream(QString const& filename, QIODevice::OpenMode mode)
-  : _file(filename) {
-  if (!_file.open(mode))
-    throw (exceptions::msg() << "file: could not open '"
-             << filename << "': " << _file.errorString());
-  if (!_file.reset())
-    throw (exceptions::msg() << "file: could not reset in '"
-             << filename << "': " << _file.errorString());
-  _roffset = _file.pos();
-  _coffset = _roffset;
-  _woffset = _roffset + _file.size();
-  _process_in = (mode & QIODevice::ReadOnly);
-  _process_out = (mode & QIODevice::WriteOnly);
+stream::stream(std::string const& path, unsigned long long max_size)
+  : _max_size(max_size),
+    _path(path),
+    _process_in(true),
+    _process_out(true) {
+  _open_first_write();
+  _open_first_read();
 }
 
 /**
  *  Destructor.
  */
-stream::~stream() {
-  logging::debug(logging::medium) << "file: closing '"
-    << _file.fileName() << "'";
-  _file.flush();
-  _file.close();
-  if (_woffset == _roffset) {
-    logging::info(logging::high) << "file: end of file '"
-      << _file.fileName() << "' reached, erasing file";
-    QFile::remove(_file.fileName());
-  }
-  else
-    logging::debug(logging::medium) << "file: not erasing '"
-      << _file.fileName() << "' write offset is " << _woffset
-      << " whereas read offset is " << _roffset;
-}
+stream::~stream() {}
 
 /**
  *  Set processing flags.
@@ -104,60 +88,52 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "file stream is shutdown");
 
-  // Seek if necessary.
-  if (_roffset != _coffset) {
-    if (!_file.seek(_roffset))
-      throw (exceptions::msg() << "file: could not seek for reading " \
-                  "in '" << _file.fileName() << "' at offset "
-               << static_cast<unsigned long long>(_roffset));
-  }
+  // Seek to position.
+  _rfile->seek(_roffset);
 
   // Build data array.
   std::auto_ptr<io::raw> data(new io::raw);
   data->resize(4096);
 
   // Read data.
-  qint64 old_roffset(_roffset);
-  qint64 rb(_file.read(data->QByteArray::data(), data->size()));
-  if (!rb) // XXX : io::exceptions::error
-    throw (io::exceptions::shutdown(true, !_process_out)
-             << "file does not have any more data");
-  else if (rb < 0) {
-    exceptions::msg e;
-    e << "file: could not read data from '"
-      << _file.fileName() << "': " << _file.errorString();
-    _roffset = _file.pos();
-    _coffset = _roffset;
-    throw (e);
+  unsigned long rb;
+  try {
+    rb = _rfile->read(data->QByteArray::data(), data->size());
   }
-  else {
-    // Process data.
-    data->resize(rb);
-    _roffset += rb;
-    _coffset = _roffset;
-    d = misc::shared_ptr<io::data>(data.release());
-
-    // Erase read data.
-    if (!_file.seek(old_roffset))
-      logging::error(logging::medium) << "file: erase seek failed in '"
-        << _file.fileName() << "'";
-    else {
-      QByteArray eraser;
-      eraser.fill('\n', rb);
-      while (!eraser.isEmpty()) {
-        rb = _file.write(eraser.data(), eraser.size());
-        if (rb <= 0) {
-          logging::error(logging::medium)
-            << "file: erasing request failed in '" << _file.fileName()
-            << "'";
-          _coffset -= eraser.size();
-          break ;
-        }
-        else
-          eraser.resize(eraser.size() - rb);
-      }
+  catch (io::exceptions::shutdown const& e) {
+    (void)e;
+    if (_wid == _rid) {
+      _rfile->close();
+      std::string file_path(_file_path(_rid));
+      logging::info(logging::high) << "file: end of last file '"
+        << file_path.c_str() << "' reached, closing and erasing file";
+      ::remove(file_path.c_str());
+      throw ;
     }
+    _open_next_read();
+    rb = _rfile->read(data->QByteArray::data(), data->size());
   }
+
+  // Process data.
+  logging::debug(logging::low) << "file: read " << rb << " bytes from '"
+    << _file_path(_rid).c_str() << "'";
+  data->resize(rb);
+  _roffset += rb;
+  d = misc::shared_ptr<io::data>(data.release());
+
+  // Erase read data.
+  _rfile->seek(0);
+  union {
+    char     bytes[2 * sizeof(uint32_t)];
+    uint32_t integers[2];
+  } header;
+  header.integers[0] = htonl(_roffset / 4294967296ull);
+  header.integers[1] = htonl(_roffset % 4294967296ull);
+  unsigned int written(0);
+  while (written != sizeof(header.bytes))
+    written += _rfile->write(
+                         header.bytes + written,
+                         sizeof(header.bytes) - written);
   return ;
 }
 
@@ -180,12 +156,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     QMutexLocker lock(&_mutex);
 
     // Seek to end of file if necessary.
-    if (_woffset != _coffset) {
-      if (!_file.seek(_woffset))
-        throw (exceptions::msg() << "file: could not seek for writing" \
-                    " in '" << _file.fileName() << "' at offset "
-                 << static_cast<unsigned long long>(_woffset));
-    }
+    _wfile->seek(_woffset);
 
     // Get data.
     void* memory;
@@ -198,24 +169,20 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
 
     // Debug message.
     logging::debug(logging::low) << "file: write request of "
-      << size << " bytes";
+      << size << " bytes for '" << _file_path(_wid).c_str() << "'";
 
     // Write data.
     while (size > 0) {
-      qint64 wb(_file.write(static_cast<char*>(memory), size));
-      if (wb <= 0) {
-        exceptions::msg e;
-        e << "file: could not write data in '" << _file.fileName()
-          << "': " << _file.errorString();
-        _woffset = _file.pos();
-        _coffset = _woffset;
-        throw (e);
-      }
+      unsigned long max_write(_max_size - _woffset);
+      if (size < max_write)
+        max_write = size;
+      unsigned long
+        wb(_wfile->write(static_cast<char*>(memory), max_write));
       size -= wb;
       _woffset += wb;
-      _file.waitForBytesWritten(-1);
+      if (_woffset == _max_size)
+        _open_next_write();
     }
-    _coffset = _woffset;
   }
   else
     logging::info(logging::low) << "file: write request with "	\
@@ -255,4 +222,211 @@ stream& stream::operator=(stream const& s) {
   assert(!"file stream is not copyable");
   abort();
   return (*this);
+}
+
+/**
+ *  Get the file path matching the ID.
+ *
+ *  @param[in] id Current ID.
+ */
+std::string stream::_file_path(unsigned int id) {
+  std::ostringstream oss;
+  oss << _path;
+  if (id)
+    oss << id;
+  return (oss.str());
+}
+
+/**
+ *  Open the first readable file.
+ */
+void stream::_open_first_read() {
+  // Get path components.
+  QString base_dir;
+  QString base_name;
+  {
+    size_t last_slash(_path.find_last_of('/'));
+    if (last_slash == std::string::npos) {
+      base_dir = ".";
+      base_name = _path.c_str();
+    }
+    else {
+      base_dir = _path.substr(0, last_slash).c_str();
+      base_name = _path.substr(last_slash + 1).c_str();
+    }
+  }
+
+  // Browse directory.
+  QStringList entries;
+  {
+    QStringList filters;
+    filters << base_name + "*";
+    QDir dir(base_dir);
+    entries = dir.entryList(filters);
+  }
+
+  // Find minimum value.
+  unsigned int min(UINT_MAX);
+  for (QStringList::iterator it(entries.begin()), end(entries.end());
+       it != end;
+       ++it) {
+    it->remove(0, base_name.size());
+    unsigned int i(it->toUInt());
+    if (i < min)
+      min = i;
+  }
+
+  // If no file was found this is an error.
+  if (UINT_MAX == min)
+    throw (io::exceptions::shutdown(true, true)
+           << "cannot find file entry in '" << qPrintable(base_dir)
+           << "' matching '" << qPrintable(base_name) << "'");
+
+  // Open file.
+  _rid = min - 1;
+  _open_next_read();
+
+  return ;
+}
+
+/**
+ *  Open the first writable file.
+ */
+void stream::_open_first_write() {
+  // Get path components.
+  QString base_dir;
+  QString base_name;
+  {
+    size_t last_slash(_path.find_last_of('/'));
+    if (last_slash == std::string::npos) {
+      base_dir = ".";
+      base_name = _path.c_str();
+    }
+    else {
+      base_dir = _path.substr(0, last_slash).c_str();
+      base_name = _path.substr(last_slash + 1).c_str();
+    }
+  }
+
+  // Browse directory.
+  QStringList entries;
+  {
+    QStringList filters;
+    filters << base_name + "*";
+    QDir dir(base_dir);
+    entries = dir.entryList(filters);
+  }
+
+  // Find maximum value.
+  unsigned int max(0);
+  for (QStringList::iterator it(entries.begin()), end(entries.end());
+       it != end;
+       ++it) {
+    it->remove(0, base_name.size());
+    unsigned int i(it->toUInt());
+    if (i > max)
+      max = i;
+  }
+  _wid = max - 1;
+
+  // Open file.
+  _open_next_write(false);
+
+  return ;
+}
+
+/**
+ *  Open the next readable file.
+ */
+void stream::_open_next_read() {
+  // Did we reached the write file ?
+  if (_rid + 1 == _wid) {
+    _rfile = _wfile;
+    _rfile->seek(0);
+  }
+  else {
+    // Open file.
+    std::string file_path(_file_path(_rid + 1));
+    {
+      misc::shared_ptr<cfile> new_file(new cfile);
+      new_file->open(file_path.c_str(), "r+");
+      _rfile = new_file;
+    }
+  }
+
+  // Remove previous file.
+  std::string file_path(_file_path(_rid));
+  logging::info(logging::high) << "file: end of file '"
+    << file_path.c_str() << "' reached, erasing file";
+  ::remove(file_path.c_str());
+
+  // Adjust current index.
+  ++_rid;
+
+  // Get read offset.
+  union {
+    char bytes[2 * sizeof(uint32_t)];
+    uint32_t integers[2];
+  } header;
+  unsigned int size(0);
+  while (size != sizeof(header))
+    size += _rfile->read(header.bytes + size, sizeof(header) - size);
+  _roffset = ntohl(header.integers[0] * 4294967296ull)
+             + ntohl(header.integers[1]);
+
+  return ;
+}
+
+/**
+ *  Open the next writable file.
+ *
+ *  @param[in] truncate true to truncate file.
+ */
+void stream::_open_next_write(bool truncate) {
+  // Open file.
+  std::string file_path(_file_path(_wid + 1));
+  logging::info(logging::high) << "file: opening new file '"
+    << file_path.c_str() << "'";
+  {
+    misc::shared_ptr<cfile> new_file(new cfile);
+    if (truncate)
+      new_file->open(file_path.c_str(), "w+");
+    else {
+      try {
+        new_file->open(file_path.c_str(), "r+");
+      }
+      catch (exceptions::msg const& e) {
+        new_file->open(file_path.c_str(), "w+");
+      }
+    }
+    _wfile = new_file;
+  }
+
+  // Position.
+  _wfile->seek(0, SEEK_END);
+  _woffset = _wfile->tell();
+
+  // Adjust current index.
+  ++_wid;
+
+  if (_woffset < static_cast<long>(2 * sizeof(uint32_t))) {
+    // Rewind to file beginning.
+    _wfile->seek(0);
+
+    // Write read offset.
+    union {
+      char     bytes[2 * sizeof(uint32_t)];
+      uint32_t integers[2];
+    } header;
+    header.integers[0] = 0;
+    header.integers[1] = htonl(2 * sizeof(uint32_t));
+    unsigned int size(0);
+    while (size < sizeof(header))
+      size += _wfile->write(header.bytes + size, sizeof(header) - size);
+
+    // Set current offset.
+    _woffset = 2 * sizeof(uint32_t);
+  }
+
+  return ;
 }

@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
-#include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -61,11 +61,22 @@ int main(int argc, char* argv[]) {
     QFile f(filename);
     if (!f.open(QIODevice::WriteOnly))
       retval |= 1;
-    for (unsigned int i = 0; i < 10000; ++i) {
+    {
+      char header[8];
+      memset(header, 0, sizeof(header));
+      header[7] = 8;
+      unsigned int size(0);
+      while (size != sizeof(header)) {
+        size += f.write(header + size, sizeof(header) - size);
+        f.waitForBytesWritten(-1);
+      }
+    }
+    for (unsigned int i(0); i < 10000; ++i) {
       unsigned int current(0);
       while (!retval && (current < sizeof(buffer) - 1)) {
-        qint64 wb(f.write(buffer + current,
-                  sizeof(buffer) - 1 - current));
+        qint64 wb(f.write(
+                      buffer + current,
+                      sizeof(buffer) - 1 - current));
         if (wb <= 0)
           retval = 1;
         else {
@@ -78,7 +89,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Open file stream.
-  file::stream fs(filename, QIODevice::ReadOnly);
+  file::stream fs(filename.toStdString());
 
   // Read data.
   unsigned int bufferc(0);

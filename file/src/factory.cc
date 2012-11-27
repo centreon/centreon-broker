@@ -108,13 +108,29 @@ io::endpoint* factory::new_endpoint(
   (void)temporary;
 
   // Find path to the file.
-  QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
-  if (it == cfg.params.end())
-    throw (exceptions::msg() << "file: no 'path' defined for file " \
+  QString filename;
+  {
+    QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
+    if (it == cfg.params.end())
+      throw (exceptions::msg() << "file: no 'path' defined for file "   \
              "endpoint '" << cfg.name << "'");
+    filename = *it;
+  }
+
+  // Find max size of file.
+  unsigned long long max_size;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("max_size"));
+    if (it != cfg.params.end())
+      max_size = it->toULongLong();
+    else
+      max_size = 0;
+  }
 
   // Generate opener.
   std::auto_ptr<opener> openr(new opener(is_input, is_output));
-  openr->set_filename(it.value());
+  openr->set_filename(filename);
+  openr->set_max_size(max_size);
   return (openr.release());
 }

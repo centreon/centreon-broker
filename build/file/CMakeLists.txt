@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2012 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -28,11 +28,13 @@ set(FILE "50-file")
 set(FILE "${FILE}" PARENT_SCOPE)
 add_library("${FILE}" SHARED
   # Sources.
+  "${SRC_DIR}/cfile.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/opener.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/file/cfile.hh"
   "${INC_DIR}/com/centreon/broker/file/factory.hh"
   "${INC_DIR}/com/centreon/broker/file/opener.hh"
   "${INC_DIR}/com/centreon/broker/file/stream.hh"
@@ -58,6 +60,12 @@ if (WITH_TESTING)
   set(TEST_NAME "file_stream_read")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/stream/read.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Size limitation.
+  set(TEST_NAME "file_stream_max_size")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/stream/max_size.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Mixed reads/writes.

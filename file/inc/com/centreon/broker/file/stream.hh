@@ -20,43 +20,55 @@
 #ifndef CCB_FILE_STREAM_HH
 #  define CCB_FILE_STREAM_HH
 
-#  include <QFile>
 #  include <QMutex>
+#  include "com/centreon/broker/file/cfile.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   file {
+namespace        file {
   /**
    *  @class stream stream.hh "com/centreon/broker/file/stream.hh"
    *  @brief File stream.
    *
    *  Read and write data to a stream.
    */
-  class     stream : public io::stream {
+  class          stream : public io::stream {
   public:
-            stream(
-              QString const& filename,
-              QIODevice::OpenMode mode);
-            ~stream();
-    void    process(
-              bool in = false,
-              bool out = false);
-    void    read(misc::shared_ptr<io::data>& d);
-    void    write(misc::shared_ptr<io::data> const& d);
+                 stream(
+                   std::string const& path,
+                   unsigned long long max_size = (unsigned long long)-1);
+                 ~stream();
+    void         process(
+                   bool in = false,
+                   bool out = false);
+    void         read(misc::shared_ptr<io::data>& d);
+    void         write(misc::shared_ptr<io::data> const& d);
 
   private:
-            stream(stream const& s);
-    stream& operator=(stream const& s);
+                 stream(stream const& s);
+    stream&      operator=(stream const& s);
+    std::string  _file_path(unsigned int id);
+    void         _open_first_read();
+    void         _open_first_write();
+    void         _open_next_read();
+    void         _open_next_write(bool truncate = true);
 
-    qint64  _coffset;
-    QFile   _file;
-    QMutex  _mutex;
-    bool    _process_in;
-    bool    _process_out;
-    qint64  _roffset;
-    qint64  _woffset;
+    long         _max_size;
+    QMutex       _mutex;
+    std::string  _path;
+    bool         _process_in;
+    bool         _process_out;
+    misc::shared_ptr<cfile>
+                 _rfile;
+    unsigned int _rid;
+    long         _roffset;
+    misc::shared_ptr<cfile>
+                 _wfile;
+    unsigned int _wid;
+    long         _woffset;
   };
 }
 

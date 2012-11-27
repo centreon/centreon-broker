@@ -30,11 +30,13 @@ files.
 Configuration
 -------------
 
-==== =================
-Tag  Description
-==== =================
-path Path to the file.
-==== =================
+======== ===========================================================
+Tag      Description
+======== ===========================================================
+path     Path to the file.
+max_size Maximum file size in bytes. If the limit is reached, Broker
+         will go on with *path1*, then *path2*, ..., *pathN*.
+======== ===========================================================
 
 Example
 -------
@@ -45,6 +47,7 @@ Example
     <type>file</type>
     <path>/var/lib/centreon/broker.file</path>
     <protocol>ndo</protocol>
+    <max_size>100000000</max_size> <!-- 100MB limit -->
   </input>
 
 Local

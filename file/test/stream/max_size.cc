@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -26,10 +27,10 @@
 
 using namespace com::centreon::broker;
 
-#define TEMP_FILE_NAME "broker_file_stream_write"
+#define TEMP_FILE_NAME "broker_file_stream_max_size"
 
 /**
- *  Check that file stream can be properly written to.
+ *  Check that file stream can limit its file size.
  *
  *  @param[in] argc Argument count.
  *  @param[in] argv Argument values.
@@ -44,11 +45,17 @@ int main(int argc, char* argv[]) {
   config::applier::init();
 
   // Generate file name.
-  QString filename(QDir::tempPath());
-  filename.append("/" TEMP_FILE_NAME);
+  QString filename[4];
+  for (unsigned int i(0); i < 4; ++i)
+    filename[i] = QDir::tempPath();
+  filename[0].append("/" TEMP_FILE_NAME);
+  filename[1].append("/" TEMP_FILE_NAME "1");
+  filename[2].append("/" TEMP_FILE_NAME "2");
+  filename[3].append("/" TEMP_FILE_NAME "3");
 
   // Remove old file.
-  QFile::remove(filename);
+  for (unsigned int i(0); i < 4; ++i)
+    ::remove(qPrintable(filename[i]));
 
   // Generate data packet.
   misc::shared_ptr<io::raw> data(new io::raw);
@@ -56,55 +63,25 @@ int main(int argc, char* argv[]) {
 
   {
     // Open file stream for writing.
-    file::stream fs(filename.toStdString());
+    file::stream fs(filename[0].toStdString(), 100000);
 
-    // Write data in file.
-    for (unsigned int i = 0; i < 10000; ++i)
+    // Write data in files.
+    for (unsigned int i(0); i < 10000; ++i)
       fs.write(data.staticCast<io::data>());
   }
 
   // Return value.
   int retval(0);
 
-  // Open file to check.
-  QFile f(filename);
-  if (!f.open(QIODevice::ReadOnly))
-    retval |= 1;
-
-  // Skip header.
-  {
-    char header[8];
-    unsigned int current(0);
-    while (current != sizeof(header)) {
-      f.waitForReadyRead(-1);
-      current += f.read(header + current, sizeof(header - current));
-    }
-  }
-
-  // Read and compare data.
-  char buffer[36];
-  unsigned int count(0);
-  unsigned int current(0);
-  while (!retval && (count < 10000)) {
-    f.waitForReadyRead(-1);
-    qint64 rb(f.read(buffer + current, sizeof(buffer) - current));
-    if (rb <= 0)
-      retval |= 1;
-    else {
-      current += rb;
-      if (current == sizeof(buffer)) {
-        retval |= memcmp(buffer, "0123456789abcdefghijklmnopqrstuvwxyz", sizeof(buffer));
-        ++count;
-        current = 0;
-      }
-    }
-  }
-  // EOF must be reached.
-  f.waitForReadyRead(-1);
-  retval |= (f.read(buffer, 1) > 0);
+  // Check files.
+  retval = ((QFile(filename[0]).size() != 100000)
+            || (QFile(filename[1]).size() != 100000)
+            || (QFile(filename[2]).size() != 100000)
+            || (QFile(filename[3]).size() != (60000 + 4 * 8)));
 
   // Remove temporary file.
-  QFile::remove(filename);
+  for (unsigned int i(0); i < 4; ++i)
+    ::remove(qPrintable(filename[i]));
 
   return (retval);
 }

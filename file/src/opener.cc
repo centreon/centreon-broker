@@ -89,15 +89,8 @@ void opener::close() {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open() {
-  QIODevice::OpenMode mode;
-  if (_is_in)
-    mode = QIODevice::ReadWrite;
-  else if (_is_out)
-    mode = QIODevice::WriteOnly;
-  else
-    throw (exceptions::msg()
-             << "file: attempt to open a file with invalid flags");
-  return (misc::shared_ptr<io::stream>(new stream(_filename, mode)));
+  return (misc::shared_ptr<io::stream>(
+            new stream(qPrintable(_filename), _max_size)));
 }
 
 /**
@@ -107,5 +100,15 @@ misc::shared_ptr<io::stream> opener::open() {
  */
 void opener::set_filename(QString const& filename) {
   _filename = filename;
+  return ;
+}
+
+/**
+ *  Set the maximum allowed file size.
+ *
+ *  @param[in] max Maximum file size in bytes.
+ */
+void opener::set_max_size(unsigned long long max) {
+  _max_size = max;
   return ;
 }

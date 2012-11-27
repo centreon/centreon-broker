@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
   QFile::remove(filename);
 
   // Open file stream.
-  file::stream fs(filename, QIODevice::ReadWrite);
+  file::stream fs(filename.toStdString(), 200);
 
   // Return value.
   int retval(0);

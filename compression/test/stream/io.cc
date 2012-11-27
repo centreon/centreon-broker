@@ -70,9 +70,7 @@ int main() {
   {
     // Open file for writing.
     misc::shared_ptr<file::stream>
-      fs(new file::stream(
-                     filename,
-                     QIODevice::WriteOnly));
+      fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1, 40000);
     cs.write_to(fs.staticCast<io::stream>());
 
@@ -94,9 +92,7 @@ int main() {
   {
     // Open file for reading.
     misc::shared_ptr<file::stream>
-      fs(new file::stream(
-                     filename,
-                     QIODevice::ReadWrite));
+      fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1);
     cs.read_from(fs.staticCast<io::stream>());
 

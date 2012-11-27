@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
   // File stream.
   misc::shared_ptr<file::stream>
-    fs(new file::stream(path, QIODevice::ReadWrite));
+    fs(new file::stream(path.toStdString()));
 
   {
     // Buffer that will be written.
