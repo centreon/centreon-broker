@@ -729,6 +729,25 @@ void failover::set_retry_interval(time_t retry_interval) {
 }
 
 /**
+ *  Get statistics of the subscriber/publisher.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void failover::statistics(std::string& buffer) const {
+  if (_is_out) {
+    QReadLocker rl(&_fromm);
+    if (!_from.isNull())
+      _from->statistics(buffer);
+  }
+  else {
+    QReadLocker rl(&_tom);
+    if (!_to.isNull())
+      _to->statistics(buffer);
+  }
+  return ;
+}
+
+/**
  *  Configuration update request.
  */
 void failover::update() {

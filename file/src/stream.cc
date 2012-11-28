@@ -149,6 +149,27 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Generate statistics about file processing.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void stream::statistics(std::string& buffer) const {
+  std::ostringstream oss;
+  oss << "file_read_path=" << _file_path(_rid) << "\n"
+      << "file_read_offset=" << _roffset << "\n"
+      << "file_write_path=" << _file_path(_wid) << "\n"
+      << "file_write_offset=" << _woffset << "\n"
+      << "file_max_size=";
+  if (_max_size)
+    oss << _max_size;
+  else
+    oss << "unlimited";
+  oss << "\n";
+  buffer.append(oss.str());
+  return ;
+}
+
+/**
  *  Write data to the file.
  *
  *  @param[in] d Data to write.
@@ -240,7 +261,7 @@ stream& stream::operator=(stream const& s) {
  *
  *  @param[in] id Current ID.
  */
-std::string stream::_file_path(unsigned int id) {
+std::string stream::_file_path(unsigned int id) const {
   std::ostringstream oss;
   oss << _path;
   if (id)

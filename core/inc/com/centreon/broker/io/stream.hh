@@ -21,6 +21,7 @@
 #  define CCB_IO_STREAM_HH
 
 #  include <ctime>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -56,6 +57,7 @@ namespace                    io {
                                time_t timeout,
                                bool* timed_out = NULL);
     void                     read_from(misc::shared_ptr<stream> from);
+    virtual void             statistics(std::string& buffer) const;
     virtual void             update();
     virtual void             write(misc::shared_ptr<data> const& d) = 0;
     void                     write_to(misc::shared_ptr<stream> to);

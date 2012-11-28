@@ -77,6 +77,7 @@ namespace                com {
           void           set_name(QString const& name);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
+          void           statistics(std::string& buffer) const;
           void           update();
           bool           wait(unsigned long time = ULONG_MAX);
           void           write(misc::shared_ptr<io::data> const& d);

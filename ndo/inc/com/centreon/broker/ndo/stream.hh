@@ -42,6 +42,7 @@ namespace   ndo {
     stream& operator=(stream const& s);
     void    process(bool in = false, bool out = true);
     void    read(misc::shared_ptr<io::data>& d);
+    void    statistics(std::string& buffer) const;
     void    write(misc::shared_ptr<io::data> const& d);
   };
 }

@@ -128,6 +128,17 @@ void stream::read(misc::shared_ptr<io::data>& data) {
 }
 
 /**
+ *  Get statistics.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void stream::statistics(std::string& buffer) const {
+  if (!_to.isNull())
+    _to->statistics(buffer);
+  return ;
+}
+
+/**
  *  @brief Write data.
  *
  *  The data can be buffered before being written to the subobject.

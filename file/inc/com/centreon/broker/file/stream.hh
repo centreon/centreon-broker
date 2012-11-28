@@ -46,12 +46,13 @@ namespace        file {
                    bool in = false,
                    bool out = false);
     void         read(misc::shared_ptr<io::data>& d);
+    void         statistics(std::string& buffer) const;
     void         write(misc::shared_ptr<io::data> const& d);
 
   private:
                  stream(stream const& s);
     stream&      operator=(stream const& s);
-    std::string  _file_path(unsigned int id);
+    std::string  _file_path(unsigned int id) const;
     void         _open_first_read();
     void         _open_first_write();
     void         _open_next_read();

@@ -84,6 +84,16 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Get statistics.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void stream::statistics(std::string& buffer) const {
+  output::statistics(buffer);
+  return ;
+}
+
+/**
  *  Write data to stream.
  *
  *  @param[in] d Data to send.

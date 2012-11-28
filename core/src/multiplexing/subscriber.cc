@@ -22,6 +22,7 @@
 #include <ctime>
 #include <limits>
 #include <QMutexLocker>
+#include <sstream>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
@@ -195,6 +196,19 @@ void subscriber::read(
     logging::debug(logging::low) << "multiplexing: " << _total_events
       << " events remaining in subscriber";
   }
+  return ;
+}
+
+/**
+ *  Generate statistics about the subscriber.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void subscriber::statistics(std::string& buffer) const {
+  QMutexLocker lock(&_mutex);
+  std::ostringstream oss;
+  oss << "queued_events=" << _events.size() << "\n";
+  buffer.append(oss.str());
   return ;
 }
 

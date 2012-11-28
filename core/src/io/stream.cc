@@ -96,6 +96,16 @@ void stream::read_from(misc::shared_ptr<stream> from) {
 }
 
 /**
+ *  Generate statistics about the stream.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void stream::statistics(std::string& buffer) const {
+  (void)buffer;
+  return ;
+}
+
+/**
  *  Configuration update.
  */
 void stream::update() {

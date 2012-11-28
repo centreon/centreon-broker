@@ -187,22 +187,28 @@ void worker::_generate_stats_for_endpoint(
   buffer.append("\n");
 
   // Choose stream we will work on.
-  QReadWriteLock* rwl;
-  misc::shared_ptr<io::stream>* s;
+  QReadWriteLock* first_rwl;
+  misc::shared_ptr<io::stream>* first_s;
+  QReadWriteLock* second_rwl;
+  misc::shared_ptr<io::stream>* second_s;
   if (is_out) {
-    rwl = &fo->_tom;
-    s = &fo->_to;
+    first_rwl = &fo->_tom;
+    first_s = &fo->_to;
+    second_rwl = &fo->_fromm;
+    second_s = &fo->_from;
   }
   else {
-    rwl = &fo->_fromm;
-    s = &fo->_from;
+    first_rwl = &fo->_fromm;
+    first_s = &fo->_from;
+    second_rwl = &fo->_tom;
+    second_s = &fo->_to;
   }
 
   {
-    // Get state.
+    // Get primary state.
     buffer.append("state=");
-    QReadLocker rl(rwl);
-    if (s->isNull()) {
+    QReadLocker rl(first_rwl);
+    if (first_s->isNull()) {
       if (!fo->_last_error.isEmpty()) {
         buffer.append("disconnected");
         buffer.append(" (");
@@ -212,10 +218,21 @@ void worker::_generate_stats_for_endpoint(
       else
         buffer.append("listening\n");
     }
-    else if (!fo->_failover.isNull() && fo->_failover->isRunning())
+    else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
       buffer.append("replaying\n");
-    else
+      (*first_s)->statistics(buffer);
+    }
+    else {
       buffer.append("connected\n");
+      (*first_s)->statistics(buffer);
+    }
+  }
+
+  {
+    // Get secondary state.
+    QReadLocker rl(second_rwl);
+    if (!second_s->isNull())
+      (*second_s)->statistics(buffer);
   }
 
   {
@@ -346,6 +363,8 @@ void worker::run() {
         ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));
         if (wb > 0)
           _buffer.erase(0, wb);
+        else
+          _buffer.clear();
       }
     }
   }

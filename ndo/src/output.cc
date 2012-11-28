@@ -128,6 +128,17 @@ void output::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Get statistics.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void output::statistics(std::string& buffer) const {
+  if (!_to.isNull())
+    _to->statistics(buffer);
+  return ;
+}
+
+/**
  *  Send an event.
  *
  *  @param[in] e Event to send.
