@@ -40,7 +40,7 @@ int main() {
   neb::host_check hchk2(hchk1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(hchk1, &randvals2);
 
   // Compare objects with expected results.

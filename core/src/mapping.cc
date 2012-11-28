@@ -759,6 +759,10 @@ static mapped_data<host> const host_mapping[] = {
 // host_check members mapping.
 static mapped_data<host_check> const host_check_mapping[] = {
   mapped_data<host_check>(
+    &host_check::active_checks_enabled,
+    NDO_DATA_ACTIVEHOSTCHECKSENABLED,
+    NULL),
+  mapped_data<host_check>(
     &host_check::check_type,
     NDO_DATA_CHECKTYPE,
     NULL),
@@ -1826,6 +1830,10 @@ static mapped_data<service> const service_mapping[] = {
 
 // service_check members mapping.
 static mapped_data<service_check> const service_check_mapping[] = {
+  mapped_data<service_check>(
+    &service_check::active_checks_enabled,
+    NDO_DATA_ACTIVESERVICECHECKSENABLED,
+    NULL),
   mapped_data<service_check>(
     &service_check::check_type,
     NDO_DATA_CHECKTYPE,

@@ -31,7 +31,8 @@ int main() {
   neb::service_check schk;
 
   // Check.
-  return ((schk.command_line != "")
+  return (schk.active_checks_enabled
+          || (schk.command_line != "")
           || (schk.host_id != 0)
           || (schk.next_check != 0)
           || (schk.service_id != 0)
