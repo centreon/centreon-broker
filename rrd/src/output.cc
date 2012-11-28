@@ -124,7 +124,7 @@ void output::process(bool in, bool out) {
 void output::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (broker::exceptions::msg()
-           << "RRD: attempt to read data from an output endpoint");
+         << "RRD: attempt to read from endpoint (not supported yet)");
   return ;
 }
 

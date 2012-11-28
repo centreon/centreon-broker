@@ -133,12 +133,12 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor) const {
   (void)is_acceptor;
-  (void)is_output;
+  (void)is_input;
 
   // Check that endpoint is output only.
-  if (is_input)
+  if (!is_output)
     throw (exceptions::msg()
-             << "RRD: cannot create an input RRD endpoint");
+             << "RRD: cannot create an input-only RRD endpoint");
 
   // Get metrics RRD path.
   QString metrics_path(find_param(cfg, "metrics_path"));
