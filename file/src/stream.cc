@@ -59,7 +59,7 @@ stream::stream(
   if (is_temporary) {
     // Create unique file.
     std::ostringstream oss;
-    oss << "-" << QCoreApplication::applicationPid() << this;
+    oss << "-" << QCoreApplication::applicationPid() << "-" << this;
     _path += oss.str();
   }
   _open_first_write();
