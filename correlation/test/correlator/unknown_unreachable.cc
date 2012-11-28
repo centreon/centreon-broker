@@ -67,14 +67,16 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456789;
     c.write(ss.staticCast<io::data>());
   }
   { // #2
-    misc::shared_ptr<neb::host_status> ss(new neb::host_status);
-    ss->host_id = 90;
-    ss->state_type = 1;
-    ss->current_state = 1;
-    c.write(ss.staticCast<io::data>());
+    misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+    hs->host_id = 90;
+    hs->state_type = 1;
+    hs->current_state = 1;
+    hs->last_check = 123456790;
+    c.write(hs.staticCast<io::data>());
   }
   { // #3
     misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -82,6 +84,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456791;
     c.write(ss.staticCast<io::data>());
   }
   { // #4
@@ -90,6 +93,7 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 1;
+    ss->last_check = 123456792;
     c.write(ss.staticCast<io::data>());
   }
   { // #5
@@ -97,6 +101,7 @@ int main() {
     hs->host_id = 90;
     hs->state_type = 1;
     hs->current_state = 1;
+    hs->last_check = 123456793;
     c.write(hs.staticCast<io::data>());
   }
   { // #6
@@ -105,36 +110,73 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456794;
     c.write(ss.staticCast<io::data>());
   }
 
   // Check correlation content.
   QList<misc::shared_ptr<io::data> > content;
   // #1
-  add_state_service(content, 0, 0, 1, 56, false, 13, 0);
-  add_state_service(content, 0, 2, 0, 56, false, 13, 1);
-  add_issue(content, 0, 0, 56, 13, 1);
+  add_state_service(content, 0, 0, 123456789, 56, false, 13, 0);
+  add_state_service(content, 0, 2, 0, 56, false, 13, 123456789);
+  add_issue(content, 0, 0, 56, 13, 123456789);
   // #2
-  add_state_host(content, 0, 0, 1, 90, false, 0);
-  add_state_host(content, 0, 1, 0, 90, false, 1);
-  add_issue(content, 0, 0, 90, 0, 1);
+  add_state_host(content, 0, 0, 123456790, 90, false, 0);
+  add_state_host(content, 0, 1, 0, 90, false, 123456790);
+  add_issue(content, 0, 0, 90, 0, 123456790);
   // #3
-  add_state_service(content, 0, 0, 1, 42, false, 24, 0);
-  add_state_service(content, 0, 2, 0, 42, false, 24, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
-  add_issue_parent(content, 56, 13, 1, 0, 42, 24, 1, 1);
-  add_issue_parent(content, 90, 0, 1, 0, 42, 24, 1, 1);
+  add_state_service(content, 0, 0, 123456791, 42, false, 24, 0);
+  add_state_service(content, 0, 2, 0, 42, false, 24, 123456791);
+  add_issue(content, 0, 0, 42, 24, 123456791);
+  add_issue_parent(
+    content,
+    56,
+    13,
+    123456789,
+    0,
+    42,
+    24,
+    123456791,
+    123456791);
+  add_issue_parent(
+    content,
+    90,
+    0,
+    123456790,
+    0,
+    42,
+    24,
+    123456791,
+    123456791);
   // #4
-  add_state_service(content, 0, 2, 1, 56, false, 13, 1);
-  add_state_service(content, 0, 3, 0, 56, false, 13, 1);
+  add_state_service(content, 0, 2, 123456792, 56, false, 13, 123456789);
+  add_state_service(content, 0, 3, 0, 56, false, 13, 123456792);
   // #5
-  add_state_host(content, 0, 1, 1, 90, false, 1);
-  add_state_host(content, 0, 2, 0, 90, false, 1);
+  add_state_host(content, 0, 1, 123456793, 90, false, 123456790);
+  add_state_host(content, 0, 2, 0, 90, false, 123456793);
   // #6
-  add_state_service(content, 0, 2, 1, 42, false, 24, 1);
-  add_state_service(content, 0, 0, 0, 42, false, 24, 1);
-  add_issue_parent(content, 56, 13, 1, 1, 42, 24, 1, 1);
-  add_issue_parent(content, 90, 0, 1, 1, 42, 24, 1, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
+  add_state_service(content, 0, 2, 123456794, 42, false, 24, 123456791);
+  add_state_service(content, 0, 0, 0, 42, false, 24, 123456794);
+  add_issue_parent(
+    content,
+    56,
+    13,
+    123456789,
+    123456794,
+    42,
+    24,
+    123456791,
+    123456791);
+  add_issue_parent(
+    content,
+    90,
+    0,
+    123456790,
+    123456794,
+    42,
+    24,
+    123456791,
+    123456791);
+  add_issue(content, 0, 123456794, 42, 24, 123456791);
   return (!check_content(c, content));
 }

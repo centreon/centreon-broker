@@ -72,6 +72,7 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456789;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -80,6 +81,7 @@ int main() {
     ss->service_id = 42;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456790;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -88,6 +90,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456791;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -96,6 +99,7 @@ int main() {
     ss->service_id = 8;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456792;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -104,6 +108,7 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456793;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -112,6 +117,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456794;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -120,6 +126,7 @@ int main() {
     ss->service_id = 42;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456795;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -128,24 +135,79 @@ int main() {
     ss->service_id = 8;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456796;
     c.write(ss.staticCast<io::data>());
   }
 
   // Check correlation content.
   QList<misc::shared_ptr<io::data> > content;
-  add_issue(content, 0, 0, 56, 13, 1);
-  add_issue(content, 0, 0, 90, 42, 1);
-  add_issue(content, 0, 0, 42, 24, 1);
-  add_issue(content, 0, 0, 213, 8, 1);
-  add_issue_parent(content, 42, 24, 1, 0, 56, 13, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 0, 90, 42, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 0, 213, 8, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 1, 56, 13, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 1, 90, 42, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 1, 213, 8, 1, 1);
-  add_issue(content, 0, 1, 56, 13, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
-  add_issue(content, 0, 1, 90, 42, 1);
-  add_issue(content, 0, 1, 213, 8, 1);
+  add_issue(content, 0, 0, 56, 13, 123456789);
+  add_issue(content, 0, 0, 90, 42, 123456790);
+  add_issue(content, 0, 0, 42, 24, 123456791);
+  add_issue(content, 0, 0, 213, 8, 123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    0,
+    56,
+    13,
+    123456789,
+    123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    0,
+    90,
+    42,
+    123456790,
+    123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    0,
+    213,
+    8,
+    123456792,
+    123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    123456793,
+    56,
+    13,
+    123456789,
+    123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    123456793,
+    90,
+    42,
+    123456790,
+    123456792);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456791,
+    123456793,
+    213,
+    8,
+    123456792,
+    123456792);
+  add_issue(content, 0, 123456793, 56, 13, 123456789);
+  add_issue(content, 0, 123456794, 42, 24, 123456791);
+  add_issue(content, 0, 123456795, 90, 42, 123456790);
+  add_issue(content, 0, 123456796, 213, 8, 123456792);
   return (!check_content(c, content));
 }

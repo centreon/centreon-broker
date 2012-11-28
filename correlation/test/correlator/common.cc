@@ -206,12 +206,10 @@ bool check_content(
         misc::shared_ptr<correlation::issue>
           i2(it->staticCast<correlation::issue>());
         retval = ((i1->ack_time == i2->ack_time)
-                  && ((i1->end_time && i2->end_time)
-                      || (!i1->end_time && !i2->end_time))
+                  && (i1->end_time == i2->end_time)
                   && (i1->host_id == i2->host_id)
                   && (i1->service_id == i2->service_id)
-                  && ((i1->start_time && i2->start_time)
-                      || (!i1->start_time && !i2->start_time)));
+                  && (i1->start_time == i2->start_time));
       }
       else if (d->type()
                == "com::centreon::broker::correlation::issue_parent") {
@@ -221,18 +219,12 @@ bool check_content(
           ip2(it->staticCast<correlation::issue_parent>());
         retval = ((ip1->child_host_id == ip2->child_host_id)
                   && (ip1->child_service_id == ip2->child_service_id)
-                  && ((ip1->child_start_time && ip2->child_start_time)
-                      || (!ip1->child_start_time
-                          && !ip2->child_start_time))
-                  && ((ip1->end_time && ip2->end_time)
-                      || (!ip1->end_time && !ip2->end_time))
+                  && (ip1->child_start_time == ip2->child_start_time)
+                  && (ip1->end_time == ip2->end_time)
                   && (ip1->parent_host_id == ip2->parent_host_id)
                   && (ip1->parent_service_id == ip2->parent_service_id)
-                  && ((ip1->parent_start_time && ip2->parent_start_time)
-                      || (!ip1->parent_start_time
-                          && !ip2->parent_start_time))
-                  && ((ip1->start_time && ip2->start_time)
-                      || (!ip1->start_time && !ip2->start_time)));
+                  && (ip1->parent_start_time == ip2->parent_start_time)
+                  && (ip1->start_time == ip2->start_time));
       }
       else if (d->type()
                == "com::centreon::broker::correlation::host_state") {
@@ -242,12 +234,10 @@ bool check_content(
           s2(it->staticCast<correlation::host_state>());
         retval = ((s1->ack_time == s2->ack_time)
                   && (s1->current_state == s2->current_state)
-                  && ((s1->end_time && s2->end_time)
-                      || (!s2->end_time && !s2->end_time))
+                  && (s1->end_time == s2->end_time)
                   && (s1->host_id == s2->host_id)
                   && (s1->in_downtime == s2->in_downtime)
-                  && ((s1->start_time && s2->start_time)
-                      || (!s1->start_time && !s2->start_time)));
+                  && (s1->start_time == s2->start_time));
       }
       else if (d->type()
                == "com::centreon::broker::correlation::service_state") {
@@ -257,13 +247,11 @@ bool check_content(
           s2(it->staticCast<correlation::service_state>());
         retval = ((s1->ack_time == s2->ack_time)
                   && (s1->current_state == s2->current_state)
-                  && ((s1->end_time && s2->end_time)
-                      || (!s2->end_time && !s2->end_time))
+                  && (s1->end_time == s2->end_time)
                   && (s1->host_id == s2->host_id)
                   && (s1->in_downtime == s2->in_downtime)
                   && (s1->service_id == s2->service_id)
-                  && ((s1->start_time && s2->start_time)
-                      || (!s1->start_time && !s2->start_time)));
+                  && (s1->start_time == s2->start_time));
       }
       ++it;
     }

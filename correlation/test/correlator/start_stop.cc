@@ -45,7 +45,7 @@ int main() {
   n1.my_issue.reset(new issue);
   n1.my_issue->host_id = 42;
   n1.my_issue->service_id = 24;
-  n1.my_issue->start_time = 123456;
+  n1.my_issue->start_time = 123456789;
   node& n2(state[qMakePair(77u, 56u)]);
   n2.host_id = 77;
   n2.service_id = 56;
@@ -53,7 +53,7 @@ int main() {
   n2.my_issue.reset(new issue);
   n2.my_issue->host_id = 77;
   n2.my_issue->service_id = 56;
-  n2.my_issue->start_time = 7466;
+  n2.my_issue->start_time = 123456790;
   n1.add_parent(&n2);
 
   // Create correlator.

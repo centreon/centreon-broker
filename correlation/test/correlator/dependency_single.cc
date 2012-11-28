@@ -62,6 +62,7 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456789;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -70,6 +71,7 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 2;
+    ss->last_check = 123456790;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -78,6 +80,7 @@ int main() {
     ss->service_id = 13;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456791;
     c.write(ss.staticCast<io::data>());
   }
   {
@@ -86,16 +89,35 @@ int main() {
     ss->service_id = 24;
     ss->state_type = 1;
     ss->current_state = 0;
+    ss->last_check = 123456792;
     c.write(ss.staticCast<io::data>());
   }
 
   // Check correlation content.
   QList<misc::shared_ptr<io::data> > content;
-  add_issue(content, 0, 0, 42, 24, 1);
-  add_issue(content, 0, 0, 56, 13, 1);
-  add_issue_parent(content, 42, 24, 1, 0, 56, 13, 1, 1);
-  add_issue_parent(content, 42, 24, 1, 1, 56, 13, 1, 1);
-  add_issue(content, 0, 1, 56, 13, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
+  add_issue(content, 0, 0, 42, 24, 123456789);
+  add_issue(content, 0, 0, 56, 13, 123456790);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456789,
+    0,
+    56,
+    13,
+    123456790,
+    123456790);
+  add_issue_parent(
+    content,
+    42,
+    24,
+    123456789,
+    123456791,
+    56,
+    13,
+    123456790,
+    123456790);
+  add_issue(content, 0, 123456791, 56, 13, 123456790);
+  add_issue(content, 0, 123456792, 42, 24, 123456789);
   return (!check_content(c, content));
 }
