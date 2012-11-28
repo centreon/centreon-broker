@@ -303,7 +303,7 @@ void worker::run() {
       // Check file opening.
       if (_buffer.empty()) {
         _close();
-        usleep(500);
+        usleep(100000);
         if (!_open())
           continue ;
       }
