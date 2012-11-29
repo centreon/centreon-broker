@@ -236,16 +236,16 @@ void rebuilder::run() {
               check_interval * _interval_length);
           }
           catch (...) {
-            // Set index as rebuilt.
-            _set_index_rebuild(index_id, 0);
+            // Set index as to-be-rebuilt.
+            _set_index_rebuild(index_id, 1);
 
             // Rethrow exception.
             throw ;
           }
 
-          // Set index as rebuilt.
-          if (!_should_exit)
-            _set_index_rebuild(index_id, 1);
+          // Set index as rebuilt or to-be-rebuild
+          // if we were interrupted.
+          _set_index_rebuild(index_id, (_should_exit ? 1 : 0));
         }
 
         // Close DB.
