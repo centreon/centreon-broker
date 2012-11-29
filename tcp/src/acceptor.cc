@@ -150,23 +150,25 @@ misc::shared_ptr<io::stream> acceptor::open() {
   }
 
   // Wait for incoming connections.
-  logging::debug(logging::medium) << "TCP: waiting for new connection";
-  bool timedout(false);
-  bool ret(_socket->waitForNewConnection(200, &timedout));
-  while (!ret && timedout) {
-    QWaitCondition cv;
-    cv.wait(&_mutex, 10);
-    timedout = false;
-    ret = _socket.get()
-      && _socket->waitForNewConnection(200, &timedout);
-  }
-  if (!ret) {
-    if (!_socket.get())
-      throw (io::exceptions::shutdown(true, true)
-             << "TCP: shutdown requested");
-    else
-      throw (exceptions::msg() << "TCP: error while waiting client: "
-             << _socket->errorString());
+  if (!_socket->hasPendingConnections()) {
+    logging::debug(logging::medium) << "TCP: waiting for new connection";
+    bool timedout(false);
+    bool ret(_socket->waitForNewConnection(200, &timedout));
+    while (!ret && timedout) {
+      QWaitCondition cv;
+      cv.wait(&_mutex, 10);
+      timedout = false;
+      ret = _socket.get()
+	&& _socket->waitForNewConnection(200, &timedout);
+    }
+    if (!ret) {
+      if (!_socket.get())
+	throw (io::exceptions::shutdown(true, true)
+	       << "TCP: shutdown requested");
+      else
+	throw (exceptions::msg() << "TCP: error while waiting client: "
+	       << _socket->errorString());
+    }
   }
 
   // Accept client.
