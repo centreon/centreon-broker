@@ -197,6 +197,8 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
 
     // Write data.
     while (size > 0) {
+      if (_woffset == _max_size)
+        _open_next_write();
       unsigned long max_write(_max_size - _woffset);
       if (size < max_write)
         max_write = size;
@@ -205,8 +207,6 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
       size -= wb;
       _woffset += wb;
       memory += wb;
-      if (_woffset == _max_size)
-        _open_next_write();
     }
   }
   else
