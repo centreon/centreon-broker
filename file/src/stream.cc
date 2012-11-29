@@ -183,7 +183,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     _wfile->seek(_woffset);
 
     // Get data.
-    void* memory;
+    char const* memory;
     unsigned int size;
     {
       io::raw* data(static_cast<io::raw*>(d.data()));
@@ -201,9 +201,10 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
       if (size < max_write)
         max_write = size;
       unsigned long
-        wb(_wfile->write(static_cast<char*>(memory), max_write));
+        wb(_wfile->write(memory, max_write));
       size -= wb;
       _woffset += wb;
+      memory += wb;
       if (_woffset == _max_size)
         _open_next_write();
     }
