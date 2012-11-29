@@ -52,10 +52,8 @@ subscriber::subscriber(io::endpoint const* temporary)
   QMutexLocker lock2(&_mutex);
   _process_in = true;
   _process_out = true;
-  if (temporary) {
+  if (temporary)
     _endp_temporary = std::auto_ptr<io::endpoint>(temporary->clone());
-    _temporary = _endp_temporary->open();
-  }
   gl_subscribers.push_back(this);
   logging::debug(logging::low) << "multiplexing: "
     << gl_subscribers.size()
@@ -220,11 +218,15 @@ void subscriber::statistics(std::string& buffer) const {
 void subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
-    if (++_total_events > event_queue_max_size()
-        && !_temporary.isNull())
+    if (_total_events >= event_queue_max_size()
+        && _endp_temporary.get()) {
+      if (_temporary.isNull())
+	_temporary = _endp_temporary->open();
       _temporary->write(event);
+    }
     else
       _events.enqueue(event);
+    ++_total_events;
   }
   _cv.wakeOne();
   return ;
@@ -271,8 +273,8 @@ subscriber& subscriber::operator=(subscriber const& s) {
  */
 void subscriber::clean() {
   QMutexLocker lock(&_mutex);
-  if (_endp_temporary.get())
-    _temporary = _endp_temporary->open();
+  if (!_temporary.isNull())
+    _temporary = misc::shared_ptr<io::stream>();
   _events.clear();
   _total_events = 0;
   return ;
@@ -285,11 +287,19 @@ void subscriber::clean() {
  *  @param[out] event Last event available.
  */
 void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
-  if (_total_events > event_queue_max_size()
+  if (_total_events >= event_queue_max_size()
       && !_temporary.isNull()) {
-    _temporary->read(event);
-    _events.enqueue(event);
+    try {
+      do {
+	_temporary->read(event);
+      } while (event.isNull());
+      _events.enqueue(event);
+    }
+    catch (io::exceptions::shutdown const& e) {
+      (void)e;
+      _temporary = misc::shared_ptr<io::stream>();
+    }
   }
-  event = _events.dequeue();
   --_total_events;
+  event = _events.dequeue();
 }

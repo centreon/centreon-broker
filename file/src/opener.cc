@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/file/stream.hh"
@@ -89,13 +91,15 @@ void opener::close() {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open() {
-  // Check if is temporary endpoint.
-  bool is_temporary(!_is_in && !_is_out);
+  QString filename(_filename);
+  if (!_is_in && !_is_out) {
+    // Create unique temporary file.
+    std::ostringstream oss;
+    oss << "-" << QCoreApplication::applicationPid() << "-" << this;
+    filename = _filename + oss.str().c_str();
+  }
   return (misc::shared_ptr<io::stream>(
-            new stream(
-                  qPrintable(_filename),
-                  _max_size,
-                  is_temporary)));
+            new stream(qPrintable(filename), _max_size)));
 }
 
 /**

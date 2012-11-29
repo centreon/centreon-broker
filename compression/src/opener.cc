@@ -71,7 +71,10 @@ opener& opener::operator=(opener const& o) {
  *  @return This object.
  */
 io::endpoint* opener::clone() const {
-  return (new opener(*this));
+  std::auto_ptr<opener> copy(new opener(*this));
+  if (!_from.isNull())
+    copy->_from = _from->clone();
+  return (copy.release());
 }
 
 /**

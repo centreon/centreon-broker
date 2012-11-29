@@ -22,7 +22,6 @@
 #include <climits>
 #include <cstdlib>
 #include <memory>
-#include <QCoreApplication>
 #include <QDir>
 #include <QMutexLocker>
 #include <sstream>
@@ -50,18 +49,11 @@ using namespace com::centreon::broker::file;
  */
 stream::stream(
           std::string const& path,
-          unsigned long long max_size,
-          bool is_temporary)
+          unsigned long long max_size)
   : _max_size(max_size),
     _path(path),
     _process_in(true),
     _process_out(true) {
-  if (is_temporary) {
-    // Create unique file.
-    std::ostringstream oss;
-    oss << "-" << QCoreApplication::applicationPid() << "-" << this;
-    _path += oss.str();
-  }
   _open_first_write();
   _open_first_read();
 }
