@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <memory>
 #include "com/centreon/broker/compression/opener.hh"
 #include "com/centreon/broker/compression/stream.hh"
 
