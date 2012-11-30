@@ -438,6 +438,8 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
   "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
@@ -513,6 +515,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Failover to file.
+  set(TEST_NAME "running_failover_to_file")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/failover_to_file.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
 endif ()
 
 #
