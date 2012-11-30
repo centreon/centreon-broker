@@ -28,6 +28,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
+#include "test/external_command.hh"
 #include "test/generate.hh"
 #include "test/vars.hh"
 
@@ -48,6 +49,7 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
+  external_command commander;
   engine daemon;
 
   try {
@@ -57,18 +59,20 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
-    std::string cbmod_loading;
+    commander.set_file(tmpnam(NULL));
+    std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
+      oss << commander.get_engine_config()
+          << "broker_module=" << CBMOD_PATH << " "
           << PROJECT_SOURCE_DIR << "/test/cfg/monitoring_to_sql.xml\n";
-      cbmod_loading = oss.str();
+      additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
     config_write(
       engine_config_path.c_str(),
-      cbmod_loading.c_str(),
+      additional_config.c_str(),
       &hosts,
       &services);
 
@@ -77,7 +81,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(50 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
@@ -142,6 +146,48 @@ int main() {
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'services'");
+    }
+
+    // Get current time.
+    time_t t1(time(NULL));
+
+    // Put a service in a critical state
+    // to generate logs (checked below).
+    {
+      commander.execute("ENABLE_PASSIVE_SVC_CHECKS;1;2");
+      commander.execute("DISABLE_SVC_CHECK;1;2");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output1");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output3");
+    }
+
+    // Run a while.
+    sleep(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Current time.
+    now = time(NULL);
+
+    // Check generated logs.
+    {
+      std::ostringstream query;
+      query << "SELECT ctime, host_name, output, service_description,"
+            << "       status, type"
+            << "  FROM logs"
+            << "  WHERE host_id=1 AND msg_type=0 AND service_id=2";
+      QSqlQuery q(db);
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg() << "cannot get logs from DB: "
+               << qPrintable(q.lastError().text()));
+      if (!q.next()
+          || (q.value(0).toUInt() < t1)
+          || (q.value(0).toUInt() > now)
+          || (q.value(1).toString() != "1")
+          || (q.value(2).toString() != "output3\n")
+          || (q.value(3).toString() != "2")
+          || (q.value(4).toUInt() != 2)
+          || (q.value(5).toUInt() != 1)
+          || q.next())
+        throw (exceptions::msg() << "invalid entry in the logs table");
     }
 
     // Success.

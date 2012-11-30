@@ -639,13 +639,13 @@ CREATE TABLE logs (
   retry int default NULL,
   service_description varchar(255) default NULL,
   service_id int default NULL,
-  status enum('0', '1', '2', '3', '4') default NULL,
+  status tinyint default NULL,
   type smallint default NULL,
 
   PRIMARY KEY (log_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE SET NULL
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 
 --
