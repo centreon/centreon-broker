@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -131,11 +132,11 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"COUNTER|c[counter]=147852369\\;123\\;745698877\\;3\\;\"";
+      cmd = "echo \"COUNTER|c[counter]=147852369\\;123\\;745698877\\;3\\;nan\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DERIVE|d[derive]=89588s\\;100000\\;1000\\;\\;100000\"";
+      cmd = "echo \"DERIVE|d[derive]=89588s\\;100000\\;1000\\;\\;inf\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
@@ -286,7 +287,7 @@ int main() {
                    || (fabs(warning - 100000.0) > 100.0)
                    || (fabs(critical - 1000.0) > 10.0)
                    || !q.value(6).isNull()
-                   || (fabs(max_val - 100000.0) > 100.0));
+                   || (fabs(max_val - DBL_MAX - 1.0) < 0.1));
           break ;
         case 3:
           error = ((metric_name != "gauge")
