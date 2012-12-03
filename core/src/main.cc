@@ -17,15 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <errno.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <locale.h>
 #include <QCoreApplication>
 #include <QLibraryInfo>
-#include <signal.h>
-#include <string.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/logger.hh"
@@ -119,12 +121,15 @@ int main(int argc, char* argv[]) {
 
   try {
     // Check the command line.
+    bool check(false);
     bool debug(false);
     bool help(false);
     bool version(false);
     if (argc >= 2) {
       for (int i(1); i < argc; ++i)
-        if (!strcmp(argv[i], "-d"))
+        if (!strcmp(argv[i], "-c"))
+          check = true;
+        else if (!strcmp(argv[i], "-d"))
           debug = true;
         else if (!strcmp(argv[i], "-h"))
           help = true;
@@ -135,6 +140,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Apply default configuration.
+    config::state default_state;
     {
       // Logging object.
       config::logger default_log;
@@ -142,12 +148,18 @@ int main(int argc, char* argv[]) {
       default_log.debug(debug);
       default_log.error(!help);
       default_log.info(true);
-      default_log.level(debug ? logging::low : logging::high);
-      default_log.name("stderr");
+      logging::level level;
+      if (debug)
+        level = logging::low;
+      else if (check)
+        level = logging::medium;
+      else
+        level = logging::high;
+      default_log.level(level);
+      default_log.name((check || version) ? "stdout" : "stderr");
       default_log.type(config::logger::standard);
 
       // Configuration object.
-      config::state default_state;
       default_state.loggers().push_back(default_log);
 
       // Apply configuration.
@@ -157,7 +169,12 @@ int main(int argc, char* argv[]) {
     // Check parameters requirements.
     if (help) {
       logging::info(logging::high) << "USAGE: " << argv[0]
-        << " [-d] [-h] [-v] [<configfile>]";
+        << " [-c] [-d] [-h] [-v] [<configfile>]";
+      logging::info(logging::high) << "  -c  Check configuration file.";
+      logging::info(logging::high) << "  -d  Enable debug mode.";
+      logging::info(logging::high) << "  -h  Print this help.";
+      logging::info(logging::high)
+        << "  -v  Print Centreon Broker version.";
       logging::info(logging::high) << "Centreon Broker "
         << CENTREON_BROKER_VERSION;
       logging::info(logging::high) << "Copyright 2009-2012 Merethis";
@@ -172,7 +189,7 @@ int main(int argc, char* argv[]) {
     }
     else if (gl_mainconfigfile.isEmpty()) {
       logging::error(logging::high) << "USAGE: " << argv[0]
-        << " [-d] [-h] [-v] [<configfile>]";
+        << " [-c] [-d] [-h] [-v] [<configfile>]";
       retval = 1;
     }
     else {
@@ -210,8 +227,27 @@ int main(int argc, char* argv[]) {
         config::state conf;
         parsr.parse(gl_mainconfigfile, conf);
 
-        // Apply resulting configuration.
-        config::applier::state::instance().apply(conf);
+        // Apply resulting configuration totally ...
+        if (!check)
+          config::applier::state::instance().apply(conf);
+        // ... or partially for verification purpose.
+        else {
+          // Loggers.
+          for (QList<config::logger>::iterator
+                 it(conf.loggers().begin()),
+                 end(conf.loggers().end());
+               it != end;
+               ++it)
+            it->types(0);
+          conf.loggers().push_back(default_state.loggers().front());
+          config::applier::logger::instance().apply(conf.loggers());
+        }
+
+        // Modules.
+        config::applier::modules::instance().apply(
+                                               conf.module_list(),
+                                               conf.module_directory(),
+                                               &conf);
       }
 
       // Set configuration update handler.
@@ -231,19 +267,22 @@ int main(int argc, char* argv[]) {
       }
 
       // Launch event loop.
-      retval = app.exec();
+      if (!check)
+        retval = app.exec();
+      else
+        retval = EXIT_SUCCESS;
     }
   }
   // Standard exception.
   catch (std::exception const& e) {
     logging::error(logging::high) << e.what();
-    retval = 1;
+    retval = EXIT_FAILURE;
   }
   // Unknown exception.
   catch (...) {
     logging::error(logging::high)
       << "main: unknown error, aborting execution";
-    retval = 1;
+    retval = EXIT_FAILURE;
   }
 
   // Unload endpoints.
