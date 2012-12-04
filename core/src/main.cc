@@ -227,11 +227,8 @@ int main(int argc, char* argv[]) {
         config::state conf;
         parsr.parse(gl_mainconfigfile, conf);
 
-        // Apply resulting configuration totally ...
-        if (!check)
-          config::applier::state::instance().apply(conf);
-        // ... or partially for verification purpose.
-        else {
+        // Verification modifications.
+        if (check) {
           // Loggers.
           for (QList<config::logger>::iterator
                  it(conf.loggers().begin()),
@@ -240,14 +237,10 @@ int main(int argc, char* argv[]) {
                ++it)
             it->types(0);
           conf.loggers().push_back(default_state.loggers().front());
-          config::applier::logger::instance().apply(conf.loggers());
         }
 
-        // Modules.
-        config::applier::modules::instance().apply(
-                                               conf.module_list(),
-                                               conf.module_directory(),
-                                               &conf);
+        // Apply resulting configuration totally or partially.
+        config::applier::state::instance().apply(conf, !check);
       }
 
       // Set configuration update handler.
