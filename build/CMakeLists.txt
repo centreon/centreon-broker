@@ -456,12 +456,14 @@ add_library("${TEST_LIB}" STATIC
   "${PROJECT_SOURCE_DIR}/test/engine.cc"
   "${PROJECT_SOURCE_DIR}/test/external_command.cc"
   "${PROJECT_SOURCE_DIR}/test/generate.cc"
+  "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
   # Headers.
   "${PROJECT_SOURCE_DIR}/test/cbd.hh"
   "${PROJECT_SOURCE_DIR}/test/config.hh"
   "${PROJECT_SOURCE_DIR}/test/engine.hh"
   "${PROJECT_SOURCE_DIR}/test/external_command.hh"
   "${PROJECT_SOURCE_DIR}/test/generate.hh"
+  "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
 )
 target_link_libraries("${TEST_LIB}" "roker")
 
@@ -515,7 +517,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_monitoring_to_rrd")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Failover to file.

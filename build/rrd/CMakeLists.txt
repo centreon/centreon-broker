@@ -41,6 +41,7 @@ else ()
   if (NOT LIBRRD_LDFLAGS)
     message(FATAL_ERROR "Could not find librrd's library.")
   endif ()
+  set(LIBRRD_LDFLAGS "${LIBRRD_LDFLAGS}" PARENT_SCOPE)
 endif ()
 
 # RRD module.

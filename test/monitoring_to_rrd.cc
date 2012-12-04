@@ -35,6 +35,7 @@
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/generate.hh"
+#include "test/rrd_file.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -336,6 +337,7 @@ int main() {
     }
 
     // Check that status RRD files exist.
+    unsigned int i(0);
     for (std::list<unsigned int>::const_iterator
            it(indexes.begin()),
            end(indexes.end());
@@ -349,16 +351,90 @@ int main() {
     }
 
     // Check that metrics RRD files exist.
+    i = 0;
     for (std::list<unsigned int>::const_iterator
            it(metrics.begin()),
            end(metrics.end());
          it != end;
-         ++it) {
+         ++it, ++i) {
       std::ostringstream path;
       path << metrics_path << "/" << *it << ".rrd";
       if (!QFile::exists(path.str().c_str()))
         throw (exceptions::msg() << "metrics RRD file '"
                << path.str().c_str() << "' does not exist");
+      rrd_file f;
+      f.load(path.str().c_str());
+
+      // Check content.
+      if (f.get_rras().size() != 2)
+        throw (exceptions::msg() << "metrics RRD file '"
+               << path.str().c_str() << "' does not have two RRAs");
+      if (f.get_rras().front().size() < 2)
+        throw (exceptions::msg() << "metrics RRD file '"
+               << path.str().c_str()
+               << "' does not have enough entries in its first RRA");
+      switch (i % 5) {
+      case 0:
+        for (std::map<time_t, double>::const_iterator
+               it(f.get_rras().front().begin()),
+               end(f.get_rras().front().end());
+             it != end;
+             ++it)
+          if (fabs(it->second - 1491.6) > 0.01)
+            throw (exceptions::msg()
+                   << "invalid absolute value in RRD file '"
+                   << path.str().c_str() << "' (entry " << i
+                   << "): got " << it->second << " expected 1491.6");
+        break ;
+      case 1:
+        for (std::map<time_t, double>::const_iterator
+               it(f.get_rras().front().begin()),
+               end(f.get_rras().front().end());
+             it != end;
+             ++it)
+          if (fabs(it->second) > 0.01)
+            throw (exceptions::msg()
+                   << "invalid counter value in RRD file '"
+                   << path.str().c_str() << "' (entry " << i
+                   << "): got " << it->second << " expected 0.0");
+        break ;
+      case 2:
+        for (std::map<time_t, double>::const_iterator
+               it(f.get_rras().front().begin()),
+               end(f.get_rras().front().end());
+             it != end;
+             ++it)
+          if (fabs(it->second) > 0.01)
+            throw (exceptions::msg()
+                   << "invalid derive value in RRD file '"
+                   << path.str().c_str() << "' (entry " << i
+                   << "): got " << it->second << " expected 0.0");
+        break ;
+      case 3:
+        for (std::map<time_t, double>::const_iterator
+               it(f.get_rras().front().begin()),
+               end(f.get_rras().front().end());
+             it != end;
+             ++it)
+          if (fabs(it->second - 135.25) > 0.01)
+            throw (exceptions::msg()
+                   << "invalid gauge value in RRD file '"
+                   << path.str().c_str() << "' (entry " << i
+                   << "): got " << it->second << " expected 135.25");
+        break ;
+      case 4:
+        for (std::map<time_t, double>::const_iterator
+               it(f.get_rras().front().begin()),
+               end(f.get_rras().front().end());
+             it != end;
+             ++it)
+          if (fabs(it->second - 9.0) > 0.01)
+            throw (exceptions::msg()
+                   << "invalid default value in RRD file '"
+                   << path.str().c_str() << "' (entry " << i
+                   << "): got " << it->second << " expected 9.0");
+        break ;
+      }
     }
 
     // Success.
