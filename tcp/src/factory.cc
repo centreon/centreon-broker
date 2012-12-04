@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <QString>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/connector.hh"
@@ -138,11 +139,7 @@ io::endpoint* factory::new_endpoint(
     // Is TLS enabled ?
     QMap<QString, QString>::const_iterator it(cfg.params.find("tls"));
     if (it != cfg.params.end()) {
-      tls = (!it.value().compare("yes", Qt::CaseInsensitive)
-             || !it.value().compare("true", Qt::CaseInsensitive)
-             || !it.value().compare("enable", Qt::CaseInsensitive)
-             || !it.value().compare("enabled", Qt::CaseInsensitive)
-             || it.value().toInt());
+      tls = config::parser::parse_boolean(*it);
       if (tls) {
         // CA certificate.
         it = cfg.params.find("ca_certificate");

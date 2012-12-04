@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
 #include "com/centreon/broker/sql/factory.hh"
@@ -171,7 +172,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("check_replication"));
     if (it != cfg.params.end())
-      check_replication = it.value().toUInt();
+      check_replication = config::parser::parse_boolean(*it);
   }
 
   // Use state events ?
@@ -180,7 +181,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("with_state_events"));
     if (it != cfg.params.end())
-      wse = true;
+      wse = config::parser::parse_boolean(*it);
   }
 
   // Connector.

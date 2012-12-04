@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/opener.hh"
 
@@ -86,9 +87,7 @@ bool factory::has_endpoint(
   QMap<QString, QString>::const_iterator
     it(cfg.params.find("compression"));
   return ((cfg.params.end() != it)
-          && (!it.value().compare("yes", Qt::CaseInsensitive)
-              || !it.value().compare("enabled", Qt::CaseInsensitive)
-              || it.value().toUInt()));
+          && config::parser::parse_boolean(*it));
 }
 
 /**

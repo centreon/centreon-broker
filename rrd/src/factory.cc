@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/connector.hh"
 #include "com/centreon/broker/rrd/factory.hh"
@@ -162,7 +163,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::iterator
       it(cfg.params.find("write_metrics"));
     if (it != cfg.params.end())
-      write_metrics = it->toUInt();
+      write_metrics = config::parser::parse_boolean(*it);
     else
       write_metrics = true;
   }
@@ -173,7 +174,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::iterator
       it(cfg.params.find("write_status"));
     if (it != cfg.params.end())
-      write_status = it->toUInt();
+      write_status = config::parser::parse_boolean(*it);
     else
       write_status = true;
   }

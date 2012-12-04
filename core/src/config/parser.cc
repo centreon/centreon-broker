@@ -29,146 +29,6 @@ using namespace com::centreon::broker::config;
 
 /**************************************
 *                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Parse the configuration of an endpoint.
- *
- *  @param[in]  elem XML element that have the endpoint configuration.
- *  @param[out] e    Element object.
- */
-void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
-  QDomNodeList nlist(elem.childNodes());
-  for (int i = 0, len = nlist.size(); i < len; ++i) {
-    QDomElement entry(nlist.item(i).toElement());
-    if (!entry.isNull()) {
-      QString name(entry.tagName());
-      if (name == "buffering_timeout")
-        e.buffering_timeout
-          = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "failover")
-        e.failover = entry.text();
-      else if (name == "name")
-        e.name = entry.text();
-      else if (name == "read_timeout")
-        e.read_timeout = static_cast<time_t>(entry.text().toInt());
-      else if (name == "retry_interval")
-        e.retry_interval = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "type")
-        e.type = entry.text();
-      e.params[name] = entry.text();
-    }
-  }
-  return ;
-}
-
-/**
- *  Parse the configuration of a logging object.
- *
- *  @param[in]  elem XML element that have the logger configuration.
- *  @param[out] l    Logger object.
- */
-void parser::_parse_logger(QDomElement& elem, logger& l) {
-  QDomNodeList nlist(elem.childNodes());
-  for (int i = 0, len = nlist.size(); i < len; ++i) {
-    QDomElement entry(nlist.item(i).toElement());
-    if (!entry.isNull()) {
-      QString name(entry.tagName());
-      if (name == "config") {
-        QString val(entry.text());
-        l.config((val == "yes") || val.toInt());
-      }
-      else if (name == "debug") {
-        QString val(entry.text());
-        l.debug((val == "yes") || val.toInt());
-      }
-      else if (name == "error") {
-        QString val(entry.text());
-        l.error((val == "yes") || val.toInt());
-      }
-      else if (name == "info") {
-        QString val(entry.text());
-        l.info((val == "yes") || val.toInt());
-      }
-      else if (name == "facility") {
-        QString val(entry.text());
-        if (!val.compare("kern", Qt::CaseInsensitive))
-          l.facility(LOG_KERN);
-        else if (!val.compare("user", Qt::CaseInsensitive))
-          l.facility(LOG_USER);
-        else if (!val.compare("mail", Qt::CaseInsensitive))
-          l.facility(LOG_MAIL);
-        else if (!val.compare("news", Qt::CaseInsensitive))
-          l.facility(LOG_NEWS);
-        else if (!val.compare("uucp", Qt::CaseInsensitive))
-          l.facility(LOG_UUCP);
-        else if (!val.compare("daemon", Qt::CaseInsensitive))
-          l.facility(LOG_DAEMON);
-        else if (!val.compare("auth", Qt::CaseInsensitive))
-          l.facility(LOG_AUTH);
-        else if (!val.compare("cron", Qt::CaseInsensitive))
-          l.facility(LOG_CRON);
-        else if (!val.compare("lpr", Qt::CaseInsensitive))
-          l.facility(LOG_LPR);
-        else if (!val.compare("local0", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL0);
-        else if (!val.compare("local1", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL1);
-        else if (!val.compare("local2", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL2);
-        else if (!val.compare("local3", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL3);
-        else if (!val.compare("local4", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL4);
-        else if (!val.compare("local5", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL5);
-        else if (!val.compare("local6", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL6);
-        else if (!val.compare("local7", Qt::CaseInsensitive))
-          l.facility(LOG_LOCAL7);
-        else
-          l.facility(val.toUInt());
-      }
-      else if (name == "level") {
-        QString val_str(entry.text());
-        int val(val_str.toInt());
-        if ((val == 3) || (val_str == "high"))
-          l.level(com::centreon::broker::logging::low);
-        else if ((val == 2) || (val_str == "medium"))
-          l.level(com::centreon::broker::logging::medium);
-        else if ((val == 1) || (val_str == "low"))
-          l.level(com::centreon::broker::logging::high);
-        else
-          l.level(com::centreon::broker::logging::none);
-      }
-      else if (name == "max_size")
-        l.max_size(entry.text().toUInt());
-      else if (name == "name")
-        l.name(entry.text());
-      else if (name == "type") {
-        QString val(entry.text());
-        if (val == "file")
-          l.type(logger::file);
-        else if (val == "monitoring")
-          l.type(logger::monitoring);
-        else if (val == "standard")
-          l.type(logger::standard);
-        else if (val == "syslog")
-          l.type(logger::syslog);
-        else
-          throw (exceptions::msg()
-                 << "config parser: unknown logger type '"
-                 << val << "'");
-      }
-    }
-  }
-  return ;
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -297,5 +157,151 @@ void parser::parse(QString const& file, state& s) {
     }
   }
 
+  return ;
+}
+
+/**
+ *  Parse a boolean value.
+ *
+ *  @param[in] value String representation of the boolean.
+ */
+bool parser::parse_boolean(QString const& value) {
+  bool conversion_ok;
+  return (!value.compare("yes", Qt::CaseInsensitive)
+          || !value.compare("enable", Qt::CaseInsensitive)
+          || !value.compare("enabled", Qt::CaseInsensitive)
+          || !value.compare("true", Qt::CaseInsensitive)
+          || (value.toUInt(&conversion_ok) && conversion_ok));
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Parse the configuration of an endpoint.
+ *
+ *  @param[in]  elem XML element that have the endpoint configuration.
+ *  @param[out] e    Element object.
+ */
+void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
+  QDomNodeList nlist(elem.childNodes());
+  for (int i = 0, len = nlist.size(); i < len; ++i) {
+    QDomElement entry(nlist.item(i).toElement());
+    if (!entry.isNull()) {
+      QString name(entry.tagName());
+      if (name == "buffering_timeout")
+        e.buffering_timeout
+          = static_cast<time_t>(entry.text().toUInt());
+      else if (name == "failover")
+        e.failover = entry.text();
+      else if (name == "name")
+        e.name = entry.text();
+      else if (name == "read_timeout")
+        e.read_timeout = static_cast<time_t>(entry.text().toInt());
+      else if (name == "retry_interval")
+        e.retry_interval = static_cast<time_t>(entry.text().toUInt());
+      else if (name == "type")
+        e.type = entry.text();
+      e.params[name] = entry.text();
+    }
+  }
+  return ;
+}
+
+/**
+ *  Parse the configuration of a logging object.
+ *
+ *  @param[in]  elem XML element that have the logger configuration.
+ *  @param[out] l    Logger object.
+ */
+void parser::_parse_logger(QDomElement& elem, logger& l) {
+  QDomNodeList nlist(elem.childNodes());
+  for (int i = 0, len = nlist.size(); i < len; ++i) {
+    QDomElement entry(nlist.item(i).toElement());
+    if (!entry.isNull()) {
+      QString name(entry.tagName());
+      if (name == "config")
+        l.config(parse_boolean(entry.text()));
+      else if (name == "debug")
+        l.debug(parse_boolean(entry.text()));
+      else if (name == "error")
+        l.error(parse_boolean(entry.text()));
+      else if (name == "info")
+        l.info(parse_boolean(entry.text()));
+      else if (name == "facility") {
+        QString val(entry.text());
+        if (!val.compare("kern", Qt::CaseInsensitive))
+          l.facility(LOG_KERN);
+        else if (!val.compare("user", Qt::CaseInsensitive))
+          l.facility(LOG_USER);
+        else if (!val.compare("mail", Qt::CaseInsensitive))
+          l.facility(LOG_MAIL);
+        else if (!val.compare("news", Qt::CaseInsensitive))
+          l.facility(LOG_NEWS);
+        else if (!val.compare("uucp", Qt::CaseInsensitive))
+          l.facility(LOG_UUCP);
+        else if (!val.compare("daemon", Qt::CaseInsensitive))
+          l.facility(LOG_DAEMON);
+        else if (!val.compare("auth", Qt::CaseInsensitive))
+          l.facility(LOG_AUTH);
+        else if (!val.compare("cron", Qt::CaseInsensitive))
+          l.facility(LOG_CRON);
+        else if (!val.compare("lpr", Qt::CaseInsensitive))
+          l.facility(LOG_LPR);
+        else if (!val.compare("local0", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL0);
+        else if (!val.compare("local1", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL1);
+        else if (!val.compare("local2", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL2);
+        else if (!val.compare("local3", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL3);
+        else if (!val.compare("local4", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL4);
+        else if (!val.compare("local5", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL5);
+        else if (!val.compare("local6", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL6);
+        else if (!val.compare("local7", Qt::CaseInsensitive))
+          l.facility(LOG_LOCAL7);
+        else
+          l.facility(val.toUInt());
+      }
+      else if (name == "level") {
+        QString val_str(entry.text());
+        int val(val_str.toInt());
+        if ((val == 3) || (val_str == "high"))
+          l.level(com::centreon::broker::logging::low);
+        else if ((val == 2) || (val_str == "medium"))
+          l.level(com::centreon::broker::logging::medium);
+        else if ((val == 1) || (val_str == "low"))
+          l.level(com::centreon::broker::logging::high);
+        else
+          l.level(com::centreon::broker::logging::none);
+      }
+      else if (name == "max_size")
+        l.max_size(entry.text().toUInt());
+      else if (name == "name")
+        l.name(entry.text());
+      else if (name == "type") {
+        QString val(entry.text());
+        if (val == "file")
+          l.type(logger::file);
+        else if (val == "monitoring")
+          l.type(logger::monitoring);
+        else if (val == "standard")
+          l.type(logger::standard);
+        else if (val == "syslog")
+          l.type(logger::syslog);
+        else
+          throw (exceptions::msg()
+                 << "config parser: unknown logger type '"
+                 << val << "'");
+      }
+    }
+  }
   return ;
 }

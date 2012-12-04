@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,40 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CONFIG_PARSER_HH_
-# define CCB_CONFIG_PARSER_HH_
+#ifndef CCB_CONFIG_PARSER_HH
+#  define CCB_CONFIG_PARSER_HH
 
-# include <QDomElement>
-# include <QList>
-# include <QString>
-# include "com/centreon/broker/config/state.hh"
+#  include <QDomElement>
+#  include <QList>
+#  include <QString>
+#  include "com/centreon/broker/config/state.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   config {
-        /**
-         *  @class parser parser.hh "com/centreon/broker/config/parser.hh"
-         *  @brief Parse configuration file.
-         *
-         *  Parse a configuration file and generate appropriate objects for further
-         *  handling.
-         */
-        class     parser {
-         private:
-          void    _parse_endpoint(QDomElement& elem, endpoint& e);
-          void    _parse_logger(QDomElement& elem, logger& l);
+CCB_BEGIN()
 
-         public:
-                  parser();
-                  parser(parser const& p);
-                  ~parser();
-          parser& operator=(parser const& p);
-          void    parse(QString const& file, state& s);
-        };
-      }
-    }
-  }
+namespace       config {
+  /**
+   *  @class parser parser.hh "com/centreon/broker/config/parser.hh"
+   *  @brief Parse configuration file.
+   *
+   *  Parse a configuration file and generate appropriate objects for further
+   *  handling.
+   */
+  class         parser {
+  public:
+                parser();
+                parser(parser const& p);
+                ~parser();
+    parser&     operator=(parser const& p);
+    void        parse(QString const& file, state& s);
+    static bool parse_boolean(QString const& value);
+
+  private:
+    void        _parse_endpoint(QDomElement& elem, endpoint& e);
+    void        _parse_logger(QDomElement& elem, logger& l);
+  };
 }
 
-#endif /* !CCB_CONFIG_PARSER_HH_ */
+CCB_END()
+
+#endif // !CCB_CONFIG_PARSER_HH

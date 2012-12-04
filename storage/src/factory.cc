@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/connector.hh"
 #include "com/centreon/broker/storage/factory.hh"
@@ -175,7 +176,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("check_replication"));
     if (it != cfg.params.end())
-      check_replication = it.value().toUInt();
+      check_replication = config::parser::parse_boolean(*it);
   }
 
   // Connector.
