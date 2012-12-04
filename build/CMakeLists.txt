@@ -440,6 +440,8 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
   "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
@@ -522,6 +524,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/failover_to_file.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # RRD endpoint as failover.
+  set(TEST_NAME "running_rrd_as_failover")
+  add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 
 endif ()
 
@@ -1083,6 +1089,7 @@ if (WITH_TESTING)
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")
+
 endif ()
 
 #

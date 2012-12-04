@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyBroker</instance_name>
+  <!--
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <output>
+    <name>RRDCachedDAsFailoverUnitTest</name>
+    <type>rrd</type>
+    <failover>RRDAsFailoverUnitTest</failover>
+    <metrics_path>@PROJECT_SOURCE_DIR@</metrics_path>
+    <status_path>@PROJECT_SOURCE_DIR@</status_path>
+    <port>19283</port>
+  </output>
+  <output>
+    <name>RRDAsFailoverUnitTest</name>
+    <type>rrd</type>
+    <metrics_path>@PROJECT_SOURCE_DIR@</metrics_path>
+    <status_path>@PROJECT_SOURCE_DIR@</status_path>
+  </output>
+</centreonbroker>

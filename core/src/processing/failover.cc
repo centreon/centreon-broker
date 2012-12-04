@@ -445,7 +445,6 @@ void failover::run() {
   logging::debug(logging::medium) << "failover: "
     << _name << " is launching loop";
   QMutexLocker exit_lock(&_should_exitm);
-  _should_exit = false;
 
   time_t buffering(0);
   while (!_should_exit) {
