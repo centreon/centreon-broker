@@ -16,7 +16,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <rrd.h>
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/factory.hh"
 
 using namespace com::centreon::broker;
@@ -45,12 +47,19 @@ extern "C" {
     (void)arg;
 
     // Increment instance number.
-    if (!instances++)
+    if (!instances++) {
+      // Print RRDtool version.
+      char const* rrdversion(rrd_strversion());
+      logging::info(logging::high) << "RRD: using rrdtool "
+        << (rrdversion ? rrdversion : "(unknown)");
+
       // Register RRD layer.
       io::protocols::instance().reg("RRD",
         rrd::factory(),
         1,
         7);
+    }
+
     return ;
   }
 }
