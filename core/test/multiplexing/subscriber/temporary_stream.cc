@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <QMutexLocker>
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "test/multiplexing/subscriber/temporary_stream.hh"
 
 using namespace com::centreon::broker;
@@ -31,9 +32,7 @@ using namespace com::centreon::broker;
 /**
  *  Constructor.
  */
-temporary_stream::temporary_stream() {
-
-}
+temporary_stream::temporary_stream() {}
 
 /**
  *  Copy constructor.
@@ -87,9 +86,11 @@ void temporary_stream::process(bool in, bool out) {
 void temporary_stream::read(misc::shared_ptr<io::data>& data) {
   QMutexLocker lock(&_eventsm);
   if (_events.empty())
-    data.clear();
+    throw (io::exceptions::shutdown(false, false)
+           << "temporary stream does not have any more event");
   else
     data = _events.dequeue();
+  return ;
 }
 
 /**
@@ -100,4 +101,5 @@ void temporary_stream::read(misc::shared_ptr<io::data>& data) {
 void temporary_stream::write(misc::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_eventsm);
   _events.enqueue(d);
+  return ;
 }

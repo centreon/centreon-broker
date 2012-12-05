@@ -55,15 +55,13 @@ int main() {
   // Return value.
   int retval(0);
 
-  // Check that subscriber is empty.
+  // Event pointer.
   misc::shared_ptr<io::data> event;
-  s.read(event, 0);
-  retval |= !event.isNull();
 
   // Close subscriber.
   s.process(false, false);
 
-    // Publish data.
+  // Publish data.
   for (unsigned int i(0); i < 3; ++i) {
     misc::shared_ptr<io::raw> data(new io::raw);
     data = misc::shared_ptr<io::raw>(new io::raw);
