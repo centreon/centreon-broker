@@ -38,7 +38,9 @@ union          randval {
   int          i;
   short        s;
   char*        S;
+#  ifndef NO_TIME_T_MAPPING
   time_t       t;
+#  endif // !NO_TIME_T_MAPPING
   unsigned int u;
 };
 
@@ -101,6 +103,7 @@ void     randomize(
         (t.*members[i].member.S) = r.S;
       }
       break ;
+#  ifndef NO_TIME_T_MAPPING
     case 't':
       if (i && (members[i - 1].member.t == members[i].member.t))
         continue ;
@@ -109,6 +112,7 @@ void     randomize(
         (t.*members[i].member.t) = r.t;
       }
       break ;
+#  endif // !NO_TIME_T_MAPPING
     case 'u':
       if (i && (members[i - 1].member.u == members[i].member.u))
         continue ;
@@ -191,6 +195,7 @@ bool     operator==(
       }
       retval = (t.*members[i].member.S == it->S);
       break ;
+#  ifndef NO_TIME_T_MAPPING
     case 't':
       if (i && (members[i - 1].member.t == members[i].member.t)) {
         --it;
@@ -198,6 +203,7 @@ bool     operator==(
       }
       retval = (t.*members[i].member.t == it->t);
       break ;
+#  endif // !NO_TIME_T_MAPPING
     case 'u':
       if (i && (members[i - 1].member.u == members[i].member.u)) {
         --it;
