@@ -46,9 +46,10 @@ using namespace com::centreon::broker::ndo;
  *  Get a boolean from an object.
  */
 template <typename T>
-static void get_boolean(T const& t,
-                        data_member<T> const& member,
-                        std::stringstream& buffer) {
+static void get_boolean(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << (t.*(member.b) ? "1" : "0");
   return ;
 }
@@ -57,9 +58,10 @@ static void get_boolean(T const& t,
  *  Get a double from an object.
  */
 template <typename T>
-static void get_double(T const& t,
-                       data_member<T> const& member,
-                       std::stringstream& buffer) {
+static void get_double(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << std::fixed << t.*(member.d);
   return ;
 }
@@ -68,9 +70,10 @@ static void get_double(T const& t,
  *  Get an integer from an object.
  */
 template <typename T>
-static void get_integer(T const& t,
-                        data_member<T> const& member,
-                        std::stringstream& buffer) {
+static void get_integer(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << t.*(member.i);
   return ;
 }
@@ -79,9 +82,10 @@ static void get_integer(T const& t,
  *  Get a short from an object.
  */
 template <typename T>
-static void get_short(T const& t,
-                      data_member<T> const& member,
-                      std::stringstream& buffer) {
+static void get_short(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << t.*(member.s);
   return ;
 }
@@ -90,31 +94,36 @@ static void get_short(T const& t,
  *  Get a string from an object.
  */
 template <typename T>
-static void get_string(T const& t,
-                       data_member<T> const& member,
-                       std::stringstream& buffer) {
+static void get_string(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << (t.*(member.S)).toStdString();
   return ;
 }
 
+#ifndef NO_TIME_T_MAPPING
 /**
  *  Get a time_t from an object.
  */
 template <typename T>
-static void get_timet(T const& t,
-                      data_member<T> const& member,
-                      std::stringstream& buffer) {
+static void get_timet(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << t.*(member.t);
   return ;
 }
+#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Get an unsigned integer from an object.
  */
 template <typename T>
-static void get_uint(T const& t,
-                     data_member<T> const& member,
-                     std::stringstream& buffer) {
+static void get_uint(
+              T const& t,
+              data_member<T> const& member,
+              std::stringstream& buffer) {
   buffer << t.*(member.u);
   return ;
 }
@@ -123,9 +132,10 @@ static void get_uint(T const& t,
  *  Set a boolean within an object.
  */
 template <typename T>
-static void set_boolean(T& t,
-                        data_member<T> const& member,
-                        char const* str) {
+static void set_boolean(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.b) = strtol(str, NULL, 0);
   return ;
 }
@@ -134,9 +144,10 @@ static void set_boolean(T& t,
  *  Set a double within an object.
  */
 template <typename T>
-static void set_double(T& t,
-                       data_member<T> const& member,
-                       char const* str) {
+static void set_double(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.d) = strtod(str, NULL);
   return ;
 }
@@ -145,9 +156,10 @@ static void set_double(T& t,
  *  Set an integer within an object.
  */
 template <typename T>
-static void set_integer(T& t,
-                        data_member<T> const& member,
-                        char const* str) {
+static void set_integer(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.i) = strtol(str, NULL, 0);
   return ;
 }
@@ -156,9 +168,10 @@ static void set_integer(T& t,
  *  Set a short within an object.
  */
 template <typename T>
-static void set_short(T& t,
-                      data_member<T> const& member,
-                      char const* str) {
+static void set_short(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.s) = strtol(str, NULL, 0);
   return ;
 }
@@ -167,31 +180,36 @@ static void set_short(T& t,
  *  Set a string within an object.
  */
 template <typename T>
-static void set_string(T& t,
-                       data_member<T> const& member,
-                       char const* str) {
+static void set_string(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.S) = str;
   return ;
 }
 
+#ifndef NO_TIME_T_MAPPING
 /**
  *  Set a time_t within an object.
  */
 template <typename T>
-static void set_timet(T& t,
-                      data_member<T> const& member,
-                      char const* str) {
+static void set_timet(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.t) = strtol(str, NULL, 0);
   return ;
 }
+#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Set an unsigned integer within an object.
  */
 template <typename T>
-static void set_uint(T& t,
-                     data_member<T> const& member,
-                     char const* str) {
+static void set_uint(
+              T& t,
+              data_member<T> const& member,
+              char const* str) {
   t.*(member.u) = strtoul(str, NULL, 0);
   return ;
 }
@@ -226,10 +244,12 @@ static void static_init() {
         gs.getter = &get_string<T>;
         gs.setter = &set_string<T>;
         break ;
+#ifndef NO_TIME_T_MAPPING
        case mapped_data<T>::TIME_T:
         gs.getter = &get_timet<T>;
         gs.setter = &set_timet<T>;
         break ;
+#endif // !NO_TIME_T_MAPPING
        case mapped_data<T>::UINT:
         gs.getter = &get_uint<T>;
         gs.setter = &set_uint<T>;

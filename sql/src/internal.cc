@@ -134,6 +134,7 @@ static void get_string_might_be_null(
   return ;
 }
 
+#ifndef NO_TIME_T_MAPPING
 /**
  *  Get a time_t from an object.
  */
@@ -159,6 +160,7 @@ static void get_timet_might_be_null(
   get_integer_might_be_null<T>(t, field, member, q);
   return ;
 }
+#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Get an unsigned int from an object.
@@ -230,12 +232,14 @@ static void static_init() {
         else
           entry.gs.getter = &get_string<T>;
         break ;
+#ifndef NO_TIME_T_MAPPING
       case mapped_data<T>::TIME_T:
         if (mapped_type<T>::members[i].null_on_zero)
           entry.gs.getter = &get_timet_might_be_null<T>;
         else
           entry.gs.getter = &get_timet<T>;
         break ;
+#endif // !NO_TIME_T_MAPPING
       case mapped_data<T>::UINT:
         if (mapped_type<T>::members[i].null_on_zero)
           entry.gs.getter = &get_uint_might_be_null<T>;

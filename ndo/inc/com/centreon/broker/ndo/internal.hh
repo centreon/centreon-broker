@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,39 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NDO_INTERNAL_HH_
-# define CCB_NDO_INTERNAL_HH_
+#ifndef CCB_NDO_INTERNAL_HH
+#  define CCB_NDO_INTERNAL_HH
 
-# include <map>
-# include <sstream>
-# include "mapping.hh"
+#  include <map>
+#  include <sstream>
+#  include "com/centreon/broker/namespace.hh"
+#  include "mapping.hh"
 
-namespace                       com {
-  namespace                     centreon {
-    namespace                   broker {
-      namespace                 ndo {
-        template                <typename T>
-        struct                  getter_setter {
-          data_member<T> const* member;
-          void                  (* getter)(T const&,
-                                  data_member<T> const&,
-                                  std::stringstream& buffer);
-          void                  (* setter)(T&,
-                                  data_member<T> const&,
-                                  char const*);
-        };
+CCB_BEGIN()
 
-        // NDO mappings.
-        template                <typename T>
-        struct                  ndo_mapped_type {
-          static std::map<int, getter_setter<T> > map;
-        };
+namespace                 ndo {
+  template                <typename T>
+  struct                  getter_setter {
+    data_member<T> const* member;
+    void                  (* getter)(
+                            T const&,
+                            data_member<T> const&,
+                            std::stringstream& buffer);
+    void                  (* setter)(
+                            T&,
+                            data_member<T> const&,
+                            char const*);
+  };
 
-        // Mapping initialization routine.
-        void initialize();
-      }
-    }
-  }
+  // NDO mappings.
+  template                <typename T>
+  struct                  ndo_mapped_type {
+    static std::map<int, getter_setter<T> > map;
+  };
+
+  // Mapping initialization routine.
+  void initialize();
 }
 
-#endif /* !CCB_NDO_INTERNAL_HH_ */
+CCB_END()
+
+#endif // !CCB_NDO_INTERNAL_HH
