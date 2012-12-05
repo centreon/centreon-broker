@@ -51,6 +51,17 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
 
+# Check time_t size (for overload on platforms
+# where sizeof(time_t)==sizeof(int)).
+include(CheckTypeSize)
+set(CMAKE_EXTRA_INCLUDE_FILES "ctime")
+check_type_size("time_t" TIME_T_SIZE)
+check_type_size("int" INT_SIZE)
+if (TIME_T_SIZE EQUAL INT_SIZE)
+  add_definitions(-DNO_TIME_T_MAPPING)
+endif ()
+unset(CMAKE_EXTRA_INCLUDE_FILES)
+
 #
 # Get distributions name
 #

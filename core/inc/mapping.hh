@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,109 +17,128 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MAPPING_HH_
-# define CCB_MAPPING_HH_
+#ifndef CCB_MAPPING_HH
+#  define CCB_MAPPING_HH
 
-# include <QString>
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      /**
-       *  Holds a pointer to member.
-       */
-      template         <typename T>
-      union            data_member {
-        bool           T::*b;
-        double         T::*d;
-        int            T::*i;
-        short          T::*s;
-        QString        T::*S;
-        time_t         T::*t;
-        unsigned int   T::*u;
-      };
+CCB_BEGIN()
 
-      /**
-       *  @class mapped_data mapping.hh "mapping.hh"
-       *  @brief Mapping of a data member.
-       *
-       *  This template represents the overall mapping of a specific
-       *  data member of a class T. This data member is associated with
-       *  a name (used by DB and XML) and an ID (used by NDO).
-       */
-      template         <typename T>
-      class            mapped_data {
-       public:
-        enum           Type {
-          UNKNOWN = '\0',
-          BOOL = 'b',
-          DOUBLE = 'd',
-          INT = 'i',
-          SHORT = 's',
-          STRING = 'S',
-          TIME_T = 't',
-          UINT = 'u'
-        };
-        unsigned int   id;
-        bool           is_id;
-        data_member<T> member;
-        char const*    name;
-        bool           null_on_zero;
-        char           type;
+/**
+ *  Holds a pointer to member.
+ */
+template         <typename T>
+union            data_member {
+  bool           T::*b;
+  double         T::*d;
+  int            T::*i;
+  short          T::*s;
+  QString        T::*S;
+#  ifndef NO_TIME_T_MAPPING
+  time_t         T::*t;
+#  endif // !NO_TIME_T_MAPPING
+  unsigned int   T::*u;
+};
 
-                       mapped_data() : id(0), name(NULL), type(UNKNOWN) {}
+/**
+ *  @class mapped_data mapping.hh "mapping.hh"
+ *  @brief Mapping of a data member.
+ *
+ *  This template represents the overall mapping of a specific
+ *  data member of a class T. This data member is associated with
+ *  a name (used by DB and XML) and an ID (used by NDO).
+ */
+template         <typename T>
+class            mapped_data {
+public:
+  enum           Type {
+    UNKNOWN = '\0',
+    BOOL = 'b',
+    DOUBLE = 'd',
+    INT = 'i',
+    SHORT = 's',
+    STRING = 'S',
+#  ifndef NO_TIME_T_MAPPING
+    TIME_T = 't',
+#  endif // !NO_TIME_T_MAPPING
+    UINT = 'u'
+  };
+  unsigned int   id;
+  bool           is_id;
+  data_member<T> member;
+  char const*    name;
+  bool           null_on_zero;
+  char           type;
 
-                       mapped_data(bool T::* b, unsigned int i, char const* n)
-          : id(i), name(n), null_on_zero(false), type(BOOL)
-        { member.b = b; }
+                 mapped_data() : id(0), name(NULL), type(UNKNOWN) {}
 
-                       mapped_data(double T::* d,
-                         unsigned int i,
-                         char const* n)
-          : id(i), name(n), null_on_zero(false), type(DOUBLE)
-        { member.d = d; }
+                 mapped_data(
+                   bool T::* b,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(BOOL)
+  { member.b = b; }
 
-                       mapped_data(int T::* I,
-                         unsigned int i,
-                         char const* n)
-          : id(i), name(n), null_on_zero(false), type(INT)
-        { member.i = I; }
+                 mapped_data(
+                   double T::* d,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(DOUBLE)
+  { member.d = d; }
 
-                       mapped_data(short T::* s,
-                         unsigned int i,
-                         char const* n)
-          : id(i), name(n), null_on_zero(false), type(SHORT)
-        { member.s = s; }
+                 mapped_data(
+                   int T::* I,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(INT)
+  { member.i = I; }
 
-                       mapped_data(QString T::* S,
-                         unsigned int i,
-                         char const* n,
-                         bool noz = false)
-          : id(i), name(n), null_on_zero(noz), type(STRING)
-        { member.S = S; }
+                 mapped_data(
+                   short T::* s,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(SHORT)
+  { member.s = s; }
 
-                       mapped_data(time_t T::* t,
-                         unsigned int i,
-                         char const* n,
-                         bool noz = false)
-          : id(i), name(n), null_on_zero(noz), type(TIME_T)
-        { member.t = t; }
+                 mapped_data(
+                   QString T::* S,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(STRING)
+  { member.S = S; }
 
-                       mapped_data(unsigned int T::* u,
-                         unsigned int i,
-                         char const* n,
-                         bool noz = false)
-          : id(i), name(n), null_on_zero(noz), type(UINT)
-        { member.u = u; }
-      };
+#  ifndef NO_TIME_T_MAPPING
+                 mapped_data(
+                   time_t T::* t,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(TIME_T)
+  { member.t = t; }
+#  endif // !NO_TIME_T_MAPPING
 
-      template                       <typename T>
-      struct                         mapped_type {
-        static mapped_data<T> const* members;
-        static char const*           table;
-      };
-    }
-  }
-}
+                 mapped_data(
+                   unsigned int T::* u,
+                   unsigned int i,
+                   char const* n,
+                   bool noz = false)
+    : id(i), name(n), null_on_zero(noz), type(UINT)
+  { member.u = u; }
+};
 
-#endif /* !CCB_MAPPING_HH_ */
+template                       <typename T>
+struct                         mapped_type {
+  static mapped_data<T> const* members;
+  static char const*           table;
+};
+
+CCB_END()
+
+#endif // !CCB_MAPPING_HH
