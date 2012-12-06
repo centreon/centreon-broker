@@ -48,6 +48,13 @@ using namespace com::centreon::broker;
 // Acknowledgement list.
 static std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
 acknowledgements;
+// Downtime list.
+struct   private_downtime_params {
+  time_t deletion_time;
+  bool   started;
+};
+// Unstarted downtimes.
+static std::map<unsigned int, private_downtime_params> downtimes;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
@@ -405,8 +412,6 @@ int neb::callback_custom_variable(int callback_type, void* data) {
   return (0);
 }
 
-// Private structure.
-struct private_downtime_params { time_t deletion_time; bool started; };
 /**
  *  @brief Function that process downtime data.
  *
@@ -419,9 +424,6 @@ struct private_downtime_params { time_t deletion_time; bool started; };
  *  @return 0 on success.
  */
 int neb::callback_downtime(int callback_type, void* data) {
-  // Unstarted downtimes.
-  static std::map<unsigned int, private_downtime_params> downtimes;
-
   // Log message.
   logging::info(logging::medium)
     << "callbacks: generating downtime event";
@@ -467,22 +469,22 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->internal_id = downtime_data->downtime_id;
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
+    private_downtime_params& params(downtimes[downtime->internal_id]);
     if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
         || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
-      downtimes[downtime->internal_id].deletion_time = 0;
-      downtimes[downtime->internal_id].started = false;
+      params.deletion_time = 0;
+      params.started = false;
     }
     else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
-      downtimes[downtime->internal_id].started = true;
+      params.started = true;
     }
     else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
       if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
-        downtimes[downtime->internal_id].deletion_time = time(NULL);
+        params.deletion_time = downtime_data->timestamp.tv_sec;
     }
-    downtime->deletion_time
-      = downtimes[downtime->internal_id].deletion_time;
+    downtime->deletion_time = params.deletion_time;
     downtime->was_cancelled = (downtime->deletion_time != 0);
-    downtime->was_started = downtimes[downtime->internal_id].started;
+    downtime->was_started = params.started;
     if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
       downtimes.erase(downtime->internal_id);
 
@@ -668,6 +670,16 @@ int neb::callback_external_command(int callback_type, void* data) {
             }
           }
         }
+      }
+      else if ((necd->command_type == CMD_DEL_HOST_DOWNTIME)
+               || (necd->command_type == CMD_DEL_SVC_DOWNTIME)) {
+        unsigned int downtime_id(necd->command_args
+                                 ? strtoul(necd->command_args, NULL, 0)
+                                 : 0);
+        std::map<unsigned int, private_downtime_params>::iterator
+          it(downtimes.find(downtime_id));
+        if (it != downtimes.end())
+          it->second.deletion_time = necd->timestamp.tv_sec;
       }
     }
     // Avoid exception propagation in C code.
