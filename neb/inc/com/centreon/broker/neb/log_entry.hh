@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_LOG_ENTRY_HH
 #  define CCB_NEB_LOG_ENTRY_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -45,11 +45,11 @@ namespace          neb {
     log_entry&     operator=(const log_entry& le);
     QString const& type() const;
 
-    time_t         c_time;
+    timestamp      c_time;
     unsigned int   host_id;
     QString        host_name;
     QString        instance_name;
-    time_t         issue_start_time;
+    timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
     QString        notification_cmd;

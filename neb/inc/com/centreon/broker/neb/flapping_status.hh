@@ -20,9 +20,9 @@
 #ifndef CCB_NEB_FLAPPING_STATUS_HH
 #  define CCB_NEB_FLAPPING_STATUS_HH
 
-#  include <ctime>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -41,8 +41,8 @@ namespace            neb {
     flapping_status& operator=(flapping_status const& fs);
     QString const&   type() const;
 
-    time_t           comment_time;
-    time_t           event_time;
+    timestamp        comment_time;
+    timestamp        event_time;
     int              event_type;
     short            flapping_type;
     double           high_threshold;

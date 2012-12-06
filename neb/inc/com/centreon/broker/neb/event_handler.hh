@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_EVENT_HANDLER_HH
 #  define CCB_NEB_EVENT_HANDLER_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -46,14 +46,14 @@ namespace          neb {
     QString        command_args;
     QString        command_line;
     short          early_timeout;
-    time_t         end_time;
+    timestamp      end_time;
     double         execution_time;
     short          handler_type;
     unsigned int   host_id;
     QString        output;
     short          return_code;
     unsigned int   service_id;
-    time_t         start_time;
+    timestamp      start_time;
     short          state;
     short          state_type;
     short          timeout;

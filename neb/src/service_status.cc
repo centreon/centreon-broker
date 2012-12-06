@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,33 +20,6 @@
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal members of the given object to the current
- *         instance.
- *
- *  Make a copy of all internal members defined within service_status to
- *  the current instance. This method is used by the copy constructor
- *  and the assignment operator.
- *
- *  @param[in] ss Object to copy.
- */
-void service_status::_internal_copy(service_status const& ss) {
-  host_name = ss.host_name;
-  last_time_critical = ss.last_time_critical;
-  last_time_ok = ss.last_time_ok;
-  last_time_unknown = ss.last_time_unknown;
-  last_time_warning = ss.last_time_warning;
-  service_description = ss.service_description;
-  service_id = ss.service_id;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -108,4 +81,31 @@ service_status& service_status::operator=(service_status const& ss) {
 QString const& service_status::type() const {
   static QString const ss_type("com::centreon::broker::neb::service_status");
   return (ss_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal members of the given object to the current
+ *         instance.
+ *
+ *  Make a copy of all internal members defined within service_status to
+ *  the current instance. This method is used by the copy constructor
+ *  and the assignment operator.
+ *
+ *  @param[in] ss Object to copy.
+ */
+void service_status::_internal_copy(service_status const& ss) {
+  host_name = ss.host_name;
+  last_time_critical = ss.last_time_critical;
+  last_time_ok = ss.last_time_ok;
+  last_time_unknown = ss.last_time_unknown;
+  last_time_warning = ss.last_time_warning;
+  service_description = ss.service_description;
+  service_id = ss.service_id;
+  return ;
 }

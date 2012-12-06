@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_ISSUE_HH_
-# define CCB_CORRELATION_ISSUE_HH_
+#ifndef CCB_CORRELATION_ISSUE_HH
+#  define CCB_CORRELATION_ISSUE_HH
 
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -34,15 +34,7 @@ namespace          correlation {
    *  Update or create an issue.
    */
   class            issue : public io::data {
-   private:
-    void           _internal_copy(issue const& i);
-
-   public:
-    time_t         ack_time;
-    time_t         end_time;
-    unsigned int   host_id;
-    unsigned int   service_id;
-    time_t         start_time;
+  public:
                    issue();
                    issue(issue const& i);
                    ~issue();
@@ -50,9 +42,18 @@ namespace          correlation {
     bool           operator==(issue const& i) const;
     bool           operator!=(issue const& i) const;
     QString const& type() const;
+
+    timestamp      ack_time;
+    timestamp      end_time;
+    unsigned int   host_id;
+    unsigned int   service_id;
+    timestamp      start_time;
+
+  private:
+    void           _internal_copy(issue const& i);
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_CORRELATION_ISSUE_HH_ */
+#endif // !CCB_CORRELATION_ISSUE_HH

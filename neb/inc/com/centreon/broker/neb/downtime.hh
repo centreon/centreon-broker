@@ -21,9 +21,9 @@
 #  define CCB_NEB_DOWNTIME_HH
 
 #  include <QString>
-#  include <ctime>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -47,17 +47,17 @@ namespace          neb {
 
     QString        author;
     QString        comment;
-    time_t         deletion_time;
+    timestamp      deletion_time;
     short          downtime_type;
-    time_t         duration;
-    time_t         end_time;
-    time_t         entry_time;
+    timestamp      duration;
+    timestamp      end_time;
+    timestamp      entry_time;
     bool           fixed;
     unsigned int   host_id;
     unsigned int   instance_id;
     unsigned int   internal_id;
     unsigned int   service_id;
-    time_t         start_time;
+    timestamp      start_time;
     unsigned int   triggered_by;
     bool           was_cancelled;
     bool           was_started;

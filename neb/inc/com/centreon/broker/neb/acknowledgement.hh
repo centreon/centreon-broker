@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_ACKNOWLEDGEMENT_HH
 #  define CCB_NEB_ACKNOWLEDGEMENT_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -47,8 +47,8 @@ namespace            neb {
     short            acknowledgement_type;
     QString          author;
     QString          comment;
-    time_t           deletion_time;
-    time_t           entry_time;
+    timestamp        deletion_time;
+    timestamp        entry_time;
     unsigned int     host_id;
     unsigned int     instance_id;
     bool             is_sticky;

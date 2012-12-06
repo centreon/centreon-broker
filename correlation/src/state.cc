@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,28 +20,6 @@
 #include "com/centreon/broker/correlation/state.hh"
 
 using namespace com::centreon::broker::correlation;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members from the given object.
- *
- *  @param[in] s Object to copy.
- */
-void state::_internal_copy(state const& s) {
-  ack_time = s.ack_time;
-  current_state = s.current_state;
-  end_time = s.end_time;
-  host_id = s.host_id;
-  in_downtime = s.in_downtime;
-  service_id = s.service_id;
-  start_time = s.start_time;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -86,4 +64,26 @@ state& state::operator=(state const& s) {
   io::data::operator=(s);
   _internal_copy(s);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members from the given object.
+ *
+ *  @param[in] s Object to copy.
+ */
+void state::_internal_copy(state const& s) {
+  ack_time = s.ack_time;
+  current_state = s.current_state;
+  end_time = s.end_time;
+  host_id = s.host_id;
+  in_downtime = s.in_downtime;
+  service_id = s.service_id;
+  start_time = s.start_time;
+  return ;
 }

@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,29 +20,6 @@
 #include "com/centreon/broker/neb/host_status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy all internal members of the given object to the current
- *         instance.
- *
- *  Make a copy of all internal members of HostStatus to the current
- *  instance. This method is use by the copy constructor and the
- *  assignment operator.
- *
- *  @param[in] hs Object to copy.
- */
-void host_status::_internal_copy(host_status const& hs) {
-  last_time_down = hs.last_time_down;
-  last_time_unreachable = hs.last_time_unreachable;
-  last_time_up = hs.last_time_up;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -99,4 +77,27 @@ host_status& host_status::operator=(host_status const& hs) {
 QString const& host_status::type() const {
   static QString const hs_type("com::centreon::broker::neb::host_status");
   return (hs_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy all internal members of the given object to the current
+ *         instance.
+ *
+ *  Make a copy of all internal members of HostStatus to the current
+ *  instance. This method is use by the copy constructor and the
+ *  assignment operator.
+ *
+ *  @param[in] hs Object to copy.
+ */
+void host_status::_internal_copy(host_status const& hs) {
+  last_time_down = hs.last_time_down;
+  last_time_unreachable = hs.last_time_unreachable;
+  last_time_up = hs.last_time_up;
+  return ;
 }

@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_INSTANCE_HH
 #  define CCB_NEB_INSTANCE_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -48,8 +48,8 @@ namespace          neb {
     bool           is_running;
     QString        name;
     unsigned int   pid;
-    time_t         program_end;
-    time_t         program_start;
+    timestamp      program_end;
+    timestamp      program_start;
     QString        version;
 
   private:

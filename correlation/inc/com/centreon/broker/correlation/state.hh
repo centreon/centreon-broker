@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_STATE_HH_
-# define CCB_CORRELATION_STATE_HH_
+#ifndef CCB_CORRELATION_STATE_HH
+#  define CCB_CORRELATION_STATE_HH
 
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -35,24 +35,25 @@ namespace        correlation {
    *  a given time.
    */
   class          state : public io::data {
-   private:
-    void         _internal_copy(state const& s);
-
-   public:
-    time_t       ack_time;
-    int          current_state;
-    time_t       end_time;
-    unsigned int host_id;
-    bool         in_downtime;
-    unsigned int service_id;
-    time_t       start_time;
+  public:
                  state();
                  state(state const& s);
     virtual      ~state();
     state&       operator=(state const& s);
+
+    timestamp    ack_time;
+    int          current_state;
+    timestamp    end_time;
+    unsigned int host_id;
+    bool         in_downtime;
+    unsigned int service_id;
+    timestamp    start_time;
+
+  private:
+    void         _internal_copy(state const& s);
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_CORRELATION_STATE_HH_ */
+#endif // !CCB_CORRELATION_STATE_HH

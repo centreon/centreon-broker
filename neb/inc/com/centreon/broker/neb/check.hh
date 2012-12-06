@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_CHECK_HH
 #  define CCB_NEB_CHECK_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -49,7 +49,7 @@ namespace   neb {
     short        check_type;
     QString      command_line;
     unsigned int host_id;
-    time_t       next_check;
+    timestamp    next_check;
 
   private:
     void         _internal_copy(check const& c);

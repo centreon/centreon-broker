@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_ENGINE_STATE_HH_
-# define CCB_CORRELATION_ENGINE_STATE_HH_
+#ifndef CCB_CORRELATION_ENGINE_STATE_HH
+#  define CCB_CORRELATION_ENGINE_STATE_HH
 
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,16 +33,17 @@ namespace          correlation {
    *  This class represent the state of the correlation engine.
    */
   class            engine_state : public io::data {
-   public:
-    bool           started;
+  public:
                    engine_state();
                    engine_state(engine_state const& es);
     virtual        ~engine_state();
     engine_state&  operator=(engine_state const& es);
     QString const& type() const;
+
+    bool           started;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_CORRELATION_STATE_HH_ */
+#endif // !CCB_CORRELATION_STATE_HH

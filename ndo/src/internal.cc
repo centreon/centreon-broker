@@ -102,7 +102,6 @@ static void get_string(
   return ;
 }
 
-#ifndef NO_TIME_T_MAPPING
 /**
  *  Get a time_t from an object.
  */
@@ -111,10 +110,9 @@ static void get_timet(
               T const& t,
               data_member<T> const& member,
               std::stringstream& buffer) {
-  buffer << t.*(member.t);
+  buffer << (t.*(member.t)).get_time_t();
   return ;
 }
-#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Get an unsigned integer from an object.
@@ -188,7 +186,6 @@ static void set_string(
   return ;
 }
 
-#ifndef NO_TIME_T_MAPPING
 /**
  *  Set a time_t within an object.
  */
@@ -200,7 +197,6 @@ static void set_timet(
   t.*(member.t) = strtol(str, NULL, 0);
   return ;
 }
-#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Set an unsigned integer within an object.
@@ -244,12 +240,10 @@ static void static_init() {
         gs.getter = &get_string<T>;
         gs.setter = &set_string<T>;
         break ;
-#ifndef NO_TIME_T_MAPPING
-       case mapped_data<T>::TIME_T:
+       case mapped_data<T>::TIMESTAMP:
         gs.getter = &get_timet<T>;
         gs.setter = &set_timet<T>;
         break ;
-#endif // !NO_TIME_T_MAPPING
        case mapped_data<T>::UINT:
         gs.getter = &get_uint<T>;
         gs.setter = &set_uint<T>;

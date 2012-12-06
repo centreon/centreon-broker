@@ -20,10 +20,10 @@
 #ifndef CCB_STORAGE_METRIC_HH
 #  define CCB_STORAGE_METRIC_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -42,8 +42,8 @@ namespace          storage {
     metric&        operator=(metric const& m);
     QString const& type() const;
 
-    time_t         ctime;
-    time_t         interval;
+    timestamp      ctime;
+    unsigned int   interval;
     bool           is_for_rebuild;
     unsigned int   metric_id;
     QString        name;

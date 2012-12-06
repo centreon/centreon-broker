@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 #  define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -47,7 +47,7 @@ namespace                   neb {
     bool                    modified;
     QString                 name;
     unsigned int            service_id;
-    time_t                  update_time;
+    timestamp               update_time;
     QString                 value;
 
   private:

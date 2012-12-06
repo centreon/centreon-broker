@@ -20,9 +20,9 @@
 #ifndef CCB_MAPPING_HH
 #  define CCB_MAPPING_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -36,9 +36,7 @@ union            data_member {
   int            T::*i;
   short          T::*s;
   QString        T::*S;
-#  ifndef NO_TIME_T_MAPPING
-  time_t         T::*t;
-#  endif // !NO_TIME_T_MAPPING
+  timestamp      T::*t;
   unsigned int   T::*u;
 };
 
@@ -60,9 +58,7 @@ public:
     INT = 'i',
     SHORT = 's',
     STRING = 'S',
-#  ifndef NO_TIME_T_MAPPING
-    TIME_T = 't',
-#  endif // !NO_TIME_T_MAPPING
+    TIMESTAMP = 't',
     UINT = 'u'
   };
   unsigned int   id;
@@ -114,15 +110,13 @@ public:
     : id(i), name(n), null_on_zero(noz), type(STRING)
   { member.S = S; }
 
-#  ifndef NO_TIME_T_MAPPING
                  mapped_data(
-                   time_t T::* t,
+                   timestamp T::* t,
                    unsigned int i,
                    char const* n,
                    bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(TIME_T)
+    : id(i), name(n), null_on_zero(noz), type(TIMESTAMP)
   { member.t = t; }
-#  endif // !NO_TIME_T_MAPPING
 
                  mapped_data(
                    unsigned int T::* u,

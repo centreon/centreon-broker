@@ -20,10 +20,10 @@
 #ifndef CCB_NEB_NOTIFICATION_HH
 #  define CCB_NEB_NOTIFICATION_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -48,14 +48,14 @@ namespace          neb {
     QString        command_name;
     QString        contact_name;
     bool           contacts_notified;
-    time_t         end_time;
+    timestamp      end_time;
     bool           escalated;
     unsigned int   host_id;
     int            notification_type;
     QString        output;
     int            reason_type;
     unsigned int   service_id;
-    time_t         start_time;
+    timestamp      start_time;
     int            state;
 
   private:

@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,40 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_HOST_STATUS_HH_
-# define CCB_NEB_HOST_STATUS_HH_
+#ifndef CCB_NEB_HOST_STATUS_HH
+#  define CCB_NEB_HOST_STATUS_HH
 
-# include <time.h>
-# include "com/centreon/broker/neb/host_service_status.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/host_service_status.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class host_status host_status.hh "com/centreon/broker/neb/host_status.hh"
-         *  @brief host_status represents a status change of an host.
-         *
-         *  host_status are generated when the status of an host change.
-         *  Appropriate fields should be updated.
-         */
-        class            host_status : public host_service_status {
-         private:
-          void           _internal_copy(host_status const& hs);
+CCB_BEGIN()
 
-         public:
-          time_t         last_time_down;
-          time_t         last_time_unreachable;
-          time_t         last_time_up;
-                         host_status();
-                         host_status(host_status const& hs);
-          virtual        ~host_status();
-          host_status&   operator=(host_status const& hs);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          neb {
+  /**
+   *  @class host_status host_status.hh "com/centreon/broker/neb/host_status.hh"
+   *  @brief host_status represents a status change of an host.
+   *
+   *  host_status are generated when the status of an host change.
+   *  Appropriate fields should be updated.
+   */
+  class            host_status : public host_service_status {
+  public:
+                   host_status();
+                   host_status(host_status const& hs);
+    virtual        ~host_status();
+    host_status&   operator=(host_status const& hs);
+    QString const& type() const;
+
+    timestamp      last_time_down;
+    timestamp      last_time_unreachable;
+    timestamp      last_time_up;
+
+  private:
+    void           _internal_copy(host_status const& hs);
+  };
 }
 
-#endif /* !CCB_NEB_HOST_STATUS_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_HOST_STATUS_HH

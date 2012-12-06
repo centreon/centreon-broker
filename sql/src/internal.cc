@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cassert>
+#include <cstdlib>
 #include <QSqlQuery>
 #include <QVariant>
-#include <assert.h>
-#include <stdlib.h>
 #include "com/centreon/broker/sql/internal.hh"
 
 using namespace com::centreon::broker;
@@ -134,7 +134,6 @@ static void get_string_might_be_null(
   return ;
 }
 
-#ifndef NO_TIME_T_MAPPING
 /**
  *  Get a time_t from an object.
  */
@@ -144,7 +143,9 @@ static void get_timet(
               QString const& field,
               data_member<T> const& member,
               QSqlQuery& q) {
-  get_integer<T>(t, field, member, q);
+  q.bindValue(
+      field,
+      QVariant(static_cast<qlonglong>((t.*(member.t)).get_time_t())));
   return ;
 }
 
@@ -157,10 +158,15 @@ static void get_timet_might_be_null(
               QString const& field,
               data_member<T> const& member,
               QSqlQuery& q) {
-  get_integer_might_be_null<T>(t, field, member, q);
+  qlonglong val((t.*(member.t)).get_time_t());
+  // Not-NULL.
+  if (val)
+    q.bindValue(field, QVariant(val));
+  // NULL.
+  else
+    q.bindValue(field, QVariant(QVariant::LongLong));
   return ;
 }
-#endif // !NO_TIME_T_MAPPING
 
 /**
  *  Get an unsigned int from an object.
@@ -232,14 +238,12 @@ static void static_init() {
         else
           entry.gs.getter = &get_string<T>;
         break ;
-#ifndef NO_TIME_T_MAPPING
-      case mapped_data<T>::TIME_T:
+      case mapped_data<T>::TIMESTAMP:
         if (mapped_type<T>::members[i].null_on_zero)
           entry.gs.getter = &get_timet_might_be_null<T>;
         else
           entry.gs.getter = &get_timet<T>;
         break ;
-#endif // !NO_TIME_T_MAPPING
       case mapped_data<T>::UINT:
         if (mapped_type<T>::members[i].null_on_zero)
           entry.gs.getter = &get_uint_might_be_null<T>;

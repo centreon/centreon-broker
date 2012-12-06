@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_HOST_STATE_HH_
-# define CCB_CORRELATION_HOST_STATE_HH_
+#ifndef CCB_CORRELATION_HOST_STATE_HH
+#  define CCB_CORRELATION_HOST_STATE_HH
 
-# include "com/centreon/broker/correlation/state.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/correlation/state.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,7 +33,7 @@ namespace          correlation {
    *  State of an host at a given time.
    */
   class            host_state : public state {
-   public:
+  public:
                    host_state();
                    host_state(host_state const& hs);
                    ~host_state();
@@ -46,4 +46,4 @@ namespace          correlation {
 
 CCB_END()
 
-#endif /* !CCB_CORRELATION_HOST_STATE_HH_ */
+#endif // !CCB_CORRELATION_HOST_STATE_HH

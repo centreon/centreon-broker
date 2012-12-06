@@ -20,9 +20,9 @@
 #ifndef CCB_STORAGE_STATUS_HH
 #  define CCB_STORAGE_STATUS_HH
 
-#  include <ctime>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -41,11 +41,11 @@ namespace          storage {
     status&        operator=(status const& s);
     QString const& type() const;
 
-    time_t         ctime;
+    timestamp      ctime;
     unsigned int   index_id;
-    time_t         interval;
+    unsigned int   interval;
     bool           is_for_rebuild;
-    time_t         rrd_len;
+    timestamp      rrd_len;
     short          state;
 
   private:

@@ -51,18 +51,6 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
 
-# Check time_t size (for overload on platforms
-# where sizeof(time_t)==sizeof(int)).
-include(CheckTypeSize)
-set(CMAKE_EXTRA_INCLUDE_FILES "time.h")
-check_type_size("time_t" SIZEOF_TIME_T)
-check_type_size("int" SIZEOF_INT)
-if ("${SIZEOF_TIME_T}" EQUAL "${SIZEOF_INT}")
-  message(WARNING "Time is expressed on ${SIZEOF_TIME_T} bytes.")
-  add_definitions(-DNO_TIME_T_MAPPING)
-endif ()
-unset(CMAKE_EXTRA_INCLUDE_FILES)
-
 #
 # Get distributions name
 #
@@ -289,7 +277,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
-# #	../src/io/split.cc
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
@@ -353,6 +340,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/timestamp.hh"
 )
 
 # Static libraries.

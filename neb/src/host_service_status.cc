@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,62 +20,6 @@
 #include "com/centreon/broker/neb/host_service_status.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data of the given object to the current
- *         instance.
- *
- *  Make a copy of all internal members of host_service_status to the
- *  current instance.
- *
- *  @param[in] hss Object to copy.
- */
-void host_service_status::_internal_copy(host_service_status const& hss) {
-  acknowledgement_type = hss.acknowledgement_type;
-  active_checks_enabled = hss.active_checks_enabled;
-  check_command = hss.check_command;
-  check_interval = hss.check_interval;
-  check_period = hss.check_period;
-  check_type = hss.check_type;
-  current_check_attempt = hss.current_check_attempt;
-  current_notification_number = hss.current_notification_number;
-  current_state = hss.current_state;
-  enabled = hss.enabled;
-  event_handler = hss.event_handler;
-  execution_time = hss.execution_time;
-  has_been_checked = hss.has_been_checked;
-  host_id = hss.host_id;
-  is_flapping = hss.is_flapping;
-  last_check = hss.last_check;
-  last_hard_state = hss.last_hard_state;
-  last_hard_state_change = hss.last_hard_state_change;
-  last_notification = hss.last_notification;
-  last_state_change = hss.last_state_change;
-  last_update = hss.last_update;
-  latency = hss.latency;
-  max_check_attempts = hss.max_check_attempts;
-  modified_attributes = hss.modified_attributes;
-  next_check = hss.next_check;
-  next_notification = hss.next_notification;
-  no_more_notifications = hss.no_more_notifications;
-  obsess_over = hss.obsess_over;
-  output = hss.output;
-  passive_checks_enabled = hss.passive_checks_enabled;
-  percent_state_change = hss.percent_state_change;
-  perf_data = hss.perf_data;
-  problem_has_been_acknowledged = hss.problem_has_been_acknowledged;
-  retry_interval = hss.retry_interval;
-  scheduled_downtime_depth = hss.scheduled_downtime_depth;
-  should_be_scheduled = hss.should_be_scheduled;
-  state_type = hss.state_type;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -151,4 +96,60 @@ host_service_status& host_service_status::operator=(host_service_status const& h
   status::operator=(hss);
   _internal_copy(hss);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal data of the given object to the current
+ *         instance.
+ *
+ *  Make a copy of all internal members of host_service_status to the
+ *  current instance.
+ *
+ *  @param[in] hss Object to copy.
+ */
+void host_service_status::_internal_copy(host_service_status const& hss) {
+  acknowledgement_type = hss.acknowledgement_type;
+  active_checks_enabled = hss.active_checks_enabled;
+  check_command = hss.check_command;
+  check_interval = hss.check_interval;
+  check_period = hss.check_period;
+  check_type = hss.check_type;
+  current_check_attempt = hss.current_check_attempt;
+  current_notification_number = hss.current_notification_number;
+  current_state = hss.current_state;
+  enabled = hss.enabled;
+  event_handler = hss.event_handler;
+  execution_time = hss.execution_time;
+  has_been_checked = hss.has_been_checked;
+  host_id = hss.host_id;
+  is_flapping = hss.is_flapping;
+  last_check = hss.last_check;
+  last_hard_state = hss.last_hard_state;
+  last_hard_state_change = hss.last_hard_state_change;
+  last_notification = hss.last_notification;
+  last_state_change = hss.last_state_change;
+  last_update = hss.last_update;
+  latency = hss.latency;
+  max_check_attempts = hss.max_check_attempts;
+  modified_attributes = hss.modified_attributes;
+  next_check = hss.next_check;
+  next_notification = hss.next_notification;
+  no_more_notifications = hss.no_more_notifications;
+  obsess_over = hss.obsess_over;
+  output = hss.output;
+  passive_checks_enabled = hss.passive_checks_enabled;
+  percent_state_change = hss.percent_state_change;
+  perf_data = hss.perf_data;
+  problem_has_been_acknowledged = hss.problem_has_been_acknowledged;
+  retry_interval = hss.retry_interval;
+  scheduled_downtime_depth = hss.scheduled_downtime_depth;
+  should_be_scheduled = hss.should_be_scheduled;
+  state_type = hss.state_type;
+  return ;
 }

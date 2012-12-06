@@ -24,6 +24,7 @@
 #  include <QList>
 #  include "com/centreon/broker/correlation/issue.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -60,7 +61,7 @@ namespace                correlation {
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
     unsigned int         service_id;
-    time_t               since;
+    timestamp            since;
     short                state;
 
    private:

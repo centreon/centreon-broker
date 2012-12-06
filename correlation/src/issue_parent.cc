@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,29 +21,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members to this object.
- *
- *  @param[in] ip Object to copy.
- */
-void issue_parent::_internal_copy(issue_parent const& ip) {
-  child_host_id = ip.child_host_id;
-  child_service_id = ip.child_service_id;
-  child_start_time = ip.child_start_time;
-  end_time = ip.end_time;
-  parent_host_id = ip.parent_host_id;
-  parent_service_id = ip.parent_service_id;
-  parent_start_time = ip.parent_start_time;
-  start_time = ip.start_time;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -99,4 +76,27 @@ issue_parent& issue_parent::operator=(issue_parent const& ip) {
 QString const& issue_parent::type() const {
   static QString const ip_type("com::centreon::broker::correlation::issue_parent");
   return (ip_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Copy internal data members to this object.
+ *
+ *  @param[in] ip Object to copy.
+ */
+void issue_parent::_internal_copy(issue_parent const& ip) {
+  child_host_id = ip.child_host_id;
+  child_service_id = ip.child_service_id;
+  child_start_time = ip.child_start_time;
+  end_time = ip.end_time;
+  parent_host_id = ip.parent_host_id;
+  parent_service_id = ip.parent_service_id;
+  parent_start_time = ip.parent_start_time;
+  start_time = ip.start_time;
+  return ;
 }

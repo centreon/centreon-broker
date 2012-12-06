@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,29 +21,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal members.
- *
- *  This method is used by the copy constructor and the assignment
- *  operator.
- *
- *  @param[in] i Object to copy.
- */
-void issue::_internal_copy(issue const& i) {
-  ack_time = i.ack_time;
-  end_time = i.end_time;
-  host_id = i.host_id;
-  service_id = i.service_id;
-  start_time = i.start_time;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -123,4 +100,27 @@ bool issue::operator!=(issue const& i) const {
 QString const& issue::type() const {
   static QString const issue_type("com::centreon::broker::correlation::issue");
   return (issue_type);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy internal members.
+ *
+ *  This method is used by the copy constructor and the assignment
+ *  operator.
+ *
+ *  @param[in] i Object to copy.
+ */
+void issue::_internal_copy(issue const& i) {
+  ack_time = i.ack_time;
+  end_time = i.end_time;
+  host_id = i.host_id;
+  service_id = i.service_id;
+  start_time = i.start_time;
+  return ;
 }

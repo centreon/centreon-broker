@@ -20,10 +20,10 @@
 #ifndef CCB_EVENTS_INSTANCE_STATUS_HH
 #  define CCB_EVENTS_INSTANCE_STATUS_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/status.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -54,9 +54,9 @@ namespace            neb {
     QString          global_host_event_handler;
     QString          global_service_event_handler;
     unsigned int     id;
-    time_t           last_alive;
-    time_t           last_command_check;
-    time_t           last_log_rotation;
+    timestamp        last_alive;
+    timestamp        last_command_check;
+    timestamp        last_log_rotation;
     int              modified_host_attributes;
     int              modified_service_attributes;
     bool             obsess_over_hosts;

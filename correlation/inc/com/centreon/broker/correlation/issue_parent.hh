@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2012 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,12 +19,12 @@
 ** For more information: contact@centreon.com
 */
 
-#ifndef CCB_CORRELATION_ISSUE_PARENT_HH_
-# define CCB_CORRELATION_ISSUE_PARENT_HH_
+#ifndef CCB_CORRELATION_ISSUE_PARENT_HH
+#  define CCB_CORRELATION_ISSUE_PARENT_HH
 
-# include <time.h>
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -36,26 +36,27 @@ namespace          correlation {
    *  Declare an issue parent of another issue.
    */
   class            issue_parent : public io::data {
-   private:
-    void           _internal_copy(issue_parent const& ip);
-
-   public:
-    unsigned int   child_host_id;
-    unsigned int   child_service_id;
-    time_t         child_start_time;
-    time_t         end_time;
-    unsigned int   parent_host_id;
-    unsigned int   parent_service_id;
-    time_t         parent_start_time;
-    time_t         start_time;
+  public:
                    issue_parent();
                    issue_parent(issue_parent const& ip);
                    ~issue_parent();
     issue_parent&  operator=(issue_parent const& ip);
     QString const& type() const;
+
+    unsigned int   child_host_id;
+    unsigned int   child_service_id;
+    timestamp      child_start_time;
+    timestamp      end_time;
+    unsigned int   parent_host_id;
+    unsigned int   parent_service_id;
+    timestamp      parent_start_time;
+    timestamp      start_time;
+
+  private:
+    void           _internal_copy(issue_parent const& ip);
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_CORRELATION_ISSUE_PARENT_HH_ */
+#endif // !CCB_CORRELATION_ISSUE_PARENT_HH
