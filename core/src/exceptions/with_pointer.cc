@@ -110,7 +110,7 @@ misc::shared_ptr<io::data> with_pointer::ptr() const {
 /**
  *  Rethrow the subexception.
  */
-void with_pointer::rethrow() {
+void with_pointer::rethrow() const {
   _base->rethrow();
   return ;
 }

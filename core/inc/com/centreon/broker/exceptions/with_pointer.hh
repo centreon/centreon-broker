@@ -46,7 +46,7 @@ namespace                      exceptions {
     with_pointer&              operator=(with_pointer const& wp);
     virtual msg*               clone() const;
     misc::shared_ptr<io::data> ptr() const;
-    virtual void               rethrow();
+    virtual void               rethrow() const;
     char const*                what() const throw ();
 
   private:
