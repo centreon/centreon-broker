@@ -28,6 +28,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/logging/file.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
@@ -76,6 +77,21 @@ void state::apply(
                         s.module_list(),
                         s.module_directory(),
                         &s);
+  {
+    unsigned int module_count(0);
+    for (modules::iterator
+           it(modules::instance().begin()),
+           end(modules::instance().end());
+         it != end;
+         ++it)
+      ++module_count;
+    if (module_count)
+      logging::config(logging::high) << "applier: " << module_count
+        << " modules loaded";
+    else
+      logging::config(logging::high) << "applier: no module loaded, "
+        "you might want to check the 'module_directory' directive";
+  }
 
   com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
 
