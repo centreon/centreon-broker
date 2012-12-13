@@ -122,8 +122,8 @@ int main() {
           || (q.value(3).toString() != "Merethis")
           || (q.value(4).toString() != "Centreon")
           || !q.value(5).toUInt()
-          || (q.value(6).toUInt() < now - 50)
-          || (q.value(6).toUInt() > now)
+          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
+          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
           || !(q.value(7).isNull() || !q.value(7).toUInt())
           // Host comment #2.
           || !q.next()
@@ -133,8 +133,8 @@ int main() {
           || (q.value(3).toString() != "RandomAuthor")
           || (q.value(4).toString() != "Some random comment.")
           || q.value(5).toUInt()
-          || (q.value(6).toUInt() < now - 50)
-          || (q.value(6).toUInt() > now)
+          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
+          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
           || !(q.value(7).isNull() || !q.value(7).toUInt())
           // Service comment #3.
           || !q.next()
@@ -144,8 +144,8 @@ int main() {
           || (q.value(3).toString() != "Broker")
           || (q.value(4).toString() != "Another comment !")
           || !q.value(5).toUInt()
-          || (q.value(6).toUInt() < now - 50)
-          || (q.value(6).toUInt() > now)
+          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
+          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
           || !(q.value(7).isNull() || !q.value(7).toUInt())
           // Service comment #4.
           || !q.next()
@@ -155,8 +155,8 @@ int main() {
           || (q.value(3).toString() != "FooBar")
           || (q.value(4).toString() != "Baz    Qux")
           || q.value(5).toUInt()
-          || (q.value(6).toUInt() < now - 50)
-          || (q.value(6).toUInt() > now)
+          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
+          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
           || !(q.value(7).isNull() || !q.value(7).toUInt())
           // EOF
           || q.next())
@@ -189,13 +189,13 @@ int main() {
       if (// Host comment #1.
           !q.next()
           || (q.value(0).toUInt() != 1)
-          || (q.value(1).toUInt() < now - 30)
-          || (q.value(1).toUInt() > now - 10) 
+          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 30)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now - 10)
           // Host comment #2.
           || !q.next()
           || (q.value(0).toUInt() != 2)
-          || (q.value(1).toUInt() < now - 15)
-          || (q.value(1).toUInt() > now)
+          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 15)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
           // Service comment #1.
           || !q.next()
           || (q.value(0).toUInt() != 3)
@@ -203,8 +203,8 @@ int main() {
           // Service comment #2.
           || !q.next()
           || (q.value(0).toUInt() != 4)
-          || (q.value(1).toUInt() < now - 30)
-          || (q.value(1).toUInt() > now - 10)
+          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 30)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now - 10)
           // EOF
           || q.next())
         throw (exceptions::msg() << "invalid deletion_time in DB (now "

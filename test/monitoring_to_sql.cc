@@ -97,7 +97,7 @@ int main() {
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() + 30 < now)
+          || (static_cast<time_t>(q.value(0).toLongLong()) + 30 < now)
           || (q.value(1).toString() != "MyBroker")
           || q.next())
         throw (exceptions::msg() << "invalid entry in 'instances'");
@@ -117,7 +117,8 @@ int main() {
         if (!q.next()
             || (q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
-            || (q.value(2).toUInt() + 30 < now))
+            || (static_cast<time_t>(q.value(2).toLongLong()) + 30
+                < now))
           throw (exceptions::msg() << "invalid entry in 'hosts' ("
                  << i << ")");
       }
@@ -140,7 +141,8 @@ int main() {
             || (q.value(0).toUInt() != ((i - 1) / 5 + 1))
             || (q.value(1).toUInt() != i)
             || (q.value(2).toUInt() != i)
-            || (q.value(3).toUInt() + 30 < now))
+            || (static_cast<time_t>(q.value(3).toLongLong()) + 30
+                < now))
           throw (exceptions::msg() << "invalid entry in 'services' ("
                  << i << ")");
       }
@@ -179,8 +181,8 @@ int main() {
         throw (exceptions::msg() << "cannot get logs from DB: "
                << qPrintable(q.lastError().text()));
       if (!q.next()
-          || (q.value(0).toUInt() < t1)
-          || (q.value(0).toUInt() > now)
+          || (static_cast<time_t>(q.value(0).toLongLong()) < t1)
+          || (static_cast<time_t>(q.value(0).toLongLong()) > now)
           || (q.value(1).toString() != "1")
           || (q.value(2).toString() != "output3\n")
           || (q.value(3).toString() != "2")

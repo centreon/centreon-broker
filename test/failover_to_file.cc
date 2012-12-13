@@ -161,8 +161,8 @@ int main() {
         if (!q.next())
           throw (exceptions::msg() << "not enough entries in DB: found "
                  << i << " expected 50");
-        if ((q.value(0).toUInt() < t1)
-            || (q.value(0).toUInt() > t2))
+        if ((static_cast<time_t>(q.value(0).toLongLong()) < t1)
+            || (static_cast<time_t>(q.value(0).toLongLong()) > t2))
           throw (exceptions::msg()
                  << "invalid last update time from DB: "
                  << q.value(0).toUInt() << " was not between "
@@ -207,8 +207,8 @@ int main() {
         if (!q.next())
           throw (exceptions::msg() << "not enough entries in DB: found "
                  << i << " expected 50");
-        if ((q.value(0).toUInt() < t3)
-            || (q.value(0).toUInt() > t4))
+        if ((static_cast<time_t>(q.value(0).toLongLong()) < t3)
+            || (static_cast<time_t>(q.value(0).toLongLong()) > t4))
           throw (exceptions::msg()
                  << "invalid last update time from DB: "
                  << q.value(0).toUInt() << " was not between "

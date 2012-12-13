@@ -93,7 +93,7 @@ int main() {
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() + 30 < now)
+          || (static_cast<time_t>(q.value(0).toLongLong()) + 30 < now)
           || (q.value(1).toString() != "MyBroker")
           || q.next())
         throw (exceptions::msg() << "invalid entry in 'instances'");
@@ -113,7 +113,8 @@ int main() {
         if (!q.next()
             || (q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
-            || (q.value(2).toUInt() + 30 < now))
+            || (static_cast<time_t>(q.value(2).toLongLong()) + 30
+                < now))
           throw (exceptions::msg() << "invalid entry in 'hosts' ("
                  << i << ")");
       }
@@ -136,7 +137,8 @@ int main() {
             || (q.value(0).toUInt() != ((i - 1) / 5 + 1))
             || (q.value(1).toUInt() != i)
             || (q.value(2).toUInt() != i)
-            || (q.value(3).toUInt() + 30 < now))
+            || (static_cast<time_t>(q.value(3).toLongLong()) + 30
+                < now))
           throw (exceptions::msg() << "invalid entry in 'services' ("
                  << i << ")");
       }
@@ -157,7 +159,7 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  //config_db_close(DB_NAME);
+  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 
