@@ -93,14 +93,18 @@ int main() {
             << "  FROM instances"
             << "  WHERE instance_id=42";
       QSqlQuery q(db);
-      if (!q.exec(query.str().c_str()))
+      if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
-      if (!q.next()
-          || (static_cast<time_t>(q.value(0).toLongLong()) + 30 < now)
-          || (q.value(1).toString() != "MyBroker")
-          || q.next())
-        throw (exceptions::msg() << "invalid entry in 'instances'");
+      if ((static_cast<time_t>(q.value(0).toLongLong()) + 30 < now)
+          || (q.value(1).toString() != "MyBroker"))
+        throw (exceptions::msg()
+               << "invalid entry in 'instances': got (last_alive "
+               << q.value(0).toLongLong() << ", name "
+               << qPrintable(q.value(1).toString()) << "), expected ("
+               << now - 30 << ":, MyBroker");
+      if (q.next())
+        throw (exceptions::msg() << "too much entries in 'instances'");
     }
 
     // Check 'hosts' table.
@@ -114,13 +118,19 @@ int main() {
         throw (exceptions::msg() << "cannot read hosts from DB: "
                << q.lastError().text().toStdString().c_str());
       for (unsigned int i(1); i <= 10; ++i) {
-        if (!q.next()
-            || (q.value(0).toUInt() != i)
+        if (!q.next())
+          throw (exceptions::msg()
+                 << "not enough entries in 'hosts': got " << i
+                 << " expected 10");
+        if ((q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
             || (static_cast<time_t>(q.value(2).toLongLong()) + 30
                 < now))
           throw (exceptions::msg() << "invalid entry in 'hosts' ("
-                 << i << ")");
+                 << i << "): got (host_id " << i << ", name "
+                 << q.value(1).toUInt() << ", last_check "
+                 << q.value(2).toLongLong() << "), expected ("
+                 << i << ", " << i << ", " << now - 30 << ":)");
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'hosts'");
@@ -137,14 +147,22 @@ int main() {
         throw (exceptions::msg() << "cannot read services from DB: "
                << q.lastError().text().toStdString().c_str());
       for (unsigned int i(1); i <= 10 * 5; ++i) {
-        if (!q.next()
-            || (q.value(0).toUInt() != ((i - 1) / 5 + 1))
+        if (!q.next())
+          throw (exceptions::msg()
+                 << "not enough entries in 'services': got " << i
+                 << " expected 50");
+        if ((q.value(0).toUInt() != ((i - 1) / 5 + 1))
             || (q.value(1).toUInt() != i)
             || (q.value(2).toUInt() != i)
             || (static_cast<time_t>(q.value(3).toLongLong()) + 30
                 < now))
           throw (exceptions::msg() << "invalid entry in 'services' ("
-                 << i << ")");
+                 << i << "): got (host_id " << q.value(0).toUInt()
+                 << ", service_id " << q.value(1).toUInt()
+                 << ", description " << q.value(2).toUInt()
+                 << ", last_check " << q.value(3).toLongLong()
+                 << ") expected (" << i << ", " << i << ", " << i
+                 << ", " << now - 30 << ":)");
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'services'");
@@ -177,19 +195,28 @@ int main() {
             << "  FROM logs"
             << "  WHERE host_id=1 AND msg_type=0 AND service_id=2";
       QSqlQuery q(db);
-      if (!q.exec(query.str().c_str()))
+      if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot get logs from DB: "
                << qPrintable(q.lastError().text()));
-      if (!q.next()
-          || (static_cast<time_t>(q.value(0).toLongLong()) < t1)
+      if ((static_cast<time_t>(q.value(0).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(0).toLongLong()) > now)
           || (q.value(1).toString() != "1")
           || (q.value(2).toString() != "output3\n")
           || (q.value(3).toString() != "2")
           || (q.value(4).toUInt() != 2)
-          || (q.value(5).toUInt() != 1)
-          || q.next())
-        throw (exceptions::msg() << "invalid entry in the logs table");
+          || (q.value(5).toUInt() != 1))
+        throw (exceptions::msg()
+               << "invalid entry in the 'logs' table: got (ctime "
+               << q.value(0).toLongLong() << ", host_name "
+               << qPrintable(q.value(1).toString()) << ", output "
+               << qPrintable(q.value(2).toString())
+               << ", service_description "
+               << qPrintable(q.value(3).toString())
+               << ", status " << q.value(4).toUInt() << ", type "
+               << q.value(5).toUInt() << "), expected (" << t1 << ":"
+               << now << ", 1, output3\\n, 2, 2, 1)");
+      if (q.next())
+        throw (exceptions::msg() << "too much entries in 'logs'");
     }
 
     // Success.
