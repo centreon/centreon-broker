@@ -119,11 +119,17 @@ extern "C" {
         timed_event* te(NULL);
         for (timed_event* current = event_list_high;
              current != event_list_high_tail;
-             current = current->next)
-          if (current->event_data == (void*)process_qcore) {
+             current = current->next) {
+          union {
+            void (* code)(void*);
+            void *  data;
+          } val;
+          val.code = &process_qcore;
+          if (current->event_data == val.data) {
             te = current;
             break ;
           }
+        }
         if (te)
           remove_event(te, &event_list_high, &event_list_high_tail);
         delete QCoreApplication::instance();
@@ -279,7 +285,12 @@ extern "C" {
       return (-1);
 
     // Process Qt events if necessary.
-    if (gl_initialized_qt)
+    if (gl_initialized_qt) {
+      union {
+        void (* code)(void*);
+        void*   data;
+      } val;
+      val.code = &process_qcore;
       schedule_new_event(
         99,
         1,
@@ -288,9 +299,10 @@ extern "C" {
         1,
         NULL,
         1,
-        (void*)process_qcore,
+        val.data,
         NULL,
         0);
+    }
 
     return (0);
   }

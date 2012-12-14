@@ -100,10 +100,14 @@ void handle::close() {
     logging::debug(logging::low) << "modules: searching " \
          "deinitialization routine (symbol " << deinitialization
       << ") in '" << _handle.fileName() << "'";
-    void* sym(_handle.resolve(deinitialization));
+    union {
+      void (* code)();
+      void*   data;
+    } sym;
+    sym.data = _handle.resolve(deinitialization);
 
     // Could not find deinitialization routine.
-    if (!sym) {
+    if (!sym.data) {
       QString error_str(_handle.errorString());
       logging::info(logging::medium) << "modules: could not find " \
            "deinitialization routine in '" << _handle.fileName()
@@ -113,7 +117,7 @@ void handle::close() {
     else {
       logging::debug(logging::low) << "modules: calling " \
         "deinitialization routine of '" << _handle.fileName() << "'";
-      (*(void (*)())(sym))();
+      (*(sym.code))();
       logging::debug(logging::low) << "modules: deinitialization " \
            "routine of '" << _handle.fileName()
         << "' successfully completed";
@@ -192,10 +196,14 @@ void handle::_init(void const* arg) {
   logging::debug(logging::low) << "modules: searching "
        "initialization routine (symbol " << initialization
     << ") in '" << _handle.fileName() << "'";
-  void* sym(_handle.resolve(initialization));
+  union {
+    void (* code)();
+    void*   data;
+  } sym;
+  sym.data = _handle.resolve(initialization);
 
   // Could not find initialization routine.
-  if (!sym) {
+  if (!sym.data) {
     QString error_str(_handle.errorString());
     throw (exceptions::msg() << "modules: could not find " \
                 "initialization routine in '" << _handle.fileName()
@@ -205,7 +213,7 @@ void handle::_init(void const* arg) {
   // Call initialization routine.
   logging::debug(logging::low) << "modules: calling initialization " \
     "routine of '" << _handle.fileName() << "'";
-  (*(void (*)(void const*))(sym))(arg);
+  (*(void (*)(void const*))(sym.code))(arg);
   logging::debug(logging::medium) << "modules: initialization " \
     "routine of '" << _handle.fileName() << "' successfully completed";
 
