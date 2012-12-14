@@ -27,7 +27,7 @@ Prerequisites
 =============
 
 In order to use RPM from the CES repository, you have to install the
-appropriate repo file. Run the following command as privileged user::
+appropriate repo file. Run the following command as privileged user ::
 
   $ wget http://yum.centreon.com/standard/ces-standard.repo -O /etc/yum.repos.d/ces-standard.repo
 
@@ -36,7 +36,7 @@ The repo file is now installed.
 Install
 =======
 
-Run the following commands as privileged user::
+Run the following commands as privileged user ::
 
   $ yum clean all
   $ yum install centreon-broker centreon-broker-core centreon-broker-cbd centreon-broker-cbmod centreon-broker-storage
@@ -65,10 +65,24 @@ FreeBSD, Solaris, ...).
 Prerequisites
 =============
 
-CentOS 5.x
-----------
+If you decide to build Centreon Broker from sources, we heavily
+recommand that you create dedicated system user and group for
+security purposes.
 
-In CentOS 5.x you need to add manually cmake. After that you can
+On all systems the commands to create a user and a group both named
+**centreon-broker** are as follow (need to run these as root) ::
+
+  $ groupadd centreon-broker
+  $ useradd -g centreon-broker -m -r -d /var/lib/centreon-broker centreon-broker
+
+Please note that these user and group will be used in the next steps. If
+you decide to change user and/or group name here, please do so in
+further steps too.
+
+CentOS
+------
+
+In CentOS you need to add manually cmake. After that you can
 install binary packages. Either use the Package Manager or the
 yum tool to install them. You should check packages version when
 necessary.
@@ -90,39 +104,40 @@ RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
 =========================== ================= ================================
 
-#. Get and install cmake form official website::
+#. Install basic compilation tools ::
 
-    $ wget http://www.cmake.org/files/v2.8/cmake-2.8.9-Linux-i386.sh
-    $ sh cmake-2.8.9-Linux-i386.sh
-    $ y
-    $ y
-    $ mv cmake-2.8.9-Linux-i386 /usr/local/cmake
+     $ yum install gcc gcc-c++ make
 
-#. Add cmake directory into the PATH environment variable::
+#. Install RRDTool ::
 
-    $ export PATH="$PATH:/usr/local/cmake/bin"
+     $ yum install rrdtool-devel
 
-#. Install basic compilation tools::
+#. Get and install cmake
 
-    $ yum install gcc gcc-c++ make
+   For CentOS 5 ::
+
+     $ ARCH=`uname -m`
+     $ wget http://apt.sw.be/redhat/el5/en/${ARCH}/extras/RPMS/cmake-2.8.8-1.el5.rfx.${ARCH}.rpm
+     $ rpm -Uvh cmake-2.8.8-1.el5.rfx.${ARCH}.rpm
+
+   For CentOS 6 ::
+
+     $ ARCH=`uname -m`
+     $ wget http://apt.sw.be/redhat/el6/en/${ARCH}/extras/RPMS/cmake-2.8.8-1.el6.rfx.${ARCH}.rpm
+     $ rpm -Uvh cmake-2.8.8-1.el6.rfx.${ARCH}.rpm
 
 #. Install Qt framework
 
-You need to install Centreon Entreprise Server (CES) repo file as
-explained :ref:`user_installation_packages_prerequisites`.
+   You need to install Centreon Entreprise Server (CES) repo file as
+   explained :ref:`user_installation_packages_prerequisites` ::
 
-    $ yum clean all
-    $ yum install qt4-devel
+     $ yum clean all
+     $ yum install qt4-devel qt4-mysql
 
-#. Add qt directory into the PATH environment variable::
+#. Add qt directory into the PATH environment variable ::
 
-    $ updatedb
-    $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
-
-CentOS 6.x
-----------
-
-FIXME
+     $ updatedb
+     $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
 
 Debian/Ubuntu
 -------------
@@ -149,9 +164,17 @@ RRDTool                     librrd-dev       Development files for RRD file
                                              (graph) creation and update.
 =========================== ================ ================================
 
-#. Install compilation tools::
+#. Install compilation tools ::
 
-    $ apt-get install build-essential cmake libqt4-dev librrd-dev
+     $ apt-get install build-essential cmake
+
+#. Install RRDTool ::
+
+     $ apt-get install librrd-dev
+
+#. Install Qt framework ::
+
+     $ apt-get install libqt4-dev libqt4-sql-mysql
 
 OpenSUSE
 --------
@@ -171,13 +194,24 @@ CMake **(>= 2.8)**          cmake             Read the build script and
                                               prepare sources for compilation.
 Qt **(>= 4.5)**             libqt4-devel      Centreon Broker require Qt
                                               core framework.
+                            libqt4-sql-mysql  MySQL drivers for Qt. Useful if
+                                              you're using DB output (with
+                                              Centreon for example).
 RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
 =========================== ================= ================================
 
-#. Install compilation tools::
+#. Install compilation tools ::
 
-    $ zypper install gcc gcc-c++ make cmake libqt4-devel rrdtool-devel
+     $ zypper install gcc gcc-c++ make cmake libqt4-devel rrdtool-devel
+
+#. Install RRDTool ::
+
+     $ zypper install rrdtool-devel
+
+#. Install Qt framework ::
+
+     $ zypper install libqt4-devel libqt4-sql-mysql
 
 Build
 =====
@@ -186,14 +220,20 @@ Get sources
 -----------
 
 Centreon Broker can be checked out from Merethis's subversion server at
-http://svn.modules.centreon.com/centreon-broker. On a Linux box with git
-installed this is just a matter of::
+http://svn.modules.centreon.com/centreon-broker. On a Linux box with svn
+installed folowing this.
 
-  $ svn checkout http://svn.modules.centreon.com/centreon-broker
+Get all project ::
+
+  $ svn checkout http://svn.modules.centreon.com/centreon-broker/trunk
+
+Just the trunk ::
+
+  $ svn checkout http://svn.modules.centreon.com/centreon-broker/trunk centreon-broker
 
 Or You can get the latest Centreon Broker's sources from its
 `download website <http://www.centreon.com/Centreon-Extensions/centreon-broker-download.html>`_
-Once downloaded, extract it::
+Once downloaded, extract it ::
 
   $ tar xzf centreon-broker.tar.gz
 
@@ -202,19 +242,12 @@ Configuration
 
 At the root of the project directory you'll find a build directory
 which holds build scripts. Generate the Makefile by running the
-following command::
+following command ::
 
   $ cd /path_to_centreon_broker/build
-  $ cmake .
-
-Checking of necessary components is performed and if successfully
-executed a summary of your configuration is printed.
-
-Variables
-~~~~~~~~~
 
 Your Centreon Broker can be tweaked to your particular needs using
-CMake's variable system. Variables can be set like this::
+CMake's variable system. Variables can be set like this ::
 
   $ cmake -D<variable1>=<value1> [-D<variable2>=<value2>] .
 
@@ -242,11 +275,11 @@ WITH_TESTING        Enable build of unit tests. Disabled by default.     OFF
 WITH_USER           Set the user for Centreon Broker installation.       root
 =================== ==================================================== ============================================
 
-Example::
+Example ::
 
   $ cmake \
       -DWITH_DAEMONS='central-broker;central-rrd' \
-      -DWITH_GROUP=root \
+      -DWITH_GROUP=centreon-broker \
       -DWITH_PREFIX=/usr \
       -DWITH_PREFIX_BIN=/usr/sbin \
       -DWITH_PREFIX_CONF=/etc/centreon-broker \
@@ -256,7 +289,7 @@ Example::
       -DWITH_STARTUP_DIR=/etc/init.d \
       -DWITH_STARTUP_SCRIPT=auto \
       -DWITH_TESTING=0 \
-      -DWITH_USER=root .
+      -DWITH_USER=centreon-broker .
 
 At this step, the software will check for existence and usability of the
 rerequisites. If one cannot be found, an appropriate error message will
@@ -264,7 +297,7 @@ be printed. Otherwise an installation summary will be printed.
 
 .. note::
   If you need to change the options you used to compile your software,
-  you might want to remove the *CMakeLists.txt* file that is in the
+  you might want to remove the *CMakeCache.txt* file that is in the
   *build* directory. This will remove cache entries that might have been
   computed during the last configuration step.
 
@@ -281,7 +314,7 @@ Install
 =======
 
 Once compiled, the following command must be run as privileged user to
-finish installation::
+finish installation ::
 
   $ make install
 
