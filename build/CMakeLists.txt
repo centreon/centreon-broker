@@ -456,6 +456,7 @@ add_library("${TEST_LIB}" STATIC
   "${PROJECT_SOURCE_DIR}/test/engine.cc"
   "${PROJECT_SOURCE_DIR}/test/external_command.cc"
   "${PROJECT_SOURCE_DIR}/test/generate.cc"
+  "${PROJECT_SOURCE_DIR}/test/misc.cc"
   "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
   # Headers.
   "${PROJECT_SOURCE_DIR}/test/cbd.hh"
@@ -463,6 +464,7 @@ add_library("${TEST_LIB}" STATIC
   "${PROJECT_SOURCE_DIR}/test/engine.hh"
   "${PROJECT_SOURCE_DIR}/test/external_command.hh"
   "${PROJECT_SOURCE_DIR}/test/generate.hh"
+  "${PROJECT_SOURCE_DIR}/test/misc.hh"
   "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
 )
 target_link_libraries("${TEST_LIB}" "roker")

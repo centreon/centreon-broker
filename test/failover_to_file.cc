@@ -32,6 +32,7 @@
 #include "test/engine.hh"
 #include "test/external_command.hh"
 #include "test/generate.hh"
+#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -133,11 +134,11 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Temporary disable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");
-    sleep(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // T2.
     time_t t2(time(NULL));
@@ -146,7 +147,7 @@ int main() {
     broker.set_config_file(
              PROJECT_SOURCE_DIR "/test/cfg/failover_to_file.xml");
     broker.start();
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check that retention was successfully replayed.
     {
@@ -181,18 +182,18 @@ int main() {
 
     // Reenable checks.
     commander.execute("START_EXECUTING_SVC_CHECKS");
-    sleep(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Redisable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");
-    sleep(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // T4.
     time_t t4(time(NULL));
 
     // Restart Broker daemon.
     broker.start();
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check that retention was successfully replayed.
     {

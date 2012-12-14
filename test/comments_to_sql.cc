@@ -30,6 +30,7 @@
 #include "test/engine.hh"
 #include "test/external_command.hh"
 #include "test/generate.hh"
+#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -83,7 +84,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Add comments on two hosts.
     commander.execute(
@@ -98,7 +99,7 @@ int main() {
                 "ADD_SVC_COMMENT;1;1;0;FooBar;Baz    Qux");
 
     // Let the monitoring engine run a while.
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
@@ -166,12 +167,12 @@ int main() {
     // Remove two comments.
     commander.execute("DEL_HOST_COMMENT;1");
     commander.execute("DEL_SVC_COMMENT;4");
-    sleep(10);
+    sleep_for(10);
 
     // Restart daemon.
     daemon.stop();
     daemon.start();
-    sleep(10);
+    sleep_for(10);
     now = time(NULL);
 
     // Check that comments where deleted.

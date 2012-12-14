@@ -30,6 +30,7 @@
 #include "test/engine.hh"
 #include "test/external_command.hh"
 #include "test/generate.hh"
+#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -110,7 +111,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Set soon-to-be-in-downtime service as passive.
     {
@@ -119,7 +120,7 @@ int main() {
     }
 
     // Run a little while.
-    sleep(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
@@ -155,7 +156,7 @@ int main() {
     }
 
     // Let the monitoring engine run a while.
-    sleep(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // New time.
     time_t t1(now);
@@ -299,7 +300,7 @@ int main() {
     commander.execute("DEL_HOST_DOWNTIME;1");
 
     // Run a while.
-    sleep(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Update time.
     time_t t2(now);

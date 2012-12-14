@@ -29,6 +29,7 @@
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/generate.hh"
+#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -77,7 +78,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep(60 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(60 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
