@@ -57,6 +57,18 @@ module_directory Where Centreon Broker’s modules are stored.              ::
                                                                             <module_directory>
                                                                               /var/lib/centreon/broker/
                                                                             </module_directory>
+module           If you do not want to load all modules of a
+                 *module_directory* you can use this directive to load    ::
+                 only one module. This directive can be repeated as much
+                 as wanted.                                                 <module>
+                                                                              /usr/lib/centreon-broker/10-neb.so
+                                                                            </module>
+                                                                            <module>
+                                                                              /usr/lib/centreon-broker/50-tcp.so
+                                                                            </module>
+                                                                            <module> 
+                                                                              /usr/lib/centreon-broker/80-ndo.so
+                                                                            </module>
 instance         Only useful if Centreon Broker is loaded as              ::
                  a module of a monitoring engine (Centreon
                  Engine, Nagios ...). Unique number that                    <instance>42</instance>
@@ -64,6 +76,16 @@ instance         Only useful if Centreon Broker is loaded as              ::
 instance_name    An optional name used to identify a poller (see          ::
                  *instance* above).
                                                                             <instance_name>MyPoller</instance_name>
+include          Include another Centreon Broker configuration file that
+                 must respect the same syntax.                            ::
+
+                                                                            <include>
+                                                                              /etc/centreon-broker/common.xml
+                                                                            </include>
+flush_logs       Enable or not log flushing. Flushing (aka syncing) tends
+                 to slow the software down. Default is disabled and we    ::
+                 recommend to only enable flushing in case of abnormal
+                 process failures.                                          <flush_logs>0</flush_logs>
 log_thread_id    Enable or not thread ID logging. This option will        ::
                  affect all loggers. Default is 0 (disabled).
                                                                             <log_thread_id>1</log_thread_id>
