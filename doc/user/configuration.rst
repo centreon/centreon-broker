@@ -52,11 +52,26 @@ Options
 ================ ======================================================== =============================================
 Option           Description                                              Example
 ================ ======================================================== =============================================
-module_directory Where Centreon Broker’s modules are stored.              ``/var/lib/centreon/broker/``
-instance         Only useful if Centreon Broker is loaded as              42
+module_directory Where Centreon Broker’s modules are stored.              ::
+
+                                                                            <module_directory>
+                                                                              /var/lib/centreon/broker/
+                                                                            </module_directory>
+instance         Only useful if Centreon Broker is loaded as              ::
                  a module of a monitoring engine (Centreon
-                 Engine, Nagios ...). Unique number that
+                 Engine, Nagios ...). Unique number that                    <instance>42</instance>
                  identify the poller.
+instance_name    An optional name used to identify a poller (see          ::
+                 *instance* above).
+                                                                            <instance_name>MyPoller</instance_name>
+log_thread_id    Enable or not thread ID logging. This option will        ::
+                 affect all loggers. Default is 0 (disabled).
+                                                                            <log_thread_id>1</log_thread_id>
+log_timestamp    Enable or not timestamp logging. This option will
+                 affect all loggers. Default is 1 (enabled) except when   ::
+                 Broker is loaded as a monitoring engine module to
+                 prevent incompatibilities that might arise with            <log_timestamp>1</log_timestamp>
+                 non-thread-safe use of time-related functions.
 logger           Start a :ref:`logger definition
                  <user_configuration_logger>`.                            ::
 
