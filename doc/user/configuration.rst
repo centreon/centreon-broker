@@ -211,6 +211,43 @@ handles the first layer and one that handles the last one (ie.
 intermediate layers are not required but can provide additional
 features). Also one layer can only be handled by one protocol maximum.
 
+Common Options
+==============
+
+This table lists all options that can be specified on every endpoint.
+Note that some of them might be useless on some endpoint types.
+
+================= =============================== ======================
+Option            Description                     Example
+================= =============================== ======================
+buffering_timeout Number of seconds to wait       ::
+                  before launching the endpoint
+                  *failover*.                       <buffering_timeout>
+                                                      10
+                                                    </buffering_timeout>
+name              An optional name, mostly used   ::
+                  to identify a *failover*.
+                                                    <name>
+                                                      MyEndpoint
+                                                    </name>
+read_timeout      This parameter is used by some
+                  output endpoints to take some   ::
+                  action after an inactivity of
+                  specified seconds. For example    <read_timeout>
+                  the *SQL* module will commit        10
+                  its current transaction, the      </read_timeout>
+                  *compression* module will
+                  compress data without waiting
+                  for a full buffer, ...
+retry_interval    Number of seconds to wait       ::
+                  between two reconnections to
+                  the same endpoint.                <retry_interval>
+                                                      60
+                                                    </retry_interval>
+type              Endpoint type, as specified
+                  by modules.
+================= =============================== ======================
+
 Configuration File
 ==================
 
