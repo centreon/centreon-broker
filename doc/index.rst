@@ -1,3 +1,5 @@
+.. _top:
+
 Welcome to Centreon Broker's documentation!
 ===========================================
 
@@ -25,7 +27,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-
+   
    installation/index
    user/index
    exploit/index
