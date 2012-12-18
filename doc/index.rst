@@ -24,6 +24,7 @@ basic communication features such as TCP streams or database insertion.
 Contents:
 
 .. toctree::
+   :maxdepth: 2
 
    installation/index
    user/index
