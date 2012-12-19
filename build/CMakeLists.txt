@@ -185,7 +185,8 @@ if (WITH_DAEMONS)
       "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
   endif ()
-  install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.init"
+  exec_program("chmod a+x ${PROJECT_SOURCE_DIR}/script/cbd.init" OUTPUT_VARIABLE OKITOKI)
+  install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
     DESTINATION "${STARTUP_DIR}"
     RENAME "cbd")
   configure_file("${PROJECT_SOURCE_DIR}/script/master.run.in"
