@@ -27,6 +27,8 @@ This means that it receives input events and forward them to some
 output streams. Centreon Broker does not directly know which events are
 handled. This is the job of the :ref:`modules <user_modules>`.
 
+.. _config_daemon:
+
 The daemon
 ==========
 
@@ -36,6 +38,35 @@ having only daemons would be useless, as none of them generate
 monitoring events. They can however be configured to perform some
 specific tasks. For example a daemon can handle all RRD graphs creation,
 another can insert events in database, ...
+
+Daemon init script
+******************
+
+The daemon can be started by the init script cbd. By default 
+(*/etc/init.d/cbd*).
+
+This startup script use a configuration file master.run (by default
+*/etc/centreon-broker/master.run*)
+
+This file contains the list of cbd daemons to start. This list must correspond
+to the list configured in Centreon Web.
+
+The format of this file is::
+
+  daemon_name	config_file	start	reload
+
+Examples::
+
+  cbd		cbd-broker.xml	y	y
+  cbd-rrd	cbd-rrd.xml	y	n
+
+The **daemon_name** is the name for distinct daemon each other.
+
+The **config_file** is the configuration file for start the daemon.
+
+If **start** is set to y, the daemon will be start and stop with init script.
+
+If **reload** is set to y, the daemon will be reload with init script.
 
 The module
 ==========
