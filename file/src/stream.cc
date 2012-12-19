@@ -54,6 +54,9 @@ stream::stream(
     _path(path),
     _process_in(true),
     _process_out(true) {
+  if (max_size <= 2 * sizeof(uint32_t))
+    throw (exceptions::msg()
+           << "file: invalid stream max size: " << max_size);
   _open_first_write();
   _open_first_read();
 }
