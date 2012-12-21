@@ -28,6 +28,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
+   release_notes/index
    installation/index
    user/index
    exploit/index
