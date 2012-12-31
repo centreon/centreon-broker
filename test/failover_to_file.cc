@@ -134,7 +134,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Temporary disable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");

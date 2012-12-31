@@ -97,13 +97,16 @@ int main() {
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
-      if ((static_cast<time_t>(q.value(0).toLongLong()) + 30 < now)
+      if ((static_cast<time_t>(q.value(0).toLongLong())
+           + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+           < now)
           || (q.value(1).toString() != "MyBroker"))
         throw (exceptions::msg()
                << "invalid entry in 'instances': got (last_alive "
                << q.value(0).toLongLong() << ", name "
                << qPrintable(q.value(1).toString()) << "), expected ("
-               << now - 30 << ":, MyBroker");
+               << now - 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+               << ":, MyBroker");
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'instances'");
     }
@@ -125,13 +128,15 @@ int main() {
                  << " expected 10");
         if ((q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
-            || (static_cast<time_t>(q.value(2).toLongLong()) + 30
+            || (static_cast<time_t>(q.value(2).toLongLong())
+                + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
                 < now))
           throw (exceptions::msg() << "invalid entry in 'hosts' ("
                  << i << "): got (host_id " << i << ", name "
                  << q.value(1).toUInt() << ", last_check "
                  << q.value(2).toLongLong() << "), expected ("
-                 << i << ", " << i << ", " << now - 30 << ":)");
+                 << i << ", " << i << ", "
+                 << now - MONITORING_ENGINE_INTERVAL_LENGTH << ":)");
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'hosts'");
@@ -155,15 +160,18 @@ int main() {
         if ((q.value(0).toUInt() != ((i - 1) / 5 + 1))
             || (q.value(1).toUInt() != i)
             || (q.value(2).toUInt() != i)
-            || (static_cast<time_t>(q.value(3).toLongLong()) + 30
+            || (static_cast<time_t>(q.value(3).toLongLong())
+                + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
                 < now))
           throw (exceptions::msg() << "invalid entry in 'services' ("
                  << i << "): got (host_id " << q.value(0).toUInt()
                  << ", service_id " << q.value(1).toUInt()
                  << ", description " << q.value(2).toUInt()
                  << ", last_check " << q.value(3).toLongLong()
-                 << ") expected (" << i << ", " << i << ", " << i
-                 << ", " << now - 30 << ":)");
+                 << ") expected (" << ((i - 1) / 5 + 1) << ", " << i
+                 << ", " << i << ", "
+                 << now - 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+                 << ":)");
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'services'");

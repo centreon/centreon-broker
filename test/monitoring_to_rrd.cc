@@ -235,7 +235,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(60 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check metrics table.
     std::list<unsigned int> metrics;
