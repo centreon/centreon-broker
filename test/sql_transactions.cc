@@ -123,7 +123,7 @@ int main() {
         if (!q.next())
           throw (exceptions::msg()
                  << "not enough entries in 'hosts': got "
-                 << i << " exepected 10");
+                 << i << " expected 10");
         if ((q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
             || (static_cast<time_t>(q.value(2).toLongLong())
