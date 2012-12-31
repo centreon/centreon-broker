@@ -360,7 +360,7 @@ void config_write(
           << "  check_interval "
           << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 5) << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"

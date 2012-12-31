@@ -96,14 +96,14 @@ int main() {
                << q.lastError().text().toStdString().c_str());
       time_t now(time(NULL));
       if ((static_cast<time_t>(q.value(0).toLongLong())
-           + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+           + 7 * MONITORING_ENGINE_INTERVAL_LENGTH
            < now)
           || (q.value(1).toString() != "MyBroker"))
         throw (exceptions::msg()
                << "invalid entry in 'instances': got (last_alive "
                << q.value(0).toLongLong() << ", name "
                << qPrintable(q.value(1).toString()) << "), expected ("
-               << now - 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+               << now - 7 * MONITORING_ENGINE_INTERVAL_LENGTH
                << ":, MyBroker");
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'instances'");
@@ -157,7 +157,7 @@ int main() {
             || (q.value(1).toUInt() != i)
             || (q.value(2).toUInt() != i)
             || (static_cast<time_t>(q.value(3).toLongLong())
-                + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+                + 7 * MONITORING_ENGINE_INTERVAL_LENGTH
                 < now))
           throw (exceptions::msg() << "invalid entry in 'services' ("
                  << i << "): got (host_id " << q.value(0).toUInt()
@@ -166,7 +166,7 @@ int main() {
                  << ", last_check " << q.value(3).toLongLong()
                  << ") expected (" << ((i - 1) / 5 + 1) << ", " << i
                  << ", " << i << ", "
-                 << now - 5 * MONITORING_ENGINE_INTERVAL_LENGTH
+                 << now - 7 * MONITORING_ENGINE_INTERVAL_LENGTH
                  << ":)");
       }
       if (q.next())
