@@ -84,9 +84,6 @@ int main() {
     daemon.start();
     sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Base time.
-    time_t now(time(NULL));
-
     // Check 'instances' table.
     {
       std::ostringstream query;
@@ -97,6 +94,7 @@ int main() {
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
+      time_t now(time(NULL));
       if ((static_cast<time_t>(q.value(0).toLongLong())
            + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
            < now)
@@ -128,15 +126,12 @@ int main() {
                  << " expected 10");
         if ((q.value(0).toUInt() != i)
             || (q.value(1).toUInt() != i)
-            || (static_cast<time_t>(q.value(2).toLongLong())
-                + 5 * MONITORING_ENGINE_INTERVAL_LENGTH
-                < now))
+            || !static_cast<time_t>(q.value(2).toLongLong()))
           throw (exceptions::msg() << "invalid entry in 'hosts' ("
                  << i << "): got (host_id " << i << ", name "
                  << q.value(1).toUInt() << ", last_check "
                  << q.value(2).toLongLong() << "), expected ("
-                 << i << ", " << i << ", "
-                 << now - MONITORING_ENGINE_INTERVAL_LENGTH << ":)");
+                 << i << ", " << i << ", not 0)");
       }
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'hosts'");
@@ -152,6 +147,7 @@ int main() {
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read services from DB: "
                << q.lastError().text().toStdString().c_str());
+      time_t now(time(NULL));
       for (unsigned int i(1); i <= 10 * 5; ++i) {
         if (!q.next())
           throw (exceptions::msg()
@@ -193,9 +189,6 @@ int main() {
     // Run a while.
     sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Current time.
-    now = time(NULL);
-
     // Check generated logs.
     {
       std::ostringstream query;
@@ -207,6 +200,7 @@ int main() {
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot get logs from DB: "
                << qPrintable(q.lastError().text()));
+      time_t now(time(NULL));
       if ((static_cast<time_t>(q.value(0).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(0).toLongLong()) > now)
           || (q.value(1).toString() != "1")
