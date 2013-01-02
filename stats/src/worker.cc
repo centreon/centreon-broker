@@ -17,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <errno.h>
+#include <cassert>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <iomanip>
 #include <QMutexLocker>
 #include <sstream>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -377,5 +377,6 @@ void worker::run() {
     logging::error(logging::high)
       << "stats: thread will exit due to an unknown error";
   }
+  ::unlink(qPrintable(_fifo));
   return ;
 }
