@@ -77,7 +77,10 @@ void state::apply(
                         s.module_list(),
                         s.module_directory(),
                         &s);
-  {
+  static bool first_application(true);
+  if (first_application)
+    first_application = false;
+  else {
     unsigned int module_count(0);
     for (modules::iterator
            it(modules::instance().begin()),
