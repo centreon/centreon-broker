@@ -84,7 +84,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(14 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Add comments on two hosts.
     commander.execute(
@@ -99,13 +99,31 @@ int main() {
                 "ADD_SVC_COMMENT;1;1;0;FooBar;Baz    Qux");
 
     // Let the monitoring engine run a while.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Base time.
     time_t now(time(NULL));
 
     // Check comments.
     {
+      struct {
+        QVariant internal_id;
+        QVariant host_id;
+        QVariant service_id;
+        QVariant author;
+        QVariant data;
+        QVariant persistent;
+      } entries[] = {
+        { QVariant(1u), QVariant(9u), QVariant(QVariant::UInt),
+          QVariant("Merethis"), QVariant("Centreon"), QVariant(1) },
+        { QVariant(2u), QVariant(4u), QVariant(QVariant::UInt),
+          QVariant("RandomAuthor"), QVariant("Some random comment."),
+          QVariant(0) },
+        { QVariant(3u), QVariant(3u), QVariant(13u), QVariant("Broker"),
+          QVariant("Another comment !"), QVariant(1) },
+        { QVariant(4u), QVariant(1u), QVariant(1u), QVariant("FooBar"),
+          QVariant("Baz    Qux"), QVariant(0) }
+      };
       std::ostringstream query;
       query << "SELECT internal_id, host_id, service_id, author, data, persistent, entry_time, deletion_time"
             << "  FROM comments"
@@ -114,69 +132,75 @@ int main() {
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get comments from DB: "
                << q.lastError().text().toStdString().c_str());
-      
-      if (// Host comment #1.
-          !q.next()
-          || (q.value(0).toUInt() != 1)
-          || (q.value(1).toUInt() != 9)
-          || !q.value(2).isNull()
-          || (q.value(3).toString() != "Merethis")
-          || (q.value(4).toString() != "Centreon")
-          || !q.value(5).toUInt()
-          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
-          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          // Host comment #2.
-          || !q.next()
-          || (q.value(0).toUInt() != 2)
-          || (q.value(1).toUInt() != 4)
-          || !q.value(2).isNull()
-          || (q.value(3).toString() != "RandomAuthor")
-          || (q.value(4).toString() != "Some random comment.")
-          || q.value(5).toUInt()
-          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
-          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          // Service comment #3.
-          || !q.next()
-          || (q.value(0).toUInt() != 3)
-          || (q.value(1).toUInt() != 3)
-          || (q.value(2).toUInt() != 13)
-          || (q.value(3).toString() != "Broker")
-          || (q.value(4).toString() != "Another comment !")
-          || !q.value(5).toUInt()
-          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
-          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          // Service comment #4.
-          || !q.next()
-          || (q.value(0).toUInt() != 4)
-          || (q.value(1).toUInt() != 1)
-          || (q.value(2).toUInt() != 1)
-          || (q.value(3).toString() != "FooBar")
-          || (q.value(4).toString() != "Baz    Qux")
-          || q.value(5).toUInt()
-          || (static_cast<time_t>(q.value(6).toLongLong()) < now - 50)
-          || (static_cast<time_t>(q.value(6).toLongLong()) > now)
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          // EOF
-          || q.next())
-        throw (exceptions::msg() << "invalid comment entry in DB");
+
+      // Check entries.
+      for (unsigned int i(0);
+           i < sizeof(entries) / sizeof(*entries);
+           ++i) {
+        if (!q.next())
+          throw (exceptions::msg()
+                 << "not enough comments in DB (check #1): got " << i
+                 << ", expected "
+                 << sizeof(entries) / sizeof(*entries));
+        if ((q.value(0) != entries[i].internal_id)
+            || (q.value(1) != entries[i].host_id)
+            || (q.value(2) != entries[i].service_id)
+            || (q.value(3) != entries[i].author)
+            || (q.value(4) != entries[i].data)
+            || (static_cast<bool>(q.value(5).toInt())
+                != static_cast<bool>(entries[i].persistent.toInt()))
+            || (static_cast<time_t>(q.value(6).toLongLong())
+                < (now - 12 * MONITORING_ENGINE_INTERVAL_LENGTH - 5))
+            || (static_cast<time_t>(q.value(6).toLongLong()) > now)
+            || !q.value(7).isNull())
+          throw (exceptions::msg() << "invalid comment " << i
+                 << ": got (internal id "
+                 << q.value(0).toUInt() << ", host_id "
+                 << q.value(1).toUInt() << ", service_id "
+                 << q.value(2).toUInt() << ", author "
+                 << qPrintable(q.value(3).toString()) << ", data "
+                 << qPrintable(q.value(4).toString()) << ", persistent "
+                 << q.value(5).toInt() << ", entry time "
+                 << q.value(6).toLongLong() << ", deletion time "
+                 << q.value(7).isNull() << "), expected ("
+                 << entries[i].internal_id.toUInt() << ", "
+                 << entries[i].host_id.toUInt() << ", "
+                 << entries[i].service_id.toUInt() << ", "
+                 << qPrintable(entries[i].author.toString()) << ", "
+                 << qPrintable(entries[i].data.toString()) << ", "
+                 << (now - 12 * MONITORING_ENGINE_INTERVAL_LENGTH - 5)
+                 << ":" << now << ", true)");
+      }
+      if (q.next())
+        throw (exceptions::msg() << "too much comments in DB");
     }
 
     // Remove two comments.
     commander.execute("DEL_HOST_COMMENT;1");
     commander.execute("DEL_SVC_COMMENT;4");
-    sleep_for(10);
+    sleep_for(7 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Restart daemon.
     daemon.stop();
     daemon.start();
-    sleep_for(10);
+    sleep_for(7 * MONITORING_ENGINE_INTERVAL_LENGTH);
     now = time(NULL);
 
     // Check that comments where deleted.
     {
+      struct {
+        unsigned int internal_id;
+        bool         deletion_time_is_null;
+        time_t       deletion_time_low;
+        time_t       deletion_time_high;
+      } entries[] = {
+        { 1u, false, now - 15 * MONITORING_ENGINE_INTERVAL_LENGTH,
+          now - 7 * MONITORING_ENGINE_INTERVAL_LENGTH },
+        { 2u, false, now - 8 * MONITORING_ENGINE_INTERVAL_LENGTH, now },
+        { 3u, true, 0, 0 },
+        { 4u, false, now - 15 * MONITORING_ENGINE_INTERVAL_LENGTH,
+          now - 7 * MONITORING_ENGINE_INTERVAL_LENGTH }
+      };
       std::ostringstream query;
       query << "SELECT internal_id, deletion_time"
             << "  FROM comments"
@@ -187,29 +211,34 @@ int main() {
                << "cannot get deletion time of comments from DB: "
                << q.lastError().text().toStdString().c_str());
 
-      if (// Host comment #1.
-          !q.next()
-          || (q.value(0).toUInt() != 1)
-          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 30)
-          || (static_cast<time_t>(q.value(1).toLongLong()) > now - 10)
-          // Host comment #2.
-          || !q.next()
-          || (q.value(0).toUInt() != 2)
-          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 15)
-          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
-          // Service comment #1.
-          || !q.next()
-          || (q.value(0).toUInt() != 3)
-          || !(q.value(1).isNull() || !q.value(1).toUInt())
-          // Service comment #2.
-          || !q.next()
-          || (q.value(0).toUInt() != 4)
-          || (static_cast<time_t>(q.value(1).toLongLong()) < now - 30)
-          || (static_cast<time_t>(q.value(1).toLongLong()) > now - 10)
-          // EOF
-          || q.next())
-        throw (exceptions::msg() << "invalid deletion_time in DB (now "
-               << now << ")");
+      // Check comments.
+      for (unsigned int i(0);
+           i < sizeof(entries) / sizeof(*entries);
+           ++i) {
+        if (!q.next())
+          throw (exceptions::msg()
+                 << "not enough comments in DB (check #2): got " << i
+                 << ", expected "
+                 << sizeof(entries) / sizeof(*entries));
+        bool entry_deletion_time_is_null(q.value(1).isNull());
+        if ((q.value(0).toUInt() != entries[i].internal_id)
+            || (entry_deletion_time_is_null
+                != entries[i].deletion_time_is_null)
+            || (entry_deletion_time_is_null
+                && ((static_cast<time_t>(q.value(1).toLongLong())
+                     < entries[i].deletion_time_low)
+                    || (static_cast<time_t>(q.value(1).toLongLong())
+                        > entries[i].deletion_time_high))))
+          throw (exceptions::msg() << "invalid comment " << i
+                 << ": got (internal id " << q.value(0).toUInt()
+                 << ", null deletion time "
+                 << entry_deletion_time_is_null << ", deletion time "
+                 << q.value(1).toLongLong() << "), expected ("
+                 << entries[i].internal_id << ", "
+                 << entries[i].deletion_time_is_null << ", "
+                 << entries[i].deletion_time_low << ":"
+                 << entries[i].deletion_time_high << ")");
+      }
     }
 
     // Success.

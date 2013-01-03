@@ -100,7 +100,8 @@ static mapped_data<comment> const comment_mapping[] = {
   mapped_data<comment>(
     &comment::deletion_time,
     NDO_DATA_ENDTIME,
-    "deletion_time"),
+    "deletion_time",
+    true),
   mapped_data<comment>(
     &comment::entry_time,
     NDO_DATA_ENTRYTIME,
