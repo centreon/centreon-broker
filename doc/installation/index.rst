@@ -275,6 +275,22 @@ WITH_TESTING        Enable build of unit tests. Disabled by default.     OFF
 WITH_USER           Set the user for Centreon Broker installation.       root
 =================== ==================================================== ============================================
 
+If you enable testing variable you can set some variable to add more unit test:
+
+====================================== ==================================================== =========================
+Variable                               Description                                          Default value
+====================================== ==================================================== =========================
+WITH_DB_HOST                           Hostname to connect on database.                     localhost
+WITH_DB_PASSWORD                       Password to connect on database.                     ""
+WITH_DB_PORT                           Port to connect on database.                         3306
+WITH_DB_TYPE                           Database type (only "mysql" is available)            OFF
+WITH_DB_USER                           User to connect on database.                         ""
+WITH_MONITORING_ENGINE                 Enable testing with monitoring engine (set to        OFF
+                                       "nagios" or "entengine").
+WITH_MONITORING_ENGINE_INTERVAL_LENGTH Set the monitoring engine interval (in seconds).     1
+WITH_MONITORING_ENGINE_MODULES         Add monitoring engine modules.                       ""
+====================================== ==================================================== =========================
+
 Example ::
 
   $ cmake \
