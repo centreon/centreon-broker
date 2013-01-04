@@ -11,3 +11,4 @@
 #
 #
 # daemon_name	daemon_config	running		reload
+@DAEMONS_CONFIGURATION@

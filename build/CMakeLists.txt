@@ -185,18 +185,21 @@ if (WITH_DAEMONS)
       "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
   endif ()
-  exec_program("chmod a+x ${PROJECT_SOURCE_DIR}/script/cbd.init" OUTPUT_VARIABLE OKITOKI)
-  install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
-    DESTINATION "${STARTUP_DIR}"
-    RENAME "cbd")
+
+  set(DAEMONS_CONFIGURATION "")
+  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
+    set(DAEMONS_CONFIGURATION
+      "${DAEMONS_CONFIGURATION}${DAEMON_NAME}\t${DAEMON_NAME}.xml\ty\ty\n")
+  endforeach ()
+
   configure_file("${PROJECT_SOURCE_DIR}/script/master.run.in"
     "${PROJECT_SOURCE_DIR}/script/master.run"
     @ONLY)
-  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
-    execute_process(COMMAND "echo" "${DAEMON_NAME}\t${DAEMON_NAME}.xml\ty\ty" ">>" "${PROJECT_SOURCE_DIR}/master.run")
-  endforeach ()
   install(FILES "${PROJECT_SOURCE_DIR}/script/master.run"
     DESTINATION "${PREFIX_CONF}")
+  install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
+    DESTINATION "${STARTUP_DIR}"
+    RENAME "cbd")
 endif ()
 
 # Monitoring engine (for testing).
