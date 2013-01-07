@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include <cassert>
 #include <climits>
 #include <cstdlib>
+#include <limits>
 #include <memory>
 #include <QDir>
 #include <QMutexLocker>
@@ -54,9 +55,10 @@ stream::stream(
     _path(path),
     _process_in(true),
     _process_out(true) {
-  if (max_size <= 2 * sizeof(uint32_t))
-    throw (exceptions::msg()
-           << "file: invalid stream max size: " << max_size);
+  if ((max_size <= 2 * sizeof(uint32_t))
+      || (max_size > static_cast<unsigned long long>(
+                       std::numeric_limits<long>::max())))
+    _max_size = std::numeric_limits<long>::max();
   _open_first_write();
   _open_first_read();
 }
@@ -65,6 +67,19 @@ stream::stream(
  *  Destructor.
  */
 stream::~stream() {}
+
+/**
+ *  @brief Get stream's maximum size.
+ *
+ *  This size is used to determine the maximum file size that a file can
+ *  have. After this limit, the next file (<file>, <file>1, <file>2,
+ *  ...) will be opened.
+ *
+ *  @return Max size in bytes.
+ */
+unsigned long long stream::get_max_size() const throw () {
+  return (_max_size);
+}
 
 /**
  *  Set processing flags.
@@ -155,7 +170,7 @@ void stream::statistics(std::string& buffer) const {
       << "file_write_path=" << _file_path(_wid) << "\n"
       << "file_write_offset=" << _woffset << "\n"
       << "file_max_size=";
-  if (_max_size)
+  if (_max_size != std::numeric_limits<long>::max())
     oss << _max_size;
   else
     oss << "unlimited";

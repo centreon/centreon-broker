@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <cstdlib>
+#include <limits>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -83,5 +84,32 @@ int main(int argc, char* argv[]) {
   for (unsigned int i(0); i < 4; ++i)
     ::remove(qPrintable(filename[i]));
 
-  return (retval);
+  // Check max file size #1.
+  {
+    file::stream fs(filename[0].toStdString(), 0);
+    retval |= (fs.get_max_size()
+               != static_cast<unsigned long long>(
+                    std::numeric_limits<long>::max()));
+  }
+
+  // Check max file size #2.
+  {
+    file::stream fs(filename[0].toStdString(), 5);
+    retval |= (fs.get_max_size()
+               != static_cast<unsigned long long>(
+                    std::numeric_limits<long>::max()));
+  }
+
+  // Check max fiel size #3.
+  {
+    file::stream
+      fs(
+        filename[0].toStdString(),
+        std::numeric_limits<unsigned long long>::max() - 123456);
+    retval |= (fs.get_max_size()
+               != static_cast<unsigned long long>(
+                    std::numeric_limits<long>::max()));
+  }
+
+  return (retval ? 1 : 0);
 }
