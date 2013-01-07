@@ -30,7 +30,7 @@ on_centreon_rtd = os.environ.get('CENTREON_RTD', None) == 'True'
 extensions = ['sphinx.ext.intersphinx']
 
 intersphinx_mapping = {
-  'centreon-engine' : ('http://doc-dev.merethis.net/docs/centreon-engine/en/latest', None),
+  'centreon-engine' : ('http://documentation.centreon.com/docs/centreon-engine/en/latest', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
