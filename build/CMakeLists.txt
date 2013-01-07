@@ -525,6 +525,18 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Disable status graphs.
+  set(TEST_NAME "running_disable_status_graphs")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/disable_status_graphs.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Disable metrics graphs.
+  set(TEST_NAME "running_disable_metrics_graphs")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/disable_metrics_graphs.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Failover to file.
   set(TEST_NAME "running_failover_to_file")
