@@ -4,7 +4,7 @@
 Installation
 ############
 
-Merethis recommend using its official packages from the Centreon
+Merethis recommends using its official packages from the Centreon
 Entreprise Server (CES) repository. Most of Merethis' endorsed
 software are available as RPM packages.
 
@@ -29,16 +29,17 @@ Prerequisites
 In order to use RPM from the CES repository, you have to install the
 appropriate repo file. Run the following command as privileged user ::
 
-  $ wget http://yum.centreon.com/standard/ces-standard.repo -O /etc/yum.repos.d/ces-standard.repo
+  $ wget http://yum.centreon.com/standard/2.2/ces-standard.repo -O /etc/yum.repos.d/ces-standard.repo
 
-The repo file is now installed.
+The repo file is now installed. Don't forget to cleanup ::
+
+  $ yum clean all
 
 Install
 =======
 
 Run the following commands as privileged user ::
 
-  $ yum clean all
   $ yum install centreon-broker centreon-broker-core centreon-broker-cbd centreon-broker-cbmod centreon-broker-storage
 
 All dependencies are automatically installed from Merethis repositories.
@@ -106,38 +107,30 @@ RRDTool                     rrdtool-devel     Development files for RRD file
 
 #. Install basic compilation tools ::
 
-     $ yum install gcc gcc-c++ make
+   $ yum install gcc gcc-c++ make
+
+#. Install Merethis repository
+
+   You need to install Centreon Entreprise Server (CES) repos file as
+   explained :ref:`user_installation_packages_prerequisites` to use some
+   specific package version.
 
 #. Install RRDTool ::
 
-     $ yum install rrdtool-devel
+   $ yum install rrdtool-devel
 
-#. Get and install cmake
+#. Install cmake
 
-   For CentOS 5 ::
-
-     $ ARCH=`uname -m`
-     $ wget http://apt.sw.be/redhat/el5/en/${ARCH}/extras/RPMS/cmake-2.8.8-1.el5.rfx.${ARCH}.rpm
-     $ rpm -Uvh cmake-2.8.8-1.el5.rfx.${ARCH}.rpm
-
-   For CentOS 6 ::
-
-     $ ARCH=`uname -m`
-     $ wget http://apt.sw.be/redhat/el6/en/${ARCH}/extras/RPMS/cmake-2.8.8-1.el6.rfx.${ARCH}.rpm
-     $ rpm -Uvh cmake-2.8.8-1.el6.rfx.${ARCH}.rpm
+   $ yum install cmake
 
 #. Install Qt framework
 
-   You need to install Centreon Entreprise Server (CES) repo file as
-   explained :ref:`user_installation_packages_prerequisites` ::
-
-     $ yum clean all
-     $ yum install qt4-devel qt4-mysql
+   $ yum install qt4-devel qt4-mysql
 
 #. Add qt directory into the PATH environment variable ::
 
-     $ updatedb
-     $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
+   $ updatedb
+   $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
 
 Debian/Ubuntu
 -------------
