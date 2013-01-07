@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <QMutexLocker>
 #if QT_VERSION >= 0x040300
+#  include <QSslKey>
 #  include <QSslSocket>
 #endif // Qt >= 4.3.0
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -134,7 +135,15 @@ misc::shared_ptr<io::stream> connector::open() {
     // Set self certificates.
     if (!_private.isEmpty() && !_public.isEmpty()) {
       ssl_socket->setLocalCertificate(_public);
+      if (ssl_socket->localCertificate().isNull()
+          || !ssl_socket->localCertificate().isValid())
+        throw (exceptions::msg()
+               << "TCP: invalid public certificate file '"
+               << qPrintable(_public) << "'");
       ssl_socket->setPrivateKey(_private);
+      if (ssl_socket->privateKey().isNull())
+        throw (exceptions::msg() << "TCP: invalid private key file '"
+               << qPrintable(_private) << "'");
     }
 
     // Set CA certificate.

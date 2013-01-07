@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,10 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <memory>
+#include <QSslKey>
 #include <QSslSocket>
-#include <stdlib.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/tcp/tls_server.hh"
 
 using namespace com::centreon::broker;
@@ -70,7 +72,15 @@ void tls_server::incomingConnection(int socketDescriptor) {
   // Set self certificates.
   if (!_private.isEmpty() && !_public.isEmpty()) {
     ssl_socket->setLocalCertificate(_public);
+    if (ssl_socket->localCertificate().isNull()
+        || !ssl_socket->localCertificate().isValid())
+      throw (exceptions::msg()
+             << "TCP: invalid public certificate file '"
+             << qPrintable(_public) << "'");
     ssl_socket->setPrivateKey(_private);
+    if (ssl_socket->privateKey().isNull())
+      throw (exceptions::msg() << "TCP: invalid private key file '"
+             << qPrintable(_private) << "'");
   }
 
   // Set CA certificate.
