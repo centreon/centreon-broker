@@ -596,10 +596,9 @@ void correlator::_correlate_host_service_status(
 
       // Update node.
       n->in_downtime = hss.scheduled_downtime_depth;
-      if (state_changed) {
-        n->since = now;
+      n->since = now;
+      if (state_changed)
         n->state = hss.current_state;
-      }
 
       // New state.
       {
