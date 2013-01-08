@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,6 +44,27 @@ namespace                          com {
         class                      correlator : public multiplexing::hooker {
           Q_OBJECT
 
+         public:
+                                   correlator();
+                                   correlator(correlator const& c);
+                                   ~correlator();
+          correlator&              operator=(correlator const& c);
+          QMap<QPair<unsigned int, unsigned int>, node> const&
+                                   get_state() const;
+          void                     load(
+                                     QString const& correlation_file,
+                                     QString const& retention_file);
+          void                     read(misc::shared_ptr<io::data>& d);
+          void                     set_state(
+                                     QMap<QPair<unsigned int, unsigned int>, node> const& state);
+          void                     starting();
+          void                     stopping();
+          void                     write(
+                                     misc::shared_ptr<io::data> const& e);
+
+         public slots:
+          void                     update();
+
          private:
           QList<misc::shared_ptr<io::data> >
                                    _events;
@@ -69,31 +90,10 @@ namespace                          com {
                                    _remove_node(
                                      QMap<QPair<unsigned int, unsigned int>, node>::iterator it);
           void                     _write_issues();
-
-         public:
-                                   correlator();
-                                   correlator(correlator const& c);
-                                   ~correlator();
-          correlator&              operator=(correlator const& c);
-          QMap<QPair<unsigned int, unsigned int>, node> const&
-                                   get_state() const;
-          void                     load(
-                                     QString const& correlation_file,
-                                     QString const& retention_file);
-          void                     read(misc::shared_ptr<io::data>& d);
-          void                     set_state(
-                                     QMap<QPair<unsigned int, unsigned int>, node> const& state);
-          void                     starting();
-          void                     stopping();
-          void                     write(
-                                     misc::shared_ptr<io::data> const& e);
-
-         public slots:
-          void                     update();
         };
       }
     }
   }
 }
 
-#endif /* !CCB_CORRELATION_CORRELATOR_HH_ */
+#endif // !CCB_CORRELATION_CORRELATOR_HH

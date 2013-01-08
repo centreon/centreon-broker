@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,8 +60,9 @@ static bool should_be_unknown(node const& n) {
   // If node has no parents, then all_parents_down will be false.
   if (!n.parents().isEmpty()) {
     all_parents_down = true;
-    for (QList<node*>::const_iterator it = n.parents().begin(),
-           end = n.parents().end();
+    for (QList<node*>::const_iterator
+           it(n.parents().begin()),
+           end(n.parents().end());
          it != end;
          ++it)
       all_parents_down = (all_parents_down && (*it)->state);
@@ -71,8 +72,9 @@ static bool should_be_unknown(node const& n) {
 
   // Check dependencies.
   one_dependency_down = false;
-  for (QList<node*>::const_iterator it = n.depends_on().begin(),
-         end = n.depends_on().end();
+  for (QList<node*>::const_iterator
+         it(n.depends_on().begin()),
+         end(n.depends_on().end());
        it != end;
        ++it)
     one_dependency_down = (one_dependency_down || (*it)->state);
@@ -181,8 +183,8 @@ void correlator::load(QString const& correlation_file,
 
   // Reopen issues.
   for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-         it = _nodes.begin(),
-         end = _nodes.end();
+         it(_nodes.begin()),
+         end(_nodes.end());
        it != end;
        ++it)
     if (it->my_issue.get()) {
@@ -195,8 +197,8 @@ void correlator::load(QString const& correlation_file,
 
   // Re-link issues.
   for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
-         it = _nodes.begin(),
-         end = _nodes.end();
+         it(_nodes.begin()),
+         end(_nodes.end());
        it != end;
        ++it)
     if (it->my_issue.get())
@@ -227,8 +229,8 @@ void correlator::read(misc::shared_ptr<io::data>& e) {
 void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& state) {
   // Copy nodes.
   for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-         it = state.begin(),
-         end = state.end();
+         it(state.begin()),
+         end(state.end());
        it != end;
        ++it) {
     node& n(_nodes[qMakePair(it->host_id, it->service_id)]);
@@ -242,15 +244,15 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
 
   // Copy node links.
   for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-         it = state.begin(),
-         end = state.end();
+         it(state.begin()),
+         end(state.end());
        it != end;
        ++it) {
     node& n(_nodes[qMakePair(it->host_id, it->service_id)]);
     // Copy children.
     for (QList<node*>::const_iterator
-           it2 = it->children().begin(),
-           end2 = it->children().end();
+           it2(it->children().begin()),
+           end2(it->children().end());
          it2 != end2;
          ++it2)
       n.add_child(&_nodes[qMakePair(
@@ -258,8 +260,8 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
         (*it2)->service_id)]);
     // Copy dependencies.
     for (QList<node*>::const_iterator
-           it2 = it->depended_by().begin(),
-           end2 = it->depended_by().end();
+           it2(it->depended_by().begin()),
+           end2(it->depended_by().end());
          it2 != end2;
          ++it2)
       n.add_depended(&_nodes[qMakePair(
@@ -295,15 +297,15 @@ void correlator::stopping() {
   // Close issues and issues parenting.
   /*time_t now(time(NULL));
   for (QMap<QPair<unsigned int, unsigned int>, node>::iterator
-         it = _nodes.begin(),
-         end = _nodes.end();
+         it(_nodes.begin()),
+         end(_nodes.end());
        it != end;
        ++it)
     if (it->my_issue.get()) {
       // Remove issue parenting.
       for (QList<node*>::const_iterator
-             it2 = it->depends_on().begin(),
-             end2 = it->depends_on().end();
+             it2(it->depends_on().begin()),
+             end2(it->depends_on().end());
            it2 != end2;
            ++it2)
         if ((*it2)->my_issue.get()) {
@@ -322,15 +324,15 @@ void correlator::stopping() {
         }
       bool all_parents(true);
       for (QList<node*>::const_iterator
-             it2 = it->parents().begin(),
-             end2 = it->parents().end();
+             it2(it->parents().begin()),
+             end2(it->parents().end());
            it2 != end2;
            ++it2)
         all_parents = (all_parents && (*it2)->my_issue.get());
       if (all_parents) {
         for (QList<node*>::const_iterator
-               it2 = it->parents().begin(),
-               end2 = it->parents().end();
+               it2(it->parents().begin()),
+               end2(it->parents().end());
              it2 != end2;
              ++it2) {
           misc::shared_ptr<issue_parent> p(new issue_parent);
@@ -632,8 +634,8 @@ void correlator::_correlate_host_service_status(
         
         // Issue parenting deletion.
         for (QList<node*>::const_iterator
-               it = n->depends_on().begin(),
-               end = n->depends_on().end();
+               it(n->depends_on().begin()),
+               end(n->depends_on().end());
              it != end;
              ++it)
           if ((*it)->my_issue.get()) {
@@ -655,8 +657,8 @@ void correlator::_correlate_host_service_status(
             _events.push_back(p.staticCast<io::data>());
           }
         for (QList<node*>::const_iterator
-               it = n->depended_by().begin(),
-               end = n->depended_by().end();
+               it(n->depended_by().begin()),
+               end(n->depended_by().end());
              it != end;
              ++it)
           if ((*it)->my_issue.get()) {
@@ -677,18 +679,22 @@ void correlator::_correlate_host_service_status(
             p->end_time = now;
             _events.push_back(p.staticCast<io::data>());
           }
-        bool all_parents = true;
+        bool all_parents(true);
+        timestamp t(n->my_issue->start_time);
         for (QList<node*>::const_iterator
-               it = n->parents().begin(),
-               end = n->parents().end();
-             it != end;
-             ++it)
+               it(n->parents().begin()),
+               end(n->parents().end());
+             all_parents && (it != end);
+             ++it) {
           if (!(*it)->my_issue.get())
             all_parents = false;
+          else if ((*it)->my_issue->start_time > t)
+            t = (*it)->my_issue->start_time;
+        }
         if (all_parents)
           for (QList<node*>::const_iterator
-                 it = n->parents().begin(),
-                 end = n->parents().end();
+                 it(n->parents().begin()),
+                 end(n->parents().end());
                it != end;
                ++it) {
             logging::debug(logging::low) << "correlation: deleting " \
@@ -702,30 +708,33 @@ void correlator::_correlate_host_service_status(
             p->parent_host_id = (*it)->host_id;
             p->parent_service_id = (*it)->service_id;
             p->parent_start_time = (*it)->my_issue->start_time;
-            p->start_time = (p->child_start_time > p->parent_start_time
-                             ? p->child_start_time
-                             : p->parent_start_time);
+            p->start_time = t;
             p->end_time = now;
             _events.push_back(p.staticCast<io::data>());
           }
         for (QList<node*>::const_iterator
-               it = n->children().begin(),
-               end = n->children().end();
+               it(n->children().begin()),
+               end(n->children().end());
              it != end;
              ++it) {
           if ((*it)->my_issue.get()) {
             // Check that all parents of the node have an issue.
             all_parents = true;
+            t = (*it)->my_issue->start_time;
             for (QList<node*>::const_iterator
-                   it2 = (*it)->parents().begin(),
-                   end2 = (*it)->parents().end();
-                 it2 != end2;
-                 ++it2)
-              all_parents = (all_parents && (*it2)->my_issue.get());
+                   it2((*it)->parents().begin()),
+                   end2((*it)->parents().end());
+                 all_parents && (it2 != end2);
+                 ++it2) {
+              if (!(*it2)->my_issue.get())
+                all_parents = false;
+              else if ((*it2)->my_issue->start_time > t)
+                t = (*it2)->my_issue->start_time;
+            }
             if (all_parents)
               for (QList<node*>::const_iterator
-                     it2 = (*it)->parents().begin(),
-                     end2 = (*it)->parents().end();
+                     it2((*it)->parents().begin()),
+                     end2((*it)->parents().end());
                    it2 != end2;
                    ++it2) {
                 logging::debug(logging::low) << "correlation: " \
@@ -740,9 +749,7 @@ void correlator::_correlate_host_service_status(
                 p->parent_host_id = (*it2)->host_id;
                 p->parent_service_id = (*it2)->service_id;
                 p->parent_start_time = (*it2)->my_issue->start_time;
-                p->start_time = (p->child_start_time > p->parent_start_time
-                                 ? p->child_start_time
-                                 : p->parent_start_time);
+                p->start_time = t;
                 p->end_time = now;
                 _events.push_back(p.staticCast<io::data>());
               }
@@ -841,8 +848,8 @@ issue* correlator::_find_related_issue(node& n) {
   else {
     isu = NULL;
     for (QList<node*>::const_iterator
-           it = n.depends_on().begin(),
-           end = n.depends_on().end();
+           it(n.depends_on().begin()),
+           end(n.depends_on().end());
          it != end;
          ++it)
       if ((*it)->state) {
@@ -851,8 +858,8 @@ issue* correlator::_find_related_issue(node& n) {
       }
     if (!isu) {
       for (QList<node*>::const_iterator
-             it = n.parents().begin(),
-             end = n.parents().end();
+             it(n.parents().begin()),
+             end(n.parents().end());
            it != end;
            ++it)
         if ((*it)->state) {
@@ -887,8 +894,8 @@ void correlator::_issue_parenting(node* n, bool full) {
   if (full && (unknown_state(*n) == n->state)) {
     // Loop dependencies.
     for (QList<node*>::const_iterator
-           it = n->depends_on().begin(),
-           end = n->depends_on().end();
+           it(n->depends_on().begin()),
+           end(n->depends_on().end());
          it != end;
          ++it)
       if ((*it)->my_issue.get()) {
@@ -908,17 +915,17 @@ void correlator::_issue_parenting(node* n, bool full) {
       }
 
     // Loop parents.
-    bool all_parent_issue = true;
+    bool all_parent_issue(true);
     for (QList<node*>::const_iterator
-           it = n->parents().begin(),
-           end = n->parents().end();
+           it(n->parents().begin()),
+           end(n->parents().end());
          it != end;
          ++it)
       all_parent_issue = (all_parent_issue && (*it)->my_issue.get());
     if (all_parent_issue) {
       for (QList<node*>::const_iterator
-             it = n->parents().begin(),
-             end = n->parents().end();
+             it(n->parents().begin()),
+             end(n->parents().end());
            it != end;
            ++it) {
         logging::debug(logging::low) << "correlation: creating " \
@@ -940,8 +947,8 @@ void correlator::_issue_parenting(node* n, bool full) {
 
   // Loop dependant nodes.
   for (QList<node*>::const_iterator
-         it = n->depended_by().begin(),
-         end = n->depended_by().end();
+         it(n->depended_by().begin()),
+         end(n->depended_by().end());
        it != end;
        ++it)
     if ((*it)->my_issue.get()) {
@@ -962,23 +969,23 @@ void correlator::_issue_parenting(node* n, bool full) {
 
   // Loop children.
   for (QList<node*>::const_iterator
-         it = n->children().begin(),
-         end = n->children().end();
+         it(n->children().begin()),
+         end(n->children().end());
        it != end;
        ++it)
     if ((*it)->my_issue.get()) {
       // Check that all parents of the node have an issue.
-      bool all_parent_issue = true;
+      bool all_parent_issue(true);
       for (QList<node*>::const_iterator
-             it2 = (*it)->parents().begin(),
-             end2 = (*it)->parents().end();
+             it2((*it)->parents().begin()),
+             end2((*it)->parents().end());
            it2 != end2;
            ++it2)
         all_parent_issue = (all_parent_issue && (*it2)->my_issue.get());
       if (all_parent_issue)
         for (QList<node*>::const_iterator
-               it2 = (*it)->parents().begin(),
-               end2 = (*it)->parents().end();
+               it2((*it)->parents().begin()),
+               end2((*it)->parents().end());
              it2 != end2;
              ++it2) {
           logging::debug(logging::low) << "correlation: " \
@@ -993,7 +1000,7 @@ void correlator::_issue_parenting(node* n, bool full) {
           parenting->parent_host_id = (*it2)->host_id;
           parenting->parent_service_id = (*it2)->service_id;
           parenting->parent_start_time = (*it2)->my_issue->start_time;
-          parenting->start_time = (*it2)->my_issue->start_time;
+          parenting->start_time = n->my_issue->start_time;
           _events.push_back(parenting.staticCast<io::data>());
         }
     }
@@ -1040,8 +1047,8 @@ void correlator::_write_issues() {
 
     // Dump nodes and issues.
     for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-           it = _nodes.begin(),
-           end = _nodes.end();
+           it(_nodes.begin()),
+           end(_nodes.end());
          it != end;
          ++it) {
       {
