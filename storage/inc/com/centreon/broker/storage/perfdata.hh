@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,6 +48,10 @@ namespace          storage {
     perfdata&      operator=(perfdata const& pd);
     double         critical() const throw ();
     void           critical(double c) throw ();
+    double         critical_low() const throw ();
+    void           critical_low(double c) throw ();
+    bool           critical_mode() const throw ();
+    void           critical_mode(bool m) throw ();
     double         max() const throw ();
     void           max(double m) throw ();
     double         min() const throw ();
@@ -62,9 +66,15 @@ namespace          storage {
     void           value_type(data_type t) throw ();
     double         warning() const throw ();
     void           warning(double w) throw ();
+    double         warning_low() const throw ();
+    void           warning_low(double w) throw ();
+    bool           warning_mode() const throw ();
+    void           warning_mode(bool m) throw ();
 
   private:
     double         _critical;
+    double         _critical_low;
+    bool           _critical_mode;
     double         _max;
     double         _min;
     QString        _name;
@@ -72,6 +82,8 @@ namespace          storage {
     double         _value;
     data_type      _value_type;
     double         _warning;
+    double         _warning_low;
+    bool           _warning_mode;
   };
 }
 

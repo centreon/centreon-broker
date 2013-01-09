@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -33,11 +34,15 @@ int main() {
 
   // Check properties values.
   return (!isnan(p.critical())
+          || (p.critical_low() > (DBL_MIN + 0.001))
+          || p.critical_mode()
           || !isnan(p.max())
           || !isnan(p.min())
           || !p.name().isEmpty()
           || !p.unit().isEmpty()
           || !isnan(p.value())
           || (p.value_type() != storage::perfdata::gauge)
-          || !isnan(p.warning()));
+          || !isnan(p.warning())
+          || (p.warning_low() > (DBL_MIN + 0.001))
+          || p.warning_mode());
 }

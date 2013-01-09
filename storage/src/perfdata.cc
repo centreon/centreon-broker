@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include <cfloat>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
@@ -33,11 +34,15 @@ using namespace com::centreon::broker::storage;
  */
 perfdata::perfdata()
   : _critical(NAN),
+    _critical_low(DBL_MIN),
+    _critical_mode(false),
     _max(NAN),
     _min(NAN),
     _value(NAN),
     _value_type(gauge),
-    _warning(NAN) {}
+    _warning(NAN),
+    _warning_low(DBL_MIN),
+    _warning_mode(false) {}
 
 /**
  *  Copy constructor.
@@ -61,14 +66,20 @@ perfdata::~perfdata() throw () {}
  *  @return This object.
  */
 perfdata& perfdata::operator=(perfdata const& pd) {
-  _critical = pd._critical;
-  _max = pd._max;
-  _min = pd._min;
-  _name = pd._name;
-  _unit = pd._unit;
-  _value = pd._value;
-  _value_type = pd._value_type;
-  _warning = pd._warning;
+  if (this != &pd) {
+    _critical = pd._critical;
+    _critical_low = pd._critical_low;
+    _critical_mode = pd._critical_mode;
+    _max = pd._max;
+    _min = pd._min;
+    _name = pd._name;
+    _unit = pd._unit;
+    _value = pd._value;
+    _value_type = pd._value_type;
+    _warning = pd._warning;
+    _warning_low = pd._warning_low;
+    _warning_mode = pd._warning_mode;
+  }
   return (*this);
 }
 
@@ -88,6 +99,46 @@ double perfdata::critical() const throw () {
  */
 void perfdata::critical(double c) throw () {
   _critical = c;
+  return ;
+}
+
+/**
+ *  Get the low critical threshold.
+ *
+ *  @return Low critical value.
+ */
+double perfdata::critical_low() const throw () {
+  return (_critical_low);
+}
+
+/**
+ *  Set the low critical threshold.
+ *
+ *  @param[in] c Low critical value.
+ */
+void perfdata::critical_low(double c) throw () {
+  _critical_low = c;
+  return ;
+}
+
+/**
+ *  Get the critical threshold mode.
+ *
+ *  @return false if an alert is generated if the value is outside the
+ *          range, true otherwise.
+ */
+bool perfdata::critical_mode() const throw () {
+  return (_critical_mode);
+}
+
+/**
+ *  Set the critical threshold mode.
+ *
+ *  @param[in] m false if an alert is generated if the value is outside
+ *               the range, true otherwise.
+ */
+void perfdata::critical_mode(bool m) throw () {
+  _critical_mode = m;
   return ;
 }
 
@@ -221,5 +272,45 @@ double perfdata::warning() const throw () {
  */
 void perfdata::warning(double w) throw () {
   _warning = w;
+  return ;
+}
+
+/**
+ *  Get the low warning threshold.
+ *
+ *  @return Low warning value.
+ */
+double perfdata::warning_low() const throw () {
+  return (_warning_low);
+}
+
+/**
+ *  Set the low warning threshold.
+ *
+ *  @param[in] w Low warning value.
+ */
+void perfdata::warning_low(double w) throw () {
+  _warning_low = w;
+  return ;
+}
+
+/**
+ *  Get the warning threshold mode.
+ *
+ *  @return false if an alert is generated if the value is outside the
+ *          range, true otherwise.
+ */
+bool perfdata::warning_mode() const throw () {
+  return (_warning_mode);
+}
+
+/**
+ *  Set the warning threshold mode.
+ *
+ *  @param[in] m false if an alert is generated if the value it outside
+ *               the range, true otherwise.
+ */
+void perfdata::warning_mode(bool m) throw () {
+  _warning_mode = m;
   return ;
 }

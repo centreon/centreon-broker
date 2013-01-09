@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,6 +31,8 @@ int main() {
   // First object.
   storage::perfdata p1;
   p1.critical(42.0);
+  p1.critical_low(-456.032);
+  p1.critical_mode(false);
   p1.max(76.3);
   p1.min(567.2);
   p1.name("foo");
@@ -38,10 +40,14 @@ int main() {
   p1.value(52189.912);
   p1.value_type(storage::perfdata::counter);
   p1.warning(4548.0);
+  p1.warning_low(42.42);
+  p1.warning_mode(true);
 
   // Second object.
   storage::perfdata p2;
   p2.critical(2345678.9672374);
+  p2.critical_low(-3284523786.8923);
+  p2.critical_mode(true);
   p2.max(834857.9023);
   p2.min(348.239479);
   p2.name("merethis");
@@ -49,12 +55,16 @@ int main() {
   p2.value(8374598345.234);
   p2.value_type(storage::perfdata::absolute);
   p2.warning(0.823745784);
+  p2.warning_low(NAN);
+  p2.warning_mode(false);
 
   // Assignment.
   p2 = p1;
 
   // Change first object.
   p1.critical(9432.5);
+  p1.critical_low(1000.0001);
+  p1.critical_mode(true);
   p1.max(123.0);
   p1.min(843.876);
   p1.name("baz");
@@ -62,9 +72,13 @@ int main() {
   p1.value(3485.9);
   p1.value_type(storage::perfdata::derive);
   p1.warning(3612.0);
+  p1.warning_low(-987579.0);
+  p1.warning_mode(false);
 
   // Check objects properties values.
   return ((fabs(p1.critical() - 9432.5) > 0.00001)
+          || (fabs(p1.critical_low() - 1000.0001) > 0.00001)
+          || !p1.critical_mode()
           || (fabs(p1.max() - 123.0) > 0.00001)
           || (fabs(p1.min() - 843.876) > 0.00001)
           || (p1.name() != "baz")
@@ -72,12 +86,18 @@ int main() {
           || (fabs(p1.value() - 3485.9) > 0.00001)
           || (p1.value_type() != storage::perfdata::derive)
           || (fabs(p1.warning() - 3612.0) > 0.00001)
+          || (fabs(p1.warning_low() + 987579.0) > 0.01)
+          || p1.warning_mode()
           || (fabs(p2.critical() - 42.0) > 0.00001)
+          || (fabs(p2.critical_low() + 456.032) > 0.00001)
+          || p2.critical_mode()
           || (fabs(p2.max() - 76.3) > 0.00001)
           || (fabs(p2.min() - 567.2) > 0.00001)
           || (p2.name() != "foo")
           || (p2.unit() != "bar")
           || (fabs(p2.value() - 52189.912) > 0.00001)
           || (p2.value_type() != storage::perfdata::counter)
-          || (fabs(p2.warning() - 4548.0) > 0.00001));
+          || (fabs(p2.warning() - 4548.0) > 0.00001)
+          || (fabs(p2.warning_low() - 42.42) > 0.00001)
+          || !p2.warning_mode());
 }
