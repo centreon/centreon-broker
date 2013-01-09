@@ -75,12 +75,16 @@ namespace         storage {
     };
     struct         metric_info {
       double       crit;
+      double       crit_low;
+      bool         crit_mode;
       double       max;
       unsigned int metric_id;
       double       min;
       unsigned int type;
       QString      unit_name;
       double       warn;
+      double       warn_low;
+      bool         warn_mode;
     };
 
     stream&       operator=(stream const& s);
@@ -96,7 +100,11 @@ namespace         storage {
                     QString metric_name,
 		    QString const& unit_name,
 		    double warn,
+                    double warn_low,
+                    bool warn_mode,
 		    double crit,
+                    double crit_low,
+                    bool crit_mode,
 		    double min,
 		    double max,
                     unsigned int* type = NULL);

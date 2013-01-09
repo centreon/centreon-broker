@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -457,7 +457,11 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
                                    pd.name(),
                                    pd.unit(),
                                    pd.warning(),
+                                   pd.warning_low(),
+                                   pd.warning_mode(),
                                    pd.critical(),
+                                   pd.critical_low(),
+                                   pd.critical_mode(),
                                    pd.min(),
                                    pd.max(),
                                    &metric_type));
@@ -769,8 +773,12 @@ unsigned int stream::_find_index_id(
  *  @param[in]     index_id    Index ID of the metric.
  *  @param[in]     metric_name Name of the metric.
  *  @param[in]     unit_name   Metric unit.
- *  @param[in]     warn        Warning threshold.
- *  @param[in]     crit        Critical threshold.
+ *  @param[in]     warn        High warning threshold.
+ *  @param[in]     warn_low    Low warning threshold.
+ *  @param[in]     warn_mode   Warning range mode.
+ *  @param[in]     crit        High critical threshold.
+ *  @param[in]     crit_low    Low critical threshold.
+ *  @param[in]     crit_mode   Critical range mode.
  *  @param[in]     min         Minimal metric value.
  *  @param[in]     max         Maximal metric value.
  *  @param[in,out] type        If not null, set to the metric type.
@@ -783,7 +791,11 @@ unsigned int stream::_find_metric_id(
                        QString metric_name,
                        QString const& unit_name,
                        double warn,
+                       double warn_low,
+                       bool warn_mode,
                        double crit,
+                       double crit_low,
+                       bool crit_mode,
                        double min,
                        double max,
                        unsigned int* type) {
@@ -808,12 +820,16 @@ unsigned int stream::_find_metric_id(
       logging::info(logging::medium) << "storage: updating metric "
         << it->second.metric_id << " of (" << index_id << ", "
         << metric_name << ") (unit: " << unit_name << ", warning: "
-        << warn << ", critical: " << crit << ", min: " << min
-        << ", max: " << max << ")";
+        << warn_low << ":" << warn << ", critical: " << crit_low << ":"
+        << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
       _update_metrics->bindValue(":unit_name", unit_name);
       _update_metrics->bindValue(":warn", check_double(warn));
+      _update_metrics->bindValue(":warn_low", check_double(warn_low));
+      _update_metrics->bindValue(":warn_threshold_mode", warn_mode);
       _update_metrics->bindValue(":crit", check_double(crit));
+      _update_metrics->bindValue(":crit_low", check_double(crit_low));
+      _update_metrics->bindValue(":crit_threshold_mode", crit_mode);
       _update_metrics->bindValue(":min", check_double(min));
       _update_metrics->bindValue(":max", check_double(max));
       _update_metrics->bindValue(":index_id", index_id);
@@ -827,10 +843,14 @@ unsigned int stream::_find_metric_id(
 
       // Update cache entry.
       it->second.crit = crit;
+      it->second.crit_low = crit_low;
+      it->second.crit_mode = crit_mode;
       it->second.max = max;
       it->second.min = min;
       it->second.unit_name = unit_name;
       it->second.warn = warn;
+      it->second.warn_low = warn_low;
+      it->second.warn_mode = warn_mode;
     }
 
     // Anyway, we found the metric ID.
@@ -909,11 +929,16 @@ unsigned int stream::_find_metric_id(
       << retval << " for (" << index_id << ", " << metric_name << ")";
     metric_info info;
     info.crit = crit;
+    info.crit_low = crit_low;
+    info.crit_mode = crit_mode;
     info.max = max;
     info.metric_id = retval;
     info.min = min;
     info.type = *type;
     info.unit_name = unit_name;
+    info.warn = warn;
+    info.warn_low = warn_low;
+    info.warn_mode = warn_mode;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
   }
 
@@ -935,7 +960,11 @@ void stream::_prepare() {
   if (!_update_metrics->prepare("UPDATE metrics" \
                                 " SET unit_name=:unit_name," \
                                 " warn=:warn," \
+                                " warn_low=:warn_low," \
+                                " warn_threshold_mode=:warn_threshold_mode," \
                                 " crit=:crit," \
+                                " crit_low=:crit_low," \
+                                " crit_threshold_mode=:crit_threshold_mode," \
                                 " min=:min," \
                                 " max=:max" \
                                 " WHERE index_id=:index_id" \
@@ -997,7 +1026,7 @@ void stream::_rebuild_cache() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, crit, min, max" \
+    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max" \
                 " FROM metrics",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -1016,9 +1045,13 @@ void stream::_rebuild_cache() {
                    : q.value(3).toUInt());
       info.unit_name = q.value(4).toString();
       info.warn = q.value(5).toDouble();
-      info.crit = q.value(6).toDouble();
-      info.min = q.value(7).toDouble();
-      info.max = q.value(8).toDouble();
+      info.warn_low = q.value(6).toDouble();
+      info.warn_mode = q.value(7).toUInt();
+      info.crit = q.value(8).toDouble();
+      info.crit_low = q.value(9).toDouble();
+      info.crit_mode = q.value(10).toUInt();
+      info.min = q.value(11).toDouble();
+      info.max = q.value(12).toDouble();
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;
