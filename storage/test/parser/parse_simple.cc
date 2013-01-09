@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,16 +44,20 @@ int main() {
     "time=2.45698s;2.000000;5.000000;0.000000;10.000000",
     list);
 
+  // Expected perfdata.
+  perfdata expected;
+  expected.name("time");
+  expected.value_type(perfdata::gauge);
+  expected.value(2.45698);
+  expected.unit("s");
+  expected.warning(2.0);
+  expected.warning_low(0.0);
+  expected.critical(5.0);
+  expected.critical_low(0.0);
+  expected.min(0.0);
+  expected.max(10.0);
+
   // Check parsing.
-  int retval(list.size() != 1);
-  perfdata& pd(list.front());
-  retval |= ((fabs(pd.critical() - 5.0) > 0.000001)
-    || (fabs(pd.max() - 10.0) > 0.000001)
-    || (fabs(pd.min()) > 0.000001)
-    || (pd.name() != "time")
-    || (pd.unit() != "s")
-    || (fabs(pd.value() - 2.45698) > 0.000001)
-    || (pd.value_type() != perfdata::gauge)
-    || (fabs(pd.warning() - 2.0) > 0.000001));
-  return (retval);
+  return ((list.size() != 1)
+          || (list.front() != expected));
 }

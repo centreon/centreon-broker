@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,36 +17,36 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_PARSER_HH_
-# define CCB_STORAGE_PARSER_HH_
+#ifndef CCB_STORAGE_PARSER_HH
+#  define CCB_STORAGE_PARSER_HH
 
-# include <QList>
-# include <QString>
-# include "com/centreon/broker/storage/perfdata.hh"
+#  include <QList>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/storage/perfdata.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     broker {
-      namespace   storage {
-        /**
-         *  @class parser parser.hh "com/centreon/broker/storage/parser.hh"
-         *  @brief Parse raw perfdatas.
-         *
-         *  Parse perfdata as given by plugins output and convert them to a
-         *  perfdata structure.
-         */
-        class     parser {
-         public:
-                  parser();
-                  parser(parser const& p);
-                  ~parser();
-          parser& operator=(parser const& p);
-          void    parse_perfdata(QString const& str,
-                    QList<perfdata>& pd);
-        };
-      }
-    }
-  }
+CCB_BEGIN()
+
+namespace   storage {
+  /**
+   *  @class parser parser.hh "com/centreon/broker/storage/parser.hh"
+   *  @brief Parse raw perfdatas.
+   *
+   *  Parse perfdata as given by plugins output and convert them to a
+   *  perfdata structure.
+   */
+  class     parser {
+  public:
+            parser();
+            parser(parser const& p);
+            ~parser();
+    parser& operator=(parser const& p);
+    void    parse_perfdata(
+              QString const& str,
+              QList<perfdata>& pd);
+  };
 }
 
-#endif /* !CCB_STORAGE_PARSER_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_PARSER_HH

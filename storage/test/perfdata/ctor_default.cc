@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cfloat>
 #include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -34,7 +33,7 @@ int main() {
 
   // Check properties values.
   return (!isnan(p.critical())
-          || (p.critical_low() > (DBL_MIN + 0.001))
+          || !isnan(p.critical_low())
           || p.critical_mode()
           || !isnan(p.max())
           || !isnan(p.min())
@@ -43,6 +42,6 @@ int main() {
           || !isnan(p.value())
           || (p.value_type() != storage::perfdata::gauge)
           || !isnan(p.warning())
-          || (p.warning_low() > (DBL_MIN + 0.001))
+          || !isnan(p.warning_low())
           || p.warning_mode());
 }

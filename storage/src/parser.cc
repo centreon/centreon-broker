@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -59,6 +60,59 @@ static inline double extract_double(
       ++*str;
   }
   return (retval);
+}
+
+/**
+ *  Extract a range from a perfdata string.
+ *
+ *  @param[out]    low       Low threshold value.
+ *  @param[out]    high      High threshold value.
+ *  @param[out]    inclusive true if range is inclusive, false
+ *                           otherwise.
+ *  @param[in,out] str       Pointer to a perfdata string.
+ */
+static inline void extract_range(
+                     double* low,
+                     double* high,
+                     bool* inclusive,
+                     char const** str) {
+  // Exclusive range ?
+  if ((**str) == '@') {
+    *inclusive = true;
+    ++*str;
+  }
+  else
+    *inclusive = false;
+
+  // Low threshold value.
+  double low_value;
+  if ('~' == **str) {
+    low_value = -INFINITY;
+    ++*str;
+  }
+  else
+    low_value = extract_double(str);
+
+  // High threshold value.
+  double high_value;
+  if (**str != ':') {
+    high_value = low_value;
+    if (!isnan(low_value))
+      low_value = 0.0;
+  }
+  else {
+    ++*str;
+    char const* ptr(*str);
+    high_value = extract_double(str);
+    if (*str == ptr)
+      high_value = INFINITY;
+  }
+
+  // Set values.
+  *low = low_value;
+  *high = high_value;
+
+  return ;
 }
 
 /**************************************
@@ -184,10 +238,30 @@ void parser::parse_perfdata(
       ++ptr;
 
     // Extract warning.
-    p.warning(extract_double(&ptr));
+    {
+      double warning_high;
+      double warning_low;
+      bool warning_mode;
+      extract_range(&warning_low, &warning_high, &warning_mode, &ptr);
+      p.warning(warning_high);
+      p.warning_low(warning_low);
+      p.warning_mode(warning_mode);
+    }
 
     // Extract critical.
-    p.critical(extract_double(&ptr));
+    {
+      double critical_high;
+      double critical_low;
+      bool critical_mode;
+      extract_range(
+        &critical_low,
+        &critical_high,
+        &critical_mode,
+        &ptr);
+      p.critical(critical_high);
+      p.critical_low(critical_low);
+      p.critical_mode(critical_mode);
+    }
 
     // Extract minimum.
     p.min(extract_double(&ptr));

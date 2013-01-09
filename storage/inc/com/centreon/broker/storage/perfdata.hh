@@ -89,4 +89,11 @@ namespace          storage {
 
 CCB_END()
 
+bool operator==(
+       com::centreon::broker::storage::perfdata const& left,
+       com::centreon::broker::storage::perfdata const& right);
+bool operator!=(
+       com::centreon::broker::storage::perfdata const& left,
+       com::centreon::broker::storage::perfdata const& right);
+
 #endif // !CCB_STORAGE_PERFDATA_HH

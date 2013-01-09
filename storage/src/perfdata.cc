@@ -17,8 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cmath>
-#include <cfloat>
+#include <math.h>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
@@ -34,14 +33,14 @@ using namespace com::centreon::broker::storage;
  */
 perfdata::perfdata()
   : _critical(NAN),
-    _critical_low(DBL_MIN),
+    _critical_low(NAN),
     _critical_mode(false),
     _max(NAN),
     _min(NAN),
     _value(NAN),
     _value_type(gauge),
     _warning(NAN),
-    _warning_low(DBL_MIN),
+    _warning_low(NAN),
     _warning_mode(false) {}
 
 /**
@@ -313,4 +312,55 @@ bool perfdata::warning_mode() const throw () {
 void perfdata::warning_mode(bool m) throw () {
   _warning_mode = m;
   return ;
+}
+
+/**************************************
+*                                     *
+*          Global Functions           *
+*                                     *
+**************************************/
+
+// Comparison macro.
+#define double_equal(a, b) ((isnan(a) && isnan(b)) \
+                            || (isinf(a) \
+                                && isinf(b) \
+                                && ((bool)signbit(a) \
+                                    == (bool)signbit(b))) \
+                            || (isfinite(a) \
+                                && isfinite(b) \
+                                && !(fabs((a) - (b)) > (0.01 * fabs(a)))))
+
+/**
+ *  Compare two perfdata objects.
+ *
+ *  @param[in] left  First object.
+ *  @param[in] right Second object.
+ *
+ *  @return true if both objects are equal.
+ */
+bool operator==(perfdata const& left, perfdata const& right) {
+  return (double_equal(left.critical(), right.critical())
+          && double_equal(left.critical_low(), right.critical_low())
+          && (left.critical_mode() == right.critical_mode())
+          && double_equal(left.max(), right.max())
+          && double_equal(left.min(), right.min())
+          && (left.name() == right.name())
+          && (left.unit() == right.unit())
+          && double_equal(left.value(), right.value())
+          && (left.value_type() == right.value_type())
+          && double_equal(left.warning(), right.warning())
+          && double_equal(left.warning_low(), right.warning_low())
+          && (left.warning_mode() == right.warning_mode()));
+}
+
+/**
+ *  Compare two perfdata objects.
+ *
+ *  @param[in] left  First object.
+ *  @param[in] right Second object.
+ *
+ *  @return true if both objects are inequal.
+ */
+bool operator!=(perfdata const& left, perfdata const& right) {
+  return (!(left == right));
 }
