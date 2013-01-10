@@ -320,15 +320,23 @@ void perfdata::warning_mode(bool m) throw () {
 *                                     *
 **************************************/
 
-// Comparison macro.
-#define double_equal(a, b) ((isnan(a) && isnan(b)) \
-                            || (isinf(a) \
-                                && isinf(b) \
-                                && ((bool)signbit(a) \
-                                    == (bool)signbit(b))) \
-                            || (isfinite(a) \
-                                && isfinite(b) \
-                                && !(fabs((a) - (b)) > (0.01 * fabs(a)))))
+/**
+ *  Comparison helper.
+ *
+ *  @param[in] a First value. 
+ *  @param[in] b Second value.
+ *
+ *  @return true if a and b are equal.
+ */
+static inline bool double_equal(double a, double b) {
+  return ((isnan(a) && isnan(b))
+          || (isinf(a)
+              && isinf(b)
+              && ((bool)signbit(a) == (bool)signbit(b)))
+          || (isfinite(a)
+              && isfinite(b)
+              && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
+}
 
 /**
  *  Compare two perfdata objects.

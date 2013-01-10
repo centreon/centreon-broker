@@ -18,8 +18,8 @@
 */
 
 #include <cassert>
-#include <cmath>
 #include <cstdlib>
+#include <math.h>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlField>
@@ -74,13 +74,19 @@ static inline QVariant check_double(double f) {
 /**
  *  Check that two double are equal.
  *
- *  @param[in] d1 First double.
- *  @param[in] d2 Second double.
+ *  @param[in] a First value.
+ *  @param[in] b Second value.
  *
- *  @return true if d1 and d2 are equal.
+ *  @return true if a and b are equal.
  */
-static inline bool double_equal(double d1, double d2) {
-  return (fabs(d1 - d2) < EPSILON);
+static inline bool double_equal(double a, double b) {
+  return ((isnan(a) && isnan(b))
+          || (isinf(a)
+              && isinf(b)
+              && ((bool)signbit(a) == (bool)signbit(b)))
+          || (isfinite(a)
+              && isfinite(b)
+              && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 
 /**************************************
