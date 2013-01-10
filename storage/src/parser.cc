@@ -104,7 +104,8 @@ static inline void extract_range(
     ++*str;
     char const* ptr(*str);
     high_value = extract_double(str);
-    if (*str == ptr)
+    if (isnan(high_value)
+        && ((*str == ptr) || (*str == (ptr + 1))))
       high_value = INFINITY;
   }
 

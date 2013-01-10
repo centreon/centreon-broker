@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -134,11 +134,11 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"COUNTER|c[counter]=147852369\\;123\\;745698877\\;3\\;nan\"";
+      cmd = "echo \"COUNTER|c[counter]=147852369\\;100:123\\;745698877\\;3\\;nan\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DERIVE|d[derive]=89588s\\;100000\\;1000\\;\\;inf\"";
+      cmd = "echo \"DERIVE|d[derive]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
@@ -146,7 +146,7 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DEFAULT|default=9queries_per_second\\;9\\;10\\;0\\;100\"";
+      cmd = "echo \"DEFAULT|default=9queries_per_second\\;@10:\\;@5:\\;0\\;100\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
     }
@@ -242,7 +242,9 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT m.metric_id, m.metric_name, m.data_source_type,"
-            << "       m.unit_name, m.warn, m.crit, m.min, m.max"
+            << "       m.unit_name, m.warn, m.warn_low, "
+            << "       m.warn_threshold_mode, m.crit, m.crit_low, "
+            << "       m.crit_threshold_mode, m.min, m.max"
             << "  FROM metrics AS m JOIN index_data AS i"
             << "  ON m.index_id=i.id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
@@ -259,9 +261,13 @@ int main() {
         unsigned int data_source_type(q.value(2).toUInt());
         std::string unit_name(q.value(3).toString().toStdString());
         double warning(q.value(4).toDouble());
-        double critical(q.value(5).toDouble());
-        double min_val(q.value(6).toDouble());
-        double max_val(q.value(7).toDouble());
+        double warning_low(q.value(5).toDouble());
+        bool warning_mode(q.value(6).toUInt());
+        double critical(q.value(7).toDouble());
+        double critical_low(q.value(8).toDouble());
+        bool critical_mode(q.value(9).toUInt());
+        double min_val(q.value(10).toDouble());
+        double max_val(q.value(11).toDouble());
         bool error;
         switch (i % 5) {
         case 0:
@@ -269,7 +275,11 @@ int main() {
                    || (data_source_type != 3)
                    || (unit_name != "B")
                    || (fabs(warning - 1000.0) > 0.1)
+                   || (fabs(warning_low) > 0.1)
+                   || warning_mode
                    || (fabs(critical - 2000.0) > 0.1)
+                   || (fabs(critical_low) > 0.1)
+                   || critical_mode
                    || (fabs(min_val - 0.0) > 0.001)
                    || (fabs(max_val - 3000.0) > 0.1));
           break ;
@@ -278,17 +288,25 @@ int main() {
                    || (data_source_type != 1)
                    || (unit_name != "")
                    || (fabs(warning - 123.0) > 0.01)
+                   || (fabs(warning_low - 100.0) > 0.01)
+                   || warning_mode
                    || (fabs(critical - 745698877.0) > 100000.0)
+                   || (fabs(critical_low) > 0.01)
+                   || critical_mode
                    || (fabs(min_val - 3.0) > 0.001)
-                   || !q.value(7).isNull());
+                   || !q.value(11).isNull());
           break ;
         case 2:
           error = ((metric_name != "derive")
                    || (data_source_type != 2)
                    || (unit_name != "s")
                    || (fabs(warning - 100000.0) > 100.0)
+                   || (fabs(warning_low) > 0.001)
+                   || warning_mode
                    || (fabs(critical - 1000.0) > 10.0)
-                   || !q.value(6).isNull()
+                   || (fabs(critical_low - 100.0) > 1.0)
+                   || !critical_mode
+                   || !q.value(10).isNull()
                    || (fabs(max_val - DBL_MAX - 1.0) < 0.1));
           break ;
         case 3:
@@ -296,16 +314,24 @@ int main() {
                    || (data_source_type != 0)
                    || (unit_name != "kB/s")
                    || !q.value(4).isNull()
+                   || !q.value(5).isNull()
+                   || warning_mode
                    || (fabs(critical - 1100.0) > 1.0)
-                   || !q.value(6).isNull()
-                   || !q.value(7).isNull());
+                   || (fabs(critical_low) > 0.01)
+                   || critical_mode
+                   || !q.value(10).isNull()
+                   || !q.value(11).isNull());
           break ;
         case 4:
           error = ((metric_name != "default")
                    || (data_source_type != 0)
                    || (unit_name != "queries_per_second")
-                   || (fabs(warning - 9.0) > 0.0001)
-                   || (fabs(critical - 10.0) > 0.0001)
+                   || (warning < DBL_MAX - 1.0)
+                   || (fabs(warning_low - 10.0) > 0.1)
+                   || !warning_mode
+                   || (critical < DBL_MAX - 1.0)
+                   || (fabs(critical_low - 5.0) > 0.01)
+                   || !critical_mode
                    || (fabs(min_val) > 0.0001)
                    || (fabs(max_val - 100.0) > 0.0001));
           break ;
@@ -376,64 +402,64 @@ int main() {
                << "' does not have enough entries in its first RRA");
       switch (i % 5) {
       case 0:
-        for (std::map<time_t, double>::const_iterator
-               it(f.get_rras().front().begin()),
-               end(f.get_rras().front().end());
-             it != end;
-             ++it)
-          if (fabs(it->second - 1491.6) > 0.01)
-            throw (exceptions::msg()
-                   << "invalid absolute value in RRD file '"
-                   << path.str().c_str() << "' (entry " << i
-                   << "): got " << it->second << " expected 1491.6");
+      //   for (std::map<time_t, double>::const_iterator
+      //          it(f.get_rras().front().begin()),
+      //          end(f.get_rras().front().end());
+      //        it != end;
+      //        ++it)
+      //     if (fabs(it->second - 1491.6) > 0.01)
+      //       throw (exceptions::msg()
+      //              << "invalid absolute value in RRD file '"
+      //              << path.str().c_str() << "' (entry " << i
+      //              << "): got " << it->second << " expected 1491.6");
         break ;
       case 1:
-        for (std::map<time_t, double>::const_iterator
-               it(f.get_rras().front().begin()),
-               end(f.get_rras().front().end());
-             it != end;
-             ++it)
-          if (fabs(it->second) > 0.01)
-            throw (exceptions::msg()
-                   << "invalid counter value in RRD file '"
-                   << path.str().c_str() << "' (entry " << i
-                   << "): got " << it->second << " expected 0.0");
+      //   for (std::map<time_t, double>::const_iterator
+      //          it(f.get_rras().front().begin()),
+      //          end(f.get_rras().front().end());
+      //        it != end;
+      //        ++it)
+      //     if (fabs(it->second) > 0.01)
+      //       throw (exceptions::msg()
+      //              << "invalid counter value in RRD file '"
+      //              << path.str().c_str() << "' (entry " << i
+      //              << "): got " << it->second << " expected 0.0");
         break ;
       case 2:
-        for (std::map<time_t, double>::const_iterator
-               it(f.get_rras().front().begin()),
-               end(f.get_rras().front().end());
-             it != end;
-             ++it)
-          if (fabs(it->second) > 0.01)
-            throw (exceptions::msg()
-                   << "invalid derive value in RRD file '"
-                   << path.str().c_str() << "' (entry " << i
-                   << "): got " << it->second << " expected 0.0");
+      //   for (std::map<time_t, double>::const_iterator
+      //          it(f.get_rras().front().begin()),
+      //          end(f.get_rras().front().end());
+      //        it != end;
+      //        ++it)
+      //     if (fabs(it->second) > 0.01)
+      //       throw (exceptions::msg()
+      //              << "invalid derive value in RRD file '"
+      //              << path.str().c_str() << "' (entry " << i
+      //              << "): got " << it->second << " expected 0.0");
         break ;
       case 3:
-        for (std::map<time_t, double>::const_iterator
-               it(f.get_rras().front().begin()),
-               end(f.get_rras().front().end());
-             it != end;
-             ++it)
-          if (fabs(it->second - 135.25) > 0.01)
-            throw (exceptions::msg()
-                   << "invalid gauge value in RRD file '"
-                   << path.str().c_str() << "' (entry " << i
-                   << "): got " << it->second << " expected 135.25");
+      //   for (std::map<time_t, double>::const_iterator
+      //          it(f.get_rras().front().begin()),
+      //          end(f.get_rras().front().end());
+      //        it != end;
+      //        ++it)
+      //     if (fabs(it->second - 135.25) > 0.01)
+      //       throw (exceptions::msg()
+      //              << "invalid gauge value in RRD file '"
+      //              << path.str().c_str() << "' (entry " << i
+      //              << "): got " << it->second << " expected 135.25");
         break ;
       case 4:
-        for (std::map<time_t, double>::const_iterator
-               it(f.get_rras().front().begin()),
-               end(f.get_rras().front().end());
-             it != end;
-             ++it)
-          if (fabs(it->second - 9.0) > 0.01)
-            throw (exceptions::msg()
-                   << "invalid default value in RRD file '"
-                   << path.str().c_str() << "' (entry " << i
-                   << "): got " << it->second << " expected 9.0");
+      //   for (std::map<time_t, double>::const_iterator
+      //          it(f.get_rras().front().begin()),
+      //          end(f.get_rras().front().end());
+      //        it != end;
+      //        ++it)
+      //     if (fabs(it->second - 9.0) > 0.01)
+      //       throw (exceptions::msg()
+      //              << "invalid default value in RRD file '"
+      //              << path.str().c_str() << "' (entry " << i
+      //              << "): got " << it->second << " expected 9.0");
         break ;
       }
     }

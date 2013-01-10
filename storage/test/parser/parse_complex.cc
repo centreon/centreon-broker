@@ -43,7 +43,7 @@ int main() {
   p.parse_perfdata(
       "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
       "infotraffic=18x;;;; a[foo]=1234;10;11: c[bar]=1234;~:10;20:30 "
-      "baz=1234;@10:20;",
+      "baz=1234;@10:20; qux=9queries_per_second;@10:;@5:;0;100",
       list);
 
   // Expected result.
@@ -106,6 +106,22 @@ int main() {
     pd.warning(20.0);
     pd.warning_low(10.0);
     pd.warning_mode(true);
+    expected.push_back(pd);
+  }
+  {
+    perfdata pd;
+    pd.name("qux");
+    pd.value_type(perfdata::gauge);
+    pd.value(9.0);
+    pd.unit("queries_per_second");
+    pd.warning(INFINITY);
+    pd.warning_low(10.0);
+    pd.warning_mode(true);
+    pd.critical(INFINITY);
+    pd.critical_low(5.0);
+    pd.critical_mode(true);
+    pd.min(0.0);
+    pd.max(100.0);
     expected.push_back(pd);
   }
 

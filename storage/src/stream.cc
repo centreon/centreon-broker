@@ -83,21 +83,6 @@ static inline bool double_equal(double d1, double d2) {
   return (fabs(d1 - d2) < EPSILON);
 }
 
-/**
- *  Dump a double as a SQL value.
- *
- *  @param[out] s Stream on which data will be dumped.
- *  @param[in]  d Target double.
- */
-static void dump_sql_double(std::ostream& s, double d) {
-  using namespace std;
-  if (isfinite(d))
-    s << d;
-  else
-    s << "NULL";
-  return ;
-}
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -814,9 +799,13 @@ unsigned int stream::_find_metric_id(
     // Should we update metrics ?
     if ((unit_name != it->second.unit_name)
         || !double_equal(crit, it->second.crit)
+        || !double_equal(crit_low, it->second.crit_low)
+        || (crit_mode != it->second.crit_mode)
         || !double_equal(max, it->second.max)
         || !double_equal(min, it->second.min)
-        || !double_equal(warn, it->second.warn)) {
+        || !double_equal(warn, it->second.warn)
+        || !double_equal(warn_low, it->second.warn_low)
+        || (warn_mode != it->second.warn_mode)) {
       logging::info(logging::medium) << "storage: updating metric "
         << it->second.metric_id << " of (" << index_id << ", "
         << metric_name << ") (unit: " << unit_name << ", warning: "
@@ -866,37 +855,36 @@ unsigned int stream::_find_metric_id(
       << ", " << metric_name << ")";
     // Build query.
     std::ostringstream oss;
-    std::string escaped_metric_name;
-    {
-      QSqlField field("metric_name", QVariant::String);
-      field.setValue(metric_name.toStdString().c_str());
-      escaped_metric_name
-        = _storage_db->driver()->formatValue(field, true).toStdString();
-    }
-    std::string escaped_unit_name;
-    {
-      QSqlField field("unit_name", QVariant::String);
-      field.setValue(unit_name.toStdString().c_str());
-      escaped_unit_name
-        = _storage_db->driver()->formatValue(field, true).toStdString();
-    }
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    oss << "INSERT INTO metrics (index_id, metric_name, unit_name, warn, crit, min, max, data_source_type)" \
-      " VALUES (" << index_id << ", " << escaped_metric_name << ", "
-        << escaped_unit_name << ", " << std::fixed;
-    dump_sql_double(oss, warn);
-    oss << ", ";
-    dump_sql_double(oss, crit);
-    oss << ", ";
-    dump_sql_double(oss, min);
-    oss << ", ";
-    dump_sql_double(oss, max);
-    oss << ", " << *type + 1 << ")";
+    oss << "INSERT INTO metrics " \
+           "  (index_id, metric_name, unit_name, warn, warn_low, " \
+           "   warn_threshold_mode, crit, crit_low, " \
+           "   crit_threshold_mode, min, max, data_source_type)" \
+           " VALUES (:index_id, :metric_name, :unit_name, :warn, " \
+           "         :warn_low, :warn_threshold_mode, :crit, " \
+           "         :crit_low, :crit_threshold_mode, :min, :max, " \
+           "         :data_source_type)";
+    QSqlQuery q(*_storage_db);
+    if (!q.prepare(oss.str().c_str()))
+      throw (broker::exceptions::msg()
+             << "storage: could not prepare metric insertion query: "
+             << q.lastError().text());
+    q.bindValue(":index_id", index_id);
+    q.bindValue(":metric_name", metric_name);
+    q.bindValue(":unit_name", unit_name);
+    q.bindValue(":warn", check_double(warn));
+    q.bindValue(":warn_low", check_double(warn_low));
+    q.bindValue(":warn_threshold_mode", warn_mode);
+    q.bindValue(":crit", check_double(crit));
+    q.bindValue(":crit_low", check_double(crit_low));
+    q.bindValue(":crit_threshold_mode", crit_mode);
+    q.bindValue(":min", check_double(min));
+    q.bindValue(":max", check_double(max));
+    q.bindValue(":data_source_type", *type + 1);
 
     // Execute query.
-    QSqlQuery q(*_storage_db);
-    if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+    if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: insertion of " \
                   "metric '" << metric_name << "' of index " << index_id
                << " failed: " << q.lastError().text());
@@ -910,9 +898,15 @@ unsigned int stream::_find_metric_id(
       std::ostringstream oss2;
       oss2 << "SELECT metric_id" \
               " FROM metrics" \
-              " WHERE index_id=" << index_id
-           << " AND metric_name=" << escaped_metric_name;
-      QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+              " WHERE index_id=:index_id" \
+              " AND metric_name=:metric_name";
+      QSqlQuery q2(*_storage_db);
+      if (!q2.prepare(oss2.str().c_str()))
+        throw (broker::exceptions::msg()
+               << "storage: could not prepare metric ID fetching query: "
+               << q2.lastError().text());
+      q2.bindValue(":index_id", index_id);
+      q2.bindValue(":metric_name", metric_name);
       if (!q2.exec() || q2.lastError().isValid() || !q2.next())
         throw (broker::exceptions::msg() << "storage: could not fetch" \
                     " metric_id of newly inserted metric '"
