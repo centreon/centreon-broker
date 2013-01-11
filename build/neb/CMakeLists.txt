@@ -317,6 +317,25 @@ if (WITH_TESTING)
     "${TEST_DIR}/flapping_status/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Host Tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_host_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_host_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment.
+  set(TEST_NAME "neb_host_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Host Check Tests.
   #   Default constructor.
   set(TEST_NAME "neb_host_check_ctor_default")
