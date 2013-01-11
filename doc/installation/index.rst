@@ -212,17 +212,11 @@ Build
 Get sources
 -----------
 
-Centreon Broker can be checked out from Merethis's subversion server at
-http://svn.modules.centreon.com/centreon-broker. On a Linux box with svn
-installed folowing this.
+Centreon Broker can be checked out from Merethis's git server at
+http://git.centreon.com/centreon-broker.git. On a Linux box with svn
+installed folowing this ::
 
-Get all project ::
-
-  $ svn checkout http://svn.modules.centreon.com/centreon-broker/trunk
-
-Just the trunk ::
-
-  $ svn checkout http://svn.modules.centreon.com/centreon-broker/trunk centreon-broker
+  $ git clone http://git.centreon.com/centreon-broker.git
 
 Or You can get the latest Centreon Broker's sources from its
 `download website <http://www.centreon.com/Centreon-Extensions/centreon-broker-download.html>`_
