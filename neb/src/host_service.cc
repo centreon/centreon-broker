@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,50 +20,6 @@
 #include "com/centreon/broker/neb/host_service.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy all internal data of the host_service object to the
- *         current instance.
- *
- *  Copy data defined within the host_service class. This is used by the
- *  copy constructor and the assignment operator.
- *
- *  @param[in] hs Object to copy.
- */
-void host_service::_internal_copy(host_service const& hs) {
-  action_url = hs.action_url;
-  check_freshness = hs.check_freshness;
-  default_active_checks_enabled = hs.default_active_checks_enabled;
-  default_event_handler_enabled = hs.default_event_handler_enabled;
-  default_failure_prediction = hs.default_failure_prediction;
-  default_flap_detection_enabled = hs.default_flap_detection_enabled;
-  default_notifications_enabled = hs.default_notifications_enabled;
-  default_passive_checks_enabled = hs.default_passive_checks_enabled;
-  default_process_perf_data = hs.default_process_perf_data;
-  display_name = hs.display_name;
-  first_notification_delay = hs.first_notification_delay;
-  freshness_threshold = hs.freshness_threshold;
-  high_flap_threshold = hs.high_flap_threshold;
-  icon_image = hs.icon_image;
-  icon_image_alt = hs.icon_image_alt;
-  low_flap_threshold = hs.low_flap_threshold;
-  notes = hs.notes;
-  notes_url = hs.notes_url;
-  notification_interval = hs.notification_interval;
-  notification_period = hs.notification_period;
-  notify_on_downtime = hs.notify_on_downtime;
-  notify_on_flapping = hs.notify_on_flapping;
-  notify_on_recovery = hs.notify_on_recovery;
-  retain_nonstatus_information = hs.retain_nonstatus_information;
-  retain_status_information = hs.retain_status_information;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -123,4 +80,48 @@ host_service::~host_service() {}
 host_service& host_service::operator=(host_service const& hs) {
   _internal_copy(hs);
   return (*this);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy all internal data of the host_service object to the
+ *         current instance.
+ *
+ *  Copy data defined within the host_service class. This is used by the
+ *  copy constructor and the assignment operator.
+ *
+ *  @param[in] hs Object to copy.
+ */
+void host_service::_internal_copy(host_service const& hs) {
+  action_url = hs.action_url;
+  check_freshness = hs.check_freshness;
+  default_active_checks_enabled = hs.default_active_checks_enabled;
+  default_event_handler_enabled = hs.default_event_handler_enabled;
+  default_failure_prediction = hs.default_failure_prediction;
+  default_flap_detection_enabled = hs.default_flap_detection_enabled;
+  default_notifications_enabled = hs.default_notifications_enabled;
+  default_passive_checks_enabled = hs.default_passive_checks_enabled;
+  default_process_perf_data = hs.default_process_perf_data;
+  display_name = hs.display_name;
+  first_notification_delay = hs.first_notification_delay;
+  freshness_threshold = hs.freshness_threshold;
+  high_flap_threshold = hs.high_flap_threshold;
+  icon_image = hs.icon_image;
+  icon_image_alt = hs.icon_image_alt;
+  low_flap_threshold = hs.low_flap_threshold;
+  notes = hs.notes;
+  notes_url = hs.notes_url;
+  notification_interval = hs.notification_interval;
+  notification_period = hs.notification_period;
+  notify_on_downtime = hs.notify_on_downtime;
+  notify_on_flapping = hs.notify_on_flapping;
+  notify_on_recovery = hs.notify_on_recovery;
+  retain_nonstatus_information = hs.retain_nonstatus_information;
+  retain_status_information = hs.retain_status_information;
+  return ;
 }

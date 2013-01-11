@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,56 +20,6 @@
 #include "com/centreon/broker/neb/host.hh"
 
 using namespace com::centreon::broker::neb;
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy all internal data of the given object to the current
- *         instance.
- *
- *  This method copy all data defined directly in the host class. This
- *  is used by the copy constructor and the assignment operator.
- *
- *  @param[in] h Object to copy data.
- */
-void host::_internal_copy(host const& h) {
-  address = h.address;
-  alias = h.alias;
-  flap_detection_on_down = h.flap_detection_on_down;
-  flap_detection_on_unreachable = h.flap_detection_on_unreachable;
-  flap_detection_on_up = h.flap_detection_on_up;
-  host_name = h.host_name;
-  instance_id = h.instance_id;
-  notify_on_down = h.notify_on_down;
-  notify_on_unreachable = h.notify_on_unreachable;
-  stalk_on_down = h.stalk_on_down;
-  stalk_on_unreachable = h.stalk_on_unreachable;
-  stalk_on_up = h.stalk_on_up;
-  statusmap_image = h.statusmap_image;
-  return ;
-}
-
-/**
- *  @brief Zero-initialize internal data.
- *
- *  This method is used by constructors.
- */
-void host::_zero_initialize() {
-  flap_detection_on_down = 0;
-  flap_detection_on_unreachable = 0;
-  flap_detection_on_up = 0;
-  instance_id = 0;
-  notify_on_down = 0;
-  notify_on_unreachable = 0;
-  stalk_on_down = 0;
-  stalk_on_unreachable = 0;
-  stalk_on_up = 0;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -138,4 +89,54 @@ host& host::operator=(host const& h) {
 QString const& host::type() const {
   static QString const host_type("com::centreon::broker::neb::host");
   return (host_type);
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  @brief Copy all internal data of the given object to the current
+ *         instance.
+ *
+ *  This method copy all data defined directly in the host class. This
+ *  is used by the copy constructor and the assignment operator.
+ *
+ *  @param[in] h Object to copy data.
+ */
+void host::_internal_copy(host const& h) {
+  address = h.address;
+  alias = h.alias;
+  flap_detection_on_down = h.flap_detection_on_down;
+  flap_detection_on_unreachable = h.flap_detection_on_unreachable;
+  flap_detection_on_up = h.flap_detection_on_up;
+  host_name = h.host_name;
+  instance_id = h.instance_id;
+  notify_on_down = h.notify_on_down;
+  notify_on_unreachable = h.notify_on_unreachable;
+  stalk_on_down = h.stalk_on_down;
+  stalk_on_unreachable = h.stalk_on_unreachable;
+  stalk_on_up = h.stalk_on_up;
+  statusmap_image = h.statusmap_image;
+  return ;
+}
+
+/**
+ *  @brief Zero-initialize internal data.
+ *
+ *  This method is used by constructors.
+ */
+void host::_zero_initialize() {
+  flap_detection_on_down = 0;
+  flap_detection_on_unreachable = 0;
+  flap_detection_on_up = 0;
+  instance_id = 0;
+  notify_on_down = 0;
+  notify_on_unreachable = 0;
+  stalk_on_down = 0;
+  stalk_on_unreachable = 0;
+  stalk_on_up = 0;
+  return ;
 }

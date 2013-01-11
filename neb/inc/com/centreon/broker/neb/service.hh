@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,57 +17,57 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_SERVICE_HH_
-# define CCB_NEB_SERVICE_HH_
+#ifndef CCB_NEB_SERVICE_HH
+#  define CCB_NEB_SERVICE_HH
 
-# include <QString>
-# include <time.h>
-# include "com/centreon/broker/neb/host_service.hh"
-# include "com/centreon/broker/neb/service_status.hh"
+#  include <ctime>
+#  include <QString>
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/host_service.hh"
+#  include "com/centreon/broker/neb/service_status.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          neb {
-        /**
-         *  @class service service.hh "com/centreon/broker/neb/service.hh"
-         *  @brief Service as handled by the scheduling engine.
-         *
-         *  Holds full data regarding a service.
-         *
-         *  @see host_service
-         *  @see service_status
-         */
-        class            service : public host_service,
-                                   public service_status {
-         private:
-          void           _internal_copy(service const& s);
-          void           _zero_initialize();
+CCB_BEGIN()
 
-         public:
-          QString        failure_prediction_options;
-          bool           flap_detection_on_critical;
-          bool           flap_detection_on_ok;
-          bool           flap_detection_on_unknown;
-          bool           flap_detection_on_warning;
-          bool           is_volatile;
-          bool           notify_on_critical;
-          bool           notify_on_unknown;
-          bool           notify_on_warning;
-          bool           stalk_on_critical;
-          bool           stalk_on_ok;
-          bool           stalk_on_unknown;
-          bool           stalk_on_warning;
-                         service();
-                         service(service_status const& ss);
-                         service(service const& s);
-                         ~service();
-          service&       operator=(service const& s);
-          QString const& type() const;
-        };
-      }
-    }
-  }
+namespace          neb {
+  /**
+   *  @class service service.hh "com/centreon/broker/neb/service.hh"
+   *  @brief Service as handled by the scheduling engine.
+   *
+   *  Holds full data regarding a service.
+   *
+   *  @see host_service
+   *  @see service_status
+   */
+  class            service : public host_service,
+                             public service_status {
+  public:
+                   service();
+                   service(service_status const& ss);
+                   service(service const& s);
+                   ~service();
+    service&       operator=(service const& s);
+    QString const& type() const;
+
+    QString        failure_prediction_options;
+    bool           flap_detection_on_critical;
+    bool           flap_detection_on_ok;
+    bool           flap_detection_on_unknown;
+    bool           flap_detection_on_warning;
+    bool           is_volatile;
+    bool           notify_on_critical;
+    bool           notify_on_unknown;
+    bool           notify_on_warning;
+    bool           stalk_on_critical;
+    bool           stalk_on_ok;
+    bool           stalk_on_unknown;
+    bool           stalk_on_warning;
+
+  private:
+    void           _internal_copy(service const& s);
+    void           _zero_initialize();
+  };
 }
 
-#endif /* !CCB_NEB_SERVICE_HH_ */
+CCB_END()
+
+#endif // !CCB_NEB_SERVICE_HH
