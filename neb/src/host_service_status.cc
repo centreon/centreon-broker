@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,7 +46,7 @@ host_service_status::host_service_status()
     host_id(0),
     is_flapping(false),
     last_check(0),
-    last_hard_state(0),
+    last_hard_state(4), // Pending
     last_hard_state_change(0),
     last_notification(0),
     last_state_change(0),

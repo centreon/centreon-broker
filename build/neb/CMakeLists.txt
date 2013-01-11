@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2012 Merethis
+## Copyright 2009-2013 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -410,6 +410,25 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_host_parent_assignment")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/host_parent/assignment.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Host Status Tests.
+  #   Default constructor.
+  set(TEST_NAME "neb_host_status_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host_status/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "neb_host_status_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host_status/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "neb_host_status_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/host_status/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Instance Tests.
