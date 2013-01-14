@@ -760,6 +760,43 @@ if (WITH_TESTING)
     "${TEST_DIR}/exceptions/msg/clone.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # exceptions::with_pointer tests.
+  #   Default constructor.
+  set(TEST_NAME "core_exceptions_with_pointer_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Copy constructor.
+  set(TEST_NAME "core_exceptions_with_pointer_ctor_copy")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/ctor_copy.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Assignment operator.
+  set(TEST_NAME "core_exceptions_with_pointer_assignment")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/assignment.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Throw test.
+  set(TEST_NAME "core_exceptions_with_pointer_throw")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/throw.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Rethrow test.
+  set(TEST_NAME "core_exceptions_with_pointer_rethrow")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/rethrow.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Clone test.
+  set(TEST_NAME "core_exceptions_with_pointer_clone")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/exceptions/with_pointer/clone.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # config namespace tests.

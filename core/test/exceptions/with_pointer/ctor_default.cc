@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,30 +17,33 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <cstring>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/with_pointer.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that copy constructor works properly.
+ *  Check that default construction works properly.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
-  // First object.
-  exceptions::msg e1;
-  e1 << "foobar" << 42 << 7894561236549877ull << false << "baz  qux  ";
+  // Base exception.
+  exceptions::msg base_exception;
+  base_exception << "SOME MESSAGE";
 
-  // Second object.
-  exceptions::msg e2(e1);
+  // Pointer.
+  misc::shared_ptr<io::data> data(new io::raw);
 
-  // Update first object.
-  e1 << "another string";
+  // Construct with_pointer.
+  exceptions::with_pointer e(base_exception, data);
 
   // Check.
-  return (strcmp(e1.what(),
-                 "foobar427894561236549877falsebaz  qux  another string")
-          || strcmp(e2.what(),
-                    "foobar427894561236549877falsebaz  qux  "));
+  return ((strcmp(base_exception.what(), e.what())
+           || (data.data() != e.ptr().data()))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

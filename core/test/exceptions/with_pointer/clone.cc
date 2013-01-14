@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,42 +17,46 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <cstring>
-#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/with_pointer.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 
 /**
  *  Check that the exception cloning works properly.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
-  // Base object.
-  exceptions::msg e;
-  e << "foo" << 42 << 77454654249841ull << -1 << "bar";
+  // Base exception.
+  exceptions::msg base;
+  base << "foo" << 42 << 77454654249841ull << -1 << "bar";
+  misc::shared_ptr<io::data> dat(new io::raw);
+  exceptions::with_pointer e(base, dat);
 
   // Clone object.
   std::auto_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone was properly constructed.
-  int retval(!clone.get()
-             || strcmp("foo4277454654249841-1bar", clone->what()));
+  bool error(!clone.get() || strcmp(e.what(), base.what()));
 
-  // Check that this is really a msg exception object.
-  if (!retval) {
+  // The base exception must be thrown.
+  if (!error) {
     try {
       clone->rethrow();
     }
     catch (exceptions::msg const& e) {
-      (void)e; // We're good.
+      // Proper type catch, check content.
+      error = (error || strcmp(e.what(), base.what()));
     }
     catch (...) {
-      retval |= 1;
+      error = true;
     }
   }
 
   // Return check result.
-  return (retval);
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }
