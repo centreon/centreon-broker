@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <rrd.h>
@@ -154,7 +155,8 @@ void rrd_file::_process_line(char const* line) {
       line = ptr;
       line += strlen("--> <row><v>");
       double v(strtod(line, NULL));
-      _rras.back()[t] = v;
+      if (!isnan(v))
+        _rras.back()[t] = v;
     }
   }
   return ;
