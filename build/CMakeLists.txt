@@ -549,6 +549,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_rrd_as_failover")
   add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 
+  # Statistics.
+  set(TEST_NAME "running_stats")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/stats.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
 endif ()
 
 #
