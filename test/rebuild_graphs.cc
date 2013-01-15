@@ -296,7 +296,8 @@ int main() {
       if (!info.exists())
         throw (exceptions::msg() << "status file '"
                << file_path.str().c_str() << "' does not exist");
-      else if (info.created().toTime_t() < recreated_limit)
+      else if (static_cast<time_t>(info.created().toTime_t())
+               < recreated_limit)
         throw (exceptions::msg() << "status file '"
                << file_path.str().c_str() << "' was created at "
                << info.created().toTime_t()
@@ -330,7 +331,8 @@ int main() {
       if (!info.exists())
         throw (exceptions::msg() << "metric file '"
                << file_path.str().c_str() << "' does not exist");
-      else if (info.created().toTime_t() < recreated_limit)
+      else if (static_cast<time_t>(info.created().toTime_t())
+               < recreated_limit)
         throw (exceptions::msg() << "metric file '"
                << file_path.str().c_str() << "' was created at "
                << info.created().toTime_t()
