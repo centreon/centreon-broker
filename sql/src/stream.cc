@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,7 +67,7 @@ QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
  */
 stream& stream::operator=(stream const& s) {
   (void)s;
-  assert(false);
+  assert(!"SQL stream is not copyable");
   abort();
   return (*this);
 }
