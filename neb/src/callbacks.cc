@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <ctime>
 #include <memory>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QString>
 #include <QStringList>
 #include <set>
-#include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -796,12 +796,18 @@ int neb::callback_group(int callback_type, void* data) {
         host_group(static_cast< ::hostgroup*>(group_data->object_ptr));
       if (host_group->group_name) {
         misc::shared_ptr<neb::host_group> new_hg(new neb::host_group);
+        if (host_group->action_url)
+          new_hg->action_url = host_group->action_url;
         if (host_group->alias)
           new_hg->alias = host_group->alias;
         new_hg->enabled
           = (group_data->type != NEBTYPE_HOSTGROUP_DELETE);
         new_hg->instance_id = neb::instance_id;
         new_hg->name = host_group->group_name;
+        if (host_group->notes)
+          new_hg->notes = host_group->notes;
+        if (host_group->notes_url)
+          new_hg->notes_url = host_group->notes_url;
 
         // Send host group event.
         logging::info(logging::low) << "callbacks: new host group '"
@@ -819,12 +825,18 @@ int neb::callback_group(int callback_type, void* data) {
       if (service_group->group_name) {
         misc::shared_ptr<neb::service_group>
           new_sg(new neb::service_group);
+        if (service_group->action_url)
+          new_sg->action_url = service_group->action_url;
         if (service_group->alias)
           new_sg->alias = service_group->alias;
         new_sg->enabled
           = (group_data->type != NEBTYPE_SERVICEGROUP_DELETE);
         new_sg->instance_id = neb::instance_id;
         new_sg->name = service_group->group_name;
+        if (service_group->notes)
+          new_sg->notes = service_group->notes;
+        if (service_group->notes_url)
+          new_sg->notes_url = service_group->notes_url;
 
         // Send service group event.
         logging::info(logging::low) << "callbacks:: new service group '"

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -168,6 +168,20 @@ void config_remove(char const* path) {
     ::remove(oss.str().c_str());
   }
 
+  // Host groups file.
+  {
+    std::ostringstream oss;
+    oss << path << "/host_groups.cfg";
+    ::remove(oss.str().c_str());
+  }
+
+  // Service groups files.
+  {
+    std::ostringstream oss;
+    oss << path << "/service_groups.cfg";
+    ::remove(oss.str().c_str());
+  }
+
   // Misc file.
   {
     std::ostringstream oss;
@@ -188,13 +202,18 @@ void config_remove(char const* path) {
  *  @param[in] more_directives Additionnal configuration directives.
  *  @param[in] hosts           Host list.
  *  @param[in] services        Service list.
+ *  @param[in] commands        Command list.
+ *  @param[in] host_groups     Host group list.
+ *  @param[in] service_groups  Service group list.
  */
 void config_write(
        char const* path,
        char const* more_directives,
        std::list<host>* hosts,
        std::list<service>* services,
-       std::list<command>* commands) {
+       std::list<command>* commands,
+       std::list<hostgroup>* host_groups,
+       std::list<servicegroup>* service_groups) {
   // Create base directory.
   mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 
@@ -239,6 +258,18 @@ void config_write(
     oss << path << "/commands.cfg";
     commands_file = oss.str();
   }
+  std::string host_groups_file;
+  {
+    std::ostringstream oss;
+    oss << path << "/host_groups.cfg";
+    host_groups_file = oss.str();
+  }
+  std::string service_groups_file;
+  {
+    std::ostringstream oss;
+    oss << path << "/service_groups.cfg";
+    service_groups_file = oss.str();
+  }
   std::string misc_file;
   {
     std::ostringstream oss;
@@ -248,6 +279,8 @@ void config_write(
   ofs << "cfg_file=" << hosts_file << "\n"
       << "cfg_file=" << services_file << "\n"
       << "cfg_file=" << commands_file << "\n"
+      << "cfg_file=" << host_groups_file << "\n"
+      << "cfg_file=" << service_groups_file << "\n"
       << "cfg_file=" << misc_file << "\n";
 
   // Additional configuration.
@@ -410,6 +443,75 @@ void config_write(
           << "  command_line "
           << (it->command_line ? it->command_line : "/bin/true") << "\n"
           << "}\n\n";
+    }
+  ofs.close();
+
+  // Host groups.
+  ofs.open(
+        host_groups_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open host groups configuration file in '"
+           << path << "'");
+  if (host_groups)
+    for (std::list<hostgroup>::iterator
+           it(host_groups->begin()),
+           end(host_groups->end());
+         it != end;
+         ++it) {
+      ofs << "define hostgroup{\n"
+          << "  hostgroup_name " << it->group_name << "\n";
+      if (it->action_url)
+        ofs << "  action_url " << it->action_url << "\n";
+      if (it->alias)
+        ofs << "  alias " << it->alias << "\n";
+      if (it->notes)
+        ofs << "  notes " << it->notes << "\n";
+      if (it->notes_url)
+        ofs << "  notes_url " << it->notes_url << "\n";
+      if (it->members) {
+        ofs << "  members " << it->members->host_name;
+        for (hostsmember* m(it->members->next); m; m = m->next)
+          ofs << "," << m->host_name;
+        ofs << "\n";
+      }
+      ofs << "}\n\n";
+    }
+  ofs.close();
+
+  // Service groups.
+  ofs.open(
+        service_groups_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open service groups configuration file in '"
+           << path << "'");
+  if (service_groups)
+    for (std::list<servicegroup>::iterator
+           it(service_groups->begin()),
+           end(service_groups->end());
+         it != end;
+         ++it) {
+      ofs << "define servicegroup{\n"
+          << "  servicegroup_name " << it->group_name << "\n";
+      if (it->action_url)
+        ofs << "  action_url " << it->action_url << "\n";
+      if (it->alias)
+        ofs << "  alias " << it->alias << "\n";
+      if (it->notes)
+        ofs << "  notes " << it->notes << "\n";
+      if (it->notes_url)
+        ofs << "  notes_url " << it->notes_url << "\n";
+      if (it->members) {
+        ofs << "  members " << it->members->host_name
+            << "," << it->members->service_description;
+        for (servicesmember* m(it->members->next); m; m = m->next)
+          ofs << "," << m->host_name << "," << m->service_description;
+        ofs << "\n";
+      }
+      ofs << "}\n\n";
     }
   ofs.close();
 

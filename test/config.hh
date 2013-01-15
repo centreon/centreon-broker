@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -32,6 +32,8 @@ void         config_write(
                char const* more_directives = NULL,
                std::list<host>* hosts = NULL,
                std::list<service>* services = NULL,
-               std::list<command>* commands = NULL);
+               std::list<command>* commands = NULL,
+               std::list<hostgroup>* host_groups = NULL,
+               std::list<servicegroup>* service_groups = NULL);
 
 #endif // !TEST_CONFIG_HH
