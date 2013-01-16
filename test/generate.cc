@@ -23,6 +23,45 @@
 #include "test/generate.hh"
 
 /**
+ *  Create a host dependency.
+ *
+ *  @param[out] dep       Host dependency.
+ *  @param[in]  dependent Dependent host.
+ *  @param[in]  depended  Host that is depended by the dependent host.
+ */
+void depends_on(hostdependency& dep, host& dependent, host& depended) {
+  dep.dependent_host_name = new char[strlen(dependent.name) + 1];
+  strcpy(dep.dependent_host_name, dependent.name);
+  dep.host_name = new char[strlen(depended.name) + 1];
+  strcpy(dep.host_name, depended.name);
+  return ;
+}
+
+/**
+ *  Create a service dependency.
+ *
+ *  @param[out] dep       Service dependency.
+ *  @param[in]  dependent Dependent service.
+ *  @param[in]  depended  Service that is depended by the dependent
+ *                        service.
+ */
+void depends_on(
+       servicedependency& dep,
+       service& dependent,
+       service& depended) {
+  dep.dependent_host_name = new char[strlen(dependent.host_name) + 1];
+  strcpy(dep.dependent_host_name, dependent.host_name);
+  dep.dependent_service_description
+    = new char[strlen(dependent.description) + 1];
+  strcpy(dep.dependent_service_description, dependent.description);
+  dep.host_name = new char[strlen(depended.host_name) + 1];
+  strcpy(dep.host_name, depended.host_name);
+  dep.service_description = new char[strlen(depended.description) + 1];
+  strcpy(dep.service_description, depended.description);
+  return ;
+}
+
+/**
  *  Free the command list.
  *
  *  @param[in,out] commands Commands to free.
@@ -51,8 +90,39 @@ void free_hosts(std::list<host>& hosts) {
        ++it) {
     delete [] it->name;
     delete [] it->host_check_command;
+    for (hostsmember* child(it->child_hosts); child; ) {
+      hostsmember* to_delete(child);
+      child = child->next;
+      delete [] to_delete->host_name;
+      delete to_delete;
+    }
+    for (hostsmember* parent(it->parent_hosts); parent; ) {
+      hostsmember* to_delete(parent);
+      parent = parent->next;
+      delete [] to_delete->host_name;
+      delete to_delete;
+    }
   }
   hosts.clear();
+  return ;
+}
+
+/**
+ *  Free the host dependency list.
+ *
+ *  @param[in,out] deps Host dependencies to free.
+ */
+void free_host_dependencies(std::list<hostdependency>& deps) {
+  for (std::list<hostdependency>::iterator
+         it(deps.begin()),
+         end(deps.end());
+       it != end;
+       ++it) {
+    delete [] it->dependency_period;
+    delete [] it->dependent_host_name;
+    delete [] it->host_name;
+  }
+  deps.clear();
   return ;
 }
 
@@ -99,6 +169,27 @@ void free_services(std::list<service>& services) {
     delete [] it->service_check_command;
   }
   services.clear();
+  return ;
+}
+
+/**
+ *  Free the service dependency list.
+ *
+ *  @param[in,out] deps Service dependencies to free.
+ */
+void free_service_dependencies(std::list<servicedependency>& deps) {
+  for (std::list<servicedependency>::iterator
+         it(deps.begin()),
+         end(deps.end());
+       it != end;
+       ++it) {
+    delete [] it->dependency_period;
+    delete [] it->dependent_host_name;
+    delete [] it->dependent_service_description;
+    delete [] it->host_name;
+    delete [] it->service_description;
+  }
+  deps.clear();
   return ;
 }
 
@@ -201,6 +292,23 @@ void generate_hosts(
 }
 
 /**
+ *  Generate a host dependency list.
+ *
+ *  @param[out] deps  Generated host dependency list.
+ *  @param[in]  count Number of dependencies to generate.
+ */
+void generate_host_dependencies(
+       std::list<hostdependency>& deps,
+       unsigned int count) {
+  for (unsigned int i(0); i < count; ++i) {
+    hostdependency dep;
+    memset(&dep, 0, sizeof(dep));
+    deps.push_back(dep);
+  }
+  return ;
+}
+
+/**
  *  Generate a host group list.
  *
  *  @param[out] host_groups Generated host group list.
@@ -278,6 +386,23 @@ void generate_services(
     }
   }
 
+  return ;
+}
+
+/**
+ *  Generate a service dependency list.
+ *
+ *  @param[out] deps  Generated service dependency list.
+ *  @param[in]  count Number of dependencies to generate.
+ */
+void generate_service_dependencies(
+       std::list<servicedependency>& deps,
+       unsigned int count) {
+  for (unsigned int i(0); i < count; ++i) {
+    servicedependency dep;
+    memset(&dep, 0, sizeof(dep));
+    deps.push_back(dep);
+  }
   return ;
 }
 
@@ -362,6 +487,30 @@ void link(service& s, servicegroup& sg) {
   // Set service description.
   (*m)->service_description = new char[strlen(s.description) + 1];
   strcpy((*m)->service_description, s.description);
+
+  return ;
+}
+
+/**
+ *  Declare a parenting relationship between two hosts.
+ *
+ *  @param[in,out] parent Parent host.
+ *  @param[in,out] child  Child host.
+ */
+void parent_of(host& parent, host& child) {
+  // Parent is parent of child.
+  hostsmember** parent_member(&parent.child_hosts);
+  *parent_member = new hostsmember;
+  memset(*parent_member, 0, sizeof(**parent_member));
+  (*parent_member)->host_name = new char[strlen(child.name) + 1];
+  strcpy((*parent_member)->host_name, child.name);
+
+  // Child is child of parent.
+  hostsmember** child_member(&child.parent_hosts);
+  *child_member = new hostsmember;
+  memset(*child_member, 0, sizeof(**child_member));
+  (*child_member)->host_name = new char[strlen(parent.name) + 1];
+  strcpy((*child_member)->host_name, parent.name);
 
   return ;
 }
