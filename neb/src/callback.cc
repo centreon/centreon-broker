@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/callback.hh"
 #include "com/centreon/engine/common.hh"

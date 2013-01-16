@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <cstring>
 #include <QReadLocker>
 #include <QWriteLocker>
-#include <stdlib.h>
-#include <string.h>
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;

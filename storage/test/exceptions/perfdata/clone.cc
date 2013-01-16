@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <memory>
-#include <string.h>
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 
 using namespace com::centreon::broker;

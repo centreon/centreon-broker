@@ -18,7 +18,7 @@
 ** For more information: contact@centreon.com
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "events/events.hh"
 #include "exceptions/basic.hh"
 #include "interface/xml/internal.hh"

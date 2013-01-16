@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <QDir>
 #include <QFile>
-#include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/parser.hh"
 #include "test/parser/common.hh"

@@ -18,11 +18,11 @@
 */
 
 #include <cerrno>
+#include <clocale>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <locale.h>
 #include <QCoreApplication>
 #include <QLibraryInfo>
 #include "com/centreon/broker/config/applier/endpoint.hh"

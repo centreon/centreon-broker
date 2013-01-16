@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cmath>
 #include <cstdlib>
-#include <math.h>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlField>
@@ -82,9 +82,9 @@ static inline bool double_equal(double a, double b) {
   return ((isnan(a) && isnan(b))
           || (isinf(a)
               && isinf(b)
-              && ((bool)signbit(a) == (bool)signbit(b)))
-          || (isfinite(a)
-              && isfinite(b)
+              && (std::signbit(a) == std::signbit(b)))
+          || (std::isfinite(a)
+              && std::isfinite(b)
               && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 

@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <errno.h>
+#include <cerrno>
+#include <cstring>
 #include <memory>
 #include <QDomDocument>
 #include <QDomElement>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/state.hh"

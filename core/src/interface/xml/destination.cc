@@ -18,9 +18,9 @@
 ** For more information: contact@centreon.com
 */
 
+#include <cstdlib>
 #include <memory>
 #include <sstream>
-#include <stdlib.h>
 #include "events/events.hh"
 #include "interface/xml/destination.hh"
 #include "interface/xml/internal.hh"

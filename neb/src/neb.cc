@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <clocale>
 #include <csignal>
 #include <cstring>
-#include <locale.h>
 #include <QCoreApplication>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/endpoint.hh"
