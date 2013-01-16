@@ -42,7 +42,6 @@ namespace     neb {
   private:
               callback(callback const& right);
     callback& operator=(callback const& right);
-    void      _internal_copy(callback const& right);
 
     int (*    _function)(int, void*);
     int       _id;

@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/io/protocols.hh"
@@ -133,34 +132,3 @@ void protocols::unreg(QString const& name) {
  *  Default constructor.
  */
 protocols::protocols() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Should not be used. Any attempt to use this constructor will result
- *  in a call to abort().
- *
- *  @param[in] p Unused.
- */
-protocols::protocols(protocols const& p) {
-  (void)p;
-  assert(!"protocols are not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Should not be used. Any attempt to use this method will result in a
- *  call to abort().
- *
- *  @param[in] p Unused.
- *
- *  @return This object.
- */
-protocols& protocols::operator=(protocols const& p) {
-  (void)p;
-  assert(!"protocols are not copyable");
-  abort();
-  return (*this);
-}

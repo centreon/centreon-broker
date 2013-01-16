@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <math.h>
 #include <QSqlDriver>
@@ -523,23 +522,6 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Assignment operator.
- *
- *  Should not be used. Any call to this method will result in a call to
- *  abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"storage stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Check for deleted index.

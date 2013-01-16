@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/callback.hh"
@@ -51,43 +50,4 @@ callback::callback(int id, void* handle, int (* function)(int, void*))
  */
 callback::~callback() throw () {
   neb_deregister_callback(_id, _function);
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-callback::callback(callback const& right) {
-  _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-callback& callback::operator=(callback const& right) {
-  _internal_copy(right);
-  return (*this);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Unused.
- */
-void callback::_internal_copy(callback const& right) {
-  (void)right;
-  assert(!"callback is not copyable");
-  abort();
-  return ;
 }

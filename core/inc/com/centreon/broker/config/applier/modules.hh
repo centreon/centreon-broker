@@ -56,7 +56,6 @@ namespace                     config {
                               modules();
                               modules(modules const& m);
       modules&                operator=(modules const& m);
-      void                    _internal_copy(modules const& m);
 
       broker::modules::loader _loader;
     };

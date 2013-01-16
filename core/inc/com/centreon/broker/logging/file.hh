@@ -55,9 +55,9 @@ namespace              logging {
   private:
                        file(file const& f);
     file&              operator=(file const& f);
-    void               _internal_copy(file const& f);
     void               _reopen();
     void               _write(char const* data) throw ();
+
     QFile              _file;
     unsigned long long _max;
     bool               _special;

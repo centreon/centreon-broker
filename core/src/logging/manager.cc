@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <QReadLocker>
 #include <QWriteLocker>
 #include <stdlib.h>
@@ -46,34 +45,6 @@ std::auto_ptr<manager> manager::_instance;
  */
 manager::manager() {
   memset(_limits, 0, sizeof(_limits));
-}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] m Unused.
- */
-manager::manager(manager const& m) : backend(m) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] m Unused.
- *
- *  @return This object.
- */
-manager& manager::operator=(manager const& m) {
-  (void)m;
-  assert(false);
-  abort();
-  return (*this);
 }
 
 /**

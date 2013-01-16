@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <QMutexLocker>
@@ -248,35 +247,6 @@ engine::engine() : _stopped(false), _write_func(&engine::_nop) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
-}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] e Unused.
- */
-engine::engine(engine const& e) : QObject() {
-  (void)e;
-  assert(!"multiplexing engine is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] e Unused.
- *
- *  @return This object.
- */
-engine& engine::operator=(engine const& p) {
-  (void)p;
-  assert(!"multiplexing engine is not copyable");
-  abort();
-  return (*this);
 }
 
 /**

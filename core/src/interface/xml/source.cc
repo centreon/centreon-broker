@@ -18,7 +18,6 @@
 ** For more information: contact@centreon.com
 */
 
-#include <assert.h>
 #include <stdlib.h>
 #include "events/events.hh"
 #include "exceptions/basic.hh"
@@ -32,38 +31,6 @@ using namespace interface::xml;
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  source is not copyable. Therefore any attempt to use the copy
- *  constructor will result in a call to abort().
- *
- *  @param[in] s Unused.
- */
-source::source(source const& s)
-  : interface::source(s), QXmlDefaultHandler(), QXmlInputSource(s) {
-  (void)s;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  source is not copyable. Therefore any attempt to use the assignment
- *  operator will result in a call to abort().
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-source& source::operator=(source const& s) {
-  (void)s;
-  assert(false);
-  abort();
-  return (*this);
-}
 
 /**
  *  Fetch data from the stream and give it to the XML parser.

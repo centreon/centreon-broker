@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -86,27 +85,6 @@ void worker::run(QString const& fifo_file) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-worker::worker(worker const& right) : QThread() {
-  _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-worker& worker::operator=(worker const& right) {
-  _internal_copy(right);
-  return (*this);
-}
 
 /**
  *  Close FIFO fd.
@@ -276,18 +254,6 @@ void worker::_generate_stats_for_endpoint(
     buffer.append(subbuffer);
   }
 
-  return ;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void worker::_internal_copy(worker const& right) {
-  (void)right;
-  assert(!"statistics worker is not copyable");
-  abort();
   return ;
 }
 

@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <QMutexLocker>
 #include <QWaitCondition>
@@ -163,38 +162,4 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     _socket->waitForBytesWritten(-1);
   }
   return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : io::stream(s) {
-  assert(!"local stream is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"local stream is not copyable");
-  abort();
-  return (*this);
 }

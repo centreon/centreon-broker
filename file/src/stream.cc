@@ -18,7 +18,6 @@
 */
 
 #include <arpa/inet.h>
-#include <cassert>
 #include <climits>
 #include <cstdlib>
 #include <limits>
@@ -238,34 +237,6 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will lead to a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : io::stream(s) {
-  assert(!"file stream is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will lead to a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"file stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Get the file path matching the ID.

@@ -50,7 +50,6 @@ namespace            config {
                      logger();
                      logger(logger const& l);
       logger&        operator=(logger const& l);
-      void           _internal_copy(logger const& l);
       misc::shared_ptr<logging::backend>
                      _new_backend(config::logger const& cfg);
 

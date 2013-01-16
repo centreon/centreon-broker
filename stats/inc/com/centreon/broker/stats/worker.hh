@@ -57,7 +57,6 @@ namespace               com {
                           processing::failover* fo,
                           std::string& buffer,
                           bool is_out);
-          void          _internal_copy(worker const& right);
           bool          _open();
           void          run();
 

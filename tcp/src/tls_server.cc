@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <QSslKey>
@@ -129,38 +128,3 @@ QTcpSocket* tls_server::nextPendingConnection() {
   return (_pending.isEmpty() ? NULL : _pending.dequeue());
 }
 #endif // Qt < 4.7.0
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] ts Object to copy.
- */
-tls_server::tls_server(tls_server const& ts) : QTcpServer() {
-  (void)ts;
-  assert(!"TLS server object is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] ts Object to copy.
- *
- *  @return This object.
- */
-tls_server& tls_server::operator=(tls_server const& ts) {
-  (void)ts;
-  assert(!"TLS server object is not copyable");
-  abort();
-  return (*this);
-}
