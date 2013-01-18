@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <iostream>
 #include <QDir>
 #include <QFile>
-#include <string.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/parser/common.hh"
 
 using namespace com::centreon::broker;
@@ -57,7 +61,7 @@ int main() {
     "</centreonbroker>\n";
   QString file_path(QDir::tempPath());
   file_path.append("/broker_correlation_parser_parse_retention");
-  QFile::remove(file_path);
+  ::remove(file_path.toStdString().c_str());
   QFile f(file_path);
   if (!f.open(QIODevice::WriteOnly))
     return (1);
@@ -69,60 +73,78 @@ int main() {
   }
   f.close();
 
-  // Initial state.
-  QMap<QPair<unsigned int, unsigned int>, node> parsed1;
-  QMap<QPair<unsigned int, unsigned int>, node> parsed2;
-  {
-    node& h1(parsed2[qMakePair(13u, 0u)]);
+  // Error flag.
+  bool error(true);
+  try {
+    // Initial state.
+    QMap<QPair<unsigned int, unsigned int>, node> parsed1;
+    QMap<QPair<unsigned int, unsigned int>, node> parsed2;
+    {
+      node& h1(parsed2[qMakePair(13u, 0u)]);
+      h1.host_id = 13;
+      h1.since = 145;
+      h1.state = 3;
+      h1.my_issue.reset(new issue);
+      h1.my_issue->host_id = 13;
+      h1.my_issue->start_time = 4768215;
+      node& s1(parsed2[qMakePair(13u, 21u)]);
+      s1.host_id = 13;
+      s1.service_id = 21;
+      s1.since = 33;
+      node& s2(parsed2[qMakePair(13u, 33u)]);
+      s2.host_id = 13;
+      s2.service_id = 33;
+      s2.since = 1;
+      s2.state = 4;
+      s1.add_dependency(&h1);
+    }
+
+    // Parse file.
+    correlation::parser p;
+    p.parse(file_path, true, parsed1); // Must be empty.
+    p.parse(file_path, true, parsed2); // Adjusted with retention file.
+    ::remove(file_path.toStdString().c_str());
+
+    // Expected result.
+    QMap<QPair<unsigned int, unsigned int>, node> expected;
+    node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
-    h1.since = 145;
-    h1.state = 3;
+    h1.since = 789;
+    h1.state = 42;
     h1.my_issue.reset(new issue);
     h1.my_issue->host_id = 13;
-    h1.my_issue->start_time = 4768215;
-    node& s1(parsed2[qMakePair(13u, 21u)]);
+    h1.my_issue->start_time = 3456;
+    node& s1(expected[qMakePair(13u, 21u)]);
     s1.host_id = 13;
     s1.service_id = 21;
-    s1.since = 33;
-    node& s2(parsed2[qMakePair(13u, 33u)]);
+    s1.since = 456;
+    node& s2(expected[qMakePair(13u, 33u)]);
     s2.host_id = 13;
     s2.service_id = 33;
-    s2.since = 1;
-    s2.state = 4;
+    s2.since = 145;
+    s2.state = 33;
+    s2.my_issue.reset(new issue);
+    s2.my_issue->ack_time = 762;
+    s2.my_issue->host_id = 13;
+    s2.my_issue->service_id = 33;
+    s2.my_issue->start_time = 2346213;
     s1.add_dependency(&h1);
+
+    // Compare parsing with expected result.
+    if (!parsed1.isEmpty())
+      throw (exceptions::msg() << "parse1 is not empty");
+    compare_states(expected, parsed2);
+
+    // Success.
+    error = false;
+  }
+  catch (std::exception const& e) {
+    std::cerr << e.what() << std::endl;
+  }
+  catch (...) {
+    std::cerr << "unknown exception" << std::endl;
   }
 
-  // Parse file.
-  correlation::parser p;
-  p.parse(file_path, true, parsed1); // Must be empty.
-  p.parse(file_path, true, parsed2); // Adjusted with retention file.
-  QFile::remove(file_path);
-
-  // Expected result.
-  QMap<QPair<unsigned int, unsigned int>, node> expected;
-  node& h1(expected[qMakePair(13u, 0u)]);
-  h1.host_id = 13;
-  h1.since = 789;
-  h1.state = 42;
-  h1.my_issue.reset(new issue);
-  h1.my_issue->host_id = 13;
-  h1.my_issue->start_time = 3456;
-  node& s1(expected[qMakePair(13u, 21u)]);
-  s1.host_id = 13;
-  s1.service_id = 21;
-  s1.since = 456;
-  node& s2(expected[qMakePair(13u, 33u)]);
-  s2.host_id = 13;
-  s2.service_id = 33;
-  s2.since = 145;
-  s2.state = 33;
-  s2.my_issue.reset(new issue);
-  s2.my_issue->ack_time = 762;
-  s2.my_issue->host_id = 13;
-  s2.my_issue->service_id = 33;
-  s2.my_issue->start_time = 2346213;
-  s1.add_dependency(&h1);
-
-  // Compare parsing with expected result.
-  return (!parsed1.isEmpty() || !compare_states(expected, parsed2));
+  // Return check result.
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

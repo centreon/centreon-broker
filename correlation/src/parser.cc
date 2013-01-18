@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,6 +26,89 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
+
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Default constructor.
+ */
+parser::parser() {}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] p Unused.
+ */
+parser::parser(parser const& p) : QXmlDefaultHandler() {
+  (void)p;
+}
+
+/**
+ *  Destructor.
+ */
+parser::~parser() {}
+
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] p Unused.
+ *
+ *  @return *this
+ */
+parser& parser::operator=(parser const& p) {
+  (void)p;
+  return (*this);
+}
+
+/**
+ *  Parse a configuration file.
+ *
+ *  @param[in]  filename     Path to the correlation file.
+ *  @param[in]  is_retention Set to true if filename is a retention
+ *                           file (non-authoritative content).
+ *  @param[out] nodes        Node set.
+ *  @param[in]  recursive    Recursion flag.
+ */
+void parser::parse(
+               QString const& filename,
+               bool is_retention,
+               QMap<QPair<unsigned int, unsigned int>, node>& nodes,
+               bool recursive) {
+  _in_include = false;
+  _in_root = false;
+  _include_file.clear();
+  QXmlSimpleReader reader;
+  _is_retention = is_retention;
+  _nodes = &nodes;
+  try {
+    reader.setContentHandler(this);
+    reader.setErrorHandler(this);
+    QFile qf(filename);
+    if (!qf.open(QIODevice::ReadOnly))
+      throw (exceptions::msg() << qf.errorString());
+    QXmlInputSource source(&qf);
+    reader.parse(&source);
+    if (!_is_retention && !recursive)
+      _auto_services_dependencies();
+  }
+  catch (QXmlParseException const& e) {
+    throw (exceptions::msg() << "parsing error on '" << filename
+             << "' at line "
+             << static_cast<unsigned int>(e.lineNumber())
+             << ", character "
+             << static_cast<unsigned int>(e.columnNumber())
+             << ": " << e.message());
+  }
+  catch (exceptions::msg const& e) {
+    throw (exceptions::msg() << "parsing error on '" << filename
+           << "': " << e.what());
+  }
+  return ;
+}
 
 /**************************************
 *                                     *
@@ -78,10 +161,59 @@ node* parser::_find_node(char const* host_id, char const* service_id) {
   return (n);
 }
 
-bool parser::startElement(QString const& uri,
-                          QString const& localname,
-                          QString const& qname,
-                          QXmlAttributes const& attrs) {
+/**
+ *  Callback called when characters are available.
+ *
+ *  @param[in] ch Characters.
+ *
+ *  @return true.
+ */
+bool parser::characters(QString const& ch) {
+  if (_in_include)
+    _include_file.append(ch);
+  return (true);
+}
+
+/**
+ *  Callback called when an element terminates.
+ *
+ *  @param[in] uri       Unused.
+ *  @param[in] localname Unused.
+ *  @param[in] qname     Unused.
+ *
+ *  @return true.
+ */
+bool parser::endElement(
+               QString const& uri,
+               QString const& localname,
+               QString const& qname) {
+  (void)uri;
+  (void)localname;
+  (void)qname;
+  if (_in_include) {
+    parser p;
+    p.parse(_include_file, _is_retention, *_nodes, true);
+    _in_include = false;
+    _include_file.clear();
+  }
+  return (true);
+}
+
+/**
+ *  Callback called when a new XML element starts.
+ *
+ *  @param[in] uri       URI.
+ *  @param[in] localname Local name.
+ *  @param[in] qname     QName.
+ *  @param[in] attrs     Element attributes.
+ *
+ *  @return true to continue parsing, false otherwise.
+ */
+bool parser::startElement(
+               QString const& uri,
+               QString const& localname,
+               QString const& qname,
+               QXmlAttributes const& attrs) {
   (void)uri;
   (void)qname;
   if (!_in_root)
@@ -163,6 +295,8 @@ bool parser::startElement(QString const& uri,
       if (!i_attr.isEmpty())
         n->state = i_attr.toUInt();
     }
+    else if (!strcmp(value, "include"))
+      _in_include = true;
     else if (!strcmp(value, "issue")) {
       QString ack_attr;
       QString host_attr;
@@ -270,81 +404,4 @@ bool parser::startElement(QString const& uri,
     }
   }
   return (true);
-}
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
-
-/**
- *  Default constructor.
- */
-parser::parser() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] p Unused.
- */
-parser::parser(parser const& p) : QXmlDefaultHandler() {
-  (void)p;
-}
-
-/**
- *  Destructor.
- */
-parser::~parser() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] p Unused.
- *
- *  @return *this
- */
-parser& parser::operator=(parser const& p) {
-  (void)p;
-  return (*this);
-}
-
-/**
- *  Parse a configuration file.
- *
- *  @param[in]  filename     Path to the correlation file.
- *  @param[in]  is_retention Set to true if filename is a retention
- *                           file (non-authoritative content).
- *  @param[out] nodes        Node set.
- */
-void parser::parse(QString const& filename,
-                   bool is_retention,
-                   QMap<QPair<unsigned int, unsigned int>, node>& nodes) {
-  QXmlSimpleReader reader;
-  _is_retention = is_retention;
-  _nodes = &nodes;
-  try {
-    reader.setContentHandler(this);
-    reader.setErrorHandler(this);
-    QFile qf(filename);
-    if (!qf.open(QIODevice::ReadOnly))
-      throw (exceptions::msg() << qf.errorString());
-    QXmlInputSource source(&qf);
-    reader.parse(&source);
-    if (!_is_retention)
-      _auto_services_dependencies();
-  }
-  catch (QXmlParseException const& e) {
-    throw (exceptions::msg() << "parsing error on '" << filename
-             << "' at line "
-             << static_cast<unsigned int>(e.lineNumber())
-             << ", character "
-             << static_cast<unsigned int>(e.columnNumber())
-             << ": " << e.message());
-  }
-  catch (exceptions::msg const& e) {
-    throw (exceptions::msg() << "parsing error on '" << filename
-           << "': " << e.what());
-  }
-  return ;
 }

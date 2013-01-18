@@ -17,6 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <exception>
+#include <iostream>
 #include <QDir>
 #include <QFile>
 #include <QString>
@@ -57,7 +60,7 @@ int main() {
     "</centreonbroker>\n";
   QString config_path(QDir::tempPath());
   config_path.append("/broker_correlation_correlator_retention_write1");
-  QFile::remove(config_path);
+  ::remove(config_path.toStdString().c_str());
   QFile f(config_path);
   if (!f.open(QIODevice::WriteOnly))
     return (1);
@@ -70,50 +73,66 @@ int main() {
   f.close();
   QString retention_path(QDir::tempPath());
   retention_path.append("/broker_correlation_correlator_retention_write2");
-  QFile::remove(retention_path);
+  ::remove(retention_path.toStdString().c_str());
 
-  // Correlator.
-  correlator c;
-  c.load(config_path, retention_path);
+  // Error flag.
+  bool error(true);
+  try {
+    // Correlator.
+    correlator c;
+    c.load(config_path, retention_path);
 
-  // Submit state change.
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 13;
-    ss->service_id = 21;
-    ss->state_type = 1;
-    ss->current_state = 2;
-    c.write(ss.staticCast<io::data>());
+    // Submit state change.
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 13;
+      ss->service_id = 21;
+      ss->state_type = 1;
+      ss->current_state = 2;
+      c.write(ss.staticCast<io::data>());
+    }
+    {
+      misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      hs->host_id = 42;
+      hs->state_type = 1;
+      hs->current_state = 2;
+      c.write(hs.staticCast<io::data>());
+    }
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 42;
+      ss->service_id = 12;
+      ss->state_type = 1;
+      ss->current_state = 2;
+      c.write(ss.staticCast<io::data>());
+    }
+
+    // Dump retention file.
+    c.stopping();
+
+    // Read retention state.
+    QMap<QPair<unsigned int, unsigned int>, node> retained;
+    parser p;
+    p.parse(config_path, false, retained);
+    p.parse(retention_path, true, retained);
+
+    // Compare current with retained state.
+    compare_states(c.get_state(), retained);
+
+    // Success.
+    error = false;
   }
-  {
-    misc::shared_ptr<neb::host_status> hs(new neb::host_status);
-    hs->host_id = 42;
-    hs->state_type = 1;
-    hs->current_state = 2;
-    c.write(hs.staticCast<io::data>());
+  catch (std::exception const& e) {
+    std::cerr << e.what() << std::endl;
   }
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 42;
-    ss->service_id = 12;
-    ss->state_type = 1;
-    ss->current_state = 2;
-    c.write(ss.staticCast<io::data>());
+  catch (...) {
+    std::cerr << "unknown exception" << std::endl;
   }
-
-  // Dump retention file.
-  c.stopping();
-
-  // Read retention state.
-  QMap<QPair<unsigned int, unsigned int>, node> retained;
-  parser p;
-  p.parse(config_path, false, retained);
-  p.parse(retention_path, true, retained);
 
   // Delete temporary files.
-  QFile::remove(config_path);
-  QFile::remove(retention_path);
+  ::remove(config_path.toStdString().c_str());
+  ::remove(retention_path.toStdString().c_str());
 
-  // Compare current with retained state.
-  return (!compare_states(c.get_state(), retained));
+  // Return check result.
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

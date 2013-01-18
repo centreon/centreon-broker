@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/parser/common.hh"
 
 using namespace com::centreon::broker;
@@ -26,25 +27,41 @@ using namespace com::centreon::broker;
  *
  *  @param[in] n1 First state.
  *  @param[in] n2 Second state.
- *
- *  @return true if both states are equal.
  */
-bool compare_states(QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n1,
-                    QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n2) {
-  bool retval;
+void compare_states(
+       QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n1,
+       QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n2) {
   if (n1.size() != n2.size())
-    retval = false;
+    throw (exceptions::msg() << "state #1 has " << n1.size()
+           << " elements, state #2 has " << n2.size());
   else {
-    retval = true;
     for (QMap<QPair<unsigned int, unsigned int>, correlation::node>::const_iterator
-           it1 = n1.begin(),
-           end1 = n1.end(),
-           it2 = n2.begin();
-         retval && (it1 != end1);
+           it1(n1.begin()),
+           end1(n1.end()),
+           it2(n2.begin());
+         it1 != end1;
          ++it1, ++it2)
-      if ((it1.key() != it2.key())
-          || (*it1 != *it2))
-        retval = false;
+      if (it1.key() != it2.key())
+        throw (exceptions::msg() << "state mismatch: got key (host id "
+               << it1.key().first << ", service id " << it1.key().second
+               << ") against (" << it2.key().first << ", "
+               << it2.key().second << ")");
+      else if (*it1 != *it2)
+        throw (exceptions::msg() << "state mismatch: got node (host id "
+               << it1->host_id << ", service id " << it1->service_id
+               << ", in downtime " << it1->in_downtime << ", since "
+               << it1->since << ", state " << it1->state
+               << ", children " << it1->children().size()
+               << ", parents " << it1->parents().size()
+               << ", depended by " << it1->depended_by().size()
+               << ", depends on " << it1->depends_on().size()
+               << ") against (" << it2->host_id << ", "
+               << it2->service_id << ", " << it2->in_downtime << ", "
+               << it2->since << ", " << it2->state << ", "
+               << it2->children().size() << ", "
+               << it2->parents().size() << ", "
+               << it2->depended_by().size() << ", "
+               << it2->depends_on().size() << ")");
   }
-  return (retval);
+  return ;
 }

@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2013 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -22,6 +22,7 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/correlation/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/correlation/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # Some files must be processed by Qt's moc.
@@ -68,6 +69,10 @@ set(CORRELATION_MODULE_PATH "${CORRELATION_MODULE_PATH}" PARENT_SCOPE)
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/correlation")
   set(TEST_LIBRARIES "${CORRELATION}" "${NEB}" "roker")
+
+  # Generate files.
+  configure_file("${TEST_DIR}/parser/parse_include.xml.in"
+    "${TEST_DIR}/parser/parse_include.xml")
 
   # host_state tests.
   #   Default construction.
@@ -301,6 +306,15 @@ if (WITH_TESTING)
   set(TEST_NAME "correlation_parser_parse_retention")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/parser/parse_retention.cc"
+    "${TEST_DIR}/parser/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation_parser"
+    ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Include directive.
+  set(TEST_NAME "correlation_parser_parse_include")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/parser/parse_include.cc"
     "${TEST_DIR}/parser/common.hh")
   target_link_libraries("${TEST_NAME}"
     "ccb_correlation_parser"

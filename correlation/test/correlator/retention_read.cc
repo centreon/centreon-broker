@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <exception>
+#include <iostream>
 #include <QDir>
 #include <QFile>
 #include <QString>
@@ -55,7 +58,7 @@ int main() {
     "</centreonbroker>\n";
   QString config_path(QDir::tempPath());
   config_path.append("/broker_correlation_correlator_retention_read1");
-  QFile::remove(config_path);
+  ::remove(config_path.toStdString().c_str());
   {
     QFile f(config_path);
     if (!f.open(QIODevice::WriteOnly))
@@ -79,7 +82,7 @@ int main() {
     "</centreonbroker>\n";
   QString retention_path(QDir::tempPath());
   retention_path.append("/broker_correlation_correlator_retention_read2");
-  QFile::remove(retention_path);
+  ::remove(retention_path.toStdString().c_str());
   {
     QFile f(retention_path);
     if (!f.open(QIODevice::WriteOnly))
@@ -93,20 +96,36 @@ int main() {
     f.close();
   }
 
-  // Correlator.
-  correlator c;
-  c.load(config_path, retention_path);
+  // Error flag.
+  bool error(true);
+  try {
+    // Correlator.
+    correlator c;
+    c.load(config_path, retention_path);
 
-  // Read retention state.
-  QMap<QPair<unsigned int, unsigned int>, node> retained;
-  parser p;
-  p.parse(config_path, false, retained);
-  p.parse(retention_path, true, retained);
+    // Read retention state.
+    QMap<QPair<unsigned int, unsigned int>, node> retained;
+    parser p;
+    p.parse(config_path, false, retained);
+    p.parse(retention_path, true, retained);
+
+    // Compare current with retained state.
+    compare_states(c.get_state(), retained);
+
+    // Success.
+    error = false;
+  }
+  catch (std::exception const& e) {
+    std::cerr << e.what() << std::endl;
+  }
+  catch (...) {
+    std::cerr << "unknown exception" << std::endl;
+  }
 
   // Delete temporary files.
-  QFile::remove(config_path);
-  QFile::remove(retention_path);
+  ::remove(config_path.toStdString().c_str());
+  ::remove(retention_path.toStdString().c_str());
 
-  // Compare current with retained state.
-  return (!compare_states(c.get_state(), retained));
+  // Return check result.
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }
