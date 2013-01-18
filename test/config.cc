@@ -390,6 +390,11 @@ void config_write(
           ofs << "," << parent->host_name;
         ofs << "\n";
       }
+      for (customvariablesmember* cvar(it->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        ofs << "  _" << cvar->variable_name << " "
+            << cvar->variable_value << "\n";
       ofs << "}\n\n";
     }
   ofs.close();
@@ -456,6 +461,11 @@ void config_write(
       else
         ofs << "default_contact";
       ofs << "\n";
+      for (customvariablesmember* cvar(it->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        ofs << "  _" << cvar->variable_name << " "
+            << cvar->variable_value << "\n";
       ofs << "}\n\n";
     }
   ofs.close();

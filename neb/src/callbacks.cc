@@ -330,7 +330,8 @@ int neb::callback_custom_variable(int callback_type, void* data) {
               new_cvar->host_id = it->second;
               new_cvar->modified = false;
               new_cvar->name = cvar->var_name;
-              new_cvar->update_time = time(NULL);
+              new_cvar->var_type = 0;
+              new_cvar->update_time = cvar->timestamp.tv_sec;
               new_cvar->value = cvar->var_value;
 
               // Send custom variable event.
@@ -392,7 +393,8 @@ int neb::callback_custom_variable(int callback_type, void* data) {
               new_cvar->modified = false;
               new_cvar->name = cvar->var_name;
               new_cvar->service_id = it->second.second;
-              new_cvar->update_time = time(NULL);
+              new_cvar->var_type = 1;
+              new_cvar->update_time = cvar->timestamp.tv_sec;
               new_cvar->value = cvar->var_value;
 
               // Send custom variable event.

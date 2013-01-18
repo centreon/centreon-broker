@@ -60,5 +60,13 @@ void generate_service_groups(
 void link(host& h, hostgroup& hg);
 void link(service& s, servicegroup& sg);
 void parent_of(host& parent, host& child);
+void set_custom_variable(
+       host& h,
+       char const* name,
+       char const* value);
+void set_custom_variable(
+       service& s,
+       char const* name,
+       char const* value);
 
 #endif // !TEST_GENERATE_HH

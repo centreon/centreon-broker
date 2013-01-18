@@ -102,6 +102,13 @@ void free_hosts(std::list<host>& hosts) {
       delete [] to_delete->host_name;
       delete to_delete;
     }
+    for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
+      customvariablesmember* to_delete(cvar);
+      cvar = cvar->next;
+      delete [] to_delete->variable_name;
+      delete [] to_delete->variable_value;
+      delete to_delete;
+    }
   }
   hosts.clear();
   return ;
@@ -167,6 +174,13 @@ void free_services(std::list<service>& services) {
     delete [] it->description;
     delete [] it->host_name;
     delete [] it->service_check_command;
+    for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
+      customvariablesmember* to_delete(cvar);
+      cvar = cvar->next;
+      delete [] to_delete->variable_name;
+      delete [] to_delete->variable_value;
+      delete to_delete;
+    }
   }
   services.clear();
   return ;
@@ -512,5 +526,63 @@ void parent_of(host& parent, host& child) {
   (*child_member)->host_name = new char[strlen(parent.name) + 1];
   strcpy((*child_member)->host_name, parent.name);
 
+  return ;
+}
+
+/**
+ *  Custom variable modification core function.
+ *
+ *  @param[in,out] vars  Custom variable list.
+ *  @param[in]     name  Variable name.
+ *  @param[in]     value Variable value.
+ */
+static void set_custom_variable(
+              customvariablesmember** vars,
+              char const* name,
+              char const* value) {
+  while (*vars && strcmp((*vars)->variable_name, name))
+    vars = &(*vars)->next;
+  if (!*vars) {
+    *vars = new customvariablesmember;
+    memset(*vars, 0, sizeof(**vars));
+    (*vars)->variable_name = new char[strlen(name) + 1];
+    strcpy((*vars)->variable_name, name);
+  }
+  else {
+    delete [] (*vars)->variable_value;
+    (*vars)->variable_value = NULL;
+  }
+  (*vars)->variable_value = new char[strlen(value) + 1];
+  strcpy((*vars)->variable_value, value);
+  return ;
+}
+
+/**
+ *  Set host custom variable.
+ *
+ *  @param[in,out] h     Target host.
+ *  @param[in]     name  Variable name.
+ *  @param[in]     value Variable value.
+ */
+void set_custom_variable(
+       host& h,
+       char const* name,
+       char const* value) {
+  set_custom_variable(&h.custom_variables, name, value);
+  return ;
+}
+
+/**
+ *  Set service custom variable.
+ *
+ *  @param[in,out] s     Target service.
+ *  @param[in]     name  Variable name.
+ *  @param[in]     value Variable value.
+ */
+void set_custom_variable(
+       service& s,
+       char const* name,
+       char const* value) {
+  set_custom_variable(&s.custom_variables, name, value);
   return ;
 }

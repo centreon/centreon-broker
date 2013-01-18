@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <memory>
-#include <stdlib.h>
-#include <string.h>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
@@ -72,6 +73,7 @@ static void send_custom_variables_list() {
       nebstruct_custom_variable_data nscvd;
       memset(&nscvd, 0, sizeof(nscvd));
       nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
+      nscvd.timestamp.tv_sec = time(NULL);
       nscvd.var_name = cv->variable_name;
       nscvd.var_value = cv->variable_value;
       nscvd.object_ptr = h;
@@ -92,6 +94,7 @@ static void send_custom_variables_list() {
       nebstruct_custom_variable_data nscvd;
       memset(&nscvd, 0, sizeof(nscvd));
       nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
+      nscvd.timestamp.tv_sec = time(NULL);
       nscvd.var_name = cv->variable_name;
       nscvd.var_value = cv->variable_value;
       nscvd.object_ptr = s;
