@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <stddef.h>
+#include <cstddef>
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker::mapping;

@@ -43,7 +43,6 @@ namespace       logging {
   private:
                 logger(logger const& l);
     logger&     operator=(logger const& l);
-    void        _internal_copy(logger const& l);
 
     type        _type;
   };

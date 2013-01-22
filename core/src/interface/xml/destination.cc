@@ -18,10 +18,9 @@
 ** For more information: contact@centreon.com
 */
 
-#include <assert.h>
+#include <cstdlib>
 #include <memory>
 #include <sstream>
-#include <stdlib.h>
 #include "events/events.hh"
 #include "interface/xml/destination.hh"
 #include "interface/xml/internal.hh"
@@ -51,43 +50,6 @@ static void handle_event(T const& t,
        ++it)
     (it->second.getter)(t, it->first, *it->second.member, attr);
   return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  destination is not copyable. Therefore any attempt to use the copy
- *  constructor will result in a call to abort.
- *
- *  @param[in] dest Unused.
- */
-destination::destination(destination const& dest)
-  : interface::destination(dest) {
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  destination is not copyable. Therefore any attempt to use the
- *  assignment operator will result in a call to abort.
- *
- *  @param[in] dest Unused.
- *
- *  @return This object.
- */
-destination& destination::operator=(destination const& dest) {
-  (void)dest;
-  assert(false);
-  abort();
-  return (*this);
 }
 
 /**************************************

@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <QString>
-#include <string.h>
 #include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker;

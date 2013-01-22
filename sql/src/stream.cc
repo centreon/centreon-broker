@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <QPair>
 #include <QSqlError>
@@ -54,23 +53,6 @@ QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Assignment operator.
- *
- *  Should not be used. Any call to this method will result in a call to
- *  abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"SQL stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  @brief Clean tables with data associated to the instance.

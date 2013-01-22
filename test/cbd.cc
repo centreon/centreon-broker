@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include "test/cbd.hh"
 #include "test/vars.hh"
@@ -76,36 +75,4 @@ void cbd::stop() {
     }
   }
   return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-cbd::cbd(cbd const& right) {
-  (void)right;
-  assert(!"Broker daemon is not copyable");
-  abort();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-cbd& cbd::operator=(cbd const& right) {
-  if (this != &right) {
-    assert(!"Broker daemon is not copyable");
-    abort();
-  }
-  return (*this);
 }

@@ -17,16 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <iomanip>
 #include <QMutexLocker>
+#include <poll.h>
 #include <sstream>
-#include <sys/select.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -86,27 +84,6 @@ void worker::run(QString const& fifo_file) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-worker::worker(worker const& right) : QThread() {
-  _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-worker& worker::operator=(worker const& right) {
-  _internal_copy(right);
-  return (*this);
-}
 
 /**
  *  Close FIFO fd.
@@ -280,18 +257,6 @@ void worker::_generate_stats_for_endpoint(
 }
 
 /**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void worker::_internal_copy(worker const& right) {
-  (void)right;
-  assert(!"statistics worker is not copyable");
-  abort();
-  return ;
-}
-
-/**
  *  Open FIFO.
  *
  *  @return true on success.
@@ -327,20 +292,13 @@ void worker::run() {
       }
 
       // FD sets.
-      fd_set e;
-      fd_set w;
-      FD_ZERO(&e);
-      FD_ZERO(&w);
-      FD_SET(_fd, &e);
-      FD_SET(_fd, &w);
-
-      // Timeout.
-      struct timeval timeout;
-      memset(&timeout, 0, sizeof(timeout));
-      timeout.tv_sec = 1;
+      pollfd fds;
+      fds.fd = _fd;
+      fds.events = POLLOUT;
+      fds.revents = 0;
 
       // Multiplexing.
-      int flagged(select(_fd + 1, NULL, &w, &e, &timeout));
+      int flagged(poll(&fds, 1, 1000));
 
       // Error.
       if (flagged < 0) {
@@ -350,21 +308,23 @@ void worker::run() {
           throw (exceptions::msg() << "multiplexing failure: " << msg);
         }
       }
-      // FD error.
-      else if (FD_ISSET(_fd, &e))
-        throw (exceptions::msg() << "FIFO fd has pending error");
-      // Readable.
-      else if (FD_ISSET(_fd, &w)) {
-        if (_buffer.empty())
-          // Generate statistics.
-          _generate_stats();
+      else if (flagged > 0) {
+        // FD error.
+        if ((fds.revents & (POLLERR | POLLNVAL | POLLHUP)))
+          throw (exceptions::msg() << "FIFO fd has pending error");
+        // Readable.
+        else if ((fds.revents & POLLOUT)) {
+          if (_buffer.empty())
+            // Generate statistics.
+            _generate_stats();
 
-        // Write data.
-        ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));
-        if (wb > 0)
-          _buffer.erase(0, wb);
-        else
-          _buffer.clear();
+          // Write data.
+          ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));
+          if (wb > 0)
+            _buffer.erase(0, wb);
+          else
+            _buffer.clear();
+        }
       }
     }
   }

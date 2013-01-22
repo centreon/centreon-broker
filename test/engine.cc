@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include "test/engine.hh"
 #include "test/vars.hh"
@@ -76,36 +75,4 @@ void engine::stop() {
     }
   }
   return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-engine::engine(engine const& right) {
-  (void)right;
-  assert(!"monitoring engine is not copyable");
-  abort();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-engine& engine::operator=(engine const& right) {
-  if (this != &right) {
-    assert(!"monitoring engine is not copyable");
-    abort();
-  }
-  return (*this);
 }

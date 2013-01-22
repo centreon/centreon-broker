@@ -17,10 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <limits.h>
+#include <climits>
+#include <cstdlib>
 #include <QThread>
-#include <stdlib.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
@@ -231,39 +230,6 @@ void file::with_timestamp(bool enable) throw () {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] f Unused.
- */
-file::file(file const& f) : backend() {
-  _internal_copy(f);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] f Unused.
- *
- *  @return This object.
- */
-file& file::operator=(file const& f) {
-  _internal_copy(f);
-  return (*this);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] f Unused.
- */
-void file::_internal_copy(file const& f) {
-  (void)f;
-  assert(!"logging file is not copyable");
-  abort();
-  return ;
-}
 
 /**
  *  Reopen log file.

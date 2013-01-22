@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
@@ -355,38 +354,4 @@ void output::write(misc::shared_ptr<io::data> const& d) {
   }
 
   return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] o Object to copy.
- */
-output::output(output const& o) : io::stream(o) {
-  assert(!"RRD output is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] o Object to copy.
- *
- *  @return This object.
- */
-output& output::operator=(output const& o) {
-  (void)o;
-  assert(!"RRD output is not copyable");
-  abort();
-  return (*this);
 }

@@ -46,7 +46,6 @@ namespace              file {
   private:
                        cfile(cfile const& right);
     cfile&             operator=(cfile const& right);
-    void               _internal_copy(cfile const& right);
 
     FILE*              _stream;
   };

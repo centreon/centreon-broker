@@ -17,9 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
+#include <cmath>
 #include <cstdlib>
-#include <math.h>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlField>
@@ -83,9 +82,9 @@ static inline bool double_equal(double a, double b) {
   return ((isnan(a) && isnan(b))
           || (isinf(a)
               && isinf(b)
-              && ((bool)signbit(a) == (bool)signbit(b)))
-          || (isfinite(a)
-              && isfinite(b)
+              && (std::signbit(a) == std::signbit(b)))
+          || (std::isfinite(a)
+              && std::isfinite(b)
               && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 
@@ -523,23 +522,6 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Assignment operator.
- *
- *  Should not be used. Any call to this method will result in a call to
- *  abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"storage stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Check for deleted index.

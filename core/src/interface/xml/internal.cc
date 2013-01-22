@@ -18,10 +18,10 @@
 ** For more information: contact@centreon.com
 */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
-#include <stdlib.h>
-#include <string.h>
 #include "interface/xml/internal.hh"
 
 using namespace interface::xml;

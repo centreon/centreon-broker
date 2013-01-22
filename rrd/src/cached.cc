@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cerrno>
 #include <cstdlib>
 #include <QFile>
@@ -247,33 +246,6 @@ void cached::update(time_t t, QString const& value) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any attempt to use the copy constructor will result in a call to
- *  abort().
- *
- *  @param[in] c Unused.
- */
-cached::cached(cached const& c) : backend(c) {
-  assert(!"RRD cached object is not copyable");
-  abort();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] c Unused.
- *
- *  @return This object.
- */
-cached& cached::operator=(cached const& c) {
-  (void)c;
-  assert(!"RRD cached object is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Send data to rrdcached.

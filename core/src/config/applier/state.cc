@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <QCoreApplication>
@@ -145,42 +144,3 @@ void state::unload() {
  *  Default constructor.
  */
 state::state() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-state::state(state const& s) {
-  (void)s;
-  _internal_copy(s);
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-state& state::operator=(state const& s) {
-  (void)s;
-  _internal_copy(s);
-  return (*this);
-}
-
-/**
- *  Calls abort().
- *
- *  @param[in] s Unused.
- */
-void state::_internal_copy(state const& s) {
-  (void)s;
-  assert(!"state configuration applier is not copyable");
-  abort();
-  return ;
-}

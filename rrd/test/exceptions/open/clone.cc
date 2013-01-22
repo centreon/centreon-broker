@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <memory>
-#include <string.h>
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 
 using namespace com::centreon::broker;

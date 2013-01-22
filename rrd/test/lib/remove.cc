@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
 #include <QDir>
 #include <QFile>
 #include <QString>
-#include <time.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 

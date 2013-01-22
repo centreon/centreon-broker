@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
+#include <cstring>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker;

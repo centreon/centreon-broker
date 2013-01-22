@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <QCoreApplication>
 #include <QDir>
 #include <QTime>
-#include <stdlib.h>
-#include <time.h>
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"

@@ -17,10 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <ctime>
 #include <QDomDocument>
 #include <QDomElement>
-#include <time.h>
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
@@ -630,7 +629,7 @@ void correlator::_correlate_host_service_status(
         logging::info(logging::medium)
           << "correlation: issue on node (" << n->host_id
           << ", " << n->service_id << ") is over";
-        
+
         // Issue parenting deletion.
         for (QList<node*>::const_iterator
                it(n->depends_on().begin()),

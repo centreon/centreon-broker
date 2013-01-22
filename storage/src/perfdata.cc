@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
@@ -323,7 +323,7 @@ void perfdata::warning_mode(bool m) throw () {
 /**
  *  Comparison helper.
  *
- *  @param[in] a First value. 
+ *  @param[in] a First value.
  *  @param[in] b Second value.
  *
  *  @return true if a and b are equal.
@@ -332,9 +332,9 @@ static inline bool double_equal(double a, double b) {
   return ((isnan(a) && isnan(b))
           || (isinf(a)
               && isinf(b)
-              && ((bool)signbit(a) == (bool)signbit(b)))
-          || (isfinite(a)
-              && isfinite(b)
+              && (std::signbit(a) == std::signbit(b)))
+          || (std::isfinite(a)
+              && std::isfinite(b)
               && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 

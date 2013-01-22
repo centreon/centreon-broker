@@ -16,7 +16,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
+#include <cstring>
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 
 using namespace com::centreon::broker;

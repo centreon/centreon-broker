@@ -19,8 +19,8 @@
 #ifndef CCB_MAPPING_SOURCE_HH_
 # define CCB_MAPPING_SOURCE_HH_
 
+# include <ctime>
 # include <QString>
-# include <time.h>
 # include "com/centreon/broker/io/data.hh"
 
 namespace                        com {

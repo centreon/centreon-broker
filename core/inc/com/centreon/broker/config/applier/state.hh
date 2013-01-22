@@ -47,7 +47,6 @@ namespace           config {
                     state();
                     state(state const& s);
       state&        operator=(state const& s);
-      void          _internal_copy(state const& s);
     };
   }
 }

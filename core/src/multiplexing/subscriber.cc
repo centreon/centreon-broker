@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <ctime>
 #include <limits>
@@ -237,36 +236,6 @@ void subscriber::write(misc::shared_ptr<io::data> const& event) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  subscriber is not copyable. Any attempt to use the copy constructor
- *  will result in a call to abort().
- *
- *  @param[in] s Unused.
- */
-subscriber::subscriber(subscriber const& s) : io::stream(s) {
-  assert(!"subscriber is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  subscriber is not copyable. Any attempt to use the assignment
- *  operator will result in a call to abort().
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-subscriber& subscriber::operator=(subscriber const& s) {
-  (void)s;
-  assert(!"subscriber is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Release all events stored within the internal list.

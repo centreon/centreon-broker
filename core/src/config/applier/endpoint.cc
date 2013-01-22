@@ -18,7 +18,6 @@
 */
 
 #include <algorithm>
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <QCoreApplication>
@@ -445,36 +444,6 @@ void endpoint::unload() {
  *  Default constructor.
  */
 endpoint::endpoint() : QObject(), _outputsm(QMutex::Recursive) {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] e Object to copy.
- */
-endpoint::endpoint(endpoint const& e)
-  : QObject(), _outputsm(QMutex::Recursive) {
-  (void)e;
-  assert(false);
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] e Object to copy.
- *
- *  @return This object.
- */
-endpoint& endpoint::operator=(endpoint const& e) {
-  (void)e;
-  assert(false);
-  abort();
-  return (*this);
-}
 
 /**
  *  Create and register an endpoint according to configuration.

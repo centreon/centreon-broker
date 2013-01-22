@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cerrno>
 #include <cstdlib>
 #include "com/centreon/broker/file/cfile.hh"
@@ -146,44 +145,4 @@ unsigned long cfile::write(void const* buffer, unsigned long size) {
            << " bytes to file: " << msg);
   }
   return (retval);
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-cfile::cfile(cfile const& right) {
-  _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-cfile& cfile::operator=(cfile const& right) {
-  if (this != &right)
-    _internal_copy(right);
-  return (*this);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void cfile::_internal_copy(cfile const& right) {
-  (void)right;
-  assert(!"cfile is not copyable");
-  abort();
-  return ;
 }
