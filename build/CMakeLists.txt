@@ -418,6 +418,9 @@ add_subdirectory("storage")
 # TCP module.
 add_subdirectory("tcp")
 
+# BBDO module.
+add_subdirectory("bbdo")
+
 # NDO module.
 add_subdirectory("ndo")
 
