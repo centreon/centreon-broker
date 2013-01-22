@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_PARSER_HH_
-# define CCB_CORRELATION_PARSER_HH_
+#ifndef CCB_CORRELATION_PARSER_HH
+#  define CCB_CORRELATION_PARSER_HH
 
-# include <QMap>
-# include <QPair>
-# include <QString>
-# include <QXmlDefaultHandler>
-# include "com/centreon/broker/correlation/node.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QMap>
+#  include <QPair>
+#  include <QString>
+#  include <QXmlDefaultHandler>
+#  include "com/centreon/broker/correlation/node.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -38,22 +38,7 @@ namespace   correlation {
    *  relationships.
    */
   class     parser : private QXmlDefaultHandler {
-   private:
-    bool    _in_root;
-    bool    _is_retention;
-    QMap<QPair<unsigned int, unsigned int>, node>*
-            _nodes;
-    void    _auto_services_dependencies();
-    node*   _find_node(
-              char const* host_id,
-              char const* service_id);
-    bool    startElement(
-              QString const& uri,
-              QString const& localname,
-              QString const& qname,
-              QXmlAttributes const& attrs);
-
-   public:
+  public:
             parser();
             parser(parser const& p);
             ~parser();
@@ -61,10 +46,34 @@ namespace   correlation {
     void    parse(
               QString const& filename,
               bool is_retention,
-              QMap<QPair<unsigned int, unsigned int>, node>& nodes);
+              QMap<QPair<unsigned int, unsigned int>, node>& nodes,
+              bool recursive = false);
+
+  private:
+    void    _auto_services_dependencies();
+    node*   _find_node(
+              char const* host_id,
+              char const* service_id);
+    bool    characters(QString const& ch);
+    bool    endElement(
+              QString const& uri,
+              QString const& localname,
+              QString const& qname);
+    bool    startElement(
+              QString const& uri,
+              QString const& localname,
+              QString const& qname,
+              QXmlAttributes const& attrs);
+
+    bool    _in_include;
+    bool    _in_root;
+    QString _include_file;
+    bool    _is_retention;
+    QMap<QPair<unsigned int, unsigned int>, node>*
+            _nodes;
   };
 }
 
 CCB_END()
 
-#endif /* !CORRELATION_PARSER_HH_ */
+#endif // !CORRELATION_PARSER_HH

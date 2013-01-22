@@ -182,6 +182,20 @@ void config_remove(char const* path) {
     ::remove(oss.str().c_str());
   }
 
+  // Host dependencies file.
+  {
+    std::ostringstream oss;
+    oss << path << "/host_dependencies.cfg";
+    ::remove(oss.str().c_str());
+  }
+
+  // Service dependencies file.
+  {
+    std::ostringstream oss;
+    oss << path << "/service_dependencies.cfg";
+    ::remove(oss.str().c_str());
+  }
+
   // Misc file.
   {
     std::ostringstream oss;
@@ -205,6 +219,8 @@ void config_remove(char const* path) {
  *  @param[in] commands        Command list.
  *  @param[in] host_groups     Host group list.
  *  @param[in] service_groups  Service group list.
+ *  @param[in] host_deps       Host dependencies.
+ *  @param[in] service_deps    Service dependencies.
  */
 void config_write(
        char const* path,
@@ -213,7 +229,9 @@ void config_write(
        std::list<service>* services,
        std::list<command>* commands,
        std::list<hostgroup>* host_groups,
-       std::list<servicegroup>* service_groups) {
+       std::list<servicegroup>* service_groups,
+       std::list<hostdependency>* host_deps,
+       std::list<servicedependency>* service_deps) {
   // Create base directory.
   mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 
@@ -270,6 +288,18 @@ void config_write(
     oss << path << "/service_groups.cfg";
     service_groups_file = oss.str();
   }
+  std::string host_dependencies_file;
+  {
+    std::ostringstream oss;
+    oss << path << "/host_dependencies.cfg";
+    host_dependencies_file = oss.str();
+  }
+  std::string service_dependencies_file;
+  {
+    std::ostringstream oss;
+    oss << path << "/service_dependencies.cfg";
+    service_dependencies_file = oss.str();
+  }
   std::string misc_file;
   {
     std::ostringstream oss;
@@ -281,6 +311,8 @@ void config_write(
       << "cfg_file=" << commands_file << "\n"
       << "cfg_file=" << host_groups_file << "\n"
       << "cfg_file=" << service_groups_file << "\n"
+      << "cfg_file=" << host_dependencies_file << "\n"
+      << "cfg_file=" << service_dependencies_file << "\n"
       << "cfg_file=" << misc_file << "\n";
 
   // Additional configuration.
@@ -350,6 +382,19 @@ void config_write(
       else
         ofs << "default_contact";
       ofs << "\n";
+      if (it->parent_hosts) {
+        ofs << "  parents " << it->parent_hosts->host_name;
+        for (hostsmember* parent(it->parent_hosts->next);
+             parent;
+             parent = parent->next)
+          ofs << "," << parent->host_name;
+        ofs << "\n";
+      }
+      for (customvariablesmember* cvar(it->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        ofs << "  _" << cvar->variable_name << " "
+            << cvar->variable_value << "\n";
       ofs << "}\n\n";
     }
   ofs.close();
@@ -416,6 +461,11 @@ void config_write(
       else
         ofs << "default_contact";
       ofs << "\n";
+      for (customvariablesmember* cvar(it->custom_variables);
+           cvar;
+           cvar = cvar->next)
+        ofs << "  _" << cvar->variable_name << " "
+            << cvar->variable_value << "\n";
       ofs << "}\n\n";
     }
   ofs.close();
@@ -512,6 +562,53 @@ void config_write(
         ofs << "\n";
       }
       ofs << "}\n\n";
+    }
+  ofs.close();
+
+  // Host dependencies.
+  ofs.open(
+        host_dependencies_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open host dependencies configuration file in '"
+           << path << "'");
+  if (host_deps)
+    for (std::list<hostdependency>::iterator
+           it(host_deps->begin()),
+           end(host_deps->end());
+         it != end;
+         ++it) {
+      ofs << "define hostdependency{\n"
+          << "  dependent_host_name " << it->dependent_host_name << "\n"
+          << "  host_name " << it->host_name << "\n"
+          << "  notification_failure_criteria d,u\n"
+          << "}\n\n";
+    }
+  ofs.close();
+
+  // Service dependencies.
+  ofs.open(
+        service_dependencies_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open service dependencies configuration file in '"
+           << path << "'");
+  if (service_deps)
+    for (std::list<servicedependency>::iterator
+           it(service_deps->begin()),
+           end(service_deps->end());
+         it != end;
+         ++it) {
+      ofs << "define servicedependency{\n"
+          << "  dependent_host_name " << it->dependent_host_name << "\n"
+          << "  dependent_service_description "
+          << it->dependent_service_description << "\n"
+          << "  host_name " << it->host_name << "\n"
+          << "  service_description " << it->service_description << "\n"
+          << "  notification_failure_criteria w,c,u\n"
+          << "}\n\n";
     }
   ofs.close();
 

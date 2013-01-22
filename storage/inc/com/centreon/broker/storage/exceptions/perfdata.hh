@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,47 +17,46 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH_
-# define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH_
+#ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
+#  define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 
-# include "com/centreon/broker/exceptions/msg.hh"
+#  include "com/centreon/broker/exceptions/msg.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          storage {
-        namespace        exceptions {
-          /**
-           *  @class perfdata perfdata.hh "com/centreon/broker/storage/exceptions/perfdata.hh"
-           *  @brief Perfdata exception.
-           *
-           *  Exception thrown when handling performance data.
-           */
-          class          perfdata : public broker::exceptions::msg {
-           public:
-                         perfdata() throw ();
-                         perfdata(perfdata const& pd) throw ();
-                         ~perfdata() throw ();
-            perfdata&    operator=(perfdata const& pdf) throw ();
-            virtual broker::exceptions::msg*
-                         clone() const;
-            virtual void rethrow() const;
+CCB_BEGIN()
 
-            /**
-             *  Insert data in message.
-             *
-             *  @param[in] t Data to insert.
-             */
-            template     <typename T>
-            perfdata&    operator<<(T t) throw () {
-              broker::exceptions::msg::operator<<(t);
-              return (*this);
-            }
-          };
-        }
+namespace          storage {
+  namespace        exceptions {
+    /**
+     *  @class perfdata perfdata.hh "com/centreon/broker/storage/exceptions/perfdata.hh"
+     *  @brief Perfdata exception.
+     *
+     *  Exception thrown when handling performance data.
+     */
+    class          perfdata : public broker::exceptions::msg {
+    public:
+                   perfdata() throw ();
+                   perfdata(perfdata const& pd) throw ();
+                   ~perfdata() throw ();
+      perfdata&    operator=(perfdata const& pdf) throw ();
+      virtual broker::exceptions::msg*
+                   clone() const;
+      virtual void rethrow() const;
+
+      /**
+       *  Insert data in message.
+       *
+       *  @param[in] t Data to insert.
+       */
+      template     <typename T>
+      perfdata&    operator<<(T t) throw () {
+        broker::exceptions::msg::operator<<(t);
+        return (*this);
       }
-    }
+    };
   }
 }
 
-#endif /* !CCB_STORAGE_EXCEPTIONS_PERFDATA_HH_ */
+CCB_END()
+
+#endif // !CCB_STORAGE_EXCEPTIONS_PERFDATA_HH

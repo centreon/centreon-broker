@@ -34,6 +34,8 @@ void         config_write(
                std::list<service>* services = NULL,
                std::list<command>* commands = NULL,
                std::list<hostgroup>* host_groups = NULL,
-               std::list<servicegroup>* service_groups = NULL);
+               std::list<servicegroup>* service_groups = NULL,
+               std::list<hostdependency>* host_deps = NULL,
+               std::list<servicedependency>* service_deps = NULL);
 
 #endif // !TEST_CONFIG_HH

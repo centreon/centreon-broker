@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,17 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PARSER_COMMON_HH_
-# define PARSER_COMMON_HH_
+#ifndef PARSER_COMMON_HH
+#  define PARSER_COMMON_HH
 
-# include <QMap>
-# include <QPair>
-# include "com/centreon/broker/correlation/node.hh"
+#  include <QMap>
+#  include <QPair>
+#  include "com/centreon/broker/correlation/node.hh"
 
-bool compare_states(
+void compare_states(
        QMap<QPair<unsigned int, unsigned int>,
          com::centreon::broker::correlation::node> const& n1,
        QMap<QPair<unsigned int, unsigned int>,
          com::centreon::broker::correlation::node> const& n2);
 
-#endif /* !PARSER_COMMON_HH_ */
+#endif // !PARSER_COMMON_HH

@@ -428,12 +428,16 @@ configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
+configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
+  "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
   "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
 configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
@@ -489,6 +493,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/groups_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Dependencies to SQL.
+  set(TEST_NAME "running_dependencies_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/dependencies_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # SQL transactions.
   set(TEST_NAME "running_sql_transactions")
   add_executable("${TEST_NAME}"
@@ -505,6 +515,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_comments_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/comments_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Custom variables to SQL.
+  set(TEST_NAME "running_custom_variables_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/custom_variables_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Downtimes to SQL.
