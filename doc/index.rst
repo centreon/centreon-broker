@@ -32,3 +32,4 @@ Contents:
    installation/index
    user/index
    exploit/index
+   dev/index
