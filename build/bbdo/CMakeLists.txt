@@ -29,8 +29,10 @@ set(BBDO "80-bbdo")
 set(BBDO "${BBDO}" PARENT_SCOPE)
 add_library("${BBDO}" SHARED
   # Sources.
+  "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   # Headers.
+  "${INC_DIR}/factory.hh"
 )
 target_link_libraries("${BBDO}" ${QT_LIBRARIES})
 set_target_properties("${BBDO}" PROPERTIES PREFIX "")
