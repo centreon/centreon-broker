@@ -24,15 +24,24 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/bbdp/test")
 include_directories("${INC_DIR}")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bbdo")
 
+# Some files must be processed by Qt's moc.
+unset(QT_WRAPPED_SOURCES)
+qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/acceptor.hh"
+)
+
 # BBDO module.
 set(BBDO "80-bbdo")
 set(BBDO "${BBDO}" PARENT_SCOPE)
 add_library("${BBDO}" SHARED
   # Sources.
+  "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  ${QT_WRAPPED_SOURCES}
   # Headers.
+  "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
 )
