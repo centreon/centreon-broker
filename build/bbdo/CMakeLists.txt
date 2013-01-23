@@ -22,6 +22,9 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/bbdo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/bbdo/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/bbdp/test")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bbdo")
 
 # Some files must be processed by Qt's moc.
@@ -38,12 +41,14 @@ add_library("${BBDO}" SHARED
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/internal.hh"
 )
 target_link_libraries("${BBDO}" ${QT_LIBRARIES})
 set_target_properties("${BBDO}" PROPERTIES PREFIX "")

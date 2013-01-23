@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -47,9 +49,13 @@ extern "C" {
     // Increment instance number.
     if (!instances++) {
       // Register BBDO protocol.
-      // XXX
+      io::protocols::instance().reg(
+                                  "BBDO",
+                                  bbdo::factory(),
+                                  7,
+                                  7);
       // Initialize mappings.
-      // XXX
+      bbdo::initialize();
     }
     return ;
   }
