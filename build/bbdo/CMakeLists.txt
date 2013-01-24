@@ -43,12 +43,14 @@ add_library("${BBDO}" SHARED
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/output.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
+  "${INC_DIR}/output.hh"
 )
 target_link_libraries("${BBDO}" ${QT_LIBRARIES})
 set_target_properties("${BBDO}" PROPERTIES PREFIX "")

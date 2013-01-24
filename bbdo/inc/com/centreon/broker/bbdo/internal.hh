@@ -20,10 +20,12 @@
 #ifndef CCB_BBDO_INTERNAL_HH
 #  define CCB_BBDO_INTERNAL_HH
 
-#  include <string>
+#  include <QByteArray>
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "mapping.hh"
+
+#  define BBDO_HEADER_SIZE 8
 
 CCB_BEGIN()
 
@@ -34,7 +36,7 @@ namespace                 bbdo {
     void (*               getter)(
                             T const&,
                             data_member<T> const&,
-                            std::string&);
+                            QByteArray&);
     unsigned int (*       setter)(
                             T&,
                             data_member<T> const&,

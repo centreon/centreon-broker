@@ -49,7 +49,7 @@ template <typename T>
 static void get_boolean(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   char c(t.*(member.b) ? 1 : 0);
   buffer.append(&c, 1);
   return ;
@@ -62,7 +62,7 @@ template <typename T>
 static void get_double(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   char str[32];
   snprintf(str, sizeof(str), "%f", t.*(member.d));
   size_t strsz(strlen(str));
@@ -77,7 +77,7 @@ template <typename T>
 static void get_integer(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   uint32_t value(htonl(t.*(member.i)));
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),
@@ -92,7 +92,7 @@ template <typename T>
 static void get_short(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   uint16_t value(htons(t.*(member.s)));
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),
@@ -107,7 +107,7 @@ template <typename T>
 static void get_string(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   buffer.append(qPrintable(t.*(member.S)));
   char c('\0');
   buffer.append(&c, 1);
@@ -121,7 +121,7 @@ template <typename T>
 static void get_timestamp(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   long long ts((t.*(member.t)).get_time_t());
   uint32_t high(htonl(ts / (1ll << 32)));
   uint32_t low(htonl(ts % (1ll << 32)));
@@ -141,7 +141,7 @@ template <typename T>
 static void get_uint(
               T const& t,
               data_member<T> const& member,
-              std::string& buffer) {
+              QByteArray& buffer) {
   uint32_t value(htonl(t.*(member.u)));
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),

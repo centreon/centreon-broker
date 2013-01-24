@@ -18,9 +18,10 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/bbdo/acceptor.hh"
+#include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -133,7 +134,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
       else {
         in = misc::shared_ptr<io::stream>(
                new multiplexing::subscriber(_temporary.get()));
-        ; // out = misc::shared_ptr<io::stream>(new bbdo::output);
+        out = misc::shared_ptr<io::stream>(new bbdo::output);
         out->read_from(base);
         out->write_to(base);
       }
