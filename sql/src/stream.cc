@@ -27,7 +27,6 @@
 #include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
-#include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"

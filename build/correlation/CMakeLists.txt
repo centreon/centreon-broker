@@ -24,11 +24,12 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/com/centreon/broker/correlation/correlator.hh")
+  "${INC_DIR}/correlator.hh")
 
 # Correlation module.
 set(CORRELATION "20-correlation")
@@ -46,15 +47,16 @@ add_library("${CORRELATION}" SHARED
   "${SRC_DIR}/service_state.cc"
   "${SRC_DIR}/state.cc"
   # Headers.
-  "${INC_DIR}/com/centreon/broker/correlation/correlator.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/engine_state.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/host_state.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/issue.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/issue_parent.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/node.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/parser.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/service_state.hh"
-  "${INC_DIR}/com/centreon/broker/correlation/state.hh"
+  "${INC_DIR}/correlator.hh"
+  "${INC_DIR}/engine_state.hh"
+  "${INC_DIR}/events.hh"
+  "${INC_DIR}/host_state.hh"
+  "${INC_DIR}/issue.hh"
+  "${INC_DIR}/issue_parent.hh"
+  "${INC_DIR}/node.hh"
+  "${INC_DIR}/parser.hh"
+  "${INC_DIR}/service_state.hh"
+  "${INC_DIR}/state.hh"
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,10 +24,7 @@
 #  include <string>
 #  include <utility>
 #  include <vector>
-#  include "com/centreon/broker/correlation/host_state.hh"
-#  include "com/centreon/broker/correlation/issue.hh"
-#  include "com/centreon/broker/correlation/issue_parent.hh"
-#  include "com/centreon/broker/correlation/service_state.hh"
+#  include "com/centreon/broker/correlation/events.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/events.hh"
 #  include "mapping.hh"

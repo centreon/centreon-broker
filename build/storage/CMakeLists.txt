@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2013 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -24,6 +24,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/storage/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
+set(INC_DIR "${INC_DIR}/com/centreon/broker/storage")
 
 # Storage module.
 set(STORAGE "20-storage")
@@ -43,17 +44,18 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/status.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
-  "${INC_DIR}/com/centreon/broker/storage/connector.hh"
-  "${INC_DIR}/com/centreon/broker/storage/exceptions/perfdata.hh"
-  "${INC_DIR}/com/centreon/broker/storage/factory.hh"
-  "${INC_DIR}/com/centreon/broker/storage/metric.hh"
-  "${INC_DIR}/com/centreon/broker/storage/parser.hh"
-  "${INC_DIR}/com/centreon/broker/storage/perfdata.hh"
-  "${INC_DIR}/com/centreon/broker/storage/rebuild.hh"
-  "${INC_DIR}/com/centreon/broker/storage/rebuilder.hh"
-  "${INC_DIR}/com/centreon/broker/storage/remove_graph.hh"
-  "${INC_DIR}/com/centreon/broker/storage/status.hh"
-  "${INC_DIR}/com/centreon/broker/storage/stream.hh"
+  "${INC_DIR}/connector.hh"
+  "${INC_DIR}/events.hh"
+  "${INC_DIR}/exceptions/perfdata.hh"
+  "${INC_DIR}/factory.hh"
+  "${INC_DIR}/metric.hh"
+  "${INC_DIR}/parser.hh"
+  "${INC_DIR}/perfdata.hh"
+  "${INC_DIR}/rebuild.hh"
+  "${INC_DIR}/rebuilder.hh"
+  "${INC_DIR}/remove_graph.hh"
+  "${INC_DIR}/status.hh"
+  "${INC_DIR}/stream.hh"
 )
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")

@@ -24,11 +24,7 @@
 #include <cstring>
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/correlation/engine_state.hh"
-#include "com/centreon/broker/correlation/host_state.hh"
-#include "com/centreon/broker/correlation/issue.hh"
-#include "com/centreon/broker/correlation/issue_parent.hh"
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/events.hh"

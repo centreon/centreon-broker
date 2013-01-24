@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/correlation/engine_state.hh"
-#include "com/centreon/broker/correlation/host_state.hh"
-#include "com/centreon/broker/correlation/issue.hh"
-#include "com/centreon/broker/correlation/issue_parent.hh"
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -29,10 +25,7 @@
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/ndo/output.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/storage/metric.hh"
-#include "com/centreon/broker/storage/rebuild.hh"
-#include "com/centreon/broker/storage/remove_graph.hh"
-#include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/events.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
 

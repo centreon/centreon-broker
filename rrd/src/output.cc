@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,11 +28,8 @@
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/rrd/output.hh"
-#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/events.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
-#include "com/centreon/broker/storage/rebuild.hh"
-#include "com/centreon/broker/storage/remove_graph.hh"
-#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
