@@ -41,6 +41,7 @@ add_library("${BBDO}" SHARED
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/input.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
@@ -49,6 +50,7 @@ add_library("${BBDO}" SHARED
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/input.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/output.hh"
 )

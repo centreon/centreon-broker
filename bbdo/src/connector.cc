@@ -19,6 +19,7 @@
 
 #include <memory>
 #include "com/centreon/broker/bbdo/connector.hh"
+#include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/output.hh"
 
 using namespace com::centreon::broker;
@@ -102,7 +103,7 @@ misc::shared_ptr<io::stream> connector::open() {
         if (_is_out)
           ; // bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::stream);
         else
-          ; // bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::input);
+          bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::input);
       }
       else
         bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::output);
