@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
 
@@ -110,7 +111,7 @@ io::endpoint* factory::new_endpoint(
   (void)cfg;
   io::endpoint* retval(NULL);
   if (is_acceptor)
-    ; // retval = new bbdo::acceptor(is_output, temporary);
+    retval = new bbdo::acceptor(is_output, temporary);
   else
     retval = new bbdo::connector(is_input, is_output);
   return (retval);

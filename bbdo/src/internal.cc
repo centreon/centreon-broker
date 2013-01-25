@@ -283,6 +283,7 @@ static void static_init() {
     if (mapped_type<T>::members[i].id) {
       bbdo_mapped_type<T>::table.resize(bbdo_mapped_type<T>::table.size() + 1);
       getter_setter<T>& gs(bbdo_mapped_type<T>::table.back());
+      gs.member = &mapped_type<T>::members[i].member;
       switch (mapped_type<T>::members[i].type) {
       case mapped_data<T>::BOOL:
         gs.getter = &get_boolean<T>;
