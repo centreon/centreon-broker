@@ -32,8 +32,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-// BBDO 
-
 /**************************************
 *                                     *
 *          Static Functions           *
