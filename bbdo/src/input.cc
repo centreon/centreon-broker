@@ -25,6 +25,7 @@
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/events.hh"
 
@@ -183,6 +184,9 @@ void input::read(misc::shared_ptr<io::data>& d) {
                  ntohl(*static_cast<uint32_t const*>(
                           static_cast<void const*>(
                             _buffer.c_str() + _processed + 4))));
+  logging::debug(logging::high)
+    << "BBDO: got new header with a size of " << packet_size
+    << " and an ID of " << event_id;
 
   // Read data payload.
   _processed += BBDO_HEADER_SIZE;
@@ -221,6 +225,8 @@ void input::read(misc::shared_ptr<io::data>& d) {
     }
 
   // Mark data as processed.
+  logging::debug(logging::medium) << "BBDO: unserialized "
+    << total_size + BBDO_HEADER_SIZE << " bytes";
   _processed += total_size;
 
   return ;

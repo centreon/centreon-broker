@@ -266,10 +266,10 @@ void output::write(misc::shared_ptr<io::data> const& e) {
           << "BBDO: serializing event of type '" << event_type << "'";
         misc::shared_ptr<io::raw> data(new io::raw);
         (*helpers[i].routine)(*data, &*e);
-        _to->write(data.staticCast<io::data>());
         logging::debug(logging::medium) << "BBDO: event of type '"
           << event_type << "' successfully serialized in "
           << data->size() << " bytes";
+        _to->write(data.staticCast<io::data>());
         break ;
       }
   }

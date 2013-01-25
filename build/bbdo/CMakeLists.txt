@@ -46,6 +46,8 @@ add_library("${BBDO}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
   "${SRC_DIR}/stream.cc"
+  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
+  "${PROJECT_SOURCE_DIR}/ndo/src/temp_mapping.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/acceptor.hh"
