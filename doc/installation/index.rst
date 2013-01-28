@@ -245,11 +245,11 @@ Variable            Description                                          Default
 =================== ==================================================== ============================================
 WITH_DAEMONS        Set a list of Centreon Broker sysv start up script.  OFF
 WITH_GROUP          Set the group for Centreon Broker installation.      root
-WITH_PREFIX         Base directory for Centreon Broker installation. If  ``${WITH_PREFIX}/bin``
+WITH_PREFIX         Base directory for Centreon Broker installation. If  ``/usr/local``
                     other prefixes are expressed as relative paths, they
-                    are relative to this path. /usr/local
-WITH_PREFIX_BIN     Path in which binaries will be installed.            ``${WITH_PREFIX}/etc``
-WITH_PREFIX_CONF    Define specific directory for Centreon Engine
+                    are relative to this path.
+WITH_PREFIX_BIN     Path in which binaries will be installed.            ``${WITH_PREFIX}/bin``
+WITH_PREFIX_CONF    Define specific directory for Centreon Engine        ``${WITH_PREFIX}/etc``
                     configuration.
 WITH_PREFIX_INC     Define specific directory for Centreon Broker        ``${WITH_PREFIX}/include/centreon-broker``
                     headers.
