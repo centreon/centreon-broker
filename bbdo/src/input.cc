@@ -171,19 +171,39 @@ void input::read(misc::shared_ptr<io::data>& d) {
   std::auto_ptr<io::data> e;
   d.clear();
 
-  // Read next packet header.
-  _buffer_must_have_unprocessed(BBDO_HEADER_SIZE);
+  // Get header informations.
+  unsigned int event_id;
+  unsigned int packet_size;
+  while (1) {
+    // Read next packet header.
+    _buffer_must_have_unprocessed(BBDO_HEADER_SIZE);
 
-  // Packet size.
-  unsigned int packet_size(
-                 ntohs(*static_cast<uint16_t const*>(
-                          static_cast<void const*>(
-                            _buffer.c_str() + _processed + 2))));
-  // Get event ID.
-  unsigned int event_id(
-                 ntohl(*static_cast<uint32_t const*>(
-                          static_cast<void const*>(
-                            _buffer.c_str() + _processed + 4))));
+    // Packet size.
+    packet_size = ntohs(*static_cast<uint16_t const*>(
+                           static_cast<void const*>(
+                             _buffer.c_str() + _processed + 2)));
+
+    // Get event ID.
+    event_id = ntohl(*static_cast<uint32_t const*>(
+                        static_cast<void const*>(
+                          _buffer.c_str() + _processed + 4)));
+
+    // Get checksum.
+    unsigned chksum(ntohs(*static_cast<uint16_t const*>(
+                             static_cast<void const*>(
+                               _buffer.c_str() + _processed))));
+
+    // Check header integrity.
+    if (chksum == qChecksum(_buffer.c_str() + _processed + 2, 6))
+      break ;
+
+    // Mark data as processed.
+    logging::debug(logging::low)
+      << "BBDO: header integrity check failed";
+    ++_processed;
+  }
+
+  // Log.
   logging::debug(logging::high)
     << "BBDO: got new header with a size of " << packet_size
     << " and an ID of " << event_id;
