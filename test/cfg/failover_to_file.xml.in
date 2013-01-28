@@ -18,7 +18,7 @@
     <name>InputFailoverToFileUnitTest</name>
     <type>tcp</type>
     <port>5680</port>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </input>
   <output>
     <name>OutputFailoverToFileUnitTest</name>

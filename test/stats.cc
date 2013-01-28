@@ -77,7 +77,7 @@ int main() {
           << "    <type>tcp</type>\n"
           << "    <host>localhost</host>\n"
           << "    <port>5569</port>\n"
-          << "    <protocol>ndo</protocol>\n"
+          << "    <protocol>bbdo</protocol>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();

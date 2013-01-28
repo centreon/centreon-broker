@@ -19,7 +19,7 @@
     <type>tcp</type>
     <host>localhost</host>
     <port>5678</port>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
     <compression>yes</compression>
     <compression_level>8</compression_level>
     <compression_buffer>8000</compression_buffer>

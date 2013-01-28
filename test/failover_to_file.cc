@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -95,14 +95,14 @@ int main() {
           << "    <type>tcp</type>\n"
           << "    <host>localhost</host>\n"
           << "    <port>5680</port>\n"
-          << "    <protocol>ndo</protocol>\n"
+          << "    <protocol>bbdo</protocol>\n"
           << "    <retry_interval>1</retry_interval>\n"
           << "  </output>\n"
           << "  <output>\n"
           << "    <name>ToRetentionFile</name>\n"
           << "    <type>file</type>\n"
           << "    <path>" << retention_file_path << "</path>\n"
-          << "    <protocol>ndo</protocol>\n"
+          << "    <protocol>bbdo</protocol>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();
