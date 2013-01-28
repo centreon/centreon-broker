@@ -64,8 +64,9 @@ static void get_double(
               data_member<T> const& member,
               QByteArray& buffer) {
   char str[32];
-  snprintf(str, sizeof(str), "%f", t.*(member.d));
-  size_t strsz(strlen(str));
+  size_t strsz(snprintf(str, sizeof(str), "%f", t.*(member.d)) + 1);
+  if (strsz > sizeof(str))
+    strsz = sizeof(str);
   buffer.append(str, strsz);
   return ;
 }
@@ -109,8 +110,7 @@ static void get_string(
               data_member<T> const& member,
               QByteArray& buffer) {
   buffer.append(qPrintable(t.*(member.S)));
-  char c('\0');
-  buffer.append(&c, 1);
+  buffer.append('\0');
   return ;
 }
 
@@ -249,10 +249,10 @@ static unsigned int set_timestamp(
            << "BBDO: cannot extract timestamp value: "
            << size << " bytes left in packet");
   uint32_t const* ptr(static_cast<uint32_t const*>(data));
-  long long val(*ptr);
+  long long val(ntohl(*ptr));
   ++ptr;
   val <<= 32;
-  val |= *ptr;
+  val |= ntohl(*ptr);
   t.*(member.t) = val;
   return (2 * sizeof(uint32_t));
 }
