@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/connector.hh"
 #include "com/centreon/broker/rrd/output.hh"
 
@@ -140,7 +144,7 @@ void connector::set_cached_net(unsigned short port) throw () {
  *  @param[in] metrics_path Where metrics RRD files will be written.
  */
 void connector::set_metrics_path(QString const& metrics_path) {
-  _metrics_path = metrics_path;
+  _metrics_path = _real_path_of(metrics_path);
   return ;
 }
 
@@ -150,7 +154,7 @@ void connector::set_metrics_path(QString const& metrics_path) {
  *  @param[in] status_path Where status RRD files will be written.
  */
 void connector::set_status_path(QString const& status_path) {
-  _status_path = status_path;
+  _status_path = _real_path_of(status_path);
   return ;
 }
 
@@ -193,4 +197,45 @@ void connector::_internal_copy(connector const& right) {
   _write_metrics = right._write_metrics;
   _write_status = right._write_status;
   return ;
+}
+
+/**
+ *  Get the real path (absolute, expanded) of a path.
+ *
+ *  @param[in] path Path to resolve.
+ *
+ *  @return Real path.
+ */
+QString connector::_real_path_of(QString const& path) {
+  // Variables.
+  QString retval;
+  char* real_path(realpath(qPrintable(path), NULL));
+
+  // Resolution success.
+  if (real_path) {
+    logging::info(logging::medium) << "RRD: path '" << path
+      << "' resolved as '" << real_path << "'";
+    try {
+      retval = real_path;
+    }
+    catch (...) {
+      free(real_path);
+      throw ;
+    }
+    free(real_path);
+  }
+  // Resolution failure.
+  else {
+    char const* msg(strerror(errno));
+    logging::error(logging::high) << "RRD: could not resolve path '"
+      << path << "', using it as such: " << msg;
+    retval = path;
+  }
+
+  // Last slash.
+  int last_index(retval.size() - 1);
+  if (retval[last_index] != '/')
+    retval.append("/");
+
+  return (retval);
 }

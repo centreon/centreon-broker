@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,6 +52,7 @@ namespace          rrd {
 
   private:
     void           _internal_copy(connector const& right);
+    QString        _real_path_of(QString const& path);
 
     QString        _cached_local;
     unsigned short _cached_port;
