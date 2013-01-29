@@ -20,6 +20,7 @@
 #include "com/centreon/broker/bbdo/factory.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 
@@ -48,6 +49,10 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
+      // Print protocol version.
+      logging::info(logging::high)
+        << "BBDO: using protocol version " << BBDO_VERSION_MAJOR
+        << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
       // Register BBDO protocol.
       io::protocols::instance().reg(
                                   "BBDO",

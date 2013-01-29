@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,11 +56,11 @@ namespace                    io {
                                misc::shared_ptr<io::data>& d,
                                time_t timeout,
                                bool* timed_out = NULL);
-    void                     read_from(misc::shared_ptr<stream> from);
+    virtual void             read_from(misc::shared_ptr<stream> from);
     virtual void             statistics(std::string& buffer) const;
     virtual void             update();
     virtual void             write(misc::shared_ptr<data> const& d) = 0;
-    void                     write_to(misc::shared_ptr<stream> to);
+    virtual void             write_to(misc::shared_ptr<stream> to);
 
   protected:
     misc::shared_ptr<stream> _from;

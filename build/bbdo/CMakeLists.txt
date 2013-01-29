@@ -46,6 +46,7 @@ add_library("${BBDO}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
   "${SRC_DIR}/stream.cc"
+  "${SRC_DIR}/version_response.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   "${PROJECT_SOURCE_DIR}/ndo/src/temp_mapping.cc"
   ${QT_WRAPPED_SOURCES}
@@ -57,6 +58,7 @@ add_library("${BBDO}" SHARED
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/output.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/version_response.hh"
 )
 target_link_libraries("${BBDO}" ${QT_LIBRARIES})
 set_target_properties("${BBDO}" PROPERTIES PREFIX "")

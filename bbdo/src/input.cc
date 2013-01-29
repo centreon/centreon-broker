@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -63,6 +64,30 @@ static io::data* unserialize(char const* buffer, unsigned int size) {
     buffer += processed;
   }
   return (t.release());
+}
+
+/**
+ *  Handle a version response.
+ */
+static io::data* handle_version_response(
+                   char const* buffer,
+                   unsigned int size) {
+  std::auto_ptr<version_response>
+    version(static_cast<version_response*>(
+              unserialize<version_response>(buffer, size)));
+  if (version->bbdo_major != BBDO_VERSION_MAJOR)
+    throw (exceptions::msg() << "BBDO: peer is using protocol version "
+           << version->bbdo_major << "." << version->bbdo_minor
+           << "." << version->bbdo_patch
+           << " whereas we're using protocol version "
+           << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+           << BBDO_VERSION_PATCH);
+  logging::info(logging::medium)
+    << "BBDO: peer is using protocol version " << version->bbdo_major
+    << "." << version->bbdo_minor << "." << version->bbdo_patch
+    << ", we're using version " << BBDO_VERSION_MAJOR << "."
+    << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+  return (NULL);
 }
 
 /**************************************
@@ -131,40 +156,76 @@ void input::read(misc::shared_ptr<io::data>& d) {
     unsigned int id;
     io::data* (* routine)(char const*, unsigned int);
   } const helpers[] = {
-    { 1, &unserialize<neb::acknowledgement> },
-    { 2, &unserialize<neb::comment> },
-    { 3, &unserialize<neb::custom_variable> },
-    { 4, &unserialize<neb::custom_variable_status> },
-    { 5, &unserialize<neb::downtime> },
-    { 6, &unserialize<neb::event_handler> },
-    { 7, &unserialize<neb::flapping_status> },
-    { 8, &unserialize<neb::host> },
-    { 9, &unserialize<neb::host_check> },
-    { 10, &unserialize<neb::host_dependency> },
-    { 11, &unserialize<neb::host_group> },
-    { 12, &unserialize<neb::host_group_member> },
-    { 13, &unserialize<neb::host_parent> },
-    { 14, &unserialize<neb::host_status> },
-    { 15, &unserialize<neb::instance> },
-    { 16, &unserialize<neb::instance_status> },
-    { 17, &unserialize<neb::log_entry> },
-    { 18, &unserialize<neb::module> },
-    { 19, &unserialize<neb::notification> },
-    { 20, &unserialize<neb::service> },
-    { 21, &unserialize<neb::service_check> },
-    { 22, &unserialize<neb::service_dependency> },
-    { 23, &unserialize<neb::service_group> },
-    { 24, &unserialize<neb::service_group_member> },
-    { 25, &unserialize<neb::service_status> },
-    { 26, &unserialize<storage::metric> },
-    { 27, &unserialize<storage::rebuild> },
-    { 28, &unserialize<storage::remove_graph> },
-    { 29, &unserialize<storage::status> },
-    { 30, &unserialize<correlation::engine_state> },
-    { 31, &unserialize<correlation::host_state> },
-    { 32, &unserialize<correlation::issue> },
-    { 33, &unserialize<correlation::issue_parent> },
-    { 34, &unserialize<correlation::service_state> }
+    { BBDO_ID(BBDO_NEB_TYPE, 1),
+      &unserialize<neb::acknowledgement> },
+    { BBDO_ID(BBDO_NEB_TYPE, 2),
+      &unserialize<neb::comment> },
+    { BBDO_ID(BBDO_NEB_TYPE, 3),
+      &unserialize<neb::custom_variable> },
+    { BBDO_ID(BBDO_NEB_TYPE, 4),
+      &unserialize<neb::custom_variable_status> },
+    { BBDO_ID(BBDO_NEB_TYPE, 5),
+      &unserialize<neb::downtime> },
+    { BBDO_ID(BBDO_NEB_TYPE, 6),
+      &unserialize<neb::event_handler> },
+    { BBDO_ID(BBDO_NEB_TYPE, 7),
+      &unserialize<neb::flapping_status> },
+    { BBDO_ID(BBDO_NEB_TYPE, 8),
+      &unserialize<neb::host> },
+    { BBDO_ID(BBDO_NEB_TYPE, 9),
+      &unserialize<neb::host_check> },
+    { BBDO_ID(BBDO_NEB_TYPE, 10),
+      &unserialize<neb::host_dependency> },
+    { BBDO_ID(BBDO_NEB_TYPE, 11),
+      &unserialize<neb::host_group> },
+    { BBDO_ID(BBDO_NEB_TYPE, 12),
+      &unserialize<neb::host_group_member> },
+    { BBDO_ID(BBDO_NEB_TYPE, 13),
+      &unserialize<neb::host_parent> },
+    { BBDO_ID(BBDO_NEB_TYPE, 14),
+      &unserialize<neb::host_status> },
+    { BBDO_ID(BBDO_NEB_TYPE, 15),
+      &unserialize<neb::instance> },
+    { BBDO_ID(BBDO_NEB_TYPE, 16),
+      &unserialize<neb::instance_status> },
+    { BBDO_ID(BBDO_NEB_TYPE, 17),
+      &unserialize<neb::log_entry> },
+    { BBDO_ID(BBDO_NEB_TYPE, 18),
+      &unserialize<neb::module> },
+    { BBDO_ID(BBDO_NEB_TYPE, 19),
+      &unserialize<neb::notification> },
+    { BBDO_ID(BBDO_NEB_TYPE, 20),
+      &unserialize<neb::service> },
+    { BBDO_ID(BBDO_NEB_TYPE, 21),
+      &unserialize<neb::service_check> },
+    { BBDO_ID(BBDO_NEB_TYPE, 22),
+      &unserialize<neb::service_dependency> },
+    { BBDO_ID(BBDO_NEB_TYPE, 23),
+      &unserialize<neb::service_group> },
+    { BBDO_ID(BBDO_NEB_TYPE, 24),
+      &unserialize<neb::service_group_member> },
+    { BBDO_ID(BBDO_NEB_TYPE, 25),
+      &unserialize<neb::service_status> },
+    { BBDO_ID(BBDO_STORAGE_TYPE, 1),
+      &unserialize<storage::metric> },
+    { BBDO_ID(BBDO_STORAGE_TYPE, 2),
+      &unserialize<storage::rebuild> },
+    { BBDO_ID(BBDO_STORAGE_TYPE, 3),
+      &unserialize<storage::remove_graph> },
+    { BBDO_ID(BBDO_STORAGE_TYPE, 4),
+      &unserialize<storage::status> },
+    { BBDO_ID(BBDO_CORRELATION_TYPE, 1),
+      &unserialize<correlation::engine_state> },
+    { BBDO_ID(BBDO_CORRELATION_TYPE, 2),
+      &unserialize<correlation::host_state> },
+    { BBDO_ID(BBDO_CORRELATION_TYPE, 3),
+      &unserialize<correlation::issue> },
+    { BBDO_ID(BBDO_CORRELATION_TYPE, 4),
+      &unserialize<correlation::issue_parent> },
+    { BBDO_ID(BBDO_CORRELATION_TYPE, 5),
+      &unserialize<correlation::service_state> },
+    { BBDO_ID(BBDO_INTERNAL_TYPE, 1),
+      &handle_version_response }
   };
 
   // Return value.
@@ -248,6 +309,13 @@ void input::read(misc::shared_ptr<io::data>& d) {
   logging::debug(logging::medium) << "BBDO: unserialized "
     << total_size + BBDO_HEADER_SIZE << " bytes";
   _processed += total_size;
+
+  // Control messages.
+  if ((event_id >> 16) == BBDO_INTERNAL_TYPE) {
+    logging::debug(logging::medium) << "BBDO: event with ID "
+      << event_id << " was a control message, launching recursive read";
+    this->read(d);
+  }
 
   return ;
 }

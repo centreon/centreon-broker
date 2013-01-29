@@ -43,6 +43,7 @@ namespace        bbdo {
     virtual void read(misc::shared_ptr<io::data>& e);
     virtual void statistics(std::string& buffer) const;
     virtual void write(misc::shared_ptr<io::data> const& e);
+    virtual void write_to(misc::shared_ptr<io::stream> to);
 
   private:
     bool         _process_out;

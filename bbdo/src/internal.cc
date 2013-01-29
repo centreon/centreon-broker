@@ -24,23 +24,48 @@
 #include <cstring>
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/storage/metric.hh"
-#include "com/centreon/broker/storage/rebuild.hh"
-#include "com/centreon/broker/storage/remove_graph.hh"
-#include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/events.hh"
+#include "mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
 *                                     *
-*          Static Functions           *
+*           Static Objects            *
 *                                     *
 **************************************/
+
+/**
+ *  Internal protocol objects mappings.
+ */
+static mapped_data<version_response> const version_response_mapping[] = {
+  mapped_data<version_response>(
+    &version_response::bbdo_major,
+    1,
+    "major"),
+  mapped_data<version_response>(
+    &version_response::bbdo_minor,
+    2,
+    "minor"),
+  mapped_data<version_response>(
+    &version_response::bbdo_patch,
+    3,
+    "patch"),
+  mapped_data<version_response>()
+};
+
+CCB_BEGIN()
+template<> const mapped_data<version_response>*
+  mapped_type<version_response>::members(version_response_mapping);
+template <> char const*
+  mapped_type<version_response>::table("version");
+CCB_END()
 
 /**
  *  Get a boolean from an object.
@@ -432,6 +457,9 @@ namespace bbdo {
   template <> std::vector<getter_setter<storage::status> >
     bbdo_mapped_type<storage::status>::table =
       std::vector<getter_setter<storage::status> >();
+  template <> std::vector<getter_setter<version_response> >
+    bbdo_mapped_type<version_response>::table = 
+      std::vector<getter_setter<version_response> >();
 }
 
 CCB_END()
@@ -476,5 +504,6 @@ void bbdo::initialize() {
   static_init<correlation::issue>();
   static_init<correlation::issue_parent>();
   static_init<correlation::service_state>();
+  static_init<version_response>();
   return ;
 }
