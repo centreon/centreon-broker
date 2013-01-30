@@ -1040,8 +1040,10 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->notify_on_recovery = h->notify_on_recovery;
     my_host->notify_on_unreachable = h->notify_on_unreachable;
     my_host->obsess_over = h->obsess_over_host;
-    if (h->plugin_output)
+    if (h->plugin_output) {
       my_host->output = h->plugin_output;
+      my_host->output.append("\n");
+    }
     if (h->long_plugin_output)
         my_host->output.append(h->long_plugin_output);
     my_host->passive_checks_enabled = h->accept_passive_host_checks;
@@ -1233,8 +1235,10 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->no_more_notifications = h->no_more_notifications;
     host_status->notifications_enabled = h->notifications_enabled;
     host_status->obsess_over = h->obsess_over_host;
-    if (h->plugin_output)
+    if (h->plugin_output) {
       host_status->output = h->plugin_output;
+      host_status->output.append("\n");
+    }
     if (h->long_plugin_output)
       host_status->output.append(h->long_plugin_output);
     host_status->passive_checks_enabled = h->accept_passive_host_checks;
@@ -1849,8 +1853,10 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->notify_on_unknown = s->notify_on_unknown;
     my_service->notify_on_warning = s->notify_on_warning;
     my_service->obsess_over = s->obsess_over_service;
-    if (s->plugin_output)
+    if (s->plugin_output) {
       my_service->output = s->plugin_output;
+      my_service->output.append("\n");
+    }
     if (s->long_plugin_output)
       my_service->output.append(s->long_plugin_output);
     my_service->passive_checks_enabled = s->accept_passive_service_checks;
@@ -2052,8 +2058,10 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->no_more_notifications = s->no_more_notifications;
     service_status->notifications_enabled = s->notifications_enabled;
     service_status->obsess_over = s->obsess_over_service;
-    if (s->plugin_output)
+    if (s->plugin_output) {
       service_status->output = s->plugin_output;
+      service_status->output.append("\n");
+    }
     if (s->long_plugin_output)
       service_status->output.append(s->long_plugin_output);
     service_status->passive_checks_enabled
