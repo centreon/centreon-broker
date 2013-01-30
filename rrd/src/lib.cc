@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -301,10 +301,16 @@ void lib::update(time_t t, QString const& value) {
         _filename.toStdString().c_str(),
         _metric.toStdString().c_str(),
         sizeof(argv) / sizeof(*argv) - 1,
-        argv))
-    throw (exceptions::update()
-           << "RRD: failed to update value for metric "
-           << _metric << ": " << rrd_get_error());
+        argv)) {
+    char const* msg(rrd_get_error());
+    if (!strstr(msg, "illegal attempt to update using time"))
+      throw (exceptions::update()
+             << "RRD: failed to update value for metric "
+             << _metric << ": " << msg);
+    else
+      logging::error(logging::low)
+        << "RRD: ignored update error: " << msg;
+  }
 
   return ;
 }

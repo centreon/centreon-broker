@@ -209,12 +209,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
           oss << static_cast<long long>(e->value);
         else
           oss << std::fixed << e->value;
-        try {
-          _backend->update(e->ctime, oss.str().c_str());
-        }
-        catch (exceptions::update const& b) {
-          logging::error(logging::low) << b.what() << " (ignored)";
-        }
+        _backend->update(e->ctime, oss.str().c_str());
       }
       else
         // Cache value.
@@ -261,12 +256,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
           oss << 75;
         else if (e->state == 2)
           oss << 0;
-        try {
-          _backend->update(e->ctime, oss.str().c_str());
-        }
-        catch (exceptions::update const& b) {
-          logging::error(logging::medium) << b.what() << " (ignored)";
-        }
+        _backend->update(e->ctime, oss.str().c_str());
       }
       else
         // Cache value.

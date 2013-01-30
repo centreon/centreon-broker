@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -236,7 +236,11 @@ void cached::update(time_t t, QString const& value) {
     _send_to_cached(oss.str().c_str());
   }
   catch (broker::exceptions::msg const& e) {
-    throw (exceptions::update() << e.what());
+    if (!strstr(e.what(), "illegal attempt to update using time"))
+      throw (exceptions::update() << e.what());
+    else
+      logging::error(logging::low)
+        << "RRD: ignored update error: " << e.what() + 5;
   }
 
   return ;
