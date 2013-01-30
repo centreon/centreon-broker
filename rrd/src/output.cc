@@ -183,8 +183,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
       QString metric_path;
       {
         std::ostringstream oss;
-        oss << _metrics_path.toStdString()
-            << "/" << e->metric_id << ".rrd";
+        oss << _metrics_path.toStdString() << e->metric_id << ".rrd";
         metric_path = oss.str().c_str();
       }
 
@@ -229,8 +228,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
       QString status_path;
       {
         std::ostringstream oss;
-        oss << _status_path.toStdString()
-            << "/" << e->index_id << ".rrd";
+        oss << _status_path.toStdString() << e->index_id << ".rrd";
         status_path = oss.str().c_str();
       }
 
@@ -276,7 +274,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     {
       std::ostringstream oss;
       oss << (e->is_index ? _status_path : _metrics_path).toStdString()
-          << "/" << e->id << ".rrd";
+          << e->id << ".rrd";
       path = oss.str().c_str();
     }
 
@@ -329,7 +327,7 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     {
       std::ostringstream oss;
       oss << (e->is_index ? _status_path : _metrics_path).toStdString()
-          << "/" << e->id << ".rrd";
+          << e->id << ".rrd";
       path = oss.str().c_str();
     }
 
