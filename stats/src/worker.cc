@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -192,6 +192,9 @@ void worker::_generate_stats_for_endpoint(
         buffer.append(fo->_last_error.toStdString());
         buffer.append(")\n");
       }
+      else if (!fo->_endpoint.isNull()
+               && !fo->_endpoint->is_acceptor())
+        buffer.append("connecting\n");
       else
         buffer.append("listening\n");
     }
