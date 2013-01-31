@@ -27,7 +27,6 @@
 #include <QThread>
 #include <QVariant>
 #include <QMutexLocker>
-#include <set>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -527,32 +526,29 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
  *  Check for deleted index.
  */
 void stream::_check_deleted_index() {
-  // List of IDs to delete.
-  std::list<unsigned int> index_to_delete;
-  std::set<unsigned int> metrics_to_delete;
+  // Info.
+  logging::info(logging::medium) << "storage: starting DB cleanup";
+  unsigned long long deleted_index(0);
+  unsigned long long deleted_metrics(0);
 
-  // Fetch index to delete.
-  {
-    QSqlQuery q(*_storage_db);
-    if (!q.exec("SELECT id FROM index_data WHERE to_delete=1")
-        || q.lastError().isValid())
-      throw (broker::exceptions::msg()
-             << "storage: could not get the list of index to delete: "
-             << q.lastError().text());
-    while (q.next())
-      index_to_delete.push_back(q.value(0).toUInt());
-  }
-
-  // Browse index to delete.
-  for (std::list<unsigned int>::iterator
-         it(index_to_delete.begin()),
-         end(index_to_delete.end());
-       it != end;
-       ++it) {
-    // Current index.
-    unsigned int index_id(*it);
+  // Delete index.
+  while (1) {
+    // Fetch next index to delete.
+    unsigned long long index_id;
+    {
+      QSqlQuery q(*_storage_db);
+      if (!q.exec("SELECT id FROM index_data WHERE to_delete=1 LIMIT 1")
+          || q.lastError().isValid())
+        throw (broker::exceptions::msg()
+               << "storage: could not query index_data to get index to delete: "
+               << q.lastError().text());
+      if (!q.next())
+        break ;
+      index_id = q.value(0).toULongLong();
+    }
 
     // Get associated metrics.
+    std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
       oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
@@ -562,11 +558,33 @@ void stream::_check_deleted_index() {
                << "storage: could not get metrics of index "
                << index_id);
       while (q.next())
-        metrics_to_delete.insert(q.value(0).toUInt());
+        metrics_to_delete.push_back(q.value(0).toULongLong());
     }
+
+    // Delete metrics.
+    _delete_metrics(metrics_to_delete);
+    deleted_metrics += metrics_to_delete.size();
+
+    // Delete index from DB.
+    {
+      std::ostringstream oss;
+      oss << "DELETE FROM index_data WHERE id=" << index_id;
+      QSqlQuery q(*_storage_db);
+      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+        logging::error(logging::low) << "storage: cannot delete index "
+          << index_id << ": " << q.lastError().text();
+    }
+    ++deleted_index;
+
+    // Remove associated graph.
+    misc::shared_ptr<remove_graph> rg(new remove_graph);
+    rg->id = index_id;
+    rg->is_index = true;
+    multiplexing::publisher().write(rg.staticCast<io::data>());
   }
 
-  // Search metrics to delete.
+  // Search standalone metrics to delete.
+  std::list<unsigned long long> metrics_to_delete;
   {
     QSqlQuery q(*_storage_db);
     if (!q.exec("SELECT metric_id FROM metrics WHERE to_delete=1")
@@ -574,14 +592,51 @@ void stream::_check_deleted_index() {
       throw (broker::exceptions::msg()
              << "storage: could not get the list of metrics to delete");
     while (q.next())
-      metrics_to_delete.insert(q.value(0).toUInt());
+      metrics_to_delete.push_back(q.value(0).toULongLong());
   }
 
+  // Delete standalone metrics.
+  _delete_metrics(metrics_to_delete);
+  deleted_metrics += metrics_to_delete.size();
+
+  // End.
+  logging::info(logging::medium) << "storage: end of DB cleanup: "
+    << deleted_metrics << " metrics and "
+    << deleted_index << " index removed";
+
+  return ;
+}
+
+/**
+ *  Clear QtSql objects.
+ */
+void stream::_clear_qsql() {
+  _insert_data_bin.reset();
+  _update_metrics.reset();
+  if (_storage_db.get() && _storage_db->isOpen()) {
+    if (_queries_per_transaction > 1)
+      _storage_db->commit();
+    _storage_db->close();
+  }
+  _storage_db.reset();
+  return ;
+}
+
+/**
+ *  Delete specified metrics.
+ *
+ *  @param[in] metrics_to_delete Metrics to delete.
+ */
+void stream::_delete_metrics(
+               std::list<unsigned long long> const& metrics_to_delete) {
   // Delete metrics.
-  while (!metrics_to_delete.empty()) {
+  for (std::list<unsigned long long>::const_iterator
+         it(metrics_to_delete.begin()),
+         end(metrics_to_delete.end());
+       it != end;
+       ++it) {
     // Current metric.
-    unsigned int metric_id(*metrics_to_delete.begin());
-    metrics_to_delete.erase(metrics_to_delete.begin());
+    unsigned long long metric_id(*it);
 
     // Do not delete entries from data_bin as the MyISAM engine used by
     // this table might lock it for a very long time. Orphaned entries
@@ -615,44 +670,6 @@ void stream::_check_deleted_index() {
     multiplexing::publisher().write(rg.staticCast<io::data>());
   }
 
-  // Delete index.
-  while (!index_to_delete.empty()) {
-    // Current index.
-    unsigned int index_id(index_to_delete.front());
-    index_to_delete.pop_front();
-
-    // Delete from DB.
-    {
-      std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE id=" << index_id;
-      QSqlQuery q(*_storage_db);
-      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
-        logging::error(logging::low) << "storage: cannot delete index "
-          << index_id << ": " << q.lastError().text();
-    }
-
-    // Remove associated graph.
-    misc::shared_ptr<remove_graph> rg(new remove_graph);
-    rg->id = index_id;
-    rg->is_index = true;
-    multiplexing::publisher().write(rg.staticCast<io::data>());
-  }
-
-  return ;
-}
-
-/**
- *  Clear QtSql objects.
- */
-void stream::_clear_qsql() {
-  _insert_data_bin.reset();
-  _update_metrics.reset();
-  if (_storage_db.get() && _storage_db->isOpen()) {
-    if (_queries_per_transaction > 1)
-      _storage_db->commit();
-    _storage_db->close();
-  }
-  _storage_db.reset();
   return ;
 }
 

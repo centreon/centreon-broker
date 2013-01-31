@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,10 +20,9 @@
 #ifndef CCB_STORAGE_STREAM_HH
 #  define CCB_STORAGE_STREAM_HH
 
+#  include <list>
 #  include <map>
 #  include <memory>
-#  include <QList>
-#  include <QMap>
 #  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
@@ -90,6 +89,8 @@ namespace         storage {
     stream&       operator=(stream const& s);
     void          _check_deleted_index();
     void          _clear_qsql();
+    void          _delete_metrics(
+                    std::list<unsigned long long> const& metrics_to_delete);
     unsigned int  _find_index_id(
                     unsigned int host_id,
                     unsigned int service_id,
