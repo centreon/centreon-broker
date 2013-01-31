@@ -606,16 +606,19 @@ void stream::_check_deleted_index() {
     unsigned int metric_id(*metrics_to_delete.begin());
     metrics_to_delete.erase(metrics_to_delete.begin());
 
-    // Delete associated data.
-    {
-      std::ostringstream oss;
-      oss << "DELETE FROM data_bin WHERE id_metric=" << metric_id;
-      QSqlQuery q(*_storage_db);
-      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
-        logging::error(logging::low)
-          << "storage: cannot remove data of metric " << metric_id
-          << ": " << q.lastError().text();
-    }
+    // Do not delete entries from data_bin as the MyISAM engine used by
+    // this table might lock it for a very long time. Orphaned entries
+    // will eventually get deleted later.
+    // // Delete associated data.
+    // {
+    //   std::ostringstream oss;
+    //   oss << "DELETE FROM data_bin WHERE id_metric=" << metric_id;
+    //   QSqlQuery q(*_storage_db);
+    //   if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+    //     logging::error(logging::low)
+    //       << "storage: cannot remove data of metric " << metric_id
+    //       << ": " << q.lastError().text();
+    // }
 
     // Delete from DB.
     {
