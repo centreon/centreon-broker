@@ -515,18 +515,20 @@ void failover::run() {
             }
             _to->write(data);
             time_t now(time(NULL));
-            if (now > _last_event) {
-              time_t limit(now - _last_event);
-              if (limit > event_window_length)
-                limit = event_window_length;
-              memmove(
-                _events + limit,
-                _events,
-                (event_window_length - limit) * sizeof(*_events));
-              memset(_events, 0, limit * sizeof(*_events));
-              _last_event = now;
+            if (!data.isNull()) {
+              if (now > _last_event) {
+                time_t limit(now - _last_event);
+                if (limit > event_window_length)
+                  limit = event_window_length;
+                memmove(
+                  _events + limit,
+                  _events,
+                  (event_window_length - limit) * sizeof(*_events));
+                memset(_events, 0, limit * sizeof(*_events));
+                _last_event = now;
+              }
+              ++_events[0];
             }
-            ++_events[0];
           }
         }
         catch (io::exceptions::shutdown const& e) {
