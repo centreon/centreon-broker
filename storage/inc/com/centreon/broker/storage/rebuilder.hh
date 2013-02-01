@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,7 +57,8 @@ namespace         storage {
                     unsigned int metric_id,
                     QString const& metric_name,
                     short metric_type,
-                    unsigned int interval);
+                    unsigned int interval,
+                    unsigned length);
     void          _rebuild_status(
                      unsigned int index_id,
                      unsigned int interval);

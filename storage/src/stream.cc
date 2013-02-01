@@ -200,6 +200,10 @@ stream::stream(
       logging::debug(logging::medium)
         << "storage: NOT checking replication status";
 
+    // Set parameters.
+    _rrd_len = rrd_len;
+    _interval_length = interval_length;
+
     // Prepare queries.
     _prepare();
 
@@ -228,10 +232,6 @@ stream::stream(
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
   }
-
-  // Set parameters.
-  _rrd_len = rrd_len;
-  _interval_length = interval_length;
 }
 
 /**
@@ -273,6 +273,10 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
       }
     }
 
+    // Set parameters.
+    _rrd_len = s._rrd_len;
+    _interval_length = s._interval_length;
+
     // Prepare queries.
     _prepare();
 
@@ -297,10 +301,6 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
     QSqlDatabase::removeDatabase(storage_id);
     throw ;
   }
-
-  // Set parameters.
-  _rrd_len = s._rrd_len;
-  _interval_length = s._interval_length;
 }
 
 /**
@@ -398,12 +398,14 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       ++_transaction_queries;
 
       unsigned int index_id(0);
+      unsigned int rrd_len;
       if (!ss->perf_data.isEmpty()
           && ((index_id = _find_index_id(
                             ss->host_id,
                             ss->service_id,
                             ss->host_name,
-                            ss->service_description))
+                            ss->service_description,
+                            &rrd_len))
               != 0)) {
         // Generate status event.
         logging::debug(logging::low)
@@ -415,7 +417,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
         status->interval = static_cast<time_t>(
                              ss->check_interval * _interval_length);
         status->is_for_rebuild = false;
-        status->rrd_len = _rrd_len;
+        status->rrd_len = rrd_len;
         status->state = ss->last_hard_state;
         multiplexing::publisher().write(status.staticCast<io::data>());
 
@@ -489,7 +491,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
           perf->is_for_rebuild = false;
           perf->metric_id = metric_id;
           perf->name = pd.name();
-          perf->rrd_len = _rrd_len;
+          perf->rrd_len = rrd_len;
           perf->value = pd.value();
           perf->value_type = metric_type;
           multiplexing::publisher().write(perf.staticCast<io::data>());
@@ -679,10 +681,11 @@ void stream::_delete_metrics(
  *  Look through the index cache for the specified index. If it cannot
  *  be found, insert an entry in the database.
  *
- *  @param[in] host_id      Host ID associated to the index.
- *  @param[in] service_id   Service ID associated to the index.
- *  @param[in] host_name    Host name associated to the index.
- *  @param[in] service_desc Service description associated to the index.
+ *  @param[in]  host_id      Host ID associated to the index.
+ *  @param[in]  service_id   Service ID associated to the index.
+ *  @param[in]  host_name    Host name associated to the index.
+ *  @param[in]  service_desc Service description associated to the index.
+ *  @param[out] rrd_len      Index RRD length.
  *
  *  @return Index ID matching host and service ID.
  */
@@ -690,7 +693,8 @@ unsigned int stream::_find_index_id(
                        unsigned int host_id,
                        unsigned int service_id,
                        QString const& host_name,
-                       QString const& service_desc) {
+                       QString const& service_desc,
+                       unsigned int* rrd_len) {
   unsigned int retval;
 
   // Look in the cache.
@@ -746,8 +750,10 @@ unsigned int stream::_find_index_id(
     }
     // Anyway, we found index ID.
     retval = it->second.index_id;
+    if (rrd_len)
+      *rrd_len = it->second.rrd_retention;
   }
-  // Can't find in cache, insert in DB.
+  // Can't find in cache, discard data.
   else {
     logging::info(logging::medium) << "storage: index not found for ("
       << host_id << ", " << service_id << ")";
@@ -1001,7 +1007,7 @@ void stream::_rebuild_cache() {
   // Fill index cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT id, host_id, service_id, host_name, service_description, special" \
+    QSqlQuery q("SELECT id, host_id, service_id, host_name, rrd_retention, service_description, special" \
                 " FROM index_data",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -1016,8 +1022,11 @@ void stream::_rebuild_cache() {
       unsigned int host_id(q.value(1).toUInt());
       unsigned int service_id(q.value(2).toUInt());
       info.host_name = q.value(3).toString();
-      info.service_description = q.value(4).toString();
-      info.special = (q.value(5).toUInt() == 2);
+      info.rrd_retention = (q.value(4).isNull() ? 0 : q.value(4).toUInt());
+      if (!info.rrd_retention)
+        info.rrd_retention = _rrd_len;
+      info.service_description = q.value(5).toString();
+      info.special = (q.value(6).toUInt() == 2);
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";

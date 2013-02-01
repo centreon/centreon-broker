@@ -746,6 +746,7 @@ CREATE TABLE index_data (
   host_name varchar(255) default NULL,
   locked enum('0', '1') NOT NULL default '0',
   must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
+  rrd_retention int default NULL,
   service_description varchar(255) default NULL,
   special enum('0', '1') NOT NULL default '0',
   storage_type enum('0', '1', '2') NOT NULL default '2',

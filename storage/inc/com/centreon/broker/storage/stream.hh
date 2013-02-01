@@ -69,6 +69,7 @@ namespace         storage {
     struct         index_info {
       QString      host_name;
       unsigned int index_id;
+      unsigned int rrd_retention;
       QString      service_description;
       bool         special;
     };
@@ -95,7 +96,8 @@ namespace         storage {
                     unsigned int host_id,
                     unsigned int service_id,
                     QString const& host_name,
-                    QString const& service_desc);
+                    QString const& service_desc,
+                    unsigned int* rrd_len = NULL);
     unsigned int  _find_metric_id(
                     unsigned int index_id,
                     QString metric_name,

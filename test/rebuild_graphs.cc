@@ -318,7 +318,7 @@ int main() {
                << ", expected " << it->second);
     }
 
-    // Check metrics graph.s
+    // Check metrics graphs.
     for (std::map<unsigned int, time_t>::iterator
            it(metrics.begin()),
            end(metrics.end());

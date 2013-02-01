@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,6 +39,7 @@ struct index_info {
   unsigned int index_id;
   unsigned int host_id;
   unsigned int service_id;
+  unsigned int rrd_retention;
 };
 
 struct metric_info {
@@ -146,7 +147,7 @@ void rebuilder::run() {
         {
           QSqlQuery index_to_rebuild_query(_db);
           if (!index_to_rebuild_query.exec(
-                 "SELECT id, host_id, service_id"
+                 "SELECT id, host_id, service_id, rrd_retention"
                  " FROM index_data"
                  " WHERE must_be_rebuild='1'"))
             throw (broker::exceptions::msg() << "storage: rebuilder: "
@@ -157,6 +158,12 @@ void rebuilder::run() {
             info.index_id = index_to_rebuild_query.value(0).toUInt();
             info.host_id = index_to_rebuild_query.value(1).toUInt();
             info.service_id = index_to_rebuild_query.value(2).toUInt();
+            info.rrd_retention
+              = (index_to_rebuild_query.value(3).isNull()
+                 ? 0
+                 : index_to_rebuild_query.value(3).toUInt());
+            if (!info.rrd_retention)
+              info.rrd_retention = _rrd_len;
             index_to_rebuild.push_back(info);
           }
         }
@@ -166,9 +173,11 @@ void rebuilder::run() {
           // Get check interval of host/service.
           unsigned int index_id;
           unsigned int check_interval(0);
+          unsigned int rrd_len;
           {
             index_info info(index_to_rebuild.front());
             index_id = info.index_id;
+            rrd_len = info.rrd_retention;
             index_to_rebuild.pop_front();
 
             std::ostringstream oss;
@@ -227,7 +236,8 @@ void rebuilder::run() {
                 info.metric_id,
                 info.metric_name,
                 info.metric_type,
-                check_interval * _interval_length);
+                check_interval * _interval_length,
+                rrd_len);
             }
 
             // Rebuild status.
@@ -354,12 +364,14 @@ void rebuilder::_internal_copy(rebuilder const& right) {
  *  @param[in] metric_name Metric name.
  *  @param[in] type        Metric type.
  *  @param[in] interval    Host/service check interval.
+ *  @param[in] length      Metric RRD length in seconds.
  */
 void rebuilder::_rebuild_metric(
                   unsigned int metric_id,
                   QString const& metric_name,
                   short metric_type,
-                  unsigned int interval) {
+                  unsigned int interval,
+                  unsigned int length) {
   // Log.
   logging::info(logging::low)
     << "storage: rebuilder: rebuilding metric " << metric_id
@@ -385,7 +397,7 @@ void rebuilder::_rebuild_metric(
         entry->is_for_rebuild = true;
         entry->metric_id = metric_id;
         entry->name = metric_name;
-        entry->rrd_len = _rrd_len;
+        entry->rrd_len = length;
         entry->value = data_bin_query.value(1).toDouble();
         entry->value_type = metric_type;
         multiplexing::publisher().write(entry.staticCast<io::data>());
