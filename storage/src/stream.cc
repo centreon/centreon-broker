@@ -201,7 +201,7 @@ stream::stream(
         << "storage: NOT checking replication status";
 
     // Set parameters.
-    _rrd_len = rrd_len;
+    _rrd_len = (rrd_len ? rrd_len : 15552000);
     _interval_length = interval_length;
 
     // Prepare queries.
@@ -214,7 +214,7 @@ stream::stream(
     // Run rebuild thread.
     _rebuild_thread.set_interval(rebuild_check_interval);
     _rebuild_thread.set_interval_length(interval_length);
-    _rebuild_thread.set_rrd_length(rrd_len);
+    _rebuild_thread.set_rrd_length(_rrd_len);
     _rebuild_thread.set_db(*_storage_db);
     _rebuild_thread.start();
 
