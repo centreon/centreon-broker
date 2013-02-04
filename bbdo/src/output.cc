@@ -279,15 +279,3 @@ void output::write(misc::shared_ptr<io::data> const& e) {
 
   return ;
 }
-
-/**
- *  Set the stream on which this stream will write.
- *
- *  @param[in,out] to Target stream.
- */
-void output::write_to(misc::shared_ptr<io::stream> to) {
-  io::stream::write_to(to);
-  misc::shared_ptr<io::data> data(new version_response);
-  this->write(data);
-  return ;
-}

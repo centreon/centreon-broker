@@ -32,8 +32,12 @@ using namespace com::centreon::broker::bbdo;
 
 /**
  *  Default constructor.
+ *
+ *  @param[in] is_in  Is input ?
+ *  @param[in] is_out Is output ?
  */
-stream::stream() {}
+stream::stream(bool is_in, bool is_out)
+  : _input_read(is_in), _output_write(is_out) {}
 
 /**
  *  Copy constructor.
@@ -41,7 +45,11 @@ stream::stream() {}
  *  @param[in] right Object to copy.
  */
 stream::stream(stream const& right)
-  : io::stream(right), input(right), output(right) {}
+  : io::stream(right),
+    input(right),
+    output(right),
+    _input_read(right._input_read),
+    _output_write(right._output_write) {}
 
 /**
  *  Destructor.
@@ -56,8 +64,12 @@ stream::~stream() {}
  *  @return This object.
  */
 stream& stream::operator=(stream const& right) {
-  input::operator=(right);
-  output::operator=(right);
+  if (this != &right) {
+    input::operator=(right);
+    output::operator=(right);
+    _input_read = right._input_read;
+    _output_write = right._output_write;
+  }
   return (*this);
 }
 
@@ -81,7 +93,10 @@ void stream::process(bool in, bool out) {
  *  @see input::read()
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
-  input::read(d);
+  if (_input_read)
+    input::read(d);
+  else
+    output::read(d);
   return ;
 }
 
@@ -101,6 +116,9 @@ void stream::statistics(std::string& buffer) const {
  *  @param[in] d Data to send.
  */
 void stream::write(misc::shared_ptr<io::data> const& d) {
-  output::write(d);
+  if (_output_write)
+    output::write(d);
+  else
+    input::write(d);
   return ;
 }

@@ -26,23 +26,27 @@
 
 CCB_BEGIN()
 
-namespace   bbdo {
+namespace           bbdo {
   /**
    *  @class stream stream.hh "com/centreon/broker/bbdo/stream.hh"
    *  @brief BBDO stream.
    *
    *  The class converts data to NEB events back and forth.
    */
-  class     stream : public input, public output {
+  class             stream : public input, public output {
   public:
-            stream();
-            stream(stream const& right);
-            ~stream();
-    stream& operator=(stream const& right);
-    void    process(bool in = false, bool out = true);
-    void    read(misc::shared_ptr<io::data>& d);
-    void    statistics(std::string& buffer) const;
-    void    write(misc::shared_ptr<io::data> const& d);
+                    stream(bool is_in, bool is_out);
+                    stream(stream const& right);
+                    ~stream();
+    stream&         operator=(stream const& right);
+    void            process(bool in = false, bool out = true);
+    void            read(misc::shared_ptr<io::data>& d);
+    void            statistics(std::string& buffer) const;
+    void            write(misc::shared_ptr<io::data> const& d);
+
+  private:
+    bool            _input_read;
+    bool            _output_write;
   };
 }
 

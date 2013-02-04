@@ -19,8 +19,6 @@
 
 #include <memory>
 #include "com/centreon/broker/bbdo/connector.hh"
-#include "com/centreon/broker/bbdo/input.hh"
-#include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 
 using namespace com::centreon::broker;
@@ -102,12 +100,15 @@ misc::shared_ptr<io::stream> connector::open() {
     if (!retval.isNull()) {
       if (_is_in) {
         if (_is_out)
-          bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::stream);
+          bbdo_stream = misc::shared_ptr<io::stream>(
+                                new bbdo::stream(true, true));
         else
-          bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::input);
+          bbdo_stream = misc::shared_ptr<io::stream>(
+                                new bbdo::stream(true, false));
       }
       else
-        bbdo_stream = misc::shared_ptr<io::stream>(new bbdo::output);
+        bbdo_stream = misc::shared_ptr<io::stream>(
+                              new bbdo::stream(false, true));
       bbdo_stream->read_from(retval);
       bbdo_stream->write_to(retval);
     }
