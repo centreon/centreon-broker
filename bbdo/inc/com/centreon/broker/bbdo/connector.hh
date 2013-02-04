@@ -34,7 +34,11 @@ namespace         bbdo {
    */
   class           connector : public io::endpoint {
   public:
-                  connector(bool is_in, bool is_out);
+                  connector(
+                    bool is_in,
+                    bool is_out,
+                    bool negociate,
+                    QString const& extensions);
                   connector(connector const& right);
                   ~connector();
     connector&    operator=(connector const& right);
@@ -44,8 +48,10 @@ namespace         bbdo {
                   open();
 
   private:
+    QString       _extensions;
     bool          _is_in;
     bool          _is_out;
+    bool          _negociate;
   };
 }
 

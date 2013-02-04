@@ -42,6 +42,8 @@ namespace               com {
         public:
                         acceptor(
                           bool is_out,
+                          bool negociate,
+                          QString const& extensions,
                           io::endpoint const* temporary);
                         acceptor(acceptor const& right);
                         ~acceptor();
@@ -52,7 +54,9 @@ namespace               com {
                         open();
 
         private:
+          QString       _extensions;
           bool          _is_out;
+          bool          _negociate;
           std::auto_ptr<io::endpoint>
                         _temporary;
           QList<QThread*>

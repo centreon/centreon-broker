@@ -36,12 +36,20 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Constructor.
  *
- *  @param[in] is_out    true if the acceptor is an output acceptor.
- *  @param[in] temporary Temporary object used to store event queue.
+ *  @param[in] is_out     true if the acceptor is an output acceptor.
+ *  @param[in] negociate  true if feature negociation is allowed.
+ *  @param[in] extensions Available extensions.
+ *  @param[in] temporary  Temporary object used to store event queue.
  */
-acceptor::acceptor(bool is_out, io::endpoint const* temporary)
+acceptor::acceptor(
+            bool is_out,
+            bool negociate,
+            QString const& extensions,
+            io::endpoint const* temporary)
   : io::endpoint(true),
-    _is_out(is_out) {
+    _extensions(extensions),
+    _is_out(is_out),
+    _negociate(negociate) {
   if (is_out && temporary)
     _temporary.reset(temporary->clone());
 }
@@ -80,7 +88,9 @@ acceptor::~acceptor() {
 acceptor& acceptor::operator=(acceptor const& right) {
   if (this != &right) {
     io::endpoint::operator=(right);
+    _extensions = right._extensions;
     _is_out = right._is_out;
+    _negociate = right._negociate;
     if (right._is_out && right._temporary.get())
       _temporary.reset(right._temporary->clone());
   }
@@ -125,9 +135,11 @@ misc::shared_ptr<io::stream> acceptor::open() {
       misc::shared_ptr<io::stream> out;
 
       // Create input and output objects.
+      misc::shared_ptr<bbdo::stream> my_bbdo;
       if (!_is_out) {
-        in = misc::shared_ptr<io::stream>(
-                     new bbdo::stream(true, false));
+        my_bbdo = misc::shared_ptr<bbdo::stream>(
+                          new bbdo::stream(true, false));
+        in = my_bbdo.staticCast<io::stream>();
         in->read_from(base);
         in->write_to(base);
         out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
@@ -135,8 +147,9 @@ misc::shared_ptr<io::stream> acceptor::open() {
       else {
         in = misc::shared_ptr<io::stream>(
                      new multiplexing::subscriber(_temporary.get()));
-        out = misc::shared_ptr<io::stream>(
-                      new bbdo::stream(false, true));
+        my_bbdo = misc::shared_ptr<bbdo::stream>(
+                          new bbdo::stream(false, true));
+        out = my_bbdo.staticCast<io::stream>();
         out->read_from(base);
         out->write_to(base);
       }

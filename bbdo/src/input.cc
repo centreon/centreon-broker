@@ -66,30 +66,6 @@ static io::data* unserialize(char const* buffer, unsigned int size) {
   return (t.release());
 }
 
-/**
- *  Handle a version response.
- */
-static io::data* handle_version_response(
-                   char const* buffer,
-                   unsigned int size) {
-  std::auto_ptr<version_response>
-    version(static_cast<version_response*>(
-              unserialize<version_response>(buffer, size)));
-  if (version->bbdo_major != BBDO_VERSION_MAJOR)
-    throw (exceptions::msg() << "BBDO: peer is using protocol version "
-           << version->bbdo_major << "." << version->bbdo_minor
-           << "." << version->bbdo_patch
-           << " whereas we're using protocol version "
-           << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
-           << BBDO_VERSION_PATCH);
-  logging::info(logging::medium)
-    << "BBDO: peer is using protocol version " << version->bbdo_major
-    << "." << version->bbdo_minor << "." << version->bbdo_patch
-    << ", we're using version " << BBDO_VERSION_MAJOR << "."
-    << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
-  return (NULL);
-}
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -142,6 +118,7 @@ void input::process(bool in, bool out) {
   return ;
 }
 
+
 /**
  *  @brief Get the next available event.
  *
@@ -151,6 +128,49 @@ void input::process(bool in, bool out) {
  *  @param[out] d Next available event, NULL if stream is closed.
  */
 void input::read(misc::shared_ptr<io::data>& d) {
+  // Read event.
+  unsigned int event_id(read_any(d));
+  while (event_id
+         && !d.isNull()
+         && ((event_id >> 16) == BBDO_INTERNAL_TYPE)) {
+    // Version response.
+    if ((event_id & 0xFFFF) == 1) {
+      misc::shared_ptr<version_response>
+        version(d.staticCast<version_response>());
+      if (version->bbdo_major != BBDO_VERSION_MAJOR)
+        throw (exceptions::msg()
+               << "BBDO: peer is using protocol version "
+               << version->bbdo_major << "." << version->bbdo_minor
+               << "." << version->bbdo_patch
+               << " whereas we're using protocol version "
+               << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+               << BBDO_VERSION_PATCH);
+      logging::info(logging::medium)
+        << "BBDO: peer is using protocol version " << version->bbdo_major
+        << "." << version->bbdo_minor << "." << version->bbdo_patch
+        << ", we're using version " << BBDO_VERSION_MAJOR << "."
+        << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+    }
+
+    // Control messages.
+    logging::debug(logging::medium) << "BBDO: event with ID "
+      << event_id << " was a control message, launching recursive read";
+    event_id = this->read_any(d);
+  }
+  return ;
+}
+
+/**
+ *  @brief Get the next available event.
+ *
+ *  Extract the next available event on the input stream, NULL if the
+ *  stream is closed.
+ *
+ *  @param[out] d Next available event, NULL if stream is closed.
+ *
+ *  @return Event ID.
+ */
+unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
   // Redirection array.
   static struct {
     unsigned int id;
@@ -225,7 +245,7 @@ void input::read(misc::shared_ptr<io::data>& d) {
     { BBDO_ID(BBDO_CORRELATION_TYPE, 5),
       &unserialize<correlation::service_state> },
     { BBDO_ID(BBDO_INTERNAL_TYPE, 1),
-      &handle_version_response }
+      &unserialize<version_response> }
   };
 
   // Return value.
@@ -310,14 +330,7 @@ void input::read(misc::shared_ptr<io::data>& d) {
     << total_size + BBDO_HEADER_SIZE << " bytes";
   _processed += total_size;
 
-  // Control messages.
-  if ((event_id >> 16) == BBDO_INTERNAL_TYPE) {
-    logging::debug(logging::medium) << "BBDO: event with ID "
-      << event_id << " was a control message, launching recursive read";
-    this->read(d);
-  }
-
-  return ;
+  return (event_id);
 }
 
 /**

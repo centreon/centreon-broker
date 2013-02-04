@@ -20,6 +20,7 @@
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -108,11 +109,70 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          io::endpoint const* temporary,
                          bool& is_acceptor) const {
-  (void)cfg;
+  // Return value.
   io::endpoint* retval(NULL);
+
+  // Negociation allowed ?
+  bool negociate;
+  QString extensions;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("negociation"));
+    if ((it != cfg.params.end())
+        && (*it == "no"))
+      negociate = false;
+    else {
+      negociate = true;
+      extensions = _extensions(cfg, is_input, is_output);
+    }
+  }
+
+  // Create object.
   if (is_acceptor)
-    retval = new bbdo::acceptor(is_output, temporary);
+    retval = new bbdo::acceptor(
+                         is_output,
+                         negociate,
+                         extensions,
+                         temporary);
   else
-    retval = new bbdo::connector(is_input, is_output);
+    retval = new bbdo::connector(
+                         is_input,
+                         is_output,
+                         negociate,
+                         extensions);
   return (retval);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Get available extensions for an endpoint.
+ *
+ *  @param[in] cfg       Endpoint configuration.
+ *  @param[in] is_input  Input flag.
+ *  @param[in] is_output Output flag.
+ */
+QString factory::_extensions(
+                   config::endpoint const& cfg,
+                   bool is_input,
+                   bool is_output) const {
+  QString extensions;
+  for (QMap<QString, io::protocols::protocol>::const_iterator
+         it(io::protocols::instance().begin()),
+         end(io::protocols::instance().end());
+       it != end;
+       ++it) {
+    if ((it->osi_from > 1)
+        && (it->osi_to < 7)
+        && !it->endpntfactry->has_endpoint(cfg, is_input, is_output)) {
+      if (!extensions.isEmpty())
+        extensions.append(" ");
+      extensions.append(it.key());
+    }
+  }
+  return (extensions);
 }
