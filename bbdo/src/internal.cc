@@ -57,6 +57,10 @@ static mapped_data<version_response> const version_response_mapping[] = {
     &version_response::bbdo_patch,
     3,
     "patch"),
+  mapped_data<version_response>(
+    &version_response::extensions,
+    4,
+    "extensions"),
   mapped_data<version_response>()
 };
 

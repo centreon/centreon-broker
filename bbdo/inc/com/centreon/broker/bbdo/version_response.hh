@@ -43,6 +43,7 @@ namespace             bbdo {
     short             bbdo_major;
     short             bbdo_minor;
     short             bbdo_patch;
+    QString           extensions;
 
   private:
     void              _internal_copy(version_response const& right);

@@ -94,5 +94,6 @@ void version_response::_internal_copy(version_response const& right) {
   bbdo_major = right.bbdo_major;
   bbdo_minor = right.bbdo_minor;
   bbdo_patch = right.bbdo_patch;
+  extensions = right.extensions;
   return ;
 }
