@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -127,6 +127,9 @@ io::endpoint* factory::new_endpoint(
     else
       max_size = 0;
   }
+
+  // File cannot negociate features.
+  cfg.params["negociate"] = "no";
 
   // Generate opener.
   std::auto_ptr<opener> openr(new opener(is_input, is_output));
