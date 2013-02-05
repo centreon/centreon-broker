@@ -17,12 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <memory>
+#include <QStringList>
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -172,7 +175,40 @@ misc::shared_ptr<io::stream> connector::open() {
           << BBDO_VERSION_PATCH;
 
         // Apply negociated extensions.
-        // XXX
+        logging::info(logging::medium) << "BBDO: peer has extensions '"
+          << welcome_packet->extensions << "' and we have '"
+          << _extensions << "'";
+        QStringList own_ext(_extensions.split(' '));
+        QStringList peer_ext(welcome_packet->extensions.split(' '));
+        for (QStringList::const_iterator
+               it(peer_ext.begin()),
+               end(peer_ext.end());
+             it != end;
+             ++it) {
+          // Find matching extension in peer extension list.
+          QStringList::const_iterator
+            own_it(std::find(own_ext.begin(), own_ext.end(), *it));
+          // Apply extension if found.
+          if (own_it != own_ext.end()) {
+            logging::info(logging::medium)
+              << "BBDO: applying extension '" << *it << "'";
+            for (QMap<QString, io::protocols::protocol>::const_iterator
+                   proto_it(io::protocols::instance().begin()),
+                   proto_end(io::protocols::instance().end());
+                 proto_it != proto_end;
+                 ++proto_it)
+              if (proto_it.key() == *it) {
+                misc::shared_ptr<io::stream>
+                  s(proto_it->endpntfactry->new_stream(
+                                              retval,
+                                              false,
+                                              *it));
+                bbdo_stream->read_from(s);
+                bbdo_stream->write_to(s);
+                break ;
+              }
+          }
+        }
       }
     }
     retval = bbdo_stream.staticCast<io::stream>();

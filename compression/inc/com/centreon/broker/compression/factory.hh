@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,6 +49,11 @@ namespace         compression {
                     bool is_output,
                     io::endpoint const* temporary,
                     bool& is_acceptor) const;
+    misc::shared_ptr<io::stream>
+                  new_stream(
+                    misc::shared_ptr<io::stream> to,
+                    bool is_acceptor,
+                    QString const& proto_name);
   };
 }
 

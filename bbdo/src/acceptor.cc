@@ -17,11 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <memory>
+#include <QStringList>
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -196,7 +199,39 @@ misc::shared_ptr<io::stream> acceptor::open() {
         my_bbdo->output::write(misc::shared_ptr<io::data>());
 
         // Apply negociated extensions.
-        // XXX
+        logging::info(logging::medium) << "BBDO: we have extensions '"
+          << _extensions << "' and peer has '" << v->extensions << "'";
+        QStringList own_ext(_extensions.split(' '));
+        QStringList peer_ext(v->extensions.split(' '));
+        for (QStringList::const_iterator
+               it(own_ext.begin()),
+               end(own_ext.end());
+             it != end;
+             ++it) {
+          // Find matching extension in peer extension list.
+          QStringList::const_iterator
+            peer_it(std::find(peer_ext.begin(), peer_ext.end(), *it));
+          // Apply extension if found.
+          if (peer_it != peer_ext.end()) {
+            logging::info(logging::medium)
+              << "BBDO: applying extension '" << *it << "'";
+            for (QMap<QString, io::protocols::protocol>::const_iterator
+                   proto_it(io::protocols::instance().begin()),
+                   proto_end(io::protocols::instance().end());
+                 proto_it != proto_end;
+                 ++proto_it)
+              if (proto_it.key() == *it) {
+                misc::shared_ptr<io::stream>
+                  s(proto_it->endpntfactry->new_stream(
+                                              base,
+                                              true,
+                                              *it));
+                my_bbdo->read_from(s);
+                my_bbdo->write_to(s);
+                break ;
+              }
+          }
+        }
       }
 
       // Feeder thread.

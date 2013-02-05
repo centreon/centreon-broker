@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/config/endpoint.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -50,6 +51,11 @@ namespace             io {
                         bool is_output,
                         io::endpoint const* temporary,
                         bool& is_acceptor) const = 0;
+    virtual misc::shared_ptr<stream>
+                      new_stream(
+                        misc::shared_ptr<stream> to,
+                        bool is_acceptor,
+                        QString const& proto_name);
   };
 }
 

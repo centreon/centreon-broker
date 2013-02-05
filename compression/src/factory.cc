@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/opener.hh"
+#include "com/centreon/broker/compression/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
@@ -132,4 +133,25 @@ io::endpoint* factory::new_endpoint(
   openr->set_level(level);
   openr->set_size(size);
   return (openr.release());
+}
+
+/**
+ *  Create a new compression stream.
+ *
+ *  @param[in] to          Lower-layer stream.
+ *  @param[in] is_acceptor Unused.
+ *  @param[in] proto_name  Unused.
+ *
+ *  @return New compression stream.
+ */
+misc::shared_ptr<io::stream> factory::new_stream(
+                                        misc::shared_ptr<io::stream> to,
+                                        bool is_acceptor,
+                                        QString const& proto_name) {
+  (void)is_acceptor;
+  (void)proto_name;
+  misc::shared_ptr<io::stream> s(new stream);
+  s->read_from(to);
+  s->write_to(to);
+  return (s);
 }
