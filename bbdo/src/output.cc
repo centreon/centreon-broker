@@ -276,6 +276,8 @@ void output::write(misc::shared_ptr<io::data> const& e) {
         break ;
       }
   }
+  else
+    _to->write(e);
 
   return ;
 }

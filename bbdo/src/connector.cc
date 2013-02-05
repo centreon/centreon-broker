@@ -19,8 +19,11 @@
 
 #include <memory>
 #include "com/centreon/broker/bbdo/connector.hh"
+#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -110,8 +113,12 @@ void connector::close() {
  *  @return Open stream.
  */
 misc::shared_ptr<io::stream> connector::open() {
+  // Return value.
   misc::shared_ptr<io::stream> retval;
+
+  // We must have a lower layer.
   if (!_from.isNull()) {
+    // Open lower layer connection and add our own layer.
     retval = _from->open();
     misc::shared_ptr<bbdo::stream> bbdo_stream;
     if (!retval.isNull()) {
@@ -128,11 +135,45 @@ misc::shared_ptr<io::stream> connector::open() {
                               new bbdo::stream(false, true));
       bbdo_stream->read_from(retval);
       bbdo_stream->write_to(retval);
+
+      // Write welcome packet.
       misc::shared_ptr<version_response>
         welcome_packet(new version_response);
       if (_negociate)
         welcome_packet->extensions = _extensions;
       bbdo_stream->output::write(welcome_packet.staticCast<io::data>());
+      bbdo_stream->output::write(misc::shared_ptr<io::data>());
+
+      // Negociate features.
+      if (_negociate) {
+        misc::shared_ptr<io::data> d;
+        bbdo_stream->read_any(d);
+        if (d.isNull()
+            || (d->type()
+                != "com::centreon::broker::bbdo::version_response"))
+          throw (exceptions::msg() << "BBDO: invalid protocol header, "
+                 << "aborting connection");
+        welcome_packet = d.staticCast<version_response>();
+        if (welcome_packet->bbdo_major != BBDO_VERSION_MAJOR)
+          throw (exceptions::msg()
+                 << "BBDO: peer is using protocol version "
+                 << welcome_packet->bbdo_major << "."
+                 << welcome_packet->bbdo_minor << "."
+                 << welcome_packet->bbdo_patch
+                 << ", whereas we're using version "
+                 << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR
+                 << "." << BBDO_VERSION_PATCH);
+        logging::info(logging::medium)
+          << "BBDO: peer is using protocol version "
+          << welcome_packet->bbdo_major << "."
+          << welcome_packet->bbdo_minor << "."
+          << welcome_packet->bbdo_patch << ", we're using version "
+          << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+          << BBDO_VERSION_PATCH;
+
+        // Apply negociated extensions.
+        // XXX
+      }
     }
     retval = bbdo_stream.staticCast<io::stream>();
   }
