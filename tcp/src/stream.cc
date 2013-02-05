@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
@@ -168,6 +169,8 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
 
   if (d->type() == raw_type) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+    logging::debug(logging::low) << "TCP: write request of "
+      << r->size() << " bytes";
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                              r->size()));
