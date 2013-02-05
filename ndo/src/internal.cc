@@ -91,7 +91,10 @@ static void get_string(
               T const& t,
               data_member<T> const& member,
               std::stringstream& buffer) {
-  buffer << (t.*(member.S)).toStdString();
+  QString value(t.*(member.S));
+  value.replace('\\', "\\\\");
+  value.replace('\n', "\\n");
+  buffer << value.toStdString();
   return ;
 }
 
@@ -176,6 +179,14 @@ static void set_string(
               data_member<T> const& member,
               char const* str) {
   t.*(member.S) = str;
+  QString& s(t.*(member.S));
+  for (int i(0), size(s.size() - 1); i < size; ++i)
+    if (s[i] == '\\') {
+      if ('\\' == s[i + 1])
+        s.replace(i, 2, "\\");
+      else if ('n' == s[i + 1])
+        s.replace(i, 2, "\n");
+    }
   return ;
 }
 
