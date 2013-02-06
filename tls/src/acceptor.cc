@@ -22,7 +22,7 @@
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
-//#include "com/centreon/broker/tls/stream.hh"
+#include "com/centreon/broker/tls/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
@@ -151,7 +151,9 @@ misc::shared_ptr<io::stream> acceptor::open(
       p.validate_cert(*session);
 
       // Create stream object.
-      // XXX s = misc::shared_ptr<io::stream>(new stream(lower, session));
+      s = misc::shared_ptr<io::stream>(new stream(session));
+      s->read_from(lower);
+      s->write_to(lower);
     }
     catch (...) {
       if (session) {

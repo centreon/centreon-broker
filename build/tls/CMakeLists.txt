@@ -41,11 +41,13 @@ add_library("${TLS}" SHARED
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/params.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/params.hh"
+  "${INC_DIR}/stream.hh"
 )
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 get_property(TLS_MODULE_PATH
