@@ -39,9 +39,11 @@ add_library("${TLS}" SHARED
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/params.cc"
   # Headers.
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
+  "${INC_DIR}/params.hh"
 )
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 get_property(TLS_MODULE_PATH
