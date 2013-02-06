@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/tls/factory.hh"
+#include "com/centreon/broker/tls/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -31,9 +32,13 @@ extern "C" {
    */
   void broker_module_deinit() {
     // Decrement instance number.
-    if (!--instances)
+    if (!--instances) {
       // Unregister TLS layer.
       io::protocols::instance().unreg("TLS");
+
+      // Cleanup.
+      tls::destroy();
+    }
     return ;
   }
 
@@ -46,13 +51,17 @@ extern "C" {
     (void)arg;
 
     // Increment instance number.
-    if (!instances++)
+    if (!instances++) {
+      // Initialization.
+      tls::initialize();
+
       // Register TLS layer.
       io::protocols::instance().reg(
                                   "TLS",
                                   tls::factory(),
                                   5,
                                   5);
+    }
     return ;
   }
 }

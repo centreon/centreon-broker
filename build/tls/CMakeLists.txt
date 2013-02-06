@@ -24,15 +24,24 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/tls/test")
 include_directories("${INC_DIR}")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/tls")
 
+# Find GNU TLS.
+include(FindGnuTLS)
+if (NOT GNUTLS_FOUND)
+  message(FATAL_ERROR "Could not find GNU TLS.")
+endif ()
+include_directories("${GNUTLS_INCLUDE_DIR}")
+
 # TLS module.
 set(TLS "60-tls")
 set(TLS "${TLS}" PARENT_SCOPE)
 add_library("${TLS}" SHARED
   # Sources
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   # Headers.
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/internal.hh"
 )
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 get_property(TLS_MODULE_PATH
