@@ -8,6 +8,7 @@
   <module>@LOCAL_MODULE_PATH@</module>
   <module>@TCP_MODULE_PATH@</module>
   <module>@COMPRESSION_MODULE_PATH@</module>
+  <module>@TLS_MODULE_PATH@</module>
   <module>@RRD_MODULE_PATH@</module>
   <module>@BBDO_MODULE_PATH@</module>
   <module>@NDO_MODULE_PATH@</module>
