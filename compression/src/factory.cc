@@ -100,7 +100,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_output   true if the endpoint should be an output
  *                          object.
  *  @param[in]  temporary   Unused.
- *  @param[out] is_acceptor Will be set to false.
+ *  @param[out] is_acceptor Unused.
  *
  *  @return New endpoint object.
  */
