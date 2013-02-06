@@ -53,7 +53,7 @@ namespace           tls {
                       std::string const& key);
     void            set_compression(bool compress = false);
     void            set_trusted_ca(std::string const& ca_cert);
-    void            valid_cert(gnutls_session_t session);
+    void            validate_cert(gnutls_session_t session);
 
   private:
                     params(params const& p);
