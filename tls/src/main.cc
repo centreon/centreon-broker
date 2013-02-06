@@ -18,7 +18,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
-//#include "com/centreon/broker/tls/factory.hh"
+#include "com/centreon/broker/tls/factory.hh"
 
 using namespace com::centreon::broker;
 
@@ -48,13 +48,11 @@ extern "C" {
     // Increment instance number.
     if (!instances++)
       // Register TLS layer.
-      /*io::protocols::instance().reg(
-                                    "TLS",
-                                    tls::factory(),
-                                    5,
-                                    5);
-      */
-      ;
+      io::protocols::instance().reg(
+                                  "TLS",
+                                  tls::factory(),
+                                  5,
+                                  5);
     return ;
   }
 }

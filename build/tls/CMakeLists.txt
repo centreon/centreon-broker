@@ -29,8 +29,10 @@ set(TLS "60-tls")
 set(TLS "${TLS}" PARENT_SCOPE)
 add_library("${TLS}" SHARED
   # Sources
+  "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   # Headers.
+  "${INC_DIR}/factory.hh"
 )
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 get_property(TLS_MODULE_PATH
