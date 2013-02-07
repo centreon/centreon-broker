@@ -130,6 +130,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
 misc::shared_ptr<io::stream> acceptor::open(
                                          misc::shared_ptr<io::stream> lower) {
   misc::shared_ptr<io::stream> s;
+  int ret;
   if (!lower.isNull()) {
     // Load parameters.
     params p(params::SERVER);
@@ -141,7 +142,6 @@ misc::shared_ptr<io::stream> acceptor::open(
     try {
       // Initialize the TLS session
       logging::debug(logging::low) << "TLS: initializing session";
-      int ret;
       ret = gnutls_init(session, GNUTLS_SERVER);
       if (ret != GNUTLS_E_SUCCESS)
 	throw (exceptions::msg() << "TLS: cannot initialize session: "
@@ -152,35 +152,35 @@ misc::shared_ptr<io::stream> acceptor::open(
 
       // Create stream object.
       s = misc::shared_ptr<io::stream>(new stream(session));
-      s->read_from(lower);
-      s->write_to(lower);
-
-      // Bind the TLS session with the stream from the lower layer.
-#if GNUTLS_VERSION_NUMBER < 0x020C00
-      gnutls_transport_set_lowat(*session, 0);
-#endif // GNU TLS < 2.12.0
-      gnutls_transport_set_pull_function(*session, pull_helper);
-      gnutls_transport_set_push_function(*session, push_helper);
-      gnutls_transport_set_ptr(*session, s.data());
-
-      // Perform the TLS handshake.
-      logging::debug(logging::medium) << "TLS: performing handshake";
-      do {
-	ret = gnutls_handshake(*session);
-      } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-      if (ret != GNUTLS_E_SUCCESS)
-	throw (exceptions::msg() << "TLS: handshake failed: "
-               << gnutls_strerror(ret));
-      logging::debug(logging::medium) << "TLS: successful handshake";
-
-      // Check certificate.
-      p.validate_cert(*session);
     }
     catch (...) {
       gnutls_deinit(*session);
       delete (session);
       throw ;
     }
+    s->read_from(lower);
+    s->write_to(lower);
+
+    // Bind the TLS session with the stream from the lower layer.
+#if GNUTLS_VERSION_NUMBER < 0x020C00
+    gnutls_transport_set_lowat(*session, 0);
+#endif // GNU TLS < 2.12.0
+    gnutls_transport_set_pull_function(*session, pull_helper);
+    gnutls_transport_set_push_function(*session, push_helper);
+    gnutls_transport_set_ptr(*session, s.data());
+
+    // Perform the TLS handshake.
+    logging::debug(logging::medium) << "TLS: performing handshake";
+    do {
+      ret = gnutls_handshake(*session);
+    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
+    if (ret != GNUTLS_E_SUCCESS)
+      throw (exceptions::msg() << "TLS: handshake failed: "
+             << gnutls_strerror(ret));
+    logging::debug(logging::medium) << "TLS: successful handshake";
+
+    // Check certificate.
+    p.validate_cert(*session);
   }
 
   return (s);
