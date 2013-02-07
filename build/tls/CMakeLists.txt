@@ -37,6 +37,7 @@ set(TLS "${TLS}" PARENT_SCOPE)
 add_library("${TLS}" SHARED
   # Sources
   "${SRC_DIR}/acceptor.cc"
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
@@ -44,6 +45,7 @@ add_library("${TLS}" SHARED
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/acceptor.hh"
+  "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/params.hh"
