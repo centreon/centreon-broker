@@ -18,10 +18,6 @@
 */
 
 #include <QMutexLocker>
-#if QT_VERSION >= 0x040300
-#  include <QSslKey>
-#  include <QSslSocket>
-#endif // Qt >= 4.3.0
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/connector.hh"
@@ -43,8 +39,7 @@ connector::connector()
   : io::endpoint(false),
     _mutex(new QMutex),
     _port(0),
-    _timeout(-1),
-    _tls(false) {}
+    _timeout(-1) {}
 
 /**
  *  Copy constructor.
@@ -122,63 +117,17 @@ misc::shared_ptr<io::stream> connector::open() {
   // Lock mutex.
   QMutexLocker lock(&*_mutex);
 
-#if QT_VERSION >= 0x040300
-  // Is TLS enabled ?
-  if (_tls) {
-    // Create socket object.
-    misc::shared_ptr<QSslSocket> ssl_socket(new QSslSocket);
-    _socket = ssl_socket.staticCast<QTcpSocket>();
+  // Launch connection process.
+  logging::info(logging::medium) << "TCP: connecting to "
+    << _host << ":" << _port;
+  _socket = misc::shared_ptr<QTcpSocket>(new QTcpSocket);
+  _socket->connectToHost(_host, _port);
 
-    // Use only TLS protocol.
-    ssl_socket->setProtocol(QSsl::TlsV1);
-
-    // Set self certificates.
-    if (!_private.isEmpty() && !_public.isEmpty()) {
-      ssl_socket->setLocalCertificate(_public);
-      if (ssl_socket->localCertificate().isNull()
-          || !ssl_socket->localCertificate().isValid())
-        throw (exceptions::msg()
-               << "TCP: invalid public certificate file '"
-               << qPrintable(_public) << "'");
-      ssl_socket->setPrivateKey(_private);
-      if (ssl_socket->privateKey().isNull())
-        throw (exceptions::msg() << "TCP: invalid private key file '"
-               << qPrintable(_private) << "'");
-    }
-
-    // Set CA certificate.
-    if (!_ca.isEmpty()) {
-      ssl_socket->addCaCertificates(_ca);
-      ssl_socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
-      ssl_socket->setPeerVerifyDepth(0);
-    }
-    else
-      ssl_socket->setPeerVerifyMode(QSslSocket::VerifyNone);
-
-    // Launch connection and handshake process.
-    ssl_socket->connectToHostEncrypted(_host, _port);
-
-    // Wait for connection result.
-    if (!ssl_socket->waitForEncrypted())
-      throw (exceptions::msg() << "TCP: could not connect to "
-               << _host << ":" << _port << ": "
-               << _socket->errorString());
-  }
-  else
-#endif // Qt >= 4.3.0
-  {
-    // Launch connection process.
-    logging::info(logging::medium) << "TCP: connecting to "
-      << _host << ":" << _port;
-    _socket = misc::shared_ptr<QTcpSocket>(new QTcpSocket);
-    _socket->connectToHost(_host, _port);
-
-    // Wait for connection result.
-    if (!_socket->waitForConnected())
-      throw (exceptions::msg() << "TCP: could not connect to "
-               << _host << ":" << _port << ": "
-               << _socket->errorString());
-  }
+  // Wait for connection result.
+  if (!_socket->waitForConnected())
+    throw (exceptions::msg() << "TCP: could not connect to "
+           << _host << ":" << _port << ": "
+           << _socket->errorString());
   logging::info(logging::medium) << "TCP: successfully connected to "
     << _host << ":" << _port;
 
@@ -198,27 +147,6 @@ void connector::set_timeout(int msecs) {
   return ;
 }
 
-/**
- *  Set TLS parameters.
- *
- *  @param[in] enable      true to enable, false to disable.
- *  @param[in] private_key Private key to use for encryption.
- *  @param[in] public_cert Public certificate to use for encryption.
- *  @param[in] ca_cert     Trusted CA's certificate, used to
- *                         authenticate peers.
- */
-void connector::set_tls(
-                  bool enable,
-                  QString const& private_key,
-                  QString const& public_cert,
-                  QString const& ca_cert) {
-  _ca = ca_cert;
-  _private = private_key;
-  _public = public_cert;
-  _tls = enable;
-  return ;
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -231,13 +159,9 @@ void connector::set_tls(
  *  @param[in] c Object to copy.
  */
 void connector::_internal_copy(connector const& c) {
-  _ca = c._ca;
   _host = c._host;
   _port = c._port;
-  _private = c._private;
-  _public = c._public;
   _socket = c._socket;
   _timeout = c._timeout;
-  _tls = c._tls;
   return ;
 }

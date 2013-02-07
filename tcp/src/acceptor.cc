@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,9 +25,6 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
-#if QT_VERSION >= 0x040300
-#  include "com/centreon/broker/tcp/tls_server.hh"
-#endif // Qt >= 4.3.0
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -41,7 +38,7 @@ using namespace com::centreon::broker::tcp;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() : io::endpoint(true), _port(0), _tls(false) {}
+acceptor::acceptor() : io::endpoint(true), _port(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -134,12 +131,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   QMutexLocker lock(&_mutex);
   if (!_socket.get()) {
-#if QT_VERSION >= 0x040300
-    if (_tls)
-      _socket.reset(new tls_server(_private, _public, _ca));
-    else
-#endif // Qt >= 4.3.0
-      _socket.reset(new QTcpServer);
+    _socket.reset(new QTcpServer);
     if (!_socket->listen(QHostAddress::Any, _port)) {
       exceptions::msg e;
       e << "TCP: could not listen on port " << _port
@@ -207,26 +199,6 @@ misc::shared_ptr<io::stream> acceptor::open() {
 }
 
 /**
- *  Set TLS parameters.
- *
- *  @param[in] enable true to enable TLS encryption.
- *  @param[in] private_key Private key to use for encryption.
- *  @param[in] public_cert Public certificate to use for encryption.
- *  @param[in] ca_cert     Trusted CA's certificate, used to
- *                         authenticate peers.
- */
-void acceptor::set_tls(bool enable,
-                       QString const& private_key,
-                       QString const& public_cert,
-                       QString const& ca_cert) {
-  _ca = ca_cert;
-  _private = private_key;
-  _public = public_cert;
-  _tls = enable;
-  return ;
-}
-
-/**
  *  Get statistics about this TCP acceptor.
  *
  *  @param[out] buffer Buffer in which statistics will be written.
@@ -261,11 +233,7 @@ void acceptor::stats(std::string& buffer) {
  *  @param[in] a Object to copy.
  */
 void acceptor::_internal_copy(acceptor const& a) {
-  _ca = a._ca;
   _port = a._port;
-  _private = a._private;
-  _public = a._public;
-  _tls = a._tls;
   return ;
 }
 

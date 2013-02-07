@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,26 +47,17 @@ namespace          tcp {
     misc::shared_ptr<io::stream>
                    open();
     void           set_timeout(int msecs);
-    void           set_tls(
-                     bool enable,
-                     QString const& private_key = QString(),
-                     QString const& public_cert = QString(),
-                     QString const& ca_cert = QString());
 
   private:
     void           _internal_copy(connector const& c);
 
-    QString        _ca;
     QString        _host;
     misc::shared_ptr<QMutex>
                    _mutex;
     unsigned short _port;
-    QString        _private;
-    QString        _public;
     misc::shared_ptr<QTcpSocket>
                    _socket;
     int            _timeout;
-    bool           _tls;
   };
 }
 

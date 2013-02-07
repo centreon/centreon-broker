@@ -27,8 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/tcp/inc")
 unset(QT_WRAPPED_SOURCES)
 if ("${QT_VERSION}" VERSION_GREATER "4.3.0")
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
-    "${INC_DIR}/acceptor.hh"
-    "${INC_DIR}/tls_server.hh")
+    "${INC_DIR}/acceptor.hh")
 else ()
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
     "${INC_DIR}/acceptor.hh")
@@ -49,15 +48,6 @@ set(HEADERS
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/stream.hh"
 )
-# SSL addons (from Qt 4.3.0).
-if ("${QT_VERSION}" VERSION_GREATER "4.3.0")
-  set(SOURCES
-    ${SOURCES}
-    "${SRC_DIR}/tls_server.cc")
-  set(HEADERS
-    ${HEADERS}
-    "${INC_DIR}/tls_server.hh")
-endif ()
 
 # TCP module.
 set(TCP "50-tcp")

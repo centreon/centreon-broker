@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -130,42 +130,12 @@ io::endpoint* factory::new_endpoint(
     port = it.value().toUShort();
   }
 
-  // Find TLS parameters (optional).
-  bool tls(false);
-  QString ca_cert;
-  QString private_key;
-  QString public_cert;
-  {
-    // Is TLS enabled ?
-    QMap<QString, QString>::const_iterator it(cfg.params.find("tls"));
-    if (it != cfg.params.end()) {
-      tls = config::parser::parse_boolean(*it);
-      if (tls) {
-        // CA certificate.
-        it = cfg.params.find("ca_certificate");
-        if (it != cfg.params.end())
-          ca_cert = it.value();
-
-        // Private key.
-        it = cfg.params.find("private_key");
-        if (it != cfg.params.end())
-          private_key = it.value();
-
-        // Public certificate.
-        it = cfg.params.find("public_cert");
-        if (it != cfg.params.end())
-          public_cert = it.value();
-      }
-    }
-  }
-
   // Acceptor.
   std::auto_ptr<io::endpoint> endp;
   if (host.isEmpty()) {
     is_acceptor = true;
     std::auto_ptr<tcp::acceptor> a(new tcp::acceptor);
     a->listen_on(port);
-    a->set_tls(tls, private_key, public_cert, ca_cert);
     endp.reset(a.release());
   }
   // Connector.
@@ -174,7 +144,6 @@ io::endpoint* factory::new_endpoint(
     std::auto_ptr<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
     c->set_timeout(is_input && is_output ? 30 : -1);
-    c->set_tls(tls, private_key, public_cert, ca_cert);
     endp.reset(c.release());
   }
   return (endp.release());
