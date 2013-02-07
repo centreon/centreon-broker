@@ -76,6 +76,24 @@ acceptor& acceptor::operator=(acceptor const& right) {
 }
 
 /**
+ *  Clone this object.
+ *
+ *  @return A clone of this object.
+ */
+io::endpoint* acceptor::clone() const {
+  return (new acceptor(*this));
+}
+
+/**
+ *  Close the acceptor.
+ */
+void acceptor::close() {
+  if (!_from.isNull())
+    _from->close();
+  return ;
+}
+
+/**
  *  @brief Try to accept a new connection.
  *
  *  Wait for an incoming client through the underlying acceptor, perform
@@ -118,10 +136,9 @@ misc::shared_ptr<io::stream> acceptor::open(
     p.set_trusted_ca(_ca);
     p.load();
 
-    gnutls_session_t* session(NULL);
+    gnutls_session_t* session(new gnutls_session_t);
     try {
       // Initialize the TLS session
-      session = new (gnutls_session_t);
       int ret;
       ret = gnutls_init(session, GNUTLS_SERVER);
       if (ret != GNUTLS_E_SUCCESS)
@@ -156,10 +173,8 @@ misc::shared_ptr<io::stream> acceptor::open(
       s->write_to(lower);
     }
     catch (...) {
-      if (session) {
-	gnutls_deinit(*session);
-	delete (session);
-      }
+      gnutls_deinit(*session);
+      delete (session);
       throw ;
     }
   }

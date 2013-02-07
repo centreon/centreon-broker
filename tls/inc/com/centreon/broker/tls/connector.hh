@@ -26,33 +26,35 @@
 
 CCB_BEGIN()
 
-namespace       tls {
+namespace         tls {
   /**
    *  @class connector connector.hh "com/centreon/broker/tls/connector.hh"
    *  @brief Connect to a TLS peer.
    *
    *  Use a connected TLS stream to connect to a TLS peer.
    */
-  class         connector : public io::endpoint {
+  class           connector : public io::endpoint {
   public:
-                connector(
-                  std::string const& cert = std::string(),
-                  std::string const& key = std::string(),
-                  std::string const& ca = std::string());
-                connector(connector const& right);
-                ~connector();
-    connector&  operator=(connector const& right);
+                  connector(
+                    std::string const& cert = std::string(),
+                    std::string const& key = std::string(),
+                    std::string const& ca = std::string());
+                  connector(connector const& right);
+                  ~connector();
+    connector&    operator=(connector const& right);
+    io::endpoint* clone() const;
+    void          close();
     misc::shared_ptr<io::stream>
-                open();
+                  open();
     misc::shared_ptr<io::stream>
-                open(misc::shared_ptr<io::stream> lower);
+                  open(misc::shared_ptr<io::stream> lower);
 
   private:
-    void        _internal_copy(connector const& right);
+    void          _internal_copy(connector const& right);
 
-    std::string _ca;
-    std::string _cert;
-    std::string _key;
+    std::string   _ca;
+    std::string   _cert;
+    std::string   _key;
   };
 }
 

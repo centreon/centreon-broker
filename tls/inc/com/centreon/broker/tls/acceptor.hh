@@ -38,26 +38,28 @@ namespace         tls {
    *  another io::stream. Encryption will be automatically provided on
    *  the returned accepted streams.
    */
-  class         acceptor : public io::endpoint {
+  class           acceptor : public io::endpoint {
   public:
-                acceptor(
-                  std::string const& cert = std::string(),
-                  std::string const& key = std::string(),
-                  std::string const& ca = std::string());
-                acceptor(acceptor const& right);
-                ~acceptor();
-    acceptor&   operator=(acceptor const& right);
+                  acceptor(
+                    std::string const& cert = std::string(),
+                    std::string const& key = std::string(),
+                    std::string const& ca = std::string());
+                  acceptor(acceptor const& right);
+                  ~acceptor();
+    acceptor&     operator=(acceptor const& right);
+    io::endpoint* clone() const;
+    void          close();
     misc::shared_ptr<io::stream>
-                open();
+                  open();
     misc::shared_ptr<io::stream>
-                open(misc::shared_ptr<io::stream> lower);
+                  open(misc::shared_ptr<io::stream> lower);
 
   private:
-    void        _internal_copy(acceptor const& right);
+    void          _internal_copy(acceptor const& right);
 
-    std::string _ca;
-    std::string _cert;
-    std::string _key;
+    std::string   _ca;
+    std::string   _cert;
+    std::string   _key;
   };
 }
 

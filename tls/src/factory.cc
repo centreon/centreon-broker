@@ -17,7 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <memory>
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/tls/acceptor.hh"
+#include "com/centreon/broker/tls/connector.hh"
 #include "com/centreon/broker/tls/factory.hh"
 
 using namespace com::centreon::broker;
@@ -108,5 +111,62 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          io::endpoint const* temporary,
                          bool& is_acceptor) const {
-  // XXX
+  (void)is_input;
+  (void)is_output;
+  (void)temporary;
+
+  // Find TLS parameters (optional).
+  bool tls(false);
+  std::string ca_cert;
+  std::string private_key;
+  std::string public_cert;
+  {
+    // Is TLS enabled ?
+    QMap<QString, QString>::const_iterator it(cfg.params.find("tls"));
+    if (it != cfg.params.end()) {
+      tls = config::parser::parse_boolean(*it);
+      if (tls) {
+        // CA certificate.
+        it = cfg.params.find("ca_certificate");
+        if (it != cfg.params.end())
+          ca_cert = it.value().toStdString();
+
+        // Private key.
+        it = cfg.params.find("private_key");
+        if (it != cfg.params.end())
+          private_key = it.value().toStdString();
+
+        // Public certificate.
+        it = cfg.params.find("public_cert");
+        if (it != cfg.params.end())
+          public_cert = it.value().toStdString();
+      }
+    }
+  }
+
+  // Acceptor.
+  std::auto_ptr<io::endpoint> endp;
+  if (is_acceptor)
+    endp.reset(new acceptor(public_cert, private_key, ca_cert));
+  // Connector.
+  else
+    endp.reset(new connector(public_cert, private_key, ca_cert));
+  return (endp.release());
+}
+
+/**
+ *  Get new TLS stream.
+ *
+ *  @param[in] to          Lower stream.
+ *  @param[in] is_acceptor true if 'to' is an acceptor.
+ *  @param[in] proto_name  Unused.
+ *
+ *  @return New stream.
+ */
+misc::shared_ptr<io::stream> factory::new_stream(
+                                        misc::shared_ptr<io::stream> to,
+                                        bool is_acceptor,
+                                        QString const& proto_name) {
+  (void)proto_name;
+  return (is_acceptor ? acceptor().open(to) : connector().open(to));
 }
