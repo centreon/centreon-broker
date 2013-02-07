@@ -21,6 +21,7 @@
 #  define CCB_TLS_STREAM_HH
 
 #  include <gnutls/gnutls.h>
+#  include <QByteArray>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -42,12 +43,17 @@ namespace             tls {
                       ~stream();
     void              process(bool in = false, bool out = false);
     void              read(misc::shared_ptr<io::data>& d);
+    unsigned int      read_encrypted(void* buffer, unsigned int size);
     void              write(misc::shared_ptr<io::data> const& d);
+    unsigned int      write_encrypted(
+                        void const* buffer,
+                        unsigned int size);
 
   private:
                       stream(stream const& s);
     stream&           operator=(stream const& s);
 
+    QByteArray        _buffer;
     bool              _process_in;
     bool              _process_out;
     gnutls_session_t* _session;

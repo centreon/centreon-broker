@@ -111,6 +111,42 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Read encrypted data from base stream.
+ *
+ *  @param[out] buffer Output buffer.
+ *  @param[in]  size   Maximum size.
+ *
+ *  @return Number of bytes actually read.
+ */
+unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
+  // Only read raw data.
+  static QString const raw_type("com::centreon::broker::io::raw");
+
+  // Read some data.
+  while (_buffer.isEmpty()) {
+    misc::shared_ptr<io::data> d;
+    _from->read(d);
+    if (!d.isNull() && (d->type() == raw_type)) {
+      io::raw* r(static_cast<io::raw*>(d.data()));
+      _buffer.append(r->QByteArray::data(), r->size());
+    }
+  }
+
+  // Transfer data.
+  unsigned int rb(_buffer.size());
+  if (size >= rb) {
+    memcpy(buffer, _buffer.data(), rb);
+    _buffer.clear();
+  }
+  else {
+    memcpy(buffer, _buffer.data(), size);
+    _buffer.remove(0, size);
+    rb = size;
+  }
+  return (rb);
+}
+
+/**
  *  @brief Send data across the TLS session.
  *
  *  Send a chunk of data.
@@ -143,6 +179,23 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   }
 
   return ;
+}
+
+/**
+ *  Write encrypted data to base stream.
+ *
+ *  @param[in] buffer Data to write.
+ *  @param[in] size   Size of buffer.
+ *
+ *  @return Number of bytes written.
+ */
+unsigned int stream::write_encrypted(
+                       void const* buffer,
+                       unsigned int size) {
+  misc::shared_ptr<io::raw> r(new io::raw);
+  r->append(static_cast<char const*>(buffer), size);
+  _from->write(r.staticCast<io::data>());
+  return (size);
 }
 
 /**************************************

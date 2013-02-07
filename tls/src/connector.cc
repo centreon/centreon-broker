@@ -141,7 +141,7 @@ misc::shared_ptr<io::stream> connector::open(
 #endif // GNU TLS < 2.12.0
       gnutls_transport_set_pull_function(*session, pull_helper);
       gnutls_transport_set_push_function(*session, push_helper);
-      gnutls_transport_set_ptr(*session, lower.data());
+      gnutls_transport_set_ptr(*session, this);
 
       // Perform the TLS handshake.
       do {

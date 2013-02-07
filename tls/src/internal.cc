@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <gnutls/gnutls.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -24,6 +25,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/tls/internal.hh"
+#include "com/centreon/broker/tls/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -119,8 +121,7 @@ ssize_t tls::pull_helper(
                gnutls_transport_ptr_t ptr,
                void* data,
                size_t size) {
-  //return (static_cast<io::stream*>(ptr)->read(data, size));
-  // XXX
+  return (static_cast<tls::stream*>(ptr)->read_encrypted(data, size));
 }
 
 /**
@@ -131,8 +132,5 @@ ssize_t tls::push_helper(
                gnutls_transport_ptr_t ptr,
                void const* data,
                size_t size) {
-  misc::shared_ptr<io::raw> r(new io::raw);
-  r->append(static_cast<char const*>(data), size);
-  static_cast<io::stream*>(ptr)->write(r.staticCast<io::data>());
-  return (size);
+  return (static_cast<tls::stream*>(ptr)->write_encrypted(data, size));
 }
