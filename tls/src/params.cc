@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <gnutls/gnutls.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
 
@@ -74,19 +75,27 @@ void params::apply(gnutls_session_t session) {
 
   // Set anonymous credentials...
   if (_cert.empty() || _key.empty()) {
-    if (CLIENT == _type)
+    if (CLIENT == _type) {
+      logging::debug(logging::low)
+        << "TLS: using anonymous client credentials";
       ret = gnutls_credentials_set(
               session,
               GNUTLS_CRD_ANON,
               _cred.client);
-    else
+    }
+    else {
+      logging::debug(logging::low)
+        << "TLS: using anonymous server credentials";
       ret = gnutls_credentials_set(
               session,
               GNUTLS_CRD_ANON,
               _cred.server);
+    }
   }
   // ... or certificate credentials.
   else {
+    logging::debug(logging::low)
+      << "TLS: using certificates as credentials";
     ret = gnutls_credentials_set(
             session,
             GNUTLS_CRD_CERTIFICATE,

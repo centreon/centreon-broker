@@ -195,6 +195,7 @@ unsigned int stream::write_encrypted(
   misc::shared_ptr<io::raw> r(new io::raw);
   r->append(static_cast<char const*>(buffer), size);
   _from->write(r.staticCast<io::data>());
+  _from->write(misc::shared_ptr<io::data>());
   return (size);
 }
 
