@@ -85,7 +85,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(21 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Terminate monitoring engine.
     daemon.stop();
