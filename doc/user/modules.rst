@@ -299,16 +299,6 @@ port           Port on which Centreon Broker should listen (if no host
                is defined) or connect to.
 host           Host to connect to. To have a server connection, do not
                use this tag.
-tls            Enable TLS protocol. It can either be used as anonymous
-               (no public_cert nor private_key) or with appropriate
-               settings (ca_certificate) used with certificate
-               authentication.
-private_key    Private key.
-public_cert    Public certificate associated with private_key.
-ca_certificate Trusted Certificate Authority certificate. If this
-               parameter is set, the CA’s certificate is used to
-               authenticate client connections which are denied
-               if the peer key could not be validated.
 ============== =======================================================
 
 Example
@@ -399,6 +389,72 @@ Example
     <type>tcp</tcp>
     <port>5668</port>
     <protocol>ndo</protocol>
+  </input>
+
+TLS
+===
+
+The TLS module is using `GNU TLS <http://www.gnutls.org>`_ to provide
+encryption. Encryption can work with two modes : either with provided
+certificates (and optionally authentication with a trusted CA) or by
+using anonymous mode. With this last mode, TLS just have to be enabled
+and encryption is configured by the software. It is this last mode that
+is used by the BBDO protocol.
+
+================== ===
+**Type**           N/A
+**Layer(s)**       5
+**Work on input**  Yes
+**Work on output** Yes
+================== ===
+
+Options
+-------
+
+============== =======================================================
+Tag            Description
+============== =======================================================
+tls            Enable TLS protocol. It can either be used as anonymous
+               (no public_cert nor private_key) or with appropriate
+               settings (ca_certificate) used with certificate
+               authentication.
+private_key    Private key.
+public_cert    Public certificate associated with private_key.
+ca_certificate Trusted Certificate Authority certificate. If this
+               parameter is set, the CA’s certificate is used to
+               authenticate client connections which are denied
+               if the peer key could not be validated.
+============== =======================================================
+
+Example
+-------
+
+Output stream connecting to remotehost.tld using public.cert and
+private.key files.
+
+::
+
+  <output>
+    <type>tcp</type>
+    <host>remotehost.tld</host>
+    <port>5669</port>
+    <public_cert>public.cert</public_cert>
+    <private_key>private.key</private_key>
+    <protocol>bbdo</protocol>
+  </output>
+
+Input stream that authenticate clients using the trusted CA's
+certificate (trusted_ca.cert).
+
+::
+
+  <input>
+    <type>tcp</type>
+    <port>5669</port>
+    <public_cert>public.cert</public_cert>
+    <private_key>private.key</private_key>
+    <ca_certificate>trusted_ca.cert</ca_certificate>
+    <protocol>bbdo</protocol>
   </input>
 
 Compression

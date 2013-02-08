@@ -341,6 +341,7 @@ File                                         Description
 ``${WITH_PREFIX_MODULES}/50-local.so``       Local module.
 ``${WITH_PREFIX_MODULES}/50-tcp.so``         TCP module.
 ``${WITH_PREFIX_MODULES}/60-compression.so`` Compression module.
+``${WITH_PREFIX_MODULES}/60-tls.so``         TLS (encryption) module.
 ``${WITH_PREFIX_MODULES}/70-rrd.so``         RRD module.
 ``${WITH_PREFIX_MODULES}/80-bbdo.so``        BBDO module.
 ``${WITH_PREFIX_MODULES}/80-ndo.so``         NDO module.
