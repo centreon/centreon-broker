@@ -246,7 +246,7 @@ void acceptor::_on_stream_destroy(QObject* obj) {
     return ;
 
   // Retrieve QTcpSocket object.
-  QTcpSocket* sock(reinterpret_cast<QTcpSocket*>(obj));
+  QTcpSocket* sock(static_cast<QTcpSocket*>(obj));
 
   // Find and remove matching entry.
   QMutexLocker lock(&_childrenm);
@@ -256,7 +256,13 @@ void acceptor::_on_stream_destroy(QObject* obj) {
        it != end;
          ++it)
     if (it->first.data() == sock) {
-      _children.erase(it);
+      {
+        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
+          p(*it);
+        _children.erase(it);
+        lock.unlock();
+      } // Eventual shared_ptr destruction, p going out of scope.
+      lock.relock();
       break ;
     }
   return ;
