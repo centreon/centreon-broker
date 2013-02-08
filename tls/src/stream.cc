@@ -99,13 +99,14 @@ void stream::read(misc::shared_ptr<io::data>& d) {
             *_session,
             buffer->QByteArray::data(),
             buffer->size()));
-  if (ret < 0)
+  if (!ret)
+    throw (io::exceptions::shutdown(true, false)
+           << "TLS: connection got terminated");
+  else if (ret < 0)
     throw (exceptions::msg() << "TLS: could not receive data: "
            << gnutls_strerror(ret));
-  if (ret > 0) {
-    buffer->resize(ret);
-    d = buffer.staticCast<io::data>();
-  }
+  buffer->resize(ret);
+  d = buffer.staticCast<io::data>();
 
   return ;
 }
