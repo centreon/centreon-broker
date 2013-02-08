@@ -45,6 +45,10 @@ namespace             io {
                         com::centreon::broker::config::endpoint const& cfg,
                         bool is_input,
                         bool is_output) const = 0;
+    virtual bool      has_not_endpoint(
+                        com::centreon::broker::config::endpoint const& cfg,
+                        bool is_input,
+                        bool is_output) const;
     virtual endpoint* new_endpoint(
                         com::centreon::broker::config::endpoint& cfg,
                         bool is_input,

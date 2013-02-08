@@ -92,6 +92,27 @@ bool factory::has_endpoint(
 }
 
 /**
+ *  Check if endpoint configuration do not match the compression layer.
+ *
+ *  @param[in] cfg       Configuration object.
+ *  @param[in] is_input  Unused.
+ *  @param[in] is_output Unused.
+ *
+ *  @return true if the configuration does not match the compression
+ *          layer.
+ */
+bool factory::has_not_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
+  QMap<QString, QString>::const_iterator
+    it(cfg.params.find("compression"));
+  return ((it != cfg.params.end())
+          ? !has_endpoint(cfg, is_input, is_output)
+          : false);
+}
+
+/**
  *  Create an endpoint matching the configuration object.
  *
  *  @param[in]  cfg         Configuration object.

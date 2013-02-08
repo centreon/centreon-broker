@@ -43,6 +43,10 @@ namespace         compression {
                     config::endpoint const& cfg,
                     bool is_input,
                     bool is_output) const;
+    bool          has_not_endpoint(
+                    config::endpoint const& cfg,
+                    bool is_input,
+                    bool is_output) const;
     io::endpoint* new_endpoint(
                     config::endpoint& cfg,
                     bool is_input,

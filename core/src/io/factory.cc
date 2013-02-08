@@ -61,6 +61,22 @@ factory& factory::operator=(factory const& f) {
 }
 
 /**
+ *  Check if configuration do not have endpoint.
+ *
+ *  @param[in] cfg       Configuration object.
+ *  @param[in] is_input  Input endpoint ?
+ *  @param[in] is_output Output endpoint ?
+ *
+ *  @return true if configuration do not have endpoint.
+ */
+bool factory::has_not_endpoint(
+                config::endpoint const& cfg,
+                bool is_input,
+                bool is_output) const {
+  return (!has_endpoint(cfg, is_input, is_output));
+}
+
+/**
  *  @brief Create a new stream.
  *
  *  This function is used to generate new streams after successful

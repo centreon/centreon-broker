@@ -168,7 +168,14 @@ QString factory::_extensions(
        ++it) {
     if ((it->osi_from > 1)
         && (it->osi_to < 7)
-        && !it->endpntfactry->has_endpoint(cfg, is_input, is_output)) {
+        && !it->endpntfactry->has_endpoint(
+                                cfg,
+                                is_input,
+                                is_output)
+        && !it->endpntfactry->has_not_endpoint(
+                                cfg,
+                                is_input,
+                                is_output)) {
       if (!extensions.isEmpty())
         extensions.append(" ");
       extensions.append(it.key());
