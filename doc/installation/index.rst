@@ -342,6 +342,7 @@ File                                         Description
 ``${WITH_PREFIX_MODULES}/50-tcp.so``         TCP module.
 ``${WITH_PREFIX_MODULES}/60-compression.so`` Compression module.
 ``${WITH_PREFIX_MODULES}/70-rrd.so``         RRD module.
+``${WITH_PREFIX_MODULES}/80-bbdo.so``        BBDO module.
 ``${WITH_PREFIX_MODULES}/80-ndo.so``         NDO module.
 ``${WITH_PREFIX_MODULES}/80-sql.so``         SQL module.
 ============================================ ===========================

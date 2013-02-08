@@ -101,7 +101,7 @@ module               If you do not want to load all modules of a
                                                                                   /usr/lib/centreon-broker/50-tcp.so
                                                                                 </module>
                                                                                 <module> 
-                                                                                  /usr/lib/centreon-broker/80-ndo.so
+                                                                                  /usr/lib/centreon-broker/80-bbdo.so
                                                                                 </module>
 instance             Only useful if Centreon Broker is loaded as              ::
                      a module of a monitoring engine (Centreon
@@ -151,7 +151,7 @@ input                Start an :ref:`input stream definition
                                                                                 <input>
                                                                                   <type>tcp</type>
                                                                                   <port>5668</port>
-                                                                                  <protocol>ndo</protocol>
+                                                                                  <protocol>bbdo</protocol>
                                                                                 </input>
 output               Start an :ref:`output stream definition
                      <user_configuration_input_output_temporary>`.            ::
@@ -171,7 +171,7 @@ temporary            Start an :ref:`temporary stream definition
                                                                                 <temporary>
                                                                                   <type>file</type>
                                                                                   <path>/tmp/brokertemp</path>
-                                                                                  <protocol>ndo</protocol>
+                                                                                  <protocol>bbdo</protocol>
                                                                                 </temporary>
 ==================== ======================================================== =============================================
 
@@ -337,7 +337,7 @@ XML node::
   <output>
     <name>MyFile</name>
     <type>file</type>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </output>
   <output>
     <name>MyDB</name>

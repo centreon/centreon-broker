@@ -46,7 +46,7 @@ Example
   <input>
     <type>file</type>
     <path>/var/lib/centreon/broker.file</path>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
     <max_size>100000000</max_size> <!-- 100MB limit -->
   </input>
 
@@ -82,7 +82,7 @@ Example
   <output>
     <type>local_client</type>
     <path>/var/lib/centreon/broker.sock</path>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </output>
 
 ::
@@ -90,7 +90,7 @@ Example
   <output>
     <type>local_server</type>
     <path>/var/lib/centreon/broker.sock</path>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </output>
 
 .. _user_modules_rrd:
@@ -321,7 +321,7 @@ Input stream that waits for clients to connect on port 5668.
   <input>
     <type>tcp</type>
     <port>5668</port>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </input>
 
 Output stream that connects on host remotehost.tld on port 5668.
@@ -335,12 +335,43 @@ Output stream that connects on host remotehost.tld on port 5668.
     <protocol>5668</protocol>
   </output>
 
+BBDO
+====
+
+BBDO is a serialization layer introduced by Centreon Broker. Its name
+stands for *Broker Binary Data Objects*. This protocol was initially
+introduced to improve performance over the NDO protocol which was using
+data stringification. As its name suggests, BBDO is using raw binary
+data transfer which drastically reduce its CPU footprint on busy
+servers.
+
+BBDO also supports feature negociation and can automatically encrypt
+and/or compress transmitted data. No configuration is required, whereas
+possible, to use compression and TLS modules.
+
+===================== ===
+**Type**              N/A
+**Layer(s)**          7
+**Work on input**     Yes
+**Work on output**    Yes
+**Work on temporary** No
+===================== ===
+
+Configuration
+-------------
+
+======== =====================
+Tag      Description
+======== =====================
+protocol Must be set to *bbdo*.
+======== =====================
+
 NDO
 ===
 
-NDO is currently the sole generic serialization layer that exists for
-events. A serialization layer is required on some endpoints to reach the
-7th layer (NDO is inserted at layer 7).
+NDO is the historical but deprecated serialization layer for events. A
+serialization layer is required on some endpoints to reach the 7th layer
+(NDO is inserted at layer 7).
 
 ===================== ===
 **Type**              N/A

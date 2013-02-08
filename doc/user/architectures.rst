@@ -109,7 +109,7 @@ the following characteristics (leave default when unspecified):
 **Name**                   Broker-Master
 **Host to connect to**     <address of the central Broker machine>
 **Connection port**        5668
-**Serialization protocol** NDO Protocol
+**Serialization protocol** BBDO Protocol
 ========================== =======================================
 
 On Central
@@ -141,7 +141,7 @@ when unspecified):
 **Name**                   Broker-Master
 **Host to connect to**
 **Connection port**        5668
-**Serialization protocol** NDO Protocol
+**Serialization protocol** BBDO Protocol
 ========================== =============
 
 Add an output object with the following characteristics:
