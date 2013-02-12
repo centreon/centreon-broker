@@ -339,7 +339,14 @@ int main() {
         if (error)
           throw (exceptions::msg() << "invalid metric #" << i
                  << " (type " << i % 5 << ", metric "
-                 << metric_name.c_str() << ")");
+                 << metric_name.c_str() << ", data source type "
+                 << data_source_type << ", unit name "
+                 << unit_name.c_str() << ", warning " << warning
+                 << ", warning low " << warning_low << ", warning mode "
+                 << warning_mode << ", critical " << critical
+                 << ", critical low " << critical_low
+                 << ", critical mode " << critical_mode << ", min "
+                 << min_val << ", max " << max_val << ")");
       }
     }
 
