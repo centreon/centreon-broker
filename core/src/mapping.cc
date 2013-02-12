@@ -285,7 +285,8 @@ static mapped_data<downtime> const downtime_mapping[] = {
   mapped_data<downtime>(
     &downtime::triggered_by,
     NDO_DATA_TRIGGEREDBY,
-    "triggered_by"),
+    "triggered_by",
+    true),
   mapped_data<downtime>(
     &downtime::was_cancelled,
     NDO_DATA_X3D,

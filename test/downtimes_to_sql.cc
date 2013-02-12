@@ -166,9 +166,10 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT internal_id, host_id, service_id, entry_time,"
-            << "       author, cancelled, comment_data, deletion_time,"
-            << "       duration, end_time, fixed, start_time,"
-            << "       started, triggered_by, type"
+            << "       actual_end_time, actual_start_time, author,"
+            << "       cancelled, comment_data, deletion_time,"
+            << "       duration, end_time, fixed, start_time, started,"
+            << "       triggered_by, type"
             << "  FROM downtimes"
             << "  ORDER BY internal_id ASC";
       QSqlQuery q(db);
@@ -183,17 +184,20 @@ int main() {
           || !q.value(2).isNull()
           || (static_cast<time_t>(q.value(3).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
-          || (q.value(4).toString() != "Merethis")
-          || q.value(5).toUInt()
-          || (q.value(6).toString() != "Centreon is beautiful")
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          || (q.value(8).toUInt() != 3600)
-          || (static_cast<time_t>(q.value(9).toLongLong()) != t1 + 3600)
-          || !q.value(10).toUInt()
-          || (static_cast<time_t>(q.value(11).toLongLong()) != t1)
+          || !q.value(4).isNull()
+          || (static_cast<time_t>(q.value(5).toLongLong()) < t1)
+          || (static_cast<time_t>(q.value(5).toLongLong()) > now)
+          || (q.value(6).toString() != "Merethis")
+          || q.value(7).toUInt()
+          || (q.value(8).toString() != "Centreon is beautiful")
+          || !q.value(9).isNull()
+          || (q.value(10).toUInt() != 3600)
+          || (static_cast<time_t>(q.value(11).toLongLong()) != t1 + 3600)
           || !q.value(12).toUInt()
-          || !(q.value(13).isNull() || !q.value(13).toUInt())
-          || (q.value(14).toUInt() != 2)
+          || (static_cast<time_t>(q.value(13).toLongLong()) != t1)
+          || !q.value(14).toUInt()
+          || !q.value(15).isNull()
+          || (q.value(16).toUInt() != 2)
           // Host downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 2)
@@ -201,17 +205,19 @@ int main() {
           || !q.value(2).isNull()
           || (static_cast<time_t>(q.value(3).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
-          || (q.value(4).toString() != "Broker")
-          || q.value(5).toUInt()
-          || (q.value(6).toString() != "Some random and useless comment.")
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          || (q.value(8).toUInt() != 123)
-          || (static_cast<time_t>(q.value(9).toLongLong()) != t1 + 2000)
-          || q.value(10).toUInt()
-          || (static_cast<time_t>(q.value(11).toLongLong()) != t1 + 1000)
+          || !q.value(4).isNull()
+          || !q.value(5).isNull()
+          || (q.value(6).toString() != "Broker")
+          || q.value(7).toUInt()
+          || (q.value(8).toString() != "Some random and useless comment.")
+          || !q.value(9).isNull()
+          || (q.value(10).toUInt() != 123)
+          || (static_cast<time_t>(q.value(11).toLongLong()) != t1 + 2000)
           || q.value(12).toUInt()
-          || !(q.value(13).isNull() || !q.value(13).toUInt())
-          || (q.value(14).toUInt() != 2)
+          || (static_cast<time_t>(q.value(13).toLongLong()) != t1 + 1000)
+          || q.value(14).toUInt()
+          || !q.value(15).isNull()
+          || (q.value(16).toUInt() != 2)
           // Service downtime #1.
           || !q.next()
           || (q.value(0).toUInt() != 3)
@@ -219,17 +225,20 @@ int main() {
           || (q.value(2).toUInt() != 31)
           || (static_cast<time_t>(q.value(3).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
-          || (q.value(4).toString() != "Default Author")
-          || q.value(5).toUInt()
-          || (q.value(6).toString() != " This is a comment !")
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          || (q.value(8).toUInt() != 7129)
-          || (static_cast<time_t>(q.value(9).toLongLong()) != t1 + 8638)
-          || q.value(10).toUInt()
-          || (static_cast<time_t>(q.value(11).toLongLong()) != t1)
-          || !q.value(12).toUInt()
-          || !(q.value(13).isNull() || !q.value(13).toUInt())
-          || (q.value(14).toUInt() != 1)
+          || !q.value(4).isNull()
+          || (static_cast<time_t>(q.value(5).toLongLong()) < t1)
+          || (static_cast<time_t>(q.value(5).toLongLong()) > now)
+          || (q.value(6).toString() != "Default Author")
+          || q.value(7).toUInt()
+          || (q.value(8).toString() != " This is a comment !")
+          || !q.value(9).isNull()
+          || (q.value(10).toUInt() != 7129)
+          || (static_cast<time_t>(q.value(11).toLongLong()) != t1 + 8638)
+          || q.value(12).toUInt()
+          || (static_cast<time_t>(q.value(13).toLongLong()) != t1)
+          || !q.value(14).toUInt()
+          || !q.value(15).isNull()
+          || (q.value(16).toUInt() != 1)
           // Service downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 4)
@@ -237,19 +246,21 @@ int main() {
           || (q.value(2).toUInt() != 48)
           || (static_cast<time_t>(q.value(3).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
-          || (q.value(4).toString() != "Author")
-          || q.value(5).toUInt()
-          || (q.value(6).toString() != "Scheduling downtime")
-          || !(q.value(7).isNull() || !q.value(7).toUInt())
-          || (q.value(8).toUInt() != 984730)
-          || (static_cast<time_t>(q.value(9).toLongLong())
-              != t1 + 987564)
-          || !q.value(10).toUInt()
+          || !q.value(4).isNull()
+          || !q.value(5).isNull()
+          || (q.value(6).toString() != "Author")
+          || q.value(7).toUInt()
+          || (q.value(8).toString() != "Scheduling downtime")
+          || !q.value(9).isNull()
+          || (q.value(10).toUInt() != 984730)
           || (static_cast<time_t>(q.value(11).toLongLong())
+              != t1 + 987564)
+          || !q.value(12).toUInt()
+          || (static_cast<time_t>(q.value(13).toLongLong())
               != t1 + 2834)
-          || q.value(12).toUInt()
-          || !(q.value(13).isNull() || !q.value(13).toUInt())
-          || (q.value(14).toUInt() != 1)
+          || q.value(14).toUInt()
+          || !q.value(15).isNull()
+          || (q.value(16).toUInt() != 1)
           // EOF
           || q.next())
         throw (exceptions::msg() << "invalid downtime entry in DB");
@@ -309,7 +320,7 @@ int main() {
     // Check for deletion.
     {
       std::ostringstream query;
-      query << "SELECT internal_id, cancelled, deletion_time"
+      query << "SELECT internal_id, actual_end_time, cancelled, deletion_time"
             << "  FROM downtimes"
             << "  ORDER BY internal_id";
       QSqlQuery q(db);
@@ -320,30 +331,37 @@ int main() {
       if (// Host downtime #1.
           !q.next()
           || (q.value(0).toUInt() != 1)
-          || !q.value(1).toUInt()
-          || (static_cast<time_t>(q.value(2).toLongLong()) < t2)
-          || (static_cast<time_t>(q.value(2).toLongLong()) > now)
+          || (static_cast<time_t>(q.value(1).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
+          || !q.value(2).toUInt()
+          || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(3).toLongLong()) > now)
           // Host downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 2)
-          || !q.value(1).toUInt()
-          || (static_cast<time_t>(q.value(2).toLongLong()) < t2)
-          || (static_cast<time_t>(q.value(2).toLongLong()) > now)
+          || !q.value(1).isNull()
+          || !q.value(2).toUInt()
+          || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(3).toLongLong()) > now)
           // Service downtime #1.
           || !q.next()
           || (q.value(0).toUInt() != 3)
-          || !q.value(1).toUInt()
-          || (static_cast<time_t>(q.value(2).toLongLong()) < t2)
-          || (static_cast<time_t>(q.value(2).toLongLong()) > now)
+          || (static_cast<time_t>(q.value(1).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
+          || !q.value(2).toUInt()
+          || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(3).toLongLong()) > now)
           // Service downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 4)
-          || !q.value(1).toUInt()
-          || (static_cast<time_t>(q.value(2).toLongLong()) < t2)
-          || (static_cast<time_t>(q.value(2).toLongLong()) > now)
+          || !q.value(1).isNull()
+          || !q.value(2).toUInt()
+          || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(3).toLongLong()) > now)
           // EOF
           || q.next())
-        throw (exceptions::msg() << "invalid deletion_time in DB");
+        throw (exceptions::msg()
+               << "invalid actual_end_time or deletion_time in DB");
     }
 
     // Success.

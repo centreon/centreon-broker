@@ -312,7 +312,7 @@ void stream::_prepare() {
   {
     std::ostringstream oss;
     oss << "UPDATE " << mapped_type<neb::downtime>::table
-        << " SET actual_end_time=GREATEST(actual_end_time, :actual_end_time),"
+        << " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
         << "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
         << "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
         << "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
@@ -665,7 +665,9 @@ void stream::_process_downtime(io::data const& e) {
     << "SQL: processing downtime event (instance: " << d.instance_id
     << ", host: " << d.host_id << ", service: " << d.service_id
     << ", start time: " << d.start_time << ", end_time: " << d.end_time
-    << ", duration: " << d.duration << ", entry time: " << d.entry_time
+    << ", actual start time: " << d.actual_start_time
+    << ", actual end time: " << d.actual_end_time << ", duration: "
+    << d.duration << ", entry time: " << d.entry_time
     << ", deletion time: " << d.deletion_time << ")";
 
   // Processing.

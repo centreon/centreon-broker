@@ -51,7 +51,9 @@ acknowledgements;
 // Downtime list.
 struct   private_downtime_params {
   time_t deletion_time;
+  time_t end_time;
   bool   started;
+  time_t start_time;
 };
 // Unstarted downtimes.
 static std::map<unsigned int, private_downtime_params> downtimes;
@@ -475,15 +477,21 @@ int neb::callback_downtime(int callback_type, void* data) {
     if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
         || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
       params.deletion_time = 0;
+      params.end_time = 0;
       params.started = false;
+      params.start_time = 0;
     }
     else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
       params.started = true;
+      params.start_time = downtime_data->timestamp.tv_sec;
     }
     else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
       if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
         params.deletion_time = downtime_data->timestamp.tv_sec;
+      params.end_time = downtime_data->timestamp.tv_sec;
     }
+    downtime->actual_start_time = params.start_time;
+    downtime->actual_end_time = params.end_time;
     downtime->deletion_time = params.deletion_time;
     downtime->was_cancelled = (downtime->deletion_time != 0);
     downtime->was_started = params.started;
