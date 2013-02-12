@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,7 +33,9 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 downtime::downtime()
-  : deletion_time(0),
+  : actual_end_time(0),
+    actual_start_time(0),
+    deletion_time(0),
     downtime_type(0),
     duration(0),
     end_time(0),
@@ -109,6 +111,8 @@ QString const& downtime::type() const {
  *  @see operator=(downtime const&)
  */
 void downtime::_internal_copy(downtime const& d) {
+  actual_end_time = d.actual_end_time;
+  actual_start_time = d.actual_start_time;
   author = d.author;
   comment = d.comment;
   deletion_time = d.deletion_time;

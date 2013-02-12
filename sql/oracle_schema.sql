@@ -39,7 +39,7 @@ CREATE TABLE schemaversion (
   software varchar(128) NOT NULL,
   version int NOT NULL
 );
-INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 1);
+INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
 
 
 --
@@ -554,10 +554,12 @@ END;
 --
 CREATE TABLE downtimes (
   downtime_id int NOT NULL,
-  entry_time int default NULL,
+  entry_time int NOT NULL,
   host_id int NOT NULL,
   service_id int default NULL,
 
+  actual_end_time int default NULL,
+  actual_start_time int default NULL,
   author varchar(64) default NULL,
   cancelled char(1) default NULL,
   comment_data clob default NULL,

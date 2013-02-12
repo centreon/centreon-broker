@@ -403,5 +403,7 @@
 #define NDO_DATA_HOSTID                              267
 #define NDO_DATA_SERVICEID                           268
 #define NDO_DATA_LASTUPDATE                          269
+#define NDO_DATA_ACTUALENDTIME                       270
+#define NDO_DATA_ACTUALSTARTTIME                     271
 
 #endif

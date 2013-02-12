@@ -221,6 +221,16 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
 // downtime members mapping.
 static mapped_data<downtime> const downtime_mapping[] = {
   mapped_data<downtime>(
+    &downtime::actual_end_time,
+    NDO_DATA_ACTUALENDTIME,
+    "actual_end_time",
+    true),
+  mapped_data<downtime>(
+    &downtime::actual_start_time,
+    NDO_DATA_ACTUALSTARTTIME,
+    "actual_start_time",
+    true),
+  mapped_data<downtime>(
     &downtime::author,
     NDO_DATA_AUTHORNAME,
     "author"),

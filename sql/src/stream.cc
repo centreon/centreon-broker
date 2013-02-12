@@ -309,11 +309,27 @@ void stream::_prepare() {
     _custom_variable_status_update,
     id);
 
-  id.clear();
-  id.push_back(qMakePair(QString("entry_time"), false));
-  id.push_back(qMakePair(QString("host_id"), false));
-  id.push_back(qMakePair(QString("service_id"), true));
-  _prepare_update<neb::downtime>(_downtime_update, id);
+  {
+    std::ostringstream oss;
+    oss << "UPDATE " << mapped_type<neb::downtime>::table
+        << " SET actual_end_time=GREATEST(actual_end_time, :actual_end_time),"
+        << "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+        << "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+        << "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+        << "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+        << "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+        << "     type=:type"
+        << " WHERE entry_time=:entry_time"
+        << "        AND host_id=:host_id"
+        << "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+    QString query(oss.str().c_str());
+    logging::info(logging::low)
+      << "SQL: preparing statement: " << query;
+    _downtime_update.reset(new QSqlQuery(*_db));
+    if (!_downtime_update->prepare(query))
+      throw (exceptions::msg() << "SQL: cannot prepare statement: "
+             << _downtime_update->lastError().text() << ": " << query);
+  }
 
   id.clear();
   id.push_back(qMakePair(QString("host_id"), false));

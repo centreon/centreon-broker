@@ -40,7 +40,7 @@ CREATE TABLE schemaversion (
   software varchar(128) NOT NULL,
   version int NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 1);
+INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
 
 
 --
@@ -505,10 +505,12 @@ CREATE TABLE customvariables (
 --
 CREATE TABLE downtimes (
   downtime_id int NOT NULL auto_increment,
-  entry_time int default NULL,
+  entry_time int NOT NULL,
   host_id int NOT NULL,
   service_id int default NULL,
 
+  actual_end_time int default NULL,
+  actual_start_time int default NULL,
   author varchar(64) default NULL,
   cancelled boolean default NULL,
   comment_data text default NULL,

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,7 +31,9 @@ int main() {
   neb::downtime dwntm;
 
   // Check.
-  return ((dwntm.author != "")
+  return ((dwntm.actual_end_time != 0)
+          || (dwntm.actual_start_time != 0)
+          || (dwntm.author != "")
           || (dwntm.comment != "")
           || (dwntm.deletion_time != 0)
           || (dwntm.downtime_type != 0)

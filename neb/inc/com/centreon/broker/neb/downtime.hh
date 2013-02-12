@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,6 +45,8 @@ namespace          neb {
     downtime&      operator=(downtime const& d);
     QString const& type() const;
 
+    timestamp      actual_end_time;
+    timestamp      actual_start_time;
     QString        author;
     QString        comment;
     timestamp      deletion_time;
