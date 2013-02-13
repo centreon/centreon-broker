@@ -699,16 +699,14 @@ CREATE TABLE notifications (
 --  Host states.
 --
 CREATE TABLE hoststateevents (
-  hoststateevent_id serial,
   host_id int NOT NULL,
   start_time int NOT NULL,
 
+  ack_time int default NULL,
   end_time int default NULL,
   in_downtime boolean default NULL,
-  last_update int default NULL,
   state int default NULL,
 
-  PRIMARY KEY (hoststateevent_id),
   UNIQUE (host_id, start_time),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE
@@ -719,17 +717,15 @@ CREATE TABLE hoststateevents (
 --  Service states.
 --
 CREATE TABLE servicestateevents (
-  servicestateevent_id serial,
   host_id int NOT NULL,
   service_id int NOT NULL,
   start_time int NOT NULL,
 
+  ack_time int default NULL,
   end_time int default NULL,
   in_downtime boolean default NULL,
-  last_update int default NULL,
   state int default NULL,
 
-  PRIMARY KEY (servicestateevent_id),
   UNIQUE (host_id, service_id, start_time),
   FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
     ON DELETE CASCADE
