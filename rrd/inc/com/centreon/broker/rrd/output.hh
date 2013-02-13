@@ -47,17 +47,20 @@ namespace                    rrd {
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 bool ignore_update_errors,
                                  bool write_metrics = true,
                                  bool write_status = true);
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 bool ignore_update_errors,
                                  QString const& local,
                                  bool write_metrics = true,
                                  bool write_status = true);
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 bool ignore_update_errors,
                                  unsigned short port,
                                  bool write_metrics = true,
                                  bool write_status = true);
@@ -74,6 +77,7 @@ namespace                    rrd {
     output&                    operator=(output const& o);
 
     std::auto_ptr<backend>     _backend;
+    bool                       _ignore_update_errors;
     QString                    _metrics_path;
     rebuild_cache              _metrics_rebuild;
     bool                       _process_out;

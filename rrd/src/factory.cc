@@ -179,6 +179,17 @@ io::endpoint* factory::new_endpoint(
       write_status = true;
   }
 
+  // Ignore update errors (2.4.0-compatible behavior).
+  bool ignore_update_errors;
+  {
+    QMap<QString, QString>::iterator
+      it(cfg.params.find("ignore_update_errors"));
+    if (it != cfg.params.end())
+      ignore_update_errors = config::parser::parse_boolean(*it);
+    else
+      ignore_update_errors = true;
+  }
+
   // Create endpoint.
   std::auto_ptr<rrd::connector> endp(new rrd::connector);
   endp->set_metrics_path(metrics_path);
@@ -189,6 +200,7 @@ io::endpoint* factory::new_endpoint(
     endp->set_cached_net(port);
   endp->set_write_metrics(write_metrics);
   endp->set_write_status(write_status);
+  endp->set_ignore_update_errors(ignore_update_errors);
   is_acceptor = false;
   return (endp.release());
 }

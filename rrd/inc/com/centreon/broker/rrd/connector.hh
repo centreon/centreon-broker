@@ -45,6 +45,7 @@ namespace          rrd {
                    open();
     void           set_cached_local(QString const& local_socket);
     void           set_cached_net(unsigned short port) throw ();
+    void           set_ignore_update_errors(bool ignore) throw ();
     void           set_metrics_path(QString const& metrics_path);
     void           set_status_path(QString const& status_path);
     void           set_write_metrics(bool write_metrics) throw ();
@@ -56,6 +57,7 @@ namespace          rrd {
 
     QString        _cached_local;
     unsigned short _cached_port;
+    bool           _ignore_update_errors;
     QString        _metrics_path;
     QString        _status_path;
     bool           _write_metrics;
