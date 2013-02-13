@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <host id="1" />
+  <host id="2" />
+  <host id="3" />
+  <host id="4" />
+  <host id="5" />
+  <host id="6" />
+  <host id="7" />
+  <host id="8" />
+  <host id="9" />
+  <host id="10" />
+  <service id="1" host="1" />
+  <service id="2" host="1" />
+  <service id="3" host="2" />
+  <service id="4" host="2" />
+  <service id="5" host="3" />
+  <service id="6" host="3" />
+  <service id="7" host="4" />
+  <service id="8" host="4" />
+  <service id="9" host="5" />
+  <service id="10" host="5" />
+  <service id="11" host="6" />
+  <service id="12" host="6" />
+  <service id="13" host="7" />
+  <service id="14" host="7" />
+  <service id="15" host="8" />
+  <service id="16" host="8" />
+  <service id="17" host="9" />
+  <service id="18" host="9" />
+  <service id="19" host="10" />
+  <service id="20" host="10" />
+</centreonbroker>
