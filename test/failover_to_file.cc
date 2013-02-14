@@ -103,6 +103,7 @@ int main() {
           << "    <type>file</type>\n"
           << "    <path>" << retention_file_path << "</path>\n"
           << "    <protocol>bbdo</protocol>\n"
+          << "    <compression>yes</compression>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();
