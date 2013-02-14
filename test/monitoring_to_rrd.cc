@@ -146,7 +146,7 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DEFAULT|default=9queries_per_second\\;@10:\\;@5:\\;0\\;100\"";
+      cmd = "echo \"DEFAULT|'my ''default'' 1337 m3tric n4m3'=9queries_per_second\\;@10:\\;@5:\\;0\\;100\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
     }
@@ -323,7 +323,7 @@ int main() {
                    || !q.value(11).isNull());
           break ;
         case 4:
-          error = ((metric_name != "default")
+          error = ((metric_name != "my 'default' 1337 m3tric n4m3")
                    || (data_source_type != 0)
                    || (unit_name != "queries_per_second")
                    || (warning < DBL_MAX - 1.0)
