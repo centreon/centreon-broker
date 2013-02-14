@@ -79,7 +79,7 @@ char const* input::_get_line() {
   }
   // \n not found.
   else {
-    _buffer.append('\0');
+    _buffer.append(1, '\0');
     _old = std::string::npos;
   }
 
