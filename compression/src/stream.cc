@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -215,7 +215,18 @@ bool stream::_get_data(unsigned int size) {
   bool retval;
   if (static_cast<unsigned int>(_rbuffer.size()) < size) {
     misc::shared_ptr<io::data> d;
-    _from->read(d);
+    try {
+      _from->read(d);
+    }
+    catch (io::exceptions::shutdown const& e) {
+      if (!_wbuffer.isEmpty()) {
+        misc::shared_ptr<io::raw> r(new io::raw);
+        *static_cast<QByteArray*>(r.data()) = _wbuffer;
+        _wbuffer.clear();
+      }
+      else
+        throw ;
+    }
     if (d.isNull())
       retval = false;
     else {
