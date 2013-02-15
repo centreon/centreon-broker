@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <cassert>
 #include <climits>
+#include <cstdio>
 #include <cstdlib>
 #include <limits>
 #include <memory>
@@ -105,7 +106,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   QMutexLocker lock(&_mutex);
 
   // Check that read should be done.
-  if (!_process_in)
+  if (!_process_in || !_rfile.data())
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "file stream is shutdown");
 
@@ -114,7 +115,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 
   // Build data array.
   std::auto_ptr<io::raw> data(new io::raw);
-  data->resize(4096);
+  data->resize(BUFSIZ);
 
   // Read data.
   unsigned long rb;
@@ -125,6 +126,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     (void)e;
     if (_wid == _rid) {
       _rfile->close();
+      _rfile.clear();
       std::string file_path(_file_path(_rid));
       logging::info(logging::high) << "file: end of last file '"
         << file_path.c_str() << "' reached, closing and erasing file";
