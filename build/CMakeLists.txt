@@ -427,68 +427,68 @@ add_subdirectory("bbdo")
 # NDO module.
 add_subdirectory("ndo")
 
-# Configure files.
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
-  "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
-  "${PROJECT_SOURCE_DIR}/test/vars.hh")
-
-# Test library.
-include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/neb/inc/")
-set(TEST_LIB "brokertest")
-add_library("${TEST_LIB}" STATIC
-  # Sources.
-  "${PROJECT_SOURCE_DIR}/test/cbd.cc"
-  "${PROJECT_SOURCE_DIR}/test/config.cc"
-  "${PROJECT_SOURCE_DIR}/test/engine.cc"
-  "${PROJECT_SOURCE_DIR}/test/external_command.cc"
-  "${PROJECT_SOURCE_DIR}/test/generate.cc"
-  "${PROJECT_SOURCE_DIR}/test/misc.cc"
-  "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
-  # Headers.
-  "${PROJECT_SOURCE_DIR}/test/cbd.hh"
-  "${PROJECT_SOURCE_DIR}/test/config.hh"
-  "${PROJECT_SOURCE_DIR}/test/engine.hh"
-  "${PROJECT_SOURCE_DIR}/test/external_command.hh"
-  "${PROJECT_SOURCE_DIR}/test/generate.hh"
-  "${PROJECT_SOURCE_DIR}/test/misc.hh"
-  "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
-)
-target_link_libraries("${TEST_LIB}" "roker")
-
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
+  # Configure files.
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
+    "${PROJECT_SOURCE_DIR}/test/vars.hh")
+
+  # Test library.
+  include_directories("${PROJECT_SOURCE_DIR}")
+  include_directories("${PROJECT_SOURCE_DIR}/neb/inc/")
+  set(TEST_LIB "brokertest")
+  add_library("${TEST_LIB}" STATIC
+    # Sources.
+    "${PROJECT_SOURCE_DIR}/test/cbd.cc"
+    "${PROJECT_SOURCE_DIR}/test/config.cc"
+    "${PROJECT_SOURCE_DIR}/test/engine.cc"
+    "${PROJECT_SOURCE_DIR}/test/external_command.cc"
+    "${PROJECT_SOURCE_DIR}/test/generate.cc"
+    "${PROJECT_SOURCE_DIR}/test/misc.cc"
+    "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
+    # Headers.
+    "${PROJECT_SOURCE_DIR}/test/cbd.hh"
+    "${PROJECT_SOURCE_DIR}/test/config.hh"
+    "${PROJECT_SOURCE_DIR}/test/engine.hh"
+    "${PROJECT_SOURCE_DIR}/test/external_command.hh"
+    "${PROJECT_SOURCE_DIR}/test/generate.hh"
+    "${PROJECT_SOURCE_DIR}/test/misc.hh"
+    "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
+    )
+  target_link_libraries("${TEST_LIB}" "roker")
+
   # Monitoring to SQL.
   set(TEST_NAME "running_monitoring_to_sql")
   add_executable("${TEST_NAME}"
