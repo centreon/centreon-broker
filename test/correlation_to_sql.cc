@@ -105,6 +105,79 @@ int main() {
     // Let the daemon initialize.
     sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    /* Test cases
+    ** ----------
+    **
+    ** 1) OK -> CRITICAL
+    ** 2) OK -> WARNING -> DOWNTIME
+    ** 3) OK -> CRITICAL -> ACK
+    ** 4) OK -> DOWNTIME -> WARNING -> ACK -> CRITICAL
+    ** 5) OK -> CRITICAL -> ACK
+    ** 6) OK -> WARNING -> ACK -> DOWNTIME
+    */
+
+    // Step 1.
+    {
+      // Set hosts as OK.
+      for (unsigned int i(1); i <= HOST_COUNT; ++i) {
+        std::ostringstream cmd;
+        cmd << "PROCESS_HOST_CHECK_RESULT;" << i << ";0;output1-" << i;
+        commander.execute(cmd.str());
+      }
+
+      // Set services as OK.
+      for (unsigned int i(0); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
+        unsigned int host_id((i % HOST_COUNT) + 1);
+        unsigned int service_id(i + 1);
+        std::ostringstream cmd;
+        cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";"
+            << service_id << ";0;output1-" << host_id << ";"
+            << service_id;
+        commander.execute(cmd.str());
+      }
+    }
+
+    // T2.
+    time_t t2(time(NULL));
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Step 2.
+    {
+      commander.execute("PROCESS_HOST_CHECK_RESULT;1;2;output2-1");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
+      {
+        std::ostringstream oss;
+        oss << "SCHEDULE_HOST_DOWNTIME;2;" << t2 << ";" << (t2 + 3600)
+            << ";1;0;3600;Merethis;Host #2 is going in downtime";
+        commander.execute(oss.str());
+      }
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;1;2;output2-2-1");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;2;1;output2-2-2");
+    }
+
+    // T3.
+    time_t t3(time(NULL));
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Step 3.
+    {
+      {
+        std::ostringstream oss;
+        oss << "SCHEDULE_SVC_DOWNTIME;1;1;" << t3 << ";" << (t3 + 2000)
+            << ";1;0;2000;Centreon;Service #1-#1 is going in downtime";
+        commander.execute(oss.str());
+      }
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
+      commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;0;0;1;Engine;Ack SVC2-1");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;2;0;0;1;foo;Ack SVC2-2");
+    }
+
+    // T4.
+    time_t t4(time(NULL));
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
     // XXX
 
     // Success.
