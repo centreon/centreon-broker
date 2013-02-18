@@ -27,5 +27,6 @@
     <db_password>@DB_PASSWORD@</db_password>
     <db_name>broker_correlation_to_sql</db_name>
     <queries_per_transaction>0</queries_per_transaction>
+    <with_state_events>1</with_state_events>
   </output>
 </centreonbroker>

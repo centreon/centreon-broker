@@ -66,6 +66,7 @@ int main() {
          ++it) {
       it->accept_passive_host_checks = 1;
       it->checks_enabled = 0;
+      it->max_attempts = 1;
     }
     generate_services(services, hosts, SERVICES_BY_HOST);
     for (std::list<service>::iterator
@@ -75,6 +76,7 @@ int main() {
          ++it) {
       it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
+      it->max_attempts = 1;
     }
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
@@ -110,7 +112,7 @@ int main() {
     **
     ** 1) OK -> CRITICAL
     ** 2) OK -> WARNING -> DOWNTIME
-    ** 3) OK -> CRITICAL -> ACK
+    ** 3) OK -> CRITICAL -> ACK -> WARNING
     ** 4) OK -> DOWNTIME -> WARNING -> ACK -> CRITICAL
     ** 5) OK -> CRITICAL -> ACK
     ** 6) OK -> WARNING -> ACK -> DOWNTIME
@@ -136,10 +138,10 @@ int main() {
         commander.execute(cmd.str());
       }
     }
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // T2.
     time_t t2(time(NULL));
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Step 2.
     {
@@ -155,10 +157,10 @@ int main() {
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;1;2;output2-2-1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;2;1;output2-2-2");
     }
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // T3.
     time_t t3(time(NULL));
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Step 3.
     {
@@ -168,17 +170,128 @@ int main() {
             << ";1;0;2000;Centreon;Service #1-#1 is going in downtime";
         commander.execute(oss.str());
       }
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;0;0;1;Broker;Ack SVC1-2");
       commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;0;0;1;Engine;Ack SVC2-1");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;1;0;1;Engine;Ack SVC2-1");
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;2;0;0;1;foo;Ack SVC2-2");
     }
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // T4.
     time_t t4(time(NULL));
+
+    // Step 4.
+    {
+      commander.execute("PROCESS_SVC_CHECK_RESULT;1;2;1;output4-1-2");
+      commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;1;0;1;Centreon Map;Ack HST2");
+      {
+        std::ostringstream oss;
+        oss << "SCHEDULE_SVC_DOWNTIME;2;2;" << t4 << ";" << (t4 + 1600)
+            << ";0;0;1000;Merethis;Service #2-#2 is going in downtime";
+        commander.execute(oss.str());
+      }
+    }
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // XXX
+    // T5.
+    time_t t5(time(NULL));
+
+    // Step 5.
+    {
+      commander.execute("PROCESS_HOST_CHECK_RESULT;2;2;output5-2");
+    }
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check host state events.
+    {
+      struct {
+        unsigned int host_id;
+        time_t       start_time_low;
+        time_t       start_time_high;
+        time_t       end_time_is_null;
+        time_t       end_time_low;
+        time_t       end_time_high;
+        short        state;
+        bool         ack_time_is_null;
+        time_t       ack_time_low;
+        time_t       ack_time_high;
+        bool         in_downtime;
+      } const          entries[] = {
+        { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false }
+      };
+
+      // Get host state events.
+      QSqlQuery q(db);
+      if (!q.exec("SELECT host_id, start_time, end_time, state,"
+                  "       ack_time, in_downtime"
+                  " FROM hoststateevents"
+                  " ORDER BY host_id, start_time"))
+        throw (exceptions::msg() << "cannot get host state events: "
+               << q.lastError().text());
+
+      // Compare DB with expected content.
+      for (unsigned int i(0);
+           i < sizeof(entries) / sizeof(*entries);
+           ++i) {
+        // Get next entry.
+        if (!q.next())
+          throw (exceptions::msg()
+                 << "not enough host state events in DB: got " << i
+                 << ", expected "
+                 << (sizeof(entries) / sizeof(*entries)));
+
+        // Match entry.
+        if ((q.value(0).toUInt() != entries[i].host_id)
+            || (static_cast<time_t>(q.value(1).toLongLong())
+                < entries[i].start_time_low)
+            || (static_cast<time_t>(q.value(1).toLongLong())
+                > entries[i].start_time_high)
+            || (entries[i].end_time_is_null && !q.value(2).isNull())
+            || (!entries[i].end_time_is_null
+                && ((static_cast<time_t>(q.value(2).toLongLong())
+                     < entries[i].end_time_low)
+                    || (static_cast<time_t>(q.value(2).toLongLong())
+                        > entries[i].end_time_high)))
+            || (q.value(3).toInt() != entries[i].state)
+            || (entries[i].ack_time_is_null && !q.value(4).isNull())
+            || (!entries[i].ack_time_is_null
+                && ((static_cast<time_t>(q.value(4).toLongLong())
+                     < entries[i].ack_time_low)
+                    || (static_cast<time_t>(q.value(4).toLongLong())
+                        > entries[i].ack_time_high)))
+            || (static_cast<bool>(q.value(5).toInt())
+                != entries[i].in_downtime)) {
+          exceptions::msg e;
+          e << "invalid host state event entry #" << i
+            << ": got (host id " << q.value(0).toUInt()
+            << ", start time " << q.value(1).toUInt() << ", end time "
+            << (q.value(2).isNull() ? "null" : q.value(2).toString())
+            << ", state " << q.value(3).toInt() << ", ack time "
+            << (q.value(4).isNull() ? "null" : q.value(4).toString())
+            << ", in downtime " << q.value(5).toInt() << ", expected ("
+            << entries[i].host_id << ", " << entries[i].start_time_low
+            << ":" << entries[i].start_time_high << ", ";
+          if (entries[i].end_time_is_null)
+            e << "null";
+          else
+            e << entries[i].end_time_low << ":"
+              << entries[i].end_time_high;
+          e << ", " << entries[i].state << ", ";
+          if (entries[i].ack_time_is_null)
+            e << "null";
+          else
+            e << entries[i].ack_time_low << ":"
+              << entries[i].ack_time_high;
+          e << ", " << entries[i].in_downtime << ")";
+          throw (e);
+        }
+      }
+
+      // No more results.
+      if (q.next())
+        throw (exceptions::msg() << "too much host state events in DB");
+    }
 
     // Success.
     retval = EXIT_SUCCESS;
