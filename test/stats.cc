@@ -25,6 +25,7 @@
 #include <string>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
+#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -86,7 +87,7 @@ int main() {
     // Run cbd.
     daemon.set_config_file(cbd_config_path);
     daemon.start();
-    sleep(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Read data from statistics pipe.
     std::string data;
