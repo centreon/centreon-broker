@@ -207,28 +207,50 @@ void worker::_generate_stats_for_endpoint(
   {
     // Get primary state.
     buffer.append("state=");
-    QReadLocker rl(first_rwl);
-    if (first_s->isNull()) {
-      if (!fo->_last_error.isEmpty()) {
-        buffer.append("disconnected");
-        buffer.append(" (");
-        buffer.append(fo->_last_error.toStdString());
-        buffer.append(")\n");
+    bool locked(false);
+    for (unsigned int i(0); i < 10000; ++i) {
+      if (first_rwl->tryLockForRead()) {
+        locked = true;
+        break ;
       }
-      else if (!fo->_endpoint.isNull()
-               && !fo->_endpoint->is_acceptor())
-        buffer.append("connecting\n");
+      usleep(1);
+    }
+    try {
+      // Could lock RWL.
+      if (locked) {
+        if (first_s->isNull()) {
+          if (!fo->_last_error.isEmpty()) {
+            buffer.append("disconnected");
+            buffer.append(" (");
+            buffer.append(fo->_last_error.toStdString());
+            buffer.append(")\n");
+          }
+          else if (!fo->_endpoint.isNull()
+                   && !fo->_endpoint->is_acceptor())
+            buffer.append("connecting\n");
+          else
+            buffer.append("listening\n");
+        }
+        else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
+          buffer.append("replaying\n");
+          (*first_s)->statistics(buffer);
+        }
+        else {
+          buffer.append("connected\n");
+          (*first_s)->statistics(buffer);
+        }
+      }
+      // Could not lock RWL.
       else
-        buffer.append("listening\n");
+        buffer.append("blocked\n");
     }
-    else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
-      buffer.append("replaying\n");
-      (*first_s)->statistics(buffer);
+    catch (...) {
+      if (locked)
+        first_rwl->unlock();
+      throw ;
     }
-    else {
-      buffer.append("connected\n");
-      (*first_s)->statistics(buffer);
-    }
+    if (locked)
+      first_rwl->unlock();
   }
 
   {
