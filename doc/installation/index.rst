@@ -119,11 +119,11 @@ RRDTool                     rrdtool-devel     Development files for RRD file
 
    $ yum install rrdtool-devel
 
-#. Install cmake
+#. Install cmake ::
 
    $ yum install cmake
 
-#. Install Qt framework
+#. Install Qt framework ::
 
    $ yum install qt4-devel qt4-mysql
 
