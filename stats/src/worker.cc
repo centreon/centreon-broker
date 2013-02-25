@@ -184,14 +184,7 @@ void worker::_generate_stats_for_endpoint(
   {
     // Get primary state.
     buffer.append("state=");
-    bool locked(false);
-    for (unsigned int i(0); i < 10000; ++i) {
-      if (first_rwl->tryLockForRead()) {
-        locked = true;
-        break ;
-      }
-      usleep(1);
-    }
+    bool locked(first_rwl->tryLockForRead(10));
     try {
       // Could lock RWL.
       if (locked) {
