@@ -1411,7 +1411,7 @@ int neb::callback_process(int callback_type, void *data) {
 
     // Check process event type.
     process_data = static_cast<nebstruct_process_data*>(data);
-    if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
+    if (NEBTYPE_PROCESS_START == process_data->type) {
       logging::info(logging::medium)
         << "callbacks: generating process start event";
 
@@ -1479,6 +1479,8 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Send initial event and then configuration.
       gl_publisher.write(instance.staticCast<io::data>());
+    }
+    else if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       send_initial_configuration();
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
