@@ -472,7 +472,7 @@ CREATE TABLE comments (
   type smallint default NULL,
 
   PRIMARY KEY (comment_id),
-  UNIQUE (entry_time, host_id, service_id),
+  UNIQUE (host_id, service_id, entry_time),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
