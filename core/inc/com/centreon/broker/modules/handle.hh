@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,9 +44,11 @@ namespace              modules {
     void               open(
                          QString const& filename,
                          void const* arg = NULL);
+    void               update(void const* arg = NULL);
 
     static char const* deinitialization;
     static char const* initialization;
+    static char const* updatization;
 
   private:
     void               _init(void const* arg = NULL);

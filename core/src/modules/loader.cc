@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -131,16 +131,20 @@ void loader::load_dir(QString const& dirname, void const* arg) {
  *  @param[in] arg      Module argument.
  */
 void loader::load_file(QString const& filename, void const* arg) {
-  if (_handles.find(filename) == _handles.end()) {
+  QHash<QString, misc::shared_ptr<handle> >::iterator
+    it(_handles.find(filename));
+  if (it == _handles.end()) {
     logging::debug(logging::low) << "modules: loading '"
       << filename << "' which is NOT already loaded";
     misc::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
   }
-  else
-    logging::info(logging::low) << "modules: attempt to load file '"
+  else {
+    logging::info(logging::low) << "modules: attempt to update '"
       << filename << "' which is already loaded";
+    (*it)->update(arg);
+  }
   return ;
 }
 

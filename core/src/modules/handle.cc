@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,8 +31,9 @@ using namespace com::centreon::broker::modules;
 **************************************/
 
 // Routine symbols.
-char const* handle::deinitialization = "broker_module_deinit";
-char const* handle::initialization = "broker_module_init";
+char const* handle::deinitialization("broker_module_deinit");
+char const* handle::initialization("broker_module_init");
+char const* handle::updatization("broker_module_update");
 
 /**************************************
 *                                     *
@@ -176,6 +177,43 @@ void handle::open(QString const& filename, void const* arg) {
 
   // Initialize module.
   _init(arg);
+
+  return ;
+}
+
+/**
+ *  Update a library file.
+ *
+ *  @param[in] arg Library argument.
+ */
+void handle::update(void const* arg) {
+  // Check that library is loaded.
+  if (!is_open())
+    throw (exceptions::msg() << "modules: could not update "
+                                "module that is not loaded");
+
+  // Find update routine.
+  logging::debug(logging::low) << "modules: searching update "
+    << "routine (symbol " << updatization << ") in '"
+    << _handle.fileName() << "'";
+  union {
+    void (* code)();
+    void*   data;
+  } sym;
+  sym.data = _handle.resolve(updatization);
+
+  // Found routine.
+  if (sym.data) {
+    logging::debug(logging::low) << "modules: calling update routine "
+      << "of '" << _handle.fileName() << "'";
+    (*(void (*)(void const*))(sym.code))(arg);
+    logging::debug(logging::low) << "modules: update routine of '"
+      << _handle.fileName() << "' successfully completed";
+  }
+  // Routine not found.
+  else
+    logging::info(logging::medium) << "modules: could not find update "
+      << "routine of module '" << _handle.fileName() << "'";
 
   return ;
 }
