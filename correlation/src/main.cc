@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,22 +26,23 @@
 
 using namespace com::centreon::broker;
 
-// Load count.
-static unsigned int instances(0);
+CCB_BEGIN()
+namespace correlation {
+  // Load count.
+  static unsigned int instances(0);
 
-// Correlation object.
-static misc::shared_ptr<multiplexing::hooker> obj;
+  // Correlation object.
+  static misc::shared_ptr<multiplexing::hooker> obj;
 
-extern "C" {
   /**
    *  Module deinitialization routine.
    */
-  void broker_module_deinit() {
+  void module_deinit() {
     // Decrement instance number.
-    if (!--instances) {
+    if (!--correlation::instances) {
       // Unregister correlation object.
-      multiplexing::engine::instance().unhook(*obj);
-      obj.clear();
+      multiplexing::engine::instance().unhook(*correlation::obj);
+      correlation::obj.clear();
     }
     return ;
   }
@@ -51,9 +52,9 @@ extern "C" {
    *
    *  @param[in] arg Configuration argument.
    */
-  void broker_module_init(void const* arg) {
+  void module_init(void const* arg) {
     // Increment instance number.
-    if (!instances++) {
+    if (!correlation::instances++) {
       // Check that correlation is enabled.
       config::state const& cfg(*static_cast<config::state const*>(arg));
       bool loaded(false);
@@ -89,8 +90,8 @@ extern "C" {
             crltr(new correlation::correlator);
           try {
             crltr->load(correlation_file, retention_file);
-            obj = crltr.staticCast<multiplexing::hooker>();
-            multiplexing::engine::instance().hook(*obj);
+            correlation::obj = crltr.staticCast<multiplexing::hooker>();
+            multiplexing::engine::instance().hook(*correlation::obj);
             loaded = true;
           }
           catch (std::exception const& e) {
@@ -107,6 +108,38 @@ extern "C" {
         logging::config(logging::high) << "correlation: invalid " \
           "correlation configuration, correlation engine is NOT loaded";
     }
+    return ;
+  }
+}
+CCB_END()
+
+extern "C" {
+  /**
+   *  Module deinitialization routine.
+   */
+  void broker_module_deinit() {
+    correlation::module_deinit();
+    return ;
+  }
+
+  /**
+   *  Module initialization routine redirector.
+   *
+   *  @param[in] arg Configuration argument.
+   */
+  void broker_module_init(void const* arg) {
+    correlation::module_init(arg);
+    return ;
+  }
+
+  /**
+   *  Module update routine.
+   *
+   *  @param[in] arg Configuration argument.
+   */
+  void broker_module_update(void const* arg) {
+    correlation::module_deinit();
+    correlation::module_init(arg);
     return ;
   }
 }
