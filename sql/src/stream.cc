@@ -290,9 +290,9 @@ void stream::_prepare() {
   _prepare_update<neb::acknowledgement>(_acknowledgement_update, id);
 
   id.clear();
-  id.push_back(qMakePair(QString("entry_time"), false));
   id.push_back(qMakePair(QString("host_id"), false));
   id.push_back(qMakePair(QString("service_id"), true));
+  id.push_back(qMakePair(QString("entry_time"), false));
   _prepare_update<neb::comment>(_comment_update, id);
 
   id.clear();
