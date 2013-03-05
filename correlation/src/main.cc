@@ -138,8 +138,11 @@ extern "C" {
    *  @param[in] arg Configuration argument.
    */
   void broker_module_update(void const* arg) {
+    if (!correlation::obj.isNull())
+      correlation::obj->stopping();
     correlation::module_deinit();
     correlation::module_init(arg);
+    correlation::obj->starting();
     return ;
   }
 }
