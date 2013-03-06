@@ -26,9 +26,9 @@
 using namespace com::centreon::broker::logging;
 
 // Messages.
-#define LOG_CLOSE_STR "Centreon Broker log file closed\n"
-#define LOG_OPEN_STR "Centreon Broker log file opened\n"
-#define LOG_ROTATION_STR "Centreon Broker log file rotation\n"
+#define LOG_CLOSE_STR "Centreon Broker " CENTREON_BROKER_VERSION " log file closed\n"
+#define LOG_OPEN_STR "Centreon Broker " CENTREON_BROKER_VERSION " log file opened\n"
+#define LOG_ROTATION_STR "Centreon Broker "CENTREON_BROKER_VERSION " log file rotation\n"
 
 // Should file flush output at each log entry.
 bool file::_with_flush(true);
