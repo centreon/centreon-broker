@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -204,7 +204,7 @@ void subscriber::read(
 void subscriber::statistics(std::string& buffer) const {
   QMutexLocker lock(&_mutex);
   std::ostringstream oss;
-  oss << "queued_events=" << _events.size() << "\n";
+  oss << "queued events=" << _events.size() << "\n";
   buffer.append(oss.str());
   return ;
 }

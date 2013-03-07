@@ -22,9 +22,11 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iomanip>
+#include <QFileInfo>
 #include <QMutexLocker>
 #include <poll.h>
 #include <sstream>
+#include <time.h>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -100,18 +102,34 @@ void worker::_close() {
  *  Generate statistics.
  */
 void worker::_generate_stats() {
+  // General.
+  {
+    std::ostringstream oss;
+    oss << "broker\n"
+        << "version=" CENTREON_BROKER_VERSION "\n"
+        << "pid=" << getpid() << "\n"
+        << "now=" << time(NULL) << "\n"
+        << "compiled with qt=" << QT_VERSION_STR << "\n"
+        << "running with qt=" << qVersion() << "\n"
+        << "\n";
+    _buffer.append(oss.str());
+  }
+
   // Modules.
   config::applier::modules&
     mod_applier(config::applier::modules::instance());
   for (config::applier::modules::iterator
-         it = mod_applier.begin(),
-         end = mod_applier.end();
+         it(mod_applier.begin()),
+         end(mod_applier.end());
        it != end;
        ++it) {
-    _buffer.append("module ");
-    _buffer.append(it.key().toStdString());
-    _buffer.append("\nstate=loaded\n");
-    _buffer.append("\n");
+    std::ostringstream oss;
+    QFileInfo fi(it.key());
+    oss << "module " << it.key().toStdString() << "\n"
+        << "state=loaded\n"
+        << "size=" << fi.size() << "B\n"
+        << "\n";
+    _buffer.append(oss.str());
   }
 
   // Endpoint applier.
