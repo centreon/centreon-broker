@@ -213,6 +213,7 @@ Example
     <db_name>centreon_storage</db_name>
   </output>
 
+
 .. _user_modules_storage:
 
 Storage
@@ -503,3 +504,138 @@ Example
     <compression_level>4</compression_level>
     <compression_buffer>5000</compression_buffer>
   </output>
+
+
+.. _user_modules_stats:
+
+Statistics
+==========
+
+The statistics (stats) module was created to provide information about
+the ongoing processing of Centreon Broker. You find various statistics
+such as the number of events processed by second per input or output,
+the number of queued events, connected peers, loaded modules, ...
+
+This is a global module that do not apply to a specific endpoint.
+
+===================== ====
+**Type**              N/A
+**Layer(s)**          N/A
+**Work on input**     No
+**Work on output**    No
+**Work on temporary** No
+===================== ====
+
+Configuration
+-------------
+
+A *stats* node must be defined right under the root node of the XML
+configuration file. This node can then contain the following tags.
+
+==== =====================================================
+Tag  Description
+==== =====================================================
+fifo The FIFO file from which you can read the statistics.
+==== =====================================================
+
+Example
+-------
+
+::
+
+  <stats>
+    <fifo>/var/lib/centreon-broker/central-module.stats</fifo>
+  </stats>
+
+You can then read the file with a simple *cat* command.
+
+::
+
+  $> cat /var/lib/centreon-broker/central-module.stats
+  module /usr/share/centreon/lib/centreon-broker/50-tcp.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/20-correlation.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/10-neb.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/60-compression.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/20-storage.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/80-sql.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/70-rrd.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/50-local.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/80-ndo.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/05-stats.so
+  state=loaded
+
+  module /usr/share/centreon/lib/centreon-broker/50-file.so
+  state=loaded
+
+  output poller-module
+  state=connected
+  queued_events=0
+  last event at=1358863864
+  event processing speed=160.3 events/s
+  last connection attempt=1358862546
+  last connection success=1358862546
+
+
+.. _user_modules_correlation:
+
+Correlation
+===========
+
+The correlation module provide basic correlation features to Centreon
+Broker.
+
+This is a global module that do not apply to a specific endpoint.
+
+===================== ====
+**Type**              N/A
+**Layer(s)**          N/A
+**Work on input**     No
+**Work on output**    No
+**Work on temporary** No
+===================== ====
+
+Configuration
+-------------
+
+A *correlation* node must be defined right under the root node of the
+XML configuration file. This node can then contain the tags described
+in the table below.
+
+========= ==============================================================
+Tag       Description
+========= ==============================================================
+file      The XML configuration file containing host and service
+          definitions along with parenting and dependencies definitions.
+retention The XML retention file. This file is written by Centreon
+          Broker so that the correlation engine does not forget the
+          current states of the hosts and services across Broker
+          restarts.
+========= ==============================================================
+
+Example
+-------
+
+::
+
+  <correlation>
+    <file>/etc/centreon-broker/correlation.cfg</file>
+    <retention>/var/lib/centreon-broker/correlation.sav</retention>
+  </correlation>
