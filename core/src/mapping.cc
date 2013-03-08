@@ -44,7 +44,7 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     &acknowledgement::deletion_time,
     NDO_DATA_EXPIRATIONTIME,
     "deletion_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<acknowledgement>(
     &acknowledgement::entry_time,
     NDO_DATA_TIMESTAMP,
@@ -53,12 +53,12 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     &acknowledgement::host_id,
     NDO_DATA_HOSTNAME,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<acknowledgement>(
     &acknowledgement::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<acknowledgement>(
     &acknowledgement::is_sticky,
     NDO_DATA_STICKY,
@@ -75,7 +75,7 @@ static mapped_data<acknowledgement> const acknowledgement_mapping[] = {
     &acknowledgement::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<acknowledgement>(
     &acknowledgement::state,
     NDO_DATA_STATE,
@@ -97,7 +97,7 @@ static mapped_data<comment> const comment_mapping[] = {
     &comment::deletion_time,
     NDO_DATA_ENDTIME,
     "deletion_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<comment>(
     &comment::entry_time,
     NDO_DATA_ENTRYTIME,
@@ -118,12 +118,12 @@ static mapped_data<comment> const comment_mapping[] = {
     &comment::host_id,
     NDO_DATA_HOSTNAME,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<comment>(
     &comment::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<comment>(
     &comment::internal_id,
     NDO_DATA_COMMENTID,
@@ -136,7 +136,7 @@ static mapped_data<comment> const comment_mapping[] = {
     &comment::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<comment>(
     &comment::source,
     NDO_DATA_SOURCE,
@@ -154,7 +154,7 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
     &custom_variable::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<custom_variable>(
     &custom_variable::modified,
     NDO_DATA_HASBEENMODIFIED,
@@ -167,7 +167,7 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
     &custom_variable::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<custom_variable>(
     &custom_variable::update_time,
     NDO_DATA_ENTRYTIME,
@@ -193,7 +193,7 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
     &custom_variable_status::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<custom_variable_status>(
     &custom_variable_status::modified,
     NDO_DATA_HASBEENMODIFIED,
@@ -206,7 +206,7 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
     &custom_variable_status::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<custom_variable_status>(
     &custom_variable_status::update_time,
     NDO_DATA_ENTRYTIME,
@@ -224,12 +224,12 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::actual_end_time,
     NDO_DATA_ACTUALENDTIME,
     "actual_end_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::actual_start_time,
     NDO_DATA_ACTUALSTARTTIME,
     "actual_start_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::author,
     NDO_DATA_AUTHORNAME,
@@ -242,7 +242,7 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::deletion_time,
     NDO_DATA_EXPIRATIONTIME,
     "deletion_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::duration,
     NDO_DATA_DURATION,
@@ -263,12 +263,12 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::host_id,
     NDO_DATA_HOSTNAME,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::internal_id,
     NDO_DATA_DOWNTIMEID,
@@ -277,7 +277,7 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::service_id,
     NDO_DATA_SERVICEDESCRIPTION,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::start_time,
     NDO_DATA_STARTTIME,
@@ -286,7 +286,7 @@ static mapped_data<downtime> const downtime_mapping[] = {
     &downtime::triggered_by,
     NDO_DATA_TRIGGEREDBY,
     "triggered_by",
-    true),
+    NULL_ON_ZERO),
   mapped_data<downtime>(
     &downtime::was_cancelled,
     NDO_DATA_X3D,
@@ -333,7 +333,7 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
     &event_handler::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<event_handler>(
     &event_handler::return_code,
     NDO_DATA_RETURNCODE,
@@ -342,7 +342,7 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
     &event_handler::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<event_handler>(
     &event_handler::start_time,
     NDO_DATA_STARTTIME,
@@ -400,7 +400,7 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
     &flapping_status::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<flapping_status>(
     &flapping_status::internal_comment_id,
     NDO_DATA_COMMENTID,
@@ -421,7 +421,7 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
     &flapping_status::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<flapping_status>()
 };
 
@@ -575,12 +575,12 @@ static mapped_data<host> const host_mapping[] = {
     &host::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host>(
     &host::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host>(
     &host::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -778,7 +778,7 @@ static mapped_data<host_check> const host_check_mapping[] = {
     &host_check::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_check>(
     &host_check::next_check,
     NDO_DATA_NEXTHOSTCHECK,
@@ -800,7 +800,7 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
     &host_dependency::dependent_host_id,
     NDO_DATA_DEPENDENTHOSTNAME,
     "dependent_host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_dependency>(
     &host_dependency::enabled,
     NDO_DATA_FIXED,
@@ -821,7 +821,7 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
     &host_dependency::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_dependency>()
 };
 
@@ -843,7 +843,7 @@ static mapped_data<host_group> const host_group_mapping[] = {
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_group>(
     &host_group::name,
     NDO_DATA_HOSTGROUPNAME,
@@ -877,7 +877,7 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
     &host_group_member::host_id,
     NDO_DATA_HOSTGROUPMEMBER,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_group_member>()
 };
 
@@ -891,12 +891,12 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
     &host_parent::host_id,
     NDO_DATA_HOST,
     "child_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_parent>(
     &host_parent::parent_id,
     NDO_DATA_PARENTHOST,
     "parent_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_parent>()
 };
 
@@ -905,7 +905,8 @@ static mapped_data<host_state> const host_state_mapping[] = {
   mapped_data<host_state>(
     &host_state::ack_time,
     1,
-    "ack_time"),
+    "ack_time",
+    NULL_ON_MINUS_ONE),
   mapped_data<host_state>(
     &host_state::current_state,
     2,
@@ -995,7 +996,7 @@ static mapped_data<host_status> const host_status_mapping[] = {
     &host_status::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<host_status>(
     &host_status::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -1125,7 +1126,7 @@ static mapped_data<instance> const instance_mapping[] = {
     &instance::id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<instance>(
     &instance::name,
     NDO_DATA_PROGRAMNAME,
@@ -1199,7 +1200,7 @@ static mapped_data<instance_status> const instance_status_mapping[] = {
     &instance_status::id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<instance_status>(
     &instance_status::last_alive,
     NDO_DATA_LASTSTATE,
@@ -1265,17 +1266,17 @@ static mapped_data<issue> const issue_mapping[] = {
     &issue::end_time,
     NDO_DATA_ENDTIME,
     "end_time",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue>(
     &issue::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue>(
     &issue::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue>(
     &issue::start_time,
     NDO_DATA_STARTTIME,
@@ -1289,12 +1290,12 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     &issue_parent::child_host_id,
     1,
     "child_host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue_parent>(
     &issue_parent::child_service_id,
     2,
     "child_service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue_parent>(
     &issue_parent::child_start_time,
     3,
@@ -1307,12 +1308,12 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     &issue_parent::parent_host_id,
     5,
     "parent_host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue_parent>(
     &issue_parent::parent_service_id,
     6,
     "parent_service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<issue_parent>(
     &issue_parent::parent_start_time,
     7,
@@ -1334,7 +1335,7 @@ static mapped_data<log_entry> log_mapping[] = {
     &log_entry::host_id,
     NDO_DATA_HOSTID,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<log_entry>(
     &log_entry::host_name,
     NDO_DATA_HOST,
@@ -1371,12 +1372,12 @@ static mapped_data<log_entry> log_mapping[] = {
     &log_entry::service_description,
     NDO_DATA_SERVICEDESCRIPTION,
     "service_description",
-    true),
+    NULL_ON_ZERO),
   mapped_data<log_entry>(
     &log_entry::service_id,
     NDO_DATA_SERVICEID,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<log_entry>(
     &log_entry::status,
     NDO_DATA_CURRENTSTATE,
@@ -1406,7 +1407,7 @@ static mapped_data<module> const module_mapping[] = {
     &module::instance_id,
     3,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<module>(
     &module::loaded,
     4,
@@ -1436,7 +1437,7 @@ static mapped_data<notification> const notification_mapping[] = {
     &notification::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<notification>(
     &notification::notification_type,
     NDO_DATA_NOTIFICATIONTYPE,
@@ -1449,7 +1450,7 @@ static mapped_data<notification> const notification_mapping[] = {
     &notification::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<notification>(
     &notification::start_time,
     NDO_DATA_STARTTIME,
@@ -1619,7 +1620,7 @@ static mapped_data<service> const service_mapping[] = {
     &service::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service>(
     &service::host_name,
     NDO_DATA_HOSTID,
@@ -1636,7 +1637,7 @@ static mapped_data<service> const service_mapping[] = {
     &service::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service>(
     &service::is_flapping,
     NDO_DATA_ISFLAPPING,
@@ -1850,7 +1851,7 @@ static mapped_data<service_check> const service_check_mapping[] = {
     &service_check::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_check>(
     &service_check::next_check,
     NDO_DATA_NEXTSERVICECHECK,
@@ -1859,7 +1860,7 @@ static mapped_data<service_check> const service_check_mapping[] = {
     &service_check::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_check>(
     &service_check::command_line,
     NDO_DATA_COMMANDLINE,
@@ -1877,12 +1878,12 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
     &service_dependency::dependent_host_id,
     NDO_DATA_DEPENDENTHOSTNAME,
     "dependent_host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_dependency>(
     &service_dependency::dependent_service_id,
     NDO_DATA_DEPENDENTSERVICEDESCRIPTION,
     "dependent_service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_dependency>(
     &service_dependency::enabled,
     NDO_DATA_FIXED,
@@ -1895,7 +1896,7 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
     &service_dependency::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_dependency>(
     &service_dependency::inherits_parent,
     NDO_DATA_INHERITSPARENT,
@@ -1908,7 +1909,7 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
     &service_dependency::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_dependency>()
 };
 
@@ -1930,7 +1931,7 @@ static mapped_data<service_group> const service_group_mapping[] = {
     &service_group::instance_id,
     NDO_DATA_INSTANCE,
     "instance_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_group>(
     &service_group::name,
     NDO_DATA_SERVICEGROUPNAME,
@@ -1960,7 +1961,7 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
     &service_group_member::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_group_member>(
     &service_group_member::instance_id,
     NDO_DATA_INSTANCE,
@@ -1969,7 +1970,7 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
     &service_group_member::service_id,
     NDO_DATA_SERVICEGROUPMEMBER,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_group_member>()
 };
 
@@ -1978,7 +1979,8 @@ static mapped_data<service_state> const service_state_mapping [] = {
   mapped_data<service_state>(
     &service_state::ack_time,
     1,
-    "ack_time"),
+    "ack_time",
+    NULL_ON_MINUS_ONE),
   mapped_data<service_state>(
     &service_state::current_state,
     2,
@@ -2072,7 +2074,7 @@ static mapped_data<service_status> const service_status_mapping[] = {
     &service_status::host_id,
     NDO_DATA_HOST,
     "host_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_status>(
     &service_status::host_name,
     NDO_DATA_HOSTID,
@@ -2185,7 +2187,7 @@ static mapped_data<service_status> const service_status_mapping[] = {
     &service_status::service_id,
     NDO_DATA_SERVICE,
     "service_id",
-    true),
+    NULL_ON_ZERO),
   mapped_data<service_status>(
     &service_status::should_be_scheduled,
     NDO_DATA_SHOULDBESCHEDULED,
@@ -2217,25 +2219,25 @@ namespace     com {
         mapped_type<neb::acknowledgement>::members(acknowledgement_mapping);
       template <> const char*
         mapped_type<neb::acknowledgement>::table("acknowledgements");
-      
+
       // Comment mapping.
       template <> const mapped_data<neb::comment>*
         mapped_type<neb::comment>::members(comment_mapping);
       template <> const char*
         mapped_type<neb::comment>::table("comments");
-      
+
       // Custom variable mapping.
       template <> const mapped_data<neb::custom_variable>*
         mapped_type<neb::custom_variable>::members(custom_variable_mapping);
       template <> char const*
         mapped_type<neb::custom_variable>::table("customvariables");
-      
+
       // Custom variable status mapping.
       template <> const mapped_data<neb::custom_variable_status>*
         mapped_type<neb::custom_variable_status>::members(custom_variable_status_mapping);
       template <> char const*
         mapped_type<neb::custom_variable_status>::table("customvariables");
-      
+
       // downtime mapping.
       template <> const mapped_data<neb::downtime>*
         mapped_type<neb::downtime>::members(downtime_mapping);
@@ -2247,61 +2249,61 @@ namespace     com {
         mapped_type<neb::event_handler>::members(event_handler_mapping);
       template <> const char*
         mapped_type<neb::event_handler>::table("eventhandlers");
-      
+
       // Flapping status mapping.
       template <> const mapped_data<neb::flapping_status>*
         mapped_type<neb::flapping_status>::members(flapping_status_mapping);
       template <> char const*
         mapped_type<neb::flapping_status>::table("flappingstatuses");
-      
+
       // host mapping.
       template <> const mapped_data<neb::host>*
         mapped_type<neb::host>::members(host_mapping);
       template <> const char*
         mapped_type<neb::host>::table("hosts");
-      
+
       // host_check mapping.
       template <> const mapped_data<neb::host_check>*
         mapped_type<neb::host_check>::members(host_check_mapping);
       template <> const char*
         mapped_type<neb::host_check>::table("hosts");
-      
+
       // host_dependency mapping.
       template <> const mapped_data<neb::host_dependency>*
         mapped_type<neb::host_dependency>::members(host_dependency_mapping);
       template <> const char*
         mapped_type<neb::host_dependency>::table("hosts_hosts_dependencies");
-      
+
       // host_group mapping.
       template <> const mapped_data<neb::host_group>*
         mapped_type<neb::host_group>::members(host_group_mapping);
       template <> const char*
         mapped_type<neb::host_group>::table("hostgroups");
-      
+
       // host_group_member mapping.
       template <> const mapped_data<neb::host_group_member>*
         mapped_type<neb::host_group_member>::members(host_group_member_mapping);
       template <> const char*
         mapped_type<neb::host_group_member>::table("hosts_hostgroups");
-      
+
       // host_parent mapping.
       template <> const mapped_data<neb::host_parent>*
         mapped_type<neb::host_parent>::members(host_parent_mapping);
       template <> const char*
         mapped_type<neb::host_parent>::table("hosts_hosts_parents");
-      
+
       // host_status mapping.
       template <> const mapped_data<neb::host_status>*
         mapped_type<neb::host_status>::members(host_status_mapping);
       template <> const char*
         mapped_type<neb::host_status>::table("hosts");
-      
+
       // instance mapping.
       template <> const mapped_data<neb::instance>*
         mapped_type<neb::instance>::members(instance_mapping);
       template <> const char*
         mapped_type<neb::instance>::table("instances");
-      
+
       // instance_status mapping.
       template <> const mapped_data<neb::instance_status>*
         mapped_type<neb::instance_status>::members(instance_status_mapping);
@@ -2313,49 +2315,49 @@ namespace     com {
         mapped_type<neb::log_entry>::members(log_mapping);
       template <> const char*
         mapped_type<neb::log_entry>::table("logs");
-      
+
       // module mapping.
       template <> mapped_data<neb::module> const*
         mapped_type<neb::module>::members(module_mapping);
       template <> char const*
         mapped_type<neb::module>::table("modules");
-      
+
       // notification mapping.
       template <> mapped_data<neb::notification> const*
         mapped_type<neb::notification>::members(notification_mapping);
       template <> char const*
         mapped_type<neb::notification>::table("notifications");
-      
+
       // service mapping.
       template <> const mapped_data<neb::service>*
         mapped_type<neb::service>::members(service_mapping);
       template <> const char*
         mapped_type<neb::service>::table("services");
-      
+
       // service_check mapping.
       template <> const mapped_data<neb::service_check>*
         mapped_type<neb::service_check>::members(service_check_mapping);
       template <> const char*
         mapped_type<neb::service_check>::table("services");
-      
+
       // service_dependency mapping.
       template <> const mapped_data<neb::service_dependency>*
         mapped_type<neb::service_dependency>::members(service_dependency_mapping);
       template <> const char*
         mapped_type<neb::service_dependency>::table("services_services_dependencies");
-      
+
       // service_group mapping.
       template <> const mapped_data<neb::service_group>*
         mapped_type<neb::service_group>::members(service_group_mapping);
       template <> const char*
         mapped_type<neb::service_group>::table("servicegroups");
-      
+
       // service_group_member mapping.
       template <> const mapped_data<neb::service_group_member>*
         mapped_type<neb::service_group_member>::members(service_group_member_mapping);
       template <> const char*
         mapped_type<neb::service_group_member>::table("services_servicegroups");
-      
+
       // service_status mapping.
       template <> const mapped_data<neb::service_status>*
         mapped_type<neb::service_status>::members(service_status_mapping);
@@ -2367,31 +2369,31 @@ namespace     com {
         mapped_type<correlation::engine_state>::members(engine_state_mapping);
       template <> const char*
         mapped_type<correlation::engine_state>::table("enginestates");
-      
+
       // host_state mapping.
       template <> const mapped_data<correlation::host_state>*
         mapped_type<correlation::host_state>::members(host_state_mapping);
       template <> const char*
         mapped_type<correlation::host_state>::table("hoststateevents");
-      
+
       // issue mapping.
       template <> const mapped_data<correlation::issue>*
         mapped_type<correlation::issue>::members(issue_mapping);
       template <> const char*
         mapped_type<correlation::issue>::table("issues");
-      
+
       // issue_parent mapping.
       template <> const mapped_data<correlation::issue_parent>*
         mapped_type<correlation::issue_parent>::members(issue_parent_mapping);
       template <> const char*
         mapped_type<correlation::issue_parent>::table("issues_issues_parents");
-      
+
       // service_state mapping.
       template <> const mapped_data<correlation::service_state>*
         mapped_type<correlation::service_state>::members(service_state_mapping);
       template <> const char*
         mapped_type<correlation::service_state>::table("servicestateevents");
-      
+
     }
   }
 }

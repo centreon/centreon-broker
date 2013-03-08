@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,6 +41,15 @@ union            data_member {
 };
 
 /**
+ *  Enum that can set some fields to NULL on some special values.
+ */
+enum      null_on {
+  NULL_ON_NOTHING = 0,
+  NULL_ON_ZERO,
+  NULL_ON_MINUS_ONE
+};
+
+/**
  *  @class mapped_data mapping.hh "mapping.hh"
  *  @brief Mapping of a data member.
  *
@@ -62,68 +71,69 @@ public:
     UINT = 'u'
   };
   unsigned int   id;
-  bool           is_id;
   data_member<T> member;
   char const*    name;
-  bool           null_on_zero;
+  null_on        null_on_value;
   char           type;
 
-                 mapped_data() : id(0), name(NULL), type(UNKNOWN) {}
+                 mapped_data()
+    : id(0), name(NULL), null_on_value(NULL_ON_NOTHING), type(UNKNOWN)
+  {}
 
                  mapped_data(
                    bool T::* b,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(BOOL)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(BOOL)
   { member.b = b; }
 
                  mapped_data(
                    double T::* d,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(DOUBLE)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(DOUBLE)
   { member.d = d; }
 
                  mapped_data(
                    int T::* I,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(INT)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(INT)
   { member.i = I; }
 
                  mapped_data(
                    short T::* s,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(SHORT)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(SHORT)
   { member.s = s; }
 
                  mapped_data(
                    QString T::* S,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(STRING)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(STRING)
   { member.S = S; }
 
                  mapped_data(
                    timestamp T::* t,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(TIMESTAMP)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(TIMESTAMP)
   { member.t = t; }
 
                  mapped_data(
                    unsigned int T::* u,
                    unsigned int i,
                    char const* n,
-                   bool noz = false)
-    : id(i), name(n), null_on_zero(noz), type(UINT)
+                   null_on nov = NULL_ON_NOTHING)
+    : id(i), name(n), null_on_value(nov), type(UINT)
   { member.u = u; }
 };
 

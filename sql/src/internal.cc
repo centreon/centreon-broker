@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -72,10 +72,10 @@ static void get_integer(
 }
 
 /**
- *  Get an integer that might be null from an object.
+ *  Get an integer that is null on zero.
  */
 template <typename T>
-static void get_integer_might_be_null(
+static void get_integer_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
@@ -85,6 +85,24 @@ static void get_integer_might_be_null(
   if (val)
     q.bindValue(field, QVariant(val));
   // NULL.
+  else
+    q.bindValue(field, QVariant(QVariant::Int));
+  return ;
+}
+
+/**
+ *  Get an integer that is null on -1.
+ */
+template <typename T>
+static void get_integer_null_on_minus_one(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  int val(t.*(member.i));
+  // Not-NULL.
+  if (val != -1)
+    q.bindValue(field, QVariant(val));
   else
     q.bindValue(field, QVariant(QVariant::Int));
   return ;
@@ -120,7 +138,7 @@ static void get_string(
  *  Get a string that might be null from an object.
  */
 template <typename T>
-static void get_string_might_be_null(
+static void get_string_null_on_empty(
               T const& t,
               QString const& field,
               data_member<T> const& member,
@@ -150,10 +168,10 @@ static void get_timet(
 }
 
 /**
- *  Get a time_t that might be null from an object.
+ *  Get a time_t that is null on 0.
  */
 template <typename T>
-static void get_timet_might_be_null(
+static void get_timet_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
@@ -161,6 +179,25 @@ static void get_timet_might_be_null(
   qlonglong val((t.*(member.t)).get_time_t());
   // Not-NULL.
   if (val)
+    q.bindValue(field, QVariant(val));
+  // NULL.
+  else
+    q.bindValue(field, QVariant(QVariant::LongLong));
+  return ;
+}
+
+/**
+ *  Get a time_t that is null on -1.
+ */
+template <typename T>
+static void get_timet_null_on_minus_one(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  qlonglong val((t.*(member.t)).get_time_t());
+  // Not-NULL.
+  if (val != -1)
     q.bindValue(field, QVariant(val));
   // NULL.
   else
@@ -182,10 +219,10 @@ static void get_uint(
 }
 
 /**
- *  Get an unsigned int that might be null from an object.
+ *  Get an unsigned int that is null on zero.
  */
 template <typename T>
-static void get_uint_might_be_null(
+static void get_uint_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
@@ -196,7 +233,26 @@ static void get_uint_might_be_null(
     q.bindValue(field, QVariant(val));
   // NULL
   else
-    q.bindValue(field, QVariant(QVariant::Int));
+    q.bindValue(field, QVariant(QVariant::UInt));
+  return ;
+}
+
+/**
+ *  Get an unsigned int that is null on -1.
+ */
+template <typename T>
+static void get_uint_null_on_minus_one(
+              T const& t,
+              QString const& field,
+              data_member<T> const& member,
+              QSqlQuery& q) {
+  unsigned int val(t.*(member.u));
+  // Not-NULL.
+  if (val != (unsigned int)-1)
+    q.bindValue(field, QVariant(val));
+  // NULL.
+  else
+    q.bindValue(field, QVariant(QVariant::UInt));
   return ;
 }
 
@@ -224,8 +280,11 @@ static void static_init() {
         entry.gs.getter = &get_double<T>;
         break ;
       case mapped_data<T>::INT:
-        if (mapped_type<T>::members[i].null_on_zero)
-          entry.gs.getter = &get_integer_might_be_null<T>;
+        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
+          entry.gs.getter = &get_integer_null_on_zero<T>;
+        else if (mapped_type<T>::members[i].null_on_value
+                 == NULL_ON_MINUS_ONE)
+          entry.gs.getter = &get_integer_null_on_minus_one<T>;
         else
           entry.gs.getter = &get_integer<T>;
         break ;
@@ -233,20 +292,26 @@ static void static_init() {
         entry.gs.getter = &get_short<T>;
         break ;
       case mapped_data<T>::STRING:
-        if (mapped_type<T>::members[i].null_on_zero)
-          entry.gs.getter = &get_string_might_be_null<T>;
+        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
+          entry.gs.getter = &get_string_null_on_empty<T>;
         else
           entry.gs.getter = &get_string<T>;
         break ;
       case mapped_data<T>::TIMESTAMP:
-        if (mapped_type<T>::members[i].null_on_zero)
-          entry.gs.getter = &get_timet_might_be_null<T>;
+        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
+          entry.gs.getter = &get_timet_null_on_zero<T>;
+        else if (mapped_type<T>::members[i].null_on_value
+                 == NULL_ON_MINUS_ONE)
+          entry.gs.getter = &get_timet_null_on_minus_one<T>;
         else
           entry.gs.getter = &get_timet<T>;
         break ;
       case mapped_data<T>::UINT:
-        if (mapped_type<T>::members[i].null_on_zero)
-          entry.gs.getter = &get_uint_might_be_null<T>;
+        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
+          entry.gs.getter = &get_uint_null_on_zero<T>;
+        else if (mapped_type<T>::members[i].null_on_value
+                 == NULL_ON_MINUS_ONE)
+          entry.gs.getter = &get_uint_null_on_minus_one;
         else
           entry.gs.getter = &get_uint<T>;
         break ;
