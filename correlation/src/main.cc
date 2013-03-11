@@ -142,7 +142,8 @@ extern "C" {
       correlation::obj->stopping();
     correlation::module_deinit();
     correlation::module_init(arg);
-    correlation::obj->starting();
+    if (!correlation::obj.isNull())
+      correlation::obj->starting();
     return ;
   }
 }
