@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2012 Merethis
+## Copyright 2009-2013 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -34,7 +34,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 # Version.
 set(CENTREON_BROKER_MAJOR 2)
 set(CENTREON_BROKER_MINOR 4)
-set(CENTREON_BROKER_PATCH 1)
+set(CENTREON_BROKER_PATCH 2)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 
