@@ -46,8 +46,9 @@
 using namespace com::centreon::broker;
 
 // Acknowledgement list.
-static std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
-acknowledgements;
+std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+  neb::gl_acknowledgements;
+
 // Downtime list.
 struct   private_downtime_params {
   time_t deletion_time;
@@ -55,6 +56,7 @@ struct   private_downtime_params {
 };
 // Unstarted downtimes.
 static std::map<unsigned int, private_downtime_params> downtimes;
+
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
@@ -77,7 +79,6 @@ static struct {
   { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status },
   { NEBCALLBACK_HOST_CHECK_DATA, &neb::callback_host_check },
   { NEBCALLBACK_HOST_STATUS_DATA, &neb::callback_host_status },
-  { NEBCALLBACK_LOG_DATA, &neb::callback_log },
   { NEBCALLBACK_PROGRAM_STATUS_DATA, &neb::callback_program_status },
   { NEBCALLBACK_SERVICE_CHECK_DATA, &neb::callback_service_check },
   { NEBCALLBACK_SERVICE_STATUS_DATA, &neb::callback_service_status }
@@ -98,7 +99,7 @@ static struct {
 };
 
 // Registered callbacks.
-std::list<misc::shared_ptr<neb::callback> > gl_registered_callbacks;
+std::list<misc::shared_ptr<neb::callback> > neb::gl_registered_callbacks;
 
 // External function to get program version.
 extern "C" {
@@ -183,7 +184,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack->notify_contacts = ack_data->notify_contacts;
     ack->persistent_comment = ack_data->persistent_comment;
     ack->state = ack_data->state;
-    acknowledgements[std::make_pair(ack->host_id, ack->service_id)]
+    gl_acknowledgements[std::make_pair(ack->host_id, ack->service_id)]
       = *ack;
 
     // Send event.
@@ -1261,9 +1262,9 @@ int neb::callback_host_status(int callback_type, void* data) {
     std::map<
       std::pair<unsigned int, unsigned int>,
       neb::acknowledgement>::iterator
-      it(acknowledgements.find(
+      it(gl_acknowledgements.find(
            std::make_pair(host_status->host_id, 0u)));
-    if ((it != acknowledgements.end())
+    if ((it != gl_acknowledgements.end())
         && !host_status->problem_has_been_acknowledged) {
       if (!(!host_status->current_state // !(OK or (normal ack and NOK))
             || (!it->second.is_sticky
@@ -1273,7 +1274,7 @@ int neb::callback_host_status(int callback_type, void* data) {
         ack->deletion_time = time(NULL);
         gl_publisher.write(ack.staticCast<io::data>());
       }
-      acknowledgements.erase(it);
+      gl_acknowledgements.erase(it);
     }
   }
   catch (std::exception const& e) {
@@ -1389,7 +1390,7 @@ int neb::callback_process(int callback_type, void *data) {
 
     // Check process event type.
     process_data = static_cast<nebstruct_process_data*>(data);
-    if (NEBTYPE_PROCESS_START == process_data->type) {
+    if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       logging::info(logging::medium)
         << "callbacks: generating process start event";
 
@@ -1457,8 +1458,6 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Send initial event and then configuration.
       gl_publisher.write(instance.staticCast<io::data>());
-    }
-    else if (NEBTYPE_PROCESS_EVENTLOOPSTART == process_data->type) {
       send_initial_configuration();
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
@@ -2105,10 +2104,10 @@ int neb::callback_service_status(int callback_type, void* data) {
     std::map<
       std::pair<unsigned int, unsigned int>,
       neb::acknowledgement>::iterator
-      it(acknowledgements.find(std::make_pair(
-                                      service_status->host_id,
-                                      service_status->service_id)));
-    if ((it != acknowledgements.end())
+      it(gl_acknowledgements.find(std::make_pair(
+                                         service_status->host_id,
+                                         service_status->service_id)));
+    if ((it != gl_acknowledgements.end())
         && !service_status->problem_has_been_acknowledged) {
       if (!(!service_status->current_state // !(OK or (normal ack and NOK))
             || (!it->second.is_sticky
@@ -2119,7 +2118,7 @@ int neb::callback_service_status(int callback_type, void* data) {
         ack->deletion_time = time(NULL);
         gl_publisher.write(ack.staticCast<io::data>());
       }
-      acknowledgements.erase(it);
+      gl_acknowledgements.erase(it);
     }
   }
   catch (std::exception const& e) {

@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,38 +17,48 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_INTERNAL_HH_
-# define CCB_NEB_INTERNAL_HH_
+#ifndef CCB_NEB_INTERNAL_HH
+#  define CCB_NEB_INTERNAL_HH
 
-# include <map>
-# include <string>
-# include <utility>
-# include "com/centreon/broker/logging/backend.hh"
-# include "com/centreon/broker/multiplexing/publisher.hh"
+#  include <list>
+#  include <map>
+#  include <string>
+#  include <utility>
+#  include "com/centreon/broker/logging/backend.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/multiplexing/publisher.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/callback.hh"
 
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace neb {
+CCB_BEGIN()
+namespace neb {
+  // Configuration file.
+  extern QString gl_configuration_file;
 
-        // Configuration file.
-        extern QString gl_configuration_file;
+  // Instance information.
+  extern unsigned int instance_id;
+  extern QString      instance_name;
 
-        // Instance information.
-        extern unsigned int instance_id;
-        extern QString      instance_name;
+  // List of host IDs.
+  extern std::map<std::string, int> gl_hosts;
 
-        // List of host IDs.
-        extern std::map<std::string, int> gl_hosts;
+  // List of service IDs.
+  extern std::map<std::pair<std::string, std::string>, std::pair<int, int> >
+    gl_services;
 
-        // List of service IDs.
-        extern std::map<std::pair<std::string, std::string>, std::pair<int, int> > gl_services;
+  // Sender object.
+  extern multiplexing::publisher gl_publisher;
 
-        // Sender object.
-        extern multiplexing::publisher gl_publisher;
-      }
-    }
-  }
+  // Registered callbacks.
+  extern std::list<misc::shared_ptr<neb::callback> >
+    gl_registered_callbacks;
+
+  // Acknowledgement list.
+  extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+    gl_acknowledgements;
 }
 
-#endif /* !CCB_MODULE_INTERNAL_HH_ */
+CCB_END()
+
+#endif // !CCB_MODULE_INTERNAL_HH
