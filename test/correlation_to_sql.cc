@@ -208,7 +208,7 @@ int main() {
         unsigned int host_id;
         time_t       start_time_low;
         time_t       start_time_high;
-        time_t       end_time_is_null;
+        bool         end_time_is_null;
         time_t       end_time_low;
         time_t       end_time_high;
         short        state;
@@ -217,6 +217,7 @@ int main() {
         time_t       ack_time_high;
         bool         in_downtime;
       } const          entries[] = {
+        { 1, 0, 1, false, t1, t2, 4, true, 0, 0, false },
         { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
         { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false }
       };
@@ -269,7 +270,7 @@ int main() {
             << (q.value(2).isNull() ? "null" : q.value(2).toString())
             << ", state " << q.value(3).toInt() << ", ack time "
             << (q.value(4).isNull() ? "null" : q.value(4).toString())
-            << ", in downtime " << q.value(5).toInt() << ", expected ("
+            << ", in downtime " << q.value(5).toInt() << "), expected ("
             << entries[i].host_id << ", " << entries[i].start_time_low
             << ":" << entries[i].start_time_high << ", ";
           if (entries[i].end_time_is_null)

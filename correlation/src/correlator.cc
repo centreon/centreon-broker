@@ -577,7 +577,7 @@ void correlator::_correlate_host_service_status(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
         state_update->ack_time =
-          (!n->my_issue.get() ? timestamp(0) : n->my_issue->ack_time);
+          (!n->my_issue.get() ? timestamp(-1) : n->my_issue->ack_time);
         state_update->current_state = n->state;
         state_update->end_time = now;
         state_update->host_id = n->host_id;
@@ -606,7 +606,7 @@ void correlator::_correlate_host_service_status(
                   : static_cast<state*>(new service_state));
         state_update->ack_time =
           ((!n->my_issue.get() || !n->state)
-            ? timestamp(0)
+            ? timestamp(-1)
             : n->my_issue->ack_time);
         state_update->current_state = n->state;
         state_update->host_id = n->host_id;
