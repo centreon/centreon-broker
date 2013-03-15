@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,10 +34,11 @@ using namespace com::centreon::broker;
  *
  *  @return true if all log file match pattern.
  */
-bool check_content(QString const& path,
-                   QString const& pattern,
-                   unsigned int msg_nb,
-                   char const* const* lines) {
+bool check_content(
+       QString const& path,
+       QString const& pattern,
+       unsigned int msg_nb,
+       char const* const* lines) {
   // Return value.
   bool retval(true);
 
@@ -53,7 +54,7 @@ bool check_content(QString const& path,
     // First line.
     f.waitForReadyRead(-1);
     QByteArray line(f.readLine());
-    retval &= (line == "Centreon Broker log file opened\n");
+    retval &= (line == "Centreon Broker " CENTREON_BROKER_VERSION " log file opened\n");
 
     // Match lines.
     for (unsigned int i = 0;
@@ -78,7 +79,7 @@ bool check_content(QString const& path,
     // Last line.
     f.waitForReadyRead(-1);
     line = f.readLine();
-    retval &= (line == "Centreon Broker log file closed\n");
+    retval &= (line == "Centreon Broker " CENTREON_BROKER_VERSION " log file closed\n");
     f.waitForReadyRead(-1);
     f.readLine();
     retval &= (!line.isEmpty() && f.atEnd());
