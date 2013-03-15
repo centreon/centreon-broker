@@ -233,7 +233,7 @@ static void get_uint_null_on_zero(
     q.bindValue(field, QVariant(val));
   // NULL
   else
-    q.bindValue(field, QVariant(QVariant::UInt));
+    q.bindValue(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -252,7 +252,7 @@ static void get_uint_null_on_minus_one(
     q.bindValue(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::UInt));
+    q.bindValue(field, QVariant(QVariant::Int));
   return ;
 }
 
