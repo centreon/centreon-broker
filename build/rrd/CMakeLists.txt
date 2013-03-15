@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2012 Merethis
+## Copyright 2011-2013 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -28,6 +28,9 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 include(FindPkgConfig)
 if (PKG_CONFIG_FOUND)
   pkg_check_modules(LIBRRD REQUIRED "librrd")
+  if (LIBRRD_INCLUDE_DIRS)
+    include_directories("${LIBRRD_INCLUDE_DIRS}")
+  endif ()
 else ()
   # Find rrd.h
   find_path(LIBRRD_INCLUDE_DIR "rrd.h")
