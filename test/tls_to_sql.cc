@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -79,13 +79,15 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/tls_to_sql_2.xml");
     broker.start();
+    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    broker.update();
 
     // Start engine.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(21 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(19 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Terminate monitoring engine.
     daemon.stop();

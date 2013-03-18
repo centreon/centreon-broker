@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <csignal>
 #include <cstdlib>
 #include "test/cbd.hh"
 #include "test/vars.hh"
@@ -74,5 +75,15 @@ void cbd::stop() {
       _cbd.waitForFinished(-1);
     }
   }
+  return ;
+}
+
+/**
+ *  Update the cbd daemon (SIGHUP).
+ */
+void cbd::update() {
+  pid_t pid(_cbd.pid());
+  if ((pid != (pid_t)0) && (pid != (pid_t)-1))
+    kill(pid, SIGHUP);
   return ;
 }

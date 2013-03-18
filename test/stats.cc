@@ -88,6 +88,7 @@ int main() {
     daemon.set_config_file(cbd_config_path);
     daemon.start();
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    daemon.update();
 
     // Read data from statistics pipe.
     std::string data;
