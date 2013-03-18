@@ -120,13 +120,13 @@ int main() {
     // Check correlation content.
     QList<misc::shared_ptr<io::data> > content;
     // #1
-    add_state_service(content, 0, 0, 123456789, 42, false, 24, 0);
-    add_state_service(content, 0, 2, 0, 42, false, 24, 123456789);
+    add_state_service(content, -1, 0, 123456789, 42, false, 24, 0);
+    add_state_service(content, -1, 2, 0, 42, false, 24, 123456789);
     add_issue(content, 0, 0, 42, 24, 123456789);
     // #2
     add_state_service(
       content,
-      0,
+      -1,
       2,
       123456790,
       42,
@@ -173,20 +173,20 @@ int main() {
       false,
       24,
       123456791);
-    add_state_service(content, 0, 0, 0, 42, false, 24, 123456793);
+    add_state_service(content, -1, 0, 0, 42, false, 24, 123456793);
     add_issue(content, 123456790, 123456793, 42, 24, 123456789);
     // #6 should not change anything.
     // #7
     add_state_service(
       content,
-      0,
+      -1,
       0,
       123456795,
       42,
       false,
       24,
       123456793);
-    add_state_service(content, 0, 1, 0, 42, false, 24, 123456795);
+    add_state_service(content, -1, 1, 0, 42, false, 24, 123456795);
     add_issue(content, 0, 0, 42, 24, 123456795);
 
     // Check.
