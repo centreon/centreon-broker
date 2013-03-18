@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,7 @@
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -178,38 +179,50 @@ void add_state_service(
  *  @param[in] s       Stream.
  *  @param[in] content Content to match against stream.
  *
- *  @return true if all content was found.
+ *  @return If all content was found and matched. Throw otherwise.
  */
-bool check_content(
+void check_content(
        io::stream& s,
        QList<misc::shared_ptr<io::data> > const& content) {
-  bool retval(true);
+  unsigned int i(0);
   for (QList<misc::shared_ptr<io::data> >::const_iterator
          it(content.begin()),
          end(content.end());
-       retval && (it != end);) {
+       it != end;) {
     misc::shared_ptr<io::data> d;
     s.read(d);
     if (d.isNull())
-      retval = false;
+      throw (exceptions::msg() << "entry #" << i << " is null");
     else if (d->type() == (*it)->type()) {
       if (d->type() == "com::centreon::broker::correlation::engine_state") {
         misc::shared_ptr<correlation::engine_state>
           es1(d.staticCast<correlation::engine_state>());
         misc::shared_ptr<correlation::engine_state>
           es2(it->staticCast<correlation::engine_state>());
-        retval = (es1->started == es2->started);
+        if (es1->started != es2->started)
+          throw (exceptions::msg() << "entry #" << i
+                 << " (engine_state) mismatch: got (started "
+                 << es1->started << "), expected (" << es2->started
+                 << ")");
       }
       else if (d->type() == "com::centreon::broker::correlation::issue") {
         misc::shared_ptr<correlation::issue>
           i1(d.staticCast<correlation::issue>());
         misc::shared_ptr<correlation::issue>
           i2(it->staticCast<correlation::issue>());
-        retval = ((i1->ack_time == i2->ack_time)
-                  && (i1->end_time == i2->end_time)
-                  && (i1->host_id == i2->host_id)
-                  && (i1->service_id == i2->service_id)
-                  && (i1->start_time == i2->start_time));
+        if ((i1->ack_time != i2->ack_time)
+            || (i1->end_time != i2->end_time)
+            || (i1->host_id != i2->host_id)
+            || (i1->service_id != i2->service_id)
+            || (i1->start_time != i2->start_time))
+          throw (exceptions::msg() << "entry #" << i
+                 << " (issue) mismatch: got (ack time " << i1->ack_time
+                 << ", end time " << i1->end_time << ", host "
+                 << i1->host_id << ", service " << i1->service_id
+                 << ", start time " << i1->start_time << "), expected ("
+                 << i2->ack_time << ", " << i2->end_time << ", "
+                 << i2->host_id << ", " << i2->service_id << ", "
+                 << i2->start_time << ")");
       }
       else if (d->type()
                == "com::centreon::broker::correlation::issue_parent") {
@@ -217,14 +230,30 @@ bool check_content(
           ip1(d.staticCast<correlation::issue_parent>());
         misc::shared_ptr<correlation::issue_parent>
           ip2(it->staticCast<correlation::issue_parent>());
-        retval = ((ip1->child_host_id == ip2->child_host_id)
-                  && (ip1->child_service_id == ip2->child_service_id)
-                  && (ip1->child_start_time == ip2->child_start_time)
-                  && (ip1->end_time == ip2->end_time)
-                  && (ip1->parent_host_id == ip2->parent_host_id)
-                  && (ip1->parent_service_id == ip2->parent_service_id)
-                  && (ip1->parent_start_time == ip2->parent_start_time)
-                  && (ip1->start_time == ip2->start_time));
+        if ((ip1->child_host_id != ip2->child_host_id)
+            || (ip1->child_service_id != ip2->child_service_id)
+            || (ip1->child_start_time != ip2->child_start_time)
+            || (ip1->end_time != ip2->end_time)
+            || (ip1->parent_host_id != ip2->parent_host_id)
+            || (ip1->parent_service_id != ip2->parent_service_id)
+            || (ip1->parent_start_time != ip2->parent_start_time)
+            || (ip1->start_time != ip2->start_time))
+          throw (exceptions::msg() << "entry #" << i
+                 << " (issue_parent) mismatch: got (child host "
+                 << ip1->child_host_id << ", child service "
+                 << ip1->child_service_id << ", child start time "
+                 << ip1->child_start_time << ", end time "
+                 << ip1->end_time << ", parent host "
+                 << ip1->parent_host_id << ", parent service "
+                 << ip1->parent_service_id << ", parent start time "
+                 << ip1->parent_start_time << ", start time "
+                 << ip1->start_time << "), expected ("
+                 << ip2->child_host_id << ", " << ip2->child_service_id
+                 << ", " << ip2->child_start_time << ", "
+                 << ip2->end_time << ", " << ip2->parent_host_id
+                 << ", " << ip2->parent_service_id << ", "
+                 << ip2->parent_start_time << ", " << ip2->start_time
+                 << ")");
       }
       else if (d->type()
                == "com::centreon::broker::correlation::host_state") {
@@ -232,12 +261,22 @@ bool check_content(
           s1(d.staticCast<correlation::host_state>());
         misc::shared_ptr<correlation::host_state>
           s2(it->staticCast<correlation::host_state>());
-        retval = ((s1->ack_time == s2->ack_time)
-                  && (s1->current_state == s2->current_state)
-                  && (s1->end_time == s2->end_time)
-                  && (s1->host_id == s2->host_id)
-                  && (s1->in_downtime == s2->in_downtime)
-                  && (s1->start_time == s2->start_time));
+        if ((s1->ack_time != s2->ack_time)
+            || (s1->current_state != s2->current_state)
+            || (s1->end_time != s2->end_time)
+            || (s1->host_id != s2->host_id)
+            || (s1->in_downtime != s2->in_downtime)
+            || (s1->start_time != s2->start_time))
+          throw (exceptions::msg() << "entry #" << i
+                 << " (host_state) mismatch: got (ack time "
+                 << s1->ack_time << ", current state "
+                 << s1->current_state << ", end time " << s1->end_time
+                 << ", host " << s1->host_id << ", in downtime "
+                 << s1->in_downtime << ", start time " << s1->start_time
+                 << "), expected (" << s2->ack_time << ", "
+                 << s2->current_state << ", " << s2->end_time << ", "
+                 << s2->host_id << ", " << s2->in_downtime << ", "
+                 << s2->start_time << ")");
       }
       else if (d->type()
                == "com::centreon::broker::correlation::service_state") {
@@ -245,16 +284,28 @@ bool check_content(
           s1(d.staticCast<correlation::service_state>());
         misc::shared_ptr<correlation::service_state>
           s2(it->staticCast<correlation::service_state>());
-        retval = ((s1->ack_time == s2->ack_time)
-                  && (s1->current_state == s2->current_state)
-                  && (s1->end_time == s2->end_time)
-                  && (s1->host_id == s2->host_id)
-                  && (s1->in_downtime == s2->in_downtime)
-                  && (s1->service_id == s2->service_id)
-                  && (s1->start_time == s2->start_time));
+        if ((s1->ack_time != s2->ack_time)
+            || (s1->current_state != s2->current_state)
+            || (s1->end_time != s2->end_time)
+            || (s1->host_id != s2->host_id)
+            || (s1->in_downtime != s2->in_downtime)
+            || (s1->service_id != s2->service_id)
+            || (s1->start_time != s2->start_time))
+          throw (exceptions::msg() << "entry #" << i
+                 << " (service_state) mismatch: got (ack time "
+                 << s1->ack_time << ", current state "
+                 << s1->current_state << ", end time " << s1->end_time
+                 << ", host " << s1->host_id << ", in downtime "
+                 << s1->in_downtime << ", service " << s1->service_id
+                 << ", start time " << s1->start_time << "), expected ("
+                 << s2->ack_time << ", " << s2->current_state << ", "
+                 << s2->end_time << ", " << s2->host_id << ", "
+                 << s2->in_downtime << ", " << s2->service_id << ", "
+                 << s2->start_time << ")");
       }
       ++it;
+      ++i;
     }
   }
-  return (retval);
+  return ;
 }

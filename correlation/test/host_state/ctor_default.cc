@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,7 +31,7 @@ int main() {
   correlation::host_state hs;
 
   // Check default construction.
-  return ((hs.ack_time != 0)
+  return ((hs.ack_time != -1)
           || (hs.current_state != 3)
           || (hs.end_time != 0)
           || (hs.host_id != 0)

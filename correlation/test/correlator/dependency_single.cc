@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <iostream>
 #include <QMap>
 #include <QPair>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -33,91 +35,109 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Check that dependencies work.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
+  // Return value.
+  int retval(EXIT_FAILURE);
+
   // Initialization.
   config::applier::init();
 
-  // Create state.
-  QMap<QPair<unsigned int, unsigned int>, node> state;
-  node& n1(state[qMakePair(42u, 24u)]);
-  n1.host_id = 42;
-  n1.service_id = 24;
-  n1.state = 0;
-  node& n2(state[qMakePair(56u, 13u)]);
-  n2.host_id = 56;
-  n2.service_id = 13u;
-  n2.state = 0;
-  n1.add_dependency(&n2);
+  try {
+    // Create state.
+    QMap<QPair<unsigned int, unsigned int>, node> state;
+    node& n1(state[qMakePair(42u, 24u)]);
+    n1.host_id = 42;
+    n1.service_id = 24;
+    n1.state = 0;
+    node& n2(state[qMakePair(56u, 13u)]);
+    n2.host_id = 56;
+    n2.service_id = 13u;
+    n2.state = 0;
+    n1.add_dependency(&n2);
 
-  // Create correlator and apply state.
-  correlator c;
-  c.set_state(state);
+    // Create correlator and apply state.
+    correlator c;
+    c.set_state(state);
 
-  // Send node status.
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 42;
-    ss->service_id = 24;
-    ss->state_type = 1;
-    ss->current_state = 2;
-    ss->last_check = 123456789;
-    c.write(ss.staticCast<io::data>());
+    // Send node status.
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 42;
+      ss->service_id = 24;
+      ss->state_type = 1;
+      ss->current_state = 2;
+      ss->last_check = 123456789;
+      c.write(ss.staticCast<io::data>());
+    }
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 56;
+      ss->service_id = 13;
+      ss->state_type = 1;
+      ss->current_state = 2;
+      ss->last_check = 123456790;
+      c.write(ss.staticCast<io::data>());
+    }
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 56;
+      ss->service_id = 13;
+      ss->state_type = 1;
+      ss->current_state = 0;
+      ss->last_check = 123456791;
+      c.write(ss.staticCast<io::data>());
+    }
+    {
+      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->host_id = 42;
+      ss->service_id = 24;
+      ss->state_type = 1;
+      ss->current_state = 0;
+      ss->last_check = 123456792;
+      c.write(ss.staticCast<io::data>());
+    }
+
+    // Check correlation content.
+    QList<misc::shared_ptr<io::data> > content;
+    add_issue(content, 0, 0, 42, 24, 123456789);
+    add_issue(content, 0, 0, 56, 13, 123456790);
+    add_issue_parent(
+      content,
+      42,
+      24,
+      123456789,
+      0,
+      56,
+      13,
+      123456790,
+      123456790);
+    add_issue_parent(
+      content,
+      42,
+      24,
+      123456789,
+      123456791,
+      56,
+      13,
+      123456790,
+      123456790);
+    add_issue(content, 0, 123456791, 56, 13, 123456790);
+    add_issue(content, 0, 123456792, 42, 24, 123456789);
+
+    // Check.
+    check_content(c, content);
+
+    // Success.
+    retval = EXIT_SUCCESS;
   }
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 56;
-    ss->service_id = 13;
-    ss->state_type = 1;
-    ss->current_state = 2;
-    ss->last_check = 123456790;
-    c.write(ss.staticCast<io::data>());
+  catch (std::exception const& e) {
+    std::cout << e.what() << std::endl;
   }
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 56;
-    ss->service_id = 13;
-    ss->state_type = 1;
-    ss->current_state = 0;
-    ss->last_check = 123456791;
-    c.write(ss.staticCast<io::data>());
-  }
-  {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->host_id = 42;
-    ss->service_id = 24;
-    ss->state_type = 1;
-    ss->current_state = 0;
-    ss->last_check = 123456792;
-    c.write(ss.staticCast<io::data>());
+  catch (...) {
+    std::cout << "unknown exception" << std::endl;
   }
 
-  // Check correlation content.
-  QList<misc::shared_ptr<io::data> > content;
-  add_issue(content, 0, 0, 42, 24, 123456789);
-  add_issue(content, 0, 0, 56, 13, 123456790);
-  add_issue_parent(
-    content,
-    42,
-    24,
-    123456789,
-    0,
-    56,
-    13,
-    123456790,
-    123456790);
-  add_issue_parent(
-    content,
-    42,
-    24,
-    123456789,
-    123456791,
-    56,
-    13,
-    123456790,
-    123456790);
-  add_issue(content, 0, 123456791, 56, 13, 123456790);
-  add_issue(content, 0, 123456792, 42, 24, 123456789);
-  return (!check_content(c, content));
+  return (retval);
 }

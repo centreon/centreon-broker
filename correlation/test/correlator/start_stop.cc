@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+#include <iostream>
 #include <QList>
 #include <QMap>
 #include <QPair>
@@ -30,46 +32,64 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Check that node is properly default constructed.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
+  // Return value.
+  int retval(EXIT_FAILURE);
+
   // Initialization.
   config::applier::init();
 
-  // Create state.
-  QMap<QPair<unsigned int, unsigned int>, node> state;
-  node& n1(state[qMakePair(42u, 24u)]);
-  n1.host_id = 42;
-  n1.service_id = 24;
-  n1.state = 3;
-  n1.my_issue.reset(new issue);
-  n1.my_issue->host_id = 42;
-  n1.my_issue->service_id = 24;
-  n1.my_issue->start_time = 123456789;
-  node& n2(state[qMakePair(77u, 56u)]);
-  n2.host_id = 77;
-  n2.service_id = 56;
-  n2.state = 2;
-  n2.my_issue.reset(new issue);
-  n2.my_issue->host_id = 77;
-  n2.my_issue->service_id = 56;
-  n2.my_issue->start_time = 123456790;
-  n1.add_parent(&n2);
+  try {
+    // Create state.
+    QMap<QPair<unsigned int, unsigned int>, node> state;
+    node& n1(state[qMakePair(42u, 24u)]);
+    n1.host_id = 42;
+    n1.service_id = 24;
+    n1.state = 3;
+    n1.my_issue.reset(new issue);
+    n1.my_issue->host_id = 42;
+    n1.my_issue->service_id = 24;
+    n1.my_issue->start_time = 123456789;
+    node& n2(state[qMakePair(77u, 56u)]);
+    n2.host_id = 77;
+    n2.service_id = 56;
+    n2.state = 2;
+    n2.my_issue.reset(new issue);
+    n2.my_issue->host_id = 77;
+    n2.my_issue->service_id = 56;
+    n2.my_issue->start_time = 123456790;
+    n1.add_parent(&n2);
 
-  // Create correlator.
-  correlator c;
-  c.set_state(state);
+    // Create correlator.
+    correlator c;
+    c.set_state(state);
 
-  // Start correlator then stop it.
-  c.starting();
-  c.stopping();
+    // Start correlator then stop it.
+    c.starting();
+    c.stopping();
 
-  // Check correlation content.
-  QList<misc::shared_ptr<io::data> > content;
-  add_engine_state(content, true);
-  /*add_issue_parent(content, 42, 24, 1, 1, 77, 56, 1, 1);
-  add_issue(content, 0, 1, 42, 24, 1);
-  add_issue(content, 0, 1, 77, 56, 1);
-  add_engine_state(content, false);*/
-  return (!check_content(c, content));
+    // Check correlation content.
+    QList<misc::shared_ptr<io::data> > content;
+    add_engine_state(content, true);
+    // add_issue_parent(content, 42, 24, 1, 1, 77, 56, 1, 1);
+    // add_issue(content, 0, 1, 42, 24, 1);
+    // add_issue(content, 0, 1, 77, 56, 1);
+    add_engine_state(content, false);
+
+    // Check.
+    check_content(c, content);
+
+    // Success.
+    retval = EXIT_SUCCESS;
+  }
+  catch (std::exception const& e) {
+    std::cout << e.what() << std::endl;
+  }
+  catch (...) {
+    std::cout << "unknown exception" << std::endl;
+  }
+
+  return (retval);
 }

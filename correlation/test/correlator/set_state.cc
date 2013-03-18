@@ -34,7 +34,7 @@ int main() {
   // Initialization.
   config::applier::init();
 
-  // Create state. 
+  // Create state.
   QMap<QPair<unsigned int, unsigned int>, node> state;
   node& n1(state[qMakePair(42u, 24u)]);
   n1.host_id = 42;

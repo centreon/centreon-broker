@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PARSER_COMMON_HH
-#  define PARSER_COMMON_HH
+#ifndef TEST_CORRELATOR_COMMON_HH
+#  define TEST_CORRELATOR_COMMON_HH
 
 #  include <ctime>
 #  include <QList>
@@ -62,8 +62,8 @@ void add_state_service(
        bool in_downtime,
        unsigned int service_id,
        time_t start_time);
-bool check_content(
+void check_content(
        com::centreon::broker::io::stream& s,
        QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const& content);
 
-#endif // !PARSER_COMMON_HH
+#endif // !TEST_CORRELATOR_COMMON_HH

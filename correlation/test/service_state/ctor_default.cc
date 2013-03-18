@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,7 +31,7 @@ int main() {
   correlation::service_state ss;
 
   // Check default construction.
-  return ((ss.ack_time != 0)
+  return ((ss.ack_time != -1)
           || (ss.current_state != 3)
           || (ss.end_time != 0)
           || (ss.host_id != 0)
