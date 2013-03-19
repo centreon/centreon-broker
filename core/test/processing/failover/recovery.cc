@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -86,6 +86,9 @@ int main(int argc, char* argv[]) {
   // Only one open stream means success.
   retval |= ((endp1->opened_streams() != 1)
              || (endp2->opened_streams() != 1));
+
+  // Cleanup.
+  config::applier::deinit();
 
   // Return check result.
   return (retval);

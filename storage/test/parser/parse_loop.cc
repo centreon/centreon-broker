@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,5 +60,9 @@ int main() {
       || (pd.value_type() != perfdata::counter)
       || (fabs(pd.warning() - 2.0) > 0.000001));
   }
+
+  // Cleanup.
+  config::applier::deinit();
+
   return (retval);
 }

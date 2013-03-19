@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,11 +36,11 @@ using namespace com::centreon::broker;
  *  @return 0 on success.
  */
 int main(int argc, char* argv[]) {
-  // Initialization.
-  config::applier::init();
-
   // Qt core application.
   QCoreApplication app(argc, argv);
+
+  // Initialization.
+  config::applier::init();
 
   // Enable logging.
   if (argc > 1)
@@ -73,5 +73,11 @@ int main(int argc, char* argv[]) {
   f.wait();
 
   // The number of stream is the number of retry.
-  return ((se->opened_streams() != 4) || (f.get_retry_interval() != 1));
+  int retval((se->opened_streams() != 4)
+             || (f.get_retry_interval() != 1));
+
+  // Cleanup.
+  config::applier::deinit();
+
+  return (retval);
 }

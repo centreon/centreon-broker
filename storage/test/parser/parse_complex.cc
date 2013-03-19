@@ -127,14 +127,17 @@ int main() {
   }
 
   // Check parsing.
-  int retval(0);
-  while (!retval && !list.isEmpty() && !expected.isEmpty()) {
-    retval = (list.front() != expected.front());
+  bool error(false);
+  while (!error && !list.isEmpty() && !expected.isEmpty()) {
+    error = (list.front() != expected.front());
     list.pop_front();
     expected.pop_front();
   }
-  retval |= (!list.isEmpty() || !expected.isEmpty());
+  error = (error || !list.isEmpty() || !expected.isEmpty());
+
+  // Cleanup.
+  config::applier::deinit();
 
   // Return value.
-  return (retval ? EXIT_FAILURE : EXIT_SUCCESS);
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

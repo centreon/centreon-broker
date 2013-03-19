@@ -229,5 +229,8 @@ int main() {
     std::cout << "unknown exception" << std::endl;
   }
 
+  // Cleanup.
+  config::applier::deinit();
+
   return (retval);
 }

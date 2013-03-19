@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -142,5 +142,10 @@ int main(int argc, char* argv[]) {
   a.close();
 
   // For for thread to finish.
-  return (!c.wait(2000));
+  bool error(!c.wait(2000));
+
+  // Cleanup.
+  config::applier::deinit();
+
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

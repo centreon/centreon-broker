@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -145,6 +145,9 @@ int main(int argc, char* argv[]) {
 
   // Remove temporary file.
   QFile::remove(filename);
+
+  // Cleanup.
+  config::applier::deinit();
 
   return (retval);
 }

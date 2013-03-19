@@ -36,7 +36,7 @@ using namespace com::centreon::broker;
  *  @param[in] argc Argument count.
  *  @param[in] argv Argument values.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main(int argc, char* argv[]) {
   // Qt core object.
@@ -111,5 +111,8 @@ int main(int argc, char* argv[]) {
                     std::numeric_limits<long>::max()));
   }
 
-  return (retval ? 1 : 0);
+  // Cleanup.
+  config::applier::deinit();
+
+  return (retval ? EXIT_FAILURE : EXIT_SUCCESS);
 }

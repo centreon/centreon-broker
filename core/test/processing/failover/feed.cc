@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,12 +39,12 @@ using namespace com::centreon::broker;
  *  @return 0 on success.
  */
 int main(int argc, char* argv[]) {
+  // Qt core application.
+  QCoreApplication app(argc, argv);
+
   // Initialization.
   config::applier::init();
   multiplexing::engine::instance().start();
-
-  // Qt core application.
-  QCoreApplication app(argc, argv);
 
   // Log messages.
   if (argc > 1)

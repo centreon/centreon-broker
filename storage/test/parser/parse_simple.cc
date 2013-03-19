@@ -58,6 +58,11 @@ int main() {
   expected.max(10.0);
 
   // Check parsing.
-  return ((list.size() != 1)
-          || (list.front() != expected));
+  bool error((list.size() != 1)
+             || (list.front() != expected));
+
+  // Cleanup.
+  config::applier::deinit();
+
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

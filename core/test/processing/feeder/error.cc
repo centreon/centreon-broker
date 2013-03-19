@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -94,11 +94,11 @@ public:
  *  @return 0 on success.
  */
 int main(int argc, char* argv[]) {
-  // Initialization.
-  config::applier::init();
-
   // Qt core application.
   QCoreApplication app(argc, argv);
+
+  // Initialization.
+  config::applier::init();
 
   // Enable logging.
   if (argc > 1)
@@ -150,6 +150,9 @@ int main(int argc, char* argv[]) {
     }
   retval |= (i != count);
   retval |= !w.triggered();
+
+  // Cleanup.
+  config::applier::deinit();
 
   // Return check result.
   return (retval);

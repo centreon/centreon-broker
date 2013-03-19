@@ -126,6 +126,9 @@ int main() {
   ::remove(config_path.toStdString().c_str());
   ::remove(retention_path.toStdString().c_str());
 
+  // Cleanup.
+  config::applier::deinit();
+
   // Return check result.
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

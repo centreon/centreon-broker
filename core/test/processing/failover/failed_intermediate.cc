@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,11 +38,11 @@ using namespace com::centreon::broker;
  *  @return 0 on success.
  */
 int main(int argc, char* argv[]) {
-  // Initialization.
-  config::applier::init();
-
   // Application object.
   QCoreApplication app(argc, argv);
+
+  // Initialization.
+  config::applier::init();
 
   // Enable logging.
   if (argc > 1)
@@ -94,6 +94,9 @@ int main(int argc, char* argv[]) {
   // Exit threads.
   fo3->process(false, false);
   fo3->wait();
+
+  // Cleanup.
+  config::applier::deinit();
 
   return (0);
 }

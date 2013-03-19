@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -242,6 +242,9 @@ int main(int argc, char* argv[]) {
   // Wait for acceptor thread to finish.
   retval |= !accptr.wait(2000);
   retval |= accptr.failure();
+
+  // Cleanup.
+  config::applier::deinit();
 
   return (retval ? EXIT_FAILURE : EXIT_SUCCESS);
 }
