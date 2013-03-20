@@ -488,28 +488,8 @@ int main() {
   config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
-  QStringList metrics_entries(QDir(metrics_path.c_str()).entryList());
-  for (QStringList::const_iterator
-         it(metrics_entries.begin()),
-         end(metrics_entries.end());
-       it != end;
-       ++it) {
-    std::ostringstream file_path;
-    file_path << metrics_path << "/" << it->toStdString();
-    ::remove(file_path.str().c_str());
-  }
-  QDir().rmdir(metrics_path.c_str());
-  QStringList status_entries(QDir(status_path.c_str()).entryList());
-  for (QStringList::const_iterator
-         it(status_entries.begin()),
-         end(status_entries.end());
-       it != end;
-       ++it) {
-    std::ostringstream file_path;
-    file_path << status_path << "/" << it->toStdString();
-    ::remove(file_path.str().c_str());
-  }
-  QDir().rmdir(status_path.c_str());
+  recursive_remove(metrics_path);
+  recursive_remove(status_path);
 
   return (retval);
 }
