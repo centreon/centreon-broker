@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,9 +17,33 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <ctime>
+#include <QDir>
+#include <QStringList>
+#include <sstream>
 #include <unistd.h>
 #include "test/misc.hh"
+
+/**
+ *  Recursively remove a directory.
+ *
+ *  @param[in] dir_path Target directory.
+ */
+void recursive_remove(std::string const& dir_path) {
+  QStringList entries(QDir(dir_path.c_str()).entryList());
+  for (QStringList::const_iterator
+         it(entries.begin()),
+         end(entries.end());
+       it != end;
+       ++it) {
+    std::ostringstream oss;
+    oss << dir_path << "/" << it->toStdString();
+    ::remove(oss.str().c_str());
+  }
+  QDir().rmdir(dir_path.c_str());
+  return ;
+}
 
 /**
  *  Sleep for some seconds.

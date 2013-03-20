@@ -458,6 +458,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
@@ -579,6 +581,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_disable_metrics_graphs")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/disable_metrics_graphs.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Graph deletion.
+  set(TEST_NAME "running_delete_graphs")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/delete_graphs.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

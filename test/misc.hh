@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,9 @@
 #ifndef TEST_MISC_HH
 #  define TEST_MISC_HH
 
+#  include <string>
+
+void recursive_remove(std::string const& dir_path);
 void sleep_for(unsigned int seconds);
 
 #endif // !TEST_MISC_HH
