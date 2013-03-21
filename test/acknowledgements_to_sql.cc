@@ -19,6 +19,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <iostream>
 #include <QSqlError>
@@ -36,8 +37,6 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_acknowledgements_to_sql"
-#define FALSE_COMMAND_LINE "/bin/false"
-#define FALSE_COMMAND "1"
 
 /**
  *  Check that acknowledgements are properly inserted in SQL database.
@@ -67,15 +66,17 @@ int main() {
            end(commands.end());
          it != end;
          ++it) {
-      it->command_line = new char[sizeof(FALSE_COMMAND_LINE)];
-      strcpy(it->command_line, FALSE_COMMAND_LINE);
+      char const* cmdline(MY_PLUGIN_PATH " 2");
+      it->command_line = new char[strlen(cmdline) + 1];
+      strcpy(it->command_line, cmdline);
     }
     generate_hosts(hosts, 2);
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
-      it->host_check_command = new char[sizeof(FALSE_COMMAND)];
-      strcpy(it->host_check_command, FALSE_COMMAND);
+      it->accept_passive_host_checks = 1;
+      it->host_check_command = new char[2];
+      strcpy(it->host_check_command, "1");
     }
     generate_services(services, hosts, 1);
     for (std::list<service>::iterator
@@ -83,8 +84,9 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->service_check_command = new char[sizeof(FALSE_COMMAND)];
-      strcpy(it->service_check_command, FALSE_COMMAND);
+      it->accept_passive_service_checks = 1;
+      it->service_check_command = new char[2];
+      strcpy(it->service_check_command, "1");
     }
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
@@ -345,7 +347,7 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
+  //config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 
