@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include <cstdlib>
 #include <QList>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/parser.hh"
