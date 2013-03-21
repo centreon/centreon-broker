@@ -494,7 +494,7 @@ void config_write(
            << path << "'");
   ofs << "define command{\n"
       << "  command_name default_command\n"
-      << "  command_line /bin/true\n"
+      << "  command_line " MY_PLUGIN_PATH " 0\n"
       << "}\n\n";
   if (commands)
     for (std::list<command>::iterator
@@ -505,7 +505,7 @@ void config_write(
       ofs << "define command{\n"
           << "  command_name " << it->name << "\n"
           << "  command_line "
-          << (it->command_line ? it->command_line : "/bin/true") << "\n"
+          << (it->command_line ? it->command_line : MY_PLUGIN_PATH " 0") << "\n"
           << "}\n\n";
     }
   ofs.close();

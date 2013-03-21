@@ -130,23 +130,23 @@ int main() {
     {
       std::list<command>::iterator it(commands.begin());
       char const* cmd;
-      cmd = "echo \"ABSOLUTE|a[absolute]=22374B\\;1000\\;2000\\;0\\;3000\"";
+      cmd = MY_PLUGIN_PATH " 0 \"ABSOLUTE|a[absolute]=22374B\\;1000\\;2000\\;0\\;3000\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"COUNTER|c[counter]=147852369\\;100:123\\;745698877\\;3\\;nan\"";
+      cmd = MY_PLUGIN_PATH " 0 \"COUNTER|c[counter]=147852369\\;100:123\\;745698877\\;3\\;nan\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DERIVE|d[derive]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
+      cmd = MY_PLUGIN_PATH " 0 \"DERIVE|d[derive]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"GAUGE|g[gauge]=135.25kB/s\\;\\;1100\"";
+      cmd = MY_PLUGIN_PATH " 0 \"GAUGE|g[gauge]=135.25kB/s\\;\\;1100\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = "echo \"DEFAULT|'my ''default'' 1337 m3tric n4m3'=9queries_per_second\\;@10:\\;@5:\\;0\\;100\"";
+      cmd = MY_PLUGIN_PATH " 0 \"DEFAULT|'my ''default'' 1337 m3tric n4m3'=9queries_per_second\\;@10:\\;@5:\\;0\\;100\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
     }

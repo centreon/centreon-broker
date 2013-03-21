@@ -36,8 +36,6 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_downtimes_to_sql"
-#define FALSE_COMMAND_LINE "/bin/false"
-#define FALSE_COMMAND "1"
 
 /**
  *  Check that downtimes are properly inserted in SQL database.
@@ -62,16 +60,18 @@ int main() {
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, 1);
-    commands.front().command_line
-      = new char[sizeof(FALSE_COMMAND_LINE)];
-    strcpy(commands.front().command_line, FALSE_COMMAND_LINE);
+    {
+      char const* cmdline(MY_PLUGIN_PATH " 1");
+      commands.front().command_line = new char[strlen(cmdline) + 1];
+      strcpy(commands.front().command_line, cmdline);
+    }
     generate_hosts(hosts, 10);
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it)
       if (!strcmp(it->name, "2")) {
-        it->host_check_command = new char[sizeof(FALSE_COMMAND)];
-        strcpy(it->host_check_command, FALSE_COMMAND);
+        it->host_check_command = new char[2];
+        strcpy(it->host_check_command, "1");
         break ;
       }
     generate_services(services, hosts, 5);
@@ -82,8 +82,8 @@ int main() {
          ++it)
       if (!strcmp(it->host_name, "7")
           && !strcmp(it->description, "31")) {
-        it->service_check_command = new char[sizeof(FALSE_COMMAND)];
-        strcpy(it->service_check_command, FALSE_COMMAND);
+        it->service_check_command = new char[2];
+        strcpy(it->service_check_command, "1");
         break ;
       }
     commander.set_file(tmpnam(NULL));

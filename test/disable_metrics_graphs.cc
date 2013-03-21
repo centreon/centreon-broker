@@ -129,7 +129,7 @@ int main() {
     {
       std::list<command>::iterator it(commands.begin());
       char const* cmd;
-      cmd = "echo \"output|metric=1unit\"";
+      cmd = MY_PLUGIN_PATH " 0 \"output|metric=1unit\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
     }

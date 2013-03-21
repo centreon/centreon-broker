@@ -136,7 +136,7 @@ int main() {
     {
       command& cmd(commands.front());
       char const* cmdline;
-      cmdline = "echo \"output|metric=100\"";
+      cmdline = MY_PLUGIN_PATH " 0 \"output|metric=100\"";
       cmd.command_line = new char[strlen(cmdline) + 1];
       strcpy(cmd.command_line, cmdline);
     }
