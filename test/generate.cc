@@ -298,6 +298,9 @@ void generate_hosts(
     new_host.name = new char[name.size() + 1];
     strcpy(new_host.name, name.c_str());
 
+    // Set some default properties.
+    new_host.checks_enabled = 1;
+
     // Add to list.
     hosts.push_back(new_host);
   }
@@ -394,6 +397,9 @@ void generate_services(
       // Set host.
       new_service.host_name = new char[strlen(it->name) + 1];
       strcpy(new_service.host_name, it->name);
+
+      // Set some default properties.
+      new_service.checks_enabled = 1;
 
       // Add to list.
       services.push_back(new_service);

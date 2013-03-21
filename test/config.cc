@@ -354,6 +354,9 @@ void config_write(
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
+          << "  active_checks_enabled " << it->checks_enabled << "\n"
+          << "  passive_checks_enabled "
+          << it->accept_passive_host_checks << "\n"
           << "  check_command " << (it->host_check_command
                                     ? it->host_check_command
                                     : "default_command") << "\n"
@@ -390,6 +393,10 @@ void config_write(
           ofs << "," << parent->host_name;
         ofs << "\n";
       }
+      ofs << "  event_handler_enabled " << it->event_handler_enabled
+          << "\n";
+      if (it->event_handler)
+        ofs << "  event_handler " << it->event_handler << "\n";
       for (customvariablesmember* cvar(it->custom_variables);
            cvar;
            cvar = cvar->next)
@@ -429,6 +436,9 @@ void config_write(
           << "  service_description " << it->description << "\n"
           << "  _SERVICE_ID " << it->description << "\n"
           << "  host_name " << it->host_name << "\n"
+          << "  active_checks_enabled " << it->checks_enabled << "\n"
+          << "  passive_checks_enabled "
+          << it->accept_passive_service_checks << "\n"
           << "  check_command "
           << (it->service_check_command
               ? it->service_check_command
@@ -461,6 +471,10 @@ void config_write(
       else
         ofs << "default_contact";
       ofs << "\n";
+      ofs << "  event_handler_enabled " << it->event_handler_enabled
+          << "\n";
+      if (it->event_handler)
+        ofs << "  event_handler " << it->event_handler << "\n";
       for (customvariablesmember* cvar(it->custom_variables);
            cvar;
            cvar = cvar->next)

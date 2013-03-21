@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,6 +24,7 @@
 #  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
 #  define CBD_PATH "@CBD_PATH@"
 #  define CBMOD_PATH "@CBMOD_PATH@"
+#  define MY_PLUGIN_PATH "@MY_PLUGIN_PATH@"
 
 // Monitoring engine.
 #  define MONITORING_ENGINE "@MONITORING_ENGINE@"
