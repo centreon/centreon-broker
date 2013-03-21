@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,7 +31,7 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 event_handler::event_handler()
-  : early_timeout(0),
+  : early_timeout(false),
     end_time(0),
     execution_time(0),
     handler_type(0),

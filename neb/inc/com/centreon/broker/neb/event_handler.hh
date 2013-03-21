@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,7 +45,7 @@ namespace          neb {
 
     QString        command_args;
     QString        command_line;
-    short          early_timeout;
+    bool           early_timeout;
     timestamp      end_time;
     double         execution_time;
     short          handler_type;
