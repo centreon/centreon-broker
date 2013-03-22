@@ -121,32 +121,33 @@ static void send_host_dependencies_list() {
   logging::info(logging::medium)
     << "init: beginning host dependencies dump";
 
-  // Loop through all dependencies.
-  for (hostdependency* hd = hostdependency_list; hd; hd = hd->next) {
-    misc::shared_ptr<neb::host_dependency> host_dependency(
-      new neb::host_dependency);
-    std::map<std::string, int>::const_iterator it;
+  try {
+    // Loop through all dependencies.
+    for (hostdependency* hd(hostdependency_list); hd; hd = hd->next) {
+      // Fill callback struct.
+      nebstruct_relation_data nsrd;
+      memset(&nsrd, 0, sizeof(nsrd));
+      nsrd.type = NEBTYPE_DEPENDENCY_ADD;
+      nsrd.flags = NEBFLAG_NONE;
+      nsrd.attr = NEBATTR_NONE;
+      nsrd.timestamp.tv_sec = time(NULL);
+      nsrd.hst = hd->master_host_ptr;
+      nsrd.dep_hst = hd->dependent_host_ptr;
+      nsrd.dependency_period = hd->dependency_period;
+      nsrd.inherits_parent = hd->inherits_parent;
 
-    // Set host dependency parameters.
-    if (hd->dependency_period)
-      host_dependency->dependency_period = hd->dependency_period;
-    if (hd->dependent_host_name) {
-      it = neb::gl_hosts.find(hd->dependent_host_name);
-      if (it != neb::gl_hosts.end())
-        host_dependency->dependent_host_id = it->second;
+      // Callback.
+      neb::callback_relation(NEBTYPE_DEPENDENCY_ADD, &nsrd);
     }
-    host_dependency->inherits_parent = hd->inherits_parent;
-    if (hd->host_name) {
-      it = neb::gl_hosts.find(hd->host_name);
-      if (it != neb::gl_hosts.end())
-        host_dependency->host_id = it->second;
-    }
-
-    // Send host dependency event.
-    logging::info(logging::low) << "init:  host "
-      << host_dependency->dependent_host_id << " depends on host "
-      << host_dependency->host_id;
-    neb::gl_publisher.write(host_dependency.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "init: error occurred while dumping host dependencies: "
+      << e.what();
+  }
+  catch (...) {
+    logging::error(logging::high)
+      << "init: unknown error occurred while dumping host dependencies";
   }
 
   // End log message.
@@ -305,40 +306,35 @@ static void send_service_dependencies_list() {
   logging::info(logging::medium)
     << "init: beginning service dependencies dump";
 
-  // Loop through all dependencies.
-  for (servicedependency* sd = servicedependency_list; sd; sd = sd->next) {
-    std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-    misc::shared_ptr<neb::service_dependency>
-      service_dependency(new neb::service_dependency);
+  try {
+    // Loop through all dependencies.
+    for (servicedependency* sd(servicedependency_list);
+         sd;
+         sd = sd->next) {
+      // Fill callback struct.
+      nebstruct_relation_data nsrd;
+      memset(&nsrd, 0, sizeof(nsrd));
+      nsrd.type = NEBTYPE_DEPENDENCY_ADD;
+      nsrd.flags = NEBFLAG_NONE;
+      nsrd.attr = NEBATTR_NONE;
+      nsrd.timestamp.tv_sec = time(NULL);
+      nsrd.svc = sd->master_service_ptr;
+      nsrd.dep_svc = sd->dependent_service_ptr;
+      nsrd.dependency_period = sd->dependency_period;
+      nsrd.inherits_parent = sd->inherits_parent;
 
-    // Search IDs.
-    if (sd->dependent_host_name && sd->dependent_service_description) {
-      it = neb::gl_services.find(std::make_pair<std::string, std::string>(
-             sd->dependent_host_name, sd->dependent_service_description));
-      if (it != neb::gl_services.end()) {
-        service_dependency->dependent_host_id = it->second.first;
-        service_dependency->dependent_service_id = it->second.second;
-      }
+      // Callback.
+      neb::callback_relation(NEBTYPE_DEPENDENCY_ADD, &nsrd);
     }
-    if (sd->dependency_period)
-      service_dependency->dependency_period = sd->dependency_period;
-    service_dependency->inherits_parent = sd->inherits_parent;
-    if (sd->host_name && sd->service_description) {
-      it = neb::gl_services.find(std::make_pair<std::string, std::string>(
-             sd->host_name, sd->service_description));
-      if (it != neb::gl_services.end()) {
-        service_dependency->host_id = it->second.first;
-        service_dependency->service_id = it->second.second;
-      }
-    }
-
-    // Send service dependency event.
-    logging::info(logging::low) << "init:  service ("
-      << service_dependency->dependent_host_id << ", "
-      << service_dependency->dependent_service_id
-      << ") depends on service (" << service_dependency->host_id
-      << ", " << service_dependency->service_id << ")";
-    neb::gl_publisher.write(service_dependency.staticCast<io::data>());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "init: error occurred while dumping service dependencies: "
+      << e.what();
+  }
+  catch (...) {
+    logging::error(logging::high) << "init: unknown error occurred "
+      << "while dumping service dependencies";
   }
 
   // End log message.
