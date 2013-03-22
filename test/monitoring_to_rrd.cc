@@ -34,6 +34,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
+#include "test/external_command.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/rrd_file.hh"
@@ -62,6 +63,7 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   std::string metrics_path(tmpnam(NULL));
   std::string status_path(tmpnam(NULL));
+  external_command commander;
   engine daemon;
 
   // Log.
@@ -142,7 +144,7 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = MY_PLUGIN_PATH " 0 \"GAUGE|g[gauge]=135.25kB/s\\;\\;1100\"";
+      cmd = MY_PLUGIN_PATH " 0 \"GAUGE|g[gauge]=135.25$_HOSTPERFDATA_UNIT$\\;$_HOSTPERFDATA_WARNING$\\;$_HOSTPERFDATA_CRITICAL$\\;$_HOSTPERFDATA_MIN$\\;$_HOSTPERFDATA_MAX$\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
@@ -164,6 +166,26 @@ int main() {
         it->host_check_command = new char[sizeof(str)];
         strcpy(it->host_check_command, str);
         i = (i + 1) % 5;
+        set_custom_variable(
+          *it,
+          "PERFDATA_UNIT",
+          "");
+        set_custom_variable(
+          *it,
+          "PERFDATA_WARNING",
+          "");
+        set_custom_variable(
+          *it,
+          "PERFDATA_CRITICAL",
+          "900");
+        set_custom_variable(
+          *it,
+          "PERFDATA_MIN",
+          "");
+        set_custom_variable(
+          *it,
+          "PERFDATA_MAX",
+          "100000");
       }
     }
     generate_services(services, hosts, SERVICES_BY_HOST);
@@ -182,11 +204,18 @@ int main() {
         i = (i + 1) % 5;
       }
     }
-    std::string cbmod_loading;
+    commander.set_file(tmpnam(NULL));
+    std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path;
-      cbmod_loading = oss.str();
+      oss << commander.get_engine_config()
+          << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path
+          << "\n"
+          << "debug_level=-1\n"
+          << "debug_verbosity=2\n"
+          << "debug_file=/tmp/engine.log\n"
+          << "max_debug_file_size=1000000000\n";
+      additional_config = oss.str();
     }
 
     // Insert entries in index_data.
@@ -225,7 +254,7 @@ int main() {
     // Generate monitoring engine configuration files.
     config_write(
       engine_config_path.c_str(),
-      cbmod_loading.c_str(),
+      additional_config.c_str(),
       &hosts,
       &services,
       &commands);
@@ -235,7 +264,44 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Make the metrics table update.
+    for (unsigned long i(1); i <= HOST_COUNT; ++i) {
+      {
+        std::ostringstream oss;
+        oss << "CHANGE_CUSTOM_HOST_VAR;" << i
+            << ";PERFDATA_UNIT;kB/s";
+        commander.execute(oss.str());
+      }
+      {
+        std::ostringstream oss;
+        oss << "CHANGE_CUSTOM_HOST_VAR;" << i
+            << ";PERFDATA_WARNING;452:1099";
+        commander.execute(oss.str());
+      }
+      {
+        std::ostringstream oss;
+        oss << "CHANGE_CUSTOM_HOST_VAR;" << i
+            << ";PERFDATA_CRITICAL;1100";
+        commander.execute(oss.str());
+      }
+      {
+        std::ostringstream oss;
+        oss << "CHANGE_CUSTOM_HOST_VAR;" << i
+            << ";PERFDATA_MIN;0";
+        commander.execute(oss.str());
+      }
+      {
+        std::ostringstream oss;
+        oss << "CHANGE_CUSTOM_HOST_VAR;" << i
+            << ";PERFDATA_MAX;123456789";
+        commander.execute(oss.str());
+      }
+    }
+
+    // Let engine run a little more.
+    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check metrics table.
     std::list<unsigned int> metrics;
@@ -313,14 +379,14 @@ int main() {
           error = ((metric_name != "gauge")
                    || (data_source_type != 0)
                    || (unit_name != "kB/s")
-                   || !q.value(4).isNull()
-                   || !q.value(5).isNull()
+                   || (fabs(warning - 1099.0) > 1.0)
+                   || (fabs(warning_low - 452.0) > 0.4)
                    || warning_mode
                    || (fabs(critical - 1100.0) > 1.0)
                    || (fabs(critical_low) > 0.01)
                    || critical_mode
-                   || !q.value(10).isNull()
-                   || !q.value(11).isNull());
+                   || (fabs(min_val) > 0.01)
+                   || (fabs(max_val - 123456789.0) > 100000.0));
           break ;
         case 4:
           error = ((metric_name != "my 'default' 1337 m3tric n4m3")
