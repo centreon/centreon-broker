@@ -210,11 +210,7 @@ int main() {
       std::ostringstream oss;
       oss << commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path
-          << "\n"
-          << "debug_level=-1\n"
-          << "debug_verbosity=2\n"
-          << "debug_file=/tmp/engine.log\n"
-          << "max_debug_file_size=1000000000\n";
+          << "\n";
       additional_config = oss.str();
     }
 
