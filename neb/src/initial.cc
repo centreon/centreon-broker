@@ -21,6 +21,7 @@
 #include <cstring>
 #include <ctime>
 #include <memory>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
@@ -230,39 +231,35 @@ static void send_host_parents_list() {
   // Start log message.
   logging::info(logging::medium) << "init: beginning host parents dump";
 
-  // Loop through all hosts.
-  int host_id;
-  for (host* h = host_list; h; h = h->next) {
-    std::map<std::string, int>::const_iterator it;
+  try {
+    // Loop through all hosts.
+    for (host* h(host_list); h; h = h->next)
+      // Loop through all parents.
+      for (hostsmember* parent(h->parent_hosts);
+           parent;
+           parent = parent->next) {
+        // Fill callback struct.
+        nebstruct_relation_data nsrd;
+        memset(&nsrd, 0, sizeof(nsrd));
+        nsrd.type = NEBTYPE_PARENT_ADD;
+        nsrd.flags = NEBFLAG_NONE;
+        nsrd.attr = NEBATTR_NONE;
+        nsrd.timestamp.tv_sec = time(NULL);
+        nsrd.hst = parent->host_ptr;
+        nsrd.dep_hst = h;
 
-    // Search host_id.
-    if (h->name) {
-      it = neb::gl_hosts.find(h->name);
-      if (it != neb::gl_hosts.end())
-        host_id = it->second;
-      else
-        host_id = 0;
-    }
-    else
-      host_id = 0;
-
-    // Loop through all dependencies.
-    for (hostsmember* parent = h->parent_hosts; parent; parent = parent->next) {
-      misc::shared_ptr<neb::host_parent> hp(new neb::host_parent);
-      std::map<std::string, int>::const_iterator it;
-
-      hp->host_id = host_id;
-      if (parent->host_name) {
-        it = neb::gl_hosts.find(parent->host_name);
-        if (it != neb::gl_hosts.end())
-          hp->parent_id = it->second;
+        // Callback.
+        neb::callback_relation(NEBTYPE_PARENT_ADD, &nsrd);
       }
-
-      // Send host parent event.
-      logging::info(logging::low) << "init:  host " << hp->parent_id
-        << " is parent of host " << hp->host_id;
-      neb::gl_publisher.write(hp.staticCast<io::data>());
-    }
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "init: error occurred while dumping host parents: "
+      << e.what();
+  }
+  catch (...) {
+    logging::error(logging::high)
+      << "init: unknown error occurred while dumping host parents";
   }
 
   // End log message.
