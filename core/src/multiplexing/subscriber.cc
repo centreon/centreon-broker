@@ -205,7 +205,7 @@ void subscriber::read(
 void subscriber::statistics(std::string& buffer) const {
   QMutexLocker lock(&_mutex);
   std::ostringstream oss;
-  oss << "queued_events=" << _events.size() << "\n";
+  oss << "queued_events=" << _total_events << "\n";
   buffer.append(oss.str());
   return ;
 }
