@@ -23,6 +23,7 @@
     <tls>yes</tls>
     <private_key>@PROJECT_SOURCE_DIR@/test/cfg/tls_to_sql_1.key</private_key>
     <public_cert>@PROJECT_SOURCE_DIR@/test/cfg/tls_to_sql_1.cert</public_cert>
+    <ca_certificate>@PROJECT_SOURCE_DIR@/test/cfg/tls_to_sql_ca.cert</ca_certificate>
     <read_timeout>5</read_timeout>
   </output>
 </centreonbroker>

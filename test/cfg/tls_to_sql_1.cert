@@ -1,23 +1,82 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=FR, ST=Ile-de-France, L=Gentilly, O=Merethis, CN=merethis.com
+        Validity
+            Not Before: Mar 28 10:53:41 2013 GMT
+            Not After : Mar 26 10:53:41 2023 GMT
+        Subject: C=FR, ST=Ile-de-France, L=Gentilly, O=Merethis, CN=BrokerTLSToSQL1
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:db:4b:c0:fe:d9:62:46:08:af:32:db:8a:1c:14:
+                    68:cd:29:ea:14:67:88:1d:3f:db:0d:98:30:b2:f6:
+                    a6:6b:61:aa:bc:7e:93:f6:b5:80:10:49:95:08:ac:
+                    2d:66:bf:33:bd:67:cd:64:e0:9a:42:9e:4a:fd:d6:
+                    15:71:e6:85:44:54:a4:13:46:72:20:ab:be:61:ca:
+                    9d:8a:d5:08:98:de:c0:ae:c1:9f:e4:8e:7e:c0:77:
+                    32:1b:26:6d:e9:2c:40:d7:fe:36:67:bf:86:35:b3:
+                    38:2e:99:6b:5f:a2:b5:2e:09:75:6e:ae:e5:9f:91:
+                    6c:54:bd:51:91:71:b2:74:cd:13:1c:37:8e:02:61:
+                    e1:c0:5c:80:0c:e9:ad:25:6d:6f:20:db:06:25:4d:
+                    11:78:59:7e:bf:89:c7:98:fd:56:ca:6d:7f:3c:ef:
+                    59:23:dc:c6:82:97:c4:1d:49:ba:5f:b9:3e:18:f5:
+                    17:cd:17:04:9a:4f:49:2b:09:fb:f4:7e:e4:33:09:
+                    54:b0:d3:d0:07:1c:bc:aa:92:f4:71:71:35:1c:63:
+                    d4:c7:45:37:b1:b2:e2:e6:a9:11:e3:a0:a9:83:0f:
+                    f9:06:19:c2:fb:00:df:05:51:47:13:85:ad:4a:b3:
+                    e8:60:29:6b:23:71:d4:c2:ae:37:47:da:a5:d8:81:
+                    7d:81
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+            X509v3 Subject Key Identifier: 
+                58:C3:0C:2B:35:51:D6:52:6B:84:92:C2:CB:BD:E3:E3:D0:4C:3E:B1
+            X509v3 Authority Key Identifier: 
+                keyid:F6:83:A8:EB:28:31:B3:93:58:24:50:67:68:D0:A9:9A:7B:12:EE:1A
+
+    Signature Algorithm: sha1WithRSAEncryption
+         67:63:50:2e:b5:be:0b:51:49:4e:21:dc:1c:38:ec:81:7d:7f:
+         ba:48:a7:16:a6:6b:ee:dc:55:2b:30:32:e0:00:b2:1b:f7:65:
+         0f:76:b3:fe:eb:e4:69:24:ed:85:ee:e8:db:ed:76:cb:18:c5:
+         cd:7c:99:e5:73:93:42:81:89:b1:02:9b:c2:5e:37:44:09:2b:
+         54:64:7c:bf:75:16:3d:f5:93:82:8e:d5:46:9a:57:98:16:73:
+         f2:ac:89:c5:b6:6b:19:73:24:6f:66:67:b1:e8:62:f3:2e:bf:
+         ef:b2:42:48:b5:46:d4:2e:ee:65:f8:07:00:2d:26:09:39:53:
+         67:12:74:65:f6:55:1d:b7:94:a2:dd:87:13:89:63:5d:73:b7:
+         97:72:42:dd:8a:bb:9c:1a:cc:f8:e6:d8:2e:46:a5:31:f2:54:
+         4c:42:7b:00:9c:1d:89:b2:df:af:06:47:0d:b8:9c:59:a1:15:
+         fb:29:0f:54:ca:89:09:8a:c0:51:fb:23:7d:a0:e0:0a:81:c7:
+         51:e0:74:c3:cd:99:5b:9b:ed:45:0a:5a:e6:af:e6:72:2e:19:
+         fa:ac:b0:7e:b5:13:59:f1:40:89:17:d8:eb:82:b0:33:53:d7:
+         67:36:75:61:0c:b4:ff:b7:33:4d:bf:f0:0d:ef:9e:c5:98:60:
+         1c:63:5b:54
 -----BEGIN CERTIFICATE-----
-MIID1TCCAr2gAwIBAgIJANjbLL96JL8nMA0GCSqGSIb3DQEBBQUAMIGAMQswCQYD
-VQQGEwJGUjETMBEGA1UECAwKU29tZS1TdGF0ZTEOMAwGA1UEBwwFUGFyaXMxETAP
-BgNVBAoMCE1lcmV0aGlzMRUwEwYDVQQDDAxtZXJldGhpcy5jb20xIjAgBgkqhkiG
-9w0BCQEWE2Jyb2tlckBtZXJldGhpcy5jb20wHhcNMTIxMDI5MTUxMDA1WhcNMjIx
-MDI3MTUxMDA1WjCBgDELMAkGA1UEBhMCRlIxEzARBgNVBAgMClNvbWUtU3RhdGUx
-DjAMBgNVBAcMBVBhcmlzMREwDwYDVQQKDAhNZXJldGhpczEVMBMGA1UEAwwMbWVy
-ZXRoaXMuY29tMSIwIAYJKoZIhvcNAQkBFhNicm9rZXJAbWVyZXRoaXMuY29tMIIB
-IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3rhCDE6qdZ3PQ8VaoQjq6dz4
-EbEUavKJ6p65k6/B0dktRsT5sPgffaQYp05ZifYyjx+CnXJESxZ8bQshlGHOuWxc
-EJT4wMXFl9zKch++8MiOa+E6Ly2RJ5rlYbx4BeBB5HR12yNSpPyy4QEAUxRdDutY
-12iMOj0/zg7vy7eauvrWnc4uJ4dXBZNgt/RLR0JZXlmKJ9ZoMaOMuGtu3wYEHp6G
-4kdzLTKE2TfwiVnWz9ecih64Sw8NCmt2uFinljKS7ByhEYJodf0ilacIaPjOohyV
-SiKGkCxBE2c7VVPzGviSp1N5jrIiMfapAPLs/xXaGOhTTov31KNPFJGhqmImHwID
-AQABo1AwTjAdBgNVHQ4EFgQUiyrXNfErTlZFdzKxAUxQ0bkVsdcwHwYDVR0jBBgw
-FoAUiyrXNfErTlZFdzKxAUxQ0bkVsdcwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0B
-AQUFAAOCAQEAskzrayNXNzO/egM4PgJp1Tdh6WZD7FtmY2w18faX9QFTcm/9dYT3
-MCPwnfRxQdaXN7cNPvZm9vT4bAuTxHpIBHC+PrrliUTm/vmdXYVpfwkn+Cr1WbRf
-k/tB/8J4lodFDBDubdoV5D7Git6ohnE6KMnW9tpQduBKp5kf+PkW9bTs33fAr6d4
-z1zoeVu7fmQ04F2Hmbxj8kevJJStHkNTd4K8cYYjbjOzx91refNR4gUzBmwewY7u
-L5xUfnIectvgnQPuHLooBNxnRp2I5EwoV8iM/5D3hEBlI4EqhMSQbjpIrDmLeIFK
-cX0ziQjBm2Y4r3niuCK69FxsILMd7Plqqg==
+MIIDvTCCAqWgAwIBAgIBATANBgkqhkiG9w0BAQUFADBiMQswCQYDVQQGEwJGUjEW
+MBQGA1UECAwNSWxlLWRlLUZyYW5jZTERMA8GA1UEBwwIR2VudGlsbHkxETAPBgNV
+BAoMCE1lcmV0aGlzMRUwEwYDVQQDDAxtZXJldGhpcy5jb20wHhcNMTMwMzI4MTA1
+MzQxWhcNMjMwMzI2MTA1MzQxWjBlMQswCQYDVQQGEwJGUjEWMBQGA1UECAwNSWxl
+LWRlLUZyYW5jZTERMA8GA1UEBwwIR2VudGlsbHkxETAPBgNVBAoMCE1lcmV0aGlz
+MRgwFgYDVQQDDA9Ccm9rZXJUTFNUb1NRTDEwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+DwAwggEKAoIBAQDbS8D+2WJGCK8y24ocFGjNKeoUZ4gdP9sNmDCy9qZrYaq8fpP2
+tYAQSZUIrC1mvzO9Z81k4JpCnkr91hVx5oVEVKQTRnIgq75hyp2K1QiY3sCuwZ/k
+jn7AdzIbJm3pLEDX/jZnv4Y1szgumWtforUuCXVuruWfkWxUvVGRcbJ0zRMcN44C
+YeHAXIAM6a0lbW8g2wYlTRF4WX6/iceY/VbKbX8871kj3MaCl8QdSbpfuT4Y9RfN
+FwSaT0krCfv0fuQzCVSw09AHHLyqkvRxcTUcY9THRTexsuLmqRHjoKmDD/kGGcL7
+AN8FUUcTha1Ks+hgKWsjcdTCrjdH2qXYgX2BAgMBAAGjezB5MAkGA1UdEwQCMAAw
+LAYJYIZIAYb4QgENBB8WHU9wZW5TU0wgR2VuZXJhdGVkIENlcnRpZmljYXRlMB0G
+A1UdDgQWBBRYwwwrNVHWUmuEksLLvePj0Ew+sTAfBgNVHSMEGDAWgBT2g6jrKDGz
+k1gkUGdo0KmaexLuGjANBgkqhkiG9w0BAQUFAAOCAQEAZ2NQLrW+C1FJTiHcHDjs
+gX1/ukinFqZr7txVKzAy4ACyG/dlD3az/uvkaSTthe7o2+12yxjFzXyZ5XOTQoGJ
+sQKbwl43RAkrVGR8v3UWPfWTgo7VRppXmBZz8qyJxbZrGXMkb2Znsehi8y6/77JC
+SLVG1C7uZfgHAC0mCTlTZxJ0ZfZVHbeUot2HE4ljXXO3l3JC3Yq7nBrM+ObYLkal
+MfJUTEJ7AJwdibLfrwZHDbicWaEV+ykPVMqJCYrAUfsjfaDgCoHHUeB0w82ZW5vt
+RQpa5q/mci4Z+qywfrUTWfFAiRfY64KwM1PXZzZ1YQy0/7czTb/wDe+exZhgHGNb
+VA==
 -----END CERTIFICATE-----

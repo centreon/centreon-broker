@@ -100,10 +100,10 @@ void params::apply(gnutls_session_t session) {
             session,
             GNUTLS_CRD_CERTIFICATE,
             _cred.cert);
-    // if (SERVER == _type)
-    //   gnutls_certificate_server_set_request(
-    //     session,
-    //     GNUTLS_CERT_REQUIRE);
+    if (SERVER == _type)
+      gnutls_certificate_server_set_request(
+        session,
+        GNUTLS_CERT_REQUEST);
   }
   if (ret != GNUTLS_E_SUCCESS)
     throw (exceptions::msg() << "TLS: could not set credentials: "
