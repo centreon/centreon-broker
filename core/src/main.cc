@@ -55,6 +55,9 @@ static QString gl_mainconfigfile;
 static void hup_handler(int signum) {
   (void)signum;
 
+  // Disable SIGHUP handling during handler execution.
+  signal(SIGHUP, SIG_IGN);
+
   // Log message.
   logging::config(logging::high)
     << "main: configuration update requested";
@@ -66,6 +69,9 @@ static void hup_handler(int signum) {
 
   // Apply resulting configuration.
   config::applier::state::instance().apply(conf);
+
+  // Reenable SIGHUP handler.
+  signal(SIGHUP, &hup_handler);
 
   return ;
 }
