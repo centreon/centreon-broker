@@ -108,8 +108,16 @@ bool factory::has_endpoint(
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
-  (void)is_output;
-  return (!cfg.type.compare("sql", Qt::CaseInsensitive));
+  bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive)
+              && is_output);
+  if (is_sql) {
+    // Default transaction timeout.
+    if (cfg.params.find("read_timeout") == cfg.params.end()) {
+      cfg.params["read_timeout"] = "2";
+      cfg.read_timeout = 2;
+    }
+  }
+  return (is_sql);
 }
 
 /**
@@ -161,10 +169,6 @@ io::endpoint* factory::new_endpoint(
     else
       queries_per_transaction = 1000;
   }
-
-  // Transaction timeout.
-  if (cfg.params.find("read_timeout") == cfg.params.end())
-    cfg.read_timeout = 2;
 
   // Check replication status ?
   bool check_replication(true);

@@ -84,7 +84,14 @@ bool factory::has_endpoint(
                 bool is_output) const {
   (void)is_input;
   (void)is_output;
-  return (cfg.type == "file");
+  bool retval;
+  if (cfg.type == "file") {
+    cfg.params["negociate"] = "no"; // File cannot negociate features.
+    retval = true;
+  }
+  else
+    retval = false;
+  return (retval);
 }
 
 /**
