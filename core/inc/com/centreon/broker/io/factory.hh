@@ -41,7 +41,7 @@ namespace             io {
     factory&          operator=(factory const& f);
     virtual factory*  clone() const = 0;
     virtual bool      has_endpoint(
-                        com::centreon::broker::config::endpoint const& cfg,
+                        com::centreon::broker::config::endpoint& cfg,
                         bool is_input,
                         bool is_output) const = 0;
     virtual endpoint* new_endpoint(

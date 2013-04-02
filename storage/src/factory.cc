@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -104,7 +104,7 @@ io::factory* factory::clone() const {
  *  @return true if the configuration matches the storage layer.
  */
 bool factory::has_endpoint(
-                config::endpoint const& cfg, 
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   (void)is_input;

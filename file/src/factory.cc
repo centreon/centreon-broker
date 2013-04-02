@@ -79,7 +79,7 @@ io::factory* factory::clone() const {
  *  @return true if configuration matches the file layer.
  */
 bool factory::has_endpoint(
-                config::endpoint const& cfg,
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
