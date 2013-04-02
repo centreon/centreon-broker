@@ -84,7 +84,14 @@ bool factory::has_endpoint(
                 bool is_output) const {
   (void)is_input;
   (void)is_output;
-  return (cfg.type == "file");
+  bool retval;
+  if (cfg.type == "file") {
+    cfg.params["negociate"] = "no"; // File cannot negociate features.
+    retval = true;
+  }
+  else
+    retval = false;
+  return (retval);
 }
 
 /**
@@ -127,9 +134,6 @@ io::endpoint* factory::new_endpoint(
     else
       max_size = 0;
   }
-
-  // File cannot negociate features.
-  cfg.params["negociate"] = "no";
 
   // Generate opener.
   std::auto_ptr<opener> openr(new opener(is_input, is_output));

@@ -108,7 +108,16 @@ bool factory::has_endpoint(
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
-  return (is_output && (cfg.type == "storage"));
+  bool is_storage(!cfg.type.compare("storage", Qt::CaseInsensitive)
+                  && is_output);
+  if (is_storage) {
+    // Transaction timeout.
+    if (cfg.params.find("read_timeout") == cfg.params.end()) {
+      cfg.params["read_timeout"] = "2";
+      cfg.read_timeout = 2;
+    }
+  }
+  return (is_storage);
 }
 
 /**
@@ -154,10 +163,6 @@ io::endpoint* factory::new_endpoint(
     else
       queries_per_transaction = 1000;
   }
-
-  // Transaction timeout.
-  if (cfg.params.find("read_timeout") == cfg.params.end())
-    cfg.read_timeout = 2;
 
   // Rebuild check interval.
   unsigned int rebuild_check_interval(0);
