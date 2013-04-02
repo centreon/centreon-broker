@@ -5,3 +5,4 @@ Developer
 .. toctree::
 
    bbdo
+   mapping

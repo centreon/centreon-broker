@@ -13,8 +13,25 @@ Introduction
 BBDO stands for Broker Binary Data Object. BBDO is designed to transfer
 "data packets" from a node to another. These "data packets" are most of
 the time monitoring information provided by the monitoring engine (eg.
-Centreon Engine or Nagios). It uses raw binary values which allows it to
-consume very few memory.
+Centreon Engine or Nagios). It uses mostly raw binary values which
+allows it to consume very few memory.
+
+*****
+Types
+*****
+
+As a binary protocol, BBDO uses data types to serialize data. They are
+written in a Big Endian format and described in the following table.
+
+============= =========================== ============
+Type          Representation              Size (bytes)
+============= =========================== ============
+integer       binary                      4
+short integer binary                      2
+long integer  binary                      8
+string        nul-terminated UTF-8 string variable
+real          nul-terminated UTF-8 string variable
+============= =========================== ============
 
 *************
 Packet format
@@ -24,11 +41,124 @@ The packets format of Centreon Broker introduce only 8 bytes of header
 to transmit each monitoring event (usually about 100-200 bytes each).
 Fields are provided in the big endian format.
 
-========= ============ =====================================
-Field     Size (bytes) Description
-========= ============ =====================================
-checksum  2            CRC-16-CCITT of size and id.
-size      2            Size of the packet, including header.
-id        4            ID of the event.
-data      size         Payload data.
-========= ============ =====================================
+========= ====================== =====================================
+Field     Type                   Description
+========= ====================== =====================================
+checksum  unsigned short integer CRC-16-CCITT of size and id.
+size      unsigned short integer Size of the packet, including header.
+id        unsigned integer       ID of the event.
+data                             Payload data.
+========= ====================== =====================================
+
+Packet ID
+=========
+
+As seen in the previous paragraph, every packet holds an ID that express
+by itself how data is encoded. This ID can be splitted in two 16-bits
+components. The 16 most significant bits are the event category and the
+16 least significant bits the event type.
+
+The event categories serialize events properties one after the other, so
+order is very important to not loose track when unserializing events.
+
+****************
+Event categories
+****************
+
+The current available categories are described in the table below.
+
+=========== ===================== ===== ================================
+Category    API macro             Value Description
+=========== ===================== ===== ================================
+NEB         BBDO_NEB_TYPE         1     Classical monitoring events
+                                        (hosts, services, notifications,
+                                        event handlers, plugin
+                                        execution, ...).
+Storage     BBDO_STORAGE_TYPE     2     Category related to RRD graph
+                                        building.
+Correlation BBDO_CORRELATION_TYPE 3     Status correlation.
+Internal    BBDO_INTERNAL_TYPE    65535 Reserved for internal protocol
+                                        use.
+=========== ===================== ===== ================================
+
+NEB
+===
+
+The table below lists event types available in the NEB category. They
+have to be mixed with the BBDO_NEB_TYPE category to get a BBDO event ID.
+
+====================== =====
+Type                   Value
+====================== =====
+Acknowledgement        1
+Comment                2
+Custom variable        3
+Custom variable status 4
+Downtime               5
+Event handler          6
+Flapping status        7
+Host                   8
+Host check             9
+Host dependency        10
+Host group             11
+Host group member      12
+Host parent            13
+Host status            14
+Instance               15
+Instance status        16
+Log entry              17
+Module                 18
+Notification           19
+Service                20
+Service check          21
+Service dependency     22
+Service group          23
+Service group member   24
+Service status         25
+====================== =====
+
+Storage
+=======
+
+The table below lists event types available in the Storage category.
+They have to be mixed with the BBDO_STORAGE_TYPE category to get a BBDO
+event ID.
+
+============ =====
+Type         Value
+============ =====
+metric       1
+rebuild      2
+remove_graph 3
+status       4
+============ =====
+
+Correlation
+===========
+
+The table below lists event types available in the Correlation category.
+They have to be mixed with the BBDO_CORRELATION_TYPE category to get a
+BBDO event ID.
+
+============= =====
+Type          Value
+============= =====
+engine_state  1
+host_state    2
+issue         3
+issue_parent  4
+service_state 5
+============= =====
+
+Internal
+========
+
+The table below lists event types available in the Internal category.
+They have to be mixed with the BBDO_INTERNAL_TYPE category to get a BBDO
+event ID.
+
+================ =====
+Type             Value
+================ =====
+version_response 1
+================ =====
