@@ -80,7 +80,7 @@ io::factory* factory::clone() const {
  *  @return true if the configuration matches the compression layer.
  */
 bool factory::has_endpoint(
-                config::endpoint const& cfg,
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
@@ -102,7 +102,7 @@ bool factory::has_endpoint(
  *          layer.
  */
 bool factory::has_not_endpoint(
-                config::endpoint const& cfg,
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   QMap<QString, QString>::const_iterator

@@ -70,7 +70,7 @@ factory& factory::operator=(factory const& f) {
  *  @return true if configuration do not have endpoint.
  */
 bool factory::has_not_endpoint(
-                config::endpoint const& cfg,
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   return (!has_endpoint(cfg, is_input, is_output));

@@ -81,7 +81,7 @@ io::factory* factory::clone() const {
  *  @return true if the configuration has this protocol.
  */
 bool factory::has_endpoint(
-                config::endpoint const& cfg,
+                config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
@@ -157,7 +157,7 @@ io::endpoint* factory::new_endpoint(
  *  @param[in] is_output Output flag.
  */
 QString factory::_extensions(
-                   config::endpoint const& cfg,
+                   config::endpoint& cfg,
                    bool is_input,
                    bool is_output) const {
   QString extensions;

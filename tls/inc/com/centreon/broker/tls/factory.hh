@@ -40,11 +40,11 @@ namespace          tls {
     factory&       operator=(factory const& right);
     io::factory*   clone() const;
     bool           has_endpoint(
-                     config::endpoint const& cfg,
+                     config::endpoint& cfg,
                      bool is_input,
                      bool is_output) const;
     bool           has_not_endpoint(
-                     config::endpoint const& cfg,
+                     config::endpoint& cfg,
                      bool is_input,
                      bool is_output) const;
     io::endpoint*  new_endpoint(
