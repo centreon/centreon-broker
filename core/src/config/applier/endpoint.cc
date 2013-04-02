@@ -112,6 +112,28 @@ void endpoint::apply(
   logging::debug(logging::high) << "endpoint applier: " << inputs.size()
     << " inputs and " << outputs.size() << " outputs to apply";
 
+  // Copy endpoint configurations and apply eventual modifications.
+  QList<config::endpoint> tmp_inputs(inputs);
+  QList<config::endpoint> tmp_outputs(outputs);
+  for (QMap<QString, io::protocols::protocol>::const_iterator
+         it1(io::protocols::instance().begin()),
+         end1(io::protocols::instance().end());
+       it1 != end1;
+       ++it1) {
+    for (QList<config::endpoint>::iterator
+           it2(tmp_inputs.begin()),
+           end2(tmp_inputs.end());
+         it2 != end2;
+         ++it2)
+      it1->endpntfactry->has_endpoint(*it2, true, false);
+    for (QList<config::endpoint>::iterator
+           it3(tmp_outputs.begin()),
+           end3(tmp_outputs.end());
+         it3 != end3;
+         ++it3)
+      it1->endpntfactry->has_endpoint(*it3, false, true);
+  }
+
   bool temporary_has_change(false);
   std::auto_ptr<io::endpoint> endp_temporary;
   {
@@ -131,7 +153,7 @@ void endpoint::apply(
     QMutexLocker lock(&_inputsm);
     _diff_endpoints(
       _inputs,
-      inputs,
+      tmp_inputs,
       temporary_has_change,
       in_to_create);
   }
@@ -142,7 +164,7 @@ void endpoint::apply(
     QMutexLocker lock(&_outputsm);
     _diff_endpoints(
       _outputs,
-      outputs,
+      tmp_outputs,
       temporary_has_change,
       out_to_create);
   }
