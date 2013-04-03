@@ -16,6 +16,8 @@ the time monitoring information provided by the monitoring engine (eg.
 Centreon Engine or Nagios). It uses mostly raw binary values which
 allows it to consume very few memory.
 
+.. _dev_bbdo_types:
+
 *****
 Types
 *****
@@ -32,6 +34,8 @@ long integer  binary                      8
 string        nul-terminated UTF-8 string variable
 real          nul-terminated UTF-8 string variable
 ============= =========================== ============
+
+.. _dev_bbdo_packet_format:
 
 *************
 Packet format
@@ -60,6 +64,8 @@ components. The 16 most significant bits are the event category and the
 
 The event categories serialize events properties one after the other, so
 order is very important to not loose track when unserializing events.
+
+.. _dev_bbdo_event_categories:
 
 ****************
 Event categories
@@ -162,3 +168,15 @@ Type             Value
 ================ =====
 version_response 1
 ================ =====
+
+*******************
+Event serialization
+*******************
+
+Most events listed in each
+:ref:`event category <dev_bbdo_event_categories>` have a mapping used to
+serialize their content. Indeed their content is directly serialized in
+the :ref:`packet payload data <dev_bbdo_packet_format>`, one field after
+the other in the order described in the
+:ref:`mapping tables <dev_mapping>`. They are encoded following rules
+described in the :ref:`types paragraph <dev_bbdo_types>`.

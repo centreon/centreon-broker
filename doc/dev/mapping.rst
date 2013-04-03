@@ -1,3 +1,5 @@
+.. _dev_mapping:
+
 #############################
 Centreon Broker Event Mapping
 #############################
@@ -13,592 +15,776 @@ NEB
 Acknowledgement
 ===============
 
-Property Type Description
-acknowledgement_type
-author
-comment
-deletion_time
-entry_time
-host_id
-instance_id
-is_sticky
-notify_contacts
-persistent_comment
-service_id
-state
+==================== ================ ==================================
+Property             Type             Description
+==================== ================ ==================================
+acknowledgement_type short integer    Host acknowledgement when 0,
+                                      service acknowledgement when 1.
+author               string           Acknowledgement author.
+comment              string           Comment associated to the
+                                      acknowledgement.
+deletion_time        time             Time at which the acknowledgement
+                                      was deleted. If 0, it was not
+                                      deleted.
+entry_time           time             Time at which the acknowledgement
+                                      was created.
+host_id              unsigned integer Host ID.
+instance_id          unsigned integer Instance ID.
+is_sticky            boolean          Sticky flag.
+notify_contacts      boolean          Notification flag.
+persistent_comment   boolean          True if the comment is persistent.
+service_id           unsigned integer Service ID. 0 for a host
+                                      acknowledgement.
+state                short integer    Host / service state.
+==================== ================ ==================================
 
 Comment
 =======
 
-Property Type Description
-author
-comment_type
-deletion_time
-entry_time
-entry_type
-expire_time
-expires
-host_id
-instance_id
-internal_id
-persistent
-service_id
-source
-data
+============= ================ =========================================
+Property      Type             Description
+============= ================ =========================================
+author        string           Comment author.
+comment_type  short integer    1 for a host comment, 2 for a service
+                               comment.
+deletion_time time             Time at which the comment was deleted. 0
+                               if the comment was not deleted (yet).
+entry_time    time             Time at which the comment was created.
+entry_type    short integer    1 for a user comment (through external
+                               command), 2 for a downtime comment, 3 for
+                               a flapping comment and 4 for an
+                               acknowledgement comment.
+expire_time   time             Comment expiration time. 0 if no
+                               expiration time.
+expires       bool             True if the comment expires.
+host_id       unsigned integer Host ID.
+instance_id   unsigned integer Instance ID.
+internal_id   unsigned integer Internal monitoring engine ID of the
+                               comment.
+persistent    boolean          True if the comment is persistent.
+service_id    unsigned integer Service ID. 0 if this is a host comment.
+source        short integer    0 when the comment originates from the
+                               monitoring engine (internal) or 1 when
+                               the comment comes from another source
+                               (external).
+data          string           Comment data (text).
+============= ================ =========================================
 
 Custom variable
 ===============
 
-Property Type Description
-host_id
-modified
-name
-service_id
-update_time
-var_type
-value
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+host_id     unsigned integer Host ID.
+modified    boolean          True if the variable was modified.
+name        string           Variable name.
+service_id  unsigned integer Service ID. 0 if this is a host custom
+                             variable.
+update_time time             Last time at which the variable was
+                             updated.
+var_type    short integer    0 for a host custom variable, 1 for a
+                             service custom variable.
+value       string           Variable value.
+=========== ================ ===========================================
 
 Custom variable status
 ======================
 
-Property Type Description
-host_id
-modified
-name
-service_id
-update_time
-value
+Custom variable status events are generated when a custom variable needs
+to be updated.
+
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+host_id     unsigned integer Host ID.
+modified    boolean          True if the variable was modified.
+name        string           Variable name.
+service_id  unsigned integer Service ID. 0 if this is a host custom
+                             variable.
+update_time time             Last time at which the variable was
+                             updated.
+value       string           Variable value.
+=========== ================ ===========================================
 
 Downtime
 ========
 
-Property Type Description
-actual_end_time
-actual_start_time
-author
-downtime_type
-deletion_time
-duration
-end_time
-entry_time
-fixed
-host_id
-instance_id
-internal_id
-service_id
-start_time
-triggered_by
-was_cancelled
-was_started
-comment
+================= ================ =====================================
+Property          Type             Description
+================= ================ =====================================
+actual_end_time   time             Actual time at which the downtime
+                                   ended.
+actual_start_time time             Actual time at which the downtime
+                                   started.
+author            string           Downtime creator.
+downtime_type     short integer    1 for a service downtime, 2 for a
+                                   host downtime.
+deletion_time     time             Time at which the downtime was
+                                   deleted.
+duration          time             Downtime duration.
+end_time          time             Scheduled downtime end time.
+entry_time        time             Time at which the downtime was
+                                   created.
+fixed             boolean          True if the downtime is fixed, false
+                                   if it is flexible.
+host_id           unsigned integer Host ID.
+instance_id       unsigned integer Instance ID.
+internal_id       unsigned integer Internal monitoring engine ID.
+service_id        unsigned integer Service ID. 0 if this is a host
+                                   downtime.
+start_time        time             Scheduled downtime start time.
+triggered_by      unsigned integer Internal ID of the downtime that
+                                   triggered this downtime.
+was_cancelled     boolean          True if the downtime was cancelled.
+was_started       boolean          True if the downtime has been
+                                   started.
+comment           string           Downtime comment.
+================= ================ =====================================
 
 Event handler
 =============
 
-Property Type Description
-early_timeout
-end_time
-execution_time
-handler_type
-host_id
-return_code
-service_id
-start_time
-state
-state_type
-timeout
-command_args
-command_line
-output
+============== ================ ========================================
+Property       Type             Description
+============== ================ ========================================
+early_timeout  boolean          True if the event handler timed out.
+end_time       time             Time at which the event handler
+                                execution ended.
+execution_time real             Execution time in seconds.
+handler_type   short integer    0 for host-specific event handler, 1 for
+                                service-specific event handler, 2 for
+                                global host event handler and 3 for
+                                global service event handler.
+host_id        unsigned integer Host ID.
+return_code    short integer    Value returned by the event handler.
+service_id     unsigned integer Service ID. 0 if this is a host event
+                                handler.
+start_time     time             Time at which the event handler started.
+state          short integer    Host / service state.
+state_type     short integer    0 for SOFT, 1 for HARD.
+timeout        short integer    Event handler timeout in seconds.
+command_args   string           Event handler arguments.
+command_line   string           Event handler command line.
+output         string           Output returned by the event handler.
+============== ================ ========================================
 
 Flapping status
 ===============
 
-Property Type Description
-comment_time
-event_time
-event_type
-flapping_type
-high_threshold
-host_id
-internal_comment_id
-low_threshold
-percent_state_change
-reason_type
-service_id
+==================== ================ ==================================
+Property             Type             Description
+==================== ================ ==================================
+comment_time         time
+event_time           time
+event_type           integer
+flapping_type        short integer
+high_threshold       real             High flapping threshold.
+host_id              unsigned integer Host ID.
+internal_comment_id  unsigned integer
+low_threshold        real             Low flapping threshold.
+percent_state_change real
+reason_type          short integer
+service_id           unsigned integer Service ID. 0 if this is a host
+                                      flapping entry.
+==================== ================ ==================================
 
 Host
 ====
 
-Property Type Description
-acknowledgement_type
-action_url
-active_checks_enabled
-address
-alias
-check_freshness
-check_interval
-check_period
-check_type
-current_check_attempt
-current_notification_number
-current_state
-default_active_checks_enabled
-default_event_handler_enabled
-default_failure_prediction
-default_flap_detection_enabled
-default_notifications_enabled
-default_passive_checks_enabled
-default_process_perf_data
-display_name
-enabled
-event_handler
-event_handler_enabled
-execution_time
-failure_prediction_enabled
-first_notification_delay
-flap_detection_enabled
-flap_detection_on_down
-flap_detection_on_unreachable
-flap_detection_on_up
-freshness_threshold
-has_been_checked
-high_flap_threshold
-host_name
-icon_image
-icon_image_alt
-host_id
-instance_id
-is_flapping
-last_check
-last_hard_state
-last_hard_state_change
-last_notification
-last_state_change
-last_time_down
-last_time_unreachable
-last_time_up
-last_update
-latency
-low_flap_threshold
-max_check_attempts
-modified_attributes
-next_check
-next_notification
-no_more_notifications
-notes
-notes_url
-notification_interval
-notification_period
-notifications_enabled
-notify_on_down
-notify_on_downtime
-notify_on_flapping
-notify_on_recovery
-notify_on_unreachable
-obsess_over
-passive_checks_enabled
-percent_state_change
-problem_has_been_acknowledged
-process_performance_data
-retain_nonstatus_information
-retain_status_information
-retry_interval
-scheduled_downtime_depth
-should_be_scheduled
-stalk_on_down
-stalk_on_unreachable
-stalk_on_up
-state_type
-statusmap_image
-check_command
-output
-perf_data
+============================== ================ ========================
+Property                       Type             Description
+============================== ================ ========================
+acknowledgement_type           short integer
+action_url                     string
+active_checks_enabled          boolean
+address                        string
+alias                          string
+check_freshness                boolean
+check_interval                 real
+check_period                   string
+check_type                     short integer
+current_check_attempt          short integer
+current_notification_number    short integer
+current_state                  short integer
+default_active_checks_enabled  boolean
+default_event_handler_enabled  boolean
+default_failure_prediction     boolean
+default_flap_detection_enabled boolean
+default_notifications_enabled  boolean
+default_passive_checks_enabled boolean
+default_process_perf_data      boolean
+display_name                   string
+enabled                        boolean
+event_handler                  string
+event_handler_enabled          boolean
+execution_time                 real
+failure_prediction_enabled     boolean
+first_notification_delay       real
+flap_detection_enabled         boolean
+flap_detection_on_down         boolean
+flap_detection_on_unreachable  boolean
+flap_detection_on_up           boolean
+freshness_threshold            real
+has_been_checked               boolean
+high_flap_threshold            real
+host_name                      string
+icon_image                     string
+icon_image_alt                 string
+host_id                        unsigned integer
+instance_id                    unsigned integer
+is_flapping                    boolean
+last_check                     time
+last_hard_state                short integer
+last_hard_state_change         time
+last_notification              time
+last_state_change              time
+last_time_down                 time
+last_time_unreachable          time
+last_time_up                   time
+last_update                    time
+latency                        real
+low_flap_threshold             real
+max_check_attempts             short integer
+modified_attributes            unsigned integer
+next_check                     time
+next_notification              time
+no_more_notifications          boolean
+notes                          string
+notes_url                      string
+notification_interval          real
+notification_period            string
+notifications_enabled          boolean
+notify_on_down                 boolean
+notify_on_downtime             boolean
+notify_on_flapping             boolean
+notify_on_recovery             boolean
+notify_on_unreachable          boolean
+obsess_over                    boolean
+passive_checks_enabled         boolean
+percent_state_change           real
+problem_has_been_acknowledged  boolean
+process_performance_data       boolean
+retain_nonstatus_information   boolean
+retain_status_information      boolean
+retry_interval                 real
+scheduled_downtime_depth       short integer
+should_be_scheduled            boolean
+stalk_on_down                  boolean
+stalk_on_unreachable           boolean
+stalk_on_up                    boolean
+state_type                     short integer
+statusmap_image                string
+check_command                  string
+output                         string
+perf_data                      string
+============================== ================ ========================
 
 Host check
 ==========
 
-Property Type Description
-active_checks_enabled
-check_type
-host_id
-next_check
-command_line
+===================== ================ =================================
+Property              Type             Description
+===================== ================ =================================
+active_checks_enabled boolean          True if active checks are enabled
+                                       on the host.
+check_type            short integer
+host_id               unsigned integer Host ID.
+next_check            time             Time at which the next check is
+                                       scheduled.
+command_line          string           Check command line.
+===================== ================ =================================
 
 Host dependency
 ===============
 
-Property Type Description
-dependency_period
-dependent_host_id
-enabled
-execution_failure_options
-inherits_parent
-notification_failure_options
-host_id
+============================ ================ ==========================
+Property                     Type             Description
+============================ ================ ==========================
+dependency_period            string
+dependent_host_id            unsigned integer
+enabled                      boolean
+execution_failure_options    string
+inherits_parent              boolean
+notification_failure_options string
+host_id                      unsigned integer
+============================ ================ ==========================
 
 Host group
 ==========
 
-Property Type Description
-action_url
-alias
-enabled
-instance_id
-name
-notes
-notes_url
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+action_url  string           Action URL.
+alias       string           Group alias.
+enabled     boolean          True if the group is enabled, false if it
+                             is not (deletion).
+instance_id unsigned integer Instance ID.
+name        string           Group name.
+notes       string           Notes.
+notes_url   string           Notes URL.
+=========== ================ ===========================================
 
 Host group member
 =================
 
-Property Type Description
-enabled
-group
-instance_id
-host_id
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+enabled     boolean          True if the membership is enabled, false if
+                             it is not (deletion).
+group       string           Group name.
+instance_id unsigned integer Instance ID.
+host_id     unsigned integer Host ID.
+=========== ================ ===========================================
 
 Host parent
 ===========
 
-Property Type Description
-enabled
-host_id
-parent_id
+========= ================ =============================================
+Property  Type             Description
+========= ================ =============================================
+enabled   boolean          True if parenting is enabled, false if it is
+                           not (deletion).
+host_id   unsigned integer Child host ID.
+parent_id unsigned integer Parent host ID.
+========= ================ =============================================
 
 Host status
 ===========
 
-Property Type Description
-acknowledgement_type
-active_checks_enabled
-check_interval
-check_period
-check_type
-current_check_attempt
-current_notification_number
-current_state
-enabled
-event_handler
-event_handler_enabled
-execution_time
-failure_prediction_enabled
-flap_detection_enabled
-has_been_checked
-host_id
-is_flapping
-last_check
-last_hard_state
-last_hard_state_change
-last_notification
-last_state_change
-last_time_down
-last_time_unreachable
-last_time_up
-last_update
-latency
-max_check_attempts
-modified_attributes
-next_check
-next_notification
-no_more_notifications
-notifications_enabled
-obsess_over
-passive_checks_enabled
-percent_state_change
-problem_has_been_acknowledged
-process_performance_data
-retry_interval
-scheduled_downtime_depth
-should_be_scheduled
-state_type
-check_command
-output
-perf_data
+============================= ================ =========================
+Property                      Type             Description
+============================= ================ =========================
+acknowledgement_type          short integer
+active_checks_enabled         boolean
+check_interval                real
+check_period                  string
+check_type                    short integer
+current_check_attempt         short integer
+current_notification_number   short integer
+current_state                 short integer
+enabled                       boolean
+event_handler                 string
+event_handler_enabled         boolean
+execution_time                real
+failure_prediction_enabled    boolean
+flap_detection_enabled        boolean
+has_been_checked              boolean
+host_id                       unsigned integer
+is_flapping                   boolean
+last_check                    time
+last_hard_state               short integer
+last_hard_state_change        time
+last_notification             time
+last_state_change             time
+last_time_down                time
+last_time_unreachable         time
+last_time_up                  time
+last_update                   time
+latency                       real
+max_check_attempts            short integer
+modified_attributes           unsigned integer
+next_check                    time
+next_notification             time
+no_more_notifications         boolean
+notifications_enabled         boolean
+obsess_over                   boolean
+passive_checks_enabled        boolean
+percent_state_change          real
+problem_has_been_acknowledged boolean
+process_performance_data      boolean
+retry_interval                real
+scheduled_downtime_depth      short integer
+should_be_scheduled           boolean
+state_type                    short integer
+check_command                 string
+output                        string
+perf_data                     string
+============================= ================ =========================
 
 Instance
 ========
 
-Property Type Description
-engine
-id
-name
-is_running
-pid
-program_end
-program_start
-version
+============= ================ =========================================
+Property      Type             Description
+============= ================ =========================================
+engine        string           Name of the monitoring engine used on
+                               this instance.
+id            unsigned integer Instance ID.
+name          string           Instance name.
+is_running    boolean          Whether or not this instance is running.
+pid           unsigned integer Monitoring engine PID.
+program_end   time             Time at which the instance shut down.
+program_start time             Time at which the instance started.
+version       string           Version of the monitoring engine used on
+                               this instance.
+============= ================ =========================================
 
 Instance status
 ===============
 
-Property Type Description
-active_host_checks_enabled
-active_service_checks_enabled
-address
-check_hosts_freshness
-check_services_freshness
-daemon_mode
-description
-event_handler_enabled
-failure_prediction_enabled
-flap_detection_enabled
-id
-last_alive
-last_command_check
-last_log_rotation
-modified_host_attributes
-modified_service_attributes
-notifications
-obsess_over_hosts
-obsess_over_services
-passive_host_checks_enabled
-passive_service_checks_enabled
-process_performance_data
-global_host_event_handler
-global_service_event_handler
+============================== ================ ========================
+Property                       Type             Description
+============================== ================ ========================
+active_host_checks_enabled     boolean          Whether or not active
+                                                host checks are globally
+                                                enabled.
+active_service_checks_enabled  boolean          Whether or not active
+                                                service checks are
+                                                globally enabled.
+address                        string           Instance address.
+check_hosts_freshness          boolean          Whether or not hosts
+                                                freshness checking is
+                                                globally enabled.
+check_services_freshness       boolean          Whether or not services
+                                                freshness checking is
+                                                globally enabled.
+daemon_mode                    boolean          True if the monitoring
+                                                engine runs daemonized.
+description                    string
+event_handler_enabled          boolean          Whether or not event
+                                                handlers are globally
+                                                enabled.
+failure_prediction_enabled     boolean          Whether or not failure
+                                                prediction is globally
+                                                enabled.
+flap_detection_enabled         boolean          Whether or not flap
+                                                detection is globally
+                                                enabled.
+id                             unsigned integer Instance ID.
+last_alive                     time             Last time the instance
+                                                was known alive.
+last_command_check             time             Last time a check
+                                                command was executed.
+last_log_rotation              time             Last time logs were
+                                                rotated.
+modified_host_attributes       integer          Modified host
+                                                attributes.
+modified_service_attributes    integer          Modified service
+                                                attributes.
+notifications_enabled          boolean          Whether or not
+                                                notifications are
+                                                globally enabled.
+obsess_over_hosts              boolean          Whether or not the
+                                                monitoring engine should
+                                                obsess over hosts.
+obsess_over_services           boolean          Whether or not the
+                                                monitoring engine should
+                                                obsess over services.
+passive_host_checks_enabled    boolean          Whether or not passive
+                                                host checks are globally
+                                                enabled.
+passive_service_checks_enabled boolean          Whether or not passive
+                                                service checks are
+                                                globally enabled.
+process_performance_data       boolean          Whether or not
+                                                performance data
+                                                processing is globally
+                                                enabled.
+global_host_event_handler      string           Global host event
+                                                handler.
+global_service_event_handler   string           Global service event
+                                                handler.
+============================== ================ ========================
 
 Log entry
 =========
 
-Property Type Description
-c_time
-host_id
-host_name
-instance_name
-issue_start_time
-log_type
-msg_type
-notification_cmd
-notification_contact
-retry
-service_description
-service_id
-status
-output
+==================== ================ ==================================
+Property             Type             Description
+==================== ================ ==================================
+c_time               time             Log time.
+host_id              unsigned integer Host ID. 0 if log entry does not
+                                      refer to a specific host or
+                                      service.
+host_name            string           Host name. Can be empty if log
+                                      entry does not refer to a specific
+                                      host or service.
+instance_name        string           Instance name.
+issue_start_time     time             Issue start time if correlation is
+                                      enabled and log entry refers to an
+                                      issue.
+log_type             short integer    0 for SOFT, 1 for HARD.
+msg_type             short integer    0 for SERVICE ALERT, 1 for HOST
+                                      ALERT, 2 for SERVICE NOTIFICATION,
+                                      3 for HOST NOTIFICATION, 4 for
+                                      Warning, 5 for EXTERNAL COMMAND,
+                                      6 for CURRENT SERVICE STATE, 7 for
+                                      CURRENT HOST STATE, 8 for INITIAL
+                                      SERVICE STATE, 9 for INITIAL HOST
+                                      STATE, 10 for
+                                      ACKNOWLEDGE_SVC_PROBLEM external
+                                      command, 11 for
+                                      ACKNOWLEDGE_HOST_PROBLEM external
+                                      command.
+notification_cmd     string           Notification command.
+notification_contact string           Notification contact.
+retry                integer          Current check attempt.
+service_description  string           Service description. Empty if log
+                                      entry does not refer to a specific
+                                      service.
+service_id           unsigned integer Service ID. 0 if log entry does
+                                      not refer to a specific service.
+status               short integer    Host / service status.
+output               string           Output.
+==================== ================ ==================================
 
 Module
 ======
 
-Property Type Description
-args
-enabled
-filename
-instance_id
-loaded
-should_be_loaded
+Module events are generated when Centreon Broker modules get loaded or
+unloaded.
+
+================ ================ ======================================
+Property         Type             Description
+================ ================ ======================================
+args             string           Module arguments.
+enabled          boolean          Whether or not this module is enabled.
+filename         string           Path to the module file.
+instance_id      unsigned integer Instance ID.
+loaded           boolean          Whether or not this module is loaded.
+should_be_loaded boolean          Whether or not this module should be
+                                  (should have been) loaded.
+================ ================ ======================================
 
 Notification
 ============
 
-Property Type Description
-contacts_notified
-end_time
-escalated
-host_id
-notification_type
-reason_type
-service_id
-start_time
-state
-ack_author
-ack_data
-command_name
-contact_name
-output
+================= ================ =====================================
+Property          Type             Description
+================= ================ =====================================
+contacts_notified boolean
+end_time          time
+escalated         boolean
+host_id           unsigned integer
+notification_type integer
+reason_type       integer
+service_id        unsigned integer
+start_time        time
+state             integer
+ack_author        string
+ack_data          string
+command_name      string
+contact_name      string
+output            string
+================= ================ =====================================
 
 Service
 =======
 
-Property Type Description
-acknowledgement_type
-action_url
-active_checks_enabled
-check_freshness
-check_interval
-check_period
-check_type
-current_check_attempt
-current_notification_number
-current_state
-default_active_checks_enabled
-default_event_handler_enabled
-default_failure_prediction
-default_flap_detection_enabled
-default_notifications_enabled
-default_passive_checks_enabled
-default_process_perf_data
-display_name
-enabled
-event_handler
-event_handler_enabled
-execution_time
-failure_prediction_enabled
-failure_prediction_options
-first_notification_delay
-flap_detection_enabled
-flap_detection_on_critical
-flap_detection_on_ok
-flap_detection_on_unknown
-flap_detection_on_warning
-freshness_threshold
-has_been_checked
-high_flap_threshold
-host_id
-host_name
-icon_image
-icon_image_alt
-service_id
-is_flapping
-is_volatile
-last_check
-last_hard_state
-last_hard_state_change
-last_notification
-last_state_change
-last_time_critical
-last_time_ok
-last_time_unknown
-last_time_warning
-last_update
-latency
-low_flap_threshold
-max_check_attempts
-modified_attributes
-next_check
-next_notification
-no_more_notifications
-notes
-notes_url
-notification_interval
-notification_period
-notifications_enabled
-notify_on_critical
-notify_on_downtime
-notify_on_flapping
-notify_on_recovery
-notify_on_unknown
-notify_on_warning
-obsess_over
-passive_checks_enabled
-percent_state_change
-problem_has_been_acknowledged
-process_performance_data
-retain_nonstatus_information
-retain_status_information
-retry_interval
-scheduled_downtime_depth
-service_description
-should_be_scheduled
-stalk_on_critical
-stalk_on_ok
-stalk_on_unknown
-stalk_on_warning
-state_type
-check_command
-output
-perf_data
+============================== ================ ========================
+Property                       Type             Description
+============================== ================ ========================
+acknowledgement_type           short integer
+action_url                     string
+active_checks_enabled          boolean
+check_freshness                boolean
+check_interval                 real
+check_period                   string
+check_type                     short integer
+current_check_attempt          short integer
+current_notification_number    short integer
+current_state                  short integer
+default_active_checks_enabled  boolean
+default_event_handler_enabled  boolean
+default_failure_prediction     boolean
+default_flap_detection_enabled boolean
+default_notifications_enabled  boolean
+default_passive_checks_enabled boolean
+default_process_perf_data      boolean
+display_name                   string
+enabled                        boolean
+event_handler                  string
+event_handler_enabled          boolean
+execution_time                 real
+failure_prediction_enabled     boolean
+failure_prediction_options     string
+first_notification_delay       real
+flap_detection_enabled         boolean
+flap_detection_on_critical     boolean
+flap_detection_on_ok           boolean
+flap_detection_on_unknown      boolean
+flap_detection_on_warning      boolean
+freshness_threshold            real
+has_been_checked               boolean
+high_flap_threshold            real
+host_id                        unsigned integer
+host_name                      string
+icon_image                     string
+icon_image_alt                 string
+service_id                     unsigned integer
+is_flapping                    boolean
+is_volatile                    boolean
+last_check                     time
+last_hard_state                short integer
+last_hard_state_change         time
+last_notification              time
+last_state_change              time
+last_time_critical             time
+last_time_ok                   time
+last_time_unknown              time
+last_time_warning              time
+last_update                    time
+latency                        real
+low_flap_threshold             real
+max_check_attempts             short integer
+modified_attributes            unsigned integer
+next_check                     time
+next_notification              time
+no_more_notifications          boolean
+notes                          string
+notes_url                      string
+notification_interval          real
+notification_period            string
+notifications_enabled          boolean
+notify_on_critical             boolean
+notify_on_downtime             boolean
+notify_on_flapping             boolean
+notify_on_recovery             boolean
+notify_on_unknown              boolean
+notify_on_warning              boolean
+obsess_over                    boolean
+passive_checks_enabled         boolean
+percent_state_change           real
+problem_has_been_acknowledged  boolean
+process_performance_data       boolean
+retain_nonstatus_information   boolean
+retain_status_information      boolean
+retry_interval                 real
+scheduled_downtime_depth       short integer
+service_description            string
+should_be_scheduled            boolean
+stalk_on_critical              boolean
+stalk_on_ok                    boolean
+stalk_on_unknown               boolean
+stalk_on_warning               boolean
+state_type                     short integer
+check_command                  string
+output                         string
+perf_data                      string
+============================== ================ ========================
 
 Service check
 =============
 
-Property Type Description
-active_checks_enabled
-check_type
-host_id
-next_check
-service_id
-command_line
+===================== ================ =================================
+Property              Type             Description
+===================== ================ =================================
+active_checks_enabled boolean          True if active checks are enabled
+                                       on the service.
+check_type            short
+host_id               unsigned integer Host ID.
+next_check            time             Time at which the next check is
+                                       scheduled.
+service_id            unsigned integer Service ID.
+command_line          string           Check command line.
+===================== ================ =================================
 
 Service dependency
 ==================
 
-Property Type Description
-dependency_period
-dependent_host_id
-dependent_service_id
-enabled
-execution_failure_options
-host_id
-inherits_parent
-notification_failure_options
-service_id
+============================ ================ ==========================
+Property                     Type             Description
+============================ ================ ==========================
+dependency_period            string
+dependent_host_id            unsigned integer
+dependent_service_id         unsigned integer
+enabled                      boolean
+execution_failure_options    string
+host_id                      unsigned integer
+inherits_parent              boolean
+notification_failure_options string
+service_id                   unsigned integer
+============================ ================ ==========================
 
 Service group
 =============
 
-Property Type Description
-action_url
-alias
-enabled
-instance_id
-name
-notes
-notes_url
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+action_url  string           Action URL.
+alias       string           Group alias.
+enabled     enabled          True if the group is enable, false if it is
+                             not (deletion).
+instance_id unsigned integer Instance ID.
+name        string           Group name.
+notes       string           Notes.
+notes_url   string           Notes URL.
+=========== ================ ===========================================
 
 Service group member
 ====================
 
-Property Type Description
-enabled
-group
-host_id
-instance_id
-service_id
+=========== ================ ===========================================
+Property    Type             Description
+=========== ================ ===========================================
+enabled     boolean          True if the membership is enabled, false if
+                             it is not (deletion).
+group       string           Group name.
+host_id     unsigned integer Host ID.
+instance_id unsigned integer Instance ID.
+service_id  unsigned integer Service ID.
+=========== ================ ===========================================
 
 Service status
 ==============
 
-Property Type Description
-acknowledgement_type
-active_checks_enabled
-check_interval
-check_period
-check_type
-current_check_attempt
-current_notification_number
-current_state
-enabled
-event_handler
-event_handler_enabled
-execution_time
-failure_prediction_enabled
-flap_detection_enabled
-has_been_checked
-host_id
-host_name
-is_flapping
-last_check
-last_hard_state
-last_hard_state_change
-last_notification
-last_state_change
-last_time_critical
-last_time_ok
-last_time_unknown
-last_time_warning
-last_update
-latency
-max_check_attempts
-modified_attributes
-next_check
-next_notification
-no_more_notifications
-notifications_enabled
-obsess_over
-passive_checks_enabled
-percent_state_change
-problem_has_been_acknowledged
-process_performance_data
-retry_interval
-scheduled_downtime_depth
-service_description
-service_id
-should_be_scheduled
-state_type
-check_command
-output
-perf_data
+============================= ================ =========================
+Property                      Type             Description
+============================= ================ =========================
+acknowledgement_type          short integer
+active_checks_enabled         boolean
+check_interval                real
+check_period                  string
+check_type                    short integer
+current_check_attempt         short integer
+current_notification_number   short integer
+current_state                 short integer
+enabled                       boolean
+event_handler                 string
+event_handler_enabled         boolean
+execution_time                real
+failure_prediction_enabled    boolean
+flap_detection_enabled        boolean
+has_been_checked              boolean
+host_id                       unsigned integer
+host_name                     string
+is_flapping                   boolean
+last_check                    time
+last_hard_state               short integer
+last_hard_state_change        time
+last_notification             time
+last_state_change             time
+last_time_critical            time
+last_time_ok                  time
+last_time_unknown             time
+last_time_warning             time
+last_update                   time
+latency                       real
+max_check_attempts            short integer
+modified_attributes           unsigned integer
+next_check                    time
+next_notification             time
+no_more_notifications         boolean
+notifications_enabled         boolean
+obsess_over                   boolean
+passive_checks_enabled        boolean
+percent_state_change          real
+problem_has_been_acknowledged boolean
+process_performance_data      boolean
+retry_interval                real
+scheduled_downtime_depth      short integer
+service_description           string
+service_id                    unsigned integer
+should_be_scheduled           boolean
+state_type                    short integer
+check_command                 string
+output                        string
+perf_data                     string
+============================= ================ =========================
 
 *******
 Storage
@@ -685,51 +871,69 @@ Correlation
 Engine state
 ============
 
-Property Type Description
-started
+Engine state events are sent when the correlation engine starts or stops.
+
+======== ======= =======================================================
+Property Type    Description
+======== ======= =======================================================
+started  boolean True if the correlation engine is starting, false if it
+                 is stopping.
+======== ======= =======================================================
 
 Host state
 ==========
 
-Property Type Description
-ack_time
-current_state
-end_time
-host_id
-in_downtime
-start_time
+============= ================ =========================================
+Property      Type             Description
+============= ================ =========================================
+ack_time      time
+current_state integer
+end_time      time
+host_id       unsigned integer
+in_downtime   boolean
+start_time    time
+============= ================ =========================================
 
 Issue
 =====
 
-Property Type Description
-ack_time
-end_time
-host_id
-service_id
-start_time
+========== ================ ============================================
+Property   Type             Description
+========== ================ ============================================
+ack_time   time
+end_time   time
+host_id    unsigned integer
+service_id unsigned integer
+start_time time
+========== ================ ============================================
 
 Issue parent
 ============
 
-Property Type Description
-child_host_id
-child_service_id
-child_start_time
-end_time
-parent_host_id
-parent_service_id
-parent_start_time
-start_time
+================= ================ =====================================
+Property          Type             Description
+================= ================ =====================================
+child_host_id     unsigned integer
+child_service_id  unsigned integer
+child_start_time  time
+end_time          time
+parent_host_id    unsigned integer
+parent_service_id unsigned integer
+parent_start_time time
+start_time        time
+================= ================ =====================================
 
 Service state
 =============
 
-Property Type Description
-ack_time
-state
-end_time
-host_id
-in_downtime
-service_id
-start_time
+============= ================ =========================================
+Property      Type             Description
+============= ================ =========================================
+ack_time      time
+current_state int
+end_time      time
+host_id       unsigned integer
+in_downtime   boolean
+service_id    unsigned integer
+start_time    time
+============= ================ =========================================
