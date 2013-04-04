@@ -48,7 +48,7 @@ Fields are provided in the big endian format.
 ========= ====================== =====================================
 Field     Type                   Description
 ========= ====================== =====================================
-checksum  unsigned short integer CRC-16-CCITT of size and id.
+checksum  unsigned short integer CRC-16-CCITT X.25 of size and id.
 size      unsigned short integer Size of the packet, including header.
 id        unsigned integer       ID of the event.
 data                             Payload data.
@@ -180,3 +180,62 @@ the :ref:`packet payload data <dev_bbdo_packet_format>`, one field after
 the other in the order described in the
 :ref:`mapping tables <dev_mapping>`. They are encoded following rules
 described in the :ref:`types paragraph <dev_bbdo_types>`.
+
+*******
+Example
+*******
+
+Let's take an example and see how an *host check event* gets sent in a
+packet. Its mapping is as follow :
+
+===================== ================ =================================
+Property              Type             Value in example
+===================== ================ =================================
+active_checks_enabled boolean          True.
+check_type            short integer    0 (active host check).
+host_id               unsigned integer 42
+next_check            time             1365080225
+command_line          string           ./my_plugin -H 127.0.0.1
+===================== ================ =================================
+
+And gives the following packet with values in hexadecimal.
+
+::
+
+  +-----------------+-----------------+-----------------------------------+
+  |      CRC16      |      SIZE       |                ID                 |
+  +========+========+========+========+========+========+========+========+
+  |   27   |   33   |   00   |   2C   |   00   |   01   |   00   |   09   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+  +--------+-----------------+-----------------------------------+--------
+  | active_|                 |                                   |
+  | checks_|    check_type   |              host_id              |    =>
+  | enabled|                 |                                   |
+  +========+========+========+========+==========================+========+
+  |   01   |   00   |   00   |   00   |   00   |   00   |   2A   |   51   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+   --------------------------+--------------------------------------------
+        =>  next_check       |               command_line =>
+  +========+========+========+========+========+========+========+========+
+  |   5D   |   78   |   A1   |   2E   |   2F   |   6D   |   79   |   5F   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+   -----------------------------------------------------------------------
+                             => command_line =>
+  +========+========+========+========+========+========+========+========+
+  |   70   |   6C   |   75   |   67   |   69   |   6E   |   20   |   2D   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+   -----------------------------------------------------------------------
+                             => command_line =>
+  +========+========+========+========+========+========+========+========+
+  |   48   |   20   |   31   |   32   |   37   |   2E   |   30   |   2E   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+   -----------------------------------+
+            => command_line           |
+  +========+========+========+========+
+  |   30   |   2E   |   31   |   00   |
+  +--------+--------+--------+--------+
