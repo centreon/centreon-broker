@@ -256,8 +256,7 @@ void subscriber::clean() {
  *  @param[out] event Last event available.
  */
 void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
-  if (_total_events >= event_queue_max_size()
-      && !_temporary.isNull()) {
+  if (!_temporary.isNull()) {
     try {
       do {
 	_temporary->read(event);
@@ -266,9 +265,10 @@ void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
     }
     catch (io::exceptions::shutdown const& e) {
       (void)e;
-      _temporary = misc::shared_ptr<io::stream>();
+      _temporary.clear();
     }
   }
   --_total_events;
   event = _events.dequeue();
+  return ;
 }
