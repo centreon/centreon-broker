@@ -386,46 +386,104 @@ get_property(CBD_PATH
   TARGET "cbd"
   PROPERTY LOCATION)
 
+# Module list.
+unset(MODULE_LIST)
+
 # Stats module.
-add_subdirectory("stats")
+option(WITH_MODULE_STATS "Build stats module." ON)
+if (WITH_MODULE_STATS)
+  add_subdirectory("stats")
+  list(APPEND MODULE_LIST "stats")
+endif()
 
 # NEB module.
-add_subdirectory("neb")
+option(WITH_MODULE_NEB "Build NEB module." ON)
+if (WITH_MODULE_NEB)
+  add_subdirectory("neb")
+  list(APPEND MODULE_LIST "neb")
+endif()
 
 # File module.
-add_subdirectory("file")
+option(WITH_MODULE_FILE "Build file module." ON)
+if (WITH_MODULE_FILE)
+  add_subdirectory("file")
+  list(APPEND MODULE_LIST "file")
+endif()
 
 # Compression module.
-add_subdirectory("compression")
+option(WITH_MODULE_COMPRESSION "Build compression module." ON)
+if (WITH_MODULE_COMPRESSION)
+  add_subdirectory("compression")
+  list(APPEND MODULE_LIST "compression")
+endif()
 
 # Correlation module.
-add_subdirectory("correlation")
+option(WITH_MODULE_CORRELATION "Build correlation module." ON)
+if (WITH_MODULE_CORRELATION)
+  add_subdirectory("correlation")
+  list(APPEND MODULE_LIST "correlation")
+endif()
 
 # Local sockets module.
-if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
-  add_subdirectory("local")
+option(WITH_MODULE_LOCAL "Build local module." ON)
+if (WITH_MODULE_LOCAL)
+  if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
+    add_subdirectory("local")
+    list(APPEND MODULE_LIST "local")
+  endif ()
 endif ()
 
 # RRD module.
-add_subdirectory("rrd")
+option(WITH_MODULE_RRD "Build RRD module." ON)
+if (WITH_MODULE_RRD)
+  add_subdirectory("rrd")
+  list(APPEND MODULE_LIST "rrd")
+endif()
 
 # SQL module.
-add_subdirectory("sql")
+option(WITH_MODULE_SQL "Build SQL module." ON)
+if (WITH_MODULE_SQL)
+  add_subdirectory("sql")
+  list(APPEND MODULE_LIST "sql")
+endif()
 
 # Storage module.
-add_subdirectory("storage")
+option(WITH_MODULE_STORAGE "Build storage module." ON)
+if (WITH_MODULE_STORAGE)
+  add_subdirectory("storage")
+  list(APPEND MODULE_LIST "storage")
+endif()
 
 # TCP module.
-add_subdirectory("tcp")
+option(WITH_MODULE_TCP "Build TCP module." ON)
+if (WITH_MODULE_TCP)
+  add_subdirectory("tcp")
+  list(APPEND MODULE_LIST "tcp")
+endif()
 
 # TLS module.
-add_subdirectory("tls")
+option(WITH_MODULE_TLS "Build TLS module." ON)
+if (WITH_MODULE_TLS)
+  add_subdirectory("tls")
+  list(APPEND MODULE_LIST "tls")
+endif()
 
 # BBDO module.
-add_subdirectory("bbdo")
+option(WITH_MODULE_BBDO "Build BBDO module." ON)
+if (WITH_MODULE_BBDO)
+  add_subdirectory("bbdo")
+  list(APPEND MODULE_LIST "bbdo")
+endif()
 
 # NDO module.
-add_subdirectory("ndo")
+option(WITH_MODULE_NDO "Build NDO module." ON)
+if (WITH_MODULE_NDO)
+  add_subdirectory("ndo")
+  list(APPEND MODULE_LIST "ndo")
+endif()
+
+# Format string.
+string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
@@ -1277,6 +1335,7 @@ if (WITH_STARTUP_SCRIPT STREQUAL "no")
 else ()
   message(STATUS "    - Startup script             ${WITH_STARTUP_SCRIPT}")
 endif ()
+message(STATUS "    - Module                     ${MODULE_LIST}")
 message(STATUS "")
 message(STATUS "  Install")
 message(STATUS "    - Prefix                     ${CMAKE_INSTALL_PREFIX}")

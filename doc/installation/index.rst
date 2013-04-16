@@ -240,27 +240,40 @@ CMake's variable system. Variables can be set like this ::
 
 Here's the list of variables available and their description:
 
-=================== ==================================================== ============================================
-Variable            Description                                          Default value
-=================== ==================================================== ============================================
-WITH_DAEMONS        Set a list of Centreon Broker sysv start up script.  OFF
-WITH_GROUP          Set the group for Centreon Broker installation.      root
-WITH_PREFIX         Base directory for Centreon Broker installation. If  ``/usr/local``
-                    other prefixes are expressed as relative paths, they
-                    are relative to this path.
-WITH_PREFIX_BIN     Path in which binaries will be installed.            ``${WITH_PREFIX}/bin``
-WITH_PREFIX_CONF    Define specific directory for Centreon Engine        ``${WITH_PREFIX}/etc``
-                    configuration.
-WITH_PREFIX_INC     Define specific directory for Centreon Broker        ``${WITH_PREFIX}/include/centreon-broker``
-                    headers.
-WITH_PREFIX_LIB     Where shared objects (like cbmod.so) will be         ``${WITH_PREFIX}/lib``
-                    installed.
-WITH_PREFIX_MODULES Where Centreon Broker modules will be installed.     ``${WITH_PREFIX_LIB}/centreon-broker``
-WITH_STARTUP_DIR    Define the startup directory.                        Generaly in ``/etc/init.d`` or ``/etc/init``
-WITH_STARTUP_SCRIPT Generate and install startup script.                 auto detection
-WITH_TESTING        Enable build of unit tests. Disabled by default.     OFF
-WITH_USER           Set the user for Centreon Broker installation.       root
-=================== ==================================================== ============================================
+======================= ==================================================== ============================================
+Variable                Description                                          Default value
+======================= ==================================================== ============================================
+WITH_DAEMONS            Set a list of Centreon Broker sysv start up script.  OFF
+WITH_GROUP              Set the group for Centreon Broker installation.      root
+WITH_MODULE_BBDO        Build BBDO module.                                   ON
+WITH_MODULE_COMPRESSION Build compression module.                            ON
+WITH_MODULE_CORRELATION Build correlation module.                            ON
+WITH_MODULE_FILE        Build file module.                                   ON
+WITH_MODULE_LOCAL       Build local module.                                  ON
+WITH_MODULE_NDO         Build NDO module.                                    ON
+WITH_MODULE_NEB         Build NEB module.                                    ON
+WITH_MODULE_RRD         Build RRD module.                                    ON
+WITH_MODULE_SQL         Build SQL module.                                    ON
+WITH_MODULE_STATS       Build stats module.                                  ON
+WITH_MODULE_STORAGE     Build storage module.                                ON
+WITH_MODULE_TCP         Build TCP module.                                    ON
+WITH_MODULE_TLS         Build TLS module.                                    ON
+WITH_PREFIX             Base directory for Centreon Broker installation. If  ``/usr/local``
+                        other prefixes are expressed as relative paths, they
+                        are relative to this path.
+WITH_PREFIX_BIN         Path in which binaries will be installed.            ``${WITH_PREFIX}/bin``
+WITH_PREFIX_CONF        Define specific directory for Centreon Engine        ``${WITH_PREFIX}/etc``
+                        configuration.
+WITH_PREFIX_INC         Define specific directory for Centreon Broker        ``${WITH_PREFIX}/include/centreon-broker``
+                        headers.
+WITH_PREFIX_LIB         Where shared objects (like cbmod.so) will be         ``${WITH_PREFIX}/lib``
+                        installed.
+WITH_PREFIX_MODULES     Where Centreon Broker modules will be installed.     ``${WITH_PREFIX_LIB}/centreon-broker``
+WITH_STARTUP_DIR        Define the startup directory.                        Generaly in ``/etc/init.d`` or ``/etc/init``
+WITH_STARTUP_SCRIPT     Generate and install startup script.                 auto detection
+WITH_TESTING            Enable build of unit tests. Disabled by default.     OFF
+WITH_USER               Set the user for Centreon Broker installation.       root
+======================= ==================================================== ============================================
 
 If you enable testing variable you can set some variable to add more unit test:
 
