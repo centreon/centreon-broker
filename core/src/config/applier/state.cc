@@ -26,6 +26,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/applier/temporary.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -97,8 +98,11 @@ void state::apply(
 
   com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
 
-  // Apply input, output and temporary configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs(), s.temporary());
+  // Apply temporary configuration.
+  temporary::instance().apply(s.temporary());
+
+  // Apply input and output configuration.
+  endpoint::instance().apply(s.inputs(), s.outputs());
 
   // Enable multiplexing loop.
   if (run_mux)

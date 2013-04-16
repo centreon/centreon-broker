@@ -144,6 +144,18 @@ misc::shared_ptr<io::stream> connector::open() {
 }
 
 /**
+ *  Open the connection.
+ *
+ *  @param[in] id Unused.
+ *
+ *  @return A new connection object.
+ */
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
+  (void)id;
+  return (open());
+}
+
+/**
  *  Set connection timeout.
  *
  *  @param[in] msecs Timeout in ms.

@@ -98,14 +98,12 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] inputs    Inputs configuration.
- *  @param[in] outputs   Outputs configuration.
- *  @param[in] temporary Temporary configuration.
+ *  @param[in] inputs               Inputs configuration.
+ *  @param[in] outputs              Outputs configuration.
  */
 void endpoint::apply(
                  QList<config::endpoint> const& inputs,
-                 QList<config::endpoint> const& outputs,
-                 config::endpoint temporary) {
+                 QList<config::endpoint> const& outputs) {
   // Log messages.
   logging::config(logging::medium)
     << "endpoint applier: loading configuration";
@@ -134,19 +132,6 @@ void endpoint::apply(
       it1->endpntfactry->has_endpoint(*it3, false, true);
   }
 
-  bool temporary_has_change(false);
-  std::auto_ptr<io::endpoint> endp_temporary;
-  {
-    QMutexLocker lock(&_temporarym);
-    if (_temporary != temporary) {
-      temporary_has_change = true;
-      _temporary = temporary;
-    }
-    // Create temporary endpoint with temporary configuration.
-    endp_temporary
-      = std::auto_ptr<io::endpoint>(_create_temporary(temporary));
-  }
-
   // Remove old inputs and generate inputs to create.
   QList<config::endpoint> in_to_create;
   {
@@ -154,7 +139,6 @@ void endpoint::apply(
     _diff_endpoints(
       _inputs,
       tmp_inputs,
-      temporary_has_change,
       in_to_create);
   }
 
@@ -165,7 +149,6 @@ void endpoint::apply(
     _diff_endpoints(
       _outputs,
       tmp_outputs,
-      temporary_has_change,
       out_to_create);
   }
 
@@ -206,7 +189,6 @@ void endpoint::apply(
                                                  *it,
                                                  false,
                                                  true,
-                                                 endp_temporary.get(),
                                                  out_to_create));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_output()));
@@ -238,7 +220,6 @@ void endpoint::apply(
                                                  *it,
                                                  true,
                                                  false,
-                                                 endp_temporary.get(),
                                                  in_to_create));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_input()));
@@ -473,14 +454,12 @@ endpoint::endpoint() : QObject(), _outputsm(QMutex::Recursive) {}
  *  @param[in] cfg       Endpoint configuration.
  *  @param[in] is_input  true if the endpoint will act as input.
  *  @param[in] is_output true if the endpoint will act as output.
- *  @param[in] temporary Temporary endpoint.
  *  @param[in] l         List of endpoints.
  */
 processing::failover* endpoint::_create_endpoint(
                                   config::endpoint& cfg,
                                   bool is_input,
                                   bool is_output,
-                                  io::endpoint const* temporary,
                                   QList<config::endpoint>& l) {
   // Debug message.
   logging::config(logging::medium)
@@ -499,7 +478,6 @@ processing::failover* endpoint::_create_endpoint(
                         *it,
                         is_input || is_output,
                         is_output,
-                        temporary,
                         l));
   }
 
@@ -519,7 +497,6 @@ processing::failover* endpoint::_create_endpoint(
                                                 cfg,
                                                 is_input,
                                                 is_output,
-                                                temporary,
                                                 is_acceptor));
       level = it.value().osi_to + 1;
       break ;
@@ -542,7 +519,6 @@ processing::failover* endpoint::_create_endpoint(
                                              cfg,
                                              is_input,
                                              is_output,
-                                             temporary,
                                              is_acceptor));
         current->from(endp);
         endp = current;
@@ -559,89 +535,13 @@ processing::failover* endpoint::_create_endpoint(
 
   // Return failover thread.
   std::auto_ptr<processing::failover>
-    fo(new processing::failover(is_output, temporary));
+    fo(new processing::failover(is_output, cfg.name));
   fo->set_buffering_timeout(cfg.buffering_timeout);
-  fo->set_name(cfg.name);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_endpoint(endp);
   fo->set_failover(failovr);
   return (fo.release());
-}
-
-/**
- *  Create and register an temporary according to configuration.
- *
- *  @param[in] cfg Endpoint configuration.
- */
-io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
-  // No temporary is define into the configuration.
-  if (cfg.params.empty())
-    return (NULL);
-
-  // Debug message.
-  logging::config(logging::medium)
-    << "endpoint applier: creating new temporary '" << cfg.name << "'";
-
-  // Check that failover is configured.
-  if (!cfg.failover.isEmpty())
-    throw (exceptions::msg() << "endpoint applier: find failover into "
-           "temporary '" << cfg.name << "'");
-
-  // Create endpoint object.
-  std::auto_ptr<io::endpoint> endp;
-  bool is_acceptor(false);
-  int level(0);
-  for (QMap<QString, io::protocols::protocol>::const_iterator
-         it(io::protocols::instance().begin()),
-         end(io::protocols::instance().end());
-       it != end;
-       ++it) {
-    if ((it.value().osi_from == 1)
-        && it.value().endpntfactry->has_endpoint(cfg, true, true)) {
-      endp = std::auto_ptr<io::endpoint>(
-                     it.value().endpntfactry->new_endpoint(
-                                                cfg,
-                                                false,
-                                                false,
-                                                NULL,
-                                                is_acceptor));
-      level = it.value().osi_to + 1;
-      break ;
-    }
-  }
-  if (!endp.get())
-    throw (exceptions::msg() << "endpoint applier: no matching " \
-             "protocol found for temporary '" << cfg.name << "'");
-
-  // Create remaining objects.
-  while (level <= 7) {
-    // Browse protocol list.
-    QMap<QString, io::protocols::protocol>::const_iterator it(io::protocols::instance().begin());
-    QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
-    while (it != end) {
-      if ((it.value().osi_from == level)
-          && (it.value().endpntfactry->has_endpoint(cfg, true, true))) {
-        std::auto_ptr<io::endpoint>
-          current(it.value().endpntfactry->new_endpoint(
-                                             cfg,
-                                             true,
-                                             true,
-                                             NULL,
-                                             is_acceptor));
-        current->from(misc::shared_ptr<io::endpoint>(endp.release()));
-        endp = current;
-        level = it.value().osi_to;
-        break ;
-      }
-      ++it;
-    }
-    if ((7 == level) && (it == end))
-      throw (exceptions::msg() << "endpoint applier: no matching " \
-               "protocol found for temporary '" << cfg.name << "'");
-    ++level;
-  }
-  return (endp.release());
 }
 
 /**
@@ -654,7 +554,6 @@ io::endpoint* endpoint::_create_temporary(config::endpoint& cfg) {
 void endpoint::_diff_endpoints(
                  QMap<config::endpoint, processing::failover*> & current,
                  QList<config::endpoint> const& new_endpoints,
-                 bool temporary_has_change,
                  QList<config::endpoint>& to_create) {
   // Copy some lists that we will modify.
   QList<config::endpoint> new_ep(new_endpoints);
@@ -696,7 +595,7 @@ void endpoint::_diff_endpoints(
     // Try to find entry and subentries in the endpoints already running.
     QMap<config::endpoint, processing::failover*>::iterator
       map_it(to_delete.find(entries.first()));
-    if (map_it == to_delete.end() || temporary_has_change)
+    if (map_it == to_delete.end())
       for (QList<config::endpoint>::iterator
              it(entries.begin()),
              end(entries.end());

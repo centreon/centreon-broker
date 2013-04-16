@@ -97,8 +97,6 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if endpoint must act as event source.
  *  @param[in]  is_output   true if endpoint must act as event
  *                          destination.
- *  @param[in]  temporary   Temporary stream to write data when memory
- *                          queue is full.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *
  *  @return Endpoint matching configuration.
@@ -107,7 +105,6 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   // Return value.
   io::endpoint* retval(NULL);
@@ -130,10 +127,10 @@ io::endpoint* factory::new_endpoint(
   // Create object.
   if (is_acceptor)
     retval = new bbdo::acceptor(
+                         cfg.name,
                          is_output,
                          negociate,
-                         extensions,
-                         temporary);
+                         extensions);
   else
     retval = new bbdo::connector(
                          is_input,

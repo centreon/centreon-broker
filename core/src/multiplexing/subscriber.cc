@@ -23,6 +23,7 @@
 #include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -41,18 +42,16 @@ unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned in
 /**
  *  Constructor.
  *
- *  @param[in] temporary Temporary stream to write data when memory
- *                       queue is full.
+ *  @param[in] temporary_name Temporary name to build temporary.
  */
-subscriber::subscriber(io::endpoint const* temporary)
-  : _total_events(0) {
+subscriber::subscriber(QString const& temporary_name)
+  : _temporary_name(temporary_name),
+    _total_events(0) {
   // Register self in subscriber list.
   QMutexLocker lock1(&gl_subscribersm);
   QMutexLocker lock2(&_mutex);
   _process_in = true;
   _process_out = true;
-  if (temporary)
-    _endp_temporary = std::auto_ptr<io::endpoint>(temporary->clone());
   gl_subscribers.push_back(this);
   logging::debug(logging::low) << "multiplexing: "
     << gl_subscribers.size()
@@ -217,11 +216,14 @@ void subscriber::statistics(std::string& buffer) const {
 void subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
-    if (_total_events >= event_queue_max_size()
-        && _endp_temporary.get()) {
-      if (_temporary.isNull())
-	_temporary = _endp_temporary->open();
-      _temporary->write(event);
+    if (_total_events >= event_queue_max_size()) {
+      if (!_temporary) {
+        _temporary = io::temporary::instance().create(_temporary_name);
+        if (!_temporary)
+          _events.enqueue(event);
+      }
+      if (_temporary)
+        _temporary->write(event);
     }
     else
       _events.enqueue(event);
@@ -242,7 +244,7 @@ void subscriber::write(misc::shared_ptr<io::data> const& event) {
  */
 void subscriber::clean() {
   QMutexLocker lock(&_mutex);
-  if (!_temporary.isNull())
+  if (_temporary)
     _temporary = misc::shared_ptr<io::stream>();
   _events.clear();
   _total_events = 0;
@@ -256,7 +258,7 @@ void subscriber::clean() {
  *  @param[out] event Last event available.
  */
 void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
-  if (!_temporary.isNull()) {
+  if (_temporary) {
     try {
       do {
 	_temporary->read(event);

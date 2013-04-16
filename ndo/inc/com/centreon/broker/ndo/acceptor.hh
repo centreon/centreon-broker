@@ -20,7 +20,6 @@
 #ifndef CCB_NDO_ACCEPTOR_HH
 #  define CCB_NDO_ACCEPTOR_HH
 
-#  include <memory>
 #  include <QThread>
 #  include <QVector>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -40,9 +39,7 @@ namespace               com {
           Q_OBJECT
 
          public:
-                        acceptor(
-                          bool is_out,
-                          io::endpoint const* temporary);
+                        acceptor(QString const& name, bool is_out);
                         acceptor(acceptor const& a);
                         ~acceptor();
           acceptor&     operator=(acceptor const& a);
@@ -50,11 +47,15 @@ namespace               com {
           void          close();
           misc::shared_ptr<io::stream>
                         open();
+          misc::shared_ptr<io::stream>
+                        open(QString const& id);
 
          private:
+          misc::shared_ptr<io::stream>
+                        _open(misc::shared_ptr<io::stream> stream);
+
           bool          _is_out;
-          std::auto_ptr<io::endpoint>
-                        _temporary;
+          QString       _name;
           QVector<QThread*>
                         _threads;
 

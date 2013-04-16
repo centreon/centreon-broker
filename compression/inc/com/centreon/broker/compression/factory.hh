@@ -51,7 +51,6 @@ namespace         compression {
                     config::endpoint& cfg,
                     bool is_input,
                     bool is_output,
-                    io::endpoint const* temporary,
                     bool& is_acceptor) const;
     misc::shared_ptr<io::stream>
                   new_stream(

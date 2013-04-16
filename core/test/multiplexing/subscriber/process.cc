@@ -39,7 +39,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   // Subscriber.
-  multiplexing::subscriber s;
+  multiplexing::subscriber s("temporary_prefix_name");
 
   // Return value.
   int retval(0);

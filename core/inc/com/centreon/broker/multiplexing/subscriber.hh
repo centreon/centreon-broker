@@ -47,8 +47,7 @@ namespace               multiplexing {
    */
   class                 subscriber : public io::stream {
   public:
-                        subscriber(
-                          io::endpoint const* temporary = NULL);
+                        subscriber(QString const& temporary_name);
                         ~subscriber();
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
@@ -69,17 +68,16 @@ namespace               multiplexing {
                           misc::shared_ptr<io::data>& event);
 
     QWaitCondition      _cv;
-    std::auto_ptr<io::endpoint>
-                        _endp_temporary;
     QQueue<misc::shared_ptr<io::data> >
                         _events;
     static unsigned int _event_queue_max_size;
     mutable QMutex      _mutex;
     bool                _process_in;
     bool                _process_out;
-    unsigned int        _total_events;
     misc::shared_ptr<io::stream>
                         _temporary;
+    QString             _temporary_name;
+    unsigned int        _total_events;
   };
 }
 

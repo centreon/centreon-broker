@@ -186,6 +186,26 @@ misc::shared_ptr<io::stream> acceptor::open(
   return (s);
 }
 
+/**
+ *  Overwrite method open.
+ *
+ *  @return A TLS-encrypted stream (namely a tls::stream object).
+ */
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+  /*
+  ** The process of accepting a TLS client is pretty straight-forward.
+  ** Just follow the comments the have an overview of performed
+  ** operations.
+  */
+
+  // First accept a client from the lower layer.
+  misc::shared_ptr<io::stream> lower(_from->open(id));
+  misc::shared_ptr<io::stream> new_stream;
+  if (!lower.isNull())
+    new_stream = open(lower);
+  return (new_stream);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *

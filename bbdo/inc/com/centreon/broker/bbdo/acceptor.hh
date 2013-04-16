@@ -20,7 +20,6 @@
 #ifndef CCB_BBDO_ACCEPTOR_HH
 #  define CCB_BBDO_ACCEPTOR_HH
 
-#  include <memory>
 #  include <QList>
 #  include <QThread>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -41,10 +40,10 @@ namespace               com {
 
         public:
                         acceptor(
+                          QString const& name,
                           bool is_out,
                           bool negociate,
-                          QString const& extensions,
-                          io::endpoint const* temporary);
+                          QString const& extensions);
                         acceptor(acceptor const& right);
                         ~acceptor();
           acceptor&     operator=(acceptor const& right);
@@ -52,13 +51,17 @@ namespace               com {
           void          close();
           misc::shared_ptr<io::stream>
                         open();
+          misc::shared_ptr<io::stream>
+                        open(QString const& id);
 
         private:
+          misc::shared_ptr<io::stream>
+                        _open(misc::shared_ptr<io::stream> stream);
+
           QString       _extensions;
           bool          _is_out;
+          QString       _name;
           bool          _negociate;
-          std::auto_ptr<io::endpoint>
-                        _temporary;
           QList<QThread*>
                         _threads;
 

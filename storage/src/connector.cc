@@ -182,6 +182,18 @@ misc::shared_ptr<io::stream> connector::open() {
                   _check_replication)));
 }
 
+/**
+ *  Connect to a DB.
+ *
+ *  @param[in] id Unused.
+ *
+ *  @return Storage connection object.
+ */
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
+  (void)id;
+  return (open());
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
