@@ -94,14 +94,20 @@ void opener::close() {
  */
 misc::shared_ptr<io::stream> opener::open() {
   misc::shared_ptr<io::stream> retval;
-  if (!_from.isNull()) {
-    misc::shared_ptr<io::stream> base(_from->open());
-    if (!base.isNull()) {
-      retval = misc::shared_ptr<io::stream>(new stream(_level, _size));
-      retval->read_from(base);
-      retval->write_to(base);
-    }
-  }
+  if (!_from.isNull())
+    retval = _open(_from->open());
+  return (retval);
+}
+
+/**
+ *  Open a compression stream.
+ *
+ *  @return New compression object.
+ */
+misc::shared_ptr<io::stream> opener::open(QString const& id) {
+  misc::shared_ptr<io::stream> retval;
+  if (!_from.isNull())
+    retval = _open(_from->open(id));
   return (retval);
 }
 
@@ -124,4 +130,26 @@ void opener::set_level(int level) {
 void opener::set_size(unsigned int size) {
   _size = size;
   return ;
+}
+
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Open a compression stream.
+ *
+ *  @return New compression object.
+ */
+misc::shared_ptr<io::stream> opener::_open(
+  misc::shared_ptr<io::stream> base) {
+  misc::shared_ptr<io::stream> retval;
+  if (!base.isNull()) {
+    retval = misc::shared_ptr<io::stream>(new stream(_level, _size));
+    retval->read_from(base);
+    retval->write_to(base);
+  }
+  return (retval);
 }

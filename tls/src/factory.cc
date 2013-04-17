@@ -119,7 +119,6 @@ bool factory::has_not_endpoint(
  *                         object.
  *  @param[in] is_output   true if the endpoint should be an output
  *                         object.
- *  @param[in] temporary   Unused.
  *  @param[in] is_acceptor Is true if endpoint is an acceptor, false
  *                         otherwise.
  *
@@ -129,11 +128,9 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
-  (void)temporary;
 
   // Find TLS parameters (optional).
   bool tls(false);

@@ -147,3 +147,15 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _check_replication,
                                              _with_state_events)));
 }
+
+/**
+ *  Connect to a DB.
+ *
+ *  @param[in] id Unused.
+ *
+ *  @return SQL connection object.
+ */
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
+  (void)id;
+  return (open());
+}

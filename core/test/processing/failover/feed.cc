@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   se->set_succeed(true);
 
   // Subscriber.
-  multiplexing::subscriber s;
+  multiplexing::subscriber s("temporary_prefix_name");
 
   // Failover object.
   processing::failover f(false);

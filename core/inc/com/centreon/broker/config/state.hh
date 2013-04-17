@@ -52,6 +52,10 @@ namespace                         config {
     bool                          flush_logs() const throw ();
     QList<endpoint>&              inputs() throw ();
     QList<endpoint> const&        inputs() const throw ();
+    void                          instance_id(unsigned int id) throw ();
+    unsigned int                  instance_id() const throw ();
+    void                          instance_name(QString const& name) throw ();
+    QString const&                instance_name() const throw ();
     void                          log_thread_id(bool log_id) throw ();
     bool                          log_thread_id() const throw ();
     void                          log_timestamp(bool log_time) throw ();
@@ -75,6 +79,8 @@ namespace                         config {
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     QList<endpoint>               _inputs;
+    unsigned int                  _instance_id;
+    QString                       _instance_name;
     bool                          _log_thread_id;
     bool                          _log_timestamp;
     QList<logger>                 _loggers;

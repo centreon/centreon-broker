@@ -16,7 +16,7 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-
+#include <iostream>
 #include "com/centreon/broker/io/endpoint.hh"
 
 using namespace com::centreon::broker::io;

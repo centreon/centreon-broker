@@ -47,17 +47,16 @@ using namespace com::centreon::broker::processing;
  *
  *  @param[in] is_out    true if the failover thread is an output
  *                       thread.
- *  @param[in] temporary Temporary stream to write data when memory
- *                       queue is full.
+ *  @param[in] name      The failover name.
  */
-failover::failover(bool is_out, io::endpoint const* temporary)
+failover::failover(bool is_out, QString const& name)
   : _buffering_timeout(0),
     _initial(true),
     _is_out(is_out),
     _last_connect_attempt(0),
     _last_connect_success(0),
     _last_event(0),
-    _name("(unknown)"),
+    _name(name),
     _next_timeout((time_t)-1),
     _read_timeout((time_t)-1),
     _retry_interval(30),
@@ -66,7 +65,7 @@ failover::failover(bool is_out, io::endpoint const* temporary)
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
   if (_is_out)
-    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber(temporary));
+    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber(name));
   else
     _to = misc::shared_ptr<io::stream>(new multiplexing::publisher);
 }
@@ -691,16 +690,6 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
     QWriteLocker lock(&_fromm);
     _from = _failover.staticCast<io::stream>();
   }
-  return ;
-}
-
-/**
- *  Set failover name.
- *
- *  @param[in] name New failover name.
- */
-void failover::set_name(QString const& name) {
-  _name = name;
   return ;
 }
 

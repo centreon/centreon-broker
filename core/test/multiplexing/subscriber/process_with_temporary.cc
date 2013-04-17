@@ -50,7 +50,7 @@ int main() {
 
   // Subscriber.
   multiplexing::subscriber::event_queue_max_size(1);
-  multiplexing::subscriber s(temporary.get());
+  multiplexing::subscriber s("temporary_prefix_name");
 
   // Return value.
   int retval(0);

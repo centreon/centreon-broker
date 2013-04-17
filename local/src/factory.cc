@@ -96,7 +96,6 @@ bool factory::has_endpoint(
  *  @param[in]  cfg         Endpoint configuration.
  *  @param[in]  is_input    Unused.
  *  @param[in]  is_output   Unused.
- *  @param[in]  temporary   Unused.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *
  *  @return Endpoint matching configuration.
@@ -105,11 +104,9 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
-  (void)temporary;
 
   // Find name.
   QString name;

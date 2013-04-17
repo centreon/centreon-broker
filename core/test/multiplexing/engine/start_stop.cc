@@ -39,7 +39,7 @@ int main() {
   config::applier::init();
 
   // Subscriber.
-  multiplexing::subscriber s;
+  multiplexing::subscriber s("temporary_prefix_name");
 
   // Send events through engine.
   char const* messages[] = { MSG1, MSG2, NULL };

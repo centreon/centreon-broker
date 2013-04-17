@@ -58,8 +58,7 @@ int main(int argc, char* argv[]) {
   endp1->set_succeed(true);
   endp1->set_initial_replay_events(true);
   misc::shared_ptr<processing::failover>
-    fo1(new processing::failover(true));
-  fo1->set_name("failover1");
+    fo1(new processing::failover(true, "failover1"));
   fo1->set_endpoint(endp1.staticCast<io::endpoint>());
 
   // Second failover.
@@ -67,8 +66,7 @@ int main(int argc, char* argv[]) {
   endp2->set_succeed(true);
   endp2->set_initial_store_events(true);
   misc::shared_ptr<processing::failover>
-    fo2(new processing::failover(true));
-  fo1->set_name("failover2");
+    fo2(new processing::failover(true, "failover2"));
   fo2->set_endpoint(endp2.staticCast<io::endpoint>());
   fo2->set_failover(fo1);
 

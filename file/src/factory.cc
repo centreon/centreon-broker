@@ -100,7 +100,6 @@ bool factory::has_endpoint(
  *  @param[in]  cfg         Endpoint configuration.
  *  @param[in]  is_input    true if the file should act as input.
  *  @param[in]  is_output   true if the file should act as output.
- *  @param[in]  temporary   Unused.
  *  @param[out] is_acceptor Will be set to false.
  *
  *  @return Acceptor matching configuration.
@@ -109,10 +108,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_acceptor;
-  (void)temporary;
 
   // Find path to the file.
   QString filename;

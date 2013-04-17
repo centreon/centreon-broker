@@ -20,6 +20,7 @@
 #ifndef CCB_IO_ENDPOINT_HH
 #  define CCB_IO_ENDPOINT_HH
 
+#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -49,6 +50,7 @@ namespace                            io {
     bool                             is_acceptor() const throw ();
     bool                             is_connector() const throw ();
     virtual misc::shared_ptr<stream> open() = 0;
+    virtual misc::shared_ptr<stream> open(QString const& id) = 0;
     virtual void                     stats(std::string& buffer);
 
    protected:

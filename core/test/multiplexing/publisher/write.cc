@@ -42,7 +42,7 @@ int main() {
   multiplexing::publisher p;
 
   // Subscriber.
-  multiplexing::subscriber s;
+  multiplexing::subscriber s("temporary_prefix_name");
 
   // Publish event.
   {

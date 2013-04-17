@@ -43,6 +43,8 @@ namespace          rrd {
     void           close();
     misc::shared_ptr<io::stream>
                    open();
+    misc::shared_ptr<io::stream>
+                   open(QString const& id);
     void           set_cached_local(QString const& local_socket);
     void           set_cached_net(unsigned short port) throw ();
     void           set_metrics_path(QString const& metrics_path);

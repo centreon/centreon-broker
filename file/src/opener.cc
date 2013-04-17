@@ -97,14 +97,20 @@ void opener::close() {
  */
 misc::shared_ptr<io::stream> opener::open() {
   QString filename(_filename);
-  if (!_is_in && !_is_out) {
-    // Create unique temporary file.
-    std::ostringstream oss;
-    oss << "-" << QCoreApplication::applicationPid() << "-" << this;
-    filename = _filename + oss.str().c_str();
-  }
   return (misc::shared_ptr<io::stream>(
             new stream(qPrintable(filename), _max_size)));
+}
+
+/**
+ *  Open a new stream.
+ *
+ *  @param[in] id The identifier.
+ *
+ *  @return Opened stream.
+ */
+misc::shared_ptr<io::stream> opener::open(QString const& id) {
+  return (misc::shared_ptr<io::stream>(
+            new stream(qPrintable(_filename + "-" + id), _max_size)));
 }
 
 /**
