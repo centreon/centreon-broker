@@ -64,6 +64,8 @@ namespace               multiplexing {
                         subscriber(subscriber const& s);
     subscriber&         operator=(subscriber const& s);
     void                clean();
+    bool                _get_event_from_temporary(
+                          misc::shared_ptr<io::data>& event);
     void                _get_last_event(
                           misc::shared_ptr<io::data>& event);
 
@@ -74,6 +76,7 @@ namespace               multiplexing {
     mutable QMutex      _mutex;
     bool                _process_in;
     bool                _process_out;
+    bool                _recovery_temporary;
     misc::shared_ptr<io::stream>
                         _temporary;
     QString             _temporary_name;

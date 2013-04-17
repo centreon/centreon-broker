@@ -45,17 +45,51 @@ unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned in
  *  @param[in] temporary_name Temporary name to build temporary.
  */
 subscriber::subscriber(QString const& temporary_name)
-  : _temporary_name(temporary_name),
+  : _process_in(true),
+    _process_out(true),
+    _recovery_temporary(false),
+    _temporary_name(temporary_name),
     _total_events(0) {
-  // Register self in subscriber list.
-  QMutexLocker lock1(&gl_subscribersm);
-  QMutexLocker lock2(&_mutex);
-  _process_in = true;
-  _process_out = true;
-  gl_subscribers.push_back(this);
-  logging::debug(logging::low) << "multiplexing: "
-    << gl_subscribers.size()
-    << " subscribers are registered after insertion";
+  unsigned int size(0);
+
+  {
+    QMutexLocker lock2(&_mutex);
+
+    // Register self in subscriber list.
+    {
+      QMutexLocker lock1(&gl_subscribersm);
+      gl_subscribers.push_back(this);
+      size = gl_subscribers.size();
+    }
+
+    // if necessary load last temporary for recovery.
+    _temporary = io::temporary::instance().create(_temporary_name);
+    if (_temporary) {
+      misc::shared_ptr<io::data> event;
+      while (_total_events < event_queue_max_size()) {
+        _recovery_temporary = _get_event_from_temporary(event);
+        if (!_recovery_temporary) {
+          // All temporary event was loaded into the memory event queue.
+          // The recovery mode is disable.
+          break;
+        }
+        else {
+          // Push temporary event to the memory event queue.
+          _events.enqueue(event);
+          ++_total_events;
+        }
+      }
+    }
+  }
+
+  logging::debug(logging::low)
+    << "multiplexing: " << size << " subscribers are registered after "
+    "insertion";
+
+  logging::info(logging::low)
+    << "multiplexing: start with " << _total_events << " in queue and "
+    "the recovery temporary file is "
+    << (_recovery_temporary ? "enable" : "disable");
 }
 
 /**
@@ -100,7 +134,7 @@ unsigned int subscriber::event_queue_max_size() throw () {
  */
 void subscriber::process(bool in, bool out) {
   // Debug message.
-  logging::debug(logging::low) << "multiplexing: subscriber " \
+  logging::debug(logging::low) << "multiplexing: subscriber "
     "processing request in=" << in << ", out=" << out;
 
   // Lock mutex.
@@ -203,7 +237,14 @@ void subscriber::read(
 void subscriber::statistics(std::string& buffer) const {
   QMutexLocker lock(&_mutex);
   std::ostringstream oss;
-  oss << "queued events=" << _total_events << "\n";
+  if (_recovery_temporary)
+    oss << "queued events=unkown";
+  else
+    oss << "queued events=" << _total_events << "\n";
+
+  char const* enable(_recovery_temporary ? "yes" : "no");
+  oss << "temporary recovery mode=" << enable << "\n";
+
   buffer.append(oss.str());
   return ;
 }
@@ -216,18 +257,24 @@ void subscriber::statistics(std::string& buffer) const {
 void subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
+    // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
-      if (!_temporary) {
+      // Try to create temporary if is necessary.
+      if (!_temporary)
         _temporary = io::temporary::instance().create(_temporary_name);
-        if (!_temporary)
-          _events.enqueue(event);
-      }
+
+      // Check if we have temporary.
       if (_temporary)
         _temporary->write(event);
+      else
+        _events.enqueue(event);
     }
     else
       _events.enqueue(event);
-    ++_total_events;
+
+    // If the recovery mode is disable increase total events.
+    if (!_recovery_temporary)
+      ++_total_events;
   }
   _cv.wakeOne();
   return ;
@@ -247,8 +294,38 @@ void subscriber::clean() {
   if (_temporary)
     _temporary = misc::shared_ptr<io::stream>();
   _events.clear();
+  _recovery_temporary = false;
   _total_events = 0;
   return ;
+}
+
+/**
+ *  Get event from temporary file. Warning, lock
+ *  _mutex before use this function.
+ *
+ *  @param[out] event The Last event available.
+ *
+ *  @return True if have event into the temporary.
+ */
+bool subscriber::_get_event_from_temporary(
+                   misc::shared_ptr<io::data>& event) {
+  bool ret(false);
+  // If temporary exist, try to get the last event.
+  if (_temporary) {
+    try {
+      do {
+        _temporary->read(event);
+      } while (event.isNull());
+      ret = true;
+    }
+    catch (io::exceptions::shutdown const& e) {
+      // The temporary end was reach.
+      (void)e;
+      _temporary.clear();
+      _recovery_temporary = false;
+    }
+  }
+  return (ret);
 }
 
 /**
@@ -258,19 +335,15 @@ void subscriber::clean() {
  *  @param[out] event Last event available.
  */
 void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
-  if (_temporary) {
-    try {
-      do {
-	_temporary->read(event);
-      } while (event.isNull());
-      _events.enqueue(event);
-    }
-    catch (io::exceptions::shutdown const& e) {
-      (void)e;
-      _temporary.clear();
-    }
-  }
-  --_total_events;
+  // Try to get the last temporary event.
+  if (_get_event_from_temporary(event))
+    _events.enqueue(event);
+
+  // If the recovery mode is disable decrease total events.
+  if (!_recovery_temporary)
+    --_total_events;
+
+  // Get the last avaiable event.
   event = _events.dequeue();
   return ;
 }
