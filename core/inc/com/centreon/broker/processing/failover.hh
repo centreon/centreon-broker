@@ -25,6 +25,7 @@
 #  include <memory>
 #  include <QMutex>
 #  include <QReadWriteLock>
+#  include <QString>
 #  include <QThread>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -53,7 +54,7 @@ namespace                com {
          public:
                          failover(
                            bool is_out,
-                           io::endpoint const* temporary = NULL);
+                           QString const& name = "(unknown)");
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);
@@ -74,7 +75,6 @@ namespace                com {
                            misc::shared_ptr<io::endpoint> endp);
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
-          void           set_name(QString const& name);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
           void           statistics(std::string& buffer) const;

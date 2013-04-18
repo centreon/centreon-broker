@@ -42,8 +42,13 @@ namespace         ndo {
     void          close();
     misc::shared_ptr<io::stream>
                   open();
+    misc::shared_ptr<io::stream>
+                  open(QString const& id);
 
   private:
+    misc::shared_ptr<io::stream>
+                  _open(misc::shared_ptr<io::stream> stream);
+
     bool          _is_in;
     bool          _is_out;
   };

@@ -69,6 +69,8 @@ void state::clear() {
   _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
+  _instance_id = 0;
+  _instance_name.clear();
   _log_thread_id = false;
   _log_timestamp
     = com::centreon::broker::logging::file::with_timestamp();
@@ -134,6 +136,42 @@ QList<endpoint>& state::inputs() throw () {
  */
 QList<endpoint> const& state::inputs() const throw () {
   return (_inputs);
+}
+
+/**
+ *  Set the instance id.
+ *
+ *  @param[in] id Instance id.
+ */
+void state::instance_id(unsigned int id) throw () {
+  _instance_id = id;
+}
+
+/**
+ *  Get the instance id.
+ *
+ *  @return Instance id.
+ */
+unsigned int state::instance_id() const throw () {
+  return (_instance_id);
+}
+
+/**
+ *  Set the instance name.
+ *
+ *  @param[in] name Instance name.
+ */
+void state::instance_name(QString const& name) throw () {
+  _instance_name = name;
+}
+
+/**
+ *  Get the instance name.
+ *
+ *  @return Instance name.
+ */
+QString const& state::instance_name() const throw () {
+  return (_instance_name);
 }
 
 /**
@@ -297,6 +335,8 @@ endpoint const& state::temporary() const throw () {
 void state::_internal_copy(state const& s) {
   _event_queue_max_size = s._event_queue_max_size;
   _inputs = s._inputs;
+  _instance_id = s._instance_id;
+  _instance_name = s._instance_name;
   _log_thread_id = s._log_thread_id;
   _log_timestamp = s._log_timestamp;
   _loggers = s._loggers;

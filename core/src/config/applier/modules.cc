@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -135,40 +134,3 @@ void modules::unload() {
  *  Default constructor.
  */
 modules::modules() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] m Object to copy.
- */
-modules::modules(modules const& m) {
-  _internal_copy(m);
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] m Object to copy.
- *
- *  @return This object.
- */
-modules& modules::operator=(modules const& m) {
-  _internal_copy(m);
-  return (*this);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] m Object to copy.
- */
-void modules::_internal_copy(modules const& m) {
-  (void)m;
-  assert(!"modules configuration applier is not copyable");
-  abort();
-  return ;
-}

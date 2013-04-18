@@ -26,7 +26,9 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/applier/temporary.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
@@ -46,8 +48,10 @@ Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
+  io::temporary::unload();
   config::applier::state::unload();
   config::applier::endpoint::unload();
+  config::applier::temporary::unload();
   config::applier::logger::unload();
   multiplexing::engine::unload();
   config::applier::modules::unload();
@@ -66,8 +70,10 @@ void config::applier::init() {
   io::protocols::load();
   config::applier::modules::load();
   config::applier::logger::load();
+  config::applier::temporary::load();
   config::applier::endpoint::load();
   config::applier::state::load();
+  io::temporary::load();
 
   // Register Qt types.
   qRegisterMetaType<QAbstractSocket::SocketError>(

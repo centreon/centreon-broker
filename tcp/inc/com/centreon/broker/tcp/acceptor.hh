@@ -52,6 +52,8 @@ namespace                com {
           void           listen_on(unsigned short port);
           misc::shared_ptr<io::stream>
                          open();
+          misc::shared_ptr<io::stream>
+                         open(QString const& id);
           void           set_tls(
                            bool enable,
                            QString const& private_key = QString(),

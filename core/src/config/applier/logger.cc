@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -148,46 +147,6 @@ void logger::unload() {
  *  Default constructor.
  */
 logger::logger() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] l Object to copy.
- */
-logger::logger(logger const& l) {
-  (void)l;
-  _internal_copy(l);
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] l Object to copy.
- *
- *  @return This object.
- */
-logger& logger::operator=(logger const& l) {
-  _internal_copy(l);
-  return (*this);
-}
-
-/**
- *  @brief Copy internal data members.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] l Unused.
- */
-void logger::_internal_copy(logger const& l) {
-  (void)l;
-  assert(!"logger applier is not copyable");
-  abort();
-  return ;
-}
 
 /**
  *  Create a backend object from its configuration.

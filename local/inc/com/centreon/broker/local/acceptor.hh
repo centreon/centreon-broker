@@ -46,6 +46,7 @@ namespace                        local {
     void                         close();
     void                         listen_on(QString const& name);
     misc::shared_ptr<io::stream> open();
+    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
     QMutex                       _mutex;

@@ -21,6 +21,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/opener.hh"
+#include "com/centreon/broker/compression/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
@@ -98,7 +99,6 @@ bool factory::has_endpoint(
                             object.
  *  @param[in]  is_output   true if the endpoint should be an output
  *                          object.
- *  @param[in]  temporary   Unused.
  *  @param[out] is_acceptor Will be set to false.
  *
  *  @return New endpoint object.
@@ -107,12 +107,10 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         io::endpoint const* temporary,
                          bool& is_acceptor) const {
   (void)is_input;
   (void)is_output;
   (void)is_acceptor;
-  (void)temporary;
 
   // Get compression level.
   int level(-1);

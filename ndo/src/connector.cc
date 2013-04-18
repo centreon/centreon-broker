@@ -93,22 +93,44 @@ void connector::close() {
  */
 misc::shared_ptr<io::stream> connector::open() {
   misc::shared_ptr<io::stream> retval;
-  if (!_from.isNull()) {
-    retval = _from->open();
-    misc::shared_ptr<io::stream> ndo_stream;
-    if (!retval.isNull()) {
-      if (_is_in) {
-        if (_is_out)
-          ndo_stream = misc::shared_ptr<io::stream>(new ndo::stream);
-        else
-          ndo_stream = misc::shared_ptr<io::stream>(new ndo::input);
-      }
-      else
-        ndo_stream = misc::shared_ptr<io::stream>(new ndo::output);
-      ndo_stream->read_from(retval);
-      ndo_stream->write_to(retval);
-    }
-    retval = ndo_stream;
-  }
+  if (!_from.isNull())
+    retval = _open(_from->open());
   return (retval);
+}
+
+/**
+ *  Open the connector.
+ */
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
+  misc::shared_ptr<io::stream> retval;
+  if (!_from.isNull())
+    retval = _open(_from->open(id));
+  return (retval);
+}
+
+/**************************************
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
+
+/**
+ *  Open the connector.
+ */
+misc::shared_ptr<io::stream> connector::_open(
+                                              misc::shared_ptr<io::stream> stream) {
+  misc::shared_ptr<io::stream> ndo_stream;
+  if (!stream.isNull()) {
+    if (_is_in) {
+      if (_is_out)
+        ndo_stream = misc::shared_ptr<io::stream>(new ndo::stream);
+      else
+        ndo_stream = misc::shared_ptr<io::stream>(new ndo::input);
+    }
+    else
+      ndo_stream = misc::shared_ptr<io::stream>(new ndo::output);
+    ndo_stream->read_from(stream);
+    ndo_stream->write_to(stream);
+  }
+  return (ndo_stream);
 }

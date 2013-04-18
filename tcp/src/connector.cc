@@ -189,6 +189,16 @@ misc::shared_ptr<io::stream> connector::open() {
 }
 
 /**
+ *  Connect to the remote host.
+ *
+ *  @param[in] id Unused.
+ */
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
+  (void)id;
+  return (open());
+}
+
+/**
  *  Set connection timeout.
  *
  *  @param[in] msecs Timeout in ms.

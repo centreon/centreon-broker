@@ -60,14 +60,14 @@ void acceptor::_on_thread_termination() {
 /**
  *  Constructor.
  *
- *  @param[in] is_out    true if the acceptor is an output acceptor.
- *  @param[in] temporary XXX: todo.
+ *  @param[in] name   The name to build temporary.
+ *  @param[in] is_out True if the acceptor is an output acceptor.
  */
-acceptor::acceptor(bool is_out, io::endpoint const* temporary)
+acceptor::acceptor(QString const& name, bool is_out)
   : io::endpoint(true),
-    _is_out(is_out) {
-  if (is_out && temporary)
-    _temporary = std::auto_ptr<io::endpoint>(temporary->clone());
+    _is_out(is_out),
+    _name(name) {
+
 }
 
 /**
@@ -77,8 +77,7 @@ acceptor::acceptor(bool is_out, io::endpoint const* temporary)
  */
 acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _is_out = a._is_out;
-  if (a._is_out && a._temporary.get())
-    _temporary = std::auto_ptr<io::endpoint>(a._temporary->clone());
+  _name = a._name;
 }
 
 /**
@@ -105,8 +104,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
   if (this != &a) {
     io::endpoint::operator=(a);
     _is_out = a._is_out;
-    if (a._is_out && a._temporary.get())
-      _temporary = std::auto_ptr<io::endpoint>(a._temporary->clone());
+    _name = a._name;
   }
   return (*this);
 }
@@ -137,46 +135,68 @@ void acceptor::close() {
  */
 misc::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
-  if (!_from.isNull()) {
-    misc::shared_ptr<io::stream> base(_from->open());
+  if (!_from.isNull())
+    _open(_from->open());
+  return (misc::shared_ptr<io::stream>());
+}
 
-    if (!base.isNull()) {
-      // In and out objects.
-      misc::shared_ptr<io::stream> in;
-      misc::shared_ptr<io::stream> out;
+/**
+ *  Open the acceptor.
+ */
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+  // Wait for client from the lower layer.
+  if (!_from.isNull())
+    _open(_from->open(id));
+  return (misc::shared_ptr<io::stream>());
+}
 
-      // Create input and output objects.
-      if (!_is_out) {
-        in = misc::shared_ptr<io::stream>(new ndo::input);
-        in->read_from(base);
-        in->write_to(base);
-        out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
-      }
-      else {
-        in = misc::shared_ptr<io::stream>(
-               new multiplexing::subscriber(_temporary.get()));
-        out = misc::shared_ptr<io::stream>(new ndo::output);
-        out->read_from(base);
-        out->write_to(base);
-      }
+/**************************************
+*                                     *
+*          Private Methods            *
+*                                     *
+**************************************/
 
-      // Feeder thread.
-      std::auto_ptr<processing::feeder> feedr(new processing::feeder);
-      feedr->prepare(in, out);
-      QObject::connect(
-        feedr.get(),
-        SIGNAL(finished()),
-        this,
-        SLOT(_on_thread_termination()));
-      _threads.push_back(feedr.get());
-      QObject::connect(
-        feedr.get(),
-        SIGNAL(finished()),
-        feedr.get(),
-        SLOT(deleteLater()));
-      processing::feeder* f(feedr.release());
-      f->start();
+/**
+ *  Open the acceptor.
+ */
+misc::shared_ptr<io::stream> acceptor::_open(
+  misc::shared_ptr<io::stream> stream) {
+  if (!stream.isNull()) {
+    // In and out objects.
+    misc::shared_ptr<io::stream> in;
+    misc::shared_ptr<io::stream> out;
+
+    // Create input and output objects.
+    if (!_is_out) {
+      in = misc::shared_ptr<io::stream>(new ndo::input);
+      in->read_from(stream);
+      in->write_to(stream);
+      out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
     }
+    else {
+      in = misc::shared_ptr<io::stream>(
+                                        new multiplexing::subscriber(_name));
+      out = misc::shared_ptr<io::stream>(new ndo::output);
+      out->read_from(stream);
+      out->write_to(stream);
+    }
+
+    // Feeder thread.
+    std::auto_ptr<processing::feeder> feedr(new processing::feeder);
+    feedr->prepare(in, out);
+    QObject::connect(
+                     feedr.get(),
+                     SIGNAL(finished()),
+                     this,
+                     SLOT(_on_thread_termination()));
+    _threads.push_back(feedr.get());
+    QObject::connect(
+                     feedr.get(),
+                     SIGNAL(finished()),
+                     feedr.get(),
+                     SLOT(deleteLater()));
+    processing::feeder* f(feedr.release());
+    f->start();
   }
 
   return (misc::shared_ptr<io::stream>());

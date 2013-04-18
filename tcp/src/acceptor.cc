@@ -207,6 +207,16 @@ misc::shared_ptr<io::stream> acceptor::open() {
 }
 
 /**
+ *  Start connection acception.
+ *
+ *  @param[in] id Unused.
+ */
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+  (void)id;
+  return (open());
+}
+
+/**
  *  Set TLS parameters.
  *
  *  @param[in] enable true to enable TLS encryption.

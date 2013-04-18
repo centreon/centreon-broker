@@ -155,3 +155,15 @@ misc::shared_ptr<io::stream> acceptor::open() {
   // Return object.
   return (misc::shared_ptr<io::stream>(new stream(incoming)));
 }
+
+/**
+ *  Open the acceptor.
+ *
+ *  @param[in] id Unused.
+ *
+ *  @return A new stream.
+ */
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+  (void)id;
+  return (open());
+}

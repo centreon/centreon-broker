@@ -47,7 +47,6 @@ namespace         local {
                     config::endpoint& cfg,
                     bool is_input,
                     bool is_output,
-                    io::endpoint const* temporary,
                     bool& is_acceptor) const;
   };
 }

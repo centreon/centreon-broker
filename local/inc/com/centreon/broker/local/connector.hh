@@ -44,6 +44,7 @@ namespace                          local {
     void                           close();
     void                           connect_to(QString const& name);
     misc::shared_ptr<io::stream>   open();
+    misc::shared_ptr<io::stream>   open(QString const& id);
     void                           set_timeout(int msecs);
 
   private:

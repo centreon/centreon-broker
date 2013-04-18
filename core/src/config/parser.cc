@@ -93,6 +93,9 @@ void parser::parse(QString const& file, state& s) {
   // Check if temporary object is already define.
   bool has_temprorary(false);
 
+  // Check if instance id is already define.
+  bool has_instance_id(false);
+
   // Browse first-level elements.
   QDomElement root(d.documentElement());
   QDomNodeList level1(root.childNodes());
@@ -101,7 +104,14 @@ void parser::parse(QString const& file, state& s) {
     // Process only element nodes.
     if (!elem.isNull()) {
       QString name(elem.tagName());
-      if (name == "flush_logs") {
+      if (name == "instance") {
+        s.instance_id(elem.text().toUInt());
+        has_instance_id = true;
+      }
+      else if (name == "instance_name") {
+        s.instance_name(elem.text());
+      }
+      else if (name == "flush_logs") {
         QString val(elem.text());
         s.flush_logs(!((val == "no") || (val == "0")));
       }
@@ -144,9 +154,19 @@ void parser::parse(QString const& file, state& s) {
         if (has_temprorary)
           throw (exceptions::msg() << "config parser: one temporary "
                  "object is already define");
-        endpoint temp;
-        _parse_endpoint(elem, temp);
-        s.temporary() = temp;
+        if (!has_instance_id)
+          throw (exceptions::msg()
+                 << "config parser: missing instance before temporary");
+        _parse_endpoint(elem, s.temporary());
+        if (s.temporary().type != "file")
+          throw (exceptions::msg()
+                 << "config parser: bad temporary type");
+        QMap<QString, QString>::iterator
+          it(s.temporary().params.find("path"));
+        if (it == s.temporary().params.end())
+          throw (exceptions::msg()
+                 << "config params: bad temporary path");
+        it.value() += "-" + QString().setNum(s.instance_id());
         has_temprorary = true;
       }
       else {

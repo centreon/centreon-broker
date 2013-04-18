@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <QCoreApplication>
@@ -27,6 +26,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/applier/temporary.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -98,8 +98,11 @@ void state::apply(
 
   com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
 
-  // Apply input, output and temporary configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs(), s.temporary());
+  // Apply temporary configuration.
+  temporary::instance().apply(s.temporary());
+
+  // Apply input and output configuration.
+  endpoint::instance().apply(s.inputs(), s.outputs());
 
   // Enable multiplexing loop.
   if (run_mux)
@@ -145,42 +148,3 @@ void state::unload() {
  *  Default constructor.
  */
 state::state() {}
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- */
-state::state(state const& s) {
-  (void)s;
-  _internal_copy(s);
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this method will result in a call to abort().
- *
- *  @param[in] s Object to copy.
- *
- *  @return This object.
- */
-state& state::operator=(state const& s) {
-  (void)s;
-  _internal_copy(s);
-  return (*this);
-}
-
-/**
- *  Calls abort().
- *
- *  @param[in] s Unused.
- */
-void state::_internal_copy(state const& s) {
-  (void)s;
-  assert(!"state configuration applier is not copyable");
-  abort();
-  return ;
-}
