@@ -24,6 +24,7 @@
 #  include <memory>
 #  include <QMutex>
 #  include <QQueue>
+#  include <QString>
 #  include <QWaitCondition>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"

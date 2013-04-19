@@ -25,6 +25,7 @@
 #  include <memory>
 #  include <QMutex>
 #  include <QReadWriteLock>
+#  include <QString>
 #  include <QThread>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"

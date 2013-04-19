@@ -39,6 +39,7 @@ using namespace com::centreon::broker::rrd;
 connector::connector()
   : io::endpoint(false),
     _cached_port(0),
+    _ignore_update_errors(true),
     _write_metrics(true),
     _write_status(true) {}
 
@@ -99,6 +100,7 @@ misc::shared_ptr<io::stream> connector::open() {
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
+                                                _ignore_update_errors,
                                                 _cached_local,
                                                 _write_metrics,
                                                 _write_status));
@@ -106,6 +108,7 @@ misc::shared_ptr<io::stream> connector::open() {
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
+                                                _ignore_update_errors,
                                                 _cached_port,
                                                 _write_metrics,
                                                 _write_status));
@@ -113,6 +116,7 @@ misc::shared_ptr<io::stream> connector::open() {
     retval = misc::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
+                                                _ignore_update_errors,
                                                 _write_metrics,
                                                 _write_status));
   return (retval);
@@ -147,6 +151,17 @@ void connector::set_cached_local(QString const& local_socket) {
  */
 void connector::set_cached_net(unsigned short port) throw () {
   _cached_port = port;
+  return ;
+}
+
+/**
+ *  Set if update errors must be checked or not (2.4.0-compatible
+ *  behavior).
+ *
+ *  @param[in] ignore Set to true to ignore update errors.
+ */
+void connector::set_ignore_update_errors(bool ignore) throw () {
+  _ignore_update_errors = ignore;
   return ;
 }
 
@@ -204,6 +219,7 @@ void connector::set_write_status(bool write_status) throw () {
 void connector::_internal_copy(connector const& right) {
   _cached_local = right._cached_local;
   _cached_port = right._cached_port;
+  _ignore_update_errors = right._ignore_update_errors;
   _metrics_path = right._metrics_path;
   _status_path = right._status_path;
   _write_metrics = right._write_metrics;

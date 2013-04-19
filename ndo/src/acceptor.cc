@@ -78,7 +78,7 @@ acceptor::acceptor(QString const& name, bool is_out)
 acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _is_out = a._is_out;
   _name = a._name;
- }
+}
 
 /**
  *  Destructor.

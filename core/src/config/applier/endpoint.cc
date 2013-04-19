@@ -98,8 +98,8 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] inputs               Inputs configuration.
- *  @param[in] outputs              Outputs configuration.
+ *  @param[in] inputs  Inputs configuration.
+ *  @param[in] outputs Outputs configuration.
  */
 void endpoint::apply(
                  QList<config::endpoint> const& inputs,

@@ -110,7 +110,7 @@ misc::shared_ptr<io::stream> opener::open() {
  */
 misc::shared_ptr<io::stream> opener::open(QString const& id) {
   return (misc::shared_ptr<io::stream>(
-            new stream(qPrintable(_filename + "-" + id), _max_size)));
+                  new stream(qPrintable(_filename + "-" + id), _max_size)));
 }
 
 /**

@@ -43,21 +43,24 @@ using namespace com::centreon::broker::rrd;
 /**
  *  Standard constructor.
  *
- *  @param[in] metrics_path  Path in which metrics RRD files should be
- *                           written.
- *  @param[in] status_path   Path in which status RRD files should be
- *                           written.
- *  @param[in] write_metrics Set to true if metrics graph must be
- *                           written.
- *  @param[in] write_status  Set to true if status graph must be
- *                           written.
+ *  @param[in] metrics_path         Path in which metrics RRD files
+ *                                  should be written.
+ *  @param[in] status_path          Path in which status RRD files
+ *                                  should be written.
+ *  @param[in] ignore_update_errors Set to true to ignore update errors.
+ *  @param[in] write_metrics        Set to true if metrics graph must be
+ *                                  written.
+ *  @param[in] write_status         Set to true if status graph must be
+ *                                  written.
  */
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          bool ignore_update_errors,
           bool write_metrics,
           bool write_status)
   : _backend(new lib),
+    _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path),
@@ -67,21 +70,24 @@ output::output(
 /**
  *  Local socket constructor.
  *
- *  @param[in] metrics_path  See standard constructor.
- *  @param[in] status_path   See standard constructor.
- *  @param[in] local         Local socket connection parameters.
- *  @param[in] write_metrics Set to true if metrics graph must be
- *                           written.
- *  @param[in] write_status  Set to true if status graph must be
- *                           written.
+ *  @param[in] metrics_path         See standard constructor.
+ *  @param[in] status_path          See standard constructor.
+ *  @param[in] ignore_update_errors Set to true to ignore update errors.
+ *  @param[in] local                Local socket connection parameters.
+ *  @param[in] write_metrics        Set to true if metrics graph must be
+ *                                  written.
+ *  @param[in] write_status         Set to true if status graph must be
+ *                                  written.
  */
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          bool ignore_update_errors,
           QString const& local,
           bool write_metrics,
           bool write_status)
-  : _metrics_path(metrics_path),
+  : _ignore_update_errors(ignore_update_errors),
+    _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path),
     _write_metrics(write_metrics),
@@ -100,21 +106,24 @@ output::output(
 /**
  *  Network socket constructor.
  *
- *  @param[in] metrics_path  See standard constructor.
- *  @param[in] status_path   See standard constructor.
- *  @param[in] port          rrdcached listening port.
- *  @param[in] write_metrics Set to true if metrics graph must be
- *                           written.
- *  @param[in] write_status  Set to true if status graph must be
- *                           written.
+ *  @param[in] metrics_path         See standard constructor.
+ *  @param[in] status_path          See standard constructor.
+ *  @param[in] ignore_update_errors Set to true to ignore update errors.
+ *  @param[in] port                 rrdcached listening port.
+ *  @param[in] write_metrics        Set to true if metrics graph must be
+ *                                  written.
+ *  @param[in] write_status         Set to true if status graph must be
+ *                                  written.
  */
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          bool ignore_update_errors,
           unsigned short port,
           bool write_metrics,
           bool write_status)
-  : _metrics_path(metrics_path),
+  : _ignore_update_errors(ignore_update_errors),
+    _metrics_path(metrics_path),
     _process_out(true),
     _status_path(status_path),
     _write_metrics(write_metrics),
