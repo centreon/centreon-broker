@@ -238,7 +238,7 @@ void subscriber::statistics(std::string& buffer) const {
   QMutexLocker lock(&_mutex);
   std::ostringstream oss;
   if (_recovery_temporary)
-    oss << "queued events=unkown";
+    oss << "queued events=unkown\n";
   else
     oss << "queued events=" << _total_events << "\n";
 

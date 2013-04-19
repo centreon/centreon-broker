@@ -109,27 +109,6 @@ extern "C" {
 }
 
 /**
- *  Extract an XML value from a node.
- *
- *  @param[in] str XML string.
- *
- *  @return XML value.
- */
-static QString extract_xml_text(QString const& str) {
-  QString xml_doc_str;
-  xml_doc_str = "<root>";
-  xml_doc_str.append(str);
-  xml_doc_str.append("</root>");
-  QDomDocument xml_doc;
-  xml_doc.setContent(xml_doc_str);
-  QDomElement elem(xml_doc.documentElement().firstChild().toElement());
-  QString ret;
-  if (!elem.isNull())
-    ret = elem.text();
-  return (ret);
-}
-
-/**
  *  @brief Function that process acknowledgement data.
  *
  *  This function is called by Nagios when some acknowledgement data are
@@ -1453,13 +1432,8 @@ int neb::callback_process(int callback_type, void *data) {
         config::applier::state::instance().apply(conf);
 
         // Set variables.
-        QMap<QString, QString>::const_iterator it;
-        it = conf.params().find("instance");
-        if (it != conf.params().end())
-          instance_id = extract_xml_text(it.value()).toUInt();
-        it = conf.params().find("instance_name");
-        if (it != conf.params().end())
-          instance_name = extract_xml_text(it.value());
+        instance_id = conf.instance_id();
+        instance_name = conf.instance_name();
       }
       catch (exceptions::msg const& e) {
         logging::config(logging::high) << e.what();

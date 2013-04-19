@@ -31,8 +31,10 @@ using namespace com::centreon::broker;
 
 /**
  *  Constructor.
+ *
+ *  @param[in] id The temporary id.
  */
-temporary_stream::temporary_stream() {}
+temporary_stream::temporary_stream(QString const& id) : _id(id) {}
 
 /**
  *  Copy constructor.
@@ -42,6 +44,7 @@ temporary_stream::temporary_stream() {}
 temporary_stream::temporary_stream(temporary_stream const& ss)
   : io::stream(ss) {
   _events = ss._events;
+  _id = ss._id;
 }
 
 /**
@@ -62,6 +65,7 @@ temporary_stream& temporary_stream::operator=(temporary_stream const& ss) {
     QMutexLocker lock1(&_eventsm);
     QMutexLocker lock2(&ss._eventsm);
     _events = ss._events;
+    _id = ss._id;
   }
   return (*this);
 }

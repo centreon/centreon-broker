@@ -33,7 +33,7 @@ CCB_BEGIN()
  */
 class                 temporary_endpoint : public io::endpoint {
 public:
-                      temporary_endpoint();
+                      temporary_endpoint(QString const& id = "");
                       temporary_endpoint(temporary_endpoint const& se);
                       ~temporary_endpoint();
   temporary_endpoint& operator=(temporary_endpoint const& se);
@@ -43,6 +43,9 @@ public:
                       open();
   misc::shared_ptr<io::stream>
                       open(QString const& id);
+
+private:
+  QString             _id;
 };
 
 CCB_END()

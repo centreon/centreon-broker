@@ -113,10 +113,11 @@ misc::shared_ptr<io::stream> setable_endpoint::open() {
 /**
  *  Open endpoint.
  *
+ *  @param[in] id Unused.
+ *
  *  @return New setable_stream.
  */
-misc::shared_ptr<io::stream> setable_endpoint::open(
-                                                 QString const& id) {
+misc::shared_ptr<io::stream> setable_endpoint::open(QString const& id) {
   (void)id;
   return (open());
 }
