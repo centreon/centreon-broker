@@ -22,6 +22,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "temporary_endpoint.hh"
@@ -46,11 +47,12 @@ int main() {
   multiplexing::engine::instance().start();
 
   // Create temporary endpoint.
-  std::auto_ptr<io::endpoint> temporary(new temporary_endpoint);
+  misc::shared_ptr<io::endpoint> temporary(new temporary_endpoint);
+  io::temporary::instance().set(temporary);
 
   // Subscriber.
   multiplexing::subscriber::event_queue_max_size(1);
-  multiplexing::subscriber s(temporary.get());
+  multiplexing::subscriber s("temporary_name");
 
   // Return value.
   int retval(0);

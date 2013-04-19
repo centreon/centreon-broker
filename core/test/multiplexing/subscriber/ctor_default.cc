@@ -36,7 +36,7 @@ int main() {
   config::applier::init();
 
   // Subscriber.
-  multiplexing::subscriber s;
+  multiplexing::subscriber s("temporary_name");
 
   // Return value.
   int retval(0);

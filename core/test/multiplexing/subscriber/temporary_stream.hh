@@ -33,7 +33,7 @@ CCB_BEGIN()
  */
 class               temporary_stream : public io::stream {
 public:
-                    temporary_stream();
+                    temporary_stream(QString const& id = "");
                     temporary_stream(temporary_stream const& ss);
                     ~temporary_stream();
   temporary_stream& operator=(temporary_stream const& ss);
@@ -45,6 +45,7 @@ private:
   QQueue<misc::shared_ptr<io::data> >
                     _events;
   mutable QMutex    _eventsm;
+  QString           _id;
 };
 
 CCB_END()

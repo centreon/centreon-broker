@@ -30,10 +30,13 @@ using namespace com::centreon::broker;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] id The temporary id.
  */
-temporary_endpoint::temporary_endpoint()
-  : io::endpoint(false) {
+temporary_endpoint::temporary_endpoint(QString const& id)
+  : io::endpoint(false),
+    _id(id) {
 
 }
 
@@ -43,7 +46,8 @@ temporary_endpoint::temporary_endpoint()
  *  @param[in] se Object to copy.
  */
 temporary_endpoint::temporary_endpoint(temporary_endpoint const& se)
-  : io::endpoint(se) {
+  : io::endpoint(se),
+    _id(se._id) {
 
 }
 
@@ -62,8 +66,10 @@ temporary_endpoint::~temporary_endpoint() {
  *  @return This object.
  */
 temporary_endpoint& temporary_endpoint::operator=(temporary_endpoint const& se) {
-  if (&se != this)
+  if (&se != this) {
     com::centreon::broker::io::endpoint::operator=(se);
+    _id = se._id;
+  }
   return (*this);
 }
 
@@ -88,4 +94,16 @@ void temporary_endpoint::close() {
  */
 misc::shared_ptr<io::stream> temporary_endpoint::open() {
   return (misc::shared_ptr<io::stream>(new temporary_stream));
+}
+
+/**
+ *  Open endpoint.
+ *
+ *  @param[in] id The temporary id.
+ *
+ *  @return New temporary_stream.
+ */
+misc::shared_ptr<io::stream> temporary_endpoint::open(
+                                                   QString const& id) {
+  return (misc::shared_ptr<io::stream>(new temporary_stream(id)));
 }
