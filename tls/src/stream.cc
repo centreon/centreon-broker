@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -198,41 +197,4 @@ unsigned int stream::write_encrypted(
   _from->write(r.staticCast<io::data>());
   _from->write(misc::shared_ptr<io::data>());
   return (size);
-}
-
-/**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  stream is not copiable, that's why the copy constructor is declared
- *  private. Any attempt to use it will result in a call to abort().
- *
- *  @param[in] s Unused.
- */
-stream::stream(stream const& s) : io::stream(s) {
-  assert(!"TLS stream is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignement operator.
- *
- *  stream is not copiable, that's why the assignment operator is
- *  declared private. Any attempt to use it will result in a call to
- *  abort().
- *
- *  @param[in] s Unused.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& s) {
-  (void)s;
-  assert(!"TLS stream is not copyable");
-  abort();
-  return (*this);
 }

@@ -40,7 +40,7 @@ monitoring_logger::monitoring_logger() {}
  */
 monitoring_logger::monitoring_logger(monitoring_logger const& ml)
   : logging::backend(ml) {
-  _internal_copy(ml);
+
 }
 
 /**
@@ -59,7 +59,6 @@ monitoring_logger& monitoring_logger::operator=(
                                         monitoring_logger const& ml) {
   if (this != &ml) {
     backend::operator=(ml);
-    _internal_copy(ml);
   }
   return (*this);
 }
@@ -110,24 +109,5 @@ void monitoring_logger::log_msg(
     };
     logit(data_type, display, "Centreon Broker: %s", msg);
   }
-  return ;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Copy internal data members.
- *
- *  This class does not contain any data member, so this method does
- *  nothing.
- *
- *  @param[in] ml Object to copy.
- */
-void monitoring_logger::_internal_copy(monitoring_logger const& ml) {
-  (void)ml;
   return ;
 }

@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <gnutls/gnutls.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -254,35 +253,6 @@ void params::validate_cert(gnutls_session_t session) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  @brief Copy constructor.
- *
- *  Any call to this constructor will result in a call to abort().
- *
- *  @param[in] p Unused.
- */
-params::params(params const& p) {
-  (void)p;
-  assert(!"TLS params are not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Any call to this operator will result in a call to abort().
- *
- *  @param[in] p Unused.
- *
- *  @return This object.
- */
-params& params::operator=(params const& p) {
-  (void)p;
-  assert(!"TLS params are not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  @brief Clean the params instance.
