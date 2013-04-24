@@ -513,8 +513,8 @@ void failover::run() {
               _to->update();
             }
             _to->write(data);
-            time_t now(time(NULL));
             if (!data.isNull()) {
+              time_t now(time(NULL));
               if (now > _last_event) {
                 time_t limit(now - _last_event);
                 if (limit > event_window_length)
