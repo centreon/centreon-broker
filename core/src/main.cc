@@ -80,17 +80,18 @@ static void hup_handler(int signum) {
  *  Function called on termination request (when program receives
  *  SIGTERM).
  *
- *  @param[in] signum Signal number.
+ *  @param[in] signum Unused.
+ *  @param[in] info   Signal informations.
+ *  @param[in] data   Unused.
  */
-static void term_handler(int signum) {
+static void term_handler(int signum, siginfo_t* info, void* data) {
   (void)signum;
+  (void)data;
 
   // Log message.
   logging::info(logging::high)
-    << "main: termination request received";
-
-  // Reset original signal handler.
-  signal(SIGTERM, SIG_DFL);
+    << "main: termination request received by process id "
+    << info->si_pid << " with real user id " << info->si_uid;
 
   // Ask event loop to quit.
   QCoreApplication::exit(0);
@@ -257,13 +258,16 @@ int main(int argc, char* argv[]) {
           << err;
       }
 
+      // Init signal handler.
+      struct sigaction sigterm_act;
+      memset(&sigterm_act, 0, sizeof(sigterm_act));
+      sigterm_act.sa_sigaction = &term_handler;
+      sigterm_act.sa_flags = SA_SIGINFO | SA_RESETHAND;
+
       // Set termination handler.
-      if (signal(SIGTERM, term_handler) == SIG_ERR) {
-        char const* err(strerror(errno));
+      if (sigaction(SIGTERM, &sigterm_act, NULL) < 0)
         logging::info(logging::high)
-          << "main: could not register termination handler: "
-          << err;
-      }
+          << "main: could not register termination handler";
 
       // Launch event loop.
       if (!check)
