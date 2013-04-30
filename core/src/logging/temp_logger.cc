@@ -37,6 +37,7 @@ temp_logger::redir const temp_logger::_redir_nothing = {
   &temp_logger::_nothing<long>,
   &temp_logger::_nothing<long long>,
   &temp_logger::_nothing<QString const&>,
+  &temp_logger::_nothing<std::string const&>,
   &temp_logger::_nothing<unsigned int>,
   &temp_logger::_nothing<unsigned long>,
   &temp_logger::_nothing<unsigned long long>,
@@ -50,6 +51,7 @@ temp_logger::redir const temp_logger::_redir_stringifier = {
   &temp_logger::_to_stringifier<long>,
   &temp_logger::_to_stringifier<long long>,
   &temp_logger::_to_stringifier<QString const&>,
+  &temp_logger::_to_stringifier<std::string const&>,
   &temp_logger::_to_stringifier<unsigned int>,
   &temp_logger::_to_stringifier<unsigned long>,
   &temp_logger::_to_stringifier<unsigned long long>,
@@ -214,6 +216,17 @@ temp_logger& temp_logger::operator<<(long long ll) throw () {
  */
 temp_logger& temp_logger::operator<<(QString const& q) throw () {
   return ((this->*(_redir->redirect_qstring))(q));
+}
+
+/**
+ *  std::string redirection.
+ *
+ *  @param[in] q std::string.
+ *
+ *  @return This object.
+ */
+temp_logger& temp_logger::operator<<(std::string const& q) throw () {
+  return ((this->*(_redir->redirect_std_string))(q));
 }
 
 /**

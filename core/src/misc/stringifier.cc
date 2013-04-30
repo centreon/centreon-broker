@@ -168,6 +168,17 @@ stringifier& stringifier::operator<<(QString const& q) throw () {
 }
 
 /**
+ *  Append a std string to the internal buffer.
+ *
+ *  @param[in] q std::string to append.
+ *
+ *  @return Current instance.
+ */
+stringifier& stringifier::operator<<(std::string const& s) throw () {
+  return (operator<<(s.c_str()));
+}
+
+/**
  *  Append an unsigned integer to the internal buffer.
  *
  *  @param[in] i Unsigned integer to append.

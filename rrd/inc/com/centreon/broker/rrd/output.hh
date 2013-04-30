@@ -24,6 +24,7 @@
 #  include <memory>
 #  include <QHash>
 #  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
@@ -78,10 +79,10 @@ namespace                    rrd {
 
     std::auto_ptr<backend>     _backend;
     bool                       _ignore_update_errors;
-    QString                    _metrics_path;
+    std::string                _metrics_path;
     rebuild_cache              _metrics_rebuild;
     bool                       _process_out;
-    QString                    _status_path;
+    std::string                _status_path;
     rebuild_cache              _status_rebuild;
     bool                       _write_metrics;
     bool                       _write_status;

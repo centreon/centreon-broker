@@ -70,7 +70,7 @@ void worker::run(QString const& fifo_file) {
   _close();
 
   // Set FIFO file.
-  _fifo = fifo_file;
+  _fifo = fifo_file.toStdString();
 
   // Set exit flag.
   _should_exit = false;
@@ -106,12 +106,12 @@ void worker::_generate_stats() {
   {
     std::ostringstream oss;
     oss << "broker\n"
-        << "version=" CENTREON_BROKER_VERSION "\n"
-        << "pid=" << getpid() << "\n"
-        << "now=" << time(NULL) << "\n"
-        << "compiled with qt=" << QT_VERSION_STR << "\n"
-        << "running with qt=" << qVersion() << "\n"
-        << "\n";
+      "version=" CENTREON_BROKER_VERSION "\n"
+      "pid=" << getpid() << "\n"
+      "now=" << time(NULL) << "\n"
+      "compiled with qt=" << QT_VERSION_STR << "\n"
+      "running with qt=" << qVersion() << "\n"
+      "\n";
     _buffer.append(oss.str());
   }
 
@@ -126,9 +126,9 @@ void worker::_generate_stats() {
     std::ostringstream oss;
     QFileInfo fi(it.key());
     oss << "module " << it.key().toStdString() << "\n"
-        << "state=loaded\n"
-        << "size=" << fi.size() << "B\n"
-        << "\n";
+      "state=loaded\n"
+      "size=" << fi.size() << "B\n"
+      "\n";
     _buffer.append(oss.str());
   }
 
@@ -252,7 +252,7 @@ void worker::_generate_stats_for_endpoint(
     // Event processing stats.
     std::ostringstream oss;
     oss << "last event at=" << fo->get_last_event() << "\n"
-        << "event processing speed=" << std::fixed
+      "event processing speed=" << std::fixed
         << std::setprecision(1) << fo->get_event_processing_speed()
         << " events/s\n";
     buffer.append(oss.str());
@@ -299,7 +299,7 @@ void worker::_generate_stats_for_endpoint(
  */
 bool worker::_open() {
   bool retval;
-  _fd = open(qPrintable(_fifo), O_WRONLY | O_NONBLOCK);
+  _fd = open(_fifo.c_str(), O_WRONLY | O_NONBLOCK);
   if (_fd < 0) {
     if (errno != ENXIO) {
       char const* msg(strerror(errno));
@@ -373,6 +373,6 @@ void worker::run() {
     logging::error(logging::high)
       << "stats: thread will exit due to an unknown error";
   }
-  ::unlink(qPrintable(_fifo));
+  ::unlink(_fifo.c_str());
   return ;
 }

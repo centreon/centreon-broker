@@ -39,11 +39,11 @@ using namespace interface::xml;
  */
 template <typename T>
 static void handle_event(T const& t,
-                         std::map<std::string, std::string>& attr) {
-  typename std::map<std::string, getter_setter<T> >::const_iterator end;
-  typename std::map<std::string, getter_setter<T> >::const_iterator it;
+                         umap<std::string, std::string>& attr) {
+  typename umap<std::string, getter_setter<T> >::const_iterator end;
+  typename umap<std::string, getter_setter<T> >::const_iterator it;
 
-  for (typename std::map<std::string, getter_setter<T> >::const_iterator
+  for (typename umap<std::string, getter_setter<T> >::const_iterator
          it = xml_mapped_type<T>::map.begin(),
          end = xml_mapped_type<T>::map.end();
        it != end;
@@ -85,7 +85,7 @@ void destination::close() {
  */
 void destination::event(events::event* e) {
   try {
-    std::map<std::string, std::string> attr;
+    umap<std::string, std::string> attr;
     std::string name;
     switch (e->get_type()) {
      case events::event::ACKNOWLEDGEMENT:
@@ -194,7 +194,7 @@ void destination::event(events::event* e) {
     std::string data;
     data = "<";
     data.append(name);
-    for (std::map<std::string, std::string>::const_iterator
+    for (umap<std::string, std::string>::const_iterator
            it = attr.begin(),
            end = attr.end();
          it != end;

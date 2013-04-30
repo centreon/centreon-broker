@@ -26,6 +26,7 @@
 #  include <utility>
 #  include "com/centreon/broker/logging/backend.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/multiplexing/publisher.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/acknowledgement.hh"
@@ -41,7 +42,7 @@ namespace neb {
   extern QString      instance_name;
 
   // List of host IDs.
-  extern std::map<std::string, int> gl_hosts;
+  extern umap<std::string, int> gl_hosts;
 
   // List of service IDs.
   extern std::map<std::pair<std::string, std::string>, std::pair<int, int> >
@@ -55,7 +56,7 @@ namespace neb {
     gl_registered_callbacks;
 
   // Acknowledgement list.
-  extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+  extern umap<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
     gl_acknowledgements;
 }
 

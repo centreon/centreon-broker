@@ -162,8 +162,8 @@ time_t failover::get_buffering_timeout() const throw () {
  */
 double failover::get_event_processing_speed() const throw () {
   unsigned int events(0);
-  for (int i(0);
-       i < event_window_length - time(NULL) + _last_event;
+  for (int i(0), end(event_window_length - time(NULL) + _last_event);
+       i < end;
        ++i)
     events += _events[i];
   return (static_cast<double>(events) / event_window_length);

@@ -62,7 +62,7 @@ namespace               com {
 
           std::string   _buffer;
           int           _fd;
-          QString       _fifo;
+          std::string   _fifo;
           volatile bool _should_exit;
         };
       }

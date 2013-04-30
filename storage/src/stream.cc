@@ -699,8 +699,8 @@ unsigned int stream::_find_index_id(
 
   // Look in the cache.
   std::map<
-         std::pair<unsigned int, unsigned int>,
-         index_info>::iterator
+    std::pair<unsigned int, unsigned int>,
+    index_info>::iterator
     it(_index_cache.find(std::make_pair(host_id, service_id)));
 
   // Special.
@@ -723,18 +723,19 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      std::ostringstream oss;
-      oss << "UPDATE index_data" \
-             " SET host_name=:host_name," \
-             "     service_description=:service_description," \
-             "     special=:special" \
-             " WHERE host_id=" << host_id
-          << " AND service_id=" << service_id;
+      QString query("UPDATE index_data"
+                    " SET host_name=:host_name,"
+                    "     service_description=:service_description,"
+                    "     special=:special"
+                    " WHERE host_id=:host_id"
+                    " AND service_id=:service_id");
       QSqlQuery q(*_storage_db);
-      q.prepare(oss.str().c_str());
+      q.prepare(query);
       q.bindValue(":host_name", host_name);
       q.bindValue(":service_description", service_desc);
       q.bindValue(":special", (special ? 2 : 1));
+      q.bindValue(":host_id", host_id);
+      q.bindValue(":service_id", service_id);
       if (!q.exec() || q.lastError().isValid())
         throw (broker::exceptions::msg() << "storage: could not update "
                   "service information in index_data (host_id "
@@ -868,19 +869,19 @@ unsigned int stream::_find_metric_id(
       << "storage: creating new metric for (" << index_id
       << ", " << metric_name << ")";
     // Build query.
-    std::ostringstream oss;
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    oss << "INSERT INTO metrics " \
-           "  (index_id, metric_name, unit_name, warn, warn_low, " \
-           "   warn_threshold_mode, crit, crit_low, " \
-           "   crit_threshold_mode, min, max, data_source_type)" \
-           " VALUES (:index_id, :metric_name, :unit_name, :warn, " \
-           "         :warn_low, :warn_threshold_mode, :crit, " \
-           "         :crit_low, :crit_threshold_mode, :min, :max, " \
-           "         :data_source_type)";
+    QString query(
+              "INSERT INTO metrics "
+              "  (index_id, metric_name, unit_name, warn, warn_low, "
+              "   warn_threshold_mode, crit, crit_low, "
+              "   crit_threshold_mode, min, max, data_source_type)"
+              " VALUES (:index_id, :metric_name, :unit_name, :warn, "
+              "         :warn_low, :warn_threshold_mode, :crit, "
+              "         :crit_low, :crit_threshold_mode, :min, :max, "
+              "         :data_source_type)");
     QSqlQuery q(*_storage_db);
-    if (!q.prepare(oss.str().c_str()))
+    if (!q.prepare(query))
       throw (broker::exceptions::msg()
              << "storage: could not prepare metric insertion query: "
              << q.lastError().text());
@@ -909,13 +910,12 @@ unsigned int stream::_find_metric_id(
 #if QT_VERSION >= 0x040302
       q.finish();
 #endif // Qt >= 4.3.2
-      std::ostringstream oss2;
-      oss2 << "SELECT metric_id" \
-              " FROM metrics" \
-              " WHERE index_id=:index_id" \
-              " AND metric_name=:metric_name";
+      QString query("SELECT metric_id"
+                    " FROM metrics"
+                    " WHERE index_id=:index_id"
+                    " AND metric_name=:metric_name");
       QSqlQuery q2(*_storage_db);
-      if (!q2.prepare(oss2.str().c_str()))
+      if (!q2.prepare(query))
         throw (broker::exceptions::msg()
                << "storage: could not prepare metric ID fetching query: "
                << q2.lastError().text());

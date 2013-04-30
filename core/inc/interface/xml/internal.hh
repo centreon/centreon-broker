@@ -21,8 +21,8 @@
 #ifndef INTERFACE_XML_INTERNAL_HH_
 # define INTERFACE_XML_INTERNAL_HH_
 
-# include <map>
 # include <string>
+# include "com/centreon/broker/misc/unordered_hash.hh"
 # include "mapping.hh"
 
 namespace                   interface {
@@ -42,7 +42,7 @@ namespace                   interface {
     // XML mappings.
     template                <typename T>
     struct                  xml_mapped_type {
-      static std::map<std::string, getter_setter<T> > map;
+      static umap<std::string, getter_setter<T> > map;
     };
 
     // Mapping initialization routine.

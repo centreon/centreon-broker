@@ -146,8 +146,8 @@ void lib::open(
              << filename << "' does not exist");
 
   // Remember information for further operations.
-  _filename = filename;
-  _metric = normalize_metric_name(metric);
+  _filename = filename.toStdString();
+  _metric = normalize_metric_name(metric).toStdString();
 
   return ;
 }
@@ -173,8 +173,8 @@ void lib::open(
   this->close();
 
   // Remember informations for further operations.
-  _filename = filename;
-  _metric = normalize_metric_name(metric);
+  _filename = filename.toStdString();
+  _metric = normalize_metric_name(metric).toStdString();
 
   /* Find step of RRD file if already existing. */
   /* XXX : why is it here ?
@@ -188,13 +188,13 @@ void lib::open(
   */
 
   /* Remove previous file. */
-  QFile::remove(_filename);
+  QFile::remove(_filename.c_str());
 
   /* Set parameters. */
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;
-  ds_oss << "DS:" << _metric.toStdString() << ":";
+  ds_oss << "DS:" << _metric << ":";
   switch (value_type) {
   case storage::perfdata::absolute:
     ds_oss << "ABSOLUTE";
@@ -227,7 +227,7 @@ void lib::open(
 
   // Create RRD file.
   rrd_clear_error();
-  if (rrd_create_r(_filename.toStdString().c_str(),
+  if (rrd_create_r(_filename.c_str(),
         interval,
         from,
         3,
@@ -236,11 +236,11 @@ void lib::open(
              << _filename << "': " << rrd_get_error());
 
   // Set parameters.
-  std::string fn(_filename.toStdString());
+  std::string fn(_filename);
   std::string hb;
   {
     std::ostringstream oss;
-    oss << qPrintable(_metric) << ":" << interval * 10;
+    oss << _metric << ":" << interval * 10;
     hb = oss.str();
   }
   argv[0] = "librrd";
@@ -251,8 +251,8 @@ void lib::open(
 
   // Tune file.
   if (rrd_tune(4, (char**)argv))
-    logging::error(logging::medium) << "RRD: could not tune " \
-      "heartbeat of file '" << _filename << "'";
+    logging::error(logging::medium) << "RRD: could not tune "
+      "heartbeat of file '" << _filename.c_str() << "'";
 
   return ;
 }
@@ -266,7 +266,7 @@ void lib::remove(QString const& filename) {
   if (::remove(filename.toStdString().c_str())) {
     char const* msg(strerror(errno));
     logging::error(logging::high) << "RRD: could not remove file '"
-      << filename << "': " << msg;
+      << qPrintable(filename) << "': " << msg;
   }
   return ;
 }
@@ -298,8 +298,8 @@ void lib::update(time_t t, QString const& value) {
   // Update RRD file.
   rrd_clear_error();
   if (rrd_update_r(
-        _filename.toStdString().c_str(),
-        _metric.toStdString().c_str(),
+        _filename.c_str(),
+        _metric.c_str(),
         sizeof(argv) / sizeof(*argv) - 1,
         argv)) {
     char const* msg(rrd_get_error());

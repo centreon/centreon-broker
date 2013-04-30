@@ -61,8 +61,8 @@ namespace            rrd {
                        QString const& value);
 
    private:
-    QString          _filename;
-    QString          _metric;
+    std::string      _filename;
+    std::string      _metric;
   };
 }
 

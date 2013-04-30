@@ -270,108 +270,108 @@ namespace       com {
   namespace     centreon {
     namespace   broker {
       namespace ndo {
-        template <> std::map<int, getter_setter<correlation::engine_state> >
+        template <> umap<int, getter_setter<correlation::engine_state> >
           ndo_mapped_type<correlation::engine_state>::map =
-            std::map<int, getter_setter<correlation::engine_state> >();
-        template <> std::map<int, getter_setter<correlation::host_state> >
+            umap<int, getter_setter<correlation::engine_state> >();
+        template <> umap<int, getter_setter<correlation::host_state> >
           ndo_mapped_type<correlation::host_state>::map =
-            std::map<int, getter_setter<correlation::host_state> >();
-        template <> std::map<int, getter_setter<correlation::issue> >
+            umap<int, getter_setter<correlation::host_state> >();
+        template <> umap<int, getter_setter<correlation::issue> >
           ndo_mapped_type<correlation::issue>::map =
-            std::map<int, getter_setter<correlation::issue> >();
-        template <> std::map<int, getter_setter<correlation::issue_parent> >
+            umap<int, getter_setter<correlation::issue> >();
+        template <> umap<int, getter_setter<correlation::issue_parent> >
           ndo_mapped_type<correlation::issue_parent>::map =
-          std::map<int, getter_setter<correlation::issue_parent> >();
-        template <> std::map<int, getter_setter<correlation::service_state> >
+          umap<int, getter_setter<correlation::issue_parent> >();
+        template <> umap<int, getter_setter<correlation::service_state> >
           ndo_mapped_type<correlation::service_state>::map =
-            std::map<int, getter_setter<correlation::service_state> >();
-        template <> std::map<int, getter_setter<neb::acknowledgement> >
+            umap<int, getter_setter<correlation::service_state> >();
+        template <> umap<int, getter_setter<neb::acknowledgement> >
           ndo_mapped_type<neb::acknowledgement>::map =
-            std::map<int, getter_setter<neb::acknowledgement> >();
-        template <> std::map<int, getter_setter<neb::comment> >
+            umap<int, getter_setter<neb::acknowledgement> >();
+        template <> umap<int, getter_setter<neb::comment> >
           ndo_mapped_type<neb::comment>::map =
-            std::map<int, getter_setter<neb::comment> >();
-        template <> std::map<int, getter_setter<neb::custom_variable> >
+            umap<int, getter_setter<neb::comment> >();
+        template <> umap<int, getter_setter<neb::custom_variable> >
           ndo_mapped_type<neb::custom_variable>::map =
-            std::map<int, getter_setter<neb::custom_variable> >();
-        template <> std::map<int, getter_setter<neb::custom_variable_status> >
+            umap<int, getter_setter<neb::custom_variable> >();
+        template <> umap<int, getter_setter<neb::custom_variable_status> >
           ndo_mapped_type<neb::custom_variable_status>::map =
-            std::map<int, getter_setter<neb::custom_variable_status> >();
-        template <> std::map<int, getter_setter<neb::downtime> >
+            umap<int, getter_setter<neb::custom_variable_status> >();
+        template <> umap<int, getter_setter<neb::downtime> >
           ndo_mapped_type<neb::downtime>::map =
-            std::map<int, getter_setter<neb::downtime> >();
-        template <> std::map<int, getter_setter<neb::event_handler> >
+            umap<int, getter_setter<neb::downtime> >();
+        template <> umap<int, getter_setter<neb::event_handler> >
           ndo_mapped_type<neb::event_handler>::map =
-            std::map<int, getter_setter<neb::event_handler> >();
-        template <> std::map<int, getter_setter<neb::flapping_status> >
+            umap<int, getter_setter<neb::event_handler> >();
+        template <> umap<int, getter_setter<neb::flapping_status> >
           ndo_mapped_type<neb::flapping_status>::map =
-            std::map<int, getter_setter<neb::flapping_status> >();
-        template <> std::map<int, getter_setter<neb::host> >
+            umap<int, getter_setter<neb::flapping_status> >();
+        template <> umap<int, getter_setter<neb::host> >
           ndo_mapped_type<neb::host>::map =
-            std::map<int, getter_setter<neb::host> >();
-        template <> std::map<int, getter_setter<neb::host_check> >
+            umap<int, getter_setter<neb::host> >();
+        template <> umap<int, getter_setter<neb::host_check> >
           ndo_mapped_type<neb::host_check>::map =
-            std::map<int, getter_setter<neb::host_check> >();
-        template <> std::map<int, getter_setter<neb::host_dependency> >
+            umap<int, getter_setter<neb::host_check> >();
+        template <> umap<int, getter_setter<neb::host_dependency> >
           ndo_mapped_type<neb::host_dependency>::map =
-            std::map<int, getter_setter<neb::host_dependency> >();
-        template <> std::map<int, getter_setter<neb::host_group> >
+            umap<int, getter_setter<neb::host_dependency> >();
+        template <> umap<int, getter_setter<neb::host_group> >
           ndo_mapped_type<neb::host_group>::map =
-            std::map<int, getter_setter<neb::host_group> >();
-        template <> std::map<int, getter_setter<neb::host_group_member> >
+            umap<int, getter_setter<neb::host_group> >();
+        template <> umap<int, getter_setter<neb::host_group_member> >
           ndo_mapped_type<neb::host_group_member>::map =
-            std::map<int, getter_setter<neb::host_group_member> >();
-        template <> std::map<int, getter_setter<neb::host_parent> >
+            umap<int, getter_setter<neb::host_group_member> >();
+        template <> umap<int, getter_setter<neb::host_parent> >
           ndo_mapped_type<neb::host_parent>::map =
-            std::map<int, getter_setter<neb::host_parent> >();
-        template <> std::map<int, getter_setter<neb::host_status> >
+            umap<int, getter_setter<neb::host_parent> >();
+        template <> umap<int, getter_setter<neb::host_status> >
           ndo_mapped_type<neb::host_status>::map =
-            std::map<int, getter_setter<neb::host_status> >();
-        template <> std::map<int, getter_setter<neb::instance> >
+            umap<int, getter_setter<neb::host_status> >();
+        template <> umap<int, getter_setter<neb::instance> >
           ndo_mapped_type<neb::instance>::map =
-            std::map<int, getter_setter<neb::instance> >();
-        template <> std::map<int, getter_setter<neb::instance_status> >
+            umap<int, getter_setter<neb::instance> >();
+        template <> umap<int, getter_setter<neb::instance_status> >
           ndo_mapped_type<neb::instance_status>::map =
-            std::map<int, getter_setter<neb::instance_status> >();
-        template <> std::map<int, getter_setter<neb::log_entry> >
+            umap<int, getter_setter<neb::instance_status> >();
+        template <> umap<int, getter_setter<neb::log_entry> >
           ndo_mapped_type<neb::log_entry>::map =
-            std::map<int, getter_setter<neb::log_entry> >();
-        template <> std::map<int, getter_setter<neb::module> >
+            umap<int, getter_setter<neb::log_entry> >();
+        template <> umap<int, getter_setter<neb::module> >
           ndo_mapped_type<neb::module>::map =
-            std::map<int, getter_setter<neb::module> >();
-        template <> std::map<int, getter_setter<neb::notification> >
+            umap<int, getter_setter<neb::module> >();
+        template <> umap<int, getter_setter<neb::notification> >
           ndo_mapped_type<neb::notification>::map =
-            std::map<int, getter_setter<neb::notification> >();
-        template <> std::map<int, getter_setter<neb::service> >
+            umap<int, getter_setter<neb::notification> >();
+        template <> umap<int, getter_setter<neb::service> >
           ndo_mapped_type<neb::service>::map =
-            std::map<int, getter_setter<neb::service> >();
-        template <> std::map<int, getter_setter<neb::service_check> >
+            umap<int, getter_setter<neb::service> >();
+        template <> umap<int, getter_setter<neb::service_check> >
           ndo_mapped_type<neb::service_check>::map =
-            std::map<int, getter_setter<neb::service_check> >();
-        template <> std::map<int, getter_setter<neb::service_dependency> >
+            umap<int, getter_setter<neb::service_check> >();
+        template <> umap<int, getter_setter<neb::service_dependency> >
           ndo_mapped_type<neb::service_dependency>::map =
-            std::map<int, getter_setter<neb::service_dependency> >();
-        template <> std::map<int, getter_setter<neb::service_group> >
+            umap<int, getter_setter<neb::service_dependency> >();
+        template <> umap<int, getter_setter<neb::service_group> >
           ndo_mapped_type<neb::service_group>::map =
-            std::map<int, getter_setter<neb::service_group> >();
-        template <> std::map<int, getter_setter<neb::service_group_member> >
+            umap<int, getter_setter<neb::service_group> >();
+        template <> umap<int, getter_setter<neb::service_group_member> >
           ndo_mapped_type<neb::service_group_member>::map =
-            std::map<int, getter_setter<neb::service_group_member> >();
-        template <> std::map<int, getter_setter<neb::service_status> >
+            umap<int, getter_setter<neb::service_group_member> >();
+        template <> umap<int, getter_setter<neb::service_status> >
           ndo_mapped_type<neb::service_status>::map =
-            std::map<int, getter_setter<neb::service_status> >();
-        template <> std::map<int, getter_setter<storage::metric> >
+            umap<int, getter_setter<neb::service_status> >();
+        template <> umap<int, getter_setter<storage::metric> >
           ndo_mapped_type<storage::metric>::map =
-            std::map<int, getter_setter<storage::metric> >();
-        template <> std::map<int, getter_setter<storage::rebuild> >
+            umap<int, getter_setter<storage::metric> >();
+        template <> umap<int, getter_setter<storage::rebuild> >
           ndo_mapped_type<storage::rebuild>::map =
-            std::map<int, getter_setter<storage::rebuild> >();
-        template <> std::map<int, getter_setter<storage::remove_graph> >
+            umap<int, getter_setter<storage::rebuild> >();
+        template <> umap<int, getter_setter<storage::remove_graph> >
           ndo_mapped_type<storage::remove_graph>::map =
-            std::map<int, getter_setter<storage::remove_graph> >();
-        template <> std::map<int, getter_setter<storage::status> >
+            umap<int, getter_setter<storage::remove_graph> >();
+        template <> umap<int, getter_setter<storage::status> >
           ndo_mapped_type<storage::status>::map =
-            std::map<int, getter_setter<storage::status> >();
+            umap<int, getter_setter<storage::status> >();
       }
     }
   }

@@ -44,9 +44,9 @@ using namespace com::centreon::broker::ndo;
 template <typename T>
 static void handle_event(T const& e,
                          std::stringstream& buffer) {
-  typename std::map<int, getter_setter<T> >::const_iterator end
+  typename umap<int, getter_setter<T> >::const_iterator end
     = ndo_mapped_type<T>::map.end();
-  for (typename std::map<int, getter_setter<T> >::const_iterator it
+  for (typename umap<int, getter_setter<T> >::const_iterator it
          = ndo_mapped_type<T>::map.begin();
        it != end;
        ++it) {
