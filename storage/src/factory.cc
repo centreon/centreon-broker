@@ -181,6 +181,15 @@ io::endpoint* factory::new_endpoint(
       check_replication = config::parser::parse_boolean(*it);
   }
 
+  // Store or not in data_bin.
+  bool store_in_data_bin(true);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("store_in_data_bin"));
+    if (it != cfg.params.end())
+      store_in_data_bin = config::parser::parse_boolean(*it);
+  }
+
   // Connector.
   std::auto_ptr<storage::connector> c(new storage::connector);
   c->connect_to(
@@ -194,7 +203,8 @@ io::endpoint* factory::new_endpoint(
        rrd_length,
        interval_length,
        rebuild_check_interval,
-       check_replication);
+       check_replication,
+       store_in_data_bin);
   is_acceptor = false;
   return (c.release());
 }

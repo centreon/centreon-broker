@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -53,7 +53,8 @@ namespace          storage {
                      unsigned int rrd_len,
                      time_t interval_length,
                      unsigned int rebuild_check_interval,
-                     bool check_replication);
+                     bool check_replication,
+                     bool store_in_data_bin = true);
     misc::shared_ptr<io::stream>
                    open();
     misc::shared_ptr<io::stream>
@@ -73,6 +74,7 @@ namespace          storage {
     unsigned short _storage_port;
     QString        _storage_user;
     QString        _storage_type;
+    bool           _store_in_data_bin;
   };
 }
 

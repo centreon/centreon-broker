@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -130,9 +130,13 @@ void connector::close() {
  *  @param[in] storage_db              Storage DB name.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] rrd_len                 RRD storage length.
+ *  @param[in] interval_length         Interval length.
  *  @param[in] rebuild_check_interval  How often the storage endpoint
  *                                     must check for graph rebuild.
- *  @param[in] interval_length         Interval length.
+ *  @param[in] check_replication       Check for replication status or
+ *                                     not.
+ *  @param[in] store_in_data_bin       True to store performance data in
+ *                                     the data_bin table.
  */
 void connector::connect_to(
                   QString const& storage_type,
@@ -145,7 +149,8 @@ void connector::connect_to(
                   unsigned int rrd_len,
                   time_t interval_length,
                   unsigned int rebuild_check_interval,
-                  bool check_replication) {
+                  bool check_replication,
+                  bool store_in_data_bin) {
   _queries_per_transaction = queries_per_transaction;
   _storage_db = storage_db;
   _storage_host = storage_host;
@@ -157,6 +162,7 @@ void connector::connect_to(
   _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;
   _check_replication = check_replication;
+  _store_in_data_bin = store_in_data_bin;
   return ;
 }
 
@@ -178,7 +184,7 @@ misc::shared_ptr<io::stream> connector::open() {
                   _rrd_len,
                   _interval_length,
                   _rebuild_check_interval,
-                  true,
+                  _store_in_data_bin,
                   _check_replication)));
 }
 
@@ -217,5 +223,6 @@ void connector::_internal_copy(connector const& c) {
   _storage_port = c._storage_port;
   _storage_user = c._storage_user;
   _storage_type = c._storage_type;
+  _store_in_data_bin = c._store_in_data_bin;
   return ;
 }
