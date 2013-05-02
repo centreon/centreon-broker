@@ -458,27 +458,13 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
                                    &metric_type));
 
           if (_store_in_db) {
-            // Insert perfdata in data_bin.
-            logging::debug(logging::low)
-              << "storage: inserting perfdata in data_bin (metric: "
-              << metric_id << ", ctime: " << ss->last_check
-              << ", value: " << pd.value() << ", status: "
-              << ss->current_state << ")";
-            _insert_data_bin->bindValue(":id_metric", metric_id);
-            _insert_data_bin->bindValue(
-                                ":ctime",
-                                static_cast<unsigned int>(ss->last_check));
-            _insert_data_bin->bindValue(":value", pd.value());
-            _insert_data_bin->bindValue(
-                                ":status",
-                                ss->current_state + 1);
-            if (!_insert_data_bin->exec()
-                || _insert_data_bin->lastError().isValid())
-              throw (broker::exceptions::msg() << "storage: could not " \
-                        "insert data in data_bin (metric " << metric_id
-                     << ", ctime "
-                     << static_cast<unsigned long long>(ss->last_check)
-                     << "): " << _insert_data_bin->lastError().text());
+            // Append perfdata to queue.
+            metric_value val;
+            val.c_time = ss->last_check;
+            val.metric_id = metric_id;
+            val.status = ss->current_state + 1;
+            val.value = pd.value();
+            _perfdata_queue.push_back(val);
           }
 
           // Send perfdata event to processing.
@@ -500,7 +486,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
     }
   }
 
-  // Commit transaction.
+  // Commit transactions.
   if (_queries_per_transaction > 1) {
     logging::debug(logging::low) << "storage: current transaction has "
       << _transaction_queries << " pending queries";
@@ -514,6 +500,12 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       _transaction_queries = 0;
     }
   }
+  long perfdata_events(_perfdata_queue.size());
+  logging::debug(logging::low) << "storage: " << perfdata_events
+    << " data_bin events are pending";
+  if ((perfdata_events >= _queries_per_transaction)
+      || data.isNull())
+    _insert_perfdatas();
 
   return ;
 }
@@ -613,9 +605,9 @@ void stream::_check_deleted_index() {
  *  Clear QtSql objects.
  */
 void stream::_clear_qsql() {
-  _insert_data_bin.reset();
   _update_metrics.reset();
   if (_storage_db.get() && _storage_db->isOpen()) {
+    _insert_perfdatas();
     if (_queries_per_transaction > 1)
       _storage_db->commit();
     _storage_db->close();
@@ -954,6 +946,45 @@ unsigned int stream::_find_metric_id(
 }
 
 /**
+ *  Insert performance data entries in the data_bin table.
+ */
+void stream::_insert_perfdatas() {
+  if (!_perfdata_queue.empty()) {
+    // Insert first entry.
+    std::ostringstream query;
+    {
+      metric_value& mv(_perfdata_queue.front());
+      query.precision(10);
+      query << std::fixed
+            << "INSERT INTO data_bin (id_metric, ctime, status, value)"
+               " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", " << mv.value << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Insert perfdata in data_bin.
+    while (!_perfdata_queue.empty()) {
+      metric_value& mv(_perfdata_queue.front());
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", " << mv.value << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Execute query.
+    QSqlQuery q(*_storage_db);
+    logging::debug(logging::low)
+      << "storage: executing query: " << query.str().c_str();
+    if (!q.exec(query.str().c_str())
+        || q.lastError().isValid())
+      throw (broker::exceptions::msg()
+             << "storage: could not insert data in data_bin: "
+             << q.lastError().text());
+  }
+
+  return ;
+}
+
+/**
  *  Prepare queries.
  */
 void stream::_prepare() {
@@ -980,18 +1011,6 @@ void stream::_prepare() {
     throw (broker::exceptions::msg() << "storage: could not prepare " \
                 "metrics update query: "
              << _update_metrics->lastError().text());
-
-  // Prepare data_bind insert query.
-  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
-  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
-                                 " id_metric, ctime, value, status)" \
-                                 " VALUES (:id_metric," \
-                                 " :ctime," \
-                                 " :value," \
-                                 " :status)"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "data_bin insert query: "
-             << _insert_data_bin->lastError().text());
 
   return ;
 }

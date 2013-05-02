@@ -86,6 +86,12 @@ namespace         storage {
       double       warn_low;
       bool         warn_mode;
     };
+    struct         metric_value {
+      time_t       c_time;
+      unsigned int metric_id;
+      short        status;
+      double       value;
+    };
 
     stream&       operator=(stream const& s);
     void          _check_deleted_index();
@@ -111,16 +117,17 @@ namespace         storage {
 		    double min,
 		    double max,
                     unsigned int* type = NULL);
+    void          _insert_perfdatas();
     void          _prepare();
     void          _rebuild_cache();
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                   _index_cache;
-    std::auto_ptr<QSqlQuery>
-                  _insert_data_bin;
     time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                   _metric_cache;
+    std::list<metric_value>
+                  _perfdata_queue;
     bool          _process_out;
     unsigned int  _queries_per_transaction;
     rebuilder     _rebuild_thread;
