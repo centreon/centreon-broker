@@ -185,7 +185,8 @@ void parser::parse_perfdata(
     // Get metric name.
     bool in_quote(false);
     unsigned int i(0);
-    while (ptr[i] && (in_quote || (ptr[i] != '='))) {
+    while (ptr[i] && (in_quote
+                      || ((ptr[i] != '=') && !isspace(ptr[i])))) {
       if ('\'' == ptr[i])
         in_quote = !in_quote;
       ++i;
