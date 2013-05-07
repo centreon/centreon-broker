@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -42,7 +42,7 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_monitoring_to_rrd"
-#define HOST_COUNT 10
+#define HOST_COUNT 12
 #define SERVICES_BY_HOST 1
 
 /**
@@ -126,10 +126,13 @@ int main() {
     }
 
     // Prepare monitoring engine configuration parameters.
-    generate_commands(commands, 5);
+    generate_commands(commands, 6);
     {
       std::list<command>::iterator it(commands.begin());
       char const* cmd;
+      cmd = "echo \"NONE\"";
+      it->command_line = new char[strlen(cmd) + 1];
+      strcpy(it->command_line, cmd);
       cmd = "echo \"ABSOLUTE|a[absolute]=22374B\\;1000\\;2000\\;0\\;3000\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
@@ -163,7 +166,7 @@ int main() {
         str[1] = '\0';
         it->host_check_command = new char[sizeof(str)];
         strcpy(it->host_check_command, str);
-        i = (i + 1) % 5;
+        i = (i + 1) % 6;
       }
     }
     generate_services(services, hosts, SERVICES_BY_HOST);
@@ -179,7 +182,7 @@ int main() {
         str[1] = '\0';
         it->service_check_command = new char[sizeof(str)];
         strcpy(it->service_check_command, str);
-        i = (i + 1) % 5;
+        i = (i + 1) % 6;
       }
     }
     std::string cbmod_loading;
@@ -243,7 +246,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT m.metric_id, m.metric_name, m.data_source_type,"
             << "       m.unit_name, m.warn, m.crit, m.min, m.max"
-            << "  FROM metrics AS m JOIN index_data AS i"
+            << "  FROM metrics AS m INNER JOIN index_data AS i"
             << "  ON m.index_id=i.id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
       QSqlQuery q(db);
@@ -251,6 +254,8 @@ int main() {
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
       for (unsigned int i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
+        if (!(i % 6))
+          continue ;
         if (!q.next())
           throw (exceptions::msg() << "not enough entry in metrics ("
                  << i << " expected 10)");
@@ -263,8 +268,8 @@ int main() {
         double min_val(q.value(6).toDouble());
         double max_val(q.value(7).toDouble());
         bool error;
-        switch (i % 5) {
-        case 0:
+        switch (i % 6) {
+        case 1:
           error = ((metric_name != "absolute")
                    || (data_source_type != 3)
                    || (unit_name != "B")
@@ -273,7 +278,7 @@ int main() {
                    || (fabs(min_val - 0.0) > 0.001)
                    || (fabs(max_val - 3000.0) > 0.1));
           break ;
-        case 1:
+        case 2:
           error = ((metric_name != "counter")
                    || (data_source_type != 1)
                    || (unit_name != "")
@@ -282,7 +287,7 @@ int main() {
                    || (fabs(min_val - 3.0) > 0.001)
                    || !q.value(7).isNull());
           break ;
-        case 2:
+        case 3:
           error = ((metric_name != "derive")
                    || (data_source_type != 2)
                    || (unit_name != "s")
@@ -291,7 +296,7 @@ int main() {
                    || !q.value(6).isNull()
                    || (fabs(max_val - DBL_MAX - 1.0) < 0.1));
           break ;
-        case 3:
+        case 4:
           error = ((metric_name != "gauge")
                    || (data_source_type != 0)
                    || (unit_name != "kB/s")
@@ -300,7 +305,7 @@ int main() {
                    || !q.value(6).isNull()
                    || !q.value(7).isNull());
           break ;
-        case 4:
+        case 5:
           error = ((metric_name != "default")
                    || (data_source_type != 0)
                    || (unit_name != "queries_per_second")
@@ -312,7 +317,7 @@ int main() {
         }
         if (error)
           throw (exceptions::msg() << "invalid metric #" << i
-                 << " (type " << i % 5 << ", metric "
+                 << " (type " << i % 6 << ", metric "
                  << metric_name.c_str() << ")");
       }
     }
