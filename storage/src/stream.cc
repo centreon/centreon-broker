@@ -397,16 +397,14 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       // Increase event count.
       ++_transaction_queries;
 
-      unsigned int index_id(0);
       unsigned int rrd_len;
-      if (!ss->perf_data.isEmpty()
-          && ((index_id = _find_index_id(
-                            ss->host_id,
-                            ss->service_id,
-                            ss->host_name,
-                            ss->service_description,
-                            &rrd_len))
-              != 0)) {
+      unsigned int index_id(_find_index_id(
+                              ss->host_id,
+                              ss->service_id,
+                              ss->host_name,
+                              ss->service_description,
+                              &rrd_len));
+      if (index_id != 0) {
         // Generate status event.
         logging::debug(logging::low)
           << "storage: generating status event for (" << ss->host_id
@@ -421,66 +419,70 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
         status->state = ss->last_hard_state;
         multiplexing::publisher().write(status.staticCast<io::data>());
 
-        // Parse perfdata.
-        QList<perfdata> pds;
-        parser p;
-        try {
-          p.parse_perfdata(ss->perf_data, pds);
-        }
-        catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-          logging::error(logging::medium)
-            << "storage: error while parsing perfdata of service ("
-            << ss->host_id << ", " << ss->service_id << "): "
-            << e.what();
-          return ;
-        }
-
-        // Loop through all metrics.
-        for (QList<perfdata>::iterator it(pds.begin()), end(pds.end());
-             it != end;
-             ++it) {
-          perfdata& pd(*it);
-
-          // Find metric_id.
-          unsigned int metric_type(pd.value_type());
-          unsigned int metric_id(_find_metric_id(
-                                   index_id,
-                                   pd.name(),
-                                   pd.unit(),
-                                   pd.warning(),
-                                   pd.warning_low(),
-                                   pd.warning_mode(),
-                                   pd.critical(),
-                                   pd.critical_low(),
-                                   pd.critical_mode(),
-                                   pd.min(),
-                                   pd.max(),
-                                   &metric_type));
-
-          if (_store_in_db) {
-            // Append perfdata to queue.
-            metric_value val;
-            val.c_time = ss->last_check;
-            val.metric_id = metric_id;
-            val.status = ss->current_state + 1;
-            val.value = pd.value();
-            _perfdata_queue.push_back(val);
+        if (!ss->perf_data.isEmpty()) {
+          // Parse perfdata.
+          QList<perfdata> pds;
+          parser p;
+          try {
+            p.parse_perfdata(ss->perf_data, pds);
+          }
+          catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+            logging::error(logging::medium)
+              << "storage: error while parsing perfdata of service ("
+              << ss->host_id << ", " << ss->service_id << "): "
+              << e.what();
+            return ;
           }
 
-          // Send perfdata event to processing.
-          logging::debug(logging::high)
-            << "storage: generating perfdata event";
-          misc::shared_ptr<storage::metric> perf(new storage::metric);
-          perf->ctime = ss->last_check;
-          perf->interval = static_cast<time_t>(ss->check_interval
-                                               * _interval_length);
-          perf->is_for_rebuild = false;
-          perf->metric_id = metric_id;
-          perf->name = pd.name();
-          perf->rrd_len = rrd_len;
-          perf->value = pd.value();
-          perf->value_type = metric_type;
-          multiplexing::publisher().write(perf.staticCast<io::data>());
+          // Loop through all metrics.
+          for (QList<perfdata>::iterator
+                 it(pds.begin()),
+                 end(pds.end());
+               it != end;
+               ++it) {
+            perfdata& pd(*it);
+
+            // Find metric_id.
+            unsigned int metric_type(pd.value_type());
+            unsigned int metric_id(_find_metric_id(
+                                     index_id,
+                                     pd.name(),
+                                     pd.unit(),
+                                     pd.warning(),
+                                     pd.warning_low(),
+                                     pd.warning_mode(),
+                                     pd.critical(),
+                                     pd.critical_low(),
+                                     pd.critical_mode(),
+                                     pd.min(),
+                                     pd.max(),
+                                     &metric_type));
+
+            if (_store_in_db) {
+              // Append perfdata to queue.
+              metric_value val;
+              val.c_time = ss->last_check;
+              val.metric_id = metric_id;
+              val.status = ss->current_state + 1;
+              val.value = pd.value();
+              _perfdata_queue.push_back(val);
+            }
+
+            // Send perfdata event to processing.
+            logging::debug(logging::high)
+              << "storage: generating perfdata event";
+            misc::shared_ptr<storage::metric> perf(new storage::metric);
+            perf->ctime = ss->last_check;
+            perf->interval = static_cast<time_t>(ss->check_interval
+                                                 * _interval_length);
+            perf->is_for_rebuild = false;
+            perf->metric_id = metric_id;
+            perf->name = pd.name();
+            perf->rrd_len = rrd_len;
+            perf->value = pd.value();
+            perf->value_type = metric_type;
+            multiplexing::publisher().write(perf.staticCast<io::data>());
+          }
         }
       }
     }
