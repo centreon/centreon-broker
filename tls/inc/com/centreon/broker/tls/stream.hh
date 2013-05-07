@@ -44,7 +44,7 @@ namespace             tls {
     void              process(bool in = false, bool out = false);
     void              read(misc::shared_ptr<io::data>& d);
     unsigned int      read_encrypted(void* buffer, unsigned int size);
-    void              write(misc::shared_ptr<io::data> const& d);
+    unsigned int      write(misc::shared_ptr<io::data> const& d);
     unsigned int      write_encrypted(
                         void const* buffer,
                         unsigned int size);

@@ -337,12 +337,14 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
  *  Write data.
  *
  *  @param[in] d Object to copy.
+ *
+ *  @return Does not return, throw an exception.
  */
-void input::write(misc::shared_ptr<io::data> const& d) {
+unsigned int input::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   throw (exceptions::msg()
          << "BBDO: attempt to write to an input object");
-  return ;
+  return (1);
 }
 
 /**************************************

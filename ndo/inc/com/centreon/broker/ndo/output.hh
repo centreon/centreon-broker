@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace        ndo {
+namespace                ndo {
   /**
    *  @class output output.hh "com/centreon/broker/ndo/output.hh"
    *  @brief NDO output destination.
@@ -33,19 +33,19 @@ namespace        ndo {
    *  The class converts events to an output stream using a modified
    *  version of the NDO protocol.
    */
-  class          output : virtual public io::stream {
+  class                  output : virtual public io::stream {
   public:
-                 output();
-                 output(output const& o);
-    virtual      ~output();
-    output&      operator=(output const& o);
-    void         process(bool in = false, bool out = false);
-    virtual void read(misc::shared_ptr<io::data>& e);
-    virtual void statistics(std::string& buffer) const;
-    virtual void write(misc::shared_ptr<io::data> const& e);
+                         output();
+                         output(output const& o);
+    virtual              ~output();
+    output&              operator=(output const& o);
+    void                 process(bool in = false, bool out = false);
+    virtual void         read(misc::shared_ptr<io::data>& e);
+    virtual void         statistics(std::string& buffer) const;
+    virtual unsigned int write(misc::shared_ptr<io::data> const& e);
 
   private:
-    bool         _process_out;
+    bool                 _process_out;
   };
 }
 

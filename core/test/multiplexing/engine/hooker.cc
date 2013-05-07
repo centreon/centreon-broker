@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -103,8 +103,10 @@ void hooker::stopping() {
  *  Receive event to hook.
  *
  *  @param[in] d Ignored.
+ *
+ *  @return Number of elements acknowledged (1).
  */
-void hooker::write(misc::shared_ptr<io::data> const& d) {
+unsigned int hooker::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
     misc::shared_ptr<io::raw> raw(new io::raw);
@@ -114,5 +116,5 @@ void hooker::write(misc::shared_ptr<io::data> const& d) {
   else
     throw (io::exceptions::shutdown(true, true)
            << "hooker test object is shutdown");
-  return ;
+  return (1);
 }

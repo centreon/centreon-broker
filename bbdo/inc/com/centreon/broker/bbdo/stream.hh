@@ -42,7 +42,7 @@ namespace           bbdo {
     void            process(bool in = false, bool out = true);
     void            read(misc::shared_ptr<io::data>& d);
     void            statistics(std::string& buffer) const;
-    void            write(misc::shared_ptr<io::data> const& d);
+    unsigned int    write(misc::shared_ptr<io::data> const& d);
 
   private:
     bool            _input_read;

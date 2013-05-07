@@ -2039,8 +2039,10 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  Write an event.
  *
  *  @param[in] data Event pointer.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data can be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -2070,5 +2072,5 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
     }
   }
 
-  return ;
+  return (1);
 }

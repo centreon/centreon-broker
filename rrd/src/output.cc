@@ -166,14 +166,16 @@ void output::read(misc::shared_ptr<io::data>& d) {
  *  Write an event.
  *
  *  @param[in] d Data to write.
+ *
+ *  @return Number of events acknowledged.
  */
-void output::write(misc::shared_ptr<io::data> const& d) {
+unsigned int output::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
              << "RRD output is shutdown");
   if (d.isNull())
-    return ;
+    return (1);
 
   if (d->type() == "com::centreon::broker::storage::metric") {
     if (_write_metrics) {
@@ -347,5 +349,5 @@ void output::write(misc::shared_ptr<io::data> const& d) {
     _backend->remove(path);
   }
 
-  return ;
+  return (1);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,7 +26,7 @@
 
 CCB_BEGIN()
 
-namespace        ndo {
+namespace                ndo {
   /**
    *  @class input input.hh "com/centreon/broker/ndo/input.hh"
    *  @brief NDO input source.
@@ -34,24 +34,24 @@ namespace        ndo {
    *  The class converts an input stream into events using a modified
    *  version of the NDO protocol.
    */
-  class          input : virtual public io::stream {
+  class                  input : virtual public io::stream {
   public:
-                 input();
-                 input(input const& i);
-    virtual      ~input();
-    input&       operator=(input const& i);
-    void         process(bool in = false, bool out = false);
-    virtual void read(misc::shared_ptr<io::data>& d);
-    virtual void write(misc::shared_ptr<io::data> const& d);
+                         input();
+                         input(input const& i);
+    virtual              ~input();
+    input&               operator=(input const& i);
+    void                 process(bool in = false, bool out = false);
+    virtual void         read(misc::shared_ptr<io::data>& d);
+    virtual unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
-    char const*  _get_line();
-    template     <typename T>
-    T*           _handle_event();
+    char const*          _get_line();
+    template             <typename T>
+    T*                   _handle_event();
 
-    std::string  _buffer;
-    size_t       _old;
-    bool         _process_in;
+    std::string          _buffer;
+    size_t               _old;
+    bool                 _process_in;
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -101,9 +101,11 @@ void temporary_stream::read(misc::shared_ptr<io::data>& data) {
  *  Write some data.
  *
  *  @param[in] d Data to write.
+ *
+ *  @return Number of elements acknowledged (1).
  */
-void temporary_stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_eventsm);
   _events.enqueue(d);
-  return ;
+  return (1);
 }

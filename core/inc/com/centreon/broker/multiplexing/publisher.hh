@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,15 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_PUBLISHER_HH_
-# define CCB_MULTIPLEXING_PUBLISHER_HH_
+#ifndef CCB_MULTIPLEXING_PUBLISHER_HH
+#  define CCB_MULTIPLEXING_PUBLISHER_HH
 
-# include "com/centreon/broker/io/stream.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace      multiplexing {
+namespace        multiplexing {
   /**
    *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
    *  @brief Publish events to the multiplexing engine.
@@ -35,21 +35,21 @@ namespace      multiplexing {
    *
    *  @see engine
    */
-  class        publisher : public io::stream {
+  class          publisher : public io::stream {
   public:
-               publisher();
-               publisher(publisher const& p);
-               ~publisher() throw ();
-    publisher& operator=(publisher const& p);
-    void       process(bool in = false, bool out = true);
-    void       read(misc::shared_ptr<io::data>& d);
-    void       write(misc::shared_ptr<io::data> const& d);
+                 publisher();
+                 publisher(publisher const& p);
+                 ~publisher() throw ();
+    publisher&   operator=(publisher const& p);
+    void         process(bool in = false, bool out = true);
+    void         read(misc::shared_ptr<io::data>& d);
+    unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
-    bool       _process;
+    bool         _process;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_MULTIPLEXING_PUBLISHER_HH_ */
+#endif // !CCB_MULTIPLEXING_PUBLISHER_HH

@@ -379,8 +379,10 @@ void stream::update() {
  *  Write an event.
  *
  *  @param[in] data Event pointer.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -432,7 +434,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
             << "storage: error while parsing perfdata of service ("
             << ss->host_id << ", " << ss->service_id << "): "
             << e.what();
-          return ;
+          return (1);
         }
 
         // Loop through all metrics.
@@ -507,7 +509,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       || data.isNull())
     _insert_perfdatas();
 
-  return ;
+  return (1);
 }
 
 /**************************************

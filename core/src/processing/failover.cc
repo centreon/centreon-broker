@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,7 +25,6 @@
 #include <QTimer>
 #include <QWriteLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -487,77 +486,67 @@ void failover::run() {
         _last_connect_success = time(NULL);
       }
 
+      // Reprocess unacknowledged events.
+      _unprocessed.splice(_unprocessed.begin(), _processed);
+
       // Process input and output.
       logging::debug(logging::medium) << "failover: "
         << _name << " is launching feeding";
-      misc::shared_ptr<io::data> data;
       exit_lock.relock();
       while (!_should_exit || !_immediate) {
         exit_lock.unlock();
         bool timed_out(false);
-        try {
-          {
-            QReadLocker lock(&_fromm);
-            if (!_from.isNull()) {
-              if (_update && !_is_out) {
-                _update = false;
-                _from->update();
-              }
-              _from->read(data, _next_timeout, &timed_out);
-              if (timed_out && (_read_timeout != (time_t)-1))
-                _next_timeout = time(NULL) + _read_timeout;
-            }
-          }
-          QWriteLocker lock(&_tom);
-          if (!_to.isNull()) {
-            if (_update && _is_out) {
+        if (_unprocessed.empty()) {
+          QReadLocker lock(&_fromm);
+          if (!_from.isNull()) {
+            if (_update && !_is_out) {
               _update = false;
-              _to->update();
+              _from->update();
             }
-            _to->write(data);
-            time_t now(time(NULL));
-            if (!data.isNull()) {
-              if (now > _last_event) {
-                time_t limit(now - _last_event);
-                if (limit > event_window_length)
-                  limit = event_window_length;
-                memmove(
-                  _events + limit,
-                  _events,
-                  (event_window_length - limit) * sizeof(*_events));
-                memset(_events, 0, limit * sizeof(*_events));
-                _last_event = now;
-              }
-              else if (now < _last_event) {
-                memset(_events, 0, event_window_length * sizeof(*_events));
-                _last_event = now;
-              }
-              ++_events[0];
+            {
+              misc::shared_ptr<io::data> data;
+              _from->read(data, _next_timeout, &timed_out);
+              _unprocessed.push_back(data);
             }
+            if (timed_out && (_read_timeout != (time_t)-1))
+              _next_timeout = time(NULL) + _read_timeout;
           }
         }
-        catch (io::exceptions::shutdown const& e) {
-          throw ;
-        }
-        catch (exceptions::msg const& e) {
-          try {
-            throw (exceptions::with_pointer(e, data));
+        QWriteLocker lock(&_tom);
+        if (!_to.isNull()) {
+          if (_update && _is_out) {
+            _update = false;
+            _to->update();
           }
-          catch (exceptions::with_pointer const& e) {
-            throw ;
+          unsigned int written(_to->write(_unprocessed.front()));
+          time_t now(time(NULL));
+          if (!_unprocessed.front().isNull()) {
+            if (now > _last_event) {
+              time_t limit(now - _last_event);
+              if (limit > event_window_length)
+                limit = event_window_length;
+              memmove(
+                _events + limit,
+                _events,
+                (event_window_length - limit) * sizeof(*_events));
+              memset(_events, 0, limit * sizeof(*_events));
+              _last_event = now;
+            }
+            else if (now < _last_event) {
+              memset(_events, 0, event_window_length * sizeof(*_events));
+              _last_event = now;
+            }
+            ++_events[0];
           }
-          catch (...) {}
-          throw ;
+          _processed.push_back(_unprocessed.front());
+          _unprocessed.pop_front();
+          for (unsigned int i(0);
+               (i < written) && !_processed.empty();
+               ++i)
+            _processed.pop_front();
         }
-        data.clear();
         exit_lock.relock();
       }
-    }
-    catch (exceptions::with_pointer const& e) {
-      logging::error(logging::high) << e.what();
-      _last_error = e.what();
-      if (!e.ptr().isNull() && !_failover.isNull() && !_failover->isRunning())
-        _failover->write(e.ptr());
     }
     catch (io::exceptions::shutdown const& e) {
       logging::info(logging::medium)
@@ -769,8 +758,8 @@ bool failover::wait(unsigned long time) {
  *
  *  @return Does not return, throw an exception.
  */
-void failover::write(misc::shared_ptr<io::data> const& d) {
-  QMutexLocker lock(&_datam);
-  _data = d;
-  return ;
+unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
+  throw (exceptions::msg() << "cannot write to failover '"
+         << _name << "'");
+  return (0);
 }

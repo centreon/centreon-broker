@@ -59,7 +59,7 @@ namespace                          com {
                                      QMap<QPair<unsigned int, unsigned int>, node> const& state);
           void                     starting();
           void                     stopping();
-          void                     write(
+          unsigned int             write(
                                      misc::shared_ptr<io::data> const& e);
 
          public slots:

@@ -176,8 +176,10 @@ void output::statistics(std::string& buffer) const {
  *  Send an event.
  *
  *  @param[in] e Event to send.
+ *
+ *  @return Number of events acknowledged.
  */
-void output::write(misc::shared_ptr<io::data> const& e) {
+unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Redirection array.
   static struct {
     QString      type;
@@ -279,5 +281,5 @@ void output::write(misc::shared_ptr<io::data> const& e) {
   else
     _to->write(e);
 
-  return ;
+  return (1);
 }

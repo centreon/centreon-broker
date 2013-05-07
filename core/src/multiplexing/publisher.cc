@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -96,12 +96,14 @@ void publisher::read(misc::shared_ptr<io::data>& d) {
  *  Send data to the multiplexing engine.
  *
  *  @param[in] d Multiplexed data.
+ *
+ *  @return Number of elements acknowledged (1).
  */
-void publisher::write(misc::shared_ptr<io::data> const& d) {
+unsigned int publisher::write(misc::shared_ptr<io::data> const& d) {
   if (_process)
     engine::instance().publish(d);
   else
     throw (io::exceptions::shutdown(true, true) << "publisher "
              << this << " is shutdown");
-  return ;
+  return (1);
 }
