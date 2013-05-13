@@ -50,7 +50,7 @@ namespace         storage {
                     QString const& storage_user,
                     QString const& storage_password,
                     QString const& storage_db,
-                    unsigned queries_per_transaction,
+                    unsigned int queries_per_transaction,
                     unsigned int rrd_len,
                     time_t interval_length,
                     unsigned int rebuild_check_interval,

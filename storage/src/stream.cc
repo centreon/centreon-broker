@@ -502,7 +502,7 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       _transaction_queries = 0;
     }
   }
-  long perfdata_events(_perfdata_queue.size());
+  unsigned int perfdata_events(_perfdata_queue.size());
   logging::debug(logging::low) << "storage: " << perfdata_events
     << " data_bin events are pending";
   if ((perfdata_events >= _queries_per_transaction)
