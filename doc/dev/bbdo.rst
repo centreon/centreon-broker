@@ -239,3 +239,22 @@ And gives the following packet with values in hexadecimal.
   +========+========+========+========+
   |   30   |   2E   |   31   |   00   |
   +--------+--------+--------+--------+
+
+************************
+Connection establishment
+************************
+
+BBDO is a protocol which can negociate features. When establishing a
+connection, a *version_response* packet is sent by the client. It
+provides its supported BBDO protocol version and extensions. The server
+replies to this message with another *version_response* packet
+containing its own supported protocol version and extensions. If
+protocol versions match, then starts the extensions negociation.
+
+Currently two extensions are supported : *TLS* and *compression*. Right
+after the *version_response* packet, each peer search in the other
+peer's extension list the extensions it supports. When one is found, it
+is enabled (ie. it immediately starts).
+
+You can find more details in the :ref:`TLS module documentation <user_modules_tls>`
+and the :ref:`compression module documentation <user_modules_compression>`.

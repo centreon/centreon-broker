@@ -93,6 +93,7 @@ Example
     <protocol>bbdo</protocol>
   </output>
 
+
 .. _user_modules_rrd:
 
 RRD
@@ -392,6 +393,9 @@ Example
     <protocol>ndo</protocol>
   </input>
 
+
+.. _user_modules_tls:
+
 TLS
 ===
 
@@ -457,6 +461,9 @@ certificate (trusted_ca.cert).
     <ca_certificate>trusted_ca.cert</ca_certificate>
     <protocol>bbdo</protocol>
   </input>
+
+
+.. _user_modules_compression:
 
 Compression
 ===========
