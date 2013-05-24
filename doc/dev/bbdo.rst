@@ -258,3 +258,30 @@ is enabled (ie. it immediately starts).
 
 You can find more details in the :ref:`TLS module documentation <user_modules_tls>`
 and the :ref:`compression module documentation <user_modules_compression>`.
+
+=======
+Example
+=======
+
+Let's have C the client and S the server. The following steps are
+performed sequentially.
+
+  - C initiates a TCP connection with S and connection gets established
+  - C sends a *version_response* packet with the following attributes
+    - protocol major : 1
+    - protocol minor : 0
+    - protocol patch : 0
+    - extensions : "TLS compression"
+  - S sends its own *version_response* packet in reply to C's
+    - protocol major : 1
+    - protocol minor : 0
+    - protocol patch : 0
+    - extensions : "TLS compression"
+  - C and S determines which extensions they have in common (here TLS
+    and compression)
+  - if order is important, extensions are applied in the order provided
+    by the server
+  - TLS connection is initiated, handshake performed, ...
+  - compression connection is opened
+  - now data transmitted between C and S is both encrypted and
+    compressed !
