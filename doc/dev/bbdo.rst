@@ -31,7 +31,12 @@ Type          Representation              Size (bytes)
 integer       binary                      4
 short integer binary                      2
 long integer  binary                      8
+boolean       binary (0 is false,         1
+              everything else is true)
 string        nul-terminated UTF-8 string variable
+              (either in fixed (2013) or
+              scientific (2.013e+3)
+              format)
 real          nul-terminated UTF-8 string variable
 ============= =========================== ============
 
@@ -49,6 +54,10 @@ Fields are provided in the big endian format.
 Field     Type                   Description
 ========= ====================== =====================================
 checksum  unsigned short integer CRC-16-CCITT X.25 of size and id.
+                                 The checksum can be used to recover
+                                 from an incomplete data packet sent
+                                 in the stream by dropping bytes one
+                                 by one.
 size      unsigned short integer Size of the packet, including header.
 id        unsigned integer       ID of the event.
 data                             Payload data.
@@ -259,7 +268,6 @@ is enabled (ie. it immediately starts).
 You can find more details in the :ref:`TLS module documentation <user_modules_tls>`
 and the :ref:`compression module documentation <user_modules_compression>`.
 
-=======
 Example
 =======
 

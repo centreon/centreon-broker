@@ -937,3 +937,26 @@ in_downtime   boolean
 service_id    unsigned integer
 start_time    time
 ============= ================ =========================================
+
+
+********
+Internal
+********
+
+Version response
+================
+
+========== ============= ===============================================
+Property   Type          Description
+========== ============= ===============================================
+bbdo_major short integer BBDO protocol major used by the peer sending
+                         this *version_response* packet. The sole
+                         current protocol version is 1.0.0.
+bbdo_minor short integer BBDO protocol minor used by the peer sending
+                         this *version_response* packet.
+bbdo_patch short integer BBDO protocol patch used by the peer sending
+                         this *version_response* packet.
+extensions string        Space-separated string of extensions supported
+                         by the peer sending this *version_response*
+                         packet.
+========== ============= ===============================================
