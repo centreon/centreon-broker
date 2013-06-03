@@ -34,10 +34,10 @@ long integer  binary                      8
 boolean       binary (0 is false,         1
               everything else is true)
 string        nul-terminated UTF-8 string variable
+real          nul-terminated UTF-8 string variable
               (either in fixed (2013) or
               scientific (2.013e+3)
               format)
-real          nul-terminated UTF-8 string variable
 ============= =========================== ============
 
 .. _dev_bbdo_packet_format:
