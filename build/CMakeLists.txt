@@ -43,7 +43,7 @@ add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 #
 
 # Find Qt.
-find_package(Qt4 4.2.0 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
 include(${QT_USE_FILE})
 set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")

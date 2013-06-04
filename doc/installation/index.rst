@@ -55,7 +55,7 @@ dependencies:
 
 * a C++ compilation environment.
 * CMake **(>= 2.8)**, a cross-platform build system.
-* the Qt **(>= 4.5)** framework with QtCore, QtSql and QtXml modules.
+* the Qt **(>= 4.7.4)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
 
 This program is compatible only with Unix-like platforms (Linux,
