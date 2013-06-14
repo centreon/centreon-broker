@@ -59,7 +59,7 @@ checksum  unsigned short integer CRC-16-CCITT X.25 of size and id.
                                  from an incomplete data packet sent
                                  in the stream by dropping bytes one
                                  by one.
-size      unsigned short integer Size of the packet, including header.
+size      unsigned short integer Size of the packet, excluding header.
 id        unsigned integer       ID of the event.
 data                             Payload data.
 ========= ====================== =====================================
@@ -215,7 +215,7 @@ And gives the following packet with values in hexadecimal.
   +-----------------+-----------------+-----------------------------------+
   |      CRC16      |      SIZE       |                ID                 |
   +========+========+========+========+========+========+========+========+
-  |   27   |   33   |   00   |   2C   |   00   |   01   |   00   |   09   |
+  |   27   |   33   |   00   |   28   |   00   |   01   |   00   |   09   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
   +--------+-----------------+-----------------------------------+--------
