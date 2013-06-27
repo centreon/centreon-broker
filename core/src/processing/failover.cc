@@ -487,6 +487,18 @@ void failover::run() {
         _last_connect_success = time(NULL);
       }
 
+      // Initial buffering.
+      {
+        logging::info(logging::medium)
+          << "failover: initialy buffering data in " << _name
+          << " (" << _buffering_timeout << "s)";
+        QTimer::singleShot(
+                  _buffering_timeout * 1000,
+                  this,
+                  SLOT(quit()));
+        exec();
+      }
+
       // Process input and output.
       logging::debug(logging::medium) << "failover: "
         << _name << " is launching feeding";
