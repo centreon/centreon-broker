@@ -54,7 +54,8 @@ namespace          storage {
                      time_t interval_length,
                      unsigned int rebuild_check_interval,
                      bool check_replication,
-                     bool store_in_data_bin = true);
+                     bool store_in_data_bin = true,
+                     bool insert_in_index_data = false);
     misc::shared_ptr<io::stream>
                    open();
     misc::shared_ptr<io::stream>
@@ -64,6 +65,7 @@ namespace          storage {
     void           _internal_copy(connector const& c);
 
     bool           _check_replication;
+    bool           _insert_in_index_data;
     time_t         _interval_length;
     unsigned int   _queries_per_transaction;
     unsigned int   _rebuild_check_interval;

@@ -110,6 +110,8 @@ static inline bool double_equal(double a, double b) {
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
  *  @param[in] check_replication       true to check replication status.
+ *  @param[in] insert_in_index_data    Create entries in index_data or
+ *                                     not.
  */
 stream::stream(
           QString const& storage_type,
@@ -123,7 +125,8 @@ stream::stream(
           time_t interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
-          bool check_replication) {
+          bool check_replication,
+          bool insert_in_index_data) {
   // Process events.
   _process_out = true;
 
@@ -135,13 +138,17 @@ stream::stream(
 
   // Store in DB.
   _store_in_db = store_in_db;
+  _insert_in_index_data = insert_in_index_data;
 
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
 
   // Add database connection.
-  _storage_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(storage_type, storage_id)));
+  _storage_db.reset(
+    new QSqlDatabase(QSqlDatabase::addDatabase(
+                                     storage_type,
+                                     storage_id)));
   if (storage_type == "QMYSQL")
     _storage_db->setConnectOptions("CLIENT_FOUND_ROWS");
 
@@ -249,6 +256,7 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
 
   // Store in DB.
   _store_in_db = s._store_in_db;
+  _insert_in_index_data = s._insert_in_index_data;
 
   // Storage connection ID.
   QString storage_id;

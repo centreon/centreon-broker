@@ -190,6 +190,15 @@ io::endpoint* factory::new_endpoint(
       store_in_data_bin = config::parser::parse_boolean(*it);
   }
 
+  // Insert entries or not in index_data.
+  bool insert_in_index_data(false);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("insert_in_index_data"));
+    if (it != cfg.params.end())
+      insert_in_index_data = config::parser::parse_boolean(*it);
+  }
+
   // Connector.
   std::auto_ptr<storage::connector> c(new storage::connector);
   c->connect_to(
@@ -204,7 +213,8 @@ io::endpoint* factory::new_endpoint(
        interval_length,
        rebuild_check_interval,
        check_replication,
-       store_in_data_bin);
+       store_in_data_bin,
+       insert_in_index_data);
   is_acceptor = false;
   return (c.release());
 }

@@ -55,7 +55,8 @@ namespace         storage {
                     time_t interval_length,
                     unsigned int rebuild_check_interval,
                     bool store_in_db = true,
-                    bool check_replication = true);
+                    bool check_replication = true,
+                    bool insert_in_index_data = false);
                   stream(stream const& s);
                   ~stream();
     void          process(bool in = false, bool out = true);
@@ -123,6 +124,7 @@ namespace         storage {
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                   _index_cache;
+    bool          _insert_in_index_data;
     time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                   _metric_cache;
