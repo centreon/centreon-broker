@@ -404,8 +404,10 @@ void correlator::update() {
  *  Treat a new event.
  *
  *  @param[inout] e Event to process.
+ *
+ *  @return Number of events acknowledged (1).
  */
-void correlator::write(misc::shared_ptr<io::data> const& e) {
+unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
   static QString const ack_type("com::centreon::broker::neb::acknowledgement");
   static QString const host_type("com::centreon::broker::neb::host");
   static QString const host_status_type("com::centreon::broker::neb::host_status");
@@ -439,7 +441,7 @@ void correlator::write(misc::shared_ptr<io::data> const& e) {
   catch (exceptions::msg const& e) {
     logging::error(logging::high) << e.what() << " (ignored)";
   }
-  return ;
+  return (1);
 }
 
 /**************************************

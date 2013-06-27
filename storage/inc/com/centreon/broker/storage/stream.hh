@@ -64,7 +64,7 @@ namespace         storage {
     void          starting();
     void          stopping();
     void          update();
-    void          write(misc::shared_ptr<io::data> const& d);
+    unsigned int  write(misc::shared_ptr<io::data> const& d);
 
   private:
     struct         index_info {

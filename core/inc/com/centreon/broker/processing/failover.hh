@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -80,7 +80,7 @@ namespace                com {
           void           statistics(std::string& buffer) const;
           void           update();
           bool           wait(unsigned long time = ULONG_MAX);
-          void           write(misc::shared_ptr<io::data> const& d);
+          unsigned int   write(misc::shared_ptr<io::data> const& d);
 
           static time_t const
                          event_window_length = 30;
@@ -105,8 +105,12 @@ namespace                com {
           time_t         _last_event;
           QString        _name;
           time_t         _next_timeout;
+          std::list<misc::shared_ptr<io::data> >
+                         _processed;
           time_t         _read_timeout;
           volatile time_t _retry_interval;
+          std::list<misc::shared_ptr<io::data> >
+                         _unprocessed;
           volatile bool  _update;
 
           // Retained data.

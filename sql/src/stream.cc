@@ -2039,22 +2039,30 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  Write an event.
  *
  *  @param[in] data Event pointer.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data can be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
            << "SQL stream is shutdown");
 
   // Check that data exists.
+  unsigned int retval;
   if (!data.isNull()) {
     QHash<QString, void (stream::*)(io::data const&)>::const_iterator
       it(_processing_table.find(data->type()));
     if (it != _processing_table.end()) {
       (this->*(it.value()))(*data);
       ++_transaction_queries;
+      retval = 0;
     }
+    else
+      retval = 1;
   }
+  else
+    retval = 1;
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {
@@ -2065,10 +2073,11 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
             || data.isNull())) {
       logging::info(logging::medium) << "SQL: committing transaction";
       _db->commit();
+      retval += _transaction_queries;
       _db->transaction();
       _transaction_queries = 0;
     }
   }
 
-  return ;
+  return (retval);
 }

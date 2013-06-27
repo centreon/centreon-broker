@@ -42,7 +42,7 @@ namespace                bbdo {
     void                 process(bool in = false, bool out = false);
     virtual void         read(misc::shared_ptr<io::data>& d);
     virtual unsigned int read_any(misc::shared_ptr<io::data>& d);
-    virtual void         write(misc::shared_ptr<io::data> const& d);
+    virtual unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
     void                 _buffer_must_have_unprocessed(

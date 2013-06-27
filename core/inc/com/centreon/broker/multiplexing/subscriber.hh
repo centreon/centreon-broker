@@ -59,7 +59,7 @@ namespace               multiplexing {
                           time_t timeout,
                           bool* timed_out = NULL);
     void                statistics(std::string& buffer) const;
-    void                write(misc::shared_ptr<io::data> const& d);
+    unsigned int        write(misc::shared_ptr<io::data> const& d);
 
   private:
                         subscriber(subscriber const& s);

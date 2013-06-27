@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,7 +45,7 @@ public:
   void            set_replay_events(bool replay);
   void            set_sleep_time(unsigned int ms);
   void            set_store_events(bool store);
-  void            write(
+  unsigned int    write(
                     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
 
 private:

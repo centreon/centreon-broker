@@ -135,8 +135,10 @@ void output::statistics(std::string& buffer) const {
  *  Send an event.
  *
  *  @param[in] e Event to send.
+ *
+ *  @return Number of events acknowledged.
  */
-void output::write(misc::shared_ptr<io::data> const& e) {
+unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Types.
   static QString const neb_acknowledgement_type("com::centreon::broker::neb::acknowledgement");
   static QString const neb_comment_type("com::centreon::broker::neb::comment");
@@ -178,7 +180,7 @@ void output::write(misc::shared_ptr<io::data> const& e) {
     throw (io::exceptions::shutdown(true, !_process_out)
            << "NDO output stream is shutdown");
   if (e.isNull())
-    return ;
+    return (1);
 
   logging::debug(logging::medium) << "NDO: writing data ("
     << e->type() << ")";
@@ -429,5 +431,5 @@ void output::write(misc::shared_ptr<io::data> const& e) {
   _to->write(data.staticCast<io::data>());
   logging::debug(logging::medium) << "NDO: data successfully sent";
 
-  return ;
+  return (1);
 }

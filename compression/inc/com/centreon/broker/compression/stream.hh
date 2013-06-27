@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,7 +43,7 @@ namespace        compression {
     void         process(bool in = false, bool out = false);
     void         read(misc::shared_ptr<io::data>& d);
     void         statistics(std::string& buffer) const;
-    void         write(misc::shared_ptr<io::data> const& d);
+    unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
     void         _flush();

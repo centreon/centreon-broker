@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,36 +27,36 @@
 
 CCB_BEGIN()
 
-namespace   local {
+namespace        local {
   /**
    *  @class stream stream.hh "com/centreon/broker/local/stream.hh"
    *  @brief Local socket stream.
    *
    *  Local socket stream.
    */
-  class     stream : public io::stream {
+  class          stream : public io::stream {
   public:
-            stream(misc::shared_ptr<QLocalSocket> sock);
-            stream(
-              misc::shared_ptr<QLocalSocket> sock,
-              misc::shared_ptr<QMutex> mutex);
-            ~stream();
-    void    process(bool in = false, bool out = true);
-    void    read(misc::shared_ptr<io::data>& d);
-    void    set_timeout(int msecs);
-    void    write(misc::shared_ptr<io::data> const& d);
+                 stream(misc::shared_ptr<QLocalSocket> sock);
+                 stream(
+                   misc::shared_ptr<QLocalSocket> sock,
+                   misc::shared_ptr<QMutex> mutex);
+                 ~stream();
+    void         process(bool in = false, bool out = true);
+    void         read(misc::shared_ptr<io::data>& d);
+    void         set_timeout(int msecs);
+    unsigned int write(misc::shared_ptr<io::data> const& d);
 
    private:
-            stream(stream const& s);
-    stream& operator=(stream const& s);
+                 stream(stream const& s);
+    stream&      operator=(stream const& s);
 
     misc::shared_ptr<QMutex>
-            _mutex;
-    bool    _process_in;
-    bool    _process_out;
+                 _mutex;
+    bool         _process_in;
+    bool         _process_out;
     misc::shared_ptr<QLocalSocket>
-            _socket;
-    int     _timeout;
+                 _socket;
+    int          _timeout;
   };
 }
 

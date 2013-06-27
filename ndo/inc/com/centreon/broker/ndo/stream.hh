@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,24 +26,24 @@
 
 CCB_BEGIN()
 
-namespace   ndo {
+namespace        ndo {
   /**
    *  @class stream stream.hh "com/centreon/broker/ndo/stream.hh"
    *  @brief NDO stream.
    *
    *  The class converts data to neb events back and forth.
    */
-  class     stream : public input,
-                     public output {
+  class          stream : public input,
+                          public output {
   public:
-            stream();
-            stream(stream const& s);
-            ~stream();
-    stream& operator=(stream const& s);
-    void    process(bool in = false, bool out = true);
-    void    read(misc::shared_ptr<io::data>& d);
-    void    statistics(std::string& buffer) const;
-    void    write(misc::shared_ptr<io::data> const& d);
+                 stream();
+                 stream(stream const& s);
+                 ~stream();
+    stream&      operator=(stream const& s);
+    void         process(bool in = false, bool out = true);
+    void         read(misc::shared_ptr<io::data>& d);
+    void         statistics(std::string& buffer) const;
+    unsigned int write(misc::shared_ptr<io::data> const& d);
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -139,8 +139,10 @@ void stream::set_timeout(int msecs) {
  *  Write data to the socket.
  *
  *  @param[in] d Data to write.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Raw type.
   static QString const raw_type("com::centreon::broker::io::raw");
 
@@ -149,7 +151,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "local stream is shutdown");
   if (d.isNull())
-    return ;
+    return (1);
 
   if (d->type() == raw_type) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
@@ -161,5 +163,5 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
                << _socket->errorString());
     _socket->waitForBytesWritten(-1);
   }
-  return ;
+  return (1);
 }

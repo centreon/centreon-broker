@@ -59,7 +59,7 @@ namespace                    io {
     virtual void             read_from(misc::shared_ptr<stream> from);
     virtual void             statistics(std::string& buffer) const;
     virtual void             update();
-    virtual void             write(misc::shared_ptr<data> const& d) = 0;
+    virtual unsigned int     write(misc::shared_ptr<data> const& d) = 0;
     virtual void             write_to(misc::shared_ptr<stream> to);
 
   protected:
