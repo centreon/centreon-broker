@@ -55,7 +55,7 @@ dependencies:
 
 * a C++ compilation environment.
 * CMake **(>= 2.8)**, a cross-platform build system.
-* the Qt **(>= 4.5)** framework with QtCore, QtSql and QtXml modules.
+* the Qt **(>= 4.7.4)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
 
 This program is compatible only with Unix-like platforms (Linux,
@@ -96,7 +96,7 @@ Software                    Package Name      Description
 C++ compilation environment gcc gcc-c++ make  Mandatory tools to compile.
 CMake **(>= 2.8)**          cmake             Read the build script and
                                               prepare sources for compilation.
-Qt **(>= 4.5)**             qt4-devel         Centreon Broker require Qt
+Qt **(>= 4.7.4)**           qt4-devel         Centreon Broker require Qt
                                               core framework.
                             qt4-mysql         MySQL drivers for Qt. Useful if
                                               you're using DB output (with
@@ -148,7 +148,7 @@ Software                    Package Name     Description
 C++ compilation environment build-essential  Mandatory tools to compile.
 CMake **(>= 2.8)**          cmake            Read the build script and
                                              prepare sources for compilation.
-Qt **(>= 4.5)**             libqt4-dev       Centreon Broker require Qt
+Qt **(>= 4.7.4)**           libqt4-dev       Centreon Broker require Qt
                                              core framework.
                             libqt4-sql-mysql MySQL drivers for Qt. Useful if
                                              you're using DB output (with
@@ -185,7 +185,7 @@ Software                    Package Name      Description
 C++ compilation environment gcc gcc-c++ make  Mandatory tools to compile.
 CMake **(>= 2.8)**          cmake             Read the build script and
                                               prepare sources for compilation.
-Qt **(>= 4.5)**             libqt4-devel      Centreon Broker require Qt
+Qt **(>= 4.7.4)**           libqt4-devel      Centreon Broker require Qt
                                               core framework.
                             libqt4-sql-mysql  MySQL drivers for Qt. Useful if
                                               you're using DB output (with

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,20 +35,20 @@ using namespace com::centreon::broker;
  *
  *  Simple class that hook events from the multiplexing engine.
  */
-class     hooker : public multiplexing::hooker {
+class          hooker : public multiplexing::hooker {
 public:
-          hooker();
-          hooker(hooker const& h);
-          ~hooker();
-  hooker& operator=(hooker const& h);
-  void    read(misc::shared_ptr<io::data>& d);
-  void    starting();
-  void    stopping();
-  void    write(misc::shared_ptr<io::data> const& d);
+               hooker();
+               hooker(hooker const& h);
+               ~hooker();
+  hooker&      operator=(hooker const& h);
+  void         read(misc::shared_ptr<io::data>& d);
+  void         starting();
+  void         stopping();
+  unsigned int write(misc::shared_ptr<io::data> const& d);
 
 private:
   QQueue<misc::shared_ptr<io::data> >
-          _queue;
+               _queue;
 };
 
 #endif // !HOOKER_HH

@@ -47,7 +47,7 @@ namespace              file {
                          bool out = false);
     void               read(misc::shared_ptr<io::data>& d);
     void               statistics(std::string& buffer) const;
-    void               write(misc::shared_ptr<io::data> const& d);
+    unsigned int       write(misc::shared_ptr<io::data> const& d);
 
   private:
                        stream(stream const& s);

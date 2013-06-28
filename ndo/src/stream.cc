@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -97,8 +97,9 @@ void stream::statistics(std::string& buffer) const {
  *  Write data to stream.
  *
  *  @param[in] d Data to send.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
-  output::write(d);
-  return ;
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+  return (output::write(d));
 }

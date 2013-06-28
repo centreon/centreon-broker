@@ -144,8 +144,10 @@ void stream::statistics(std::string& buffer) const {
  *  The data can be buffered before being written to the subobject.
  *
  *  @param[in] d Data to send.
+ *
+ *  @return Number of events acknowledged (1).
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -167,7 +169,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
 
-  return ;
+  return (1);
 }
 
 /**************************************

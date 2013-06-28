@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -190,8 +190,10 @@ void setable_stream::set_store_events(bool store) {
  *  Write some data.
  *
  *  @param[in] d Data to write.
+ *
+ *  @return Number of events acknowledged (1).
  */
-void setable_stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int setable_stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
            << "setable stream " << this << " is shutdown");
@@ -209,7 +211,7 @@ void setable_stream::write(misc::shared_ptr<io::data> const& d) {
         << " which has now " << _stored_events.size() << " events";
     }
   }
-  return ;
+  return (1);
 }
 
 /**************************************

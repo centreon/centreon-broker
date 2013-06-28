@@ -44,7 +44,7 @@ int main() {
   p.parse_perfdata(
       "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
       "infotraffic=18x;;;; a[foo]=1234;10;11: c[bar]=1234;~:10;20:30 "
-      "baz=1234;@10:20; qux=9queries_per_second;@10:;@5:;0;100",
+      "baz=1234;@10:20; 'q u x'=9queries_per_second;@10:;@5:;0;100",
       list);
 
   // Expected result.
@@ -111,7 +111,7 @@ int main() {
   }
   {
     perfdata pd;
-    pd.name("qux");
+    pd.name("q u x");
     pd.value_type(perfdata::gauge);
     pd.value(9.0);
     pd.unit("queries_per_second");

@@ -31,8 +31,14 @@ Type          Representation              Size (bytes)
 integer       binary                      4
 short integer binary                      2
 long integer  binary                      8
+time          binary (timestamp)          8
+boolean       binary (0 is false,         1
+              everything else is true)
 string        nul-terminated UTF-8 string variable
 real          nul-terminated UTF-8 string variable
+              (either in fixed (2013) or
+              scientific (2.013e+3)
+              format)
 ============= =========================== ============
 
 .. _dev_bbdo_packet_format:
@@ -49,7 +55,11 @@ Fields are provided in the big endian format.
 Field     Type                   Description
 ========= ====================== =====================================
 checksum  unsigned short integer CRC-16-CCITT X.25 of size and id.
-size      unsigned short integer Size of the packet, including header.
+                                 The checksum can be used to recover
+                                 from an incomplete data packet sent
+                                 in the stream by dropping bytes one
+                                 by one.
+size      unsigned short integer Size of the packet, excluding header.
 id        unsigned integer       ID of the event.
 data                             Payload data.
 ========= ====================== =====================================
@@ -205,7 +215,7 @@ And gives the following packet with values in hexadecimal.
   +-----------------+-----------------+-----------------------------------+
   |      CRC16      |      SIZE       |                ID                 |
   +========+========+========+========+========+========+========+========+
-  |   27   |   33   |   00   |   2C   |   00   |   01   |   00   |   09   |
+  |   27   |   33   |   00   |   28   |   00   |   01   |   00   |   09   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
   +--------+-----------------+-----------------------------------+--------
@@ -213,29 +223,74 @@ And gives the following packet with values in hexadecimal.
   | checks_|    check_type   |              host_id              |    =>
   | enabled|                 |                                   |
   +========+========+========+========+==========================+========+
-  |   01   |   00   |   00   |   00   |   00   |   00   |   2A   |   51   |
+  |   01   |   00   |   00   |   00   |   00   |   00   |   2A   |   00   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
    --------------------------+--------------------------------------------
-        =>  next_check       |               command_line =>
+                             =>  next_check                      |    =>
   +========+========+========+========+========+========+========+========+
-  |   5D   |   78   |   A1   |   2E   |   2F   |   6D   |   79   |   5F   |
+  |   00   |   00   |   00   |   51   |   5D   |   78   |   A1   |   2E   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
    -----------------------------------------------------------------------
                              => command_line =>
   +========+========+========+========+========+========+========+========+
-  |   70   |   6C   |   75   |   67   |   69   |   6E   |   20   |   2D   |
+  |   2F   |   6D   |   79   |   5F   |   70   |   6C   |   75   |   67   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
    -----------------------------------------------------------------------
                              => command_line =>
   +========+========+========+========+========+========+========+========+
-  |   48   |   20   |   31   |   32   |   37   |   2E   |   30   |   2E   |
+  |   69   |   6E   |   20   |   2D   |   48   |   20   |   31   |   32   |
   +--------+--------+--------+--------+--------+--------+--------+--------+
 
-   -----------------------------------+
-            => command_line           |
-  +========+========+========+========+
-  |   30   |   2E   |   31   |   00   |
-  +--------+--------+--------+--------+
+   -----------------------------------------------------------------------+
+                             => command_line                              |
+  +========+========+========+========+========+========+========+========+
+  |   37   |   2E   |   30   |   2E   |   30   |   2E   |   31   |   00   |
+  +--------+--------+--------+--------+--------+--------+--------+--------+
+
+************************
+Connection establishment
+************************
+
+BBDO is a protocol which can negociate features. When establishing a
+connection, a *version_response* packet is sent by the client. It
+provides its supported BBDO protocol version and extensions. The server
+replies to this message with another *version_response* packet
+containing its own supported protocol version and extensions. If
+protocol versions match, then starts the extensions negociation.
+
+Currently two extensions are supported : *TLS* and *compression*. Right
+after the *version_response* packet, each peer search in the other
+peer's extension list the extensions it supports. When one is found, it
+is enabled (ie. it immediately starts).
+
+You can find more details in the :ref:`TLS module documentation <user_modules_tls>`
+and the :ref:`compression module documentation <user_modules_compression>`.
+
+Example
+=======
+
+Let's have C the client and S the server. The following steps are
+performed sequentially.
+
+  - C initiates a TCP connection with S and connection gets established
+  - C sends a *version_response* packet with the following attributes
+    - protocol major : 1
+    - protocol minor : 0
+    - protocol patch : 0
+    - extensions : "TLS compression"
+  - S sends its own *version_response* packet in reply to C's
+    - protocol major : 1
+    - protocol minor : 0
+    - protocol patch : 0
+    - extensions : "TLS compression"
+  - C and S determines which extensions they have in common (here TLS
+    and compression)
+  - if order is important, extensions are applied in the order provided
+    by the server
+  - TLS connection is initiated, handshake performed, ...
+  - compression connection is opened
+  - now data transmitted between C and S is both encrypted and
+    compressed !

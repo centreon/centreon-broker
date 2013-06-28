@@ -253,8 +253,10 @@ void subscriber::statistics(std::string& buffer) const {
  *  Add a new event to the internal event list.
  *
  *  @param[in] event Event to add.
+ *
+ *  @return Number of elements acknowledged (1).
  */
-void subscriber::write(misc::shared_ptr<io::data> const& event) {
+unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
     // Check if the event queue limit is reach.
@@ -277,7 +279,7 @@ void subscriber::write(misc::shared_ptr<io::data> const& event) {
       ++_total_events;
   }
   _cv.wakeOne();
-  return ;
+  return (1);
 }
 
 /**************************************

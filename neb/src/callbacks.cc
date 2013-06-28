@@ -46,7 +46,7 @@
 using namespace com::centreon::broker;
 
 // Acknowledgement list.
-umap<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
   neb::gl_acknowledgements;
 
 // Downtime list.
@@ -1260,7 +1260,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     // Send event(s).
     gl_publisher.write(host_status.staticCast<io::data>());
     // Acknowledgement event.
-    umap<
+    std::map<
       std::pair<unsigned int, unsigned int>,
       neb::acknowledgement>::iterator
       it(gl_acknowledgements.find(
@@ -2097,7 +2097,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     // Send event(s).
     gl_publisher.write(service_status.staticCast<io::data>());
     // Acknowledgement event.
-    umap<
+    std::map<
       std::pair<unsigned int, unsigned int>,
       neb::acknowledgement>::iterator
       it(gl_acknowledgements.find(std::make_pair(

@@ -110,6 +110,8 @@ static inline bool double_equal(double a, double b) {
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
  *  @param[in] check_replication       true to check replication status.
+ *  @param[in] insert_in_index_data    Create entries in index_data or
+ *                                     not.
  */
 stream::stream(
           QString const& storage_type,
@@ -123,7 +125,8 @@ stream::stream(
           time_t interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
-          bool check_replication) {
+          bool check_replication,
+          bool insert_in_index_data) {
   // Process events.
   _process_out = true;
 
@@ -135,13 +138,17 @@ stream::stream(
 
   // Store in DB.
   _store_in_db = store_in_db;
+  _insert_in_index_data = insert_in_index_data;
 
   // Storage connection ID.
   QString storage_id;
   storage_id.setNum((qulonglong)this, 16);
 
   // Add database connection.
-  _storage_db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(storage_type, storage_id)));
+  _storage_db.reset(
+    new QSqlDatabase(QSqlDatabase::addDatabase(
+                                     storage_type,
+                                     storage_id)));
   if (storage_type == "QMYSQL")
     _storage_db->setConnectOptions("CLIENT_FOUND_ROWS");
 
@@ -249,6 +256,7 @@ stream::stream(stream const& s) : multiplexing::hooker(s) {
 
   // Store in DB.
   _store_in_db = s._store_in_db;
+  _insert_in_index_data = s._insert_in_index_data;
 
   // Storage connection ID.
   QString storage_id;
@@ -379,8 +387,10 @@ void stream::update() {
  *  Write an event.
  *
  *  @param[in] data Event pointer.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -397,16 +407,14 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       // Increase event count.
       ++_transaction_queries;
 
-      unsigned int index_id(0);
       unsigned int rrd_len;
-      if (!ss->perf_data.isEmpty()
-          && ((index_id = _find_index_id(
-                            ss->host_id,
-                            ss->service_id,
-                            ss->host_name,
-                            ss->service_description,
-                            &rrd_len))
-              != 0)) {
+      unsigned int index_id(_find_index_id(
+                              ss->host_id,
+                              ss->service_id,
+                              ss->host_name,
+                              ss->service_description,
+                              &rrd_len));
+      if (index_id != 0) {
         // Generate status event.
         logging::debug(logging::low)
           << "storage: generating status event for (" << ss->host_id
@@ -421,86 +429,76 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
         status->state = ss->last_hard_state;
         multiplexing::publisher().write(status.staticCast<io::data>());
 
-        // Parse perfdata.
-        QList<perfdata> pds;
-        parser p;
-        try {
-          p.parse_perfdata(ss->perf_data, pds);
-        }
-        catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-          logging::error(logging::medium)
-            << "storage: error while parsing perfdata of service ("
-            << ss->host_id << ", " << ss->service_id << "): "
-            << e.what();
-          return ;
-        }
-
-        // Loop through all metrics.
-        for (QList<perfdata>::iterator it(pds.begin()), end(pds.end());
-             it != end;
-             ++it) {
-          perfdata& pd(*it);
-
-          // Find metric_id.
-          unsigned int metric_type(pd.value_type());
-          unsigned int metric_id(_find_metric_id(
-                                   index_id,
-                                   pd.name(),
-                                   pd.unit(),
-                                   pd.warning(),
-                                   pd.warning_low(),
-                                   pd.warning_mode(),
-                                   pd.critical(),
-                                   pd.critical_low(),
-                                   pd.critical_mode(),
-                                   pd.min(),
-                                   pd.max(),
-                                   &metric_type));
-
-          if (_store_in_db) {
-            // Insert perfdata in data_bin.
-            logging::debug(logging::low)
-              << "storage: inserting perfdata in data_bin (metric: "
-              << metric_id << ", ctime: " << ss->last_check
-              << ", value: " << pd.value() << ", status: "
-              << ss->current_state << ")";
-            _insert_data_bin->bindValue(":id_metric", metric_id);
-            _insert_data_bin->bindValue(
-                                ":ctime",
-                                static_cast<unsigned int>(ss->last_check));
-            _insert_data_bin->bindValue(":value", pd.value());
-            _insert_data_bin->bindValue(
-                                ":status",
-                                ss->current_state + 1);
-            if (!_insert_data_bin->exec()
-                || _insert_data_bin->lastError().isValid())
-              throw (broker::exceptions::msg() << "storage: could not " \
-                        "insert data in data_bin (metric " << metric_id
-                     << ", ctime "
-                     << static_cast<unsigned long long>(ss->last_check)
-                     << "): " << _insert_data_bin->lastError().text());
+        if (!ss->perf_data.isEmpty()) {
+          // Parse perfdata.
+          QList<perfdata> pds;
+          parser p;
+          try {
+            p.parse_perfdata(ss->perf_data, pds);
+          }
+          catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+            logging::error(logging::medium)
+              << "storage: error while parsing perfdata of service ("
+              << ss->host_id << ", " << ss->service_id << "): "
+              << e.what();
+            return (1);
           }
 
-          // Send perfdata event to processing.
-          logging::debug(logging::high)
-            << "storage: generating perfdata event";
-          misc::shared_ptr<storage::metric> perf(new storage::metric);
-          perf->ctime = ss->last_check;
-          perf->interval = static_cast<time_t>(ss->check_interval
-                                               * _interval_length);
-          perf->is_for_rebuild = false;
-          perf->metric_id = metric_id;
-          perf->name = pd.name();
-          perf->rrd_len = rrd_len;
-          perf->value = pd.value();
-          perf->value_type = metric_type;
-          multiplexing::publisher().write(perf.staticCast<io::data>());
+          // Loop through all metrics.
+          for (QList<perfdata>::iterator
+                 it(pds.begin()),
+                 end(pds.end());
+               it != end;
+               ++it) {
+            perfdata& pd(*it);
+
+            // Find metric_id.
+            unsigned int metric_type(pd.value_type());
+            unsigned int metric_id(_find_metric_id(
+                                     index_id,
+                                     pd.name(),
+                                     pd.unit(),
+                                     pd.warning(),
+                                     pd.warning_low(),
+                                     pd.warning_mode(),
+                                     pd.critical(),
+                                     pd.critical_low(),
+                                     pd.critical_mode(),
+                                     pd.min(),
+                                     pd.max(),
+                                     &metric_type));
+
+            if (_store_in_db) {
+              // Append perfdata to queue.
+              metric_value val;
+              val.c_time = ss->last_check;
+              val.metric_id = metric_id;
+              val.status = ss->current_state + 1;
+              val.value = pd.value();
+              _perfdata_queue.push_back(val);
+            }
+
+            // Send perfdata event to processing.
+            logging::debug(logging::high)
+              << "storage: generating perfdata event";
+            misc::shared_ptr<storage::metric> perf(new storage::metric);
+            perf->ctime = ss->last_check;
+            perf->interval = static_cast<time_t>(ss->check_interval
+                                                 * _interval_length);
+            perf->is_for_rebuild = false;
+            perf->metric_id = metric_id;
+            perf->name = pd.name();
+            perf->rrd_len = rrd_len;
+            perf->value = pd.value();
+            perf->value_type = metric_type;
+            multiplexing::publisher().write(perf.staticCast<io::data>());
+          }
         }
       }
     }
   }
 
-  // Commit transaction.
+  // Commit transactions.
   if (_queries_per_transaction > 1) {
     logging::debug(logging::low) << "storage: current transaction has "
       << _transaction_queries << " pending queries";
@@ -514,8 +512,14 @@ void stream::write(misc::shared_ptr<io::data> const& data) {
       _transaction_queries = 0;
     }
   }
+  unsigned int perfdata_events(_perfdata_queue.size());
+  logging::debug(logging::low) << "storage: " << perfdata_events
+    << " data_bin events are pending";
+  if ((perfdata_events >= _queries_per_transaction)
+      || data.isNull())
+    _insert_perfdatas();
 
-  return ;
+  return (1);
 }
 
 /**************************************
@@ -613,9 +617,9 @@ void stream::_check_deleted_index() {
  *  Clear QtSql objects.
  */
 void stream::_clear_qsql() {
-  _insert_data_bin.reset();
   _update_metrics.reset();
   if (_storage_db.get() && _storage_db->isOpen()) {
+    _insert_perfdatas();
     if (_queries_per_transaction > 1)
       _storage_db->commit();
     _storage_db->close();
@@ -754,11 +758,76 @@ unsigned int stream::_find_index_id(
     if (rrd_len)
       *rrd_len = it->second.rrd_retention;
   }
-  // Can't find in cache, discard data.
+  // Can't find in cache, discard data or insert in DB.
   else {
     logging::info(logging::medium) << "storage: index not found for ("
       << host_id << ", " << service_id << ")";
-    retval = 0;
+    // Discard.
+    if (!_insert_in_index_data)
+      retval = 0;
+    // Insert in index_data.
+    else {
+      logging::info(logging::medium)
+        << "storage: creating new index for (" << host_id << ", "
+        << service_id << ")";
+      // Build query.
+      std::ostringstream oss;
+      oss << "INSERT INTO index_data (" \
+             "  host_id, host_name," \
+             "  service_id, service_description, " \
+             "  must_be_rebuild, special)" \
+             " VALUES (" << host_id << ", :host_name, " << service_id
+          << ", :service_description, 1, :special)";
+      QSqlQuery q(*_storage_db);
+      q.prepare(oss.str().c_str());
+      q.bindValue(":host_name", host_name);
+      q.bindValue(":service_description", service_desc);
+      q.bindValue(":special", (special ? 2 : 1));
+
+      // Execute query.
+      if (!q.exec() || q.lastError().isValid())
+        throw (broker::exceptions::msg() << "storage: insertion of " \
+                  "index (" << host_id << ", " << service_id
+               << ") failed: " << q.lastError().text());
+
+      // Fetch insert ID with query if possible.
+      if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
+          || !(retval = q.lastInsertId().toUInt())) {
+#if QT_VERSION >= 0x040302
+        q.finish();
+#endif // Qt >= 4.3.2
+        std::ostringstream oss2;
+        oss2 << "SELECT id" \
+                " FROM index_data" \
+                " WHERE host_id=" << host_id
+             << " AND service_id=" << service_id;
+        QSqlQuery q2(oss2.str().c_str(), *_storage_db);
+        if (!q2.exec() || q2.lastError().isValid() || !q2.next())
+          throw (broker::exceptions::msg() << "storage: could not " \
+                    "fetch index_id of newly inserted index ("
+                 << host_id << ", " << service_id << "): "
+                 << q2.lastError().text());
+        retval = q2.value(0).toUInt();
+        if (!retval)
+          throw (broker::exceptions::msg() << "storage: index_data " \
+                    "table is corrupted: got 0 as index_id");
+      }
+
+      // Insert index in cache.
+      logging::info(logging::medium) << "storage: new index " << retval
+        << " for (" << host_id << ", " << service_id << ")";
+      index_info info;
+      info.host_name = host_name;
+      info.index_id = retval;
+      info.service_description = service_desc;
+      info.special = special;
+      info.rrd_retention = _rrd_len;
+      _index_cache[std::make_pair(host_id, service_id)] = info;
+
+      // Provide RRD retention.
+      if (rrd_len)
+        *rrd_len = info.rrd_retention;
+    }
   }
 
   return (retval);
@@ -954,6 +1023,45 @@ unsigned int stream::_find_metric_id(
 }
 
 /**
+ *  Insert performance data entries in the data_bin table.
+ */
+void stream::_insert_perfdatas() {
+  if (!_perfdata_queue.empty()) {
+    // Insert first entry.
+    std::ostringstream query;
+    {
+      metric_value& mv(_perfdata_queue.front());
+      query.precision(10);
+      query << std::fixed
+            << "INSERT INTO data_bin (id_metric, ctime, status, value)"
+               " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", " << mv.value << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Insert perfdata in data_bin.
+    while (!_perfdata_queue.empty()) {
+      metric_value& mv(_perfdata_queue.front());
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", " << mv.value << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Execute query.
+    QSqlQuery q(*_storage_db);
+    logging::debug(logging::low)
+      << "storage: executing query: " << query.str().c_str();
+    if (!q.exec(query.str().c_str())
+        || q.lastError().isValid())
+      throw (broker::exceptions::msg()
+             << "storage: could not insert data in data_bin: "
+             << q.lastError().text());
+  }
+
+  return ;
+}
+
+/**
  *  Prepare queries.
  */
 void stream::_prepare() {
@@ -980,18 +1088,6 @@ void stream::_prepare() {
     throw (broker::exceptions::msg() << "storage: could not prepare " \
                 "metrics update query: "
              << _update_metrics->lastError().text());
-
-  // Prepare data_bind insert query.
-  _insert_data_bin.reset(new QSqlQuery(*_storage_db));
-  if (!_insert_data_bin->prepare("INSERT INTO data_bin (" \
-                                 " id_metric, ctime, value, status)" \
-                                 " VALUES (:id_metric," \
-                                 " :ctime," \
-                                 " :value," \
-                                 " :status)"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "data_bin insert query: "
-             << _insert_data_bin->lastError().text());
 
   return ;
 }

@@ -70,7 +70,7 @@ namespace                    rrd {
                                  bool in = false,
                                  bool out = true);
     void                       read(misc::shared_ptr<io::data>& d);
-    void                       write(
+    unsigned int               write(
                                  misc::shared_ptr<io::data> const& d);
 
   private:

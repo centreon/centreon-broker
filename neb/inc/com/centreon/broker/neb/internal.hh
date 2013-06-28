@@ -56,7 +56,7 @@ namespace neb {
     gl_registered_callbacks;
 
   // Acknowledgement list.
-  extern umap<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+  extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
     gl_acknowledgements;
 }
 

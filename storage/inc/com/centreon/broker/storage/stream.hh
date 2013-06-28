@@ -50,12 +50,13 @@ namespace         storage {
                     QString const& storage_user,
                     QString const& storage_password,
                     QString const& storage_db,
-                    unsigned queries_per_transaction,
+                    unsigned int queries_per_transaction,
                     unsigned int rrd_len,
                     time_t interval_length,
                     unsigned int rebuild_check_interval,
                     bool store_in_db = true,
-                    bool check_replication = true);
+                    bool check_replication = true,
+                    bool insert_in_index_data = false);
                   stream(stream const& s);
                   ~stream();
     void          process(bool in = false, bool out = true);
@@ -63,7 +64,7 @@ namespace         storage {
     void          starting();
     void          stopping();
     void          update();
-    void          write(misc::shared_ptr<io::data> const& d);
+    unsigned int  write(misc::shared_ptr<io::data> const& d);
 
   private:
     struct         index_info {
@@ -85,6 +86,12 @@ namespace         storage {
       double       warn;
       double       warn_low;
       bool         warn_mode;
+    };
+    struct         metric_value {
+      time_t       c_time;
+      unsigned int metric_id;
+      short        status;
+      double       value;
     };
 
     stream&       operator=(stream const& s);
@@ -111,16 +118,18 @@ namespace         storage {
 		    double min,
 		    double max,
                     unsigned int* type = NULL);
+    void          _insert_perfdatas();
     void          _prepare();
     void          _rebuild_cache();
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                   _index_cache;
-    std::auto_ptr<QSqlQuery>
-                  _insert_data_bin;
+    bool          _insert_in_index_data;
     time_t        _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                   _metric_cache;
+    std::list<metric_value>
+                  _perfdata_queue;
     bool          _process_out;
     unsigned int  _queries_per_transaction;
     rebuilder     _rebuild_thread;

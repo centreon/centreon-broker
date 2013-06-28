@@ -324,11 +324,13 @@ void input::read(misc::shared_ptr<io::data>& d) {
 /**
  *  Write data.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] d Unused.
+ *
+ *  @return Does not return, throw an exception.
  */
-void input::write(misc::shared_ptr<io::data> const& d) {
+unsigned int input::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   throw (exceptions::msg() << "NDO: attempt to write to an input " \
            "object");
-  return ;
+  return (1);
 }

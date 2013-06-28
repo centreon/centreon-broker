@@ -114,11 +114,13 @@ void stream::statistics(std::string& buffer) const {
  *  Write data to stream.
  *
  *  @param[in] d Data to send.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (_output_write)
     output::write(d);
   else
     input::write(d);
-  return ;
+  return (1);
 }

@@ -152,8 +152,10 @@ unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
  *  Send a chunk of data.
  *
  *  @param[in] d Packet to send.
+ *
+ *  @return Number of events acknowledged.
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -178,7 +180,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
 
-  return ;
+  return (1);
 }
 
 /**

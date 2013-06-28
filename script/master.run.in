@@ -1,7 +1,7 @@
 ## This file define the Centreon Broker daemons to start
 # Example :
 # central-cbd	central-cbd.xml	y	y
-# central-rrd	central-rdd.xml	y	n
+# central-rrd	central-rrd.xml	y	n
 #
 # The first line the daemon central-cbd is started with start action from
 # /etc/init.d/cbd and it's reload by action reload of init script

@@ -184,15 +184,17 @@ void stream::statistics(std::string& buffer) const {
  *  Write data to the file.
  *
  *  @param[in] d Data to write.
+ *
+ *  @return Number of events acknowledged (1).
  */
-void stream::write(misc::shared_ptr<io::data> const& d) {
+unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   static QString const io_raw_type("com::centreon::broker::io::raw");
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "file stream is shutdown");
   if (d.isNull())
-    return ;
+    return (1);
 
   if (d->type() == io_raw_type) {
     // Lock mutex.
@@ -231,7 +233,7 @@ void stream::write(misc::shared_ptr<io::data> const& d) {
   else
     logging::info(logging::low) << "file: write request with "	\
       "invalid data (" << d->type() << ")";
-  return ;
+  return (1);
 }
 
 /**************************************
