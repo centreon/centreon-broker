@@ -670,11 +670,18 @@ void stream::_process_downtime(io::data const& e) {
     << d.duration << ", entry time: " << d.entry_time
     << ", deletion time: " << d.deletion_time << ")";
 
-  // Processing.
-  _update_on_none_insert(
-    *_downtime_insert,
-    *_downtime_update,
-    d);
+  // Only update in case of downtime termination.
+  if (d.actual_end_time) {
+    *_downtime_update << d;
+    _execute(*_downtime_update);
+  }
+  // Update or insert if no entry was found, as long as the downtime
+  // is valid.
+  else
+    _update_on_none_insert(
+      *_downtime_insert,
+      *_downtime_update,
+      d);
 
   return ;
 }
