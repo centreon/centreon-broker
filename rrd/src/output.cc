@@ -61,9 +61,9 @@ output::output(
           bool write_status)
   : _backend(new lib),
     _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
+    _metrics_path(metrics_path.toStdString()),
     _process_out(true),
-    _status_path(status_path),
+    _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {}
 
@@ -87,9 +87,9 @@ output::output(
           bool write_metrics,
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
+    _metrics_path(metrics_path.toStdString()),
     _process_out(true),
-    _status_path(status_path),
+    _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
 #if QT_VERSION >= 0x040400
@@ -123,9 +123,9 @@ output::output(
           bool write_metrics,
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
+    _metrics_path(metrics_path.toStdString()),
     _process_out(true),
-    _status_path(status_path),
+    _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
   std::auto_ptr<cached> rrdcached(new cached);
@@ -190,7 +190,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       QString metric_path;
       {
         std::ostringstream oss;
-        oss << _metrics_path.toStdString() << e->metric_id << ".rrd";
+        oss << _metrics_path << e->metric_id << ".rrd";
         metric_path = oss.str().c_str();
       }
 
@@ -235,7 +235,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       QString status_path;
       {
         std::ostringstream oss;
-        oss << _status_path.toStdString() << e->index_id << ".rrd";
+        oss << _status_path << e->index_id << ".rrd";
         status_path = oss.str().c_str();
       }
 
@@ -280,7 +280,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
     QString path;
     {
       std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path).toStdString()
+      oss << (e->is_index ? _status_path : _metrics_path)
           << e->id << ".rrd";
       path = oss.str().c_str();
     }
@@ -333,7 +333,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
     QString path;
     {
       std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path).toStdString()
+      oss << (e->is_index ? _status_path : _metrics_path)
           << e->id << ".rrd";
       path = oss.str().c_str();
     }

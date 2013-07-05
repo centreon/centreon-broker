@@ -113,6 +113,8 @@ extern "C" {
             // Create thread.
             obj.reset(new stats::worker);
             obj->run(fifo_file);
+
+            loaded = true;
           }
           catch (std::exception const& e) {
             logging::config(logging::high) << "stats: "

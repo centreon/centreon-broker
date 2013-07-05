@@ -18,10 +18,11 @@
 */
 
 #ifndef CCB_MISC_STRINGIFIER_HH_
-# define CCB_MISC_STRINGIFIER_HH_
+#  define CCB_MISC_STRINGIFIER_HH_
 
-# include <QString>
-# include "com/centreon/broker/namespace.hh"
+#  include <QString>
+#  include <string>
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -60,6 +61,7 @@ namespace                     misc {
     stringifier&              operator<<(long l) throw ();
     stringifier&              operator<<(long long ll) throw ();
     stringifier&              operator<<(QString const& q) throw ();
+    stringifier&              operator<<(std::string const& s) throw ();
     stringifier&              operator<<(unsigned int i) throw ();
     stringifier&              operator<<(unsigned long l) throw ();
     stringifier&              operator<<(unsigned long long l) throw ();

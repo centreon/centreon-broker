@@ -99,7 +99,7 @@ T* input::_handle_event() {
   while (1) {
     key_str = _get_line();
     if (key_str) {
-      typename std::map<int, getter_setter<T> >::const_iterator it;
+      typename umap<int, getter_setter<T> >::const_iterator it;
       key = strtol(key_str, NULL, 10);
       if (NDO_API_ENDDATA == key) {
         logging::debug(logging::medium)

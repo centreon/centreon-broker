@@ -201,7 +201,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   free(datadup);
 
   // Set host and service IDs.
-  std::map<std::string, int>::const_iterator host_it;
+  umap<std::string, int>::const_iterator host_it;
   std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator service_it;
   host_it = neb::gl_hosts.find(le.host_name.toStdString());
   if (host_it != neb::gl_hosts.end())

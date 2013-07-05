@@ -248,11 +248,12 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
  *  @param[in] id Current ID.
  */
 std::string stream::_file_path(unsigned int id) const {
-  std::ostringstream oss;
-  oss << _path;
-  if (id)
-    oss << id;
-  return (oss.str());
+  if (id) {
+    std::ostringstream oss;
+    oss << _path << id;
+    return (oss.str());
+  }
+  return (_path);
 }
 
 /**

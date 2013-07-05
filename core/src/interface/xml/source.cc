@@ -52,7 +52,7 @@ void source::fetchData() {
 template <typename T>
 void source::handle_event(QXmlAttributes const& attrs) {
   std::auto_ptr<T> t(new T);
-  for (typename std::map<std::string, getter_setter<T> >::iterator
+  for (typename umap<std::string, getter_setter<T> >::iterator
          it = xml_mapped_type<T>::map.begin(),
          end = xml_mapped_type<T>::map.end();
        it != end;

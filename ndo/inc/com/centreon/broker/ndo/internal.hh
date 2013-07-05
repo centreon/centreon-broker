@@ -20,9 +20,9 @@
 #ifndef CCB_NDO_INTERNAL_HH
 #  define CCB_NDO_INTERNAL_HH
 
-#  include <map>
 #  include <sstream>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "mapping.hh"
 
 CCB_BEGIN()
@@ -44,7 +44,7 @@ namespace                 ndo {
   // NDO mappings.
   template                <typename T>
   struct                  ndo_mapped_type {
-    static std::map<int, getter_setter<T> > map;
+    static umap<int, getter_setter<T> > map;
   };
 
   // Mapping initialization routine.

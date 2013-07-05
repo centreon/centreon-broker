@@ -57,7 +57,7 @@ struct   private_downtime_params {
   time_t start_time;
 };
 // Unstarted downtimes.
-static std::map<unsigned int, private_downtime_params> downtimes;
+static umap<unsigned int, private_downtime_params> downtimes;
 
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
@@ -142,7 +142,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack->entry_time = time(NULL);
     if (!ack_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    std::map<std::string, int>::const_iterator it1;
+    umap<std::string, int>::const_iterator it1;
     it1 = gl_hosts.find(ack_data->host_name);
     if (it1 == gl_hosts.end())
       throw (exceptions::msg() << "could not find ID of host '"
@@ -150,7 +150,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack->host_id = it1->second;
     if (ack_data->service_description) {
       std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it2;
+             std::pair<int, int> >::const_iterator it2;
       it2 = gl_services.find(std::make_pair(
                                     ack_data->host_name,
                                     ack_data->service_description));
@@ -217,7 +217,7 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->expires = comment_data->expires;
     if (!comment_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    std::map<std::string, int>::const_iterator it1;
+    umap<std::string, int>::const_iterator it1;
     it1 = gl_hosts.find(comment_data->host_name);
     if (it1 == gl_hosts.end())
       throw (exceptions::msg() << "could not find ID of host '"
@@ -225,7 +225,7 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->host_id = it1->second;
     if (comment_data->service_description) {
       std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it2;
+             std::pair<int, int> >::const_iterator it2;
       it2 = gl_services.find(std::make_pair(
                                     comment_data->host_name,
                                     comment_data->service_description));
@@ -304,7 +304,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
           // Normal custom variable.
           else {
             // Fill custom variable event.
-            std::map<std::string, int>::iterator
+            umap<std::string, int>::iterator
               it(neb::gl_hosts.find(hst->name));
             if (it != neb::gl_hosts.end()) {
               misc::shared_ptr<custom_variable>
@@ -334,7 +334,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             // Host ID.
             int host_id;
             {
-              std::map<std::string, int>::iterator
+              umap<std::string, int>::iterator
                 it(neb::gl_hosts.find(svc->host_name));
               if (it != neb::gl_hosts.end())
                 host_id = it->second;
@@ -431,7 +431,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->fixed = downtime_data->fixed;
     if (!downtime_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    std::map<std::string, int>::const_iterator it1;
+    umap<std::string, int>::const_iterator it1;
     it1 = gl_hosts.find(downtime_data->host_name);
     if (it1 == gl_hosts.end())
       throw (exceptions::msg() << "could not find ID of host '"
@@ -439,7 +439,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->host_id = it1->second;
     if (downtime_data->service_description) {
       std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it2;
+             std::pair<int, int> >::const_iterator it2;
       it2 = gl_services.find(std::make_pair(
               downtime_data->host_name,
               downtime_data->service_description));
@@ -525,7 +525,7 @@ int neb::callback_event_handler(int callback_type, void* data) {
     event_handler->execution_time = event_handler_data->execution_time;
     if (!event_handler_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    std::map<std::string, int>::const_iterator it1;
+    umap<std::string, int>::const_iterator it1;
     it1 = gl_hosts.find(event_handler_data->host_name);
     if (it1 == gl_hosts.end())
       throw (exceptions::msg() << "could not find ID of host '"
@@ -603,7 +603,7 @@ int neb::callback_external_command(int callback_type, void* data) {
             QString var_value(*it);
 
             // Find host ID.
-            std::map<std::string, int>::const_iterator id;
+            umap<std::string, int>::const_iterator id;
             id = gl_hosts.find(host.toStdString());
             if (id != gl_hosts.end()) {
               // Fill custom variable.
@@ -641,7 +641,7 @@ int neb::callback_external_command(int callback_type, void* data) {
 
             // Find host/service IDs.
             std::map<std::pair<std::string, std::string>,
-                     std::pair<int, int> >::const_iterator ids;
+                   std::pair<int, int> >::const_iterator ids;
             ids = gl_services.find(std::make_pair(host.toStdString(),
                                                   service.toStdString()));
             if (ids != gl_services.end()) {
@@ -666,7 +666,7 @@ int neb::callback_external_command(int callback_type, void* data) {
         unsigned int downtime_id(necd->command_args
                                  ? strtoul(necd->command_args, NULL, 0)
                                  : 0);
-        std::map<unsigned int, private_downtime_params>::iterator
+        umap<unsigned int, private_downtime_params>::iterator
           it(downtimes.find(downtime_id));
         if (it != downtimes.end())
           it->second.deletion_time = necd->timestamp.tv_sec;
@@ -709,7 +709,7 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->high_threshold = flapping_data->high_threshold;
     if (!flapping_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    std::map<std::string, int>::const_iterator it1;
+    umap<std::string, int>::const_iterator it1;
     it1 = gl_hosts.find(flapping_data->host_name);
     if (it1 == gl_hosts.end())
       throw (exceptions::msg() << "could not find ID of host '"
@@ -717,7 +717,7 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->host_id = it1->second;
     if (flapping_data->service_description) {
       std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it2;
+             std::pair<int, int> >::const_iterator it2;
       it2 = gl_services.find(std::make_pair(
               flapping_data->host_name,
               flapping_data->service_description));
@@ -877,7 +877,7 @@ int neb::callback_group_member(int callback_type, void* data) {
           hgm(new neb::host_group_member);
         hgm->group = hg->group_name;
         hgm->instance_id = neb::instance_id;
-        std::map<std::string, int>::const_iterator it;
+        umap<std::string, int>::const_iterator it;
         it = neb::gl_hosts.find(hst->name);
         if (it != neb::gl_hosts.end())
           hgm->host_id = it->second;
@@ -1071,7 +1071,7 @@ int neb::callback_host(int callback_type, void* data) {
       my_host->statusmap_image = h->statusmap_image;
 
     // Find host ID.
-    std::map<std::string, int>::iterator
+    umap<std::string, int>::iterator
       it(neb::gl_hosts.find(my_host->host_name.toStdString()));
     if (it != neb::gl_hosts.end()) {
       my_host->host_id = it->second;
@@ -1141,7 +1141,7 @@ int neb::callback_host_check(int callback_type, void* data) {
       host_check->command_line = hcdata->command_line;
       if (!hcdata->host_name)
         throw (exceptions::msg() << "unnamed host");
-      std::map<std::string, int>::const_iterator it;
+      umap<std::string, int>::const_iterator it;
       it = gl_hosts.find(hcdata->host_name);
       if (it == gl_hosts.end())
         throw (exceptions::msg() << "could not find ID of host '"
@@ -1212,7 +1212,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     if (!h->name)
       throw (exceptions::msg() << "unnamed host");
     {
-      std::map<std::string, int>::const_iterator it;
+      umap<std::string, int>::const_iterator it;
       it = gl_hosts.find(h->name);
       if (it == gl_hosts.end())
         throw (exceptions::msg() << "could not find ID of host '"
@@ -1595,7 +1595,7 @@ int neb::callback_relation(int callback_type, void* data) {
         int host_id;
         int parent_id;
         {
-          std::map<std::string, int>::iterator it;
+          umap<std::string, int>::iterator it;
           it = neb::gl_hosts.find(relation->dep_hst->name);
           if (it != neb::gl_hosts.end())
             host_id = it->second;
@@ -1646,7 +1646,7 @@ int neb::callback_relation(int callback_type, void* data) {
         }
       }
       else if (relation->hst) {
-        std::map<std::string, int>::iterator it;
+        umap<std::string, int>::iterator it;
         it = neb::gl_hosts.find(relation->hst->name);
         if (it != neb::gl_hosts.end())
           host_id = it->second;
@@ -1680,7 +1680,7 @@ int neb::callback_relation(int callback_type, void* data) {
         }
       }
       else if (relation->dep_hst) {
-        std::map<std::string, int>::iterator it;
+        umap<std::string, int>::iterator it;
         it = neb::gl_hosts.find(relation->dep_hst->name);
         if (it != neb::gl_hosts.end())
           dep_host_id = it->second;

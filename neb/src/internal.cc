@@ -34,7 +34,7 @@ unsigned int neb::instance_id;
 QString      neb::instance_name;
 
 // List of host IDs.
-std::map<std::string, int> neb::gl_hosts;
+umap<std::string, int> neb::gl_hosts;
 
 // List of service IDs.
 std::map<std::pair<std::string, std::string>, std::pair<int, int> > neb::gl_services;

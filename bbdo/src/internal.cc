@@ -462,7 +462,7 @@ namespace bbdo {
     bbdo_mapped_type<storage::status>::table =
       std::vector<getter_setter<storage::status> >();
   template <> std::vector<getter_setter<version_response> >
-    bbdo_mapped_type<version_response>::table = 
+    bbdo_mapped_type<version_response>::table =
       std::vector<getter_setter<version_response> >();
 }
 
