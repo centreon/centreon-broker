@@ -138,28 +138,54 @@ void worker::_generate_stats() {
 
   // Print input endpoints.
   {
-    QMutexLocker lock(&endp_applier.input_mutex());
-    for (config::applier::endpoint::iterator
-           it = endp_applier.input_begin(),
-           end = endp_applier.input_end();
-         it != end;
-         ++it) {
-      _generate_stats_for_endpoint(*it, _buffer, false);
-      _buffer.append("\n");
+    bool locked(endp_applier.input_mutex().tryLock(100));
+    try {
+      if (locked)
+        for (config::applier::endpoint::iterator
+               it = endp_applier.input_begin(),
+               end = endp_applier.input_end();
+             it != end;
+             ++it) {
+          _generate_stats_for_endpoint(*it, _buffer, false);
+          _buffer.append("\n");
+        }
+      else
+        _buffer.append(
+          "inputs=could not fetch list, configuration update in progress ?\n");
     }
+    catch (...) {
+      if (locked)
+        endp_applier.input_mutex().unlock();
+      throw ;
+    }
+    if (locked)
+      endp_applier.input_mutex().unlock();
   }
 
   // Print output endpoints.
   {
-    QMutexLocker lock(&endp_applier.output_mutex());
-    for (config::applier::endpoint::iterator
-           it = endp_applier.output_begin(),
-           end = endp_applier.output_end();
-         it != end;
-         ++it) {
-      _generate_stats_for_endpoint(*it, _buffer, true);
-      _buffer.append("\n");
+    bool locked(endp_applier.output_mutex().tryLock(100));
+    try {
+      if (locked)
+        for (config::applier::endpoint::iterator
+               it(endp_applier.output_begin()),
+               end(endp_applier.output_end());
+             it != end;
+             ++it) {
+          _generate_stats_for_endpoint(*it, _buffer, true);
+          _buffer.append("\n");
+        }
+      else
+        _buffer.append(
+          "outputs=could not fetch list, configuration update in progress ?\n");
     }
+    catch (...) {
+      if (locked)
+        endp_applier.output_mutex().unlock();
+      throw ;
+    }
+    if (locked)
+      endp_applier.output_mutex().unlock();
   }
 
   return ;
