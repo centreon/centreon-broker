@@ -166,11 +166,14 @@ void input::read(misc::shared_ptr<io::data>& d) {
  *  Extract the next available event on the input stream, NULL if the
  *  stream is closed.
  *
- *  @param[out] d Next available event, NULL if stream is closed.
+ *  @param[out] d       Next available event, NULL if stream is closed.
+ *  @param[in]  timeout Timeout.
  *
  *  @return Event ID.
  */
-unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
+unsigned int input::read_any(
+                      misc::shared_ptr<io::data>& d,
+                      time_t timeout) {
   // Redirection array.
   static struct {
     unsigned int id;
@@ -257,7 +260,7 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
   unsigned int packet_size;
   while (1) {
     // Read next packet header.
-    _buffer_must_have_unprocessed(BBDO_HEADER_SIZE);
+    _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, timeout);
 
     // Packet size.
     packet_size = ntohs(*static_cast<uint16_t const*>(
@@ -282,6 +285,10 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
     logging::debug(logging::low)
       << "BBDO: header integrity check failed";
     ++_processed;
+
+    // Timeout check.
+    if ((timeout != (time_t)-1) && (time(NULL) > timeout))
+      throw (exceptions::msg() << "BBDO: connection timeout");
   }
 
   // Log.
@@ -291,7 +298,7 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
 
   // Read data payload.
   _processed += BBDO_HEADER_SIZE;
-  _buffer_must_have_unprocessed(packet_size);
+  _buffer_must_have_unprocessed(packet_size, timeout);
 
   // Regroup packets.
   unsigned int total_size(0);
@@ -300,7 +307,9 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
     total_size += packet_size;
 
     // Expect new BBDO header.
-    _buffer_must_have_unprocessed(total_size + BBDO_HEADER_SIZE);
+    _buffer_must_have_unprocessed(
+      total_size + BBDO_HEADER_SIZE,
+      timeout);
 
     // Next packet size.
     packet_size
@@ -312,7 +321,7 @@ unsigned int input::read_any(misc::shared_ptr<io::data>& d) {
     _buffer.erase(_processed + total_size, BBDO_HEADER_SIZE);
 
     // Expect data payload.
-    _buffer_must_have_unprocessed(total_size + packet_size);
+    _buffer_must_have_unprocessed(total_size + packet_size, timeout);
   }
   total_size += packet_size;
 
@@ -358,7 +367,9 @@ unsigned int input::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @param[in] bytes Number of minimal buffer size.
  */
-void input::_buffer_must_have_unprocessed(unsigned int bytes) {
+void input::_buffer_must_have_unprocessed(
+              unsigned int bytes,
+              time_t timeout) {
   static QString const raw_type("com::centreon::broker::io::raw");
   if (_buffer.size() < (_processed + bytes)) {
     _buffer.erase(0, _processed);
@@ -372,6 +383,10 @@ void input::_buffer_must_have_unprocessed(unsigned int bytes) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _buffer.append(r->QByteArray::data(), r->size());
     }
+    if ((_buffer.size() < (_processed + bytes))
+        && (timeout != (time_t)-1)
+        && (time(NULL) > timeout))
+      throw (exceptions::msg() << "BBDO: connection timeout");
   }
   return ;
 }

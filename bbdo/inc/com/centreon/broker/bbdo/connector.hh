@@ -20,6 +20,7 @@
 #ifndef CCB_BBDO_CONNECTOR_HH
 #  define CCB_BBDO_CONNECTOR_HH
 
+#  include <ctime>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -38,7 +39,8 @@ namespace         bbdo {
                     bool is_in,
                     bool is_out,
                     bool negociate,
-                    QString const& extensions);
+                    QString const& extensions,
+                    time_t timeout);
                   connector(connector const& right);
                   ~connector();
     connector&    operator=(connector const& right);
@@ -57,6 +59,7 @@ namespace         bbdo {
     bool          _is_in;
     bool          _is_out;
     bool          _negociate;
+    time_t        _timeout;
   };
 }
 

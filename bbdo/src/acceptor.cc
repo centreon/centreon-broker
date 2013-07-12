@@ -46,18 +46,22 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] is_out     true if the acceptor is an output acceptor.
  *  @param[in] negociate  true if feature negociation is allowed.
  *  @param[in] extensions Available extensions.
+ *  @param[in] timeout    Connection timeout.
  */
 acceptor::acceptor(
             QString const& name,
             bool is_out,
             bool negociate,
-            QString const& extensions)
+            QString const& extensions,
+            time_t timeout)
   : io::endpoint(true),
     _extensions(extensions),
     _is_out(is_out),
     _name(name),
-    _negociate(negociate) {
-
+    _negociate(negociate),
+    _timeout(timeout) {
+  if ((_timeout == (time_t)-1) || (_timeout == 0))
+    _timeout = 3;
 }
 
 /**
@@ -71,9 +75,8 @@ acceptor::acceptor(acceptor const& right)
     _extensions(right._extensions),
     _is_out(right._is_out),
     _name(right._name),
-    _negociate(right._negociate) {
-
-}
+    _negociate(right._negociate),
+    _timeout(right._timeout) {}
 
 /**
  *  Destructor.
@@ -102,6 +105,7 @@ acceptor& acceptor::operator=(acceptor const& right) {
     _is_out = right._is_out;
     _name = right._name;
     _negociate = right._negociate;
+    _timeout = right._timeout;
   }
   return (*this);
 }
@@ -205,7 +209,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
     if (_negociate) {
       // Read initial packet.
       misc::shared_ptr<io::data> d;
-      my_bbdo->read_any(d);
+      my_bbdo->read_any(d, time(NULL) + _timeout);
       if (d.isNull()
           || (d->type()
               != "com::centreon::broker::bbdo::version_response")) {

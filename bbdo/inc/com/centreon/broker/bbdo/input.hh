@@ -20,6 +20,7 @@
 #ifndef CCB_BBDO_INPUT_HH
 #  define CCB_BBDO_INPUT_HH
 
+#  include <ctime>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -41,12 +42,15 @@ namespace                bbdo {
     input&               operator=(input const& right);
     void                 process(bool in = false, bool out = false);
     virtual void         read(misc::shared_ptr<io::data>& d);
-    virtual unsigned int read_any(misc::shared_ptr<io::data>& d);
+    virtual unsigned int read_any(
+                           misc::shared_ptr<io::data>& d,
+                           time_t timeout = (time_t)-1);
     virtual unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
     void                 _buffer_must_have_unprocessed(
-                           unsigned int bytes);
+                           unsigned int bytes,
+                           time_t timeout = (time_t)-1);
     void                 _internal_copy(input const& right);
 
     std::string          _buffer;

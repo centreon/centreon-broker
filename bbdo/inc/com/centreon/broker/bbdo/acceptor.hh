@@ -20,6 +20,7 @@
 #ifndef CCB_BBDO_ACCEPTOR_HH
 #  define CCB_BBDO_ACCEPTOR_HH
 
+#  include <ctime>
 #  include <QList>
 #  include <QThread>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -43,7 +44,8 @@ namespace               com {
                           QString const& name,
                           bool is_out,
                           bool negociate,
-                          QString const& extensions);
+                          QString const& extensions,
+                          time_t timeout);
                         acceptor(acceptor const& right);
                         ~acceptor();
           acceptor&     operator=(acceptor const& right);
@@ -64,6 +66,7 @@ namespace               com {
           bool          _negociate;
           QList<QThread*>
                         _threads;
+          time_t        _timeout;
 
         private slots:
           void          _on_thread_termination();

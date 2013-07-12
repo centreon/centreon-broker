@@ -44,17 +44,23 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] is_out     Connector should act as output.
  *  @param[in] negociate  True if extension negociation is allowed.
  *  @param[in] extensions Available extensions.
+ *  @param[in] timeout    Timeout.
  */
 connector::connector(
              bool is_in,
              bool is_out,
              bool negociate,
-             QString const& extensions)
+             QString const& extensions,
+             time_t timeout)
   : io::endpoint(false),
     _extensions(extensions),
     _is_in(is_in),
     _is_out(is_out),
-    _negociate(negociate) {}
+    _negociate(negociate),
+    _timeout(timeout) {
+  if ((_timeout == (time_t)-1) || (_timeout == 0))
+    _timeout = 3;
+}
 
 /**
  *  Copy constructor.
@@ -66,7 +72,8 @@ connector::connector(connector const& right)
     _extensions(right._extensions),
     _is_in(right._is_in),
     _is_out(right._is_out),
-    _negociate(right._negociate) {}
+    _negociate(right._negociate),
+    _timeout(right._timeout) {}
 
 /**
  *  Destructor.
@@ -87,6 +94,7 @@ connector& connector::operator=(connector const& right) {
     _is_in = right._is_in;
     _is_out = right._is_out;
     _negociate = right._negociate;
+    _timeout = right._timeout;
   }
   return (*this);
 }
@@ -184,7 +192,7 @@ misc::shared_ptr<io::stream> connector::_open(
     // Negociate features.
     if (_negociate) {
       misc::shared_ptr<io::data> d;
-      bbdo_stream->read_any(d);
+      bbdo_stream->read_any(d, time(NULL) + _timeout);
       if (d.isNull()
           || (d->type()
               != "com::centreon::broker::bbdo::version_response"))

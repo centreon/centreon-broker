@@ -130,13 +130,15 @@ io::endpoint* factory::new_endpoint(
                          cfg.name,
                          is_output,
                          negociate,
-                         extensions);
+                         extensions,
+                         cfg.read_timeout);
   else
     retval = new bbdo::connector(
                          is_input,
                          is_output,
                          negociate,
-                         extensions);
+                         extensions,
+                         cfg.read_timeout);
   return (retval);
 }
 
