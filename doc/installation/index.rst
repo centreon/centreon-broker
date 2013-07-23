@@ -57,6 +57,7 @@ dependencies:
 * CMake **(>= 2.8)**, a cross-platform build system.
 * the Qt **(>= 4.7.4)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
+* GnuTLS **(>= 2.0)**, a secure communications library.
 
 This program is compatible only with Unix-like platforms (Linux,
 FreeBSD, Solaris, ...).
@@ -90,20 +91,22 @@ necessary.
 
 Package required to build:
 
-=========================== ================= ================================
-Software                    Package Name      Description
-=========================== ================= ================================
-C++ compilation environment gcc gcc-c++ make  Mandatory tools to compile.
-CMake **(>= 2.8)**          cmake             Read the build script and
-                                              prepare sources for compilation.
-Qt **(>= 4.7.4)**           qt4-devel         Centreon Broker require Qt
-                                              core framework.
-                            qt4-mysql         MySQL drivers for Qt. Useful if
-                                              you're using DB output (with
-                                              Centreon for example).
-RRDTool                     rrdtool-devel     Development files for RRD file
-                                              (graph) creation and update.
-=========================== ================= ================================
+=========================== ========================= ================================
+Software                    Package Name              Description
+=========================== ========================= ================================
+C++ compilation environment gcc gcc-c++ make          Mandatory tools to compile.
+CMake **(>= 2.8)**          cmake                     Read the build script and
+                                                      prepare sources for compilation.
+Qt **(>= 4.7.4)**           qt4-devel                 Centreon Broker require Qt
+                                                      core framework.
+                            qt4-mysql                 MySQL drivers for Qt. Useful if
+                                                      you're using DB output (with
+                                                      Centreon for example).
+RRDTool                     rrdtool-devel             Development files for RRD file
+                                                      (graph) creation and update.
+GnuTLS **(>= 2.0)**         gnutls-devel (el6)        Development files for gnutls.
+                            compat-gnutls-devel (el5)
+=========================== ========================= ================================
 
 #. Install basic compilation tools ::
 
@@ -126,6 +129,14 @@ RRDTool                     rrdtool-devel     Development files for RRD file
 #. Install Qt framework ::
 
    $ yum install qt4-devel qt4-mysql
+
+#. Install GnuTLS (for CentOS 5) ::
+
+   $ yum install compat-gnutls-devel
+
+#. Install GnuTLS (for CentOS 6) ::
+
+   $ yum install gnutls-devel
 
 #. Add qt directory into the PATH environment variable ::
 
@@ -155,6 +166,7 @@ Qt **(>= 4.7.4)**           libqt4-dev       Centreon Broker require Qt
                                              Centreon for example).
 RRDTool                     librrd-dev       Development files for RRD file
                                              (graph) creation and update.
+GnuTLS **(>= 2.0)**         libgnutls28-dev  Development files for gnutls.
 =========================== ================ ================================
 
 #. Install compilation tools ::
@@ -168,6 +180,10 @@ RRDTool                     librrd-dev       Development files for RRD file
 #. Install Qt framework ::
 
      $ apt-get install libqt4-dev libqt4-sql-mysql
+
+#. Install GnuTLS ::
+
+     $ apt-get install libgnutls28-dev
 
 OpenSUSE
 --------
@@ -192,6 +208,7 @@ Qt **(>= 4.7.4)**           libqt4-devel      Centreon Broker require Qt
                                               Centreon for example).
 RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
+GnuTLS **(>= 2.0)**         libgnutls-devel   Development files for gnutls.
 =========================== ================= ================================
 
 #. Install compilation tools ::
@@ -205,6 +222,10 @@ RRDTool                     rrdtool-devel     Development files for RRD file
 #. Install Qt framework ::
 
      $ zypper install libqt4-devel libqt4-sql-mysql
+
+#. Install GnuTls ::
+
+     $ zypper install libgnutls-devel
 
 Build
 =====
