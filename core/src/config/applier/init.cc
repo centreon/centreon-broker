@@ -48,12 +48,12 @@ Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
-  io::temporary::unload();
   config::applier::state::unload();
   config::applier::endpoint::unload();
   config::applier::temporary::unload();
   config::applier::logger::unload();
   multiplexing::engine::unload();
+  io::temporary::unload();
   config::applier::modules::unload();
   io::protocols::unload();
   logging::manager::unload();
@@ -66,6 +66,7 @@ void config::applier::deinit() {
 void config::applier::init() {
   // Load singletons.
   logging::manager::load();
+  io::temporary::load();
   multiplexing::engine::load();
   io::protocols::load();
   config::applier::modules::load();
@@ -73,7 +74,6 @@ void config::applier::init() {
   config::applier::temporary::load();
   config::applier::endpoint::load();
   config::applier::state::load();
-  io::temporary::load();
 
   // Register Qt types.
   qRegisterMetaType<QAbstractSocket::SocketError>(
