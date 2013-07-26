@@ -249,10 +249,14 @@ void config_write(
   }
 
   // Base configuration.
-  ofs << "check_result_path=.\n"
+  ofs << "accept_passive_host_checks=1\n"
+      << "accept_passive_service_checks=1\n"
+      << "check_result_path=.\n"
       << "check_result_reaper_frequency=1\n"
       << "command_file=monitoring_engine.cmd\n"
-      << "event_broker_options=1\n"
+      << "event_broker_options=-1\n"
+      << "execute_host_checks=1\n"
+      << "execute_service_checks=1\n"
       << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
       << "log_file=monitoring_engine.log\n"
       << "max_service_check_spread=1\n"
