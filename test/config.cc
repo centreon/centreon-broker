@@ -249,13 +249,20 @@ void config_write(
   }
 
   // Base configuration.
-  ofs << "check_result_reaper_frequency=1\n"
+  ofs << "check_result_path=.\n"
+      << "check_result_reaper_frequency=1\n"
+      << "command_file=monitoring_engine.cmd\n"
+      << "event_broker_options=1\n"
       << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
       << "log_file=monitoring_engine.log\n"
       << "max_service_check_spread=1\n"
       << "max_concurrent_checks=200\n"
       << "service_inter_check_delay_method=s\n"
-      << "sleep_time=0.01\n";
+      << "sleep_time=0.01\n"
+      << "state_retention_file=monitoring_engine_retention.dat\n"
+      << "status_file=monitoring_engine_status.dat\n"
+      << "temp_file=monitoring_engine.tmp\n"
+      << "temp_path=.\n";
 
   // Subconfiguration files.
   std::string hosts_file;

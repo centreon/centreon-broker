@@ -104,7 +104,7 @@ int main() {
                << q.value(0).toLongLong() << ", name "
                << qPrintable(q.value(1).toString()) << "), expected ("
                << now - 7 * MONITORING_ENGINE_INTERVAL_LENGTH
-               << ":, MyBroker");
+               << ":, MyBroker)");
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'instances'");
     }
