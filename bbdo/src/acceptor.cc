@@ -84,6 +84,14 @@ acceptor::acceptor(acceptor const& right)
 acceptor::~acceptor() {
   _from.clear();
   for (QList<QThread*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;
+       ++it) {
+    (*it)->wait();
+    delete *it;
+  }
+  for (QList<QThread*>::iterator
          it(_threads.begin()),
          end(_threads.end());
        it != end;
@@ -138,9 +146,30 @@ void acceptor::close() {
  *          process the incoming connection.
  */
 misc::shared_ptr<io::stream> acceptor::open() {
+  // Clean client threads.
+  for (QList<QThread*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;) {
+    if ((*it)->wait(0)) {
+      QList<QThread*>::iterator to_delete(it);
+      ++it;
+      delete *to_delete;
+      _clients.erase(to_delete);
+    }
+    else
+      ++it;
+  }
+
   // Wait for client from the lower layer.
-  if (!_from.isNull())
-    return (_open(_from->open()));
+  if (!_from.isNull()) {
+    misc::shared_ptr<io::stream> s(_open(_from->open()));
+    if (!s.isNull()) {
+      _clients.push_back(new helper(this, s));
+      _clients.last()->start();
+    }
+  }
+
   return (misc::shared_ptr<io::stream>());
 }
 
@@ -151,9 +180,30 @@ misc::shared_ptr<io::stream> acceptor::open() {
  *          process the incoming connection.
  */
 misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+  // Clean client threads.
+  for (QList<QThread*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;) {
+    if ((*it)->wait(0)) {
+      QList<QThread*>::iterator to_delete(it);
+      ++it;
+      delete *to_delete;
+      _clients.erase(to_delete);
+    }
+    else
+      ++it;
+  }
+
   // Wait for client from the lower layer.
-  if (!_from.isNull())
-    return (_open(_from->open(id)));
+  if (!_from.isNull()) {
+    misc::shared_ptr<io::stream> s(_open(_from->open(id)));
+    if (!s.isNull()) {
+      _clients.push_back(new helper(this, s));
+      _clients.last()->start();
+    }
+  }
+
   return (misc::shared_ptr<io::stream>());
 }
 
@@ -168,6 +218,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
  */
 void acceptor::_on_thread_termination() {
   QThread* th(static_cast<QThread*>(QObject::sender()));
+  QMutexLocker lock(&_threadsm);
   _threads.removeAll(th);
   return ;
 }
@@ -288,7 +339,10 @@ misc::shared_ptr<io::stream> acceptor::_open(
                SIGNAL(finished()),
                this,
                SLOT(_on_thread_termination()));
-    _threads.push_back(feedr.get());
+    {
+      QMutexLocker lock(&_threadsm);
+      _threads.push_back(feedr.get());
+    }
     QObject::connect(
                feedr.get(),
                SIGNAL(finished()),
@@ -298,4 +352,39 @@ misc::shared_ptr<io::stream> acceptor::_open(
   }
 
   return (misc::shared_ptr<io::stream>());
+}
+
+/**************************************
+*                                     *
+*           Helper Methods            *
+*                                     *
+**************************************/
+
+/**
+ *  Constructor.
+ *
+ *  @param[in] accptr Acceptor object.
+ *  @param[in] s      Stream object.
+ */
+acceptor::helper::helper(
+                    acceptor* accptr,
+                    misc::shared_ptr<io::stream> s)
+  : _acceptor(accptr), _stream(s) {}
+
+/**
+ *  Thread entry point.
+ */
+void acceptor::helper::run() {
+  try {
+    _acceptor->_open(_stream);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "BBDO: client handshake failed: " << e.what();
+  }
+  catch (...) {
+    logging::error(logging::high)
+      << "BBDO: client handshake failed: unknown error";
+  }
+  return ;
 }

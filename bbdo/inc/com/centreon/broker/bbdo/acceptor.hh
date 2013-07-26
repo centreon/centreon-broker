@@ -22,6 +22,7 @@
 
 #  include <ctime>
 #  include <QList>
+#  include <QMutex>
 #  include <QThread>
 #  include "com/centreon/broker/io/endpoint.hh"
 
@@ -38,6 +39,21 @@ namespace               com {
         class           acceptor
           : public QObject, public io::endpoint {
           Q_OBJECT
+
+        private:
+          class         helper : public QThread {
+          public:
+                        helper(
+                          acceptor* accptr,
+                          misc::shared_ptr<io::stream> s);
+            void        run();
+
+          private:
+            acceptor*   _acceptor;
+            misc::shared_ptr<io::stream>
+                        _stream;
+          };
+          friend class  helper;
 
         public:
                         acceptor(
@@ -60,12 +76,15 @@ namespace               com {
           misc::shared_ptr<io::stream>
                         _open(misc::shared_ptr<io::stream> stream);
 
+          QList<QThread*>
+                        _clients;
           QString       _extensions;
           bool          _is_out;
           QString       _name;
           bool          _negociate;
           QList<QThread*>
                         _threads;
+          QMutex        _threadsm;
           time_t        _timeout;
 
         private slots:
