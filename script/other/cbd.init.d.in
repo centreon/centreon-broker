@@ -148,7 +148,7 @@ status_all() {
     running="$(echo ${line} | awk '{ print $3 }')"
     pidfile="${pid_path}/${daemon_name}.pid"
     if [ "${running}" = "y" ]; then
-      status -p ${pidfile} ${cbd}
+      echo "${daemon_name} running"
     fi
   done
 }
