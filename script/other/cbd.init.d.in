@@ -148,7 +148,12 @@ status_all() {
     running="$(echo ${line} | awk '{ print $3 }')"
     pidfile="${pid_path}/${daemon_name}.pid"
     if [ "${running}" = "y" ]; then
-      echo "${daemon_name} running"
+      is_running=$(ps -edf | grep "${cbd} ${daemon_config}" | grep -v grep | wc -l)
+      if [ $is_running = 0 ] ; then
+        echo "${daemon_name} NOT running"
+      else
+        echo "${daemon_name} running"
+      fi
     fi
   done
 }
