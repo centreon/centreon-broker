@@ -103,9 +103,9 @@ stop() {
     pidfile="${pid_path}/${daemon_name}.pid"
     if [ "${running}" = "y" ]; then
       echo -n "Stopping ${daemon_name}: "
-      kill -TERM `cat "${pidfile}"`
+      kill -TERM `cat "${pidfile}"` > /dev/null 2>&1
       sleep ${stop_timeout}
-      kill -KILL `cat "${pidfile}"`
+      kill -KILL `cat "${pidfile}"` > /dev/null 2>&1
       RETVAL=$(ps -edf | grep "${cbd} ${daemon_config}" | grep -v grep | wc -l)
       if [ ${RETVAL} = 0 ] ; then
         rm -f "${pidfile}"
