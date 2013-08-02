@@ -204,10 +204,13 @@ void output::write(misc::shared_ptr<io::data> const& d) {
           _backend->open(metric_path, e->name);
         }
         catch (exceptions::open const& b) {
+          unsigned int
+            length(e->rrd_len / (e->interval ? e->interval : 60));
+          ++length;
           _backend->open(
             metric_path,
             e->name,
-            e->rrd_len / (e->interval ? e->interval : 60) + 1,
+            length,
             0,
             e->interval,
             e->value_type);
@@ -257,10 +260,13 @@ void output::write(misc::shared_ptr<io::data> const& d) {
           _backend->open(status_path, "status");
         }
         catch (exceptions::open const& b) {
+          unsigned int
+            length(e->rrd_len / (e->interval ? e->interval : 60));
+          ++length;
           _backend->open(
             status_path,
             "status",
-            e->rrd_len / (e->interval ? e->interval : 60),
+            length,
             0,
             e->interval);
         }
