@@ -125,19 +125,18 @@ static void send_host_dependencies_list() {
     // Loop through all dependencies.
     for (hostdependency* hd(hostdependency_list); hd; hd = hd->next) {
       // Fill callback struct.
-      nebstruct_relation_data nsrd;
-      memset(&nsrd, 0, sizeof(nsrd));
-      nsrd.type = NEBTYPE_DEPENDENCY_ADD;
-      nsrd.flags = NEBFLAG_NONE;
-      nsrd.attr = NEBATTR_NONE;
-      nsrd.timestamp.tv_sec = time(NULL);
-      nsrd.hst = hd->master_host_ptr;
-      nsrd.dep_hst = hd->dependent_host_ptr;
-      nsrd.dependency_period = hd->dependency_period;
-      nsrd.inherits_parent = hd->inherits_parent;
+      nebstruct_adaptive_dependency_data nsadd;
+      memset(&nsadd, 0, sizeof(nsadd));
+      nsadd.type = NEBTYPE_HOSTDEPENDENCY_ADD;
+      nsadd.flags = NEBFLAG_NONE;
+      nsadd.attr = NEBATTR_NONE;
+      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.object_ptr = hd;
 
       // Callback.
-      neb::callback_relation(NEBTYPE_DEPENDENCY_ADD, &nsrd);
+      neb::callback_dependency(
+             NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA,
+             &nsadd);
     }
   }
   catch (std::exception const& e) {
@@ -312,19 +311,18 @@ static void send_service_dependencies_list() {
          sd;
          sd = sd->next) {
       // Fill callback struct.
-      nebstruct_relation_data nsrd;
-      memset(&nsrd, 0, sizeof(nsrd));
-      nsrd.type = NEBTYPE_DEPENDENCY_ADD;
-      nsrd.flags = NEBFLAG_NONE;
-      nsrd.attr = NEBATTR_NONE;
-      nsrd.timestamp.tv_sec = time(NULL);
-      nsrd.svc = sd->master_service_ptr;
-      nsrd.dep_svc = sd->dependent_service_ptr;
-      nsrd.dependency_period = sd->dependency_period;
-      nsrd.inherits_parent = sd->inherits_parent;
+      nebstruct_adaptive_dependency_data nsadd;
+      memset(&nsadd, 0, sizeof(nsadd));
+      nsadd.type = NEBTYPE_SERVICEDEPENDENCY_ADD;
+      nsadd.flags = NEBFLAG_NONE;
+      nsadd.attr = NEBATTR_NONE;
+      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.object_ptr = sd;
 
       // Callback.
-      neb::callback_relation(NEBTYPE_DEPENDENCY_ADD, &nsrd);
+      neb::callback_dependency(
+             NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA,
+             &nsadd);
     }
   }
   catch (std::exception const& e) {

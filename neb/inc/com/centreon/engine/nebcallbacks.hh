@@ -1,6 +1,6 @@
 /*
 ** Copyright 2002-2007 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -63,7 +63,12 @@
 #  define NEBCALLBACK_GROUP_MEMBER_DATA                 36
 #  define NEBCALLBACK_MODULE_DATA                       37
 #  define NEBCALLBACK_RELATION_DATA                     38
-#  define NEBCALLBACK_NUMITEMS                          39 /* Total number of callback types we have. */
+
+#  define NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA          39
+#  define NEBCALLBACK_ADAPTIVE_ESCALATION_DATA          40
+#  define NEBCALLBACK_ADAPTIVE_TIMEPERIOD_DATA          41
+
+#  define NEBCALLBACK_NUMITEMS                          42 /* Total number of callback types we have. */
 
 #  ifdef __cplusplus
 extern "C" {

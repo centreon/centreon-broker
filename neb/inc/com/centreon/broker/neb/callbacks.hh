@@ -33,6 +33,7 @@ namespace neb {
   int     callback_acknowledgement(int callback_type, void* data);
   int     callback_comment(int callback_type, void* data);
   int     callback_custom_variable(int callback_type, void* data);
+  int     callback_dependency(int callback_type, void* data);
   int     callback_downtime(int callback_type, void* data);
   int     callback_event_handler(int callback_type, void* data);
   int     callback_external_command(int callback_type, void* data);
@@ -55,4 +56,4 @@ namespace neb {
 
 CCB_END()
 
-#endif /* !CCB_NEB_CALLBACKS_HH */
+#endif // !CCB_NEB_CALLBACKS_HH

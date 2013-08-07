@@ -1,6 +1,6 @@
 /*
 ** Copyright 2003-2007 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,7 +21,10 @@
 #ifndef CCE_NEBSTRUCTS_HH
 #  define CCE_NEBSTRUCTS_HH
 
-#  include "com/centreon/engine/objects.hh"
+#  include "com/centreon/engine/objects/command.hh"
+#  include "com/centreon/engine/objects/customvariablesmember.hh"
+#  include "com/centreon/engine/objects/host.hh"
+#  include "com/centreon/engine/objects/service.hh"
 
 /* Acknowledgement structure. */
 typedef struct   nebstruct_acknowledgement_struct {
@@ -60,6 +63,26 @@ typedef struct   nebstruct_adaptive_contact_data_struct {
 
   void*          object_ptr;
 }                nebstruct_adaptive_contact_data;
+
+/* Adaptive dependency data structure. */
+typedef struct   nebstruct_adaptive_dependency_data_struct {
+  int            type;
+  int            flags;
+  int            attr;
+  struct timeval timestamp;
+
+  void*          object_ptr;
+}                nebstruct_adaptive_dependency_data;
+
+/* Adaptive escalation data structure. */
+typedef struct   nebstruct_adaptive_escalation_data_struct {
+  int            type;
+  int            flags;
+  int            attr;
+  struct timeval timestamp;
+
+  void*          object_ptr;
+}                nebstruct_adaptive_escalation_data;
 
 /* Adaptive host data structure. */
 typedef struct   nebstruct_adaptive_host_data_struct {
@@ -103,6 +126,18 @@ typedef struct   nebstruct_adaptive_service_data_struct {
   void*          object_ptr;
 }                nebstruct_adaptive_service_data;
 
+/* Adaptive timeperiod data structure. */
+typedef struct   nebstruct_adaptive_timeperiod_data_struct {
+  int            type;
+  int            flags;
+  int            attr;
+  struct timeval timestamp;
+
+  int            command_type;
+
+  void*          object_ptr;
+}                nebstruct_adaptive_timeperiod_data;
+
 /* Aggregated status data structure. */
 typedef struct   nebstruct_aggregated_status_struct {
   int            type;
@@ -118,8 +153,7 @@ typedef struct   nebstruct_command_struct {
   int            attr;
   struct timeval timestamp;
 
-  char const*    cmd_line;
-  char const*    cmd_name;
+  command*       cmd;
 }                nebstruct_command_data;
 
 /* Comment data structure. */
@@ -206,17 +240,17 @@ typedef struct   nebstruct_contact_status_struct {
 }                nebstruct_contact_status_data;
 
 /* Custom variable structure. */
-typedef struct   nebstruct_custom_variable_struct {
-  int            type;
-  int            flags;
-  int            attr;
-  struct timeval timestamp;
+typedef struct           nebstruct_custom_variable_struct {
+  int                    type;
+  int                    flags;
+  int                    attr;
+  struct timeval         timestamp;
 
-  char*          var_name;
-  char*          var_value;
+  char*                  var_name;
+  char*                  var_value;
 
-  void*          object_ptr;
-}                nebstruct_custom_variable_data;
+  void*                  object_ptr;
+}                        nebstruct_custom_variable_data;
 
 /* Downtime data structure. */
 typedef struct   nebstruct_downtime_struct {
@@ -453,10 +487,6 @@ typedef struct   nebstruct_relation_struct {
   service*       svc;
   host*          dep_hst;
   service*       dep_svc;
-  char const*    dependency_period;
-  char const*    execution_failure_options;
-  int            inherits_parent;
-  char const*    notification_failure_options;
 }                nebstruct_relation_data;
 
 /* Retention data structure. */
