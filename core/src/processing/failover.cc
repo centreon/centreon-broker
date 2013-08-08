@@ -162,11 +162,13 @@ time_t failover::get_buffering_timeout() const throw () {
 double failover::get_event_processing_speed() const throw () {
   time_t now(time(NULL));
   unsigned int events(0);
-  if (now > _last_event)
+  if (now >= _last_event) {
+    int limit(event_window_length - now + _last_event);
     for (int i(0);
-         i < event_window_length - now + _last_event;
+         i < limit;
          ++i)
       events += _events[i];
+  }
   return (static_cast<double>(events) / event_window_length);
 }
 
@@ -771,6 +773,7 @@ bool failover::wait(unsigned long time) {
  *  @return Does not return, throw an exception.
  */
 unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
   throw (exceptions::msg() << "cannot write to failover '"
          << _name << "'");
   return (0);
