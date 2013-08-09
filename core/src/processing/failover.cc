@@ -360,11 +360,13 @@ void failover::read(
         logging::info(logging::medium) << "failover: " << _name
           << " is buffering data before recursive read ("
           << _buffering_timeout << "s)";
+        _update_status("status=buffering data\n");
         QTimer::singleShot(
           _buffering_timeout * 1000,
           th,
           SLOT(quit()));
         th->exec();
+        _update_status("");
         this->read(data, timeout, timed_out);
       }
     }
@@ -487,17 +489,23 @@ void failover::run() {
         copy_handler = *s;
         _last_connect_success = time(NULL);
       }
+      {
+        QReadLocker rl(rwl);
+        (*s)->update();
+      }
 
       // Initial buffering.
       {
         logging::info(logging::medium)
           << "failover: initialy buffering data in " << _name
           << " (" << _buffering_timeout << "s)";
+        _update_status("status=initialy buffering data\n");
         QTimer::singleShot(
                   _buffering_timeout * 1000,
                   this,
                   SLOT(quit()));
         exec();
+        _update_status("");
       }
 
       // Reprocess unacknowledged events.
@@ -613,9 +621,11 @@ void failover::run() {
         logging::info(logging::medium)
           << "failover: buffering data in " << _name
           << " before launching failover (" << diff << "s)";
+        _update_status("status=buffering data\n");
         QTimer::singleShot(diff * 1000, this, SLOT(quit()));
         exit_lock.unlock();
         exec();
+        _update_status("");
         exit_lock.relock();
         continue ;
       }
@@ -657,8 +667,10 @@ void failover::run() {
       logging::info(logging::medium) << "failover: " << _name
         << " is sleeping " << _retry_interval
         << " seconds before reconnection";
+      _update_status("status=sleeping before reconnection\n");
       QTimer::singleShot(_retry_interval * 1000, this, SLOT(quit()));
       exec();
+      _update_status("");
       // Relock thread lock.
       exit_lock.relock();
     }
@@ -743,6 +755,12 @@ void failover::statistics(std::string& buffer) const {
     if (!_to.isNull())
       _to->statistics(buffer);
   }
+  // XXX : cannot integrate status because failover are used as
+  //       endpoints to generate stats
+  // {
+  //   QMutexLocker lock(&_statusm);
+  //   buffer.append(_status);
+  // }
   return ;
 }
 
@@ -777,4 +795,21 @@ unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
   throw (exceptions::msg() << "cannot write to failover '"
          << _name << "'");
   return (0);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Update status message.
+ *
+ *  @param[in] status New status.
+ */
+void failover::_update_status(std::string const& status) {
+  QMutexLocker lock(&_statusm);
+  _status = status;
+  return ;
 }

@@ -367,6 +367,17 @@ void stream::starting() {
 }
 
 /**
+ *  Get endpoint statistics.
+ *
+ *  @param[out] buffer Output buffer.
+ */
+void stream::statistics(std::string& buffer) const {
+  QMutexLocker lock(&_statusm);
+  buffer.append(_status);
+  return ;
+}
+
+/**
  *  Multiplexing stopped.
  */
 void stream::stopping() {
@@ -507,9 +518,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
             || data.isNull())) {
       logging::info(logging::medium)
         << "storage: committing transaction";
+      _update_status("status=committing current transaction\n");
       _storage_db->commit();
       _storage_db->transaction();
       _transaction_queries = 0;
+      _update_status("");
     }
   }
   unsigned int perfdata_events(_perfdata_queue.size());
@@ -536,6 +549,8 @@ void stream::_check_deleted_index() {
   logging::info(logging::medium) << "storage: starting DB cleanup";
   unsigned long long deleted_index(0);
   unsigned long long deleted_metrics(0);
+  _update_status(
+    "status=deleting old performance data (might take a while)\n");
 
   // Delete index.
   while (1) {
@@ -609,6 +624,7 @@ void stream::_check_deleted_index() {
   logging::info(logging::medium) << "storage: end of DB cleanup: "
     << deleted_metrics << " metrics and "
     << deleted_index << " index removed";
+  _update_status("");
 
   return ;
 }
@@ -1027,6 +1043,9 @@ unsigned int stream::_find_metric_id(
  */
 void stream::_insert_perfdatas() {
   if (!_perfdata_queue.empty()) {
+    // Status.
+    _update_status("status=inserting performance data\n");
+
     // Insert first entry.
     std::ostringstream query;
     {
@@ -1056,6 +1075,7 @@ void stream::_insert_perfdatas() {
       throw (broker::exceptions::msg()
              << "storage: could not insert data in data_bin: "
              << q.lastError().text());
+    _update_status("");
   }
 
   return ;
@@ -1065,9 +1085,6 @@ void stream::_insert_perfdatas() {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  // Check for deleted index.
-  _check_deleted_index();
-
   // Build cache.
   _rebuild_cache();
 
@@ -1096,6 +1113,9 @@ void stream::_prepare() {
  *  Rebuild cache.
  */
 void stream::_rebuild_cache() {
+  // Status.
+  _update_status("status=rebuilding index and metrics cache\n");
+
   // Delete old cache.
   _index_cache.clear();
   _metric_cache.clear();
@@ -1166,5 +1186,19 @@ void stream::_rebuild_cache() {
     }
   }
 
+  // Status.
+  _update_status("");
+
+  return ;
+}
+
+/**
+ *  Update status of endpoint.
+ *
+ *  @param[in] status New status.
+ */
+void stream::_update_status(std::string const& status) {
+  QMutexLocker lock(&_statusm);
+  _status = status;
   return ;
 }

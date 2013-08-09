@@ -90,6 +90,8 @@ namespace                com {
           void           initial_lock();
 
          private:
+          void           _update_status(std::string const& status);
+
           // Data that doesn't require locking.
           volatile time_t _buffering_timeout;
           misc::shared_ptr<io::endpoint>
@@ -122,6 +124,10 @@ namespace                com {
           volatile bool  _immediate;
           volatile bool  _should_exit;
           mutable QMutex _should_exitm;
+
+          // Status.
+          std::string    _status;
+          mutable QMutex _statusm;
 
           // Stream locking.
           mutable QReadWriteLock _fromm;
