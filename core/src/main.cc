@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,6 +34,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/diagnostic.hh"
 
 using namespace com::centreon::broker;
 
@@ -130,6 +131,7 @@ int main(int argc, char* argv[]) {
     // Check the command line.
     bool check(false);
     bool debug(false);
+    bool diagnose(false);
     bool help(false);
     bool version(false);
     if (argc >= 2) {
@@ -138,6 +140,8 @@ int main(int argc, char* argv[]) {
           check = true;
         else if (!strcmp(argv[i], "-d"))
           debug = true;
+        else if (!strcmp(argv[i], "-D"))
+          diagnose = true;
         else if (!strcmp(argv[i], "-h"))
           help = true;
         else if (!strcmp(argv[i], "-v"))
@@ -174,7 +178,11 @@ int main(int argc, char* argv[]) {
     }
 
     // Check parameters requirements.
-    if (help) {
+    if (diagnose) {
+      misc::diagnostic diag;
+      diag.generate(gl_mainconfigfile.toStdString());
+    }
+    else if (help) {
       logging::info(logging::high) << "USAGE: " << argv[0]
         << " [-c] [-d] [-h] [-v] [<configfile>]";
       logging::info(logging::high) << "  -c  Check configuration file.";
@@ -184,7 +192,7 @@ int main(int argc, char* argv[]) {
         << "  -v  Print Centreon Broker version.";
       logging::info(logging::high) << "Centreon Broker "
         << CENTREON_BROKER_VERSION;
-      logging::info(logging::high) << "Copyright 2009-2012 Merethis";
+      logging::info(logging::high) << "Copyright 2009-2013 Merethis";
       logging::info(logging::high) << "License GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
       retval = 0;
@@ -208,7 +216,7 @@ int main(int argc, char* argv[]) {
       app.setOrganizationName("Merethis");
       logging::info(logging::medium)
         << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::medium) << "Copyright 2009-2012 Merethis";
+      logging::info(logging::medium) << "Copyright 2009-2013 Merethis";
       logging::info(logging::medium) << "License GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
 #if QT_VERSION >= 0x040400
