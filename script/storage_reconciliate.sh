@@ -63,17 +63,17 @@ while read line ; do
   metricname=`echo "$line" | cut -f 3-`
 
   # Modify metric name.
-  oldmetricname=`echo "$metricname" | sed 's|/|#S#|g' | sed 's|#BS#|\|g' | sed 's|%P%|%|g'`
+  oldmetricname=`echo "$metricname" | sed 's|/|#S#|g' | sed 's|\\\\|#BS#|g' | sed 's|%|#P#|g' | sed 's|[^0-9_a-zA-Z]|-|g'`
 
   # Process if metric name is modified.
   if [ x"$metricname" != x"$oldmetricname" ] ; then
-    oldmetricid=`mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT metric_id FROM metrics WHERE index_id=$indexid AND metric_name='$oldmetricname'" "$dbname"`
+    oldmetricid=`mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT metric_id FROM metrics WHERE index_id=$indexid AND metric_name='$oldmetricname'" "$dbname" 2> /dev/null`
     if [ x"$oldmetricid" != x ] ; then
       echo "(index $indexid, metric $oldmetricid, name $oldmetricname)  =>  (index $indexid, metric $metricid, name $metricname)"
       if [ x"$execute" = x1 ] ; then
-        #mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE data_bin SET metric_id=$metricid WHERE metric_id=$oldmetricid" "$dbname"
+        #mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid" "$dbname"
       else
-        echo "  UPDATE data_bin SET metric_id=$metricid WHERE metric_id=$oldmetricid"
+        echo "  UPDATE data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid"
       fi
     fi
   fi
