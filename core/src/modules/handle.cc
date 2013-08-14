@@ -116,8 +116,6 @@ void handle::close() {
     }
     // Call deinitialization routine.
     else {
-      logging::debug(logging::low) << "modules: calling " \
-        "deinitialization routine of '" << _handle.fileName() << "'";
       (*(sym.code))();
       logging::debug(logging::low) << "modules: deinitialization " \
            "routine of '" << _handle.fileName()
@@ -204,8 +202,6 @@ void handle::update(void const* arg) {
 
   // Found routine.
   if (sym.data) {
-    logging::debug(logging::low) << "modules: calling update routine "
-      << "of '" << _handle.fileName() << "'";
     (*(void (*)(void const*))(sym.code))(arg);
     logging::debug(logging::low) << "modules: update routine of '"
       << _handle.fileName() << "' successfully completed";
@@ -249,8 +245,6 @@ void handle::_init(void const* arg) {
   }
 
   // Call initialization routine.
-  logging::debug(logging::low) << "modules: calling initialization " \
-    "routine of '" << _handle.fileName() << "'";
   (*(void (*)(void const*))(sym.code))(arg);
   logging::debug(logging::medium) << "modules: initialization " \
     "routine of '" << _handle.fileName() << "' successfully completed";

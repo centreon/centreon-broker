@@ -134,14 +134,12 @@ void loader::load_file(QString const& filename, void const* arg) {
   QHash<QString, misc::shared_ptr<handle> >::iterator
     it(_handles.find(filename));
   if (it == _handles.end()) {
-    logging::debug(logging::low) << "modules: loading '"
-      << filename << "' which is NOT already loaded";
     misc::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
   }
   else {
-    logging::info(logging::low) << "modules: attempt to update '"
+    logging::info(logging::low) << "modules: attempt to load '"
       << filename << "' which is already loaded";
     (*it)->update(arg);
   }

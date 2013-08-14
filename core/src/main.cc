@@ -136,15 +136,15 @@ int main(int argc, char* argv[]) {
     bool version(false);
     if (argc >= 2) {
       for (int i(1); i < argc; ++i)
-        if (!strcmp(argv[i], "-c"))
+        if (!strcmp(argv[i], "-c") || !strcmp(argv[i], "--check"))
           check = true;
-        else if (!strcmp(argv[i], "-d"))
+        else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--debug"))
           debug = true;
-        else if (!strcmp(argv[i], "-D"))
+        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--diagnose"))
           diagnose = true;
-        else if (!strcmp(argv[i], "-h"))
+        else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
           help = true;
-        else if (!strcmp(argv[i], "-v"))
+        else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version"))
           version = true;
         else
           gl_mainconfigfile = argv[i];
@@ -179,14 +179,20 @@ int main(int argc, char* argv[]) {
 
     // Check parameters requirements.
     if (diagnose) {
+      if (gl_mainconfigfile.isEmpty()) {
+        logging::error(logging::high)
+          << "diagnostic: no configuration file provided: "
+          << "DIAGNOSTIC FILE MIGHT NOT BE USEFUL";
+      }
       misc::diagnostic diag;
       diag.generate(gl_mainconfigfile.toStdString());
     }
     else if (help) {
       logging::info(logging::high) << "USAGE: " << argv[0]
-        << " [-c] [-d] [-h] [-v] [<configfile>]";
+        << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       logging::info(logging::high) << "  -c  Check configuration file.";
       logging::info(logging::high) << "  -d  Enable debug mode.";
+      logging::info(logging::high) << "  -D  Generate a diagnostic file.";
       logging::info(logging::high) << "  -h  Print this help.";
       logging::info(logging::high)
         << "  -v  Print Centreon Broker version.";
@@ -204,7 +210,7 @@ int main(int argc, char* argv[]) {
     }
     else if (gl_mainconfigfile.isEmpty()) {
       logging::error(logging::high) << "USAGE: " << argv[0]
-        << " [-c] [-d] [-h] [-v] [<configfile>]";
+        << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       retval = 1;
     }
     else {
@@ -253,6 +259,10 @@ int main(int argc, char* argv[]) {
             it->types(0);
           conf.loggers().push_back(default_state.loggers().front());
         }
+
+        // Add debug output if in debug mode.
+        if (debug)
+          conf.loggers() << default_state.loggers();
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);

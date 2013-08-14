@@ -98,15 +98,28 @@ void diagnostic::generate(
   {
     diagnostic_log_path = tmp_dir;
     diagnostic_log_path.append("/diagnostic.log");
-    config::logger diagnostic_log;
-    diagnostic_log.config(true);
-    diagnostic_log.debug(true);
-    diagnostic_log.error(true);
-    diagnostic_log.info(true);
-    diagnostic_log.level(logging::low);
-    diagnostic_log.name(diagnostic_log_path.c_str());
-    diagnostic_log.type(config::logger::file);
-    diagnostic_state.loggers().push_back(diagnostic_log);
+    {
+      config::logger diagnostic_log;
+      diagnostic_log.config(true);
+      diagnostic_log.debug(true);
+      diagnostic_log.error(true);
+      diagnostic_log.info(true);
+      diagnostic_log.level(logging::low);
+      diagnostic_log.name(diagnostic_log_path.c_str());
+      diagnostic_log.type(config::logger::file);
+      diagnostic_state.loggers().push_back(diagnostic_log);
+    }
+    {
+      config::logger stdout_log;
+      stdout_log.config(false);
+      stdout_log.debug(false);
+      stdout_log.error(true);
+      stdout_log.info(true);
+      stdout_log.level(logging::high);
+      stdout_log.name("stdout");
+      stdout_log.type(config::logger::standard);
+      diagnostic_state.loggers().push_back(stdout_log);
+    }
   }
   config::applier::state::instance().apply(diagnostic_state, false);
 
@@ -293,6 +306,7 @@ void diagnostic::generate(
       QProcess p;
       p.setStandardOutputFile(log_path.c_str());
       p.start("tail", args);
+      p.waitForFinished();
     }
 
   // Generate file name if not existing.
