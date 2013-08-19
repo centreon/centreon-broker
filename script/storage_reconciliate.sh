@@ -98,9 +98,9 @@ while read line ; do
       # Rebuild graphs.
       if [ x"$indexid" != x"$lastindexid" ] ; then
         if [ x"$rebuild" = x1 ] ; then
-          mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE index_data SET must_be_rebuild=1 WHERE index_id=$indexid" "$dbname"
+          mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE index_data SET must_be_rebuild=1 WHERE id=$indexid" "$dbname"
         else
-          echo "UPDATE index_data SET must_be_rebuild=1 WHERE index_id=$indexid"
+          echo "UPDATE index_data SET must_be_rebuild=1 WHERE id=$indexid"
         fi
         lastindexid="$indexid"
       fi
