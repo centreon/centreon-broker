@@ -293,6 +293,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
               nebstruct_adaptive_host_data nsahd;
               memset(&nsahd, 0, sizeof(nsahd));
               nsahd.type = NEBTYPE_HOST_ADD;
+              nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
               nsahd.command_type = CMD_NONE;
               nsahd.modified_attribute = MODATTR_ALL;
               nsahd.modified_attributes = MODATTR_ALL;
@@ -355,6 +356,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
               nebstruct_adaptive_service_data nsasd;
               memset(&nsasd, 0, sizeof(nsasd));
               nsasd.type = NEBTYPE_SERVICE_ADD;
+              nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
               nsasd.command_type = CMD_NONE;
               nsasd.modified_attribute = MODATTR_ALL;
               nsasd.modified_attributes = MODATTR_ALL;
@@ -1270,6 +1272,7 @@ int neb::callback_host(int callback_type, void* data) {
           nebstruct_custom_variable_data data;
           memset(&data, 0, sizeof(data));
           data.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
+          data.timestamp.tv_sec = host_data->timestamp.tv_sec;
           data.var_name = cvar->variable_name;
           data.var_value = cvar->variable_value;
           data.object_ptr = host_data->object_ptr;
@@ -1975,6 +1978,7 @@ int neb::callback_service(int callback_type, void* data) {
           nebstruct_custom_variable_data data;
           memset(&data, 0, sizeof(data));
           data.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
+          data.timestamp.tv_sec = service_data->timestamp.tv_sec;
           data.var_name = cvar->variable_name;
           data.var_value = cvar->variable_value;
           data.object_ptr = service_data->object_ptr;

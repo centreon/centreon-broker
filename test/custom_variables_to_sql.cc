@@ -103,7 +103,7 @@ static void check_host_custom_variables(
              << q.value(3).toUInt() << ", type "
              << q.value(4).toUInt() << ", update time "
              << q.value(5).toUInt() << ", value "
-             << q.value(6).toUInt() << "), expected ("
+             << q.value(6).toString() << "), expected ("
              << entries[i].host_id << ", " << entries[i].name << ", "
              << (entries[i].default_value
                  ? entries[i].default_value
@@ -486,7 +486,7 @@ int main() {
           "MYSERVICEVARIABLE6",
           "Yes ! Erasing the old value ...",
           "Value (as string) of MYSERVICEVARIABLE6 custom variable"
-        }        
+        }
       };
 
       // Check.
