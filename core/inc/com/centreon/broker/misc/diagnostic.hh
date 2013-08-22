@@ -21,6 +21,7 @@
 #  define CCB_MISC_DIAGNOSTIC_HH
 
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -39,7 +40,7 @@ namespace       misc {
                 ~diagnostic() throw ();
     diagnostic& operator=(diagnostic const& right);
     void        generate(
-                  std::string const& cfg_file,
+                  std::vector<std::string> const& cfg_files,
                   std::string const& out_file = "");
   };
 }

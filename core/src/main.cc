@@ -45,7 +45,7 @@ using namespace com::centreon::broker;
 **************************************/
 
 // Main config file.
-static QString gl_mainconfigfile;
+static std::vector<std::string> gl_mainconfigfiles;
 
 /**
  *  Function called when updating configuration (when program receives
@@ -66,7 +66,7 @@ static void hup_handler(int signum) {
   // Parse configuration file.
   config::parser parsr;
   config::state conf;
-  parsr.parse(gl_mainconfigfile, conf);
+  parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
 
   // Apply resulting configuration.
   config::applier::state::instance().apply(conf);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
         else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version"))
           version = true;
         else
-          gl_mainconfigfile = argv[i];
+          gl_mainconfigfiles.push_back(argv[i]);
     }
 
     // Apply default configuration.
@@ -179,13 +179,13 @@ int main(int argc, char* argv[]) {
 
     // Check parameters requirements.
     if (diagnose) {
-      if (gl_mainconfigfile.isEmpty()) {
+      if (gl_mainconfigfiles.empty()) {
         logging::error(logging::high)
           << "diagnostic: no configuration file provided: "
           << "DIAGNOSTIC FILE MIGHT NOT BE USEFUL";
       }
       misc::diagnostic diag;
-      diag.generate(gl_mainconfigfile.toStdString());
+      diag.generate(gl_mainconfigfiles);
     }
     else if (help) {
       logging::info(logging::high) << "USAGE: " << argv[0]
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
         << CENTREON_BROKER_VERSION;
       retval = 0;
     }
-    else if (gl_mainconfigfile.isEmpty()) {
+    else if (gl_mainconfigfiles.empty()) {
       logging::error(logging::high) << "USAGE: " << argv[0]
         << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       retval = 1;
@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
         // Parse configuration file.
         config::parser parsr;
         config::state conf;
-        parsr.parse(gl_mainconfigfile, conf);
+        parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
 
         // Verification modifications.
         if (check) {
