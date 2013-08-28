@@ -20,6 +20,8 @@
 #include <cstring>
 #include <gnutls/gnutls.h>
 #if GNUTLS_VERSION_NUMBER <= 0x020B00
+#  include <cerrno>
+#  include <pthread.h>
 #  include <gcrypt.h>
 #endif // GNU TLS <= 2.11.0
 #include "com/centreon/broker/exceptions/msg.hh"
