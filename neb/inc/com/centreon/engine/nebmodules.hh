@@ -1,6 +1,6 @@
 /*
 ** Copyright 2002-2006 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -38,7 +38,7 @@
 
 /* Module load/unload flags. */
 #  define NEBMODULE_NORMAL_LOAD    0
-#  define NEBMODULE_ENGINE         (1 << 12)
+#  define NEBMODULE_ENGINE         (1 << 13)
 #  define NEBMODULE_REQUEST_UNLOAD 0
 #  define NEBMODULE_FORCE_UNLOAD   (1 << 0)
 
