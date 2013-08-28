@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,11 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/logging/logging.hh"
+
+using namespace com::centreon::broker;
+
+static unsigned int instances(0);
+
 extern "C" {
   /**
    *  Module deinitialization routine.
    */
   void broker_module_deinit() {
+    --instances;
     return ;
   }
 
@@ -31,6 +39,11 @@ extern "C" {
    */
   void broker_module_init(void const* arg) {
     (void)arg;
+    if (!instances++)
+      logging::info(logging::high)
+        << "NEB: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
     return ;
   }
 }

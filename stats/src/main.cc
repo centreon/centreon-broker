@@ -60,6 +60,11 @@ extern "C" {
   void broker_module_init(void const* arg) {
     // Increment instance number.
     if (!instances++) {
+      // Stats module.
+      logging::info(logging::high)
+        << "stats: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // Check that stats are enabled.
       config::state const& cfg(*static_cast<config::state const*>(arg));
       bool loaded(false);

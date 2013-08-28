@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,6 +19,7 @@
 
 #include <QSqlDatabase>
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/factory.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
@@ -53,6 +55,11 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
+      // Storage module.
+      logging::info(logging::high)
+        << "storage: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // This is a workaround to keep a mysql driver open.
       if (!QSqlDatabase::contains())
         QSqlDatabase::addDatabase("QMYSQL");

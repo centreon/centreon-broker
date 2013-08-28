@@ -49,6 +49,11 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
+      // BBDO module.
+      logging::info(logging::high)
+        << "BBDO: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // Print protocol version.
       logging::info(logging::high)
         << "BBDO: using protocol version " << BBDO_VERSION_MAJOR
@@ -62,6 +67,7 @@ extern "C" {
       // Initialize mappings.
       bbdo::initialize();
     }
+
     return ;
   }
 }

@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -18,6 +19,7 @@
 
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/local/factory.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 
@@ -45,12 +47,19 @@ extern "C" {
     (void)arg;
 
     // Increment instance number.
-    if (!instances++)
+    if (!instances++) {
+      // Local module.
+      logging::info(logging::high)
+        << "local: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // Register local sockets.
       io::protocols::instance().reg("local",
         local::factory(),
         1,
         3);
+    }
+
     return ;
   }
 }

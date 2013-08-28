@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -17,6 +18,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/ndo/factory.hh"
 #include "com/centreon/broker/ndo/internal.hh"
 
@@ -47,6 +49,11 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
+      // NDO module.
+      logging::info(logging::high)
+        << "NDO: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // Register NDO protocol.
       io::protocols::instance().reg("NDO",
         ndo::factory(),
@@ -55,6 +62,7 @@ extern "C" {
       // Initialize mappings.
       ndo::initialize();
     }
+
     return ;
   }
 }

@@ -55,6 +55,11 @@ namespace correlation {
   void module_init(void const* arg) {
     // Increment instance number.
     if (!correlation::instances++) {
+      // Correlation module.
+      logging::info(logging::high)
+        << "correlation: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
       // Check that correlation is enabled.
       config::state const& cfg(*static_cast<config::state const*>(arg));
       bool loaded(false);
