@@ -465,6 +465,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
             // Find metric_id.
             unsigned int metric_type(pd.value_type());
+            bool metric_locked(false);
             unsigned int metric_id(_find_metric_id(
                                      index_id,
                                      pd.name(),
@@ -477,7 +478,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                                      pd.critical_mode(),
                                      pd.min(),
                                      pd.max(),
-                                     &metric_type));
+                                     &metric_type,
+                                     &metric_locked));
 
             if (_store_in_db) {
               // Append perfdata to queue.
@@ -489,20 +491,23 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
               _perfdata_queue.push_back(val);
             }
 
-            // Send perfdata event to processing.
-            logging::debug(logging::high)
-              << "storage: generating perfdata event";
-            misc::shared_ptr<storage::metric> perf(new storage::metric);
-            perf->ctime = ss->last_check;
-            perf->interval = static_cast<time_t>(ss->check_interval
-                                                 * _interval_length);
-            perf->is_for_rebuild = false;
-            perf->metric_id = metric_id;
-            perf->name = pd.name();
-            perf->rrd_len = rrd_len;
-            perf->value = pd.value();
-            perf->value_type = metric_type;
-            multiplexing::publisher().write(perf.staticCast<io::data>());
+            if (!metric_locked) {
+              // Send perfdata event to processing.
+              logging::debug(logging::high)
+                << "storage: generating perfdata event";
+              misc::shared_ptr<storage::metric>
+                perf(new storage::metric);
+              perf->ctime = ss->last_check;
+              perf->interval = static_cast<time_t>(
+                                 ss->check_interval * _interval_length);
+              perf->is_for_rebuild = false;
+              perf->metric_id = metric_id;
+              perf->name = pd.name();
+              perf->rrd_len = rrd_len;
+              perf->value = pd.value();
+              perf->value_type = metric_type;
+              multiplexing::publisher().write(perf.staticCast<io::data>());
+            }
           }
         }
       }
@@ -883,7 +888,8 @@ unsigned int stream::_find_metric_id(
                        bool crit_mode,
                        double min,
                        double max,
-                       unsigned int* type) {
+                       unsigned int* type,
+                       bool* locked) {
   unsigned int retval;
 
   // Trim metric_name.
@@ -946,6 +952,7 @@ unsigned int stream::_find_metric_id(
     retval = it->second.metric_id;
     if (it->second.type != perfdata::automatic)
       *type = it->second.type;
+    *locked = it->second.locked;
   }
 
   // Can't find in cache, insert in DB.
@@ -956,6 +963,7 @@ unsigned int stream::_find_metric_id(
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
+    *locked = false;
     QString query(
               "INSERT INTO metrics "
               "  (index_id, metric_name, unit_name, warn, warn_low, "
@@ -1024,6 +1032,7 @@ unsigned int stream::_find_metric_id(
     info.crit = crit;
     info.crit_low = crit_low;
     info.crit_mode = crit_mode;
+    info.locked = false;
     info.max = max;
     info.metric_id = retval;
     info.min = min;
@@ -1153,7 +1162,7 @@ void stream::_rebuild_cache() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max" \
+    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max, locked" \
                 " FROM metrics",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -1179,6 +1188,7 @@ void stream::_rebuild_cache() {
       info.crit_mode = q.value(10).toUInt();
       info.min = q.value(11).toDouble();
       info.max = q.value(12).toDouble();
+      info.locked = (q.value(13).toUInt() == 1);
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;

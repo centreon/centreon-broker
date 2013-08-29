@@ -79,6 +79,7 @@ namespace          storage {
       double       crit;
       double       crit_low;
       bool         crit_mode;
+      bool         locked;
       double       max;
       unsigned int metric_id;
       double       min;
@@ -118,7 +119,8 @@ namespace          storage {
                      bool crit_mode,
 		     double min,
 		     double max,
-                     unsigned int* type = NULL);
+                     unsigned int* type,
+                     bool* locked);
     void           _insert_perfdatas();
     void           _prepare();
     void           _rebuild_cache();
