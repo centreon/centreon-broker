@@ -463,8 +463,8 @@ int neb::callback_dependency(int callback_type, void* data) {
       }
 
       // Generate service dependency event.
-      misc::shared_ptr<service_dependency>
-        hst_dep(new service_dependency);
+      misc::shared_ptr<host_dependency>
+        hst_dep(new host_dependency);
       hst_dep->host_id = host_id;
       hst_dep->dependent_host_id = dep_host_id;
       hst_dep->enabled = (nsadd->type != NEBTYPE_HOSTDEPENDENCY_DELETE);
