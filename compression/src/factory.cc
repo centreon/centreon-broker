@@ -88,6 +88,7 @@ bool factory::has_endpoint(
   QMap<QString, QString>::const_iterator
     it(cfg.params.find("compression"));
   return ((cfg.params.end() != it)
+          && it->compare("auto", Qt::CaseInsensitive)
           && config::parser::parse_boolean(*it));
 }
 
@@ -107,7 +108,8 @@ bool factory::has_not_endpoint(
                 bool is_output) const {
   QMap<QString, QString>::const_iterator
     it(cfg.params.find("compression"));
-  return ((it != cfg.params.end())
+  return (((it != cfg.params.end())
+           && it->compare("auto", Qt::CaseInsensitive))
           ? !has_endpoint(cfg, is_input, is_output)
           : false);
 }
