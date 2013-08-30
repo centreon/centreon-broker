@@ -491,7 +491,8 @@ void failover::run() {
       }
       {
         QReadLocker rl(rwl);
-        (*s)->update();
+        if (!s->isNull())
+          (*s)->update();
       }
 
       // Initial buffering.
