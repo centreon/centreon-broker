@@ -419,12 +419,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       ++_transaction_queries;
 
       unsigned int rrd_len;
+      bool index_locked(false);
       unsigned int index_id(_find_index_id(
                               ss->host_id,
                               ss->service_id,
                               ss->host_name,
                               ss->service_description,
-                              &rrd_len));
+                              &rrd_len,
+                              &index_locked));
       if (index_id != 0) {
         // Generate status event.
         logging::debug(logging::low)
@@ -491,7 +493,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
               _perfdata_queue.push_back(val);
             }
 
-            if (!metric_locked) {
+            if (!index_locked && !metric_locked) {
               // Send perfdata event to processing.
               logging::debug(logging::high)
                 << "storage: generating perfdata event";
@@ -711,6 +713,7 @@ void stream::_delete_metrics(
  *  @param[in]  host_name    Host name associated to the index.
  *  @param[in]  service_desc Service description associated to the index.
  *  @param[out] rrd_len      Index RRD length.
+ *  @param[out] locked       Locked flag.
  *
  *  @return Index ID matching host and service ID.
  */
@@ -719,7 +722,8 @@ unsigned int stream::_find_index_id(
                        unsigned int service_id,
                        QString const& host_name,
                        QString const& service_desc,
-                       unsigned int* rrd_len) {
+                       unsigned int* rrd_len,
+                       bool* locked) {
   unsigned int retval;
 
   // Look in the cache.
@@ -778,14 +782,17 @@ unsigned int stream::_find_index_id(
     retval = it->second.index_id;
     if (rrd_len)
       *rrd_len = it->second.rrd_retention;
+    *locked = it->second.locked;
   }
   // Can't find in cache, discard data or insert in DB.
   else {
     logging::info(logging::medium) << "storage: index not found for ("
       << host_id << ", " << service_id << ")";
     // Discard.
-    if (!_insert_in_index_data)
+    if (!_insert_in_index_data) {
       retval = 0;
+      *locked = true;
+    }
     // Insert in index_data.
     else {
       logging::info(logging::medium)
@@ -840,6 +847,7 @@ unsigned int stream::_find_index_id(
       index_info info;
       info.host_name = host_name;
       info.index_id = retval;
+      info.locked = false;
       info.service_description = service_desc;
       info.special = special;
       info.rrd_retention = _rrd_len;
@@ -848,6 +856,7 @@ unsigned int stream::_find_index_id(
       // Provide RRD retention.
       if (rrd_len)
         *rrd_len = info.rrd_retention;
+      *locked = info.locked;
     }
   }
 
@@ -963,7 +972,6 @@ unsigned int stream::_find_metric_id(
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    *locked = false;
     QString query(
               "INSERT INTO metrics "
               "  (index_id, metric_name, unit_name, warn, warn_low, "
@@ -1042,6 +1050,7 @@ unsigned int stream::_find_metric_id(
     info.warn_low = warn_low;
     info.warn_mode = warn_mode;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
+    *locked = info.locked;
   }
 
   return (retval);
@@ -1132,7 +1141,7 @@ void stream::_rebuild_cache() {
   // Fill index cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT id, host_id, service_id, host_name, rrd_retention, service_description, special" \
+    QSqlQuery q("SELECT id, host_id, service_id, host_name, rrd_retention, service_description, special, locked" \
                 " FROM index_data",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -1152,6 +1161,7 @@ void stream::_rebuild_cache() {
         info.rrd_retention = _rrd_len;
       info.service_description = q.value(5).toString();
       info.special = (q.value(6).toUInt() == 2);
+      info.locked = (q.value(7).toUInt() == 1);
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
