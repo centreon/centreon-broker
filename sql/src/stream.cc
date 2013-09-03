@@ -847,13 +847,11 @@ void stream::_process_host_dependency(io::data const& e) {
     logging::info(logging::medium)
       << "SQL: removing host dependency of " << hd.dependent_host_id
       << " on " << hd.host_id;
-    QSqlQuery q(*_db);
-    q.prepare(
-        "DELETE FROM hosts_hosts_dependencies "
-        "WHERE dependent_host_id=:dependent_host_id"
-        "  AND host_id=:host_id");
-    q << hd;
-    _execute(q);
+    std::ostringstream oss;
+    oss << "DELETE FROM hosts_hosts_dependencies "
+        << "WHERE dependent_host_id=" << hd.dependent_host_id
+        << "  AND host_id=" << hd.host_id;
+    _execute(oss.str().c_str());
   }
 
   return ;
@@ -1465,15 +1463,13 @@ void stream::_process_service_dependency(io::data const& e) {
       << "SQL: removing service dependency of (" << sd.dependent_host_id
       << ", " << sd.dependent_service_id << ") on (" << sd.host_id
       << ", " << sd.service_id << ")";
-    QSqlQuery q(*_db);
-    q.prepare(
-        "DELETE FROM services_services_dependencies "
-        "WHERE dependent_host_id=:dependent_host_id"
-        "  AND dependent_service_id=:dependent_service_id"
-        "  AND host_id=:host_id"
-        "  AND service_id=:service_id");
-    q << sd;
-    _execute(q);
+    std::ostringstream oss;
+    oss << "DELETE FROM services_services_dependencies "
+        << "WHERE dependent_host_id=" << sd.dependent_host_id
+        << "  AND dependent_service_id=" << sd.dependent_service_id
+        << "  AND host_id=" << sd.host_id
+        << "  AND service_id=" << sd.service_id;
+    _execute(oss.str().c_str());
   }
 
   return ;
