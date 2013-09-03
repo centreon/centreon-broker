@@ -956,17 +956,20 @@ void stream::_process_host_group_member(io::data const& e) {
 
     // Build query.
     std::ostringstream oss;
-    oss << "DELETE " << mapped_type<neb::host_group_member>::table
-        << "  FROM " << mapped_type<neb::host_group_member>::table << " hgm "
-        << "  INNER JOIN " << mapped_type<neb::host_group>::table << " hg "
+    oss << "DELETE hgm"
+        << "  FROM " << mapped_type<neb::host_group_member>::table << " AS hgm "
+        << "  INNER JOIN " << mapped_type<neb::host_group>::table << " AS hg "
         << "  ON hgm.hostgroup_id=hg.hostgroup_id "
-        << "  WHERE hg.instance_id=:instance_id "
-        << "    AND hg.name=:group"
-        << "    AND hgm.host_id=:host_id";
+        << "  WHERE hg.name=:group"
+        << "    AND hgm.host_id=:host_id"
+        << "    AND hg.instance_id=:instance_id ";
 
     // Execute query.
     QSqlQuery q(*_db);
-    q.prepare(oss.str().c_str());
+    if (!q.prepare(oss.str().c_str()))
+      throw (exceptions::msg()
+             << "SQL: cannot prepare host group membership deletion statement: "
+             << q.lastError().text());
     q << hgm;
     _execute(q);
   }
@@ -1574,18 +1577,21 @@ void stream::_process_service_group_member(io::data const& e) {
 
     // Build query.
     std::ostringstream oss;
-    oss << "DELETE " << mapped_type<neb::service_group_member>::table
-        << "  FROM " << mapped_type<neb::service_group_member>::table << " sgm "
-        << "  INNER JOIN " << mapped_type<neb::service_group>::table << " sg "
+    oss << "DELETE sgm"
+        << "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm "
+        << "  INNER JOIN " << mapped_type<neb::service_group>::table << " AS sg "
         << "  ON sgm.servicegroup_id=sg.servicegroup_id "
-        << "  WHERE sg.instance_id=:instance_id "
-        << "    AND sg.name=:group "
+        << "  WHERE sg.name=:group "
         << "    AND sgm.host_id=:host_id "
+        << "    AND sg.instance_id=:instance_id "
         << "    AND sgm.service_id=:service_id";
 
     // Execute query.
     QSqlQuery q(*_db);
-    q.prepare(oss.str().c_str());
+    if (!q.prepare(oss.str().c_str()))
+      throw (exceptions::msg()
+             << "SQL: cannot prepare service group membership deletion statement: "
+             << q.lastError().text());
     q << sgm;
     _execute(q);
   }
