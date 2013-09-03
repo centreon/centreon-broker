@@ -1047,7 +1047,8 @@ int neb::callback_group_member(int callback_type, void* data) {
       member_data(static_cast<nebstruct_group_member_data*>(data));
 
     // Host group member.
-    if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_ADD) {
+    if ((member_data->type == NEBTYPE_HOSTGROUPMEMBER_ADD)
+        || (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE)) {
       ::host const*
         hst(static_cast< ::host*>(member_data->object_ptr));
       ::hostgroup const*
@@ -1060,28 +1061,39 @@ int neb::callback_group_member(int callback_type, void* data) {
         hgm->instance_id = neb::instance_id;
         umap<std::string, int>::const_iterator it;
         it = neb::gl_hosts.find(hst->name);
-        if (it != neb::gl_hosts.end())
+        if (it != neb::gl_hosts.end()) {
           hgm->host_id = it->second;
+          if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
+            logging::info(logging::low) << "callbacks: host "
+              << hgm->host_id << " is not a member of group '"
+              << hgm->group << "' on instance " << hgm->instance_id
+              << " anymore";
+            hgm->enabled = false;
+          }
+          else {
+            logging::info(logging::low) << "callbacks: host "
+              << hgm->host_id << " is a member of group '" << hgm->group
+              << "' on instance " << hgm->instance_id;
+            hgm->enabled = true;
+          }
 
-        // Send host group member event.
-        if (hgm->host_id) {
-          logging::info(logging::low) << "callbacks: host "
-            << hgm->host_id << " is a member of group '" << hgm->group
-            << "' on instance " << hgm->instance_id;
-          neb::gl_publisher.write(hgm.staticCast<io::data>());
+          // Send host group member event.
+          if (hgm->host_id) {
+            neb::gl_publisher.write(hgm.staticCast<io::data>());
+          }
         }
       }
     }
     // Service group member.
-    else if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_ADD) {
+    else if ((member_data->type == NEBTYPE_SERVICEGROUPMEMBER_ADD)
+             || (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE)) {
       ::service const*
         svc(static_cast< ::service*>(member_data->object_ptr));
       ::servicegroup const*
         sg(static_cast< ::servicegroup*>(member_data->group_ptr));
       if (svc->description
           && sg->group_name
-          && svc->host_ptr
-          && svc->host_ptr->name) {
+          && svc->host_name) {
         // Output variable.
         misc::shared_ptr<neb::service_group_member>
           sgm(new neb::service_group_member);
@@ -1089,20 +1101,29 @@ int neb::callback_group_member(int callback_type, void* data) {
         sgm->instance_id = neb::instance_id;
         std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator it;
         it = neb::gl_services.find(std::make_pair<std::string, std::string>(
-                                     svc->host_ptr->name,
+                                     svc->host_name,
                                      svc->description));
         if (it != neb::gl_services.end()) {
           sgm->host_id = it->second.first;
           sgm->service_id = it->second.second;
-        }
+          if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE) {
+            logging::info(logging::low) << "callbacks: service ("
+              << sgm->host_id << ", " << sgm->service_id
+              << ") is not a member of group '" << sgm->group
+              << "' on instance " << sgm->instance_id << " anymore";
+            sgm->enabled = false;
+          }
+          else {
+            logging::info(logging::low) << "callbacks: service ("
+              << sgm->host_id << ", " << sgm->service_id
+              << ") is a member of group '" << sgm->group
+              << "' on instance " << sgm->instance_id;
+            sgm->enabled = true;
+          }
 
-        // Send service group member event.
-        if (sgm->host_id && sgm->service_id) {
-          logging::info(logging::low) << "callbacks: service ("
-            << sgm->host_id << ", " << sgm->service_id
-            << ") is a member of group '" << sgm->group
-            << "' on instance " << sgm->instance_id;
-          neb::gl_publisher.write(sgm.staticCast<io::data>());
+          // Send service group member event.
+          if (sgm->host_id && sgm->service_id)
+            neb::gl_publisher.write(sgm.staticCast<io::data>());
         }
       }
     }
