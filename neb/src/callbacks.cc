@@ -286,6 +286,23 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             // Host ID.
             int host_id(strtol(cvar->var_value, NULL, 0));
             if (host_id) {
+              // Already existing ?
+              if (neb::gl_hosts.find(hst->name)
+                  != neb::gl_hosts.end()) {
+                // Generate host event.
+                nebstruct_adaptive_host_data nsahd;
+                memset(&nsahd, 0, sizeof(nsahd));
+                nsahd.type = NEBTYPE_HOST_DELETE;
+                nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
+                nsahd.command_type = CMD_NONE;
+                nsahd.modified_attribute = MODATTR_ALL;
+                nsahd.modified_attributes = MODATTR_ALL;
+                nsahd.object_ptr = hst;
+
+                // Callback.
+                callback_host(NEBCALLBACK_ADAPTIVE_HOST_DATA, &nsahd);
+              }
+
               // Record host ID.
               neb::gl_hosts[hst->name] = host_id;
 
@@ -348,8 +365,29 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             int service_id(strtol(cvar->var_value, NULL, 0));
 
             if (host_id && service_id) {
+              // Already existing ?
+              if (neb::gl_services.find(
+                    std::make_pair<std::string, std::string>(
+                      svc->host_name,
+                      svc->description)) != neb::gl_services.end()) {
+                // Generate service event.
+                nebstruct_adaptive_service_data nsasd;
+                memset(&nsasd, 0, sizeof(nsasd));
+                nsasd.type = NEBTYPE_SERVICE_DELETE;
+                nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
+                nsasd.command_type = CMD_NONE;
+                nsasd.modified_attribute = MODATTR_ALL;
+                nsasd.modified_attributes = MODATTR_ALL;
+                nsasd.object_ptr = svc;
+
+                // Callback.
+                callback_service(NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &nsasd);
+              }
+
               // Record host ID/service ID.
-              neb::gl_services[std::make_pair<std::string, std::string>(svc->host_name, svc->description)]
+              neb::gl_services[std::make_pair<std::string, std::string>(
+                                 svc->host_name,
+                                 svc->description)]
                 = std::make_pair(host_id, service_id);
 
               // Generate service event.
