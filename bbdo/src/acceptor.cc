@@ -256,44 +256,45 @@ misc::shared_ptr<io::stream> acceptor::_open(
       out->write_to(stream);
     }
 
-    // Negociation.
-    if (_negociate) {
-      // Read initial packet.
-      misc::shared_ptr<io::data> d;
-      my_bbdo->read_any(d, time(NULL) + _timeout);
-      if (d.isNull()
-          || (d->type()
-              != "com::centreon::broker::bbdo::version_response")) {
-        logging::error(logging::high)
-          << "BBDO: invalid protocol header, aborting connection";
-        return (misc::shared_ptr<io::stream>());
-      }
+    // Read initial packet.
+    misc::shared_ptr<io::data> d;
+    my_bbdo->read_any(d, time(NULL) + _timeout);
+    if (d.isNull()
+        || (d->type()
+            != "com::centreon::broker::bbdo::version_response")) {
+      logging::error(logging::high)
+        << "BBDO: invalid protocol header, aborting connection";
+      return (misc::shared_ptr<io::stream>());
+    }
 
-      // Handle protocol version.
-      misc::shared_ptr<version_response>
-        v(d.staticCast<version_response>());
-      if (v->bbdo_major != BBDO_VERSION_MAJOR) {
-        logging::error(logging::high)
-          << "BBDO: peer is using protocol version " << v->bbdo_major
-          << "." << v->bbdo_minor << "." << v->bbdo_patch
-          << " whereas we're using protocol version "
-          << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
-          << BBDO_VERSION_PATCH;
-        return (misc::shared_ptr<io::stream>());
-      }
-      logging::info(logging::medium)
+    // Handle protocol version.
+    misc::shared_ptr<version_response>
+      v(d.staticCast<version_response>());
+    if (v->bbdo_major != BBDO_VERSION_MAJOR) {
+      logging::error(logging::high)
         << "BBDO: peer is using protocol version " << v->bbdo_major
         << "." << v->bbdo_minor << "." << v->bbdo_patch
-        << ", we're using version " << BBDO_VERSION_MAJOR << "."
-        << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+        << " whereas we're using protocol version "
+        << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+        << BBDO_VERSION_PATCH;
+      return (misc::shared_ptr<io::stream>());
+    }
+    logging::info(logging::medium)
+      << "BBDO: peer is using protocol version " << v->bbdo_major
+      << "." << v->bbdo_minor << "." << v->bbdo_patch
+      << ", we're using version " << BBDO_VERSION_MAJOR << "."
+      << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
 
-      // Send self version packet.
-      misc::shared_ptr<version_response>
-        welcome_packet(new version_response);
+    // Send self version packet.
+    misc::shared_ptr<version_response>
+      welcome_packet(new version_response);
+    if (_negociate)
       welcome_packet->extensions = _extensions;
-      my_bbdo->output::write(welcome_packet.staticCast<io::data>());
-      my_bbdo->output::write(misc::shared_ptr<io::data>());
+    my_bbdo->output::write(welcome_packet.staticCast<io::data>());
+    my_bbdo->output::write(misc::shared_ptr<io::data>());
 
+    // Negociation.
+    if (_negociate) {
       // Apply negociated extensions.
       logging::info(logging::medium)
         << "BBDO: we have extensions '"
