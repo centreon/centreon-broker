@@ -77,6 +77,8 @@ int main() {
       ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
           << "<centreonbroker>\n"
           << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+          << "  <instance>84</instance>\n"
+          << "  <instance_name>TheTemporaryCBD</instance_name>\n"
           << "  <event_queue_max_size>10</event_queue_max_size>\n"
           << "  <temporary>\n"
           << "    <name>Temporary</name>\n"
