@@ -278,12 +278,14 @@ unsigned int input::read_any(
                                _buffer.c_str() + _processed))));
 
     // Check header integrity.
-    if (chksum == qChecksum(_buffer.c_str() + _processed + 2, 6))
+    uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 6));
+    if (chksum == expected)
       break ;
 
     // Mark data as processed.
     logging::debug(logging::low)
-      << "BBDO: header integrity check failed";
+      << "BBDO: header integrity check failed (got " << chksum
+      << ", computed " << expected << ")";
     ++_processed;
 
     // Timeout check.

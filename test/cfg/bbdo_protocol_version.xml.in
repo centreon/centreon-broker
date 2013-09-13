@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyBroker</instance_name>
+  <!--
+  <logger>
+    <type>file</type>
+    <name>cbd.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <input>
+    <name>InputFromBBDOProtocolVersionUnitTest</name>
+    <type>tcp</type>
+    <port>5686</port>
+    <protocol>bbdo</protocol>
+  </input>
+  <output>
+    <name>OutputToBBDOProtocolVersionUnitTest</name>
+    <type>tcp</type>
+    <host>localhost</host>
+    <port>5685</port>
+    <protocol>bbdo</protocol>
+  </output>
+</centreonbroker>
