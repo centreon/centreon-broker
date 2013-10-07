@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker::storage;
@@ -68,12 +70,10 @@ status& status::operator=(status const& s) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::storage::status".
+ *  @return The event type.
  */
-QString const& status::type() const {
-  static QString const status_type(
-    "com::centreon::broker::storage::status");
-  return (status_type);
+unsigned int status::type() const {
+  return (io::events::data_type<io::events::storage, storage::de_status>::value);
 }
 
 /**************************************

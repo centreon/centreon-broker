@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/comment.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -80,11 +82,10 @@ comment& comment::operator=(comment const& c) {
 /**
  *  Returns the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::comment".
+ *  @return The event type.
  */
-QString const& comment::type() const {
-  static QString const comment_type("com::centreon::broker::neb::comment");
-  return (comment_type);
+unsigned int comment::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_comment>::value);
 }
 
 /**************************************

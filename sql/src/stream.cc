@@ -26,10 +26,13 @@
 #include <QVector>
 #include <QMutexLocker>
 #include <sstream>
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/sql/internal.hh"
 #include "com/centreon/broker/sql/stream.hh"
@@ -45,7 +48,7 @@ using namespace com::centreon::broker::sql;
 **************************************/
 
 // Processing table.
-QHash<QString, void (stream::*)(io::data const&)> stream::_processing_table;
+QHash<unsigned int, void (stream::*)(io::data const&)> stream::_processing_table;
 
 /**************************************
 *                                     *
@@ -1957,65 +1960,65 @@ stream::~stream() {
  */
 void stream::initialize() {
   // Fill processing table.
-  _processing_table["com::centreon::broker::neb::acknowledgement"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_acknowledgement>::value]
     = &stream::_process_acknowledgement;
-  _processing_table["com::centreon::broker::neb::comment"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_comment>::value]
     = &stream::_process_comment;
-  _processing_table["com::centreon::broker::neb::custom_variable"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_custom_variable>::value]
     = &stream::_process_custom_variable;
-  _processing_table["com::centreon::broker::neb::custom_variable_status"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value]
     = &stream::_process_custom_variable_status;
-  _processing_table["com::centreon::broker::neb::downtime"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_downtime>::value]
     = &stream::_process_downtime;
-  _processing_table["com::centreon::broker::neb::event_handler"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_event_handler>::value]
     = &stream::_process_event_handler;
-  _processing_table["com::centreon::broker::neb::flapping_status"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_flapping_status>::value]
     = &stream::_process_flapping_status;
-  _processing_table["com::centreon::broker::neb::host"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host>::value]
     = &stream::_process_host;
-  _processing_table["com::centreon::broker::neb::host_check"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_check>::value]
     = &stream::_process_host_check;
-  _processing_table["com::centreon::broker::neb::host_dependency"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_dependency>::value]
     = &stream::_process_host_dependency;
-  _processing_table["com::centreon::broker::neb::host_group"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_group>::value]
     = &stream::_process_host_group;
-  _processing_table["com::centreon::broker::neb::host_group_member"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_group_member>::value]
     = &stream::_process_host_group_member;
-  _processing_table["com::centreon::broker::neb::host_parent"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_parent>::value]
     = &stream::_process_host_parent;
-  _processing_table["com::centreon::broker::neb::host_status"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_host_status>::value]
     = &stream::_process_host_status;
-  _processing_table["com::centreon::broker::neb::instance"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_instance>::value]
     = &stream::_process_instance;
-  _processing_table["com::centreon::broker::neb::instance_status"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_instance_status>::value]
     = &stream::_process_instance_status;
-  _processing_table["com::centreon::broker::neb::log_entry"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_log_entry>::value]
     = &stream::_process_log;
-  _processing_table["com::centreon::broker::neb::module"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_module>::value]
     = &stream::_process_module;
-  _processing_table["com::centreon::broker::neb::notification"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_notification>::value]
     = &stream::_process_notification;
-  _processing_table["com::centreon::broker::neb::service"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service>::value]
     = &stream::_process_service;
-  _processing_table["com::centreon::broker::neb::service_check"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service_check>::value]
     = &stream::_process_service_check;
-  _processing_table["com::centreon::broker::neb::service_dependency"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service_dependency>::value]
     = &stream::_process_service_dependency;
-  _processing_table["com::centreon::broker::neb::service_group"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service_group>::value]
     = &stream::_process_service_group;
-  _processing_table["com::centreon::broker::neb::service_group_member"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service_group_member>::value]
     = &stream::_process_service_group_member;
-  _processing_table["com::centreon::broker::neb::service_status"]
+  _processing_table[io::events::data_type<io::events::neb, neb::de_service_status>::value]
     = &stream::_process_service_status;
-  _processing_table["com::centreon::broker::correlation::engine_state"]
+  _processing_table[io::events::data_type<io::events::correlation, correlation::de_engine_state>::value]
     = &stream::_process_engine;
-  _processing_table["com::centreon::broker::correlation::host_state"]
+  _processing_table[io::events::data_type<io::events::correlation, correlation::de_host_state>::value]
     = &stream::_process_host_state;
-  _processing_table["com::centreon::broker::correlation::issue"]
+  _processing_table[io::events::data_type<io::events::correlation, correlation::de_issue>::value]
     = &stream::_process_issue;
-  _processing_table["com::centreon::broker::correlation::issue_parent"]
+  _processing_table[io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value]
     = &stream::_process_issue_parent;
-  _processing_table["com::centreon::broker::correlation::service_state"]
+  _processing_table[io::events::data_type<io::events::correlation, correlation::de_service_state>::value]
     = &stream::_process_service_state;
   _processing_table.squeeze();
   return ;
@@ -2060,7 +2063,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
   unsigned int retval;
   if (!data.isNull()) {
-    QHash<QString, void (stream::*)(io::data const&)>::const_iterator
+    QHash<unsigned int, void (stream::*)(io::data const&)>::const_iterator
       it(_processing_table.find(data->type()));
     if (it != _processing_table.end()) {
       (this->*(it.value()))(*data);

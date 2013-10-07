@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 
@@ -40,5 +42,5 @@ int main() {
           || (ip.parent_start_time != 0)
           || (ip.start_time != 0)
           || (ip.type()
-              != "com::centreon::broker::correlation::issue_parent"));
+              != io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value));
 }

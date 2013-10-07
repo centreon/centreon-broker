@@ -39,7 +39,7 @@ namespace            neb {
                      custom_variable(custom_variable const& cv);
                      ~custom_variable();
     custom_variable& operator=(custom_variable const& cv);
-    QString const&   type() const;
+    unsigned int     type() const;
 
     short            var_type;
 

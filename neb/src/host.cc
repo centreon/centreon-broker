@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -84,11 +86,10 @@ host& host::operator=(host const& h) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host".
+ *  @return The event type.
  */
-QString const& host::type() const {
-  static QString const host_type("com::centreon::broker::neb::host");
-  return (host_type);
+unsigned int host::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_host>::value);
 }
 
 /**************************************

@@ -40,7 +40,7 @@ namespace          neb {
                    comment(comment const& c);
                    ~comment();
     comment&       operator=(comment const& c);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        author;
     short          comment_type;

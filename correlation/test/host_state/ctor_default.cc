@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 
@@ -39,5 +41,5 @@ int main() {
           || (hs.service_id != 0)
           || (hs.start_time != 0)
           || (hs.type()
-              != "com::centreon::broker::correlation::host_state"));
+              != io::events::data_type<io::events::correlation, correlation::de_host_state>::value));
 }

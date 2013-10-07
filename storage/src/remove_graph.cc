@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 
 using namespace com::centreon::broker::storage;
@@ -65,12 +67,10 @@ remove_graph& remove_graph::operator=(remove_graph const& right) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::storage::remove_graph".
+ *  @return The event type.
  */
-QString const& remove_graph::type() const {
-  static QString const
-    remove_graph_type("com::centreon::broker::storage::remove_graph");
-  return (remove_graph_type);
+unsigned int remove_graph::type() const {
+  return (io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
 }
 
 /**************************************

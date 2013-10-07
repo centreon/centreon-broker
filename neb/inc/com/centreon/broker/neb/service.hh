@@ -46,7 +46,7 @@ namespace          neb {
                    service(service const& s);
                    ~service();
     service&       operator=(service const& s);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        failure_prediction_options;
     bool           flap_detection_on_critical;

@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/event_handler.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -73,11 +75,10 @@ event_handler& event_handler::operator=(event_handler const& eh) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::event_handler".
+ *  @return The event type.
  */
-QString const& event_handler::type() const {
-  static QString const eh_type("com::centreon::broker::neb::event_handler");
-  return (eh_type);
+unsigned int event_handler::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_event_handler>::value);
 }
 
 /**************************************

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_dependency.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -60,9 +62,8 @@ host_dependency& host_dependency::operator=(host_dependency const& hd) {
 /**
  *  Get the type of this object.
  *
- *  @return The string "com::centreon::broker::neb::host_dependency".
+ *  @return The event type.
  */
-QString const& host_dependency::type() const {
-  static QString const hd_type("com::centreon::broker::neb::host_dependency");
-  return (hd_type);
+unsigned int host_dependency::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
 }

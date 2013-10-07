@@ -22,6 +22,7 @@
 #include <memory>
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/ndo/input.hh"
@@ -44,9 +45,6 @@ using namespace com::centreon::broker::ndo;
  *  Read a line of input.
  */
 char const* input::_get_line() {
-  // Static type.
-  static QString const io_raw_type("com::centreon::broker::io::raw");
-
   // Find new line.
   size_t it(_buffer.find_first_of('\n', _old));
   if (it == std::string::npos) {
@@ -60,7 +58,7 @@ char const* input::_get_line() {
       _from->read(data);
       if (data.isNull())
         break ;
-      if (data->type() == io_raw_type) {
+      if (data->type() == io::events::data_type<io::events::internal, 1>::value) {
         io::raw* raw(static_cast<io::raw*>(data.data()));
         _buffer.append(static_cast<char*>(
           raw->QByteArray::data()),

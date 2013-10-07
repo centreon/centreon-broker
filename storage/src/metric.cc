@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,8 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -71,11 +73,10 @@ metric& metric::operator=(metric const& m) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::storage::metric".
+ *  @return The event type.
  */
-QString const& metric::type() const {
-  static QString const metric_type("com::centreon::broker::storage::metric");
-  return (metric_type);
+unsigned int metric::type() const {
+  return (io::events::data_type<io::events::storage, storage::de_metric>::value);
 }
 
 /**************************************

@@ -40,7 +40,7 @@ namespace          correlation {
     host_state&    operator=(host_state const& hs);
     bool           operator==(host_state const& hs) const;
     bool           operator!=(host_state const& hs) const;
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 

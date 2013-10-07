@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -71,11 +73,10 @@ issue_parent& issue_parent::operator=(issue_parent const& ip) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::correlation::issue_parent".
+ *  @return The event type.
  */
-QString const& issue_parent::type() const {
-  static QString const ip_type("com::centreon::broker::correlation::issue_parent");
-  return (ip_type);
+unsigned int issue_parent::type() const {
+  return (io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
 }
 
 /**************************************

@@ -26,6 +26,7 @@
 #  include <QQueue>
 #  include <QString>
 #  include <QWaitCondition>
+#  include <set>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -58,6 +59,8 @@ namespace               multiplexing {
                           misc::shared_ptr<io::data>& d,
                           time_t timeout,
                           bool* timed_out = NULL);
+    void                set_filters(
+                          std::set<unsigned int> const& filters);
     void                statistics(std::string& buffer) const;
     unsigned int        write(misc::shared_ptr<io::data> const& d);
 
@@ -74,6 +77,8 @@ namespace               multiplexing {
     QQueue<misc::shared_ptr<io::data> >
                         _events;
     static unsigned int _event_queue_max_size;
+    std::set<unsigned int>
+                        _filters;
     mutable QMutex      _mutex;
     bool                _process_in;
     bool                _process_out;

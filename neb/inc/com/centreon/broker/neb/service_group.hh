@@ -37,7 +37,7 @@ namespace          neb {
                    service_group(service_group const& sg);
                    ~service_group();
     service_group& operator=(service_group const& sg);
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 

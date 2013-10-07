@@ -21,6 +21,8 @@
 #include <QDomElement>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
@@ -43,6 +45,9 @@ namespace correlation {
       // Unregister correlation object.
       multiplexing::engine::instance().unhook(*correlation::obj);
       correlation::obj.clear();
+
+      // Remove elements.
+      io::events::instance().unreg("correlation");
     }
     return ;
   }
@@ -59,6 +64,22 @@ namespace correlation {
       logging::info(logging::high)
         << "correlation: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
+
+      // Load elements.
+      {
+        std::set<unsigned int> elements;
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_issue>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
+        io::events::instance().reg("correlation", elements);
+      }
 
       // Check that correlation is enabled.
       config::state const& cfg(*static_cast<config::state const*>(arg));

@@ -28,9 +28,11 @@
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service.hh"
@@ -408,26 +410,19 @@ void correlator::update() {
  *  @return Number of events acknowledged (1).
  */
 unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
-  static QString const ack_type("com::centreon::broker::neb::acknowledgement");
-  static QString const host_type("com::centreon::broker::neb::host");
-  static QString const host_status_type("com::centreon::broker::neb::host_status");
-  static QString const log_entry_type("com::centreon::broker::neb::log_entry");
-  static QString const service_type("com::centreon::broker::neb::service");
-  static QString const service_status_type("com::centreon::broker::neb::service_status");
-
   try {
     // Process event.
-    if (e->type() == host_type)
+    if (e->type() == io::events::data_type<io::events::neb, neb::de_host>::value)
       _correlate_host_status(e);
-    else if (e->type() == host_status_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_status>::value)
       _correlate_host_status(e);
-    else if (e->type() == service_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service>::value)
       _correlate_service_status(e);
-    else if (e->type() == service_status_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value)
       _correlate_service_status(e);
-    else if (e->type() == log_entry_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
       _correlate_log(e);
-    else if (e->type() == ack_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
       _correlate_acknowledgement(e);
 
     // Dump retention file.

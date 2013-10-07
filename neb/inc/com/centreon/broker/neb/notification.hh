@@ -41,7 +41,7 @@ namespace          neb {
                    notification(notification const& n);
                    ~notification();
     notification&  operator=(notification const& n);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        ack_author;
     QString        ack_data;

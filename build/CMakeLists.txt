@@ -277,6 +277,7 @@ set(LIBROKER_SOURCES
 # #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
+  "${SRC_DIR}/io/events.cc"
   "${SRC_DIR}/io/exceptions/shutdown.cc"
   "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/protocols.cc"
@@ -320,6 +321,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/io/data.hh"
   "${INC_DIR}/io/endpoint.hh"
+  "${INC_DIR}/io/events.hh"
   "${INC_DIR}/io/exceptions/shutdown.hh"
   "${INC_DIR}/io/factory.hh"
   "${INC_DIR}/io/protocols.hh"

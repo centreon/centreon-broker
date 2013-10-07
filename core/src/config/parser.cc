@@ -23,8 +23,10 @@
 #include <syslog.h>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/defines.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::config;
 
 /**************************************
@@ -223,6 +225,21 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
+      else if (name == "filters") {
+        QDomNodeList nlist(entry.childNodes());
+        for (int i(0), len(nlist.size()); i < len; ++i) {
+          QDomElement entry(nlist.item(i).toElement());
+          if (!entry.isNull()) {
+            QString name(entry.tagName());
+            if (name == "category") {
+              std::string category(entry.text().toStdString());
+              std::set<unsigned int> const&
+                types(io::events::instance().get(category));
+              e.filters.insert(types.begin(), types.end());
+            }
+          }
+        }
+      }
       else if (name == "type")
         e.type = entry.text();
       e.params[name] = entry.text();

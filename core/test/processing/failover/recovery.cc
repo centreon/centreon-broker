@@ -48,14 +48,18 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
   misc::shared_ptr<processing::failover>
-    fo1(new processing::failover(true, "failover1"));
-  fo1->set_endpoint(endp1.staticCast<io::endpoint>());
+    fo1(new processing::failover(
+                          endp1.staticCast<io::endpoint>(),
+                          true,
+                          "failover1"));
 
   // Second failover.
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(true);
-  processing::failover fo2(true, "failover2");
-  fo2.set_endpoint(endp2.staticCast<io::endpoint>());
+  processing::failover fo2(
+                         endp2.staticCast<io::endpoint>(),
+                         true,
+                         "failover2");
   fo2.set_failover(fo1);
   fo2.set_retry_interval(1);
 

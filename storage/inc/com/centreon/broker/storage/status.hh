@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,7 +39,7 @@ namespace          storage {
                    status(status const& s);
                    ~status();
     status&        operator=(status const& s);
-    QString const& type() const;
+    unsigned int   type() const;
 
     timestamp      ctime;
     unsigned int   index_id;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -67,11 +69,10 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::custom_variable".
+ *  @return The event type.
  */
-QString const& custom_variable::type() const {
-  static QString const cv_type("com::centreon::broker::neb::custom_variable");
-  return (cv_type);
+unsigned int custom_variable::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
 }
 
 /**************************************

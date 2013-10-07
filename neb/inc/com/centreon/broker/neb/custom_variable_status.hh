@@ -41,7 +41,7 @@ namespace                   neb {
                               custom_variable_status const& cvs);
     virtual                 ~custom_variable_status();
     custom_variable_status& operator=(custom_variable_status const& cvs);
-    virtual QString const&  type() const;
+    virtual unsigned int    type() const;
 
     unsigned int            host_id;
     bool                    modified;

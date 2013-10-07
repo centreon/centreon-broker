@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_parent.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -66,9 +68,8 @@ host_parent& host_parent::operator=(host_parent const& hp) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host_parent".
+ *  @return The event_type.
  */
-QString const& host_parent::type() const {
-  static QString const hp_type("com::centreon::broker::neb::host_parent");
-  return (hp_type);
+unsigned int host_parent::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_host_parent>::value);
 }

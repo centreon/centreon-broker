@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -71,12 +72,10 @@ version_response& version_response::operator=(
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::bbdo::version_response".
+ *  @return The event type.
  */
-QString const& version_response::type() const {
-  static QString const
-    event_type("com::centreon::broker::bbdo::version_response");
-  return (event_type);
+unsigned int version_response::type() const {
+  return (io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value);
 }
 
 /**************************************

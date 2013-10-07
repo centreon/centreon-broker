@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -158,7 +159,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     _flush();
   else {
     // Process raw data only.
-    if (d->type() == "com::centreon::broker::io::raw") {
+    if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
       // Append data to write buffer.
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _wbuffer.append(*r);
@@ -232,7 +233,7 @@ bool stream::_get_data(unsigned int size) {
     if (d.isNull())
       retval = false;
     else {
-      if (d->type() == "com::centreon::broker::io::raw") {
+      if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }

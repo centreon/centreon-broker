@@ -38,7 +38,7 @@ namespace          neb {
                    host_parent(host_parent const& hp);
                    ~host_parent();
     host_parent&   operator=(host_parent const& hp);
-    QString const& type() const;
+    unsigned int   type() const;
 
     bool           enabled;
     unsigned int   host_id;

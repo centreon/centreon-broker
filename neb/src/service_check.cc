@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2013 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 
 using namespace com::centreon::broker::neb;
@@ -60,9 +63,8 @@ service_check& service_check::operator=(service_check const& sc) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::service_check".
+ *  @return The event_type.
  */
-QString const& service_check::type() const {
-  static QString const sc_type("com::centreon::broker::neb::service_check");
-  return (sc_type);
+unsigned int service_check::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_service_check>::value);
 }

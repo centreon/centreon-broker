@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,7 +41,7 @@ namespace          correlation {
     issue&         operator=(issue const& i);
     bool           operator==(issue const& i) const;
     bool           operator!=(issue const& i) const;
-    QString const& type() const;
+    unsigned int   type() const;
 
     timestamp      ack_time;
     timestamp      end_time;

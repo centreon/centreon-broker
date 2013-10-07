@@ -40,7 +40,7 @@ namespace           neb {
                     service_status(service_status const& ss);
     virtual         ~service_status();
     service_status& operator=(service_status const& ss);
-    QString const&  type() const;
+    unsigned int    type() const;
 
     QString         host_name;
     timestamp       last_time_critical;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,11 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_IO_DATA_HH_
-# define CCB_IO_DATA_HH_
+#ifndef CCB_IO_DATA_HH
+#  define CCB_IO_DATA_HH
 
-# include <QString>
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -36,15 +35,15 @@ namespace                  io {
    *  engine.
    */
   class                    data {
-   public:
+  public:
                            data();
                            data(data const& d);
     virtual                ~data();
     data&                  operator=(data const& d);
-    virtual QString const& type() const = 0;
+    virtual unsigned int   type() const = 0;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_IO_DATA_HH_ */
+#endif // !CCB_IO_DATA_HH

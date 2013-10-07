@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -81,11 +83,10 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& ack) {
  *  Return the type of this event. This can be useful for runtime data
  *  type determination.
  *
- *  @return The string "com::centreon::broker::neb::acknowledgement".
+ *  @return The event type.
  */
-QString const& acknowledgement::type() const {
-  static QString const ack_type("com::centreon::broker::neb::acknowledgement");
-  return (ack_type);
+unsigned int acknowledgement::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
 }
 
 /**************************************

@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/tls/stream.hh"
@@ -119,14 +120,13 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  @return Number of bytes actually read.
  */
 unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
-  // Only read raw data.
-  static QString const raw_type("com::centreon::broker::io::raw");
-
   // Read some data.
   while (_buffer.isEmpty()) {
     misc::shared_ptr<io::data> d;
     _from->read(d);
-    if (!d.isNull() && (d->type() == raw_type)) {
+    if (!d.isNull()
+        && (d->type()
+            == io::events::data_type<io::events::internal, 1>::value)) {
       io::raw* r(static_cast<io::raw*>(d.data()));
       _buffer.append(r->QByteArray::data(), r->size());
     }
@@ -162,8 +162,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
            << "TLS stream is shutdown");
 
   // Send data.
-  static QString const raw_type("com::centreon::broker::io::raw");
-  if (!d.isNull() && d->type() == raw_type) {
+  if (!d.isNull()
+      && d->type()
+      == io::events::data_type<io::events::internal, 1>::value) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
     char const* ptr(packet->QByteArray::data());
     int size(packet->size());

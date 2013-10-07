@@ -230,6 +230,16 @@ void subscriber::read(
 }
 
 /**
+ *  Set the filters.
+ *
+ *  @param[in] filters Content filters.
+ */
+void subscriber::set_filters(std::set<unsigned int> const& filters) {
+  _filters = filters;
+  return ;
+}
+
+/**
  *  Generate statistics about the subscriber.
  *
  *  @param[out] buffer Output buffer.
@@ -244,7 +254,7 @@ void subscriber::statistics(std::string& buffer) const {
 
   char const* enable(_recovery_temporary ? "yes" : "no");
   oss << "temporary recovery mode=" << enable << "\n";
-
+  // XXX : filtering statistics
   buffer.append(oss.str());
   return ;
 }
@@ -259,6 +269,10 @@ void subscriber::statistics(std::string& buffer) const {
 unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
+    // Check if we should process this event.
+    if (!_filters.empty()
+        && (_filters.find(event->type()) == _filters.end()))
+      return (1);
     // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
       // Try to create temporary if is necessary.

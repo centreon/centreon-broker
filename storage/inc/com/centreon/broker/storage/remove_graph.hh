@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,7 @@ namespace          storage {
                    remove_graph(remove_graph const& right);
                    ~remove_graph();
     remove_graph&  operator=(remove_graph const& right);
-    QString const& type() const;
+    unsigned int   type() const;
 
     unsigned int   id;
     bool           is_index;
