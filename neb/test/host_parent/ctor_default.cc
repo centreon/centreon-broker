@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_parent.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -36,5 +37,5 @@ int main() {
           || (hprnt.host_id != 0)
           || (hprnt.parent_id != 0)
           || (hprnt.type()
-              != io::data::data_type(io::data::neb, neb::de_host_parent)));
+              != io::events::data_type<io::events::neb, neb::de_host_parent>::value));
 }

@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
@@ -54,7 +55,7 @@ int main() {
   // Fetch event.
   s.read(event, 0);
   retval |= (event.isNull()
-             || (event->type() != io::data::data_type(io::data::internal, 1))
+             || (event->type() != io::events::data_type<io::events::internal, 1>::value)
              || strncmp(
                   event.staticCast<io::raw>()->QByteArray::data(),
                   MSG,

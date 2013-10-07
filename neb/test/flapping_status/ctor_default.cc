@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/flapping_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -45,5 +46,5 @@ int main() {
           || (flappy.reason_type != 0)
           || (flappy.service_id != 0)
           || (flappy.type()
-              != io::data::data_type(io::data::neb, neb::de_flapping_status)));
+              != io::events::data_type<io::events::neb, neb::de_flapping_status>::value));
 }

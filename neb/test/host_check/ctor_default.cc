@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_check.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -37,5 +38,5 @@ int main() {
           || (hchk.host_id != 0)
           || (hchk.next_check != 0)
           || (hchk.type()
-              != io::data::data_type(io::data::neb, neb::de_host_check)));
+              != io::events::data_type<io::events::neb, neb::de_host_check>::value));
 }

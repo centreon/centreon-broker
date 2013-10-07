@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_group_member.hh"
 
@@ -65,5 +66,5 @@ service_group_member& service_group_member::operator=(service_group_member const
  *  @return The event_type.
  */
 unsigned int service_group_member::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_service_group_member));
+  return (io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
 }

@@ -223,6 +223,19 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
+      else if (name == "filters") {
+        QDomNodeList nlist(entry.childNodes());
+        for (int i(0), len(nlist.size()); i < len; ++i) {
+          QDomElement entry(nlist.item(i).toElement());
+          if (!entry.isNull()) {
+            QString name(entry.tagName());
+            if (name == "category") {
+              // entry.text();
+              // e.filters.insert();
+            }
+          }
+        }
+      }
       else if (name == "type")
         e.type = entry.text();
       e.params[name] = entry.text();

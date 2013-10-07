@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/flapping_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -78,7 +79,7 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
  *  @return The event type.
  */
 unsigned int flapping_status::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_flapping_status));
+  return (io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
 }
 
 /**************************************

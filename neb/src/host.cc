@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -88,7 +89,7 @@ host& host::operator=(host const& h) {
  *  @return The event type.
  */
 unsigned int host::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_host));
+  return (io::events::data_type<io::events::neb, neb::de_host>::value);
 }
 
 /**************************************

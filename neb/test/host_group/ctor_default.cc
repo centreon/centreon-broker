@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -40,5 +41,5 @@ int main() {
           || (hgrp.notes != "")
           || (hgrp.notes_url != "")
           || (hgrp.type()
-              != io::data::data_type(io::data::neb, neb::de_host_group)));
+              != io::events::data_type<io::events::neb, neb::de_host_group>::value));
 }

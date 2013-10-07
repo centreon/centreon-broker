@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 
@@ -40,5 +41,5 @@ int main() {
           || (ss.service_id != 0)
           || (ss.start_time != 0)
           || (ss.type()
-              != io::data::data_type(io::data::correlation, correlation::de_service_state)));
+              != io::events::data_type<io::events::correlation, correlation::de_service_state>::value));
 }

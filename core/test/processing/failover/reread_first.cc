@@ -22,6 +22,7 @@
 #include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -58,16 +59,20 @@ int main(int argc, char* argv[]) {
   endp1->set_succeed(true);
   endp1->set_initial_replay_events(true);
   misc::shared_ptr<processing::failover>
-    fo1(new processing::failover(true, "failover1"));
-  fo1->set_endpoint(endp1.staticCast<io::endpoint>());
+    fo1(new processing::failover(
+                          endp1.staticCast<io::endpoint>(),
+                          true,
+                          "failover1"));
 
   // Second failover.
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(true);
   endp2->set_initial_store_events(true);
   misc::shared_ptr<processing::failover>
-    fo2(new processing::failover(true, "failover2"));
-  fo2->set_endpoint(endp2.staticCast<io::endpoint>());
+    fo2(new processing::failover(
+                          endp2.staticCast<io::endpoint>(),
+                          true,
+                          "failover2"));
   fo2->set_failover(fo1);
 
   // Publish an event that should be the last event processed by fo1.
@@ -119,7 +124,7 @@ int main(int argc, char* argv[]) {
            end(ss2->get_stored_events().end());
          (i < count) && (it != end);
          ++it) {
-      if ((*it)->type() != io::data::data_type(io::data::internal, 1)) {
+      if ((*it)->type() != io::events::data_type<io::events::internal, 1>::value) {
         logging::error(logging::high)
           << "test: read data which is not raw";
         retval |= 1;
@@ -151,7 +156,7 @@ int main(int argc, char* argv[]) {
     // Check first published event.
     misc::shared_ptr<io::data> d(ss2->get_stored_events().last());
     if (d.isNull()
-        || (d->type() != io::data::data_type(io::data::internal, 1))) {
+        || (d->type() != io::events::data_type<io::events::internal, 1>::value)) {
       logging::error(logging::high)
         << "test: null or invalid last item";
       retval |= 1;

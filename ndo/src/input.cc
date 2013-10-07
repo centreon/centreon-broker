@@ -22,6 +22,7 @@
 #include <memory>
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/ndo/input.hh"
@@ -45,7 +46,7 @@ using namespace com::centreon::broker::ndo;
  */
 char const* input::_get_line() {
   // Static type.
-  static unsigned int const io_raw_type(io::data::data_type(io::data::internal, 1));
+  static unsigned int const io_raw_type(io::events::data_type<io::events::internal, 1>::value);
 
   // Find new line.
   size_t it(_buffer.find_first_of('\n', _old));

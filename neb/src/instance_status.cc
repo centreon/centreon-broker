@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -85,7 +86,7 @@ instance_status& instance_status::operator=(instance_status const& is) {
  *  @return The event_type.
  */
 unsigned int instance_status::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_instance_status));
+  return (io::events::data_type<io::events::neb, neb::de_instance_status>::value);
 }
 
 /**************************************

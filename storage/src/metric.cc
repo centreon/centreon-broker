@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -75,7 +76,7 @@ metric& metric::operator=(metric const& m) {
  *  @return The event type.
  */
 unsigned int metric::type() const {
-  return (io::data::data_type(io::data::storage, storage::de_metric));
+  return (io::events::data_type<io::events::storage, storage::de_metric>::value);
 }
 
 /**************************************

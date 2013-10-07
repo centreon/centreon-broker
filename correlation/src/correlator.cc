@@ -28,6 +28,7 @@
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
@@ -409,12 +410,12 @@ void correlator::update() {
  *  @return Number of events acknowledged (1).
  */
 unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
-  static unsigned int const ack_type(io::data::data_type(io::data::neb, neb::de_acknowledgement));
-  static unsigned int const host_type(io::data::data_type(io::data::neb, neb::de_host));
-  static unsigned int const host_status_type(io::data::data_type(io::data::neb, neb::de_host_status));
-  static unsigned int const log_entry_type(io::data::data_type(io::data::neb, neb::de_log_entry));
-  static unsigned int const service_type(io::data::data_type(io::data::neb, neb::de_service));
-  static unsigned int const service_status_type(io::data::data_type(io::data::neb, neb::de_service_status));
+  static unsigned int const ack_type(io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
+  static unsigned int const host_type(io::events::data_type<io::events::neb, neb::de_host>::value);
+  static unsigned int const host_status_type(io::events::data_type<io::events::neb, neb::de_host_status>::value);
+  static unsigned int const log_entry_type(io::events::data_type<io::events::neb, neb::de_log_entry>::value);
+  static unsigned int const service_type(io::events::data_type<io::events::neb, neb::de_service>::value);
+  static unsigned int const service_status_type(io::events::data_type<io::events::neb, neb::de_service_status>::value);
 
   try {
     // Process event.

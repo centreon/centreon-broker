@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -43,5 +44,5 @@ int main() {
           || !isnan(m.value)
           || (m.value_type != storage::perfdata::gauge)
           || (m.type()
-              != io::data::data_type(io::data::storage, storage::de_metric)));
+              != io::events::data_type<io::events::storage, storage::de_metric>::value));
 }

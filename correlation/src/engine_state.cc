@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -68,5 +69,5 @@ engine_state& engine_state::operator=(engine_state const& es) {
  *  @return The event type.
  */
 unsigned int engine_state::type() const {
-  return (io::data::data_type(io::data::correlation, correlation::de_engine_state));
+  return (io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
 }

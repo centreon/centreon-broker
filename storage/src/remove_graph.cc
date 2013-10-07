@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 
@@ -69,7 +70,7 @@ remove_graph& remove_graph::operator=(remove_graph const& right) {
  *  @return The event type.
  */
 unsigned int remove_graph::type() const {
-  return (io::data::data_type(io::data::storage, storage::de_remove_graph));
+  return (io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
 }
 
 /**************************************

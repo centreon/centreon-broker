@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -74,7 +75,7 @@ version_response& version_response::operator=(
  *  @return The event type.
  */
 unsigned int version_response::type() const {
-  return (io::data::data_type(io::data::bbdo, bbdo::de_version_response));
+  return (io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value);
 }
 
 /**************************************

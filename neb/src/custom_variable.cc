@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -71,7 +72,7 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
  *  @return The event type.
  */
 unsigned int custom_variable::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_custom_variable));
+  return (io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
 }
 
 /**************************************

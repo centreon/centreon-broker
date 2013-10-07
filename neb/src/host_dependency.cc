@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_dependency.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -64,5 +65,5 @@ host_dependency& host_dependency::operator=(host_dependency const& hd) {
  *  @return The event type.
  */
 unsigned int host_dependency::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_host_dependency));
+  return (io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
 }

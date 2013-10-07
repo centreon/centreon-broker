@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 
@@ -68,7 +69,7 @@ rebuild& rebuild::operator=(rebuild const& right) {
  *  @return The event type.
  */
 unsigned int rebuild::type() const {
-  return (io::data::data_type(io::data::storage, storage::de_rebuild));
+  return (io::events::data_type<io::events::storage, storage::de_rebuild>::value);
 }
 
 /**************************************

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/event_handler.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -77,7 +78,7 @@ event_handler& event_handler::operator=(event_handler const& eh) {
  *  @return The event type.
  */
 unsigned int event_handler::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_event_handler));
+  return (io::events::data_type<io::events::neb, neb::de_event_handler>::value);
 }
 
 /**************************************

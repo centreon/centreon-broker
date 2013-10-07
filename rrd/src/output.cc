@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
@@ -172,13 +173,13 @@ void output::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& d) {
   static unsigned int const storage_metric_type(
-    io::data::data_type(io::data::storage, storage::de_metric));
+    io::events::data_type<io::events::storage, storage::de_metric>::value);
   static unsigned int const storage_status_type(
-    io::data::data_type(io::data::storage, storage::de_status));
+    io::events::data_type<io::events::storage, storage::de_status>::value);
   static unsigned int const storage_rebuild_type(
-    io::data::data_type(io::data::storage, storage::de_rebuild));
+    io::events::data_type<io::events::storage, storage::de_rebuild>::value);
   static unsigned int const storage_remove_graph_type(
-    io::data::data_type(io::data::storage, storage::de_remove_graph));
+    io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
 
   // Check that data exists and should be processed.
   if (!_process_out)

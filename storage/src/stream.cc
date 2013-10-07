@@ -30,6 +30,7 @@
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -403,7 +404,7 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  static unsigned int const neb_service_status(io::data::data_type(io::data::neb, neb::de_service_status));
+  static unsigned int const neb_service_status(io::events::data_type<io::events::neb, neb::de_service_status>::value);
 
   // Check that processing is enabled.
   if (!_process_out)

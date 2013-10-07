@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -85,7 +86,7 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& ack) {
  *  @return The event type.
  */
 unsigned int acknowledgement::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_acknowledgement));
+  return (io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
 }
 
 /**************************************

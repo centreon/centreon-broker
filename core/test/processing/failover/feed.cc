@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -58,8 +59,7 @@ int main(int argc, char* argv[]) {
   multiplexing::subscriber s("temporary_prefix_name");
 
   // Failover object.
-  processing::failover f(false);
-  f.set_endpoint(se.staticCast<io::endpoint>());
+  processing::failover f(se.staticCast<io::endpoint>(), false);
 
   // Launch thread.
   QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     misc::shared_ptr<io::data> event;
     s.read(event, 0);
     while (!event.isNull()) {
-      if (event->type() != io::data::data_type(io::data::internal, 1))
+      if (event->type() != io::events::data_type<io::events::internal, 1>::value)
         retval |= 1;
       else {
         misc::shared_ptr<io::raw> raw(event.staticCast<io::raw>());

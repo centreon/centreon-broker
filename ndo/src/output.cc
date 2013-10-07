@@ -20,6 +20,7 @@
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -143,40 +144,40 @@ void output::statistics(std::string& buffer) const {
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Types.
-  static unsigned int const neb_acknowledgement_type(io::data::data_type(io::data::neb, neb::de_acknowledgement));
-  static unsigned int const neb_comment_type(io::data::data_type(io::data::neb, neb::de_comment));
-  static unsigned int const neb_custom_variable_type(io::data::data_type(io::data::neb, neb::de_custom_variable));
-  static unsigned int const neb_custom_variable_status_type(io::data::data_type(io::data::neb, neb::de_custom_variable_status));
-  static unsigned int const neb_downtime_type(io::data::data_type(io::data::neb, neb::de_downtime));
-  static unsigned int const neb_event_handler_type(io::data::data_type(io::data::neb, neb::de_event_handler));
-  static unsigned int const neb_flapping_status_type(io::data::data_type(io::data::neb, neb::de_flapping_status));
-  static unsigned int const neb_host_type(io::data::data_type(io::data::neb, neb::de_host));
-  static unsigned int const neb_host_check_type(io::data::data_type(io::data::neb, neb::de_host_check));
-  static unsigned int const neb_host_dependency_type(io::data::data_type(io::data::neb, neb::de_host_dependency));
-  static unsigned int const neb_host_group_type(io::data::data_type(io::data::neb, neb::de_host_group));
-  static unsigned int const neb_host_group_member_type(io::data::data_type(io::data::neb, neb::de_host_group_member));
-  static unsigned int const neb_host_parent_type(io::data::data_type(io::data::neb, neb::de_host_parent));
-  static unsigned int const neb_host_status_type(io::data::data_type(io::data::neb, neb::de_host_status));
-  static unsigned int const neb_instance_type(io::data::data_type(io::data::neb, neb::de_instance));
-  static unsigned int const neb_instance_status_type(io::data::data_type(io::data::neb, neb::de_instance_status));
-  static unsigned int const neb_log_entry_type(io::data::data_type(io::data::neb, neb::de_log_entry));
-  static unsigned int const neb_module_type(io::data::data_type(io::data::neb, neb::de_module));
-  static unsigned int const neb_notification_type(io::data::data_type(io::data::neb, neb::de_notification));
-  static unsigned int const neb_service_type(io::data::data_type(io::data::neb, neb::de_service));
-  static unsigned int const neb_service_check_type(io::data::data_type(io::data::neb, neb::de_service_check));
-  static unsigned int const neb_service_dependency_type(io::data::data_type(io::data::neb, neb::de_service_dependency));
-  static unsigned int const neb_service_group_type(io::data::data_type(io::data::neb, neb::de_service_group));
-  static unsigned int const neb_service_group_member_type(io::data::data_type(io::data::neb, neb::de_service_group_member));
-  static unsigned int const neb_service_status_type(io::data::data_type(io::data::neb, neb::de_service_status));
-  static unsigned int const storage_metric_type(io::data::data_type(io::data::storage, storage::de_metric));
-  static unsigned int const storage_rebuild_type(io::data::data_type(io::data::storage, storage::de_rebuild));
-  static unsigned int const storage_remove_graph_type(io::data::data_type(io::data::storage, storage::de_remove_graph));
-  static unsigned int const storage_status_type(io::data::data_type(io::data::storage, storage::de_status));
-  static unsigned int const correlation_engine_state_type(io::data::data_type(io::data::correlation, correlation::de_engine_state));
-  static unsigned int const correlation_host_state_type(io::data::data_type(io::data::correlation, correlation::de_host_state));
-  static unsigned int const correlation_issue_type(io::data::data_type(io::data::correlation, correlation::de_issue));
-  static unsigned int const correlation_issue_parent_type(io::data::data_type(io::data::correlation, correlation::de_issue_parent));
-  static unsigned int const correlation_service_state_type(io::data::data_type(io::data::correlation, correlation::de_service_state));
+  static unsigned int const neb_acknowledgement_type(io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
+  static unsigned int const neb_comment_type(io::events::data_type<io::events::neb, neb::de_comment>::value);
+  static unsigned int const neb_custom_variable_type(io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
+  static unsigned int const neb_custom_variable_status_type(io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
+  static unsigned int const neb_downtime_type(io::events::data_type<io::events::neb, neb::de_downtime>::value);
+  static unsigned int const neb_event_handler_type(io::events::data_type<io::events::neb, neb::de_event_handler>::value);
+  static unsigned int const neb_flapping_status_type(io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
+  static unsigned int const neb_host_type(io::events::data_type<io::events::neb, neb::de_host>::value);
+  static unsigned int const neb_host_check_type(io::events::data_type<io::events::neb, neb::de_host_check>::value);
+  static unsigned int const neb_host_dependency_type(io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
+  static unsigned int const neb_host_group_type(io::events::data_type<io::events::neb, neb::de_host_group>::value);
+  static unsigned int const neb_host_group_member_type(io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
+  static unsigned int const neb_host_parent_type(io::events::data_type<io::events::neb, neb::de_host_parent>::value);
+  static unsigned int const neb_host_status_type(io::events::data_type<io::events::neb, neb::de_host_status>::value);
+  static unsigned int const neb_instance_type(io::events::data_type<io::events::neb, neb::de_instance>::value);
+  static unsigned int const neb_instance_status_type(io::events::data_type<io::events::neb, neb::de_instance_status>::value);
+  static unsigned int const neb_log_entry_type(io::events::data_type<io::events::neb, neb::de_log_entry>::value);
+  static unsigned int const neb_module_type(io::events::data_type<io::events::neb, neb::de_module>::value);
+  static unsigned int const neb_notification_type(io::events::data_type<io::events::neb, neb::de_notification>::value);
+  static unsigned int const neb_service_type(io::events::data_type<io::events::neb, neb::de_service>::value);
+  static unsigned int const neb_service_check_type(io::events::data_type<io::events::neb, neb::de_service_check>::value);
+  static unsigned int const neb_service_dependency_type(io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
+  static unsigned int const neb_service_group_type(io::events::data_type<io::events::neb, neb::de_service_group>::value);
+  static unsigned int const neb_service_group_member_type(io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
+  static unsigned int const neb_service_status_type(io::events::data_type<io::events::neb, neb::de_service_status>::value);
+  static unsigned int const storage_metric_type(io::events::data_type<io::events::storage, storage::de_metric>::value);
+  static unsigned int const storage_rebuild_type(io::events::data_type<io::events::storage, storage::de_rebuild>::value);
+  static unsigned int const storage_remove_graph_type(io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
+  static unsigned int const storage_status_type(io::events::data_type<io::events::storage, storage::de_status>::value);
+  static unsigned int const correlation_engine_state_type(io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
+  static unsigned int const correlation_host_state_type(io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
+  static unsigned int const correlation_issue_type(io::events::data_type<io::events::correlation, correlation::de_issue>::value);
+  static unsigned int const correlation_issue_parent_type(io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
+  static unsigned int const correlation_service_state_type(io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
 
   // Check if data exists and should be processed.
   if (!_process_out)

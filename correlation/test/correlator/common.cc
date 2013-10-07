@@ -24,6 +24,7 @@
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -196,7 +197,7 @@ void check_content(
       throw (exceptions::msg() << "entry #" << i << " is null");
     else if (d->type() == (*it)->type()) {
       if (d->type()
-          == io::data::data_type(io::data::correlation, correlation::de_engine_state)) {
+          == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value) {
         misc::shared_ptr<correlation::engine_state>
           es1(d.staticCast<correlation::engine_state>());
         misc::shared_ptr<correlation::engine_state>
@@ -208,7 +209,7 @@ void check_content(
                  << ")");
       }
       else if (d->type()
-               == io::data::data_type(io::data::correlation, correlation::de_issue)) {
+               == io::events::data_type<io::events::correlation, correlation::de_issue>::value) {
         misc::shared_ptr<correlation::issue>
           i1(d.staticCast<correlation::issue>());
         misc::shared_ptr<correlation::issue>
@@ -228,7 +229,7 @@ void check_content(
                  << i2->start_time << ")");
       }
       else if (d->type()
-               == io::data::data_type(io::data::correlation, correlation::de_issue_parent)) {
+               == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value) {
         misc::shared_ptr<correlation::issue_parent>
           ip1(d.staticCast<correlation::issue_parent>());
         misc::shared_ptr<correlation::issue_parent>
@@ -259,7 +260,7 @@ void check_content(
                  << ")");
       }
       else if (d->type()
-               == io::data::data_type(io::data::correlation, correlation::de_host_state)) {
+               == io::events::data_type<io::events::correlation, correlation::de_host_state>::value) {
         misc::shared_ptr<correlation::host_state>
           s1(d.staticCast<correlation::host_state>());
         misc::shared_ptr<correlation::host_state>
@@ -282,7 +283,7 @@ void check_content(
                  << s2->start_time << ")");
       }
       else if (d->type()
-               == io::data::data_type(io::data::correlation, correlation::de_service_state)) {
+               == io::events::data_type<io::events::correlation, correlation::de_service_state>::value) {
         misc::shared_ptr<correlation::service_state>
           s1(d.staticCast<correlation::service_state>());
         misc::shared_ptr<correlation::service_state>

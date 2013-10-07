@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/notification.hh"
 
@@ -75,7 +76,7 @@ notification& notification::operator=(notification const& n) {
  *  @return The event_type.
  */
 unsigned int notification::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_notification));
+  return (io::events::data_type<io::events::neb, neb::de_notification>::value);
 }
 
 /**************************************

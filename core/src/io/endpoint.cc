@@ -72,6 +72,15 @@ void endpoint::from(misc::shared_ptr<endpoint> endp) {
 }
 
 /**
+ *  Get the endpoint filters.
+ *
+ *  @return Endpoint filters.
+ */
+std::set<unsigned int> const& endpoint::get_filters() const throw () {
+  return (_filters);
+}
+
+/**
  *  Check if this endpoint is an acceptor.
  *
  *  @return true if endpoint is an acceptor.
@@ -87,6 +96,16 @@ bool endpoint::is_acceptor() const throw () {
  */
 bool endpoint::is_connector() const throw () {
   return (!_is_acceptor);
+}
+
+/**
+ *  Set endpoint filters.
+ *
+ *  @param[in] filters New endpoint filters.
+ */
+void endpoint::set_filters(std::set<unsigned int> const& filters) {
+  _filters = filters;
+  return ;
 }
 
 /**

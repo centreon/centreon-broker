@@ -24,6 +24,7 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/file.hh"
@@ -107,7 +108,7 @@ int main() {
         misc::shared_ptr<io::data> d;
         cs.read(d);
         if (d.isNull()
-            || (io::data::data_type(io::data::internal, 1) != d->type()))
+            || (io::events::data_type<io::events::internal, 1>::value != d->type()))
           retval |= 1;
         else {
           data = d.staticCast<io::raw>();

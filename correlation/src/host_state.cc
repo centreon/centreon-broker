@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker::correlation;
 
@@ -94,5 +95,5 @@ bool host_state::operator!=(host_state const& hs) const {
  *  @return The event type.
  */
 unsigned int host_state::type() const {
-  return (io::data::data_type(io::data::correlation, correlation::de_host_state));
+  return (io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
 }

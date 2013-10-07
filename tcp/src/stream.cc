@@ -21,6 +21,7 @@
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -160,7 +161,7 @@ void stream::set_timeout(int msecs) {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Raw type.
-  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
+  static unsigned int const raw_type(io::events::data_type<io::events::internal, 1>::value);
 
   // Check that data exists and should be processed.
   if (!_process_out)

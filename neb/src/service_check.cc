@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 
@@ -65,5 +66,5 @@ service_check& service_check::operator=(service_check const& sc) {
  *  @return The event_type.
  */
 unsigned int service_check::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_service_check));
+  return (io::events::data_type<io::events::neb, neb::de_service_check>::value);
 }

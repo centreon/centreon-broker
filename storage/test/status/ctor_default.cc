@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/status.hh"
 
@@ -39,5 +40,5 @@ int main() {
           || (s.rrd_len != 0)
           || (s.state != 0)
           || (s.type()
-              != io::data::data_type(io::data::storage, storage::de_status)));
+              != io::events::data_type<io::events::storage, storage::de_status>::value));
 }

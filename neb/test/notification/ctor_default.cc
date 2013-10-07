@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/notification.hh"
 
@@ -47,5 +48,5 @@ int main() {
           || (notif.start_time != 0)
           || (notif.state != 0)
           || (notif.type()
-              != io::data::data_type(io::data::neb, neb::de_notification)));
+              != io::events::data_type<io::events::neb, neb::de_notification>::value));
 }

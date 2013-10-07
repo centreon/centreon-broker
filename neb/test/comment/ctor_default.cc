@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/comment.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -47,5 +48,5 @@ int main() {
           || (cmmnt.service_id != 0)
           || (cmmnt.source != 0)
           || (cmmnt.type()
-              != io::data::data_type(io::data::neb, neb::de_comment)));
+              != io::events::data_type<io::events::neb, neb::de_comment>::value));
 }

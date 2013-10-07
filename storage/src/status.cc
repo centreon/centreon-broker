@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/status.hh"
 
@@ -72,7 +73,7 @@ status& status::operator=(status const& s) {
  *  @return The event type.
  */
 unsigned int status::type() const {
-  return (io::data::data_type(io::data::storage, storage::de_status));
+  return (io::events::data_type<io::events::storage, storage::de_status>::value);
 }
 
 /**************************************

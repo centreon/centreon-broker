@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
 
@@ -41,5 +42,5 @@ int main() {
           || (sdep.notification_failure_options != "")
           || (sdep.service_id != 0)
           || (sdep.type()
-              != io::data::data_type(io::data::neb, neb::de_service_dependency)));
+              != io::events::data_type<io::events::neb, neb::de_service_dependency>::value));
 }

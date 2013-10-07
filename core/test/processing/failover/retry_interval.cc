@@ -51,8 +51,7 @@ int main(int argc, char* argv[]) {
   se->set_succeed(false);
 
   // Failover object.
-  processing::failover f(false);
-  f.set_endpoint(se.staticCast<io::endpoint>());
+  processing::failover f(se.staticCast<io::endpoint>(), false);
   f.set_retry_interval(1);
 
   // Launch thread.

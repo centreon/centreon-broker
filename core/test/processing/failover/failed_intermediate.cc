@@ -52,15 +52,17 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
   misc::shared_ptr<processing::failover>
-    fo1(new processing::failover(true));
-  fo1->set_endpoint(endp1.staticCast<io::endpoint>());
+    fo1(new processing::failover(
+                          endp1.staticCast<io::endpoint>(),
+                          true));
 
   // Second failover (intermediate).
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(false);
   misc::shared_ptr<processing::failover>
-    fo2(new processing::failover(true));
-  fo2->set_endpoint(endp2.staticCast<io::endpoint>());
+    fo2(new processing::failover(
+                          endp2.staticCast<io::endpoint>(),
+                          true));
   fo2->set_failover(fo1);
   fo2->set_retry_interval(1);
 
@@ -68,8 +70,9 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> endp3(new setable_endpoint);
   endp3->set_succeed(false);
   misc::shared_ptr<processing::failover>
-    fo3(new processing::failover(true));
-  fo3->set_endpoint(endp3.staticCast<io::endpoint>());
+    fo3(new processing::failover(
+                          endp3.staticCast<io::endpoint>(),
+                          true));
   fo3->set_failover(fo2);
   fo3->set_retry_interval(1);
 

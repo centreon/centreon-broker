@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/tls/stream.hh"
@@ -120,7 +121,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
   // Only read raw data.
-  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
+  static unsigned int const raw_type(io::events::data_type<io::events::internal, 1>::value);
 
   // Read some data.
   while (_buffer.isEmpty()) {
@@ -162,7 +163,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
            << "TLS stream is shutdown");
 
   // Send data.
-  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
+  static unsigned int const raw_type(io::events::data_type<io::events::internal, 1>::value);
   if (!d.isNull() && d->type() == raw_type) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
     char const* ptr(packet->QByteArray::data());

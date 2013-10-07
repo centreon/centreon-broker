@@ -535,11 +535,10 @@ processing::failover* endpoint::_create_endpoint(
 
   // Return failover thread.
   std::auto_ptr<processing::failover>
-    fo(new processing::failover(is_output, cfg.name));
+    fo(new processing::failover(endp, is_output, cfg.name));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
-  fo->set_endpoint(endp);
   fo->set_failover(failovr);
   return (fo.release());
 }

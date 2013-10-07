@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 
@@ -47,5 +48,5 @@ int main() {
           || (le.service_id != 0)
           || (le.status != 5)
           || (le.type()
-              != io::data::data_type(io::data::neb, neb::de_log_entry)));
+              != io::events::data_type<io::events::neb, neb::de_log_entry>::value));
 }

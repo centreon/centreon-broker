@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker::correlation;
 
@@ -92,5 +93,5 @@ bool service_state::operator!=(service_state const& ss) const {
  *  @return The event type.
  */
 unsigned int service_state::type() const {
-  return (io::data::data_type(io::data::correlation, correlation::de_service_state));
+  return (io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
 }

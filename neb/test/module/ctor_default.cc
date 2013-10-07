@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/module.hh"
 
@@ -39,5 +40,5 @@ int main() {
           || (mod.loaded != false)
           || (mod.should_be_loaded != false)
           || (mod.type()
-              != io::data::data_type(io::data::neb, neb::de_module)));
+              != io::events::data_type<io::events::neb, neb::de_module>::value));
 }

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker::io;
@@ -63,5 +64,5 @@ raw& raw::operator=(raw const& r) {
  *  @return Raw data.
  */
 unsigned int raw::type() const {
-  return (data::data_type(data::internal, 1));
+  return (events::data_type<events::internal, 1>::value);
 }

@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/event_handler.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -48,5 +49,5 @@ int main() {
           || (evnt_hndlr.state_type != 0)
           || (evnt_hndlr.timeout != 0)
           || (evnt_hndlr.type()
-              != io::data::data_type(io::data::neb, neb::de_event_handler)));
+              != io::events::data_type<io::events::neb, neb::de_event_handler>::value));
 }

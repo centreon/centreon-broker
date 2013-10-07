@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -88,7 +89,7 @@ downtime& downtime::operator=(downtime const& d) {
  *  @return The event type.
  */
 unsigned int downtime::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_downtime));
+  return (io::events::data_type<io::events::neb, neb::de_downtime>::value);
 }
 
 /**************************************

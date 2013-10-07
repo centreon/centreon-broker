@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/instance_status.hh"
 
@@ -57,5 +58,5 @@ int main() {
           || (is.passive_service_checks_enabled != false)
           || (is.process_performance_data != false)
           || (is.type()
-              != io::data::data_type(io::data::neb, neb::de_instance_status)));
+              != io::events::data_type<io::events::neb, neb::de_instance_status>::value));
 }

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
 
@@ -71,7 +72,7 @@ service_dependency& service_dependency::operator=(
  *  @return The event_type.
  */
 unsigned int service_dependency::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_service_dependency));
+  return (io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
 }
 
 /**************************************

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -39,5 +40,5 @@ int main() {
           || (cvar_status.update_time != 0)
           || (cvar_status.value != "")
           || (cvar_status.type()
-              != io::data::data_type(io::data::neb, neb::de_custom_variable_status)));
+              != io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value));
 }

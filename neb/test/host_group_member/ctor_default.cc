@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group_member.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -37,5 +38,5 @@ int main() {
           || (hgrpmmbr.host_id != 0)
           || (hgrpmmbr.instance_id != 0)
           || (hgrpmmbr.type()
-              != io::data::data_type(io::data::neb, neb::de_host_group_member)));
+              != io::events::data_type<io::events::neb, neb::de_host_group_member>::value));
 }

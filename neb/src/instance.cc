@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -75,7 +76,7 @@ instance& instance::operator=(instance const& i) {
  *  @return The event_type.
  */
 unsigned int instance::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_instance));
+  return (io::events::data_type<io::events::neb, neb::de_instance>::value);
 }
 
 /**************************************

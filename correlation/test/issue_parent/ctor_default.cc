@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 
@@ -41,5 +42,5 @@ int main() {
           || (ip.parent_start_time != 0)
           || (ip.start_time != 0)
           || (ip.type()
-              != io::data::data_type(io::data::correlation, correlation::de_issue_parent)));
+              != io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value));
 }

@@ -28,6 +28,7 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -188,7 +189,7 @@ void stream::statistics(std::string& buffer) const {
  *  @return Number of events acknowledged (1).
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  static unsigned int const io_raw_type(io::data::data_type(io::data::internal, 1));
+  static unsigned int const io_raw_type(io::events::data_type<io::events::internal, 1>::value);
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)

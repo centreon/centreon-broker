@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -76,7 +77,7 @@ host_status& host_status::operator=(host_status const& hs) {
  *  @return The event_type.
  */
 unsigned int host_status::type() const {
-  return (io::data::data_type(io::data::neb, neb::de_host_status));
+  return (io::events::data_type<io::events::neb, neb::de_host_status>::value);
 }
 
 /**************************************

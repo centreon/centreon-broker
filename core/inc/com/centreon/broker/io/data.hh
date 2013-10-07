@@ -36,24 +36,11 @@ namespace                  io {
    */
   class                    data {
   public:
-    enum                   data_category {
-      neb = 1,
-      bbdo,
-      storage,
-      correlation,
-      internal = 65535
-    };
-
                            data();
                            data(data const& d);
     virtual                ~data();
     data&                  operator=(data const& d);
     virtual unsigned int   type() const = 0;
-    static unsigned int    data_type(
-			     unsigned short category,
-			     unsigned short element) {
-      return (category << 16 | element);
-    }
   };
 }
 

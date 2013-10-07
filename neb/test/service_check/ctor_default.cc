@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 
@@ -38,5 +39,5 @@ int main() {
           || (schk.next_check != 0)
           || (schk.service_id != 0)
           || (schk.type()
-              != io::data::data_type(io::data::neb, neb::de_service_check)));
+              != io::events::data_type<io::events::neb, neb::de_service_check>::value));
 }
