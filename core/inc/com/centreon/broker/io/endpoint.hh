@@ -21,7 +21,6 @@
 #  define CCB_IO_ENDPOINT_HH
 
 #  include <QString>
-#  include <set>
 #  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -48,19 +47,15 @@ namespace                            io {
     virtual void                     close() = 0;
     void                             from(
                                        misc::shared_ptr<endpoint> endp);
-    std::set<unsigned int> const&    get_filters() const throw ();
     bool                             is_acceptor() const throw ();
     bool                             is_connector() const throw ();
     virtual misc::shared_ptr<stream> open() = 0;
     virtual misc::shared_ptr<stream> open(QString const& id) = 0;
-    void                             set_filters(
-                                       std::set<unsigned int> const& filters);
     virtual void                     stats(std::string& buffer);
 
    protected:
     void                             _internal_copy(endpoint const& e);
 
-    std::set<unsigned int>           _filters;
     misc::shared_ptr<endpoint>       _from;
     bool                             _is_acceptor;
   };

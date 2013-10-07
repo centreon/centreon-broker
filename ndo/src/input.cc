@@ -45,9 +45,6 @@ using namespace com::centreon::broker::ndo;
  *  Read a line of input.
  */
 char const* input::_get_line() {
-  // Static type.
-  static unsigned int const io_raw_type(io::events::data_type<io::events::internal, 1>::value);
-
   // Find new line.
   size_t it(_buffer.find_first_of('\n', _old));
   if (it == std::string::npos) {
@@ -61,7 +58,7 @@ char const* input::_get_line() {
       _from->read(data);
       if (data.isNull())
         break ;
-      if (data->type() == io_raw_type) {
+      if (data->type() == io::events::data_type<io::events::internal, 1>::value) {
         io::raw* raw(static_cast<io::raw*>(data.data()));
         _buffer.append(static_cast<char*>(
           raw->QByteArray::data()),

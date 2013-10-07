@@ -373,7 +373,6 @@ unsigned int input::write(misc::shared_ptr<io::data> const& d) {
 void input::_buffer_must_have_unprocessed(
               unsigned int bytes,
               time_t timeout) {
-  static unsigned int const raw_type(io::events::data_type<io::events::internal, 1>::value);
   if (_buffer.size() < (_processed + bytes)) {
     _buffer.erase(0, _processed);
     _processed = 0;
@@ -382,7 +381,7 @@ void input::_buffer_must_have_unprocessed(
     misc::shared_ptr<io::data> d;
     _from->read(d);
     if (!d.isNull()
-        && d->type() == raw_type) {
+        && d->type() == io::events::data_type<io::events::internal, 1>::value) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _buffer.append(r->QByteArray::data(), r->size());
     }

@@ -27,6 +27,7 @@
 #  include <QReadWriteLock>
 #  include <QString>
 #  include <QThread>
+#  include <set>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -55,7 +56,8 @@ namespace                com {
                          failover(
                            misc::shared_ptr<io::endpoint> endp,
                            bool is_out,
-                           QString const& name = "(unknown)");
+                           QString const& name = "(unknown)",
+                           std::set<unsigned int> const& filters = std::set<unsigned int>());
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);

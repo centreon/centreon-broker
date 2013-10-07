@@ -143,42 +143,6 @@ void output::statistics(std::string& buffer) const {
  *  @return Number of events acknowledged.
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& e) {
-  // Types.
-  static unsigned int const neb_acknowledgement_type(io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
-  static unsigned int const neb_comment_type(io::events::data_type<io::events::neb, neb::de_comment>::value);
-  static unsigned int const neb_custom_variable_type(io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
-  static unsigned int const neb_custom_variable_status_type(io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
-  static unsigned int const neb_downtime_type(io::events::data_type<io::events::neb, neb::de_downtime>::value);
-  static unsigned int const neb_event_handler_type(io::events::data_type<io::events::neb, neb::de_event_handler>::value);
-  static unsigned int const neb_flapping_status_type(io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
-  static unsigned int const neb_host_type(io::events::data_type<io::events::neb, neb::de_host>::value);
-  static unsigned int const neb_host_check_type(io::events::data_type<io::events::neb, neb::de_host_check>::value);
-  static unsigned int const neb_host_dependency_type(io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
-  static unsigned int const neb_host_group_type(io::events::data_type<io::events::neb, neb::de_host_group>::value);
-  static unsigned int const neb_host_group_member_type(io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
-  static unsigned int const neb_host_parent_type(io::events::data_type<io::events::neb, neb::de_host_parent>::value);
-  static unsigned int const neb_host_status_type(io::events::data_type<io::events::neb, neb::de_host_status>::value);
-  static unsigned int const neb_instance_type(io::events::data_type<io::events::neb, neb::de_instance>::value);
-  static unsigned int const neb_instance_status_type(io::events::data_type<io::events::neb, neb::de_instance_status>::value);
-  static unsigned int const neb_log_entry_type(io::events::data_type<io::events::neb, neb::de_log_entry>::value);
-  static unsigned int const neb_module_type(io::events::data_type<io::events::neb, neb::de_module>::value);
-  static unsigned int const neb_notification_type(io::events::data_type<io::events::neb, neb::de_notification>::value);
-  static unsigned int const neb_service_type(io::events::data_type<io::events::neb, neb::de_service>::value);
-  static unsigned int const neb_service_check_type(io::events::data_type<io::events::neb, neb::de_service_check>::value);
-  static unsigned int const neb_service_dependency_type(io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
-  static unsigned int const neb_service_group_type(io::events::data_type<io::events::neb, neb::de_service_group>::value);
-  static unsigned int const neb_service_group_member_type(io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
-  static unsigned int const neb_service_status_type(io::events::data_type<io::events::neb, neb::de_service_status>::value);
-  static unsigned int const storage_metric_type(io::events::data_type<io::events::storage, storage::de_metric>::value);
-  static unsigned int const storage_rebuild_type(io::events::data_type<io::events::storage, storage::de_rebuild>::value);
-  static unsigned int const storage_remove_graph_type(io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
-  static unsigned int const storage_status_type(io::events::data_type<io::events::storage, storage::de_status>::value);
-  static unsigned int const correlation_engine_state_type(io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
-  static unsigned int const correlation_host_state_type(io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
-  static unsigned int const correlation_issue_type(io::events::data_type<io::events::correlation, correlation::de_issue>::value);
-  static unsigned int const correlation_issue_parent_type(io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
-  static unsigned int const correlation_service_state_type(io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
-
   // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, !_process_out)
@@ -189,238 +153,238 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   logging::debug(logging::medium) << "NDO: writing data ("
     << e->type() << ")";
   std::stringstream buffer;
-  if (e->type() == neb_acknowledgement_type) {
+  if (e->type() == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value) {
     buffer << NDO_API_ACKNOWLEDGEMENTDATA << ":\n";
     handle_event<neb::acknowledgement>(
       *static_cast<neb::acknowledgement*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_comment_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_comment>::value) {
     buffer << NDO_API_COMMENTDATA << ":\n";
     handle_event<neb::comment>(
       *static_cast<neb::comment*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_custom_variable_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_custom_variable>::value) {
     buffer << NDO_API_RUNTIMEVARIABLES << ":\n";
     handle_event<neb::custom_variable>(
       *static_cast<neb::custom_variable*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_custom_variable_status_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value) {
     buffer << NDO_API_CONFIGVARIABLES << ":\n";
     handle_event<neb::custom_variable_status>(
       *static_cast<neb::custom_variable_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_downtime_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_downtime>::value) {
     buffer << NDO_API_DOWNTIMEDATA << ":\n";
     handle_event<neb::downtime>(
       *static_cast<neb::downtime*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_event_handler_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_event_handler>::value) {
     buffer << NDO_API_EVENTHANDLERDATA << ":\n";
     handle_event<neb::event_handler>(
       *static_cast<neb::event_handler*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_flapping_status_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_flapping_status>::value) {
     buffer << NDO_API_FLAPPINGDATA << ":\n";
     handle_event<neb::flapping_status>(
       *static_cast<neb::flapping_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host>::value) {
     buffer << NDO_API_HOSTDEFINITION << ":\n";
     handle_event<neb::host>(
       *static_cast<neb::host*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_check_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_check>::value) {
     buffer << NDO_API_HOSTCHECKDATA << ":\n";
     handle_event<neb::host_check>(
       *static_cast<neb::host_check*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_dependency_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_dependency>::value) {
     buffer << NDO_API_HOSTDEPENDENCYDEFINITION << ":\n";
     handle_event<neb::host_dependency>(
       *static_cast<neb::host_dependency*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_group_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_group>::value) {
     buffer << NDO_API_HOSTGROUPDEFINITION << ":\n";
     handle_event<neb::host_group>(
       *static_cast<neb::host_group*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_group_member_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_group_member>::value) {
     buffer << NDO_API_HOSTGROUPMEMBERDEFINITION << ":\n";
     handle_event<neb::host_group_member>(
       *static_cast<neb::host_group_member*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_parent_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_parent>::value) {
     buffer << NDO_API_HOSTPARENT << ":\n";
     handle_event<neb::host_parent>(
       *static_cast<neb::host_parent*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_host_status_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_status>::value) {
     buffer << NDO_API_HOSTSTATUSDATA << ":\n";
     handle_event<neb::host_status>(
       *static_cast<neb::host_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_instance_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_instance>::value) {
     buffer << NDO_API_PROCESSDATA << ":\n";
     handle_event<neb::instance>(
       *static_cast<neb::instance*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_instance_status_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
     buffer << NDO_API_PROGRAMSTATUSDATA << ":\n";
     handle_event<neb::instance_status>(
       *static_cast<neb::instance_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_log_entry_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_log_entry>::value) {
     buffer << NDO_API_LOGDATA << ":\n";
     handle_event<neb::log_entry>(
       *static_cast<neb::log_entry*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_module_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_module>::value) {
     buffer << NDO_API_COMMANDDEFINITION << ":\n";
     handle_event<neb::module>(
       *static_cast<neb::module*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_notification_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_notification>::value) {
     buffer << NDO_API_NOTIFICATIONDATA << ":\n";
     handle_event<neb::notification>(
       *static_cast<neb::notification*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service>::value) {
     buffer << NDO_API_SERVICEDEFINITION << ":\n";
     handle_event<neb::service>(
       *static_cast<neb::service*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_check_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_check>::value) {
     buffer << NDO_API_SERVICECHECKDATA << ":\n";
     handle_event<neb::service_check>(
       *static_cast<neb::service_check*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_dependency_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_dependency>::value) {
     buffer << NDO_API_SERVICEDEPENDENCYDEFINITION << ":\n";
     handle_event<neb::service_dependency>(
       *static_cast<neb::service_dependency*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_group_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_group>::value) {
     buffer << NDO_API_SERVICEGROUPDEFINITION << ":\n";
     handle_event<neb::service_group>(
       *static_cast<neb::service_group*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_group_member_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_group_member>::value) {
     buffer << NDO_API_SERVICEGROUPMEMBERDEFINITION << ":\n";
     handle_event<neb::service_group_member>(
       *static_cast<neb::service_group_member*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == neb_service_status_type) {
+  else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
     buffer << NDO_API_SERVICESTATUSDATA << ":\n";
     handle_event<neb::service_status>(
       *static_cast<neb::service_status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == storage_metric_type) {
+  else if (e->type() == io::events::data_type<io::events::storage, storage::de_metric>::value) {
     buffer << NDO_API_STORAGEMETRIC << ":\n";
     handle_event<storage::metric>(
       *static_cast<storage::metric*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == storage_rebuild_type) {
+  else if (e->type() == io::events::data_type<io::events::storage, storage::de_rebuild>::value) {
     buffer << NDO_API_STORAGEREBUILD << ":\n";
     handle_event<storage::rebuild>(
       *static_cast<storage::rebuild*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == storage_remove_graph_type) {
+  else if (e->type() == io::events::data_type<io::events::storage, storage::de_remove_graph>::value) {
     buffer << NDO_API_STORAGEREMOVEGRAPH << ":\n";
     handle_event<storage::remove_graph>(
       *static_cast<storage::remove_graph*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == storage_status_type) {
+  else if (e->type() == io::events::data_type<io::events::storage, storage::de_status>::value) {
     buffer << NDO_API_STORAGESTATUS << ":\n";
     handle_event<storage::status>(
       *static_cast<storage::status*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == correlation_engine_state_type) {
+  else if (e->type() == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value) {
     buffer << NDO_API_CORRELATIONENGINESTATE << ":\n";
     handle_event<correlation::engine_state>(
       *static_cast<correlation::engine_state*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == correlation_host_state_type) {
+  else if (e->type() == io::events::data_type<io::events::correlation, correlation::de_host_state>::value) {
     buffer << NDO_API_CORRELATIONHOSTSTATE << ":\n";
     handle_event<correlation::host_state>(
       *static_cast<correlation::host_state*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == correlation_issue_type) {
+  else if (e->type() == io::events::data_type<io::events::correlation, correlation::de_issue>::value) {
     buffer << NDO_API_CORRELATIONISSUE << ":\n";
     handle_event<correlation::issue>(
       *static_cast<correlation::issue*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == correlation_issue_parent_type) {
+  else if (e->type() == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value) {
     buffer << NDO_API_CORRELATIONISSUEPARENT << ":\n";
     handle_event<correlation::issue_parent>(
       *static_cast<correlation::issue_parent*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
-  else if (e->type() == correlation_service_state_type) {
+  else if (e->type() == io::events::data_type<io::events::correlation, correlation::de_service_state>::value) {
     buffer << NDO_API_CORRELATIONSERVICESTATE << ":\n";
     handle_event<correlation::service_state>(
       *static_cast<correlation::service_state*>(e.data()),

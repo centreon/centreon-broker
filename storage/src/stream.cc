@@ -404,8 +404,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  static unsigned int const neb_service_status(io::events::data_type<io::events::neb, neb::de_service_status>::value);
-
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -413,7 +411,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process service status events.
   if (!data.isNull()) {
-    if (data->type() == neb_service_status) {
+    if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
       logging::debug(logging::high)
         << "storage: processing service status event";
       misc::shared_ptr<neb::service_status>

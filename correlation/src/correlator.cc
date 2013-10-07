@@ -410,26 +410,19 @@ void correlator::update() {
  *  @return Number of events acknowledged (1).
  */
 unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
-  static unsigned int const ack_type(io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
-  static unsigned int const host_type(io::events::data_type<io::events::neb, neb::de_host>::value);
-  static unsigned int const host_status_type(io::events::data_type<io::events::neb, neb::de_host_status>::value);
-  static unsigned int const log_entry_type(io::events::data_type<io::events::neb, neb::de_log_entry>::value);
-  static unsigned int const service_type(io::events::data_type<io::events::neb, neb::de_service>::value);
-  static unsigned int const service_status_type(io::events::data_type<io::events::neb, neb::de_service_status>::value);
-
   try {
     // Process event.
-    if (e->type() == host_type)
+    if (e->type() == io::events::data_type<io::events::neb, neb::de_host>::value)
       _correlate_host_status(e);
-    else if (e->type() == host_status_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_status>::value)
       _correlate_host_status(e);
-    else if (e->type() == service_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service>::value)
       _correlate_service_status(e);
-    else if (e->type() == service_status_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value)
       _correlate_service_status(e);
-    else if (e->type() == log_entry_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
       _correlate_log(e);
-    else if (e->type() == ack_type)
+    else if (e->type() == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
       _correlate_acknowledgement(e);
 
     // Dump retention file.

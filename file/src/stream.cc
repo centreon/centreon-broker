@@ -189,7 +189,6 @@ void stream::statistics(std::string& buffer) const {
  *  @return Number of events acknowledged (1).
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  static unsigned int const io_raw_type(io::events::data_type<io::events::internal, 1>::value);
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -197,7 +196,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == io_raw_type) {
+  if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
     // Lock mutex.
     QMutexLocker lock(&_mutex);
 

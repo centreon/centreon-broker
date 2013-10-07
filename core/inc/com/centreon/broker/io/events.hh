@@ -43,24 +43,19 @@ namespace               io {
       correlation,
       internal = 65535
     };
-    struct                     category_element {
-      data_category            category;
-      std::set<unsigned short> elements;
-    };
 
     template<unsigned short category, unsigned short element>
     struct data_type {
-      static unsigned int const value = (category << 16 | element);
+      enum { value = (category << 16 | element) };
     };
 
-    category_element const&
+    std::set<unsigned int> const&
                         get(std::string const& name) const;
     static events&      instance();
     static void         load();
     void                reg(
                           std::string const& name,
-                          data_category category,
-                          std::set<unsigned short> const& elems);
+                          std::set<unsigned int> const& elems);
     static void         unload();
     void                unreg(std::string const& name);
 
@@ -70,7 +65,7 @@ namespace               io {
                         ~events();
     events&             operator=(events const& right);
 
-    std::map<std::string, category_element>
+    std::map<std::string, std::set<unsigned int> >
                         _elements;
   };
 }

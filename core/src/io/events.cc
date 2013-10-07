@@ -39,9 +39,9 @@ static events* _instance(NULL);
  *
  *  @return Category elements.
  */
-events::category_element const& events::get(
-                                          std::string const& name) const {
-  std::map<std::string, category_element>::const_iterator
+std::set<unsigned int> const& events::get(
+                                        std::string const& name) const {
+  std::map<std::string, std::set<unsigned int> >::const_iterator
     it(_elements.find(name));
   if (it == _elements.end())
     throw (exceptions::msg() << "core: cannot find event category '"
@@ -76,12 +76,8 @@ void events::load() {
  */
 void events::reg(
                std::string const& name,
-               events::data_category category,
-               std::set<unsigned short> const& elems) {
-  category_element cetelem;
-  cetelem.category = category;
-  cetelem.elements = elems;
-  _elements[name] = cetelem;
+               std::set<unsigned int> const& elems) {
+  _elements[name] = elems;
   return ;
 }
 

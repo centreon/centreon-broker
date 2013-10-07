@@ -52,7 +52,8 @@ using namespace com::centreon::broker::processing;
 failover::failover(
             misc::shared_ptr<io::endpoint> endp,
             bool is_out,
-            QString const& name)
+            QString const& name,
+            std::set<unsigned int> const& filters)
   : _buffering_timeout(0),
     _endpoint(endp),
     _initial(true),
@@ -71,7 +72,7 @@ failover::failover(
   if (_is_out) {
     misc::shared_ptr<multiplexing::subscriber>
       subscr(new multiplexing::subscriber(name));
-    subscr->set_filters(_endpoint->get_filters());
+    subscr->set_filters(filters);
     _from = subscr.staticCast<io::stream>();
   }
   else
