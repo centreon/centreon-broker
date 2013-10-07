@@ -39,6 +39,11 @@
 CCB_BEGIN()
 
 namespace                 bbdo {
+  // Data elements.
+  enum {
+    de_version_response = 1
+  };
+
   template                <typename T>
   struct                  getter_setter {
     data_member<T> const* member;

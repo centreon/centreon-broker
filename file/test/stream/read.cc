@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     if (raw.isNull()) {
       misc::shared_ptr<io::data> d;
       fs.read(d);
-      if (d.isNull() || ("com::centreon::broker::io::raw" != d->type()))
+      if (d.isNull() || (io::data::data_type(io::data::internal, 1) != d->type()))
         retval |= 1;
       else {
         raw = d.staticCast<io::raw>();

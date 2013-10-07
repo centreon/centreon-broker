@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/correlation/engine_state.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -64,9 +65,8 @@ engine_state& engine_state::operator=(engine_state const& es) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::correlation::engine_state".
+ *  @return The event type.
  */
-QString const& engine_state::type() const {
-  static QString const es_type("com::centreon::broker::correlation::engine_state");
-  return (es_type);
+unsigned int engine_state::type() const {
+  return (io::data::data_type(io::data::correlation, correlation::de_engine_state));
 }

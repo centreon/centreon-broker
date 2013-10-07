@@ -34,6 +34,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
@@ -402,6 +403,8 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+  static unsigned int const neb_service_status(io::data::data_type(io::data::neb, neb::de_service_status));
+
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -409,7 +412,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process service status events.
   if (!data.isNull()) {
-    if (data->type() == "com::centreon::broker::neb::service_status") {
+    if (data->type() == neb_service_status) {
       logging::debug(logging::high)
         << "storage: processing service status event";
       misc::shared_ptr<neb::service_status>

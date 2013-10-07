@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -44,5 +45,5 @@ int main() {
           || (ack.service_id != 0)
           || (ack.state != 0)
           || (ack.type()
-              != "com::centreon::broker::neb::acknowledgement"));
+              != io::data::data_type(io::data::neb, neb::de_acknowledgement)));
 }

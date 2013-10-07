@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
 
 using namespace com::centreon::broker::correlation;
@@ -90,9 +91,8 @@ bool host_state::operator!=(host_state const& hs) const {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::correlation::host_state".
+ *  @return The event type.
  */
-QString const& host_state::type() const {
-  static QString const hs_type("com::centreon::broker::correlation::host_state");
-  return (hs_type);
+unsigned int host_state::type() const {
+  return (io::data::data_type(io::data::correlation, correlation::de_host_state));
 }

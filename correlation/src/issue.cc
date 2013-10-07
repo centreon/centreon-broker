@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 
 using namespace com::centreon::broker;
@@ -95,11 +96,10 @@ bool issue::operator!=(issue const& i) const {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::correlation::issue".
+ *  @return The event type.
  */
-QString const& issue::type() const {
-  static QString const issue_type("com::centreon::broker::correlation::issue");
-  return (issue_type);
+unsigned int issue::type() const {
+  return (io::data::data_type(io::data::correlation, correlation::de_issue));
 }
 
 /**************************************

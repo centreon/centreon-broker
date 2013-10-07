@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/module.hh"
 
 using namespace com::centreon::broker::neb;
@@ -66,10 +67,10 @@ module& module::operator=(module const& m) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::module".
+ *  @return The event_type.
  */
 unsigned int module::type() const {
-  return (io::data::data_type(io::data::neb, neb::module));
+  return (io::data::data_type(io::data::neb, neb::de_module));
 }
 
 /**************************************

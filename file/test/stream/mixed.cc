@@ -50,7 +50,7 @@ static int read_some(file::stream& f, unsigned int count) {
     while (-1 == index) {
       misc::shared_ptr<io::data> d;
       f.read(d);
-      if (d->type() != "com::centreon::broker::io::raw")
+      if (d->type() != io::data::data_type(io::data::internal, 1))
         return (1);
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       buffer.append(*r);

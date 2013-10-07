@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host_group.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -65,8 +66,8 @@ host_group& host_group::operator=(host_group const& hg) {
 /**
  *  Get the event's type.
  *
- *  @return The string "com::centreon::broker::neb::host_group".
+ *  @return The event type.
  */
 unsigned int host_group::type() const {
-  return (io::data::data_type(io::data::neb, neb::host_group));
+  return (io::data::data_type(io::data::neb, neb::de_host_group));
 }

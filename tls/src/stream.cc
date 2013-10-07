@@ -120,7 +120,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
   // Only read raw data.
-  static QString const raw_type("com::centreon::broker::io::raw");
+  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
 
   // Read some data.
   while (_buffer.isEmpty()) {
@@ -162,7 +162,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
            << "TLS stream is shutdown");
 
   // Send data.
-  static QString const raw_type("com::centreon::broker::io::raw");
+  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
   if (!d.isNull() && d->type() == raw_type) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
     char const* ptr(packet->QByteArray::data());

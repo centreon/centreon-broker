@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
 
 using namespace com::centreon::broker;
@@ -40,5 +41,5 @@ int main() {
           || (sdep.notification_failure_options != "")
           || (sdep.service_id != 0)
           || (sdep.type()
-              != "com::centreon::broker::neb::service_dependency"));
+              != io::data::data_type(io::data::neb, neb::de_service_dependency)));
 }

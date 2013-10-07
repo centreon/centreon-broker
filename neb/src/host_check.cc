@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host_check.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -59,8 +60,8 @@ host_check& host_check::operator=(host_check const& hc) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host_check".
+ *  @return The event type.
  */
 unsigned int host_check::type() const {
-  return (io::data::data_type(io::data::neb, neb::host_check));
+  return (io::data::data_type(io::data::neb, neb::de_host_check));
 }

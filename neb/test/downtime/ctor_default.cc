@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -50,5 +51,5 @@ int main() {
           || (dwntm.was_cancelled != false)
           || (dwntm.was_started != false)
           || (dwntm.type()
-              != "com::centreon::broker::neb::downtime"));
+              != io::data::data_type(io::data::neb, neb::de_downtime)));
 }

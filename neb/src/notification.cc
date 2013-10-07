@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/notification.hh"
 
 using namespace com::centreon::broker::neb;
@@ -71,10 +72,10 @@ notification& notification::operator=(notification const& n) {
 /**
  *  Get the type of this object.
  *
- *  @return The string "com::centreon::broker::neb::notification".
+ *  @return The event_type.
  */
 unsigned int notification::type() const {
-  return (io::data::data_type(io::data::neb, neb::notification));
+  return (io::data::data_type(io::data::neb, neb::de_notification));
 }
 
 /**************************************

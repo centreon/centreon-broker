@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_group.hh"
 
 using namespace com::centreon::broker::neb;
@@ -67,8 +68,8 @@ service_group& service_group::operator=(service_group const& sg) {
 /**
  *  Get the event's type.
  *
- *  @return The string "com::centreon::broker::neb::service_group".
+ *  @return The event_type.
  */
 unsigned int service_group::type() const {
-  return (io::data::data_type(io::data::neb, neb::service_group));
+  return (io::data::data_type(io::data::neb, neb::de_service_group));
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include "com/centreon/broker/neb/flapping_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -44,5 +45,5 @@ int main() {
           || (flappy.reason_type != 0)
           || (flappy.service_id != 0)
           || (flappy.type()
-              != "com::centreon::broker::neb::flapping_status"));
+              != io::data::data_type(io::data::neb, neb::de_flapping_status)));
 }

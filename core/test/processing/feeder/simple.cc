@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
          end(ss2->get_stored_events().end());
        it != end;
        ++it)
-    if ((*it)->type() != "com::centreon::broker::io::raw")
+    if ((*it)->type() != io::data::data_type(io::data::internal, 1))
       retval |= 1;
     else {
       misc::shared_ptr<io::raw> raw(it->staticCast<io::raw>());

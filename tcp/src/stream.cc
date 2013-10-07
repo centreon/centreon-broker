@@ -160,7 +160,7 @@ void stream::set_timeout(int msecs) {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Raw type.
-  static QString const raw_type("com::centreon::broker::io::raw");
+  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
 
   // Check that data exists and should be processed.
   if (!_process_out)

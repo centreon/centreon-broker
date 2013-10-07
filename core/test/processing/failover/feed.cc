@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     misc::shared_ptr<io::data> event;
     s.read(event, 0);
     while (!event.isNull()) {
-      if (event->type() != "com::centreon::broker::io::raw")
+      if (event->type() != io::data::data_type(io::data::internal, 1))
         retval |= 1;
       else {
         misc::shared_ptr<io::raw> raw(event.staticCast<io::raw>());

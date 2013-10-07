@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/custom_variable_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -67,10 +68,10 @@ custom_variable_status& custom_variable_status::operator=(custom_variable_status
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::custom_variable_status".
+ *  @return The event type.
  */
 unsigned int custom_variable_status::type() const {
-  return (io::data::data_type(io::data::neb, neb::custom_variable_status));
+  return (io::data::data_type(io::data::neb, neb::de_custom_variable_status));
 }
 
 /**************************************

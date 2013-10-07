@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host_parent.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -66,8 +67,8 @@ host_parent& host_parent::operator=(host_parent const& hp) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host_parent".
+ *  @return The event_type.
  */
 unsigned int host_parent::type() const {
-  return (io::data::data_type(io::data::neb, neb::host_parent));
+  return (io::data::data_type(io::data::neb, neb::de_host_parent));
 }

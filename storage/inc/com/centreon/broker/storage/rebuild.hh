@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,7 @@ namespace          storage {
                    rebuild(rebuild const& right);
                    ~rebuild();
     rebuild&       operator=(rebuild const& right);
-    QString const& type() const;
+    unsigned int   type() const;
 
     bool           end;
     unsigned int   id;

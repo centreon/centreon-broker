@@ -45,7 +45,7 @@ using namespace com::centreon::broker::ndo;
  */
 char const* input::_get_line() {
   // Static type.
-  static QString const io_raw_type("com::centreon::broker::io::raw");
+  static unsigned int const io_raw_type(io::data::data_type(io::data::internal, 1));
 
   // Find new line.
   size_t it(_buffer.find_first_of('\n', _old));

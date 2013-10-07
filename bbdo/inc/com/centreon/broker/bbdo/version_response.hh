@@ -38,7 +38,7 @@ namespace             bbdo {
                       version_response(version_response const& right);
                       ~version_response();
     version_response& operator=(version_response const& right);
-    QString const&    type() const;
+    unsigned int      type() const;
 
     short             bbdo_major;
     short             bbdo_minor;

@@ -23,11 +23,14 @@
 #include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/events.hh"
 
 using namespace com::centreon::broker;
@@ -182,78 +185,78 @@ void output::statistics(std::string& buffer) const {
 unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Redirection array.
   static struct {
-    QString      type;
+    unsigned int type;
     void (*      routine)(QByteArray&, io::data const*);
   } const helpers[] = {
-    { "com::centreon::broker::neb::acknowledgement",
+    { io::data::data_type(io::data::neb, neb::de_acknowledgement),
       &serialize<neb::acknowledgement, BBDO_ID(BBDO_NEB_TYPE, 1)> },
-    { "com::centreon::broker::neb::comment",
+    { io::data::data_type(io::data::neb, neb::de_comment),
       &serialize<neb::comment, BBDO_ID(BBDO_NEB_TYPE, 2)> },
-    { "com::centreon::broker::neb::custom_variable",
+    { io::data::data_type(io::data::neb, neb::de_custom_variable),
       &serialize<neb::custom_variable, BBDO_ID(BBDO_NEB_TYPE, 3)> },
-    { "com::centreon::broker::neb::custom_variable_status",
+    { io::data::data_type(io::data::neb, neb::de_custom_variable_status),
       &serialize<neb::custom_variable_status, BBDO_ID(BBDO_NEB_TYPE, 4)> },
-    { "com::centreon::broker::neb::downtime",
+    { io::data::data_type(io::data::neb, neb::de_downtime),
       &serialize<neb::downtime, BBDO_ID(BBDO_NEB_TYPE, 5)> },
-    { "com::centreon::broker::neb::event_handler",
+    { io::data::data_type(io::data::neb, neb::de_event_handler),
       &serialize<neb::event_handler, BBDO_ID(BBDO_NEB_TYPE, 6)> },
-    { "com::centreon::broker::neb::flapping_status",
+    { io::data::data_type(io::data::neb, neb::de_flapping_status),
       &serialize<neb::flapping_status, BBDO_ID(BBDO_NEB_TYPE, 7)> },
-    { "com::centreon::broker::neb::host",
+    { io::data::data_type(io::data::neb, neb::de_host),
       &serialize<neb::host, BBDO_ID(BBDO_NEB_TYPE, 8)> },
-    { "com::centreon::broker::neb::host_check",
+    { io::data::data_type(io::data::neb, neb::de_host_check),
       &serialize<neb::host_check, BBDO_ID(BBDO_NEB_TYPE, 9)> },
-    { "com::centreon::broker::neb::host_dependency",
+    { io::data::data_type(io::data::neb, neb::de_host_dependency),
       &serialize<neb::host_dependency, BBDO_ID(BBDO_NEB_TYPE, 10)> },
-    { "com::centreon::broker::neb::host_group",
+    { io::data::data_type(io::data::neb, neb::de_host_group),
       &serialize<neb::host_group, BBDO_ID(BBDO_NEB_TYPE, 11)> },
-    { "com::centreon::broker::neb::host_group_member",
+    { io::data::data_type(io::data::neb, neb::de_host_group_member),
       &serialize<neb::host_group_member, BBDO_ID(BBDO_NEB_TYPE, 12)> },
-    { "com::centreon::broker::neb::host_parent",
+    { io::data::data_type(io::data::neb, neb::de_host_parent),
       &serialize<neb::host_parent, BBDO_ID(BBDO_NEB_TYPE, 13)> },
-    { "com::centreon::broker::neb::host_status",
+    { io::data::data_type(io::data::neb, neb::de_host_status),
       &serialize<neb::host_status, BBDO_ID(BBDO_NEB_TYPE, 14)> },
-    { "com::centreon::broker::neb::instance",
+    { io::data::data_type(io::data::neb, neb::de_instance),
       &serialize<neb::instance, BBDO_ID(BBDO_NEB_TYPE, 15)> },
-    { "com::centreon::broker::neb::instance_status",
+    { io::data::data_type(io::data::neb, neb::de_instance_status),
       &serialize<neb::instance_status, BBDO_ID(BBDO_NEB_TYPE, 16)> },
-    { "com::centreon::broker::neb::log_entry",
+    { io::data::data_type(io::data::neb, neb::de_log_entry),
       &serialize<neb::log_entry, BBDO_ID(BBDO_NEB_TYPE, 17)> },
-    { "com::centreon::broker::neb::module",
+    { io::data::data_type(io::data::neb, neb::de_module),
       &serialize<neb::module, BBDO_ID(BBDO_NEB_TYPE, 18)> },
-    { "com::centreon::broker::neb::notification",
+    { io::data::data_type(io::data::neb, neb::de_notification),
       &serialize<neb::notification, BBDO_ID(BBDO_NEB_TYPE, 19)> },
-    { "com::centreon::broker::neb::service",
+    { io::data::data_type(io::data::neb, neb::de_service),
       &serialize<neb::service, BBDO_ID(BBDO_NEB_TYPE, 20)> },
-    { "com::centreon::broker::neb::service_check",
+    { io::data::data_type(io::data::neb, neb::de_service_check),
       &serialize<neb::service_check, BBDO_ID(BBDO_NEB_TYPE, 21)> },
-    { "com::centreon::broker::neb::service_dependency",
+    { io::data::data_type(io::data::neb, neb::de_service_dependency),
       &serialize<neb::service_dependency, BBDO_ID(BBDO_NEB_TYPE, 22)> },
-    { "com::centreon::broker::neb::service_group",
+    { io::data::data_type(io::data::neb, neb::de_service_group),
       &serialize<neb::service_group, BBDO_ID(BBDO_NEB_TYPE, 23)> },
-    { "com::centreon::broker::neb::service_group_member",
+    { io::data::data_type(io::data::neb, neb::de_service_group_member),
       &serialize<neb::service_group_member, BBDO_ID(BBDO_NEB_TYPE, 24)> },
-    { "com::centreon::broker::neb::service_status",
+    { io::data::data_type(io::data::neb, neb::de_service_status),
       &serialize<neb::service_status, BBDO_ID(BBDO_NEB_TYPE, 25)> },
-    { "com::centreon::broker::storage::metric",
+    { io::data::data_type(io::data::storage, storage::de_metric),
       &serialize<storage::metric, BBDO_ID(BBDO_STORAGE_TYPE, 1)> },
-    { "com::centreon::broker::storage::rebuild",
+    { io::data::data_type(io::data::storage, storage::de_rebuild),
       &serialize<storage::rebuild, BBDO_ID(BBDO_STORAGE_TYPE, 2)> },
-    { "com::centreon::broker::storage::remove_graph",
+    { io::data::data_type(io::data::storage, storage::de_remove_graph),
       &serialize<storage::remove_graph, BBDO_ID(BBDO_STORAGE_TYPE, 3)> },
-    { "com::centreon::broker::storage::status",
+    { io::data::data_type(io::data::storage, storage::de_status),
       &serialize<storage::status, BBDO_ID(BBDO_STORAGE_TYPE, 4)> },
-    { "com::centreon::broker::correlation::engine_state",
+    { io::data::data_type(io::data::correlation, correlation::de_engine_state),
       &serialize<correlation::engine_state, BBDO_ID(BBDO_CORRELATION_TYPE, 1)> },
-    { "com::centreon::broker::correlation::host_state",
+    { io::data::data_type(io::data::correlation, correlation::de_host_state),
       &serialize<correlation::host_state, BBDO_ID(BBDO_CORRELATION_TYPE, 2)> },
-    { "com::centreon::broker::correlation::issue",
+    { io::data::data_type(io::data::correlation, correlation::de_issue),
       &serialize<correlation::issue, BBDO_ID(BBDO_CORRELATION_TYPE, 3)> },
-    { "com::centreon::broker::correlation::issue_parent",
+    { io::data::data_type(io::data::correlation, correlation::de_issue_parent),
       &serialize<correlation::issue_parent, BBDO_ID(BBDO_CORRELATION_TYPE, 4)> },
-    { "com::centreon::broker::correlation::service_state",
+    { io::data::data_type(io::data::correlation, correlation::de_service_state),
       &serialize<correlation::service_state, BBDO_ID(BBDO_CORRELATION_TYPE, 5)> },
-    { "com::centreon::broker::bbdo::version_response",
+    { io::data::data_type(io::data::bbdo, bbdo::de_version_response),
       &serialize<version_response, BBDO_ID(BBDO_INTERNAL_TYPE, 1)> }
   };
 
@@ -264,7 +267,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
 
   // Check if data exists.
   if (!e.isNull()) {
-    QString const& event_type(e->type());
+    unsigned int event_type(e->type());
     for (unsigned int i(0); i < sizeof(helpers) / sizeof(*helpers); ++i)
       if (helpers[i].type == event_type) {
         logging::debug(logging::medium)

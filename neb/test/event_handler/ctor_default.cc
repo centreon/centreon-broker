@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include "com/centreon/broker/neb/event_handler.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -47,5 +48,5 @@ int main() {
           || (evnt_hndlr.state_type != 0)
           || (evnt_hndlr.timeout != 0)
           || (evnt_hndlr.type()
-              != "com::centreon::broker::neb::event_handler"));
+              != io::data::data_type(io::data::neb, neb::de_event_handler)));
 }

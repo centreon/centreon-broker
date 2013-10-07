@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -84,10 +85,10 @@ host& host::operator=(host const& h) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host".
+ *  @return The event type.
  */
 unsigned int host::type() const {
-  return (io::data::data_type(io::data::neb, neb::host));
+  return (io::data::data_type(io::data::neb, neb::de_host));
 }
 
 /**************************************

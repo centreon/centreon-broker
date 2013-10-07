@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/correlation/events.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -25,7 +26,9 @@
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/ndo/output.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/storage/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
 
@@ -140,40 +143,40 @@ void output::statistics(std::string& buffer) const {
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Types.
-  static QString const neb_acknowledgement_type("com::centreon::broker::neb::acknowledgement");
-  static QString const neb_comment_type("com::centreon::broker::neb::comment");
-  static QString const neb_custom_variable_type("com::centreon::broker::neb::custom_variable");
-  static QString const neb_custom_variable_status_type("com::centreon::broker::neb::custom_variable_status");
-  static QString const neb_downtime_type("com::centreon::broker::neb::downtime");
-  static QString const neb_event_handler_type("com::centreon::broker::neb::event_handler");
-  static QString const neb_flapping_status_type("com::centreon::broker::neb::flapping_status");
-  static QString const neb_host_type("com::centreon::broker::neb::host");
-  static QString const neb_host_check_type("com::centreon::broker::neb::host_check");
-  static QString const neb_host_dependency_type("com::centreon::broker::neb::host_dependency");
-  static QString const neb_host_group_type("com::centreon::broker::neb::host_group");
-  static QString const neb_host_group_member_type("com::centreon::broker::neb::host_group_member");
-  static QString const neb_host_parent_type("com::centreon::broker::neb::host_parent");
-  static QString const neb_host_status_type("com::centreon::broker::neb::host_status");
-  static QString const neb_instance_type("com::centreon::broker::neb::instance");
-  static QString const neb_instance_status_type("com::centreon::broker::neb::instance_status");
-  static QString const neb_log_entry_type("com::centreon::broker::neb::log_entry");
-  static QString const neb_module_type("com::centreon::broker::neb::module");
-  static QString const neb_notification_type("com::centreon::broker::neb::notification");
-  static QString const neb_service_type("com::centreon::broker::neb::service");
-  static QString const neb_service_check_type("com::centreon::broker::neb::service_check");
-  static QString const neb_service_dependency_type("com::centreon::broker::neb::service_dependency");
-  static QString const neb_service_group_type("com::centreon::broker::neb::service_group");
-  static QString const neb_service_group_member_type("com::centreon::broker::neb::service_group_member");
-  static QString const neb_service_status_type("com::centreon::broker::neb::service_status");
-  static QString const storage_metric_type("com::centreon::broker::storage::metric");
-  static QString const storage_rebuild_type("com::centreon::broker::storage::rebuild");
-  static QString const storage_remove_graph_type("com::centreon::broker::storage::remove_graph");
-  static QString const storage_status_type("com::centreon::broker::storage::status");
-  static QString const correlation_engine_state_type("com::centreon::broker::correlation::engine_state");
-  static QString const correlation_host_state_type("com::centreon::broker::correlation::host_state");
-  static QString const correlation_issue_type("com::centreon::broker::correlation::issue");
-  static QString const correlation_issue_parent_type("com::centreon::broker::correlation::issue_parent");
-  static QString const correlation_service_state_type("com::centreon::broker::correlation::service_state");
+  static unsigned int const neb_acknowledgement_type(io::data::data_type(io::data::neb, neb::de_acknowledgement));
+  static unsigned int const neb_comment_type(io::data::data_type(io::data::neb, neb::de_comment));
+  static unsigned int const neb_custom_variable_type(io::data::data_type(io::data::neb, neb::de_custom_variable));
+  static unsigned int const neb_custom_variable_status_type(io::data::data_type(io::data::neb, neb::de_custom_variable_status));
+  static unsigned int const neb_downtime_type(io::data::data_type(io::data::neb, neb::de_downtime));
+  static unsigned int const neb_event_handler_type(io::data::data_type(io::data::neb, neb::de_event_handler));
+  static unsigned int const neb_flapping_status_type(io::data::data_type(io::data::neb, neb::de_flapping_status));
+  static unsigned int const neb_host_type(io::data::data_type(io::data::neb, neb::de_host));
+  static unsigned int const neb_host_check_type(io::data::data_type(io::data::neb, neb::de_host_check));
+  static unsigned int const neb_host_dependency_type(io::data::data_type(io::data::neb, neb::de_host_dependency));
+  static unsigned int const neb_host_group_type(io::data::data_type(io::data::neb, neb::de_host_group));
+  static unsigned int const neb_host_group_member_type(io::data::data_type(io::data::neb, neb::de_host_group_member));
+  static unsigned int const neb_host_parent_type(io::data::data_type(io::data::neb, neb::de_host_parent));
+  static unsigned int const neb_host_status_type(io::data::data_type(io::data::neb, neb::de_host_status));
+  static unsigned int const neb_instance_type(io::data::data_type(io::data::neb, neb::de_instance));
+  static unsigned int const neb_instance_status_type(io::data::data_type(io::data::neb, neb::de_instance_status));
+  static unsigned int const neb_log_entry_type(io::data::data_type(io::data::neb, neb::de_log_entry));
+  static unsigned int const neb_module_type(io::data::data_type(io::data::neb, neb::de_module));
+  static unsigned int const neb_notification_type(io::data::data_type(io::data::neb, neb::de_notification));
+  static unsigned int const neb_service_type(io::data::data_type(io::data::neb, neb::de_service));
+  static unsigned int const neb_service_check_type(io::data::data_type(io::data::neb, neb::de_service_check));
+  static unsigned int const neb_service_dependency_type(io::data::data_type(io::data::neb, neb::de_service_dependency));
+  static unsigned int const neb_service_group_type(io::data::data_type(io::data::neb, neb::de_service_group));
+  static unsigned int const neb_service_group_member_type(io::data::data_type(io::data::neb, neb::de_service_group_member));
+  static unsigned int const neb_service_status_type(io::data::data_type(io::data::neb, neb::de_service_status));
+  static unsigned int const storage_metric_type(io::data::data_type(io::data::storage, storage::de_metric));
+  static unsigned int const storage_rebuild_type(io::data::data_type(io::data::storage, storage::de_rebuild));
+  static unsigned int const storage_remove_graph_type(io::data::data_type(io::data::storage, storage::de_remove_graph));
+  static unsigned int const storage_status_type(io::data::data_type(io::data::storage, storage::de_status));
+  static unsigned int const correlation_engine_state_type(io::data::data_type(io::data::correlation, correlation::de_engine_state));
+  static unsigned int const correlation_host_state_type(io::data::data_type(io::data::correlation, correlation::de_host_state));
+  static unsigned int const correlation_issue_type(io::data::data_type(io::data::correlation, correlation::de_issue));
+  static unsigned int const correlation_issue_parent_type(io::data::data_type(io::data::correlation, correlation::de_issue_parent));
+  static unsigned int const correlation_service_state_type(io::data::data_type(io::data::correlation, correlation::de_service_state));
 
   // Check if data exists and should be processed.
   if (!_process_out)

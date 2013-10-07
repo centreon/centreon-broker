@@ -38,9 +38,10 @@ namespace                  io {
   public:
     enum                   data_category {
       neb = 1,
+      bbdo,
       storage,
       correlation,
-      internal = 65536
+      internal = 65535
     };
 
                            data();

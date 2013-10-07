@@ -158,7 +158,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     _flush();
   else {
     // Process raw data only.
-    if (d->type() == "com::centreon::broker::io::raw") {
+    if (d->type() == io::data::data_type(io::data::internal, 1)) {
       // Append data to write buffer.
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _wbuffer.append(*r);
@@ -232,7 +232,7 @@ bool stream::_get_data(unsigned int size) {
     if (d.isNull())
       retval = false;
     else {
-      if (d->type() == "com::centreon::broker::io::raw") {
+      if (d->type() == io::data::data_type(io::data::internal, 1)) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }

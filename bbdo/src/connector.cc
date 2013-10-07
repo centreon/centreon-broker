@@ -194,7 +194,7 @@ misc::shared_ptr<io::stream> connector::_open(
     bbdo_stream->read_any(d, time(NULL) + _timeout);
     if (d.isNull()
         || (d->type()
-            != "com::centreon::broker::bbdo::version_response"))
+            != io::data::data_type(io::data::bbdo, bbdo::de_version_response)))
       throw (exceptions::msg() << "BBDO: invalid protocol header, "
              << "aborting connection");
     welcome_packet = d.staticCast<version_response>();

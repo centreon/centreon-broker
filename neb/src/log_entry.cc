@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/log_entry.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -76,10 +77,10 @@ log_entry& log_entry::operator=(log_entry const& le) {
 /**
  *  Returns the type of the event.
  *
- *  @return The string "com::centreon::broker::neb::log_entry".
+ *  @return The event_type.
  */
 unsigned int log_entry::type() const {
-  return (io::data::data_type(io::data::neb, neb::log_entry));
+  return (io::data::data_type(io::data::neb, neb::de_log_entry));
 }
 
 /**************************************

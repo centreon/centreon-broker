@@ -188,7 +188,7 @@ void stream::statistics(std::string& buffer) const {
  *  @return Number of events acknowledged (1).
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  static QString const io_raw_type("com::centreon::broker::io::raw");
+  static unsigned int const io_raw_type(io::data::data_type(io::data::internal, 1));
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)

@@ -54,7 +54,7 @@ int main() {
   // Fetch event.
   s.read(event, 0);
   retval |= (event.isNull()
-             || (event->type() != "com::centreon::broker::io::raw")
+             || (event->type() != io::data::data_type(io::data::internal, 1))
              || strncmp(
                   event.staticCast<io::raw>()->QByteArray::data(),
                   MSG,

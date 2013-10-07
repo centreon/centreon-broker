@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -84,10 +85,10 @@ downtime& downtime::operator=(downtime const& d) {
 /**
  *  Get the event's type.
  *
- *  @return The string "com::centreon::broker::neb::downtime".
+ *  @return The event type.
  */
 unsigned int downtime::type() const {
-  return (io::data::data_type(io::data::neb, neb::downtime));
+  return (io::data::data_type(io::data::neb, neb::de_downtime));
 }
 
 /**************************************

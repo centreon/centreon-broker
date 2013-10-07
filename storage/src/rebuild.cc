@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 
 using namespace com::centreon::broker::storage;
@@ -64,12 +65,10 @@ rebuild& rebuild::operator=(rebuild const& right) {
 /**
  *  Get the event type.
  *
- *  @return The string "com::centreon::broker::storage::rebuild".
+ *  @return The event type.
  */
-QString const& rebuild::type() const {
-  static QString const
-    rebuild_type("com::centreon::broker::storage::rebuild");
-  return (rebuild_type);
+unsigned int rebuild::type() const {
+  return (io::data::data_type(io::data::storage, storage::de_rebuild));
 }
 
 /**************************************

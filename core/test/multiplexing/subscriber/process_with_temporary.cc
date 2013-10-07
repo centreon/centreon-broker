@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -75,7 +75,7 @@ int main() {
   for (unsigned int i(0); i < 3; ++i) {
     s.read(event, 0);
     retval |= (event.isNull()
-               || (event->type() != "com::centreon::broker::io::raw")
+               || (event->type() != io::data::data_type(io::data::internal, 1))
                || strncmp(
                     event.staticCast<io::raw>()->QByteArray::data(),
                     msg[i],

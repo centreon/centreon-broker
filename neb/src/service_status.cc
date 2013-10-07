@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker::neb;
@@ -76,10 +77,10 @@ service_status& service_status::operator=(service_status const& ss) {
 /**
  *  Returns the type of the event.
  *
- *  @return The string "com::centreon::broker::neb::service_status".
+ *  @return The event_type.
  */
 unsigned int service_status::type() const {
-  return (io::data::data_type(io::data::neb, neb::service_status));
+  return (io::data::data_type(io::data::neb, neb::de_service_status));
 }
 
 /**************************************

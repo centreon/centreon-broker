@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -71,10 +72,10 @@ instance& instance::operator=(instance const& i) {
 /**
  *  Get the type of the event.
  *
- *  @return The string "com::centreon::broker::neb::instance".
+ *  @return The event_type.
  */
 unsigned int instance::type() const {
-  return (io::data::data_type(io::data::neb, neb::instance));
+  return (io::data::data_type(io::data::neb, neb::de_instance));
 }
 
 /**************************************

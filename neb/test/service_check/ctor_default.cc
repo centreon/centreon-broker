@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 
 using namespace com::centreon::broker;
@@ -37,5 +38,5 @@ int main() {
           || (schk.next_check != 0)
           || (schk.service_id != 0)
           || (schk.type()
-              != "com::centreon::broker::neb::service_check"));
+              != io::data::data_type(io::data::neb, neb::de_service_check)));
 }

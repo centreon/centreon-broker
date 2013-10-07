@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 
 using namespace com::centreon::broker;
@@ -39,5 +40,5 @@ int main() {
           || (ss.service_id != 0)
           || (ss.start_time != 0)
           || (ss.type()
-              != "com::centreon::broker::correlation::service_state"));
+              != io::data::data_type(io::data::correlation, correlation::de_service_state)));
 }

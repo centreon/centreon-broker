@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host_parent.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -35,5 +36,5 @@ int main() {
           || (hprnt.host_id != 0)
           || (hprnt.parent_id != 0)
           || (hprnt.type()
-              != "com::centreon::broker::neb::host_parent"));
+              != io::data::data_type(io::data::neb, neb::de_host_parent)));
 }

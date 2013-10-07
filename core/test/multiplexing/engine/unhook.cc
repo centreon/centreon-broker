@@ -94,7 +94,7 @@ int main() {
       misc::shared_ptr<io::data> d;
       s.read(d, 0);
       if (d.isNull()
-          || (d->type() != "com::centreon::broker::io::raw"))
+          || (d->type() != io::data::data_type(io::data::internal, 1)))
         retval |= 1;
       else {
         misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());

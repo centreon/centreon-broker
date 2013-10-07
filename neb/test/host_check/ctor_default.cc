@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/host_check.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -36,5 +37,5 @@ int main() {
           || (hchk.host_id != 0)
           || (hchk.next_check != 0)
           || (hchk.type()
-              != "com::centreon::broker::neb::host_check"));
+              != io::data::data_type(io::data::neb, neb::de_host_check)));
 }

@@ -20,6 +20,7 @@
 #ifndef CCB_COMPRESSION_STREAM_HH
 #  define CCB_COMPRESSION_STREAM_HH
 
+#  include <QByteArray>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 

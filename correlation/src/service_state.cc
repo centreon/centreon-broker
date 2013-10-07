@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/service_state.hh"
 
 using namespace com::centreon::broker::correlation;
@@ -88,9 +89,8 @@ bool service_state::operator!=(service_state const& ss) const {
 /**
  *  Get the type of this object.
  *
- *  @return The string "com::centreon::broker::correlation::service_state".
+ *  @return The event type.
  */
-QString const& service_state::type() const {
-  static QString const ss_type("com::centreon::broker::correlation::service_state");
-  return (ss_type);
+unsigned int service_state::type() const {
+  return (io::data::data_type(io::data::correlation, correlation::de_service_state));
 }

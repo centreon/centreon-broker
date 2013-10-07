@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/neb/comment.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -80,10 +81,10 @@ comment& comment::operator=(comment const& c) {
 /**
  *  Returns the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::comment".
+ *  @return The event type.
  */
 unsigned int comment::type() const {
-  return (io::data::data_type(io::data::neb, neb::comment));
+  return (io::data::data_type(io::data::neb, neb::de_comment));
 }
 
 /**************************************

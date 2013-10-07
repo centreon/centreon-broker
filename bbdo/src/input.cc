@@ -372,7 +372,7 @@ unsigned int input::write(misc::shared_ptr<io::data> const& d) {
 void input::_buffer_must_have_unprocessed(
               unsigned int bytes,
               time_t timeout) {
-  static QString const raw_type("com::centreon::broker::io::raw");
+  static unsigned int const raw_type(io::data::data_type(io::data::internal, 1));
   if (_buffer.size() < (_processed + bytes)) {
     _buffer.erase(0, _processed);
     _processed = 0;

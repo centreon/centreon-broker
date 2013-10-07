@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
            end(ss2->get_stored_events().end());
          (i < count) && (it != end);
          ++it) {
-      if ((*it)->type() != "com::centreon::broker::io::raw") {
+      if ((*it)->type() != io::data::data_type(io::data::internal, 1)) {
         logging::error(logging::high)
           << "test: read data which is not raw";
         retval |= 1;
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
     // Check first published event.
     misc::shared_ptr<io::data> d(ss2->get_stored_events().last());
     if (d.isNull()
-        || (d->type() != "com::centreon::broker::io::raw")) {
+        || (d->type() != io::data::data_type(io::data::internal, 1))) {
       logging::error(logging::high)
         << "test: null or invalid last item";
       retval |= 1;
