@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -62,7 +62,6 @@ raw& raw::operator=(raw const& r) {
  *
  *  @return Raw data.
  */
-QString const& raw::type() const {
-  static QString const raw_type("com::centreon::broker::io::raw");
-  return (raw_type);
+unsigned int raw::type() const {
+  return (data::data_type(data::internal, 1));
 }

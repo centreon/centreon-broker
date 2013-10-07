@@ -69,7 +69,6 @@ service_group& service_group::operator=(service_group const& sg) {
  *
  *  @return The string "com::centreon::broker::neb::service_group".
  */
-QString const& service_group::type() const {
-  static QString const sg_type("com::centreon::broker::neb::service_group");
-  return (sg_type);
+unsigned int service_group::type() const {
+  return (io::data::data_type(io::data::neb, neb::service_group));
 }

@@ -42,7 +42,7 @@ namespace            neb {
                      instance_status(instance_status const& is);
                      ~instance_status();
     instance_status& operator=(instance_status const& is);
-    QString const&   type() const;
+    unsigned int     type() const;
 
     bool             active_host_checks_enabled;
     bool             active_service_checks_enabled;

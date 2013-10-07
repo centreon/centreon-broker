@@ -76,9 +76,8 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
  *
  *  @return The string "com::centreon::broker::neb::flapping_status".
  */
-QString const& flapping_status::type() const {
-  static QString const fs_type("com::centreon::broker::neb::flapping_status");
-  return (fs_type);
+unsigned int flapping_status::type() const {
+  return (io::data::data_type(io::data::neb, neb::flapping_status));
 }
 
 /**************************************

@@ -78,9 +78,8 @@ service_status& service_status::operator=(service_status const& ss) {
  *
  *  @return The string "com::centreon::broker::neb::service_status".
  */
-QString const& service_status::type() const {
-  static QString const ss_type("com::centreon::broker::neb::service_status");
-  return (ss_type);
+unsigned int service_status::type() const {
+  return (io::data::data_type(io::data::neb, neb::service_status));
 }
 
 /**************************************

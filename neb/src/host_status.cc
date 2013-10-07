@@ -74,9 +74,8 @@ host_status& host_status::operator=(host_status const& hs) {
  *
  *  @return The string "com::centreon::broker::neb::host_status".
  */
-QString const& host_status::type() const {
-  static QString const hs_type("com::centreon::broker::neb::host_status");
-  return (hs_type);
+unsigned int host_status::type() const {
+  return (io::data::data_type(io::data::neb, neb::host_status));
 }
 
 /**************************************

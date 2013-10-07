@@ -62,7 +62,6 @@ service_check& service_check::operator=(service_check const& sc) {
  *
  *  @return The string "com::centreon::broker::neb::service_check".
  */
-QString const& service_check::type() const {
-  static QString const sc_type("com::centreon::broker::neb::service_check");
-  return (sc_type);
+unsigned int service_check::type() const {
+  return (io::data::data_type(io::data::neb, neb::service_check));
 }

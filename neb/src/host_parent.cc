@@ -68,7 +68,6 @@ host_parent& host_parent::operator=(host_parent const& hp) {
  *
  *  @return The string "com::centreon::broker::neb::host_parent".
  */
-QString const& host_parent::type() const {
-  static QString const hp_type("com::centreon::broker::neb::host_parent");
-  return (hp_type);
+unsigned int host_parent::type() const {
+  return (io::data::data_type(io::data::neb, neb::host_parent));
 }

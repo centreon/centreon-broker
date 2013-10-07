@@ -39,7 +39,7 @@ namespace            neb {
                      flapping_status(flapping_status const& fs);
                      ~flapping_status();
     flapping_status& operator=(flapping_status const& fs);
-    QString const&   type() const;
+    unsigned int     type() const;
 
     timestamp        comment_time;
     timestamp        event_time;

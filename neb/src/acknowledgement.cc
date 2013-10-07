@@ -83,9 +83,8 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& ack) {
  *
  *  @return The string "com::centreon::broker::neb::acknowledgement".
  */
-QString const& acknowledgement::type() const {
-  static QString const ack_type("com::centreon::broker::neb::acknowledgement");
-  return (ack_type);
+unsigned int acknowledgement::type() const {
+  return (io::data::data_type(io::data::neb, neb::acknowledgement));
 }
 
 /**************************************

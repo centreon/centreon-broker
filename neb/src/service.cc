@@ -88,9 +88,8 @@ service& service::operator=(service const& s) {
  *
  *  @return The string "com::centreon::broker::neb::service".
  */
-QString const& service::type() const {
-  static QString const service_type("com::centreon::broker::neb::service");
-  return (service_type);
+unsigned int service::type() const {
+  return (io::data::data_type(io::data::neb, neb::service));
 }
 
 /**************************************

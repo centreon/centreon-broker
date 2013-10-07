@@ -43,7 +43,7 @@ namespace          neb {
                    host(host const& h);
                    ~host();
     host&          operator=(host const& h);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        address;
     QString        alias;

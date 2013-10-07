@@ -78,9 +78,8 @@ log_entry& log_entry::operator=(log_entry const& le) {
  *
  *  @return The string "com::centreon::broker::neb::log_entry".
  */
-QString const& log_entry::type() const {
-  static QString const le_type("com::centreon::broker::neb::log_entry");
-  return (le_type);
+unsigned int log_entry::type() const {
+  return (io::data::data_type(io::data::neb, neb::log_entry));
 }
 
 /**************************************

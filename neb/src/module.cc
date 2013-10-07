@@ -68,9 +68,8 @@ module& module::operator=(module const& m) {
  *
  *  @return The string "com::centreon::broker::neb::module".
  */
-QString const& module::type() const {
-  static QString const module_type("com::centreon::broker::neb::module");
-  return (module_type);
+unsigned int module::type() const {
+  return (io::data::data_type(io::data::neb, neb::module));
 }
 
 /**************************************

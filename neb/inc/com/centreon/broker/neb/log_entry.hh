@@ -43,7 +43,7 @@ namespace          neb {
                    log_entry(log_entry const& le);
                    ~log_entry();
     log_entry&     operator=(const log_entry& le);
-    QString const& type() const;
+    unsigned int   type() const;
 
     timestamp      c_time;
     unsigned int   host_id;

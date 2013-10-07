@@ -86,9 +86,8 @@ host& host::operator=(host const& h) {
  *
  *  @return The string "com::centreon::broker::neb::host".
  */
-QString const& host::type() const {
-  static QString const host_type("com::centreon::broker::neb::host");
-  return (host_type);
+unsigned int host::type() const {
+  return (io::data::data_type(io::data::neb, neb::host));
 }
 
 /**************************************

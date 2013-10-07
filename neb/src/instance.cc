@@ -73,9 +73,8 @@ instance& instance::operator=(instance const& i) {
  *
  *  @return The string "com::centreon::broker::neb::instance".
  */
-QString const& instance::type() const {
-  static QString const instance_type("com::centreon::broker::neb::instance");
-  return (instance_type);
+unsigned int instance::type() const {
+  return (io::data::data_type(io::data::neb, neb::instance));
 }
 
 /**************************************

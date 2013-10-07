@@ -69,9 +69,8 @@ custom_variable& custom_variable::operator=(custom_variable const& cv) {
  *
  *  @return The string "com::centreon::broker::neb::custom_variable".
  */
-QString const& custom_variable::type() const {
-  static QString const cv_type("com::centreon::broker::neb::custom_variable");
-  return (cv_type);
+unsigned int custom_variable::type() const {
+  return (io::data::data_type(io::data::neb, neb::custom_variable));
 }
 
 /**************************************

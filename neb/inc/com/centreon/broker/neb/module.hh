@@ -40,7 +40,7 @@ namespace          neb {
                    module(module const& m);
                    ~module();
     module&        operator=(module const& m);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        args;
     bool           enabled;

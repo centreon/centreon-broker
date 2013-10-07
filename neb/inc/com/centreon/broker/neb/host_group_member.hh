@@ -41,7 +41,7 @@ namespace              neb {
                        host_group_member(host_group_member const& hgm);
     virtual            ~host_group_member();
     host_group_member& operator=(host_group_member const& hgm);
-    QString const&     type() const;
+    unsigned int       type() const;
   };
 }
 

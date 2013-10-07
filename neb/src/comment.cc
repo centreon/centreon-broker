@@ -82,9 +82,8 @@ comment& comment::operator=(comment const& c) {
  *
  *  @return The string "com::centreon::broker::neb::comment".
  */
-QString const& comment::type() const {
-  static QString const comment_type("com::centreon::broker::neb::comment");
-  return (comment_type);
+unsigned int comment::type() const {
+  return (io::data::data_type(io::data::neb, neb::comment));
 }
 
 /**************************************

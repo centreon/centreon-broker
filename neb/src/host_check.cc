@@ -61,7 +61,6 @@ host_check& host_check::operator=(host_check const& hc) {
  *
  *  @return The string "com::centreon::broker::neb::host_check".
  */
-QString const& host_check::type() const {
-  static QString const hc_type("com::centreon::broker::neb::host_check");
-  return (hc_type);
+unsigned int host_check::type() const {
+  return (io::data::data_type(io::data::neb, neb::host_check));
 }

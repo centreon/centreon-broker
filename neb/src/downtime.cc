@@ -86,9 +86,8 @@ downtime& downtime::operator=(downtime const& d) {
  *
  *  @return The string "com::centreon::broker::neb::downtime".
  */
-QString const& downtime::type() const {
-  static QString const downtime_type("com::centreon::broker::neb::downtime");
-  return (downtime_type);
+unsigned int downtime::type() const {
+  return (io::data::data_type(io::data::neb, neb::downtime));
 }
 
 /**************************************

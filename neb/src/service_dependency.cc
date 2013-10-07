@@ -69,9 +69,8 @@ service_dependency& service_dependency::operator=(
  *
  *  @return The string "com::centreon::broker::neb::service_dependency".
  */
-QString const& service_dependency::type() const {
-  static QString const sd_type("com::centreon::broker::neb::service_dependency");
-  return (sd_type);
+unsigned int service_dependency::type() const {
+  return (io::data::data_type(io::data::neb, neb::service_dependency));
 }
 
 /**************************************

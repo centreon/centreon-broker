@@ -75,9 +75,8 @@ event_handler& event_handler::operator=(event_handler const& eh) {
  *
  *  @return The string "com::centreon::broker::neb::event_handler".
  */
-QString const& event_handler::type() const {
-  static QString const eh_type("com::centreon::broker::neb::event_handler");
-  return (eh_type);
+unsigned int event_handler::type() const {
+  return (io::data::data_type(io::data::neb, neb::event_handler));
 }
 
 /**************************************

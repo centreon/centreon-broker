@@ -62,7 +62,6 @@ host_group_member& host_group_member::operator=(host_group_member const& hgm) {
  *
  *  @return The string "com::centreon::broker::neb::host_group_member".
  */
-QString const& host_group_member::type() const {
-  static QString const hgm_type("com::centreon::broker::neb::host_group_member");
-  return (hgm_type);
+unsigned int host_group_member::type() const {
+  return (io::data::data_type(io::data::neb, neb::host_group_member));
 }

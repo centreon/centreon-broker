@@ -41,7 +41,7 @@ namespace          neb {
                    instance(instance const& i);
                    ~instance();
     instance&      operator=(instance const& i);
-    QString const& type() const;
+    unsigned int   type() const;
 
     QString        engine;
     unsigned int   id;

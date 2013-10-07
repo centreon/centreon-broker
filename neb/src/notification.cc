@@ -73,9 +73,8 @@ notification& notification::operator=(notification const& n) {
  *
  *  @return The string "com::centreon::broker::neb::notification".
  */
-QString const& notification::type() const {
-  static QString const notification_type("com::centreon::broker::neb::notification");
-  return (notification_type);
+unsigned int notification::type() const {
+  return (io::data::data_type(io::data::neb, neb::notification));
 }
 
 /**************************************

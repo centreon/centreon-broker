@@ -69,9 +69,8 @@ custom_variable_status& custom_variable_status::operator=(custom_variable_status
  *
  *  @return The string "com::centreon::broker::neb::custom_variable_status".
  */
-QString const& custom_variable_status::type() const {
-  static QString const cvs_type("com::centreon::broker::neb::custom_variable_status");
-  return (cvs_type);
+unsigned int custom_variable_status::type() const {
+  return (io::data::data_type(io::data::neb, neb::custom_variable_status));
 }
 
 /**************************************

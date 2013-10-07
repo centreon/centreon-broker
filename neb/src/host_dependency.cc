@@ -62,7 +62,6 @@ host_dependency& host_dependency::operator=(host_dependency const& hd) {
  *
  *  @return The string "com::centreon::broker::neb::host_dependency".
  */
-QString const& host_dependency::type() const {
-  static QString const hd_type("com::centreon::broker::neb::host_dependency");
-  return (hd_type);
+unsigned int host_dependency::type() const {
+  return (io::data::data_type(io::data::neb, neb::host_dependency));
 }

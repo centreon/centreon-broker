@@ -83,9 +83,8 @@ instance_status& instance_status::operator=(instance_status const& is) {
  *
  *  @return The string "com::centreon::broker::neb::instance_status".
  */
-QString const& instance_status::type() const {
-  static QString const is_type("com::centreon::broker::neb::instance_status");
-  return (is_type);
+unsigned int instance_status::type() const {
+  return (io::data::data_type(io::data::neb, neb::instance_status));
 }
 
 /**************************************

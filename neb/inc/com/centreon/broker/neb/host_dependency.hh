@@ -38,7 +38,7 @@ namespace            neb {
                      host_dependency(host_dependency const& hd);
                      ~host_dependency();
     host_dependency& operator=(host_dependency const& hd);
-    QString const&   type() const;
+    unsigned int     type() const;
   };
 }
 

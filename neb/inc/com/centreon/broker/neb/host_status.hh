@@ -40,7 +40,7 @@ namespace          neb {
                    host_status(host_status const& hs);
     virtual        ~host_status();
     host_status&   operator=(host_status const& hs);
-    QString const& type() const;
+    unsigned int   type() const;
 
     timestamp      last_time_down;
     timestamp      last_time_unreachable;
