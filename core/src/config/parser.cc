@@ -23,7 +23,6 @@
 #include <syslog.h>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/defines.hh"
 
 using namespace com::centreon::broker;
@@ -231,12 +230,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
           QDomElement entry(nlist.item(i).toElement());
           if (!entry.isNull()) {
             QString name(entry.tagName());
-            if (name == "category") {
-              std::string category(entry.text().toStdString());
-              std::set<unsigned int> const&
-                types(io::events::instance().get(category));
-              e.filters.insert(types.begin(), types.end());
-            }
+            if (name == "category")
+              e.filters.insert(entry.text().toStdString());
           }
         }
       }

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
@@ -465,6 +466,18 @@ processing::failover* endpoint::_create_endpoint(
   logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
 
+  // Build filtering elements.
+  std::set<unsigned int> elements;
+  for (std::set<std::string>::const_iterator
+         it(cfg.filters.begin()), end(cfg.filters.end());
+       it != end;
+       ++it) {
+    std::set<unsigned int> const&
+      tmp_elements(io::events::instance().get(*it));
+    elements.insert(tmp_elements.begin(), tmp_elements.end());
+  }
+
+
   // Check that failover is configured.
   misc::shared_ptr<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
@@ -535,7 +548,7 @@ processing::failover* endpoint::_create_endpoint(
 
   // Return failover thread.
   std::auto_ptr<processing::failover>
-    fo(new processing::failover(endp, is_output, cfg.name, cfg.filters));
+    fo(new processing::failover(endp, is_output, cfg.name, elements));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);

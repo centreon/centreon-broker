@@ -24,6 +24,7 @@
 #  include <QMap>
 #  include <QString>
 #  include <set>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -53,7 +54,7 @@ namespace                    config {
     QMap<QString, QString>   params;
     time_t                   read_timeout;
     time_t                   retry_interval;
-    std::set<unsigned int>   filters;
+    std::set<std::string>    filters;
     QString                  type;
 
   private:
