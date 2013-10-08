@@ -209,8 +209,8 @@ void lib::open(
     ds_oss << "GAUGE";
   };
   ds_oss << ":"<< interval << ":U:U";
-  rra1_oss << "RRA:AVERAGE:0.5:1:" << length;
-  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12;
+  rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
+  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12 + 1;
   std::string ds(ds_oss.str());
   std::string rra1(rra1_oss.str());
   std::string rra2(rra2_oss.str());

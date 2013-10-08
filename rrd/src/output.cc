@@ -204,15 +204,14 @@ void output::write(misc::shared_ptr<io::data> const& d) {
           _backend->open(metric_path, e->name);
         }
         catch (exceptions::open const& b) {
-          unsigned int
-            length(e->rrd_len / (e->interval ? e->interval : 60));
-          ++length;
+          time_t interval(e->interval ? e->interval : 60);
+          unsigned int length(e->rrd_len / interval);
           _backend->open(
             metric_path,
             e->name,
             length,
             0,
-            e->interval,
+            interval,
             e->value_type);
         }
         std::ostringstream oss;
