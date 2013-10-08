@@ -20,6 +20,7 @@
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -125,13 +126,21 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Create object.
-  if (is_acceptor)
+  if (is_acceptor) {
+    // One peer retention mode ?
+    bool one_peer_retention_mode(false);
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("one_peer_retention_mode"));
+    if (it != cfg.params.end())
+      one_peer_retention_mode = config::parser::parse_boolean(*it);
     retval = new bbdo::acceptor(
                          cfg.name,
                          is_output,
                          negociate,
                          extensions,
-                         cfg.read_timeout);
+                         cfg.read_timeout,
+                         one_peer_retention_mode);
+  }
   else
     retval = new bbdo::connector(
                          is_input,

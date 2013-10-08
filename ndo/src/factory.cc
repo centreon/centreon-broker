@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/ndo/acceptor.hh"
 #include "com/centreon/broker/ndo/connector.hh"
@@ -105,8 +106,18 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor) const {
   io::endpoint* retval(NULL);
-  if (is_acceptor)
-    retval = new ndo::acceptor(cfg.name, is_output);
+  if (is_acceptor) {
+    // One peer retention mode ?
+    bool one_peer_retention_mode(false);
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("one_peer_retention_mode"));
+    if (it != cfg.params.end())
+      one_peer_retention_mode = config::parser::parse_boolean(*it);
+    retval = new ndo::acceptor(
+                        cfg.name,
+                        is_output,
+                        one_peer_retention_mode);
+  }
   else
     retval = new ndo::connector(is_input, is_output);
   return (retval);

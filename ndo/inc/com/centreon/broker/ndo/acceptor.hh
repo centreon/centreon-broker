@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,7 +39,10 @@ namespace               com {
           Q_OBJECT
 
          public:
-                        acceptor(QString const& name, bool is_out);
+                        acceptor(
+                          QString const& name,
+                          bool is_out,
+                          bool one_peer_retention_mode = false);
                         acceptor(acceptor const& a);
                         ~acceptor();
           acceptor&     operator=(acceptor const& a);
@@ -56,6 +59,7 @@ namespace               com {
 
           bool          _is_out;
           QString       _name;
+          bool          _one_peer_retention_mode;
           QVector<QThread*>
                         _threads;
 

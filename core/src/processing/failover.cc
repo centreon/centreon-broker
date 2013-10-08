@@ -70,10 +70,12 @@ failover::failover(
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
   if (_is_out) {
-    misc::shared_ptr<multiplexing::subscriber>
-      subscr(new multiplexing::subscriber(name));
-    subscr->set_filters(filters);
-    _from = subscr.staticCast<io::stream>();
+    if (_endpoint->is_connector()) {
+      misc::shared_ptr<multiplexing::subscriber>
+        subscr(new multiplexing::subscriber(name));
+      subscr->set_filters(filters);
+      _from = subscr.staticCast<io::stream>();
+    }
   }
   else
     _to = misc::shared_ptr<io::stream>(new multiplexing::publisher);
