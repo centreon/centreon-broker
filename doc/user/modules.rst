@@ -68,11 +68,15 @@ creation. Sockets can be created either as clients (type
 Configuration
 -------------
 
-==== =========================
-Tag  Description
-==== =========================
-path Path of the local socket.
-==== =========================
+======================= ================================================
+Tag                     Description
+======================= ================================================
+one_peer_retention_mode Allow only one connection for a specific output.
+                        This option allow to keep retention on a server
+                        output (socket on a listen mode).
+path                    Path of the local socket.
+protocol                Choose your protocol (bbdo or ndo).
+======================= ================================================
 
 Example
 -------
@@ -91,6 +95,15 @@ Example
     <type>local_server</type>
     <path>/var/lib/centreon/broker.sock</path>
     <protocol>bbdo</protocol>
+  </output>
+
+::
+
+  <output>
+    <type>local_server</type>
+    <path>/var/lib/centreon/broker.sock</path>
+    <protocol>bbdo</protocol>
+    <one_peer_retention_mode>1</one_peer_retention_mode>
   </output>
 
 
@@ -297,14 +310,14 @@ Configuration
 ======================= ================================================
 Tag                     Description
 ======================= ================================================
-port                    Port on which Centreon Broker should listen (if
-                        no host is defined) or connect to.
-protocol                Choose your protocol (bbdo or ndo).
 host                    Host to connect to. To have a server connection,
                         do not use this tag.
 one_peer_retention_mode Allow only one connection for a specific output.
                         This option allow to keep retention on a server
                         output (socket on a listen mode).
+port                    Port on which Centreon Broker should listen (if
+                        no host is defined) or connect to.
+protocol                Choose your protocol (bbdo or ndo).
 ======================= ================================================
 
 Example
