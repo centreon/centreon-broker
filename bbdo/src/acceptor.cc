@@ -247,6 +247,21 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   return (misc::shared_ptr<io::stream>());
 }
 
+/**
+ *  Get BBDO statistics.
+ *
+ *  @param[out] buffer Buffer.
+ */
+void acceptor::stats(std::string& buffer) {
+  buffer.append(
+           _one_peer_retention_mode
+           ? "one peer retention mode=true\n"
+           : "one peer retention mode=false\n");
+  if (!_from.isNull())
+    _from->stats(buffer);
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
