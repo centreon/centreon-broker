@@ -219,7 +219,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
             metric_path,
             e->name,
             length,
-            0,
+            e->ctime - 1,
             interval,
             e->value_type);
         }
@@ -267,7 +267,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
             status_path,
             "status",
             length,
-            0,
+            e->ctime - 1,
             e->interval);
         }
         std::ostringstream oss;

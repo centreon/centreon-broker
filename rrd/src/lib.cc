@@ -299,7 +299,7 @@ void lib::update(time_t t, QString const& value) {
   rrd_clear_error();
   if (rrd_update_r(
         _filename.c_str(),
-        _metric.c_str(),
+        NULL,
         sizeof(argv) / sizeof(*argv) - 1,
         argv)) {
     char const* msg(rrd_get_error());
