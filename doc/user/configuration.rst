@@ -42,7 +42,7 @@ another can insert events in database, ...
 Daemon init script
 ******************
 
-The daemon can be started by the init script cbd. By default 
+The daemon can be started by the init script cbd. By default
 (*/etc/init.d/cbd*).
 
 This startup script use a configuration file master.run (by default
@@ -100,7 +100,7 @@ module               If you do not want to load all modules of a
                                                                                 <module>
                                                                                   /usr/lib/centreon-broker/50-tcp.so
                                                                                 </module>
-                                                                                <module> 
+                                                                                <module>
                                                                                   /usr/lib/centreon-broker/80-bbdo.so
                                                                                 </module>
 instance             Only useful if Centreon Broker is loaded as              ::
@@ -270,6 +270,16 @@ buffering_timeout Number of seconds to wait       ::
                   *failover*.                       <buffering_timeout>
                                                       10
                                                     </buffering_timeout>
+filters           This parameter is used by       ::
+  category        endpoint to skip usless events
+                  for a specific endpoint.          <filters>
+                  The filtering is base on            <category>
+                  category (neb, storage,               neb
+                  correlation).                       </category>
+                                                      <category>
+                                                        storage
+                                                      </storage>
+                                                    </filters>
 name              An optional name, mostly used   ::
                   to identify a *failover*.
                                                     <name>
