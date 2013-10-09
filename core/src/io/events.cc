@@ -33,6 +33,46 @@ static events* _instance(NULL);
 **************************************/
 
 /**
+ *  Get first iterator.
+ *
+ *  @return First iterator.
+ */
+std::map<std::string, std::set<unsigned int> >::const_iterator events::begin() const {
+  return (_elements.begin());
+}
+
+/**
+ *  Get category of a type.
+ *
+ *  @param[in] type Type.
+ *
+ *  @return Category of type.
+ */
+unsigned short events::category_of_type(unsigned int type) throw () {
+  return (static_cast<unsigned short>(type >> 16));
+}
+
+/**
+ *  Get element of type.
+ *
+ *  @param[in] type Type.
+ *
+ *  @return Element of type.
+ */
+unsigned short events::element_of_type(unsigned int type) throw () {
+  return (static_cast<unsigned short>(type));
+}
+
+/**
+ *  Get last iterator.
+ *
+ *  @return Last iterator.
+ */
+std::map<std::string, std::set<unsigned int> >::const_iterator events::end() const {
+  return (_elements.end());
+}
+
+/**
  *  Get the content of a category.
  *
  *  @param[in] name Category name.

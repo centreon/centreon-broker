@@ -29,7 +29,6 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
@@ -114,9 +113,6 @@ extern "C" {
 
       // Clean objects.
       neb::gl_acknowledgements.clear();
-
-      // Remove events.
-      io::events::instance().unreg("neb");
 
       // Unload singletons.
       broker::config::applier::deinit();
@@ -283,62 +279,6 @@ extern "C" {
 
       // Remove old monitoring object.
       logging::manager::instance().log_on(monlog, 0);
-
-      // Register events.
-      {
-        std::set<unsigned int> elements;
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_comment>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_downtime>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_event_handler>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_check>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_group>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_parent>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_host_status>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_instance>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_instance_status>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_log_entry>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_module>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_notification>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service_check>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service_group>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service>::value);
-        elements.insert(
-                   io::events::data_type<io::events::neb, neb::de_service_status>::value);
-        io::events::instance().reg("neb", elements);
-      }
 
       // Register process and log callback.
       neb::gl_registered_callbacks.push_back(

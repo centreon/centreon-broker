@@ -44,11 +44,19 @@ namespace               io {
       internal = 65535
     };
 
-    template<unsigned short category, unsigned short element>
+    template <unsigned short category, unsigned short element>
     struct data_type {
       enum { value = (category << 16 | element) };
     };
 
+    std::map<std::string, std::set<unsigned int> >::const_iterator
+                        begin() const;
+    static unsigned short
+                        category_of_type(unsigned int type) throw ();
+    static unsigned short
+                        element_of_type(unsigned int type) throw ();
+    std::map<std::string, std::set<unsigned int> >::const_iterator
+                        end() const;
     std::set<unsigned int> const&
                         get(std::string const& name) const;
     static events&      instance();
