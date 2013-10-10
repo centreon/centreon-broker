@@ -546,6 +546,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
@@ -648,7 +652,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Compression.
+  # Protocols.
   set(TEST_NAME "running_compression_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
@@ -670,6 +674,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_bbdo_multiple_connections")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bbdo_multiple_connections.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # BBDO One Peer Retention Mode.
+  set(TEST_NAME "running_bbdo_one_peer_retention_mode")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bbdo_one_peer_retention_mode.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
