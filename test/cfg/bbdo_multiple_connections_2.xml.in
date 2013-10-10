@@ -2,6 +2,9 @@
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <!--
+  <stats>
+    <fifo>/tmp/cbd.fifo</fifo>
+  </stats>
   <logger>
     <type>file</type>
     <name>cbd.log</name>
