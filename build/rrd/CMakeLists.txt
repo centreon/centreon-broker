@@ -133,12 +133,6 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # RRD lib tests.
-  #   Metric name normalization.
-  set(TEST_NAME "rrd_lib_normalize_metric_name")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/lib/normalize_metric_name.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   File creation.
   set(TEST_NAME "rrd_lib_create")
   add_executable("${TEST_NAME}"

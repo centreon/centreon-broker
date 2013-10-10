@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,12 +46,9 @@ namespace        rrd {
     virtual void begin() = 0;
     virtual void close() = 0;
     virtual void commit() = 0;
+    virtual void open(QString const& filename) = 0;
     virtual void open(
                    QString const& filename,
-                   QString const& metric) = 0;
-    virtual void open(
-                   QString const& filename,
-                   QString const& metric,
                    unsigned int length,
                    time_t from,
                    time_t interval,

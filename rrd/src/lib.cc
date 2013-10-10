@@ -53,7 +53,7 @@ lib::lib() {}
  *  @param[in] l Object to copy.
  */
 lib::lib(lib const& l)
-  : backend(l), _filename(l._filename), _metric(l._metric) {}
+  : backend(l), _filename(l._filename) {}
 
 /**
  *  Destructor.
@@ -70,7 +70,6 @@ lib::~lib() {}
 lib& lib::operator=(lib const& l) {
   backend::operator=(l);
   _filename = l._filename;
-  _metric = l._metric;
   return (*this);
 }
 
@@ -88,7 +87,6 @@ void lib::begin() {
  */
 void lib::close() {
   _filename.clear();
-  _metric.clear();
   return ;
 }
 
@@ -102,41 +100,11 @@ void lib::commit() {
 }
 
 /**
- *  Normalize a metric name.
- *
- *  @param[in] metric Metric name.
- *
- *  @return Normalized metric name.
- */
-QString lib::normalize_metric_name(QString const& metric) {
-  QString normalized(metric.toLatin1());
-  normalized.replace("/", "slash_");
-  normalized.replace("#S#", "slash_");
-  normalized.replace("\\", "bslash_");
-  normalized.replace("#BS#", "bslash_");
-  normalized.replace("%", "pct_");
-  normalized.replace("#P#", "pct_");
-  for (unsigned int i(0), size(normalized.size()); i < size; ++i) {
-    char current(normalized.at(i).toAscii());
-    if (!isalnum(current) && (current != '-') && (current != '_'))
-      normalized.replace(i, 1, '-');
-  }
-  if (normalized.isEmpty())
-    normalized = "x";
-  else if (normalized.size() > max_metric_length)
-    normalized.resize(max_metric_length);
-  return (normalized);
-}
-
-/**
  *  Open a RRD file which already exists.
  *
  *  @param[in] filename Path to the RRD file.
- *  @param[in] metric   Metric name.
  */
-void lib::open(
-            QString const& filename,
-            QString const& metric) {
+void lib::open(QString const& filename) {
   // Close previous file.
   this->close();
 
@@ -147,7 +115,6 @@ void lib::open(
 
   // Remember information for further operations.
   _filename = filename.toStdString();
-  _metric = normalize_metric_name(metric).toStdString();
 
   return ;
 }
@@ -156,7 +123,6 @@ void lib::open(
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] metric     Metric name.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] interval   Time interval between each record.
@@ -164,7 +130,6 @@ void lib::open(
  */
 void lib::open(
             QString const& filename,
-            QString const& metric,
             unsigned int length,
             time_t from,
             time_t interval,
@@ -174,7 +139,6 @@ void lib::open(
 
   // Remember informations for further operations.
   _filename = filename.toStdString();
-  _metric = normalize_metric_name(metric).toStdString();
 
   /* Find step of RRD file if already existing. */
   /* XXX : why is it here ?
@@ -194,7 +158,7 @@ void lib::open(
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;
-  ds_oss << "DS:" << _metric << ":";
+  ds_oss << "DS:value:";
   switch (value_type) {
   case storage::perfdata::absolute:
     ds_oss << "ABSOLUTE";
@@ -240,7 +204,7 @@ void lib::open(
   std::string hb;
   {
     std::ostringstream oss;
-    oss << _metric << ":" << interval * 10;
+    oss << "value:" << interval * 10;
     hb = oss.str();
   }
   argv[0] = "librrd";
@@ -293,7 +257,7 @@ void lib::update(time_t t, QString const& value) {
 
   // Debug message.
   logging::debug(logging::high) << "RRD: updating file '"
-    << _filename << "' (metric '" << _metric << "', " << argv[0] << ")";
+    << _filename << "' (" << argv[0] << ")";
 
   // Update RRD file.
   rrd_clear_error();
@@ -305,8 +269,7 @@ void lib::update(time_t t, QString const& value) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
       throw (exceptions::update()
-             << "RRD: failed to update value for metric "
-             << _metric << ": " << msg);
+             << "RRD: failed to update value: " << msg);
     else
       logging::error(logging::low)
         << "RRD: ignored update error: " << msg;

@@ -44,13 +44,9 @@ namespace            rrd {
     void             begin();
     void             close();
     void             commit();
-    static QString   normalize_metric_name(QString const& metric);
+    void             open(QString const& filename);
     void             open(
                        QString const& filename,
-                       QString const& metric);
-    void             open(
-                       QString const& filename,
-                       QString const& metric,
                        unsigned int length,
                        time_t from,
                        time_t interval,
@@ -62,7 +58,6 @@ namespace            rrd {
 
    private:
     std::string      _filename;
-    std::string      _metric;
   };
 }
 

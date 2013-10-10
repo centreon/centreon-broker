@@ -46,7 +46,6 @@ int main() {
   rrd::lib lib;
   lib.open(
     file_path,
-    "C:\\ Used Space",
     90 * 24 * 60 * 60,
     time(NULL) - 7 * 24 * 60 * 60,
     60);

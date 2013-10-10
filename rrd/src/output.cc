@@ -210,14 +210,13 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
         // Write metrics RRD.
         try {
-          _backend->open(metric_path, e->name);
+          _backend->open(metric_path);
         }
         catch (exceptions::open const& b) {
           time_t interval(e->interval ? e->interval : 60);
           unsigned int length(e->rrd_len / interval);
           _backend->open(
             metric_path,
-            e->name,
             length,
             e->ctime - 1,
             interval,
@@ -257,7 +256,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       if (e->is_for_rebuild || it == _status_rebuild.end()) {
         // Write status RRD.
         try {
-          _backend->open(status_path, "status");
+          _backend->open(status_path);
         }
         catch (exceptions::open const& b) {
           unsigned int
@@ -265,7 +264,6 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
           ++length;
           _backend->open(
             status_path,
-            "status",
             length,
             e->ctime - 1,
             e->interval);

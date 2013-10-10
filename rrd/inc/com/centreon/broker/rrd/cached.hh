@@ -53,12 +53,9 @@ namespace   rrd {
     void    connect_remote(
               QString const& address,
               unsigned short port);
+    void    open(QString const& filename);
     void    open(
               QString const& filename,
-              QString const& metric);
-    void    open(
-              QString const& filename,
-              QString const& metric,
               unsigned int length,
               time_t from,
               time_t interval,
@@ -75,7 +72,6 @@ namespace   rrd {
 
     bool    _batch;
     QString _filename;
-    QString _metric;
     std::auto_ptr<QIODevice>
             _socket;
   };

@@ -67,7 +67,6 @@ void cached::begin() {
  */
 void cached::close() {
   _filename.clear();
-  _metric.clear();
   _batch = false;
   return ;
 }
@@ -140,11 +139,8 @@ void cached::connect_remote(
  *  Open a RRD file which already exists.
  *
  *  @param[in] filename Path to the RRD file.
- *  @param[in] metric   Metric name.
  */
-void cached::open(
-               QString const& filename,
-               QString const& metric) {
+void cached::open(QString const& filename) {
   // Close previous file.
   this->close();
 
@@ -155,7 +151,6 @@ void cached::open(
 
   // Remember information for further operations.
   _filename = filename;
-  _metric = lib::normalize_metric_name(metric);
 
   return ;
 }
@@ -164,7 +159,6 @@ void cached::open(
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] metric     Metric name.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] interval   Time interval between each record.
@@ -172,7 +166,6 @@ void cached::open(
  */
 void cached::open(
                QString const& filename,
-               QString const& metric,
                unsigned int length,
                time_t from,
                time_t interval,
@@ -182,13 +175,12 @@ void cached::open(
 
   // Remember informations for further operations.
   _filename = filename;
-  _metric = lib::normalize_metric_name(metric);
 
   /* We are unfortunately forced to use librrd to create RRD file as
   ** rrdcached does not support RRD file creation.
   */
   lib rrdf;
-  rrdf.open(filename, metric, length, from, interval, value_type);
+  rrdf.open(filename, length, from, interval, value_type);
 
   return ;
 }
