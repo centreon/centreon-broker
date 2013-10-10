@@ -319,6 +319,7 @@ unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
     QMutexLocker lock(&_mutex);
     // Check if we should process this event.
     if (!_filters.empty()
+        && !event.isNull()
         && (_filters.find(event->type()) == _filters.end()))
       return (1);
     // Check if the event queue limit is reach.

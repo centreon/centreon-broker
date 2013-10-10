@@ -52,6 +52,7 @@ namespace               com {
                         open();
           misc::shared_ptr<io::stream>
                         open(QString const& id);
+          void          stats(std::string& buffer);
 
          private:
           misc::shared_ptr<io::stream>

@@ -265,6 +265,8 @@ void config_write(
       << "sleep_time=0.01\n"
       << "state_retention_file=monitoring_engine_retention.dat\n"
       << "status_file=monitoring_engine_status.dat\n"
+      << "service_inter_check_delay_method=n\n"
+      << "host_inter_check_delay_method=n\n"
       << "temp_file=monitoring_engine.tmp\n"
       << "temp_path=.\n";
 

@@ -68,11 +68,15 @@ creation. Sockets can be created either as clients (type
 Configuration
 -------------
 
-==== =========================
-Tag  Description
-==== =========================
-path Path of the local socket.
-==== =========================
+======================= ================================================
+Tag                     Description
+======================= ================================================
+one_peer_retention_mode Allow only one connection for a specific output.
+                        This option allow to keep retention on a server
+                        output (socket on a listen mode).
+path                    Path of the local socket.
+protocol                Choose your protocol (bbdo or ndo).
+======================= ================================================
 
 Example
 -------
@@ -91,6 +95,15 @@ Example
     <type>local_server</type>
     <path>/var/lib/centreon/broker.sock</path>
     <protocol>bbdo</protocol>
+  </output>
+
+::
+
+  <output>
+    <type>local_server</type>
+    <path>/var/lib/centreon/broker.sock</path>
+    <protocol>bbdo</protocol>
+    <one_peer_retention_mode>1</one_peer_retention_mode>
   </output>
 
 
@@ -294,14 +307,18 @@ Probably one of the most used module. Provides network connectivity.
 Configuration
 -------------
 
-============== =======================================================
-Tag            Description
-============== =======================================================
-port           Port on which Centreon Broker should listen (if no host
-               is defined) or connect to.
-host           Host to connect to. To have a server connection, do not
-               use this tag.
-============== =======================================================
+======================= ================================================
+Tag                     Description
+======================= ================================================
+host                    Host to connect to. To have a server connection,
+                        do not use this tag.
+one_peer_retention_mode Allow only one connection for a specific output.
+                        This option allow to keep retention on a server
+                        output (socket on a listen mode).
+port                    Port on which Centreon Broker should listen (if
+                        no host is defined) or connect to.
+protocol                Choose your protocol (bbdo or ndo).
+======================= ================================================
 
 Example
 -------
@@ -324,7 +341,20 @@ Output stream that connects on host remotehost.tld on port 5668.
     <type>tcp</type>
     <host>remotehost.tld</host>
     <port>5668</port>
-    <protocol>5668</protocol>
+    <protocol>bbdo</protocol>
+  </output>
+
+Output stream that connects on host remotehost.tld on port 5668
+and allow single peer connection.
+
+::
+
+  <output>
+    <type>tcp</type>
+    <host>remotehost.tld</host>
+    <port>5668</port>
+    <protocol>bbdo</protocol>
+    <one_peer_retention_mode>1</one_peer_retention_mode>
   </output>
 
 BBDO
