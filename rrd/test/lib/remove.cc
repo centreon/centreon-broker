@@ -38,12 +38,13 @@ int main() {
   config::applier::init();
 
   // Temporary file path.
-  QString file_path(QDir::tempPath());
+  QString dir_path(QDir::tempPath());
+  QString file_path(dir_path);
   file_path.append("/" TEMP_FILE);
   QFile::remove(file_path);
 
   // RRD library object.
-  rrd::lib lib;
+  rrd::lib lib(dir_path.toStdString(), 16);
   lib.open(
     file_path,
     90 * 24 * 60 * 60,

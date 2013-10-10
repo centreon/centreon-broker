@@ -42,9 +42,14 @@ using namespace com::centreon::broker::rrd;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] tmpl_path  The template path.
+ *  @param[in] cache_size The maximum number of cache element.
  */
-cached::cached() : _batch(false) {}
+cached::cached(std::string const& tmpl_path, unsigned int cache_size)
+  : _batch(false),
+    _lib(tmpl_path, cache_size) {}
 
 /**
  *  Destructor.
@@ -161,14 +166,14 @@ void cached::open(QString const& filename) {
  *  @param[in] filename   Path to the RRD file.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
- *  @param[in] interval   Time interval between each record.
+ *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
 void cached::open(
                QString const& filename,
                unsigned int length,
                time_t from,
-               time_t interval,
+               unsigned int step,
                short value_type) {
   // Close previous file.
   this->close();
@@ -179,8 +184,7 @@ void cached::open(
   /* We are unfortunately forced to use librrd to create RRD file as
   ** rrdcached does not support RRD file creation.
   */
-  lib rrdf;
-  rrdf.open(filename, length, from, interval, value_type);
+  _lib.open(filename, length, from, step, value_type);
 
   return ;
 }

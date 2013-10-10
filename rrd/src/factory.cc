@@ -154,6 +154,15 @@ io::endpoint* factory::new_endpoint(
   unsigned short port;
   port = find_param(cfg, "port", false, "0").toUShort();
 
+  // Get rrd creator cache size.
+  unsigned int cache_size(16);
+  {
+    QMap<QString, QString>::iterator
+      it(cfg.params.find("cache_size"));
+    if (it != cfg.params.end())
+      cache_size = it->toUInt();
+  }
+
   // Should metrics be written ?
   bool write_metrics;
   {
@@ -195,6 +204,7 @@ io::endpoint* factory::new_endpoint(
     endp->set_cached_local(path);
   else if (port)
     endp->set_cached_net(port);
+  endp->set_cache_size(cache_size);
   endp->set_write_metrics(write_metrics);
   endp->set_write_status(write_status);
   endp->set_ignore_update_errors(ignore_update_errors);

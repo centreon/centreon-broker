@@ -45,6 +45,7 @@ namespace          rrd {
                    open();
     misc::shared_ptr<io::stream>
                    open(QString const& id);
+    void           set_cache_size(unsigned int cache_size);
     void           set_cached_local(QString const& local_socket);
     void           set_cached_net(unsigned short port) throw ();
     void           set_ignore_update_errors(bool ignore) throw ();
@@ -57,6 +58,7 @@ namespace          rrd {
     void           _internal_copy(connector const& right);
     QString        _real_path_of(QString const& path);
 
+    unsigned int   _cache_size;
     QString        _cached_local;
     unsigned short _cached_port;
     bool           _ignore_update_errors;

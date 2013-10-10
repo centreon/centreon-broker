@@ -51,7 +51,7 @@ namespace        rrd {
                    QString const& filename,
                    unsigned int length,
                    time_t from,
-                   time_t interval,
+                   unsigned int step,
                    short value_type = 0) = 0;
     virtual void remove(QString const& filename) = 0;
     virtual void update(time_t t, QString const& value) = 0;

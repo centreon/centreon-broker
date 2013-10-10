@@ -25,6 +25,7 @@
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
+#  include "com/centreon/broker/rrd/lib.hh"
 
 CCB_BEGIN()
 
@@ -42,7 +43,9 @@ namespace   rrd {
    */
   class     cached : public backend {
   public:
-            cached();
+            cached(
+              std::string const& tmpl_path,
+              unsigned int cache_size);
             ~cached();
     void    begin();
     void    close();
@@ -58,7 +61,7 @@ namespace   rrd {
               QString const& filename,
               unsigned int length,
               time_t from,
-              time_t interval,
+              unsigned int step,
               short value_type = 0);
     void    remove(QString const& filename);
     void    update(time_t t, QString const& value);
@@ -72,6 +75,7 @@ namespace   rrd {
 
     bool    _batch;
     QString _filename;
+    lib     _lib;
     std::auto_ptr<QIODevice>
             _socket;
   };

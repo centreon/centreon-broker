@@ -23,6 +23,7 @@
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
+#  include "com/centreon/broker/rrd/creator.hh"
 
 CCB_BEGIN()
 
@@ -36,8 +37,9 @@ namespace            rrd {
    */
   class              lib : public backend {
   public:
-    static int const max_metric_length = 19;
-                     lib();
+                     lib(
+                       std::string const& tmpl_path,
+                       unsigned int cache_size);
                      lib(lib const& l);
                      ~lib();
     lib&             operator=(lib const& l);
@@ -49,7 +51,7 @@ namespace            rrd {
                        QString const& filename,
                        unsigned int length,
                        time_t from,
-                       time_t interval,
+                       unsigned int step,
                        short value_type = 0);
     void             remove(QString const& filename);
     void             update(
@@ -57,6 +59,7 @@ namespace            rrd {
                        QString const& value);
 
    private:
+    creator          _creator;
     std::string      _filename;
   };
 }

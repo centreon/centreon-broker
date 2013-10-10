@@ -43,9 +43,13 @@ using namespace com::centreon::broker::rrd;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] tmpl_path  The template path.
+ *  @param[in] cache_size The maximum number of cache element.
  */
-lib::lib() {}
+lib::lib(std::string const& tmpl_path, unsigned int cache_size)
+  : _creator(tmpl_path, cache_size) {}
 
 /**
  *  Copy constructor.
@@ -53,7 +57,7 @@ lib::lib() {}
  *  @param[in] l Object to copy.
  */
 lib::lib(lib const& l)
-  : backend(l), _filename(l._filename) {}
+  : backend(l), _creator(l._creator), _filename(l._filename) {}
 
 /**
  *  Destructor.
@@ -69,6 +73,7 @@ lib::~lib() {}
  */
 lib& lib::operator=(lib const& l) {
   backend::operator=(l);
+  _creator = l._creator;
   _filename = l._filename;
   return (*this);
 }
@@ -125,14 +130,14 @@ void lib::open(QString const& filename) {
  *  @param[in] filename   Path to the RRD file.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
- *  @param[in] interval   Time interval between each record.
+ *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
 void lib::open(
             QString const& filename,
             unsigned int length,
             time_t from,
-            time_t interval,
+            unsigned int step,
             short value_type) {
   // Close previous file.
   this->close();
@@ -140,64 +145,7 @@ void lib::open(
   // Remember informations for further operations.
   _filename = filename.toStdString();
 
-  /* Find step of RRD file if already existing. */
-  /* XXX : why is it here ?
-  rrd_info_t* rrdinfo(rrd_info_r(_filename));
-  time_t interval_offset(0);
-  for (rrd_info_t* tmp = rrdinfo; tmp; tmp = tmp->next)
-    if (!strcmp(rrdinfo->key, "step"))
-      if (interval < static_cast<time_t>(rrdinfo->value.u_cnt))
-        interval_offset = rrdinfo->value.u_cnt / interval - 1;
-  rrd_info_free(rrdinfo);
-  */
-
-  /* Remove previous file. */
-  QFile::remove(_filename.c_str());
-
-  /* Set parameters. */
-  std::ostringstream ds_oss;
-  std::ostringstream rra1_oss;
-  std::ostringstream rra2_oss;
-  ds_oss << "DS:value:";
-  switch (value_type) {
-  case storage::perfdata::absolute:
-    ds_oss << "ABSOLUTE";
-    break ;
-  case storage::perfdata::counter:
-    ds_oss << "COUNTER";
-    break ;
-  case storage::perfdata::derive:
-    ds_oss << "DERIVE";
-    break ;
-  default:
-    ds_oss << "GAUGE";
-  };
-  ds_oss << ":"<< interval * 10 << ":U:U";
-  rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
-  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12 + 1;
-  std::string ds(ds_oss.str());
-  std::string rra1(rra1_oss.str());
-  std::string rra2(rra2_oss.str());
-  char const* argv[5];
-  argv[0] = ds.c_str();
-  argv[1] = rra1.c_str();
-  argv[2] = rra2.c_str();
-  argv[3] = NULL;
-
-  // Debug message.
-  logging::debug(logging::high) << "RRD: opening file '" << filename
-    << "' (" << argv[0] << ", " << argv[1] << ", " << argv[2]
-    << ", interval " << interval << ", from " << from << ")";
-
-  // Create RRD file.
-  rrd_clear_error();
-  if (rrd_create_r(_filename.c_str(),
-        interval,
-        from,
-        3,
-        argv))
-    throw (exceptions::open() << "RRD: could not create file '"
-             << _filename << "': " << rrd_get_error());
+  _creator.create(filename.toStdString(), length, from, step, value_type);
 
   return ;
 }

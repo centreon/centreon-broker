@@ -49,6 +49,7 @@ using namespace com::centreon::broker::rrd;
  *                                  should be written.
  *  @param[in] status_path          Path in which status RRD files
  *                                  should be written.
+ *  @param[in] cache_size           The maximum number of cache element.
  *  @param[in] ignore_update_errors Set to true to ignore update errors.
  *  @param[in] write_metrics        Set to true if metrics graph must be
  *                                  written.
@@ -58,10 +59,11 @@ using namespace com::centreon::broker::rrd;
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          unsigned int cache_size,
           bool ignore_update_errors,
           bool write_metrics,
           bool write_status)
-  : _backend(new lib),
+  : _backend(new lib(metrics_path.toStdString(), cache_size)),
     _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path.toStdString()),
     _process_out(true),
@@ -74,6 +76,7 @@ output::output(
  *
  *  @param[in] metrics_path         See standard constructor.
  *  @param[in] status_path          See standard constructor.
+ *  @param[in] cache_size           The maximum number of cache element.
  *  @param[in] ignore_update_errors Set to true to ignore update errors.
  *  @param[in] local                Local socket connection parameters.
  *  @param[in] write_metrics        Set to true if metrics graph must be
@@ -84,6 +87,7 @@ output::output(
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          unsigned int cache_size,
           bool ignore_update_errors,
           QString const& local,
           bool write_metrics,
@@ -95,7 +99,8 @@ output::output(
     _write_metrics(write_metrics),
     _write_status(write_status) {
 #if QT_VERSION >= 0x040400
-  std::auto_ptr<cached> rrdcached(new cached);
+  std::auto_ptr<cached>
+    rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
 #else
@@ -110,6 +115,7 @@ output::output(
  *
  *  @param[in] metrics_path         See standard constructor.
  *  @param[in] status_path          See standard constructor.
+ *  @param[in] cache_size           The maximum number of cache element.
  *  @param[in] ignore_update_errors Set to true to ignore update errors.
  *  @param[in] port                 rrdcached listening port.
  *  @param[in] write_metrics        Set to true if metrics graph must be
@@ -120,6 +126,7 @@ output::output(
 output::output(
           QString const& metrics_path,
           QString const& status_path,
+          unsigned int cache_size,
           bool ignore_update_errors,
           unsigned short port,
           bool write_metrics,
@@ -130,7 +137,8 @@ output::output(
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
-  std::auto_ptr<cached> rrdcached(new cached);
+  std::auto_ptr<cached>
+    rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
 }
