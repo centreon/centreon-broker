@@ -172,7 +172,7 @@ void lib::open(
   default:
     ds_oss << "GAUGE";
   };
-  ds_oss << ":"<< interval << ":U:U";
+  ds_oss << ":"<< interval * 10 << ":U:U";
   rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
   rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12 + 1;
   std::string ds(ds_oss.str());
@@ -198,25 +198,6 @@ void lib::open(
         argv))
     throw (exceptions::open() << "RRD: could not create file '"
              << _filename << "': " << rrd_get_error());
-
-  // Set parameters.
-  std::string fn(_filename);
-  std::string hb;
-  {
-    std::ostringstream oss;
-    oss << "value:" << interval * 10;
-    hb = oss.str();
-  }
-  argv[0] = "librrd";
-  argv[1] = fn.c_str();
-  argv[2] = "-h"; // --heartbeat
-  argv[3] = hb.c_str();
-  argv[4] = NULL;
-
-  // Tune file.
-  if (rrd_tune(4, (char**)argv))
-    logging::error(logging::medium) << "RRD: could not tune "
-      "heartbeat of file '" << _filename.c_str() << "'";
 
   return ;
 }
