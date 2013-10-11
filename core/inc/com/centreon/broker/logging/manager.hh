@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,16 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_LOGGING_MANAGER_HH_
-# define CCB_LOGGING_MANAGER_HH_
+#ifndef CCB_LOGGING_MANAGER_HH
+# define CCB_LOGGING_MANAGER_HH
 
-# include <memory>
-# include <QObject>
-# include <QReadWriteLock>
-# include <QVector>
-# include "com/centreon/broker/logging/backend.hh"
-# include "com/centreon/broker/logging/defines.hh"
-# include "com/centreon/broker/logging/temp_logger.hh"
+#  include <QObject>
+#  include <QReadWriteLock>
+#  include <QVector>
+#  include "com/centreon/broker/logging/backend.hh"
+#  include "com/centreon/broker/logging/defines.hh"
+#  include "com/centreon/broker/logging/temp_logger.hh"
 
 namespace                 com {
   namespace               centreon {
@@ -51,8 +50,7 @@ namespace                 com {
           QVector<manager_backend>
                           _backends;
           QReadWriteLock  _backendsm;
-          static std::auto_ptr<manager>
-                          _instance;
+          static manager* _instance;
           unsigned int    _limits[4];
                           manager();
                           manager(manager const& m);
@@ -87,4 +85,4 @@ namespace                 com {
   }
 }
 
-#endif /* !CCB_LOGGING_MANAGER_HH_ */
+#endif // !CCB_LOGGING_MANAGER_HH

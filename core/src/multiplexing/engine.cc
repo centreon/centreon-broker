@@ -208,6 +208,15 @@ void engine::stop() {
 }
 
 /**
+ *  Check if multiplexing engine is stopped.
+ *
+ *  @return True if the multiplexing engine is stopped.
+ */
+bool engine::stopped() const throw () {
+  return (_stopped);
+}
+
+/**
  *  Remove a hook.
  *
  *  @param[in] h Hook.

@@ -37,6 +37,7 @@ public:
   void        start();
   void        stop();
   void        update();
+  void        wait();
 
 private:
               cbd(cbd const& right);

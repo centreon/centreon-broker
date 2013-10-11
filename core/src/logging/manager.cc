@@ -32,7 +32,7 @@ using namespace com::centreon::broker::logging;
 **************************************/
 
 // Class instance.
-std::auto_ptr<manager> manager::_instance;
+manager* manager::_instance(NULL);
 
 /**************************************
 *                                     *
@@ -126,7 +126,8 @@ manager& manager::instance() {
  *  Load the manager singleton.
  */
 void manager::load() {
-  _instance.reset(new manager);
+  if (!_instance)
+    _instance = new manager;
   return ;
 }
 
@@ -206,6 +207,7 @@ void manager::log_on(backend& b,
  *  Unload the logging manager.
  */
 void manager::unload() {
-  _instance.reset();
+  delete _instance;
+  _instance = NULL;
   return ;
 }
