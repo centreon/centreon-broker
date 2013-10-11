@@ -48,6 +48,7 @@ namespace   rrd {
               unsigned int cache_size);
             ~cached();
     void    begin();
+    void    clean();
     void    close();
     void    commit();
 #  if QT_VERSION >= 0x040400

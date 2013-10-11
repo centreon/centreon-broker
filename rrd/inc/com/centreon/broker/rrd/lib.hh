@@ -44,6 +44,7 @@ namespace            rrd {
                      ~lib();
     lib&             operator=(lib const& l);
     void             begin();
+    void             clean();
     void             close();
     void             commit();
     void             open(QString const& filename);

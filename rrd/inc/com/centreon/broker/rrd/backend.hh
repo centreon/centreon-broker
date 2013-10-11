@@ -44,6 +44,7 @@ namespace        rrd {
     virtual      ~backend();
     backend&     operator=(backend const& b);
     virtual void begin() = 0;
+    virtual void clean() = 0;
     virtual void close() = 0;
     virtual void commit() = 0;
     virtual void open(QString const& filename) = 0;

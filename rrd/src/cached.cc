@@ -68,6 +68,14 @@ void cached::begin() {
 }
 
 /**
+ *  Clear the tempalte cache.
+ */
+void cached::clean() {
+  _lib.clean();
+  return ;
+}
+
+/**
  *  Close the current RRD file.
  */
 void cached::close() {

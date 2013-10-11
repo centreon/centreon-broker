@@ -88,6 +88,14 @@ void lib::begin() {
 }
 
 /**
+ *  Clean the template cache.
+ */
+void lib::clean() {
+  _creator.clear();
+  return ;
+}
+
+/**
  *  Close the RRD file.
  */
 void lib::close() {

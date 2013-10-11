@@ -173,6 +173,15 @@ void output::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Update backend after a sigup.
+ */
+void output::update() {
+  if (_backend.get())
+    _backend->clean();
+  return ;
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] d Data to write.
