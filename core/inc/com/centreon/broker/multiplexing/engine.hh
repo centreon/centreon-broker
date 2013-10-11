@@ -49,6 +49,7 @@ namespace                 com {
           void            publish(misc::shared_ptr<io::data> const& d);
           void            start();
           void            stop();
+          bool            stopped() const throw ();
           void            unhook(hooker& h);
           static void     unload();
 

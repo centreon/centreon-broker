@@ -87,3 +87,12 @@ void cbd::update() {
     kill(pid, SIGHUP);
   return ;
 }
+
+/**
+ *  Wait for process to terminate.
+ */
+void cbd::wait() {
+  if (_cbd.state() != QProcess::NotRunning)
+    _cbd.waitForFinished(-1);
+  return ;
+}

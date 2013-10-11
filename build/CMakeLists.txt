@@ -121,6 +121,7 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
+  include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
 # User.
@@ -558,8 +559,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
-    "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -738,6 +737,26 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/stats.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Benchmark.
+  unset(QT_WRAPPED_SOURCES)
+  qt4_wrap_cpp(QT_WRAPPED_SOURCES
+    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
+  set(TEST_NAME "running_bench_generate_rrd_mod")
+  add_library("${TEST_NAME}" SHARED
+    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.cc"
+    ${QT_WRAPPED_SOURCES})
+  get_property(BENCH_GENERATE_RRD_MOD_PATH
+    TARGET "${TEST_NAME}"
+    PROPERTY LOCATION)
+  set(TEST_NAME "running_bench_generate_rrd")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+
+  # Last file to configure, based on target paths.
+  configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
+    "${PROJECT_SOURCE_DIR}/test/vars.hh")
 
 endif ()
 
