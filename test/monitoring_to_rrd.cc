@@ -25,12 +25,12 @@
 #include <fstream>
 #include <iostream>
 #include <QDir>
-#include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
 #include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -446,7 +446,7 @@ int main() {
          ++it) {
       std::ostringstream path;
       path << status_path << "/" << *it << ".rrd";
-      if (!QFile::exists(path.str().c_str()))
+      if (access(path.str().c_str(), F_OK))
         throw (exceptions::msg() << "status RRD file '"
                << path.str().c_str() << "' does not exist");
     }
@@ -460,7 +460,7 @@ int main() {
          ++it, ++i) {
       std::ostringstream path;
       path << metrics_path << "/" << *it << ".rrd";
-      if (!QFile::exists(path.str().c_str()))
+      if (access(path.str().c_str(), F_OK))
         throw (exceptions::msg() << "metrics RRD file '"
                << path.str().c_str() << "' does not exist");
       rrd_file f;

@@ -19,11 +19,10 @@
 
 #include <cerrno>
 #include <cstdlib>
-#include <QFile>
+#include <QTcpSocket>
 #if QT_VERSION >= 0x040400
 #  include <QLocalSocket>
 #endif // Qt >= 4.4.0
-#include <QTcpSocket>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -153,12 +152,12 @@ void cached::connect_remote(
  *
  *  @param[in] filename Path to the RRD file.
  */
-void cached::open(QString const& filename) {
+void cached::open(std::string const& filename) {
   // Close previous file.
   this->close();
 
   // Check that the file exists.
-  if (!QFile::exists(filename))
+  if (access(filename.c_str(), F_OK))
     throw (exceptions::open() << "RRD: file '" << filename
              << "' does not exist");
 
@@ -178,7 +177,7 @@ void cached::open(QString const& filename) {
  *  @param[in] value_type Type of the metric.
  */
 void cached::open(
-               QString const& filename,
+               std::string const& filename,
                unsigned int length,
                time_t from,
                unsigned int step,
@@ -202,10 +201,10 @@ void cached::open(
  *
  *  @param[in] filename Path to the RRD file.
  */
-void cached::remove(QString const& filename) {
+void cached::remove(std::string const& filename) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "FORGET " << filename.toStdString() << "\n";
+  oss << "FORGET " << filename << "\n";
 
   try {
     _send_to_cached(oss.str().c_str());
@@ -214,7 +213,7 @@ void cached::remove(QString const& filename) {
     logging::error(logging::medium) << e.what();
   }
 
-  if (::remove(filename.toStdString().c_str())) {
+  if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
     logging::error(logging::high) << "RRD: could not remove file '"
       << filename << "': " << msg;
@@ -228,11 +227,11 @@ void cached::remove(QString const& filename) {
  *  @param[in] t     Timestamp of value.
  *  @param[in] value Associated value.
  */
-void cached::update(time_t t, QString const& value) {
+void cached::update(time_t t, std::string const& value) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "UPDATE " << _filename.toStdString() << " " << t
-      << ":" << value.toStdString() << "\n";
+  oss << "UPDATE " << _filename << " " << t
+      << ":" << value << "\n";
 
   // Send command.
   try {

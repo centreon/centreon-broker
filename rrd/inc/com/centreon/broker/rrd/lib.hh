@@ -20,7 +20,7 @@
 #ifndef CCB_RRD_LIB_HH
 #  define CCB_RRD_LIB_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
 #  include "com/centreon/broker/rrd/creator.hh"
@@ -47,17 +47,17 @@ namespace            rrd {
     void             clean();
     void             close();
     void             commit();
-    void             open(QString const& filename);
+    void             open(std::string const& filename);
     void             open(
-                       QString const& filename,
+                       std::string const& filename,
                        unsigned int length,
                        time_t from,
                        unsigned int step,
                        short value_type = 0);
-    void             remove(QString const& filename);
+    void             remove(std::string const& filename);
     void             update(
                        time_t t,
-                       QString const& value);
+                       std::string const& value);
 
    private:
     creator          _creator;

@@ -22,7 +22,6 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
-#include <QFile>
 #include <rrd.h>
 #include <sstream>
 #include <unistd.h>
@@ -117,17 +116,17 @@ void lib::commit() {
  *
  *  @param[in] filename Path to the RRD file.
  */
-void lib::open(QString const& filename) {
+void lib::open(std::string const& filename) {
   // Close previous file.
   this->close();
 
   // Check that the file exists.
-  if (!QFile::exists(filename))
+  if (access(filename.c_str(), F_OK))
     throw (exceptions::open() << "RRD: file '"
              << filename << "' does not exist");
 
   // Remember information for further operations.
-  _filename = filename.toStdString();
+  _filename = filename;
 
   return ;
 }
@@ -142,7 +141,7 @@ void lib::open(QString const& filename) {
  *  @param[in] value_type Type of the metric.
  */
 void lib::open(
-            QString const& filename,
+            std::string const& filename,
             unsigned int length,
             time_t from,
             unsigned int step,
@@ -151,9 +150,9 @@ void lib::open(
   this->close();
 
   // Remember informations for further operations.
-  _filename = filename.toStdString();
+  _filename = filename;
 
-  _creator.create(filename.toStdString(), length, from, step, value_type);
+  _creator.create(filename, length, from, step, value_type);
 
   return ;
 }
@@ -163,11 +162,11 @@ void lib::open(
  *
  *  @param[in] filename Path to the RRD file.
  */
-void lib::remove(QString const& filename) {
-  if (::remove(filename.toStdString().c_str())) {
+void lib::remove(std::string const& filename) {
+  if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
     logging::error(logging::high) << "RRD: could not remove file '"
-      << qPrintable(filename) << "': " << msg;
+      << filename << "': " << msg;
   }
   return ;
 }
@@ -178,12 +177,12 @@ void lib::remove(QString const& filename) {
  *  @param[in] t     Timestamp of value.
  *  @param[in] value Associated value.
  */
-void lib::update(time_t t, QString const& value) {
+void lib::update(time_t t, std::string const& value) {
   // Build argument string.
   std::string arg;
   {
     std::ostringstream oss;
-    oss << t << ":" << value.toStdString();
+    oss << t << ":" << value;
     arg = oss.str();
   }
 

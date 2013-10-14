@@ -20,6 +20,7 @@
 #include <ctime>
 #include <QDomDocument>
 #include <QDomElement>
+#include <unistd.h>
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
@@ -175,7 +176,8 @@ void correlator::load(QString const& correlation_file,
   }
 
   // Load retention file.
-  if (!_retention_file.isEmpty() && QFile::exists(_retention_file)) {
+  if (!_retention_file.isEmpty()
+      && !access(_retention_file.toStdString().c_str(), F_OK)) {
     logging::config(logging::medium)
       << "correlation: loading retention file";
     parser p;

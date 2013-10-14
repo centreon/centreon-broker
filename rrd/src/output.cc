@@ -189,15 +189,6 @@ void output::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& d) {
-  static unsigned int const storage_metric_type(
-    io::events::data_type<io::events::storage, storage::de_metric>::value);
-  static unsigned int const storage_status_type(
-    io::events::data_type<io::events::storage, storage::de_status>::value);
-  static unsigned int const storage_rebuild_type(
-    io::events::data_type<io::events::storage, storage::de_rebuild>::value);
-  static unsigned int const storage_remove_graph_type(
-    io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
-
   // Check that data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
@@ -205,7 +196,8 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == storage_metric_type) {
+  if (d->type()
+      == io::events::data_type<io::events::storage, storage::de_metric>::value) {
     if (_write_metrics) {
       // Debug message.
       misc::shared_ptr<storage::metric>
@@ -215,15 +207,16 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
         << (e->is_for_rebuild ? "for rebuild" : "");
 
       // Metric path.
-      QString metric_path;
+      std::string metric_path;
       {
         std::ostringstream oss;
         oss << _metrics_path << e->metric_id << ".rrd";
-        metric_path = oss.str().c_str();
+        metric_path = oss.str();
       }
 
       // Check that metric is not being rebuild.
-      rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
+      rebuild_cache::iterator
+        it(_metrics_rebuild.find(metric_path.c_str()));
       if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
         // Write metrics RRD.
         try {
@@ -244,14 +237,15 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
           oss << static_cast<long long>(e->value);
         else
           oss << std::fixed << e->value;
-        _backend->update(e->ctime, oss.str().c_str());
+        _backend->update(e->ctime, oss.str());
       }
       else
         // Cache value.
         it->push_back(d);
     }
   }
-  else if (d->type() == storage_status_type) {
+  else if (d->type()
+           == io::events::data_type<io::events::storage, storage::de_status>::value) {
     if (_write_status) {
       // Debug message.
       misc::shared_ptr<storage::status>
@@ -261,15 +255,16 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
         << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
 
       // Status path.
-      QString status_path;
+      std::string status_path;
       {
         std::ostringstream oss;
         oss << _status_path << e->index_id << ".rrd";
-        status_path = oss.str().c_str();
+        status_path = oss.str();
       }
 
       // Check that status is not begin rebuild.
-      rebuild_cache::iterator it(_status_rebuild.find(status_path));
+      rebuild_cache::iterator
+        it(_status_rebuild.find(status_path.c_str()));
       if (e->is_for_rebuild || it == _status_rebuild.end()) {
         // Write status RRD.
         try {
@@ -292,14 +287,15 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
           oss << 75;
         else if (e->state == 2)
           oss << 0;
-        _backend->update(e->ctime, oss.str().c_str());
+        _backend->update(e->ctime, oss.str());
       }
       else
         // Cache value.
         it->push_back(d);
     }
   }
-  else if (d->type() == storage_rebuild_type) {
+  else if (d->type()
+           == io::events::data_type<io::events::storage, storage::de_rebuild>::value) {
     // Debug message.
     misc::shared_ptr<storage::rebuild>
       e(d.staticCast<storage::rebuild>());
@@ -308,20 +304,20 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       << (e->end ? "(end)" : "(start)");
 
     // Generate path.
-    QString path;
+    std::string path;
     {
       std::ostringstream oss;
       oss << (e->is_index ? _status_path : _metrics_path)
           << e->id << ".rrd";
-      path = oss.str().c_str();
+      path = oss.str();
     }
 
     // Rebuild is starting.
     if (!e->end) {
       if (e->is_index)
-        _status_rebuild[path];
+        _status_rebuild[path.c_str()];
       else
-        _metrics_rebuild[path];
+        _metrics_rebuild[path.c_str()];
       _backend->remove(path);
     }
     // Rebuild is ending.
@@ -331,14 +327,14 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       {
         rebuild_cache::iterator it;
         if (e->is_index) {
-          it = _status_rebuild.find(path);
+          it = _status_rebuild.find(path.c_str());
           if (it != _status_rebuild.end()) {
             l = *it;
             _status_rebuild.erase(it);
           }
         }
         else {
-          it = _metrics_rebuild.find(path);
+          it = _metrics_rebuild.find(path.c_str());
           if (it != _metrics_rebuild.end()) {
             l = *it;
             _metrics_rebuild.erase(it);
@@ -353,7 +349,8 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       }
     }
   }
-  else if (d->type() == storage_remove_graph_type) {
+  else if (d->type()
+           == io::events::data_type<io::events::storage, storage::de_remove_graph>::value) {
     // Debug message.
     misc::shared_ptr<storage::remove_graph>
       e(d.staticCast<storage::remove_graph>());
@@ -361,18 +358,18 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       << (e->is_index ? "index " : "metric ") << e->id;
 
     // Generate path.
-    QString path;
+    std::string path;
     {
       std::ostringstream oss;
       oss << (e->is_index ? _status_path : _metrics_path)
           << e->id << ".rrd";
-      path = oss.str().c_str();
+      path = oss.str();
     }
 
     // Remove data from cache.
     rebuild_cache&
       cache(e->is_index ? _status_rebuild : _metrics_rebuild);
-    rebuild_cache::iterator it(cache.find(path));
+    rebuild_cache::iterator it(cache.find(path.c_str()));
     if (it != cache.end())
       cache.erase(it);
 

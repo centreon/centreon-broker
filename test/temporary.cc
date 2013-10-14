@@ -28,6 +28,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <sstream>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
 #include "test/config.hh"
@@ -218,7 +219,7 @@ int main() {
     sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check that temporary file got removed.
-    if (QFile::exists(real_file_path.c_str()))
+    if (!access(real_file_path.c_str(), F_OK))
       throw (exceptions::msg() << "temporary file '"
              << real_file_path.c_str() << "' still exists");
 
