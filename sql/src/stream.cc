@@ -109,7 +109,7 @@ void stream::_clean_tables(int instance_id) {
        << mapped_type<neb::service>::table << ".host_id SET "
        << mapped_type<neb::host>::table << ".enabled=0, "
        << mapped_type<neb::service>::table << ".enabled=0"
-       << " WHERE " << mapped_type<neb::host>::table
+          " WHERE " << mapped_type<neb::host>::table
        << ".instance_id=" << instance_id;
     _execute(ss.str().c_str());
   }
@@ -167,8 +167,8 @@ void stream::_clean_tables(int instance_id) {
        << " WHERE service_id IN ("
           "  SELECT services.service_id"
           "   FROM " << mapped_type<neb::service>::table << " AS services"
-       << "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
-       << "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
+          "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
+          "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
        << instance_id << ")"
           " OR dependent_service_id IN ("
           "  SELECT services.service_id "
@@ -204,12 +204,12 @@ void stream::_clean_tables(int instance_id) {
   {
     std::ostringstream ss;
     ss << "UPDATE " << mapped_type<neb::comment>::table << " AS c"
-       << " JOIN " << mapped_type<neb::host>::table << " AS h"
-       << " ON c.host_id=h.host_id"
-       << " SET c.deletion_time=" << time(NULL)
+          " JOIN " << mapped_type<neb::host>::table << " AS h"
+          " ON c.host_id=h.host_id"
+          " SET c.deletion_time=" << time(NULL)
        << " WHERE h.instance_id=" << instance_id
        << " AND c.persistent=0"
-       << " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
+          " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     _execute(ss.str().c_str());
   }
 
@@ -351,15 +351,15 @@ void stream::_prepare() {
     std::ostringstream oss;
     oss << "UPDATE " << mapped_type<neb::downtime>::table
         << " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-        << "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-        << "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-        << "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-        << "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-        << "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-        << "     type=:type"
-        << " WHERE entry_time=:entry_time"
-        << "        AND host_id=:host_id"
-        << "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+           "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+           "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+           "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+           "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+           "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+           "     type=:type"
+           " WHERE entry_time=:entry_time"
+           "        AND host_id=:host_id"
+           "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
     QString query(oss.str().c_str());
     logging::info(logging::low)
       << "SQL: preparing statement: " << query;
@@ -619,7 +619,7 @@ void stream::_process_comment(io::data const& e) {
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing comment event"
-    << " (instance: " << com.instance_id << ", host: " << com.host_id
+       " (instance: " << com.instance_id << ", host: " << com.host_id
     << ", service: " << com.service_id << ", entry time: "
     << com.entry_time << ", expire time: " << com.expire_time
     << ", deletion time: " << com.deletion_time << ", id: "
@@ -805,7 +805,7 @@ void stream::_process_host(io::data const& e) {
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing host event"
-    << " (instance: " << h.instance_id << ", id: "
+       " (instance: " << h.instance_id << ", id: "
     << h.host_id << ", name: " << h.host_name << ")";
 
   // Processing
@@ -845,7 +845,7 @@ void stream::_process_host_check(io::data const& e) {
     *_host_check_update << hc;
     _execute(*_host_check_update);
     if (_host_check_update->numRowsAffected() != 1)
-      logging::error(logging::medium) << "SQL: host check could not " \
+      logging::error(logging::medium) << "SQL: host check could not "
            "be updated because host " << hc.host_id
         << " was not found in database";
   }
@@ -887,7 +887,7 @@ void stream::_process_host_dependency(io::data const& e) {
       << " on " << hd.host_id;
     std::ostringstream oss;
     oss << "DELETE FROM hosts_hosts_dependencies "
-        << "WHERE dependent_host_id=" << hd.dependent_host_id
+           "WHERE dependent_host_id=" << hd.dependent_host_id
         << "  AND host_id=" << hd.host_id;
     _execute(oss.str().c_str());
   }
@@ -993,12 +993,12 @@ void stream::_process_host_group_member(io::data const& e) {
     // Build query.
     std::ostringstream oss;
     oss << "DELETE hgm"
-        << "  FROM " << mapped_type<neb::host_group_member>::table << " AS hgm "
-        << "  INNER JOIN " << mapped_type<neb::host_group>::table << " AS hg "
-        << "  ON hgm.hostgroup_id=hg.hostgroup_id "
-        << "  WHERE hg.name=:group"
-        << "    AND hgm.host_id=:host_id"
-        << "    AND hg.instance_id=:instance_id ";
+      "  FROM " << mapped_type<neb::host_group_member>::table << " AS hgm "
+      "  INNER JOIN " << mapped_type<neb::host_group>::table << " AS hg "
+      "  ON hgm.hostgroup_id=hg.hostgroup_id "
+      "  WHERE hg.name=:group"
+      "    AND hgm.host_id=:host_id"
+      "    AND hg.instance_id=:instance_id ";
 
     // Execute query.
     QSqlQuery q(*_db);
@@ -1077,7 +1077,7 @@ void stream::_process_host_status(io::data const& e) {
     *_host_status_update << hs;
     _execute(*_host_status_update);
     if (_host_status_update->numRowsAffected() != 1)
-      logging::error(logging::medium) << "SQL: host could not be " \
+      logging::error(logging::medium) << "SQL: host could not be "
            "updated because host " << hs.host_id
         << " was not found in database";
   }
@@ -1136,7 +1136,7 @@ void stream::_process_instance_status(io::data const& e) {
   _execute(*_instance_status_update);
   if (_instance_status_update->numRowsAffected() != 1)
     logging::error(logging::medium) << "SQL: instance "
-      << is.id << " was not updated because no matching entry " \
+      << is.id << " was not updated because no matching entry "
          "was found in database";
 
   return ;
@@ -1176,7 +1176,7 @@ void stream::_process_issue_parent(io::data const& e) {
     ip(*static_cast<correlation::issue_parent const*>(&e));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing issue parent " \
+  logging::info(logging::medium) << "SQL: processing issue parent "
        "event (child: (" << ip.child_host_id << ", "
     << ip.child_service_id << ", " << ip.child_start_time
     << "), parent: (" << ip.parent_host_id << ", "
@@ -1207,8 +1207,8 @@ void stream::_process_issue_parent(io::data const& e) {
         << "SQL: child issue ID: " << child_id;
     }
     else
-      throw (exceptions::msg() << "SQL: could not fetch child issue " \
-               << "ID (host=" << ip.child_host_id << ", service="
+      throw (exceptions::msg() << "SQL: could not fetch child issue "
+                  "ID (host=" << ip.child_host_id << ", service="
                << ip.child_service_id << ", start="
                << ip.child_start_time << ")");
   }
@@ -1233,8 +1233,8 @@ void stream::_process_issue_parent(io::data const& e) {
         << parent_id;
     }
     else
-      throw (exceptions::msg() << "SQL: could not fetch parent issue " \
-               << "ID (host=" << ip.parent_host_id << ", service="
+      throw (exceptions::msg() << "SQL: could not fetch parent issue "
+                  "ID (host=" << ip.parent_host_id << ", service="
                << ip.parent_service_id << ", start="
                << ip.parent_start_time << ")");
   }
@@ -1273,7 +1273,7 @@ void stream::_process_issue_parent(io::data const& e) {
     _issue_parent_insert->bindValue(":parent_id", parent_id);
     logging::debug(logging::low) << "SQL: inserting issue parenting";
     if (!_issue_parent_insert->exec())
-      throw (exceptions::msg() << "SQL: issue parent insert query " \
+      throw (exceptions::msg() << "SQL: issue parent insert query "
                "failed: " << _issue_parent_insert->lastError().text());
   }
 
@@ -1414,7 +1414,7 @@ void stream::_process_service(io::data const& e) {
   neb::service const& s(*static_cast<neb::service const*>(&e));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing service event " \
+  logging::info(logging::medium) << "SQL: processing service event "
        "(host id: " << s.host_id << ", service_id: " << s.service_id
     << ", description: " << s.service_description << ")";
 
@@ -1459,7 +1459,7 @@ void stream::_process_service_check(io::data const& e) {
     *_service_check_update << sc;
     _execute(*_service_check_update);
     if (_service_check_update->numRowsAffected() != 1)
-      logging::error(logging::medium) << "SQL: service check could " \
+      logging::error(logging::medium) << "SQL: service check could "
            "not be updated because service (" << sc.host_id << ", "
         << sc.service_id << ") was not found in database";
   }
@@ -1503,7 +1503,7 @@ void stream::_process_service_dependency(io::data const& e) {
       << ", " << sd.service_id << ")";
     std::ostringstream oss;
     oss << "DELETE FROM services_services_dependencies "
-        << "WHERE dependent_host_id=" << sd.dependent_host_id
+           "WHERE dependent_host_id=" << sd.dependent_host_id
         << "  AND dependent_service_id=" << sd.dependent_service_id
         << "  AND host_id=" << sd.host_id
         << "  AND service_id=" << sd.service_id;
@@ -1612,13 +1612,13 @@ void stream::_process_service_group_member(io::data const& e) {
     // Build query.
     std::ostringstream oss;
     oss << "DELETE sgm"
-        << "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm "
-        << "  INNER JOIN " << mapped_type<neb::service_group>::table << " AS sg "
-        << "  ON sgm.servicegroup_id=sg.servicegroup_id "
-        << "  WHERE sg.name=:group "
-        << "    AND sgm.host_id=:host_id "
-        << "    AND sg.instance_id=:instance_id "
-        << "    AND sgm.service_id=:service_id";
+           "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm "
+           "  INNER JOIN " << mapped_type<neb::service_group>::table << " AS sg "
+           "  ON sgm.servicegroup_id=sg.servicegroup_id "
+           "  WHERE sg.name=:group "
+           "    AND sgm.host_id=:host_id "
+           "    AND sg.instance_id=:instance_id "
+           "    AND sgm.service_id=:service_id";
 
     // Execute query.
     QSqlQuery q(*_db);
@@ -1682,7 +1682,7 @@ void stream::_process_service_status(io::data const& e) {
     *_service_status_update << ss;
     _execute(*_service_status_update);
     if (_service_status_update->numRowsAffected() != 1)
-      logging::error(logging::medium) << "SQL: service could not be " \
+      logging::error(logging::medium) << "SQL: service could not be "
            "updated because service (" << ss.host_id << ", "
         << ss.service_id << ") was not found in database";
   }
@@ -1870,11 +1870,11 @@ stream::stream(
                     && (q.value(i).toString() != "Yes"))
                 || ((field == "Seconds_Behind_Master")
                     && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg() << "SQL: replication is not " \
+              throw (exceptions::msg() << "SQL: replication is not "
                           "complete: " << field << "="
                        << q.value(i).toString());
           logging::info(logging::medium)
-            << "SQL: database replication is complete, " \
+            << "SQL: database replication is complete, "
                "connection granted";
         }
       }
