@@ -42,28 +42,6 @@ std::map<std::string, std::set<unsigned int> >::const_iterator events::begin() c
 }
 
 /**
- *  Get category of a type.
- *
- *  @param[in] type Type.
- *
- *  @return Category of type.
- */
-unsigned short events::category_of_type(unsigned int type) throw () {
-  return (static_cast<unsigned short>(type >> 16));
-}
-
-/**
- *  Get element of type.
- *
- *  @param[in] type Type.
- *
- *  @return Element of type.
- */
-unsigned short events::element_of_type(unsigned int type) throw () {
-  return (static_cast<unsigned short>(type));
-}
-
-/**
  *  Get last iterator.
  *
  *  @return Last iterator.

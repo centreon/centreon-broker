@@ -52,9 +52,13 @@ namespace               io {
     std::map<std::string, std::set<unsigned int> >::const_iterator
                         begin() const;
     static unsigned short
-                        category_of_type(unsigned int type) throw ();
+                        category_of_type(unsigned int type) throw () {
+      return (static_cast<unsigned short>(type >> 16));
+    }
     static unsigned short
-                        element_of_type(unsigned int type) throw ();
+                        element_of_type(unsigned int type) throw () {
+      return (static_cast<unsigned short>(type));
+    }
     std::map<std::string, std::set<unsigned int> >::const_iterator
                         end() const;
     std::set<unsigned int> const&

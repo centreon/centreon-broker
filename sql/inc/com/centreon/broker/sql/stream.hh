@@ -110,8 +110,8 @@ namespace        sql {
                    QSqlQuery& up,
                    T& t);
 
-    static QHash<unsigned int, void (stream::*)(io::data const&)>
-                                _processing_table;
+    static void (stream::* const _correlation_processing_table[])(io::data const&);
+    static void (stream::* const _neb_processing_table[])(io::data const&);
     std::auto_ptr<QSqlQuery>    _acknowledgement_insert;
     std::auto_ptr<QSqlQuery>    _acknowledgement_update;
     std::auto_ptr<QSqlQuery>    _comment_insert;

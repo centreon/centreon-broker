@@ -47,8 +47,43 @@ using namespace com::centreon::broker::sql;
 *                                     *
 **************************************/
 
-// Processing table.
-QHash<unsigned int, void (stream::*)(io::data const&)> stream::_processing_table;
+// Processing tables.
+void (stream::* const stream::_correlation_processing_table[])(io::data const&) = {
+  NULL,
+  &stream::_process_engine,
+  &stream::_process_host_state,
+  &stream::_process_issue,
+  &stream::_process_issue_parent,
+  &stream::_process_service_state
+};
+void (stream::* const stream::_neb_processing_table[])(io::data const&) = {
+  NULL,
+  &stream::_process_acknowledgement,
+  &stream::_process_comment,
+  &stream::_process_custom_variable,
+  &stream::_process_custom_variable_status,
+  &stream::_process_downtime,
+  &stream::_process_event_handler,
+  &stream::_process_flapping_status,
+  &stream::_process_host_check,
+  &stream::_process_host_dependency,
+  &stream::_process_host_group,
+  &stream::_process_host_group_member,
+  &stream::_process_host,
+  &stream::_process_host_parent,
+  &stream::_process_host_status,
+  &stream::_process_instance,
+  &stream::_process_instance_status,
+  &stream::_process_log,
+  &stream::_process_module,
+  &stream::_process_notification,
+  &stream::_process_service_check,
+  &stream::_process_service_dependency,
+  &stream::_process_service_group,
+  &stream::_process_service_group_member,
+  &stream::_process_service,
+  &stream::_process_service_status
+};
 
 /**************************************
 *                                     *
@@ -1959,68 +1994,7 @@ stream::~stream() {
  *  Initialize SQL layer.
  */
 void stream::initialize() {
-  // Fill processing table.
-  _processing_table[io::events::data_type<io::events::neb, neb::de_acknowledgement>::value]
-    = &stream::_process_acknowledgement;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_comment>::value]
-    = &stream::_process_comment;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_custom_variable>::value]
-    = &stream::_process_custom_variable;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value]
-    = &stream::_process_custom_variable_status;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_downtime>::value]
-    = &stream::_process_downtime;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_event_handler>::value]
-    = &stream::_process_event_handler;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_flapping_status>::value]
-    = &stream::_process_flapping_status;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host>::value]
-    = &stream::_process_host;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_check>::value]
-    = &stream::_process_host_check;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_dependency>::value]
-    = &stream::_process_host_dependency;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_group>::value]
-    = &stream::_process_host_group;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_group_member>::value]
-    = &stream::_process_host_group_member;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_parent>::value]
-    = &stream::_process_host_parent;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_host_status>::value]
-    = &stream::_process_host_status;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_instance>::value]
-    = &stream::_process_instance;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_instance_status>::value]
-    = &stream::_process_instance_status;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_log_entry>::value]
-    = &stream::_process_log;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_module>::value]
-    = &stream::_process_module;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_notification>::value]
-    = &stream::_process_notification;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service>::value]
-    = &stream::_process_service;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service_check>::value]
-    = &stream::_process_service_check;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service_dependency>::value]
-    = &stream::_process_service_dependency;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service_group>::value]
-    = &stream::_process_service_group;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service_group_member>::value]
-    = &stream::_process_service_group_member;
-  _processing_table[io::events::data_type<io::events::neb, neb::de_service_status>::value]
-    = &stream::_process_service_status;
-  _processing_table[io::events::data_type<io::events::correlation, correlation::de_engine_state>::value]
-    = &stream::_process_engine;
-  _processing_table[io::events::data_type<io::events::correlation, correlation::de_host_state>::value]
-    = &stream::_process_host_state;
-  _processing_table[io::events::data_type<io::events::correlation, correlation::de_issue>::value]
-    = &stream::_process_issue;
-  _processing_table[io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value]
-    = &stream::_process_issue_parent;
-  _processing_table[io::events::data_type<io::events::correlation, correlation::de_service_state>::value]
-    = &stream::_process_service_state;
-  _processing_table.squeeze();
+  // Not used anymore.
   return ;
 }
 
@@ -2061,20 +2035,22 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
            << "SQL stream is shutdown");
 
   // Check that data exists.
-  unsigned int retval;
+  unsigned int retval(1);
   if (!data.isNull()) {
-    QHash<unsigned int, void (stream::*)(io::data const&)>::const_iterator
-      it(_processing_table.find(data->type()));
-    if (it != _processing_table.end()) {
-      (this->*(it.value()))(*data);
+    unsigned int type(data->type());
+    unsigned short cat(io::events::category_of_type(type));
+    unsigned short elem(io::events::element_of_type(type));
+    if (cat == io::events::neb) {
+      (this->*(_neb_processing_table[elem]))(*data);
       ++_transaction_queries;
       retval = 0;
     }
-    else
-      retval = 1;
+    else if (cat == io::events::correlation) {
+      (this->*(_correlation_processing_table[elem]))(*data);
+      ++_transaction_queries;
+      retval = 0;
+    }
   }
-  else
-    retval = 1;
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {
