@@ -1782,7 +1782,7 @@ void stream::_write_logs() {
           << "  msg_type, notification_cmd, notification_contact, "
           << "  output, retry, service_description, service_id, status, "
           << "  type) "
-          << "VALUES (";
+          << "VALUES ";
 
     // Fields used to escape strings.
     QSqlField host_name_field(
@@ -1833,6 +1833,7 @@ void stream::_write_logs() {
         issue = 0;
 
       // Build insertion query.
+      static QString const empty_string("''");
       host_name_field.setValue(le->host_name);
       instance_name_field.setValue(le->instance_name);
       notification_cmd_field.setValue(le->notification_cmd);
@@ -1844,17 +1845,30 @@ void stream::_write_logs() {
         query << le->host_id;
       else
         query << "NULL";
-      query << ", " << drivr->formatValue(host_name_field) << ", "
-            << drivr->formatValue(instance_name_field) << ", ";
+      query << ", " << (host_name_field.isNull()
+                        ? empty_string
+                        : drivr->formatValue(host_name_field)) << ", "
+            << (instance_name_field.isNull()
+                ? empty_string
+                : drivr->formatValue(instance_name_field)) << ", ";
       if (issue)
         query << issue;
       else
         query << "NULL";
       query << ", " << le->msg_type << ", "
-            << drivr->formatValue(notification_cmd_field) << ", "
-            << drivr->formatValue(notification_contact_field) << ", "
-            << drivr->formatValue(output_field) << ", " << le->retry
-            << ", " << drivr->formatValue(service_description_field)
+            << (notification_cmd_field.isNull()
+                ? empty_string
+                : drivr->formatValue(notification_cmd_field)) << ", "
+            << (notification_contact_field.isNull()
+                ? empty_string
+                : drivr->formatValue(notification_contact_field))
+            << ", "
+            << (output_field.isNull()
+                ? empty_string
+                : drivr->formatValue(output_field)) << ", " << le->retry
+            << ", " << (service_description_field.isNull()
+                        ? empty_string
+                        : drivr->formatValue(service_description_field))
             << ", ";
       if (le->service_id)
         query << le->service_id;
