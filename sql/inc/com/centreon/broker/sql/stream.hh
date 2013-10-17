@@ -20,9 +20,8 @@
 #ifndef CCB_SQL_STREAM_HH
 #  define CCB_SQL_STREAM_HH
 
+#  include <deque>
 #  include <memory>
-#  include <QHash>
-#  include <QMap>
 #  include <QPair>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
@@ -73,45 +72,46 @@ namespace        sql {
     bool         _prepare_update(
                    std::auto_ptr<QSqlQuery>& st,
                    QVector<QPair<QString, bool> > const& id);
-    void         _process_acknowledgement(io::data const& e);
-    void         _process_comment(io::data const& e);
-    void         _process_custom_variable(io::data const& e);
-    void         _process_custom_variable_status(io::data const& e);
-    void         _process_downtime(io::data const& e);
-    void         _process_engine(io::data const& e);
-    void         _process_event_handler(io::data const& e);
-    void         _process_flapping_status(io::data const& e);
-    void         _process_host(io::data const& e);
-    void         _process_host_check(io::data const& e);
-    void         _process_host_dependency(io::data const& e);
-    void         _process_host_group(io::data const& e);
-    void         _process_host_group_member(io::data const& e);
-    void         _process_host_parent(io::data const& e);
-    void         _process_host_state(io::data const& e);
-    void         _process_host_status(io::data const& e);
-    void         _process_instance(io::data const& e);
-    void         _process_instance_status(io::data const& e);
-    void         _process_issue(io::data const& e);
-    void         _process_issue_parent(io::data const& e);
-    void         _process_log(io::data const& e);
-    void         _process_module(io::data const& e);
-    void         _process_notification(io::data const& e);
-    void         _process_service(io::data const& e);
-    void         _process_service_check(io::data const& e);
-    void         _process_service_dependency(io::data const& e);
-    void         _process_service_group(io::data const& e);
-    void         _process_service_group_member(io::data const& e);
-    void         _process_service_state(io::data const& e);
-    void         _process_service_status(io::data const& e);
+    void         _process_acknowledgement(misc::shared_ptr<io::data> const& e);
+    void         _process_comment(misc::shared_ptr<io::data> const& e);
+    void         _process_custom_variable(misc::shared_ptr<io::data> const& e);
+    void         _process_custom_variable_status(misc::shared_ptr<io::data> const& e);
+    void         _process_downtime(misc::shared_ptr<io::data> const& e);
+    void         _process_engine(misc::shared_ptr<io::data> const& e);
+    void         _process_event_handler(misc::shared_ptr<io::data> const& e);
+    void         _process_flapping_status(misc::shared_ptr<io::data> const& e);
+    void         _process_host(misc::shared_ptr<io::data> const& e);
+    void         _process_host_check(misc::shared_ptr<io::data> const& e);
+    void         _process_host_dependency(misc::shared_ptr<io::data> const& e);
+    void         _process_host_group(misc::shared_ptr<io::data> const& e);
+    void         _process_host_group_member(misc::shared_ptr<io::data> const& e);
+    void         _process_host_parent(misc::shared_ptr<io::data> const& e);
+    void         _process_host_state(misc::shared_ptr<io::data> const& e);
+    void         _process_host_status(misc::shared_ptr<io::data> const& e);
+    void         _process_instance(misc::shared_ptr<io::data> const& e);
+    void         _process_instance_status(misc::shared_ptr<io::data> const& e);
+    void         _process_issue(misc::shared_ptr<io::data> const& e);
+    void         _process_issue_parent(misc::shared_ptr<io::data> const& e);
+    void         _process_log(misc::shared_ptr<io::data> const& e);
+    void         _process_module(misc::shared_ptr<io::data> const& e);
+    void         _process_notification(misc::shared_ptr<io::data> const& e);
+    void         _process_service(misc::shared_ptr<io::data> const& e);
+    void         _process_service_check(misc::shared_ptr<io::data> const& e);
+    void         _process_service_dependency(misc::shared_ptr<io::data> const& e);
+    void         _process_service_group(misc::shared_ptr<io::data> const& e);
+    void         _process_service_group_member(misc::shared_ptr<io::data> const& e);
+    void         _process_service_state(misc::shared_ptr<io::data> const& e);
+    void         _process_service_status(misc::shared_ptr<io::data> const& e);
     void         _unprepare();
     template     <typename T>
     void         _update_on_none_insert(
                    QSqlQuery& ins,
                    QSqlQuery& up,
                    T& t);
+    void         _write_logs();
 
-    static void (stream::* const _correlation_processing_table[])(io::data const&);
-    static void (stream::* const _neb_processing_table[])(io::data const&);
+    static void (stream::* const _correlation_processing_table[])(misc::shared_ptr<io::data> const&);
+    static void (stream::* const _neb_processing_table[])(misc::shared_ptr<io::data> const&);
     std::auto_ptr<QSqlQuery>    _acknowledgement_insert;
     std::auto_ptr<QSqlQuery>    _acknowledgement_update;
     std::auto_ptr<QSqlQuery>    _comment_insert;
@@ -139,6 +139,7 @@ namespace        sql {
     std::auto_ptr<QSqlQuery>    _instance_update;
     std::auto_ptr<QSqlQuery>    _instance_status_update;
     std::auto_ptr<QSqlQuery>    _issue_insert;
+    std::auto_ptr<QSqlQuery>    _issue_select;
     std::auto_ptr<QSqlQuery>    _issue_update;
     std::auto_ptr<QSqlQuery>    _issue_parent_insert;
     std::auto_ptr<QSqlQuery>    _issue_parent_update;
@@ -155,6 +156,8 @@ namespace        sql {
     std::auto_ptr<QSqlQuery>    _service_state_update;
     std::auto_ptr<QSqlQuery>    _service_status_update;
     std::auto_ptr<QSqlDatabase> _db;
+    std::deque<misc::shared_ptr<io::data> >
+                                _log_queue;
     bool                        _process_out;
     unsigned int                _queries_per_transaction;
     unsigned int                _transaction_queries;
