@@ -414,25 +414,25 @@ void correlator::update() {
 unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
   try {
     // Process event.
-    if (e->type() == io::events::data_type<io::events::neb, neb::de_host>::value)
-      _correlate_host_status(e);
-    else if (e->type() == io::events::data_type<io::events::neb, neb::de_host_status>::value)
-      _correlate_host_status(e);
-    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service>::value)
+    unsigned int e_type(e->type());
+    if ((e_type == io::events::data_type<io::events::neb, neb::de_service_status>::value)
+        || (e_type == io::events::data_type<io::events::neb, neb::de_service>::value))
       _correlate_service_status(e);
-    else if (e->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-      _correlate_service_status(e);
-    else if (e->type() == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
+    else if ((e_type == io::events::data_type<io::events::neb, neb::de_host_status>::value)
+             || (e_type == io::events::data_type<io::events::neb, neb::de_host>::value))
+      _correlate_host_status(e);
+    else if (e_type == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
       _correlate_log(e);
-    else if (e->type() == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
+    else if (e_type == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
       _correlate_acknowledgement(e);
-
-    // Dump retention file.
-    static time_t next_dump(0);
-    time_t now(time(NULL));
-    if (now > next_dump) {
-      _write_issues();
-      next_dump = now + 60;
+    else if (e_type == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
+      // Dump retention file.
+      static time_t next_dump(0);
+      time_t now(time(NULL));
+      if (now > next_dump) {
+        _write_issues();
+        next_dump = now + 60;
+      }
     }
   }
   catch (exceptions::msg const& e) {
