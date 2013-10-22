@@ -19,6 +19,7 @@
 
 #include <QDomDocument>
 #include <QDomElement>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/internal.hh"
@@ -90,6 +91,7 @@ namespace correlation {
         // Parameters.
         QString correlation_file;
         QString retention_file;
+        bool is_passive(false);
 
         // Parse XML.
         QDomDocument d;
@@ -105,6 +107,8 @@ namespace correlation {
                 correlation_file = elem.text();
               else if (name == "retention")
                 retention_file = elem.text();
+              else if (name == "passive")
+                is_passive = config::parser::parse_boolean(elem.text());
             }
           }
         }
@@ -113,7 +117,7 @@ namespace correlation {
         if (!correlation_file.isEmpty()) {
           // Create and register correlation object.
           misc::shared_ptr<correlation::correlator>
-            crltr(new correlation::correlator);
+            crltr(new correlation::correlator(is_passive));
           try {
             crltr->load(correlation_file, retention_file);
             correlation::obj = crltr.staticCast<multiplexing::hooker>();
@@ -121,17 +125,17 @@ namespace correlation {
             loaded = true;
           }
           catch (std::exception const& e) {
-            logging::config(logging::high) << "correlation: " \
+            logging::config(logging::high) << "correlation: "
               "configuration loading error: " << e.what();
           }
           catch (...) {
-            logging::config(logging::high) << "correlation: " \
+            logging::config(logging::high) << "correlation: "
               "configuration loading error";
           }
         }
       }
       if (!loaded)
-        logging::config(logging::high) << "correlation: invalid " \
+        logging::config(logging::high) << "correlation: invalid "
           "correlation configuration, correlation engine is NOT loaded";
     }
     return ;

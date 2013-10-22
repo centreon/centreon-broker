@@ -656,16 +656,19 @@ A *correlation* node must be defined right under the root node of the
 XML configuration file. This node can then contain the tags described
 in the table below.
 
-========= ==============================================================
-Tag       Description
-========= ==============================================================
-file      The XML configuration file containing host and service
-          definitions along with parenting and dependencies definitions.
-retention The XML retention file. This file is written by Centreon
-          Broker so that the correlation engine does not forget the
-          current states of the hosts and services across Broker
-          restarts.
-========= ==============================================================
+========== ==============================================================
+Tag        Description
+========== ==============================================================
+file       The XML configuration file containing host and service
+           definitions along with parenting and dependencies definitions.
+retention  The XML retention file. This file is written by Centreon
+           Broker so that the correlation engine does not forget the
+           current states of the hosts and services across Broker
+           restarts.
+is_passive Enable passive mode. In this mode, the correlator update the
+           internal state with correlation events. No events are emits
+           in passive mode.
+========== ==============================================================
 
 Example
 -------
