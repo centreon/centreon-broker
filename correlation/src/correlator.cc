@@ -24,6 +24,7 @@
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/parser.hh"
@@ -113,8 +114,17 @@ static int unknown_state(node const& n) {
 
 /**
  *  Constructor.
+ *
+ *  @param[in] is_passive True if the correlator is on passive mode.
+ *                        In passive mode, the correlator only update
+ *                        internal state.
  */
-correlator::correlator() {}
+correlator::correlator(bool is_passive)
+  : _process_event(is_passive
+                   ? &correlator::_process_event_on_passive
+                   : &correlator::_process_event_on_active) {
+
+}
 
 /**
  *  Copy constructor.
@@ -161,8 +171,9 @@ QMap<QPair<unsigned int, unsigned int>, node> const& correlator::get_state() con
  *                              information will be dumped when the
  *                              correlation engine stops.
  */
-void correlator::load(QString const& correlation_file,
-                      QString const& retention_file) {
+void correlator::load(
+                   QString const& correlation_file,
+                   QString const& retention_file) {
   // Set files.
   _correlation_file = correlation_file;
   _retention_file = retention_file;
@@ -414,26 +425,7 @@ void correlator::update() {
 unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
   try {
     // Process event.
-    unsigned int e_type(e->type());
-    if ((e_type == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-        || (e_type == io::events::data_type<io::events::neb, neb::de_service>::value))
-      _correlate_service_status(e);
-    else if ((e_type == io::events::data_type<io::events::neb, neb::de_host_status>::value)
-             || (e_type == io::events::data_type<io::events::neb, neb::de_host>::value))
-      _correlate_host_status(e);
-    else if (e_type == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
-      _correlate_log(e);
-    else if (e_type == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
-      _correlate_acknowledgement(e);
-    else if (e_type == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
-      // Dump retention file.
-      static time_t next_dump(0);
-      time_t now(time(NULL));
-      if (now > next_dump) {
-        _write_issues();
-        next_dump = now + 60;
-      }
-    }
+    (this->*_process_event)(e);
   }
   catch (exceptions::msg const& e) {
     logging::error(logging::high) << e.what() << " (ignored)";
@@ -536,7 +528,7 @@ void correlator::_correlate_host_service_status(
     QMap<QPair<unsigned int, unsigned int>, node>::iterator
       hs_it(_nodes.find(qMakePair(hs.host_id, 0u)));
     if (hs_it == _nodes.end())
-      throw (exceptions::msg() << "correlation: invalid host status " \
+      throw (exceptions::msg() << "correlation: invalid host status "
                "provided (" << hs.host_id << ")");
     n = &*hs_it;
   }
@@ -545,7 +537,7 @@ void correlator::_correlate_host_service_status(
     QMap<QPair<unsigned int, unsigned int>, node>::iterator
       ss_it(_nodes.find(qMakePair(ss.host_id, ss.service_id)));
     if (ss_it == _nodes.end())
-      throw (exceptions::msg() << "correlation: invalid service " \
+      throw (exceptions::msg() << "correlation: invalid service "
                   "status provided (" << ss.host_id << ", "
                << ss.service_id << ")");
     n = &*ss_it;
@@ -638,7 +630,7 @@ void correlator::_correlate_host_service_status(
              it != end;
              ++it)
           if ((*it)->my_issue.get()) {
-            logging::debug(logging::low) << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting "
                  "issue parenting between dependent node ("
               << n->host_id << ", " << n->service_id << ") and node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -661,7 +653,7 @@ void correlator::_correlate_host_service_status(
              it != end;
              ++it)
           if ((*it)->my_issue.get()) {
-            logging::debug(logging::low) << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting "
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and dependent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -696,7 +688,7 @@ void correlator::_correlate_host_service_status(
                  end(n->parents().end());
                it != end;
                ++it) {
-            logging::debug(logging::low) << "correlation: deleting " \
+            logging::debug(logging::low) << "correlation: deleting "
                  "issue parenting between node (" << n->host_id << ", "
               << n->service_id << ") and parent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -736,7 +728,7 @@ void correlator::_correlate_host_service_status(
                      end2((*it)->parents().end());
                    it2 != end2;
                    ++it2) {
-                logging::debug(logging::low) << "correlation: " \
+                logging::debug(logging::low) << "correlation: "
                      "deleting issue parenting between node ("
                   << (*it)->host_id << ", " << (*it)->service_id
                   << ") and parent node (" << (*it2)->host_id << ", "
@@ -898,7 +890,7 @@ void correlator::_issue_parenting(node* n, bool full) {
          it != end;
          ++it)
       if ((*it)->my_issue.get()) {
-        logging::debug(logging::low) << "correlation: creating " \
+        logging::debug(logging::low) << "correlation: creating "
              "issue parenting between dependent node ("
           << n->host_id << ", " << n->service_id << ") and node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -927,7 +919,7 @@ void correlator::_issue_parenting(node* n, bool full) {
              end(n->parents().end());
            it != end;
            ++it) {
-        logging::debug(logging::low) << "correlation: creating " \
+        logging::debug(logging::low) << "correlation: creating "
              "issue parenting between node (" << n->host_id << ", "
           << n->service_id << ") and parent node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -951,7 +943,7 @@ void correlator::_issue_parenting(node* n, bool full) {
        it != end;
        ++it)
     if ((*it)->my_issue.get()) {
-      logging::debug(logging::low) << "correlation: creating " \
+      logging::debug(logging::low) << "correlation: creating "
            "issue parenting between node (" << n->host_id << ", "
         << n->service_id << ") and dependent node ("
         << (*it)->host_id << ", " << (*it)->service_id << ")";
@@ -987,7 +979,7 @@ void correlator::_issue_parenting(node* n, bool full) {
                end2((*it)->parents().end());
              it2 != end2;
              ++it2) {
-          logging::debug(logging::low) << "correlation: " \
+          logging::debug(logging::low) << "correlation: "
                "creating issue parenting between node ("
             << (*it)->host_id << ", " << (*it)->service_id
             << ") and parent node (" << (*it2)->host_id << ", "
@@ -1033,6 +1025,146 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
   // Delete node for real.
   return (_nodes.erase(it));
 }
+
+/**
+ *  Process event on active mode.
+ *
+ *  @param[inout] e Event to process.
+ */
+void correlator::_process_event_on_active(
+                   misc::shared_ptr<io::data> const& e) {
+  unsigned int e_type(e->type());
+  if ((e_type == io::events::data_type<io::events::neb, neb::de_service_status>::value)
+      || (e_type == io::events::data_type<io::events::neb, neb::de_service>::value))
+    _correlate_service_status(e);
+  else if ((e_type == io::events::data_type<io::events::neb, neb::de_host_status>::value)
+           || (e_type == io::events::data_type<io::events::neb, neb::de_host>::value))
+    _correlate_host_status(e);
+  else if (e_type == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
+    _correlate_log(e);
+  else if (e_type == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
+    _correlate_acknowledgement(e);
+  else if (e_type == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
+    // Dump retention file.
+    static time_t next_dump(0);
+    time_t now(time(NULL));
+    if (now > next_dump) {
+      _write_issues();
+      next_dump = now + 60;
+    }
+  }
+}
+
+/**
+ *  Process event on passive mode.
+ *
+ *  @param[inout] e Event to process.
+ */
+void correlator::_process_event_on_passive(
+                   misc::shared_ptr<io::data> const& e) {
+  unsigned int e_type(e->type());
+
+  logging::debug(logging::low)
+    << "correlation:: process passive event (" << e_type << ")";
+
+  // if (e_type == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value)
+  //   ;
+  if (e_type == io::events::data_type<io::events::correlation, correlation::de_host_state>::value)
+    _update_host_service_state(e.staticCast<state>());
+  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue>::value)
+    _update_issue(e.staticCast<issue>());
+  // else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value)
+  //   _update_issue_parent(e.staticCast<issue_parent>());
+  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_service_state>::value)
+    _update_host_service_state(e.staticCast<state>());
+
+  return ;
+}
+
+/**
+ *  Update internal host or service state.
+ *
+ *  @param[inout] s The host or service state.
+ */
+void correlator::_update_host_service_state(misc::shared_ptr<state> s) {
+  logging::debug(logging::low)
+    << "correlation:: process passive state event: node("
+    << s->host_id << ", " << s->service_id << ")";
+
+  QMap<QPair<unsigned int, unsigned int>, node>::iterator
+    it(_nodes.find(qMakePair(s->host_id, s->service_id)));
+  if (it != _nodes.end()) {
+    node& n(it.value());
+    n.in_downtime = s->in_downtime;
+    n.since = s->start_time;
+    n.state = s->current_state;
+  }
+
+  return ;
+}
+
+/**
+ *  Update internal issue.
+ *
+ *  @param[inout] i The issue.
+ */
+void correlator::_update_issue(misc::shared_ptr<issue> i) {
+  logging::debug(logging::low)
+    << "correlation:: process passive issue event: node("
+    << i->host_id << ", " << i->service_id << ")";
+
+  QMap<QPair<unsigned int, unsigned int>, node>::iterator
+    it(_nodes.find(qMakePair(i->host_id, i->service_id)));
+  if (it != _nodes.end()) {
+    node& n(it.value());
+    if (n.my_issue.get()) {
+      n.my_issue->ack_time = i->ack_time;
+      n.my_issue->end_time = i->end_time;
+      n.my_issue->start_time = i->start_time;
+    }
+  }
+
+  return ;
+}
+
+// /**
+//  *  Update internal issue parent.
+//  *
+//  *  @param[inout] p The issue parent.
+//  */
+// void correlator::_update_issue_parent(misc::shared_ptr<issue_parent> p) {
+//   logging::debug(logging::low)
+//     << "correlation:: process passive issue parent event: "
+//     "dependent node (" << p->child_host_id << ", "
+//     << p->child_service_id << ") and node (" << p->parent_host_id
+//     << ", " << p->parent_service_id << ")";
+
+//   QMap<QPair<unsigned int, unsigned int>, node>::iterator
+//     it(_nodes.find(qMakePair(p->child_host_id, p->child_service_id)));
+//   if (it != _nodes.end()) {
+//     node& n(it.value());
+//     if (n.my_issue.get()) {
+//       n.my_issue->start_time = p->child_start_time;
+//       // n.my_issue->end_time = p->child_time;
+//     }
+
+//     for (QList<node*>::const_iterator
+//            it(n.depends_on().begin()), end(n.depends_on().end());
+//          it != end;
+//          ++it)
+//       if ((*it)->host_id == p->parent_host_id
+//           && (*it)->service_id == p->parent_service_id
+//           && (*it)->my_issue.get()) {
+//         (*it)->my_issue->start_time = p->child_start_time;
+//         (*it)->my_issue-> = p->end_time;
+//         (*it)->my_issue-> = p->parent_start_time;
+//         (*it)->my_issue-> = p->start_time;
+//         break;
+//       }
+//   }
+
+//   return ;
+// }
 
 /**
  *  Dump issues and issues parenting to a file.
@@ -1096,7 +1228,7 @@ void correlator::_write_issues() {
     // Write issue file
     QFile f(_retention_file);
     if (!f.open(QIODevice::WriteOnly))
-      logging::config(logging::high) << "correlation: could not write" \
+      logging::config(logging::high) << "correlation: could not write"
         " retention file: " << f.errorString();
     else {
       QByteArray ba(doc.toByteArray());
@@ -1105,7 +1237,7 @@ void correlator::_write_issues() {
         f.waitForBytesWritten(-1);
         wb = f.write(ba);
         if (wb <= 0) {
-          logging::config(logging::medium) << "correlation: finished " \
+          logging::config(logging::medium) << "correlation: finished "
             "writing retention file: " << f.errorString();
           break ;
         }
