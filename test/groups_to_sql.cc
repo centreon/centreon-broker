@@ -383,7 +383,7 @@ int main() {
     // Check that host groups were deleted from DB.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM hostgroups")
+      if (!q.exec("SELECT COUNT(*) FROM hostgroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get host group count from DB: "
@@ -396,7 +396,7 @@ int main() {
     // Check that service groups were deleted from DB.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM servicegroups")
+      if (!q.exec("SELECT COUNT(*) FROM servicegroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get service group count from DB: "
