@@ -117,18 +117,20 @@ void stream::_clean_tables(int instance_id) {
     _execute(ss.str().c_str());
   }
 
-  // Remove host groups.
+  // Disable host groups.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::host_group>::table
+    ss << "UPDATE " << mapped_type<neb::host_group>::table
+       << " SET enabled=0"
        << " WHERE instance_id=" << instance_id;
     _execute(ss.str().c_str());
   }
 
-  // Remove service groups.
+  // Disable service groups.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::service_group>::table
+    ss << "UPDATE " << mapped_type<neb::service_group>::table
+       << " SET enabled=0"
        << " WHERE instance_id=" << instance_id;
     _execute(ss.str().c_str());
   }
@@ -938,29 +940,20 @@ void stream::_process_host_group(
   neb::host_group const&
     hg(*static_cast<neb::host_group const*>(e.data()));
 
-  // Insert/Update.
-  if (hg.enabled) {
+  if (hg.enabled)
     logging::info(logging::medium) << "SQL: enabling host group '"
       << hg.name << "' of instance " << hg.instance_id;
-    _update_on_none_insert(
-      *_host_group_insert,
-      *_host_group_update,
-      hg);
-  }
-  // Delete.
-  else {
-    logging::info(logging::medium)
-      << "SQL: removing host group '" << hg.name
-      << "' on instance " << hg.instance_id;
-    QSqlQuery q(*_db);
-    q.prepare(
-        "DELETE FROM hostgroups "
-        "WHERE instance_id=:instance_id"
-        "  AND name=:name");
-    q.bindValue(":instance_id", hg.instance_id);
-    q.bindValue(":name", hg.name);
-    _execute(q);
-  }
+  else
+    logging::info(logging::medium) << "SQL: disabling host group '"
+      << hg.name << "' of instance " << hg.instance_id;
+
+  // Insert/Update.
+  _host_group_insert->bindValue(":enabled", hg.enabled);
+  _host_group_update->bindValue(":enabled", hg.enabled);
+  _update_on_none_insert(
+    *_host_group_insert,
+    *_host_group_update,
+    hg);
 
   return ;
 }
@@ -1415,7 +1408,8 @@ void stream::_process_service(
 
   // Processing.
   if (s.host_id && s.service_id) {
-    _update_on_none_insert(*_service_insert,
+    _update_on_none_insert(
+      *_service_insert,
       *_service_update,
       s);
   }
@@ -1521,29 +1515,21 @@ void stream::_process_service_group(
   neb::service_group const&
     sg(*static_cast<neb::service_group const*>(e.data()));
 
-  // Insert/Update.
-  if (sg.enabled) {
+  if (sg.enabled)
     logging::info(logging::medium) << "SQL: enabling service group '"
       << sg.name << "' of instance: " << sg.instance_id;
-    _update_on_none_insert(
-      *_service_group_insert,
-      *_service_group_update,
-      sg);
-  }
-  // Delete.
-  else {
-    logging::info(logging::medium)
-      << "SQL: removing service group '" << sg.name
-      << "' on instance " << sg.instance_id;
-    QSqlQuery q(*_db);
-    q.prepare(
-        "DELETE FROM servicegroups "
-        "WHERE instance_id=:instance_id"
-        "  AND name=:name");
-    q.bindValue(":instance_id", sg.instance_id);
-    q.bindValue(":name", sg.name);
-    _execute(q);
-  }
+  else
+    logging::info(logging::medium) << "SQL: disabling service group '"
+      << sg.name << "' of instance: " << sg.instance_id;
+
+
+  // Insert/Update.
+  _service_group_insert->bindValue(":enabled", sg.enabled);
+  _service_group_update->bindValue(":enabled", sg.enabled);
+  _update_on_none_insert(
+    *_service_group_insert,
+    *_service_group_update,
+    sg);
 
   return ;
 }
