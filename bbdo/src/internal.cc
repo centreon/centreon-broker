@@ -138,8 +138,8 @@ static void get_string(
               T const& t,
               data_member<T> const& member,
               QByteArray& buffer) {
-  buffer.append(qPrintable(t.*(member.S)));
-  buffer.append('\0');
+  QByteArray tmp((t.*(member.S)).toUtf8());
+  buffer.append(tmp.constData(), tmp.size() + 1);
   return ;
 }
 

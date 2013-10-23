@@ -166,60 +166,70 @@ parser& parser::operator=(parser const& pp) {
 void parser::parse_perfdata(
                QString const& str,
                QList<perfdata>& pd) {
+  // Here we will use a UTF-8 copy of the UTF-16 QString. This will
+  // allow us to work with standard C string functions. The key thing
+  // to remember is that ASCII-compatible character encodings cannot
+  // occur on multi-byte characters.
+
+  // PS : things seem to be working with with ASCII-compliant characters
+  //      and multi-bytes Unicode characters. DO NOT TOUCH UNLESS YOU
+  //      KNOW WHAT YOU'RE DOING.
+
   // Extract metrics strings.
-  std::string buf(str.toStdString());
+  QByteArray buf(str.trimmed().toUtf8());
   std::replace(buf.begin(), buf.end(), ',', '.');
-  char const* ptr(buf.c_str());
+  char const* ptr(buf.constData());
 
-  // Skip initial whitespaces.
-  while (isblank(*ptr))
-    ++ptr;
+  // Debug message.
+  logging::debug(logging::medium)
+    << "storage: parsing perfdata string '"
+    << ptr << "'";
+
   while (*ptr) {
-    // Debug message.
-    logging::debug(logging::medium)
-      << "storage: parsing perfdata string '" << ptr << "'";
-
     // Perfdata object.
     perfdata p;
 
     // Get metric name.
     bool in_quote(false);
-    unsigned int i(0);
+    int i(0);
     while (ptr[i] && (in_quote
-                      || ((ptr[i] != '=') && !isspace(ptr[i])))) {
+                      || ((ptr[i] != '=') && !isspace(ptr[i]))
+                      || (static_cast<int>(ptr[i]) >= 128)
+                      || (static_cast<int>(ptr[i]) < 0))) {
       if ('\'' == ptr[i])
         in_quote = !in_quote;
       ++i;
     }
-    std::string s(ptr, i);
+    QByteArray s(ptr, i);
     ptr += i;
 
     // Unquote metric name.
-    size_t t;
-    t = s.find_first_of('\'');
-    while (t != std::string::npos) {
-      s.erase(t, 1);
-      t = s.find_first_of('\'', t + 1); // Skip one char, so '' becomes '.
+    int t;
+    t = s.indexOf('\'');
+    while (t != -1) {
+      s.remove(t, 1);
+      t = s.indexOf('\'', t + 1); // Skip one char, so '' becomes '.
     }
-    if ((s.size() > 0) && (*s.rbegin() == ']')) {
-      if (!s.compare(0, 2, "a[")) {
-        s = s.substr(2, s.size() - 3);
+    int size(s.size());
+    if ((size > 0) && (s[size - 1] == ']')) {
+      if (s.startsWith("a[")) {
+        s = s.mid(2, size - 3);
         p.value_type(perfdata::absolute);
       }
-      else if (!s.compare(0, 2, "c[")) {
-        s = s.substr(2, s.size() - 3);
+      else if (s.startsWith("c[")) {
+        s = s.mid(2, size - 3);
         p.value_type(perfdata::counter);
       }
-      else if (!s.compare(0, 2, "d[")) {
-        s = s.substr(2, s.size() - 3);
+      else if (s.startsWith("d[")) {
+        s = s.mid(2, size - 3);
         p.value_type(perfdata::derive);
       }
-      else if (!s.compare(0, 2, "g[")) {
-        s = s.substr(2, s.size() - 3);
+      else if (s.startsWith("g[")) {
+        s = s.mid(2, s.size() - 3);
         p.value_type(perfdata::gauge);
       }
     }
-    p.name(QString(s.c_str()).trimmed());
+    p.name(QString::fromUtf8(s.trimmed().constData()));
 
     // Check format.
     if (*ptr != '=')
@@ -233,8 +243,8 @@ void parser::parse_perfdata(
       p.value(0.0);
 
     // Extract unit.
-    t = strcspn(ptr, " ;");
-    p.unit(std::string(ptr, t).c_str());
+    t = strcspn(ptr, " \t\n\r;");
+    p.unit(QString::fromUtf8(ptr, t));
     ptr += t;
     if (*ptr == ';')
       ++ptr;

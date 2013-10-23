@@ -21,6 +21,7 @@
 #include <csignal>
 #include <cstring>
 #include <QCoreApplication>
+#include <QTextCodec>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -202,7 +203,18 @@ extern "C" {
         gl_initialized_qt = true;
         new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
         signal(SIGCHLD, SIG_DFL);
+        QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+        if (utf8_codec)
+          QTextCodec::setCodecForCStrings(utf8_codec);
+        else
+          logging::error(logging::high)
+            << "core: could not find UTF-8 codec, strings will be "
+               "interpreted using the current locale";
       }
+      // Qt already loaded.
+      else
+        logging::info(logging::high)
+          << "core: Qt was already loaded";
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
