@@ -665,7 +665,7 @@ retention  The XML retention file. This file is written by Centreon
            Broker so that the correlation engine does not forget the
            current states of the hosts and services across Broker
            restarts.
-is_passive Enable passive mode. In this mode, the correlator update the
+passive    Enable passive mode. In this mode, the correlator update the
            internal state with correlation events. No events are emits
            in passive mode.
 ========== ==============================================================

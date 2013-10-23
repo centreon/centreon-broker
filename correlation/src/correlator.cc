@@ -1117,54 +1117,19 @@ void correlator::_update_issue(misc::shared_ptr<issue> i) {
     it(_nodes.find(qMakePair(i->host_id, i->service_id)));
   if (it != _nodes.end()) {
     node& n(it.value());
-    if (n.my_issue.get()) {
+    if (i->end_time)
+      n.my_issue.reset();
+    else {
+      if (!n.my_issue.get()) {
+        n.my_issue.reset(new issue);
+        n.my_issue->start_time = i->start_time;
+      }
       n.my_issue->ack_time = i->ack_time;
-      n.my_issue->end_time = i->end_time;
-      n.my_issue->start_time = i->start_time;
     }
   }
 
   return ;
 }
-
-// /**
-//  *  Update internal issue parent.
-//  *
-//  *  @param[inout] p The issue parent.
-//  */
-// void correlator::_update_issue_parent(misc::shared_ptr<issue_parent> p) {
-//   logging::debug(logging::low)
-//     << "correlation:: process passive issue parent event: "
-//     "dependent node (" << p->child_host_id << ", "
-//     << p->child_service_id << ") and node (" << p->parent_host_id
-//     << ", " << p->parent_service_id << ")";
-
-//   QMap<QPair<unsigned int, unsigned int>, node>::iterator
-//     it(_nodes.find(qMakePair(p->child_host_id, p->child_service_id)));
-//   if (it != _nodes.end()) {
-//     node& n(it.value());
-//     if (n.my_issue.get()) {
-//       n.my_issue->start_time = p->child_start_time;
-//       // n.my_issue->end_time = p->child_time;
-//     }
-
-//     for (QList<node*>::const_iterator
-//            it(n.depends_on().begin()), end(n.depends_on().end());
-//          it != end;
-//          ++it)
-//       if ((*it)->host_id == p->parent_host_id
-//           && (*it)->service_id == p->parent_service_id
-//           && (*it)->my_issue.get()) {
-//         (*it)->my_issue->start_time = p->child_start_time;
-//         (*it)->my_issue-> = p->end_time;
-//         (*it)->my_issue-> = p->parent_start_time;
-//         (*it)->my_issue-> = p->start_time;
-//         break;
-//       }
-//   }
-
-//   return ;
-// }
 
 /**
  *  Dump issues and issues parenting to a file.

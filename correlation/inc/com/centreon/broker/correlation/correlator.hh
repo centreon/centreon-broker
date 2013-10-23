@@ -36,7 +36,6 @@ namespace                          com {
       namespace                    correlation {
         // Forward declaration.
         class issue;
-        // class issue_parent;
         class state;
 
         /**
@@ -102,8 +101,6 @@ namespace                          com {
                                      misc::shared_ptr<state> s);
           void                     _update_issue(
                                      misc::shared_ptr<issue> i);
-          // void                     _update_issue_parent(
-          //                            misc::shared_ptr<issue_parent> p);
           void                     _write_issues();
 
           void                     (correlator::*_process_event)(
