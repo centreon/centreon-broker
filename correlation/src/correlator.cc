@@ -1095,8 +1095,9 @@ void correlator::_update_host_service_state(misc::shared_ptr<state> s) {
     it(_nodes.find(qMakePair(s->host_id, s->service_id)));
   if (it != _nodes.end()) {
     node& n(it.value());
+    if (n.state != s->current_state)
+      n.since = s->start_time;
     n.in_downtime = s->in_downtime;
-    n.since = s->start_time;
     n.state = s->current_state;
   }
 
@@ -1122,6 +1123,8 @@ void correlator::_update_issue(misc::shared_ptr<issue> i) {
     else {
       if (!n.my_issue.get()) {
         n.my_issue.reset(new issue);
+        n.my_issue->host_id = i->host_id;
+        n.my_issue->service_id = i->service_id;
         n.my_issue->start_time = i->start_time;
       }
       n.my_issue->ack_time = i->ack_time;
