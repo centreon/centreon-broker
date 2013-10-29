@@ -219,7 +219,28 @@ int main() {
       } const          entries[] = {
         { 1, 0, 1, false, t1, t2, 4, true, 0, 0, false },
         { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-        { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false }
+        { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false },
+        { 2, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 2, t1, t2, false, t2, t3, 0, true, 0, 0, true },
+        { 2, t2, t3, false, t3, t4, 1, true, 0, 0, true },
+        { 2, t3, t4, false, t4, t5, 1, false, t3, t4, true },
+        { 2, t4, t5, true, 0, 0, 2, false, t4, t5, true },
+        { 3, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 3, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 4, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 4, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 5, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 6, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 7, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 8, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 9, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 10, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 10, t1, t2, true, 0, 0, 0, true, 0, 0, false }
       };
 
       // Get host state events.
@@ -307,7 +328,7 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
+  //config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

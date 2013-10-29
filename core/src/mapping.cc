@@ -914,7 +914,8 @@ static mapped_data<host_state> const host_state_mapping[] = {
   mapped_data<host_state>(
     &host_state::end_time,
     3,
-    "end_time"),
+    "end_time",
+    NULL_ON_ZERO),
   mapped_data<host_state>(
     &host_state::host_id,
     4,
@@ -1988,7 +1989,8 @@ static mapped_data<service_state> const service_state_mapping [] = {
   mapped_data<service_state>(
     &service_state::end_time,
     3,
-    "end_time"),
+    "end_time",
+    NULL_ON_ZERO),
   mapped_data<service_state>(
     &service_state::host_id,
     4,
