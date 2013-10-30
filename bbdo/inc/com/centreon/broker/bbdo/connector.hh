@@ -40,7 +40,8 @@ namespace         bbdo {
                     bool is_out,
                     bool negociate,
                     QString const& extensions,
-                    time_t timeout);
+                    time_t timeout,
+                    bool coarse = false);
                   connector(connector const& right);
                   ~connector();
     connector&    operator=(connector const& right);
@@ -55,6 +56,7 @@ namespace         bbdo {
     misc::shared_ptr<io::stream>
                   _open(misc::shared_ptr<io::stream> stream);
 
+    bool          _coarse;
     QString       _extensions;
     bool          _is_in;
     bool          _is_out;

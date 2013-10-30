@@ -20,6 +20,7 @@
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -109,10 +110,19 @@ io::endpoint* factory::new_endpoint(
   // Return value.
   io::endpoint* retval(NULL);
 
-  // Negociation allowed ?
-  bool negociate;
-  QString extensions;
+  // Coarse endpoint ?
+  bool coarse(false);
   {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("coarse"));
+    if (it != cfg.params.end())
+      coarse = config::parser::parse_boolean(*it);
+  }
+
+  // Negociation allowed ?
+  bool negociate(false);
+  QString extensions;
+  if (!coarse) {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("negociation"));
     if ((it != cfg.params.end())
@@ -131,14 +141,16 @@ io::endpoint* factory::new_endpoint(
                          is_output,
                          negociate,
                          extensions,
-                         cfg.read_timeout);
+                         cfg.read_timeout,
+                         coarse);
   else
     retval = new bbdo::connector(
                          is_input,
                          is_output,
                          negociate,
                          extensions,
-                         cfg.read_timeout);
+                         cfg.read_timeout,
+                         coarse);
   return (retval);
 }
 

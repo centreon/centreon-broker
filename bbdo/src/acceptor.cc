@@ -47,14 +47,17 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] negociate  true if feature negociation is allowed.
  *  @param[in] extensions Available extensions.
  *  @param[in] timeout    Connection timeout.
+ *  @param[in] coarse     If the acceptor is coarse or not.
  */
 acceptor::acceptor(
             QString const& name,
             bool is_out,
             bool negociate,
             QString const& extensions,
-            time_t timeout)
+            time_t timeout,
+            bool coarse)
   : io::endpoint(true),
+    _coarse(coarse),
     _extensions(extensions),
     _is_out(is_out),
     _name(name),
@@ -72,6 +75,7 @@ acceptor::acceptor(
 acceptor::acceptor(acceptor const& right)
   : QObject(),
     io::endpoint(right),
+    _coarse(right._coarse),
     _extensions(right._extensions),
     _is_out(right._is_out),
     _name(right._name),
@@ -109,6 +113,7 @@ acceptor::~acceptor() {
 acceptor& acceptor::operator=(acceptor const& right) {
   if (this != &right) {
     io::endpoint::operator=(right);
+    _coarse = right._coarse;
     _extensions = right._extensions;
     _is_out = right._is_out;
     _name = right._name;
@@ -256,78 +261,80 @@ misc::shared_ptr<io::stream> acceptor::_open(
       out->write_to(stream);
     }
 
-    // Read initial packet.
-    misc::shared_ptr<io::data> d;
-    my_bbdo->read_any(d, time(NULL) + _timeout);
-    if (d.isNull()
-        || (d->type()
-            != "com::centreon::broker::bbdo::version_response")) {
-      logging::error(logging::high)
-        << "BBDO: invalid protocol header, aborting connection";
-      return (misc::shared_ptr<io::stream>());
-    }
+    if (!_coarse) {
+      // Read initial packet.
+      misc::shared_ptr<io::data> d;
+      my_bbdo->read_any(d, time(NULL) + _timeout);
+      if (d.isNull()
+          || (d->type()
+              != "com::centreon::broker::bbdo::version_response")) {
+        logging::error(logging::high)
+          << "BBDO: invalid protocol header, aborting connection";
+        return (misc::shared_ptr<io::stream>());
+      }
 
-    // Handle protocol version.
-    misc::shared_ptr<version_response>
-      v(d.staticCast<version_response>());
-    if (v->bbdo_major != BBDO_VERSION_MAJOR) {
-      logging::error(logging::high)
+      // Handle protocol version.
+      misc::shared_ptr<version_response>
+        v(d.staticCast<version_response>());
+      if (v->bbdo_major != BBDO_VERSION_MAJOR) {
+        logging::error(logging::high)
+          << "BBDO: peer is using protocol version " << v->bbdo_major
+          << "." << v->bbdo_minor << "." << v->bbdo_patch
+          << " whereas we're using protocol version "
+          << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+          << BBDO_VERSION_PATCH;
+        return (misc::shared_ptr<io::stream>());
+      }
+      logging::info(logging::medium)
         << "BBDO: peer is using protocol version " << v->bbdo_major
         << "." << v->bbdo_minor << "." << v->bbdo_patch
-        << " whereas we're using protocol version "
-        << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
-        << BBDO_VERSION_PATCH;
-      return (misc::shared_ptr<io::stream>());
-    }
-    logging::info(logging::medium)
-      << "BBDO: peer is using protocol version " << v->bbdo_major
-      << "." << v->bbdo_minor << "." << v->bbdo_patch
-      << ", we're using version " << BBDO_VERSION_MAJOR << "."
-      << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+        << ", we're using version " << BBDO_VERSION_MAJOR << "."
+        << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
 
-    // Send self version packet.
-    misc::shared_ptr<version_response>
-      welcome_packet(new version_response);
-    if (_negociate)
-      welcome_packet->extensions = _extensions;
-    my_bbdo->output::write(welcome_packet.staticCast<io::data>());
-    my_bbdo->output::write(misc::shared_ptr<io::data>());
+      // Send self version packet.
+      misc::shared_ptr<version_response>
+        welcome_packet(new version_response);
+      if (_negociate)
+        welcome_packet->extensions = _extensions;
+      my_bbdo->output::write(welcome_packet.staticCast<io::data>());
+      my_bbdo->output::write(misc::shared_ptr<io::data>());
 
-    // Negociation.
-    if (_negociate) {
-      // Apply negociated extensions.
-      logging::info(logging::medium)
-        << "BBDO: we have extensions '"
-        << _extensions << "' and peer has '" << v->extensions << "'";
-      QStringList own_ext(_extensions.split(' '));
-      QStringList peer_ext(v->extensions.split(' '));
-      for (QStringList::const_iterator
-             it(own_ext.begin()),
-             end(own_ext.end());
-           it != end;
-           ++it) {
-        // Find matching extension in peer extension list.
-        QStringList::const_iterator
-          peer_it(std::find(peer_ext.begin(), peer_ext.end(), *it));
-        // Apply extension if found.
-        if (peer_it != peer_ext.end()) {
-          logging::info(logging::medium)
-            << "BBDO: applying extension '" << *it << "'";
-          for (QMap<QString, io::protocols::protocol>::const_iterator
-                 proto_it(io::protocols::instance().begin()),
-                 proto_end(io::protocols::instance().end());
-               proto_it != proto_end;
-               ++proto_it)
-            if (proto_it.key() == *it) {
-              misc::shared_ptr<io::stream>
-                s(proto_it->endpntfactry->new_stream(
-                                            stream,
-                                            true,
-                                            *it));
-              my_bbdo->read_from(s);
-              my_bbdo->write_to(s);
-              break ;
-            }
+      // Negociation.
+      if (_negociate) {
+        // Apply negociated extensions.
+        logging::info(logging::medium)
+          << "BBDO: we have extensions '"
+          << _extensions << "' and peer has '" << v->extensions << "'";
+        QStringList own_ext(_extensions.split(' '));
+        QStringList peer_ext(v->extensions.split(' '));
+        for (QStringList::const_iterator
+               it(own_ext.begin()),
+               end(own_ext.end());
+             it != end;
+             ++it) {
+          // Find matching extension in peer extension list.
+          QStringList::const_iterator
+            peer_it(std::find(peer_ext.begin(), peer_ext.end(), *it));
+          // Apply extension if found.
+          if (peer_it != peer_ext.end()) {
+            logging::info(logging::medium)
+              << "BBDO: applying extension '" << *it << "'";
+            for (QMap<QString, io::protocols::protocol>::const_iterator
+                   proto_it(io::protocols::instance().begin()),
+                   proto_end(io::protocols::instance().end());
+                 proto_it != proto_end;
+                 ++proto_it)
+              if (proto_it.key() == *it) {
+                misc::shared_ptr<io::stream>
+                  s(proto_it->endpntfactry->new_stream(
+                                              stream,
+                                              true,
+                                              *it));
+                my_bbdo->read_from(s);
+                my_bbdo->write_to(s);
+                break ;
+              }
+          }
         }
       }
     }

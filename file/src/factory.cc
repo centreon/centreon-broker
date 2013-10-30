@@ -86,7 +86,7 @@ bool factory::has_endpoint(
   (void)is_output;
   bool retval;
   if (cfg.type == "file") {
-    cfg.params["negociation"] = "no"; // File cannot negociate features.
+    cfg.params["coarse"] = "yes"; // File won't respond to any salutation.
     retval = true;
   }
   else
