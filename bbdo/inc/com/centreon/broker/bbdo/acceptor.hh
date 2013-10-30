@@ -65,7 +65,8 @@ namespace               com {
                           bool negociate,
                           QString const& extensions,
                           time_t timeout,
-                          bool one_peer_retention_mode = false);
+                          bool one_peer_retention_mode = false,
+                          bool coarse = false);
                         acceptor(acceptor const& right);
                         ~acceptor();
           acceptor&     operator=(acceptor const& right);
@@ -86,6 +87,7 @@ namespace               com {
 
           QList<QThread*>
                         _clients;
+          bool          _coarse;
           QString       _extensions;
           bool          _is_out;
           QString       _name;

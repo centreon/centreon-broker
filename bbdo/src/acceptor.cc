@@ -53,6 +53,7 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] timeout                 Connection timeout.
  *  @param[in] one_peer_retention_mode True to enable the "one peer
  *                                     retention mode" (TM).
+ *  @param[in] coarse                  If the acceptor is coarse or not.
  */
 acceptor::acceptor(
             QString const& name,
@@ -60,8 +61,10 @@ acceptor::acceptor(
             bool negociate,
             QString const& extensions,
             time_t timeout,
-            bool one_peer_retention_mode)
+            bool one_peer_retention_mode,
+            bool coarse)
   : io::endpoint(!one_peer_retention_mode),
+    _coarse(coarse),
     _extensions(extensions),
     _is_out(is_out),
     _name(name),
@@ -80,6 +83,7 @@ acceptor::acceptor(
 acceptor::acceptor(acceptor const& right)
   : QObject(),
     io::endpoint(right),
+    _coarse(right._coarse),
     _extensions(right._extensions),
     _is_out(right._is_out),
     _name(right._name),
@@ -118,6 +122,7 @@ acceptor::~acceptor() {
 acceptor& acceptor::operator=(acceptor const& right) {
   if (this != &right) {
     io::endpoint::operator=(right);
+    _coarse = right._coarse;
     _extensions = right._extensions;
     _is_out = right._is_out;
     _name = right._name;
@@ -277,6 +282,10 @@ void acceptor::stats(std::string& buffer) {
 void acceptor::_negociate_features(
                   misc::shared_ptr<io::stream> stream,
                   misc::shared_ptr<bbdo::stream> my_bbdo) {
+  // Coarse peer don't expect any salutation either.
+  if (_coarse)
+    return ;
+
   // Read initial packet.
   misc::shared_ptr<io::data> d;
   my_bbdo->read_any(d, time(NULL) + _timeout);
