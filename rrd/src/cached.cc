@@ -24,6 +24,7 @@
 #  include <QLocalSocket>
 #endif // Qt >= 4.4.0
 #include <sstream>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
