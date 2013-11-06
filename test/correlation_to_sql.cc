@@ -233,10 +233,10 @@ int main() {
     /* Test cases
     ** ----------
     **
-    ** 1) OK -> CRITICAL
+    ** 1) UP -> DOWN
     ** 2) OK -> WARNING -> DOWNTIME
     ** 3) OK -> CRITICAL -> ACK -> WARNING
-    ** 4) OK -> DOWNTIME -> WARNING -> ACK -> CRITICAL
+    ** 4) UP -> DOWNTIME -> UNREACHABLE -> ACK (STICKY) -> DOWN
     ** 5) OK -> CRITICAL -> ACK
     ** 6) OK -> WARNING -> ACK -> DOWNTIME
     */
@@ -295,7 +295,7 @@ int main() {
       }
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;0;0;1;Broker;Ack SVC1-2");
       commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;1;0;1;Engine;Ack SVC2-1");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;2;0;1;Engine;Ack SVC2-1");
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;2;0;0;1;foo;Ack SVC2-2");
     }
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -306,7 +306,7 @@ int main() {
     // Step 4.
     {
       commander.execute("PROCESS_SVC_CHECK_RESULT;1;2;1;output4-1-2");
-      commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;1;0;1;Centreon Map;Ack HST2");
+      commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
       {
         std::ostringstream oss;
         oss << "SCHEDULE_SVC_DOWNTIME;2;2;" << t4 << ";" << (t4 + 1600)
@@ -340,14 +340,30 @@ int main() {
         time_t       ack_time_high;
         bool         in_downtime;
       } const          entries[] = {
+        /*
+        ** Host 1.
+        */
+        // Start = PENDING.
         { 1, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        // Step 1 = UP.
         { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = UNREACHABLE.
         { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false },
+
+        /*
+        ** Host 2.
+        */
+        // Start = PENDING.
         { 2, 0, 1, false, t1, t2, 4, true, 0, 0, false },
-        { 2, t1, t2, false, t2, t3, 0, true, 0, 0, true },
-        { 2, t2, t3, false, t3, t4, 1, true, 0, 0, true },
-        { 2, t3, t4, false, t4, t5, 1, false, t3, t4, true },
-        { 2, t4, t5, true, 0, 0, 2, false, t4, t5, true },
+        // Step 1 = UP.
+        { 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = DOWNTIME.
+        { 2, t2, t3, false, t3, t4, 0, true, 0, 0, true },
+        // Step 3 = DOWN, step 4 = ACK (STICKY).
+        { 2, t3, t4, false, t4, t5, 1, false, t4, t5, true },
+        // Step 5 = UNREACHABLE.
+        { 2, t4, t5, true, 0, 0, 2, false, t4, t4 + 1, true },
+
         { 3, 0, 1, false, t1, t2, 4, true, 0, 0, false },
         { 3, t1, t2, true, 0, 0, 0, true, 0, 0, false },
         { 4, 0, 1, false, t1, t2, 4, true, 0, 0, false },
