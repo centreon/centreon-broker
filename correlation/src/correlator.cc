@@ -465,23 +465,7 @@ void correlator::_correlate_acknowledgement(
       << static_cast<unsigned long long>(ack.entry_time);
     it->my_issue->ack_time = ack.entry_time;
 
-    time_t now(ack.entry_time);
-
-    // Old state.
-    {
-      misc::shared_ptr<state> state_update(
-        ack.service_id ? static_cast<state*>(new service_state)
-                       : static_cast<state*>(new host_state));
-      state_update->current_state = it->state;
-      state_update->end_time = now;
-      state_update->host_id = it->host_id;
-      state_update->in_downtime = it->in_downtime;
-      state_update->service_id = it->service_id;
-      state_update->start_time = it->since;
-      _events.push_back(state_update.staticCast<io::data>());
-    }
-
-    // New state.
+    // Updated state.
     {
       misc::shared_ptr<state> state_update(
         ack.service_id ? static_cast<state*>(new service_state)
@@ -491,7 +475,7 @@ void correlator::_correlate_acknowledgement(
       state_update->host_id = it->host_id;
       state_update->in_downtime = it->in_downtime;
       state_update->service_id = it->service_id;
-      state_update->start_time = now;
+      state_update->start_time = it->since;
       _events.push_back(state_update.staticCast<io::data>());
     }
 
@@ -561,12 +545,18 @@ void correlator::_correlate_host_service_status(
     // Update states.
     logging::debug(logging::medium) << "correlation: node ("
       << n->host_id << ", " << n->service_id << ") has new state event";
+    // Now is the last update time if getting in/out of downtime.
+    if ((n->in_downtime && !hss.scheduled_downtime_depth)
+        || (!n->in_downtime && hss.scheduled_downtime_depth))
+      now = hss.last_update;
+
     {
       // Old state.
       {
         misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
+        // XXX : this ack_time might not be true
         state_update->ack_time =
           ((!n->my_issue.get() || !n->my_issue->ack_time)
            ? timestamp(-1)
@@ -597,10 +587,12 @@ void correlator::_correlate_host_service_status(
         misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
-        state_update->ack_time =
-          ((!n->my_issue.get() || !n->my_issue->ack_time || !n->state)
-           ? timestamp(-1)
-           : n->my_issue->ack_time);
+        if (n->host_id == 2 && n->service_id == 0)
+          logging::info(logging::medium) << "YOPEPITO "
+                                         << hss.problem_has_been_acknowledged;
+        state_update->ack_time = (hss.problem_has_been_acknowledged
+                                  ? n->since
+                                  : timestamp(-1));
         state_update->current_state = n->state;
         state_update->host_id = n->host_id;
         state_update->in_downtime = n->in_downtime;
