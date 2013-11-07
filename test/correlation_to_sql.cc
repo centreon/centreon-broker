@@ -235,10 +235,10 @@ int main() {
     **
     ** 1) UP -> DOWN
     ** 2) OK -> WARNING -> DOWNTIME
-    ** 3) OK -> CRITICAL -> ACK -> WARNING
+    ** 3) OK -> CRITICAL -> ACK (STICKY) -> WARNING
     ** 4) UP -> DOWNTIME -> UNREACHABLE -> ACK (STICKY) -> DOWN
-    ** 5) OK -> CRITICAL -> ACK
-    ** 6) OK -> WARNING -> ACK -> DOWNTIME
+    ** 5) OK -> CRITICAL -> ACK (STICKY).
+    ** 6) OK -> WARNING -> ACK (NORMAL) -> DOWNTIME
     */
 
     // Step 1.
@@ -252,7 +252,7 @@ int main() {
 
       // Set services as OK.
       for (unsigned int i(0); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
-        unsigned int host_id((i / HOST_COUNT) + 1);
+        unsigned int host_id((i / SERVICES_BY_HOST) + 1);
         unsigned int service_id(i + 1);
         std::ostringstream cmd;
         cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";"
@@ -277,8 +277,8 @@ int main() {
             << ";1;0;3600;Merethis;Host #2 is going in downtime";
         commander.execute(oss.str());
       }
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;1;2;output2-2-1");
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;2;1;output2-2-2");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
+      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
     }
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
@@ -295,8 +295,8 @@ int main() {
       }
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;0;0;1;Broker;Ack SVC1-2");
       commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;1;2;0;1;Engine;Ack SVC2-1");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;2;0;0;1;foo;Ack SVC2-2");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;3;2;0;1;Engine;Ack SVC2-3");
+      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
     }
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
@@ -309,8 +309,8 @@ int main() {
       commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
       {
         std::ostringstream oss;
-        oss << "SCHEDULE_SVC_DOWNTIME;2;2;" << t4 << ";" << (t4 + 1600)
-            << ";0;0;1000;Merethis;Service #2-#2 is going in downtime";
+        oss << "SCHEDULE_SVC_DOWNTIME;2;4;" << t4 << ";" << (t4 + 1600)
+            << ";0;0;1000;Merethis;Service #2-#4 is going in downtime";
         commander.execute(oss.str());
       }
     }
@@ -362,7 +362,7 @@ int main() {
         // Step 3 = DOWN, step 4 = ACK (STICKY).
         { 2, t3, t4, false, t4, t5, 1, false, t4, t5, true },
         // Step 5 = UNREACHABLE.
-        { 2, t4, t5, true, 0, 0, 2, false, t4, t4 + 1, true },
+        { 2, t4, t5, true, 0, 0, 2, false, t4, t5, true },
 
         { 3, 0, 1, false, t1, t2, 4, true, 0, 0, false },
         { 3, t1, t2, true, 0, 0, 0, true, 0, 0, false },
@@ -470,14 +470,99 @@ int main() {
         time_t       ack_time_high;
         bool         in_downtime;
       } const          entries[] = {
+	/*
+	** Service 1-1.
+	*/
+	// Start = UNKNOWN.
         { 1, 1, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	// Step 1 = OK.
         { 1, 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-        { 1, 1, t2, t3, true, 0, 0, 3, true, 0, 0, true },
+	// Step 2 = WARNING.
+        { 1, 1, t2, t3, false, t3, t4, 3, true, 0, 0, false },
+	// Step 3 = DOWNTIME.
+	{ 1, 1, t3, t4, true, 0, 0, 3, true, 0, 0, true },
+
+	/*
+	** Service 1-2.
+	*/
+	// Start = UNKNOWN.
         { 1, 2, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	// Step 1 = OK.
         { 1, 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-        { 1, 2, t2, t3, false, t3, t4, 3, true, 0, 0, false },
-        { 1, 2, t3, t4, true, 0, 0, 3, false, t3, t4, false }
-        //{ 2, 3, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	// Step 2 = CRITICAL, step 3 = ACK (STICKY), step 4 = WARNING.
+        { 1, 2, t2, t3, true, 0, 0, 3, false, t3, t4, false },
+
+	/*
+	** Service 2-3.
+	*/
+	// Start = UNKNOWN.
+	{ 2, 3, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	// Step 1 = OK.
+	{ 2, 3, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = CRITICAL.
+	{ 2, 3, t2, t3, false, t3, t4, 2, true, 0, 0, false },
+	// Step 3 = ACK (STICKY) and host DOWN.
+	{ 2, 3, t3, t4, true, 0, 0, 3, false, t3, t4, false },
+
+	/*
+	** Service 2-4.
+	*/
+	// Start = UNKNOWN.
+	{ 2, 4, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	// Step 1 = OK.
+	{ 2, 4, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+	// Step 2 = WARNING, step 3 = ACK (NORMAL).
+	{ 2, 4, t2, t3, false, t4, t5, 3, false, t3, t4, false },
+	// Step 4 = DOWNTIME.
+	{ 2, 4, t4, t5, true, 0, 0, 3, false, 0, 0, true },
+
+	{ 3, 5, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 3, 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 3, 6, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 3, 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 4, 7, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 4, 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 4, 8, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 4, 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 5, 9, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 5, 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 5, 10, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 5, 10, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 6, 11, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 6, 11, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 6, 12, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 6, 12, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 7, 13, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 7, 13, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 7, 14, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 7, 14, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 8, 15, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 8, 15, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 8, 16, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 8, 16, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 9, 17, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 9, 17, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 9, 18, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 9, 18, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 10, 19, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 10, 19, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+
+	{ 10, 20, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 10, 20, t1, t2, true, 0, 0, 0, true, 0, 0, false }
       };
 
       // Get service state events.
@@ -550,10 +635,10 @@ int main() {
         }
       }
 
-      // // No more results.
-      // if (q.next())
-      //   throw (exceptions::msg()
-      //          << "too much service state events in DB");
+      // No more results.
+      if (q.next())
+        throw (exceptions::msg()
+               << "too much service state events in DB");
     }
 
     // Stop daemons.
@@ -605,7 +690,7 @@ int main() {
   ::remove(broker_correlation_path.c_str());
   ::remove(cbmod_config_path.c_str());
   ::remove(cbmod_correlation_path.c_str());
-  config_db_close(DB_NAME);
+  //config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

@@ -566,13 +566,7 @@ void correlator::_correlate_host_service_status(
         state_update->host_id = n->host_id;
         state_update->in_downtime = n->in_downtime;
         state_update->service_id = n->service_id;
-        if (!n->my_issue.get())
-          state_update->start_time = n->since;
-        else
-          state_update->start_time =
-            ((n->since < n->my_issue->ack_time)
-              ? n->my_issue->ack_time
-              : n->since);
+	state_update->start_time = n->since;
         _events.push_back(state_update.staticCast<io::data>());
       }
 
