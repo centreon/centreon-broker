@@ -1081,8 +1081,7 @@ void correlator::_update_host_service_state(misc::shared_ptr<state> s) {
     it(_nodes.find(qMakePair(s->host_id, s->service_id)));
   if (it != _nodes.end()) {
     node& n(it.value());
-    if (n.state != s->current_state)
-      n.since = s->start_time;
+    n.since = s->start_time;
     n.in_downtime = s->in_downtime;
     n.state = s->current_state;
   }

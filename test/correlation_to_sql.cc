@@ -499,10 +499,8 @@ int main() {
 	{ 2, 3, 0, 1, false, t1, t2, 3, true, 0, 0, false },
 	// Step 1 = OK.
 	{ 2, 3, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = CRITICAL.
-	{ 2, 3, t2, t3, false, t3, t4, 2, true, 0, 0, false },
-	// Step 3 = ACK (STICKY) and host DOWN.
-	{ 2, 3, t3, t4, true, 0, 0, 3, false, t3, t4, false },
+        // Step 2 = CRITICAL, step 3 = ACK (STICKY).
+	{ 2, 3, t2, t3, true, 0, 0, 2, false, t3, t4, false },
 
 	/*
 	** Service 2-4.
@@ -514,7 +512,7 @@ int main() {
 	// Step 2 = WARNING, step 3 = ACK (NORMAL).
 	{ 2, 4, t2, t3, false, t4, t5, 3, false, t3, t4, false },
 	// Step 4 = DOWNTIME.
-	{ 2, 4, t4, t5, true, 0, 0, 3, false, 0, 0, true },
+	{ 2, 4, t4, t5, true, 0, 0, 3, false, t4, t5, true },
 
 	{ 3, 5, 0, 1, false, t1, t2, 3, true, 0, 0, false },
 	{ 3, 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
