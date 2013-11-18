@@ -71,4 +71,4 @@ namespace          neb {
 
 CCB_END()
 
-#endif // !EVENTS_DOWNTIME_HH
+#endif // !CCB_NEB_DOWNTIME_HH
