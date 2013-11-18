@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts_scheduled::hosts_scheduled() {}
+hosts_scheduled::hosts_scheduled()
+  : plugin("hosts_scheduled") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-hosts_scheduled::hosts_scheduled(hosts_scheduled const& right) {
-  (void)right;
+hosts_scheduled::hosts_scheduled(hosts_scheduled const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ hosts_scheduled::~hosts_scheduled() {}
  *  @return This object.
  */
 hosts_scheduled& hosts_scheduled::operator=(hosts_scheduled const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string hosts_scheduled::run() {
+void hosts_scheduled::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count hosts scheduled.
   unsigned int total(0);
   for (host* h(host_list); h; h = h->next)
@@ -71,7 +76,13 @@ std::string hosts_scheduled::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " scheduled hosts"
-    "|hosts_scheduled=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " scheduled hosts";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "hosts_scheduled=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

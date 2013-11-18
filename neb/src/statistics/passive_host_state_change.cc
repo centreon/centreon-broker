@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-passive_host_state_change::passive_host_state_change() {}
+passive_host_state_change::passive_host_state_change()
+  : plugin("passive_host_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_host_state_change::passive_host_state_change(passive_host_state_change const& right) {
-  (void)right;
+passive_host_state_change::passive_host_state_change(passive_host_state_change const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ passive_host_state_change::~passive_host_state_change() {}
  *  @return This object.
  */
 passive_host_state_change& passive_host_state_change::operator=(passive_host_state_change const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string passive_host_state_change::run() {
-  std::ostringstream oss;
+void passive_host_state_change::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (host* h(host_list); h; h = h->next)
     if (h->check_type == HOST_CHECK_PASSIVE)
       cv << h->percent_state_change;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average passive host state change of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "%|avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "% min=" << cv.min()
+        << "% max=" << cv.max() << "%";
+    perfdata = oss.str();
   }
   else {
-    oss << "No passive host to compute passive host "
-        << "state change on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No passive host to compute passive host "
+      "state change on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

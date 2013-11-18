@@ -38,7 +38,7 @@ namespace                 neb {
                           services_scheduled(services_scheduled const& right);
                           ~services_scheduled();
       services_scheduled& operator=(services_scheduled const& right);
-      std::string         run();
+      void                run(std::string& output, std::string& perfdata);
     };
   }
 }

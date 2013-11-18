@@ -28,15 +28,16 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-services_scheduled::services_scheduled() {}
+services_scheduled::services_scheduled() : plugin("services_scheduled") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-services_scheduled::services_scheduled(services_scheduled const& right) {
-  (void)right;
+services_scheduled::services_scheduled(services_scheduled const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +53,19 @@ services_scheduled::~services_scheduled() {}
  *  @return This object.
  */
 services_scheduled& services_scheduled::operator=(services_scheduled const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string services_scheduled::run() {
+void services_scheduled::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count services scheduled.
   unsigned int total(0);
   for (service* s(service_list); s; s = s->next)
@@ -71,7 +75,13 @@ std::string services_scheduled::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " scheduled services"
-    "|services_scheduled=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " scheduled services";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "services_scheduled=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

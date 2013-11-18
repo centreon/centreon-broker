@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-passive_service_state_change::passive_service_state_change() {}
+passive_service_state_change::passive_service_state_change()
+  : plugin("passive_service_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_service_state_change::passive_service_state_change(passive_service_state_change const& right) {
-  (void)right;
+passive_service_state_change::passive_service_state_change(passive_service_state_change const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ passive_service_state_change::~passive_service_state_change() {}
  *  @return This object.
  */
 passive_service_state_change& passive_service_state_change::operator=(passive_service_state_change const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string passive_service_state_change::run() {
-  std::ostringstream oss;
+void passive_service_state_change::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (service* s(service_list); s; s = s->next)
     if (s->check_type == SERVICE_CHECK_PASSIVE)
       cv << s->percent_state_change;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average passive service state change of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "%|avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "% min=" << cv.min()
+        << "% max=" << cv.max() << "%";
+    perfdata = oss.str();
   }
   else {
-    oss << "No passive service to compute passive service "
-        << "state change on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No passive service to compute passive service "
+      "state change on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

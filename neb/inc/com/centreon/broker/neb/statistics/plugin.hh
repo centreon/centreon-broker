@@ -25,16 +25,25 @@
 
 CCB_BEGIN()
 
-namespace     neb {
-  namespace   statistics {
+namespace                        neb {
+  namespace                      statistics {
     /**
      *  @class plugin plugin.hh "com/centreon/broker/neb/statistics/plugin.hh"
      *  @brief Interface to execute plugin statistics.
      */
-    class     plugin {
+    class                        plugin {
     public:
-      virtual ~plugin() {}
-      virtual std::string run() = 0;
+                                 plugin(std::string const& name);
+                                 plugin(plugin const& right);
+      virtual                    ~plugin();
+      plugin&                    operator=(plugin const& right);
+      virtual std::string const& name() const throw ();
+      virtual void               run(
+                                   std::string& output,
+                                   std::string& perfdata) = 0;
+
+    protected:
+      std::string                _name;
     };
   }
 }

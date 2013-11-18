@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-active_host_state_change::active_host_state_change() {}
+active_host_state_change::active_host_state_change()
+  : plugin("active_host_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_host_state_change::active_host_state_change(active_host_state_change const& right) {
-  (void)right;
+active_host_state_change::active_host_state_change(active_host_state_change const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ active_host_state_change::~active_host_state_change() {}
  *  @return This object.
  */
 active_host_state_change& active_host_state_change::operator=(active_host_state_change const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string active_host_state_change::run() {
-  std::ostringstream oss;
+void active_host_state_change::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (host* h(host_list); h; h = h->next)
     if (h->check_type == HOST_CHECK_ACTIVE)
       cv << h->percent_state_change;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average active host state change of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "%|avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "% min=" << cv.min()
+        << "% max=" << cv.max() << "%";
+    perfdata = oss.str();
   }
   else {
-    oss << "No active host to compute active host state "
-        << "change on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No active host to compute active host state "
+      "change on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

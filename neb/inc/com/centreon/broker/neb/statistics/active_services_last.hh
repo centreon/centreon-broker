@@ -40,7 +40,7 @@ namespace         neb {
                   ~active_services_last();
       active_services_last&
                   operator=(active_services_last const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

@@ -39,7 +39,7 @@ namespace         neb {
                   ~active_service_latency();
       active_service_latency&
                   operator=(active_service_latency const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

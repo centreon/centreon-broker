@@ -40,7 +40,7 @@ namespace                neb {
                          ~services_actively_checked();
       services_actively_checked&
                          operator=(services_actively_checked const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

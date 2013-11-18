@@ -38,7 +38,7 @@ namespace                neb {
                          services_flapping(services_flapping const& right);
                          ~services_flapping();
       services_flapping& operator=(services_flapping const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

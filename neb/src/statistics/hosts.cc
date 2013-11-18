@@ -29,15 +29,16 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts::hosts() {}
+hosts::hosts() : plugin("hosts") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-hosts::hosts(hosts const& right) {
-  (void)right;
+hosts::hosts(hosts const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -53,16 +54,19 @@ hosts::~hosts() {}
  *  @return This object.
  */
 hosts& hosts::operator=(hosts const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string hosts::run() {
+void hosts::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count hosts up / down / unreachable.
   unsigned int total[3] = { 0, 0, 0 };
   for (host* h(host_list); h; h = h->next)
@@ -74,9 +78,15 @@ std::string hosts::run() {
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
       << " has " << total[HOST_UP] << " hosts on status UP and "
-      << not_up << " hosts on non-UP status"
-    "|up=" << total[HOST_UP]
+      << not_up << " hosts on non-UP status";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "up=" << total[HOST_UP]
       << " down=" << total[HOST_DOWN]
-      << " unreachable=" << total[HOST_UNREACHABLE] << "\n";
-  return (oss.str());
+      << " unreachable=" << total[HOST_UNREACHABLE];
+  perfdata = oss.str();
+
+  return ;
 }

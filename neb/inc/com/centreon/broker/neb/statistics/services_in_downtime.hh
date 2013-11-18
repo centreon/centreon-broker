@@ -26,19 +26,19 @@
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
+namespace                   neb {
+  namespace                 statistics {
     /**
      *  @class services_in_downtime services_in_downtime.hh "com/centreon/broker/neb/statistics/services_in_downtime.hh"
      *  @brief services_in_downtime statistics plugin.
      */
-    class                services_in_downtime : public plugin {
+    class                   services_in_downtime : public plugin {
     public:
-                         services_in_downtime();
-                         services_in_downtime(services_in_downtime const& right);
-                         ~services_in_downtime();
-      services_in_downtime&    operator=(services_in_downtime const& right);
-      std::string        run();
+                            services_in_downtime();
+                            services_in_downtime(services_in_downtime const& right);
+                            ~services_in_downtime();
+      services_in_downtime& operator=(services_in_downtime const& right);
+      void                  run(std::string& output, std::string& perfdata);
     };
   }
 }

@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-passive_service_latency::passive_service_latency() {}
+passive_service_latency::passive_service_latency()
+  : plugin("passive_service_latency") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_service_latency::passive_service_latency(passive_service_latency const& right) {
-  (void)right;
+passive_service_latency::passive_service_latency(passive_service_latency const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ passive_service_latency::~passive_service_latency() {}
  *  @return This object.
  */
 passive_service_latency& passive_service_latency::operator=(passive_service_latency const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string passive_service_latency::run() {
-  std::ostringstream oss;
+void passive_service_latency::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (service* s(service_list); s; s = s->next)
     if (s->check_type == SERVICE_CHECK_PASSIVE)
       cv << s->latency;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average passive service latency of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "s|avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "s min=" << cv.min()
+        << "s max=" << cv.max() << "s";
+    perfdata = oss.str();
   }
   else {
-    oss << "No passive service to compute passive service "
-        << "latency on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No passive service to compute passive service "
+      "latency on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

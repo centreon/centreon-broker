@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-total_service_state_change::total_service_state_change() {}
+total_service_state_change::total_service_state_change()
+  : plugin("total_service_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-total_service_state_change::total_service_state_change(total_service_state_change const& right) {
-  (void)right;
+total_service_state_change::total_service_state_change(total_service_state_change const& right)
+  : plugin(right) {
+
 }
 
 /**
@@ -54,30 +56,41 @@ total_service_state_change::~total_service_state_change() {}
  *  @return This object.
  */
 total_service_state_change& total_service_state_change::operator=(total_service_state_change const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string total_service_state_change::run() {
-  std::ostringstream oss;
+void total_service_state_change::run(
+              std::string& output,
+	      std::string& perfdata) {
   if (service_list) {
     compute_value<double> cv;
     for (service* s(service_list); s; s = s->next)
       cv << s->percent_state_change;
+
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average service state change of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "%|avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "% min=" << cv.min()
+        << "% max=" << cv.max() << "%";
+    perfdata = oss.str();
   }
   else {
-    oss << "No service to compute total service state change on "
-        << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No service to compute total service state change on "
+      + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

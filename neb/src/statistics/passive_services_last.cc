@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-passive_services_last::passive_services_last() {}
+passive_services_last::passive_services_last()
+  : plugin("passive_services_last") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_services_last::passive_services_last(passive_services_last const& right) {
-  (void)right;
+passive_services_last::passive_services_last(passive_services_last const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ passive_services_last::~passive_services_last() {}
  *  @return This object.
  */
 passive_services_last& passive_services_last::operator=(passive_services_last const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string passive_services_last::run() {
+void passive_services_last::run(
+       std::string& output,
+       std::string& perfdata) {
   unsigned int last_checked_1(0);
   unsigned int last_checked_5(0);
   unsigned int last_checked_15(0);
@@ -83,12 +88,20 @@ std::string passive_services_last::run() {
       }
     }
   }
+
+  // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString() << " received "
-      << last_checked_5 << " passive checks during the last 5 minutes|"
-      << "passive_services_last_1=" << last_checked_1
+      << last_checked_5 << " passive checks during the last 5 minutes";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "passive_services_last_1=" << last_checked_1
       << " passive_services_last_5=" << last_checked_5
       << " passive_services_last_15=" << last_checked_15
-      << " passive_services_last_60=" << last_checked_60 << "\n";
-  return (oss.str());
+      << " passive_services_last_60=" << last_checked_60;
+  perfdata = oss.str();
+
+  return ;
 }

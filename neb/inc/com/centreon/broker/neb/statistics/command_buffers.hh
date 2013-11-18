@@ -38,7 +38,7 @@ namespace              neb {
                        command_buffers(command_buffers const& right);
                        ~command_buffers();
       command_buffers& operator=(command_buffers const& right);
-      std::string      run();
+      void             run(std::string& output, std::string& perfdata);
     };
   }
 }

@@ -26,19 +26,19 @@
 
 CCB_BEGIN()
 
-namespace                 neb {
-  namespace               statistics {
+namespace              neb {
+  namespace            statistics {
     /**
      *  @class hosts_scheduled hosts_scheduled.hh "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
      *  @brief hosts_scheduled statistics plugin.
      */
-    class                 hosts_scheduled : public plugin {
+    class              hosts_scheduled : public plugin {
     public:
-                          hosts_scheduled();
-                          hosts_scheduled(hosts_scheduled const& right);
-                          ~hosts_scheduled();
+                       hosts_scheduled();
+                       hosts_scheduled(hosts_scheduled const& right);
+                       ~hosts_scheduled();
       hosts_scheduled& operator=(hosts_scheduled const& right);
-      std::string         run();
+      void             run(std::string& output, std::string& perfdata);
     };
   }
 }

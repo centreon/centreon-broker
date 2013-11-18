@@ -40,7 +40,7 @@ namespace                neb {
                          ~services_passively_checked();
       services_passively_checked&
                          operator=(services_passively_checked const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

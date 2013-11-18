@@ -40,7 +40,7 @@ namespace                neb {
                          ~hosts_passively_checked();
       hosts_passively_checked&
                          operator=(hosts_passively_checked const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

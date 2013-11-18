@@ -28,15 +28,16 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-total_services::total_services() {}
+total_services::total_services() : plugin("total_services") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-total_services::total_services(total_services const& right) {
-  (void)right;
+total_services::total_services(total_services const& right)
+  : plugin(right) {
+
 }
 
 /**
@@ -52,16 +53,19 @@ total_services::~total_services() {}
  *  @return This object.
  */
 total_services& total_services::operator=(total_services const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string total_services::run() {
+void total_services::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count services.
   unsigned int total(0);
   for (service* s(service_list); s; s = s->next)
@@ -70,7 +74,13 @@ std::string total_services::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " services|total_services="
-      << total << "\n";
-  return (oss.str());
+      << " has " << total << " services";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "total_services=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

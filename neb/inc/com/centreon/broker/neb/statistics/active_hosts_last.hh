@@ -40,7 +40,7 @@ namespace         neb {
                   ~active_hosts_last();
       active_hosts_last&
                   operator=(active_hosts_last const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

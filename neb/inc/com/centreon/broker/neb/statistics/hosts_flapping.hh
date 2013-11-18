@@ -26,19 +26,19 @@
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
+namespace             neb {
+  namespace           statistics {
     /**
      *  @class hosts_flapping hosts_flapping.hh "com/centreon/broker/neb/statistics/hosts_flapping.hh"
      *  @brief hosts_flapping statistics plugin.
      */
-    class                hosts_flapping : public plugin {
+    class             hosts_flapping : public plugin {
     public:
-                         hosts_flapping();
-                         hosts_flapping(hosts_flapping const& right);
-                         ~hosts_flapping();
+                      hosts_flapping();
+                      hosts_flapping(hosts_flapping const& right);
+                      ~hosts_flapping();
       hosts_flapping& operator=(hosts_flapping const& right);
-      std::string        run();
+      void            run(std::string& output, std::string& perfdata);
     };
   }
 }

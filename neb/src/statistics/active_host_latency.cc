@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-active_host_latency::active_host_latency() {}
+active_host_latency::active_host_latency()
+  : plugin("active_host_latency") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_host_latency::active_host_latency(active_host_latency const& right) {
-  (void)right;
+active_host_latency::active_host_latency(active_host_latency const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ active_host_latency::~active_host_latency() {}
  *  @return This object.
  */
 active_host_latency& active_host_latency::operator=(active_host_latency const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string active_host_latency::run() {
-  std::ostringstream oss;
+void active_host_latency::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (host* h(host_list); h; h = h->next)
     if (h->check_type == HOST_CHECK_ACTIVE)
       cv << h->latency;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average active host latency of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "s|avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "s min=" << cv.min()
+        << "s max=" << cv.max() << "s";
+    perfdata = oss.str();
   }
   else {
-    oss << "No active host to compute active host "
-        << "latency on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No active host to compute active host "
+      "latency on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

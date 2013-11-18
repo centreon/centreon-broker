@@ -26,19 +26,19 @@
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
+namespace             neb {
+  namespace           statistics {
     /**
      *  @class total_hosts total_hosts.hh "com/centreon/broker/neb/statistics/total_hosts.hh"
      *  @brief Total_hosts statistics plugin.
      */
-    class                total_hosts : public plugin {
+    class             total_hosts : public plugin {
     public:
-                         total_hosts();
-                         total_hosts(total_hosts const& right);
-                         ~total_hosts();
+                      total_hosts();
+                      total_hosts(total_hosts const& right);
+                      ~total_hosts();
       total_hosts&    operator=(total_hosts const& right);
-      std::string        run();
+      void            run(std::string& output, std::string& perfdata);
     };
   }
 }

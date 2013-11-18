@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts_actively_checked::hosts_actively_checked() {}
+hosts_actively_checked::hosts_actively_checked()
+  : plugin("hosts_actively_checked") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-hosts_actively_checked::hosts_actively_checked(hosts_actively_checked const& right) {
-  (void)right;
+hosts_actively_checked::hosts_actively_checked(hosts_actively_checked const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ hosts_actively_checked::~hosts_actively_checked() {}
  *  @return This object.
  */
 hosts_actively_checked& hosts_actively_checked::operator=(hosts_actively_checked const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string hosts_actively_checked::run() {
+void hosts_actively_checked::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count hosts active checked.
   unsigned int total(0);
   for (host* h(host_list); h; h = h->next)
@@ -71,7 +76,13 @@ std::string hosts_actively_checked::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " hosts actively checked"
-    "|hosts_actively_checked=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " hosts actively checked";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "hosts_actively_checked=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-active_host_execution_time::active_host_execution_time() {}
+active_host_execution_time::active_host_execution_time()
+  : plugin("active_host_execution_time") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_host_execution_time::active_host_execution_time(active_host_execution_time const& right) {
-  (void)right;
+active_host_execution_time::active_host_execution_time(active_host_execution_time const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ active_host_execution_time::~active_host_execution_time() {}
  *  @return This object.
  */
 active_host_execution_time& active_host_execution_time::operator=(active_host_execution_time const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string active_host_execution_time::run() {
-  std::ostringstream oss;
+void active_host_execution_time::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (host* h(host_list); h; h = h->next)
     if (h->check_type == HOST_CHECK_ACTIVE)
       cv << h->execution_time;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average active host execution time of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "s|avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "s min=" << cv.min()
+        << "s max=" << cv.max() << "s";
+    perfdata = oss.str();
   }
   else {
-    oss << "No active host to compute active host "
-        << "execution time on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No active host to compute active host "
+      "execution time on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

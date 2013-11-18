@@ -40,7 +40,7 @@ namespace         neb {
                   ~active_service_execution_time();
       active_service_execution_time&
                   operator=(active_service_execution_time const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

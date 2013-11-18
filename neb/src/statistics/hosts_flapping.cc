@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts_flapping::hosts_flapping() {}
+hosts_flapping::hosts_flapping()
+  : plugin("hosts_flapping") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-hosts_flapping::hosts_flapping(hosts_flapping const& right) {
-  (void)right;
+hosts_flapping::hosts_flapping(hosts_flapping const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ hosts_flapping::~hosts_flapping() {}
  *  @return This object.
  */
 hosts_flapping& hosts_flapping::operator=(hosts_flapping const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string hosts_flapping::run() {
+void hosts_flapping::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count hosts are flapping.
   unsigned int total(0);
   for (host* h(host_list); h; h = h->next)
@@ -71,7 +76,13 @@ std::string hosts_flapping::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " flapping hosts"
-    "|hosts_flapping=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " flapping hosts";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "hosts_flapping=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

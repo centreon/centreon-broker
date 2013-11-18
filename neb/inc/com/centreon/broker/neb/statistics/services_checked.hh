@@ -38,7 +38,7 @@ namespace               neb {
                         services_checked(services_checked const& right);
                         ~services_checked();
       services_checked& operator=(services_checked const& right);
-      std::string       run();
+      void              run(std::string& output, std::string& perfdata);
     };
   }
 }

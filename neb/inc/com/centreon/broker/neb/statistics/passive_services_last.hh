@@ -40,7 +40,7 @@ namespace         neb {
                   ~passive_services_last();
       passive_services_last&
                   operator=(passive_services_last const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

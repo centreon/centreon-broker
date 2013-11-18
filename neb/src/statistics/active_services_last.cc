@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-active_services_last::active_services_last() {}
+active_services_last::active_services_last()
+  : plugin("active_services_last") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_services_last::active_services_last(active_services_last const& right) {
-  (void)right;
+active_services_last::active_services_last(active_services_last const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ active_services_last::~active_services_last() {}
  *  @return This object.
  */
 active_services_last& active_services_last::operator=(active_services_last const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string active_services_last::run() {
+void active_services_last::run(
+              std::string& output,
+	      std::string& perfdata) {
   unsigned int last_checked_1(0);
   unsigned int last_checked_5(0);
   unsigned int last_checked_15(0);
@@ -83,12 +88,20 @@ std::string active_services_last::run() {
       }
     }
   }
+
+  // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString() << " ran "
-      << last_checked_5 << " active checks during the last 5 minutes|"
-      << "active_services_last_1=" << last_checked_1
+      << last_checked_5 << " active checks during the last 5 minutes";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "active_services_last_1=" << last_checked_1
       << " active_services_last_5=" << last_checked_5
       << " active_services_last_15=" << last_checked_15
-      << " active_services_last_60=" << last_checked_60 << "\n";
-  return (oss.str());
+      << " active_services_last_60=" << last_checked_60;
+  perfdata = oss.str();
+
+  return ;
 }

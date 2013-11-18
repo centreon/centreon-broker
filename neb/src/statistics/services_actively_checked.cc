@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-services_actively_checked::services_actively_checked() {}
+services_actively_checked::services_actively_checked()
+  : plugin("services_actively_checked") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-services_actively_checked::services_actively_checked(services_actively_checked const& right) {
-  (void)right;
+services_actively_checked::services_actively_checked(services_actively_checked const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ services_actively_checked::~services_actively_checked() {}
  *  @return This object.
  */
 services_actively_checked& services_actively_checked::operator=(services_actively_checked const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string services_actively_checked::run() {
+void services_actively_checked::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count services active checked.
   unsigned int total(0);
   for (service* s(service_list); s; s = s->next)
@@ -71,7 +76,13 @@ std::string services_actively_checked::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " services actively checked"
-    "|services_actively_checked=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " services actively checked";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "services_actively_checked=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

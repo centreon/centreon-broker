@@ -42,7 +42,7 @@ namespace                neb {
       total_host_state_change&
                          operator=(
                            total_host_state_change const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

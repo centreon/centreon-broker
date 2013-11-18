@@ -28,15 +28,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-services_in_downtime::services_in_downtime() {}
+services_in_downtime::services_in_downtime()
+  : plugin("services_in_downtime") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-services_in_downtime::services_in_downtime(services_in_downtime const& right) {
-  (void)right;
+services_in_downtime::services_in_downtime(services_in_downtime const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +54,19 @@ services_in_downtime::~services_in_downtime() {}
  *  @return This object.
  */
 services_in_downtime& services_in_downtime::operator=(services_in_downtime const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string services_in_downtime::run() {
+void services_in_downtime::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count services in downtime.
   unsigned int total(0);
   for (service* s(service_list); s; s = s->next)
@@ -71,7 +76,13 @@ std::string services_in_downtime::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " services in downtime"
-    "|services_in_downtime=" << total << "\n";
-  return (oss.str());
+      << " has " << total << " services in downtime";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "services_in_downtime=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

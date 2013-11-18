@@ -37,8 +37,8 @@ namespace                neb {
                          hosts_in_downtime();
                          hosts_in_downtime(hosts_in_downtime const& right);
                          ~hosts_in_downtime();
-      hosts_in_downtime&    operator=(hosts_in_downtime const& right);
-      std::string        run();
+      hosts_in_downtime& operator=(hosts_in_downtime const& right);
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }

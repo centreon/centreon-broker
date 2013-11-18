@@ -39,7 +39,7 @@ namespace         neb {
                   ~active_host_latency();
       active_host_latency&
                   operator=(active_host_latency const& right);
-      std::string run();
+      void        run(std::string& output, std::string& perfdata);
     };
   }
 }

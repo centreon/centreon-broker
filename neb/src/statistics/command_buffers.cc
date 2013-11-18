@@ -29,15 +29,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-command_buffers::command_buffers() {}
+command_buffers::command_buffers()
+  : plugin("command_buffers") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-command_buffers::command_buffers(command_buffers const& right) {
-  (void)right;
+command_buffers::command_buffers(command_buffers const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -53,16 +55,19 @@ command_buffers::~command_buffers() {}
  *  @return This object.
  */
 command_buffers& command_buffers::operator=(command_buffers const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string command_buffers::run() {
+void command_buffers::run(
+              std::string& output,
+	      std::string& perfdata) {
   unsigned int high(0);
   unsigned int total(::external_command_buffer_slots);
   unsigned int used(0);
@@ -78,9 +83,13 @@ std::string command_buffers::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << used << "/" << total << " command"
-    "|used=" << used << " "
-    "high=" << high << " "
-    "total=" << total << "\n";
-  return (oss.str());
+      << " has " << used << "/" << total << " command";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "used=" << used << " high=" << high << " total=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

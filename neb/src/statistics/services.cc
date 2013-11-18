@@ -29,15 +29,16 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-services::services() {}
+services::services() : plugin("services") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-services::services(services const& right) {
-  (void)right;
+services::services(services const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -53,16 +54,19 @@ services::~services() {}
  *  @return This object.
  */
 services& services::operator=(services const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string services::run() {
+void services::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count services ok / warning / unknown / critical.
   unsigned int total[4] = { 0, 0, 0, 0 };
   for (service* s(service_list); s; s = s->next)
@@ -77,10 +81,16 @@ std::string services::run() {
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
       << " has " << total[STATE_OK] << " services on status OK and "
-      << not_ok << " services on non-OK status"
-    "|ok=" << total[STATE_OK]
+      << not_ok << " services on non-OK status";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "ok=" << total[STATE_OK]
       << " warning=" << total[STATE_WARNING]
       << " critical=" << total[STATE_CRITICAL]
-      << " unknown=" << total[STATE_UNKNOWN] << "\n";
-  return (oss.str());
+      << " unknown=" << total[STATE_UNKNOWN];
+  perfdata = oss.str();
+
+  return ;
 }

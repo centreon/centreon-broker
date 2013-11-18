@@ -30,15 +30,17 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-passive_host_latency::passive_host_latency() {}
+passive_host_latency::passive_host_latency()
+  : plugin("passive_host_latency") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_host_latency::passive_host_latency(passive_host_latency const& right) {
-  (void)right;
+passive_host_latency::passive_host_latency(passive_host_latency const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -54,31 +56,42 @@ passive_host_latency::~passive_host_latency() {}
  *  @return This object.
  */
 passive_host_latency& passive_host_latency::operator=(passive_host_latency const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string passive_host_latency::run() {
-  std::ostringstream oss;
+void passive_host_latency::run(
+              std::string& output,
+	      std::string& perfdata) {
   compute_value<double> cv;
   for (host* h(host_list); h; h = h->next)
     if (h->check_type == HOST_CHECK_PASSIVE)
       cv << h->latency;
+
   if (cv.size()) {
+    // Output.
+    std::ostringstream oss;
     oss << "Engine " << instance_name.toStdString()
         << " has an average passive host latency of "
-        << std::fixed << std::setprecision(2) << cv.avg()
-        << "s|avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s\n";
+        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+    output = oss.str();
+
+    // Perfdata.
+    oss.str("");
+    oss << "avg=" << cv.avg() << "s min=" << cv.min()
+        << "s max=" << cv.max() << "s";
+    perfdata = oss.str();
   }
   else {
-    oss << "No passive host to compute passive host "
-        << "latency on " << instance_name.toStdString() << "\n";
+    // Output.
+    output = "No passive host to compute passive host "
+      "latency on " + instance_name.toStdString();
   }
-  return (oss.str());
+  return ;
 }

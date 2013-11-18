@@ -28,15 +28,16 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-total_hosts::total_hosts() {}
+total_hosts::total_hosts() : plugin("total_hosts") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-total_hosts::total_hosts(total_hosts const& right) {
-  (void)right;
+total_hosts::total_hosts(total_hosts const& right)
+ : plugin(right) {
+
 }
 
 /**
@@ -52,16 +53,19 @@ total_hosts::~total_hosts() {}
  *  @return This object.
  */
 total_hosts& total_hosts::operator=(total_hosts const& right) {
-  (void)right;
+  plugin::operator=(right);
   return (*this);
 }
 
 /**
  *  Get statistics.
  *
- *  @return Statistics output.
+ *  @param[out] output   The output return by the plugin.
+ *  @param[out] perfdata The perf data return by the plugin.
  */
-std::string total_hosts::run() {
+void total_hosts::run(
+              std::string& output,
+	      std::string& perfdata) {
   // Count hosts.
   unsigned int total(0);
   for (host* h(host_list); h; h = h->next)
@@ -70,7 +74,13 @@ std::string total_hosts::run() {
   // Output.
   std::ostringstream oss;
   oss << "Engine " << instance_name.toStdString()
-      << " has " << total << " hosts|total_hosts="
-      << total << "\n";
-  return (oss.str());
+      << " has " << total << " hosts";
+  output = oss.str();
+
+  // Perfdata.
+  oss.str("");
+  oss << "total_hosts=" << total;
+  perfdata = oss.str();
+
+  return ;
 }

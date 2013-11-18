@@ -38,7 +38,7 @@ namespace                neb {
                          total_services(total_services const& right);
                          ~total_services();
       total_services&    operator=(total_services const& right);
-      std::string        run();
+      void               run(std::string& output, std::string& perfdata);
     };
   }
 }
