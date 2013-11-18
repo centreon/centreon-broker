@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
-#  define CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
+#ifndef CCB_NEB_STATISTICS_ACTIVE_HOST_EXECUTION_TIME_HH
+#  define CCB_NEB_STATISTICS_ACTIVE_HOST_EXECUTION_TIME_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -47,4 +47,4 @@ namespace         neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
+#endif // !CCB_NEB_STATISTICS_ACTIVE_HOST_EXECUTION_TIME_HH

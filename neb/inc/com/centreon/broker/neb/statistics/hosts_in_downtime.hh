@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATISTICS_SERVICES_IN_DOWNTIME_HH
-#  define CCB_NEB_STATISTICS_SERVICES_IN_DOWNTIME_HH
+#ifndef CCB_NEB_STATISTICS_HOSTS_IN_DOWNTIME_HH
+#  define CCB_NEB_STATISTICS_HOSTS_IN_DOWNTIME_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -45,4 +45,4 @@ namespace                neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_SERVICES_IN_DOWNTIME_HH
+#endif // !CCB_NEB_STATISTICS_HOSTS_IN_DOWNTIME_HH

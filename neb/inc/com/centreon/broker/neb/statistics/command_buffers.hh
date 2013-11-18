@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
-#  define CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
+#ifndef CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
+#  define CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -26,23 +26,23 @@
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
+namespace              neb {
+  namespace            statistics {
     /**
-     *  @class hosts_flapping hosts_flapping.hh "com/centreon/broker/neb/statistics/hosts_flapping.hh"
-     *  @brief hosts_flapping statistics plugin.
+     *  @class command_buffers command_buffers.hh "com/centreon/broker/neb/statistics/command_buffers.hh"
+     *  @brief command_buffers statistics plugin.
      */
-    class                hosts_flapping : public plugin {
+    class              command_buffers : public plugin {
     public:
-                         hosts_flapping();
-                         hosts_flapping(hosts_flapping const& right);
-                         ~hosts_flapping();
-      hosts_flapping& operator=(hosts_flapping const& right);
-      std::string        run();
+                       command_buffers();
+                       command_buffers(command_buffers const& right);
+                       ~command_buffers();
+      command_buffers& operator=(command_buffers const& right);
+      std::string      run();
     };
   }
 }
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
+#endif // !CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH

@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATISTICS_TOTAL_SERVICE_STATE_CHANGE_HH
-#  define CCB_NEB_STATISTICS_TOTAL_SERVICE_STATE_CHANGE_HH
+#ifndef CCB_NEB_STATISTICS_TOTAL_HOST_STATE_CHANGE_HH
+#  define CCB_NEB_STATISTICS_TOTAL_HOST_STATE_CHANGE_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -49,4 +49,4 @@ namespace                neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_TOTAL_SERVICE_STATE_CHANGE_HH
+#endif // !CCB_NEB_STATISTICS_TOTAL_HOST_STATE_CHANGE_HH

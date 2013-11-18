@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NE3CB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
+#ifndef CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
 #  define CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
 
 #  include <string>

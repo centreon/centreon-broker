@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_STATISTICS_PASSIVE_SERVICE_LATENCY_HH
-#  define CCB_NEB_STATISTICS_PASSIVE_SERVICE_LATENCY_HH
+#ifndef CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
+#  define CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -47,4 +47,4 @@ namespace         neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_PASSIVE_SERVICE_LATENCY_HH
+#endif // !CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
