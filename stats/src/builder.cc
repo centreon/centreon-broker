@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <sstream>
 #include <time.h>
+#include <unistd.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/stats/builder.hh"
