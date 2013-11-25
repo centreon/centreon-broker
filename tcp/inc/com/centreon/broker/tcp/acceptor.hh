@@ -54,7 +54,7 @@ namespace                com {
                          open();
           misc::shared_ptr<io::stream>
                          open(QString const& id);
-          void           stats(std::string& buffer);
+          void           stats(io::properties& tree);
 
          private:
           void           _internal_copy(acceptor const& a);

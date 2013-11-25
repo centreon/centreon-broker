@@ -129,9 +129,9 @@ void output::read(misc::shared_ptr<io::data>& d) {
  *
  *  @param[out] buffer Output buffer.
  */
-void output::statistics(std::string& buffer) const {
+void output::statistics(io::properties& tree) const {
   if (!_to.isNull())
-    _to->statistics(buffer);
+    _to->statistics(tree);
   return ;
 }
 

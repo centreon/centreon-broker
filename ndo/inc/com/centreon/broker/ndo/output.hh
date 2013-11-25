@@ -41,7 +41,7 @@ namespace                ndo {
     output&              operator=(output const& o);
     void                 process(bool in = false, bool out = false);
     virtual void         read(misc::shared_ptr<io::data>& e);
-    virtual void         statistics(std::string& buffer) const;
+    virtual void         statistics(io::properties& tree) const;
     virtual unsigned int write(misc::shared_ptr<io::data> const& e);
 
   private:

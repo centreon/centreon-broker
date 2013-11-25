@@ -19,11 +19,13 @@
 
 #include <cstring>
 #include <ctime>
+#include <iomanip>
 #include <QCoreApplication>
 #include <QMutexLocker>
 #include <QReadLocker>
 #include <QTimer>
 #include <QWriteLocker>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -747,16 +749,126 @@ void failover::set_retry_interval(time_t retry_interval) {
  *
  *  @param[out] buffer Output buffer.
  */
-void failover::statistics(std::string& buffer) const {
+void failover::statistics(io::properties& tree) const {
+  // Choose stream we will work on.
+  QReadWriteLock* first_rwl;
+  misc::shared_ptr<io::stream> const* first_s;
+  QReadWriteLock* second_rwl;
+  misc::shared_ptr<io::stream> const* second_s;
+  if (_is_out) {
+    first_rwl = &_tom;
+    first_s = &_to;
+    second_rwl = &_fromm;
+    second_s = &_from;
+  }
+  else {
+    first_rwl = &_fromm;
+    first_s = &_from;
+    second_rwl = &_tom;
+    second_s = &_to;
+  }
+
+  {
+    // Get primary state.
+    io::property& stateprop(tree["state"]);
+    stateprop.set_graphable(false);
+    bool locked(first_rwl->tryLockForRead(10));
+    try {
+      // Could lock RWL.
+      if (locked) {
+        if (first_s->isNull()) {
+          if (!_last_error.isEmpty()) {
+            std::ostringstream oss;
+            oss << "state=disconnected ("
+                << _last_error.toStdString() << ")";
+            stateprop.set_perfdata(oss.str());
+          }
+          else if (!_endpoint.isNull()
+                   && !_endpoint->is_acceptor()) {
+            stateprop.set_perfdata("state=connecting");
+          }
+          else
+            stateprop.set_perfdata("state=listening");
+        }
+        else if (!_failover.isNull() && _failover->isRunning()) {
+          stateprop.set_perfdata("state=replaying");
+          (*first_s)->statistics(tree);
+        }
+        else {
+          stateprop.set_perfdata("state=connected");
+          (*first_s)->statistics(tree);
+        }
+      }
+      // Could not lock RWL.
+      else
+        stateprop.set_perfdata("blocked\n");
+    }
+    catch (...) {
+      if (locked)
+        first_rwl->unlock();
+      throw ;
+    }
+    if (locked)
+      first_rwl->unlock();
+  }
+
+  {
+    // Get secondary state.
+    QReadLocker rl(second_rwl);
+    if (!second_s->isNull())
+      (*second_s)->statistics(tree);
+  }
+
+  {
+    // Event processing time.
+    std::ostringstream oss;
+    oss << "last event at=" << get_last_event();
+    io::property& p(tree["last_event_at"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+
+  {
+    // Event processing speed.
+    std::ostringstream oss;
+    oss << "event processing speed=" << std::fixed
+        << std::setprecision(1) << get_event_processing_speed()
+        << "events/s";
+    io::property& p(tree["event_processing_speed"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(true);
+  }
+
+  // Endpoint stats.
+  if (!_endpoint.isNull())
+    _endpoint->stats(tree);
+
+  {
+    // Last connection attempt.
+    std::ostringstream oss;
+    oss << "last connection attempt=" << _last_connect_attempt;
+    io::property& p(tree["last_connection_attempt"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    // Last connection success.
+    std::ostringstream oss;
+    oss << "last connection success=" << _last_connect_success;
+    io::property& p(tree["last_connection_success"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+
   if (_is_out) {
     QReadLocker rl(&_fromm);
     if (!_from.isNull())
-      _from->statistics(buffer);
+      _from->statistics(tree);
   }
   else {
     QReadLocker rl(&_tom);
     if (!_to.isNull())
-      _to->statistics(buffer);
+      _to->statistics(tree);
   }
   // XXX : cannot integrate status because failover are used as
   //       endpoints to generate stats

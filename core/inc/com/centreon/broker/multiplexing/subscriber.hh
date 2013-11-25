@@ -61,7 +61,7 @@ namespace               multiplexing {
                           bool* timed_out = NULL);
     void                set_filters(
                           std::set<unsigned int> const& filters);
-    void                statistics(std::string& buffer) const;
+    void                statistics(io::properties& tree) const;
     unsigned int        write(misc::shared_ptr<io::data> const& d);
 
   private:

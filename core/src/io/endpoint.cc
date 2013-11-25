@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,11 +92,11 @@ bool endpoint::is_connector() const throw () {
 /**
  *  Generate statistics about the endpoint.
  *
- *  @param[out] buffer Unused.
+ *  @param[out] tree Properties tree.
  */
-void endpoint::stats(std::string& buffer) {
+void endpoint::stats(io::properties& tree) {
   if (!_from.isNull())
-    _from->stats(buffer);
+    _from->stats(tree);
   return ;
 }
 

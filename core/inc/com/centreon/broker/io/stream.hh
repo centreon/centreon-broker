@@ -23,6 +23,7 @@
 #  include <ctime>
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/properties.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -57,7 +58,7 @@ namespace                    io {
                                time_t timeout,
                                bool* timed_out = NULL);
     virtual void             read_from(misc::shared_ptr<stream> from);
-    virtual void             statistics(std::string& buffer) const;
+    virtual void             statistics(io::properties& tree) const;
     virtual void             update();
     virtual unsigned int     write(misc::shared_ptr<data> const& d) = 0;
     virtual void             write_to(misc::shared_ptr<stream> to);
