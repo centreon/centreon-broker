@@ -101,9 +101,9 @@ void generator::run() {
       // Send dumper events.
       {
         misc::shared_ptr<dumper::dump> d(new dumper::dump);
-        d->content = b.data();
+        d->content = b.data().c_str();
         d->instance_id = _instance_id;
-        d->tag = _tag;
+        d->tag = _tag.c_str();
         multiplexing::publisher p;
         p.write(d.staticCast<io::data>());
       }
