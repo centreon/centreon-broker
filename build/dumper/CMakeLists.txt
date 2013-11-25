@@ -30,10 +30,16 @@ set(DUMPER "${DUMPER}" PARENT_SCOPE)
 add_library("${DUMPER}" SHARED
   # Sources.
   "${SRC_DIR}/dump.cc"
+  "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/opener.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/dumper/dump.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/factory.hh"
   "${INC_DIR}/com/centreon/broker/dumper/internal.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/opener.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/stream.hh"
 )
 target_link_libraries("${DUMPER}" ${QT_LIBRARIES})
 set_target_properties("${DUMPER}" PROPERTIES PREFIX "")

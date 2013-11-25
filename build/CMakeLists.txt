@@ -345,6 +345,7 @@ set(LIBROKER_SOURCES
   #"${INC_DIR}/mapping/property.hh"
   #"${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
   "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/misc/shared_ptr.hh"

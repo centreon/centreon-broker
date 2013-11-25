@@ -17,11 +17,28 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/dumper/factory.hh"
+#include "com/centreon/broker/dumper/internal.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
+
+using namespace com::centreon::broker;
+
+// Load count.
+static unsigned int instances(0);
+
 extern "C" {
   /**
    *  Module deinitialization routine.
    */
   void broker_module_deinit() {
+    // Decrement instance number.
+    if (!--instances) {
+      // Deregister storage layer.
+      io::events::instance().unreg("dumper");
+      io::protocols::instance().unreg("dumper");
+    }
     return ;
   }
 
@@ -32,6 +49,27 @@ extern "C" {
    */
   void broker_module_init(void const* arg) {
     (void)arg;
+
+    // Increment instance number.
+    if (!instances++) {
+      // Dumper module.
+      logging::info(logging::high)
+        << "dumper: module for Centreon Broker "
+        << CENTREON_BROKER_VERSION;
+
+      // Register dumper layer.
+      io::protocols::instance().reg(
+                                  "dumper",
+                                  dumper::factory(),
+                                  1,
+                                  7);
+
+      // Register dumper events.
+      std::set<unsigned int> elements;
+      elements.insert(
+                 io::events::data_type<io::events::dumper, dumper::de_dump>::value);
+      io::events::instance().reg("dumper", elements);
+    }
     return ;
   }
 }
