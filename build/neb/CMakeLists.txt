@@ -255,6 +255,7 @@ set(CBMOD_PATH "${CBMOD_PATH}" PARENT_SCOPE)
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
   add_library("neb_mapping"
     "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
   set(TEST_LIBRARIES "${NEB}" "neb_mapping" "roker")

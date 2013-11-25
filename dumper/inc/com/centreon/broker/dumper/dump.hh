@@ -20,7 +20,7 @@
 #ifndef CCB_DUMPER_DUMP_HH
 #  define CCB_DUMPER_DUMP_HH
 
-#  include <string>
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -41,9 +41,9 @@ namespace        dumper {
     dump&        operator=(dump const& right);
     unsigned int type() const;
 
-    std::string  content;
+    QString      content;
     unsigned int instance_id;
-    std::string  tag;
+    QString      tag;
 
   private:
     void         _internal_copy(dump const& right);

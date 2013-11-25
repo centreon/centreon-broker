@@ -103,7 +103,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     dump* data(static_cast<dump*>(d.data()));
 
     // Check if this output dump this event.
-    if (data->tag == _tagname) {
+    if (data->tag.toStdString() == _tagname) {
       // Lock mutex.
       QMutexLocker lock(&_mutex);
 
@@ -123,7 +123,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
                << path << "'");
 
       // Write data.
-      file << data->content;
+      file << data->content.toStdString();
     }
   }
   else
