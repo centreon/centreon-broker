@@ -28,6 +28,7 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/generator.hh"
   "${INC_DIR}/worker.hh")
 
 # Stats module.
