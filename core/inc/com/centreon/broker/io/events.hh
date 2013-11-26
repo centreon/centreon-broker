@@ -41,6 +41,7 @@ namespace               io {
       bbdo,
       storage,
       correlation,
+      dumper,
       internal = 65535
     };
 

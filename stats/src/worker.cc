@@ -32,6 +32,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/broker/stats/worker.hh"
 
 using namespace com::centreon::broker::stats;
@@ -99,226 +100,6 @@ void worker::_close() {
 }
 
 /**
- *  Generate statistics.
- */
-void worker::_generate_stats() {
-  // General.
-  {
-    std::ostringstream oss;
-    oss << "broker\n"
-      "version=" CENTREON_BROKER_VERSION "\n"
-      "pid=" << getpid() << "\n"
-      "now=" << time(NULL) << "\n"
-      "compiled with qt=" << QT_VERSION_STR << "\n"
-      "running with qt=" << qVersion() << "\n"
-      "\n";
-    _buffer.append(oss.str());
-  }
-
-  // Modules.
-  config::applier::modules&
-    mod_applier(config::applier::modules::instance());
-  for (config::applier::modules::iterator
-         it(mod_applier.begin()),
-         end(mod_applier.end());
-       it != end;
-       ++it) {
-    std::ostringstream oss;
-    QFileInfo fi(it.key());
-    oss << "module " << it.key().toStdString() << "\n"
-      "state=loaded\n"
-      "size=" << fi.size() << "B\n"
-      "\n";
-    _buffer.append(oss.str());
-  }
-
-  // Endpoint applier.
-  config::applier::endpoint&
-    endp_applier(config::applier::endpoint::instance());
-
-  // Print input endpoints.
-  {
-    bool locked(endp_applier.input_mutex().tryLock(100));
-    try {
-      if (locked)
-        for (config::applier::endpoint::iterator
-               it = endp_applier.input_begin(),
-               end = endp_applier.input_end();
-             it != end;
-             ++it) {
-          _generate_stats_for_endpoint(*it, _buffer, false);
-          _buffer.append("\n");
-        }
-      else
-        _buffer.append(
-          "inputs=could not fetch list, configuration update in progress ?\n");
-    }
-    catch (...) {
-      if (locked)
-        endp_applier.input_mutex().unlock();
-      throw ;
-    }
-    if (locked)
-      endp_applier.input_mutex().unlock();
-  }
-
-  // Print output endpoints.
-  {
-    bool locked(endp_applier.output_mutex().tryLock(100));
-    try {
-      if (locked)
-        for (config::applier::endpoint::iterator
-               it(endp_applier.output_begin()),
-               end(endp_applier.output_end());
-             it != end;
-             ++it) {
-          _generate_stats_for_endpoint(*it, _buffer, true);
-          _buffer.append("\n");
-        }
-      else
-        _buffer.append(
-          "outputs=could not fetch list, configuration update in progress ?\n");
-    }
-    catch (...) {
-      if (locked)
-        endp_applier.output_mutex().unlock();
-      throw ;
-    }
-    if (locked)
-      endp_applier.output_mutex().unlock();
-  }
-
-  return ;
-}
-
-/**
- *  Generate statistics for an endpoint.
- *
- *  @param[in]  fo     Failover thread of the endpoint.
- *  @param[out] buffer Buffer in which data will be printed.
- *  @param[in]  is_out true if fo manage an output endpoint.
- */
-void worker::_generate_stats_for_endpoint(
-               processing::failover* fo,
-               std::string& buffer,
-               bool is_out) {
-  // Header.
-  buffer.append(is_out ? "output " : "input ");
-  buffer.append(fo->_name.toStdString());
-  buffer.append("\n");
-
-  // Choose stream we will work on.
-  QReadWriteLock* first_rwl;
-  misc::shared_ptr<io::stream>* first_s;
-  QReadWriteLock* second_rwl;
-  misc::shared_ptr<io::stream>* second_s;
-  if (is_out) {
-    first_rwl = &fo->_tom;
-    first_s = &fo->_to;
-    second_rwl = &fo->_fromm;
-    second_s = &fo->_from;
-  }
-  else {
-    first_rwl = &fo->_fromm;
-    first_s = &fo->_from;
-    second_rwl = &fo->_tom;
-    second_s = &fo->_to;
-  }
-
-  {
-    // Get primary state.
-    buffer.append("state=");
-    bool locked(first_rwl->tryLockForRead(10));
-    try {
-      // Could lock RWL.
-      if (locked) {
-        if (first_s->isNull()) {
-          if (!fo->_last_error.isEmpty()) {
-            buffer.append("disconnected");
-            buffer.append(" (");
-            buffer.append(fo->_last_error.toStdString());
-            buffer.append(")\n");
-          }
-          else if (!fo->_endpoint.isNull()
-                   && !fo->_endpoint->is_acceptor())
-            buffer.append("connecting\n");
-          else
-            buffer.append("listening\n");
-        }
-        else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
-          buffer.append("replaying\n");
-          (*first_s)->statistics(buffer);
-        }
-        else {
-          buffer.append("connected\n");
-          (*first_s)->statistics(buffer);
-        }
-      }
-      // Could not lock RWL.
-      else
-        buffer.append("blocked\n");
-    }
-    catch (...) {
-      if (locked)
-        first_rwl->unlock();
-      throw ;
-    }
-    if (locked)
-      first_rwl->unlock();
-  }
-
-  {
-    // Get secondary state.
-    QReadLocker rl(second_rwl);
-    if (!second_s->isNull())
-      (*second_s)->statistics(buffer);
-  }
-
-  {
-    // Event processing stats.
-    std::ostringstream oss;
-    oss << "last event at=" << fo->get_last_event() << "\n"
-      "event processing speed=" << std::fixed
-        << std::setprecision(1) << fo->get_event_processing_speed()
-        << " events/s\n";
-    buffer.append(oss.str());
-  }
-
-  // Endpoint stats.
-  if (!fo->_endpoint.isNull())
-    fo->_endpoint->stats(buffer);
-
-  {
-    // Last connection times.
-    std::ostringstream oss;
-    oss << "last connection attempt=" << fo->_last_connect_attempt
-        << "\n" << "last connection success="
-        << fo->_last_connect_success << "\n";
-    buffer.append(oss.str());
-  }
-
-  // Failover.
-  if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
-    buffer.append("failover\n");
-    std::string subbuffer;
-    _generate_stats_for_endpoint(
-      fo->_failover.data(),
-      subbuffer,
-      is_out);
-    subbuffer.insert(0, "  ");
-    size_t pos(subbuffer.find('\n'));
-    while ((pos != subbuffer.size() - 1)
-           && (pos != std::string::npos)) {
-      subbuffer.replace(pos, 1, "\n  ");
-      pos = subbuffer.find('\n', pos + 3);
-    }
-    buffer.append(subbuffer);
-  }
-
-  return ;
-}
-
-/**
  *  Open FIFO.
  *
  *  @return true on success.
@@ -376,9 +157,12 @@ void worker::run() {
           throw (exceptions::msg() << "FIFO fd has pending error");
         // Readable.
         else if ((fds.revents & POLLOUT)) {
-          if (_buffer.empty())
+          if (_buffer.empty()) {
             // Generate statistics.
-            _generate_stats();
+            builder stats_builder;
+            stats_builder.build();
+            _buffer = stats_builder.data();
+          }
 
           // Write data.
           ssize_t wb(write(_fd, _buffer.c_str(), _buffer.size()));
@@ -392,12 +176,12 @@ void worker::run() {
   }
   catch (std::exception const& e) {
     logging::error(logging::high)
-      << "stats: thread will exit due to the following error: "
+      << "stats: FIFO thread will exit due to the following error: "
       << e.what();
   }
   catch (...) {
     logging::error(logging::high)
-      << "stats: thread will exit due to an unknown error";
+      << "stats: FIFO thread will exit due to an unknown error";
   }
   ::unlink(_fifo.c_str());
   return ;

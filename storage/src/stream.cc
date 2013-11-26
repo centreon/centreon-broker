@@ -371,11 +371,15 @@ void stream::starting() {
 /**
  *  Get endpoint statistics.
  *
- *  @param[out] buffer Output buffer.
+ *  @param[out] tree Output tree.
  */
-void stream::statistics(std::string& buffer) const {
+void stream::statistics(io::properties& tree) const {
   QMutexLocker lock(&_statusm);
-  buffer.append(_status);
+  if (!_status.empty()) {
+    io::property& p(tree["status"]);
+    p.set_perfdata(_status);
+    p.set_graphable(false);
+  }
   return ;
 }
 

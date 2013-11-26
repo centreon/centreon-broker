@@ -281,6 +281,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/events.cc"
   "${SRC_DIR}/io/exceptions/shutdown.cc"
   "${SRC_DIR}/io/factory.cc"
+  "${SRC_DIR}/io/properties.cc"
+  "${SRC_DIR}/io/property.cc"
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
@@ -325,6 +327,8 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/io/events.hh"
   "${INC_DIR}/io/exceptions/shutdown.hh"
   "${INC_DIR}/io/factory.hh"
+  "${INC_DIR}/io/properties.hh"
+  "${INC_DIR}/io/property.hh"
   "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/raw.hh"
   "${INC_DIR}/io/stream.hh"
@@ -341,6 +345,7 @@ set(LIBROKER_SOURCES
   #"${INC_DIR}/mapping/property.hh"
   #"${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
   "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/misc/shared_ptr.hh"
@@ -431,6 +436,13 @@ option(WITH_MODULE_CORRELATION "Build correlation module." ON)
 if (WITH_MODULE_CORRELATION)
   add_subdirectory("correlation")
   list(APPEND MODULE_LIST "correlation")
+endif()
+
+# Dumper module.
+option(WITH_MODULE_DUMPER "Build Dumper module." ON)
+if (WITH_MODULE_DUMPER)
+  add_subdirectory("dumper")
+  list(APPEND MODULE_LIST "dumper")
 endif()
 
 # Local sockets module.

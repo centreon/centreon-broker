@@ -165,19 +165,47 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(std::string& buffer) const {
+void stream::statistics(io::properties& tree) const {
   std::ostringstream oss;
-  oss << "file_read_path=" << _file_path(_rid) << "\n"
-      << "file_read_offset=" << _roffset << "\n"
-      << "file_write_path=" << _file_path(_wid) << "\n"
-      << "file_write_offset=" << _woffset << "\n"
-      << "file_max_size=";
-  if (_max_size != std::numeric_limits<long>::max())
-    oss << _max_size;
-  else
-    oss << "unlimited";
-  oss << "\n";
-  buffer.append(oss.str());
+  {
+    io::property& p(tree["file_read_path"]);
+    oss.str("");
+    oss << "file_read_path=" << _file_path(_rid);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_read_offset"]);
+    oss.str("");
+    oss << "file_read_offset=" << _roffset;
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_write_path"]);
+    oss.str("");
+    oss << "file_write_path=" << _file_path(_wid);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_write_offset"]);
+    oss.str("");
+    oss << "file_write_offset=" << _woffset;
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_max_size"]);
+    oss.str("");
+    oss << "file_max_size=";
+    if (_max_size != std::numeric_limits<long>::max())
+      oss << _max_size;
+    else
+      oss << "unlimited";
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
   return ;
 }
 

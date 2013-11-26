@@ -41,6 +41,11 @@ plugin::plugin(plugin const& right) {
 }
 
 /**
+ *  Destructor.
+ */
+plugin::~plugin() {}
+
+/**
  *  Copy operator.
  *
  *  @param[in] right The object to copy.

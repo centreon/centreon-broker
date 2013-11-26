@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
+  <module>@DUMPER_MODULE_PATH@</module>
   <module>@STATS_MODULE_PATH@</module>
   <module>@NEB_MODULE_PATH@</module>
   <module>@CORRELATION_MODULE_PATH@</module>
