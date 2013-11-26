@@ -390,7 +390,7 @@ void stream::_open_next_read() {
   unsigned int size(0);
   while (size != sizeof(header))
     size += _rfile->read(header.bytes + size, sizeof(header) - size);
-  _roffset = ntohl(header.integers[0] * 4294967296ull)
+  _roffset = ntohl(header.integers[0]) * 4294967296ull
              + ntohl(header.integers[1]);
 
   return ;
