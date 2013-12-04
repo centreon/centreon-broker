@@ -53,9 +53,9 @@ void config::applier::deinit() {
   config::applier::endpoint::unload();
   config::applier::temporary::unload();
   config::applier::logger::unload();
-  multiplexing::engine::unload();
   io::temporary::unload();
   config::applier::modules::unload();
+  multiplexing::engine::unload();
   io::protocols::unload();
   io::events::unload();
   logging::manager::unload();
