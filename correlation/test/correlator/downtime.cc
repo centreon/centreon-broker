@@ -62,6 +62,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456789;
+      ss->last_update = 123456789;
       c.write(ss.staticCast<io::data>());
     }
     { // #2
@@ -71,6 +72,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456790;
+      ss->last_update = 123456790;
       ss->scheduled_downtime_depth = 1;
       c.write(ss.staticCast<io::data>());
     }
@@ -81,6 +83,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456791;
+      ss->last_update = 123456791;
       c.write(ss.staticCast<io::data>());
     }
     { // #4
@@ -90,6 +93,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456792;
+      ss->last_update = 123456792;
       ss->scheduled_downtime_depth = 1;
       c.write(ss.staticCast<io::data>());
     }
@@ -100,6 +104,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456793;
+      ss->last_update = 123456793;
       ss->scheduled_downtime_depth = 1;
       c.write(ss.staticCast<io::data>());
     }
@@ -110,6 +115,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456794;
+      ss->last_update = 123456794;
       ss->scheduled_downtime_depth = 1;
       c.write(ss.staticCast<io::data>());
     }
@@ -120,6 +126,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456795;
+      ss->last_update = 123456795;
       ss->scheduled_downtime_depth = 0;
       c.write(ss.staticCast<io::data>());
     }
