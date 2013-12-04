@@ -25,6 +25,7 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -200,7 +201,7 @@ misc::shared_ptr<io::stream> connector::_open(
       bbdo_stream->read_any(d, time(NULL) + _timeout);
       if (d.isNull()
           || (d->type()
-              != "com::centreon::broker::bbdo::version_response"))
+              != io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value))
         throw (exceptions::msg() << "BBDO: invalid protocol header, "
                << "aborting connection");
       welcome_packet = d.staticCast<version_response>();

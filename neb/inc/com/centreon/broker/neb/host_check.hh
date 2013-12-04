@@ -39,7 +39,7 @@ namespace          neb {
                    host_check(host_check const& hc);
     virtual        ~host_check();
     host_check&    operator=(host_check const& hc);
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 

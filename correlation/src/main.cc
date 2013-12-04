@@ -19,8 +19,11 @@
 
 #include <QDomDocument>
 #include <QDomElement>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
@@ -43,6 +46,9 @@ namespace correlation {
       // Unregister correlation object.
       multiplexing::engine::instance().unhook(*correlation::obj);
       correlation::obj.clear();
+
+      // Remove elements.
+      io::events::instance().unreg("correlation");
     }
     return ;
   }
@@ -60,6 +66,22 @@ namespace correlation {
         << "correlation: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
+      // Load elements.
+      {
+        std::set<unsigned int> elements;
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_issue>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
+        elements.insert(
+                   io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
+        io::events::instance().reg("correlation", elements);
+      }
+
       // Check that correlation is enabled.
       config::state const& cfg(*static_cast<config::state const*>(arg));
       bool loaded(false);
@@ -69,6 +91,7 @@ namespace correlation {
         // Parameters.
         QString correlation_file;
         QString retention_file;
+        bool is_passive(false);
 
         // Parse XML.
         QDomDocument d;
@@ -84,6 +107,8 @@ namespace correlation {
                 correlation_file = elem.text();
               else if (name == "retention")
                 retention_file = elem.text();
+              else if (name == "passive")
+                is_passive = config::parser::parse_boolean(elem.text());
             }
           }
         }
@@ -92,7 +117,7 @@ namespace correlation {
         if (!correlation_file.isEmpty()) {
           // Create and register correlation object.
           misc::shared_ptr<correlation::correlator>
-            crltr(new correlation::correlator);
+            crltr(new correlation::correlator(is_passive));
           try {
             crltr->load(correlation_file, retention_file);
             correlation::obj = crltr.staticCast<multiplexing::hooker>();
@@ -100,17 +125,17 @@ namespace correlation {
             loaded = true;
           }
           catch (std::exception const& e) {
-            logging::config(logging::high) << "correlation: " \
+            logging::config(logging::high) << "correlation: "
               "configuration loading error: " << e.what();
           }
           catch (...) {
-            logging::config(logging::high) << "correlation: " \
+            logging::config(logging::high) << "correlation: "
               "configuration loading error";
           }
         }
       }
       if (!loaded)
-        logging::config(logging::high) << "correlation: invalid " \
+        logging::config(logging::high) << "correlation: invalid "
           "correlation configuration, correlation engine is NOT loaded";
     }
     return ;

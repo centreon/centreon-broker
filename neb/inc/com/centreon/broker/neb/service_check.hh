@@ -39,7 +39,7 @@ namespace          neb {
                    service_check(service_check const& sc);
     virtual        ~service_check();
     service_check& operator=(service_check const& sc);
-    QString const& type() const;
+    unsigned int   type() const;
 
     unsigned int   service_id;
   };

@@ -22,6 +22,7 @@
 #include <limits>
 #include <QMutexLocker>
 #include <sstream>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -230,22 +231,79 @@ void subscriber::read(
 }
 
 /**
+ *  Set the filters.
+ *
+ *  @param[in] filters Content filters.
+ */
+void subscriber::set_filters(std::set<unsigned int> const& filters) {
+  _filters = filters;
+  return ;
+}
+
+/**
  *  Generate statistics about the subscriber.
  *
  *  @param[out] buffer Output buffer.
  */
 void subscriber::statistics(std::string& buffer) const {
+  // Lock object.
   QMutexLocker lock(&_mutex);
+
+  // Queued events.
   std::ostringstream oss;
   if (_recovery_temporary)
     oss << "queued events=unkown\n";
   else
     oss << "queued events=" << _total_events << "\n";
 
+  // Temporary mode.
   char const* enable(_recovery_temporary ? "yes" : "no");
   oss << "temporary recovery mode=" << enable << "\n";
 
+  // Filters.
+  {
+    // Get numeric event categories.
+    std::set<unsigned short> numcats;
+    for (std::set<unsigned int>::const_iterator
+           it(_filters.begin()),
+           end(_filters.end());
+         it != end;
+         ++it)
+      numcats.insert(io::events::category_of_type(*it));
+
+    // Print filters.
+    oss << "accepted events\n";
+    if (numcats.empty()) {
+      oss << "  all\n";
+    }
+    else {
+      // Convert numeric categories to strings.
+      for (std::set<unsigned short>::const_iterator
+             it(numcats.begin()),
+             end(numcats.end());
+           it != end;
+           ++it) {
+        std::map<std::string, std::set<unsigned int> >::const_iterator
+          it2(io::events::instance().begin()),
+          end2(io::events::instance().end());
+        while (it2 != end2) {
+          if (!it2->second.empty()
+              && (*it == (io::events::category_of_type(
+                                        *it2->second.begin())))) {
+            oss << "  " << it2->first << "\n";
+            break ;
+          }
+          ++it2;
+        }
+        if (it2 == end2)
+          oss << "  " << *it << "\n";
+      }
+    }
+  }
+
+  // Return string.
   buffer.append(oss.str());
+
   return ;
 }
 
@@ -259,6 +317,11 @@ void subscriber::statistics(std::string& buffer) const {
 unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
   {
     QMutexLocker lock(&_mutex);
+    // Check if we should process this event.
+    if (!_filters.empty()
+        && !event.isNull()
+        && (_filters.find(event->type()) == _filters.end()))
+      return (1);
     // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
       // Try to create temporary if is necessary.

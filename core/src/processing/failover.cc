@@ -44,12 +44,18 @@ using namespace com::centreon::broker::processing;
 /**
  *  Constructor.
  *
+ *  @param[in] endp      Failover thread endpoint.
  *  @param[in] is_out    true if the failover thread is an output
  *                       thread.
  *  @param[in] name      The failover name.
  */
-failover::failover(bool is_out, QString const& name)
+failover::failover(
+            misc::shared_ptr<io::endpoint> endp,
+            bool is_out,
+            QString const& name,
+            std::set<unsigned int> const& filters)
   : _buffering_timeout(0),
+    _endpoint(endp),
     _initial(true),
     _is_out(is_out),
     _last_connect_attempt(0),
@@ -63,8 +69,14 @@ failover::failover(bool is_out, QString const& name)
     _immediate(true),
     _should_exit(false),
     _should_exitm(QMutex::Recursive) {
-  if (_is_out)
-    _from = misc::shared_ptr<io::stream>(new multiplexing::subscriber(name));
+  if (_is_out) {
+    if (_endpoint->is_connector()) {
+      misc::shared_ptr<multiplexing::subscriber>
+        subscr(new multiplexing::subscriber(name));
+      subscr->set_filters(filters);
+      _from = subscr.staticCast<io::stream>();
+    }
+  }
   else
     _to = misc::shared_ptr<io::stream>(new multiplexing::publisher);
 }
@@ -688,16 +700,6 @@ void failover::run() {
  */
 void failover::set_buffering_timeout(time_t secs) {
   _buffering_timeout = secs;
-  return ;
-}
-
-/**
- *  Set thread endpoint.
- *
- *  @param[in] endp Thread endpoint.
- */
-void failover::set_endpoint(misc::shared_ptr<io::endpoint> endp) {
-  _endpoint = endp;
   return ;
 }
 

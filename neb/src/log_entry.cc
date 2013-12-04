@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -76,11 +78,10 @@ log_entry& log_entry::operator=(log_entry const& le) {
 /**
  *  Returns the type of the event.
  *
- *  @return The string "com::centreon::broker::neb::log_entry".
+ *  @return The event_type.
  */
-QString const& log_entry::type() const {
-  static QString const le_type("com::centreon::broker::neb::log_entry");
-  return (le_type);
+unsigned int log_entry::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_log_entry>::value);
 }
 
 /**************************************

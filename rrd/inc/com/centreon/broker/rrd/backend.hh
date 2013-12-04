@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,7 @@
 #  define CCB_RRD_BACKEND_HH
 
 #  include <ctime>
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -44,20 +44,18 @@ namespace        rrd {
     virtual      ~backend();
     backend&     operator=(backend const& b);
     virtual void begin() = 0;
+    virtual void clean() = 0;
     virtual void close() = 0;
     virtual void commit() = 0;
+    virtual void open(std::string const& filename) = 0;
     virtual void open(
-                   QString const& filename,
-                   QString const& metric) = 0;
-    virtual void open(
-                   QString const& filename,
-                   QString const& metric,
+                   std::string const& filename,
                    unsigned int length,
                    time_t from,
-                   time_t interval,
+                   unsigned int step,
                    short value_type = 0) = 0;
-    virtual void remove(QString const& filename) = 0;
-    virtual void update(time_t t, QString const& value) = 0;
+    virtual void remove(std::string const& filename) = 0;
+    virtual void update(time_t t, std::string const& value) = 0;
   };
 }
 

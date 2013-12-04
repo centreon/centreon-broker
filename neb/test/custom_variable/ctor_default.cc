@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -39,5 +41,5 @@ int main() {
           || (cvar.value != "")
           || (cvar.var_type != 0)
           || (cvar.type()
-              != "com::centreon::broker::neb::custom_variable"));
+              != io::events::data_type<io::events::neb, neb::de_custom_variable>::value));
 }

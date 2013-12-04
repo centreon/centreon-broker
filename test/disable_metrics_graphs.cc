@@ -206,6 +206,9 @@ int main() {
     daemon.start();
     sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    // Stop monitoring engine.
+    daemon.stop();
+
     // Check that no metric RRD file exist.
     if (!QDir(metrics_path.c_str()).entryList(
                QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty())

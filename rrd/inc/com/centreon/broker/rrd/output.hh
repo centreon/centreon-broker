@@ -48,12 +48,14 @@ namespace                    rrd {
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 unsigned int cache_size,
                                  bool ignore_update_errors,
                                  bool write_metrics = true,
                                  bool write_status = true);
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 unsigned int cache_size,
                                  bool ignore_update_errors,
                                  QString const& local,
                                  bool write_metrics = true,
@@ -61,6 +63,7 @@ namespace                    rrd {
                                output(
                                  QString const& metrics_path,
                                  QString const& status_path,
+                                 unsigned int cache_size,
                                  bool ignore_update_errors,
                                  unsigned short port,
                                  bool write_metrics = true,
@@ -70,6 +73,7 @@ namespace                    rrd {
                                  bool in = false,
                                  bool out = true);
     void                       read(misc::shared_ptr<io::data>& d);
+    void                       update();
     unsigned int               write(
                                  misc::shared_ptr<io::data> const& d);
 

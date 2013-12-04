@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -50,5 +52,5 @@ int main() {
           || (dwntm.was_cancelled != false)
           || (dwntm.was_started != false)
           || (dwntm.type()
-              != "com::centreon::broker::neb::downtime"));
+              != io::events::data_type<io::events::neb, neb::de_downtime>::value));
 }

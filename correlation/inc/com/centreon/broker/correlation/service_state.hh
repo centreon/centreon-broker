@@ -40,7 +40,7 @@ namespace          correlation {
     service_state& operator=(service_state const& ss);
     bool           operator==(service_state const& ss) const;
     bool           operator!=(service_state const& ss) const;
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 

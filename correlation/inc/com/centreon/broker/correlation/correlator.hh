@@ -34,6 +34,10 @@ namespace                          com {
   namespace                        centreon {
     namespace                      broker {
       namespace                    correlation {
+        // Forward declaration.
+        class issue;
+        class state;
+
         /**
          *  @class correlator correlator.hh "correlation/correlator.hh"
          *  @brief Create event correlation.
@@ -45,7 +49,7 @@ namespace                          com {
           Q_OBJECT
 
          public:
-                                   correlator();
+                                   correlator(bool is_passive = false);
                                    correlator(correlator const& c);
                                    ~correlator();
           correlator&              operator=(correlator const& c);
@@ -86,10 +90,21 @@ namespace                          com {
           issue*                   _find_related_issue(node& n);
           void                     _internal_copy(correlator const& c);
           void                     _issue_parenting(node* n, bool full);
+          void                     _process_event_on_active(
+                                     misc::shared_ptr<io::data> const& e);
+          void                     _process_event_on_passive(
+                                     misc::shared_ptr<io::data> const& e);
           QMap<QPair<unsigned int, unsigned int>, node>::iterator
                                    _remove_node(
                                      QMap<QPair<unsigned int, unsigned int>, node>::iterator it);
+          void                     _update_host_service_state(
+                                     misc::shared_ptr<state> s);
+          void                     _update_issue(
+                                     misc::shared_ptr<issue> i);
           void                     _write_issues();
+
+          void                     (correlator::*_process_event)(
+                                     misc::shared_ptr<io::data> const&);
         };
       }
     }

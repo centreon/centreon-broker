@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,8 @@
 */
 
 #include <cmath>
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -41,5 +43,6 @@ int main() {
           || (m.rrd_len != 0)
           || !isnan(m.value)
           || (m.value_type != storage::perfdata::gauge)
-          || (m.type() != "com::centreon::broker::storage::metric"));
+          || (m.type()
+              != io::events::data_type<io::events::storage, storage::de_metric>::value));
 }

@@ -30,6 +30,9 @@ namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         bbdo {
+        // Forward declaration.
+        class           stream;
+
         /**
          *  @class acceptor acceptor.hh "com/centreon/broker/bbdo/acceptor.hh"
          *  @brief BBDO acceptor.
@@ -62,6 +65,7 @@ namespace               com {
                           bool negociate,
                           QString const& extensions,
                           time_t timeout,
+                          bool one_peer_retention_mode = false,
                           bool coarse = false);
                         acceptor(acceptor const& right);
                         ~acceptor();
@@ -72,8 +76,12 @@ namespace               com {
                         open();
           misc::shared_ptr<io::stream>
                         open(QString const& id);
+          void          stats(std::string& buffer);
 
         private:
+          void          _negociate_features(
+                           misc::shared_ptr<io::stream> stream,
+                           misc::shared_ptr<bbdo::stream> my_bbdo);
           misc::shared_ptr<io::stream>
                         _open(misc::shared_ptr<io::stream> stream);
 
@@ -84,6 +92,7 @@ namespace               com {
           bool          _is_out;
           QString       _name;
           bool          _negociate;
+          bool          _one_peer_retention_mode;
           QList<QThread*>
                         _threads;
           QMutex        _threadsm;

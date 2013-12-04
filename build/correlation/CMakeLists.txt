@@ -51,6 +51,7 @@ add_library("${CORRELATION}" SHARED
   "${INC_DIR}/engine_state.hh"
   "${INC_DIR}/events.hh"
   "${INC_DIR}/host_state.hh"
+  "${INC_DIR}/internal.hh"
   "${INC_DIR}/issue.hh"
   "${INC_DIR}/issue_parent.hh"
   "${INC_DIR}/node.hh"

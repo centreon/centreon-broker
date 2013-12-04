@@ -27,6 +27,7 @@
 #  include <QReadWriteLock>
 #  include <QString>
 #  include <QThread>
+#  include <set>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -53,8 +54,10 @@ namespace                com {
 
          public:
                          failover(
+                           misc::shared_ptr<io::endpoint> endp,
                            bool is_out,
-                           QString const& name = "(unknown)");
+                           QString const& name = "(unknown)",
+                           std::set<unsigned int> const& filters = std::set<unsigned int>());
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);
@@ -71,8 +74,6 @@ namespace                com {
                            bool* timed_out = NULL);
           void           run();
           void           set_buffering_timeout(time_t secs);
-          void           set_endpoint(
-                           misc::shared_ptr<io::endpoint> endp);
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
           void           set_read_timeout(time_t read_timeout);

@@ -18,9 +18,11 @@
 */
 
 #include <QSqlDatabase>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/factory.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -36,6 +38,7 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Deregister storage layer.
+      io::events::instance().unreg("storage");
       io::protocols::instance().unreg("storage");
 
       // Remove the workaround connection.
@@ -65,10 +68,23 @@ extern "C" {
         QSqlDatabase::addDatabase("QMYSQL");
 
       // Register storage layer.
-      io::protocols::instance().reg("storage",
-        storage::factory(),
-        1,
-        7);
+      io::protocols::instance().reg(
+                                  "storage",
+                                  storage::factory(),
+                                  1,
+                                  7);
+
+      // Register storage events.
+      std::set<unsigned int> elements;
+      elements.insert(
+                 io::events::data_type<io::events::storage, storage::de_metric>::value);
+      elements.insert(
+                 io::events::data_type<io::events::storage, storage::de_rebuild>::value);
+      elements.insert(
+                 io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
+      elements.insert(
+                 io::events::data_type<io::events::storage, storage::de_status>::value);
+      io::events::instance().reg("storage", elements);
     }
     return ;
   }

@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -95,7 +96,7 @@ int main() {
       misc::shared_ptr<io::data> d;
       s.read(d, 0);
       if (d.isNull()
-          || (d->type() != "com::centreon::broker::io::raw"))
+          || (d->type() != io::events::data_type<io::events::internal, 1>::value))
         retval |= 1;
       else {
         misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());

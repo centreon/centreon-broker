@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_IO_RAW_HH_
-# define CCB_IO_RAW_HH_
+#ifndef CCB_IO_RAW_HH
+#  define CCB_IO_RAW_HH
 
-# include <QByteArray>
-# include "com/centreon/broker/io/data.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <QByteArray>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -34,15 +34,15 @@ namespace          io {
    *  Raw byte array.
    */
   class            raw : public data, public QByteArray {
-   public:
+  public:
                    raw();
                    raw(raw const& r);
                    ~raw();
     raw&           operator=(raw const& r);
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_IO_RAW_HH_ */
+#endif // !CCB_IO_RAW_HH

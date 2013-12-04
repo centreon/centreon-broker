@@ -42,7 +42,7 @@ namespace            neb {
                      acknowledgement(acknowledgement const& ack);
                      ~acknowledgement();
     acknowledgement& operator=(acknowledgement const& ack);
-    QString const&   type() const;
+    unsigned int     type() const;
 
     short            acknowledgement_type;
     QString          author;

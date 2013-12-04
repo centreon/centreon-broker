@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QTimer>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
@@ -80,7 +81,7 @@ int main(int argc, char* argv[]) {
          end(ss2->get_stored_events().end());
        it != end;
        ++it)
-    if ((*it)->type() != "com::centreon::broker::io::raw")
+    if ((*it)->type() != io::events::data_type<io::events::internal, 1>::value)
       retval |= 1;
     else {
       misc::shared_ptr<io::raw> raw(it->staticCast<io::raw>());

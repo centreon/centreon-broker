@@ -838,7 +838,7 @@ static mapped_data<host_group> const host_group_mapping[] = {
   mapped_data<host_group>(
     &host_group::enabled,
     NDO_DATA_FIXED,
-    NULL),
+    "enabled"),
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
@@ -914,7 +914,8 @@ static mapped_data<host_state> const host_state_mapping[] = {
   mapped_data<host_state>(
     &host_state::end_time,
     3,
-    "end_time"),
+    "end_time",
+    NULL_ON_ZERO),
   mapped_data<host_state>(
     &host_state::host_id,
     4,
@@ -1926,7 +1927,7 @@ static mapped_data<service_group> const service_group_mapping[] = {
   mapped_data<service_group>(
     &service_group::enabled,
     NDO_DATA_FIXED,
-    NULL),
+    "enabled"),
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,
@@ -1988,7 +1989,8 @@ static mapped_data<service_state> const service_state_mapping [] = {
   mapped_data<service_state>(
     &service_state::end_time,
     3,
-    "end_time"),
+    "end_time",
+    NULL_ON_ZERO),
   mapped_data<service_state>(
     &service_state::host_id,
     4,

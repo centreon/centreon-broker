@@ -25,6 +25,7 @@
 #include <QFile>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 
@@ -50,7 +51,7 @@ static int read_some(file::stream& f, unsigned int count) {
     while (-1 == index) {
       misc::shared_ptr<io::data> d;
       f.read(d);
-      if (d->type() != "com::centreon::broker::io::raw")
+      if (d->type() != io::events::data_type<io::events::internal, 1>::value)
         return (1);
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       buffer.append(*r);

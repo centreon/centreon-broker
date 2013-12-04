@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyBroker</instance_name>
+  <!--
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <output>
+    <name>OutputToBBDOOnePeerRetentionModeUnitTest</name>
+    <type>tcp</type>
+    <port>5687</port>
+    <protocol>bbdo</protocol>
+    <read_timeout>1</read_timeout>
+    <one_peer_retention_mode>1</one_peer_retention_mode>
+  </output>
+</centreonbroker>

@@ -91,22 +91,22 @@ necessary.
 
 Package required to build:
 
-=========================== ========================= ================================
-Software                    Package Name              Description
-=========================== ========================= ================================
-C++ compilation environment gcc gcc-c++ make          Mandatory tools to compile.
-CMake **(>= 2.8)**          cmake                     Read the build script and
-                                                      prepare sources for compilation.
-Qt **(>= 4.7.4)**           qt4-devel                 Centreon Broker require Qt
-                                                      core framework.
-                            qt4-mysql                 MySQL drivers for Qt. Useful if
-                                                      you're using DB output (with
-                                                      Centreon for example).
-RRDTool                     rrdtool-devel             Development files for RRD file
-                                                      (graph) creation and update.
-GnuTLS **(>= 2.0)**         gnutls-devel (el6)        Development files for gnutls.
-                            compat-gnutls-devel (el5)
-=========================== ========================= ================================
+=========================== ========================== ================================
+Software                    Package Name               Description
+=========================== ========================== ================================
+C++ compilation environment gcc gcc-c++ make           Mandatory tools to compile.
+CMake **(>= 2.8)**          cmake                      Read the build script and
+                                                       prepare sources for compilation.
+Qt **(>= 4.7.4)**           qt4-devel                  Centreon Broker require Qt
+                                                       core framework.
+                            qt4-mysql                  MySQL drivers for Qt. Useful if
+                                                       you're using DB output (with
+                                                       Centreon for example).
+RRDTool                     rrdtool-devel              Development files for RRD file
+                                                       (graph) creation and update.
+GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnutls.
+                            compat-gnutls2-devel (el5)
+=========================== ========================== ================================
 
 #. Install basic compilation tools ::
 

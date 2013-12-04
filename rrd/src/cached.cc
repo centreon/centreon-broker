@@ -19,12 +19,12 @@
 
 #include <cerrno>
 #include <cstdlib>
-#include <QFile>
+#include <QTcpSocket>
 #if QT_VERSION >= 0x040400
 #  include <QLocalSocket>
 #endif // Qt >= 4.4.0
-#include <QTcpSocket>
 #include <sstream>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
@@ -42,9 +42,14 @@ using namespace com::centreon::broker::rrd;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] tmpl_path  The template path.
+ *  @param[in] cache_size The maximum number of cache element.
  */
-cached::cached() : _batch(false) {}
+cached::cached(std::string const& tmpl_path, unsigned int cache_size)
+  : _batch(false),
+    _lib(tmpl_path, cache_size) {}
 
 /**
  *  Destructor.
@@ -63,11 +68,18 @@ void cached::begin() {
 }
 
 /**
+ *  Clear the tempalte cache.
+ */
+void cached::clean() {
+  _lib.clean();
+  return ;
+}
+
+/**
  *  Close the current RRD file.
  */
 void cached::close() {
   _filename.clear();
-  _metric.clear();
   _batch = false;
   return ;
 }
@@ -140,22 +152,18 @@ void cached::connect_remote(
  *  Open a RRD file which already exists.
  *
  *  @param[in] filename Path to the RRD file.
- *  @param[in] metric   Metric name.
  */
-void cached::open(
-               QString const& filename,
-               QString const& metric) {
+void cached::open(std::string const& filename) {
   // Close previous file.
   this->close();
 
   // Check that the file exists.
-  if (!QFile::exists(filename))
+  if (access(filename.c_str(), F_OK))
     throw (exceptions::open() << "RRD: file '" << filename
              << "' does not exist");
 
   // Remember information for further operations.
   _filename = filename;
-  _metric = lib::normalize_metric_name(metric);
 
   return ;
 }
@@ -164,31 +172,27 @@ void cached::open(
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] metric     Metric name.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
- *  @param[in] interval   Time interval between each record.
+ *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
 void cached::open(
-               QString const& filename,
-               QString const& metric,
+               std::string const& filename,
                unsigned int length,
                time_t from,
-               time_t interval,
+               unsigned int step,
                short value_type) {
   // Close previous file.
   this->close();
 
   // Remember informations for further operations.
   _filename = filename;
-  _metric = lib::normalize_metric_name(metric);
 
   /* We are unfortunately forced to use librrd to create RRD file as
   ** rrdcached does not support RRD file creation.
   */
-  lib rrdf;
-  rrdf.open(filename, metric, length, from, interval, value_type);
+  _lib.open(filename, length, from, step, value_type);
 
   return ;
 }
@@ -198,10 +202,10 @@ void cached::open(
  *
  *  @param[in] filename Path to the RRD file.
  */
-void cached::remove(QString const& filename) {
+void cached::remove(std::string const& filename) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "FORGET " << filename.toStdString() << "\n";
+  oss << "FORGET " << filename << "\n";
 
   try {
     _send_to_cached(oss.str().c_str());
@@ -210,7 +214,7 @@ void cached::remove(QString const& filename) {
     logging::error(logging::medium) << e.what();
   }
 
-  if (::remove(filename.toStdString().c_str())) {
+  if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
     logging::error(logging::high) << "RRD: could not remove file '"
       << filename << "': " << msg;
@@ -224,11 +228,11 @@ void cached::remove(QString const& filename) {
  *  @param[in] t     Timestamp of value.
  *  @param[in] value Associated value.
  */
-void cached::update(time_t t, QString const& value) {
+void cached::update(time_t t, std::string const& value) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "UPDATE " << _filename.toStdString() << " " << t
-      << ":" << value.toStdString() << "\n";
+  oss << "UPDATE " << _filename << " " << t
+      << ":" << value << "\n";
 
   // Send command.
   try {

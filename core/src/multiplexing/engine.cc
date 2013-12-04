@@ -50,9 +50,6 @@ std::auto_ptr<engine> engine::_instance;
 // Data queue.
 static QQueue<misc::shared_ptr<io::data> > _kiew;
 
-// Mutex.
-static QMutex _mutex(QMutex::Recursive);
-
 // Processing flag.
 static bool _processing;
 
@@ -74,7 +71,7 @@ engine::~engine() {}
  *  @param[in] data Write data to hook.
  */
 void engine::hook(hooker& h, bool data) {
-  QMutexLocker lock(&_mutex);
+  QMutexLocker lock(this);
   _hooks.push_back(std::make_pair(&h, data));
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
@@ -105,7 +102,7 @@ void engine::load() {
  */
 void engine::publish(misc::shared_ptr<io::data> const& e) {
   // Lock mutex.
-  QMutexLocker lock(&_mutex);
+  QMutexLocker lock(this);
 
   if (!_stopped) {
     // Store object for further processing.
@@ -128,7 +125,7 @@ void engine::start() {
     _write_func = &engine::_write;
 
     // Copy event queue.
-    QMutexLocker lock(&_mutex);
+    QMutexLocker lock(this);
     QQueue<misc::shared_ptr<io::data> > kiew(_kiew);
     _kiew.clear();
 
@@ -168,7 +165,7 @@ void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
     logging::debug(logging::high) << "multiplexing: stopping";
-    QMutexLocker lock(&_mutex);
+    QMutexLocker lock(this);
     for (QVector<std::pair<hooker*, bool> >::iterator
            it(_hooks_begin),
            end(_hooks_end);
@@ -222,7 +219,7 @@ bool engine::stopped() const throw () {
  *  @param[in] h Hook.
  */
 void engine::unhook(hooker& h) {
-  QMutexLocker lock(&_mutex);
+  QMutexLocker lock(this);
   for (QVector<std::pair<hooker*, bool> >::iterator
          it(_hooks_begin);
        it != _hooks.end();)
@@ -252,7 +249,10 @@ void engine::unload() {
 /**
  *  Default constructor.
  */
-engine::engine() : _stopped(false), _write_func(&engine::_nop) {
+engine::engine()
+  : QMutex(QMutex::Recursive),
+    _stopped(false),
+    _write_func(&engine::_nop) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
@@ -274,7 +274,7 @@ void engine::_nop(misc::shared_ptr<io::data> const& d) {
  *  @param[in] obj Destroyed object.
  */
 void engine::_on_hook_destroy(QObject* obj) {
-  QMutexLocker lock(&_mutex);
+  QMutexLocker lock(this);
   for (QVector<std::pair<hooker*, bool> >::iterator
          it = _hooks.begin();
        it != _hooks.end();)

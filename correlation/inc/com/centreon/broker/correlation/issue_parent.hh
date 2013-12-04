@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,7 +41,7 @@ namespace          correlation {
                    issue_parent(issue_parent const& ip);
                    ~issue_parent();
     issue_parent&  operator=(issue_parent const& ip);
-    QString const& type() const;
+    unsigned int   type() const;
 
     unsigned int   child_host_id;
     unsigned int   child_service_id;

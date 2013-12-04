@@ -1294,6 +1294,10 @@ int neb::callback_host(int callback_type, void* data) {
       my_host->perf_data = h->perf_data;
     my_host->problem_has_been_acknowledged
       = h->problem_has_been_acknowledged;
+    logging::info(logging::low)
+      << "callbacks:  XXX host state change ack(" << my_host->problem_has_been_acknowledged
+      << ") " << my_host->host_id << " ('" << my_host->host_name << "') on instance "
+      << my_host->instance_id;
     my_host->process_performance_data = h->process_performance_data;
     my_host->retain_nonstatus_information
       = h->retain_nonstatus_information;
@@ -1490,6 +1494,9 @@ int neb::callback_host_status(int callback_type, void* data) {
       host_status->perf_data = h->perf_data;
     host_status->problem_has_been_acknowledged
       = h->problem_has_been_acknowledged;
+    logging::info(logging::low)
+      << "callbacks:  XXX host status state change ack(" << host_status->problem_has_been_acknowledged
+      << ") " << host_status->host_id;
     host_status->process_performance_data = h->process_performance_data;
     host_status->retry_interval = h->retry_interval;
     host_status->scheduled_downtime_depth = h->scheduled_downtime_depth;

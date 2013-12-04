@@ -4,6 +4,9 @@
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
   <!--
+  <stats>
+    <fifo>/tmp/cbd.fifo</fifo>
+  </stats>
   <logger>
     <type>file</type>
     <name>cbmod.log</name>
@@ -24,5 +27,8 @@
     <db_password>@DB_PASSWORD@</db_password>
     <db_name>broker_monitoring_to_sql</db_name>
     <queries_per_transaction>0</queries_per_transaction>
+    <filters>
+      <category>neb</category>
+    </filters>
   </output>
 </centreonbroker>

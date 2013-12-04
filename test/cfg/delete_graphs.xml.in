@@ -4,6 +4,9 @@
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
   <!--
+  <stats>
+    <fifo>/tmp/cbd.fifo</fifo>
+  </stats>
   <logger>
     <type>file</type>
     <name>cbmod.log</name>
@@ -20,5 +23,6 @@
     <host>localhost</host>
     <port>5681</port>
     <protocol>bbdo</protocol>
+    <read_timeout>1</read_timeout>
   </output>
 </centreonbroker>

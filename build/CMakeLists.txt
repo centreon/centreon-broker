@@ -33,7 +33,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
 # Version.
 set(CENTREON_BROKER_MAJOR 2)
-set(CENTREON_BROKER_MINOR 5)
+set(CENTREON_BROKER_MINOR 6)
 set(CENTREON_BROKER_PATCH 0)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
@@ -278,6 +278,7 @@ set(LIBROKER_SOURCES
 # #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
+  "${SRC_DIR}/io/events.cc"
   "${SRC_DIR}/io/exceptions/shutdown.cc"
   "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/protocols.cc"
@@ -321,6 +322,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/io/data.hh"
   "${INC_DIR}/io/endpoint.hh"
+  "${INC_DIR}/io/events.hh"
   "${INC_DIR}/io/exceptions/shutdown.hh"
   "${INC_DIR}/io/factory.hh"
   "${INC_DIR}/io/protocols.hh"
@@ -517,8 +519,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/comments_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/correlation_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
@@ -527,6 +527,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
@@ -543,6 +545,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
@@ -636,8 +642,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/event_handlers_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Filtering to SQL.
+  set(TEST_NAME "running_filtering_to_sql")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Compression.
+  # Protocols.
   set(TEST_NAME "running_compression_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
@@ -659,6 +671,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_bbdo_multiple_connections")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bbdo_multiple_connections.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # BBDO One Peer Retention Mode.
+  set(TEST_NAME "running_bbdo_one_peer_retention_mode")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bbdo_one_peer_retention_mode.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

@@ -23,8 +23,10 @@
 #  include <memory>
 #  include <QIODevice>
 #  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
+#  include "com/centreon/broker/rrd/lib.hh"
 
 CCB_BEGIN()
 
@@ -42,9 +44,12 @@ namespace   rrd {
    */
   class     cached : public backend {
   public:
-            cached();
+            cached(
+              std::string const& tmpl_path,
+              unsigned int cache_size);
             ~cached();
     void    begin();
+    void    clean();
     void    close();
     void    commit();
 #  if QT_VERSION >= 0x040400
@@ -53,18 +58,15 @@ namespace   rrd {
     void    connect_remote(
               QString const& address,
               unsigned short port);
+    void    open(std::string const& filename);
     void    open(
-              QString const& filename,
-              QString const& metric);
-    void    open(
-              QString const& filename,
-              QString const& metric,
+              std::string const& filename,
               unsigned int length,
               time_t from,
-              time_t interval,
+              unsigned int step,
               short value_type = 0);
-    void    remove(QString const& filename);
-    void    update(time_t t, QString const& value);
+    void    remove(std::string const& filename);
+    void    update(time_t t, std::string const& value);
 
   private:
             cached(cached const& c);
@@ -74,8 +76,9 @@ namespace   rrd {
               unsigned int size = 0);
 
     bool    _batch;
-    QString _filename;
-    QString _metric;
+    std::string
+            _filename;
+    lib     _lib;
     std::auto_ptr<QIODevice>
             _socket;
   };

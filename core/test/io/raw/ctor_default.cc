@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011-213 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
@@ -31,6 +32,6 @@ int main() {
   io::raw data;
 
   // Check construction.
-  return ((data.type() != "com::centreon::broker::io::raw")
+  return ((data.type() != io::events::data_type<io::events::internal, 1>::value)
 	  || (data.size() != 0));
 }

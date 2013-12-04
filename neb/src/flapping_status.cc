@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/flapping_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -74,11 +76,10 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::flapping_status".
+ *  @return The event type.
  */
-QString const& flapping_status::type() const {
-  static QString const fs_type("com::centreon::broker::neb::flapping_status");
-  return (fs_type);
+unsigned int flapping_status::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
 }
 
 /**************************************

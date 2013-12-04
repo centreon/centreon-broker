@@ -30,10 +30,12 @@
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
@@ -409,7 +411,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process service status events.
   if (!data.isNull()) {
-    if (data->type() == "com::centreon::broker::neb::service_status") {
+    if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
       logging::debug(logging::high)
         << "storage: processing service status event";
       misc::shared_ptr<neb::service_status>

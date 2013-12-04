@@ -91,10 +91,10 @@ static void get_string(
               T const& t,
               data_member<T> const& member,
               std::stringstream& buffer) {
-  QString value(t.*(member.S));
+  QByteArray value((t.*(member.S)).toUtf8());
   value.replace('\\', "\\\\");
   value.replace('\n', "\\n");
-  buffer << value.toStdString();
+  buffer.write(value.constData(), value.size());
   return ;
 }
 

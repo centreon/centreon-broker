@@ -55,6 +55,7 @@ add_library("${RRD}" SHARED
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/cached.cc"
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/creator.cc"
   "${SRC_DIR}/exceptions/open.cc"
   "${SRC_DIR}/exceptions/update.cc"
   "${SRC_DIR}/factory.cc"
@@ -65,6 +66,7 @@ add_library("${RRD}" SHARED
   "${INC_DIR}/com/centreon/broker/rrd/backend.hh"
   "${INC_DIR}/com/centreon/broker/rrd/cached.hh"
   "${INC_DIR}/com/centreon/broker/rrd/connector.hh"
+  "${INC_DIR}/com/centreon/broker/rrd/creator.hh"
   "${INC_DIR}/com/centreon/broker/rrd/exceptions/open.hh"
   "${INC_DIR}/com/centreon/broker/rrd/exceptions/update.hh"
   "${INC_DIR}/com/centreon/broker/rrd/factory.hh"
@@ -133,12 +135,6 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # RRD lib tests.
-  #   Metric name normalization.
-  set(TEST_NAME "rrd_lib_normalize_metric_name")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/lib/normalize_metric_name.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   File creation.
   set(TEST_NAME "rrd_lib_create")
   add_executable("${TEST_NAME}"

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_group_member.hh"
 
 using namespace com::centreon::broker;
@@ -37,5 +39,5 @@ int main() {
           || (sgrpmmbr.instance_id != 0)
           || (sgrpmmbr.service_id != 0)
           || (sgrpmmbr.type()
-              != "com::centreon::broker::neb::service_group_member"));
+              != io::events::data_type<io::events::neb, neb::de_service_group_member>::value));
 }

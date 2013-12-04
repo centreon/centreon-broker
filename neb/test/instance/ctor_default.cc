@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -40,5 +42,5 @@ int main() {
           || (i.program_start != 0)
           || (i.version != "")
           || (i.type()
-              != "com::centreon::broker::neb::instance"));
+              != io::events::data_type<io::events::neb, neb::de_instance>::value));
 }

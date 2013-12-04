@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,15 +60,20 @@ void acceptor::_on_thread_termination() {
 /**
  *  Constructor.
  *
- *  @param[in] name   The name to build temporary.
- *  @param[in] is_out True if the acceptor is an output acceptor.
+ *  @param[in] name                    The name to build temporary.
+ *  @param[in] is_out                  True if the acceptor is an output
+ *                                     acceptor.
+ *  @param[in] one_peer_retention_mode True to enable the "one peer
+ *                                     retention mode" (TM).
  */
-acceptor::acceptor(QString const& name, bool is_out)
-  : io::endpoint(true),
+acceptor::acceptor(
+            QString const& name,
+            bool is_out,
+            bool one_peer_retention_mode)
+  : io::endpoint(!one_peer_retention_mode),
     _is_out(is_out),
-    _name(name) {
-
-}
+    _name(name),
+    _one_peer_retention_mode(one_peer_retention_mode) {}
 
 /**
  *  Copy constructor.
@@ -78,6 +83,7 @@ acceptor::acceptor(QString const& name, bool is_out)
 acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
   _is_out = a._is_out;
   _name = a._name;
+  _one_peer_retention_mode = a._one_peer_retention_mode;
 }
 
 /**
@@ -105,6 +111,7 @@ acceptor& acceptor::operator=(acceptor const& a) {
     io::endpoint::operator=(a);
     _is_out = a._is_out;
     _name = a._name;
+    _one_peer_retention_mode = a._one_peer_retention_mode;
   }
   return (*this);
 }
@@ -135,8 +142,22 @@ void acceptor::close() {
  */
 misc::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
-  if (!_from.isNull())
-    _open(_from->open());
+  if (!_from.isNull()) {
+    if (_one_peer_retention_mode) {
+      misc::shared_ptr<io::stream> sub(_from->open());
+      if (!sub.isNull()) {
+        misc::shared_ptr<io::stream>
+          ours(_is_out
+               ? static_cast<io::stream*>(new ndo::output)
+               : static_cast<io::stream*>(new ndo::input));
+        ours->read_from(sub);
+        ours->write_to(sub);
+        return (ours);
+      }
+    }
+    else
+      _open(_from->open());
+  }
   return (misc::shared_ptr<io::stream>());
 }
 
@@ -145,9 +166,38 @@ misc::shared_ptr<io::stream> acceptor::open() {
  */
 misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   // Wait for client from the lower layer.
-  if (!_from.isNull())
-    _open(_from->open(id));
+  if (!_from.isNull()) {
+    if (_one_peer_retention_mode) {
+      misc::shared_ptr<io::stream> sub(_from->open(id));
+      if (!sub.isNull()) {
+        misc::shared_ptr<io::stream>
+          ours(_is_out
+               ? static_cast<io::stream*>(new ndo::output)
+               : static_cast<io::stream*>(new ndo::input));
+        ours->read_from(sub);
+        ours->write_to(sub);
+        return (ours);
+      }
+    }
+    else
+      _open(_from->open(id));
+  }
   return (misc::shared_ptr<io::stream>());
+}
+
+/**
+ *  Get NDO statistics.
+ *
+ *  @param[out] buffer Buffer.
+ */
+void acceptor::stats(std::string& buffer) {
+  buffer.append(
+           _one_peer_retention_mode
+           ? "one peer retention mode=true\n"
+           : "one peer retention mode=false\n");
+  if (!_from.isNull())
+    _from->stats(buffer);
+  return ;
 }
 
 /**************************************

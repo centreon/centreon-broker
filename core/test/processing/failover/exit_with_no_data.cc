@@ -50,8 +50,7 @@ int main(int argc, char* argv[]) {
   se1->set_succeed(true);
 
   // Failover object.
-  processing::failover f1(true);
-  f1.set_endpoint(se1.staticCast<io::endpoint>());
+  processing::failover f1(se1.staticCast<io::endpoint>(), true);
 
   // Launch thread.
   f1.start();
@@ -70,8 +69,7 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> se2(new setable_endpoint);
   se2->set_succeed(true);
   misc::shared_ptr<processing::failover>
-    f2(new processing::failover(true));
-  f2->set_endpoint(se2.staticCast<io::endpoint>());
+    f2(new processing::failover(se2.staticCast<io::endpoint>(), true));
   se1->set_succeed(true);
   f1.set_failover(f2);
   f1.start();

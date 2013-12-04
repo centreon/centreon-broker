@@ -43,7 +43,7 @@ namespace                 neb {
                             service_group_member const& sgm);
     virtual               ~service_group_member();
     service_group_member& operator=(service_group_member const& sgm);
-    QString const&        type() const;
+    unsigned int          type() const;
 
     unsigned int          service_id;
   };

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,8 +19,10 @@
 
 #include <cstdlib>
 #include <memory>
+#include <QMutexLocker>
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -51,6 +53,11 @@ void modules::apply(
                 QList<QString> const& module_list,
                 QString const& module_dir,
                 void const* arg) {
+  // Lock multiplexing engine in case modules register hooks.
+  QMutexLocker
+    lock(&com::centreon::broker::multiplexing::engine::instance());
+
+  // Load modules.
   for (QList<QString>::const_iterator
          it(module_list.begin()),
          end(module_list.end());

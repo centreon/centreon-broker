@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -81,11 +83,10 @@ instance_status& instance_status::operator=(instance_status const& is) {
 /**
  *  Get the type of the event.
  *
- *  @return The string "com::centreon::broker::neb::instance_status".
+ *  @return The event_type.
  */
-QString const& instance_status::type() const {
-  static QString const is_type("com::centreon::broker::neb::instance_status");
-  return (is_type);
+unsigned int instance_status::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_instance_status>::value);
 }
 
 /**************************************

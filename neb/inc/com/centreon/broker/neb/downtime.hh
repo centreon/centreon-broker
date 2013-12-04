@@ -43,7 +43,7 @@ namespace          neb {
                    downtime(downtime const& d);
                    ~downtime();
     downtime&      operator=(downtime const& d);
-    QString const& type() const;
+    unsigned int   type() const;
 
     timestamp      actual_end_time;
     timestamp      actual_start_time;
@@ -71,4 +71,4 @@ namespace          neb {
 
 CCB_END()
 
-#endif // !EVENTS_DOWNTIME_HH
+#endif // !CCB_NEB_DOWNTIME_HH

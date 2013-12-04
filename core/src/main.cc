@@ -25,6 +25,7 @@
 #include <exception>
 #include <QCoreApplication>
 #include <QLibraryInfo>
+#include <QTextCodec>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -126,6 +127,13 @@ int main(int argc, char* argv[]) {
 
   // Qt application object.
   QCoreApplication app(argc, argv);
+  QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+  if (utf8_codec)
+    QTextCodec::setCodecForCStrings(utf8_codec);
+  else
+    logging::error(logging::high)
+      << "core: could not find UTF-8 codec, strings will be "
+         "interpreted using the current locale";
 
   try {
     // Check the command line.

@@ -200,6 +200,7 @@ CREATE TABLE hostgroups (
   alias varchar(255) default NULL,
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
+  enabled bool NOT NULL default true,
 
   PRIMARY KEY (hostgroup_id),
   UNIQUE (name, instance_id),
@@ -376,6 +377,7 @@ CREATE TABLE servicegroups (
   alias varchar(255) default NULL,
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
+  enabled bool NOT NULL default true,
 
   PRIMARY KEY (servicegroup_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)

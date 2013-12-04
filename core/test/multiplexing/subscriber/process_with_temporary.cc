@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,7 @@
 #include <cstring>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/temporary.hh"
@@ -75,7 +76,7 @@ int main() {
   for (unsigned int i(0); i < 3; ++i) {
     s.read(event, 0);
     retval |= (event.isNull()
-               || (event->type() != "com::centreon::broker::io::raw")
+               || (event->type() != io::events::data_type<io::events::internal, 1>::value)
                || strncmp(
                     event.staticCast<io::raw>()->QByteArray::data(),
                     msg[i],

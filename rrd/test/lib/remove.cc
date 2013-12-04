@@ -17,10 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <ctime>
 #include <QDir>
-#include <QFile>
 #include <QString>
+#include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
@@ -38,15 +39,15 @@ int main() {
   config::applier::init();
 
   // Temporary file path.
-  QString file_path(QDir::tempPath());
+  std::string dir_path(QDir::tempPath().toStdString());
+  std::string file_path(dir_path);
   file_path.append("/" TEMP_FILE);
-  QFile::remove(file_path);
+  ::remove(file_path.c_str());
 
   // RRD library object.
-  rrd::lib lib;
+  rrd::lib lib(dir_path, 16);
   lib.open(
     file_path,
-    "C:\\ Used Space",
     90 * 24 * 60 * 60,
     time(NULL) - 7 * 24 * 60 * 60,
     60);
@@ -54,13 +55,13 @@ int main() {
   lib.remove(file_path);
 
   // Check file exists.
-  int retval(QFile::exists(file_path));
+  bool file_exists(!access(file_path.c_str(), F_OK));
 
   // Remove temporary file.
-  QFile::remove(file_path);
+  ::remove(file_path.c_str());
 
   // Cleanup.
   config::applier::deinit();
 
-  return (retval);
+  return (!file_exists ? EXIT_SUCCESS : EXIT_FAILURE);
 }

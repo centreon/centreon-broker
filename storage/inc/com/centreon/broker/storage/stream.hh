@@ -20,6 +20,7 @@
 #ifndef CCB_STORAGE_STREAM_HH
 #  define CCB_STORAGE_STREAM_HH
 
+#  include <deque>
 #  include <list>
 #  include <map>
 #  include <memory>
@@ -134,7 +135,7 @@ namespace          storage {
     time_t         _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
-    std::list<metric_value>
+    std::deque<metric_value>
                    _perfdata_queue;
     bool           _process_out;
     unsigned int   _queries_per_transaction;

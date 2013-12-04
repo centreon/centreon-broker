@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group_member.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::neb;
 
@@ -60,9 +62,8 @@ host_group_member& host_group_member::operator=(host_group_member const& hgm) {
 /**
  *  Get the type of this event.
  *
- *  @return The string "com::centreon::broker::neb::host_group_member".
+ *  @return The event type.
  */
-QString const& host_group_member::type() const {
-  static QString const hgm_type("com::centreon::broker::neb::host_group_member");
-  return (hgm_type);
+unsigned int host_group_member::type() const {
+  return (io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
 }

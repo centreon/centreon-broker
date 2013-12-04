@@ -21,6 +21,7 @@
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/local/stream.hh"
@@ -143,9 +144,6 @@ void stream::set_timeout(int msecs) {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Raw type.
-  static QString const raw_type("com::centreon::broker::io::raw");
-
   // Check if data exists and should be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
@@ -153,7 +151,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == raw_type) {
+  if (d->type()
+      == io::events::data_type<io::events::internal, 1>::value) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),

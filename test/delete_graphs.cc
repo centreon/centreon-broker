@@ -22,13 +22,13 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <utility>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -257,7 +257,7 @@ int main() {
         {
           std::ostringstream status_file;
           status_file << status_path << "/" << it1->first << ".rrd";
-          if (!QFile::exists(status_file.str().c_str()))
+          if (access(status_file.str().c_str(), F_OK))
             throw (exceptions::msg() << "status RRD file '"
                    << status_file.str().c_str() << "' does not exist");
         }
@@ -265,7 +265,7 @@ int main() {
           std::ostringstream metrics_file;
           metrics_file << metrics_path << "/"
                        << it1->second.front() << ".rrd";
-          if (!QFile::exists(metrics_file.str().c_str()))
+          if (access(metrics_file.str().c_str(), F_OK))
             throw (exceptions::msg() << "metrics RRD file '"
                    << metrics_file.str().c_str() << "' does not exist");
         }
@@ -366,7 +366,7 @@ int main() {
          ++it) {
       std::ostringstream status_file;
       status_file << status_path << "/" << it->second << ".rrd";
-      if (QFile::exists(status_file.str().c_str()))
+      if (!access(status_file.str().c_str(), F_OK))
         throw (exceptions::msg() << "status RRD file '"
                << status_file.str().c_str() << "' still exists");
     }
@@ -381,7 +381,7 @@ int main() {
         std::ostringstream metrics_file;
         metrics_file << metrics_path << "/"
                      << it->second.front() << ".rrd";
-        if (QFile::exists(metrics_file.str().c_str()))
+        if (!access(metrics_file.str().c_str(), F_OK))
           throw (exceptions::msg() << "metrics RRD file '"
                  << metrics_file.str().c_str() << "' still exists");
       }

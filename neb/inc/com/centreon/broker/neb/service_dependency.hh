@@ -39,7 +39,7 @@ namespace               neb {
                           service_dependency const& sd);
                         ~service_dependency();
     service_dependency& operator=(service_dependency const& sd);
-    QString const&      type() const;
+    unsigned int        type() const;
 
     unsigned int        dependent_service_id;
     unsigned int        service_id;

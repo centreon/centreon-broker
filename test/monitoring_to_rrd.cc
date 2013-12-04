@@ -24,13 +24,15 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <QCoreApplication>
 #include <QDir>
-#include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QTextCodec>
 #include <QVariant>
 #include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -49,11 +51,22 @@ using namespace com::centreon::broker;
 /**
  *  Check that monitoring is properly inserted in RRD graphs.
  *
+ *  @param[in] argc Argument count.
+ *  @param[in] argv Argument values.
+ *
  *  @return EXIT_SUCCESS on success.
  */
-int main() {
+int main(int argc, char* argv[]) {
   // Return value.
   int retval(EXIT_FAILURE);
+
+  // Initialize Qt.
+  QCoreApplication app(argc, argv);
+  QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+  if (utf8_codec)
+    QTextCodec::setCodecForCStrings(utf8_codec);
+  else
+    std::cout << "could not set the UTF-8 codec\n";
 
   // Variables that need cleaning.
   std::list<command> commands;
@@ -143,7 +156,7 @@ int main() {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = MY_PLUGIN_PATH " 0 \"DERIVE|d[derive]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
+      cmd = MY_PLUGIN_PATH " 0 \"DERIVE|d[dérîve]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
@@ -324,9 +337,9 @@ int main() {
           throw (exceptions::msg() << "not enough entry in metrics ("
                  << i << " expected 10)");
         metrics.push_back(q.value(0).toUInt());
-        std::string metric_name(q.value(1).toString().toStdString());
+        QString metric_name(q.value(1).toString());
         unsigned int data_source_type(q.value(2).toUInt());
-        std::string unit_name(q.value(3).toString().toStdString());
+        QString unit_name(q.value(3).toString());
         double warning(q.value(4).toDouble());
         double warning_low(q.value(5).toDouble());
         bool warning_mode(q.value(6).toUInt());
@@ -364,7 +377,7 @@ int main() {
                    || !q.value(11).isNull());
           break ;
         case 3:
-          error = ((metric_name != "derive")
+          error = ((metric_name != "dérîve")
                    || (data_source_type != 2)
                    || (unit_name != "s")
                    || (fabs(warning - 100000.0) > 100.0)
@@ -406,9 +419,9 @@ int main() {
         if (error)
           throw (exceptions::msg() << "invalid metric #" << i
                  << " (type " << i % 6 << ", metric "
-                 << metric_name.c_str() << ", data source type "
+                 << metric_name << ", data source type "
                  << data_source_type << ", unit name "
-                 << unit_name.c_str() << ", warning " << warning
+                 << unit_name << ", warning " << warning
                  << ", warning low " << warning_low << ", warning mode "
                  << warning_mode << ", critical " << critical
                  << ", critical low " << critical_low
@@ -446,7 +459,7 @@ int main() {
          ++it) {
       std::ostringstream path;
       path << status_path << "/" << *it << ".rrd";
-      if (!QFile::exists(path.str().c_str()))
+      if (access(path.str().c_str(), F_OK))
         throw (exceptions::msg() << "status RRD file '"
                << path.str().c_str() << "' does not exist");
     }
@@ -460,7 +473,7 @@ int main() {
          ++it, ++i) {
       std::ostringstream path;
       path << metrics_path << "/" << *it << ".rrd";
-      if (!QFile::exists(path.str().c_str()))
+      if (access(path.str().c_str(), F_OK))
         throw (exceptions::msg() << "metrics RRD file '"
                << path.str().c_str() << "' does not exist");
       rrd_file f;

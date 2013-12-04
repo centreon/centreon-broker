@@ -38,7 +38,7 @@ namespace          neb {
                    host_group(host_group const& hg);
                    ~host_group();
     host_group&    operator=(host_group const& hg);
-    QString const& type() const;
+    unsigned int   type() const;
   };
 }
 
