@@ -46,7 +46,7 @@ namespace               io {
 
     template <unsigned short category, unsigned short element>
     struct data_type {
-      enum { value = (category << 16 | element) };
+      enum { value = static_cast<unsigned int>(category << 16 | element) };
     };
 
     std::map<std::string, std::set<unsigned int> >::const_iterator
