@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,6 +52,7 @@ namespace          neb {
     bool           escalated;
     unsigned int   host_id;
     int            notification_type;
+    unsigned int   instance_id;
     QString        output;
     int            reason_type;
     unsigned int   service_id;

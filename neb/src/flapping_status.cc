@@ -39,6 +39,7 @@ flapping_status::flapping_status()
     flapping_type(0),
     high_threshold(0),
     host_id(0),
+    instance_id(0),
     internal_comment_id(0),
     low_threshold(0),
     percent_state_change(0),
@@ -100,6 +101,7 @@ void flapping_status::_internal_copy(flapping_status const& fs) {
   flapping_type = fs.flapping_type;
   high_threshold = fs.high_threshold;
   host_id = fs.host_id;
+  instance_id = fs.instance_id;
   internal_comment_id = fs.internal_comment_id;
   low_threshold = fs.low_threshold;
   percent_state_change = fs.percent_state_change;

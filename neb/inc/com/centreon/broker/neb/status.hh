@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace       neb {
+namespace        neb {
   /**
    *  @class status status.hh "com/centreon/broker/neb/status.hh"
    *  @brief Root class of status events.
@@ -37,21 +37,22 @@ namespace       neb {
    *  @see program_status
    *  @see service_status
    */
-  class         status : public io::data {
+  class          status : public io::data {
   public:
-                status();
-                status(status const& s);
-    virtual     ~status();
-    status&     operator=(status const& s);
+                 status();
+                 status(status const& s);
+    virtual      ~status();
+    status&      operator=(status const& s);
 
-    bool        event_handler_enabled;
-    bool        failure_prediction_enabled;
-    bool        flap_detection_enabled;
-    bool        notifications_enabled;
-    bool        process_performance_data;
+    bool         event_handler_enabled;
+    bool         failure_prediction_enabled;
+    bool         flap_detection_enabled;
+    unsigned int instance_id;
+    bool         notifications_enabled;
+    bool         process_performance_data;
 
   private:
-    void        _internal_copy(status const& s);
+    void         _internal_copy(status const& s);
   };
 }
 

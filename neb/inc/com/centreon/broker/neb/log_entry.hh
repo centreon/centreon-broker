@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,6 +48,7 @@ namespace          neb {
     timestamp      c_time;
     unsigned int   host_id;
     QString        host_name;
+    unsigned int   instance_id;
     QString        instance_name;
     timestamp      issue_start_time;
     short          log_type;

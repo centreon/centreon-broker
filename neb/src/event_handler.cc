@@ -38,6 +38,7 @@ event_handler::event_handler()
     execution_time(0),
     handler_type(0),
     host_id(0),
+    instance_id(0),
     return_code(0),
     service_id(0),
     start_time(0),
@@ -100,6 +101,7 @@ void event_handler::_internal_copy(event_handler const& eh) {
   execution_time = eh.execution_time;
   handler_type = eh.handler_type;
   host_id = eh.host_id;
+  instance_id = eh.instance_id;
   output = eh.output;
   return_code = eh.return_code;
   service_id = eh.service_id;

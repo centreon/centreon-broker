@@ -34,6 +34,7 @@ using namespace com::centreon::broker::neb;
  */
 custom_variable_status::custom_variable_status()
   : host_id(0),
+    instance_id(0),
     modified(true),
     service_id(0),
     update_time(0) {}
@@ -88,6 +89,7 @@ unsigned int custom_variable_status::type() const {
  */
 void custom_variable_status::_internal_copy(custom_variable_status const& cvs) {
   host_id = cvs.host_id;
+  instance_id = cvs.instance_id;
   modified = cvs.modified;
   name = cvs.name;
   service_id = cvs.service_id;

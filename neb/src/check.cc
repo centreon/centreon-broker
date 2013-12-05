@@ -34,6 +34,7 @@ check::check()
   : active_checks_enabled(false),
     check_type(0),
     host_id(0),
+    instance_id(0),
     next_check(0) {}
 
 /**
@@ -81,6 +82,7 @@ void check::_internal_copy(check const& c) {
   check_type = c.check_type;
   command_line = c.command_line;
   host_id = c.host_id;
+  instance_id = c.instance_id;
   next_check = c.next_check;
   return ;
 }

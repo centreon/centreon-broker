@@ -34,7 +34,8 @@ dependency::dependency()
   : dependent_host_id(0),
     enabled(true),
     host_id(0),
-    inherits_parent(false) {}
+    inherits_parent(false),
+    instance_id(0) {}
 
 /**
  *  Copy constructor.
@@ -83,6 +84,7 @@ void dependency::_internal_copy(dependency const& dep) {
   execution_failure_options = dep.execution_failure_options;
   host_id = dep.host_id;
   inherits_parent = dep.inherits_parent;
+  instance_id = dep.instance_id;
   notification_failure_options = dep.notification_failure_options;
   return ;
 }
