@@ -33,7 +33,7 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Default constructor.
  */
-engine_state::engine_state() : started(false) {}
+engine_state::engine_state() : instance_id(0), started(false) {}
 
 /**
  *  Copy constructor.
@@ -41,7 +41,7 @@ engine_state::engine_state() : started(false) {}
  *  @param[in] es Object to copy.
  */
 engine_state::engine_state(engine_state const& es)
-  : io::data(es), started(es.started) {}
+  : io::data(es), instance_id(es.instance_id), started(es.started) {}
 
 /**
  *  Destructor.
@@ -58,6 +58,7 @@ engine_state::~engine_state() {}
 engine_state& engine_state::operator=(engine_state const& es) {
   if (this != &es) {
     io::data::operator=(es);
+    instance_id = es.instance_id;
     started = es.started;
   }
   return (*this);

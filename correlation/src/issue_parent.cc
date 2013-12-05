@@ -38,6 +38,7 @@ issue_parent::issue_parent()
     child_service_id(0),
     child_start_time(0),
     end_time(0),
+    instance_id(0),
     parent_host_id(0),
     parent_service_id(0),
     parent_start_time(0),
@@ -95,6 +96,7 @@ void issue_parent::_internal_copy(issue_parent const& ip) {
   child_service_id = ip.child_service_id;
   child_start_time = ip.child_start_time;
   end_time = ip.end_time;
+  instance_id = ip.instance_id;
   parent_host_id = ip.parent_host_id;
   parent_service_id = ip.parent_service_id;
   parent_start_time = ip.parent_start_time;

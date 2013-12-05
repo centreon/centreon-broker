@@ -35,6 +35,7 @@ state::state()
     current_state(3),
     end_time(0),
     host_id(0),
+    instance_id(0),
     in_downtime(false),
     service_id(0),
     start_time(0) {}
@@ -82,6 +83,7 @@ void state::_internal_copy(state const& s) {
   current_state = s.current_state;
   end_time = s.end_time;
   host_id = s.host_id;
+  instance_id = s.instance_id;
   in_downtime = s.in_downtime;
   service_id = s.service_id;
   start_time = s.start_time;

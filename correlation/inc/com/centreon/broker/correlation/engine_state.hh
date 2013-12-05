@@ -40,6 +40,7 @@ namespace          correlation {
     engine_state&  operator=(engine_state const& es);
     unsigned int   type() const;
 
+    unsigned int   instance_id;
     bool           started;
   };
 }
