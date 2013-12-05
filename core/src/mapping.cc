@@ -184,6 +184,10 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
     &custom_variable::value,
     NDO_DATA_ACTIVEHOSTCHECKSENABLED,
     "default_value"),
+  mapped_data<custom_variable>(
+    &custom_variable::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<custom_variable>()
 };
 
@@ -215,6 +219,10 @@ static mapped_data<custom_variable_status> const custom_variable_status_mapping[
     &custom_variable_status::value,
     NDO_DATA_ACTIVESERVICECHECKSENABLED,
     "value"),
+  mapped_data<custom_variable_status>(
+    &custom_variable_status::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<custom_variable_status>()
 };
 
@@ -308,6 +316,10 @@ static mapped_data<engine_state> const engine_state_mapping[] = {
     &engine_state::started,
     1,
     "started"),
+  mapped_data<engine_state>(
+    &engine_state::instance_id,
+    2,
+    NULL),
   mapped_data<engine_state>()
 };
 
@@ -371,6 +383,10 @@ static mapped_data<event_handler> const event_handler_mapping[] = {
     &event_handler::output,
     NDO_DATA_OUTPUT,
     "output"),
+  mapped_data<event_handler>(
+    &event_handler::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<event_handler>()
 };
 
@@ -422,6 +438,10 @@ static mapped_data<flapping_status> const flapping_status_mapping[] = {
     NDO_DATA_SERVICE,
     "service_id",
     NULL_ON_ZERO),
+  mapped_data<flapping_status>(
+    &flapping_status::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<flapping_status>()
 };
 
@@ -787,6 +807,10 @@ static mapped_data<host_check> const host_check_mapping[] = {
     &host_check::command_line,
     NDO_DATA_COMMANDLINE,
     "command_line"),
+  mapped_data<host_check>(
+    &host_check::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<host_check>()
 };
 
@@ -822,6 +846,10 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
     NDO_DATA_HOST,
     "host_id",
     NULL_ON_ZERO),
+  mapped_data<host_dependency>(
+    &host_dependency::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<host_dependency>()
 };
 
@@ -897,6 +925,10 @@ static mapped_data<host_parent> const host_parent_mapping[] = {
     NDO_DATA_PARENTHOST,
     "parent_id",
     NULL_ON_ZERO),
+  mapped_data<host_parent>(
+    &host_parent::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<host_parent>()
 };
 
@@ -928,6 +960,10 @@ static mapped_data<host_state> const host_state_mapping[] = {
     &host_state::start_time,
     6,
     "start_time"),
+  mapped_data<host_state>(
+    &host_state::instance_id,
+    7,
+    NULL),
   mapped_data<host_state>()
 };
 
@@ -1114,6 +1150,10 @@ static mapped_data<host_status> const host_status_mapping[] = {
     &host_status::perf_data,
     NDO_DATA_PERFDATA,
     "perfdata"),
+  mapped_data<host_status>(
+    &host_status::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<host_status>()
 };
 
@@ -1282,6 +1322,10 @@ static mapped_data<issue> const issue_mapping[] = {
     &issue::start_time,
     NDO_DATA_STARTTIME,
     "start_time"),
+  mapped_data<issue>(
+    &issue::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<issue>()
 };
 
@@ -1323,6 +1367,10 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     &issue_parent::start_time,
     8,
     "start_time"),
+  mapped_data<issue_parent>(
+    &issue_parent::instance_id,
+    9,
+    NULL),
   mapped_data<issue_parent>()
 };
 
@@ -1387,6 +1435,10 @@ static mapped_data<log_entry> log_mapping[] = {
     &log_entry::output,
     NDO_DATA_OUTPUT,
     "output"),
+  mapped_data<log_entry>(
+    &log_entry::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<log_entry>()
 };
 
@@ -1480,6 +1532,10 @@ static mapped_data<notification> const notification_mapping[] = {
     &notification::output,
     NDO_DATA_OUTPUT,
     "output"),
+  mapped_data<notification>(
+    &notification::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<notification>()
 };
 
@@ -1835,6 +1891,10 @@ static mapped_data<service> const service_mapping[] = {
     &service::perf_data,
     NDO_DATA_PERFDATA,
     "perfdata"),
+  mapped_data<service>(
+    &service::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<service>()
 };
 
@@ -1866,6 +1926,10 @@ static mapped_data<service_check> const service_check_mapping[] = {
     &service_check::command_line,
     NDO_DATA_COMMANDLINE,
     "command_line"),
+  mapped_data<service_check>(
+    &service_check::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<service_check>()
 };
 
@@ -1911,6 +1975,10 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
     NDO_DATA_SERVICE,
     "service_id",
     NULL_ON_ZERO),
+  mapped_data<service_dependency>(
+    &service_dependency::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<service_dependency>()
 };
 
@@ -2007,6 +2075,10 @@ static mapped_data<service_state> const service_state_mapping [] = {
     &service_state::start_time,
     7,
     "start_time"),
+  mapped_data<service_state>(
+    &service_state::instance_id,
+    8,
+    NULL),
   mapped_data<service_state>()
 };
 
@@ -2210,6 +2282,10 @@ static mapped_data<service_status> const service_status_mapping[] = {
     &service_status::perf_data,
     NDO_DATA_PERFDATA,
     "perfdata"),
+  mapped_data<service_status>(
+    &service_status::instance_id,
+    NDO_DATA_INSTANCE,
+    NULL),
   mapped_data<service_status>()
 };
 
