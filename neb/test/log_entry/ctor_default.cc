@@ -36,6 +36,7 @@ int main() {
   return ((le.c_time != 0)
           || (le.host_id != 0)
           || (le.host_name != "")
+          || (le.instance_id != 0)
           || (le.instance_name != "")
           || (le.issue_start_time != 0)
           || (le.log_type != 0)

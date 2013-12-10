@@ -39,6 +39,7 @@ int main() {
           || (sdep.execution_failure_options != "")
           || (sdep.host_id != 0)
           || (sdep.inherits_parent != false)
+          || (sdep.instance_id != 0)
           || (sdep.notification_failure_options != "")
           || (sdep.service_id != 0)
           || (sdep.type()

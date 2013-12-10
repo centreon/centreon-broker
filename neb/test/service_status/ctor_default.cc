@@ -51,6 +51,7 @@ int main() {
            || ss.has_been_checked
            || (ss.host_id != 0)
            || !ss.host_name.isEmpty()
+           || (ss.instance_id != 0)
            || ss.is_flapping
            || (ss.last_check != 0)
            || (ss.last_hard_state != 4)

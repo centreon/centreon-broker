@@ -36,6 +36,7 @@ int main() {
   return (hchk.active_checks_enabled
           || (hchk.command_line != "")
           || (hchk.host_id != 0)
+          || (hchk.instance_id != 0)
           || (hchk.next_check != 0)
           || (hchk.type()
               != io::events::data_type<io::events::neb, neb::de_host_check>::value));

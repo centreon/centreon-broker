@@ -41,6 +41,7 @@ int main() {
           || (notif.end_time != 0)
           || (notif.escalated != false)
           || (notif.host_id != 0)
+          || (notif.instance_id != 0)
           || (notif.notification_type != 0)
           || (notif.output != "")
           || (notif.reason_type != 0)

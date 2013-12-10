@@ -35,6 +35,7 @@ int main() {
   // Check.
   return ((hprnt.enabled != true)
           || (hprnt.host_id != 0)
+          || (hprnt.instance_id != 0)
           || (hprnt.parent_id != 0)
           || (hprnt.type()
               != io::events::data_type<io::events::neb, neb::de_host_parent>::value));

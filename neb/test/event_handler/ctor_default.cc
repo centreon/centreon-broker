@@ -41,6 +41,7 @@ int main() {
           || (fabs(evnt_hndlr.execution_time) > 0.000001)
           || (evnt_hndlr.handler_type != 0)
           || (evnt_hndlr.host_id != 0)
+          || (evnt_hndlr.instance_id != 0)
           || (evnt_hndlr.output != "")
           || (evnt_hndlr.return_code != 0)
           || (evnt_hndlr.service_id != 0)

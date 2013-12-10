@@ -40,6 +40,7 @@ int main() {
           || (flappy.flapping_type != 0)
           || (fabs(flappy.high_threshold) > 0.000001)
           || (flappy.host_id != 0)
+          || (flappy.instance_id != 0)
           || (flappy.internal_comment_id != 0)
           || (fabs(flappy.low_threshold) > 0.000001)
           || (fabs(flappy.percent_state_change) > 0.000001)

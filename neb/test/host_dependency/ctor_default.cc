@@ -39,6 +39,7 @@ int main() {
           || (hdep.execution_failure_options != "")
           || (hdep.host_id != 0)
           || (hdep.inherits_parent != false)
+          || (hdep.instance_id != 0)
           || (hdep.notification_failure_options != "")
           || (hdep.type()
               != io::events::data_type<io::events::neb, neb::de_host_dependency>::value));
