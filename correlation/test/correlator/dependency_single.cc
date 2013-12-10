@@ -58,7 +58,7 @@ int main() {
     n1.add_dependency(&n2);
 
     // Create correlator and apply state.
-    correlator c;
+    correlator c(0);
     c.set_state(state);
 
     // Send node status.

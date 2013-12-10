@@ -49,7 +49,9 @@ namespace                          com {
           Q_OBJECT
 
          public:
-                                   correlator(bool is_passive = false);
+                                   correlator(
+                                     unsigned int instance_id,
+                                     bool is_passive = false);
                                    correlator(correlator const& c);
                                    ~correlator();
           correlator&              operator=(correlator const& c);
@@ -73,6 +75,7 @@ namespace                          com {
           QList<misc::shared_ptr<io::data> >
                                    _events;
           QString                  _correlation_file;
+          unsigned int             _instance_id;
           QMap<QPair<unsigned int, unsigned int>, node>
                                    _nodes;
           QString                  _retention_file;

@@ -36,6 +36,7 @@ int main() {
   return ((i.ack_time != 0)
           || (i.end_time != 0)
           || (i.host_id != 0)
+          || (i.instance_id != 0)
           || (i.service_id != 0)
           || (i.start_time != 0)
           || (i.type()

@@ -66,7 +66,7 @@ int main() {
     n1.add_parent(&n2);
 
     // Set state to correlator.
-    correlator c;
+    correlator c(0);
     c.set_state(state);
 
     // Compare states.

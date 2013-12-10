@@ -51,7 +51,7 @@ int main() {
     n.state = 0;
 
     // Create correlator and apply state.
-    correlator c;
+    correlator c(0);
     c.set_state(state);
 
     // Send node status.
