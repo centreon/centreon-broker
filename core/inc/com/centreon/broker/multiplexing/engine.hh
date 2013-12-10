@@ -21,7 +21,7 @@
 #  define CCB_MULTIPLEXING_ENGINE_HH
 
 #  include <memory>
-#  include <QObject>
+#  include <QMutex>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 
@@ -38,7 +38,7 @@ namespace                 com {
          *  @see publisher
          *  @see subscriber
          */
-        class             engine : public QObject {
+        class             engine : public QObject, public QMutex {
           Q_OBJECT
 
          public:
