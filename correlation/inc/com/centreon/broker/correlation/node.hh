@@ -58,6 +58,7 @@ namespace                correlation {
     void                 remove_parent(node* n);
 
     unsigned int         host_id;
+    unsigned int         instance_id;
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
     unsigned int         service_id;

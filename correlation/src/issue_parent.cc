@@ -35,11 +35,12 @@ using namespace com::centreon::broker::correlation;
  */
 issue_parent::issue_parent()
   : child_host_id(0),
+    child_instance_id(0),
     child_service_id(0),
     child_start_time(0),
     end_time(0),
-    instance_id(0),
     parent_host_id(0),
+    parent_instance_id(0),
     parent_service_id(0),
     parent_start_time(0),
     start_time(0) {}
@@ -93,11 +94,12 @@ unsigned int issue_parent::type() const {
  */
 void issue_parent::_internal_copy(issue_parent const& ip) {
   child_host_id = ip.child_host_id;
+  child_instance_id = ip.child_instance_id;
   child_service_id = ip.child_service_id;
   child_start_time = ip.child_start_time;
   end_time = ip.end_time;
-  instance_id = ip.instance_id;
   parent_host_id = ip.parent_host_id;
+  parent_instance_id = ip.parent_instance_id;
   parent_service_id = ip.parent_service_id;
   parent_start_time = ip.parent_start_time;
   start_time = ip.start_time;

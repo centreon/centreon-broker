@@ -625,11 +625,12 @@ void correlator::_correlate_host_service_status(
               << n->host_id << ", " << n->service_id << ") and node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
-            p->instance_id = hss.instance_id;
             p->child_host_id = n->host_id;
+            p->child_instance_id = n->instance_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
+            p->parent_instance_id = (*it)->instance_id;
             p->parent_service_id = (*it)->service_id;
             p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
@@ -649,11 +650,12 @@ void correlator::_correlate_host_service_status(
               << n->service_id << ") and dependent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
-            p->instance_id = hss.instance_id;
             p->child_host_id = (*it)->host_id;
+            p->child_instance_id = (*it)->instance_id;
             p->child_service_id = (*it)->service_id;
             p->child_start_time = (*it)->my_issue->start_time;
             p->parent_host_id = n->host_id;
+            p->parent_instance_id = n->instance_id;
             p->parent_service_id = n->service_id;
             p->parent_start_time = n->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
@@ -685,11 +687,12 @@ void correlator::_correlate_host_service_status(
               << n->service_id << ") and parent node ("
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
-            p->instance_id = hss.instance_id;
             p->child_host_id = n->host_id;
+            p->child_instance_id = n->instance_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
+            p->parent_instance_id = (*it)->instance_id;
             p->parent_service_id = (*it)->service_id;
             p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = t;
@@ -727,11 +730,12 @@ void correlator::_correlate_host_service_status(
                   << ") and parent node (" << (*it2)->host_id << ", "
                   << (*it2)->service_id << ")";
                 misc::shared_ptr<issue_parent> p(new issue_parent);
-                p->instance_id = hss.instance_id;
                 p->child_host_id = (*it)->host_id;
+                p->child_instance_id = (*it)->instance_id;
                 p->child_service_id = (*it)->service_id;
                 p->child_start_time = (*it)->my_issue->start_time;
                 p->parent_host_id = (*it2)->host_id;
+                p->parent_instance_id = (*it2)->instance_id;
                 p->parent_service_id = (*it2)->service_id;
                 p->parent_start_time = (*it2)->my_issue->start_time;
                 p->start_time = t;
@@ -891,11 +895,12 @@ void correlator::_issue_parenting(node* n, bool full) {
           << n->host_id << ", " << n->service_id << ") and node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
         misc::shared_ptr<issue_parent> parenting(new issue_parent);
-        parenting->instance_id = 0; // XXX: todo.
         parenting->child_host_id = n->host_id;
+        parenting->child_instance_id = n->instance_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
         parenting->parent_host_id = (*it)->host_id;
+        parenting->parent_instance_id = (*it)->instance_id;
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
@@ -921,11 +926,12 @@ void correlator::_issue_parenting(node* n, bool full) {
           << n->service_id << ") and parent node ("
           << (*it)->host_id << ", " << (*it)->service_id << ")";
         misc::shared_ptr<issue_parent> parenting(new issue_parent);
-        parenting->instance_id = 0; // XXX: todo.
         parenting->child_host_id = n->host_id;
+        parenting->child_instance_id = n->instance_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
         parenting->parent_host_id = (*it)->host_id;
+        parenting->parent_instance_id = (*it)->instance_id;
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
@@ -946,11 +952,12 @@ void correlator::_issue_parenting(node* n, bool full) {
         << n->service_id << ") and dependent node ("
         << (*it)->host_id << ", " << (*it)->service_id << ")";
       misc::shared_ptr<issue_parent> parenting(new issue_parent);
-      parenting->instance_id = 0; // XXX: todo.
       parenting->child_host_id = (*it)->host_id;
+      parenting->child_instance_id = (*it)->instance_id;
       parenting->child_service_id = (*it)->service_id;
       parenting->child_start_time = (*it)->my_issue->start_time;
       parenting->parent_host_id = n->host_id;
+      parenting->parent_instance_id = n->instance_id;
       parenting->parent_service_id = n->service_id;
       parenting->parent_start_time = n->my_issue->start_time;
       parenting->start_time = n->my_issue->start_time;
@@ -984,11 +991,12 @@ void correlator::_issue_parenting(node* n, bool full) {
             << ") and parent node (" << (*it2)->host_id << ", "
             << (*it2)->service_id << ")";
           misc::shared_ptr<issue_parent> parenting(new issue_parent);
-          parenting->instance_id = 0; // XXX: todo.
           parenting->child_host_id = (*it)->host_id;
+          parenting->child_instance_id = (*it)->instance_id;
           parenting->child_service_id = (*it)->service_id;
           parenting->child_start_time = (*it)->my_issue->start_time;
           parenting->parent_host_id = (*it2)->host_id;
+          parenting->parent_instance_id = (*it2)->instance_id;
           parenting->parent_service_id = (*it2)->service_id;
           parenting->parent_start_time = (*it2)->my_issue->start_time;
           parenting->start_time = n->my_issue->start_time;

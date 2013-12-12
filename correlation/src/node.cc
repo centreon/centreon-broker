@@ -34,6 +34,7 @@ using namespace com::centreon::broker::correlation;
  */
 node::node()
   : host_id(0),
+    instance_id(0),
     in_downtime(false),
     service_id(0),
     since(0),
@@ -104,6 +105,7 @@ bool node::operator==(node const& n) const {
   if (this == &n)
     retval = true;
   else if ((host_id == n.host_id)
+           && (instance_id == n.instance_id)
            && (in_downtime == n.in_downtime)
            && (service_id == n.service_id)
            && (since == n.since)
@@ -361,6 +363,7 @@ void node::_internal_copy(node const& n) {
 
   // Copy other members.
   host_id = n.host_id;
+  instance_id = n.instance_id;
   in_downtime = n.in_downtime;
   if (n.my_issue.get())
     my_issue.reset(new issue(*(n.my_issue)));

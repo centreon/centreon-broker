@@ -33,15 +33,18 @@ void add_issue(
        time_t ack_time,
        time_t end_time,
        unsigned int host_id,
+       unsigned int instance_id,
        unsigned int service_id,
        time_t start_time);
 void add_issue_parent(
        QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
        unsigned int child_host_id,
+       unsigned int child_instance_id,
        unsigned int child_service_id,
        time_t child_start_time,
        time_t end_time,
        unsigned int parent_host_id,
+       unsigned int parent_instance_id,
        unsigned int parent_service_id,
        time_t parent_start_time,
        time_t start_time);
@@ -51,6 +54,7 @@ void add_state_host(
        int current_state,
        time_t end_time,
        unsigned int host_id,
+       unsigned int instance_id,
        bool in_downtime,
        time_t start_time);
 void add_state_service(
@@ -59,6 +63,7 @@ void add_state_service(
        int current_state,
        time_t end_time,
        unsigned int host_id,
+       unsigned int instance_id,
        bool in_downtime,
        unsigned int service_id,
        time_t start_time);

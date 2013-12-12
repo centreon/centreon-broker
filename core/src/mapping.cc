@@ -1368,8 +1368,12 @@ static mapped_data<issue_parent> const issue_parent_mapping[] = {
     8,
     "start_time"),
   mapped_data<issue_parent>(
-    &issue_parent::instance_id,
+    &issue_parent::child_instance_id,
     9,
+    NULL),
+  mapped_data<issue_parent>(
+    &issue_parent::parent_instance_id,
+    10,
     NULL),
   mapped_data<issue_parent>()
 };
