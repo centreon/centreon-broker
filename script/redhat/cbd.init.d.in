@@ -39,7 +39,6 @@ cbd="@PREFIX_BIN@/cbd"
 pid_path=/var/run
 stop_timeout=10
 user="@USER@"
-debug=0
 
 # Check that cbd is executable.
 if [ ! -x "${cbd}" ] ; then
@@ -54,7 +53,7 @@ if [ ! -e "${master_file}" ] ; then
 fi
 
 # Start cbd.
-start() {
+start_all() {
   global_retval=0
   cat ${master_file} | grep -v '^#'| while read line; do
     daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
@@ -72,15 +71,10 @@ start() {
           return 1
         fi
       fi
-
+  
       # Start cbd.
       echo -n "Starting ${daemon_name}: "
-      if [ $debug -eq 1 ]; then
-	  echo "/tmp/%e.core.%t.%u.%p" > /proc/sys/kernel/core_pattern
-	  PID=`su - "${user}" -c "ulimit -c unlimited; ${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
-      else
-	  PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
-      fi
+      PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
       RETVAL=$?
       if [ ${RETVAL} = 0 ]; then
         echo ${PID} > "${pidfile}"
@@ -95,8 +89,37 @@ start() {
   return ${global_retval}
 }
 
+start_one() {
+  grep "^$1[[:space:]]" ${master_file} &>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Daemon is not found"
+    return 1
+  fi
+  line=$(grep "^$1[[:space:]]" ${master_file})
+  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+  daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+  running="$(echo ${line} | awk '{ print $3 }')"
+  pidfile="${pid_path}/${daemon_name}.pid"
+  if [ "${running}" != "y" ]; then
+    echo "Daemon is set to not running"
+    return 1
+  fi
+  # Start cbd.
+  echo -n "Starting ${daemon_name}: "
+  PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
+  RETVAL=$?
+  if [ ${RETVAL} = 0 ]; then
+    echo ${PID} > "${pidfile}"
+    success "cbd startup"
+  else
+    ${global_retval} = ${RETVAL}
+    failure "cbd startup"
+  fi
+  echo
+}
+
 # Stop cbd.
-stop() {
+stop_all() {
   cat ${master_file} | grep -v '^#'| while read line; do
     daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
     daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
@@ -117,8 +140,35 @@ stop() {
   done
 }
 
+stop_one() {
+  grep "^$1[[:space:]]" ${master_file} &>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Daemon is not found"
+    return 1
+  fi
+  line=$(grep "^$1[[:space:]]" ${master_file})
+  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+  daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
+  running="$(echo ${line} | awk '{ print $3 }')"
+  pidfile="${pid_path}/${daemon_name}.pid"
+  if [ "${running}" != "y" ]; then
+    echo "Daemon is set to not running"
+    return 1
+  fi
+  echo -n "Stopping ${daemon_name}: "
+  killproc -p "${pidfile}" -d ${stop_timeout} "$cbd"
+  RETVAL=$?
+  if [ ${RETVAL} = 0 ] ; then
+    rm -f "${pidfile}"
+    success "cbd shutdown"
+  else
+    failure "cbd shutdown"
+  fi
+  echo
+}
+
 # Send kill HUP
-reload() {
+reload_all() {
   cat ${master_file} | grep -v '^#'| while read line; do
     daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
     daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
@@ -139,6 +189,25 @@ reload() {
   done
 }
 
+# Check status on one daemon
+status_one() {
+  grep "^$1[[:space:]]" ${master_file} &>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Daemon is not found"
+    return 1
+  fi
+  line=$(grep "^$1[[:space:]]" ${master_file})
+  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
+  running="$(echo ${line} | awk '{ print $3 }')"
+  pidfile="${pid_path}/${daemon_name}.pid"
+  if [ "${running}" != "y" ]; then
+    echo "Daemon is set to not running"
+    return 1
+  fi
+  status -p ${pidfile} ${cbd}
+  return $?
+}
+
 # Status
 status_all() {
   cat ${master_file} | grep -v '^#'| while read line; do
@@ -155,21 +224,45 @@ status_all() {
 # Switch case.
 case "$1" in
   start)
-    start
+    if [ -n "$2" ]; then
+      start_one $2
+      RETVAL=$?
+    else
+      start_all
+      RETVAL=$?
+    fi
     ;;
   stop)
-    stop
+    if [ -n "$2" ]; then
+      stop_one $2
+      RETVAL=$?
+    else
+      stop_all
+      RETVAL=$?
+    fi
     ;;
   restart)
-    stop
-    start
+    if [ -n "$2" ]; then
+      stop_one $2
+      start_one $2
+      RETVAL=$?
+    else
+      stop_all
+      start_all
+      RETVAL=$?
+    fi
     ;;
   reload)
-    reload
+    reload_all
     ;;
   status)
-    status_all
-    RETVAL=$?
+    if [ -n "$2" ]; then
+      status_one $2
+      RETVAL=$?
+    else
+      status_all
+      RETVAL=$?
+    fi
     ;;
   *)
     echo "Usage: ${daemon_name} {start|stop|restart|status}"
