@@ -482,6 +482,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                                      pd.critical_mode(),
                                      pd.min(),
                                      pd.max(),
+                                     pd.value(),
                                      &metric_type,
                                      &metric_locked));
 
@@ -882,7 +883,9 @@ unsigned int stream::_find_index_id(
  *  @param[in]     crit_mode   Critical range mode.
  *  @param[in]     min         Minimal metric value.
  *  @param[in]     max         Maximal metric value.
+ *  @param[in]     value       Most recent value.
  *  @param[in,out] type        If not null, set to the metric type.
+ *  @param[in,out] locked      Whether or not the metric is locked.
  *
  *  @return Metric ID requested, 0 if it could not be found not
  *          inserted.
@@ -899,6 +902,7 @@ unsigned int stream::_find_metric_id(
                        bool crit_mode,
                        double min,
                        double max,
+                       double value,
                        unsigned int* type,
                        bool* locked) {
   unsigned int retval;
@@ -913,53 +917,32 @@ unsigned int stream::_find_metric_id(
     logging::debug(logging::low) << "storage: found metric "
       << it->second.metric_id << " of (" << index_id << ", "
       << metric_name << ") in cache";
-    // Should we update metrics ?
-    if ((unit_name != it->second.unit_name)
-        || !double_equal(crit, it->second.crit)
-        || !double_equal(crit_low, it->second.crit_low)
-        || (crit_mode != it->second.crit_mode)
-        || !double_equal(max, it->second.max)
-        || !double_equal(min, it->second.min)
-        || !double_equal(warn, it->second.warn)
-        || !double_equal(warn_low, it->second.warn_low)
-        || (warn_mode != it->second.warn_mode)) {
-      logging::info(logging::medium) << "storage: updating metric "
-        << it->second.metric_id << " of (" << index_id << ", "
-        << metric_name << ") (unit: " << unit_name << ", warning: "
-        << warn_low << ":" << warn << ", critical: " << crit_low << ":"
-        << crit << ", min: " << min << ", max: " << max << ")";
-      // Update metrics table.
-      _update_metrics->bindValue(":unit_name", unit_name);
-      _update_metrics->bindValue(":warn", check_double(warn));
-      _update_metrics->bindValue(":warn_low", check_double(warn_low));
-      _update_metrics->bindValue(":warn_threshold_mode", warn_mode);
-      _update_metrics->bindValue(":crit", check_double(crit));
-      _update_metrics->bindValue(":crit_low", check_double(crit_low));
-      _update_metrics->bindValue(":crit_threshold_mode", crit_mode);
-      _update_metrics->bindValue(":min", check_double(min));
-      _update_metrics->bindValue(":max", check_double(max));
-      _update_metrics->bindValue(":index_id", index_id);
-      _update_metrics->bindValue(":metric_name", metric_name);
-      if (!_update_metrics->exec()
-          || _update_metrics->lastError().isValid())
-        throw (broker::exceptions::msg() << "storage: could not " \
-                    "update metric (index_id " << index_id
-                 << ", metric " << metric_name << "): "
-                 << _update_metrics->lastError().text());
+    logging::info(logging::medium) << "storage: updating metric "
+      << it->second.metric_id << " of (" << index_id << ", "
+      << metric_name << ") (unit: " << unit_name << ", warning: "
+      << warn_low << ":" << warn << ", critical: " << crit_low << ":"
+      << crit << ", min: " << min << ", max: " << max << ")";
+    // Update metrics table.
+    _update_metrics->bindValue(":unit_name", unit_name);
+    _update_metrics->bindValue(":warn", check_double(warn));
+    _update_metrics->bindValue(":warn_low", check_double(warn_low));
+    _update_metrics->bindValue(":warn_threshold_mode", warn_mode);
+    _update_metrics->bindValue(":crit", check_double(crit));
+    _update_metrics->bindValue(":crit_low", check_double(crit_low));
+    _update_metrics->bindValue(":crit_threshold_mode", crit_mode);
+    _update_metrics->bindValue(":min", check_double(min));
+    _update_metrics->bindValue(":max", check_double(max));
+    _update_metrics->bindValue(":current_value", check_double(value));
+    _update_metrics->bindValue(":index_id", index_id);
+    _update_metrics->bindValue(":metric_name", metric_name);
+    if (!_update_metrics->exec()
+        || _update_metrics->lastError().isValid())
+      throw (broker::exceptions::msg() << "storage: could not " \
+                "update metric (index_id " << index_id
+             << ", metric " << metric_name << "): "
+             << _update_metrics->lastError().text());
 
-      // Update cache entry.
-      it->second.crit = crit;
-      it->second.crit_low = crit_low;
-      it->second.crit_mode = crit_mode;
-      it->second.max = max;
-      it->second.min = min;
-      it->second.unit_name = unit_name;
-      it->second.warn = warn;
-      it->second.warn_low = warn_low;
-      it->second.warn_mode = warn_mode;
-    }
-
-    // Anyway, we found the metric ID.
+    // Remember, we found the metric ID.
     retval = it->second.metric_id;
     if (it->second.type != perfdata::automatic)
       *type = it->second.type;
@@ -978,11 +961,12 @@ unsigned int stream::_find_metric_id(
               "INSERT INTO metrics "
               "  (index_id, metric_name, unit_name, warn, warn_low, "
               "   warn_threshold_mode, crit, crit_low, "
-              "   crit_threshold_mode, min, max, data_source_type)"
+              "   crit_threshold_mode, min, max, current_value,"
+              "   data_source_type)"
               " VALUES (:index_id, :metric_name, :unit_name, :warn, "
               "         :warn_low, :warn_threshold_mode, :crit, "
               "         :crit_low, :crit_threshold_mode, :min, :max, "
-              "         :data_source_type)");
+              "         :current_value, :data_source_type)");
     QSqlQuery q(*_storage_db);
     if (!q.prepare(query))
       throw (broker::exceptions::msg()
@@ -999,6 +983,7 @@ unsigned int stream::_find_metric_id(
     q.bindValue(":crit_threshold_mode", crit_mode);
     q.bindValue(":min", check_double(min));
     q.bindValue(":max", check_double(max));
+    q.bindValue(":current_value", check_double(value));
     q.bindValue(":data_source_type", *type + 1);
 
     // Execute query.
@@ -1039,18 +1024,9 @@ unsigned int stream::_find_metric_id(
     logging::info(logging::medium) << "storage: new metric "
       << retval << " for (" << index_id << ", " << metric_name << ")";
     metric_info info;
-    info.crit = crit;
-    info.crit_low = crit_low;
-    info.crit_mode = crit_mode;
     info.locked = false;
-    info.max = max;
     info.metric_id = retval;
-    info.min = min;
     info.type = *type;
-    info.unit_name = unit_name;
-    info.warn = warn;
-    info.warn_low = warn_low;
-    info.warn_mode = warn_mode;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
     *locked = info.locked;
   }
@@ -1119,7 +1095,8 @@ void stream::_prepare() {
                                 " crit_low=:crit_low," \
                                 " crit_threshold_mode=:crit_threshold_mode," \
                                 " min=:min," \
-                                " max=:max" \
+                                " max=:max," \
+                                " current_value=:current_value" \
                                 " WHERE index_id=:index_id" \
                                 " AND metric_name=:metric_name"))
     throw (broker::exceptions::msg() << "storage: could not prepare " \
@@ -1174,7 +1151,8 @@ void stream::_rebuild_cache() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name, data_source_type, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max, locked" \
+    QSqlQuery q("SELECT metric_id, index_id, metric_name," \
+                "       data_source_type, locked" \
                 " FROM metrics",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
@@ -1191,16 +1169,7 @@ void stream::_rebuild_cache() {
       info.type = (q.value(3).isNull()
                    ? static_cast<unsigned int>(perfdata::automatic)
                    : q.value(3).toUInt());
-      info.unit_name = q.value(4).toString();
-      info.warn = q.value(5).toDouble();
-      info.warn_low = q.value(6).toDouble();
-      info.warn_mode = q.value(7).toUInt();
-      info.crit = q.value(8).toDouble();
-      info.crit_low = q.value(9).toDouble();
-      info.crit_mode = q.value(10).toUInt();
-      info.min = q.value(11).toDouble();
-      info.max = q.value(12).toDouble();
-      info.locked = (q.value(13).toUInt() == 1);
+      info.locked = (q.value(4).toUInt() == 1);
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;

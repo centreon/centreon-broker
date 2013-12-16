@@ -78,18 +78,9 @@ namespace          storage {
       bool         special;
     };
     struct         metric_info {
-      double       crit;
-      double       crit_low;
-      bool         crit_mode;
       bool         locked;
-      double       max;
       unsigned int metric_id;
-      double       min;
       unsigned int type;
-      QString      unit_name;
-      double       warn;
-      double       warn_low;
-      bool         warn_mode;
     };
     struct         metric_value {
       time_t       c_time;
@@ -122,6 +113,7 @@ namespace          storage {
                      bool crit_mode,
 		     double min,
 		     double max,
+                     double value,
                      unsigned int* type,
                      bool* locked);
     void           _insert_perfdatas();
