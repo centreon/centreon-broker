@@ -100,7 +100,7 @@ int main() {
   bool error(true);
   try {
     // Correlator.
-    correlator c;
+    correlator c(0);
     c.load(config_path, retention_path);
 
     // Read retention state.

@@ -117,7 +117,7 @@ namespace correlation {
         if (!correlation_file.isEmpty()) {
           // Create and register correlation object.
           misc::shared_ptr<correlation::correlator>
-            crltr(new correlation::correlator(is_passive));
+            crltr(new correlation::correlator(cfg.instance_id(), is_passive));
           try {
             crltr->load(correlation_file, retention_file);
             correlation::obj = crltr.staticCast<multiplexing::hooker>();

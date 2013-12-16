@@ -47,17 +47,19 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
+    n.instance_id = 1;
     n.service_id = 24;
     n.state = 0;
 
     // Create correlator and apply state.
-    correlator c;
+    correlator c(0);
     c.set_state(state);
 
     // Send node status.
     { // #1
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 2;
@@ -68,6 +70,7 @@ int main() {
     { // #2
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 2;
@@ -79,6 +82,7 @@ int main() {
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 0;
@@ -89,6 +93,7 @@ int main() {
     { // #4
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 0;
@@ -100,6 +105,7 @@ int main() {
     { // #5
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 2;
@@ -111,6 +117,7 @@ int main() {
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 0;
@@ -122,6 +129,7 @@ int main() {
     { // #7
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
+      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 0;
@@ -134,9 +142,9 @@ int main() {
     // Check correlation content.
     QList<misc::shared_ptr<io::data> > content;
     // #1
-    add_state_service(content, -1, 0, 123456789, 42, false, 24, 0);
-    add_state_service(content, -1, 2, 0, 42, false, 24, 123456789);
-    add_issue(content, 0, 0, 42, 24, 123456789);
+    add_state_service(content, -1, 0, 123456789, 42, 1, false, 24, 0);
+    add_state_service(content, -1, 2, 0, 42, 1, false, 24, 123456789);
+    add_issue(content, 0, 0, 42, 1, 24, 123456789);
     // #2
     add_state_service(
       content,
@@ -144,10 +152,11 @@ int main() {
       2,
       123456790,
       42,
+      1,
       false,
       24,
       123456789);
-    add_state_service(content, -1, 2, 0, 42, true, 24, 123456790);
+    add_state_service(content, -1, 2, 0, 42, 1, true, 24, 123456790);
     // #3
     add_state_service(
       content,
@@ -155,11 +164,12 @@ int main() {
       2,
       123456791,
       42,
+      1,
       true,
       24,
       123456790);
-    add_state_service(content, -1, 0, 0, 42, false, 24, 123456791);
-    add_issue(content, 0, 123456791, 42, 24, 123456789);
+    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456791);
+    add_issue(content, 0, 123456791, 42, 1, 24, 123456789);
     // #4
     add_state_service(
       content,
@@ -167,10 +177,11 @@ int main() {
       0,
       123456792,
       42,
+      1,
       false,
       24,
       123456791);
-    add_state_service(content, -1, 0, 0, 42, true, 24, 123456792);
+    add_state_service(content, -1, 0, 0, 42, 1, true, 24, 123456792);
     // #5
     add_state_service(
       content,
@@ -178,11 +189,12 @@ int main() {
       0,
       123456793,
       42,
+      1,
       true,
       24,
       123456792);
-    add_state_service(content, -1, 2, 0, 42, true, 24, 123456793);
-    add_issue(content, 0, 0, 42, 24, 123456793);
+    add_state_service(content, -1, 2, 0, 42, 1, true, 24, 123456793);
+    add_issue(content, 0, 0, 42, 1, 24, 123456793);
     // #6
     add_state_service(
       content,
@@ -190,11 +202,12 @@ int main() {
       2,
       123456794,
       42,
+      1,
       true,
       24,
       123456793);
-    add_state_service(content, -1, 0, 0, 42, true, 24, 123456794);
-    add_issue(content, 0, 123456794, 42, 24, 123456793);
+    add_state_service(content, -1, 0, 0, 42, 1, true, 24, 123456794);
+    add_issue(content, 0, 123456794, 42, 1, 24, 123456793);
     // #7
     add_state_service(
       content,
@@ -202,10 +215,11 @@ int main() {
       0,
       123456795,
       42,
+      1,
       true,
       24,
       123456794);
-    add_state_service(content, -1, 0, 0, 42, false, 24, 123456795);
+    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456795);
 
     // Check.
     check_content(c, content);

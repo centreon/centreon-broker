@@ -50,6 +50,7 @@ int main() {
           || hs.flap_detection_enabled
           || hs.has_been_checked
           || (hs.host_id != 0)
+          || (hs.instance_id != 0)
           || hs.is_flapping
           || (hs.last_check != 0)
           || (hs.last_hard_state != 4)

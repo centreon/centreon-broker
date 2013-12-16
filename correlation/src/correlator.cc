@@ -115,12 +115,14 @@ static int unknown_state(node const& n) {
 /**
  *  Constructor.
  *
- *  @param[in] is_passive True if the correlator is on passive mode.
- *                        In passive mode, the correlator only update
- *                        internal state.
+ *  @param[in] instance_id The broker instance.
+ *  @param[in] is_passive  True if the correlator is on passive mode.
+ *                         In passive mode, the correlator only update
+ *                         internal state.
  */
-correlator::correlator(bool is_passive)
-  : _process_event(is_passive
+correlator::correlator(unsigned int instance_id, bool is_passive)
+  : _instance_id(instance_id),
+    _process_event(is_passive
                    ? &correlator::_process_event_on_passive
                    : &correlator::_process_event_on_active) {
 
@@ -293,6 +295,7 @@ void correlator::starting() {
   // Send engine state.
   logging::info(logging::medium) << "correlation: engine starting";
   misc::shared_ptr<engine_state> es(new engine_state);
+  es->instance_id = _instance_id;
   es->started = true;
   _events.push_front(es.staticCast<io::data>());
   return ;
@@ -375,6 +378,7 @@ void correlator::stopping() {
 
   // Send engine state.
   misc::shared_ptr<engine_state> es(new engine_state);
+  es->instance_id = _instance_id;
   es->started = false;
   _events.push_back(es.staticCast<io::data>());
 
@@ -470,6 +474,7 @@ void correlator::_correlate_acknowledgement(
       misc::shared_ptr<state> state_update(
         ack.service_id ? static_cast<state*>(new service_state)
                        : static_cast<state*>(new host_state));
+      state_update->instance_id = ack.instance_id;
       state_update->ack_time = ack.entry_time;
       state_update->current_state = it->state;
       state_update->host_id = it->host_id;
@@ -557,6 +562,7 @@ void correlator::_correlate_host_service_status(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
         // XXX : this ack_time might not be true
+        state_update->instance_id = hss.instance_id;
         state_update->ack_time =
           ((!n->my_issue.get() || !n->my_issue->ack_time)
            ? timestamp(-1)
@@ -581,9 +587,7 @@ void correlator::_correlate_host_service_status(
         misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
-        if (n->host_id == 2 && n->service_id == 0)
-          logging::info(logging::medium) << "YOPEPITO "
-                                         << hss.problem_has_been_acknowledged;
+        state_update->instance_id = hss.instance_id;
         state_update->ack_time = (hss.problem_has_been_acknowledged
                                   ? n->since
                                   : timestamp(-1));
@@ -622,9 +626,11 @@ void correlator::_correlate_host_service_status(
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
+            p->child_instance_id = n->instance_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
+            p->parent_instance_id = (*it)->instance_id;
             p->parent_service_id = (*it)->service_id;
             p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
@@ -645,9 +651,11 @@ void correlator::_correlate_host_service_status(
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = (*it)->host_id;
+            p->child_instance_id = (*it)->instance_id;
             p->child_service_id = (*it)->service_id;
             p->child_start_time = (*it)->my_issue->start_time;
             p->parent_host_id = n->host_id;
+            p->parent_instance_id = n->instance_id;
             p->parent_service_id = n->service_id;
             p->parent_start_time = n->my_issue->start_time;
             p->start_time = (p->child_start_time > p->parent_start_time
@@ -680,9 +688,11 @@ void correlator::_correlate_host_service_status(
               << (*it)->host_id << ", " << (*it)->service_id << ")";
             misc::shared_ptr<issue_parent> p(new issue_parent);
             p->child_host_id = n->host_id;
+            p->child_instance_id = n->instance_id;
             p->child_service_id = n->service_id;
             p->child_start_time = n->my_issue->start_time;
             p->parent_host_id = (*it)->host_id;
+            p->parent_instance_id = (*it)->instance_id;
             p->parent_service_id = (*it)->service_id;
             p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = t;
@@ -721,9 +731,11 @@ void correlator::_correlate_host_service_status(
                   << (*it2)->service_id << ")";
                 misc::shared_ptr<issue_parent> p(new issue_parent);
                 p->child_host_id = (*it)->host_id;
+                p->child_instance_id = (*it)->instance_id;
                 p->child_service_id = (*it)->service_id;
                 p->child_start_time = (*it)->my_issue->start_time;
                 p->parent_host_id = (*it2)->host_id;
+                p->parent_instance_id = (*it2)->instance_id;
                 p->parent_service_id = (*it2)->service_id;
                 p->parent_start_time = (*it2)->my_issue->start_time;
                 p->start_time = t;
@@ -743,6 +755,7 @@ void correlator::_correlate_host_service_status(
     else {
       // Set issue.
       n->my_issue.reset(new issue);
+      n->my_issue->instance_id = hss.instance_id;
       n->my_issue->host_id = n->host_id;
       n->my_issue->service_id = n->service_id;
       n->my_issue->start_time = now;
@@ -856,6 +869,7 @@ issue* correlator::_find_related_issue(node& n) {
  *  @param[in] c Object to copy.
  */
 void correlator::_internal_copy(correlator const& c) {
+  _instance_id = c._instance_id;
   _nodes = c._nodes;
   return ;
 }
@@ -882,9 +896,11 @@ void correlator::_issue_parenting(node* n, bool full) {
           << (*it)->host_id << ", " << (*it)->service_id << ")";
         misc::shared_ptr<issue_parent> parenting(new issue_parent);
         parenting->child_host_id = n->host_id;
+        parenting->child_instance_id = n->instance_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
         parenting->parent_host_id = (*it)->host_id;
+        parenting->parent_instance_id = (*it)->instance_id;
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
@@ -911,9 +927,11 @@ void correlator::_issue_parenting(node* n, bool full) {
           << (*it)->host_id << ", " << (*it)->service_id << ")";
         misc::shared_ptr<issue_parent> parenting(new issue_parent);
         parenting->child_host_id = n->host_id;
+        parenting->child_instance_id = n->instance_id;
         parenting->child_service_id = n->service_id;
         parenting->child_start_time = n->my_issue->start_time;
         parenting->parent_host_id = (*it)->host_id;
+        parenting->parent_instance_id = (*it)->instance_id;
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
@@ -935,9 +953,11 @@ void correlator::_issue_parenting(node* n, bool full) {
         << (*it)->host_id << ", " << (*it)->service_id << ")";
       misc::shared_ptr<issue_parent> parenting(new issue_parent);
       parenting->child_host_id = (*it)->host_id;
+      parenting->child_instance_id = (*it)->instance_id;
       parenting->child_service_id = (*it)->service_id;
       parenting->child_start_time = (*it)->my_issue->start_time;
       parenting->parent_host_id = n->host_id;
+      parenting->parent_instance_id = n->instance_id;
       parenting->parent_service_id = n->service_id;
       parenting->parent_start_time = n->my_issue->start_time;
       parenting->start_time = n->my_issue->start_time;
@@ -972,9 +992,11 @@ void correlator::_issue_parenting(node* n, bool full) {
             << (*it2)->service_id << ")";
           misc::shared_ptr<issue_parent> parenting(new issue_parent);
           parenting->child_host_id = (*it)->host_id;
+          parenting->child_instance_id = (*it)->instance_id;
           parenting->child_service_id = (*it)->service_id;
           parenting->child_start_time = (*it)->my_issue->start_time;
           parenting->parent_host_id = (*it2)->host_id;
+          parenting->parent_instance_id = (*it2)->instance_id;
           parenting->parent_service_id = (*it2)->service_id;
           parenting->parent_start_time = (*it2)->my_issue->start_time;
           parenting->start_time = n->my_issue->start_time;
@@ -994,6 +1016,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     << it->host_id << ", " << it->service_id << ") before deletion";
   if (it->service_id) {
     misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+    ss->instance_id = 0; // XXX: todo.
     ss->current_state = 0;
     ss->state_type = 1;
     ss->host_id = it->host_id;
@@ -1002,6 +1025,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
   }
   else {
     misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+    hs->instance_id = 0; // XXX: todo.
     hs->current_state = 0;
     hs->state_type = 1;
     hs->host_id = it->host_id;
@@ -1108,6 +1132,7 @@ void correlator::_update_issue(misc::shared_ptr<issue> i) {
     else {
       if (!n.my_issue.get()) {
         n.my_issue.reset(new issue);
+        n.my_issue->instance_id = i->instance_id;
         n.my_issue->host_id = i->host_id;
         n.my_issue->service_id = i->service_id;
         n.my_issue->start_time = i->start_time;

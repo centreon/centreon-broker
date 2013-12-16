@@ -34,6 +34,7 @@ int main() {
 
   // Check.
   return ((cvar.host_id != 0)
+          || (cvar.instance_id != 0)
           || (cvar.modified != false)
           || (cvar.name != "")
           || (cvar.service_id != 0)

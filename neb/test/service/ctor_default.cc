@@ -71,6 +71,7 @@ int main() {
            || !s.host_name.isEmpty()
            || !s.icon_image.isEmpty()
            || !s.icon_image_alt.isEmpty()
+           || (s.instance_id != 0)
            || s.is_flapping
            || s.is_volatile
            || (s.last_check != 0)

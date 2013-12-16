@@ -63,7 +63,7 @@ int main() {
     n1.add_parent(&n2);
 
     // Create correlator.
-    correlator c;
+    correlator c(0);
     c.set_state(state);
 
     // Start correlator then stop it.
