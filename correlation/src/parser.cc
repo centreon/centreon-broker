@@ -274,6 +274,11 @@ bool parser::startElement(
         *n = new_node;
         logging::config(logging::medium)
           << "correlation: new host " << new_node.host_id;
+
+        // Process optional configuration arguments.
+        i_attr = attrs.value("instance_id");
+        if (!i_attr.isEmpty())
+          n->instance_id = i_attr.toUInt();
       }
       // Get node.
       else {

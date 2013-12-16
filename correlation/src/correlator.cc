@@ -251,6 +251,7 @@ void correlator::set_state(QMap<QPair<unsigned int, unsigned int>, node> const& 
        ++it) {
     node& n(_nodes[qMakePair(it->host_id, it->service_id)]);
     n.host_id = it->host_id;
+    n.instance_id = it->instance_id;
     n.service_id = it->service_id;
     n.since = it->since;
     n.state = it->state;
@@ -1016,7 +1017,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     << it->host_id << ", " << it->service_id << ") before deletion";
   if (it->service_id) {
     misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-    ss->instance_id = 0; // XXX: todo.
+    ss->instance_id = it->instance_id;
     ss->current_state = 0;
     ss->state_type = 1;
     ss->host_id = it->host_id;
@@ -1025,7 +1026,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
   }
   else {
     misc::shared_ptr<neb::host_status> hs(new neb::host_status);
-    hs->instance_id = 0; // XXX: todo.
+    hs->instance_id = it->instance_id;
     hs->current_state = 0;
     hs->state_type = 1;
     hs->host_id = it->host_id;
