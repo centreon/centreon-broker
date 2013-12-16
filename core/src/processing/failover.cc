@@ -373,6 +373,7 @@ void failover::read(
           << " is buffering data before recursive read ("
           << _buffering_timeout << "s)";
         _update_status("status=buffering data\n");
+        // XXX: read this http://qt-project.org/doc/qt-4.8/threads-qobject.html
         QTimer::singleShot(
           _buffering_timeout * 1000,
           th,
