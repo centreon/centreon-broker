@@ -358,6 +358,7 @@ void creator::_sendfile(
                  std::string const& filename) {
   ssize_t total(already_transfered);
   while (total < size) {
+    already_transfered = total;
     ssize_t ret = ::sendfile(
                       out_fd,
                       in_fd,
