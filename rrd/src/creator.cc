@@ -173,7 +173,7 @@ void creator::create(
  *  @param[in] in_fd    The fd informations to duplicate file.
  */
 void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
-  /* Remove previous file. */
+  // Remove previous file.
   remove(filename.c_str());
 
   int out_fd(open(
@@ -186,17 +186,28 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
            << filename << "': " << msg);
   }
 
+  // First call(s) to sendfile detect if the kernel support the syscall
+  // on any FD (Linux < 2.6.33 only supports writing to socket FD).
   off_t offset(0);
-  ssize_t total(0);
-  while (total < in_fd.size) {
-    ssize_t ret(::sendfile(out_fd, in_fd.fd, &offset, in_fd.size));
+  ssize_t ret;
+  do {
+    ret = ::sendfile(out_fd, in_fd.fd, &offset, in_fd.size);
+  } while ((ret < 0) && (errno == EAGAIN));
+  bool fallback((ret < 0) && ((errno == EINVAL) || (errno == ENOSYS)));
+  if (!fallback) {
     if (ret < 0) {
       char const* msg(strerror(errno));
       throw (exceptions::open() << "RRD: could not create file '"
              << filename << "': " << msg);
     }
-    total += ret;
+    // Good to go with the sendfile syscall.
+    _sendfile(out_fd, in_fd.fd, ret, in_fd.size, filename);
   }
+  else {
+    // We must fallback to the read/write combo.
+    _read_write(out_fd, in_fd.fd, in_fd.size, filename);
+  }
+
   ::close(out_fd);
 }
 
@@ -272,5 +283,93 @@ void creator::_open(
     throw (exceptions::open() << "RRD: could not create file '"
              << filename << "': " << rrd_get_error());
 
+  return ;
+}
+
+/**
+ *  Transfer file between two FDs using read and write.
+ *
+ *  @param[in] out_fd   Output FD.
+ *  @param[in] in_fd    Input FD.
+ *  @param[in] size     Size to transfer.
+ *  @param[in] filename Path to the file being created.
+ */
+void creator::_read_write(
+                int out_fd,
+                int in_fd,
+                ssize_t size,
+                std::string const& filename) {
+  // Reset position of in_fd.
+  if (lseek(in_fd, 0, SEEK_SET) == (off_t)-1) {
+    char const* msg(strerror(errno));
+    throw (exceptions::open() << "RRD: could not create file '"
+           << filename << "': " << msg);
+  }
+
+  char buffer[4096];
+  ssize_t transfered(0);
+  while (transfered < size) {
+    // Read from in_fd.
+    ssize_t rb(::read(in_fd, buffer, sizeof(buffer)));
+    if (rb <= 0) {
+      if (errno != EAGAIN) {
+        char const* msg(strerror(errno));
+        throw (exceptions::open() << "RRD: could not create file '"
+               << filename << "': " << msg);
+      }
+      continue ;
+    }
+
+    // Write to out_fd.
+    ssize_t wb(0);
+    while (wb < rb) {
+      ssize_t ret(::write(out_fd, buffer + wb, rb - wb));
+      if (ret <= 0) {
+        if (errno != EAGAIN) {
+          char const* msg(strerror(errno));
+          throw (exceptions::open() << "RRD: could not create file '"
+                 << filename << "': " << msg);
+        }
+      }
+      else
+        wb += ret;
+    }
+
+    // Update total transfered bytes.
+    transfered += wb;
+  }
+  return ;
+}
+
+/**
+ *  Transfer file between two FDs using sendfile.
+ *
+ *  @param[in] out_fd             Output FD.
+ *  @param[in] in_fd              Input FD.
+ *  @param[in] already_transfered Number of bytes already transfered.
+ *  @param[in] size               Total size to transfer.
+ *  @param[in] filename           Path to the file being created.
+ */
+void creator::_sendfile(
+                 int out_fd,
+                 int in_fd,
+                 off_t already_transfered,
+                 ssize_t size,
+                 std::string const& filename) {
+  ssize_t total(already_transfered);
+  while (total < size) {
+    ssize_t ret = ::sendfile(
+                      out_fd,
+                      in_fd,
+                      &already_transfered,
+                      size - already_transfered);
+    if ((ret <= 0) && (errno != EAGAIN)) {
+      char const* msg(strerror(errno));
+      throw (exceptions::open() << "RRD: could not create file '"
+             << filename << "': " << msg);
+    }
+    else if (ret > 0)
+      total += ret;
+  }
   return ;
 }

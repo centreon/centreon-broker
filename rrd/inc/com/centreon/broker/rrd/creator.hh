@@ -23,6 +23,7 @@
 #  include <ctime>
 #  include <map>
 #  include <string>
+#  include <sys/types.h>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -78,6 +79,17 @@ namespace         rrd {
                      time_t from,
                      unsigned int step,
                      short value_type);
+    void           _read_write(
+                     int out_fd,
+                     int in_fd,
+                     ssize_t size,
+                     std::string const& filename);
+    void           _sendfile(
+                     int out_fd,
+                     int in_fd,
+                     off_t already_transferred,
+                     ssize_t size,
+                     std::string const& filename);
 
     unsigned int   _cache_size;
     std::map<tmpl_info, fd_info>
