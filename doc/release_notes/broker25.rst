@@ -58,6 +58,9 @@ incidents at Merethis' support center.
 Important notes
 ***************
 
+* Centreon Broker 2.5 works with Centreon 2.4.5 and next version.
+  Centreon 2.4.5 provide new database schema required by Centreon
+  Broker 2.5.
 * Make sure to stop or restart Centreon-Broker with the init script.
   Otherwise, possible issues can arise if Centreon-Broker is not
   shutdown properly.
