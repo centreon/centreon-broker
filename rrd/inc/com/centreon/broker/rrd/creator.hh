@@ -84,12 +84,14 @@ namespace         rrd {
                      int in_fd,
                      ssize_t size,
                      std::string const& filename);
+#  ifdef __linux__
     void           _sendfile(
                      int out_fd,
                      int in_fd,
                      off_t already_transferred,
                      ssize_t size,
                      std::string const& filename);
+#  endif // Linux
 
     unsigned int   _cache_size;
     std::map<tmpl_info, fd_info>

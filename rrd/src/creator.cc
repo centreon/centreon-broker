@@ -23,7 +23,9 @@
 #include <fcntl.h>
 #include <rrd.h>
 #include <sstream>
-#include <sys/sendfile.h>
+#ifdef __linux__
+#  include <sys/sendfile.h>
+#endif // Linux
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -186,6 +188,7 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
            << filename << "': " << msg);
   }
 
+#ifdef __linux__
   // First call(s) to sendfile detect if the kernel support the syscall
   // on any FD (Linux < 2.6.33 only supports writing to socket FD).
   off_t offset(0);
@@ -203,10 +206,10 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
     // Good to go with the sendfile syscall.
     _sendfile(out_fd, in_fd.fd, ret, in_fd.size, filename);
   }
-  else {
+  else
+#endif // Linux
     // We must fallback to the read/write combo.
     _read_write(out_fd, in_fd.fd, in_fd.size, filename);
-  }
 
   ::close(out_fd);
 }
@@ -341,6 +344,7 @@ void creator::_read_write(
   return ;
 }
 
+#ifdef __linux__
 /**
  *  Transfer file between two FDs using sendfile.
  *
@@ -374,3 +378,4 @@ void creator::_sendfile(
   }
   return ;
 }
+#endif // Linux
