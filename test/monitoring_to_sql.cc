@@ -204,7 +204,7 @@ int main() {
       if ((static_cast<time_t>(q.value(0).toLongLong()) < t1)
           || (static_cast<time_t>(q.value(0).toLongLong()) > now)
           || (q.value(1).toString() != "1")
-          || (q.value(2).toString() != "output3\n")
+          || (q.value(2).toString() != "output3")
           || (q.value(3).toString() != "2")
           || (q.value(4).toUInt() != 2)
           || (q.value(5).toUInt() != 1))
@@ -217,7 +217,7 @@ int main() {
                << qPrintable(q.value(3).toString())
                << ", status " << q.value(4).toUInt() << ", type "
                << q.value(5).toUInt() << "), expected (" << t1 << ":"
-               << now << ", 1, output3\\n, 2, 2, 1)");
+               << now << ", 1, output3, 2, 2, 1)");
       if (q.next())
         throw (exceptions::msg() << "too much entries in 'logs'");
     }
