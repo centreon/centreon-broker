@@ -235,6 +235,8 @@ void cached::update(time_t t, std::string const& value) {
       << ":" << value << "\n";
 
   // Send command.
+  logging::debug(logging::high) << "RRD: updating file '"
+    << _filename << "' (" << oss.str() << ")";
   try {
     _send_to_cached(oss.str().c_str());
   }
@@ -243,7 +245,8 @@ void cached::update(time_t t, std::string const& value) {
       throw (exceptions::update() << e.what());
     else
       logging::error(logging::low)
-        << "RRD: ignored update error: " << e.what() + 5;
+        << "RRD: ignored update error in file '"
+        << _filename << "': " << e.what() + 5;
   }
 
   return ;
@@ -295,14 +298,15 @@ void cached::_send_to_cached(
     lines = strtol(line, NULL, 10);
     if (lines < 0)
       throw (broker::exceptions::msg()
-             << "RRD: rrdcached query failed (" << command << "): "
+             << "RRD: rrdcached query failed on file '"
+             << _filename << "' (" << command << "): "
              << line);
     while (lines > 0) {
       _socket->waitForReadyRead(-1);
       if (_socket->readLine(line, sizeof(line)) < 0)
-        throw (broker::exceptions::msg() << "RRD: error while getting" \
-                    " response from rrdcached: "
-                 << _socket->errorString());
+        throw (broker::exceptions::msg() << "RRD: error while getting "
+               << "response from rrdcached for file '" << _filename
+               << "': " << _socket->errorString());
       --lines;
     }
   }

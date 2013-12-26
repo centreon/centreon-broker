@@ -240,7 +240,7 @@ void creator::_open(
   rrd_info_free(rrdinfo);
   */
 
-  /* Set parameters. */
+  // Set parameters.
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;

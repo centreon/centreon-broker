@@ -204,10 +204,12 @@ void lib::update(time_t t, std::string const& value) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
       throw (exceptions::update()
-             << "RRD: failed to update value: " << msg);
+             << "RRD: failed to update value in file '"
+             << _filename << "': " << msg);
     else
       logging::error(logging::low)
-        << "RRD: ignored update error: " << msg;
+        << "RRD: ignored update error in file '"
+        << _filename << "': " << msg;
   }
 
   return ;

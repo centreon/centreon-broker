@@ -412,10 +412,12 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Process service status events.
   if (!data.isNull()) {
     if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
-      logging::debug(logging::high)
-        << "storage: processing service status event";
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
+      logging::debug(logging::high)
+        << "storage: processing service status event of service "
+        << ss->service_id << " of host " << ss->host_id
+        << " (ctime " << ss->last_check << ")";
 
       // Increase event count.
       ++_transaction_queries;
@@ -498,8 +500,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
             if (!index_locked && !metric_locked) {
               // Send perfdata event to processing.
-              logging::debug(logging::high)
-                << "storage: generating perfdata event";
               misc::shared_ptr<storage::metric>
                 perf(new storage::metric);
               perf->ctime = ss->last_check;
@@ -511,6 +511,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
               perf->rrd_len = rrd_len;
               perf->value = pd.value();
               perf->value_type = metric_type;
+              logging::debug(logging::high)
+                << "storage: generating perfdata event for metric "
+                << perf->metric_id << " (name " << perf->name
+                << ", ctime " << perf->ctime << ", value "
+                << perf->value << ")";
               multiplexing::publisher().write(perf.staticCast<io::data>());
             }
           }

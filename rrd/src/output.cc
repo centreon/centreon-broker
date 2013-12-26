@@ -204,7 +204,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
         e(d.staticCast<storage::metric>());
       logging::debug(logging::medium) << "RRD: new data for metric "
         << e->metric_id << " (time " << e->ctime << ") "
-        << (e->is_for_rebuild ? "for rebuild" : "");
+        << (e->is_for_rebuild ? " for rebuild" : "");
 
       // Metric path.
       std::string metric_path;
