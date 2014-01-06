@@ -561,6 +561,9 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
   include_directories("${PROJECT_SOURCE_DIR}/neb/inc/")
+  if (LIBRRD_INCLUDE_DIRS)
+    include_directories("${LIBRRD_INCLUDE_DIRS}")
+  endif ()
   set(TEST_LIB "brokertest")
   add_library("${TEST_LIB}" STATIC
     # Sources.

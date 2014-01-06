@@ -30,6 +30,7 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(LIBRRD REQUIRED "librrd")
   if (LIBRRD_INCLUDE_DIRS)
     include_directories("${LIBRRD_INCLUDE_DIRS}")
+    set(LIBRRD_INCLUDE_DIRS "${LIBRRD_INCLUDE_DIRS}" PARENT_SCOPE)
   endif ()
 else ()
   # Find rrd.h
@@ -38,6 +39,7 @@ else ()
     message(FATAL_ERROR "Could not find librrd's headers.")
   endif ()
   include_directories("${LIBRRD_INCLUDE_DIR}")
+  set(LIBRRD_INCLUDE_DIRS "${LIBRRD_INCLUDE_DIR}" PARENT_SCOPE)
 
   # Find librrd.
   find_library(LIBRRD_LDFLAGS "rrd")
