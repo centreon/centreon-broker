@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -562,18 +562,19 @@ void correlator::_correlate_host_service_status(
         misc::shared_ptr<state> state_update(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
-        // XXX : this ack_time might not be true
         state_update->instance_id = hss.instance_id;
-        state_update->ack_time =
-          ((!n->my_issue.get() || !n->my_issue->ack_time)
-           ? timestamp(-1)
-           : n->my_issue->ack_time);
         state_update->current_state = n->state;
         state_update->end_time = now;
         state_update->host_id = n->host_id;
         state_update->in_downtime = n->in_downtime;
         state_update->service_id = n->service_id;
 	state_update->start_time = n->since;
+        if (!n->my_issue.get() || !n->my_issue->ack_time)
+          state_update->ack_time = timestamp(-1);
+        else if (n->my_issue->ack_time > n->since)
+          state_update->ack_time = n->my_issue->ack_time;
+        else
+          state_update->ack_time = n->since;
         _events.push_back(state_update.staticCast<io::data>());
       }
 
