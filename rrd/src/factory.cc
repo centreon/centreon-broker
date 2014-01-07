@@ -40,11 +40,11 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] thrw Should throw if value is not found.
  *  @param[in] def  Default value.
  */
-static QString const& find_param(
-                        config::endpoint const& cfg,
-                        QString const& key,
-                        bool thrw = true,
-                        QString const& def = QString()) {
+static QString find_param(
+                 config::endpoint const& cfg,
+                 QString const& key,
+                 bool thrw = true,
+                 QString const& def = QString()) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it) {
     if (thrw)
