@@ -53,7 +53,10 @@ using namespace com::centreon::broker::file;
 stream::stream(
           std::string const& path,
           unsigned long long max_size)
-  : _max_size(max_size),
+  : _last_read_offset(0),
+    _last_time(0),
+    _last_write_offset(0),
+    _max_size(max_size),
     _path(path),
     _process_in(true),
     _process_out(true) {
@@ -167,6 +170,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  @param[out] buffer Output buffer.
  */
 void stream::statistics(std::string& buffer) const {
+  // Easy to print.
   std::ostringstream oss;
   oss << "file_read_path=" << _file_path(_rid) << "\n"
       << "file_read_offset=" << _roffset << "\n"
@@ -178,15 +182,46 @@ void stream::statistics(std::string& buffer) const {
   else
     oss << "unlimited";
   oss << "\n";
+
+  // Need computation.
   oss << "file_percent_processed="
       << std::fixed << std::setprecision(1);
   if ((_rid != _wid)
-      && (_max_size == std::numeric_limits<long>::max()))
+      && (_max_size == std::numeric_limits<long>::max())) {
     oss << "unknown\n";
-  else
+  }
+  else {
     oss << (_roffset * 100.0)
            / (_woffset + (_wid - _rid) * _max_size) << "%\n";
+    unsigned long long roffset(_roffset + _rid * _max_size);
+    unsigned long long woffset(_woffset + _wid * _max_size);
+    time_t now(time(NULL));
+    if (_last_time && (now != _last_time)) {
+      oss << "file_expected_terminated_at=";
+      unsigned long long
+        div(roffset + _last_write_offset - _last_read_offset - woffset);
+      time_t eta(0);
+      if (div <= 0)
+        oss << "file not processed fast enough to terminate\n";
+      else {
+        eta = now + (woffset - roffset) * (now - _last_time) / div;
+        oss << eta << "\n";
+      }
+      if (_max_size == std::numeric_limits<long>::max())
+        oss << "file_expected_max_size="
+            << woffset
+               + (woffset - _last_write_offset)
+               * (eta - now)
+               / (now - _last_time)
+            << "\n";
+    }
+    _last_time = now;
+    _last_read_offset = roffset;
+    _last_write_offset = woffset;
+  }
+
   buffer.append(oss.str());
+
   return ;
 }
 

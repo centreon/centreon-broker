@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,6 +58,11 @@ namespace              file {
     void               _open_next_read();
     void               _open_next_write(bool truncate = true);
 
+    mutable unsigned long long
+                       _last_read_offset;
+    mutable time_t     _last_time;
+    mutable unsigned long long
+                       _last_write_offset;
     long               _max_size;
     QMutex             _mutex;
     std::string        _path;
