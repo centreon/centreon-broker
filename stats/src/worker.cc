@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -225,6 +225,8 @@ void worker::_generate_stats_for_endpoint(
     second_s = &fo->_to;
   }
 
+  // Should we generate more stats ?
+  bool more_stats(true);
   {
     // Get primary state.
     buffer.append("state=");
@@ -239,11 +241,17 @@ void worker::_generate_stats_for_endpoint(
             buffer.append(fo->_last_error.toStdString());
             buffer.append(")\n");
           }
+          else if (!fo->isRunning()) {
+            buffer.append("unused\n");
+            more_stats = false;
+          }
           else if (!fo->_endpoint.isNull()
-                   && !fo->_endpoint->is_acceptor())
+                   && !fo->_endpoint->is_acceptor()) {
             buffer.append("connecting\n");
-          else
+          }
+          else {
             buffer.append("listening\n");
+          }
         }
         else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
           buffer.append("replaying\n");
@@ -267,38 +275,41 @@ void worker::_generate_stats_for_endpoint(
       first_rwl->unlock();
   }
 
-  {
-    // Get secondary state.
-    QReadLocker rl(second_rwl);
-    if (!second_s->isNull())
-      (*second_s)->statistics(buffer);
-  }
+  // More statistics.
+  if (more_stats) {
+    {
+      // Get secondary state.
+      QReadLocker rl(second_rwl);
+      if (!second_s->isNull())
+        (*second_s)->statistics(buffer);
+    }
 
-  {
-    // Event processing stats.
-    std::ostringstream oss;
-    oss << "last event at=" << fo->get_last_event() << "\n"
-      "event processing speed=" << std::fixed
-        << std::setprecision(1) << fo->get_event_processing_speed()
-        << " events/s\n";
-    buffer.append(oss.str());
-  }
+    {
+      // Event processing stats.
+      std::ostringstream oss;
+      oss << "last event at=" << fo->get_last_event() << "\n"
+        "event processing speed=" << std::fixed
+          << std::setprecision(1) << fo->get_event_processing_speed()
+          << " events/s\n";
+      buffer.append(oss.str());
+    }
 
-  // Endpoint stats.
-  if (!fo->_endpoint.isNull())
-    fo->_endpoint->stats(buffer);
+    // Endpoint stats.
+    if (!fo->_endpoint.isNull())
+      fo->_endpoint->stats(buffer);
 
-  {
-    // Last connection times.
-    std::ostringstream oss;
-    oss << "last connection attempt=" << fo->_last_connect_attempt
-        << "\n" << "last connection success="
-        << fo->_last_connect_success << "\n";
-    buffer.append(oss.str());
+    {
+      // Last connection times.
+      std::ostringstream oss;
+      oss << "last connection attempt=" << fo->_last_connect_attempt
+          << "\n" << "last connection success="
+          << fo->_last_connect_success << "\n";
+      buffer.append(oss.str());
+    }
   }
 
   // Failover.
-  if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
+  if (!fo->_failover.isNull()) {
     buffer.append("failover\n");
     std::string subbuffer;
     _generate_stats_for_endpoint(
