@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
+#include <iomanip>
 #include <limits>
 #include <memory>
 #include <QDir>
@@ -177,6 +178,14 @@ void stream::statistics(std::string& buffer) const {
   else
     oss << "unlimited";
   oss << "\n";
+  oss << "file_percent_processed="
+      << std::fixed << std::setprecision(1);
+  if ((_rid != _wid)
+      && (_max_size == std::numeric_limits<long>::max()))
+    oss << "unknown\n";
+  else
+    oss << (_roffset * 100.0)
+           / (_woffset + (_wid - _rid) * _max_size) << "%\n";
   buffer.append(oss.str());
   return ;
 }
