@@ -99,6 +99,8 @@ void creator::clear() {
         << "_" << info.value_type << ".rrd";
     ::remove(oss.str().c_str());
   }
+  _fds.clear();
+  return ;
 }
 
 /**
