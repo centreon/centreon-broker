@@ -91,11 +91,9 @@ template <typename T>
 T* input::_handle_event() {
   std::auto_ptr<T> event(new T);
   int key;
-  char const* key_str;
-  char const* value_str;
 
   while (1) {
-    key_str = _get_line();
+    char const* key_str(_get_line());
     if (key_str) {
       typename umap<int, getter_setter<T> >::const_iterator it;
       key = strtol(key_str, NULL, 10);
@@ -104,7 +102,7 @@ T* input::_handle_event() {
           << "NDO: new event successfully generated";
         break ;
       }
-      value_str = strchr(key_str, '=');
+      char const* value_str(strchr(key_str, '='));
       value_str = (value_str ? value_str + 1 : "");
       it = ndo_mapped_type<T>::map.find(key);
       if (it != ndo_mapped_type<T>::map.end())

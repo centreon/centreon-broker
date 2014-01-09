@@ -148,8 +148,8 @@ namespace                  com {
            *
            *  @param[in] p Object to copy.
            */
-                           property(property const& p) : source(p) {
-            _prop = p._prop;
+                           property(property const& p)
+            : source(p), _prop(p._prop) {
           }
 
           /**

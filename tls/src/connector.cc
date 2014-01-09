@@ -117,8 +117,8 @@ misc::shared_ptr<io::stream> connector::open() {
 misc::shared_ptr<io::stream> connector::open(
                                           misc::shared_ptr<io::stream> lower) {
   misc::shared_ptr<io::stream> s;
-  int ret;
   if (!lower.isNull()) {
+    int ret;
     // Load parameters.
     params p(params::CLIENT);
     p.set_cert(_cert, _key);

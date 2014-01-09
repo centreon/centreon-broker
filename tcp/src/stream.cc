@@ -100,8 +100,8 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 
   // If data is already available, skip the waitForReadyRead() loop.
   if (_socket->bytesAvailable() <= 0) {
-    bool ret;
     while (1) {
+      bool ret;
       if (!(ret = _socket->waitForReadyRead(
                              (_timeout == -1)
                              ? 200

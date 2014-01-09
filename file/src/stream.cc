@@ -201,7 +201,7 @@ void stream::statistics(std::string& buffer) const {
       unsigned long long
         div(roffset + _last_write_offset - _last_read_offset - woffset);
       time_t eta(0);
-      if (div <= 0)
+      if (div == 0)
         oss << "file not processed fast enough to terminate\n";
       else {
         eta = now + (woffset - roffset) * (now - _last_time) / div;

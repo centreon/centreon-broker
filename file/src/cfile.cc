@@ -81,7 +81,7 @@ void cfile::open(char const* path, char const* mode) {
  */
 unsigned long cfile::read(void* buffer, unsigned long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
-  if (retval <= 0) {
+  if (retval == 0) {
     if (feof(_stream))
       throw (io::exceptions::shutdown(true, true));
     else if ((EAGAIN == errno) || (EINTR == errno))

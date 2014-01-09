@@ -91,8 +91,8 @@ void stream::process(bool in, bool out) {
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   QMutexLocker lock(&*_mutex);
-  bool ret;
   while (1) {
+    bool ret;
     if (!_process_in
         || (!(ret = _socket->waitForReadyRead(
                 (_timeout == -1)

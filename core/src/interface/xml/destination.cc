@@ -40,9 +40,6 @@ using namespace interface::xml;
 template <typename T>
 static void handle_event(T const& t,
                          umap<std::string, std::string>& attr) {
-  typename umap<std::string, getter_setter<T> >::const_iterator end;
-  typename umap<std::string, getter_setter<T> >::const_iterator it;
-
   for (typename umap<std::string, getter_setter<T> >::const_iterator
          it = xml_mapped_type<T>::map.begin(),
          end = xml_mapped_type<T>::map.end();
