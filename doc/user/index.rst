@@ -8,3 +8,4 @@ User
    configuration
    modules
    architectures
+   best_practices
