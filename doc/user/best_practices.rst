@@ -69,8 +69,7 @@ Output
 Poller
 ======
 
-Pollers should output to the Centreon central. The TCP output should
-have a failover file.
+Pollers should output to the Centreon central.
 
   * type = tcp
   * name = central
@@ -85,6 +84,8 @@ have a failover file.
   * one_peer_retention_mode = no
   * filter category = *empty*
   * compression = auto
+
+The TCP output should have a failover file.
 
   * type = file
   * name = central-failover
@@ -119,6 +120,8 @@ have a failover file.
   * read_timeout = 10
   * filter category = correlation,neb
 
+The SQL output should have a failover file.
+
   * type = file
   * name = central-broker-sql-master-failover
   * path = /var/lib/centreon-broker/central-broker-sql-master-failover.dat
@@ -128,6 +131,8 @@ have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = no
+
+This is the performance data output.
 
   * type = storage
   * name = central-broker-perfdata-master
@@ -148,6 +153,8 @@ have a failover file.
   * insert_in_index_data = no
   * filter category = neb
 
+The performance data output should have a failover file.
+
   * type = file
   * name = central-broker-perfdata-master-failover
   * path = /var/lib/centreon-broker/central-broker-perfdata-master-failover.dat
@@ -157,6 +164,8 @@ have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = no
+
+This is the output to central-rrd.
 
   * type = tcp
   * name = central-broker-rrd-master
@@ -171,6 +180,8 @@ have a failover file.
   * one_peer_retention_mode = no
   * filter category = storage
   * compression = auto
+
+The central-rrd output should have a failover file.
 
   * type = file
   * name = central-broker-rrd-master-failover
@@ -197,6 +208,8 @@ The Central RRD is responsible for writing RRD files on disk.
   * write_metrics = yes
   * write_status = yes
   * filter category = *empty*
+
+The RRD output should have a failover file.
 
   * type = file
   * name = central-rrd-master-failover
