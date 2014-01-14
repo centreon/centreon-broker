@@ -47,7 +47,6 @@ namespace        neb {
     bool         event_handler_enabled;
     bool         failure_prediction_enabled;
     bool         flap_detection_enabled;
-    unsigned int instance_id;
     bool         notifications_enabled;
     bool         process_performance_data;
 

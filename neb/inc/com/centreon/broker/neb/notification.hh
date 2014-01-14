@@ -51,7 +51,6 @@ namespace          neb {
     timestamp      end_time;
     bool           escalated;
     unsigned int   host_id;
-    unsigned int   instance_id;
     int            notification_type;
     QString        output;
     int            reason_type;

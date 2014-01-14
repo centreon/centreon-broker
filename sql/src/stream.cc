@@ -95,6 +95,32 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
 **************************************/
 
 /**
+ *  Clean the deleted cache of instance ids.
+ */
+void stream::_cache_clean() {
+  _cache_deleted_instance_id.clear();
+}
+
+/**
+ *  Create the deleted cache of instance ids.
+ */
+void stream::_cache_create() {
+  std::ostringstream ss;
+  ss << "SELECT instance_id"
+     << " FROM " << mapped_type<neb::instance>::table
+     << " WHERE deleted=1";
+  QSqlQuery q(*_db);
+  if (!q.exec(ss.str().c_str()))
+    logging::error(logging::high)
+      << "SQL: could not get list of deleted instances: "
+      << q.lastError().text();
+  else
+    while (q.next())
+      _cache_deleted_instance_id.insert(q.value(0).toUInt());
+  return ;
+}
+
+/**
  *  @brief Clean tables with data associated to the instance.
  *
  *  Rather than delete appropriate entries in tables, they are instead
@@ -493,6 +519,8 @@ void stream::_prepare() {
       << query;
     _issue_parent_update->prepare(query);
   }
+
+  _cache_create();
 
   return ;
 }
@@ -2131,6 +2159,15 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Update internal stream cache.
+ */
+void stream::update() {
+  _cache_clean();
+  _cache_create();
+  return ;
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
@@ -2146,6 +2183,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
   unsigned int retval(1);
   if (!data.isNull()) {
+    // Check that data is related to a non-deleted instance.
+    if (_cache_deleted_instance_id.find(data->instance_id)
+        != _cache_deleted_instance_id.end()) {
+      logging::info(logging::low)
+        << "SQL: discarding some event related to a deleted instance ("
+        << data->instance_id << ")";
+      return (retval);
+    }
+
+    // Process event.
     unsigned int type(data->type());
     unsigned short cat(io::events::category_of_type(type));
     unsigned short elem(io::events::element_of_type(type));

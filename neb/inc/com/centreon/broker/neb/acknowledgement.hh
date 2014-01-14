@@ -50,7 +50,6 @@ namespace            neb {
     timestamp        deletion_time;
     timestamp        entry_time;
     unsigned int     host_id;
-    unsigned int     instance_id;
     bool             is_sticky;
     bool             notify_contacts;
     bool             persistent_comment;

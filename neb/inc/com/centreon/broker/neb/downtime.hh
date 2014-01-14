@@ -56,7 +56,6 @@ namespace          neb {
     timestamp      entry_time;
     bool           fixed;
     unsigned int   host_id;
-    unsigned int   instance_id;
     unsigned int   internal_id;
     unsigned int   service_id;
     timestamp      start_time;

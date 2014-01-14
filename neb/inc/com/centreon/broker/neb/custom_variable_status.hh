@@ -44,7 +44,6 @@ namespace                   neb {
     virtual unsigned int    type() const;
 
     unsigned int            host_id;
-    unsigned int            instance_id;
     bool                    modified;
     QString                 name;
     unsigned int            service_id;

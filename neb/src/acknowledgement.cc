@@ -40,8 +40,7 @@ acknowledgement::acknowledgement()
     deletion_time(0),
     entry_time(0),
     host_id(0),
-    instance_id(0),
-    is_sticky(false),
+        is_sticky(false),
     notify_contacts(false),
     persistent_comment(false),
     service_id(0),
@@ -116,8 +115,7 @@ void acknowledgement::_internal_copy(acknowledgement const& ack) {
   deletion_time = ack.deletion_time;
   entry_time = ack.entry_time;
   host_id = ack.host_id;
-  instance_id = ack.instance_id;
-  is_sticky = ack.is_sticky;
+    is_sticky = ack.is_sticky;
   notify_contacts = ack.notify_contacts;
   persistent_comment = ack.persistent_comment;
   service_id = ack.service_id;
