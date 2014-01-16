@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -141,12 +141,6 @@ io::endpoint* factory::new_endpoint(
     throw (exceptions::msg()
              << "RRD: cannot create an input-only RRD endpoint");
 
-  // Get metrics RRD path.
-  QString metrics_path(find_param(cfg, "metrics_path"));
-
-  // Get status RRD path.
-  QString status_path(find_param(cfg, "status_path"));
-
   // Local socket path.
   QString path(find_param(cfg, "path", false));
 
@@ -184,6 +178,16 @@ io::endpoint* factory::new_endpoint(
     else
       write_status = true;
   }
+
+  // Get metrics RRD path.
+  QString metrics_path(write_metrics
+                       ? find_param(cfg, "metrics_path")
+                       : "");
+
+  // Get status RRD path.
+  QString status_path(write_status
+                      ? find_param(cfg, "status_path")
+                      : "");
 
   // Ignore update errors (2.4.0-compatible behavior).
   bool ignore_update_errors;
