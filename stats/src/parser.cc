@@ -113,7 +113,7 @@ void parser::parse(
         m.set_name(name.text().toStdString());
         cfg.metrics().push_back(m);
 
-        service = metrics.nextSiblingElement("service");
+        service = service.nextSiblingElement("service");
       }
     }
   }

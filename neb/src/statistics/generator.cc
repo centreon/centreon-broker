@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/neb/statistics/active_host_execution_time.hh"
@@ -220,11 +221,15 @@ void generator::remove(
  *  Execute all plugins.
  */
 void generator::run() {
+  time_t now(time(NULL));
   for (std::map<std::pair<unsigned int, unsigned int>, misc::shared_ptr<plugin> >::const_iterator
          it(_registers.begin()), end(_registers.end());
        it != end;
        ++it) {
     misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+    ss->check_interval = _interval;
+    ss->last_check = now;
+    ss->last_update = now;
     ss->host_id = it->first.first;
     ss->service_id = it->first.second;
     ss->host_name = instance_name;
@@ -260,22 +265,38 @@ void generator::set(config::state const& config) {
   // Parse XML.
   QDomDocument d;
   if (d.setContent(it.value())) {
-    unsigned int host_id(0);
-
-    // Browse first-level elements.
     QDomElement root(d.documentElement());
-    QDomNodeList level1(root.childNodes());
-    for (int i = 0, len = level1.size(); i < len; ++i) {
-      QDomElement elem(level1.item(i).toElement());
-      if (!elem.isNull()) {
-        std::string name(elem.tagName().toStdString());
-        if (name == "id")
-          host_id = elem.text().toUInt();
-        else if (name == "interval")
-          _interval = elem.text().toUInt();
-        else {
-          unsigned int service_id(elem.text().toUInt());
-          add(host_id, service_id, name);
+
+    QDomElement remote(root.lastChildElement("remote"));
+    if (!remote.isNull()) {
+      QDomElement interval(remote.lastChildElement("interval"));
+      if (!interval.isNull())
+        _interval = interval.text().toUInt();
+
+      QDomElement metrics(remote.lastChildElement("metrics"));
+      if (!metrics.isNull()) {
+        QDomElement host(metrics.lastChildElement("host"));
+        if (host.isNull())
+          throw (exceptions::msg() << "stats: invalid remote host");
+        unsigned int host_id(host.text().toUInt());
+
+        QDomElement service(metrics.firstChildElement("service"));
+        while (!service.isNull()) {
+          QDomElement id(service.firstChildElement("id"));
+          if (id.isNull())
+            throw (exceptions::msg()
+                   << "stats: invalid remote service id");
+          QDomElement name(service.firstChildElement("name"));
+          if (name.isNull())
+            throw (exceptions::msg()
+                   << "stats: invalid remote service name");
+
+          logging::config(logging::medium)
+            << "stats: new service (host " << host_id << ", service "
+            << id.text().toUInt() << ", name " << name.text() << ")";
+          add(host_id, id.text().toUInt(), name.text().toStdString());
+
+          service = service.nextSiblingElement("service");
         }
       }
     }

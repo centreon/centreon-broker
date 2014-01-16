@@ -1729,6 +1729,9 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Add statistics event.
       if (statistics_interval) {
+        logging::info(logging::medium)
+          << "stats: registering statistics generation event in "
+          << "monitoring engine";
         union {
           void (* code)(void*);
           void* data;

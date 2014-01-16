@@ -748,6 +748,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Statistics events (internal metrics).
+  set(TEST_NAME "running_stats_events")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
