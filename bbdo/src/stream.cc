@@ -103,10 +103,10 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 /**
  *  Get statistics.
  *
- *  @param[out] buffer Output buffer.
+ *  @param[out] tree Output tree.
  */
-void stream::statistics(std::string& buffer) const {
-  output::statistics(buffer);
+void stream::statistics(io::properties& tree) const {
+  output::statistics(tree);
   return ;
 }
 

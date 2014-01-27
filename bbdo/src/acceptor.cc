@@ -255,15 +255,16 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
 /**
  *  Get BBDO statistics.
  *
- *  @param[out] buffer Buffer.
+ *  @param[out] tree Properties tree.
  */
-void acceptor::stats(std::string& buffer) {
-  buffer.append(
-           _one_peer_retention_mode
-           ? "one peer retention mode=true\n"
-           : "one peer retention mode=false\n");
+void acceptor::stats(io::properties& tree) {
+  io::property& p(tree["one_peer_retention_mode"]);
+  p.set_perfdata(_one_peer_retention_mode
+                 ? "one peer retention mode=true"
+                 : "one peer retention mode=false");
+  p.set_graphable(false);
   if (!_from.isNull())
-    _from->stats(buffer);
+    _from->stats(tree);
   return ;
 }
 

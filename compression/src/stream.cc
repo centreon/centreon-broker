@@ -133,9 +133,9 @@ void stream::read(misc::shared_ptr<io::data>& data) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(std::string& buffer) const {
+void stream::statistics(io::properties& tree) const {
   if (!_to.isNull())
-    _to->statistics(buffer);
+    _to->statistics(tree);
   return ;
 }
 

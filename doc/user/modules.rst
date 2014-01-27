@@ -569,11 +569,14 @@ Configuration
 A *stats* node must be defined right under the root node of the XML
 configuration file. This node can then contain the following tags.
 
-==== =====================================================
-Tag  Description
-==== =====================================================
-fifo The FIFO file from which you can read the statistics.
-==== =====================================================
+====== =====================================================
+Tag    Description
+====== =====================================================
+fifo   The FIFO file from which you can read the statistics.
+remote Send statistics information from monitoring engine
+       or broker over the networks (This feature need
+       centreon-broker >= 2.7).
+====== =====================================================
 
 Example
 -------
@@ -630,6 +633,104 @@ You can then read the file with a simple *cat* command.
   last connection attempt=1358862546
   last connection success=1358862546
 
+Since Centreon-Broker 2.7 we can send statistics over the network with
+the node "remote". This node can then contain the following tags.
+
+========== =====================================================
+Tag        Description
+========== =====================================================
+dumper_tag Tag name of the dumper output to write statistics.
+interval   Interval in seconds to dump statitics.
+metrics    This node contain informations about statistics to
+           write (see below). All stats into metrics create RRD
+	   files.
+========== =====================================================
+
+This table describe the node metrics.
+
+========== =====================================================
+Tag        Description
+========== =====================================================
+host       Host id of the metric.
+service    Service contain service id and servce name of the
+           metric.
+========== =====================================================
+
+This table describe the node service.
+
+========== =====================================================
+Tag        Description
+========== =====================================================
+id         Service id of the metric.
+name       Service name.
+========== =====================================================
+
+This is list of available services for NEB module.
+
+============================= ================================================= ==================================================
+Name                          Description                                       Perfdata
+============================= ================================================= ==================================================
+active_host_execution_time    Active host check execution time (ms)             avg, min, max
+active_host_latency           Active host check latency (ms)                    avg, min, max
+active_hosts_last             Number of active host checks in last minutes      active_hosts_last_1, active_hosts_last_5,
+                                                                                active_hosts_last_15, active_hosts_last_60
+active_host_state_change      Active host check % state change                  avg, min, max
+active_service_execution_time Active service check execution time (ms)          avg, min, max
+active_service_latency        Active service check latency (ms)                 avg, min, max
+active_services_last          Number of active service checks in last minutes   active_services_last_1, active_services_last_5,
+                                                                                active_services_last_15, active_services_last_60
+active_service_state_change   Active service check % state change               avg, min, max
+command_buffers               External command buffer informations              used, high, total
+hosts_actively_checked        Total of hosts actively checked                   hosts_actively_checked
+hosts_checked                 Total of hosts checked                            hosts_checked
+hosts_flapping                Number of host in flapping                        hosts_flapping
+hosts                         Total hosts state informations                    up, down, unreachable
+hosts_in_downtime             Number of host in downtime                        hosts_in_downtime
+hosts_passively_checked       Total of hosts passively checked                  hosts_passively_checked
+hosts_scheduled               Total of scheduled hosts                          hosts_scheduled
+passive_host_latency          Passive host check latency (ms)                   avg, min, max
+passive_hosts_last            Number of passive host checks in last minutes     passive_hosts_last_1, passive_hosts_last_5,
+                                                                                passive_hosts_last_15, passive_hosts_last_60
+passive_host_state_change     Passive host check % state change                 avg, min, max
+passive_service_latency       Passive service check latency (ms)                avg, min, max
+passive_services_last         Number of passive service checks in last minutes  passive_services_last_1, passive_services_last_5,
+                                                                                passive_services_last_15, passive_services_last_60
+passive_service_state_change  Passive service check % state change              avg, min, max
+services_actively_checked     Total of services actively checked                services_actively_checked
+services_checked              Total of services checked                         services_checked
+services_flapping             Number of service in flapping                     services_flapping
+services                      Total services state informations                 ok, warning, critical, unknown
+services_in_downtime          Number of service in downtime                     services_in_downtime
+services_passively_checked    Total of services passively checked               services_passively_checked
+services_scheduled            Total of scheduled services                       services_scheduled
+total_hosts                   Total number of hosts                             total_hosts
+total_host_state_change       Total host check % state change                   avg, min, max
+total_services                Total number of services                          total_services
+total_service_state_change    Total service check % state change                avg, min, max
+============================= ================================================= ==================================================
+
+Example
+-------
+
+::
+
+  <stats>
+    <remote>
+      <dumper_tag>CentralBroker</dumper_tag>
+      <interval>300</interval>
+      <metrics>
+        <host>1</host>
+	<service>
+  	  <id>1</id>
+	  <name>active_host_execution_time</name>
+	</services>
+	<service>
+  	  <id>2</id>
+	  <name>active_host_latency</name>
+	</services>
+      </metrics>
+    </remote>
+  </stats>
 
 .. _user_modules_correlation:
 
@@ -679,3 +780,47 @@ Example
     <file>/etc/centreon-broker/correlation.cfg</file>
     <retention>/var/lib/centreon-broker/correlation.sav</retention>
   </correlation>
+
+Dumper
+======
+
+The dumper module is used to create file. It fetches events
+generated by statistics engine and directly handle them.
+
+===================== ======
+**Type**              dumper
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ======
+
+Description
+-----------
+
+That dumper endpoint receives data to write these into the file.
+It can filter these data by the tagname. A dumper write only data
+with the same tagname as his.
+
+Configuration
+-------------
+
+============= ===========================================================
+Tag           Description
+============= ===========================================================
+tagname       The tag name to write file. Tag name allow filtering.
+path          The path of the file to write data. You can use macro
+              $instance_id$ into the path to write the instance id of the
+              poller.
+============= ===========================================================
+
+Example
+-------
+
+::
+
+  <output>
+    <type>dumper</type>
+    <tagname>CentralBroker</tagname>
+    <path>/var/lib/centreon-broker/$instance_id$.stats</path>
+  </output>

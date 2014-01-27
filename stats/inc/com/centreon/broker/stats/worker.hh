@@ -26,7 +26,10 @@
 namespace               com {
   namespace             centreon {
     namespace           broker {
-      // Forward declaration.
+      // Forward declarations.
+      namespace         io {
+        class           properties;
+      }
       namespace         processing {
         class           failover;
       }
@@ -49,14 +52,9 @@ namespace               com {
           void          run(QString const& fifo_file);
 
         private:
-                        worker(worker const& righ);
+                        worker(worker const& right);
           worker&       operator=(worker const& right);
           void          _close();
-          void          _generate_stats();
-          void          _generate_stats_for_endpoint(
-                          processing::failover* fo,
-                          std::string& buffer,
-                          bool is_out);
           bool          _open();
           void          run();
 

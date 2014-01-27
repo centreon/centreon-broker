@@ -22,6 +22,7 @@
 
 #  include <QString>
 #  include <string>
+#  include "com/centreon/broker/io/properties.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -51,7 +52,7 @@ namespace                            io {
     bool                             is_connector() const throw ();
     virtual misc::shared_ptr<stream> open() = 0;
     virtual misc::shared_ptr<stream> open(QString const& id) = 0;
-    virtual void                     stats(std::string& buffer);
+    virtual void                     stats(io::properties& tree);
 
    protected:
     void                             _internal_copy(endpoint const& e);

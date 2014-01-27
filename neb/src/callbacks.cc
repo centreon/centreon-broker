@@ -38,8 +38,10 @@
 #include "com/centreon/broker/neb/initial.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/set_log_data.hh"
+#include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/engine/broker.hh"
 #include "com/centreon/engine/comments.hh"
+#include "com/centreon/engine/events.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
 
@@ -107,6 +109,24 @@ std::list<misc::shared_ptr<neb::callback> > neb::gl_registered_callbacks;
 // External function to get program version.
 extern "C" {
   char const* get_program_version();
+}
+
+// Statistics generator.
+static neb::statistics::generator gl_generator;
+
+extern "C" void event_statistics(void* args) {
+  (void)args;
+  try {
+    gl_generator.run();
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "stats: error occurred while generating statistics event: "
+      << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return ;
 }
 
 /**
@@ -1687,6 +1707,7 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Output variable.
       misc::shared_ptr<neb::instance> instance(new neb::instance);
+      unsigned int statistics_interval(0);
 
       // Parse configuration file.
       try {
@@ -1696,10 +1717,12 @@ int neb::callback_process(int callback_type, void *data) {
 
         // Apply resulting configuration.
         config::applier::state::instance().apply(conf);
+        gl_generator.set(conf);
 
         // Set variables.
         instance_id = conf.instance_id();
         instance_name = conf.instance_name();
+        statistics_interval = gl_generator.interval();
       }
       catch (exceptions::msg const& e) {
         logging::config(logging::high) << e.what();
@@ -1721,6 +1744,29 @@ int neb::callback_process(int callback_type, void *data) {
       // Send initial event and then configuration.
       gl_publisher.write(instance.staticCast<io::data>());
       send_initial_configuration();
+
+      // Add statistics event.
+      if (statistics_interval) {
+        logging::info(logging::medium)
+          << "stats: registering statistics generation event in "
+          << "monitoring engine";
+        union {
+          void (* code)(void*);
+          void* data;
+        } val;
+        val.code = &event_statistics;
+        schedule_new_event(
+          EVENT_USER_FUNCTION,
+          0,
+          time(NULL) + statistics_interval,
+          1,
+          statistics_interval,
+          NULL,
+          1,
+          val.data,
+          NULL,
+          0);
+      }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info(logging::medium)

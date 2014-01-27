@@ -18,12 +18,14 @@
 */
 
 #include "com/centreon/broker/correlation/events.hh"
+#include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
+using namespace com::centreon::broker::dumper;
 using namespace com::centreon::broker::neb;
 
 // acknowledgement members mapping.
@@ -308,6 +310,23 @@ static mapped_data<downtime> const downtime_mapping[] = {
     NDO_DATA_COMMENT,
     "comment_data"),
   mapped_data<downtime>()
+};
+
+// dump members mapping.
+static mapped_data<dump> const dumper_dump_mapping[] = {
+  mapped_data<dump>(
+    &dump::content,
+    1,
+    "content"),
+  mapped_data<dump>(
+    &dump::instance_id,
+    2,
+    "instance_id"),
+  mapped_data<dump>(
+    &dump::tag,
+    3,
+    "tag"),
+  mapped_data<dump>()
 };
 
 // engine_state members mapping.
@@ -2445,6 +2464,12 @@ namespace     com {
         mapped_type<neb::service_status>::members(service_status_mapping);
       template <> const char*
         mapped_type<neb::service_status>::table("services");
+
+      // Dumper output mapping.
+      template <> const mapped_data<dumper::dump>*
+        mapped_type<dumper::dump>::members(dumper_dump_mapping);
+      template <> const char*
+        mapped_type<dumper::dump>::table("dumper");
 
       // Correlation engine state mapping.
       template <> const mapped_data<correlation::engine_state>*
