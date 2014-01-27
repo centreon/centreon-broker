@@ -113,7 +113,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
 
       // Build path.
       std::string path(_path);
-      misc::string::replace(path, "$insance_id$", oss.str());
+      misc::string::replace(path, "$instance_id$", oss.str());
 
       // Open file.
       std::ofstream file(path.c_str());
