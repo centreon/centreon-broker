@@ -30,6 +30,7 @@
 #  include <set>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/sql/cleanup.hh"
 
 CCB_BEGIN()
 
@@ -50,6 +51,7 @@ namespace        sql {
                    QString const& password,
                    QString const& db,
                    unsigned int queries_per_transaction,
+                   unsigned int cleanup_check_interval,
                    bool check_replication,
                    bool with_state_events);
                  stream(stream const& s);
@@ -160,6 +162,7 @@ namespace        sql {
     std::auto_ptr<QSqlQuery>    _service_state_update;
     std::auto_ptr<QSqlQuery>    _service_status_update;
     std::set<unsigned int>      _cache_deleted_instance_id;
+    cleanup                     _cleanup_thread;
     std::auto_ptr<QSqlDatabase> _db;
     std::deque<misc::shared_ptr<io::data> >
                                 _log_queue;

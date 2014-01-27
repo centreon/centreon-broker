@@ -1909,15 +1909,17 @@ void stream::_write_logs() {
 /**
  *  Constructor.
  *
- *  @param[in] type              Database type.
- *  @param[in] host              Database host.
- *  @param[in] port              Database port.
- *  @param[in] user              User.
- *  @param[in] password          Password.
- *  @param[in] db                Database name.
- *  @param[in] qpt               Queries per transaction.
- *  @param[in] check_replication true to check replication status.
- *  @param[in] wse               With state events.
+ *  @param[in] type                    Database type.
+ *  @param[in] host                    Database host.
+ *  @param[in] port                    Database port.
+ *  @param[in] user                    User.
+ *  @param[in] password                Password.
+ *  @param[in] db                      Database name.
+ *  @param[in] qpt                     Queries per transaction.
+ *  @param[in] cleanup_thread_interval How often the stream must
+ *                                     check for cleanup database.
+ *  @param[in] check_replication       true to check replication status.
+ *  @param[in] wse                     With state events.
  */
 stream::stream(
           QString const& type,
@@ -1927,6 +1929,7 @@ stream::stream(
           QString const& password,
           QString const& db,
           unsigned int qpt,
+          unsigned int cleanup_check_interval,
           bool check_replication,
           bool wse)
   : _process_out(true),
@@ -2026,6 +2029,11 @@ stream::stream(
     // First transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
+
+    // Run cleanup thread.
+    _cleanup_thread.set_interval(cleanup_check_interval);
+    _cleanup_thread.set_db(*_db);
+    _cleanup_thread.start();
   }
   catch (...) {
     // Unprepare queries.
@@ -2067,6 +2075,10 @@ stream::stream(stream const& s) : io::stream(s) {
 
   // Clone database.
   _db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._db, id)));
+
+  // Copy cleanup thread.
+  _cleanup_thread = s._cleanup_thread;
+
   try {
     {
       QMutexLocker lock(&global_lock);
@@ -2082,6 +2094,9 @@ stream::stream(stream const& s) : io::stream(s) {
     // First transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
+
+    // Run cleanup thread.
+    _cleanup_thread.start();
   }
   catch (...) {
     // Unprepare queries.
@@ -2105,6 +2120,10 @@ stream::stream(stream const& s) : io::stream(s) {
  *  Destructor.
  */
 stream::~stream() {
+  // Stop cleanup thread.
+  _cleanup_thread.exit();
+  _cleanup_thread.wait(-1);
+
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);

@@ -134,7 +134,7 @@ unsigned int rebuilder::get_rrd_length() const throw () {
  *  Thread entry point.
  */
 void rebuilder::run() {
-  while (!_should_exit) {
+  while (!_should_exit && _interval) {
     try {
       // Open DB.
       if (!_db.open())
