@@ -51,7 +51,6 @@ namespace          neb {
     bool           flap_detection_on_unreachable;
     bool           flap_detection_on_up;
     QString        host_name;
-    unsigned int   instance_id;
     bool           notify_on_down;
     bool           notify_on_unreachable;
     bool           stalk_on_down;

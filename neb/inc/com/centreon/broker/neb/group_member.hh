@@ -46,7 +46,6 @@ namespace         neb {
     bool          enabled;
     QString       group;
     unsigned int  host_id;
-    unsigned int  instance_id;
 
   private:
     void          _internal_copy(group_member const& gm);

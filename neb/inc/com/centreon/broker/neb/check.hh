@@ -49,7 +49,6 @@ namespace   neb {
     short        check_type;
     QString      command_line;
     unsigned int host_id;
-    unsigned int instance_id;
     timestamp    next_check;
 
   private:

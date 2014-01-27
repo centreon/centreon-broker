@@ -50,7 +50,6 @@ namespace          neb {
     double         execution_time;
     short          handler_type;
     unsigned int   host_id;
-    unsigned int   instance_id;
     QString        output;
     short          return_code;
     unsigned int   service_id;

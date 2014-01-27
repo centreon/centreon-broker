@@ -114,8 +114,7 @@ void host::_internal_copy(host const& h) {
   flap_detection_on_unreachable = h.flap_detection_on_unreachable;
   flap_detection_on_up = h.flap_detection_on_up;
   host_name = h.host_name;
-  instance_id = h.instance_id;
-  notify_on_down = h.notify_on_down;
+    notify_on_down = h.notify_on_down;
   notify_on_unreachable = h.notify_on_unreachable;
   stalk_on_down = h.stalk_on_down;
   stalk_on_unreachable = h.stalk_on_unreachable;

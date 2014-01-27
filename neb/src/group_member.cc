@@ -31,7 +31,7 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 neb::group_member::group_member()
-  : enabled(true), host_id(0), instance_id(0) {}
+  : enabled(true), host_id(0) {}
 
 /**
  *  Copy constructor.
@@ -79,6 +79,5 @@ void neb::group_member::_internal_copy(group_member const& gm) {
   enabled = gm.enabled;
   group = gm.group;
   host_id = gm.host_id;
-  instance_id = gm.instance_id;
-  return ;
+    return ;
 }

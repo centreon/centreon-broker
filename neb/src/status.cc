@@ -36,8 +36,7 @@ status::status()
   : event_handler_enabled(false),
     failure_prediction_enabled(false),
     flap_detection_enabled(false),
-    instance_id(0),
-    notifications_enabled(false),
+        notifications_enabled(false),
     process_performance_data(false) {}
 
 /**
@@ -90,8 +89,7 @@ void status::_internal_copy(status const& s) {
   event_handler_enabled = s.event_handler_enabled;
   failure_prediction_enabled = s.failure_prediction_enabled;
   flap_detection_enabled = s.flap_detection_enabled;
-  instance_id = s.instance_id;
-  notifications_enabled = s.notifications_enabled;
+    notifications_enabled = s.notifications_enabled;
   process_performance_data = s.process_performance_data;
   return ;
 }

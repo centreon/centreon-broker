@@ -34,8 +34,7 @@ using namespace com::centreon::broker::neb;
  */
 module::module()
   : enabled(true),
-    instance_id(0),
-    loaded(false),
+        loaded(false),
     should_be_loaded(false) {}
 
 /**
@@ -89,8 +88,7 @@ void module::_internal_copy(module const& m) {
   args = m.args;
   enabled = m.enabled;
   filename = m.filename;
-  instance_id = m.instance_id;
-  loaded = m.loaded;
+    loaded = m.loaded;
   should_be_loaded = m.should_be_loaded;
   return ;
 }

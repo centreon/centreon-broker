@@ -35,7 +35,6 @@ using namespace com::centreon::broker::neb;
 host_parent::host_parent()
   : enabled(true),
     host_id(0),
-    instance_id(0),
     parent_id(0) {}
 
 /**
@@ -47,7 +46,6 @@ host_parent::host_parent(host_parent const& hp)
   : io::data(hp),
     enabled(hp.enabled),
     host_id(hp.host_id),
-    instance_id(hp.instance_id),
     parent_id(hp.parent_id) {}
 
 /**
@@ -66,8 +64,7 @@ host_parent& host_parent::operator=(host_parent const& hp) {
   io::data::operator=(hp);
   enabled = hp.enabled;
   host_id = hp.host_id;
-  instance_id = hp.instance_id;
-  parent_id = hp.parent_id;
+    parent_id = hp.parent_id;
   return (*this);
 }
 

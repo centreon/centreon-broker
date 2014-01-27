@@ -41,6 +41,8 @@ namespace                  io {
     virtual                ~data();
     data&                  operator=(data const& d);
     virtual unsigned int   type() const = 0;
+
+    unsigned int           instance_id;
   };
 }
 
