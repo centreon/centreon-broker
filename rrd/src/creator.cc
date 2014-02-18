@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,10 +47,7 @@ using namespace com::centreon::broker::rrd;
 creator::creator(
            std::string const& tmpl_path,
            unsigned int cache_size)
-  : _cache_size(cache_size),
-    _tmpl_path(tmpl_path) {
-
-}
+  : _cache_size(cache_size), _tmpl_path(tmpl_path) {}
 
 /**
  *  Copy constructor.
@@ -183,7 +180,7 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
   int out_fd(open(
                filename.c_str(),
                O_CREAT | O_TRUNC | O_WRONLY,
-               S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
+               S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
   if (out_fd < 0) {
     char const* msg(strerror(errno));
     throw (exceptions::open() << "RRD: could not create file '"
