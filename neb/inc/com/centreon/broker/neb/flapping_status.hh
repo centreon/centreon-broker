@@ -47,7 +47,6 @@ namespace            neb {
     short            flapping_type;
     double           high_threshold;
     unsigned int     host_id;
-    unsigned int     instance_id;
     unsigned int     internal_comment_id;
     double           low_threshold;
     double           percent_state_change;

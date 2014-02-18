@@ -30,16 +30,14 @@ using namespace com::centreon::broker::io;
 /**
  *  Constructor.
  */
-data::data() {}
+data::data() : instance_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] d Object to copy.
  */
-data::data(data const& d) {
-  (void)d;
-}
+data::data(data const& d) : instance_id(d.instance_id) {}
 
 /**
  *  Destructor.
@@ -54,6 +52,6 @@ data::~data() {}
  *  @return This object.
  */
 data& data::operator=(data const& d) {
-  (void)d;
+  instance_id = d.instance_id;
   return (*this);
 }

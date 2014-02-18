@@ -42,7 +42,6 @@ namespace          neb {
 
     bool           enabled;
     unsigned int   host_id;
-    unsigned int   instance_id;
     unsigned int   parent_id;
   };
 }

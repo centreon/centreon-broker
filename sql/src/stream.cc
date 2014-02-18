@@ -95,6 +95,32 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
 **************************************/
 
 /**
+ *  Clean the deleted cache of instance ids.
+ */
+void stream::_cache_clean() {
+  _cache_deleted_instance_id.clear();
+}
+
+/**
+ *  Create the deleted cache of instance ids.
+ */
+void stream::_cache_create() {
+  std::ostringstream ss;
+  ss << "SELECT instance_id"
+     << " FROM " << mapped_type<neb::instance>::table
+     << " WHERE deleted=1";
+  QSqlQuery q(*_db);
+  if (!q.exec(ss.str().c_str()))
+    logging::error(logging::high)
+      << "SQL: could not get list of deleted instances: "
+      << q.lastError().text();
+  else
+    while (q.next())
+      _cache_deleted_instance_id.insert(q.value(0).toUInt());
+  return ;
+}
+
+/**
  *  @brief Clean tables with data associated to the instance.
  *
  *  Rather than delete appropriate entries in tables, they are instead
@@ -493,6 +519,8 @@ void stream::_prepare() {
       << query;
     _issue_parent_update->prepare(query);
   }
+
+  _cache_create();
 
   return ;
 }
@@ -1881,15 +1909,17 @@ void stream::_write_logs() {
 /**
  *  Constructor.
  *
- *  @param[in] type              Database type.
- *  @param[in] host              Database host.
- *  @param[in] port              Database port.
- *  @param[in] user              User.
- *  @param[in] password          Password.
- *  @param[in] db                Database name.
- *  @param[in] qpt               Queries per transaction.
- *  @param[in] check_replication true to check replication status.
- *  @param[in] wse               With state events.
+ *  @param[in] type                    Database type.
+ *  @param[in] host                    Database host.
+ *  @param[in] port                    Database port.
+ *  @param[in] user                    User.
+ *  @param[in] password                Password.
+ *  @param[in] db                      Database name.
+ *  @param[in] qpt                     Queries per transaction.
+ *  @param[in] cleanup_thread_interval How often the stream must
+ *                                     check for cleanup database.
+ *  @param[in] check_replication       true to check replication status.
+ *  @param[in] wse                     With state events.
  */
 stream::stream(
           QString const& type,
@@ -1899,6 +1929,7 @@ stream::stream(
           QString const& password,
           QString const& db,
           unsigned int qpt,
+          unsigned int cleanup_check_interval,
           bool check_replication,
           bool wse)
   : _process_out(true),
@@ -1998,6 +2029,11 @@ stream::stream(
     // First transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
+
+    // Run cleanup thread.
+    _cleanup_thread.set_interval(cleanup_check_interval);
+    _cleanup_thread.set_db(*_db);
+    _cleanup_thread.start();
   }
   catch (...) {
     // Unprepare queries.
@@ -2039,6 +2075,10 @@ stream::stream(stream const& s) : io::stream(s) {
 
   // Clone database.
   _db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._db, id)));
+
+  // Copy cleanup thread.
+  _cleanup_thread = s._cleanup_thread;
+
   try {
     {
       QMutexLocker lock(&global_lock);
@@ -2054,6 +2094,9 @@ stream::stream(stream const& s) : io::stream(s) {
     // First transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
+
+    // Run cleanup thread.
+    _cleanup_thread.start();
   }
   catch (...) {
     // Unprepare queries.
@@ -2077,6 +2120,10 @@ stream::stream(stream const& s) : io::stream(s) {
  *  Destructor.
  */
 stream::~stream() {
+  // Stop cleanup thread.
+  _cleanup_thread.exit();
+  _cleanup_thread.wait(-1);
+
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
@@ -2131,6 +2178,15 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 }
 
 /**
+ *  Update internal stream cache.
+ */
+void stream::update() {
+  _cache_clean();
+  _cache_create();
+  return ;
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
@@ -2146,6 +2202,18 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
   unsigned int retval(1);
   if (!data.isNull()) {
+    // Check that data is related to a non-deleted instance.
+    if ((_cache_deleted_instance_id.find(data->instance_id)
+        != _cache_deleted_instance_id.end())
+        && (data->type()
+            != io::events::data_type<io::events::neb, neb::de_log_entry>::value)) {
+      logging::info(logging::low)
+        << "SQL: discarding some event related to a deleted instance ("
+        << data->instance_id << ")";
+      return (retval);
+    }
+
+    // Process event.
     unsigned int type(data->type());
     unsigned short cat(io::events::category_of_type(type));
     unsigned short elem(io::events::element_of_type(type));

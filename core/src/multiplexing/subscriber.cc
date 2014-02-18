@@ -245,23 +245,36 @@ void subscriber::set_filters(std::set<unsigned int> const& filters) {
  *
  *  @param[out] buffer Output buffer.
  */
-void subscriber::statistics(std::string& buffer) const {
+void subscriber::statistics(io::properties& tree) const {
   // Lock object.
   QMutexLocker lock(&_mutex);
 
   // Queued events.
   std::ostringstream oss;
-  if (_recovery_temporary)
-    oss << "queued events=unkown\n";
-  else
-    oss << "queued events=" << _total_events << "\n";
+  {
+    if (_recovery_temporary)
+      oss << "queued events=unkown";
+    else
+      oss << "queued events=" << _total_events;
+    io::property& p(tree["queued_events"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
 
   // Temporary mode.
-  char const* enable(_recovery_temporary ? "yes" : "no");
-  oss << "temporary recovery mode=" << enable << "\n";
+  {
+    oss.str("");
+    char const* enable(_recovery_temporary ? "yes" : "no");
+    oss << "temporary recovery mode=" << enable;
+    io::property& p(tree["temporary_recovery_mode"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
 
   // Filters.
   {
+    oss.str("");
+
     // Get numeric event categories.
     std::set<unsigned short> numcats;
     for (std::set<unsigned int>::const_iterator
@@ -272,9 +285,9 @@ void subscriber::statistics(std::string& buffer) const {
       numcats.insert(io::events::category_of_type(*it));
 
     // Print filters.
-    oss << "accepted events\n";
+    oss << "accepted events";
     if (numcats.empty()) {
-      oss << "  all\n";
+      oss << "\n  all";
     }
     else {
       // Convert numeric categories to strings.
@@ -290,19 +303,21 @@ void subscriber::statistics(std::string& buffer) const {
           if (!it2->second.empty()
               && (*it == (io::events::category_of_type(
                                         *it2->second.begin())))) {
-            oss << "  " << it2->first << "\n";
+            oss << "\n  " << it2->first;
             break ;
           }
           ++it2;
         }
         if (it2 == end2)
-          oss << "  " << *it << "\n";
+          oss << "\n  " << *it;
       }
     }
-  }
 
-  // Return string.
-  buffer.append(oss.str());
+    // Set property.
+    io::property& p(tree["accepted_events"]);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
 
   return ;
 }

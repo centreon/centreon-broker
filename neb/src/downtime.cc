@@ -44,8 +44,7 @@ downtime::downtime()
     entry_time(0),
     fixed(true),
     host_id(0),
-    instance_id(0),
-    internal_id(0),
+        internal_id(0),
     service_id(0),
     start_time(0),
     triggered_by(0),
@@ -123,8 +122,7 @@ void downtime::_internal_copy(downtime const& d) {
   entry_time = d.entry_time;
   fixed = d.fixed;
   host_id = d.host_id;
-  instance_id = d.instance_id;
-  internal_id = d.internal_id;
+    internal_id = d.internal_id;
   service_id = d.service_id;
   start_time = d.start_time;
   triggered_by = d.triggered_by;

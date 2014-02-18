@@ -37,6 +37,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/events.hh"
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
@@ -314,7 +315,7 @@ extern "C" {
         } val;
         val.code = &process_qcore;
         schedule_new_event(
-          99,
+          EVENT_USER_FUNCTION,
           1,
           time(NULL) + 1,
           1,

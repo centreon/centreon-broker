@@ -150,6 +150,41 @@ add_library("${CBMOD}" SHARED
   "${SRC_DIR}/monitoring_logger.cc"
   "${SRC_DIR}/neb.cc"
   "${SRC_DIR}/set_log_data.cc"
+  "${SRC_DIR}/statistics/active_host_execution_time.cc"
+  "${SRC_DIR}/statistics/active_host_latency.cc"
+  "${SRC_DIR}/statistics/active_host_state_change.cc"
+  "${SRC_DIR}/statistics/active_hosts_last.cc"
+  "${SRC_DIR}/statistics/active_service_execution_time.cc"
+  "${SRC_DIR}/statistics/active_service_latency.cc"
+  "${SRC_DIR}/statistics/active_service_state_change.cc"
+  "${SRC_DIR}/statistics/active_services_last.cc"
+  "${SRC_DIR}/statistics/command_buffers.cc"
+  "${SRC_DIR}/statistics/generator.cc"
+  "${SRC_DIR}/statistics/hosts.cc"
+  "${SRC_DIR}/statistics/hosts_actively_checked.cc"
+  "${SRC_DIR}/statistics/hosts_checked.cc"
+  "${SRC_DIR}/statistics/hosts_flapping.cc"
+  "${SRC_DIR}/statistics/hosts_in_downtime.cc"
+  "${SRC_DIR}/statistics/hosts_passively_checked.cc"
+  "${SRC_DIR}/statistics/hosts_scheduled.cc"
+  "${SRC_DIR}/statistics/passive_host_latency.cc"
+  "${SRC_DIR}/statistics/passive_host_state_change.cc"
+  "${SRC_DIR}/statistics/passive_hosts_last.cc"
+  "${SRC_DIR}/statistics/passive_service_latency.cc"
+  "${SRC_DIR}/statistics/passive_service_state_change.cc"
+  "${SRC_DIR}/statistics/passive_services_last.cc"
+  "${SRC_DIR}/statistics/plugin.cc"
+  "${SRC_DIR}/statistics/services.cc"
+  "${SRC_DIR}/statistics/services_actively_checked.cc"
+  "${SRC_DIR}/statistics/services_checked.cc"
+  "${SRC_DIR}/statistics/services_flapping.cc"
+  "${SRC_DIR}/statistics/services_in_downtime.cc"
+  "${SRC_DIR}/statistics/services_passively_checked.cc"
+  "${SRC_DIR}/statistics/services_scheduled.cc"
+  "${SRC_DIR}/statistics/total_host_state_change.cc"
+  "${SRC_DIR}/statistics/total_hosts.cc"
+  "${SRC_DIR}/statistics/total_service_state_change.cc"
+  "${SRC_DIR}/statistics/total_services.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/neb/callback.hh"
   "${INC_DIR}/com/centreon/broker/neb/callbacks.hh"
@@ -157,7 +192,46 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
   "${INC_DIR}/com/centreon/broker/neb/monitoring_logger.hh"
   "${INC_DIR}/com/centreon/broker/neb/set_log_data.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_host_execution_time.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_host_latency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_host_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_hosts_last.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_service_execution_time.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_service_latency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_service_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/active_services_last.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/command_buffers.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/compute_value.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/generator.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_actively_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_flapping.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_in_downtime.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_passively_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_scheduled.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_host_latency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_host_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_hosts_last.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_service_latency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_service_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/passive_services_last.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/plugin.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_actively_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_flapping.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_in_downtime.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_passively_checked.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/services_scheduled.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/total_host_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/total_hosts.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/total_service_state_change.hh"
+  "${INC_DIR}/com/centreon/broker/neb/statistics/total_services.hh"
 )
+
+
+
 get_property(CBMOD_DEFINES
   TARGET "${CBMOD}"
   PROPERTY COMPILE_DEFINITIONS)
@@ -181,6 +255,7 @@ set(CBMOD_PATH "${CBMOD_PATH}" PARENT_SCOPE)
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
   add_library("neb_mapping"
     "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
   set(TEST_LIBRARIES "${NEB}" "neb_mapping" "roker")
@@ -742,7 +817,7 @@ if (WITH_TESTING)
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/external_acknowledge_service.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")  
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rules.

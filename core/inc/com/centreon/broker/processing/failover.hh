@@ -38,7 +38,7 @@ namespace                com {
     namespace            broker {
       // Forward declaration.
       namespace          stats {
-        class            worker;
+        class            builder;
       }
 
       namespace          processing {
@@ -50,7 +50,7 @@ namespace                com {
          */
         class            failover : public QThread, public io::stream {
           Q_OBJECT
-          friend class   stats::worker;
+          friend class   stats::builder;
 
          public:
                          failover(
@@ -78,7 +78,7 @@ namespace                com {
                            misc::shared_ptr<processing::failover> fo);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
-          void           statistics(std::string& buffer) const;
+          void           statistics(io::properties& tree) const;
           void           update();
           bool           wait(unsigned long time = ULONG_MAX);
           unsigned int   write(misc::shared_ptr<io::data> const& d);

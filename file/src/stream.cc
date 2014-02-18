@@ -169,58 +169,112 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(std::string& buffer) const {
-  // Easy to print.
+void stream::statistics(io::properties& tree) const {
   std::ostringstream oss;
-  oss << "file_read_path=" << _file_path(_rid) << "\n"
-      << "file_read_offset=" << _roffset << "\n"
-      << "file_write_path=" << _file_path(_wid) << "\n"
-      << "file_write_offset=" << _woffset << "\n"
-      << "file_max_size=";
-  if (_max_size != std::numeric_limits<long>::max())
-    oss << _max_size;
-  else
-    oss << "unlimited";
-  oss << "\n";
+
+  // Easy to print.
+  {
+    io::property& p(tree["file_read_path"]);
+    oss.str("");
+    oss << "file_read_path=" << _file_path(_rid);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_read_offset"]);
+    oss.str("");
+    oss << "file_read_offset=" << _roffset;
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_write_path"]);
+    oss.str("");
+    oss << "file_write_path=" << _file_path(_wid);
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_write_offset"]);
+    oss.str("");
+    oss << "file_write_offset=" << _woffset;
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
+  {
+    io::property& p(tree["file_max_size"]);
+    oss.str("");
+    oss << "file_max_size=";
+    if (_max_size != std::numeric_limits<long>::max())
+      oss << _max_size;
+    else
+      oss << "unlimited";
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
+  }
 
   // Need computation.
-  oss << "file_percent_processed="
-      << std::fixed << std::setprecision(1);
-  if ((_rid != _wid)
-      && (_max_size == std::numeric_limits<long>::max())) {
-    oss << "unknown\n";
+  bool write_time_expected(false);
+  {
+    io::property& p(tree["file_percent_processed"]);
+    oss.str("");
+    oss << "file_percent_processed=";
+    if (_rid != _wid
+        && _max_size == std::numeric_limits<long>::max()) {
+      oss << "unknown\n";
+    }
+    else {
+      oss << (_roffset * 100.0) / (_woffset + (_wid - _rid) * _max_size)
+          << "%\n";
+      write_time_expected = true;
+    }
+    p.set_perfdata(oss.str());
+    p.set_graphable(false);
   }
-  else {
-    oss << (_roffset * 100.0)
-           / (_woffset + (_wid - _rid) * _max_size) << "%\n";
+  if (write_time_expected) {
+    time_t now(time(NULL));
     unsigned long long roffset(_roffset + _rid * _max_size);
     unsigned long long woffset(_woffset + _wid * _max_size);
-    time_t now(time(NULL));
+
     if (_last_time && (now != _last_time)) {
-      oss << "file_expected_terminated_at=";
-      unsigned long long
-        div(roffset + _last_write_offset - _last_read_offset - woffset);
       time_t eta(0);
-      if (div == 0)
-        oss << "file not processed fast enough to terminate\n";
-      else {
-        eta = now + (woffset - roffset) * (now - _last_time) / div;
-        oss << eta << "\n";
+      {
+        io::property& p(tree["file_expected_terminated_at"]);
+        oss.str("");
+        oss << "file_expected_terminated_at=";
+
+        unsigned long long
+          div(roffset + _last_write_offset - _last_read_offset - woffset);
+        if (div == 0)
+          oss << "file not processed fast enough to terminate\n";
+        else {
+          eta = now + (woffset - roffset) * (now - _last_time) / div;
+          oss << eta << "\n";
+        }
+
+        p.set_perfdata(oss.str());
+        p.set_graphable(false);
       }
-      if (_max_size == std::numeric_limits<long>::max())
+
+      if (_max_size == std::numeric_limits<long>::max()) {
+        io::property& p(tree["file_expected_max_size"]);
+        oss.str("");
         oss << "file_expected_max_size="
             << woffset
                + (woffset - _last_write_offset)
                * (eta - now)
                / (now - _last_time)
             << "\n";
+
+        p.set_perfdata(oss.str());
+        p.set_graphable(false);
+      }
     }
+
     _last_time = now;
     _last_read_offset = roffset;
     _last_write_offset = woffset;
   }
-
-  buffer.append(oss.str());
 
   return ;
 }

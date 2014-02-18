@@ -51,7 +51,6 @@ namespace          neb {
     timestamp      expire_time;
     bool           expires;
     unsigned int   host_id;
-    unsigned int   instance_id;
     unsigned int   internal_id;
     bool           persistent;
     unsigned int   service_id;

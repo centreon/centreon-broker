@@ -23,6 +23,7 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/ndo/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/ndo/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 

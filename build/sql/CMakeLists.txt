@@ -22,6 +22,7 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/sql/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
+include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # SQL module.
@@ -29,6 +30,7 @@ set(SQL "80-sql")
 set(SQL "${SQL}" PARENT_SCOPE)
 add_library("${SQL}" SHARED
   # Sources.
+  "${SRC_DIR}/cleanup.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/internal.cc"
@@ -36,6 +38,7 @@ add_library("${SQL}" SHARED
   "${SRC_DIR}/stream.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
   "${INC_DIR}/com/centreon/broker/sql/internal.hh"

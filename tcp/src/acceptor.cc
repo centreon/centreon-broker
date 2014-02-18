@@ -211,12 +211,12 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
 /**
  *  Get statistics about this TCP acceptor.
  *
- *  @param[out] buffer Buffer in which statistics will be written.
+ *  @param[out] tree Buffer in which statistics will be written.
  */
-void acceptor::stats(std::string& buffer) {
+void acceptor::stats(io::properties& tree) {
   QMutexLocker children_lock(&_childrenm);
   std::ostringstream oss;
-  oss << "peers=" << _children.size() << "\n";
+  oss << "peers=" << _children.size();
   for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
          it(_children.begin()),
          end(_children.end());
@@ -224,10 +224,12 @@ void acceptor::stats(std::string& buffer) {
        ++it) {
     QMutexLocker lock(it->second.data());
     if (!it->first.isNull())
-      oss << "  " << it->first->peerAddress().toString().toStdString()
-          << ":" << it->first->peerPort() << "\n";
+      oss << "\n  " << it->first->peerAddress().toString().toStdString()
+          << ":" << it->first->peerPort();
   }
-  buffer.append(oss.str());
+  io::property& p(tree["peers"]);
+  p.set_perfdata(oss.str());
+  p.set_graphable(false);
   return ;
 }
 

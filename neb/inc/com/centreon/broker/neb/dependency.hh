@@ -49,7 +49,6 @@ namespace        neb {
     QString      execution_failure_options;
     unsigned int host_id;
     bool         inherits_parent;
-    unsigned int instance_id;
     QString      notification_failure_options;
 
   private:

@@ -45,7 +45,6 @@ namespace          neb {
     QString        args;
     bool           enabled;
     QString        filename;
-    unsigned int   instance_id;
     bool           loaded;
     bool           should_be_loaded;
 

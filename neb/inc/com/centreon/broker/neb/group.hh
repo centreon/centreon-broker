@@ -47,7 +47,6 @@ namespace        neb {
     QString      action_url;
     QString      alias;
     bool         enabled;
-    unsigned int instance_id;
     QString      name;
     QString      notes;
     QString      notes_url;

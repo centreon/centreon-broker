@@ -37,8 +37,7 @@ notification::notification()
     end_time(0),
     escalated(false),
     host_id(0),
-    instance_id(0),
-    notification_type(0),
+        notification_type(0),
     reason_type(0),
     service_id(0),
     start_time(0),
@@ -100,8 +99,7 @@ void notification::_internal_copy(notification const& n) {
   end_time = n.end_time;
   escalated = n.escalated;
   host_id = n.host_id;
-  instance_id = n.instance_id;
-  notification_type = n.notification_type;
+    notification_type = n.notification_type;
   output = n.output;
   reason_type = n.reason_type;
   service_id = n.service_id;

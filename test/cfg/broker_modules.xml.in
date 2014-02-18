@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
-  <module>@STATS_MODULE_PATH@</module>
+  <module>@DUMPER_MODULE_PATH@</module>
   <module>@NEB_MODULE_PATH@</module>
+  <module>@STATS_MODULE_PATH@</module>
   <module>@CORRELATION_MODULE_PATH@</module>
   <module>@STORAGE_MODULE_PATH@</module>
   <module>@FILE_MODULE_PATH@</module>
