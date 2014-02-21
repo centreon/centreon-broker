@@ -21,18 +21,15 @@
 
 # include "com/centreon/broker/namespace.hh"
 # include <string>
-
-CCB_BEGIN()
+namespace com { 
+ namespace centreon { 
+  namespace broker {
+   namespace configuration {
 
 
 
 class  bool_expression{
 
-  unsigned int  _id;
-  double        _impact;
-  std::string   _expression;
-  bool          _impact_if;
-  bool          _state; 
 
 
   // friend void swap(  bool_expression& left,  bool_expression& right) throw();
@@ -57,17 +54,26 @@ public:
     _state(state) 
  {}
 
-  unsigned int         getId()const         { return _id;}
-  double               getImpact()const     { return _impact;}
-  const std::string&   getExpression()const { return _expression;}
-  bool                 getImpactIf() const  { return _impact_if; }
-  bool                 getState()const      { return _state; }
+  unsigned int         get_id()const         { return _id;}
+  double               get_impact()const     { return _impact;}
+  const std::string&   get_expression()const { return _expression;}
+  bool                 get_impactIf() const  { return _impact_if; }
+  bool                 get_state()const      { return _state; }
 
   // void setId(  unsigned int)const         { return _id;}
-  void                 setImpact(double d)                  {  _impact=d;}
-  void                 setExpression(const std::string& s)  {  _expression = s;}
-  void                 setImpactIf( bool b)                 {  _impact_if = b; }
-  void                 setState(bool s)                     {  _state = s; }
+  void                 set_impact(double d)                  {  _impact=d;}
+  void                 set_expression(const std::string& s)  {  _expression = s;}
+  void                 set_impactIf( bool b)                 {  _impact_if = b; }
+  void                 set_state(bool s)                     {  _state = s; }
+
+private:
+
+  unsigned int  _id;
+  double        _impact;
+  std::string   _expression;
+  bool          _impact_if;
+  bool          _state; 
+
 
 };
 
@@ -75,6 +81,9 @@ public:
 
 
 
-CCB_END()
+   }
+  }
+ }
+}
 
 #endif
