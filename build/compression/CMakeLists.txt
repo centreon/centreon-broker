@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2014 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -52,6 +52,15 @@ if (WITH_TESTING)
   set(TEST_NAME "compression_stream_io")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/stream/io.cc")
+  target_link_libraries("${TEST_NAME}"
+    "${FILE}"
+    "${COMPRESSION}"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Buffer is read back.
+  set(TEST_NAME "compression_buffer_is_read_back")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/stream/buffer_is_read_back.cc")
   target_link_libraries("${TEST_NAME}"
     "${FILE}"
     "${COMPRESSION}"
