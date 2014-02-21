@@ -21,11 +21,11 @@
 
 # include "com/centreon/broker/namespace.hh"
 # include <string>
-namespace com { 
- namespace centreon { 
-  namespace broker {
-   namespace configuration {
 
+namespace CCBC = com::centreon::broker::configuration;
+
+
+namespace CCBC{
 
 
 class  bool_expression{
@@ -79,11 +79,6 @@ private:
 
 
 
-
-
-   }
-  }
- }
 }
 
 #endif
