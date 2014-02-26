@@ -175,7 +175,7 @@ reload_all() {
     running="$(echo ${line} | awk '{ print $3 }')"
     reload="$(echo ${line} | awk '{ print $4 }')"
     pidfile="${pid_path}/${daemon_name}.pid"
-    if [ "${running}" = "y" -a "${reload}" = "y" ]; then
+    if [ "${reload}" = "y" ]; then
       echo -n "Reloading ${daemon_name}: "
       killproc -p "${pidfile}" "${cbd}" -HUP
       RETVAL=$?
