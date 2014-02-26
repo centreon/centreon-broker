@@ -475,6 +475,14 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
+
+# Storage module.
+option(WITH_MODULE_STORAGE "Build bam module." ON)
+if (WITH_MODULE_STORAGE)
+  add_subdirectory("bam")
+  list(APPEND MODULE_LIST "bam")
+endif()
+
 # TCP module.
 option(WITH_MODULE_TCP "Build TCP module." ON)
 if (WITH_MODULE_TCP)
