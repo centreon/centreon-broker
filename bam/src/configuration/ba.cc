@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,42 +19,44 @@
 
 
 #include "com/centreon/broker/bam/configuration/ba.hh"
+
 using namespace com::centreon::broker::configuration;
 
-  /**
-   *
-   *
-   *
-   */
-  ba::ba( unsigned int id,
-	  const std::string& name,
-	  double level,
-	  double warning_level,
-	  double critical_level):
+/**
+ *  Constructor.
+ *
+ *  @param[in] id   BA ID.
+ *  @param[in] name BA name.
+ *  ...
+ */
+ba::ba(
+      unsigned int id,
+      std::string const& name,
+      double level,
+      double warning_level,
+      double critical_level):
   _id(id),
   _name(name),
   _level(level),
   _warning_level(warning_level),
   _critical_level(critical_level)
-  {
-    
-  }  
+{}  
 
-  /**
-   *
-   *
-   */
-  unsigned int ba::get_id()const{ 
-    return _id; 
-  }
+/**
+ *
+ *
+ */
+unsigned int ba::get_id() const {
+  return (_id);
+}
 
-  /**
-   *
-   *
-   */
-  std::string const& ba::get_name()const{ 
-    return _name;
-  }
+/**
+ *
+ *
+ */
+std::string const& ba::get_name() const {
+  return (_name);
+}
 
   /**
    *

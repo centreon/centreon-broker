@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -16,51 +16,58 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef CCBN_BA_HH
-#  define CCBN_BA_HH
+
+#ifndef CCB_BAM_CONFIGURATION_BA_HH
+#  define CCB_BAM_CONFIGURATION_BA_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace configuration{
-  
-  class ba {
-    
-  public:
-    /**   
-     *  Constructor
+namespace              bam {
+  namespace            configuration {
+    /**
+     *  @class ba ba.hh "com/centreon/broker/bam/configuration/ba.hh"
+     *  @brief BA configuration state.
+     *
+     *  The ba class is used to stored configuration directly read from
+     *  the DB.
      */
-    ba( unsigned int id,
-	const std::string& name,
-	double level,
-	double warning_level,
-	double critical_level);
-    
-    unsigned int get_id() const;
-    std::string const& get_name()const;
-    double get_level()const;
-    double get_warning_level()const;
-    double get_critical_level()const;
-    
-    void set_id( unsigned int id);
-    void set_name ( const std::string& name);
-    void set_level ( double level);
-    void set_warning_level ( double warning_level);  
-    void set_critical_level ( double critical_level);
+    class              ba {
+    public:
+                       ba();
+                       ba(
+                         unsigned int id,
+                         std::string const& name,
+                         double level,
+                         double warning_level,
+                         double critical_level);
+                       ba(ba const& right);
+                       ~ba();
+    ba&                operator=(ba const& right);
+
+    unsigned int       get_id() const;
+    std::string const& get_name() const;
+    double             get_level() const;
+    double             get_warning_level() const;
+    double             get_critical_level() const;
+
+    void               set_id( unsigned int id);
+    void               set_name(std::string const& name);
+    void               set_level(double level);
+    void               set_warning_level(double warning_level);  
+    void               set_critical_level(double critical_level);
     
   private:
-    unsigned int _id;
-    std::string _name;
-    double _level;
-    double _warning_level;
-    double _critical_level;
-    
+    unsigned int       _id;
+    std::string        _name;
+    double             _level;
+    double             _warning_level;
+    double             _critical_level;    
   };
-  
 }
 
 CCB_END()
 
-#endif
+#endif // !CCB_BAM_CONFIGURATION_BA_HH
