@@ -36,37 +36,39 @@ namespace              bam {
      */
     class              ba {
     public:
-                       ba();
-                       ba(
-                         unsigned int id,
-                         std::string const& name,
-                         double level,
-                         double warning_level,
-                         double critical_level);
-                       ba(ba const& right);
-                       ~ba();
-    ba&                operator=(ba const& right);
+      ba();
+      ba(
+	 unsigned int       id = 0,
+	 std::string const& name = "",
+	 double             level = 0.0,
+	 double             warning_level = 0.0,
+	 double             critical_level = 0.0 );
+      ba(ba const& right);
+      ~ba();
+      ba& operator=(ba const& right);
 
-    unsigned int       get_id() const;
-    std::string const& get_name() const;
-    double             get_level() const;
-    double             get_warning_level() const;
-    double             get_critical_level() const;
+      unsigned int       get_id() const;
+      std::string const& get_name() const;
+      double             get_level() const;
+      double             get_warning_level() const;
+      double             get_critical_level() const;
 
-    void               set_id( unsigned int id);
-    void               set_name(std::string const& name);
-    void               set_level(double level);
-    void               set_warning_level(double warning_level);  
-    void               set_critical_level(double critical_level);
+      void               set_id(unsigned int id);
+      void               set_name(std::string const& name);
+      void               set_level(double level);
+      void               set_warning_level(double warning_level);  
+      void               set_critical_level(double critical_level);
     
-  private:
-    unsigned int       _id;
-    std::string        _name;
-    double             _level;
-    double             _warning_level;
-    double             _critical_level;    
-  };
+    private:
+      unsigned int       _id;
+      std::string        _name;
+      double             _level;
+      double             _warning_level;
+      double             _critical_level;    
+    };
+  }
 }
+
 
 CCB_END()
 

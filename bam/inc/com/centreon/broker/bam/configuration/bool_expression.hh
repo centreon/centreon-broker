@@ -21,40 +21,46 @@
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
 
-namespace configuration{
+namespace                 bam{
+  namespace               configuration{
 
-  class  bool_expression {
+  class                   bool_expression {
   public:  
-    bool_expression(     
-		    unsigned int id,
-		    double impact,
-		    std::string const& expression,
-		    bool impact_if,
-		    bool state  );
+                          bool_expression(     
+			    unsigned int       id = 0,
+			    double             impact = 0.0,
+			    std::string const& expression = "",
+			    bool               impact_if = false,
+		            bool               state = false);
+                          bool_expression(bool_expression const&);
+    bool_expression&      operator=(bool_expression const&);
+                          ~bool_expression();
+ 
+    unsigned int          get_id() const;
+    double                get_impact() const;  
+    std::string const&    get_expression() const; 
+    bool                  get_impactIf() const;   
+    bool                  get_state() const;     
     
-    unsigned int get_id() const;
-    double get_impact() const;  
-    std::string const& get_expression() const; 
-    bool get_impactIf() const;   
-    bool get_state() const;     
-    
-    void set_impact( double d);  
-    void set_expression( std::string const & s);
-    void set_impactIf( bool b); 
-    void set_state( bool s); 
+    void                  set_impact(double d);  
+    void                  set_expression(std::string const& s);
+    void                  set_impactIf(bool b); 
+    void                  set_state(bool s); 
     
   private:
-    unsigned int  _id;
-    double        _impact;
-    std::string   _expression;
-    bool          _impact_if;
-    bool          _state; 
+    unsigned int          _id;
+    double                _impact;
+    std::string           _expression;
+    bool                  _impact_if;
+    bool                  _state; 
   };
   
+  }
 }
 
 CCB_END()
 
-#endif
+#endif // !CCB_CONFIGURATION_BOOL_EXPRESSION_HH

@@ -23,7 +23,7 @@
 #include <QtSql>
 
 
-using namespace com::centreon::broker::configuration;
+using namespace com::centreon::broker::bam::configuration;
 
 /**
  *

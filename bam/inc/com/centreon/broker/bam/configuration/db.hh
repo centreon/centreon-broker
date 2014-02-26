@@ -24,44 +24,48 @@
 #  include "com/centreon/broker/namespace.hh"
 CCB_BEGIN()
 
-namespace configuration{
+namespace              bam {
+  namespace            configuration{
 
-  class db{
+    class db{
     
-  public:
-    db( std::string const& type,
-	unsigned short port,
-	std::string const& host,
-	std::string const& user,
-	std::string const& password,
-	std::string const& name
-	);
+    public:
+      db( std::string const& type,
+	  unsigned short port,
+	  std::string const& host,
+	  std::string const& user,
+	  std::string const& password,
+	  std::string const& name
+	  );
 
-    std::string const & get_type();
-    std::string const & get_host();
-    unsigned short get_port();
-    std::string const & get_user();
-    std::string const & get_password();
-    std::string const & get_name();
+      db( db const&);
+      db& operator=( db const&);
 
-    void set_type(std::string const &  );
-    void set_host(std::string const &  );
-    void set_port(unsigned short  );
-    void set_user(std::string const &  );
-    void set_password(std::string const &  );
-    void set_name(std::string const &  );
+      std::string const & get_type();
+      std::string const & get_host();
+      unsigned short get_port();
+      std::string const & get_user();
+      std::string const & get_password();
+      std::string const & get_name();
+
+      void set_type(std::string const &  );
+      void set_host(std::string const &  );
+      void set_port(unsigned short  );
+      void set_user(std::string const &  );
+      void set_password(std::string const &  );
+      void set_name(std::string const &  );
     
-  private:
-    std::string _type;
-    std::string _host;
-    unsigned short _port;
-    std::string _user;
-    std::string _password;
-    std::string _name;
-  };
-  
+    private:
+      std::string _type;
+      std::string _host;
+      unsigned short _port;
+      std::string _user;
+      std::string _password;
+      std::string _name;
+    };
+  }
 }
 
 CCB_END()
 
-#endif
+#endif // !CCB_CONFIGURATION_DB_HH

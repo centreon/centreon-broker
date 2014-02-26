@@ -20,13 +20,18 @@
 # define CCBN_BOOL_EXPRESSION_HH
 
 # include <string>
-
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 
-using namespace com::centreon::broker::configuration;
+using namespace com::centreon::broker::bam::configuration;
 
 /**
- *
+ * Constructor
+ * 
+ *  @param[in] id             BA id.
+ *  @param[in] impact         BA impact.
+ *  @param[in] expression     BA expression.
+ *  @param[in] impact_if      BA impact_if
+ *  @param[in] state          BA state.
  *
  */  
 bool_expression::bool_expression( 
@@ -43,8 +48,33 @@ bool_expression::bool_expression(
   _state(state) 
 {}
 
+
 /**
+ * assignment operator
  *
+ */
+bool_expression& operator=(bool_expression const& _other){
+  if( &_other != this){
+    _id=_other._id;
+    _impact=_other._impact ;
+    _expression=_other._expression;
+    _impact_if=_other._impact_if;
+    _state=_other._state; 
+  }
+  return *this;
+}
+
+
+/*
+ * Destructor
+ */
+bool_expression::~bool_expression(){
+}
+
+
+
+/**
+ * get_id
  *
  */  
 unsigned int bool_expression::get_id()const { 
@@ -52,7 +82,7 @@ unsigned int bool_expression::get_id()const {
 }
 
 /**
- *
+ *get_impact
  *
  */  
 double bool_expression::get_impact()const { 
@@ -60,7 +90,7 @@ double bool_expression::get_impact()const {
 }
 
 /**
- *
+ *get_expression
  *
  */  
 std::string const& bool_expression::get_expression()const { 
@@ -68,7 +98,7 @@ std::string const& bool_expression::get_expression()const {
 }
 
 /**
- *
+ *get_impactIf
  *
  */  
 bool bool_expression::get_impactIf() const { 
@@ -77,14 +107,14 @@ bool bool_expression::get_impactIf() const {
 
 /**
  *
- *
+ *get_state
  */  
 bool bool_expression::get_state()const { 
   return _state; 
 }
 
 /**
- *
+ *set_impact
  *
  */  
 void bool_expression::set_impact(double d){  
@@ -92,7 +122,7 @@ void bool_expression::set_impact(double d){
 }
 
 /**
- *
+ *set_expression
  *
  */  
 void bool_expression::set_expression(const std::string& s){  
@@ -100,7 +130,7 @@ void bool_expression::set_expression(const std::string& s){
 }
 
 /**
- *
+ *set_impactIf
  *
  */  
 void bool_expression::set_impactIf( bool b){  
@@ -108,7 +138,7 @@ void bool_expression::set_impactIf( bool b){
 }
 
 /**
- *
+ *set_state
  *
  */  
 void bool_expression::set_state(bool s) {  
@@ -117,7 +147,7 @@ void bool_expression::set_state(bool s) {
 
 
 
-#endif
+#endif //! CCBN_BOOL_EXPRESSION_HH
 
 
 

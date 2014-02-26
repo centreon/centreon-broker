@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/bam/configuration/kpi.hh"
 
-using namespace com::centreon::broker::configuration;
+using namespace com::centreon::broker::bam::configuration;
 
     
   /**
@@ -55,208 +55,226 @@ using namespace com::centreon::broker::configuration;
     _impact_unknown(unknown)  
   {}
 
-  /**
-   *
-   */  
-  unsigned kpi::get_id()const{  
-    return _id;
-  }
+/**
+ * constructor 
+ *
+ */
+kpi::kpi(kpi const&){
 
-  /**
-   *
-   */  
-  short kpi::get_state_type()const{
-    return  _state_type ;
-  }
+}
 
-  /**
-   *
-   */  
-  unsigned int kpi::get_host_id()const{
-    return   _host_id;
-  }
+/**
+ * assignment operator
+ *
+ */
+kpi& kpi::operator=(kpi const&){
 
-  /**
-   *
-   */  
-  unsigned int kpi::get_service_id()const{ 
-    return _service_id;
-  }
+}
 
-  /**
-   *
-   */  
-  bool kpi::is_service() const { 
-    return (_service_id != 0 ) ; 
-  }  
 
-  /**
-   *
-   */  
-  bool kpi::is_ba() const { 
-    return (_ba_id != 0); 
-  }
 
-  /**
-   *
-   */  
-  unsigned int kpi::get_ba_id()const{
-    return  _ba_id ;
-  }
+/**
+ * get_id
+ */  
+unsigned kpi::get_id()const{  
+  return _id;
+}
 
-  /**
-   *
-   */  
-  short kpi::get_status()const{
-    return  _status ;
-  }
+/**
+ * get_state_type
+ */  
+short kpi::get_state_type()const{
+  return  _state_type ;
+}
 
-  /**
-   *
-   */  
-  short kpi::get_last_hard_state()const{
-    return  _last_hard_state;
-  }
+/**
+ * get_host_id
+ */  
+unsigned int kpi::get_host_id()const{
+  return   _host_id;
+}
 
-  /**
-   *
-   */  
-  bool kpi::is_downtimed() const{  
-    return _downtimed;
-  }
+/**
+ * get_service_id
+ */  
+unsigned int kpi::get_service_id()const{ 
+  return _service_id;
+}
 
-  /**
-   *
-   */  
-  bool kpi::is_acknowledged() const{  
-    return _acknowledged;
-  }
+/**
+ * is_service
+ */  
+bool kpi::is_service() const { 
+  return (_service_id != 0 ) ; 
+}  
 
-  /**
-   *
-   */  
-  bool kpi::ignore_downtime() const{  
-    return _ignore_downtime;
-  }
+/**
+ * is_ba
+ */  
+bool kpi::is_ba() const { 
+  return (_ba_id != 0); 
+}
 
-  /**
-   *
-   */  
-  bool kpi::ignore_acknowledgement() const{  
-    return _ignore_acknowledgement;
-  }
+/**
+ * get_bad_id
+ */  
+unsigned int kpi::get_ba_id()const{
+  return  _ba_id ;
+}
+
+/**
+ * get_status
+ */  
+short kpi::get_status()const{
+  return  _status ;
+}
+
+/**
+ * get_last_hard_state
+ */  
+short kpi::get_last_hard_state()const{
+  return  _last_hard_state;
+}
+
+/**
+ * is_downtimed
+ */  
+bool kpi::is_downtimed() const{  
+  return _downtimed;
+}
+
+/**
+ * is_acknowledged
+ */  
+bool kpi::is_acknowledged() const{  
+  return _acknowledged;
+}
+
+/**
+ * ignore_downtime
+ */  
+bool kpi::ignore_downtime() const{  
+  return _ignore_downtime;
+}
+
+/**
+ * ignore_acknowledgement
+ */  
+bool kpi::ignore_acknowledgement() const{  
+  return _ignore_acknowledgement;
+}
   
-  /**
-   *
-   */  
-  double kpi::get_impact_warning() const{  
-    return _impact_warning;
-  }
+/**
+ * get_impact_warning
+ */  
+double kpi::get_impact_warning() const{  
+  return _impact_warning;
+}
 
-  /**
-   *
-   */  
-  double kpi::get_impact_critical() const{  
-    return _impact_critical;
-  }
+/**
+ * get_impact_critical
+ */  
+double kpi::get_impact_critical() const{  
+  return _impact_critical;
+}
 
-  /**
-   *
-   */  
-  double kpi::get_impact_unknown() const{  
-   return _impact_unknown;
-  }
+/**
+ * get_impact_unknown
+ */  
+double kpi::get_impact_unknown() const{  
+  return _impact_unknown;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_state_type( short s){  
-    _state_type = s ;
-  }
+/**
+ * set_state_type
+ */  
+void kpi::set_state_type(short s){  
+  _state_type = s ;
+}
     
-  /**
-   *
-   */  
-  void kpi::set_host_id( unsigned int i){  
-    _host_id = i;
-  }
+/**
+ * set_host_id
+ */  
+void kpi::set_host_id(unsigned int i){  
+  _host_id = i;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_service_id(unsigned int i ){  
-    _service_id = i;
-  }
+/**
+ * set_service_id
+ */  
+void kpi::set_service_id(unsigned int i ){  
+  _service_id = i;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_ba_id(unsigned int i){  
-    _ba_id = i;
-  }
+/**
+ * set_ba_id
+ */  
+void kpi::set_ba_id(unsigned int i){  
+  _ba_id = i;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_status(short s){  
-    _status = s;
-  }
+/**
+ * set_status
+ */  
+void kpi::set_status(short s){  
+  _status = s;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_last_hard_state(short s){  
-    _last_hard_state = s;
-  }
+/**
+ * set_last_hard_state
+ */  
+void kpi::set_last_hard_state(short s){  
+  _last_hard_state = s;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_downtimed(bool b){  
-   _downtimed = b ;
-  }
+/**
+ * set_downtimed
+ */  
+void kpi::set_downtimed(bool b){  
+  _downtimed = b ;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_acknowledged(bool b){  
-    _acknowledged = b;
-  }
+/**
+ * set_acknowledged
+ */  
+void kpi::set_acknowledged(bool b){  
+  _acknowledged = b;
+}
 
-  /**
-   *
-   */  
-  void kpi::ignore_downtime( bool b){  
-   _ignore_downtime = b ;
-  }
+/**
+ * ignore_downtime
+ */  
+void kpi::ignore_downtime(bool b){  
+  _ignore_downtime = b ;
+}
 
-  /**
-   *
-   */  
-  void kpi::ignore_acknowledgement(bool b){  
-   _ignore_acknowledgement = b ;
-  }
+/**
+ * ignore_acknowledgement
+ */  
+void kpi::ignore_acknowledgement(bool b){  
+  _ignore_acknowledgement = b ;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_impact_warning(double d){  
-   _impact_warning = d ;
-  }
+/**
+ * set_impact_warning
+ */  
+void kpi::set_impact_warning(double d){  
+  _impact_warning = d ;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_impact_critical(double d){  
-   _impact_critical = d ;
-  }
+/**
+ * set_impact_critical
+ */  
+void kpi::set_impact_critical(double d){  
+  _impact_critical = d ;
+}
 
-  /**
-   *
-   */  
-  void kpi::set_impact_unknown(double d){  
-    _impact_unknown = d;
-  }
+/**
+ * set_impact_unknown
+ */  
+void kpi::set_impact_unknown(double d){  
+  _impact_unknown = d;
+}
 
   
 

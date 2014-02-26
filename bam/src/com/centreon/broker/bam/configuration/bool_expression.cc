@@ -23,6 +23,8 @@
 
 CCB_BEGIN()
   
+ using namespace 
+
  bool_expression::bool_expression( 
    unsigned int         id,
    double               impact,

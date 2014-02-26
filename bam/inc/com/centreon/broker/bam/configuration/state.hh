@@ -33,33 +33,39 @@ CCB_BEGIN()
  *
  *
  */
-namespace configuration{
+namespace bam{
+  namespace configuration{
 
 
-/**
- * typedefs
- *
- */
-typedef std::vector<ba> bas;
-typedef std::vector<kpi> kpis;
-typedef std::vector<bool_expression> bool_exps;
+    /**
+     * typedefs
+     *
+     */
+    typedef std::vector<ba>              bas;
+    typedef std::vector<kpi>             kpis;
+    typedef std::vector<bool_expression> bool_exps;
 
 
   
-  class state{
-  public:
-    bas const& get_bas();
-    kpis const& get_kpis();
-    bool_exps const& get_boolexps();
-    
-  private:
-    bas _bas;
-    kpis _kpis;
-    bool_exps _bool_expressions;
-  };
+    class state{
+    public:
+      bas const&       get_bas()const;
+      kpis const&      get_kpis()const;
+      bool_exps const& get_boolexps()const;
 
+      bas&             get_bas();
+      kpis&            get_kpis();
+      bool_exps&       get_boolexps();
+
+    
+    private:
+      bas       _bas;
+      kpis      _kpis;
+      bool_exps _bool_expressions;
+    };
+  }
 }
 
 CCB_END()
 
-#endif
+#endif // ! CCB_CONFIGURATION_STATE_HH

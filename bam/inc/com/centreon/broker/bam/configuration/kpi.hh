@@ -24,42 +24,46 @@
 
 CCB_BEGIN()
 
+namespace bam{
 namespace configuration{
   
   class kpi{
   public:
     
-    kpi( unsigned int id,
-	 short state_type,
-	 unsigned int hostid,
-	 unsigned int serviceid,
-	 unsigned int ba,
-	 short status,
-	 short lasthardstate,
-	 bool downtimed,
-	 bool acknowledged,
-	 bool ignoredowntime,
-	 bool ignoreacknowledgement,
-	 double warning,
-	 double critical,
-	 double unknown  );
+    kpi( unsigned int id = 0,
+	 short state_type = 0,
+	 unsigned int hostid = 0,
+	 unsigned int serviceid = 0,
+	 unsigned int ba = 0,
+	 short status = 0,
+	 short lasthardstate = 0,
+	 bool downtimed = false,
+	 bool acknowledged = false,
+	 bool ignoredowntime = false,
+	 bool ignoreacknowledgement = false,
+	 double warning = 0,
+	 double critical = 0,
+	 double unknown = 0  );
 
-    unsigned get_id()const;
-    short get_state_type()const;
-    unsigned int get_host_id()const;
-    unsigned int get_service_id()const;
-    bool is_service()const;
-    bool is_ba()const;
-    unsigned int get_ba_id()const;
-    short get_status()const;
-    short get_last_hard_state()const;
-    bool is_downtimed() const;
-    bool is_acknowledged() const;
-    bool ignore_downtime() const;
-    bool ignore_acknowledgement() const;
-    double get_impact_warning() const;
-    double get_impact_critical() const;
-    double get_impact_unknown() const;
+    kpi ( kpi const&);
+    kpi& operator=( kpi const&);
+
+    unsigned      get_id()const;
+    short         get_state_type()const;
+    unsigned int  get_host_id()const;
+    unsigned int  get_service_id()const;
+    bool          is_service()const;
+    bool          is_ba()const;
+    unsigned int  get_ba_id()const;
+    short         get_status()const;
+    short         get_last_hard_state()const;
+    bool          is_downtimed() const;
+    bool          is_acknowledged() const;
+    bool          ignore_downtime() const;
+    bool          ignore_acknowledgement() const;
+    double        get_impact_warning() const;
+    double        get_impact_critical() const;
+    double        get_impact_unknown() const;
     
     
     //    void set_id( unsigned int);    
@@ -103,7 +107,7 @@ namespace configuration{
 
 }
 
-CCB_END()
+  CCB_END()
 
-#endif
+#endif  //CCB_CONFIGURATION_KPI_HH
 
