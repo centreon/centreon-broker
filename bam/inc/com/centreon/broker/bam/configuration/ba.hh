@@ -16,41 +16,47 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef CCB_CONFIGURATION_BOOL_EXPRESSION_HH
-#  define CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#ifndef CCBN_BA_HH
+#  define CCBN_BA_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
 
 namespace configuration{
-
-  class  bool_expression {
-  public:  
-    bool_expression(     
-		    unsigned int id,
-		    double impact,
-		    std::string const& expression,
-		    bool impact_if,
-		    bool state  );
+  
+  class ba {
+    
+  public:
+    /**   
+     *  Constructor
+     */
+    ba( unsigned int id,
+	const std::string& name,
+	double level,
+	double warning_level,
+	double critical_level);
     
     unsigned int get_id() const;
-    double get_impact() const;  
-    std::string const& get_expression() const; 
-    bool get_impactIf() const;   
-    bool get_state() const;     
+    std::string const& get_name()const;
+    double get_level()const;
+    double get_warning_level()const;
+    double get_critical_level()const;
     
-    void set_impact( double d);  
-    void set_expression( std::string const & s);
-    void set_impactIf( bool b); 
-    void set_state( bool s); 
+    void set_id( unsigned int id);
+    void set_name ( const std::string& name);
+    void set_level ( double level);
+    void set_warning_level ( double warning_level);  
+    void set_critical_level ( double critical_level);
     
   private:
-    unsigned int  _id;
-    double        _impact;
-    std::string   _expression;
-    bool          _impact_if;
-    bool          _state; 
+    unsigned int _id;
+    std::string _name;
+    double _level;
+    double _warning_level;
+    double _critical_level;
+    
   };
   
 }

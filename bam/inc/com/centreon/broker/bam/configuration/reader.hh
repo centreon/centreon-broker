@@ -16,43 +16,32 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef CCB_CONFIGURATION_BOOL_EXPRESSION_HH
-#  define CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 
+#ifndef CCB_CONFIGURATION_READER_HH
+#  define CCB_CONFIGURATION_READER_HH
 #  include <string>
+
 #  include "com/centreon/broker/namespace.hh"
 CCB_BEGIN()
 
 namespace configuration{
-
-  class  bool_expression {
-  public:  
-    bool_expression(     
-		    unsigned int id,
-		    double impact,
-		    std::string const& expression,
-		    bool impact_if,
-		    bool state  );
-    
-    unsigned int get_id() const;
-    double get_impact() const;  
-    std::string const& get_expression() const; 
-    bool get_impactIf() const;   
-    bool get_state() const;     
-    
-    void set_impact( double d);  
-    void set_expression( std::string const & s);
-    void set_impactIf( bool b); 
-    void set_state( bool s); 
-    
-  private:
-    unsigned int  _id;
-    double        _impact;
-    std::string   _expression;
-    bool          _impact_if;
-    bool          _state; 
-  };
+  /**
+   * class declarations
+   *
+   */
+  class db;
+  class state;
   
+  /**
+   *@class reader
+   *
+   */
+  class reader{
+
+  public:  
+    void read(db const&  , state& );
+  };
+
 }
 
 CCB_END()
