@@ -40,6 +40,7 @@ namespace              bam {
 
       db( db const&);
       db& operator=( db const&);
+      ~db();
 
       std::string const & get_type();
       std::string const & get_host();

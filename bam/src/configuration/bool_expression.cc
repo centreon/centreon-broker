@@ -53,13 +53,13 @@ bool_expression::bool_expression(
  * assignment operator
  *
  */
-bool_expression& operator=(bool_expression const& _other){
-  if( &_other != this){
-    _id=_other._id;
-    _impact=_other._impact ;
-    _expression=_other._expression;
-    _impact_if=_other._impact_if;
-    _state=_other._state; 
+bool_expression& bool_expression::operator=(bool_expression const& other){
+  if( &other != this){
+    _id=other._id;
+    _impact=other._impact ;
+    _expression=other._expression;
+    _impact_if=other._impact_if;
+    _state=other._state; 
   }
   return *this;
 }

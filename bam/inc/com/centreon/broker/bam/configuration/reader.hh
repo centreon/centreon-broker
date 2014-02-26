@@ -20,28 +20,28 @@
 #ifndef CCB_CONFIGURATION_READER_HH
 #  define CCB_CONFIGURATION_READER_HH
 #  include <string>
-
 #  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
-
-namespace configuration{
-  /**
-   * class declarations
-   *
-   */
-  class db;
-  class state;
+namespace bam{
+  namespace configuration{
+    /**
+     * class declarations
+     *
+     */
+    class db;
+    class state;
   
-  /**
-   *@class reader
-   *
-   */
-  class reader{
+    /**
+     *@class reader
+     *
+     */
+    class reader{
 
-  public:  
-    void read(db const&  , state& );
-  };
-
+    public:  
+      void read(db const&  , state& );
+    };
+  }
 }
 
 CCB_END()

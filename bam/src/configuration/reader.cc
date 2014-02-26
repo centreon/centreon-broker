@@ -22,11 +22,14 @@
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include <QtSql>
 
+#include "com/centreon/broker/bam/configuration/reader.hh"
 
 using namespace com::centreon::broker::bam::configuration;
 
+
+
 /**
- *
+ * Constructor
  *
  */
 void reader::read(db const& mydb, state& out ){

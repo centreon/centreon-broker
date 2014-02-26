@@ -54,118 +54,118 @@ db::~db(){
  *  assignment operator
  *
  */
-db& db::operator( db const& other(){
-    if( &other != this){
-      _type = other._type;
-      _host = other._host;
-      _port = other._port;
-      _user = other._user;
-      _password = other._password;
-      _name = other._name;
-    }
-    return *this;
+db& db::operator=(db const& other){
+  if(&other != this){
+    _type = other._type;
+    _host = other._host;
+    _port = other._port;
+    _user = other._user;
+    _password = other._password;
+    _name = other._name;
+  }
+  return *this;
 }
 
 
-  /**
-   * Copy constructor
-   *
-   */
-  void db::db( db const& other())
+/**
+ * Copy constructor
+ *
+ */
+db::db( db const& other):
   _type (other._type),
-  _host (ther._host),
+  _host (other._host),
   _port (other._port),
   _user (other._user),
   _password (other._password),
   _name ( other._name)
-  {
-  }
+{
+}
 
-  /**
-   *  get_type
-   */  
-  std::string const & db::get_type(){ 
-    return _type; 
-  }
+/**
+ *  get_type
+ */  
+std::string const & db::get_type(){ 
+  return _type; 
+}
 
-  /**
-   * get_host
-   */  
-  std::string const & db::get_host(){ 
-    return _host; 
-  }
+/**
+ * get_host
+ */  
+std::string const & db::get_host(){ 
+  return _host; 
+}
 
-  /**
-   * get_port
-   */  
-  unsigned short db::get_port(){ 
-    return _port; 
-  }
+/**
+ * get_port
+ */  
+unsigned short db::get_port(){ 
+  return _port; 
+}
 
-  /**
-   * get_user
-   */  
-  std::string const& db::get_user(){ 
-    return _user; 
-  }
+/**
+ * get_user
+ */  
+std::string const& db::get_user(){ 
+  return _user; 
+}
 
-  /**
-   * get_password
-   */  
-  std::string const& db::get_password(){ 
-    return _password; 
-  }
+/**
+ * get_password
+ */  
+std::string const& db::get_password(){ 
+  return _password; 
+}
 
-  /**
-   * get_name
-   */  
-  std::string const& db::get_name(){ 
-    return _name; 
-  }
+/**
+ * get_name
+ */  
+std::string const& db::get_name(){ 
+  return _name; 
+}
   
-  /**
-   * set_type
-   *
-   * @param db type
-   */  
-  void db::set_type(std::string const& t){ 
-    _type = t; 
-  }
+/**
+ * set_type
+ *
+ * @param db type
+ */  
+void db::set_type(std::string const& t){ 
+  _type = t; 
+}
 
-  /**
-   * set_host
-   */  
-  void db::set_host(std::string const& h){ 
-    _host = h; 
-  }
+/**
+ * set_host
+ */  
+void db::set_host(std::string const& h){ 
+  _host = h; 
+}
 
-  /**
-   * set_port
-   */  
-  void db::set_port(unsigned short  p){ 
-    _port = p; 
-  }
+/**
+ * set_port
+ */  
+void db::set_port(unsigned short  p){ 
+  _port = p; 
+}
 
-  /**
-   * set_user
-   */  
-  void db::set_user(std::string const&  u){ 
-    _user = u; 
-  }
+/**
+ * set_user
+ */  
+void db::set_user(std::string const&  u){ 
+  _user = u; 
+}
 
-  /**
-   * set_password
-   */  
-  void db::set_password(std::string const& p ){ 
-    _password = p; 
-  }
+/**
+ * set_password
+ */  
+void db::set_password(std::string const& p ){ 
+  _password = p; 
+}
 
-  /**
-   * set_name
-   */  
-  void db::set_name(std::string const&  n){ 
-    _name = n; 
-  }
+/**
+ * set_name
+ */  
+void db::set_name(std::string const&  n){ 
+  _name = n; 
+}
 
 
 

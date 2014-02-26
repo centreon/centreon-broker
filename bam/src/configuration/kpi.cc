@@ -56,11 +56,26 @@ using namespace com::centreon::broker::bam::configuration;
   {}
 
 /**
- * constructor 
+ * Copy constructor 
  *
  */
-kpi::kpi(kpi const&){
-
+kpi::kpi(kpi const& other)
+ :
+  _id( other._id),
+  _state_type( other._state_type),
+  _host_id( other._host_id),
+  _service_id( other._service_id),
+  _ba_id( other._ba_id),
+  _status( other._status),
+  _last_hard_state( other._last_hard_state),
+  _downtimed( other._downtimed),
+  _acknowledged( other._acknowledged),
+  _ignore_downtime( other._ignore_downtime),
+  _ignore_acknowledgement( other._ignore_acknowledgement),
+  _impact_warning( other._impact_warning),
+  _impact_critical( other._impact_critical),
+  _impact_unknown( other._impact_unknown)
+{
 }
 
 /**

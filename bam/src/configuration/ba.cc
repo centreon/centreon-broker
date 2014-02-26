@@ -79,7 +79,7 @@ ba& ba::operator=(ba const& other){
  *  destructor.
  *  
  */
-void bool_expression::~bool_expression(){
+ba::~ba(){
 }
 
 
