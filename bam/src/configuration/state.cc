@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,11 +22,12 @@
 using namespace com::centreon::broker::bam::configuration;
  
 /**
- * get_bas
- *@return  a const list of bas
+ *  Get the list of BAs.
+ *
+ *  @return  A const list of bas.
  */
-bas const& state::get_bas()const{ 
-  return _bas; 
+state::bas const& state::get_bas() const {
+  return (_bas);
 }
 
 /**

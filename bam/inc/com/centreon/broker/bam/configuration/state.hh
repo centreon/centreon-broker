@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -16,42 +16,41 @@
 ** along with Centreon Broker. If not, see
 ** <http:/www.gnu.org/licenses/>.
 */
-#ifndef CCB_CONFIGURATION_STATE_HH
-#  define CCB_CONFIGURATION_STATE_HH
 
-#  include <vector>
+#ifndef CCB_BAM_CONFIGURATION_STATE_HH
+#  define CCB_BAM_CONFIGURATION_STATE_HH
+
+#  include <deque>
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
-
 #  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
 
-/**
- *
- *@class state
- *
- *
- */
 namespace bam{
   namespace configuration{
-
-
     /**
-     * typedefs
+     *  @class state state.hh "com/centreon/broker/bam/configuration/state.hh"
+     *  @brief Configuration state.
      *
+     *  Holds the entire configuration of the BAM module.
      */
-    typedef std::vector<ba>              bas;
-    typedef std::vector<kpi>             kpis;
-    typedef std::vector<bool_expression> bool_exps;
-
-
-  
     class state{
     public:
-      bas const&       get_bas()const;
-      kpis const&      get_kpis()const;
-      bool_exps const& get_boolexps()const;
+      /* Typedefs */
+      typedef std::deque<ba>              bas;
+      typedef std::deque<kpi>             kpis;
+      typedef std::deque<bool_expression> bool_exps;
+
+                       state();
+                       state(state const& right);
+                       ~state();
+      state&           operator=(state const& right);
+
+      bas const&       get_bas() const;
+      kpis const&      get_kpis() const;
+      bool_exps const& get_boolexps() const;
 
       bas&             get_bas();
       kpis&            get_kpis();
@@ -68,4 +67,4 @@ namespace bam{
 
 CCB_END()
 
-#endif // ! CCB_CONFIGURATION_STATE_HH
+#endif // ! CCB_BAM_CONFIGURATION_STATE_HH
