@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2013 Merethis
+## Copyright 2009-2014 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -475,10 +475,9 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
-
-# Storage module.
-option(WITH_MODULE_STORAGE "Build bam module." ON)
-if (WITH_MODULE_STORAGE)
+# BAM module.
+option(WITH_MODULE_BAM "Build BAM module." ON)
+if (WITH_MODULE_BAM)
   add_subdirectory("bam")
   list(APPEND MODULE_LIST "bam")
 endif()
