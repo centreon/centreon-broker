@@ -36,6 +36,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/configuration/kpi.cc"
   "${SRC_DIR}/configuration/reader.cc"
   "${SRC_DIR}/configuration/state.cc"
+  "${SRC_DIR}/service_listener.cc"
   # Headers.
   "${INC_DIR}/computable.hh"
   "${INC_DIR}/configuration/ba.hh"
@@ -44,6 +45,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/configuration/kpi.hh"
   "${INC_DIR}/configuration/reader.hh"
   "${INC_DIR}/configuration/state.hh"
+  "${INC_DIR}/service_listener.hh"
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")
