@@ -1,0 +1,83 @@
+/*
+** Copyright 2014 Merethis
+**
+** This file is part of Centreon Broker.
+**
+** Centreon Broker is free software: you can redistribute it and/or
+** modify it under the terms of the GNU General Public License version 2
+** as published by the Free Software Foundation.
+**
+** Centreon Broker is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+** General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with Centreon Broker. If not, see
+** <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef CCB_BAM_KPI_SERVICE_HH
+#  define CCB_BAM_KPI_SERVICE_HH
+
+#  include "com/centreon/broker/bam/kpi.hh"
+#  include "com/centreon/broker/bam/namespace.hh"
+#  include "com/centreon/broker/bam/service_listener.hh"
+
+CCB_BEGIN()
+
+namespace        bam {
+  /**
+   *  @class kpi_service kpi_service.hh "com/centreon/broker/bam/kpi_service.hh"
+   *  @brief Service as a KPI.
+   *
+   *  Allows use of a service as a KPI that can impact a BA.
+   */
+  class          kpi_service : public service_listener, public kpi {
+  public:
+                 kpi_service();
+                 kpi_service(kpi_service const& right);
+                 ~kpi_service();
+    kpi_service& operator=(kpi_service const& right);
+    unsigned int get_host_id() const;
+    double       get_impact_critical() const;
+    double       get_impact_unknown() const;
+    double       get_impact_warning() const;
+    unsigned int get_service_id() const;
+    short        get_state_hard() const;
+    short        get_state_soft() const;
+    short        get_state_type() const;
+    double       impact_hard();
+    double       impact_soft();
+    bool         in_downtime() const;
+    bool         is_acknowledged() const;
+    void         service_update(
+                   misc::shared_ptr<neb::service_status> const& status);
+    void         set_acknowledged(bool acknowledged);
+    void         set_downtimed(bool downtimed);
+    void         set_host_id(unsigned int host_id);
+    void         set_impact_critical(double impact);
+    void         set_impact_unknown(double impact);
+    void         set_impact_warning(double impact);
+    void         set_service_id(unsigned int service_id);
+    void         set_state_hard(short state);
+    void         set_state_soft(short state);
+    void         set_state_type(short type);
+
+  private:
+    void         _internal_copy(kpi_service const& right);
+
+    bool         _acknowledged;
+    bool         _downtimed;
+    unsigned int _host_id;
+    double       _impacts[5];
+    unsigned int _service_id;
+    short        _state_hard;
+    short        _state_soft;
+    short        _state_type;
+  };
+}
+
+CCB_END()
+
+#endif // !CCB_BAM_KPI_SERVICE_HH
