@@ -33,3 +33,15 @@ More statistics
 
 When engaged in a retention process, Centreon Broker now provides an
 estimate of arrival time and max size used on disk.
+
+
+***************
+Important notes
+***************
+
+* Centreon Broker 2.6 works with Centreon 2.5.0 and above. Centreon
+  2.5.0 provides a new database schema required by Centreon Broker
+  2.6.0.
+* Make sure to stop or restart Centreon Broker and Centreon Engine
+  before upgrading. No retention file should exist as BBDO protocol
+  versions are not compatible.
