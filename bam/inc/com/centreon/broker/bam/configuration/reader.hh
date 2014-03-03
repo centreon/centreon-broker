@@ -17,41 +17,41 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef  CCB_CONFIGURATION_READER_HH
-#  define CCB_CONFIGURATION_READER_HH
+#ifndef CCB_BAM_CONFIGURATION_READER_HH
+#  define CCB_BAM_CONFIGURATION_READER_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace bam{
-  namespace configuration{
-    /**
-     * class declarations
-     *
-     */
+namespace       bam{
+  namespace     configuration{
+    // Class declarations.
     class db;
     class state;
-  
-    /**
-     *@class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
-     *
-     *@brief using the dbinfo to access the database, load state_obj with configuration
-     */
-    class reader{
-     
-    public:
-      reader();
-      reader(const reader&);
-      reader& operator=(const reader&);
-      ~reader();
 
-      void read(db const& dbinfo , state& state_obj);
+    /**
+     *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
+     *
+     *  @brief Using the dbinfo to access the database, load state_obj
+     *         with configuration.
+     *
+     *  Extract the database content to a configuration state usable by
+     *  the BAM engine.
+     */
+    class     reader{
+    public:
+              reader();
+              reader(reader const& right);
+              ~reader();
+      reader& operator=(const reader&);
+
+      void read(db const& dbinfo, state& state_obj);
     };
   }
 }
 
 CCB_END()
 
-#endif //!CCB_CONFIGURATION_READER_HH
+#endif // !CCB_BAM_CONFIGURATION_READER_HH

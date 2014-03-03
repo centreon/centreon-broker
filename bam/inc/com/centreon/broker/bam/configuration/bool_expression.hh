@@ -16,8 +16,9 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef CCB_CONFIGURATION_BOOL_EXPRESSION_HH
-#  define CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+
+#ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#  define CCB_BAM_CONFIGURATION_BOOL_EXPRESSION_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -31,40 +32,39 @@ namespace                 bam{
      *@ brief  a pseudo-kpi triggered by a the value of a boolean expression
      *
      */
-  class                   bool_expression {
-  public:  
-                          bool_expression(     
-			    unsigned int       id = 0,
-			    double             impact = 0.0,
-			    std::string const& expression = "",
-			    bool               impact_if = false,
-		            bool               state = false);
-                          bool_expression(bool_expression const&);
-    bool_expression&      operator=(bool_expression const&);
-                          ~bool_expression();
- 
-    unsigned int          get_id() const;
-    double                get_impact() const;  
-    std::string const&    get_expression() const; 
-    bool                  get_impactIf() const;   
-    bool                  get_state() const;     
-    
-    void                  set_impact(double d);  
-    void                  set_expression(std::string const& s);
-    void                  set_impactIf(bool b); 
-    void                  set_state(bool s); 
-    
-  private:
-    unsigned int          _id;
-    double                _impact;
-    std::string           _expression;
-    bool                  _impact_if;
-    bool                  _state; 
-  };
-  
+    class                   bool_expression {
+    public:
+                            bool_expression(
+                              unsigned int id = 0,
+                              double impact = 0.0,
+                              std::string const& expression = "",
+                              bool impact_if = false,
+                              bool state = false);
+                            bool_expression(bool_expression const& right);
+                            ~bool_expression();
+      bool_expression&      operator=(bool_expression const& right);
+
+      unsigned int          get_id() const;
+      double                get_impact() const;
+      std::string const&    get_expression() const;
+      bool                  get_impact_if() const;
+      bool                  get_state() const;
+
+      void                  set_impact(double d);
+      void                  set_expression(std::string const& s);
+      void                  set_impact_if(bool b);
+      void                  set_state(bool s);
+
+    private:
+      unsigned int          _id;
+      double                _impact;
+      std::string           _expression;
+      bool                  _impact_if;
+      bool                  _state;
+    };
   }
 }
 
 CCB_END()
 
-#endif // !CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#endif // !CCB_BAM_CONFIGURATION_BOOL_EXPRESSION_HH
