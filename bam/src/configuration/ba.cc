@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-
 #include "com/centreon/broker/bam/configuration/ba.hh"
 
 using namespace com::centreon::broker::bam::configuration;
@@ -33,11 +32,11 @@ using namespace com::centreon::broker::bam::configuration;
  *  
  */
 ba::ba(
-       unsigned int id,
-       std::string const& name,
-       double level,
-       double warning_level,
-       double critical_level):
+      unsigned int id,
+      std::string const& name,
+      double level,
+      double warning_level,
+      double critical_level):
   _id(id),
   _name(name),
   _level(level),
@@ -47,123 +46,121 @@ ba::ba(
 
 
 /**
- *  Copie Constructor.
- *  
+ *  Copy Constructor
+ *
+ *  @param[in] other The original object. 
  */
 ba::ba(ba const& other)
-:
-  _id( other._id ),
-  _name( other._name ),
-  _level( other._level ),
-  _warning_level( other._warning_level ),
-  _critical_level( other._critical_level ) 
+  : _id(other._id),
+    _name(other._name),
+    _level(other._level),
+    _warning_level(other._warning_level),
+    _critical_level(other._critical_level) 
 {
 }
 
 /**
  *  Assignment Operator.
+ *
+ *  @param[in] other The original object. 
  *  
+ *  @return this  
  */
-ba& ba::operator=(ba const& other){
-  if ( this != &other){
+ba& ba::operator=(ba const& other) {
+  if (this != &other) {
     _id = other._id;
     _name =  other._name;
     _level = other._level;
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
   }
-  return *this;
+  return (*this);
 }
 
 /**
- *  destructor.
- *  
+ *  Destructor.
  */
-ba::~ba(){
+ba::~ba() {
 }
 
-
-
 /**
- * get_id
+ *  Get business activity id.
+ *
+ *  @return An integer representing the value of a business activity
  * 
  */
- unsigned int ba::get_id() const {
+unsigned int ba::get_id() const {
   return (_id);
 }
 
 /**
- * get_name
- * 
+ *  Get name of the business activity
+ *
+ *  @return The name
  */
 std::string const& ba::get_name() const {
   return (_name);
 }
 
-/**
- * get_level
- *
- */
-double ba::get_level()const{ 
-  return _level;
-}
 
 /**
- * get_warning_level
- *
+ *  Get warning level
+ * 
+ *  @return The percentage for the warning level
  */
 double ba::get_warning_level()const{ 
   return _warning_level;
 }
 
 /**
- * get_critical_level
+ *  Get critical level
  *
+ *  @return The percentage for the critical level
  */
 double ba::get_critical_level()const{ 
   return _critical_level;
 }
 
 /**
- * set_id
+ *  Set id
  *
- * @param id
+ *  @param[in] Set business activity id key
  */
 void ba::set_id(unsigned int id){ 
   _id=id;
 }
 
 /**
- * set_name
+ *  Set name
  *
- * @param name
+ *  @param[in] name
  */
 void ba::set_name (const std::string& name){ 
   _name=name;
 }
 
 /**
- * set_level
+ *  Set level
  *
- * @param level
+ *  @param[in] level
  */
 void ba::set_level (double level){ 
   _level=level; 
 }
 
 /**
- * set_warning_level
+ *  Set the percentage for warning level
  *
- * @param warning_level
+ *  @param[in] warning level
  */
 void ba::set_warning_level(double warning_level){ 
   _warning_level=warning_level; 
 }  
 
 /**
- * set_criticial_level
+ *  Set the percentage for criticial level 
  *
- * @param critical_level
+ *  @param[in] critical level
  */
 void ba::set_critical_level(double critical_level){ 
   _critical_level=critical_level; 

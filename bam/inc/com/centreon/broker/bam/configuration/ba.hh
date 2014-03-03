@@ -36,7 +36,7 @@ namespace              bam {
      */
     class              ba {
     public:
-      ba();
+      
       ba(
 	 unsigned int       id = 0,
 	 std::string const& name = "",
@@ -49,7 +49,6 @@ namespace              bam {
 
       unsigned int       get_id() const;
       std::string const& get_name() const;
-      double             get_level() const;
       double             get_warning_level() const;
       double             get_critical_level() const;
 

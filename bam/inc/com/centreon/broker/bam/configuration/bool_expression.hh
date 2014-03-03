@@ -26,7 +26,11 @@ CCB_BEGIN()
 
 namespace                 bam{
   namespace               configuration{
-
+    /**
+     *@class bool_expression bool_expression.hh  "com/centreon/broker/bam/configuration/bool_expression.h"
+     *@ brief  a pseudo-kpi triggered by a the value of a boolean expression
+     *
+     */
   class                   bool_expression {
   public:  
                           bool_expression(     

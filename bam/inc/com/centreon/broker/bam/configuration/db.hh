@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,11 +22,17 @@
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
 
 namespace              bam {
   namespace            configuration{
-
+    /**
+     *  @class db db.hh "com/centreon/broker/bam/configuration/db.hh"
+     *  @brief 
+     *
+     *  Hold the database information
+     */
     class db{
     
     public:
@@ -38,23 +44,23 @@ namespace              bam {
 	  std::string const& name
 	  );
 
-      db( db const&);
-      db& operator=( db const&);
-      ~db();
+                          db( db const&);
+                          db& operator=( db const&);
+                         ~db();
 
-      std::string const & get_type();
-      std::string const & get_host();
-      unsigned short get_port();
-      std::string const & get_user();
-      std::string const & get_password();
-      std::string const & get_name();
+      std::string const & get_type()const;
+      std::string const & get_host()const;
+      unsigned short      get_port()const;
+      std::string const & get_user()const;
+      std::string const & get_password()const;
+      std::string const & get_name()const;
 
-      void set_type(std::string const &  );
-      void set_host(std::string const &  );
-      void set_port(unsigned short  );
-      void set_user(std::string const &  );
-      void set_password(std::string const &  );
-      void set_name(std::string const &  );
+      void                set_type(std::string const &  );
+      void                set_host(std::string const &  );
+      void                set_port(unsigned short  );
+      void                set_user(std::string const &  );
+      void                set_password(std::string const &  );
+      void                set_name(std::string const &  );
     
     private:
       std::string _type;

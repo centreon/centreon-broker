@@ -21,7 +21,7 @@
 #  define CCB_BAM_KPI_SERVICE_HH
 
 #  include "com/centreon/broker/bam/kpi.hh"
-#  include "com/centreon/broker/bam/namespace.hh"
+#  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
 
 CCB_BEGIN()

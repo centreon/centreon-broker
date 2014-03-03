@@ -21,7 +21,8 @@
 #  define CCB_BAM_KPI_HH
 
 #  include "com/centreon/broker/bam/computable.hh"
-#  include "com/centreon/broker/bam/kpi.hh"
+//#  include "com/centreon/broker/bam/kpi.hh"
+CCB_BEGIN()
 
 namespace          bam {
   /**
@@ -43,5 +44,7 @@ namespace          bam {
     virtual bool   is_acknowledged() = 0;
   };
 }
+
+CCB_END()
 
 #endif // !CCB_BAM_KPI_HH

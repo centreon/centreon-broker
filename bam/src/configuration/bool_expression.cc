@@ -50,8 +50,10 @@ bool_expression::bool_expression(
 
 
 /**
- * assignment operator
+ *  assignment operator
  *
+ *  @param[in] other
+ *  @return    this
  */
 bool_expression& bool_expression::operator=(bool_expression const& other){
   if( &other != this){
@@ -66,7 +68,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other){
 
 
 /*
- * Destructor
+ *  Destructor
  */
 bool_expression::~bool_expression(){
 }
@@ -74,7 +76,9 @@ bool_expression::~bool_expression(){
 
 
 /**
- * get_id
+ *  get id
+ *
+ *  @return The id
  *
  */  
 unsigned int bool_expression::get_id()const { 
@@ -82,64 +86,72 @@ unsigned int bool_expression::get_id()const {
 }
 
 /**
- *get_impact
- *
+ *  Get the impact 
+ *  @return The impact
+ * 
  */  
 double bool_expression::get_impact()const { 
   return _impact;
 }
 
 /**
- *get_expression
+ *  get boolean expression
  *
+ *  @return The textual representation of the expression
  */  
 std::string const& bool_expression::get_expression()const { 
   return _expression;
 }
 
 /**
- *get_impactIf
+ *  get impactIf
  *
+ *  @result get whether the the expression impacts
  */  
 bool bool_expression::get_impactIf() const { 
   return _impact_if; 
 }
 
 /**
+ *  get_state
  *
- *get_state
+ *  @result Gets the current state  
  */  
 bool bool_expression::get_state()const { 
   return _state; 
 }
 
 /**
- *set_impact
+ *  set impact
  *
+ *  @param[in] impact value
  */  
 void bool_expression::set_impact(double d){  
   _impact=d;
 }
 
 /**
- *set_expression
+ *  set expression
  *
+ *  @param[in]  set the textual value for the expression
  */  
 void bool_expression::set_expression(const std::string& s){  
   _expression = s;
 }
 
 /**
- *set_impactIf
+ *  set impactIf
  *
+ *  @param[in]  sets whether the resulting value is to be considered
  */  
 void bool_expression::set_impactIf( bool b){  
   _impact_if = b; 
 }
 
 /**
- *set_state
+ *  set state
  *
+ *  @param[in]  Set the current state of the expression
  */  
 void bool_expression::set_state(bool s) {  
   _state = s; 

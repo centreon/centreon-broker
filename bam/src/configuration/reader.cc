@@ -23,6 +23,7 @@
 #include <QtSql>
 
 #include "com/centreon/broker/bam/configuration/reader.hh"
+#include "com/centreon/broker/bam/configuration/reader_exception.hh"
 
 using namespace com::centreon::broker::bam::configuration;
 
@@ -31,38 +32,73 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  * Constructor
  *
+ *@param[in] mydb       Information for accessing database
+ *@param[out] outState  All the configuration state for the BA subsystem
  */
 void reader::read(db const& mydb, state& out ){
  
-  /*    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("192.168.11.3");
-    db.setDatabaseName("menudb");
-    db.setUserName("root");
-    db.setPassword("test");
-    if (!db.open()) 
-    {
-      QMessageBox::critical(0, QObject::tr("Database Error"),
-			    db.lastError().text());    
-    }
+  QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+  db.setHostName( mydb.get_host().c_str()  );
+  db.setDatabaseName( mydb.get_name().c_str()  );
+  db.setUserName( mydb.get_user().c_str()  );
+  db.setPassword( mydb.get_password().c_str()  );
+
+  if (!db.open()) {
+    throw reader_exception() << "\nDatabase Error: Access failure" 
+			     << "\nReason:"<<  db.lastError().text()
+			     << "\nHost:"  <<  mydb.get_host() 
+			     << "\nName:"  <<  mydb.get_name() ;
+  }
     
-    QSqlQuery query("SELECT * FROM test");   
+  QSqlQuery query("SELECT *" 
+                  " FROM test");   
     
-    table->setColumnCount(query.record().count());
-    table->setRowCount(query.size());
+  //int QSqlQuery::size () const
+
+  //table->setColumnCount(query.record().count());
+  //table->setRowCount(query.size());
     
-    int index=0;
-    while (query.next()) 
+  int index=0;
+  while (query.next()) 
     {      
-	table->setItem(index,0,new QTableWidgetItem(query.value(0).toString()));
-	table->setItem(index,1,new QTableWidgetItem(query.value(1).toString()));	
-	index++;
+      // table->setItem(index,0,new QTableWidgetItem(query.value(0).toString()));
+      //table->setItem(index,1,new QTableWidgetItem(query.value(1).toString()));	
+      index++;
     }
     
-    table->show();
-    return app.exec();
-  */
+  //table->show();
+  // return app.exec();  
 }
 
 
+/**
+ * constructor
+ *
+ */
+reader::reader(){
+}
 
 
+/**
+ * copy constructor
+ *
+ */
+reader::reader(const reader& other){
+}
+
+
+/**
+ * assignment operator
+ *
+ */
+reader& reader::operator=(const reader& other){
+  return *this;
+}
+
+
+/**
+ * destructor
+ *
+ */
+reader::~reader(){
+}

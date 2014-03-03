@@ -25,14 +25,21 @@ using namespace com::centreon::broker::bam::configuration;
 
 /**
  *  constructor
+ *
+ *  param[in]  type
+ *  param[in]  the port
+ *  param[in]  the host machine
+ *  param[in]  the user login
+ *  param[in]  the password
+ *  param[in]  database name
  */
-db::db( std::string const& type,
-	unsigned short port,
-	std::string const& host,
-	std::string const& user,
-	std::string const& password,
-	std::string const& name
-	):
+db::db(std::string const& type,
+       unsigned short port,
+       std::string const& host,
+       std::string const& user,
+       std::string const& password,
+       std::string const& name
+       ):
   _type(type),
   _host(host),
   _port(port),
@@ -53,6 +60,7 @@ db::~db(){
 /**
  *  assignment operator
  *
+ *  param[in]  other
  */
 db& db::operator=(db const& other){
   if(&other != this){
@@ -70,6 +78,7 @@ db& db::operator=(db const& other){
 /**
  * Copy constructor
  *
+ *  param[in]  other
  */
 db::db( db const& other):
   _type (other._type),
@@ -82,89 +91,111 @@ db::db( db const& other):
 }
 
 /**
- *  get_type
+ *  get type
+ *
+ *  @return The type
  */  
-std::string const & db::get_type(){ 
+std::string const & db::get_type()const{ 
   return _type; 
 }
 
 /**
- * get_host
+ *  get host
+ *
+ *  @return The host
  */  
-std::string const & db::get_host(){ 
+std::string const & db::get_host()const{ 
   return _host; 
 }
 
 /**
- * get_port
+ *  get port
+ *
+ *  @return The port
  */  
-unsigned short db::get_port(){ 
+unsigned short db::get_port()const{ 
   return _port; 
 }
 
 /**
- * get_user
+ *  get user
+ *
+ *  @return The user
  */  
-std::string const& db::get_user(){ 
+std::string const& db::get_user()const{ 
   return _user; 
 }
 
 /**
- * get_password
+ *  get password
+ *
+ *  @return The password
  */  
-std::string const& db::get_password(){ 
+std::string const& db::get_password()const{ 
   return _password; 
 }
 
 /**
- * get_name
+ *  get name
+ *
+ *  @return The database name
  */  
-std::string const& db::get_name(){ 
+std::string const& db::get_name()const{ 
   return _name; 
 }
   
 /**
- * set_type
+ *  set type
  *
- * @param db type
+ * @param The database type
  */  
 void db::set_type(std::string const& t){ 
   _type = t; 
 }
 
 /**
- * set_host
+ *  set host
+ *
+ *  @param The host
  */  
 void db::set_host(std::string const& h){ 
   _host = h; 
 }
 
 /**
- * set_port
+ *  set port
+ *
+ *  @param Set the port number of the database
  */  
 void db::set_port(unsigned short  p){ 
   _port = p; 
 }
 
 /**
- * set_user
+ *  set user
+ *
+ *  @param The user name
  */  
 void db::set_user(std::string const&  u){ 
   _user = u; 
 }
 
 /**
- * set_password
+ *  set password
+ *
+ *  @param password The password
  */  
-void db::set_password(std::string const& p ){ 
-  _password = p; 
+void db::set_password(std::string const& password ){ 
+  _password = password; 
 }
 
 /**
- * set_name
+ *  set name
+ *
+ *  @param[in] name The database name
  */  
-void db::set_name(std::string const&  n){ 
-  _name = n; 
+void db::set_name(std::string const&  name){ 
+  _name = name; 
 }
 
 
