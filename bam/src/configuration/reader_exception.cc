@@ -17,41 +17,38 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include  "com/centreon/broker/bam/configuration/reader_exception.hh" 
+#include  "com/centreon/broker/bam/configuration/reader_exception.hh"
 
-using namespace com::centreon::broker::bam::configuration; 
+using namespace com::centreon::broker::bam::configuration;
 
 /**
  *  Constructor
- *
  */
-reader_exception::reader_exception():msg() {
-}
-
-/**
- *  Destructor
- *
- */
-reader_exception::~reader_exception(){
-}
-
-/**
- *  Assignment operator
- *
- *  @param[in] Other object
- */
-reader_exception& reader_exception::operator=(const reader_exception& other){  
-  if ( this != &other){
-    msg=other;
-  }
-  return *this;
-}
+reader_exception::reader_exception() : msg() {}
 
 /**
  *  Copy constructor
  *
  *  @param[in] Other object
  */
-reader_exception(const reader_exception& other): msg(other){
+reader_exception(reader_exception const& other) : msg(other) {}
 
+/**
+ *  Destructor
+ */
+reader_exception::~reader_exception() {}
+
+/**
+ *  Assignment operator
+ *
+ *  @param[in] other Object to copy.
+ *
+ *  @return This object.
+ */
+reader_exception& reader_exception::operator=(
+                                      reader_exception const& other) {
+  if (this != &other) {
+    msg = other;
+  }
+  return (*this);
 }

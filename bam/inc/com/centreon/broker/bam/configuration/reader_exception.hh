@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -16,44 +16,31 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef    CCB_CONFIGURATION_READER_EXCEPTION_HH
-#define  CCB_CONFIGURATION_READER_EXCEPTION_HH
+
+#ifndef CCB_CONFIGURATION_READER_EXCEPTION_HH
+#  define CCB_CONFIGURATION_READER_EXCEPTION_HH
 
 #  include "com/centreon/broker/exceptions/msg.hh"
 
-
-
 CCB_BEGIN()
-namespace bam{
-  namespace configuration{
 
-
-  /**
-   *  @class reader_exception reader_exception.hh "com/centreon/broker/bam/configuration/reader_exception.hh"
-   *  @brief Exception thrown when the reader fails to read from a database
-   *
-   *  Reader_exception..
-   */
-    class         reader_exception : public   exceptions::msg{
-    public:
-      reader_exception();
-      ~reader_exception() throw();
-      reader_exception(const reader_exception& other);
-      reader_exception& operator=(const reader_exception& other);
-
-    private:
-
-    } ;
-
-
+namespace               bam {
+  namespace             configuration {
     /**
-     *@class reader_exception reader_exception.hh "com/centreon/broker/bam/configuration/reader_exception.hh"
+     *  @class reader_exception reader_exception.hh "com/centreon/broker/bam/configuration/reader_exception.hh"
+     *  @brief Exception thrown when the reader fails to read from a database
      *
-     *@brief using the dbinfo to access the database, load sta te_obj with configuration
+     *  Reader_exception.
      */
+    class               reader_exception : public exceptions::msg {
+    public:
+                        reader_exception();
+                        ~reader_exception() throw ();
+      reader_exception& operator=(reader_exception const& other);
+    };
   }
 }
 
 CCB_END()
 
-#endif
+#endif // !CCB_CONFIGURATION_READER_EXCEPTION_HH
