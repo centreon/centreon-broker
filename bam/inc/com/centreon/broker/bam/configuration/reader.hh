@@ -48,6 +48,12 @@ namespace       bam{
       reader& operator=(const reader&);
 
       void read(db const& dbinfo, state& state_obj);
+
+    private:
+      void load(QSqlDatabase& db, state::kpis& kpis);
+      void load(QSqlDatabase& db, state::bas& bas);
+      void load(QSqlDatabase& db, state::bool_exps& bool_exps);
+      static void assert_query(QSqlDatabase& db, QSqlQuery& queryToCheck);
     };
   }
 }

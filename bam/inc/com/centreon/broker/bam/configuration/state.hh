@@ -47,6 +47,7 @@ namespace              bam{
                        state(state const& right);
                        ~state();
       state&           operator=(state const& right);
+      void             clear();
 
       bas const&       get_bas() const;
       kpis const&      get_kpis() const;
