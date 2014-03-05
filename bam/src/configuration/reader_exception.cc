@@ -41,6 +41,10 @@ reader_exception::~reader_exception(){
  *  @param[in] Other object
  */
 reader_exception& reader_exception::operator=(const reader_exception& other){  
+  if ( this != &other){
+    msg=other;
+  }
+  return *this;
 }
 
 /**
