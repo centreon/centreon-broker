@@ -20,9 +20,9 @@
 #ifndef CCB_BAM_BA_HH
 #  define CCB_BAM_BA_HH
 
-#  include <map>
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -46,23 +46,41 @@ namespace  bam {
     ba&    operator=(ba const& right);
     void   add_impact(misc::shared_ptr<kpi>& impact);
     void   child_has_update(misc::shared_ptr<computable>& child);
+    double get_ack_impact_hard();
+    double get_ack_impact_soft();
+    double get_downtime_impact_hard();
+    double get_downtime_impact_soft();
     short  get_state_hard();
     short  get_state_soft();
-    bool   in_downtime();
-    bool   is_acknowledged();
     void   remove_impact(misc::shared_ptr<kpi>& impact);
 
   private:
-    void   _internal_copy(ba const& right);
+    static int const        _recompute_limit = 100;
 
-    bool   _acknowledged;
-    bool   _downtimed;
-    std::map<misc::shared_ptr<kpi>, std::pair<double, double> >
+    struct impact_info {
+      misc::shared_ptr<kpi> kpi_ptr;
+      bool                  acknowledged;
+      bool                  downtimed;
+      double                hard_impact;
+      double                soft_impact;
+    };
+
+    void   _apply_impact(impact_info& impact);
+    void   _internal_copy(ba const& right);
+    void   _recompute();
+    void   _unapply_impact(impact_info& impact);
+
+    double _acknowledgement_hard;
+    double _acknowledgement_soft;
+    double _downtime_hard;
+    double _downtime_soft;
+    umap<kpi*, impact_info>
            _impacts;
     double _level_critical;
     double _level_hard;
     double _level_soft;
     double _level_warning;
+    int    _recompute_count;
   };
 }
 
