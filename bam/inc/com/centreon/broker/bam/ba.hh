@@ -21,6 +21,7 @@
 #  define CCB_BAM_BA_HH
 
 #  include "com/centreon/broker/bam/computable.hh"
+#  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -59,10 +60,8 @@ namespace  bam {
 
     struct impact_info {
       misc::shared_ptr<kpi> kpi_ptr;
-      bool                  acknowledged;
-      bool                  downtimed;
-      double                hard_impact;
-      double                soft_impact;
+      impact_values         hard_impact;
+      impact_values         soft_impact;
     };
 
     void   _apply_impact(impact_info& impact);

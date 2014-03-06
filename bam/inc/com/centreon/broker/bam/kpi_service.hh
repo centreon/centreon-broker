@@ -47,8 +47,8 @@ namespace        bam {
     short        get_state_hard() const;
     short        get_state_soft() const;
     short        get_state_type() const;
-    double       impact_hard();
-    double       impact_soft();
+    void         impact_hard(impact_values& impact);
+    void         impact_soft(impact_values& impact);
     bool         in_downtime() const;
     bool         is_acknowledged() const;
     void         service_update(
@@ -65,7 +65,7 @@ namespace        bam {
     void         set_state_type(short type);
 
   private:
-    double       _impact_of_state(short state);
+    void         _fill_impact(impact_values& impact, short state);
     void         _internal_copy(kpi_service const& right);
 
     bool         _acknowledged;

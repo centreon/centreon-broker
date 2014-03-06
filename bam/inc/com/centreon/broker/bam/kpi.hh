@@ -25,7 +25,10 @@
 
 CCB_BEGIN()
 
-namespace          bam {
+namespace        bam {
+  // Forward declaration.
+  class          impact_values;
+
   /**
    *  @class kpi kpi.hh "com/centreon/broker/bam/kpi.hh"
    *  @brief Impact of a BA.
@@ -33,16 +36,14 @@ namespace          bam {
    *  This is the base class that represents an impact of a BA. This
    *  can either be a boolean rule or a service or a BA itself.
    */
-  class            kpi : public computable {
+  class          kpi : public computable {
   public:
-                   kpi();
-                   kpi(kpi const& right);
-    virtual        ~kpi();
-    kpi&           operator=(kpi const& right);
-    virtual double impact_hard() = 0;
-    virtual double impact_soft() = 0;
-    virtual bool   in_downtime() = 0;
-    virtual bool   is_acknowledged() = 0;
+                 kpi();
+                 kpi(kpi const& right);
+    virtual      ~kpi();
+    kpi&         operator=(kpi const& right);
+    virtual void impact_hard(impact_values& hard_impact) = 0;
+    virtual void impact_soft(impact_values& soft_impact) = 0;
   };
 }
 

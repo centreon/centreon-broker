@@ -45,14 +45,21 @@ namespace   bam {
             ~kpi_ba();
     kpi_ba& operator=(kpi_ba const& right);
     void    child_has_update(misc::shared_ptr<computable>& child);
-    double  impact_hard();
-    double  impact_soft();
-    bool    in_downtime();
-    bool    is_acknowledged();
+    double  get_impact_critical() const;
+    double  get_impact_warning() const;
+    void    impact_hard(impact_values& hard_impact);
+    void    impact_soft(impact_values& soft_impact);
     void    link_ba(misc::shared_ptr<ba>& my_ba);
+    void    set_impact_critical(double impact);
+    void    set_impact_warning(double impact);
     void    unlink_ba();
 
   private:
+    void    _fill_impact(
+              impact_values& impact,
+              short state,
+              double acknowledgement,
+              double downtime);
     void    _internal_copy(kpi_ba const& right);
 
     misc::shared_ptr<ba>
