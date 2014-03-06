@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/bam/ba.hh"
+#include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 
 using namespace com::centreon::broker::bam;
@@ -76,10 +77,8 @@ void ba::add_impact(misc::shared_ptr<kpi>& impact) {
   if (it == _impacts.end()) {
     impact_info& ii(_impacts[impact.data()]);
     ii.kpi_ptr = impact;
-    ii.hard_impact = impact->impact_hard();
-    ii.soft_impact = impact->impact_soft();
-    ii.acknowledged = impact->is_acknowledged();
-    ii.downtimed = impact->in_downtime();
+    impact->impact_hard(ii.hard_impact);
+    impact->impact_soft(ii.soft_impact);
     _apply_impact(ii);
   }
   return ;
@@ -98,10 +97,8 @@ void ba::child_has_update(misc::shared_ptr<computable>& child) {
     _unapply_impact(it->second);
 
     // Apply new data.
-    it->second.acknowledged = it->second.kpi_ptr->is_acknowledged();
-    it->second.downtimed = it->second.kpi_ptr->in_downtime();
-    it->second.hard_impact = it->second.kpi_ptr->impact_hard();
-    it->second.soft_impact = it->second.kpi_ptr->impact_soft();
+    it->second.kpi_ptr->impact_hard(it->second.hard_impact);
+    it->second.kpi_ptr->impact_soft(it->second.soft_impact);
     _apply_impact(it->second);
   }
   return ;
@@ -196,19 +193,19 @@ void ba::remove_impact(misc::shared_ptr<kpi>& impact) {
  *  @param[in] impact Impact information.
  */
 void ba::_apply_impact(ba::impact_info& impact) {
-  _level_hard -= impact.hard_impact;
-  _level_soft -= impact.soft_impact;
-  if (impact.acknowledged) {
-    _acknowledgement_hard += impact.hard_impact;
-    _acknowledgement_soft += impact.soft_impact;
-  }
-  if (impact.downtimed) {
-    _downtime_hard += impact.hard_impact;
-    _downtime_soft += impact.soft_impact;
-  }
+  // Adjust values.
+  _acknowledgement_hard += impact.hard_impact.get_acknowledgement();
+  _acknowledgement_soft += impact.soft_impact.get_acknowledgement();
+  _downtime_hard += impact.hard_impact.get_downtime();
+  _downtime_soft += impact.soft_impact.get_downtime();
+  _level_hard -= impact.hard_impact.get_nominal();
+  _level_soft -= impact.soft_impact.get_nominal();
+
+  // Prevent derive of values.
   ++_recompute_count;
   if (_recompute_count >= _recompute_limit)
     _recompute();
+
   return ;
 }
 
@@ -259,18 +256,18 @@ void ba::_recompute() {
  *  @param[in] impact Impact information.
  */
 void ba::_unapply_impact(ba::impact_info& impact) {
-  if (impact.acknowledged) {
-    _acknowledgement_hard -= impact.hard_impact;
-    _acknowledgement_soft -= impact.soft_impact;
-  }
-  if (impact.downtimed) {
-    _downtime_hard -= impact.hard_impact;
-    _downtime_soft -= impact.soft_impact;
-  }
-  _level_hard += impact.hard_impact;
-  _level_soft += impact.soft_impact;
+  // Adjust values.
+  _acknowledgement_hard -= impact.hard_impact.get_acknowledgement();
+  _acknowledgement_soft -= impact.soft_impact.get_acknowledgement();
+  _downtime_hard -= impact.hard_impact.get_downtime();
+  _downtime_soft -= impact.soft_impact.get_downtime();
+  _level_hard += impact.hard_impact.get_nominal();
+  _level_soft += impact.soft_impact.get_nominal();
+
+  // Prevent derive of values.
   ++_recompute_count;
   if (_recompute_count >= _recompute_limit)
     _recompute();
+
   return ;
 }
