@@ -22,6 +22,7 @@
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/bam/configuration/db.hh"
 
 CCB_BEGIN()
 
@@ -40,20 +41,24 @@ namespace       bam{
      *  Extract the database content to a configuration state usable by
      *  the BAM engine.
      */
-    class     reader{
+    class reader {
     public:
-              reader();
-              reader(reader const& right);
-              ~reader();
-      reader& operator=(const reader&);
-
-      void read(db const& dbinfo, state& state_obj);
+      reader(configuration::db const&);
+      ~reader();
+      void read(state& state_obj);
 
     private:
-      void load(QSqlDatabase& db, state::kpis& kpis);
-      void load(QSqlDatabase& db, state::bas& bas);
-      void load(QSqlDatabase& db, state::bool_exps& bool_exps);
-      static void assert_query(QSqlDatabase& db, QSqlQuery& queryToCheck);
+      // No copies or assignments
+      reader(reader const&);
+      reader& operator=(reader const&);
+      void ensure_open();
+      void load(state::kpis& kpis);
+      void load(state::bas& bas);
+      void load(state::bool_exps& bool_exps);
+      void assert_query(QSqlQuery& queryToCheck);
+
+      QSqlDatabase      _db;
+      configuration::db _dbinfo;
     };
   }
 }

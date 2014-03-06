@@ -622,7 +622,7 @@ bool stream::_prepare_update(
     query.append(" AND ");
   }
   query.resize(query.size() - 5);
-  logging::info(logging::low)
+ add logging::info(logging::low)
     << "SQL: preparing statement: " << query;
 
   // Prepare statement.
