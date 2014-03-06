@@ -65,6 +65,7 @@ namespace        bam {
     void         set_state_type(short type);
 
   private:
+    double       _impact_of_state(short state);
     void         _internal_copy(kpi_service const& right);
 
     bool         _acknowledged;

@@ -19,7 +19,10 @@
 
 #include <cstring>
 #include "com/centreon/broker/bam/kpi_service.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
@@ -146,7 +149,7 @@ short kpi_service::get_state_type() const {
  *  @return Impact implied by the hard service state.
  */
 double kpi_service::impact_hard() {
-  // XXX
+  return (_impact_of_state(_state_hard));
 }
 
 /**
@@ -155,7 +158,7 @@ double kpi_service::impact_hard() {
  *  @return Impact implied by the soft service state.
  */
 double kpi_service::impact_soft() {
-  // XXX
+  return (_impact_of_state(_state_soft));
 }
 
 /**
@@ -183,7 +186,16 @@ bool kpi_service::is_acknowledged() const {
  */
 void kpi_service::service_update(
                     misc::shared_ptr<neb::service_status> const& status) {
-  // XXX
+  if (!status.isNull()
+      && (status->host_id == _host_id)
+      && (status->service_id == _service_id)) {
+    _acknowledged = status->problem_has_been_acknowledged;
+    _downtimed = status->scheduled_downtime_depth;
+    _state_hard = status->last_hard_state;
+    _state_soft = status->current_state;
+    _state_type = status->state_type;
+  }
+  return ;
 }
 
 /**
@@ -284,6 +296,23 @@ void kpi_service::set_state_soft(short state) {
 void kpi_service::set_state_type(short type) {
   _state_type = type;
   return ;
+}
+
+/**
+ *  Get the impact introduced by a particuliar state.
+ *
+ *  @param[in] state State for which we wish to get the impact.
+ *
+ *  @return Impact introduced by state.
+ */
+double kpi_service::_impact_of_state(short state) {
+  if ((state < 0)
+      || (static_cast<size_t>(state)
+          >= (sizeof(_impacts) / sizeof(*_impacts))))
+    throw (exceptions::msg()
+           << "BAM: could not get impact introduced by state "
+           << state);
+  return (_impacts[state]);
 }
 
 /**
