@@ -21,7 +21,8 @@
 #  define CCB_BAM_KPI_HH
 
 #  include "com/centreon/broker/bam/computable.hh"
-//#  include "com/centreon/broker/bam/kpi.hh"
+#  include "com/centreon/broker/namespace.hh"
+
 CCB_BEGIN()
 
 namespace          bam {
