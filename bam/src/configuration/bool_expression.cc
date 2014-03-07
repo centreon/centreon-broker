@@ -48,14 +48,13 @@ bool_expression::bool_expression(
   _state(state)
 {}
 
-
 /**
  *  assignment operator
  *
  *  @param[in] other
  *  @return    this
  */
-bool_expression& bool_expression::operator=(bool_expression const& other){
+bool_expression& bool_expression::operator=(bool_expression const& other) {
   if( &other != this){
     _id=other._id;
     _impact=other._impact ;
@@ -66,14 +65,10 @@ bool_expression& bool_expression::operator=(bool_expression const& other){
   return *this;
 }
 
-
 /*
  *  Destructor
  */
-bool_expression::~bool_expression(){
-}
-
-
+bool_expression::~bool_expression(){}
 
 /**
  *  get id
@@ -81,8 +76,8 @@ bool_expression::~bool_expression(){
  *  @return The id
  *
  */
-unsigned int bool_expression::get_id()const {
-  return _id;
+unsigned int bool_expression::get_id() const {
+  return (_id);
 }
 
 /**
@@ -90,8 +85,8 @@ unsigned int bool_expression::get_id()const {
  *  @return The impact
  *
  */
-double bool_expression::get_impact()const {
-  return _impact;
+double bool_expression::get_impact() const {
+  return (_impact);
 }
 
 /**
@@ -99,8 +94,8 @@ double bool_expression::get_impact()const {
  *
  *  @return The textual representation of the expression
  */
-std::string const& bool_expression::get_expression()const {
-  return _expression;
+std::string const& bool_expression::get_expression() const {
+  return (_expression);
 }
 
 /**
@@ -109,7 +104,7 @@ std::string const& bool_expression::get_expression()const {
  *  @result get whether the the expression impacts
  */
 bool bool_expression::get_impact_if() const {
-  return _impact_if;
+  return (_impact_if);
 }
 
 /**
@@ -117,8 +112,8 @@ bool bool_expression::get_impact_if() const {
  *
  *  @result Gets the current state
  */
-bool bool_expression::get_state()const {
-  return _state;
+bool bool_expression::get_state() const {
+  return (_state);
 }
 
 /**
@@ -126,8 +121,8 @@ bool bool_expression::get_state()const {
  *
  *  @param[in] impact value
  */
-void bool_expression::set_impact(double d){
-  _impact=d;
+void bool_expression::set_impact(double d) {
+  _impact = d;
 }
 
 /**
@@ -135,7 +130,7 @@ void bool_expression::set_impact(double d){
  *
  *  @param[in]  set the textual value for the expression
  */
-void bool_expression::set_expression(const std::string& s){
+void bool_expression::set_expression(const std::string& s) {
   _expression = s;
 }
 
@@ -144,7 +139,7 @@ void bool_expression::set_expression(const std::string& s){
  *
  *  @param[in]  sets whether the resulting value is to be considered
  */
-void bool_expression::set_impact_if( bool b){
+void bool_expression::set_impact_if( bool b) {
   _impact_if = b;
 }
 

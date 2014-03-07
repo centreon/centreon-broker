@@ -45,19 +45,20 @@ public:
     create_map<T, U>& operator()(const T& key, const U& val)
     {
         m_map[key] = val;
-        return *this;
+        return (*this);
     }
 
     operator std::map<T, U>()
     {
-        return m_map;
+      return (m_map);
     }
 private:
-    std::map<T, U> m_map;
+    std::map<T,U> m_map;
 };
 
 /**
  *  @function map_2_QT
+ *
  *  @brief   maps the logical name for a RDBMS to the Qlib name
  *  @param[in]  The logical name for the database
  *  @return     The QT lib name for the database system
@@ -103,11 +104,10 @@ private:
 reader::reader(configuration::db const& mydb)
   : _db(),
     _dbinfo(mydb){
-  QString id;
-  id.setNum((qulonglong)this, 16);
-  _db = QSqlDatabase::addDatabase( map_2_QT(mydb.get_type()),
-                                   id);
-  _ensure_open();
+      QString id;
+      id.setNum((qulonglong)this, 16);
+      _db = QSqlDatabase::addDatabase(map_2_QT(mydb.get_type()), id);
+      _ensure_open();
 }
 
 /**
@@ -173,11 +173,11 @@ void reader::_ensure_open(){
     // we must have a valid database connexion at this point
     if( !_db.open() ){
       throw (reader_exception()
-	     << "BAM: Database access failure"
-	     << ", Reason: "<<  _db.lastError().text()
-             << ", Type: "  <<  _dbinfo.get_type()
-	     << ", Host: "  <<  _dbinfo.get_host()
-	     << ", Name: "  <<  _dbinfo.get_name());
+	<< "BAM: Database access failure"
+	<< ", Reason: "<<  _db.lastError().text()
+        << ", Type: "  <<  _dbinfo.get_type()
+	<< ", Host: "  <<  _dbinfo.get_host()
+	<< ", Name: "  <<  _dbinfo.get_name());
     }
   }
 }
@@ -213,21 +213,21 @@ void reader::_load(state::kpis& kpis){
   while (query.next()) {
     kpis.push_back(
       kpi(
-	  query.value(0).toInt(), //unsigned int id = 0,
-	  query.value(1).toInt(), //short state_type = 0,
-	  query.value(2).toInt(), //unsigned int hostid = 0,
-	  query.value(3).toInt(),//unsigned int serviceid = 0
-	  query.value(4).toInt(),//unsigned int ba = 0,
-	  query.value(5).toInt(),//short status = 0,
-	  query.value(6).toInt(),//short lasthardstate = 0,
-	  query.value(7).toFloat(),//bool downtimed = false,
-	  query.value(8).toFloat(),//bool acknowledged = false,
-	  query.value(9).toBool(),//bool ignoredowntime = false,
-	  query.value(10).toBool(),//bool ignoreacknowledgement = false,
-	  query.value(11).toDouble(),//double warning = 0,
-	  query.value(12).toDouble(),//double critical = 0,
-	  query.value(13).toDouble()//double unknown = 0);
-	  ));
+        query.value(0).toInt(), //unsigned int id = 0,
+        query.value(1).toInt(), //short state_type = 0,
+        query.value(2).toInt(), //unsigned int hostid = 0,
+        query.value(3).toInt(),//unsigned int serviceid = 0
+        query.value(4).toInt(),//unsigned int ba = 0,
+        query.value(5).toInt(),//short status = 0,
+        query.value(6).toInt(),//short lasthardstate = 0,
+        query.value(7).toFloat(),//bool downtimed = false,
+        query.value(8).toFloat(),//bool acknowledged = false,
+        query.value(9).toBool(),//bool ignoredowntime = false,
+        query.value(10).toBool(),//bool ignoreacknowledgement = false,
+        query.value(11).toDouble(),//double warning = 0,
+        query.value(12).toDouble(),//double critical = 0,
+        query.value(13).toDouble()//double unknown = 0);
+          ));
   }
 }
 
@@ -249,11 +249,11 @@ void reader::_load(state::bas& bas){
   while (query.next()) {
     bas.push_back(
       ba(query.value(0).toInt(),                  //unsigned int id = 0,
-	 query.value(1).toString().toStdString() ,//std::string const& name = "",
-	 query.value(2).toFloat(),                //double level = 0.0,
-	 query.value(3).toFloat(),                //double warning_level = 0.0
-	 query.value(4).toFloat()                 //double critical_level = 0.0);
-	 ));
+        query.value(1).toString().toStdString() ,//std::string const& name = "",
+        query.value(2).toFloat(),                //double level = 0.0,
+        query.value(3).toFloat(),                //double warning_level = 0.0
+        query.value(4).toFloat()                 //double critical_level = 0.0);
+        ));
   }
 }
 
@@ -275,13 +275,13 @@ void reader::_load(state::bool_exps& bool_exps){
 
   while (query.next()) {
     bool_exps.push_back(
-			bool_expression(
-					query.value(0).toInt(), //unsigned int id = 0,
-					query.value(1).toFloat(),//double impact = 0.0,
-					query.value(2).toString().toStdString(),//std::string const& expression = "",
-					query.value(3).toBool(),//bool impact_if = false,
-					query.value(4).toBool()//bool state = false
-					));
+      bool_expression(
+        query.value(0).toInt(), //unsigned int id = 0,
+        query.value(1).toFloat(),//double impact = 0.0,
+        query.value(2).toString().toStdString(),//std::string const& expression = "",
+        query.value(3).toBool(),//bool impact_if = false,
+        query.value(4).toBool()//bool state = false
+      ));
   }
 }
 

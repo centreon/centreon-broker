@@ -84,7 +84,7 @@ kpi::kpi(kpi const& other)
  */
 kpi& kpi::operator=(kpi const& other) {
   if(&other != this) {
-    _id=other._id;
+    _id = other._id;
     _state_type = other._state_type;
     _host_id = other._host_id;
     _service_id = other._service_id;
