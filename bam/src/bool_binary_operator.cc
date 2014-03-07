@@ -24,7 +24,11 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-bool_binary_operator::bool_binary_operator() {}
+bool_binary_operator::bool_binary_operator()
+  : _left_hard(false),
+    _left_soft(false),
+    _right_hard(false),
+    _right_soft(false) {}
 
 /**
  *  Copy constructor.
@@ -59,6 +63,26 @@ bool_binary_operator& bool_binary_operator::operator=(
 }
 
 /**
+ *  Notification of child update.
+ *
+ *  @param[in] child Child that got updated.
+ */
+void bool_binary_operator::child_has_update(
+                             misc::shared_ptr<computable>& child) {
+  if (!child.isNull()) {
+    if (child.data() == _left.data()) {
+      _left_hard = _left->value_hard();
+      _left_soft = _left->value_soft();
+    }
+    else if (child.data() == _right.data()) {
+      _right_hard = _right->value_hard();
+      _right_soft = _right->value_soft();
+    }
+  }
+  return ;
+}
+
+/**
  *  Set left member.
  *
  *  @param[in] left Left member of the boolean operator.
@@ -88,6 +112,10 @@ void bool_binary_operator::set_right(
 void bool_binary_operator::_internal_copy(
                              bool_binary_operator const& right) {
   _left = right._left;
+  _left_hard = right._left_hard;
+  _left_soft = right._left_soft;
   _right = right._right;
+  _right_hard = right._right_hard;
+  _right_soft = right._right_soft;
   return ;
 }

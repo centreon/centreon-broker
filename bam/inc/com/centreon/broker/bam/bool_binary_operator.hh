@@ -40,14 +40,20 @@ namespace                 bam {
                             bool_binary_operator const& right);
     virtual               ~bool_binary_operator();
     bool_binary_operator& operator=(bool_binary_operator const& right);
+    void                  child_has_update(
+                            misc::shared_ptr<computable>& child);
     void                  set_left(misc::shared_ptr<bool_value>& left);
     void                  set_right(misc::shared_ptr<bool_value>& right);
 
   protected:
     misc::shared_ptr<bool_value>
                           _left;
+    bool                  _left_hard;
+    bool                  _left_soft;
     misc::shared_ptr<bool_value>
                           _right;
+    bool                  _right_hard;
+    bool                  _right_soft;
 
   private:
     void                  _internal_copy(
