@@ -34,7 +34,6 @@ namespace       bam{
 
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
-     *
      *  @brief Using the dbinfo to access the database, load state_obj
      *         with configuration.
      *
@@ -43,19 +42,19 @@ namespace       bam{
      */
     class reader {
     public:
-      reader(configuration::db const&);
-      ~reader();
-      void read(state& state_obj);
+                        reader(configuration::db const& databaseInfo);
+                        ~reader();
+      void              read(state& state_obj);
 
     private:
       // No copies or assignments
-      reader(reader const&);
-      reader& operator=(reader const&);
-      void ensure_open();
-      void load(state::kpis& kpis);
-      void load(state::bas& bas);
-      void load(state::bool_exps& bool_exps);
-      void assert_query(QSqlQuery& queryToCheck);
+                        reader(reader const& other);
+      reader&           operator=(reader const& other);
+      void              _ensure_open();
+      void              _load(state::kpis& kpis);
+      void              _load(state::bas& bas);
+      void              _load(state::bool_exps& bool_exps);
+      void              _assert_query(QSqlQuery& query_to_check);
 
       QSqlDatabase      _db;
       configuration::db _dbinfo;
