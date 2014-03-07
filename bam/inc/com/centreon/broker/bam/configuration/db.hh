@@ -42,9 +42,9 @@ namespace                 bam {
                             std::string const& user,
                             std::string const& password,
                             std::string const& name);
-                          db(db const& right);
-      db&                 operator=(db const& right);
+                          db(db const& other);
                           ~db();
+      db&                 operator=(db const& other);
 
       std::string const & get_type() const;
       std::string const & get_host() const;

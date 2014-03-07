@@ -77,7 +77,7 @@ ba& ba::operator=(ba const& other) {
 /**
  *  Destructor.
  */
-ba::~ba(){}
+ba::~ba() {}
 
 /**
  *  Get business activity id.
@@ -159,6 +159,3 @@ void ba::set_warning_level(double warning_level) {
 void ba::set_critical_level(double critical_level) {
   _critical_level = critical_level;
 }
-
-
-
