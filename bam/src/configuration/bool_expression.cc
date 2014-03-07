@@ -35,13 +35,12 @@ using namespace com::centreon::broker::bam::configuration;
  *
  */
 bool_expression::bool_expression(
-				 unsigned int         id,
-				 double               impact,
-				 std::string const&   expression,
-				 bool                 impact_if,
-				 bool                 state
-				  ):
-  _id(id),
+                               unsigned int         id,
+                               double               impact,
+			       std::string const&   expression,
+			       bool                 impact_if,
+			       bool                 state)
+ : _id(id),
   _impact(impact),
   _expression(expression),
   _impact_if(impact_if),
