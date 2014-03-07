@@ -31,6 +31,7 @@ set(BAM "${BAM}" PARENT_SCOPE)
 add_library("${BAM}" SHARED
   # Sources.
   "${SRC_DIR}/ba.cc"
+  "${SRC_DIR}/bool_value.cc"
   "${SRC_DIR}/computable.cc"
   "${SRC_DIR}/configuration/ba.cc"
   "${SRC_DIR}/configuration/bool_expression.cc"
@@ -45,6 +46,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/service_listener.cc"
   # Headers.
   "${INC_DIR}/ba.hh"
+  "${INC_DIR}/bool_value.hh"
   "${INC_DIR}/computable.hh"
   "${INC_DIR}/configuration/ba.hh"
   "${INC_DIR}/configuration/bool_expression.hh"
