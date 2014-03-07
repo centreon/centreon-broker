@@ -43,7 +43,6 @@ ba::ba(
   _critical_level(critical_level)
 {}
 
-
 /**
  *  Copy Constructor
  *
@@ -78,7 +77,7 @@ ba& ba::operator=(ba const& other) {
 /**
  *  Destructor.
  */
-ba::~ba() {}
+ba::~ba(){}
 
 /**
  *  Get business activity id.
@@ -97,7 +96,6 @@ unsigned int ba::get_id() const {
 std::string const& ba::get_name() const {
   return (_name);
 }
-
 
 /**
  *  Get warning level.

@@ -31,12 +31,12 @@ reader_exception::reader_exception() : msg() {}
  *
  *  @param[in] Other object
  */
-reader_exception(reader_exception const& other) : msg(other) {}
+reader_exception::reader_exception(reader_exception const& other) : msg(other) {}
 
 /**
  *  Destructor
  */
-reader_exception::~reader_exception() {}
+reader_exception::~reader_exception() throw() {}
 
 /**
  *  Assignment operator
@@ -45,10 +45,7 @@ reader_exception::~reader_exception() {}
  *
  *  @return This object.
  */
-reader_exception& reader_exception::operator=(
-                                      reader_exception const& other) {
-  if (this != &other) {
-    msg = other;
-  }
+reader_exception& reader_exception::operator=(reader_exception const& other) {
+  msg::operator=(other);
   return (*this);
 }
