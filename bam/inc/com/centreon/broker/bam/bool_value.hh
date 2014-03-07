@@ -36,7 +36,7 @@ namespace        bam {
   public:
                  bool_value();
                  bool_value(bool_value const& right);
-                 ~bool_value();
+    virtual      ~bool_value();
     bool_value&  operator=(bool_value const& right);
     virtual bool value_hard() = 0;
     virtual bool value_soft() = 0;
