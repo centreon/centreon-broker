@@ -47,9 +47,9 @@ db::db(
     _name(name) {}
 
 /**
- * Copy constructor.
+ *  Copy constructor.
  *
- *  param[in]  other
+ *  param[in]  other Object to copy.
  */
 db::db(db const& other)
   : _type(other._type),
@@ -69,6 +69,8 @@ db::~db() {}
  *  Assignment operator.
  *
  *  param[in]  other Object to copy.
+ *
+ *  @return This object.
  */
 db& db::operator=(db const& other) {
   if (&other != this) {
