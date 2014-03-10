@@ -33,9 +33,9 @@ state::state() {}
  *  @param[in] right Object to copy.
  */
 state::state(state const& right)
-  : _bas(),
-    _kpis(),
-    _bool_expressions() {}
+  : _bas(right._bas),
+    _kpis(right._kpis),
+    _bool_expressions(right._bool_expressions) {}
 
 /**
  *  Destructor
