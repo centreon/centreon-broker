@@ -27,6 +27,35 @@ using namespace com::centreon::broker::bam::configuration;
  */
 state::state(){}
 
+
+/**
+ * Copy Constructor
+ *
+ */
+state(state const& right):
+  _bas( ),
+  _kpis(),
+  _bool_expressions(){}
+
+/**
+ * Destructor
+ *
+ */
+~state(){}
+
+/**
+ * Assignment operator
+ *
+ */
+state&           operator=(state const& right){
+  if(this != &right  ){
+    _bas = right._bas ;
+    _kpis= right._kpis ;
+    _bool_expressions= right._bool_expressions ;
+  }
+  return *this;
+}
+
 /**
  *  Get the list of BAs.
  *

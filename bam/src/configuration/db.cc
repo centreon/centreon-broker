@@ -47,7 +47,7 @@ db::db(
     _name(name) {}
 
 /**
- * Copy constructor
+ * Copy constructor.
  *
  *  param[in]  other
  */
