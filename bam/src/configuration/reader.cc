@@ -26,7 +26,6 @@
 
 using namespace com::centreon::broker::bam::configuration;
 
-
 /**
  *  @class  create_map
  *  @brief  A clever piece of code found on the net to
@@ -37,17 +36,33 @@ template <typename T, typename U>
 class create_map
 {
 public:
+  /**
+   *  Constructor
+   *
+   */
     create_map(const T& key, const U& val)
     {
         m_map[key] = val;
     }
 
+  /**
+   *  Operator ( key, value )
+   *
+   *  @brief  This operator takes the same parameters as constructor
+   *          so that the row for the constructor and all preceding rows are identical.
+   *          This allows for a clean layout of table rows.
+   */
     create_map<T, U>& operator()(const T& key, const U& val)
     {
         m_map[key] = val;
         return (*this);
     }
 
+   /**
+   *  Operator map
+   *
+   *  @return  Returns the internal map loaded with all the values of the literal table.
+   */
     operator std::map<T, U>()
     {
       return (m_map);
