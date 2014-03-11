@@ -33,16 +33,14 @@ using namespace com::centreon::broker::bam::configuration;
  *          .... why write it yourself? ... This sort of code needs a seperate namespace..
  */
 template <typename T, typename U>
-class create_map
-{
+class create_map {
 public:
   /**
    *  Constructor
    *
    */
-    create_map(const T& key, const U& val)
-    {
-        m_map[key] = val;
+    create_map(T const& key,U const& val) {
+      m_map[key] = val;
     }
 
   /**
@@ -52,10 +50,9 @@ public:
    *          so that the row for the constructor and all preceding rows are identical.
    *          This allows for a clean layout of table rows.
    */
-    create_map<T, U>& operator()(const T& key, const U& val)
-    {
-        m_map[key] = val;
-        return (*this);
+    create_map<T,U>& operator()(T const& key, U const& val) {
+      m_map[key] = val;
+      return (*this);
     }
 
    /**
@@ -63,8 +60,7 @@ public:
    *
    *  @return  Returns the internal map loaded with all the values of the literal table.
    */
-    operator std::map<T, U>()
-    {
+    operator std::map<T, U>() {
       return (m_map);
     }
 private:
@@ -78,7 +74,7 @@ private:
  *  @param[in]  The logical name for the database
  *  @return     The QT lib name for the database system
  */
- QString map_2_QT(const std::string& dbtype){
+ QString map_2_QT(std::string const& dbtype) {
 
     using namespace std;
 
@@ -169,7 +165,7 @@ reader::reader(reader const& other) :
  *  @Brief   Hidden implementation
  *
  */
-reader& reader::operator=(reader const& other){
+reader& reader::operator=(reader const& other) {
   (void)other;
   return (*this);
 }
@@ -179,7 +175,7 @@ reader& reader::operator=(reader const& other){
  *
  *  @brief   Enforce that the database be open as a postcondition
  */
-void reader::_ensure_open(){
+void reader::_ensure_open() {
   if(!_db.isOpen()){
     _db.setHostName(_dbinfo.get_host().c_str()  );
     _db.setDatabaseName(_dbinfo.get_name().c_str()  );
@@ -202,7 +198,7 @@ void reader::_ensure_open(){
  *
  *  @param[out] list of kpis in database
  */
-void reader::_load(state::kpis& kpis){
+void reader::_load(state::kpis& kpis) {
   kpis.clear();
   QSqlQuery query =
     _db.exec("SELECT    k.kpi_id,                                              "
@@ -251,7 +247,7 @@ void reader::_load(state::kpis& kpis){
  *
  *  @param[out] list of bas in database
  */
-void reader::_load(state::bas& bas){
+void reader::_load(state::bas& bas) {
 
   QSqlQuery query = _db.exec("SELECT ba_id,          "
 			     "       name,           "
@@ -277,7 +273,7 @@ void reader::_load(state::bas& bas){
  *
  *  @param[out] list of bool expression in database
  */
-void reader::_load(state::bool_exps& bool_exps){
+void reader::_load(state::bool_exps& bool_exps) {
   QSqlQuery query = _db.exec("SELECT     be.boolean_id,      "
 			     "           COALESCE(be.impact,imp.impact)"
 			     "           be.expression,"
@@ -305,7 +301,7 @@ void reader::_load(state::bool_exps& bool_exps){
  *
  *  @param[in] assert that the query succeeded
  */
-void reader::_assert_query(QSqlQuery& query){
+void reader::_assert_query(QSqlQuery& query) {
   if(!query.isActive()){
     throw reader_exception() << "Database Select Error: " << query.lastError().text()
                              << ", Type: " <<  _dbinfo.get_type()
