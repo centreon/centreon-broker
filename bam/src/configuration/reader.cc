@@ -36,57 +36,62 @@ class create_map {
 public:
   /**
    *  Constructor
-   *
    */
-    create_map(T const& key,U const& val) {
-      m_map[key] = val;
-    }
+  create_map(T const& key,U const& val) {
+    m_map[key] = val;
+  }
 
   /**
-   *  Operator ( key, value )
+   *  @brief Operator (key, value).
    *
-   *  @brief  This operator takes the same parameters as constructor
-   *          so that the row for the constructor and all preceding rows are identical.
-   *          This allows for a clean layout of table rows.
+   *  This operator takes the same parameters as constructor so that the
+   *  row for the constructor and all preceding rows are identical. This
+   *  allows for a clean layout of table rows.
+   *
+   *  @param[in] key Key.
+   *  @param[in] val Value.
+   *
+   *  @return This object.
    */
-    create_map<T,U>& operator()(T const& key, U const& val) {
-      m_map[key] = val;
-      return (*this);
-    }
+  create_map<T,U>& operator()(T const& key, U const& val) {
+    m_map[key] = val;
+    return (*this);
+  }
 
-   /**
+  /**
    *  Operator map
    *
-   *  @return  Returns the internal map loaded with all the values of the literal table.
+   *  @return  Returns the internal map loaded with all the values of
+   *           the literal table.
    */
-    operator std::map<T, U>() {
-      return (m_map);
-    }
+  operator std::map<T, U>() {
+    return (m_map);
+  }
+
 private:
-    std::map<T,U> m_map;
+  std::map<T,U> m_map;
 };
 
 /**
- *  @function map_2_QT
+ *  This function maps the logical name for a RDBMS to the QT lib name.
  *
- *  @brief   This function maps the logical name for a RDBMS to the Qlib name.
  *  @param[in]  The logical name for the database.
+ *
  *  @return     The QT lib name for the database system.
  */
- QString map_2_QT(std::string const& dbtype) {
+QString map_2_qt(std::string const& dbtype) {
+  using namespace std;
 
-    using namespace std;
+  // Lower case the string.
+  QString qt_db_type(dbtype.c_str());
+  qt_db_type = qt_db_type.toLower();
 
-// lower case the string
-    QString qt_db_type(dbtype.c_str());
-    qt_db_type = qt_db_type.toLower();
-
-    // load map only ONCE.. at first execution
-    // avantage    :  logN, typesafe, thread-safe ( AFTER init)
-    // disavantage :  race on initialisation...
-    typedef map<QString, QString> string_2_string;
-    static string_2_string name_2_qname=
-      create_map<QString,QString>
+  // Load map only ONCE at first execution.
+  // Advantage   :  logN, typesafe, thread-safe ( AFTER init).
+  // Disavantage :  race on initialisation.
+  typedef map<QString, QString> string_2_string;
+  static string_2_string name_2_qname =
+    create_map<QString,QString>
       ("db2",        "QDB2")
       ("ibase",      "QIBASE")
       ("interbase",  "QIBASE")
@@ -101,9 +106,9 @@ private:
       ("tds",        "QTDS")
       ("sybase",     "QTDS");
 
-    // find the database in table
-    string_2_string::iterator found = name_2_qname.find(qt_db_type);
-    return (found != name_2_qname.end() ? found->first : qt_db_type);
+  // Find the database in table.
+  string_2_string::iterator found = name_2_qname.find(qt_db_type);
+  return (found != name_2_qname.end() ? found->first : qt_db_type);
 }
 
 /**
@@ -112,12 +117,11 @@ private:
  *  @param[in] mydb       Information for accessing database.
  */
 reader::reader(configuration::db const& mydb)
-  : _db(),
-    _dbinfo(mydb){
-      QString id;
-      id.setNum((qulonglong)this, 16);
-      _db = QSqlDatabase::addDatabase(map_2_QT(mydb.get_type()), id);
-      _ensure_open();
+  : _db(), _dbinfo(mydb) {
+  QString id;
+  id.setNum((qulonglong)this, 16);
+  _db = QSqlDatabase::addDatabase(map_2_qt(mydb.get_type()), id);
+  _ensure_open();
 }
 
 /**
@@ -128,10 +132,10 @@ reader::~reader() {
 }
 
 /**
- *  Reader
+ *  Read configuration from database.
  *
  *  @param[out] st  All the configuration state for the BA subsystem
- *                  recuperated from the specified database
+ *                  recuperated from the specified database.
  */
 void reader::read(state& st) {
   try {
@@ -142,27 +146,28 @@ void reader::read(state& st) {
     _load( st.get_boolexps());
     _db.commit();
   }
-  catch (std::exception& e) {
-    //apparently, no need to rollback transaction.. achieved in the db destructor
+  catch (std::exception const& e) {
+    // Apparently, no need to rollback transaction.. achieved in the db destructor.
     st.clear();
-    throw;
+    throw ;
   }
 }
 
 /**
- *  Copy constructor
+ *  @brief Copy constructor
  *
- *  @Brief   Hidden implementation, never called.
+ *  Hidden implementation, never called.
  */
-reader::reader(reader const& other) :
-  _dbinfo(other._dbinfo){
-}
+reader::reader(reader const& other) : _dbinfo(other._dbinfo) {}
 
 /**
- *  assignment operator
+ *  @brief Assignment operator.
  *
- *  @Brief   Hidden implementation, never called.
+ *  Hidden implementation, never called.
  *
+ *  @param[in] other Unused.
+ *
+ *  @return This object.
  */
 reader& reader::operator=(reader const& other) {
   (void)other;
@@ -170,32 +175,33 @@ reader& reader::operator=(reader const& other) {
 }
 
 /**
- *  open
+ *  @brief Ensure that internal database object is open.
  *
- *  @brief   Enforce that the database be open as a postcondition.
+ *  Enforce that the database be open as a postcondition.
  */
 void reader::_ensure_open() {
-  if(!_db.isOpen()){
-    _db.setHostName(_dbinfo.get_host().c_str()  );
-    _db.setDatabaseName(_dbinfo.get_name().c_str()  );
-    _db.setUserName(_dbinfo.get_user().c_str()  );
-    _db.setPassword(_dbinfo.get_password().c_str()  );
-    // we must have a valid database connexion at this point
-    if( !_db.open() ){
+  if (!_db.isOpen()){
+    _db.setHostName(_dbinfo.get_host().c_str());
+    _db.setDatabaseName(_dbinfo.get_name().c_str());
+    _db.setUserName(_dbinfo.get_user().c_str());
+    _db.setPassword(_dbinfo.get_password().c_str());
+    // We must have a valid database connexion at this point.
+    if( !_db.open()) {
       throw (reader_exception()
-	<< "BAM: Database access failure"
-	<< ", Reason: "<<  _db.lastError().text()
-        << ", Type: "  <<  _dbinfo.get_type()
-	<< ", Host: "  <<  _dbinfo.get_host()
-	<< ", Name: "  <<  _dbinfo.get_name());
+             << "BAM: database access failure ("
+             << "reason: " <<  _db.lastError().text()
+             << ", type: "  <<  _dbinfo.get_type()
+             << ", host: "  <<  _dbinfo.get_host()
+             << ", DB name: "  <<  _dbinfo.get_name()
+             << ")");
     }
   }
 }
 
 /**
- *  Load
+ *  Load KPIs from the DB.
  *
- *  @param[out] The list of kpis in database.
+ *  @param[out] kpis The list of kpis in database.
  */
 void reader::_load(state::kpis& kpis) {
   kpis.clear();
@@ -217,37 +223,35 @@ void reader::_load(state::kpis& kpis) {
 	     "FROM      mod_bam_kpi AS k                                       "
 	     "LEFT JOIN mod_bam_impacts AS ww ON k.drop_warning_impact_id =  ww.id_impact "
 	     "LEFT JOIN mod_bam_impacts AS cc ON k.drop_critical_impact_id = cc.id_impact "
-	     "LEFT JOIN mod_bam_impacts AS uu ON k.drop_unknown_impact_id =  uu.id_impact;");
+	     "LEFT JOIN mod_bam_impacts AS uu ON k.drop_unknown_impact_id =  uu.id_impact");
   _assert_query(query);
 
   while (query.next()) {
     kpis.push_back(
       kpi(
-        query.value(0).toInt(), //unsigned int id = 0,
-        query.value(1).toInt(), //short state_type = 0,
-        query.value(2).toInt(), //unsigned int hostid = 0,
-        query.value(3).toInt(),//unsigned int serviceid = 0
-        query.value(4).toInt(),//unsigned int ba = 0,
-        query.value(5).toInt(),//short status = 0,
-        query.value(6).toInt(),//short lasthardstate = 0,
-        query.value(7).toFloat(),//bool downtimed = false,
-        query.value(8).toFloat(),//bool acknowledged = false,
-        query.value(9).toBool(),//bool ignoredowntime = false,
-        query.value(10).toBool(),//bool ignoreacknowledgement = false,
-        query.value(11).toDouble(),//double warning = 0,
-        query.value(12).toDouble(),//double critical = 0,
-        query.value(13).toDouble()//double unknown = 0);
-          ));
+        query.value(0).toInt(), // ID.
+        query.value(1).toInt(), // State type.
+        query.value(2).toInt(), // Host ID.
+        query.value(3).toInt(),// Service ID.
+        query.value(4).toInt(),// BA ID.
+        query.value(5).toInt(),// Status.
+        query.value(6).toInt(),// Hard state.
+        query.value(7).toFloat(),// Downtimed.
+        query.value(8).toFloat(),// Acknowledged.
+        query.value(9).toBool(),// Ignore downtime.
+        query.value(10).toBool(),// Ignore acknowledgement.
+        query.value(11).toDouble(),// Warning.
+        query.value(12).toDouble(),// Critical.
+        query.value(13).toDouble()));// Unknown.
   }
 }
 
 /**
- *  Load
+ *  Load BAs from the DB.
  *
- *  @param[out] The list of bas in database.
+ *  @param[out] bas The list of bas in database.
  */
 void reader::_load(state::bas& bas) {
-
   QSqlQuery query = _db.exec("SELECT ba_id,          "
 			     "       name,           "
 			     "       current_level,  "
@@ -258,19 +262,19 @@ void reader::_load(state::bas& bas) {
 
   while (query.next()) {
     bas.push_back(
-      ba(query.value(0).toInt(),                  //unsigned int id = 0,
-        query.value(1).toString().toStdString() ,//std::string const& name = "",
-        query.value(2).toFloat(),                //double level = 0.0,
-        query.value(3).toFloat(),                //double warning_level = 0.0
-        query.value(4).toFloat()                 //double critical_level = 0.0);
-        ));
+      ba(
+        query.value(0).toInt(), // ID.
+        query.value(1).toString().toStdString(), // Name.
+        query.value(2).toFloat(), // Level.
+        query.value(3).toFloat(), // Warning level.
+        query.value(4).toFloat())); // Critical level.
   }
 }
 
 /**
- *  Load
+ *  Load boolean expressions from the DB.
  *
- *  @param[out] The list of bool expression in database.
+ *  @param[out] bool_exps The list of bool expression in database.
  */
 void reader::_load(state::bool_exps& bool_exps) {
   QSqlQuery query = _db.exec("SELECT     be.boolean_id,      "
@@ -279,32 +283,35 @@ void reader::_load(state::bool_exps& bool_exps) {
 			     "           be.bool_state,"
 			     "           be.current_state"
 			     "FROM       mod_bam_boolean as be"
-			     "LEFT JOIN  mod_bam_impacts as imp ON be.impact_id =  imp.id_impact "
-			     );
+			     "LEFT JOIN  mod_bam_impacts as imp ON be.impact_id =  imp.id_impact ");
   _assert_query(query);
 
   while (query.next()) {
     bool_exps.push_back(
       bool_expression(
-        query.value(0).toInt(), //unsigned int id = 0,
-        query.value(1).toFloat(),//double impact = 0.0,
-        query.value(2).toString().toStdString(),//std::string const& expression = "",
-        query.value(3).toBool(),//bool impact_if = false,
-        query.value(4).toBool()//bool state = false
-      ));
+        query.value(0).toInt(), // ID.
+        query.value(1).toFloat(),// Impact.
+        query.value(2).toString().toStdString(), // Expression.
+        query.value(3).toBool(), // Impact if.
+        query.value(4).toBool())); // State.
   }
 }
 
 /**
- *  Assert query
+ *  @brief Assert query.
  *
- *  @param[in] Ensure that the query is legitimate.
+ *  Ensure that the query is legitimate.
+ *
+ *  @param[in] query Query to assert.
  */
 void reader::_assert_query(QSqlQuery& query) {
-  if(!query.isActive()){
-    throw reader_exception() << "Database Select Error: " << query.lastError().text()
-                             << ", Type: " <<  _dbinfo.get_type()
-			     << ", Host:"  <<  _db.hostName()
-			     << ", Name:"  <<  _db.databaseName() ;
+  if (!query.isActive()) {
+    throw (reader_exception()
+           << "BAM: could not get extract configuration from DB: "
+           << query.lastError().text()
+           << " (type: " <<  _dbinfo.get_type()
+           << ", host: "  <<  _db.hostName()
+           << ", name: "  <<  _db.databaseName()
+           << ")");
   }
 }
