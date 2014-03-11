@@ -29,8 +29,7 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  @class  create_map
  *  @brief  A clever piece of code found on the net to
- *          automate the loading of a map from a literal expression
- *          .... why write it yourself? ... This sort of code needs a seperate namespace..
+ *          automate the loading of a map from a literal expression.
  */
 template <typename T, typename U>
 class create_map {
@@ -70,9 +69,9 @@ private:
 /**
  *  @function map_2_QT
  *
- *  @brief   maps the logical name for a RDBMS to the Qlib name
- *  @param[in]  The logical name for the database
- *  @return     The QT lib name for the database system
+ *  @brief   This function maps the logical name for a RDBMS to the Qlib name.
+ *  @param[in]  The logical name for the database.
+ *  @return     The QT lib name for the database system.
  */
  QString map_2_QT(std::string const& dbtype) {
 
@@ -153,7 +152,7 @@ void reader::read(state& st) {
 /**
  *  Copy constructor
  *
- *  @Brief   Hidden implementation
+ *  @Brief   Hidden implementation, never called.
  */
 reader::reader(reader const& other) :
   _dbinfo(other._dbinfo){
@@ -162,7 +161,7 @@ reader::reader(reader const& other) :
 /**
  *  assignment operator
  *
- *  @Brief   Hidden implementation
+ *  @Brief   Hidden implementation, never called.
  *
  */
 reader& reader::operator=(reader const& other) {
@@ -173,7 +172,7 @@ reader& reader::operator=(reader const& other) {
 /**
  *  open
  *
- *  @brief   Enforce that the database be open as a postcondition
+ *  @brief   Enforce that the database be open as a postcondition.
  */
 void reader::_ensure_open() {
   if(!_db.isOpen()){
@@ -196,7 +195,7 @@ void reader::_ensure_open() {
 /**
  *  Load
  *
- *  @param[out] list of kpis in database
+ *  @param[out] The list of kpis in database.
  */
 void reader::_load(state::kpis& kpis) {
   kpis.clear();
@@ -245,7 +244,7 @@ void reader::_load(state::kpis& kpis) {
 /**
  *  Load
  *
- *  @param[out] list of bas in database
+ *  @param[out] The list of bas in database.
  */
 void reader::_load(state::bas& bas) {
 
@@ -271,7 +270,7 @@ void reader::_load(state::bas& bas) {
 /**
  *  Load
  *
- *  @param[out] list of bool expression in database
+ *  @param[out] The list of bool expression in database.
  */
 void reader::_load(state::bool_exps& bool_exps) {
   QSqlQuery query = _db.exec("SELECT     be.boolean_id,      "
@@ -299,7 +298,7 @@ void reader::_load(state::bool_exps& bool_exps) {
 /**
  *  Assert query
  *
- *  @param[in] assert that the query succeeded
+ *  @param[in] Ensure that the query is legitimate.
  */
 void reader::_assert_query(QSqlQuery& query) {
   if(!query.isActive()){
