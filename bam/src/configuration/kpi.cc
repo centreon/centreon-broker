@@ -78,12 +78,19 @@ kpi::kpi(kpi const& other)
 {}
 
 /**
+ *  Destructor.
+ */
+kpi::~kpi() {}
+
+/**
  *  Assignment operator.
  *
  *  @param[in] other The copy.
+ *
+ *  @return This object.
  */
 kpi& kpi::operator=(kpi const& other) {
-  if(&other != this) {
+  if (&other != this) {
     _id = other._id;
     _state_type = other._state_type;
     _host_id = other._host_id;
@@ -101,12 +108,6 @@ kpi& kpi::operator=(kpi const& other) {
   }
   return (*this);
 }
-
-/**
- *  Destructor.
- */
-kpi::~kpi() {}
-
 
 /**
  *  Get the id.

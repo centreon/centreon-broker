@@ -29,8 +29,8 @@ CCB_BEGIN()
 namespace       bam{
   namespace     configuration{
     // Class declarations.
-    class db;
-    class state;
+    class       db;
+    class       state;
 
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
@@ -40,9 +40,9 @@ namespace       bam{
      *  Extract the database content to a configuration state usable by
      *  the BAM engine.
      */
-    class reader {
+    class               reader {
     public:
-                        reader(configuration::db const& databaseInfo);
+                        reader(configuration::db const& database_info);
                         ~reader();
       void              read(state& state_obj);
 

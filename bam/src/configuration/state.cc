@@ -22,8 +22,7 @@
 using namespace com::centreon::broker::bam::configuration;
 
 /**
- *  Constructor
- *
+ *  Constructor.
  */
 state::state() {}
 

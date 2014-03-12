@@ -44,7 +44,7 @@ ba::ba(
 {}
 
 /**
- *  Copy Constructor
+ *  Copy constructor.
  *
  *  @param[in] other The original object.
  */
@@ -55,6 +55,11 @@ ba::ba(ba const& other)
     _warning_level(other._warning_level),
     _critical_level(other._critical_level)
 {}
+
+/**
+ *  Destructor.
+ */
+ba::~ba() {}
 
 /**
  *  Assignment Operator.
@@ -73,11 +78,6 @@ ba& ba::operator=(ba const& other) {
   }
   return (*this);
 }
-
-/**
- *  Destructor.
- */
-ba::~ba() {}
 
 /**
  *  Get business activity id.

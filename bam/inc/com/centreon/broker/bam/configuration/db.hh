@@ -61,7 +61,6 @@ namespace                 bam {
       void                set_name(std::string const& name);
 
     private:
-      // static std::string  _getQDatabaseType(std::string const& type);
       std::string         _type;
       std::string         _host;
       unsigned short      _port;
