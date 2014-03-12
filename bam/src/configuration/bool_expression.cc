@@ -135,38 +135,38 @@ bool bool_expression::get_state() const {
 /**
  *  Set impact
  *
- *  @param[in] New impact value for the bool expression.
+ *  @param[in] si Impact value for the bool expression.
  */
-void bool_expression::set_impact(double d) {
-  _impact = d;
+void bool_expression::set_impact(double si) {
+  _impact = si;
 }
 
 /**
  *  Set expression
  *
- *  @param[in]  Set the textual value for the expression.
+ *  @param[in]  exp Set the textual value for the expression.
  */
-void bool_expression::set_expression(const std::string& s) {
-  _expression = s;
+void bool_expression::set_expression(const std::string& exp) {
+  _expression = exp;
 }
 
 /**
  *  set impactIf
  *
- *  @param[in]  Sets whether the resulting value is to be considered
+ *  @param[in] bif  Sets whether the resulting value is to be considered
  *              for a true or false evaluation.
  */
-void bool_expression::set_impact_if( bool b) {
-  _impact_if = b;
+void bool_expression::set_impact_if( bool bif ) {
+  _impact_if = bif;
 }
 
 /**
  *  Set state
  *
- *  @param[in]  Set the current state of the expression.
+ *  @param[in]  st Set the current state of the expression.
  */
-void bool_expression::set_state(bool s) {
-  _state = s;
+void bool_expression::set_state(bool st) {
+  _state = st;
 }
 
 
