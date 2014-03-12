@@ -70,9 +70,9 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
 bool_expression::~bool_expression(){}
 
 /**
- *  get id
+ *  Get the primary key.
  *
- *  @return The id
+ *  @return The id.
  *
  */
 unsigned int bool_expression::get_id() const {
@@ -80,8 +80,12 @@ unsigned int bool_expression::get_id() const {
 }
 
 /**
- *  Get the impact
- *  @return The impact
+ *  Get the impact.
+ *
+ *  @return The impact refers to the negative effect of a business activity
+ *          failure to the higher-level enclosing business activity. Depending
+ *          on the boolean expression, this can be applicable whether the
+ *          evaluation is false or true.
  *
  */
 double bool_expression::get_impact() const {
@@ -89,45 +93,46 @@ double bool_expression::get_impact() const {
 }
 
 /**
- *  get boolean expression
+ *  Get the boolean expression.
  *
- *  @return The textual representation of the expression
+ *  @return The textual representation of the expression.
  */
 std::string const& bool_expression::get_expression() const {
   return (_expression);
 }
 
 /**
- *  get impactIf
+ *  get impact If
  *
- *  @result get whether the the expression impacts
+ *  @result Get whether the impacts is applicable
+ *          for a true or false statement
  */
 bool bool_expression::get_impact_if() const {
   return (_impact_if);
 }
 
 /**
- *  get_state
+ *  Get state
  *
- *  @result Gets the current state
+ *  @result Gets the current state.
  */
 bool bool_expression::get_state() const {
   return (_state);
 }
 
 /**
- *  set impact
+ *  Set impact
  *
- *  @param[in] impact value
+ *  @param[in] New impact value for the bool expression.
  */
 void bool_expression::set_impact(double d) {
   _impact = d;
 }
 
 /**
- *  set expression
+ *  Set expression
  *
- *  @param[in]  set the textual value for the expression
+ *  @param[in]  Set the textual value for the expression.
  */
 void bool_expression::set_expression(const std::string& s) {
   _expression = s;
@@ -136,16 +141,17 @@ void bool_expression::set_expression(const std::string& s) {
 /**
  *  set impactIf
  *
- *  @param[in]  sets whether the resulting value is to be considered
+ *  @param[in]  Sets whether the resulting value is to be considered
+ *              for a true or false evaluation.
  */
 void bool_expression::set_impact_if( bool b) {
   _impact_if = b;
 }
 
 /**
- *  set state
+ *  Set state
  *
- *  @param[in]  Set the current state of the expression
+ *  @param[in]  Set the current state of the expression.
  */
 void bool_expression::set_state(bool s) {
   _state = s;
