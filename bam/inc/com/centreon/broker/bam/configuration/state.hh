@@ -28,15 +28,15 @@
 
 CCB_BEGIN()
 
-namespace              bam{
-  namespace            configuration{
+namespace              bam {
+  namespace            configuration {
     /**
      *  @class state state.hh "com/centreon/broker/bam/configuration/state.hh"
      *  @brief Configuration state.
      *
      *  Holds the entire configuration of the BAM module.
      */
-    class              state{
+    class              state {
     public:
       /* Typedefs */
       typedef std::deque<ba>              bas;
