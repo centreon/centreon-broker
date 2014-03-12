@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,8 +25,8 @@
 
 CCB_BEGIN()
 
-namespace                 bam{
-  namespace               configuration{
+namespace                   bam {
+  namespace                 configuration {
     /**
      *@class bool_expression bool_expression.hh  "com/centreon/broker/bam/configuration/bool_expression.h"
      *
@@ -35,11 +35,11 @@ namespace                 bam{
     class                   bool_expression {
     public:
                             bool_expression(
-			      unsigned int id = 0,
-			      double impact = 0.0,
-			      std::string const& expression = "",
-			      bool impact_if = false,
-			      bool state = false);
+                              unsigned int id = 0,
+                              double impact = 0.0,
+                              std::string const& expression = "",
+                              bool impact_if = false,
+                              bool state = false);
                             bool_expression(bool_expression const& right);
                             ~bool_expression();
       bool_expression&      operator=(bool_expression const& right);
