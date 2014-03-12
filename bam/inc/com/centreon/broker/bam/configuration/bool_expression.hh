@@ -41,8 +41,8 @@ namespace                   bam {
                               bool impact_if = false,
                               bool state = false);
                             bool_expression(bool_expression const& right);
-                            ~bool_expression();
       bool_expression&      operator=(bool_expression const& right);
+                            ~bool_expression();
 
       unsigned int          get_id() const;
       double                get_impact() const;
