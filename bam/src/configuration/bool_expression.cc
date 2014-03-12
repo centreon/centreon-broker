@@ -42,7 +42,7 @@ bool_expression::bool_expression(
    _impact(impact),
    _expression(expression),
    _impact_if(impact_if),
-   _state(state){} v
+   _state(state){}
 
                    /**
                     *  Copy constructor

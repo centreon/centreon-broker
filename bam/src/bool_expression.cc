@@ -15,6 +15,7 @@
 ** You should have received a copy of the GNU General Public License
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
+
 */
 
 #include "com/centreon/broker/bam/bool_expression.hh"
@@ -25,23 +26,11 @@ using namespace com::centreon::broker::bam;
 
 /**
  *  Default constructor.
- *
- *  @param[in] id          Primary key of bool_expression.
- *  @param[in] impact      The impact in percentage to the enclosing BA.
- *  @param[in] expression  The textual representation of the expression.
- *  @param[in] impact_if   Sets whether the expression impacts on true OR false.
- *  @param[in] state       Set the current state of the expression.
  */
-bool_expression::bool_expression( unsigned int id,
-			          double impact,
-			          std::string const& expression,
-                                  bool impact_if,
-                                  bool state )
-  :  _id(id),
-     _impact(impact),
-     _expression(expression),
-     _impact_if(impact_if),
-     _state(state){}
+bool_expression::bool_expression()
+  : _impact_if(true),
+    _impact_hard(0.0),
+    _impact_soft(0.0) {}
 
 /**
  *  Copy constructor.
@@ -50,22 +39,7 @@ bool_expression::bool_expression( unsigned int id,
  */
 bool_expression::bool_expression(bool_expression const& right)
   : kpi(right) {
-   _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_expression& bool_expression::operator=(bool_expression const& right) {
-  if (this != &right) {
-    kpi::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
+  _internal_copy(right);
 }
 
 /**
@@ -74,8 +48,22 @@ bool_expression& bool_expression::operator=(bool_expression const& right) {
 bool_expression::~bool_expression() {}
 
 /**
- *  child has update
+ *  Assignment operator.
  *
+ *  @param[in] right Object to copy.
+ *
+ *  @return This object.
+ */
+bool_expression& bool_expression::operator=(
+                                    bool_expression const& right) {
+  if (this != &right) {
+    kpi::operator=(right);
+    _internal_copy(right);
+  }
+  return (*this);
+}
+
+/**
  *  @brief Notify of change of a child.
  *
  *  This class does not cache child values. Therefore this method is not

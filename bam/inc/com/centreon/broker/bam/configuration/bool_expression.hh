@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
-#  define CCB_BAM_CONFIGURATION_BOOL_EXPRESSION_HH
+#  ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#  define BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
