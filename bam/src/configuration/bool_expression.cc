@@ -142,7 +142,7 @@ void bool_expression::set_impact(double si) {
  *
  *  @param[in]  exp Set the textual value for the expression.
  */
-void bool_expression::set_expression(const std::string& exp) {
+void bool_expression::set_expression(std::string const& exp) {
   _expression = exp;
 }
 
@@ -150,9 +150,9 @@ void bool_expression::set_expression(const std::string& exp) {
  *  Set impact if.
  *
  *  @param[in] bif  Sets whether the resulting value is to be considered
- *              for a true or false evaluation.
+ *                  for a true or false evaluation.
  */
-void bool_expression::set_impact_if( bool bif ) {
+void bool_expression::set_impact_if(bool bif) {
   _impact_if = bif;
 }
 
