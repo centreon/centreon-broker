@@ -16,8 +16,6 @@
 ** along with Centreon Broker. If not, see
 ** <http://www.gnu.org/licenses/>.
 */
-#ifndef CCBN_BOOL_EXPRESSION_HH
-# define CCBN_BOOL_EXPRESSION_HH
 
 # include <string>
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
@@ -41,11 +39,25 @@ bool_expression::bool_expression(
 			       bool                 impact_if,
 			       bool                 state)
  : _id(id),
-  _impact(impact),
-  _expression(expression),
-  _impact_if(impact_if),
-  _state(state)
-{}
+   _impact(impact),
+   _expression(expression),
+   _impact_if(impact_if),
+   _state(state){}
+
+/**
+ *  Copy constructor
+ *
+ *  @param[in]  The object to copy
+ */
+bool_expression::bool_expression(bool_expression const& right)
+  :
+  _id( right._id ),
+  _impact(right._impact),
+  _expression(right._expression),
+  _impact_if(right._impact),
+  _state(right._state){
+
+}
 
 /**
  *  assignment operator
@@ -54,7 +66,7 @@ bool_expression::bool_expression(
  *  @return    this
  */
 bool_expression& bool_expression::operator=(bool_expression const& other) {
-  if( &other != this){
+  if(&other != this){
     _id=other._id;
     _impact=other._impact ;
     _expression=other._expression;
@@ -105,7 +117,7 @@ std::string const& bool_expression::get_expression() const {
  *  get impact If
  *
  *  @result Get whether the impacts is applicable
- *          for a true or false statement
+ *          for a true or false statement.
  */
 bool bool_expression::get_impact_if() const {
   return (_impact_if);
@@ -159,7 +171,6 @@ void bool_expression::set_state(bool s) {
 
 
 
-#endif //! CCBN_BOOL_EXPRESSION_HH
 
 
 
