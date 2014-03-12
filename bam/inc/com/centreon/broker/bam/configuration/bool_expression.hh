@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#  ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 #  define BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 
 #  include <string>
@@ -28,9 +28,11 @@ CCB_BEGIN()
 namespace                   bam {
   namespace                 configuration {
     /**
-     *@class bool_expression bool_expression.hh  "com/centreon/broker/bam/configuration/bool_expression.h"
+     *  @class bool_expression bool_expression.hh  "com/centreon/broker/bam/configuration/bool_expression.h"
+     *  @brief A pseudo-kpi triggered by a the value of a boolean expression.
      *
-     *@brief A pseudo-kpi triggered by a the value of a boolean expression.
+     *  Configuration of a boolean expression, later used to impact one
+     *  or more BA.
      */
     class                   bool_expression {
     public:
