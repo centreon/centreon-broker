@@ -42,27 +42,27 @@ bool_expression::bool_expression(
    _impact(impact),
    _expression(expression),
    _impact_if(impact_if),
-   _state(state){}
+   _state(state){} v
 
-/**
- *  Copy constructor
- *
- *  @param[in]  The object to copy
- */
-bool_expression::bool_expression(bool_expression const& right)
-  :
-  _id( right._id ),
-  _impact(right._impact),
-  _expression(right._expression),
-  _impact_if(right._impact),
-  _state(right._state){
+                   /**
+                    *  Copy constructor
+                    *
+                    *  @param[in]  The object to copy.
+                    */
+   bool_expression::bool_expression(bool_expression const& right)
+     :
+     _id(right._id),
+     _impact(right._impact),
+     _expression(right._expression),
+     _impact_if(right._impact),
+     _state(right._state){
 
-}
+                   }
 
 /**
  *  assignment operator
  *
- *  @param[in] other
+ *  @param[in] other object
  *  @return    this
  */
 bool_expression& bool_expression::operator=(bool_expression const& other) {
@@ -79,7 +79,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
 /*
  *  Destructor
  */
-bool_expression::~bool_expression(){}
+bool_expression::~bool_expression() {}
 
 /**
  *  Get the primary key.
