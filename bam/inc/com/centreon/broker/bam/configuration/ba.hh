@@ -45,6 +45,8 @@ namespace                bam {
                          ba(ba const& right);
                          ~ba();
       ba&                operator=(ba const& right);
+      bool               operator==(ba const& right) const;
+      bool               operator!=(ba const& right) const;
 
       unsigned int       get_id() const;
       std::string const& get_name() const;
