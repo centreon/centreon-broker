@@ -39,6 +39,8 @@ namespace        bam {
                  kpi_service(kpi_service const& right);
                  ~kpi_service();
     kpi_service& operator=(kpi_service const& right);
+    void         child_has_update(
+                   misc::shared_ptr<computable>& child);
     unsigned int get_host_id() const;
     double       get_impact_critical() const;
     double       get_impact_unknown() const;

@@ -17,7 +17,9 @@
 ** <http:/www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include "com/centreon/broker/bam/configuration/applier/kpi.hh"
+#include "com/centreon/broker/bam/kpi_ba.hh"
+#include "com/centreon/broker/bam/kpi_service.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -25,21 +27,21 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Default constructor.
  */
-applier::ba::ba() {}
+applier::kpi::kpi() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-applier::ba::ba(applier::ba const& right) {
+applier::kpi::kpi(applier::kpi const& right) {
   _internal_copy(right);
 }
 
 /**
  *  Destructor.
  */
-applier::ba::~ba() {}
+applier::kpi::~kpi() {}
 
 /**
  *  Assignment operator.
@@ -48,7 +50,7 @@ applier::ba::~ba() {}
  *
  *  @return This object.
  */
-applier::ba& applier::ba::operator=(applier::ba const& right) {
+applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
   if (this != &right)
     _internal_copy(right);
   return (*this);
@@ -57,9 +59,12 @@ applier::ba& applier::ba::operator=(applier::ba const& right) {
 /**
  *  Apply configuration.
  *
- *  @param[in] my_bas BAs to apply.
+ *  @param[in] my_kpis Object to copy.
+ *
+ *  @return This object.
  */
-void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
+void applier::kpi::apply(
+                     bam::configuration::state::kpis const& my_kpis) {
   //
   // DIFF
   //
@@ -70,14 +75,14 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
 
   // Objects to create are items remaining in the
   // set at the end of the iteration.
-  bam::configuration::state::bas to_create(my_bas);
+  bam::configuration::state::kpis to_create(my_kpis);
 
   // Objects to modify are items found but
   // with mismatching configuration.
-  std::list<bam::configuration::ba> to_modify;
+  std::list<bam::configuration::kpi> to_modify;
 
   // Iterate through configuration.
-  for (bam::configuration::state::bas::iterator
+  for (bam::configuration::state::kpis::iterator
          it(to_create.begin()),
          end(to_create.end());
        it != end;) {
@@ -85,7 +90,6 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
       cfg_it(to_delete.find(it->get_id()));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
-      // Configuration mismatch, modify object.
       if (cfg_it->second.cfg != *it)
         to_modify.push_back(*it);
       to_delete.erase(cfg_it);
@@ -110,28 +114,24 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::bas::iterator
+  for (bam::configuration::state::kpis::iterator
          it(to_create.begin()),
          end(to_create.end());
        it != end;
        ++it) {
-    misc::shared_ptr<bam::ba> new_ba(_new_ba(*it));
+    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it));
     applied& content(_applied[it->get_id()]);
     content.cfg = *it;
-    content.obj = new_ba;
+    content.obj = new_kpi;
   }
 
   // Modify existing objects.
-  for (std::list<bam::configuration::ba>::iterator
+  for (std::list<bam::configuration::kpi>::iterator
          it(to_modify.begin()),
          end(to_modify.end());
        it != end;
        ++it) {
-    std::map<unsigned int, applied>::iterator
-      pos(_applied.find(it->get_id()));
-    if (pos != _applied.end()) {
-      // XXX : apply modified configuration
-    }
+    // XXX
   }
 
   return ;
@@ -142,21 +142,44 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
  *
  *  @param[in] right Object to copy.
  */
-void applier::ba::_internal_copy(applier::ba const& right) {
+void applier::kpi::_internal_copy(applier::kpi const& right) {
   _applied = right._applied;
   return ;
 }
 
 /**
- *  Create new BA object.
+ *  Create new KPI object.
  *
- *  @param[in] cfg BA configuration.
+ *  @param[in] cfg KPI configuration.
  *
- *  @return New BA object.
+ *  @return New KPI object.
  */
-misc::shared_ptr<bam::ba> applier::ba::_new_ba(
-                                         configuration::ba const& cfg) {
-  misc::shared_ptr<bam::ba> obj(new bam::ba);
-  // XXX : use configuration for BA levels
-  return (obj);
+misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
+                                           configuration::kpi const& cfg) {
+  misc::shared_ptr<bam::kpi> my_kpi;
+  if (cfg.is_service()) {
+    misc::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
+    obj->set_acknowledged(cfg.is_acknowledged());
+    obj->set_downtimed(cfg.is_downtimed());
+    obj->set_host_id(cfg.get_host_id());
+    obj->set_impact_critical(cfg.get_impact_critical());
+    obj->set_impact_unknown(cfg.get_impact_unknown());
+    obj->set_impact_warning(cfg.get_impact_warning());
+    obj->set_service_id(cfg.get_service_id());
+    obj->set_state_hard(cfg.get_last_hard_state());
+    obj->set_state_soft(cfg.get_status());
+    obj->set_state_type(cfg.get_state_type());
+    // XXX : link kpi
+    my_kpi = obj.staticCast<bam::kpi>();
+  }
+  else if (cfg.is_ba()) {
+    misc::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
+    obj->set_impact_critical(cfg.get_impact_critical());
+    obj->set_impact_warning(cfg.get_impact_warning());
+    // XXX : link kpi
+    my_kpi = obj.staticCast<bam::kpi>();
+  }
+  else
+    ; // XXX
+  return (my_kpi);
 }

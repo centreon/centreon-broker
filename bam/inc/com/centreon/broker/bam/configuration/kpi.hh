@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,8 +24,8 @@
 
 CCB_BEGIN()
 
-namespace           bam{
-  namespace         configuration{
+namespace           bam {
+  namespace         configuration {
     /**
      *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/kpi.hh"
      *  @brief   Abstraction for representing a business interest in the
@@ -34,7 +34,7 @@ namespace           bam{
      *  KPI configuration. It holds the rule of the KPI such as its
      *  impact, which service/BA it targets, ...
      */
-    class           kpi{
+    class           kpi {
     public:
                     kpi(
                       unsigned int id = 0,
@@ -52,8 +52,10 @@ namespace           bam{
                       double critical = 0,
                       double unknown = 0);
                     kpi(kpi const& other);
-                    kpi& operator=(kpi const& other);
                     ~kpi();
+      kpi&          operator=(kpi const& other);
+      bool          operator==(kpi const& other) const;
+      bool          operator!=(kpi const& other) const;
 
       unsigned      get_id() const;
       short         get_state_type() const;
@@ -72,36 +74,36 @@ namespace           bam{
       double        get_impact_critical() const;
       double        get_impact_unknown() const;
 
-      void         set_id(unsigned int id);
-      void         set_state_type(short state_type);
-      void         set_host_id(unsigned int host_id);
-      void         set_service_id(unsigned int service_id);
-      void         set_ba_id(unsigned int ba_id);
-      void         set_status(short status);
-      void         set_last_hard_state(short hard_state);
-      void         set_downtimed(bool downtimed);
-      void         set_acknowledged(bool acknowledged);
-      void         ignore_downtime(bool ignore);
-      void         ignore_acknowledgement(bool ignore) ;
-      void         set_impact_warning(double impact);
-      void         set_impact_critical(double impact);
-      void         set_impact_unknown(double impact);
+      void          set_id(unsigned int id);
+      void          set_state_type(short state_type);
+      void          set_host_id(unsigned int host_id);
+      void          set_service_id(unsigned int service_id);
+      void          set_ba_id(unsigned int ba_id);
+      void          set_status(short status);
+      void          set_last_hard_state(short hard_state);
+      void          set_downtimed(bool downtimed);
+      void          set_acknowledged(bool acknowledged);
+      void          ignore_downtime(bool ignore);
+      void          ignore_acknowledgement(bool ignore) ;
+      void          set_impact_warning(double impact);
+      void          set_impact_critical(double impact);
+      void          set_impact_unknown(double impact);
 
     private:
-      unsigned int _id;
-      short        _state_type;
-      unsigned int _host_id;
-      unsigned int _service_id;
-      unsigned int _ba_id;
-      short        _status;
-      short        _last_hard_state;
-      bool         _downtimed;
-      bool         _acknowledged;
-      bool         _ignore_downtime;
-      bool         _ignore_acknowledgement;
-      double       _impact_warning;
-      double       _impact_critical;
-      double       _impact_unknown;
+      unsigned int  _id;
+      short         _state_type;
+      unsigned int  _host_id;
+      unsigned int  _service_id;
+      unsigned int  _ba_id;
+      short         _status;
+      short         _last_hard_state;
+      bool          _downtimed;
+      bool          _acknowledged;
+      bool          _ignore_downtime;
+      bool          _ignore_acknowledgement;
+      double        _impact_warning;
+      double        _impact_critical;
+      double        _impact_unknown;
     };
   }
 }

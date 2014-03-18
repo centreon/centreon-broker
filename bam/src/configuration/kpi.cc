@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -107,6 +107,41 @@ kpi& kpi::operator=(kpi const& other) {
     _impact_unknown = other._impact_unknown ;
   }
   return (*this);
+}
+
+/**
+ *  Equality comparison operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if both objects are equal.
+ */
+bool kpi::operator==(kpi const& other) const {
+  return ((_id == other._id)
+          && (_state_type == other._state_type)
+          && (_host_id == other._host_id)
+          && (_service_id == other._service_id)
+          && (_ba_id == other._ba_id)
+          && (_status == other._status)
+          && (_last_hard_state == other._last_hard_state)
+          && (_downtimed == other._downtimed)
+          && (_acknowledged == other._acknowledged)
+          && (_ignore_downtime == other._ignore_downtime)
+          && (_ignore_acknowledgement == other._ignore_acknowledgement)
+          && (_impact_warning == other._impact_warning)
+          && (_impact_critical == other._impact_critical)
+          && (_impact_unknown == other._impact_unknown));
+}
+
+/**
+ *  Inequality comparison operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if both objects are inequal.
+ */
+bool kpi::operator!=(kpi const& other) const {
+  return (!operator==(other));
 }
 
 /**
