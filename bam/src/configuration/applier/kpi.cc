@@ -17,9 +17,11 @@
 ** <http:/www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -59,12 +61,14 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
 /**
  *  Apply configuration.
  *
- *  @param[in] my_kpis Object to copy.
+ *  @param[in]     my_kpis Object to copy.
+ *  @param[in,out] my_bas  Already applied BAs.
  *
  *  @return This object.
  */
 void applier::kpi::apply(
-                     bam::configuration::state::kpis const& my_kpis) {
+                     bam::configuration::state::kpis const& my_kpis,
+                     applier::ba& my_bas) {
   //
   // DIFF
   //
@@ -119,7 +123,7 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;
        ++it) {
-    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it));
+    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it, my_bas));
     applied& content(_applied[it->get_id()]);
     content.cfg = *it;
     content.obj = new_kpi;
@@ -150,12 +154,14 @@ void applier::kpi::_internal_copy(applier::kpi const& right) {
 /**
  *  Create new KPI object.
  *
- *  @param[in] cfg KPI configuration.
+ *  @param[in] cfg    KPI configuration.
+ *  @param[in] my_bas Already applied BAs.
  *
  *  @return New KPI object.
  */
 misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
-                                           configuration::kpi const& cfg) {
+                                           configuration::kpi const& cfg,
+                                           applier::ba& my_bas) {
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
     misc::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
@@ -169,17 +175,32 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_state_hard(cfg.get_last_hard_state());
     obj->set_state_soft(cfg.get_status());
     obj->set_state_type(cfg.get_state_type());
-    // XXX : link kpi
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else if (cfg.is_ba()) {
     misc::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
-    // XXX : link kpi
+    misc::shared_ptr<bam::ba>
+      target(my_bas.find_ba(cfg.get_indicator_ba_id()));
+    if (target.isNull())
+      throw (exceptions::msg()
+             << "BAM: could not create KPI " << cfg.get_id()
+             << "): could not find BA " << cfg.get_indicator_ba_id());
+    obj->link_ba(target);
+    target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else
-    ; // XXX
+    throw (exceptions::msg()
+           << "BAM: could not create KPI " << cfg.get_id()
+           << " which is neither related to a service nor a BA");
+  misc::shared_ptr<bam::ba>
+    my_ba(my_bas.find_ba(cfg.get_ba_id()));
+  if (my_ba.isNull())
+    throw (exceptions::msg()
+           << "BAM: could not create KPI " << cfg.get_id()
+           << ": BA " << cfg.get_ba_id() << " does not exist");
+  my_kpi->add_parent(my_ba.staticCast<bam::computable>());
   return (my_kpi);
 }

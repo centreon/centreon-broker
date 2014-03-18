@@ -45,6 +45,8 @@ namespace     bam {
               ~ba();
         ba&   operator=(ba const& right);
         void  apply(configuration::state::bas const& my_bas);
+        misc::shared_ptr<bam::ba>
+              find_ba(unsigned int id);
 
       private:
         struct applied {

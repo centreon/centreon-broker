@@ -42,6 +42,7 @@ namespace           bam {
                       unsigned int hostid = 0,
                       unsigned int serviceid = 0,
                       unsigned int ba = 0,
+                      unsigned int indicator_ba = 0,
                       short status = 0,
                       short lasthardstate = 0,
                       bool downtimed = false,
@@ -57,13 +58,14 @@ namespace           bam {
       bool          operator==(kpi const& other) const;
       bool          operator!=(kpi const& other) const;
 
-      unsigned      get_id() const;
+      unsigned int  get_id() const;
       short         get_state_type() const;
       unsigned int  get_host_id() const;
       unsigned int  get_service_id() const;
       bool          is_service() const;
       bool          is_ba() const;
       unsigned int  get_ba_id() const;
+      unsigned int  get_indicator_ba_id() const;
       short         get_status() const;
       short         get_last_hard_state() const;
       bool          is_downtimed() const;
@@ -79,6 +81,7 @@ namespace           bam {
       void          set_host_id(unsigned int host_id);
       void          set_service_id(unsigned int service_id);
       void          set_ba_id(unsigned int ba_id);
+      void          set_indicator_ba_id(unsigned int ba_id);
       void          set_status(short status);
       void          set_last_hard_state(short hard_state);
       void          set_downtimed(bool downtimed);
@@ -95,6 +98,7 @@ namespace           bam {
       unsigned int  _host_id;
       unsigned int  _service_id;
       unsigned int  _ba_id;
+      unsigned int  _indicator_ba_id;
       short         _status;
       short         _last_hard_state;
       bool          _downtimed;

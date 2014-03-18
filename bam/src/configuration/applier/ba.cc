@@ -138,6 +138,21 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
 }
 
 /**
+ *  Find BA by its ID.
+ *
+ *  @param[in] id BA ID.
+ *
+ *  @return Shared pointer to the applied BA object.
+ */
+misc::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
+  std::map<unsigned int, applied>::iterator
+    it(_applied.find(id));
+  return ((it != _applied.end())
+          ? it->second.obj
+          : misc::shared_ptr<bam::ba>());
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.

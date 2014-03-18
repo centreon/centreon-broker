@@ -54,6 +54,17 @@ computable& computable::operator=(computable const& right) {
 }
 
 /**
+ *  Add a new parent.
+ *
+ *  @param[in] parent Parent node.
+ */
+void computable::add_parent(
+                   misc::shared_ptr<computable> const& parent) {
+  _parents.push_back(parent);
+  return ;
+}
+
+/**
  *  @brief Propagate the update of a child node.
  *
  *  This method will call the child_has_update() method of the parents
@@ -78,21 +89,12 @@ void computable::propagate_update(misc::shared_ptr<computable>& child) {
 }
 
 /**
- *  Add a new parent.
- *
- *  @param[in] parent Parent node.
- */
-void computable::_add_parent(misc::shared_ptr<computable>& parent) {
-  _parents.push_back(parent);
-  return ;
-}
-
-/**
  *  Remove a parent.
  *
  *  @param[in] parent Parent node.
  */
-void computable::_remove_parent(misc::shared_ptr<computable>& parent) {
+void computable::remove_parent(
+                   misc::shared_ptr<computable> const& parent) {
   for (std::list<misc::shared_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());

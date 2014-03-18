@@ -32,6 +32,9 @@ CCB_BEGIN()
 namespace     bam {
   namespace   configuration {
     namespace applier {
+      // Forward declaration.
+      class   ba;
+
       /**
        *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/applier/kpi.hh"
        *  @brief Apply KPI configuration.
@@ -44,7 +47,9 @@ namespace     bam {
               kpi(kpi const& right);
               ~kpi();
         kpi&  operator=(kpi const& right);
-        void  apply(configuration::state::kpis const& my_kpis);
+        void  apply(
+                configuration::state::kpis const& my_kpis,
+                ba& my_bas);
 
       private:
         struct applied {
@@ -54,7 +59,9 @@ namespace     bam {
 
         void  _internal_copy(kpi const& right);
         misc::shared_ptr<bam::kpi>
-              _new_kpi(configuration::kpi const& cfg);
+              _new_kpi(
+                configuration::kpi const& cfg,
+                ba& my_bas);
 
         std::map<unsigned int, applied>
               _applied;
