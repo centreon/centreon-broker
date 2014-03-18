@@ -73,6 +73,17 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
 }
 
 /**
+ *  Unused callback.
+ *
+ *  @param[in] child Unused.
+ */
+void kpi_service::child_has_update(
+                    misc::shared_ptr<computable>& child) {
+  (void)child;
+  return ;
+}
+
+/**
  *  Get host ID.
  *
  *  @return Host ID.

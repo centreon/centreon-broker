@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,6 +30,7 @@ kpi::kpi(
        unsigned int host_id,
        unsigned int service_id,
        unsigned int ba,
+       unsigned int indicator_ba,
        short status,
        short last_hard_state,
        bool downtimed,
@@ -44,6 +45,7 @@ kpi::kpi(
     _host_id(host_id),
     _service_id(service_id),
     _ba_id(ba),
+    _indicator_ba_id(indicator_ba),
     _status(status),
     _last_hard_state(last_hard_state),
     _downtimed(downtimed),
@@ -66,6 +68,7 @@ kpi::kpi(kpi const& other)
     _host_id(other._host_id),
     _service_id(other._service_id),
     _ba_id(other._ba_id),
+    _indicator_ba_id(other._indicator_ba_id),
     _status(other._status),
     _last_hard_state(other._last_hard_state),
     _downtimed(other._downtimed),
@@ -96,6 +99,7 @@ kpi& kpi::operator=(kpi const& other) {
     _host_id = other._host_id;
     _service_id = other._service_id;
     _ba_id = other._ba_id;
+    _indicator_ba_id = other._indicator_ba_id;
     _status = other._status;
     _last_hard_state = other._last_hard_state;
     _downtimed = other._downtimed;
@@ -107,6 +111,42 @@ kpi& kpi::operator=(kpi const& other) {
     _impact_unknown = other._impact_unknown ;
   }
   return (*this);
+}
+
+/**
+ *  Equality comparison operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if both objects are equal.
+ */
+bool kpi::operator==(kpi const& other) const {
+  return ((_id == other._id)
+          && (_state_type == other._state_type)
+          && (_host_id == other._host_id)
+          && (_service_id == other._service_id)
+          && (_ba_id == other._ba_id)
+          && (_indicator_ba_id == other._indicator_ba_id)
+          && (_status == other._status)
+          && (_last_hard_state == other._last_hard_state)
+          && (_downtimed == other._downtimed)
+          && (_acknowledged == other._acknowledged)
+          && (_ignore_downtime == other._ignore_downtime)
+          && (_ignore_acknowledgement == other._ignore_acknowledgement)
+          && (_impact_warning == other._impact_warning)
+          && (_impact_critical == other._impact_critical)
+          && (_impact_unknown == other._impact_unknown));
+}
+
+/**
+ *  Inequality comparison operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if both objects are inequal.
+ */
+bool kpi::operator!=(kpi const& other) const {
+  return (!operator==(other));
 }
 
 /**
@@ -160,7 +200,7 @@ bool kpi::is_service() const {
  *  @return Whether this is a business activity abstraction or not.
  */
 bool kpi::is_ba() const {
-  return (_ba_id != 0);
+  return (_indicator_ba_id != 0);
 }
 
 /**
@@ -170,6 +210,15 @@ bool kpi::is_ba() const {
  */
 unsigned int kpi::get_ba_id() const {
   return (_ba_id);
+}
+
+/**
+ *  Get indicator BA ID.
+ *
+ *  @return The ID of the BA attached to this KPI.
+ */
+unsigned int kpi::get_indicator_ba_id() const {
+  return (_indicator_ba_id);
 }
 
 /**
@@ -287,6 +336,16 @@ void kpi::set_service_id(unsigned int i) {
  */
 void kpi::set_ba_id(unsigned int i) {
   _ba_id = i;
+}
+
+/**
+ *  Set the BA ID that affects this KPI.
+ *
+ *  @param[in] ba_id BA ID.
+ */
+void kpi::set_indicator_ba_id(unsigned int ba_id) {
+  _indicator_ba_id = ba_id;
+  return ;
 }
 
 /**

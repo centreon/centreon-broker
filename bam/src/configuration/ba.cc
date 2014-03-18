@@ -80,6 +80,32 @@ ba& ba::operator=(ba const& other) {
 }
 
 /**
+ *  Equality comparison operator.
+ *
+ *  @param[in] right Object to compare to.
+ *
+ *  @return True if this object and right are totally equal.
+ */
+bool ba::operator==(ba const& right) const {
+  return ((_id == right._id)
+          && (_name == right._name)
+          && (_level == right._level)
+          && (_warning_level == right._warning_level)
+          && (_critical_level == right._critical_level));
+}
+
+/**
+ *  Inequality comparison operator.
+ *
+ *  @param[in] right Object to compare to.
+ *
+ *  @return True if this object and right are inequal.
+ */
+bool ba::operator!=(ba const& right) const {
+  return (!operator==(right));
+}
+
+/**
  *  Get business activity id.
  *
  *  @return An integer representing the value of a business activity.

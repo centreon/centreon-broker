@@ -40,8 +40,10 @@ namespace        bam {
                  computable(computable const& right);
     virtual      ~computable();
     computable&  operator=(computable const& right);
+    void         add_parent(misc::shared_ptr<computable> const& parent);
     void         propagate_update(
                    misc::shared_ptr<computable>& child);
+    void         remove_parent(misc::shared_ptr<computable> const& parent);
 
     /**
      *  @brief Notify node of the change of a child node.
@@ -55,10 +57,6 @@ namespace        bam {
      */
     virtual void child_has_update(
                    misc::shared_ptr<computable>& child) = 0;
-
-  protected:
-    void         _add_parent(misc::shared_ptr<computable>& parent);
-    void         _remove_parent(misc::shared_ptr<computable>& parent);
 
   private:
     void         _internal_copy(computable const& right);
